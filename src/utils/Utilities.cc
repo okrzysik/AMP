@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 
 // Detect the OS and include system dependent headers
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
@@ -42,13 +43,19 @@
     #include <sys/sysctl.h>
 #elif defined(__linux) || defined(__unix) || defined(__posix)
     #define USE_LINUX
-    #include <signal.h>
+    #define USE_NM
+    #include <sys/time.h>
     #include <execinfo.h>
-    #include <cxxabi.h>
     #include <dlfcn.h>
     #include <malloc.h>
 #else
     #error Unknown OS
+#endif
+
+
+#ifdef __GNUC__
+    #define USE_ABI
+    #include <cxxabi.h>
 #endif
 
 
@@ -229,7 +236,7 @@ void Utilities::abort(const std::string &message,
         std::vector<std::string> stack = getCallStack();
         printf("Stack Trace:\n");
         for (size_t i=0; i<stack.size(); i++)
-            printf("   %s",stack[i].c_str());
+            printf("   %s\n",stack[i].c_str());
         printf("\n");
         // Log the abort message
         Logger::getInstance() -> logAbort(message, filename, line);
@@ -294,28 +301,10 @@ size_t Utilities::getMemoryUsage()
 {
     size_t N_bytes = 0;
     #if defined(USE_LINUX)
-        // Get the memory usage according to mallinfo 
         struct mallinfo meminfo = mallinfo();
-        unsigned int size_hblkhd = static_cast<unsigned int>( meminfo.hblkhd );
-        unsigned int size_uordblks = static_cast<unsigned int>( meminfo.uordblks );
-        N_bytes = size_hblkhd + size_uordblks;
-        /*// Correct if we wrapped around 2^32
-        FILE *stderr_tmp = stderr;
-        char buffer[512];
-        memset(buffer,0,512);
-        stderr = fmemopen(buffer,511,"wb+");
-        malloc_stats();
-        fclose(stderr);
-        stderr = stderr_tmp;
-        std::string tmp(buffer);
-        size_t pos = tmp.find("max mmap bytes");
-        tmp = tmp.substr(pos);
-        pos = tmp.find("=");
-        tmp = tmp.substr(pos+1);
-        size_t max_mmap = static_cast<size_t>(atol(tmp.c_str()));
-        while ( max_mmap+size_uordblks >= N_bytes+0x100000000 ) {
-            N_bytes += 0x100000000;
-        }*/
+        size_t size_hblkhd = static_cast<size_t>( meminfo.hblkhd );
+        size_t size_uordblks = static_cast<size_t>( meminfo.uordblks );
+        N_bytes = static_cast<size_t>( size_hblkhd + size_uordblks );
     #elif defined(USE_MAC)
         struct task_basic_info t_info;
         mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
@@ -337,38 +326,90 @@ size_t Utilities::getMemoryUsage()
 /****************************************************************************
 *  Function to get the current call stack                                   *
 ****************************************************************************/
+struct global_symbols_struct {
+    bool loaded;
+    std::vector<void*> address;
+    std::vector<std::string> obj;
+    global_symbols_struct(): loaded(false) {}
+} global_symbols;
+std::string print_address( void *address )
+{
+    char tmp[20];
+    unsigned long long int address2 = reinterpret_cast<size_t>(address);
+    sprintf(tmp,"0x%016llx",address2);
+    return std::string(tmp);
+}
+std::string remove_path(const std::string& var)
+{
+    const char* tmp = std::max(strrchr(var.c_str(),47),strrchr(var.c_str(),92));
+    if ( tmp==0 )
+        tmp = var.c_str();
+    else
+        tmp++;
+    return std::string(tmp);
+}
 std::vector<std::string>  Utilities::getCallStack()
 {
     std::vector<std::string>  stack_list;
     #if defined(USE_LINUX) || defined(USE_MAC)
         void *trace[100];
+        memset(trace,0,100*sizeof(void*));
         Dl_info dlinfo;
         int status;
         const char *symname;
         char *demangled=NULL;
         int trace_size = backtrace(trace,100);
+        char **names = backtrace_symbols(trace,100);
         for (int i=0; i<trace_size; ++i) {  
             if(!dladdr(trace[i], &dlinfo))
                 continue;
             symname = dlinfo.dli_sname;
-            demangled = abi::__cxa_demangle(symname, NULL, 0, &status);
-            if(status == 0 && demangled)
-                symname = demangled;
+            #if defined(USE_ABI)
+                demangled = abi::__cxa_demangle(symname, NULL, 0, &status);
+                if(status == 0 && demangled)
+                    symname = demangled;
+            #endif
             std::string object = std::string(dlinfo.dli_fname);
             std::string function = "";
             if ( symname!=NULL )
                 function = std::string(symname);
-            if ( i!=0 ) {  // Skip the current function
-                std::string stack_item = object + ":   " + function + "\n";
-                //stack_item = "object: " + object + "\n";
-                //stack_item += "function: " + function + "\n";
-                stack_list.push_back(stack_item);
-            }
-            if ( demangled==NULL ) {
+            // Create the stack item
+            object = remove_path(object);
+            std::string stack_item = print_address(trace[i]) + ":   " + object + ":   ";
+            while ( stack_item.size() < 40 )
+                stack_item.push_back(' ');
+            stack_item += function;
+            stack_list.push_back(stack_item);
+            if ( demangled!=NULL ) {
                 free(demangled);
                 demangled=NULL;
             }
-        } 
+        }
+        free(names);
+        if ( stack_list.empty() ) {
+            // Try to load the global symbols and use them
+            if ( !global_symbols.loaded ) {
+                global_symbols.loaded = true;
+                std::vector<char> type;
+                Utilities::get_symbols( global_symbols.address, type, global_symbols.obj );
+            }
+            if ( !global_symbols.address.empty() ) {
+                for (int i=0; i<trace_size; ++i) {  
+                    // Search through the global symbols to find the address
+                    size_t index = findfirst(global_symbols.address,trace[i])-1;
+                    std::string stack_item = print_address(trace[i]) + ":   " + global_symbols.obj[index];
+                    stack_list.push_back(stack_item);
+                }
+            }
+        }
+        if ( stack_list.empty() ) {
+            // We don't have access to the symbols, print the addresses
+            // We can then use nm or some other method to convert the addresses to the function
+            for (int i=0; i<trace_size; ++i) {  
+                std::string stack_item = print_address(trace[i]);
+                stack_list.push_back(stack_item);
+            }
+        }
     #elif defined(USE_WINDOWS)
         ::CONTEXT lContext;
         ::ZeroMemory( &lContext, sizeof( ::CONTEXT ) );
@@ -389,7 +430,8 @@ std::vector<std::string>  Utilities::getCallStack()
             DWORD MachineType = IMAGE_FILE_MACHINE_IA64;
         #endif
         while ( 1 ) {
-            bool rtn = ::StackWalk64( MachineType, ::GetCurrentProcess(), ::GetCurrentThread(), &lFrameStack, MachineType == IMAGE_FILE_MACHINE_I386 ? 0 : &lContext,
+            int rtn = ::StackWalk64( MachineType, ::GetCurrentProcess(), ::GetCurrentThread(), 
+                &lFrameStack, MachineType == IMAGE_FILE_MACHINE_I386 ? 0 : &lContext,
                 NULL, &::SymFunctionTableAccess64, &::SymGetModuleBase64, NULL );
             if( !rtn )
                 break;
@@ -397,10 +439,15 @@ std::vector<std::string>  Utilities::getCallStack()
                 break;
             ::MEMORY_BASIC_INFORMATION lInfoMemory;
             ::VirtualQuery( ( ::PVOID )lFrameStack.AddrPC.Offset, &lInfoMemory, sizeof( lInfoMemory ) );
+            if ( lInfoMemory.Type==MEM_PRIVATE )
+                continue;
             ::DWORD64 lBaseAllocation = reinterpret_cast< ::DWORD64 >( lInfoMemory.AllocationBase );
             ::TCHAR lNameModule[ 1024 ];
-            ::GetModuleFileName( reinterpret_cast< ::HMODULE >( lBaseAllocation ), lNameModule, 1024 );
+            ::HMODULE hBaseAllocation = reinterpret_cast< ::HMODULE >( lBaseAllocation );
+            ::GetModuleFileName( hBaseAllocation, lNameModule, 1024 );
             PIMAGE_DOS_HEADER lHeaderDOS = reinterpret_cast<PIMAGE_DOS_HEADER>( lBaseAllocation );
+            if ( lHeaderDOS==NULL )
+                continue;
             PIMAGE_NT_HEADERS lHeaderNT = reinterpret_cast<PIMAGE_NT_HEADERS>( lBaseAllocation + lHeaderDOS->e_lfanew );
             PIMAGE_SECTION_HEADER lHeaderSection = IMAGE_FIRST_SECTION( lHeaderNT );
             ::DWORD64 lRVA = lFrameStack.AddrPC.Offset - lBaseAllocation;
@@ -419,8 +466,54 @@ std::vector<std::string>  Utilities::getCallStack()
             stream << lNameModule << " : 000" << lNumberSection << " : " << reinterpret_cast<void*>(lOffsetSection);
             stack_list.push_back(stream.str());
         }
+    #else
+        #warning Stack trace is not supported on this compiler/OS
     #endif
     return stack_list;
+}
+
+
+/****************************************************************************
+*  Function to get symbols for the executable from nm (if availible)        *
+****************************************************************************/
+int Utilities::get_symbols( std::vector<void*>& address, std::vector<char>& type, 
+    std::vector<std::string>& obj )
+{
+    address.clear();
+    type.clear();
+    obj.clear();
+    #ifdef USE_NM
+        try { 
+            char buf[1024];
+            int len = ::readlink("/proc/self/exe",buf,sizeof(buf)-1);
+            if ( len==-1 )
+                return -2;
+            buf[len] = '\0';
+            char cmd[1024];
+            sprintf(cmd,"nm --demangle --numeric-sort %s",buf);
+            FILE *in = popen(cmd,"r");
+            if ( in==NULL )
+                return -2;
+            while ( fgets(buf,sizeof(buf)-1,in)!=NULL ) {
+                if ( buf[0] == ' ' )
+                    continue;
+                char *a = buf;
+                char *b = strchr(a,' ');  b[0] = 0;  b++;
+                char *c = strchr(b,' ');  c[0] = 0;  c++;
+                char *d = strchr(c,'\n');  if ( d ) { d[0]=0; }
+                size_t add = strtoul(a,NULL,16);
+                address.push_back( reinterpret_cast<void*>(add) );
+                type.push_back( b[0] );
+                obj.push_back( std::string(c) );
+        	}
+            pclose(in);
+        } catch (...) {
+            return -3;
+        }
+        return 0;
+    #else
+        return -1;
+    #endif
 }
 
 

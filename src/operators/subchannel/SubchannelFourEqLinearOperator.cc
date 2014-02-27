@@ -142,7 +142,7 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
         if ( !d_ownSubChannel[i] )
             continue;
         AMP::Mesh::MeshIterator localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
-        AMP::Mesh::Mesh::shared_ptr localSubchannel = d_Mesh->Subset( localSubchannelIt  );
+        AMP::Mesh::Mesh::shared_ptr localSubchannel = d_Mesh->Subset( localSubchannelIt, false );
         AMP::Mesh::MeshIterator face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(localSubchannel, 0);
         for (size_t j=0; j<face.size(); j++) {
             d_subchannelFace[i].push_back( *face );

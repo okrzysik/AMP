@@ -15,10 +15,19 @@ namespace Mesh {
 /********************************************************
 * Constructors                                          *
 ********************************************************/
-SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::MeshIterator iterator_in )
+SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, 
+    const AMP::Mesh::MeshIterator iterator_in, bool isGlobal )
 {
     this->d_parent_mesh = mesh;
-    this->d_comm = mesh->getComm();
+    if ( isGlobal ) {
+        this->d_comm = mesh->getComm();
+    } else {
+        for (AMP::Mesh::MeshIterator it=iterator_in; it!=iterator_in.end(); ++it) {
+            if ( !it->globalID().is_local() )
+                AMP_ERROR("Subsetting local mesh for iterator with ghost elements is not supported");
+        }
+        this->d_comm = AMP_MPI(AMP_COMM_SELF);
+    }
     this->setMeshID();
     this->PhysicalDim = mesh->getDim();
     this->d_name = mesh->getName() + "_subset";

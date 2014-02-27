@@ -623,7 +623,7 @@ boost::shared_ptr<Mesh>  MultiMesh::Subset( MeshID meshID ) const
 /********************************************************
 * Function to subset a mesh using a mesh iterator       *
 ********************************************************/
-boost::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in ) const
+boost::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool isGlobal ) const
 {
     if ( iterator_in.size()==0 )
         return boost::shared_ptr<Mesh>();
@@ -637,33 +637,39 @@ boost::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in ) con
             AMP_ERROR("Subset mesh requires all of the elements to be the same type");
         ++iterator;
     }
-    // Subset for the name in each submesh
+    // Subset for the iterator in each submesh
     std::vector<Mesh::shared_ptr> subset;
     std::set<MeshID> subsetID;
     for (size_t i=0; i<d_meshes.size(); i++) {
         iterator = Mesh::getIterator( Intersection, iterator_in, d_meshes[i]->getIterator(type,d_meshes[i]->getMaxGhostWidth()) );
         if ( iterator.size() == 0 ) 
             continue;
-        boost::shared_ptr<Mesh> mesh = d_meshes[i]->Subset( iterator );
+        boost::shared_ptr<Mesh> mesh = d_meshes[i]->Subset( iterator, isGlobal );
         if ( mesh.get()!=NULL ) {
             subset.push_back( mesh );
             subsetID.insert( mesh->meshID() );
         }
     }
     // Count the number of globally unique sub-meshes
-    d_comm.setGather( subsetID ); 
+    AMP::AMP_MPI new_comm(AMP_COMM_SELF);
+    if ( isGlobal )
+        d_comm.setGather( subsetID ); 
     if ( subsetID.size() <= 1 ) {
         if ( subset.empty() ) {
             return boost::shared_ptr<Mesh>();
         } else {
-            boost::shared_ptr<Mesh> subsetMultiMesh( new MultiMesh( subset[0]->getComm(), subset ) );
+            if ( isGlobal )
+                new_comm = subset[0]->getComm();
+            boost::shared_ptr<Mesh> subsetMultiMesh( new MultiMesh( new_comm, subset ) );
             subsetMultiMesh->setName( d_name+"_subset" );
             return subsetMultiMesh;
         }
     }
     // Create a new multi-mesh to contain the subset
-    int color = subset.empty() ? -1:0;
-    AMP::AMP_MPI new_comm = d_comm.split( color );
+    if ( isGlobal ) {
+        int color = subset.empty() ? -1:0;
+        new_comm = d_comm.split( color );
+    }
     if ( new_comm.isNull() )
         return boost::shared_ptr<Mesh>();
     boost::shared_ptr<Mesh> subsetMultiMesh( new MultiMesh( new_comm, subset ) );

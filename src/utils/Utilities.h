@@ -232,9 +232,14 @@ namespace Utilities
     //! Function to get the current call stack
     std::vector<std::string> getCallStack();
 
+    /*!
+     * Return the symbols from the current executable (not availible for all platforms)
+     * @return      Returns 0 if sucessful
+     */
+    int get_symbols( std::vector<void*>& address, std::vector<char>& type, std::vector<std::string>& obj );
+	
     //! Print AMP Banner
     void printBanner();
-
 
     //! Triplet version of std::pair
     template<class A, class B, class C>

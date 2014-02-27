@@ -324,7 +324,7 @@ int main(int argc, char *argv[])
         }
         if ( !call_stack.empty() ) {
             ut.passes("non empty call stack");
-            if ( call_stack[0].find("get_call_stack()") != std::string::npos )
+            if ( call_stack[1].find("get_call_stack()") != std::string::npos )
                 ut.passes("call stack decoded function symbols");
             else
                 ut.expected_failure("call stack was unable to decode function symbols");
@@ -332,7 +332,14 @@ int main(int argc, char *argv[])
             ut.failure("non empty call stack");
         }
 
-
+        // Test getting the symbols
+        std::vector<void*> address;
+        std::vector<char> type;
+        std::vector<std::string> obj;
+        int rtn = AMP::Utilities::get_symbols( address, type, obj );
+        if ( rtn==0 && !address.empty() )
+            ut.passes("Read symbols from executable");
+		
         // Test deleting and checking if a file exists
         if ( globalComm.getRank()==0 ) {
             FILE *fid = fopen( "testDeleteFile.txt", "w" );

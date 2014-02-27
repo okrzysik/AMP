@@ -283,10 +283,10 @@ boost::shared_ptr<Mesh>  Mesh::Subset( std::string name ) const {
 /********************************************************
 * Function to subset a mesh using a mesh iterator       *
 ********************************************************/
-boost::shared_ptr<Mesh> Mesh::Subset( const MeshIterator &iterator ) const
+boost::shared_ptr<Mesh> Mesh::Subset( const MeshIterator &iterator, bool isGlobal ) const
 {
     boost::shared_ptr<const Mesh> this_mesh( shared_from_this() );
-    boost::shared_ptr<SubsetMesh> mesh( new SubsetMesh( this_mesh, iterator ) );
+    boost::shared_ptr<SubsetMesh> mesh( new SubsetMesh( this_mesh, iterator, isGlobal ) );
     return mesh;
 }
 

@@ -163,8 +163,10 @@ public:
      * \details  This function will subset a mesh over a given iterator.
      *   This will return a new mesh object.
      * \param iterator  MeshIterator used to subset
+     * \param isGlobal  Is the new subset mesh global over the entire mesh (true,default), 
+     *                  or do we only want to keep the local mesh (false)
      */
-    virtual boost::shared_ptr<Mesh>  Subset ( const MeshIterator &iterator ) const;
+    virtual boost::shared_ptr<Mesh>  Subset ( const MeshIterator &iterator, bool isGlobal=true ) const;
 
 
     /**

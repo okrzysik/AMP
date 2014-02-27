@@ -128,9 +128,9 @@ ENDMACRO()
 
 
 # Add a subdirectory
-MACRO ( ADD_PACKAGE_SUBDIRECTORY SUBDIR )
-    FIND_FILES_PATH ( ${SUBDIR} )
-ENDMACRO ()
+MACRO( ADD_PACKAGE_SUBDIRECTORY SUBDIR )
+    FIND_FILES_PATH( ${SUBDIR} )
+ENDMACRO()
 
 
 # Install a package
@@ -162,30 +162,30 @@ MACRO( INSTALL_AMP_TARGET LIBNAME )
         INSTALL( TARGETS ${LIBNAME} DESTINATION ${AMP_INSTALL_DIR}/lib )
     ENDIF()
     INSTALL( FILES ${HEADERS} DESTINATION ${AMP_INSTALL_DIR}/include/${LIBNAME} )
-ENDMACRO ()
+ENDMACRO()
 
 
 # Macro to verify that a variable has been set
 MACRO( VERIFY_VARIABLE VARIABLE_NAME )
     IF ( NOT ${VARIABLE_NAME} )
-        MESSAGE ( FATAL_ERROR "PLease set: " ${VARIABLE_NAME} )
-    ENDIF ()
-ENDMACRO ()
+        MESSAGE( FATAL_ERROR "PLease set: " ${VARIABLE_NAME} )
+    ENDIF()
+ENDMACRO()
 
 
 # Macro to verify that a path has been set
-MACRO ( VERIFY_PATH PATH_NAME )
+MACRO( VERIFY_PATH PATH_NAME )
     IF ("${PATH_NAME}" STREQUAL "")
         MESSAGE ( FATAL_ERROR "Path is not set: ${PATH_NAME}" )
     ENDIF()
     IF ( NOT EXISTS ${PATH_NAME} )
         MESSAGE ( FATAL_ERROR "Path does not exist: ${PATH_NAME}" )
     ENDIF()
-ENDMACRO ()
+ENDMACRO()
 
 
 # Macro to tell cmake to use static libraries
-MACRO ( SET_STATIC_FLAGS )
+MACRO( SET_STATIC_FLAGS )
     # Remove extra library links
     set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
     set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
@@ -217,6 +217,9 @@ MACRO( SET_COMPILER )
     ELSEIF( ${CMAKE_C_COMPILER_ID} MATCHES "PGI")
         SET(USING_PGCC TRUE)
         MESSAGE("Using pgCC")
+    ELSEIF( (${CMAKE_C_COMPILER_ID} MATCHES "CRAY") OR (${CMAKE_C_COMPILER_ID} MATCHES "Cray") )
+        SET(USING_CRAY TRUE)
+        MESSAGE("Using Cray")
     ELSE()
         SET(USING_DEFAULT TRUE)
         MESSAGE("${CMAKE_C_COMPILER_ID}")
@@ -310,27 +313,34 @@ MACRO ( SET_WARNINGS )
     # Disable warnings that occur frequently, but should be fixed eventually
     SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -wd522 -wd869 -wd1419" )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -wd522 -wd869 -wd1419" )
+  ELSEIF ( USING_CRAY )
+    # Add default compiler options
+    SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS}")
+    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}")
+  ELSEIF ( USING_PGCC )
+    # Add default compiler options
+    SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS}")
+    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}")
   ELSEIF ( USING_DEFAULT )
     # Add default compiler options
     SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -Wall")
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wall")
   ENDIF ()
-  
 ENDMACRO ()
 
 
 # Macro to add user compile flags
-MACRO ( ADD_USER_FLAGS )
+MACRO( ADD_USER_FLAGS )
     SET(CMAKE_C_FLAGS   " ${CMAKE_C_FLAGS} ${CFLAGS}" )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} ${CXXFLAGS}" )
     SET(CMAKE_Fortran_FLAGS " ${CMAKE_Fortran_FLAGS} ${FFLAGS}" )
-ENDMACRO ()
+ENDMACRO()
 
 
 # Macro to set the flags for debug mode
-MACRO ( SET_COMPILER_FLAGS )
+MACRO( SET_COMPILER_FLAGS )
     # Initilaize the compiler
-    SET_COMPILER ()
+    SET_COMPILER()
     # Set the default flags for each build type
     IF ( USING_MICROSOFT )
         SET(CMAKE_C_FLAGS_DEBUG       "-D_DEBUG /DEBUG /Od /EHsc /MDd /Zi" )
@@ -406,9 +416,9 @@ MACRO ( COPY_EXAMPLE_DATA_FILE FILENAME )
         COPY_DATA_FILE( ${FILE_TO_COPY} ${DESTINATION1} )
         COPY_DATA_FILE( ${FILE_TO_COPY} ${DESTINATION2} )
     ELSE()
-        MESSAGE ( WARNING "Cannot find file: " ${FILE_TO_COPY} )
+        MESSAGE( WARNING "Cannot find file: " ${FILE_TO_COPY} )
     ENDIF()
-ENDMACRO ()
+ENDMACRO()
 
 
 # Macro to copy a mesh file
@@ -442,10 +452,10 @@ MACRO ( ADD_AMP_EXE_DEP EXE )
     IF ( AMP_TEST_LIB_EXISTS )
         ADD_DEPENDENCIES ( ${EXE} ${PACKAGE_TEST_LIB} )
         TARGET_LINK_LIBRARIES ( ${EXE} ${PACKAGE_TEST_LIB} )
-    ENDIF ()
+    ENDIF()
     # Add the executable to the dependencies of check and build-test
-    ADD_DEPENDENCIES ( check ${EXE} )
-    ADD_DEPENDENCIES ( build-test ${EXE} )
+    ADD_DEPENDENCIES( check ${EXE} )
+    ADD_DEPENDENCIES( build-test ${EXE} )
     # Add the file copy targets to the dependency list
     ADD_DEPENDENCIES ( ${EXE} copy-AMP-Data )
     # Add the libraries
@@ -461,7 +471,7 @@ MACRO ( ADD_AMP_EXE_DEP EXE )
     TARGET_LINK_LIBRARIES ( ${EXE} ${LAPACK_LIBS} ${BLAS_LIBS} )
     TARGET_LINK_LIBRARIES ( ${EXE} ${COVERAGE_LIBS} ${LDLIBS} )
     TARGET_LINK_LIBRARIES ( ${EXE} ${SYSTEM_LIBS} )
-ENDMACRO ()
+ENDMACRO()
 
 
 # Add a executable
