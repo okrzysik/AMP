@@ -2,6 +2,7 @@
 #include "utils/ProfilerApp.h"
 
 #include <string>
+#include <vector>
 
 #ifdef USE_WINDOWS
     #define TIME_TYPE LARGE_INTEGER
@@ -18,6 +19,21 @@
 #endif
 
 
+bool call_recursive_scope( int N, int i=0 ) 
+{
+    char name[10];
+    sprintf(name,"scoped-%i",i+1);
+    bool pass = !global_profiler.active(name,__FILE__);
+    PROFILE_SCOPED(timer,"scoped");
+    pass = pass && global_profiler.active(name,__FILE__);
+    if ( N > 0 )
+        pass = pass && call_recursive_scope( --N, ++i );
+    sprintf(name,"scoped-%i",i+2);
+    pass = pass && !global_profiler.active(name,__FILE__);
+    return pass;
+}
+
+
 int run_tests( bool enable_trace, std::string save_name ) 
 {
     PROFILE_ENABLE();
@@ -32,12 +48,29 @@ int run_tests( bool enable_trace, std::string save_name )
     const int N_timers = 1000;
     int N_errors = 0;
 
+    // Check that "MAIN" is active and "NULL" is not
+    bool test1 = global_profiler.active("MAIN",__FILE__);
+    bool test2 = global_profiler.active("NULL",__FILE__);
+    if ( !test1 || test2 ) {
+        printf("Correct timers are not active\n");
+        N_errors++;
+    }
+
+    // Test the scoped timer
+    bool pass = call_recursive_scope( 5 );
+    if ( !pass ) {
+        printf("Scoped timer fails\n");
+        N_errors++;
+    }
+
     // Get a list of timer names
     std::vector<std::string> names(N_timers);
+    std::vector<size_t> ids(N_timers);
     for (int i=0; i<N_timers; i++) {
         char tmp[16];
         sprintf(tmp,"%04i",i);
         names[i] = std::string(tmp);
+        ids[i] = AMP::ProfilerApp::get_timer_id(names[i].c_str(),__FILE__);
     }
 
     // Check that the start/stop command fail when they should
@@ -76,14 +109,14 @@ int run_tests( bool enable_trace, std::string save_name )
         // Test how long it takes to start/stop the timers
         PROFILE_START("level 0");
         for (int j=0; j<N_timers; j++) {
-            PROFILE_START(names[j],0);
-            PROFILE_STOP(names[j],0);
+            global_profiler.start( names[j], __FILE__, __LINE__, 0, ids[j] );
+            global_profiler.stop(  names[j], __FILE__, __LINE__, 0, ids[j] );
         }
         PROFILE_STOP("level 0");
         PROFILE_START("level 1");
         for (int j=0; j<N_timers; j++) {
-            PROFILE_START(names[j],1);
-            PROFILE_STOP(names[j],1);
+            global_profiler.start( names[j], __FILE__, __LINE__, 1, ids[j] );
+            global_profiler.stop(  names[j], __FILE__, __LINE__, 1, ids[j] );
         }
         PROFILE_STOP("level 1");
         // Test the memory around allocations

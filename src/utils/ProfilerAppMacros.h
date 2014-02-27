@@ -69,6 +69,18 @@
     PROFILE_STOP_LEVEL( NAME, __FILE__, -1, GET_LEVEL(_0,##__VA_ARGS__,0) )
 
 
+/*! \def PROFILE_SCOPED(OBJ,NAME,..)
+ *  \brief Create and start a scoped timer
+ *  \details This create and start a ScopedTimer
+ *      See  \ref AMP::ProfilerApp "ProfilerApp" and
+ *     \ref AMP::ProfilerApp "ProfilerApp" for more info.
+ *  \param OBJ   Name of the object
+ *  \param NAME  Name of the timer
+ */
+#define PROFILE_SCOPED(OBJ,NAME,...) \
+    AMP::ScopedTimer OBJ(NAME,__FILE__,__LINE__,GET_LEVEL(_0,##__VA_ARGS__,0),global_profiler)
+
+
 /*! \def PROFILE_SYNCRONIZE()
  *  \brief Syncronize the time across multiple processors
  *  \details This will syncronize time zero across all processors.

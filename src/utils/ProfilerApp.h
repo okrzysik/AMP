@@ -1,7 +1,6 @@
 #ifndef included_ProfilerApp
 #define included_ProfilerApp
 
-#include "utils/ProfilerAppMacros.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,9 +42,8 @@
 namespace AMP {
 
 
-#define BIT_WORD size_t                         // A unsigned integer data type (the larger the word size, the better the performance)
-#define TRACE_SIZE 100                          // The maximum number of timers that will be checked for the trace logs
-                                                // The actual number of timers is TRACE_SIZE * number of bits of BIT_WORD
+#define TRACE_SIZE 64                           // The maximum number of timers that will be checked for the trace logs
+                                                // The actual number of timers is TRACE_SIZE * number of bits of size_t
                                                 // Note: this only affects the trace logs, the number of timers is unlimited
 #define MAX_TRACE_TRACE 1e6                     // The maximum number of stored start and stop times per trace
                                                 // Note: this is only used if store_trace is set, and should be a power of 2
@@ -91,8 +89,8 @@ namespace AMP {
   * for the timers.  All timers with a number greater than the current level in the profiler will be ignored.
   * The macros PROFILE_START and PROFILE_STOP automatically check the level for performance and calling an
   * unused timer adds ~10ns per call. <BR>
-  * For repeated calls the timer adds ~ 5us per call with without trace info, and ~25us per call with full trace info. 
-  * Most of this overhead is not in the time returned by the timer.
+  * For repeated calls the timer adds ~ 1us per call with without trace info, and ~1-10us per call with full trace info. 
+  * Most of this overhead is not in the time returned by the timer.  The resolution is ~ 1us for a single timer call.
   * Note that when a timer is created the cost may be significantly higher, but this only occurs once per timer.  <BR>
   * Example usage:
   *    void my_function(void *arg) {
@@ -137,8 +135,9 @@ public:
      * @param line          Line number containing the start command
      * @param level         Level of detail to include this timer (default is 0)
      *                      Only timers whos level is <= the level of the specified by enable will be included.
+     * @param id            Optional id for the timer (helps improve performance).  See get_timer_id for more info.
      */
-    void start( const std::string& message, const char* filename, const int line, const int level=0 );
+    void start( const std::string& message, const char* filename, const int line, const int level=0, const size_t id=0 );
 
     /*!
      * \brief  Function to stop profiling a block of code
@@ -152,8 +151,19 @@ public:
      * @param level         Level of detail to include this timer (default is 0)
      *                      Only timers whos level is <= the level of the specified by enable will be included.
      *                      Note: this must match the level in start
+     * @param id            Optional id for the timer (helps improve performance).  See get_timer_id for more info.
      */
-    void stop( const std::string& message, const char* filename, const int line, const int level=0 );
+    void stop( const std::string& message, const char* filename, const int line, const int level=0, const size_t id=0 );
+
+    /*!
+     * \brief  Function to check if a timer is active
+     * \details  This function checks if a given timer is active on the current thread.
+     * @param message       Message to uniquely identify the block of code being profiled.
+     *                      It must match a start call.
+     * @param filename      Name of the file containing the code
+     * @param id            Optional id for the timer (helps improve performance).  See get_timer_id for more info.
+     */
+    bool active( const std::string& message, const char* filename, const size_t id=0 );
 
     /*!
      * \brief  Function to save the profiling info
@@ -221,6 +231,15 @@ public:
      */
     void ignore_timer_errors(bool flag=false) { d_check_timer_error = flag; }
 
+    /*!
+     * \brief  Function to change the behavior of timer errors
+     * \details  This function returns the timer id given the message and filename
+     * @param message     The timer message
+     * @param filename    The filename
+     */
+    // Function to return a hopefully unique id based on the message and filename
+    static size_t get_timer_id( const char* message, const char* filename );
+
 private:
 
     // Protect against copy of the class
@@ -231,7 +250,7 @@ private:
     struct store_trace {
         size_t N_calls;             // Number of calls to this block
         size_t id;                  // This is a (hopefully) unique id that we can use for comparison
-        BIT_WORD trace[TRACE_SIZE]; // Store the trace
+        size_t trace[TRACE_SIZE];   // Store the trace
         store_trace *next;          // Pointer to the next entry in the list
         double min_time;            // Store the minimum time spent in the given block (seconds)
         double max_time;            // Store the maximum time spent in the given block (seconds)
@@ -239,10 +258,9 @@ private:
         double *start_time;         // Store when start was called for the given trace (seconds from constructor call)
         double *end_time;           // Store when stop was called for the given trace (seconds from constructor call)
         // Constructor
-        store_trace(): N_calls(0), id(0), next(NULL), min_time(0), max_time(0), total_time(0), start_time(NULL), end_time(NULL)
-        {
-            for (int i=0; i<TRACE_SIZE; ++i)
-                trace[i] = 0;
+        store_trace(): N_calls(0), id(0), next(NULL), min_time(1e100), 
+            max_time(0), total_time(0), start_time(NULL), end_time(NULL) {
+            memset(trace,0,TRACE_SIZE*sizeof(size_t));
         }
         // Destructor
 		~store_trace() {
@@ -285,7 +303,7 @@ private:
         unsigned int trace_index;           // The index of the current timer in the trace
         int N_calls;                        // Number of calls to this block
         size_t id;                          // A unique id for each timer
-        BIT_WORD trace[TRACE_SIZE];         // Store the current trace
+        size_t trace[TRACE_SIZE];           // Store the current trace
         double min_time;                    // Store the minimum time spent in the given block (seconds)
         double max_time;                    // Store the maximum time spent in the given block (seconds)
         double total_time;                  // Store the total time spent in the given block (seconds)
@@ -294,10 +312,9 @@ private:
         store_timer_data_info *timer_data;  // Pointer to the timer data
         TIME_TYPE start_time;               // Store when start was called for the given block
         // Constructor used to initialize key values
-		store_timer(): is_active(false), trace_index(0), N_calls(0), id(0), min_time(0), max_time(0), total_time(0), 
+		store_timer(): is_active(false), trace_index(0), N_calls(0), id(0), min_time(1e100), max_time(0), total_time(0), 
             trace_head(NULL), next(NULL), timer_data(NULL) {
-            for (int i=0; i<TRACE_SIZE; ++i)
-                trace[i] = 0;
+            memset(trace,0,TRACE_SIZE*sizeof(size_t));
 		}
         // Destructor 
 		~store_timer() {
@@ -318,7 +335,7 @@ private:
         int thread_num;                     // The internal id of the thread
         unsigned int N_timers;              // The number of timers seen by the current thread
         volatile thread_info *next;         // Pointer to the next entry in the head list
-        BIT_WORD active[TRACE_SIZE];        // Store the current active traces
+        size_t active[TRACE_SIZE];          // Store the current active traces
         store_timer *head[TIMER_HASH_SIZE]; // Store the timers in a hash table
         size_t N_memory_steps;              // The number of steps we have for the memory usage
         double* time_memory;                // The times at which we know the memory usage
@@ -371,22 +388,14 @@ private:
     store_timer_data_info* get_timer_data( size_t id );
 
     // Function to return the appropriate timer block
-    inline store_timer* get_block( thread_info *thread_data, const char* message, const char* filename, const int start, const int stop );
-
-    // Function to return a hopefully unique id based on the message and filename
-    static inline size_t get_timer_id( const char* message, const char* filename );
+    inline store_timer* get_block( thread_info *thread_data, const char* message, 
+        const char* filename, size_t timer_id, const int start, const int stop );
 
     // Function to return a hopefully unique id based on the active bit array
-    static inline size_t get_trace_id( size_t N, const BIT_WORD *trace );
+    static inline size_t get_trace_id( const size_t *trace );
 
     // Function to return the string of active timers
-    static std::string get_active_list( BIT_WORD *active, unsigned int myIndex, thread_info *head );
-
-    // Function to get the hash index given a timer id
-    static unsigned int get_timer_hash( size_t id );
-
-    // Function to get the hash index given a thread id
-    static unsigned int get_thread_hash( size_t id );
+    static std::string get_active_list( size_t *active, unsigned int myIndex, thread_info *head );
 
     // Function to get the current memory usage
     static inline size_t get_memory_usage();
@@ -421,6 +430,83 @@ private:
 
 // The global profiler
 extern AMP::ProfilerApp global_profiler;
+
+
+namespace AMP {
+
+
+/** \class ScopedTimer
+  *
+  * This class provides a scoped timer that automatically stops when it
+  * leaves scope and is thread safe.
+  * Example usage:
+  *    void my_function(void *arg) {
+  *       ScopedTimer timer = PROFILE_SCOPED(timer,"my function");
+  *       ...
+  *    }
+  *    void my_function(void *arg) {
+  *       PROFILE_SCOPED(timer,"my function");
+  *       ...
+  *    }
+  */
+class ScopedTimer {
+public:
+    /**                 
+     * @brief Create and start a scoped profiler
+     * @details This is constructor to create and start a timer that starts
+     *    at the given line, and is automatically deleted.  
+     *    The scoped timer is also recursive safe, in that it automatically
+     *    appends "-x" to indicate the number of recursive calls of the given timer.  
+     *    Note: We can only have one scoped timer in a given scope
+     *    Note: the scoped timer is generally lower performance that PROFILE_START and PROFILE_STOP.
+     * @param msg           Name of the timer
+     * @param file          Name of the file containing the code (__FILE__)
+     * @param line          Line number containing the start command (__LINE__)
+     * @param level         Level of detail to include this timer (default is 0)
+     *                      Only timers whos level is <= the level of the specified by enable will be included.
+     * @param app           Profiler application to use.  Default is the global profiler
+     */
+    ScopedTimer( const std::string& msg, const char* file, const int line, 
+        const int level=0, ProfilerApp& app=global_profiler ):
+        d_app(app), d_filename(file), d_line(line), d_level(level)
+    {
+        d_id = 0;
+        if ( level <= app.get_level( ) ) {
+            int recursive_level = 0;
+            char buffer[16];
+            while ( d_id==0 ) {
+                recursive_level++;
+                sprintf(buffer,"-%i",recursive_level);
+                d_message = msg + std::string(buffer);
+                size_t id2 = ProfilerApp::get_timer_id(d_message.c_str(),d_filename.c_str());
+                bool test = d_app.active(d_message,d_filename.c_str(),id2);
+                d_id = test ? 0:id2;
+            }
+            d_app.start(d_message,d_filename.c_str(),d_line,d_level,d_id);
+        }
+    }
+    ~ScopedTimer()
+    {
+        if ( d_id != 0 ) 
+            d_app.stop(d_message,d_filename.c_str(),-1,d_level,d_id);
+    }
+protected:
+    ScopedTimer(const ScopedTimer&);            // Private copy constructor
+    ScopedTimer& operator=(const ScopedTimer&); // Private assignment operator
+private:
+    ProfilerApp& d_app;
+    std::string d_message;
+    const std::string d_filename;
+    const int d_line;
+    const int d_level;
+    size_t d_id;
+};
+
+
+}
+
+
+#include "utils/ProfilerAppMacros.h"
 
 
 #endif
