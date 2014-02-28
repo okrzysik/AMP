@@ -14,7 +14,8 @@
       if ( LEVEL <= global_profiler.get_level() )           \
         global_profiler.stop( NAME, FILE, LINE, LEVEL );    \
     } while(0)
-
+#define PROFILE_SCOPED_LEVEL(OBJ,NAME,FILE,LINE,LEVEL)      \
+    AMP::ScopedTimer OBJ( NAME, FILE, LINE, LEVEL )
 
 
 /*! \addtogroup Macros
@@ -78,7 +79,7 @@
  *  \param NAME  Name of the timer
  */
 #define PROFILE_SCOPED(OBJ,NAME,...) \
-    AMP::ScopedTimer OBJ(NAME,__FILE__,__LINE__,GET_LEVEL(_0,##__VA_ARGS__,0),global_profiler)
+    PROFILE_SCOPED_LEVEL(OBJ,NAME,__FILE__,__LINE__, GET_LEVEL(_0,##__VA_ARGS__,0))
 
 
 /*! \def PROFILE_SYNCRONIZE()
