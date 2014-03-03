@@ -141,7 +141,8 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
         d_nlParams->sublist("Anderson Parameters").set("Mixing Parameter", mixing);
         d_nlParams->sublist("Anderson Parameters").sublist("Preconditioning").set("Precondition",d_precOp.get()!=NULL);
     }
-    d_nlParams->sublist("Line Search").set("Method", "Polynomial");
+    std::string lineSearchMethod = nonlinear_db->getStringWithDefault("lineSearchMethod","Polynomial");
+    d_nlParams->sublist("Line Search").set("Method", lineSearchMethod);
     d_nlParams->sublist("Direction").sublist("Newton").sublist("Linear Solver").set("Tolerance",linearRelativeTolerance);
     if ( params->d_prePostOperator.get()!=NULL ) {
          d_nlParams->sublist("Solver Options").set< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
