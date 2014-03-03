@@ -67,6 +67,7 @@ private:
     AMP::Operator::Operator::shared_ptr             d_nonlinearOp;
     AMP::Operator::Operator::shared_ptr             d_linearOp;
     AMP::Solver::SolverStrategy::shared_ptr         d_preconditioner;
+    AMP::Solver::PrePostOperator::shared_ptr        d_prePostOperator;
 
 };
 
