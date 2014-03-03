@@ -504,7 +504,6 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
 
         boost::shared_ptr<AMP::Database> trilinosPreconditioner_db = columnPreconditioner_db->getDatabase("TrilinosPreconditioner");
         unsigned int N_preconditioners = linearColumnOperator->getNumberOfOperators();
-        //N_preconditioners--;    // Don't use a preconditioner for subchannel
         for(unsigned int id=0; id<N_preconditioners; id++) {
             boost::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(new AMP::Solver::SolverStrategyParameters(trilinosPreconditioner_db));
             trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator(id);
