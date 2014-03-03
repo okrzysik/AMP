@@ -31,7 +31,7 @@ namespace Solver {
 TrilinosNOXSolver::TrilinosNOXSolver():
     SolverStrategy()
 {
-    
+
 }
 TrilinosNOXSolver::TrilinosNOXSolver(boost::shared_ptr<TrilinosNOXSolverParameters> parameters):
     SolverStrategy(parameters)
@@ -39,7 +39,7 @@ TrilinosNOXSolver::TrilinosNOXSolver(boost::shared_ptr<TrilinosNOXSolverParamete
     TrilinosNOXSolver();
     initialize(parameters);
 }
-void TrilinosNOXSolver::reset(boost::shared_ptr<SolverStrategyParameters> parameters) 
+void TrilinosNOXSolver::reset(boost::shared_ptr<SolverStrategyParameters> parameters)
 {
     initialize(parameters);
 }
@@ -54,7 +54,7 @@ TrilinosNOXSolver::~TrilinosNOXSolver()
 void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> parameters )
 {
     // Copy the parameters
-    boost::shared_ptr<TrilinosNOXSolverParameters> params = 
+    boost::shared_ptr<TrilinosNOXSolverParameters> params =
         boost::dynamic_pointer_cast<TrilinosNOXSolverParameters>( parameters );
     AMP_ASSERT(params.get()!=NULL);
     AMP_ASSERT(params->d_db.get()!=NULL);
@@ -114,12 +114,12 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     // Create the convergence tests (these will need to be on the input database)
     Teuchos::RCP<NOX::StatusTest::NormF> absresid =
         Teuchos::rcp(new NOX::StatusTest::NormF(d_dMaxError));
-    Teuchos::RCP<NOX::StatusTest::NormWRMS> wrms =
-        Teuchos::rcp(new NOX::StatusTest::NormWRMS(linearRelativeTolerance,d_dMaxError));
+    //Teuchos::RCP<NOX::StatusTest::NormWRMS> wrms =
+    //    Teuchos::rcp(new NOX::StatusTest::NormWRMS(linearRelativeTolerance,d_dMaxError));
     Teuchos::RCP<NOX::StatusTest::Combo> converged =
         Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
     converged->addStatusTest(absresid);
-    converged->addStatusTest(wrms);
+    //converged->addStatusTest(wrms);
     Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters =
         Teuchos::rcp(new NOX::StatusTest::MaxIters(d_iMaxIterations));
     Teuchos::RCP<NOX::StatusTest::FiniteValue> fv =
@@ -154,15 +154,15 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     NOX::Utils::MsgType print_level = NOX::Utils::Error;
     if ( d_iDebugPrintInfoLevel >= 1 ) {
         print_level = static_cast<NOX::Utils::MsgType>( print_level+
-                      NOX::Utils::OuterIteration + 
-                      NOX::Utils::OuterIterationStatusTest + 
+                      NOX::Utils::OuterIteration +
+                      NOX::Utils::OuterIterationStatusTest +
                       NOX::Utils::InnerIteration +
                       NOX::Utils::Warning );
     } else if ( d_iDebugPrintInfoLevel >= 2 ) {
         print_level = static_cast<NOX::Utils::MsgType>( print_level+
                       NOX::Utils::LinearSolverDetails +
-                      NOX::Utils::Parameters + 
-                      NOX::Utils::Details + 
+                      NOX::Utils::Parameters +
+                      NOX::Utils::Details +
                       NOX::Utils::Debug +
                       NOX::Utils::TestDetails +
                       NOX::Utils::Error);
@@ -179,13 +179,13 @@ void TrilinosNOXSolver::solve( boost::shared_ptr<const AMP::LinearAlgebra::Vecto
 {
     PROFILE_START("solve");
     // Get thyra vectors
-    boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> initial = 
+    boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> initial =
         boost::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
         AMP::LinearAlgebra::ThyraVector::view( d_initialGuess ) );
-    boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> U = 
+    boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> U =
         boost::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
         AMP::LinearAlgebra::ThyraVector::view( u ) );
-    boost::shared_ptr<const AMP::LinearAlgebra::ThyraVector> F = 
+    boost::shared_ptr<const AMP::LinearAlgebra::ThyraVector> F =
         boost::dynamic_pointer_cast<const AMP::LinearAlgebra::ThyraVector>(
         AMP::LinearAlgebra::ThyraVector::constView( f ) );
     // Set the rhs for the thyra model
@@ -203,7 +203,7 @@ void TrilinosNOXSolver::solve( boost::shared_ptr<const AMP::LinearAlgebra::Vecto
         jfnkParams->print(std::cout);
     // Create the NOX::Thyra::Group
     //Teuchos::RCP<NOX::Thyra::Group> nox_group( new NOX::Thyra::Group( initial->getVec(), d_thyraModel ) );
-    Teuchos::RCP< ::Thyra::ModelEvaluator<double> > thyraModel = 
+    Teuchos::RCP< ::Thyra::ModelEvaluator<double> > thyraModel =
         Teuchos::rcp(new NOX::MatrixFreeModelEvaluatorDecorator<double>(d_thyraModel));
     Teuchos::RCP<NOX::Thyra::Group> nox_group( new NOX::Thyra::Group( initial->getVec(), thyraModel, jfnkOp, d_lowsFactory, d_precOp, Teuchos::null));
     nox_group->setX(U->getVec());
@@ -220,7 +220,7 @@ void TrilinosNOXSolver::solve( boost::shared_ptr<const AMP::LinearAlgebra::Vecto
         AMP_ERROR("Failed to solve");
     // Copy the solution back to u
     const NOX::Thyra::Vector* tmp = dynamic_cast<const NOX::Thyra::Vector*>(&(nox_group->getX()));
-    const AMP::LinearAlgebra::ThyraVectorWrapper* thyraVec = 
+    const AMP::LinearAlgebra::ThyraVectorWrapper* thyraVec =
         dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper*>(&(tmp->getThyraVector()));
     AMP_ASSERT(thyraVec!=NULL);
     AMP_ASSERT(thyraVec->numVecs()==1);
