@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "Utilities.h"
 
 #include "utils/AMP_MPI.h"
@@ -455,11 +456,11 @@ std::vector<std::string>  Utilities::getCallStack()
             ::DWORD64 lOffsetSection = ::DWORD64();
             for( int lCnt = ::DWORD64(); lCnt < lHeaderNT->FileHeader.NumberOfSections; lCnt++, lHeaderSection++ ) {
                 ::DWORD64 lSectionBase = lHeaderSection->VirtualAddress;
-                ::DWORD64 lSectionEnd = lSectionBase + max( lHeaderSection->SizeOfRawData, lHeaderSection->Misc.VirtualSize );
+                ::DWORD64 lSectionEnd = lSectionBase + std::max( lHeaderSection->SizeOfRawData, lHeaderSection->Misc.VirtualSize );
                 if( ( lRVA >= lSectionBase ) && ( lRVA <= lSectionEnd ) ) {
                     lNumberSection = lCnt + 1;
                     lOffsetSection = lRVA - lSectionBase;
-                    break;
+                    //break;
                 }
             }
             std::stringstream stream;
