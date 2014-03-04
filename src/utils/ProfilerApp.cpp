@@ -53,6 +53,11 @@ extern "C" {
     #define get_time(x) gettimeofday(x,NULL);
     #define get_diff(start,end,f) (((double)end.tv_sec-start.tv_sec)+1e-6*((double)end.tv_usec-start.tv_usec))
     #define get_frequency(f) (*f=timeval())
+    #ifdef __LP64__
+        #define ARCH_SIZE 64
+    #else
+        #define ARCH_SIZE 32
+    #endif
 #else
     #error Unknown OS
 #endif
