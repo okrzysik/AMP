@@ -148,7 +148,7 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     d_nlParams->sublist("Line Search").set("Method", lineSearchMethod);
     d_nlParams->sublist("Direction").sublist("Newton").sublist("Linear Solver").set("Tolerance",linearRelativeTolerance);
     if ( params->d_prePostOperator.get()!=NULL ) {
-        Teuchos::RefCountPtr<NOX::Abstract::PrePostOperator> prePostOperator( 
+        Teuchos::RefCountPtr<NOX::Abstract::PrePostOperator> prePostOperator(
             params->d_prePostOperator.get(), Teuchos::DeallocDelete<NOX::Abstract::PrePostOperator>(), false );
          d_nlParams->sublist("Solver Options").set< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
             "User Defined Pre/Post Operator",prePostOperator);
@@ -206,7 +206,7 @@ void TrilinosNOXSolver::solve( boost::shared_ptr<const AMP::LinearAlgebra::Vecto
         new NOX::Thyra::MatrixFreeJacobianOperator<double>(printParams) );
     jfnkOp->setParameterList(jfnkParams);
     if ( d_iDebugPrintInfoLevel>=3 && d_comm.getRank()==0 )
-        jfnkParams->print(std::cout);
+        jfnkParams->print(AMP::pout);
     // Create the NOX::Thyra::Group
     //Teuchos::RCP<NOX::Thyra::Group> nox_group( new NOX::Thyra::Group( initial->getVec(), d_thyraModel ) );
     Teuchos::RCP< ::Thyra::ModelEvaluator<double> > thyraModel =
@@ -220,7 +220,7 @@ void TrilinosNOXSolver::solve( boost::shared_ptr<const AMP::LinearAlgebra::Vecto
     // Create the solver
     d_solver = NOX::Solver::buildSolver(nox_group, d_status, d_nlParams);
     // Solve
-    d_nlParams->print(std::cout);
+    d_nlParams->print(AMP::pout);
     NOX::StatusTest::StatusType solvStatus = d_solver->solve();
     if ( solvStatus != NOX::StatusTest::Converged )
         AMP_ERROR("Failed to solve");
