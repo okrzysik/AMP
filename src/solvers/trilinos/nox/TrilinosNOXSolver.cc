@@ -19,6 +19,8 @@
 #include "BelosTypes.hpp"
 #include "NOX_Thyra_MatrixFreeJacobianOperator.hpp"
 #include "NOX_MatrixFree_ModelEvaluatorDecorator.hpp"
+#include <Teuchos_RefCountPtrDecl.hpp>
+
 
 
 namespace AMP {
@@ -73,6 +75,7 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     modelParams->d_linearOp = params->d_pLinearOperator;
     modelParams->d_icVec = d_initialGuess;
     modelParams->d_preconditioner.reset();
+    modelParams->d_prePostOperator = params->d_prePostOperator;
     if ( linear_db->getBoolWithDefault("uses_preconditioner",false) )
         modelParams->d_preconditioner = params->d_preconditioner;
     d_thyraModel = Teuchos::RCP<TrilinosThyraModelEvaluator>( new TrilinosThyraModelEvaluator(modelParams) );
@@ -145,8 +148,10 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     d_nlParams->sublist("Line Search").set("Method", lineSearchMethod);
     d_nlParams->sublist("Direction").sublist("Newton").sublist("Linear Solver").set("Tolerance",linearRelativeTolerance);
     if ( params->d_prePostOperator.get()!=NULL ) {
+        Teuchos::RefCountPtr<NOX::Abstract::PrePostOperator> prePostOperator( 
+            params->d_prePostOperator.get(), Teuchos::DeallocDelete<NOX::Abstract::PrePostOperator>(), false );
          d_nlParams->sublist("Solver Options").set< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
-            "User Defined Pre/Post Operator",params->d_prePostOperator);
+            "User Defined Pre/Post Operator",prePostOperator);
     }
     // Set the printing parameters in the "Printing" sublist
     Teuchos::ParameterList& printParams = d_nlParams->sublist("Printing");

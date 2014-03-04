@@ -24,6 +24,7 @@ TrilinosThyraModelEvaluator::TrilinosThyraModelEvaluator( boost::shared_ptr<Tril
     d_linearOp = params->d_linearOp;
     d_icVec = params->d_icVec;
     d_preconditioner = params->d_preconditioner;
+    d_prePostOperator = params->d_prePostOperator;
 }
 
 
@@ -50,7 +51,7 @@ void TrilinosThyraModelEvaluator::setRhs( AMP::LinearAlgebra::Vector::const_shar
 void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBase::InArgs<double> &inArgs,
     const ::Thyra::ModelEvaluatorBase::OutArgs<double> &outArgs ) const
 {
-		 
+         
     AMP::LinearAlgebra::Vector::const_shared_ptr x = AMP::LinearAlgebra::ThyraVector::constView( inArgs.get_x().get() );
     AMP::LinearAlgebra::Vector::shared_ptr   f_out = AMP::LinearAlgebra::ThyraVector::view( outArgs.get_f().get() );
     //const Thyra::ConstDetachedVectorView<double> x(inArgs.get_x());
@@ -77,7 +78,20 @@ void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBa
     if ( f_out != NULL ) {
         // Evaluate the residual:  r = A(u) - rhs
         f_out->zero();
+        ::Thyra::ModelEvaluatorBase::Evaluation< ::Thyra::VectorBase<double> > eval = outArgs.get_f();
+        bool exact = true;
+        if (eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_EXACT) {
+            exact = true;
+        } else if (eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_APPROX_DERIV) {
+            exact = false;
+        } else if (eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_VERY_APPROX_DERIV) {
+            exact = false;
+        }
+        if ( d_prePostOperator != NULL )
+            d_prePostOperator->runPreApply( x, f_out, exact );
         d_nonlinearOp->apply( d_rhs, x, f_out, 1.0, -1.0 );
+        if ( d_prePostOperator != NULL )
+            d_prePostOperator->runPostApply( x, f_out, exact );
     }
 
     if ( outArgs.supports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_op) ) {

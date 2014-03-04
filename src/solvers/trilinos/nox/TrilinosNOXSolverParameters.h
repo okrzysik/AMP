@@ -5,9 +5,7 @@
 #include "utils/Database.h"
 #include "utils/AMP_MPI.h"
 #include "solvers/SolverStrategyParameters.h"
-#include "NOX_Abstract_PrePostOperator.H"
-#include "Teuchos_RefCountPtrDecl.hpp"
-
+#include "solvers/trilinos/nox/PrePostOperator.h"
 
 
 namespace AMP {
@@ -29,7 +27,7 @@ public:
     AMP::LinearAlgebra::Vector::shared_ptr      d_pInitialGuess;
     AMP::Operator::Operator::shared_ptr         d_pLinearOperator;
     AMP::Solver::SolverStrategy::shared_ptr     d_preconditioner;
-    Teuchos::RefCountPtr<NOX::Abstract::PrePostOperator> d_prePostOperator;
+    AMP::Solver::PrePostOperator::shared_ptr    d_prePostOperator;
 
 protected:
 private:
