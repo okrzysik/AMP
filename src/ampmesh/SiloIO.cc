@@ -120,8 +120,11 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
         }
     } else if ( d_decomposition==2 ) {
         // Every rank will write a seperate file
+        if ( d_comm.getRank()==0 )
+            Utilities::recursiveMkdir( fname_in+"_silo", (S_IRUSR|S_IWUSR|S_IXUSR), false );
+        d_comm.barrier();
         std::stringstream tmp2;
-        tmp2 << fname_in << "_" << iteration_count << "." << d_comm.getRank()+1 << "." << getExtension();
+        tmp2 << fname_in << "_silo/" << iteration_count << "." << d_comm.getRank()+1 << "." << getExtension();
         std::string fname_rank = tmp2.str();
         DBfile *FileHandle = DBCreate( fname_rank.c_str(), DB_CLOBBER, DB_LOCAL, NULL, DB_HDF5 );
         // Write the base meshes
