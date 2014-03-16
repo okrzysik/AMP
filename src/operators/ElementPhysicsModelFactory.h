@@ -4,8 +4,7 @@
 /* Boost files */
 #include "boost/shared_ptr.hpp"
 
-#include "ElementPhysicsModel.h"
-#include "operators/boundary/RobinPhysicsModel.h"
+#include "operators/ElementPhysicsModel.h"
 
 namespace AMP {
 namespace Operator {

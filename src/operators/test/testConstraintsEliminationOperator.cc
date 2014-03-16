@@ -16,7 +16,6 @@
 
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
-#include "libmesh.h"
 
 #include "operators/OperatorBuilder.h"
 #include "operators/LinearBVPOperator.h"

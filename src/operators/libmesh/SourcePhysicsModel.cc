@@ -7,16 +7,9 @@
 #include "operators/SourcePhysicsModel.h"
 #include "operators/ElementPhysicsModel.h"
 #include "operators/ElementPhysicsModelParameters.h"
-#include "operators/MassDensityModel.h"
 #include "operators/ManufacturedSourceModel1.h"
 #include "operators/ManufacturedSourceModel2.h"
 #include "operators/diffusion/DiffusionTransportModel.h"
-
-/* Libmesh files */
-#include "fe_type.h"
-#include "fe_base.h"
-#include "elem.h"
-#include "quadrature_gauss.h"
 
 
 namespace AMP {

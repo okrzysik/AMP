@@ -1,46 +1,68 @@
 #include "OperatorBuilder.h"
 #include "utils/Utilities.h"
 
-#include "operators/IdentityOperator.h"
-#include "operators/VolumeIntegralOperator.h"
-#include "operators/MassLinearFEOperator.h"
-#include "operators/NeutronicsRhs.h"
-#include "operators/LinearBVPOperator.h"
-#include "operators/NonlinearBVPOperator.h"
-#include "operators/ParameterFactory.h"
-#include "operators/ElementOperationFactory.h"
-#include "operators/boundary/ColumnBoundaryOperator.h"
-#include "operators/boundary/DirichletMatrixCorrection.h"
-#include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/boundary/PressureBoundaryOperator.h"
-#include "operators/boundary/NeumannVectorCorrection.h"
-#include "operators/boundary/RobinMatrixCorrection.h"
-#include "operators/boundary/RobinVectorCorrection.h"
-#include "operators/boundary/MassMatrixCorrection.h"
-#include "operators/subchannel/FlowFrapconOperator.h"
-#include "operators/subchannel/FlowFrapconJacobian.h"
-#include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
-#include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
-#include "operators/subchannel/SubchannelFourEqNonlinearOperator.h"
-#include "operators/mechanics/MechanicsLinearFEOperator.h"
-#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
-#include "operators/diffusion/DiffusionLinearFEOperator.h"
-#include "operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "operators/diffusion/FickSoretNonlinearFEOperator.h"
-#include "operators/map/MapSurface.h"
-
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
 
-#include "operators/mechanics/MechanicsConstants.h"
 #include "ampmesh/StructuredMeshHelper.h"
 
 #include <string>
 
+
+#include "operators/IdentityOperator.h"
+
+#include "operators/LinearBVPOperator.h"
+#include "operators/NonlinearBVPOperator.h"
+
+#ifdef USE_EXT_LIBMESH
+    #include "operators/VolumeIntegralOperator.h"
+    #include "operators/MassLinearFEOperator.h"
+    #include "operators/NeutronicsRhs.h"
+    #include "operators/ParameterFactory.h"
+    #include "operators/ElementOperationFactory.h"
+    #include "operators/boundary/ColumnBoundaryOperator.h"
+    #include "operators/boundary/DirichletMatrixCorrection.h"
+    #include "operators/boundary/DirichletVectorCorrection.h"
+    #include "operators/boundary/PressureBoundaryOperator.h"
+    #include "operators/boundary/NeumannVectorCorrection.h"
+    #include "operators/boundary/RobinMatrixCorrection.h"
+    #include "operators/boundary/RobinVectorCorrection.h"
+    #include "operators/boundary/MassMatrixCorrection.h"
+    #include "operators/subchannel/FlowFrapconOperator.h"
+    #include "operators/subchannel/FlowFrapconJacobian.h"
+    #include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
+    #include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
+    #include "operators/subchannel/SubchannelFourEqNonlinearOperator.h"
+    #include "operators/mechanics/MechanicsConstants.h"
+    #include "operators/mechanics/MechanicsLinearFEOperator.h"
+    #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
+    #include "operators/diffusion/DiffusionLinearFEOperator.h"
+    #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
+    #include "operators/diffusion/FickSoretNonlinearFEOperator.h"
+    #include "operators/map/MapSurface.h"
+#endif
+
+
+#define resetOperation(NAME)                                                \
+    do {                                                                    \
+        if ( name == #NAME ) {                                              \
+            boost::shared_ptr<NAME ## Parameters> params =                  \
+                boost::dynamic_pointer_cast<NAME ## Parameters>(in_params); \
+            AMP_ASSERT(params.get()==in_params.get());                      \
+            retOperator.reset( new NAME(params) );                          \
+        }                                                                   \
+    }                                                                       \
+while(0)
+
+
 namespace AMP {
 namespace Operator {
+
+
+typedef OperatorParameters IdentityOperatorParameters;
+
 
 boost::shared_ptr<Operator>
 OperatorBuilder::createOperator(boost::shared_ptr<OperatorParameters>  in_params)
@@ -52,59 +74,26 @@ OperatorBuilder::createOperator(boost::shared_ptr<OperatorParameters>  in_params
   
     std::string name = in_params->d_db->getString("name");
   
-    if(name=="IdentityOperator") 
-    {
-        retOperator.reset(new IdentityOperator(in_params));
-    }
-    else if(name=="DirichletMatrixCorrection")
-    {
-        retOperator.reset(new DirichletMatrixCorrection(boost::dynamic_pointer_cast<DirichletMatrixCorrectionParameters>(in_params)));
-    }
-    else if (name=="DirichletVectorCorrection")
-    {
-        retOperator.reset(new DirichletVectorCorrection(boost::dynamic_pointer_cast<DirichletVectorCorrectionParameters>(in_params)));
-    }
-    else if (name=="PressureBoundaryOperator")
-    {
-        retOperator.reset(new PressureBoundaryOperator(in_params));
-    }
-    else if (name=="NeumannVectorCorrection")
-    {
-        retOperator.reset(new NeumannVectorCorrection(boost::dynamic_pointer_cast<NeumannVectorCorrectionParameters>(in_params)));
-    }
-    else if (name=="RobinMatrixCorrection")
-    {
-        retOperator.reset(new RobinMatrixCorrection(boost::dynamic_pointer_cast<RobinMatrixCorrectionParameters>(in_params)));
-    }
-    else if (name=="RobinVectorCorrection")
-    {
-        retOperator.reset(new RobinVectorCorrection(boost::dynamic_pointer_cast<NeumannVectorCorrectionParameters>(in_params)));
-    }
-    else if(name=="MechanicsLinearFEOperator")
-    {
-        retOperator.reset(new MechanicsLinearFEOperator(boost::dynamic_pointer_cast<MechanicsLinearFEOperatorParameters>(in_params)));
-    }
-    else if(name=="MechanicsNonlinearFEOperator")
-    {
-        retOperator.reset(new MechanicsNonlinearFEOperator(boost::dynamic_pointer_cast<MechanicsNonlinearFEOperatorParameters>(in_params)));
-    }
-    else if(name=="DiffusionLinearFEOperator")
-    {
-        retOperator.reset(new DiffusionLinearFEOperator(boost::dynamic_pointer_cast<DiffusionLinearFEOperatorParameters>(in_params)));
-    }
-    else if(name=="DiffusionNonlinearFEOperator")
-    {
-        retOperator.reset(new DiffusionNonlinearFEOperator(boost::dynamic_pointer_cast<DiffusionNonlinearFEOperatorParameters>(in_params)));
-    }
-    else if(name=="FickSoretNonlinearFEOperator")
-    {
-        retOperator.reset(new FickSoretNonlinearFEOperator(boost::dynamic_pointer_cast<FickSoretNonlinearFEOperatorParameters>(in_params)));
-    }
-    else if(name=="VolumeIntegralOperator")
-    {
-        retOperator.reset(new VolumeIntegralOperator(boost::dynamic_pointer_cast<VolumeIntegralOperatorParameters>(in_params)));
-    }
-    else if((name=="LinearBVPOperator")||(name=="NonlinearBVPOperator"))
+    resetOperation(IdentityOperator);
+    #ifdef USE_EXT_LIBMESH
+        resetOperation(DirichletMatrixCorrection);
+        resetOperation(DirichletVectorCorrection);
+        resetOperation(PressureBoundaryOperator);
+        resetOperation(NeumannVectorCorrection);
+        resetOperation(RobinMatrixCorrection);
+        resetOperation(RobinVectorCorrection);
+        resetOperation(MechanicsLinearFEOperator);
+        resetOperation(MechanicsNonlinearFEOperator);
+        resetOperation(DiffusionLinearFEOperator);
+        resetOperation(DiffusionNonlinearFEOperator);
+        resetOperation(FickSoretNonlinearFEOperator);
+        resetOperation(FlowFrapconOperator);
+        resetOperation(FlowFrapconJacobian);
+        resetOperation(NeutronicsRhs);
+        //resetOperation(Mesh3Dto1D);
+    #endif
+
+    if ( (name=="LinearBVPOperator") || (name=="NonlinearBVPOperator") )
     {
         boost::shared_ptr<BVPOperatorParameters> bvpOperatorParameters = boost::dynamic_pointer_cast<BVPOperatorParameters>(in_params);
       
@@ -117,32 +106,12 @@ OperatorBuilder::createOperator(boost::shared_ptr<OperatorParameters>  in_params
             OperatorBuilder::createOperator(bvpOperatorParameters->d_boundaryOperatorParams) );
       
         if(name=="LinearBVPOperator")
-        {
             retOperator.reset(new LinearBVPOperator(boost::dynamic_pointer_cast<BVPOperatorParameters>(in_params)));
-        }
         else
-        {
             retOperator.reset(new NonlinearBVPOperator(boost::dynamic_pointer_cast<BVPOperatorParameters>(in_params)));
-        }
-    }
-    else if (name=="FlowFrapconOperator")
-    {
-        retOperator.reset(new FlowFrapconOperator(boost::dynamic_pointer_cast<FlowFrapconOperatorParameters>(in_params)));
-    }
-    else if (name=="FlowFrapconJacobian")
-    {
-        retOperator.reset(new FlowFrapconJacobian(boost::dynamic_pointer_cast<FlowFrapconJacobianParameters>(in_params)));
-    }
-    else if(name=="NeutronicsRhs")
-    {
-        retOperator.reset(new NeutronicsRhs(boost::dynamic_pointer_cast<NeutronicsRhsParameters>(in_params)));
-    }
-    else if(name=="Mesh3Dto1D")
-    {
-        //    retOperator.reset(new Mesh3Dto1D(boost::dynamic_pointer_cast<OperatorParameters>(in_params)));
     }
   
-  return retOperator;
+    return retOperator;
 }
 
 
@@ -283,6 +252,9 @@ OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter,
     return retOperator;
 }
   
+
+#ifdef USE_EXT_LIBMESH
+
 
 // Create the identity operator
 AMP::Operator::Operator::shared_ptr
@@ -1384,6 +1356,9 @@ OperatorBuilder::createOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter1, AMP::
     }
     return retOperator;
 }
+
+
+#endif
 
 
 }

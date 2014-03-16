@@ -7,7 +7,6 @@
 #include "operators/ElementPhysicsModel.h"
 #include "materials/Material.h"
 #include "operators/ElementPhysicsModelParameters.h"
-#include "operators/MassDensityModel.h"
 
 
 namespace AMP {
