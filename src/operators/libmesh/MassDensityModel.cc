@@ -5,7 +5,7 @@
  *      Author: gad
  */
 
-#include "operators/MassDensityModel.h"
+#include "MassDensityModel.h"
 #include "operators/diffusion/DiffusionTransportModel.h"
 #include "materials/TensorProperty.h"
 #include <algorithm>

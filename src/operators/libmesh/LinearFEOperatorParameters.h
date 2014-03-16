@@ -2,7 +2,7 @@
 #ifndef included_AMP_LinearFEOperatorParameters
 #define included_AMP_LinearFEOperatorParameters
 
-#include "operators/FEOperatorParameters.h"
+#include "operators/libmesh/FEOperatorParameters.h"
 #include "discretization/DOF_Manager.h"
 
 namespace AMP {

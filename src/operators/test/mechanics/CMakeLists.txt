@@ -1,9 +1,6 @@
 INCLUDE (${AMP_SOURCE_DIR}/cmake/macros.cmake)
 
-COPY_TEST_DATA_FILE ( input_linearMechanics-1 )
-COPY_TEST_DATA_FILE ( input_linearMechanics-2 )
-COPY_TEST_DATA_FILE ( input_linearMechanics-3 )
-COPY_TEST_DATA_FILE ( input_linearMechanics-4 )
+COPY_MESH_FILE( brick.e )
 
 ADD_AMP_TEST_1_2_4 ( testLinearMechanics-reset-1 )
 COPY_TEST_DATA_FILE ( input_testLinearMechanics-reset-1 )
@@ -46,9 +43,6 @@ COPY_TEST_DATA_FILE ( input_nonlinearBVP-Mechanics-ThermalStrain-Thermal-Oxygen-
 ADD_AMP_TEST_1_2_4 ( testNonlinearMechanics-reset-1 )
 COPY_TEST_DATA_FILE ( input_testNonlinearMechanics-reset-1 )
 
-COPY_TEST_DATA_FILE ( input_MechanicsLinearElement-create-1 )
-COPY_TEST_DATA_FILE ( input_MechanicsNonlinearElement-create-1 )
-
 COPY_TEST_DATA_FILE ( input_linearMechanics+ThermalDiffusion-TUI-1 )
 COPY_TEST_DATA_FILE ( input_linearMechanics+ThermalDiffusion-UO2MSRZC09-1 )
 COPY_TEST_DATA_FILE ( input_linearMechanics+FickDiffusion-TUI-1 )
@@ -69,9 +63,10 @@ COPY_TEST_DATA_FILE ( input_linearBVP-Mechanics+Thermal+Fick+Dirichlet-UO2MSRZC0
 ADD_AMP_TEST_1_2_4 ( testMaterialModels_ElasticDamageThermalStrain-1 )
 COPY_TEST_DATA_FILE (input_testMaterialModels_ElasticDamageThermalStrain-1 )
 
-ADD_AMP_TEST_1_2_4 ( testConstraintsEliminationOperator )
-COPY_TEST_DATA_FILE ( input_testConstraintsEliminationOperator )
-
+IF ( USE_EXT_PETSC )
+    ADD_AMP_TEST_1_2_4 ( testConstraintsEliminationOperator )
+    COPY_TEST_DATA_FILE ( input_testConstraintsEliminationOperator )
+ENDIF()
 
 
 

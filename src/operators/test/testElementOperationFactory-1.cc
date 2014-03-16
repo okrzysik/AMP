@@ -20,7 +20,7 @@
 #include "operators/diffusion/DiffusionLinearElement.h"
 #include "operators/diffusion/DiffusionNonlinearElement.h"
 
-#include "operators/MassLinearElement.h"
+#include "operators/libmesh/MassLinearElement.h"
 
 
 

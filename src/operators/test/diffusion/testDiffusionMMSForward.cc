@@ -29,11 +29,11 @@
 #include "operators/diffusion/DiffusionLinearElement.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "../MassLinearFEOperator.h"
-#include "../MassDensityModel.h"
-#include "../OperatorBuilder.h"
+#include "operators/libmesh/MassLinearFEOperator.h"
+#include "operators/libmesh/MassDensityModel.h"
+#include "operators/OperatorBuilder.h"
 
-#include "applyTests.h"
+#include "../applyTests.h"
 
 
 void forwardTest1(AMP::UnitTest *ut, std::string exeName)

@@ -84,7 +84,7 @@ void AMPManager::terminate_AMP(std::string message)
         std::vector<std::string> stack = AMP::Utilities::getCallStack();
         msg << "Stack Trace:\n";
         for (size_t i=0; i<stack.size(); i++)
-            msg << "   " << stack[i];
+            msg << "   " << stack[i] << std::endl;
         std::cerr << msg.str();
     }
     if ( force_exit>1 ) {

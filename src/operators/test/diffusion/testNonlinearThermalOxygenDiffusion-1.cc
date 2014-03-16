@@ -29,7 +29,7 @@
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
 
-#include "applyTests.h"
+#include "../applyTests.h"
 
 void thermalOxygenDiffusionTest(AMP::UnitTest *ut, std::string exeName)
 {

@@ -30,16 +30,16 @@
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
 
-#include "operators/boundary/NeumannVectorCorrection.h"
+#include "operators/boundary/libmesh/NeumannVectorCorrection.h"
 
-#include "../BVPOperatorParameters.h"
-#include "../LinearBVPOperator.h"
-#include "../NonlinearBVPOperator.h"
-#include "../MassLinearFEOperator.h"
-#include "../MassDensityModel.h"
-#include "../OperatorBuilder.h"
+#include "operators/BVPOperatorParameters.h"
+#include "operators/LinearBVPOperator.h"
+#include "operators/NonlinearBVPOperator.h"
+#include "operators/libmesh/MassLinearFEOperator.h"
+#include "operators/libmesh/MassDensityModel.h"
+#include "operators/OperatorBuilder.h"
 
-#include "applyTests.h"
+#include "../applyTests.h"
 
 
 void bvpTest1(AMP::UnitTest *ut, std::string exeName)

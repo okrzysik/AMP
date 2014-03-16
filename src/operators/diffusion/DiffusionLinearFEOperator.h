@@ -3,7 +3,7 @@
 #define included_AMP_DiffusionLinearFEOperator
 
 /* AMP files */
-#include "operators/LinearFEOperator.h"
+#include "operators/libmesh/LinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearFEOperatorParameters.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
 #include "utils/Utilities.h"

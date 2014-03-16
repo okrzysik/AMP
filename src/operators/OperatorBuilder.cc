@@ -17,18 +17,18 @@
 #include "operators/NonlinearBVPOperator.h"
 
 #ifdef USE_EXT_LIBMESH
-    #include "operators/VolumeIntegralOperator.h"
-    #include "operators/MassLinearFEOperator.h"
+    #include "operators/libmesh/VolumeIntegralOperator.h"
+    #include "operators/libmesh/MassLinearFEOperator.h"
     #include "operators/NeutronicsRhs.h"
     #include "operators/ParameterFactory.h"
     #include "operators/ElementOperationFactory.h"
     #include "operators/boundary/ColumnBoundaryOperator.h"
     #include "operators/boundary/DirichletMatrixCorrection.h"
     #include "operators/boundary/DirichletVectorCorrection.h"
-    #include "operators/boundary/PressureBoundaryOperator.h"
-    #include "operators/boundary/NeumannVectorCorrection.h"
-    #include "operators/boundary/RobinMatrixCorrection.h"
-    #include "operators/boundary/RobinVectorCorrection.h"
+    #include "operators/boundary/libmesh/PressureBoundaryOperator.h"
+    #include "operators/boundary/libmesh/NeumannVectorCorrection.h"
+    #include "operators/boundary/libmesh/RobinMatrixCorrection.h"
+    #include "operators/boundary/libmesh/RobinVectorCorrection.h"
     #include "operators/boundary/MassMatrixCorrection.h"
     #include "operators/subchannel/FlowFrapconOperator.h"
     #include "operators/subchannel/FlowFrapconJacobian.h"
@@ -78,7 +78,6 @@ OperatorBuilder::createOperator(boost::shared_ptr<OperatorParameters>  in_params
     #ifdef USE_EXT_LIBMESH
         resetOperation(DirichletMatrixCorrection);
         resetOperation(DirichletVectorCorrection);
-        resetOperation(PressureBoundaryOperator);
         resetOperation(NeumannVectorCorrection);
         resetOperation(RobinMatrixCorrection);
         resetOperation(RobinVectorCorrection);
@@ -91,8 +90,13 @@ OperatorBuilder::createOperator(boost::shared_ptr<OperatorParameters>  in_params
         resetOperation(FlowFrapconJacobian);
         resetOperation(NeutronicsRhs);
         //resetOperation(Mesh3Dto1D);
+        if ( name == "PressureBoundaryOperator" ) {
+            boost::shared_ptr<TractionBoundaryOperatorParameters> params =
+                boost::dynamic_pointer_cast<TractionBoundaryOperatorParameters>(in_params);
+            AMP_ASSERT(params.get()==in_params.get());                      \
+            retOperator.reset( new PressureBoundaryOperator(params) );                          \
+        }      
     #endif
-
     if ( (name=="LinearBVPOperator") || (name=="NonlinearBVPOperator") )
     {
         boost::shared_ptr<BVPOperatorParameters> bvpOperatorParameters = boost::dynamic_pointer_cast<BVPOperatorParameters>(in_params);

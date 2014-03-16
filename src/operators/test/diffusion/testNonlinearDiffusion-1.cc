@@ -36,7 +36,7 @@
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
 
-#include "applyTests.h"
+#include "../applyTests.h"
 
 #include "materials/Material.h"
 

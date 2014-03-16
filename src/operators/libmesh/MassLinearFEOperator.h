@@ -3,9 +3,9 @@
 #define included_AMP_MassLinearFEOperator
 
 /* AMP files */
-#include "LinearFEOperator.h"
-#include "MassLinearFEOperatorParameters.h"
-#include "MassLinearElement.h"
+#include "operators/libmesh/LinearFEOperator.h"
+#include "operators/libmesh/MassLinearFEOperatorParameters.h"
+#include "operators/libmesh/MassLinearElement.h"
 #include "utils/Utilities.h"
 
 /* Boost files */

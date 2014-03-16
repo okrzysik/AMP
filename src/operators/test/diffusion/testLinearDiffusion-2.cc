@@ -34,7 +34,7 @@
 
 #include "materials/Material.h"
 
-#include "patchfunctions.h"
+#include "../patchfunctions.h"
 
 
 /**

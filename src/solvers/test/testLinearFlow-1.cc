@@ -22,7 +22,7 @@
 
 #include "operators/NeutronicsRhs.h"
 #include "vectors/Variable.h"
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 #include "materials/Material.h"
 
 #include "matrices/Matrix.h"
@@ -42,7 +42,7 @@
 #include "operators/OperatorBuilder.h"
 
 #include "operators/BlockOperator.h"
-#include "operators/TrilinosMatrixShellOperator.h"
+#include "operators/trilinos/TrilinosMatrixShellOperator.h"
 #include "operators/petsc/PetscMatrixShellOperator.h"
 
 #include "solvers/trilinos/TrilinosMLSolver.h"

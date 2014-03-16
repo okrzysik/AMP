@@ -1,4 +1,4 @@
-#include "operators/NodeToGaussPointOperator.h"
+#include "NodeToGaussPointOperator.h"
 #include "utils/ProfilerApp.h"
 
 /* Libmesh files */

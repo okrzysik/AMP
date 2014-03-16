@@ -4,7 +4,7 @@
 
 #include "operators/boundary/LinearBoundaryOperatorParameters.h"
 #include "operators/OperatorParameters.h"
-#include "RobinPhysicsModel.h"
+#include "operators/boundary/libmesh/RobinPhysicsModel.h"
 
 namespace AMP {
 namespace Operator {

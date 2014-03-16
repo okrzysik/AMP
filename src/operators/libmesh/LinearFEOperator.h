@@ -3,8 +3,8 @@
 #define included_AMP_LinearFEOperator
 
 /* AMP files */
-#include "LinearOperator.h"
-#include "LinearFEOperatorParameters.h"
+#include "operators/LinearOperator.h"
+#include "operators/libmesh/LinearFEOperatorParameters.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "elem.h"

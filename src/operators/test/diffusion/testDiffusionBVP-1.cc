@@ -27,14 +27,14 @@
 
 #include "operators/boundary/DirichletMatrixCorrection.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/boundary/NeumannVectorCorrection.h"
+#include "operators/boundary/libmesh/NeumannVectorCorrection.h"
 
-#include "../BVPOperatorParameters.h"
-#include "../LinearBVPOperator.h"
-#include "../NonlinearBVPOperator.h"
-#include "../OperatorBuilder.h"
+#include "operators/BVPOperatorParameters.h"
+#include "operators/LinearBVPOperator.h"
+#include "operators/NonlinearBVPOperator.h"
+#include "operators/OperatorBuilder.h"
 
-#include "applyTests.h"
+#include "../applyTests.h"
 
 
 

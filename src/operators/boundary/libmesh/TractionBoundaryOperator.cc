@@ -1,5 +1,5 @@
 
-#include "operators/boundary/TractionBoundaryOperator.h"
+#include "operators/boundary/libmesh/TractionBoundaryOperator.h"
 
 #include "enum_order.h"
 #include "enum_fe_family.h"

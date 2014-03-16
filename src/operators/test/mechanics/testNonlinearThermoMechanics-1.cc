@@ -26,7 +26,7 @@
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 
-#include "applyTests.h"
+#include "../applyTests.h"
 
 
 void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)

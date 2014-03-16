@@ -30,13 +30,13 @@
 #include "operators/diffusion/DiffusionNonlinearElement.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperatorParameters.h"
-#include "../ElementPhysicsModelParameters.h"
-#include "../ElementPhysicsModelFactory.h"
-#include "../OperatorBuilder.h"
+#include "operators/ElementPhysicsModelParameters.h"
+#include "operators/ElementPhysicsModelFactory.h"
+#include "operators/OperatorBuilder.h"
 
 #include "materials/Material.h"
 
-#include "patchfunctions.h"
+#include "../patchfunctions.h"
 
 
 /**

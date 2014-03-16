@@ -2,7 +2,7 @@
 #ifndef included_AMP_PelletStackOperator
 #define included_AMP_PelletStackOperator
 
-#include "operators/PelletStackOperatorParameters.h"
+#include "operators/libmesh/PelletStackOperatorParameters.h"
 
 namespace AMP {
   namespace Operator {

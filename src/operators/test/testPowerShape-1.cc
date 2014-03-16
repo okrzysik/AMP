@@ -16,7 +16,7 @@
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 
-#include "../PowerShape.h"
+#include "operators/libmesh/PowerShape.h"
 
 void test_with_shape(AMP::UnitTest *ut, std::string exeName )
 {

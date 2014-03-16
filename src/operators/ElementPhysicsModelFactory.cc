@@ -25,16 +25,16 @@
     #include "operators/diffusion/DiffusionCylindricalTransportModel.h"
 
     // Pellet Contact Conductance model
-    #include "operators/PelletContactConductanceModel.h"
+    #include "operators/libmesh/PelletContactConductanceModel.h"
 
     // Convective Heat Coefficient model
     #include "operators/subchannel/ConvectiveHeatCoefficient.h"
 
     // source physics model
-    #include "operators/SourcePhysicsModel.h"
+    #include "operators/libmesh/SourcePhysicsModel.h"
 
     // mass density model
-    #include "operators/MassDensityModel.h"
+    #include "operators/libmesh/MassDensityModel.h"
 
     // manufactured diffusion transport model
     #include "operators/ManufacturedDiffusionTransportModel.h"

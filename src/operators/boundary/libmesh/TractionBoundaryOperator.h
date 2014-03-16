@@ -2,8 +2,8 @@
 #ifndef included_AMP_TractionBoundaryOperator
 #define included_AMP_TractionBoundaryOperator
 
-#include "BoundaryOperator.h"
-#include "TractionBoundaryOperatorParameters.h"
+#include "operators/boundary/BoundaryOperator.h"
+#include "operators/boundary/libmesh/TractionBoundaryOperatorParameters.h"
 
 namespace AMP {
   namespace Operator {

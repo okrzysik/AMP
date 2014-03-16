@@ -3,7 +3,7 @@
 
 #include <string>
 #include <valarray>
-#include "ElementPhysicsModel.h"
+#include "operators/ElementPhysicsModel.h"
 #include "boost/shared_ptr.hpp"
 #include "materials/Material.h"
 #include "materials/Property.h"

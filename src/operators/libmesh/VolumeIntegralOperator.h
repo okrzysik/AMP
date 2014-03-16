@@ -2,9 +2,9 @@
 #ifndef included_AMP_VolumeIntegralOperator
 #define included_AMP_VolumeIntegralOperator
 
-#include "NonlinearFEOperator.h"
-#include "VolumeIntegralOperatorParameters.h"
-#include "SourceNonlinearElement.h"
+#include "operators/libmesh/NonlinearFEOperator.h"
+#include "operators/libmesh/VolumeIntegralOperatorParameters.h"
+#include "operators/libmesh/SourceNonlinearElement.h"
 #include "vectors/MultiVariable.h"
 #include "matrices/Matrix.h"
 

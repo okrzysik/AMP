@@ -11,7 +11,7 @@
 #include "vectors/Vector.h"
 #include "utils/Utilities.h"
 #include "operators/OperatorParameters.h"
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 
 namespace AMP{
 namespace TimeIntegrator{

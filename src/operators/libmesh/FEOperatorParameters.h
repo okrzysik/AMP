@@ -3,7 +3,7 @@
 #define included_AMP_FEOperatorParameters
 
 #include "operators/OperatorParameters.h"
-#include "ElementOperation.h"
+#include "operators/ElementOperation.h"
 
 namespace AMP {
   namespace Operator {

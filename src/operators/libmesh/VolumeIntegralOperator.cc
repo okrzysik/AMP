@@ -1,5 +1,4 @@
-
-#include "VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
 #include "utils/ProfilerApp.h"

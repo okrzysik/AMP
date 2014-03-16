@@ -7,7 +7,7 @@
 
 #include "operators/ElementPhysicsModelFactory.h"
 #include "operators/diffusion/DiffusionTransportModel.h"
-#include "operators/boundary/RobinPhysicsModel.h"
+#include "operators/boundary/libmesh/RobinPhysicsModel.h"
 #include "boost/shared_ptr.hpp"
 
 namespace AMP {

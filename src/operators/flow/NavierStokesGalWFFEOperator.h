@@ -9,8 +9,8 @@
 #include "discretization/DOF_Manager.h"
 #include "ampmesh/MeshElement.h"
 
-#include "operators/NonlinearFEOperator.h"
-#include "operators/NonlinearFEOperator.h"
+#include "operators/libmesh/NonlinearFEOperator.h"
+#include "operators/libmesh/NonlinearFEOperator.h"
 #include "operators/flow/NavierStokesConstants.h"
 #include "operators/flow/NavierStokesGalWFFEOperatorParameters.h"
 #include "operators/flow/NavierStokesGalWFElement.h"

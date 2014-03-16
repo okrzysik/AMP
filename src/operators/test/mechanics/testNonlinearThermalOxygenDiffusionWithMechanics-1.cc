@@ -34,7 +34,7 @@
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 
-#include "applyTests.h"
+#include "../applyTests.h"
 
 
 void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)

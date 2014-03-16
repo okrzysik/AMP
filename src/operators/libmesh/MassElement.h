@@ -6,8 +6,8 @@
 #include "boost/shared_ptr.hpp"
 
 /* AMP files */
-#include "ElementOperation.h"
-#include "MassDensityModel.h"
+#include "operators/ElementOperation.h"
+#include "operators/libmesh/MassDensityModel.h"
 
 /* Libmesh files */
 #include "fe_type.h"

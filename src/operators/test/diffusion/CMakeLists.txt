@@ -1,7 +1,7 @@
 INCLUDE (${AMP_SOURCE_DIR}/cmake/macros.cmake)
 
+COPY_MESH_FILE( brick.e )
 
-COPY_TEST_DATA_FILE ( input_linearDiffusion-TUI-Fick-1 )
 COPY_TEST_DATA_FILE ( input_linearDiffusion-TUI-Soret-1 )
 COPY_TEST_DATA_FILE ( input_linearDiffusion-TUI-Thermal-1 )
 COPY_TEST_DATA_FILE ( input_linearDiffusion-UO2MSRZC09-Fick-1 )
@@ -20,10 +20,13 @@ COPY_TEST_DATA_FILE ( input_linearBVPOperator-Diffusion-UO2MSRZC09-Fick-RobinMat
 COPY_TEST_DATA_FILE ( input_linearBVPOperator-Diffusion-UO2MSRZC09-Soret-RobinMatrixCorrection-1 )
 COPY_TEST_DATA_FILE ( input_linearBVPOperator-Diffusion-UO2MSRZC09-Thermal-RobinMatrixCorrection-1 )
 
+COPY_TEST_DATA_FILE( input_nonlinearBVP-Thermal-Oxygen-UO2MSRZC09-1 )
 ADD_AMP_TEST_1_2_4 ( testNonlinearThermalOxygenDiffusion-1 )
 
-COPY_TEST_DATA_FILE ( input_DiffusionLinearElement-create-1 )
-COPY_TEST_DATA_FILE ( input_DiffusionNonlinearElement-create-1 )
+COPY_TEST_DATA_FILE( input_linearBVP-Thermal+Fick+Dirichlet-TUI-1 )
+COPY_TEST_DATA_FILE( input_linearBVP-Thermal+Fick+Dirichlet-UO2MSRZC09-1 )
+COPY_TEST_DATA_FILE( input_linearBVP-Thermal+Fick+Robin-TUI-1 )
+COPY_TEST_DATA_FILE( input_linearBVP-Thermal+Fick+Robin-UO2MSRZC09-1 )
 
 ADD_AMP_TEST_1_2_4 ( testLinearDiffusion-1 )
 COPY_TEST_DATA_FILE ( input_Diffusion-TUI-Thermal-1  )

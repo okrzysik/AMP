@@ -1,15 +1,16 @@
 
 #include <cstring>
 
+#include "SourcePhysicsModel.h"
 #include "boost/shared_ptr.hpp"
 #include "utils/ProfilerApp.h"
 #include "materials/Material.h"
-#include "operators/SourcePhysicsModel.h"
 #include "operators/ElementPhysicsModel.h"
 #include "operators/ElementPhysicsModelParameters.h"
 #include "operators/ManufacturedSourceModel1.h"
 #include "operators/ManufacturedSourceModel2.h"
 #include "operators/diffusion/DiffusionTransportModel.h"
+#include "operators/libmesh/MassDensityModel.h"
 
 
 namespace AMP {

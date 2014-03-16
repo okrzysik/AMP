@@ -6,7 +6,7 @@
 #include "boost/shared_ptr.hpp"
 
 /* AMP files */
-#include "MassElement.h"
+#include "operators/libmesh/MassElement.h"
 
 namespace AMP {
 namespace Operator {

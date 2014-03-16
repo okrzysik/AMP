@@ -1,5 +1,5 @@
 
-#include "operators/PelletStackOperator.h"
+#include "operators/libmesh/PelletStackOperator.h"
 #include "operators/map/NodeToNodeMap.h"
 #include "vectors/VectorSelector.h"
 

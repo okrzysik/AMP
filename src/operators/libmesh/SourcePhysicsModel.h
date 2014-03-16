@@ -8,6 +8,8 @@
 #include "materials/Material.h"
 #include "operators/ElementPhysicsModelParameters.h"
 
+#include "point.h"
+
 
 namespace AMP {
 namespace Operator {
