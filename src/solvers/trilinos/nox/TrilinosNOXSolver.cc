@@ -88,11 +88,13 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     std::string linearSolver     = linear_db->getString("linearSolver");
     int maxLinearIterations      = linear_db->getIntegerWithDefault("max_iterations",100);
     double linearRelativeTolerance  = linear_db->getDoubleWithDefault("relative_tolerance",1e-3);
+    bool flexGmres = linear_db->getBoolWithDefault("flexibleGmres",true);
     p->set("Linear Solver Type",linearSolverType);
     p->set("Preconditioner Type","None");
     p->sublist("Linear Solver Types").sublist(linearSolverType).set("Solver Type",linearSolver);
     Teuchos::ParameterList& linearSolverParams = p->sublist("Linear Solver Types").sublist(linearSolverType);
-    linearSolverParams.sublist("Solver Types").sublist("Pseudo Block GMRES").set("Maximum Iterations",maxLinearIterations);
+    linearSolverParams.sublist("Solver Types").sublist(linearSolver).set("Maximum Iterations",maxLinearIterations);
+    linearSolverParams.sublist("Solver Types").sublist(linearSolver).set("Flexible Gmres",false);
     if ( linear_db->getIntegerWithDefault("print_info_level",0) >= 2 ) {
         linearSolverParams.sublist("Solver Types").sublist(linearSolver).set("Output Frequency",1);
         linearSolverParams.sublist("Solver Types").sublist(linearSolver).set("Verbosity",10);
