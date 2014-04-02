@@ -3,7 +3,7 @@
 #define included_AMP_MechanicsLinearFEOperator
 
 /* AMP files */
-#include "operators/LinearFEOperator.h"
+#include "operators/libmesh/LinearFEOperator.h"
 #include "MechanicsConstants.h"
 #include "MechanicsLinearFEOperatorParameters.h"
 #include "MechanicsLinearElement.h"

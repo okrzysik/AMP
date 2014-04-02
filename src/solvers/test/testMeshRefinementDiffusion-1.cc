@@ -16,7 +16,7 @@
 #include "utils/Utilities.h"
 
 #include "boost/shared_ptr.hpp"
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -30,7 +30,7 @@
 #include "operators/CoupledOperator.h"
 #include "operators/OperatorBuilder.h"
 #include "operators/boundary/ColumnBoundaryOperator.h"
-#include "operators/boundary/RobinVectorCorrection.h"
+#include "operators/boundary/libmesh/RobinVectorCorrection.h"
 
 #include "operators/map/ScalarZAxisMap.h"
 #include "operators/map/AsyncMapColumnOperator.h"

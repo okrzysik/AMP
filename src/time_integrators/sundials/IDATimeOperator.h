@@ -5,7 +5,7 @@
 #include "boost/shared_ptr.hpp"
 #include "operators/Operator.h"
 #include "operators/OperatorParameters.h"
-#include "operators/MassLinearFEOperator.h"
+#include "operators/libmesh/MassLinearFEOperator.h"
 #include "vectors/Vector.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
@@ -14,7 +14,7 @@
 #include "operators/OperatorBuilder.h"
 
 // BP : the next include is probably unnecessary
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 
 namespace AMP{
 namespace TimeIntegrator{

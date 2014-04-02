@@ -4,7 +4,7 @@
 
 #include "vectors/MultiVariable.h"
 #include "vectors/Vector.h"
-#include "operators/NonlinearFEOperator.h"
+#include "operators/libmesh/NonlinearFEOperator.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperatorParameters.h"
 #include "operators/diffusion/DiffusionNonlinearElement.h"
 #include "operators/diffusion/DiffusionConstants.h"

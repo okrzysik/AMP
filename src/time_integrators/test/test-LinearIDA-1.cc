@@ -16,7 +16,7 @@
 #include "vectors/Vector.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
 #include "operators/diffusion/DiffusionTransportModel.h"
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/NeutronicsRhs.h"
 
 /* libMesh files */
@@ -35,9 +35,9 @@
 #include "linear_implicit_system.h"
 #include "elem.h"
 
-#include "operators/MassLinearElement.h"
+#include "operators/libmesh/MassLinearElement.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
-#include "operators/MassLinearFEOperator.h"
+#include "operators/libmesh/MassLinearFEOperator.h"
 
 #include "operators/IsotropicElasticModel.h"
 #include "operators/MechanicsLinearElement.h"

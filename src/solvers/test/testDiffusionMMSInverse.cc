@@ -25,7 +25,7 @@
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 
-#include "operators/boundary/NeumannVectorCorrection.h"
+#include "operators/boundary/libmesh/NeumannVectorCorrection.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/boundary/DirichletVectorCorrectionParameters.h"
 
@@ -36,8 +36,8 @@
 #include "operators/BVPOperatorParameters.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
-#include "operators/MassLinearFEOperator.h"
-#include "operators/MassDensityModel.h"
+#include "operators/libmesh/MassLinearFEOperator.h"
+#include "operators/libmesh/MassDensityModel.h"
 #include "operators/OperatorBuilder.h"
 
 #include "solvers/petsc/PetscSNESSolver.h"

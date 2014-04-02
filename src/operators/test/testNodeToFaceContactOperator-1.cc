@@ -24,7 +24,7 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/ColumnOperator.h"
 #include "operators/petsc/PetscMatrixShellOperator.h"
-#include "operators/TrilinosMatrixShellOperator.h"
+#include "operators/trilinos/TrilinosMatrixShellOperator.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/mechanics/MechanicsModelParameters.h"
 #include "operators/mechanics/MechanicsMaterialModel.h"

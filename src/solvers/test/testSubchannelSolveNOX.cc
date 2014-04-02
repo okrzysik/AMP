@@ -30,13 +30,13 @@
 #include "operators/boundary/RobinVectorCorrection.h"
 #include "operators/boundary/NeumannVectorCorrectionParameters.h"
 #include "operators/boundary/DirichletMatrixCorrection.h"
-#include "operators/boundary/RobinMatrixCorrection.h"
-#include "operators/boundary/NeumannVectorCorrection.h"
+#include "operators/boundary/libmesh/RobinMatrixCorrection.h"
+#include "operators/boundary/libmesh/NeumannVectorCorrection.h"
 
 #include "operators/VectorCopyOperator.h"
 
 #include "operators/IdentityOperator.h"
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/CoupledOperator.h"
 #include "operators/CoupledOperatorParameters.h"
 #include "operators/NodeToGaussPointOperator.h"

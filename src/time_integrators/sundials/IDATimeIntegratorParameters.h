@@ -18,7 +18,7 @@
 //#ifndef included_AMP_MassMatrix
 //#include "operators/MassMatrix.h"
 //#endif
-#include "operators/MassLinearFEOperator.h"
+#include "operators/libmesh/MassLinearFEOperator.h"
 #include "operators/Operator.h"
 
 #ifndef included_SolverStrategy

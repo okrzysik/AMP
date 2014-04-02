@@ -5,7 +5,7 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/PelletStackOperator.h"
+#include "operators/libmesh/PelletStackOperator.h"
 #include "operators/CoupledOperator.h"
 #include "operators/map/NodeToNodeMap.h"
 #include "operators/map/AsyncMapColumnOperator.h"

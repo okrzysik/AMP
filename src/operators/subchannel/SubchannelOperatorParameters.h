@@ -4,7 +4,7 @@
 
 #include "operators/OperatorParameters.h"
 #include "operators/subchannel/SubchannelPhysicsModel.h"
-#include "operators/boundary/RobinPhysicsModel.h"
+#include "operators/boundary/libmesh/RobinPhysicsModel.h"
 #include "discretization/DOF_Manager.h"
 
 namespace AMP {

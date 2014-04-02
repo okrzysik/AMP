@@ -13,8 +13,8 @@
 #include "utils/Writer.h"
 #include "vectors/Vector.h"
 
-#include "operators/VolumeIntegralOperator.h"
-#include "operators/SourceNonlinearElement.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
+#include "operators/libmesh/SourceNonlinearElement.h"
 #include "operators/ElementPhysicsModelFactory.h"
 #include "operators/ElementOperationFactory.h"
 #include "operators/OperatorBuilder.h"
@@ -23,7 +23,7 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 
-#include "../PowerShape.h"
+#include "operators/libmesh/PowerShape.h"
 
 void test_with_shape(AMP::UnitTest *ut, std::string exeName )
 {

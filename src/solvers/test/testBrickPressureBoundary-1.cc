@@ -30,7 +30,7 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
-#include "operators/boundary/PressureBoundaryOperator.h"
+#include "operators/boundary/libmesh/PressureBoundaryOperator.h"
 
 #include "solvers/petsc/PetscKrylovSolverParameters.h"
 #include "solvers/petsc/PetscKrylovSolver.h"
