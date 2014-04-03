@@ -23,7 +23,7 @@ public:
 
 
     //! Default constructor
-    SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::MeshIterator iterator );
+    SubsetMesh( boost::shared_ptr<const Mesh> mesh, const AMP::Mesh::MeshIterator iterator, bool isGlobal );
 
 
     //! Deconstructor

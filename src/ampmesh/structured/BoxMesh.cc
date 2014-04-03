@@ -52,59 +52,14 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
     for (size_t d=0; d<size.size(); d++)
         AMP_INSIST(size[d]>0,"All dimensions must have a size > 0");
     // Create the logical mesh
-    AMP_INSIST(PhysicalDim<=3,"DIM>3 not programmed yet");
-    if ( generator.compare("cube")==0 ) {
-        AMP_INSIST(size.size()==PhysicalDim,"Size of field 'Size' must match dim");
-        for (int d=0; d<PhysicalDim; d++)
-            d_size[d] = size[d];
-        if ( d_db->keyExists("Periodic") ) {
-            std::vector<unsigned char> per = d_db->getBoolArray("Periodic");
-            AMP_INSIST(per.size()==(size_t)GeomDim,"Periodic must match dim");
-            for (size_t d=0; d<per.size(); d++)
-                d_isPeriodic[d] = per[d];
-        }
-    } else if ( generator.compare("circle")==0 ) {
-        AMP_INSIST(PhysicalDim==2,"cylinder generator requires a 2d mesh");
-        AMP_INSIST(size.size()==1,"Size of field 'Size' must be of size 1");
-        d_size[0] = 2*size[0];
-        d_size[1] = 2*size[0];
-        d_size[2] = 0;
-    } else if ( generator.compare("cylinder")==0 ) {
-        AMP_INSIST(PhysicalDim==3,"cylinder generator requires a 3d mesh");
-        AMP_INSIST(size.size()==2,"Size of field 'Size' must be of size 2");
-        d_size[0] = 2*size[0];
-        d_size[1] = 2*size[0];
-        d_size[2] = size[1];
-        if ( d_db->keyExists("Periodic") ) {
-            std::vector<unsigned char> per = d_db->getBoolArray("Periodic");
-            AMP_INSIST(per.size()==1,"Periodic must be 1x1 for cylinder");
-            d_isPeriodic[2] = per[0];
-        }
-    } else if ( generator.compare("tube")==0 ) {
-        AMP_INSIST(PhysicalDim==3,"tube generator requires a 3d mesh");
-        AMP_INSIST(size.size()==PhysicalDim,"Size of field 'Size' must match dim");
-        for (int d=0; d<PhysicalDim; d++)
-            d_size[d] = size[d];
-        d_isPeriodic[1] = true;    // We will use the logical mesh (r,theta,z), so theta is periodic
-        if ( d_db->keyExists("Periodic") ) {
-            std::vector<unsigned char> per = d_db->getBoolArray("Periodic");
-            AMP_INSIST(per.size()==1,"Periodic must be 1x1 for tube");
-            d_isPeriodic[2] = per[0];
-        }
-    } else if ( generator.compare("shell")==0 ) {
-        AMP_INSIST(PhysicalDim==3,"shell generator requires a 3d mesh");
-        AMP_INSIST(size.size()==2,"Size of field 'Size' must be of size 1");
-        d_isPeriodic[0] = true;
-        d_size[0] = size[1];
-        d_size[1] = size[1]/2;
-        d_size[2] = size[0];
-    } else if ( generator.compare("sphere")==0 ) {
-        AMP_INSIST(PhysicalDim==3,"sphere generator requires a 3d mesh");
-        AMP_INSIST(size.size()==1,"Size of field 'Size' must be of size 1");
-        d_size[0] = 2*size[0];
-        d_size[1] = 2*size[0];
-        d_size[2] = 2*size[0];
-    } 
+    std::vector<int> meshSize;
+    std::vector<bool> isPeriodic;
+    std::vector<int> minSize;
+    BoxMesh::createLogicalMesh(d_db,meshSize,isPeriodic,minSize);
+    for (int d=0; d<PhysicalDim; d++) {
+        d_size[d] = meshSize[d];
+        d_isPeriodic[d] = isPeriodic[d];
+    }
     // Create the load balance
     for (int d=0; d<PhysicalDim; d++)
         d_numBlocks[d] = 1;
@@ -120,11 +75,13 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ):
             double v = -1;
             for (int i=0; i<PhysicalDim; i++) {
                 double tmp = ((double)d_size[i])/((double)d_numBlocks[i]);
-                if ( tmp > v ) {
+                if ( tmp>v && tmp>minSize[i] && minSize[i]>=0 ) {
                     d = i;
                     v = tmp;
                 }
             }
+            if ( d==-1 )
+                break;
             d_numBlocks[d] *= factors[factors.size()-1];
             factors.resize(factors.size()-1);
         }
@@ -764,43 +721,13 @@ size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         // User specified the number of elements, this should override everything
         N_elements = (size_t) db->getInteger("NumberOfElements");
     } else {
-        // Use the generator to determine the number of input elements
-        AMP_INSIST(db->keyExists("Generator"),"Field 'Generator' must exist in database'");
-        AMP_INSIST(db->keyExists("dim"),"Field 'dim' must exist in database'");
-        AMP_INSIST(db->keyExists("Size"),"Field 'Size' must exist in database'");
-        std::string generator = db->getString("Generator");
-        int dim = db->getInteger("dim");
-        std::vector<int> size = db->getIntegerArray("Size");
-        for (size_t d=0; d<size.size(); d++)
-            AMP_INSIST(size[d]>0,"All values of size must be > 0");
-        if ( generator.compare("cube")==0 ) {
-            AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must match dimfor cube");
-            N_elements = 1;
-            for (int d=0; d<dim; d++)
-                N_elements *= size[d];
-        } else if ( generator.compare("tube")==0 ) {
-            AMP_INSIST(dim==3,"tube requires a 3d mesh");
-            AMP_INSIST((int)size.size()==dim,"Size of field 'Size' must be 1x3 for tube");
-            N_elements = size[0]*size[1]*size[2];
-        } else if ( generator.compare("circle")==0 ) {
-            AMP_INSIST(dim==2,"circle requires a 2d mesh");
-            AMP_INSIST((int)size.size()==1,"Size of field 'Size' must be 1x1 for cylinder");
-            N_elements = (2*size[0])*(2*size[0]);
-        } else if ( generator.compare("cylinder")==0 ) {
-            AMP_INSIST(dim==3,"cylinder requires a 3d mesh");
-            AMP_INSIST((int)size.size()==2,"Size of field 'Size' must be 1x2 for cylinder");
-            N_elements = (2*size[0])*(2*size[0])*size[1];
-        } else if ( generator.compare("shell")==0 ) {
-            AMP_INSIST(dim==3,"cylinder requires a 3d mesh");
-            AMP_INSIST((int)size.size()==2,"Size of field 'Size' must be 1x2 for shell");
-            N_elements = size[0]*(2*size[1])*(2*size[1]);
-        } else if ( generator.compare("sphere")==0 ) {
-            AMP_INSIST(dim==3,"cylinder requires a 3d mesh");
-            AMP_INSIST((int)size.size()==1,"Size of field 'Size' must be 1x1 for sphere");
-            N_elements = (2*size[0])*(2*size[0])*(2*size[0]);
-        } else {
-            AMP_ERROR("Unkown generator");
-        }
+        std::vector<int> meshSize;
+        std::vector<bool> isPeriodic;
+        std::vector<int> minSize;
+        BoxMesh::createLogicalMesh(db,meshSize,isPeriodic,minSize);
+        N_elements = 1;
+        for (size_t i=0; i<meshSize.size(); i++)
+            N_elements *= meshSize[i];
     }
     // Adjust the number of elements by a weight if desired
     if ( db->keyExists("Weight") ) {
@@ -808,6 +735,32 @@ size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         N_elements = (size_t) ceil(weight*((double)N_elements));
     }
     return N_elements;
+}
+
+
+/****************************************************************
+* Estimate the maximum number of processors                     *
+****************************************************************/
+size_t BoxMesh::maxProcs( const MeshParameters::shared_ptr &params )
+{
+    // Check for valid inputs
+    AMP_INSIST(params.get(),"Params must not be null");
+    boost::shared_ptr<AMP::Database> db = params->getDatabase( );
+    AMP_INSIST(db.get(),"Database must exist");
+    size_t maxProcs = 1;
+    if ( db->keyExists("LoadBalanceMinSize") ) {
+        std::vector<int> meshSize;
+        std::vector<bool> isPeriodic;
+        std::vector<int> minSize;
+        BoxMesh::createLogicalMesh(db,meshSize,isPeriodic,minSize);
+        for (size_t i=0; i<meshSize.size(); i++) {
+            if ( minSize[i] != -1 )
+                maxProcs *= (meshSize[i]/minSize[i]);
+        }
+    } else {
+        maxProcs = estimateMeshSize( params );
+    }
+    return maxProcs;
 }
 
 
@@ -1215,6 +1168,94 @@ void BoxMesh::map_logical_sphere( size_t N, double r, double *x, double *y, doub
         y[i] = w*y[i] + r*(1-w)*yc/sqrt3;
         z[i] = w*z[i] + r*(1-w)*zc/sqrt3;
     }
+}
+
+
+/****************************************************************
+* Helper function to create the logical mesh                    *
+****************************************************************/
+void BoxMesh::createLogicalMesh( boost::shared_ptr<AMP::Database> db,
+    std::vector<int>& meshSize, std::vector<bool>& isPeriodic, std::vector<int>& minSize ) 
+{
+    // Get mandatory fields from the database
+    AMP_INSIST(db->keyExists("dim"),"Field 'dim' must exist in database'");
+    AMP_INSIST(db->keyExists("Generator"),"Field 'Generator' must exist in database'");
+    AMP_INSIST(db->keyExists("Size"),"Field 'Size' must exist in database'");
+    unsigned char PhysicalDim = db->getInteger("dim");
+    GeomType GeomDim = (GeomType) PhysicalDim;
+    std::string generator = db->getString("Generator");
+    std::vector<int> size = db->getIntegerArray("Size");
+    for (size_t d=0; d<size.size(); d++)
+        AMP_INSIST(size[d]>0,"All dimensions must have a size > 0");
+    AMP_INSIST(PhysicalDim<=3,"DIM>3 not programmed yet");
+    minSize.clear();
+    if ( db->keyExists("LoadBalanceMinSize") ) {
+        minSize = db->getIntegerArray("LoadBalanceMinSize");
+        AMP_ASSERT(minSize.size()==size.size());
+        for (size_t i=0; i<minSize.size(); i++) {
+            if ( minSize[i]==0 ) 
+                minSize[i] = 1;
+        }
+    }
+    // Create the logical mesh
+    meshSize = std::vector<int>(PhysicalDim,0);
+    isPeriodic = std::vector<bool>(PhysicalDim,false);
+    if ( generator.compare("cube")==0 ) {
+        AMP_INSIST(size.size()==PhysicalDim,"Size of field 'Size' must match dim");
+        for (int d=0; d<PhysicalDim; d++)
+            meshSize[d] = size[d];
+        if ( db->keyExists("Periodic") ) {
+            std::vector<unsigned char> per = db->getBoolArray("Periodic");
+            AMP_INSIST(per.size()==(size_t)GeomDim,"Periodic must match dim");
+            for (size_t d=0; d<per.size(); d++)
+                isPeriodic[d] = per[d];
+        }
+    } else if ( generator.compare("circle")==0 ) {
+        AMP_INSIST(PhysicalDim==2,"cylinder generator requires a 2d mesh");
+        AMP_INSIST(size.size()==1,"Size of field 'Size' must be of size 1");
+        meshSize[0] = 2*size[0];
+        meshSize[1] = 2*size[0];
+        meshSize[2] = 0;
+    } else if ( generator.compare("cylinder")==0 ) {
+        AMP_INSIST(PhysicalDim==3,"cylinder generator requires a 3d mesh");
+        AMP_INSIST(size.size()==2,"Size of field 'Size' must be of size 2");
+        meshSize[0] = 2*size[0];
+        meshSize[1] = 2*size[0];
+        meshSize[2] = size[1];
+        if ( db->keyExists("Periodic") ) {
+            std::vector<unsigned char> per = db->getBoolArray("Periodic");
+            AMP_INSIST(per.size()==1,"Periodic must be 1x1 for cylinder");
+            isPeriodic[2] = per[0];
+        }
+    } else if ( generator.compare("tube")==0 ) {
+        AMP_INSIST(PhysicalDim==3,"tube generator requires a 3d mesh");
+        AMP_INSIST(size.size()==PhysicalDim,"Size of field 'Size' must match dim");
+        for (int d=0; d<PhysicalDim; d++)
+            meshSize[d] = size[d];
+        isPeriodic[1] = true;    // We will use the logical mesh (r,theta,z), so theta is periodic
+        if ( db->keyExists("Periodic") ) {
+            std::vector<unsigned char> per = db->getBoolArray("Periodic");
+            AMP_INSIST(per.size()==1,"Periodic must be 1x1 for tube");
+            isPeriodic[2] = per[0];
+        }
+    } else if ( generator.compare("shell")==0 ) {
+        AMP_INSIST(PhysicalDim==3,"shell generator requires a 3d mesh");
+        AMP_INSIST(size.size()==2,"Size of field 'Size' must be of size 1");
+        isPeriodic[0] = true;
+        meshSize[0] = size[1];
+        meshSize[1] = size[1]/2;
+        meshSize[2] = size[0];
+    } else if ( generator.compare("sphere")==0 ) {
+        AMP_INSIST(PhysicalDim==3,"sphere generator requires a 3d mesh");
+        AMP_INSIST(size.size()==1,"Size of field 'Size' must be of size 1");
+        meshSize[0] = 2*size[0];
+        meshSize[1] = 2*size[0];
+        meshSize[2] = 2*size[0];
+    } 
+    if ( minSize.empty() ) {
+        minSize = std::vector<int>(meshSize.size(),1);
+    }
+    AMP_ASSERT(minSize.size()==meshSize.size());
 }
 
 

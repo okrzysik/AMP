@@ -286,7 +286,7 @@ int main(int argc, char *argv[])
             n_bytes2 = AMP::Utilities::getMemoryUsage();
             delete [] tmp;  tmp = NULL; NULL_USE(tmp);
             size_t n_bytes3 = AMP::Utilities::getMemoryUsage();
-            if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1+0x81000000 && abs_diff(n_bytes1,n_bytes3)<20e3 ) {
+            if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1+0x81000000 && abs_diff(n_bytes1,n_bytes3)<50e3 ) {
                 ut.passes("getMemoryUsage correctly handles 2^31 - 2^32 bytes"); 
             } else {
                 std::cout<<"Memtest 2-4 GB failes: "<<n_bytes1<<" "<<n_bytes2<<" "<<n_bytes3<<std::endl;
@@ -306,7 +306,7 @@ int main(int argc, char *argv[])
                 n_bytes2 = AMP::Utilities::getMemoryUsage();
                 delete [] tmp;  tmp = NULL; NULL_USE(tmp);
                 n_bytes3 = AMP::Utilities::getMemoryUsage();
-                if ( n_bytes2 > 0x100000000 && n_bytes2 < n_bytes1+0x110000000 && abs_diff(n_bytes1,n_bytes3)<20e3 ) {
+                if ( n_bytes2 > 0x100000000 && n_bytes2 < n_bytes1+0x110000000 && abs_diff(n_bytes1,n_bytes3)<50e3 ) {
                     ut.passes("getMemoryUsage correctly handles memory > 2^32 bytes"); 
                 } else {
                     std::cout<<"Memtest >4 GB failes: "<<n_bytes1<<" "<<n_bytes2<<" "<<n_bytes3<<std::endl;
@@ -322,9 +322,9 @@ int main(int argc, char *argv[])
             for (size_t i=0; i<call_stack.size(); i++)
                 std::cout << "   " << call_stack[i];
         }
-        if ( !call_stack.empty() ) {
+        if ( call_stack.size()>=2 ) {
             ut.passes("non empty call stack");
-            if ( call_stack[0].find("get_call_stack()") != std::string::npos )
+            if ( call_stack[1].find("get_call_stack()") != std::string::npos )
                 ut.passes("call stack decoded function symbols");
             else
                 ut.expected_failure("call stack was unable to decode function symbols");
@@ -332,7 +332,14 @@ int main(int argc, char *argv[])
             ut.failure("non empty call stack");
         }
 
-
+        // Test getting the symbols
+        std::vector<void*> address;
+        std::vector<char> type;
+        std::vector<std::string> obj;
+        int rtn = AMP::Utilities::get_symbols( address, type, obj );
+        if ( rtn==0 && !address.empty() )
+            ut.passes("Read symbols from executable");
+		
         // Test deleting and checking if a file exists
         if ( globalComm.getRank()==0 ) {
             FILE *fid = fopen( "testDeleteFile.txt", "w" );

@@ -141,7 +141,6 @@ void draw_tetrahedron(unsigned int f, hex8_element_t *volume_element) {
   t.push_back(triangle_t(p[2], p[3], p[1]));
   t.push_back(triangle_t(p[1], p[2], p[0]));
   t.push_back(triangle_t(p[3], p[0], p[2]));
-  double point_of_view[3] = { 1.0, 1.0, 1.0 };
   std::string option;
   std::vector<bool> b(4, false);
   if (t[0].above_point(t[2].get_centroid())) {
@@ -203,7 +202,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     -1.0, +1.0, +1.0  // 7
   };
 
-  std::string labels_coord[8] = {
+/*  std::string labels_coord[8] = {
     "(-1,-1,-1)",
     "(+1,-1,-1)",
     "(+1,+1,-1)",
@@ -212,7 +211,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     "(+1,-1,+1)",
     "(+1,+1,+1)",
     "(-1,+1,+1)" 
-  };
+  };*/
 
   std::string labels_num[8] = {
     "0",

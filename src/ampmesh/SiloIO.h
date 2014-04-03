@@ -142,6 +142,12 @@ private:
         void pack( char* );
         // Function to unpack the data from a byte array
         static siloMultiMeshData unpack( char* );
+        // Constructors
+        siloMultiMeshData(): id(), ownerRank(-1) {}
+        siloMultiMeshData(const siloMultiMeshData&);
+        siloMultiMeshData& operator=(const siloMultiMeshData&);
+        // Destructor
+        ~siloMultiMeshData() {}
     };
     
     // Function to syncronize multimesh data

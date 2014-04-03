@@ -249,13 +249,13 @@ public:
         AMP::LinearAlgebra::Vector::shared_ptr  vectorrhs = matrix->getRightVector();
         double normlhs , normrhs;
 
-        /* Verify 0 matrix from factory */
+        // Verify 0 matrix from factory
         if ( matrix->L1Norm() == 0.0 )
             utils->passes ( "Factory returns 0 matrix" );
         else
             utils->failure ( "Factory returns 0 matrix" );
 
-        /* Verify mult with 0 matrix */
+        // Verify mult with 0 matrix
         matrix->zero();
         vectorlhs->setRandomValues ();
         matrix->mult ( vectorlhs , vectorrhs );
@@ -266,7 +266,7 @@ public:
         else
             utils->failure ( "mult by 0 matrix" );
 
-        /* Verify mult with identity */
+        // Verify mult with identity
         vectorlhs->setToScalar ( 1.0 );
         matrix->setDiagonal ( vectorlhs );
         vectorlhs->setRandomValues ();
@@ -279,7 +279,7 @@ public:
         else
             utils->failure ( "mult by I matrix" );
 
-        /* Try the non-trivial matrix */
+        // Try the non-trivial matrix
         fillWithPseudoLaplacian<FACTORY>( matrix );
         vectorlhs->setRandomValues ();
         matrix->mult ( vectorlhs , vectorrhs );
@@ -313,9 +313,8 @@ public:
         AMP::LinearAlgebra::Vector::shared_ptr  vector3 = matZero->getRightVector();
 
         if ( vector1->getGlobalSize() > 1000 ) {
-            // Matrix-matrix multiplies take a long time
+            // Matrix-matrix multiplies take a long time (skip it)
             PROFILE_STOP2("VerifyMatMultMatrix");
-            utils->expected_failure("VerifyMatMultMatrix skipped");
             return;
         }
 
@@ -328,14 +327,14 @@ public:
         vector1->setRandomValues();
         double ans1, ans2, ans3;
 
-        /* Verify matMultiply with 0 matrix */
+        // Verify matMultiply with 0 matrix
         matSol = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
         if ( matSol->L1Norm()==0.0 )
             utils->passes ( "matMultiply with 0 matrix" );
         else
             utils->failure ( "matMultiply with 0 matrix" );
 
-        /* Verify mult with identity */
+        // Verify mult with identity
         matLaplac->mult( vector1, vector2 );
         ans1 = vector2->L2Norm();
         matSol = AMP::LinearAlgebra::Matrix::matMultiply( matIdent, matLaplac );
@@ -349,7 +348,7 @@ public:
         else
             utils->failure ( "matMultiply with identity matrix" );
 
-        /* Verify mult with two trival matrices */
+        // Verify mult with two trival matrices
         matLaplac->mult( vector1, vector2 );
         matLaplac->mult( vector2, vector3 );
         ans1 = vector3->L2Norm();

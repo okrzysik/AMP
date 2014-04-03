@@ -108,7 +108,7 @@ for(int dummy = 0; dummy < 2; ++dummy) {
     size_t p = 0;
     for(it = it_begin; it != it_end; ++it) {
       dofMap->getDOFs(it->globalID(), dofIndices);
-      AMP_ASSERT(dofIndices.size() == dofsPerNode);
+      AMP_ASSERT(static_cast<int>(dofIndices.size()) == dofsPerNode);
       std::copy(&(dofIndices[0]), &(dofIndices[0])+dofsPerNode, &(slaveIndices[0])+p);
       std::copy(&(dirichletValues[0]), &(dirichletValues[0])+dofsPerNode, &(slaveValues[0])+p);
       p += dofsPerNode;

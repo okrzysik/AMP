@@ -91,8 +91,6 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   AMP::LinearAlgebra::Variable::shared_ptr inputOxygenVariable1  ( new AMP::Mesh::NodalScalarVariable ( "Concentration", meshAdapter1 ) );
   AMP::LinearAlgebra::Variable::shared_ptr outputOxygenVariable1 ( new AMP::Mesh::NodalScalarVariable ( "Concentration", meshAdapter1 ) );
 
-  double intguess = input_db->getDoubleWithDefault("InitialGuess",400);
-
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> TempOxyVariable(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
   TempOxyVariable->add(inputThermalVariable1);
   TempOxyVariable->add(inputThermalVariable2);

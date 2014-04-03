@@ -7,7 +7,7 @@ Mesh {
      MeshType = "AMP"
      dim = 3
      Generator = "cube"
-     Size = 1, 1, 20
+     Size = 1, 1, 150
      Range = 0.0, 1.28016e-2, 0.0, 1.28016e-2, 0.0, 3.81 
      x_offset = 0.0
      y_offset = 0.0
@@ -112,6 +112,7 @@ NonlinearSolver{
         Preconditioner{
             print_info_level = 1
             max_iterations = 1
+            max_levels = 1
             max_error = 1.0e-7
         }
     }

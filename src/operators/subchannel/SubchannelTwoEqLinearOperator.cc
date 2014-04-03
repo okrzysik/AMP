@@ -136,7 +136,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
         if ( !d_ownSubChannel[i] )
             continue;
         AMP::Mesh::MeshIterator localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
-        AMP::Mesh::Mesh::shared_ptr localSubchannel = d_Mesh->Subset( localSubchannelIt  );
+        AMP::Mesh::Mesh::shared_ptr localSubchannel = d_Mesh->Subset( localSubchannelIt, false );
         AMP::Mesh::MeshIterator face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(localSubchannel, 0);
         for (size_t j=0; j<face.size(); j++) {
             d_subchannelFace[i].push_back( *face );
@@ -199,20 +199,20 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
             // energy residual
             // ======================================================
             if (face == localSubchannelIt.begin()){
-              double p_in = P_scale*d_frozenVec->getValueByGlobalID(dofs[1]);
-              d_matrix->setValueByGlobalID(dofs[0], dofs[0], 1.0);
-              d_matrix->setValueByGlobalID(dofs[0], dofs[1], -1.0*dhdp(d_Tin,p_in));
+                double p_in = P_scale*d_frozenVec->getValueByGlobalID(dofs[1]);
+                d_matrix->setValueByGlobalID(dofs[0], dofs[0], 1.0 );
+                d_matrix->setValueByGlobalID(dofs[0], dofs[1], -1.0*dhdp(d_Tin,p_in) );
             } else {
-              // residual at face corresponds to cell below
-              double z_plus = (face->centroid())[2];
-              --face;
-              d_dofMap->getDOFs( face->globalID(), dofs_minus );
-              double z_minus = (face->centroid())[2];
-              ++face;
-              double dz = z_plus - z_minus;
+                // residual at face corresponds to cell below
+                double z_plus = (face->centroid())[2];
+                --face;
+                d_dofMap->getDOFs( face->globalID(), dofs_minus );
+                double z_minus = (face->centroid())[2];
+                ++face;
+                double dz = z_plus - z_minus;
 
-              d_matrix->setValueByGlobalID(dofs[0], dofs_minus[0], -mass/dz);
-              d_matrix->setValueByGlobalID(dofs[0], dofs[0],        mass/dz);
+                d_matrix->setValueByGlobalID(dofs[0], dofs_minus[0], -(mass/dz) );
+                d_matrix->setValueByGlobalID(dofs[0], dofs[0],        (mass/dz) );
             }
 
             // ======================================================
@@ -225,100 +225,104 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
             std::vector<double> minusFaceCentroid = face->centroid();
             double z_minus = minusFaceCentroid[2]; // z-coordinate of lower face
             if (face == end_face - 1){
-              d_dofMap->getDOFs( face->globalID(), dofs );
-              d_matrix->setValueByGlobalID(dofs[1], dofs[1], 1.0);
+                d_dofMap->getDOFs( face->globalID(), dofs );
+                d_matrix->setValueByGlobalID(dofs[1], dofs[1], 1.0 );
             } else {
-              ++face;
-              d_dofMap->getDOFs( face->globalID(), dofs_plus );
-              std::vector<double> plusFaceCentroid = face->centroid();
-              double z_plus = plusFaceCentroid[2]; // z-coordinate of lower face
-              --face;
-              double h_plus  = h_scale*d_frozenVec->getValueByGlobalID(dofs_plus[0]); // enthalpy evaluated at upper face
-              double p_plus  = P_scale*d_frozenVec->getValueByGlobalID(dofs_plus[1]); // pressure evaluated at upper face
+                ++face;
+                d_dofMap->getDOFs( face->globalID(), dofs_plus );
+                std::vector<double> plusFaceCentroid = face->centroid();
+                double z_plus = plusFaceCentroid[2]; // z-coordinate of lower face
+                --face;
+                double h_plus  = h_scale*d_frozenVec->getValueByGlobalID(dofs_plus[0]); // enthalpy evaluated at upper face
+                double p_plus  = P_scale*d_frozenVec->getValueByGlobalID(dofs_plus[1]); // pressure evaluated at upper face
 
-              // evaluate specific volume at upper face
-              std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
-              volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
-              volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,p_plus)));
-              std::vector<double> volumeResult_plus(1);
-              d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus); 
-              double v_plus = volumeResult_plus[0];
+                // evaluate specific volume at upper face
+                std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
+                volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
+                volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,p_plus)));
+                std::vector<double> volumeResult_plus(1);
+                d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus); 
+                double v_plus = volumeResult_plus[0];
 
-              // evaluate specific volume at lower face
-              std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_minus;
-              volumeArgMap_minus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_minus)));
-              volumeArgMap_minus.insert(std::make_pair("pressure",new std::vector<double>(1,p_minus)));
-              std::vector<double> volumeResult_minus(1);
-              d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus); 
-              double v_minus = volumeResult_minus[0];
+                // evaluate specific volume at lower face
+                std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_minus;
+                volumeArgMap_minus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_minus)));
+                volumeArgMap_minus.insert(std::make_pair("pressure",new std::vector<double>(1,p_minus)));
+                std::vector<double> volumeResult_minus(1);
+                d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus); 
+                double v_minus = volumeResult_minus[0];
 
-              // evaluate friction factor
-              double fric = friction(h_minus, p_minus, h_plus, p_plus, mass, A, D);
+                // evaluate friction factor
+                double fric = friction(h_minus, p_minus, h_plus, p_plus, mass, A, D);
 
-              // evaluate derivatives of specific volume
-              double dvdh_plus  = dvdh(h_plus, p_plus);
-              double dvdh_minus = dvdh(h_minus,p_minus);
-              double dvdp_plus  = dvdp(h_plus, p_plus);
-              double dvdp_minus = dvdp(h_minus,p_minus);
+                // evaluate derivatives of specific volume
+                double dvdh_plus  = dvdh(h_plus, p_plus);
+                double dvdh_minus = dvdh(h_minus,p_minus);
+                double dvdp_plus  = dvdp(h_plus, p_plus);
+                double dvdp_minus = dvdp(h_minus,p_minus);
 
-              // evaluate derivatives of friction
-              double dfdh_minus = dfdh_lower(h_minus,p_minus,h_plus,p_plus,mass,A,D);
-              double dfdh_plus  = dfdh_upper(h_minus,p_minus,h_plus,p_plus,mass,A,D);
-              double dfdp_minus = dfdp_lower(h_minus,p_minus,h_plus,p_plus,mass,A,D);
-              double dfdp_plus  = dfdp_upper(h_minus,p_minus,h_plus,p_plus,mass,A,D);
+                // evaluate derivatives of friction
+                double dfdh_minus = dfdh_lower(h_minus,p_minus,h_plus,p_plus,mass,A,D);
+                double dfdh_plus  = dfdh_upper(h_minus,p_minus,h_plus,p_plus,mass,A,D);
+                double dfdp_minus = dfdp_lower(h_minus,p_minus,h_plus,p_plus,mass,A,D);
+                double dfdp_plus  = dfdp_upper(h_minus,p_minus,h_plus,p_plus,mass,A,D);
 
-              // compute form loss coefficient
-              double K = 0.0;
-              for (size_t igrid=0; igrid < d_lossGrid.size(); igrid++){
-                 double zMin_grid = d_zMinGrid[igrid];
-                 double zMax_grid = d_zMaxGrid[igrid];
-                 AMP_INSIST((zMax_grid > zMin_grid),"Grid spacer zMin > zMax");
-                 double K_grid = d_lossGrid[igrid];
-                 double K_perLength = K_grid/(zMax_grid - zMin_grid);
-                 if (zMax_grid >= z_plus){
-                    double overlap = 0.0;
-                    if (zMin_grid >= z_plus){
-                       overlap = 0.0;
-                    } else if (zMin_grid > z_minus && zMin_grid < z_plus){
-                       overlap = z_plus - zMin_grid;
-                    } else if (zMin_grid <= z_minus){
-                       overlap = z_plus - z_minus;
-                    } else {
-                       AMP_ERROR("Unexpected position comparison for zMin_grid");
+                // compute form loss coefficient
+                double K = 0.0;
+                for (size_t igrid=0; igrid < d_lossGrid.size(); igrid++){
+                    double zMin_grid = d_zMinGrid[igrid];
+                    double zMax_grid = d_zMaxGrid[igrid];
+                    AMP_INSIST((zMax_grid > zMin_grid),"Grid spacer zMin > zMax");
+                    double K_grid = d_lossGrid[igrid];
+                    double K_perLength = K_grid/(zMax_grid - zMin_grid);
+                    if (zMax_grid >= z_plus){
+                        double overlap = 0.0;
+                        if (zMin_grid >= z_plus){
+                            overlap = 0.0;
+                        } else if (zMin_grid > z_minus && zMin_grid < z_plus){
+                            overlap = z_plus - zMin_grid;
+                        } else if (zMin_grid <= z_minus){
+                            overlap = z_plus - z_minus;
+                        } else {
+                            AMP_ERROR("Unexpected position comparison for zMin_grid");
+                        }
+                        K += overlap*K_perLength;
+                    } else if (zMax_grid < z_plus && zMax_grid > z_minus){
+                        double overlap = 0.0;
+                        if (zMin_grid > z_minus){
+                            overlap = zMax_grid - zMin_grid;
+                        } else if (zMin_grid <= z_minus){
+                            overlap = zMax_grid - z_minus;
+                        } else {
+                            AMP_ERROR("Unexpected position comparison for zMin_grid");
+                        }
+                        K += overlap*K_perLength;
                     }
-                    K += overlap*K_perLength;
-                 } else if (zMax_grid < z_plus && zMax_grid > z_minus){
-                    double overlap = 0.0;
-                    if (zMin_grid > z_minus){
-                       overlap = zMax_grid - zMin_grid;
-                    } else if (zMin_grid <= z_minus){
-                       overlap = zMax_grid - z_minus;
-                    } else {
-                       AMP_ERROR("Unexpected position comparison for zMin_grid");
-                    }
-                    K += overlap*K_perLength;
-                 }
-              }
+                }
 
-              // compute Jacobian entries
-              double dz = d_z[j]-d_z[j-1];
-              double A_j = -1.0*std::pow(mass/A,2)*dvdh_minus - 2.0*g*dz*std::cos(d_theta)*
-                dvdh_minus/std::pow(v_plus+v_minus,2)+
-                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_minus + dz/D*dfdh_minus*(v_plus + v_minus));
-              double B_j = -1.0*std::pow(mass/A,2)*dvdp_minus - 2.0*g*dz*std::cos(d_theta)*
-                dvdp_minus/std::pow(v_plus+v_minus,2)+
-                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_minus + dz/D*dfdp_minus*(v_plus + v_minus)) - 1;
-              double C_j = std::pow(mass/A,2)*dvdh_plus - 2.0*g*dz*std::cos(d_theta)*
-                dvdh_plus/std::pow(v_plus+v_minus,2)+
-                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_plus + dz/D*dfdh_plus*(v_plus + v_minus));
-              double D_j = std::pow(mass/A,2)*dvdp_plus - 2.0*g*dz*std::cos(d_theta)*
-                dvdp_plus/std::pow(v_plus+v_minus,2)+
-                (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_plus + dz/D*dfdp_plus*(v_plus + v_minus)) + 1;
+                // compute Jacobian entries
+                double dz = d_z[j]-d_z[j-1];
+                double A_j = -1.0*std::pow(mass/A,2)*dvdh_minus - 
+                    2.0*g*dz*std::cos(d_theta)*dvdh_minus/std::pow(v_plus+v_minus,2) +
+                    (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_minus + 
+                    dz/D*dfdh_minus*(v_plus + v_minus));
+                double B_j = -1.0*std::pow(mass/A,2)*dvdp_minus - 
+                    2.0*g*dz*std::cos(d_theta)*dvdp_minus/std::pow(v_plus+v_minus,2) +
+                    (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_minus + 
+                    dz/D*dfdp_minus*(v_plus + v_minus)) - 1;
+                double C_j = std::pow(mass/A,2)*dvdh_plus - 
+                    2.0*g*dz*std::cos(d_theta)*dvdh_plus/std::pow(v_plus+v_minus,2) +
+                    (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_plus + 
+                    dz/D*dfdh_plus*(v_plus + v_minus));
+                double D_j = std::pow(mass/A,2)*dvdp_plus - 
+                    2.0*g*dz*std::cos(d_theta)*dvdp_plus/std::pow(v_plus+v_minus,2)+
+                    (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_plus + 
+                    dz/D*dfdp_plus*(v_plus + v_minus)) + 1;
 
-              d_matrix->setValueByGlobalID(dofs[1] , dofs[0]       , A*A_j );
-              d_matrix->setValueByGlobalID(dofs[1] , dofs[1]       , A*B_j );
-              d_matrix->setValueByGlobalID(dofs[1] , dofs_plus[0]  , A*C_j );
-              d_matrix->setValueByGlobalID(dofs[1] , dofs_plus[1]  , A*D_j );
+                d_matrix->setValueByGlobalID(dofs[1] , dofs[0]       , A*A_j );
+                d_matrix->setValueByGlobalID(dofs[1] , dofs[1]       , A*B_j );
+                d_matrix->setValueByGlobalID(dofs[1] , dofs_plus[0]  , A*C_j );
+                d_matrix->setValueByGlobalID(dofs[1] , dofs_plus[1]  , A*D_j );
             }
             ++face;
         }

@@ -4,6 +4,7 @@ Mesh{
     MeshType = "Multimesh"
     MeshDatabasePrefix = "Mesh_"
     MeshArrayDatabasePrefix = "MeshArray_"
+    LoadBalanceMethod = 2
 
     // Pin meshes
     Mesh_1 {
@@ -74,6 +75,7 @@ Mesh{
         dim = 3
         Generator = "cube"
         Size = 4, 4, 10
+        LoadBalanceMinSize = 1,1,-1
         x_grid = 0.0, 0.0063, 0.0189, 0.0315, 0.0378
         y_grid = 0.0, 0.0063, 0.0189, 0.0315, 0.0378
         z_grid = 0.0, 0.00315, 0.0063, 0.00945, 0.0126, 0.01575, 0.0189, 0.02205, 0.0252, 0.02835, 0.0315
@@ -779,7 +781,7 @@ NonlinearSolver {
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 10000 -ksp_rtol 1.0e-1 -ksp_atol 1.0e-11 -ksp_gmres_restart 100"
 
         Preconditioner {
-          print_info_level = 1
+            print_info_level = 1
             max_iterations = 1
             max_error = 1e-16
             absolute_tolerance = 1.0e-16

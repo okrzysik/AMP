@@ -62,12 +62,16 @@ PetscErrorCode _AMP_GetVecs(Mat m,Vec *right,Vec *left)
     MatShellGetContext ( m , &ctx );
     AMP::LinearAlgebra::Matrix    *pMatrix = static_cast<AMP::LinearAlgebra::ManagedPetscMatrix *> ( ctx );
     if(right!=PETSC_NULL) {
-        AMP::LinearAlgebra::Vector::shared_ptr pRight = AMP::LinearAlgebra::PetscVector::view ( pMatrix->getRightVector() );
-        VecDuplicate ( pRight->castTo<AMP::LinearAlgebra::PetscVector>().getVec() , right );
+        boost::shared_ptr<AMP::LinearAlgebra::PetscVector> pRight = 
+            boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(
+            AMP::LinearAlgebra::PetscVector::view( pMatrix->getRightVector() ) );
+        VecDuplicate( pRight->getVec(), right );
     }
     if(left!=PETSC_NULL) {
-        AMP::LinearAlgebra::Vector::shared_ptr pLeft = AMP::LinearAlgebra::PetscVector::view ( pMatrix->getLeftVector() );
-        VecDuplicate ( pLeft->castTo<AMP::LinearAlgebra::PetscVector>().getVec() , left );
+        boost::shared_ptr<AMP::LinearAlgebra::PetscVector> pLeft = 
+            boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(
+            AMP::LinearAlgebra::PetscVector::view( pMatrix->getLeftVector() ) );
+        VecDuplicate( pLeft->getVec(), left );
     }
     return 0;
 }

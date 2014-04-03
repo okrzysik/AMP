@@ -629,9 +629,9 @@ void DendroSearch::search(AMP::AMP_MPI comm, const std::vector<double> & pts)
     int rank = comm.getRank();
     int npes = comm.getSize();
 
-    std::string fileName = "debug_dendro_" + boost::lexical_cast<std::string>(rank);
-    std::fstream d_fout;
-    d_fout.open(fileName.c_str(), std::fstream::out);
+//    std::string fileName = "debug_dendro_" + boost::lexical_cast<std::string>(rank);
+//    std::fstream d_fout;
+//    d_fout.open(fileName.c_str(), std::fstream::out);
 //    d_fout<<"local elements="<<(d_meshAdapter.get() != NULL ? static_cast<int>(d_meshAdapter->numLocalElements(AMP::Mesh::Volume)) : -1)
 //        <<"  global="<<(d_meshAdapter.get() != NULL ? static_cast<int>(d_meshAdapter->numGlobalElements(AMP::Mesh::Volume)) : -1)<<"\n";
 
