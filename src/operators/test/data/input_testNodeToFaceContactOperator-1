@@ -3,7 +3,7 @@ maxActiveSetIterations = 20
 loadParameterX = 1.0e1
 loadParameterZ = 1.0e2
 
-useML = TRUE
+useML = FALSE
 matrixFree = FALSE
 
 Mesh{
@@ -20,7 +20,7 @@ Mesh{
         y_offset = 0.0
         z_offset = 0.0
         Generator = "cube"
-        Size = 16, 16, 16
+        Size = 32, 2, 32
         Range = 0.0, 0.01, 0.0, 0.01, 0.0, 0.01
     }
  
@@ -32,7 +32,7 @@ Mesh{
         y_offset = 0.0
         z_offset = 0.01
         Generator = "cube"
-        Size = 16, 16, 16
+        Size = 322, 2, 32
         Range = 0.0, 0.01, 0.0, 0.01, 0.0, 0.01
     }
 }
@@ -45,7 +45,7 @@ ContactOperator {
     SlaveBoundaryID = 4
     InputVariable = "displacement"
     OutputVariable = "displacement"
-ContactIsFrictionless = TRUE
+ContactIsFrictionless = FALSE
 }
 
 MatrixShellOperator {
@@ -69,7 +69,7 @@ MasterDirichletMatrixCorrection{
     zero_dirichlet_block = FALSE
     skip_rhs_correction = FALSE
     skip_rhs_add_correction = FALSE
-    number_of_ids = 1
+    number_of_ids = 3
     id_0 = 4
     number_of_dofs_0 = 3
     dof_0_0 = 0
@@ -78,6 +78,14 @@ MasterDirichletMatrixCorrection{
     value_0_0 = 0.0
     value_0_1 = 0.0
     value_0_2 = 0.0
+    id_1 = 2
+    number_of_dofs_1 = 1
+    dof_1_0 = 1
+    value_1_0 = 0.0
+    id_2 = 3
+    number_of_dofs_2 = 1
+    dof_2_0 = 1
+    value_2_0 = 0.0
 }
 
 SlaveBVPOperator {
@@ -96,7 +104,7 @@ SlaveDirichletMatrixCorrection{
     zero_dirichlet_block = FALSE
     skip_rhs_correction = FALSE
     skip_rhs_add_correction = FALSE
-    number_of_ids = 1
+    number_of_ids = 3
     id_0 = 5
     number_of_dofs_0 = 3
     dof_0_0 = 0
@@ -105,6 +113,14 @@ SlaveDirichletMatrixCorrection{
     value_0_0 = 0.0
     value_0_1 = 0.0
     value_0_2 = 0.0
+    id_1 = 2
+    number_of_dofs_1 = 1
+    dof_1_0 = 1
+    value_1_0 = 0.0
+    id_2 = 3
+    number_of_dofs_2 = 1
+    dof_2_0 = 1
+    value_2_0 = 0.0
 }
 
 MasterLoadOperator {
@@ -205,7 +221,7 @@ SlaveMechanicsMaterialModel {
 
 LinearSolver {
   print_info_level = 1
-    max_iterations = 2000
+    max_iterations = 20000
     max_error = 1.0e-16
     ksp_type = "cg"
     absolute_tolerance = 1.0e-16

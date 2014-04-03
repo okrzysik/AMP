@@ -1,11 +1,11 @@
 maxActiveSetIterations = 5
 maxLoadingIterations = 1
 
-LoadParameter = -6.25
-LoadCutoff = 1.492
+LoadParameter = -1.5625
+LoadCutoff = 1.984
+yDisplacementHelper = 0.0
 
 useML = TRUE
-matrixFree = FALSE
 
 Mesh{
   MeshName = "MainMesh"
@@ -21,33 +21,34 @@ Mesh{
         y_offset = 0.0
         z_offset = 0.0
         Generator = "cube"
-        Size = 32, 16, 2
-        Range = 0.0, 1.0, 0.0, 0.5, 0.0, 1.0
+        Size = 16, 8, 16
+        Range = -1.0, 1.0, -1.0, 0.0, -1.0, 1.0
     }
 
     Mesh_2{
         MeshName = "cylinder_1"
         MeshType = "AMP"
+        FileName = "my_circle_1x.e"
         dim = 3
-        x_offset = 0.5
+        x_offset = 0.0
         y_offset = 1.0
         z_offset = 0.0
         Generator = "cylinder"
-        Size = 16, 2
-        Range = 0.5, 0.0, 1.0
+        Size = 8, 16
+        Range = 1.0, -1.0, 1.0
     }
 
 }
 
 ContactOperator {
   name = "NodeToSegmentConstraints"
-    MasterMeshIndex = 0
-    SlaveMeshIndex = 1
-    MasterBoundaryID = 3
-    SlaveBoundaryID = 4
+    MasterMeshIndex = 1
+    SlaveMeshIndex = 0
+    MasterBoundaryID = 4
+    SlaveBoundaryID = 3
     InputVariable = "displacement"
     OutputVariable = "displacement"
-ContactIsFrictionless = TRUE
+ContactIsFrictionless = FALSE
 }
 
 MatrixShellOperator {
@@ -63,7 +64,7 @@ MasterBVPOperator {
     BoundaryOperator = "MasterDirichletMatrixCorrection"
 }
 
-SlaveDirichletMatrixCorrection{
+MasterDirichletMatrixCorrection{
   name = "DirichletMatrixCorrection"
     print_info_level = 1
     skip_params = FALSE
@@ -71,7 +72,7 @@ SlaveDirichletMatrixCorrection{
     zero_dirichlet_block = FALSE
     skip_rhs_correction = FALSE
     skip_rhs_add_correction = FALSE
-    number_of_ids = 2
+    number_of_ids = 0
     id_0 = 1
     number_of_dofs_0 = 1
     dof_0_0 = 2
@@ -90,7 +91,7 @@ SlaveBVPOperator {
     BoundaryOperator = "SlaveDirichletMatrixCorrection"
 }
 
-MasterDirichletMatrixCorrection{
+SlaveDirichletMatrixCorrection{
   name = "DirichletMatrixCorrection"
     print_info_level = 1
     skip_params = FALSE
@@ -98,7 +99,7 @@ MasterDirichletMatrixCorrection{
     zero_dirichlet_block = FALSE
     skip_rhs_correction = FALSE
     skip_rhs_add_correction = FALSE
-    number_of_ids = 3
+    number_of_ids = 1
     id_0 = 2
     number_of_dofs_0 = 3
     dof_0_0 = 0
@@ -137,7 +138,7 @@ SlaveMechanicsLinearFEOperator{
   LocalModel = "SlaveMechanicsMaterialModel"
 }
 
-SlaveMechanicsMaterialModel {
+MasterMechanicsMaterialModel {
   USE_MATERIALS_LIBRARY = FALSE
     Material = ""
     name="IsotropicElasticModel"
@@ -167,7 +168,7 @@ MasterMechanicsLinearFEOperator{
   LocalModel = "MasterMechanicsMaterialModel"
 }
 
-MasterMechanicsMaterialModel {
+SlaveMechanicsMaterialModel {
   USE_MATERIALS_LIBRARY = FALSE
     Material = ""
     name="IsotropicElasticModel"
@@ -180,7 +181,7 @@ MasterMechanicsMaterialModel {
 
 LinearSolver {
   print_info_level = 1
-    max_iterations = 10000
+    max_iterations = 50000
     max_error = 1.0e-16
     ksp_type = "cg"
     absolute_tolerance = 1.0e-16

@@ -60,7 +60,7 @@ void myGetRow(void *object, int row, std::vector<unsigned int> &cols, std::vecto
   size_t slaveMatrixNumberGlobalRows = slaveMatrix->numGlobalRows();
   size_t slaveMatrixNumberGlobalColumns = slaveMatrix->numGlobalColumns();
 
-  if (row < masterMatrixNumberGlobalRows) {
+  if (row < static_cast<int>(masterMatrixNumberGlobalRows)) {
     masterMatrix->getRowByGlobalID(row, cols, values);
   } else {
 //    cols.push_back(row);
@@ -90,7 +90,7 @@ void selectNodes(AMP::Mesh::Mesh::shared_ptr mesh, std::vector<AMP::Mesh::MeshEl
   } // end for
 }
 
-void printNodesValues(AMP::Mesh::Mesh::shared_ptr mesh, std::vector<AMP::Mesh::MeshElementID> const & nodesGlobalIDs, AMP::LinearAlgebra::Vector::shared_ptr vectorField1, AMP::LinearAlgebra::Vector::shared_ptr vectorField2, std::ostream & os = std::cout) {
+void printNodesValues(AMP::Mesh::Mesh::shared_ptr mesh, std::vector<AMP::Mesh::MeshElementID> const & nodesGlobalIDs, AMP::LinearAlgebra::Vector::shared_ptr vectorField1, std::ostream & os = std::cout) {
   AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField1->getDOFManager();
   for (size_t i = 0; i < nodesGlobalIDs.size(); ++i) {
     std::vector<double> coord = mesh->getElement(nodesGlobalIDs[i]).coord();
@@ -98,8 +98,7 @@ void printNodesValues(AMP::Mesh::Mesh::shared_ptr mesh, std::vector<AMP::Mesh::M
     dofManager->getDOFs(nodesGlobalIDs[i], dofIndices);
     AMP_ASSERT(dofIndices.size() == 1);
     double value1 = vectorField1->getLocalValueByGlobalID(dofIndices[0]);
-    double value2 = vectorField2->getLocalValueByGlobalID(dofIndices[0]);
-    os<<coord[0]<<"  "<<value1<<"  "<<value2<<"\n";
+    os<<coord[0]<<"  "<<value1<<"\n";
   } // end for i 
 }
 
@@ -442,7 +441,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     trilinosMatrixShellOperator->setGetRow(&myGetRow);
     trilinosMatrixShellOperator->setOperator(dummyColumnOperator);
     boost::shared_ptr<AMP::Database> trilinosMLSolver_db = columnPreconditioner_db->getDatabase("MLSolver");
-    trilinosMLSolver_db->putBool("USE_EPETRA", true);
+    trilinosMLSolver_db->putBool("USE_EPETRA", false);
     boost::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> mlSolverParams(new AMP::Solver::TrilinosMLSolverParameters(trilinosMLSolver_db));
     mlSolverParams->d_pOperator = trilinosMatrixShellOperator;
     boost::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver(new AMP::Solver::TrilinosMLSolver(mlSolverParams));
@@ -478,18 +477,22 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::LinearAlgebra::Vector::shared_ptr sigma_xz = AMP::LinearAlgebra::createVector(tempDofManager, AMP::LinearAlgebra::Variable::shared_ptr(new AMP::LinearAlgebra::Variable("sigma_xz")), split);
   AMP::LinearAlgebra::Vector::shared_ptr sigma_xy = AMP::LinearAlgebra::createVector(tempDofManager, AMP::LinearAlgebra::Variable::shared_ptr(new AMP::LinearAlgebra::Variable("sigma_xy")), split);
   AMP::LinearAlgebra::Vector::shared_ptr sigma_eff = AMP::LinearAlgebra::createVector(tempDofManager, AMP::LinearAlgebra::Variable::shared_ptr(new AMP::LinearAlgebra::Variable("sigma_eff")), split);
-  AMP::LinearAlgebra::Vector::shared_ptr activeSetVec = sigma_eff->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr suckItVec = sigma_eff->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr lickItVec = sigma_eff->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr activeSetBeforeUpdateVec = sigma_eff->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr activeSetAfterUpdateVec = sigma_eff->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr contactPressureVec = sigma_eff->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr surfaceTractionVec = columnSolVec->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr normalVectorVec = columnSolVec->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr contactShiftVec = columnSolVec->cloneVector();
-  activeSetVec->zero();
-  suckItVec->zero();
-  lickItVec->zero();
+  contactPressureVec->zero();
   surfaceTractionVec->zero();
   normalVectorVec->zero();
   contactShiftVec->zero();
+  sigma_xx->zero();
+  sigma_yy->zero();
+  sigma_zz->zero();
+  sigma_yz->zero();
+  sigma_xz->zero();
+  sigma_xy->zero();
 
   computeStressTensor(meshAdapter, columnSolVec, 
       sigma_xx, sigma_yy, sigma_zz, sigma_yz, sigma_xz, sigma_xy,
@@ -498,19 +501,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
 #ifdef USE_EXT_SILO
   {
-    siloWriter->registerVector(columnSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution");
-    siloWriter->registerVector(sigma_eff, meshAdapter, AMP::Mesh::Vertex, "vonMises");
+    siloWriter->registerVector(columnSolVec, meshAdapter, AMP::Mesh::Vertex, "SolutionDisplacement");
+    siloWriter->registerVector(sigma_eff, meshAdapter, AMP::Mesh::Vertex, "vonMisesStresses");
     siloWriter->registerVector(sigma_xx, meshAdapter, AMP::Mesh::Vertex, "sigma_xx");
     siloWriter->registerVector(sigma_yy, meshAdapter, AMP::Mesh::Vertex, "sigma_yy");
     siloWriter->registerVector(sigma_zz, meshAdapter, AMP::Mesh::Vertex, "sigma_zz");
     siloWriter->registerVector(sigma_yz, meshAdapter, AMP::Mesh::Vertex, "sigma_yz");
     siloWriter->registerVector(sigma_xz, meshAdapter, AMP::Mesh::Vertex, "sigma_xz");
     siloWriter->registerVector(sigma_xy, meshAdapter, AMP::Mesh::Vertex, "sigma_xy");
-    siloWriter->registerVector(activeSetVec, meshAdapter, AMP::Mesh::Vertex, "Contact");
+    siloWriter->registerVector(activeSetBeforeUpdateVec, meshAdapter, AMP::Mesh::Vertex, "ActiveSetBeforeUpdate");
+    siloWriter->registerVector(activeSetAfterUpdateVec, meshAdapter, AMP::Mesh::Vertex, "ActiveSetAfterUpdate");
     siloWriter->registerVector(surfaceTractionVec, meshAdapter, AMP::Mesh::Vertex, "Traction");
     siloWriter->registerVector(normalVectorVec, meshAdapter, AMP::Mesh::Vertex, "Normal");
-    siloWriter->registerVector(suckItVec, meshAdapter, AMP::Mesh::Vertex, "Suction");
-    siloWriter->registerVector(lickItVec, meshAdapter, AMP::Mesh::Vertex, "Tangent");
+    siloWriter->registerVector(contactPressureVec, meshAdapter, AMP::Mesh::Vertex, "ContactPressure");
     siloWriter->registerVector(contactShiftVec, meshAdapter, AMP::Mesh::Vertex, "Shift");
     char outFileName[256];
     sprintf(outFileName, "TOTO_%d", 0);
@@ -533,7 +536,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   std::vector<AMP::Mesh::MeshElementID> slaveNodesGlobalIDs;
   selectNodes(slaveMeshAdapter, slaveNodesGlobalIDs);
-  printNodesValues(slaveMeshAdapter, slaveNodesGlobalIDs, suckItVec, lickItVec);
+  printNodesValues(slaveMeshAdapter, slaveNodesGlobalIDs, contactPressureVec);
 
   size_t const maxActiveSetIterations = input_db->getIntegerWithDefault("maxActiveSetIterations", 5);
   for (size_t activeSetIteration = 0; activeSetIteration < maxActiveSetIterations; ++activeSetIteration) {
@@ -582,7 +585,16 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   // u_s = C u_m
   contactOperator->copyMasterToSlave(columnSolVec);
 
+  globalComm.barrier();
+  double solveBeginTime = MPI_Wtime();
+
   linearSolver->solve(columnRhsVec, columnSolVec);
+
+  globalComm.barrier();
+  double solveEndTime = MPI_Wtime();
+  if(!rank) {
+    std::cout<<"Finished linear solve in "<<(solveEndTime - solveBeginTime)<<" seconds."<<std::endl;
+  }
 
   // u^s = C u^m + d
   contactOperator->copyMasterToSlave(columnSolVec);
@@ -597,61 +609,54 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       sigma_eff, slaveMechanicsMaterialModel,
       referenceTemperature, thermalExpansionCoefficient, tempVec);
 
-  activeSetVec->setToScalar(-1.0);
-
   std::vector<AMP::Mesh::MeshElementID> const & activeSet = contactOperator->getActiveSet();
   size_t const sizeOfActiveSetBeforeUpdate = activeSet.size();
 
   std::vector<size_t> activeSetTempDOFsIndicesBeforeUpdate;
   tempDofManager->getDOFs(activeSet, activeSetTempDOFsIndicesBeforeUpdate);
   AMP_ASSERT( activeSetTempDOFsIndicesBeforeUpdate.size() == sizeOfActiveSetBeforeUpdate );
-  std::vector<double> valuesForActiveSet(sizeOfActiveSetBeforeUpdate, 2.0); 
-  activeSetVec->setLocalValuesByGlobalID(sizeOfActiveSetBeforeUpdate, &(activeSetTempDOFsIndicesBeforeUpdate[0]), &(valuesForActiveSet[0]));
+  std::vector<double> valuesForActiveSetBeforeUpdate(sizeOfActiveSetBeforeUpdate, 2.0); 
+  activeSetBeforeUpdateVec->setToScalar(-1.0);
+  activeSetBeforeUpdateVec->setLocalValuesByGlobalID(sizeOfActiveSetBeforeUpdate, &(activeSetTempDOFsIndicesBeforeUpdate[0]), &(valuesForActiveSetBeforeUpdate[0]));
 
   std::vector<size_t> activeSetDispDOFsIndicesBeforeUpdate;
   dispDofManager->getDOFs(activeSet, activeSetDispDOFsIndicesBeforeUpdate);
   AMP_ASSERT( activeSetDispDOFsIndicesBeforeUpdate.size() == 3*sizeOfActiveSetBeforeUpdate );
 
-#ifdef USE_EXT_SILO
-  {
-  columnSolVec->scale(1.0e3);
-  meshAdapter->displaceMesh(columnSolVec);
-  char outFileName[256];
-  sprintf(outFileName, "TOTO_%d", 0);
-  siloWriter->writeFile(outFileName, activeSetIteration+1);
-  columnSolVec->scale(-1.0);
-  meshAdapter->displaceMesh(columnSolVec);
-  columnSolVec->scale(-1.0e-3);
-  }
-#endif
-
-//  meshAdapter->displaceMesh(columnSolVec);
+  // Update active set
   size_t nChangesInActiveSet = contactOperator->updateActiveSet(columnSolVec);
-  if (!rank) { std::cout<<nChangesInActiveSet<<" CHANGES IN ACTIVE SET\n"; }
 
-  suckItVec->zero();
-  lickItVec->zero();
-  surfaceTractionVec->zero();
-  normalVectorVec->zero();
   size_t const sizeOfActiveSetAfterUpdate = activeSet.size();
-  std::vector<double> const * slaveVerticesNormalVector;
-  std::vector<double> const * slaveVerticesSurfaceTraction;
-  contactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(slaveVerticesNormalVector, slaveVerticesSurfaceTraction);
-//  AMP_ASSERT( slaveVerticesNormalVector->size() == 3*sizeOfActiveSetBeforeUpdate );
-  AMP_ASSERT( slaveVerticesNormalVector->size() == 3*sizeOfActiveSetAfterUpdate );
-  AMP_ASSERT( slaveVerticesSurfaceTraction->size() == 3*sizeOfActiveSetBeforeUpdate );
-  surfaceTractionVec->setLocalValuesByGlobalID(3*sizeOfActiveSetBeforeUpdate, &(activeSetDispDOFsIndicesBeforeUpdate[0]), &((*slaveVerticesSurfaceTraction)[0]));
-  normalVectorVec->setLocalValuesByGlobalID(3*sizeOfActiveSetBeforeUpdate, &(activeSetDispDOFsIndicesBeforeUpdate[0]), &((*slaveVerticesNormalVector)[0]));
-  std::vector<double> surfaceTractionDOTnormalVector(sizeOfActiveSetBeforeUpdate);
-  std::vector<double> surfaceTractionTangentComponent(sizeOfActiveSetBeforeUpdate);
-  for (size_t kk = 0; kk < sizeOfActiveSetBeforeUpdate;++kk) {
-    surfaceTractionDOTnormalVector[kk] = - compute_scalar_product(&((*slaveVerticesSurfaceTraction)[3*kk]), &((*slaveVerticesNormalVector)[3*kk]));
-    surfaceTractionTangentComponent[kk] = std::sqrt(std::pow(compute_vector_norm(&((*slaveVerticesSurfaceTraction)[3*kk])), 2) - std::pow(surfaceTractionDOTnormalVector[kk], 2));
-  } // end for kk
-  suckItVec->setLocalValuesByGlobalID(sizeOfActiveSetBeforeUpdate, &(activeSetTempDOFsIndicesBeforeUpdate[0]), &(surfaceTractionDOTnormalVector[0]));
-  lickItVec->setLocalValuesByGlobalID(sizeOfActiveSetBeforeUpdate, &(activeSetTempDOFsIndicesBeforeUpdate[0]), &(surfaceTractionTangentComponent[0]));
 
-  printNodesValues(slaveMeshAdapter, slaveNodesGlobalIDs, suckItVec, lickItVec);
+  std::vector<size_t> activeSetTempDOFsIndicesAfterUpdate;
+  tempDofManager->getDOFs(activeSet, activeSetTempDOFsIndicesAfterUpdate);
+  AMP_ASSERT( activeSetTempDOFsIndicesAfterUpdate.size() == sizeOfActiveSetAfterUpdate );
+  std::vector<double> valuesForActiveSetAfterUpdate(sizeOfActiveSetAfterUpdate, 2.0); 
+  activeSetAfterUpdateVec->setToScalar(-1.0);
+  activeSetAfterUpdateVec->setLocalValuesByGlobalID(sizeOfActiveSetAfterUpdate, &(activeSetTempDOFsIndicesAfterUpdate[0]), &(valuesForActiveSetAfterUpdate[0]));
+
+  std::vector<size_t> activeSetDispDOFsIndicesAfterUpdate;
+  dispDofManager->getDOFs(activeSet, activeSetDispDOFsIndicesAfterUpdate);
+  AMP_ASSERT( activeSetDispDOFsIndicesAfterUpdate.size() == 3*sizeOfActiveSetAfterUpdate );
+
+  std::vector<double> const * slaveVerticesNormalVectorBeforeUpdate;
+  std::vector<double> const * slaveVerticesSurfaceTractionBeforeUpdate;
+  contactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(slaveVerticesNormalVectorBeforeUpdate, slaveVerticesSurfaceTractionBeforeUpdate);
+  AMP_ASSERT( slaveVerticesSurfaceTractionBeforeUpdate->size() == 3*sizeOfActiveSetBeforeUpdate);
+  AMP_ASSERT( slaveVerticesNormalVectorBeforeUpdate->size() == 3*sizeOfActiveSetBeforeUpdate);
+  surfaceTractionVec->zero();
+  surfaceTractionVec->setLocalValuesByGlobalID(3*sizeOfActiveSetBeforeUpdate, &(activeSetDispDOFsIndicesBeforeUpdate[0]), &((*slaveVerticesSurfaceTractionBeforeUpdate)[0]));
+  normalVectorVec->zero();
+  normalVectorVec->setLocalValuesByGlobalID(3*sizeOfActiveSetBeforeUpdate, &(activeSetDispDOFsIndicesBeforeUpdate[0]), &((*slaveVerticesNormalVectorBeforeUpdate)[0]));
+
+    std::vector<double> surfaceTractionDOTnormalVector(sizeOfActiveSetBeforeUpdate);
+    for (size_t kk = 0; kk < sizeOfActiveSetBeforeUpdate; ++kk) {
+      surfaceTractionDOTnormalVector[kk] = - compute_scalar_product(&((*slaveVerticesSurfaceTractionBeforeUpdate)[3*kk]), &((*slaveVerticesNormalVectorBeforeUpdate)[3*kk]));
+    } // end for kk
+    contactPressureVec->zero();
+    contactPressureVec->setLocalValuesByGlobalID(sizeOfActiveSetBeforeUpdate, &(activeSetTempDOFsIndicesBeforeUpdate[0]), &(surfaceTractionDOTnormalVector[0]));
+
+  printNodesValues(slaveMeshAdapter, slaveNodesGlobalIDs, contactPressureVec);
 
 #ifdef USE_EXT_SILO
   {
@@ -665,6 +670,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   columnSolVec->scale(-1.0e-3);
   }
 #endif
+  if (!rank) { std::cout<<nChangesInActiveSet<<" CHANGES IN ACTIVE SET\n"; }
 
   if (nChangesInActiveSet == 0) { break; }
   AMP_ASSERT( activeSetIteration != maxActiveSetIterations - 1 );

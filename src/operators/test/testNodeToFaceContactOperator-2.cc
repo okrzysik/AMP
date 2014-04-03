@@ -48,63 +48,6 @@
 
 #include "testNodeToFaceContactOperator.h"
 
-void applyCustomDirichletCondition(AMP::LinearAlgebra::Vector::shared_ptr rhs, AMP::LinearAlgebra::Vector::shared_ptr & cor,
-    AMP::Mesh::Mesh::shared_ptr meshAdapter, std::map<AMP::Mesh::MeshElementID, std::map<size_t, double> > const & constraints, 
-    AMP::LinearAlgebra::Matrix::shared_ptr mat) 
-{
-  AMP::Discretization::DOFManager::shared_ptr dofManager = rhs->getDOFManager();
-  std::vector<size_t> dofIndices;
-  if(mat.get() != NULL) {
-    char xyz[] = "xyz" ;
-    size_t count = 0;
-    std::vector<double> coord;
-    AMP::LinearAlgebra::Vector::shared_ptr dir = rhs->cloneVector(); 
-    dir->zero();
-    for(std::map<AMP::Mesh::MeshElementID, std::map<size_t, double> >::const_iterator it = constraints.begin(); it != constraints.end(); ++it) {
-      dofManager->getDOFs(it->first, dofIndices);
-      coord = (meshAdapter->getElement(it->first)).coord();
-      for(std::map<size_t, double>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt) {
-        std::cout<<++count<<" ("<<coord[0]<<", "<<coord[1]<<", "<<coord[2]<<") "<<jt->second<<"  "<<xyz[jt->first]<<"\n";
-        dir->setLocalValueByGlobalID(dofIndices[jt->first], jt->second);
-      } // end for
-    } // end for
-    dir->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
-    mat->mult(dir, cor);
-    for(std::map<AMP::Mesh::MeshElementID, std::map<size_t, double> >::const_iterator it = constraints.begin(); it != constraints.end(); ++it) {
-      dofManager->getDOFs(it->first, dofIndices);
-      for(std::map<size_t, double>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt) {
-        for(size_t k = 0; k < dofIndices.size(); ++k) {
-          if (jt->first == k) {
-            mat->setValueByGlobalID(dofIndices[k], dofIndices[k], 1.0);
-          } else {
-            mat->setValueByGlobalID(dofIndices[jt->first], dofIndices[k], 0.0);
-            mat->setValueByGlobalID(dofIndices[k], dofIndices[jt->first], 0.0);
-          } // end if
-        } // end for k
-      } // end for jt
-      std::vector<AMP::Mesh::MeshElement::shared_ptr> neighbors = (meshAdapter->getElement(it->first)).getNeighbors();
-      std::vector<size_t> neighborsDofIndices;
-      for(size_t n = 0; n < neighbors.size(); ++n) {
-        dofManager->getDOFs(neighbors[n]->globalID(), neighborsDofIndices);
-        for(size_t k = 0; k < neighborsDofIndices.size(); ++k) {
-          for(std::map<size_t, double>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt) {
-            mat->setValueByGlobalID(dofIndices[jt->first], neighborsDofIndices[k], 0.0);
-            mat->setValueByGlobalID(neighborsDofIndices[k], dofIndices[jt->first], 0.0);
-          } // end for jt
-        } // end for k
-      } // end for n
-    } // end for it
-    mat->makeConsistent();
-  } // end if
-  rhs->subtract(rhs, cor);
-  for(std::map<AMP::Mesh::MeshElementID, std::map<size_t, double> >::const_iterator it = constraints.begin(); it != constraints.end(); ++it) {
-    dofManager->getDOFs(it->first, dofIndices);
-    for(std::map<size_t, double>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt) {
-      rhs->setLocalValueByGlobalID(dofIndices[jt->first], jt->second);
-    } // end for jt
-  } // end for it
-}
-
 void selectNodes(AMP::Mesh::Mesh::shared_ptr mesh, std::vector<AMP::Mesh::MeshElementID> & nodesGlobalIDs) {
   AMP::Mesh::MeshIterator meshIterator = mesh->getBoundaryIDIterator(AMP::Mesh::Vertex, 3);
   AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
@@ -112,23 +55,22 @@ void selectNodes(AMP::Mesh::Mesh::shared_ptr mesh, std::vector<AMP::Mesh::MeshEl
   nodesGlobalIDs.clear();
   for (meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator) {
     std::vector<double> coord = meshIterator->coord();
-    if (std::abs(coord[2] - 0.5) < 1.0e-14) {
+    if (std::abs(coord[2] - 0.0) < 1.0e-14) {
       nodesGlobalIDs.push_back(meshIterator->globalID());
 //      std::cout<<nodesGlobalIDs.size()<<"  ("<<coord[0]<<", "<<coord[1]<<", "<<coord[2]<<")"<<std::endl;
     } // end if
   } // end for
 }
 
-void printNodesValues(AMP::Mesh::Mesh::shared_ptr mesh, std::vector<AMP::Mesh::MeshElementID> const & nodesGlobalIDs, AMP::LinearAlgebra::Vector::shared_ptr vectorField1, AMP::LinearAlgebra::Vector::shared_ptr vectorField2, std::ostream & os = std::cout) {
-  AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField1->getDOFManager();
+void printNodesValues(AMP::Mesh::Mesh::shared_ptr mesh, std::vector<AMP::Mesh::MeshElementID> const & nodesGlobalIDs, AMP::LinearAlgebra::Vector::shared_ptr vectorField, std::ostream & os = std::cout) {
+  AMP::Discretization::DOFManager::shared_ptr dofManager = vectorField->getDOFManager();
   for (size_t i = 0; i < nodesGlobalIDs.size(); ++i) {
     std::vector<double> coord = mesh->getElement(nodesGlobalIDs[i]).coord();
     std::vector<size_t> dofIndices;
     dofManager->getDOFs(nodesGlobalIDs[i], dofIndices);
     AMP_ASSERT(dofIndices.size() == 1);
-    double value1 = vectorField1->getLocalValueByGlobalID(dofIndices[0]);
-    double value2 = vectorField2->getLocalValueByGlobalID(dofIndices[0]);
-    os<<std::setprecision(15)<<coord[0]<<"  "<<value1<<"  "<<value2<<"\n";
+    double value = vectorField->getLocalValueByGlobalID(dofIndices[0]);
+    os<<std::setprecision(15)<<coord[0]<<"  "<<value<<"\n";
   } // end for i 
 }
 
@@ -153,10 +95,10 @@ void getConcentratedLoadAtNodes(double loadParameter, double loadCutoff, AMP::Me
       if (vertexCoordinates[1] > loadCutoff) {
         loadValues.push_back(loadParameter);
         dofIndices.push_back(vertexDofIndices[1]);
-        if (vertexCoordinates[1] - 1.49213 < 0.0) {
+        if (vertexCoordinates[1] - 1.98426 < 0.0) {
           loadValues.back() /= 2.0; 
         } // end if
-        if ((std::abs(vertexCoordinates[2] - 0.0) < 1.0e-14)
+        if ((std::abs(vertexCoordinates[2] + 1.0) < 1.0e-14)
           || (std::abs(vertexCoordinates[2] - 1.0) < 1.0e-14)) {
           loadValues.back() /= 2.0; 
         } // end if
@@ -263,11 +205,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   contactOperator->setContactIsFrictionless(contact_db->getBoolWithDefault("ContactIsFrictionless", false));
   
   bool useML = input_db->getBoolWithDefault("useML", false);
-  bool matrixFree = input_db->getBoolWithDefault("matrixFree", false);
-  AMP_ASSERT(!matrixFree); // will not work unless nullspace is set
 
   // Build the master and slave operators
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> masterBVPOperator;
+  boost::shared_ptr<AMP::Operator::LinearBVPOperator> dummyMasterBVPOperator;
   AMP::Mesh::MeshID masterMeshID = contactOperator->getMasterMeshID();
   AMP::Mesh::Mesh::shared_ptr masterMeshAdapter = meshAdapter->Subset(masterMeshID);
   if (masterMeshAdapter.get() != NULL) {
@@ -285,10 +226,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       masterSolverParams->d_comm = masterMeshAdapter->getComm();
       boost::shared_ptr<AMP::Solver::PetscKrylovSolver> masterSolver(new AMP::Solver::PetscKrylovSolver(masterSolverParams));
       columnPreconditioner->append(masterSolver);
-    } else if (!matrixFree) {
+    } else {
       boost::shared_ptr<AMP::Database> masterSolver_db = columnPreconditioner_db->getDatabase("MLSolver"); 
       boost::shared_ptr<AMP::Solver::SolverStrategyParameters> masterSolverParams(new AMP::Solver::SolverStrategyParameters(masterSolver_db));
-      masterSolverParams->d_pOperator = masterBVPOperator;
+//      dummyMasterBVPOperator = boost::shared_ptr<AMP::Operator::LinearBVPOperator>(new AMP::Operator::LinearBVPOperator(*masterBVPOperator));
+      dummyMasterBVPOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(masterMeshAdapter,
+                                                                                                                                            "MasterBVPOperator",
+                                                                                                                                            input_db,
+                                                                                                                                            masterElementPhysicsModel));
+
+      masterSolverParams->d_pOperator = dummyMasterBVPOperator;
+//      masterSolverParams->d_pOperator = masterBVPOperator;
       boost::shared_ptr<AMP::Solver::TrilinosMLSolver> masterSolver(new AMP::Solver::TrilinosMLSolver(masterSolverParams));
       columnPreconditioner->append(masterSolver);
     } // end if
@@ -314,7 +262,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       slaveSolverParams->d_comm = slaveMeshAdapter->getComm();
       boost::shared_ptr<AMP::Solver::PetscKrylovSolver> slaveSolver(new AMP::Solver::PetscKrylovSolver(slaveSolverParams));
       columnPreconditioner->append(slaveSolver);
-    } else if (!matrixFree) {
+    } else { 
       boost::shared_ptr<AMP::Database> slaveSolver_db = columnPreconditioner_db->getDatabase("MLSolver"); 
       boost::shared_ptr<AMP::Solver::SolverStrategyParameters> slaveSolverParams(new AMP::Solver::SolverStrategyParameters(slaveSolver_db));
       slaveSolverParams->d_pOperator = slaveBVPOperator;
@@ -325,70 +273,57 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   } // end if
 
   std::map<AMP::Mesh::MeshElementID, std::map<size_t, double> > constraints;
-//  boost::shared_ptr<AMP::InputDatabase> dummyOperator_db(new AMP::InputDatabase("dummyOperator_db"));
-//  dummyOperator_db->putString("InputVariable", "displacement");
-//  dummyOperator_db->putString("OutputVariable", "displacement");
-//  boost::shared_ptr<AMP::Operator::OperatorParameters> dummyOperatorParams(new AMP::Operator::OperatorParameters(dummyOperator_db));
-//  boost::shared_ptr<AMP::Operator::CustomConstraintsEliminationOperator> dirichletCustomConstraintsEliminationOperator(new AMP::Operator::CustomConstraintsEliminationOperator(dummyOperatorParams));
-//  std::vector<size_t> dofIndices;
-//  std::vector<double> dirichletValues;
-//  AMP::Mesh::MeshIterator it = masterMeshAdapter->getIterator(AMP::Mesh::Vertex);
-  AMP::Mesh::MeshIterator it = slaveMeshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, 4);
+  std::map<AMP::Mesh::MeshElementID, std::map<size_t, double> > dummyConstraints;
+  AMP::Mesh::MeshIterator it = masterMeshAdapter->getIterator(AMP::Mesh::Vertex);
+{
   AMP::Mesh::MeshIterator it_begin = it.begin();
   AMP::Mesh::MeshIterator it_end = it.end();
   std::vector<double> coord;
-//  std::vector<size_t> dof;
   double const epsilon = 1.0e-10;
   std::map<size_t, double> tmp;
-//  size_t count = 0;
+  std::map<size_t, double> dummyTmp;
   for(it = it_begin; it != it_end; ++it) {
     coord = it->coord();
-//    dispDofManager->getDOFs(it->globalID(), dof);
     tmp.clear();
-    if (std::abs(coord[1] - 1.5) < epsilon) {
-//      dofIndices.push_back(dof[0]);
-//      dirichletValues.push_back(0.0);
-//      std::cout<<++count<<" ("<<coord[0]<<", "<<coord[1]<<", "<<coord[2]<<") x \n";
-      tmp.insert(std::pair<size_t, double>(0, 0.0));
-      if (std::abs(coord[2] - 0.5) < epsilon) {
-//        dofIndices.push_back(dof[2]);
-//        dirichletValues.push_back(0.0);
-//        std::cout<<++count<<" ("<<coord[0]<<", "<<coord[1]<<", "<<coord[2]<<") z \n";
+    dummyTmp.clear();
+    if (std::abs(std::sqrt(std::pow(coord[0] - 0.0, 2) + std::pow(coord[1] - 1.0, 2)) - 1.0) < epsilon) {
+      if ((std::abs(coord[2] - 0.0) < epsilon) && (coord[1] > 1.0 - epsilon)) {
         tmp.insert(std::pair<size_t, double>(2, 0.0));
-      } // end if
-    } else if (std::abs(coord[1] - 0.5) < epsilon) {
-      tmp.insert(std::pair<size_t, double>(0, 0.0));
-      if (std::abs(coord[2] - 0.5) < epsilon) {
-        tmp.insert(std::pair<size_t, double>(2, 0.0));
-      } // end if
-//    } else if((std::abs(coord[0] - 0.5) < epsilon) 
-////           && (std::abs(coord[1] - 1.0) < epsilon) 
-//           && (coord[1] > 1.0 - epsilon) 
-//           && (std::abs(coord[2] - 0.5) < epsilon)) {
-////        std::cout<<++count<<" ("<<coord[0]<<", "<<coord[1]<<", "<<coord[2]<<") x \n";
-////        std::cout<<++count<<" ("<<coord[0]<<", "<<coord[1]<<", "<<coord[2]<<") z \n";
-////        dofIndices.push_back(dof[0]);
-////        dofIndices.push_back(dof[2]);
-////        dirichletValues.push_back(0.0);
-////        dirichletValues.push_back(0.0);
-//        tmp.insert(std::pair<size_t, double>(0, 0.0));
-//        tmp.insert(std::pair<size_t, double>(2, 0.0));
+      }
+      if (std::abs(coord[1] - 0.0) < epsilon) {
+//        dummyTmp.insert(std::pair<size_t, double>(0, 0.0));
+        dummyTmp.insert(std::pair<size_t, double>(1, 0.0));
+//        dummyTmp.insert(std::pair<size_t, double>(2, 0.0));
+      }
+    } else {
+      if (((std::abs(coord[2] + 1.0) < epsilon) || (std::abs(coord[2] - 1.0) < epsilon)) && (std::abs(coord[0] - 0.0) < epsilon)) {
+        tmp.insert(std::pair<size_t, double>(0, 0.0));
+      } 
     } // end if
     if (!tmp.empty()) {
       constraints.insert(std::pair<AMP::Mesh::MeshElementID, std::map<size_t, double> >(it->globalID(), tmp));
     } // end if
+    if (!dummyTmp.empty()) {
+      dummyConstraints.insert(std::pair<AMP::Mesh::MeshElementID, std::map<size_t, double> >(it->globalID(), dummyTmp));
+    } // end if
   } // end for
-//if (false) {
-//  dirichletCustomConstraintsEliminationOperator->initialize(dofIndices, dirichletValues);
-//} // end if
-//  boost::shared_ptr<AMP::InputDatabase> dirichletSolver_db(new AMP::InputDatabase("DirichletSolver"));
-//  dirichletSolver_db->putInteger("print_info_level", 1);
-//  dirichletSolver_db->putInteger("max_iterations", 1);
-//  dirichletSolver_db->putDouble("max_error", 1.0e-16);
-//  boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolverParameters> dirichletSolverParams(new AMP::Solver::ConstraintsEliminationSolverParameters(dirichletSolver_db));
-//  dirichletSolverParams->d_pOperator = dirichletCustomConstraintsEliminationOperator;
-//  boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolver> dirichletCustomConstraintsEliminationSolver(new AMP::Solver::ConstraintsEliminationSolver(dirichletSolverParams));
-//  columnPreconditioner->append(dirichletCustomConstraintsEliminationSolver);
+}
+
+//{
+//  std::vector<AMP::Mesh::MeshElementID> const & activeSet = contactOperator->getActiveSet();
+//  size_t const sizeOfActiveSet = activeSet.size();
+//  std::map<size_t, double> tmp;
+//  std::vector<size_t> dofIndices;
+//  for(size_t i = 0; i <sizeOfActiveSet; ++i) {
+//    tmp.clear();
+//    dispDofManager->getDOFs(activeSet[i], dofIndices);
+//    AMP_ASSERT(dofIndices.size() == 3);
+//    for (size_t j = 0; j< 3; ++j) {
+//      tmp.insert(std::pair<size_t, double>(dofIndices[j], 0.0));
+//    } // end for j
+//    dummyConstraints.insert(std::pair<AMP::Mesh::MeshElementID, std::map<size_t, double> >(it->globalID(), tmp));
+//  } // end for i
+//}
 
   // Build matrix shell operators to use the column operator with the petsc krylov solvers and trilinos ml
   boost::shared_ptr<AMP::Database> matrixShellDatabase = input_db->getDatabase("MatrixShellOperator");
@@ -406,22 +341,6 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   petscMatrixShellOperator->setMatLocalRowSize(matLocalSize);
   petscMatrixShellOperator->setMatLocalColumnSize(matLocalSize);
   petscMatrixShellOperator->setOperator(columnOperator); 
-
-  if (useML && matrixFree) {
-    boost::shared_ptr<AMP::Operator::ColumnOperator> dummyColumnOperator(new AMP::Operator::ColumnOperator(emptyParams));
-    dummyColumnOperator->append(masterBVPOperator);
-    dummyColumnOperator->append(slaveBVPOperator);
-    boost::shared_ptr<AMP::Operator::TrilinosMatrixShellOperator> trilinosMatrixShellOperator(new AMP::Operator::TrilinosMatrixShellOperator(matrixShellParams));
-    trilinosMatrixShellOperator->setNodalDofMap(dispDofManager);
-//    trilinosMatrixShellOperator->setGetRow(&myGetRow); // not included so far
-    trilinosMatrixShellOperator->setOperator(dummyColumnOperator);
-    boost::shared_ptr<AMP::Database> trilinosMLSolver_db = columnPreconditioner_db->getDatabase("MLSolver");
-    trilinosMLSolver_db->putBool("USE_EPETRA", true);
-    boost::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> mlSolverParams(new AMP::Solver::TrilinosMLSolverParameters(trilinosMLSolver_db));
-    mlSolverParams->d_pOperator = trilinosMatrixShellOperator;
-    boost::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver(new AMP::Solver::TrilinosMLSolver(mlSolverParams));
-    columnPreconditioner->append(mlSolver);
-  } // end if
 
   boost::shared_ptr<AMP::Database> contactPreconditioner_db = columnPreconditioner_db->getDatabase("ContactPreconditioner"); 
   boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolverParameters> contactPreconditionerParams(new AMP::Solver::ConstraintsEliminationSolverParameters(contactPreconditioner_db));
@@ -453,15 +372,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::LinearAlgebra::Vector::shared_ptr sigma_xz = AMP::LinearAlgebra::createVector(tempDofManager, AMP::LinearAlgebra::Variable::shared_ptr(new AMP::LinearAlgebra::Variable("sigma_xz")), split);
   AMP::LinearAlgebra::Vector::shared_ptr sigma_xy = AMP::LinearAlgebra::createVector(tempDofManager, AMP::LinearAlgebra::Variable::shared_ptr(new AMP::LinearAlgebra::Variable("sigma_xy")), split);
   AMP::LinearAlgebra::Vector::shared_ptr sigma_eff = AMP::LinearAlgebra::createVector(tempDofManager, AMP::LinearAlgebra::Variable::shared_ptr(new AMP::LinearAlgebra::Variable("sigma_eff")), split);
-  AMP::LinearAlgebra::Vector::shared_ptr activeSetVec = sigma_eff->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr activeSetBeforeUpdateVec = sigma_eff->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr activeSetAfterUpdateVec = sigma_eff->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr contactPressureVec = sigma_eff->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr lickItVec = sigma_eff->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr surfaceTractionVec = columnSolVec->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr normalVectorVec = columnSolVec->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr contactShiftVec = columnSolVec->cloneVector();
-  activeSetVec->zero();
   contactPressureVec->zero();
-  lickItVec->zero();
   surfaceTractionVec->zero();
   normalVectorVec->zero();
   contactShiftVec->zero();
@@ -472,8 +389,26 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   sigma_xz->zero();
   sigma_xy->zero();
 
-  bool skipDisplaceMesh = true;
-  contactOperator->updateActiveSet(nullVec, skipDisplaceMesh);
+  double yDisplacementHelper = input_db->getDoubleWithDefault("yDisplacementHelper", 0.0);
+  if (yDisplacementHelper != 0.0) {
+    AMP::LinearAlgebra::Vector::shared_ptr yDispVec = columnSolVec->select(AMP::LinearAlgebra::VS_Stride(1, 3), "help");
+    yDispVec = yDispVec->select(AMP::LinearAlgebra::VS_Mesh(slaveMeshAdapter), "help");
+    yDispVec->setToScalar(yDisplacementHelper);
+    contactOperator->updateActiveSetWithALittleHelp(columnSolVec);
+    yDispVec->zero();
+  } else {
+    bool skipDisplaceMesh = true;
+    contactOperator->updateActiveSet(nullVec, skipDisplaceMesh);
+  } // end if
+
+if (useML) {
+  AMP::LinearAlgebra::Matrix::shared_ptr dummyMat = dummyMasterBVPOperator->getMatrix();
+  AMP::LinearAlgebra::Vector::shared_ptr dummyRhs = (dummyMasterBVPOperator->subsetOutputVector(columnRhsVec))->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr dummyCor = dummyRhs->cloneVector();
+  applyCustomDirichletCondition(dummyRhs, dummyCor, meshAdapter, constraints, dummyMat);
+  applyCustomDirichletCondition(dummyRhs, dummyCor, meshAdapter, dummyConstraints, dummyMat);
+  dummyMasterBVPOperator->setMatrix(dummyMat);
+}
 
 #ifdef USE_EXT_SILO
   {
@@ -485,11 +420,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     siloWriter->registerVector(sigma_yz, meshAdapter, AMP::Mesh::Vertex, "sigma_yz");
     siloWriter->registerVector(sigma_xz, meshAdapter, AMP::Mesh::Vertex, "sigma_xz");
     siloWriter->registerVector(sigma_xy, meshAdapter, AMP::Mesh::Vertex, "sigma_xy");
-    siloWriter->registerVector(activeSetVec, meshAdapter, AMP::Mesh::Vertex, "Contact");
+    siloWriter->registerVector(activeSetBeforeUpdateVec, meshAdapter, AMP::Mesh::Vertex, "ActiveSetBeforeUpdate");
+    siloWriter->registerVector(activeSetAfterUpdateVec, meshAdapter, AMP::Mesh::Vertex, "ActiveSetAfterUpdate");
     siloWriter->registerVector(surfaceTractionVec, meshAdapter, AMP::Mesh::Vertex, "Traction");
     siloWriter->registerVector(normalVectorVec, meshAdapter, AMP::Mesh::Vertex, "Normal");
     siloWriter->registerVector(contactPressureVec, meshAdapter, AMP::Mesh::Vertex, "ContactPressure");
-    siloWriter->registerVector(lickItVec, meshAdapter, AMP::Mesh::Vertex, "Tangent");
     siloWriter->registerVector(contactShiftVec, meshAdapter, AMP::Mesh::Vertex, "Shift");
     char outFileName[256];
     sprintf(outFileName, "TITI_%d", 0);
@@ -505,9 +440,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 //  linearSolver->setZeroInitialGuess(true);
   linearSolver->setInitialGuess(columnSolVec);
 
-  std::vector<AMP::Mesh::MeshElementID> masterNodesGlobalIDs;
-  selectNodes(masterMeshAdapter, masterNodesGlobalIDs);
-  printNodesValues(masterMeshAdapter, masterNodesGlobalIDs, contactPressureVec, lickItVec);
+//  std::vector<AMP::Mesh::MeshElementID> masterNodesGlobalIDs;
+//  selectNodes(masterMeshAdapter, masterNodesGlobalIDs);
+//  printNodesValues(masterMeshAdapter, masterNodesGlobalIDs, contactPressureVec);
+  std::vector<AMP::Mesh::MeshElementID> slaveNodesGlobalIDs;
+  selectNodes(slaveMeshAdapter, slaveNodesGlobalIDs);
+  printNodesValues(slaveMeshAdapter, slaveNodesGlobalIDs, contactPressureVec);
 
 int TOTO_count = 0;
 size_t const maxLoadingIterations = input_db->getIntegerWithDefault("maxLoadingIterations", 5);
@@ -528,7 +466,8 @@ for (size_t loadingIteration = 0; loadingIteration < maxLoadingIterations; ++loa
   // compute rhs
   double loadParameter = input_db->getDouble("LoadParameter");
   double loadCutoff = input_db->getDouble("LoadCutoff");
-  getConcentratedLoadAtNodes(loadParameter, loadCutoff, slaveMeshAdapter, columnRhsVec, dispDofManager);
+//  getConcentratedLoadAtNodes(loadParameter, loadCutoff, slaveMeshAdapter, columnRhsVec, dispDofManager);
+  getConcentratedLoadAtNodes(loadParameter, loadCutoff, masterMeshAdapter, columnRhsVec, dispDofManager);
   columnRhsVec->scale(scalingFactor);
 
   // apply dirichlet rhs correction
@@ -539,15 +478,15 @@ for (size_t loadingIteration = 0; loadingIteration < maxLoadingIterations; ++loa
     slaveBVPOperator->modifyRHSvector(columnRhsVec);
   } // end if
 
-//  AMP::LinearAlgebra::Matrix::shared_ptr mat = slaveBVPOperator->getMatrix();
-//  AMP::LinearAlgebra::Vector::shared_ptr rhs = slaveBVPOperator->subsetOutputVector(columnRhsVec);
-//  if (cor.get() == NULL) {
-//    cor = rhs->cloneVector();
-//    applyCustomDirichletCondition(rhs, cor, meshAdapter, constraints, mat);
-//  } else {
-//    applyCustomDirichletCondition(rhs, cor, meshAdapter, constraints, AMP::LinearAlgebra::Matrix::shared_ptr());
-//  } // end if
-//  AMP_ASSERT(cor.get() != NULL);
+  AMP::LinearAlgebra::Matrix::shared_ptr mat = masterBVPOperator->getMatrix();
+  AMP::LinearAlgebra::Vector::shared_ptr rhs = masterBVPOperator->subsetOutputVector(columnRhsVec);
+  if (cor.get() == NULL) {
+    cor = rhs->cloneVector();
+    applyCustomDirichletCondition(rhs, cor, meshAdapter, constraints, mat);
+  } else {
+    applyCustomDirichletCondition(rhs, cor, meshAdapter, constraints, AMP::LinearAlgebra::Matrix::shared_ptr());
+  } // end if
+  AMP_ASSERT(cor.get() != NULL);
 
   // get d
   contactOperator->addShiftToSlave(columnSolVec);
@@ -568,7 +507,16 @@ for (size_t loadingIteration = 0; loadingIteration < maxLoadingIterations; ++loa
   // u_s = C u_m
   contactOperator->copyMasterToSlave(columnSolVec);
 
+  globalComm.barrier();
+  double solveBeginTime = MPI_Wtime();
+
   linearSolver->solve(columnRhsVec, columnSolVec);
+
+  globalComm.barrier();
+  double solveEndTime = MPI_Wtime();
+  if(!rank) {
+    std::cout<<"Finished linear solve in "<<(solveEndTime - solveBeginTime)<<" seconds."<<std::endl;
+  }
 
   // u^s = C u^m + d
   contactOperator->copyMasterToSlave(columnSolVec);
@@ -583,121 +531,94 @@ for (size_t loadingIteration = 0; loadingIteration < maxLoadingIterations; ++loa
       sigma_eff, slaveMechanicsMaterialModel,
       referenceTemperature, thermalExpansionCoefficient, tempVec);
 
-  activeSetVec->setToScalar(-1.0);
-
   std::vector<AMP::Mesh::MeshElementID> const & activeSet = contactOperator->getActiveSet();
   size_t const sizeOfActiveSetBeforeUpdate = activeSet.size();
 
   std::vector<size_t> activeSetTempDOFsIndicesBeforeUpdate;
   tempDofManager->getDOFs(activeSet, activeSetTempDOFsIndicesBeforeUpdate);
   AMP_ASSERT( activeSetTempDOFsIndicesBeforeUpdate.size() == sizeOfActiveSetBeforeUpdate );
-  std::vector<double> valuesForActiveSet(sizeOfActiveSetBeforeUpdate, 2.0); 
-  activeSetVec->setLocalValuesByGlobalID(sizeOfActiveSetBeforeUpdate, &(activeSetTempDOFsIndicesBeforeUpdate[0]), &(valuesForActiveSet[0]));
+  std::vector<double> valuesForActiveSetBeforeUpdate(sizeOfActiveSetBeforeUpdate, 2.0); 
+  activeSetBeforeUpdateVec->setToScalar(-1.0);
+  activeSetBeforeUpdateVec->setLocalValuesByGlobalID(sizeOfActiveSetBeforeUpdate, &(activeSetTempDOFsIndicesBeforeUpdate[0]), &(valuesForActiveSetBeforeUpdate[0]));
 
   std::vector<size_t> activeSetDispDOFsIndicesBeforeUpdate;
   dispDofManager->getDOFs(activeSet, activeSetDispDOFsIndicesBeforeUpdate);
   AMP_ASSERT( activeSetDispDOFsIndicesBeforeUpdate.size() == 3*sizeOfActiveSetBeforeUpdate );
 
-  {//TODO: this is tmp only
-  normalVectorVec->zero();
-  std::vector<double> const * slaveVerticesNormalVector;
-  std::vector<double> const * slaveVerticesSurfaceTraction;
-  contactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(slaveVerticesNormalVector, slaveVerticesSurfaceTraction);
-  AMP_ASSERT( slaveVerticesNormalVector->size() == 3*sizeOfActiveSetBeforeUpdate );
-//  AMP_ASSERT( slaveVerticesSurfaceTraction->size() == 3*sizeOfActiveSetBeforeUpdate );
-  normalVectorVec->setLocalValuesByGlobalID(3*sizeOfActiveSetBeforeUpdate, &(activeSetDispDOFsIndicesBeforeUpdate[0]), &((*slaveVerticesNormalVector)[0]));
-  }
-
-#ifdef USE_EXT_SILO
-{
-  meshAdapter->displaceMesh(columnSolVec);
-  char outFileName[256];
-  sprintf(outFileName, "TITI_%d", 0);
-//  siloWriter->writeFile(outFileName, activeSetIteration+1);
-  siloWriter->writeFile(outFileName, TOTO_count);
-
-  std::vector<double> coord;
-  std::vector<size_t> dof;
-  for (size_t jj = 0; jj < sizeOfActiveSetBeforeUpdate; ++jj) {
-    std::vector<double> coord = (slaveMeshAdapter->getElement(activeSet[jj])).coord();
-    if (std::abs(coord[2] - 0.5) < 1.0e-10) {
-      tempDofManager->getDOFs(activeSet[jj], dof);
-      double pressure = contactPressureVec->getLocalValueByGlobalID(dof[0]);
-      std::cout<<coord[0]<<"  "<<pressure<<"\n";
-    } // end if
-  } // end for jj
-
-  columnSolVec->scale(-1.0);
-  meshAdapter->displaceMesh(columnSolVec);
-  columnSolVec->scale(-1.0);
-}
-#endif
-
-
   // Update active set
   size_t nChangesInActiveSet = contactOperator->updateActiveSet(columnSolVec);
-  if (!rank) { std::cout<<nChangesInActiveSet<<" CHANGES IN ACTIVE SET\n"; }
 
-  contactPressureVec->zero();
-  lickItVec->zero();
-  surfaceTractionVec->zero();
-  normalVectorVec->zero();
   size_t const sizeOfActiveSetAfterUpdate = activeSet.size();
-  std::vector<double> const * slaveVerticesNormalVector;
-  std::vector<double> const * slaveVerticesSurfaceTraction;
-  contactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(slaveVerticesNormalVector, slaveVerticesSurfaceTraction);
-//  AMP_ASSERT( slaveVerticesNormalVector->size() == 3*sizeOfActiveSetBeforeUpdate );
-  AMP_ASSERT( slaveVerticesNormalVector->size() == 3*sizeOfActiveSetAfterUpdate );
-  AMP_ASSERT( slaveVerticesSurfaceTraction->size() == 3*sizeOfActiveSetBeforeUpdate );
-  surfaceTractionVec->setLocalValuesByGlobalID(3*sizeOfActiveSetBeforeUpdate, &(activeSetDispDOFsIndicesBeforeUpdate[0]), &((*slaveVerticesSurfaceTraction)[0]));
-  normalVectorVec->setLocalValuesByGlobalID(3*sizeOfActiveSetBeforeUpdate, &(activeSetDispDOFsIndicesBeforeUpdate[0]), &((*slaveVerticesNormalVector)[0]));
-  std::vector<double> surfaceTractionDOTnormalVector(sizeOfActiveSetBeforeUpdate);
-  std::vector<double> surfaceTractionTangentComponent(sizeOfActiveSetBeforeUpdate);
-  for (size_t kk = 0; kk < sizeOfActiveSetBeforeUpdate;++kk) {
-    surfaceTractionDOTnormalVector[kk] = - compute_scalar_product(&((*slaveVerticesSurfaceTraction)[3*kk]), &((*slaveVerticesNormalVector)[3*kk]));
-    surfaceTractionTangentComponent[kk] = std::sqrt(std::pow(compute_vector_norm(&((*slaveVerticesSurfaceTraction)[3*kk])), 2) - std::pow(surfaceTractionDOTnormalVector[kk], 2));
-  } // end for kk
-  contactPressureVec->setLocalValuesByGlobalID(sizeOfActiveSetBeforeUpdate, &(activeSetTempDOFsIndicesBeforeUpdate[0]), &(surfaceTractionDOTnormalVector[0]));
-  lickItVec->setLocalValuesByGlobalID(sizeOfActiveSetBeforeUpdate, &(activeSetTempDOFsIndicesBeforeUpdate[0]), &(surfaceTractionTangentComponent[0]));
 
-  AMP::Mesh::MeshIterator meshIterator = masterMeshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, 3);
-  AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
-  AMP::Mesh::MeshIterator meshIterator_end = meshIterator.end();
-  double normalVector[3] = { 0.0, 1.0, 0.0 }; 
-  double stressTensor[6];
-  double traction[3];
-  double contactPressure;
-  std::vector<size_t> dofIndex;
-  for (meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator) {
-    tempDofManager->getDOFs(meshIterator->globalID(), dofIndex); 
-    AMP_ASSERT(dofIndex.size() == 1);
-    stressTensor[0] = sigma_xx->getLocalValueByGlobalID(dofIndex[0]);
-    stressTensor[1] = sigma_yy->getLocalValueByGlobalID(dofIndex[0]);
-    stressTensor[2] = sigma_zz->getLocalValueByGlobalID(dofIndex[0]);
-    stressTensor[3] = sigma_yz->getLocalValueByGlobalID(dofIndex[0]);
-    stressTensor[4] = sigma_xz->getLocalValueByGlobalID(dofIndex[0]);
-    stressTensor[5] = sigma_xy->getLocalValueByGlobalID(dofIndex[0]);
-    compute_traction(stressTensor, normalVector, traction);
-    contactPressure = - compute_scalar_product(traction, normalVector);
-    contactPressureVec->setLocalValueByGlobalID(dofIndex[0], contactPressure);
-  } // end for
+  std::vector<size_t> activeSetTempDOFsIndicesAfterUpdate;
+  tempDofManager->getDOFs(activeSet, activeSetTempDOFsIndicesAfterUpdate);
+  AMP_ASSERT( activeSetTempDOFsIndicesAfterUpdate.size() == sizeOfActiveSetAfterUpdate );
+  std::vector<double> valuesForActiveSetAfterUpdate(sizeOfActiveSetAfterUpdate, 2.0); 
+  activeSetAfterUpdateVec->setToScalar(-1.0);
+  activeSetAfterUpdateVec->setLocalValuesByGlobalID(sizeOfActiveSetAfterUpdate, &(activeSetTempDOFsIndicesAfterUpdate[0]), &(valuesForActiveSetAfterUpdate[0]));
 
-  printNodesValues(masterMeshAdapter, masterNodesGlobalIDs, contactPressureVec, lickItVec);
+  std::vector<size_t> activeSetDispDOFsIndicesAfterUpdate;
+  dispDofManager->getDOFs(activeSet, activeSetDispDOFsIndicesAfterUpdate);
+  AMP_ASSERT( activeSetDispDOFsIndicesAfterUpdate.size() == 3*sizeOfActiveSetAfterUpdate );
 
-  std::vector<double> coord;
-  std::vector<size_t> dof;
-  double disp[3];
-  for (size_t jj = 0; jj < sizeOfActiveSetBeforeUpdate; ++jj) {
-    std::vector<double> coord = (slaveMeshAdapter->getElement(activeSet[jj])).coord();
-    if (std::abs(coord[2] - 0.5) < 1.0e-10) {
-      tempDofManager->getDOFs(activeSet[jj], dof);
-      double pressure = contactPressureVec->getLocalValueByGlobalID(dof[0]);
-      dispDofManager->getDOFs(activeSet[jj], dof);
-      columnSolVec->getLocalValuesByGlobalID(3, &(dof[0]), disp);
-      std::transform(&(coord[0]), &(coord[0])+3, &(coord[0]), disp, std::plus<double>());
-      std::cout<<coord[0]<<"  "<<pressure<<"\n";
-    } // end if
-  } // end for jj
+  std::vector<double> const * slaveVerticesNormalVectorBeforeUpdate;
+  std::vector<double> const * slaveVerticesSurfaceTractionBeforeUpdate;
+  contactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(slaveVerticesNormalVectorBeforeUpdate, slaveVerticesSurfaceTractionBeforeUpdate);
+  AMP_ASSERT( slaveVerticesSurfaceTractionBeforeUpdate->size() == 3*sizeOfActiveSetBeforeUpdate);
+  AMP_ASSERT( slaveVerticesNormalVectorBeforeUpdate->size() == 3*sizeOfActiveSetBeforeUpdate);
+  surfaceTractionVec->zero();
+  surfaceTractionVec->setLocalValuesByGlobalID(3*sizeOfActiveSetBeforeUpdate, &(activeSetDispDOFsIndicesBeforeUpdate[0]), &((*slaveVerticesSurfaceTractionBeforeUpdate)[0]));
+  normalVectorVec->zero();
+  normalVectorVec->setLocalValuesByGlobalID(3*sizeOfActiveSetBeforeUpdate, &(activeSetDispDOFsIndicesBeforeUpdate[0]), &((*slaveVerticesNormalVectorBeforeUpdate)[0]));
+
+    std::vector<double> surfaceTractionDOTnormalVector(sizeOfActiveSetBeforeUpdate);
+    for (size_t kk = 0; kk < sizeOfActiveSetBeforeUpdate; ++kk) {
+      surfaceTractionDOTnormalVector[kk] = - compute_scalar_product(&((*slaveVerticesSurfaceTractionBeforeUpdate)[3*kk]), &((*slaveVerticesNormalVectorBeforeUpdate)[3*kk]));
+    } // end for kk
+    contactPressureVec->zero();
+    contactPressureVec->setLocalValuesByGlobalID(sizeOfActiveSetBeforeUpdate, &(activeSetTempDOFsIndicesBeforeUpdate[0]), &(surfaceTractionDOTnormalVector[0]));
+
+//{
+//  AMP::Mesh::MeshIterator meshIterator = masterMeshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, 3);
+//  AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
+//  AMP::Mesh::MeshIterator meshIterator_end = meshIterator.end();
+//  double normalVector[3] = { 0.0, 1.0, 0.0 }; 
+//  double stressTensor[6];
+//  double traction[3];
+//  double contactPressure;
+//  std::vector<size_t> dofIndex;
+//  for (meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator) {
+//    tempDofManager->getDOFs(meshIterator->globalID(), dofIndex); 
+//    AMP_ASSERT(dofIndex.size() == 1);
+//    stressTensor[0] = sigma_xx->getLocalValueByGlobalID(dofIndex[0]);
+//    stressTensor[1] = sigma_yy->getLocalValueByGlobalID(dofIndex[0]);
+//    stressTensor[2] = sigma_zz->getLocalValueByGlobalID(dofIndex[0]);
+//    stressTensor[3] = sigma_yz->getLocalValueByGlobalID(dofIndex[0]);
+//    stressTensor[4] = sigma_xz->getLocalValueByGlobalID(dofIndex[0]);
+//    stressTensor[5] = sigma_xy->getLocalValueByGlobalID(dofIndex[0]);
+//    compute_traction(stressTensor, normalVector, traction);
+//    contactPressure = - compute_scalar_product(traction, normalVector);
+//    contactPressureVec->setLocalValueByGlobalID(dofIndex[0], contactPressure);
+//  } // end for
+//}
+
+//  printNodesValues(masterMeshAdapter, masterNodesGlobalIDs, contactPressureVec);
+  printNodesValues(slaveMeshAdapter, slaveNodesGlobalIDs, contactPressureVec);
+
+//  std::vector<double> coord;
+//  std::vector<size_t> dof;
+//  double disp[3];
+//  for (size_t jj = 0; jj < sizeOfActiveSetBeforeUpdate; ++jj) {
+//    std::vector<double> coord = (slaveMeshAdapter->getElement(activeSet[jj])).coord();
+//    if (std::abs(coord[2] - 0.0) < 1.0e-10) {
+//      tempDofManager->getDOFs(activeSet[jj], dof);
+//      double pressure = contactPressureVec->getLocalValueByGlobalID(dof[0]);
+//      dispDofManager->getDOFs(activeSet[jj], dof);
+//      columnSolVec->getLocalValuesByGlobalID(3, &(dof[0]), disp);
+//      std::transform(&(coord[0]), &(coord[0])+3, &(coord[0]), disp, std::plus<double>());
+//      std::cout<<coord[0]<<"  "<<pressure<<"\n";
+//    } // end if
+//  } // end for jj
 
 #ifdef USE_EXT_SILO
   {
@@ -710,6 +631,7 @@ for (size_t loadingIteration = 0; loadingIteration < maxLoadingIterations; ++loa
   columnSolVec->scale(-1.0);
   }
 #endif
+  if (!rank) { std::cout<<nChangesInActiveSet<<" CHANGES IN ACTIVE SET\n"; }
 
   if (nChangesInActiveSet == 0) { break; }
   AMP_ASSERT( activeSetIteration != maxActiveSetIterations - 1 );
@@ -717,14 +639,6 @@ for (size_t loadingIteration = 0; loadingIteration < maxLoadingIterations; ++loa
 
 } //end for
 
-  meshAdapter->displaceMesh(columnSolVec);
-
-#ifdef USE_EXT_SILO
-  siloWriter->registerVector(columnSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution");
-  char outFileName[256];
-  sprintf(outFileName, "MPC_%d", 0);
-  siloWriter->writeFile(outFileName, 0);
-#endif
   fout.close();
 
   ut->passes(exeName);

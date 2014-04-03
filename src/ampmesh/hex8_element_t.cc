@@ -424,7 +424,7 @@ void hex8_element_t::get_basis_functions_derivatives(double const *x, double *ba
 void hex8_element_t::project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face, double *shift_global_coordinates) {
   AMP_CHECK_ASSERT(f < 6);
   std::vector<double> projection_local_coordinates(local_coordinates, local_coordinates+3);
-  if (f == 0) {
+/*  if (f == 0) {
     projection_local_coordinates[2] = -1.0;
   } else if (f == 1) {
     projection_local_coordinates[1] = -1.0;
@@ -439,13 +439,17 @@ void hex8_element_t::project_on_face(unsigned int f, double const *local_coordin
   } else {
     std::cerr<<"comment en es-tu arrive la tres cher?"<<std::endl;
     assert(false);
-  } // end if
+  } // end if*/
+map_local_to_face(f, local_coordinates, local_coordinates_on_face);
+map_face_to_local(f, local_coordinates_on_face, &(projection_local_coordinates[0]));
+
+
   std::vector<double> projection_global_coordinates(3);
   map_local_to_global(&(projection_local_coordinates[0]), &(projection_global_coordinates[0]));
-  std::vector<double> point_global_coordinates(3);
-  map_local_to_global(local_coordinates, (&point_global_coordinates[0]));
-  make_vector_from_two_points((&point_global_coordinates[0]), &(projection_global_coordinates[0]), shift_global_coordinates);
-  map_local_to_face(f, local_coordinates, local_coordinates_on_face);
+  std::vector<double> global_coordinates(3);
+  map_local_to_global(local_coordinates, (&global_coordinates[0]));
+  make_vector_from_two_points((&global_coordinates[0]), &(projection_global_coordinates[0]), shift_global_coordinates);
+//  map_local_to_face(f, local_coordinates, local_coordinates_on_face);
 }
 
 void hex8_element_t::compute_normal_to_face(unsigned int f, double const *local_coordinates, double const *global_coordinates, double *normal_vector) {

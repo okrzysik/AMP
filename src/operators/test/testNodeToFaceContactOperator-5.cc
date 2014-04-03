@@ -79,6 +79,16 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   if(!rank) {
     std::cout<<"Finished parsing the input file in "<<(inpReadEndTime - inpReadBeginTime)<<" seconds."<<std::endl;
   }
+  
+  bool useML = input_db->getBoolWithDefault("useML", false);
+  bool cladExpansionConstrained = input_db->getBoolWithDefault("cladExpansionConstrained", true);
+  bool useLevitatingFuel = input_db->getBoolWithDefault("useLevitatingFuel", true);
+  std::string prefixFileName = input_db->getStringWithDefault("prefixFileName", "TATA_0");
+  double scaleSolution = input_db->getDoubleWithDefault("scaleSolution", 1.0);
+  double cladNeedALittleHelp = input_db->getDoubleWithDefault("cladNeedALittleHelp", 0.0);
+  double fuelNeedALittleHelp = input_db->getDoubleWithDefault("fuelNeedALittleHelp", -1.0);
+  bool contactIsFrictionless = input_db->getBoolWithDefault("contactIsFrictionless", false);
+  double shrinkFactor = input_db->getDoubleWithDefault("shrinkFactor", 0.0);
 
   // Load the meshes
   globalComm.barrier();
@@ -113,10 +123,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   columnPreconditionerParams->d_pOperator = columnOperator;
   boost::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
-  // Get the mechanics material model for the contact operator
-  boost::shared_ptr<AMP::Database> model_db = input_db->getDatabase("MechanicsMaterialModel");
-  boost::shared_ptr<AMP::Operator::MechanicsModelParameters> mechanicsMaterialModelParams(new AMP::Operator::MechanicsModelParameters(model_db));
-  boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> masterMechanicsMaterialModel(new AMP::Operator::IsotropicElasticModel(mechanicsMaterialModelParams));
+  // Get the mechanics material models for the contact operator and for computing stresses
+  boost::shared_ptr<AMP::Database> fuelModel_db = input_db->getDatabase("FuelMechanicsMaterialModel");
+  boost::shared_ptr<AMP::Operator::MechanicsModelParameters> fuelMechanicsMaterialModelParams(new AMP::Operator::MechanicsModelParameters(fuelModel_db));
+  boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> fuelMechanicsMaterialModel(new AMP::Operator::IsotropicElasticModel(fuelMechanicsMaterialModelParams));
+  boost::shared_ptr<AMP::Database> cladModel_db = input_db->getDatabase("CladMechanicsMaterialModel");
+  boost::shared_ptr<AMP::Operator::MechanicsModelParameters> cladMechanicsMaterialModelParams(new AMP::Operator::MechanicsModelParameters(cladModel_db));
+  boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> cladMechanicsMaterialModel(new AMP::Operator::IsotropicElasticModel(cladMechanicsMaterialModelParams));
 
   // Build the contact operators
   boost::shared_ptr<AMP::Operator::NodeToFaceContactOperator> bottomPelletTopPelletContactOperator;
@@ -129,9 +142,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   bottomPelletTopPelletContactOperatorParams->d_DOFManager = dispDofManager;
   bottomPelletTopPelletContactOperatorParams->d_GlobalComm = globalComm;
   bottomPelletTopPelletContactOperatorParams->d_Mesh = meshAdapter;
-  bottomPelletTopPelletContactOperatorParams->d_MasterMechanicsMaterialModel = masterMechanicsMaterialModel;
+  bottomPelletTopPelletContactOperatorParams->d_MasterMechanicsMaterialModel = fuelMechanicsMaterialModel;
   bottomPelletTopPelletContactOperatorParams->reset();
   bottomPelletTopPelletContactOperator = boost::shared_ptr<AMP::Operator::NodeToFaceContactOperator>(new AMP::Operator::NodeToFaceContactOperator(bottomPelletTopPelletContactOperatorParams));
+  bottomPelletTopPelletContactOperator->initialize();
+  bottomPelletTopPelletContactOperator->setContactIsFrictionless(contactIsFrictionless);
+//  bottomPelletTopPelletContactOperator->setContactIsFrictionless(bottomPelletTopPelletContact_db->getBoolWithDefault("ContactIsFrictionless", false));
 
   boost::shared_ptr<AMP::Database> bottomPelletCladContact_db = input_db->getDatabase("BottomPelletCladContactOperator");
   boost::shared_ptr<AMP::Operator::ContactOperatorParameters> bottomPelletCladContactOperatorParams(new AMP::Operator::ContactOperatorParameters(bottomPelletCladContact_db));
@@ -139,9 +155,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   bottomPelletCladContactOperatorParams->d_DOFManager = dispDofManager;
   bottomPelletCladContactOperatorParams->d_GlobalComm = globalComm;
   bottomPelletCladContactOperatorParams->d_Mesh = meshAdapter;
-  bottomPelletCladContactOperatorParams->d_MasterMechanicsMaterialModel = masterMechanicsMaterialModel;
+  bottomPelletCladContactOperatorParams->d_MasterMechanicsMaterialModel = fuelMechanicsMaterialModel;
   bottomPelletCladContactOperatorParams->reset();
   bottomPelletCladContactOperator = boost::shared_ptr<AMP::Operator::NodeToFaceContactOperator>(new AMP::Operator::NodeToFaceContactOperator(bottomPelletCladContactOperatorParams));
+  bottomPelletCladContactOperator->initialize();
+  bottomPelletCladContactOperator->setContactIsFrictionless(contactIsFrictionless);
+//  bottomPelletCladContactOperator->setContactIsFrictionless(bottomPelletCladContact_db->getBoolWithDefault("ContactIsFrictionless", false));
 
   boost::shared_ptr<AMP::Database> topPelletCladContact_db = input_db->getDatabase("TopPelletCladContactOperator");
   boost::shared_ptr<AMP::Operator::ContactOperatorParameters> topPelletCladContactOperatorParams(new AMP::Operator::ContactOperatorParameters(topPelletCladContact_db));
@@ -149,23 +168,21 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   topPelletCladContactOperatorParams->d_DOFManager = dispDofManager;
   topPelletCladContactOperatorParams->d_GlobalComm = globalComm;
   topPelletCladContactOperatorParams->d_Mesh = meshAdapter;
-  topPelletCladContactOperatorParams->d_MasterMechanicsMaterialModel = masterMechanicsMaterialModel;
+  topPelletCladContactOperatorParams->d_MasterMechanicsMaterialModel = fuelMechanicsMaterialModel;
   topPelletCladContactOperatorParams->reset();
   topPelletCladContactOperator = boost::shared_ptr<AMP::Operator::NodeToFaceContactOperator>(new AMP::Operator::NodeToFaceContactOperator(topPelletCladContactOperatorParams));
-
-  bottomPelletTopPelletContactOperator->initialize();
-  bottomPelletCladContactOperator->initialize();
   topPelletCladContactOperator->initialize();
-  
-  bool useML = input_db->getBoolWithDefault("useML", false);
+  topPelletCladContactOperator->setContactIsFrictionless(contactIsFrictionless);
+//  topPelletCladContactOperator->setContactIsFrictionless(topPelletCladContact_db->getBoolWithDefault("ContactIsFrictionless", false));
+
   // Build the BVP operators
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> bottomPelletBVPOperator;
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> topPelletBVPOperator;
   boost::shared_ptr<AMP::Operator::LinearBVPOperator> cladBVPOperator;
 
 
-  AMP::Mesh::MeshID bottomPelletMeshID = bottomPelletTopPelletContactOperator->getSlaveMeshID();
-  AMP_ASSERT(bottomPelletMeshID == bottomPelletCladContactOperator->getSlaveMeshID());
+  AMP::Mesh::MeshID bottomPelletMeshID = bottomPelletTopPelletContactOperator->getMasterMeshID();
+  AMP_ASSERT(bottomPelletMeshID == bottomPelletCladContactOperator->getMasterMeshID());
   AMP::Mesh::Mesh::shared_ptr bottomPelletMeshAdapter = meshAdapter->Subset(bottomPelletMeshID);
   if (bottomPelletMeshAdapter.get() != NULL) {
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> bottomPelletElementPhysicsModel;
@@ -175,16 +192,24 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
                                                                                                                                            bottomPelletElementPhysicsModel));
     columnOperator->append(bottomPelletBVPOperator);
 
-    boost::shared_ptr<AMP::Database> bottomPelletSolver_db = columnPreconditioner_db->getDatabase("DummySolver"); 
-    boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> bottomPelletSolverParams(new AMP::Solver::PetscKrylovSolverParameters(bottomPelletSolver_db));
-    bottomPelletSolverParams->d_pOperator = bottomPelletBVPOperator;
-    bottomPelletSolverParams->d_comm = bottomPelletMeshAdapter->getComm();
-    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> bottomPelletSolver(new AMP::Solver::PetscKrylovSolver(bottomPelletSolverParams));
-    columnPreconditioner->append(bottomPelletSolver);
+    if (!useML) {
+      boost::shared_ptr<AMP::Database> bottomPelletSolver_db = columnPreconditioner_db->getDatabase("DummySolver"); 
+      boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> bottomPelletSolverParams(new AMP::Solver::PetscKrylovSolverParameters(bottomPelletSolver_db));
+      bottomPelletSolverParams->d_pOperator = bottomPelletBVPOperator;
+      bottomPelletSolverParams->d_comm = bottomPelletMeshAdapter->getComm();
+      boost::shared_ptr<AMP::Solver::PetscKrylovSolver> bottomPelletSolver(new AMP::Solver::PetscKrylovSolver(bottomPelletSolverParams));
+      columnPreconditioner->append(bottomPelletSolver);
+    } else {
+      boost::shared_ptr<AMP::Database> bottomPelletSolver_db = columnPreconditioner_db->getDatabase("MLSolver"); 
+      boost::shared_ptr<AMP::Solver::SolverStrategyParameters> bottomPelletSolverParams(new AMP::Solver::SolverStrategyParameters(bottomPelletSolver_db));
+      bottomPelletSolverParams->d_pOperator = bottomPelletBVPOperator;
+      boost::shared_ptr<AMP::Solver::TrilinosMLSolver> bottomPelletSolver(new AMP::Solver::TrilinosMLSolver(bottomPelletSolverParams));
+      columnPreconditioner->append(bottomPelletSolver);
+    } // end if
   } // end if
 
-  AMP::Mesh::MeshID topPelletMeshID = bottomPelletTopPelletContactOperator->getMasterMeshID();
-  AMP_ASSERT(topPelletMeshID == topPelletCladContactOperator->getSlaveMeshID());
+  AMP::Mesh::MeshID topPelletMeshID = bottomPelletTopPelletContactOperator->getSlaveMeshID();
+  AMP_ASSERT(topPelletMeshID == topPelletCladContactOperator->getMasterMeshID());
   AMP::Mesh::Mesh::shared_ptr topPelletMeshAdapter = meshAdapter->Subset(topPelletMeshID);
   if (topPelletMeshAdapter.get() != NULL) {
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> topPelletElementPhysicsModel;
@@ -194,16 +219,24 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
                                                                                                                                         topPelletElementPhysicsModel));
     columnOperator->append(topPelletBVPOperator);
 
-    boost::shared_ptr<AMP::Database> topPelletSolver_db = columnPreconditioner_db->getDatabase("DummySolver"); 
-    boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> topPelletSolverParams(new AMP::Solver::PetscKrylovSolverParameters(topPelletSolver_db));
-    topPelletSolverParams->d_pOperator = topPelletBVPOperator;
-    topPelletSolverParams->d_comm = topPelletMeshAdapter->getComm();
-    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> topPelletSolver(new AMP::Solver::PetscKrylovSolver(topPelletSolverParams));
-    columnPreconditioner->append(topPelletSolver);
+    if (!useML) {
+      boost::shared_ptr<AMP::Database> topPelletSolver_db = columnPreconditioner_db->getDatabase("DummySolver"); 
+      boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> topPelletSolverParams(new AMP::Solver::PetscKrylovSolverParameters(topPelletSolver_db));
+      topPelletSolverParams->d_pOperator = topPelletBVPOperator;
+      topPelletSolverParams->d_comm = topPelletMeshAdapter->getComm();
+      boost::shared_ptr<AMP::Solver::PetscKrylovSolver> topPelletSolver(new AMP::Solver::PetscKrylovSolver(topPelletSolverParams));
+      columnPreconditioner->append(topPelletSolver);
+    } else {
+      boost::shared_ptr<AMP::Database> topPelletSolver_db = columnPreconditioner_db->getDatabase("MLSolver"); 
+      boost::shared_ptr<AMP::Solver::SolverStrategyParameters> topPelletSolverParams(new AMP::Solver::SolverStrategyParameters(topPelletSolver_db));
+      topPelletSolverParams->d_pOperator = topPelletBVPOperator;
+      boost::shared_ptr<AMP::Solver::TrilinosMLSolver> topPelletSolver(new AMP::Solver::TrilinosMLSolver(topPelletSolverParams));
+      columnPreconditioner->append(topPelletSolver);
+    } // end if
   } // end if
 
-  AMP::Mesh::MeshID cladMeshID = bottomPelletCladContactOperator->getMasterMeshID();
-  AMP_ASSERT(cladMeshID == topPelletCladContactOperator->getMasterMeshID());
+  AMP::Mesh::MeshID cladMeshID = bottomPelletCladContactOperator->getSlaveMeshID();
+  AMP_ASSERT(cladMeshID == topPelletCladContactOperator->getSlaveMeshID());
   AMP::Mesh::Mesh::shared_ptr cladMeshAdapter = meshAdapter->Subset(cladMeshID);
   if (cladMeshAdapter.get() != NULL) {
     boost::shared_ptr<AMP::Operator::ElementPhysicsModel> cladElementPhysicsModel;
@@ -253,8 +286,27 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   columnPreconditioner->append(topPelletCladContactPreconditioner);
 }
 
+  std::map<AMP::Mesh::MeshElementID, std::map<size_t, double> > bottomPelletConstraints;
+  std::map<AMP::Mesh::MeshElementID, std::map<size_t, double> > topPelletConstraints;
+  std::map<AMP::Mesh::MeshElementID, std::map<size_t, double> > cladConstraints;
+  if (!useLevitatingFuel) {
+    double fuelOuterRadius = input_db->getDouble("FuelOuterRadius"); 
+    double dishRadius = input_db->getDoubleWithDefault("DishRadius", 0.0);
+    makeConstraintsOnFuel(bottomPelletMeshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, 1), fuelOuterRadius, bottomPelletConstraints, true, dishRadius);
+    makeConstraintsOnFuel(bottomPelletMeshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, 2), fuelOuterRadius, bottomPelletConstraints, false);
+    makeConstraintsOnFuel(topPelletMeshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, 2), fuelOuterRadius, topPelletConstraints, true, dishRadius);
+    makeConstraintsOnFuel(topPelletMeshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, 1), fuelOuterRadius, topPelletConstraints, false);
+  } // end if
+  if (!cladExpansionConstrained) {
+    double cladInnerRadius = input_db->getDouble("CladInnerRadius"); 
+    double cladOuterRadius = input_db->getDouble("CladOuterRadius"); 
+    double cladHeight = input_db->getDouble("CladHeight");
+    makeConstraintsOnClad(cladMeshAdapter->getIterator(AMP::Mesh::Vertex), cladInnerRadius, cladOuterRadius, cladHeight, cladConstraints);
+  } // end if
+
   // Items for computing the RHS correction due to thermal expansion
-  boost::shared_ptr<AMP::Database> temperatureRhs_db = input_db->getDatabase("TemperatureRHSVectorCorrection");
+  boost::shared_ptr<AMP::Database> fuelTemperatureRhs_db = input_db->getDatabase("FuelTemperatureRHSVectorCorrection");
+  boost::shared_ptr<AMP::Database> cladTemperatureRhs_db = input_db->getDatabase("CladTemperatureRHSVectorCorrection");
   AMP::LinearAlgebra::Variable::shared_ptr tempVar(new AMP::LinearAlgebra::Variable("temperature"));
   AMP::LinearAlgebra::Variable::shared_ptr dispVar = columnOperator->getOutputVariable();
   AMP::Discretization::DOFManager::shared_ptr tempDofManager = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, 1 , split);
@@ -269,43 +321,60 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::LinearAlgebra::Vector::shared_ptr sigma_xy = AMP::LinearAlgebra::createVector(tempDofManager, AMP::LinearAlgebra::Variable::shared_ptr(new AMP::LinearAlgebra::Variable("sigma_xy")), split);
   AMP::LinearAlgebra::Vector::shared_ptr sigma_eff = AMP::LinearAlgebra::createVector(tempDofManager, AMP::LinearAlgebra::Variable::shared_ptr(new AMP::LinearAlgebra::Variable("sigma_eff")), split);
 
-  AMP::Mesh::MeshIterator topPelletMeshIterator = topPelletMeshAdapter->getIterator(AMP::Mesh::Vertex);
-  AMP::Mesh::MeshIterator bottomPelletMeshIterator = bottomPelletMeshAdapter->getIterator(AMP::Mesh::Vertex);
-  AMP::Mesh::MeshIterator meshIterator = AMP::Mesh::Mesh::getIterator(AMP::Mesh::Union, topPelletMeshIterator, bottomPelletMeshIterator),
-      meshIterator_begin = meshIterator.begin(),
-      meshIterator_end = meshIterator.end();
-  std::vector<double> vertexCoord;
-  std::vector<size_t> DOFsIndices;
-  double temperatureOuterRadius = input_db->getDouble("TemperatureOuterRadius"); 
-  double heatGenerationRate = input_db->getDouble("HeatGenerationRate");
-  double outerRadius = input_db->getDouble("OuterRadius");
-  double outerRadiusSquared = outerRadius * outerRadius;
-  double thermalConductivity = input_db->getDouble("ThermalConductivity");
-  double temperatureCenterLine = temperatureOuterRadius + heatGenerationRate * outerRadiusSquared / (4.0 * thermalConductivity);
+  globalComm.barrier();
+  double tempCompBeginTime = MPI_Wtime();
+
+  double dummyFuelThermalConductivity = 0.0; // not used k_f = a+b/(c+Td)
+  double linearHeatGenerationRate = input_db->getDouble("LinearHeatGenerationRate");
+  double fuelOuterRadius = input_db->getDouble("FuelOuterRadius");
+  double cladInnerRadius = input_db->getDouble("CladInnerRadius");
+  double cladOuterRadius = input_db->getDouble("CladOuterRadius");
+  double cladThermalConductivity = input_db->getDouble("CladThermalConductivity");
+
+  double gapThermalConductivity = input_db->getDouble("GapThermalConductivity");
+  double moderatorTemperature = input_db->getDouble("ModeratorTemperature");
+  double moderatorHeatTransferCoefficient = input_db->getDouble("ModeratorHeatTransferCoefficient");
+
   double referenceTemperature = input_db->getDouble("ReferenceTemperature");
-  if (!rank) { std::cout<<"temperatureCenterLine="<<temperatureCenterLine<<"\n"; }
+
+  double cladOuterRadiusTemperature = moderatorTemperature + linearHeatGenerationRate / (2.0 * M_PI) / (cladOuterRadius * moderatorHeatTransferCoefficient);
+  double cladInnerRadiusTemperature = cladOuterRadiusTemperature + linearHeatGenerationRate / (2.0 * M_PI) / cladThermalConductivity * std::log(cladOuterRadius / cladInnerRadius);
+  double gapAverageRadius = 0.5 * (cladInnerRadius + fuelOuterRadius);
+  double gapHeatTranferCoefficient = gapThermalConductivity / (cladInnerRadius - fuelOuterRadius);
+  double fuelOuterRadiusTemperature = cladInnerRadiusTemperature + linearHeatGenerationRate / (2.0 * M_PI) / (gapAverageRadius * gapHeatTranferCoefficient);
+  double fuelCenterLineTemperature = fuelOuterRadiusTemperature;
+  newton_solver_t<double> solver;
+  solver.set(&my_f, &my_ijmf);
+  my_p.r = 0.0;
+  my_p.q_prime = linearHeatGenerationRate;
+  my_p.T_fo = fuelOuterRadiusTemperature;
+  my_p.R_fo = fuelOuterRadius;
+  solver.solve(fuelCenterLineTemperature, &my_p);
+  if(!rank) {
+    std::cout<<"cladOuterRadiusTemperature="<<cladOuterRadiusTemperature<<"\n";
+    std::cout<<"cladInnerRadiusTemperature="<<cladInnerRadiusTemperature<<"\n";
+    std::cout<<"fuelOuterRadiusTemperature="<<fuelOuterRadiusTemperature<<"\n";
+    std::cout<<"fuelCenterLineTemperature="<<fuelCenterLineTemperature<<"\n";
+  }
+
   refTempVec->setToScalar(referenceTemperature);
-  tempVec->setToScalar(0.0);
+  tempVec->setToScalar(referenceTemperature);
 
-  for (meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator) {
-    vertexCoord = meshIterator->coord();
-//rotate_points(2, M_PI / -2.0, 1, &(vertexCoord[0]));
-    double radiusSquared = vertexCoord[0]*vertexCoord[0] + vertexCoord[1]*vertexCoord[1];
-    double temperature = temperatureCenterLine - heatGenerationRate * radiusSquared / (4.0 * thermalConductivity);
-    tempDofManager->getDOFs(meshIterator->globalID(), DOFsIndices);
-    AMP_ASSERT(DOFsIndices.size() == 1);
-    tempVec->setLocalValuesByGlobalID(1, &(DOFsIndices[0]), &temperature);
-  } // end for
+  computeFuelTemperature(bottomPelletMeshAdapter, tempVec, fuelOuterRadius, fuelOuterRadiusTemperature, linearHeatGenerationRate, dummyFuelThermalConductivity);
+  computeFuelTemperature(topPelletMeshAdapter, tempVec, fuelOuterRadius, fuelOuterRadiusTemperature, linearHeatGenerationRate, dummyFuelThermalConductivity);
+  computeCladTemperature(cladMeshAdapter, tempVec, cladInnerRadius, cladOuterRadius, linearHeatGenerationRate, cladOuterRadiusTemperature, cladThermalConductivity);
 
-  AMP::LinearAlgebra::VS_Mesh cladVectorSelector(cladMeshAdapter);
-  AMP::LinearAlgebra::Vector::shared_ptr cladTempVec = tempVec->select(cladVectorSelector, tempVar->getName());
-  cladTempVec->setToScalar(referenceTemperature);
+  globalComm.barrier();
+  double tempCompEndTime = MPI_Wtime();
+  if(!rank) {
+    std::cout<<"Finished computing the temperature profile in "<<(tempCompEndTime - tempCompBeginTime)<<" seconds."<<std::endl;
+  }
 
-  boost::shared_ptr<AMP::Database> tmp_db = temperatureRhs_db->getDatabase("RhsMaterialModel");
-  double thermalExpansionCoefficient = tmp_db->getDouble("THERMAL_EXPANSION_COEFFICIENT");
-  bottomPelletTopPelletContactOperator->uglyHack(tempVec, tempDofManager, thermalExpansionCoefficient, referenceTemperature);
-  bottomPelletCladContactOperator->uglyHack(tempVec, tempDofManager, thermalExpansionCoefficient, referenceTemperature);
-  topPelletCladContactOperator->uglyHack(tempVec, tempDofManager, thermalExpansionCoefficient, referenceTemperature);
+  double fuelThermalExpansionCoefficient = (fuelTemperatureRhs_db->getDatabase("RhsMaterialModel"))->getDouble("THERMAL_EXPANSION_COEFFICIENT");
+  double cladThermalExpansionCoefficient = (cladTemperatureRhs_db->getDatabase("RhsMaterialModel"))->getDouble("THERMAL_EXPANSION_COEFFICIENT");
+  bottomPelletTopPelletContactOperator->uglyHack(tempVec, tempDofManager, fuelThermalExpansionCoefficient, referenceTemperature);
+  bottomPelletCladContactOperator->uglyHack(tempVec, tempDofManager, fuelThermalExpansionCoefficient, referenceTemperature);
+  topPelletCladContactOperator->uglyHack(tempVec, tempDofManager, fuelThermalExpansionCoefficient, referenceTemperature);
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
   AMP::LinearAlgebra::Variable::shared_ptr columnVar = columnOperator->getOutputVariable();
@@ -313,28 +382,77 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::LinearAlgebra::Vector::shared_ptr columnRhsVec = AMP::LinearAlgebra::createVector(dispDofManager, columnVar, split);
   columnSolVec->zero();
   columnRhsVec->zero();
+  AMP::LinearAlgebra::Vector::shared_ptr bottomPelletCor;
+  AMP::LinearAlgebra::Vector::shared_ptr topPelletCor;
+  AMP::LinearAlgebra::Vector::shared_ptr cladCor;
 
-  AMP::LinearAlgebra::Vector::shared_ptr activeSetVec = sigma_eff->cloneVector();
-  AMP::LinearAlgebra::Vector::shared_ptr suckItVec = sigma_eff->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr activeSetBeforeUpdateVec = sigma_eff->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr activeSetAfterUpdateVec = sigma_eff->cloneVector();
+  AMP::LinearAlgebra::Vector::shared_ptr contactPressureVec = sigma_eff->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr surfaceTractionVec = columnSolVec->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr normalVectorVec = columnSolVec->cloneVector();
 
-  computeStressTensor(meshAdapter, columnSolVec, 
-      sigma_xx, sigma_yy, sigma_zz, sigma_yz, sigma_xz, sigma_xy,
-      sigma_eff, 1.0e6, 0.3,
-      referenceTemperature, thermalExpansionCoefficient, tempVec);
+  if (shrinkFactor != 0.0) {
+    AMP_ASSERT( (shrinkFactor > 0.0) && (shrinkFactor < 1.0) );
+    shrinkMesh(cladMeshAdapter, shrinkFactor);
+  }
 
-  bool skipDisplaceMesh = true;
-  bottomPelletTopPelletContactOperator->updateActiveSet(nullVec, skipDisplaceMesh);
-  bottomPelletCladContactOperator->updateActiveSet(nullVec, skipDisplaceMesh);
-  topPelletCladContactOperator->updateActiveSet(nullVec, skipDisplaceMesh);
-
+  if (fuelNeedALittleHelp != -1.0) {
+{
+    AMP::Mesh::MeshIterator it = topPelletMeshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, 2);
+    AMP::Mesh::MeshIterator it_begin = it.begin(), it_end = it.end();
+    std::vector<double> coord;
+    std::vector<size_t> dofs;
+    double epsilon = 1.0e-12;
+    double radius;
+    for (it = it_begin; it != it_end; ++it) {
+      coord = it->coord();
+      radius = std::sqrt(std::pow(coord[0], 2) + std::pow(coord[1], 2));
+      if (radius > fuelNeedALittleHelp) {
+        dispDofManager->getDOFs(it->globalID(), dofs);
+        columnSolVec->setValueByGlobalID(dofs[2], 0.0001);
+      } //end if
+    } // end for
+}
+    bottomPelletTopPelletContactOperator->updateActiveSetWithALittleHelp(columnSolVec);
+    columnSolVec->zero();
+  } else {
+    bool skipDisplaceMesh = true;
+    bottomPelletTopPelletContactOperator->updateActiveSet(nullVec, skipDisplaceMesh);
+  } // end if
+  if (cladNeedALittleHelp != 0.0) {
+{
+    AMP::Mesh::MeshIterator it = cladMeshAdapter->getIterator(AMP::Mesh::Vertex);
+    AMP::Mesh::MeshIterator it_begin = it.begin(), it_end = it.end();
+    std::vector<size_t> dofs;
+    double epsilon = 1.0e-12;
+    for (it = it_begin; it != it_end; ++it) {
+      dispDofManager->getDOFs(it->globalID(), dofs);
+      columnSolVec->setValueByGlobalID(dofs[2], -cladNeedALittleHelp);
+    } // end for
+}
+    topPelletCladContactOperator->updateActiveSetWithALittleHelp(columnSolVec);
+    columnSolVec->zero();
+{
+    AMP::Mesh::MeshIterator it = cladMeshAdapter->getIterator(AMP::Mesh::Vertex);
+    AMP::Mesh::MeshIterator it_begin = it.begin(), it_end = it.end();
+    std::vector<size_t> dofs;
+    double epsilon = 1.0e-12;
+    for (it = it_begin; it != it_end; ++it) {
+      dispDofManager->getDOFs(it->globalID(), dofs);
+      columnSolVec->setValueByGlobalID(dofs[2], cladNeedALittleHelp);
+    } // end for
+}
+    bottomPelletCladContactOperator->updateActiveSetWithALittleHelp(columnSolVec);
+    columnSolVec->zero();
+  } else {
+    bool skipDisplaceMesh = true;
+    bottomPelletCladContactOperator->updateActiveSet(nullVec, skipDisplaceMesh);
+    topPelletCladContactOperator->updateActiveSet(nullVec, skipDisplaceMesh);
+  } // end if
   
   AMP::LinearAlgebra::Vector::shared_ptr contactShiftVec = createVector(dispDofManager, columnVar, split);
   contactShiftVec->zero();
-
-  AMP::LinearAlgebra::Vector::shared_ptr oldSolVec = columnSolVec->cloneVector();
-  oldSolVec->zero();
 
 #ifdef USE_EXT_SILO
   {
@@ -347,18 +465,15 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     siloWriter->registerVector(sigma_yz, meshAdapter, AMP::Mesh::Vertex, "sigma_yz");
     siloWriter->registerVector(sigma_xz, meshAdapter, AMP::Mesh::Vertex, "sigma_xz");
     siloWriter->registerVector(sigma_xy, meshAdapter, AMP::Mesh::Vertex, "sigma_xy");
-    siloWriter->registerVector(activeSetVec, meshAdapter, AMP::Mesh::Vertex, "Contact");
-    siloWriter->registerVector(oldSolVec, meshAdapter, AMP::Mesh::Vertex, "Error");
+    siloWriter->registerVector(activeSetBeforeUpdateVec, meshAdapter, AMP::Mesh::Vertex, "ActiveSetBeforeUpdate");
+    siloWriter->registerVector(activeSetAfterUpdateVec, meshAdapter, AMP::Mesh::Vertex, "ActiveSetAfterUpdate");
     siloWriter->registerVector(surfaceTractionVec, meshAdapter, AMP::Mesh::Vertex, "Traction");
     siloWriter->registerVector(normalVectorVec, meshAdapter, AMP::Mesh::Vertex, "Normal");
-    siloWriter->registerVector(suckItVec, meshAdapter, AMP::Mesh::Vertex, "Suction");
+    siloWriter->registerVector(contactPressureVec, meshAdapter, AMP::Mesh::Vertex, "ContactPressure");
     siloWriter->registerVector(contactShiftVec, meshAdapter, AMP::Mesh::Vertex, "Shift");
-    char outFileName[256];
-    sprintf(outFileName, "TATA_%d", 0);
-    siloWriter->writeFile(outFileName, 0);
+    siloWriter->writeFile(prefixFileName.c_str(), 0);
   }
 #endif
-  oldSolVec->copyVector(columnSolVec);
 
   columnSolVec->zero();
   columnOperator->append(bottomPelletTopPelletContactOperator);
@@ -426,12 +541,56 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     columnRhsVec->zero();
 
     // compute thermal load f
-    computeTemperatureRhsVector(meshAdapter, temperatureRhs_db, tempVar, dispVar, tempVec, refTempVec, columnRhsVec);
+{
+    AMP::LinearAlgebra::VS_Mesh bottomPelletVectorSelector(bottomPelletMeshAdapter);
+    AMP::LinearAlgebra::Vector::shared_ptr bottomPelletRhsVec = columnRhsVec->select(bottomPelletVectorSelector, dispVar->getName());
+    computeTemperatureRhsVector(bottomPelletMeshAdapter, fuelTemperatureRhs_db, tempVar, dispVar, tempVec, refTempVec, bottomPelletRhsVec);
+
+    AMP::LinearAlgebra::VS_Mesh topPelletVectorSelector(topPelletMeshAdapter);
+    AMP::LinearAlgebra::Vector::shared_ptr topPelletRhsVec = columnRhsVec->select(topPelletVectorSelector, dispVar->getName());
+    computeTemperatureRhsVector(topPelletMeshAdapter, fuelTemperatureRhs_db, tempVar, dispVar, tempVec, refTempVec, topPelletRhsVec);
+
+    AMP::LinearAlgebra::VS_Mesh cladVectorSelector(cladMeshAdapter);
+    AMP::LinearAlgebra::Vector::shared_ptr cladRhsVec = columnRhsVec->select(cladVectorSelector, dispVar->getName());
+    computeTemperatureRhsVector(cladMeshAdapter, cladTemperatureRhs_db, tempVar, dispVar, tempVec, refTempVec, cladRhsVec);
+
+}
 
     // apply dirichlet rhs correction on f
     if (bottomPelletBVPOperator.get() != NULL) { bottomPelletBVPOperator->modifyRHSvector(columnRhsVec); }
     if (topPelletBVPOperator.get() != NULL) { topPelletBVPOperator->modifyRHSvector(columnRhsVec); }
     if (cladBVPOperator.get() != NULL) { cladBVPOperator->modifyRHSvector(columnRhsVec); }
+{
+    AMP::LinearAlgebra::Matrix::shared_ptr bottomPelletMat = bottomPelletBVPOperator->getMatrix();
+    AMP::LinearAlgebra::Vector::shared_ptr bottomPelletRhs = bottomPelletBVPOperator->subsetOutputVector(columnRhsVec);
+    if (bottomPelletCor.get() == NULL) {
+      bottomPelletCor = bottomPelletRhs->cloneVector();
+      applyCustomDirichletCondition(bottomPelletRhs, bottomPelletCor, bottomPelletMeshAdapter, bottomPelletConstraints, bottomPelletMat);
+    } else {
+      applyCustomDirichletCondition(bottomPelletRhs, bottomPelletCor, bottomPelletMeshAdapter, bottomPelletConstraints, AMP::LinearAlgebra::Matrix::shared_ptr());
+    } // end if
+    AMP_ASSERT(bottomPelletCor.get() != NULL);
+
+    AMP::LinearAlgebra::Matrix::shared_ptr topPelletMat = topPelletBVPOperator->getMatrix();
+    AMP::LinearAlgebra::Vector::shared_ptr topPelletRhs = topPelletBVPOperator->subsetOutputVector(columnRhsVec);
+    if (topPelletCor.get() == NULL) {
+      topPelletCor = topPelletRhs->cloneVector();
+      applyCustomDirichletCondition(topPelletRhs, topPelletCor, topPelletMeshAdapter, topPelletConstraints, topPelletMat);
+    } else {
+      applyCustomDirichletCondition(topPelletRhs, topPelletCor, topPelletMeshAdapter, topPelletConstraints, AMP::LinearAlgebra::Matrix::shared_ptr());
+    } // end if
+    AMP_ASSERT(topPelletCor.get() != NULL);
+
+    AMP::LinearAlgebra::Matrix::shared_ptr cladMat = cladBVPOperator->getMatrix();
+    AMP::LinearAlgebra::Vector::shared_ptr cladRhs = cladBVPOperator->subsetOutputVector(columnRhsVec);
+    if (cladCor.get() == NULL) {
+      cladCor = cladRhs->cloneVector();
+      applyCustomDirichletCondition(cladRhs, cladCor, cladMeshAdapter, cladConstraints, cladMat);
+    } else {
+      applyCustomDirichletCondition(cladRhs, cladCor, cladMeshAdapter, cladConstraints, AMP::LinearAlgebra::Matrix::shared_ptr());
+    } // end if
+    AMP_ASSERT(topPelletCor.get() != NULL);
+}
 
     // get d
     contactShiftVec->zero();
@@ -464,8 +623,16 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     bottomPelletCladContactOperator->copyMasterToSlave(columnSolVec);
     topPelletCladContactOperator->copyMasterToSlave(columnSolVec);
 
+    globalComm.barrier();
+    double solveBeginTime = MPI_Wtime();
 
     linearSolver->solve(columnRhsVec, columnSolVec);
+
+    globalComm.barrier();
+    double solveEndTime = MPI_Wtime();
+    if(!rank) {
+      std::cout<<"Finished linear solve in "<<(solveEndTime - solveBeginTime)<<" seconds."<<std::endl;
+    }
 
     // u^s = C u^m + d
     bottomPelletTopPelletContactOperator->copyMasterToSlave(columnSolVec);
@@ -476,66 +643,76 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     bottomPelletCladContactOperator->addShiftToSlave(columnSolVec);
     topPelletCladContactOperator->addShiftToSlave(columnSolVec);
 
-    computeStressTensor(meshAdapter, columnSolVec, 
+    computeStressTensor(bottomPelletMeshAdapter, columnSolVec, 
         sigma_xx, sigma_yy, sigma_zz, sigma_yz, sigma_xz, sigma_xy,
-        sigma_eff, 1.0e6, 0.3,
-        referenceTemperature, thermalExpansionCoefficient, tempVec);
+        sigma_eff, fuelMechanicsMaterialModel,
+        referenceTemperature, fuelThermalExpansionCoefficient, tempVec);
+    computeStressTensor(topPelletMeshAdapter, columnSolVec, 
+        sigma_xx, sigma_yy, sigma_zz, sigma_yz, sigma_xz, sigma_xy,
+        sigma_eff, fuelMechanicsMaterialModel,
+        referenceTemperature, fuelThermalExpansionCoefficient, tempVec);
+    computeStressTensor(cladMeshAdapter, columnSolVec, 
+        sigma_xx, sigma_yy, sigma_zz, sigma_yz, sigma_xz, sigma_xy,
+        sigma_eff, cladMechanicsMaterialModel,
+        referenceTemperature, cladThermalExpansionCoefficient, tempVec);
 
-    activeSetVec->setToScalar(-1.0);
+    activeSetBeforeUpdateVec->setToScalar(-1.0);
 
-    std::vector<AMP::Mesh::MeshElementID> const * bottomPelletTopPelletPointerToActiveSet;
-    bottomPelletTopPelletContactOperator->getActiveSet(bottomPelletTopPelletPointerToActiveSet);
-    size_t const bottomPelletTopPelletSizeOfActiveSetBeforeUpdate = bottomPelletTopPelletPointerToActiveSet->size();
+    std::vector<AMP::Mesh::MeshElementID> const & bottomPelletTopPelletActiveSet = bottomPelletTopPelletContactOperator->getActiveSet();
+    size_t const bottomPelletTopPelletSizeOfActiveSetBeforeUpdate = bottomPelletTopPelletActiveSet.size();
 
     std::vector<size_t> bottomPelletTopPelletActiveSetTempDOFsIndicesBeforeUpdate;
-    tempDofManager->getDOFs(*bottomPelletTopPelletPointerToActiveSet, bottomPelletTopPelletActiveSetTempDOFsIndicesBeforeUpdate);
+    tempDofManager->getDOFs(bottomPelletTopPelletActiveSet, bottomPelletTopPelletActiveSetTempDOFsIndicesBeforeUpdate);
     AMP_ASSERT( bottomPelletTopPelletActiveSetTempDOFsIndicesBeforeUpdate.size() == bottomPelletTopPelletSizeOfActiveSetBeforeUpdate );
     std::vector<double> bottomPelletTopPelletValuesForActiveSet(bottomPelletTopPelletSizeOfActiveSetBeforeUpdate, 2.0); 
-    activeSetVec->setLocalValuesByGlobalID(bottomPelletTopPelletSizeOfActiveSetBeforeUpdate, &(bottomPelletTopPelletActiveSetTempDOFsIndicesBeforeUpdate[0]), &(bottomPelletTopPelletValuesForActiveSet[0]));
+    activeSetBeforeUpdateVec->setLocalValuesByGlobalID(bottomPelletTopPelletSizeOfActiveSetBeforeUpdate, &(bottomPelletTopPelletActiveSetTempDOFsIndicesBeforeUpdate[0]), &(bottomPelletTopPelletValuesForActiveSet[0]));
 
     std::vector<size_t> bottomPelletTopPelletActiveSetDispDOFsIndicesBeforeUpdate;
-    dispDofManager->getDOFs(*bottomPelletTopPelletPointerToActiveSet, bottomPelletTopPelletActiveSetDispDOFsIndicesBeforeUpdate);
+    dispDofManager->getDOFs(bottomPelletTopPelletActiveSet, bottomPelletTopPelletActiveSetDispDOFsIndicesBeforeUpdate);
     AMP_ASSERT( bottomPelletTopPelletActiveSetDispDOFsIndicesBeforeUpdate.size() == 3*bottomPelletTopPelletSizeOfActiveSetBeforeUpdate );
 //
-    std::vector<AMP::Mesh::MeshElementID> const * bottomPelletCladPointerToActiveSet;
-    bottomPelletCladContactOperator->getActiveSet(bottomPelletCladPointerToActiveSet);
-    size_t const bottomPelletCladSizeOfActiveSetBeforeUpdate = bottomPelletCladPointerToActiveSet->size();
+    std::vector<AMP::Mesh::MeshElementID> const & bottomPelletCladActiveSet = bottomPelletCladContactOperator->getActiveSet();
+    size_t const bottomPelletCladSizeOfActiveSetBeforeUpdate = bottomPelletCladActiveSet.size();
 
     std::vector<size_t> bottomPelletCladActiveSetTempDOFsIndicesBeforeUpdate;
-    tempDofManager->getDOFs(*bottomPelletCladPointerToActiveSet, bottomPelletCladActiveSetTempDOFsIndicesBeforeUpdate);
+    tempDofManager->getDOFs(bottomPelletCladActiveSet, bottomPelletCladActiveSetTempDOFsIndicesBeforeUpdate);
     AMP_ASSERT( bottomPelletCladActiveSetTempDOFsIndicesBeforeUpdate.size() == bottomPelletCladSizeOfActiveSetBeforeUpdate );
     std::vector<double> bottomPelletCladValuesForActiveSet(bottomPelletCladSizeOfActiveSetBeforeUpdate, 2.0); 
-    activeSetVec->setLocalValuesByGlobalID(bottomPelletCladSizeOfActiveSetBeforeUpdate, &(bottomPelletCladActiveSetTempDOFsIndicesBeforeUpdate[0]), &(bottomPelletCladValuesForActiveSet[0]));
+    activeSetBeforeUpdateVec->setLocalValuesByGlobalID(bottomPelletCladSizeOfActiveSetBeforeUpdate, &(bottomPelletCladActiveSetTempDOFsIndicesBeforeUpdate[0]), &(bottomPelletCladValuesForActiveSet[0]));
 
     std::vector<size_t> bottomPelletCladActiveSetDispDOFsIndicesBeforeUpdate;
-    dispDofManager->getDOFs(*bottomPelletCladPointerToActiveSet, bottomPelletCladActiveSetDispDOFsIndicesBeforeUpdate);
+    dispDofManager->getDOFs(bottomPelletCladActiveSet, bottomPelletCladActiveSetDispDOFsIndicesBeforeUpdate);
     AMP_ASSERT( bottomPelletCladActiveSetDispDOFsIndicesBeforeUpdate.size() == 3*bottomPelletCladSizeOfActiveSetBeforeUpdate );
 //
-    std::vector<AMP::Mesh::MeshElementID> const * topPelletCladPointerToActiveSet;
-    topPelletCladContactOperator->getActiveSet(topPelletCladPointerToActiveSet);
-    size_t const topPelletCladSizeOfActiveSetBeforeUpdate = topPelletCladPointerToActiveSet->size();
+    std::vector<AMP::Mesh::MeshElementID> const & topPelletCladActiveSet = topPelletCladContactOperator->getActiveSet();
+    size_t const topPelletCladSizeOfActiveSetBeforeUpdate = topPelletCladActiveSet.size();
 
     std::vector<size_t> topPelletCladActiveSetTempDOFsIndicesBeforeUpdate;
-    tempDofManager->getDOFs(*topPelletCladPointerToActiveSet, topPelletCladActiveSetTempDOFsIndicesBeforeUpdate);
+    tempDofManager->getDOFs(topPelletCladActiveSet, topPelletCladActiveSetTempDOFsIndicesBeforeUpdate);
     AMP_ASSERT( topPelletCladActiveSetTempDOFsIndicesBeforeUpdate.size() == topPelletCladSizeOfActiveSetBeforeUpdate );
     std::vector<double> topPelletCladValuesForActiveSet(topPelletCladSizeOfActiveSetBeforeUpdate, 2.0); 
-    activeSetVec->setLocalValuesByGlobalID(topPelletCladSizeOfActiveSetBeforeUpdate, &(topPelletCladActiveSetTempDOFsIndicesBeforeUpdate[0]), &(topPelletCladValuesForActiveSet[0]));
+    activeSetBeforeUpdateVec->setLocalValuesByGlobalID(topPelletCladSizeOfActiveSetBeforeUpdate, &(topPelletCladActiveSetTempDOFsIndicesBeforeUpdate[0]), &(topPelletCladValuesForActiveSet[0]));
 
     std::vector<size_t> topPelletCladActiveSetDispDOFsIndicesBeforeUpdate;
-    dispDofManager->getDOFs(*topPelletCladPointerToActiveSet, topPelletCladActiveSetDispDOFsIndicesBeforeUpdate);
+    dispDofManager->getDOFs(topPelletCladActiveSet, topPelletCladActiveSetDispDOFsIndicesBeforeUpdate);
     AMP_ASSERT( topPelletCladActiveSetDispDOFsIndicesBeforeUpdate.size() == 3*topPelletCladSizeOfActiveSetBeforeUpdate );
 
 
 #ifdef USE_EXT_SILO
 {
+
+    if (scaleSolution != 1.0) {
+      columnSolVec->scale(scaleSolution);
+    }
     meshAdapter->displaceMesh(columnSolVec);
-    char outFileName[256];
-    sprintf(outFileName, "TATA_%d", 0);
-//    siloWriter->writeFile(outFileName, (activeSetIteration+1)+(thermalLoadingIteration)*maxActiveSetIterations);
-    siloWriter->writeFile(outFileName, TOTO_count);
+    siloWriter->writeFile(prefixFileName.c_str(), TOTO_count);
     columnSolVec->scale(-1.0);
     meshAdapter->displaceMesh(columnSolVec);
-    columnSolVec->scale(-1.0);
+    if (scaleSolution!= 1.0) {
+      columnSolVec->scale(-1.0 / scaleSolution);
+    } else {
+      columnSolVec->scale(-1.0);
+    }
 }
 #endif
 
@@ -544,17 +721,29 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     nChangesInActiveSet += bottomPelletCladContactOperator->updateActiveSet(columnSolVec);
     nChangesInActiveSet += topPelletCladContactOperator->updateActiveSet(columnSolVec);
 
-    suckItVec->zero();
     surfaceTractionVec->zero();
     normalVectorVec->zero();
+    contactPressureVec->zero();
 
-    size_t const bottomPelletTopPelletSizeOfActiveSetAfterUpdate = bottomPelletTopPelletPointerToActiveSet->size();
+    activeSetAfterUpdateVec->setToScalar(-1.0);
+
+    size_t const bottomPelletTopPelletSizeOfActiveSetAfterUpdate = bottomPelletTopPelletActiveSet.size();
+
+    std::vector<size_t> bottomPelletTopPelletActiveSetTempDOFsIndicesAfterUpdate;
+    tempDofManager->getDOFs(bottomPelletTopPelletActiveSet, bottomPelletTopPelletActiveSetTempDOFsIndicesAfterUpdate);
+    AMP_ASSERT( bottomPelletTopPelletActiveSetTempDOFsIndicesAfterUpdate.size() == bottomPelletTopPelletSizeOfActiveSetAfterUpdate );
+    std::vector<double> bottomPelletTopPelletValuesForActiveSetAfterUpdate(bottomPelletTopPelletSizeOfActiveSetAfterUpdate, 2.0); 
+    activeSetAfterUpdateVec->setLocalValuesByGlobalID(bottomPelletTopPelletSizeOfActiveSetAfterUpdate, &(bottomPelletTopPelletActiveSetTempDOFsIndicesAfterUpdate[0]), &(bottomPelletTopPelletValuesForActiveSetAfterUpdate[0]));
+
+    std::vector<size_t> bottomPelletTopPelletActiveSetDispDOFsIndicesAfterUpdate;
+    dispDofManager->getDOFs(bottomPelletTopPelletActiveSet, bottomPelletTopPelletActiveSetDispDOFsIndicesAfterUpdate);
+    AMP_ASSERT( bottomPelletTopPelletActiveSetDispDOFsIndicesAfterUpdate.size() == 3*bottomPelletTopPelletSizeOfActiveSetAfterUpdate );
 
     std::vector<double> const * bottomPelletTopPelletSlaveVerticesNormalVector;
     std::vector<double> const * bottomPelletTopPelletSlaveVerticesSurfaceTraction;
     bottomPelletTopPelletContactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(bottomPelletTopPelletSlaveVerticesNormalVector, bottomPelletTopPelletSlaveVerticesSurfaceTraction);
     AMP_ASSERT( bottomPelletTopPelletSlaveVerticesSurfaceTraction->size() == 3*bottomPelletTopPelletSizeOfActiveSetBeforeUpdate);
-    AMP_ASSERT( bottomPelletTopPelletSlaveVerticesNormalVector->size() == 3*bottomPelletTopPelletSizeOfActiveSetAfterUpdate);
+    AMP_ASSERT( bottomPelletTopPelletSlaveVerticesNormalVector->size() == 3*bottomPelletTopPelletSizeOfActiveSetBeforeUpdate);
     surfaceTractionVec->setLocalValuesByGlobalID(3*bottomPelletTopPelletSizeOfActiveSetBeforeUpdate, &(bottomPelletTopPelletActiveSetDispDOFsIndicesBeforeUpdate[0]), &((*bottomPelletTopPelletSlaveVerticesSurfaceTraction)[0]));
     normalVectorVec->setLocalValuesByGlobalID(3*bottomPelletTopPelletSizeOfActiveSetBeforeUpdate, &(bottomPelletTopPelletActiveSetDispDOFsIndicesBeforeUpdate[0]), &((*bottomPelletTopPelletSlaveVerticesNormalVector)[0]));
 
@@ -562,15 +751,25 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     for (size_t kk = 0; kk < bottomPelletTopPelletSizeOfActiveSetBeforeUpdate; ++kk) {
       bottomPelletTopPelletSurfaceTractionDOTnormalVector[kk] = - compute_scalar_product(&((*bottomPelletTopPelletSlaveVerticesSurfaceTraction)[3*kk]), &((*bottomPelletTopPelletSlaveVerticesNormalVector)[3*kk]));
     } // end for kk
-    suckItVec->setLocalValuesByGlobalID(bottomPelletTopPelletSizeOfActiveSetBeforeUpdate, &(bottomPelletTopPelletActiveSetTempDOFsIndicesBeforeUpdate[0]), &(bottomPelletTopPelletSurfaceTractionDOTnormalVector[0]));
+    contactPressureVec->setLocalValuesByGlobalID(bottomPelletTopPelletSizeOfActiveSetBeforeUpdate, &(bottomPelletTopPelletActiveSetTempDOFsIndicesBeforeUpdate[0]), &(bottomPelletTopPelletSurfaceTractionDOTnormalVector[0]));
 //
-    size_t const bottomPelletCladSizeOfActiveSetAfterUpdate = bottomPelletCladPointerToActiveSet->size();
+    size_t const bottomPelletCladSizeOfActiveSetAfterUpdate = bottomPelletCladActiveSet.size();
+
+    std::vector<size_t> bottomPelletCladActiveSetTempDOFsIndicesAfterUpdate;
+    tempDofManager->getDOFs(bottomPelletCladActiveSet, bottomPelletCladActiveSetTempDOFsIndicesAfterUpdate);
+    AMP_ASSERT( bottomPelletCladActiveSetTempDOFsIndicesAfterUpdate.size() == bottomPelletCladSizeOfActiveSetAfterUpdate );
+    std::vector<double> bottomPelletCladValuesForActiveSetAfterUpdate(bottomPelletCladSizeOfActiveSetAfterUpdate, 2.0); 
+    activeSetAfterUpdateVec->setLocalValuesByGlobalID(bottomPelletCladSizeOfActiveSetAfterUpdate, &(bottomPelletCladActiveSetTempDOFsIndicesAfterUpdate[0]), &(bottomPelletCladValuesForActiveSetAfterUpdate[0]));
+
+    std::vector<size_t> bottomPelletCladActiveSetDispDOFsIndicesAfterUpdate;
+    dispDofManager->getDOFs(bottomPelletCladActiveSet, bottomPelletCladActiveSetDispDOFsIndicesAfterUpdate);
+    AMP_ASSERT( bottomPelletCladActiveSetDispDOFsIndicesAfterUpdate.size() == 3*bottomPelletCladSizeOfActiveSetAfterUpdate );
 
     std::vector<double> const * bottomPelletCladSlaveVerticesNormalVector;
     std::vector<double> const * bottomPelletCladSlaveVerticesSurfaceTraction;
     bottomPelletCladContactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(bottomPelletCladSlaveVerticesNormalVector, bottomPelletCladSlaveVerticesSurfaceTraction);
     AMP_ASSERT( bottomPelletCladSlaveVerticesSurfaceTraction->size() == 3*bottomPelletCladSizeOfActiveSetBeforeUpdate);
-    AMP_ASSERT( bottomPelletCladSlaveVerticesNormalVector->size() == 3*bottomPelletCladSizeOfActiveSetAfterUpdate);
+    AMP_ASSERT( bottomPelletCladSlaveVerticesNormalVector->size() == 3*bottomPelletCladSizeOfActiveSetBeforeUpdate);
     surfaceTractionVec->setLocalValuesByGlobalID(3*bottomPelletCladSizeOfActiveSetBeforeUpdate, &(bottomPelletCladActiveSetDispDOFsIndicesBeforeUpdate[0]), &((*bottomPelletCladSlaveVerticesSurfaceTraction)[0]));
     normalVectorVec->setLocalValuesByGlobalID(3*bottomPelletCladSizeOfActiveSetBeforeUpdate, &(bottomPelletCladActiveSetDispDOFsIndicesBeforeUpdate[0]), &((*bottomPelletCladSlaveVerticesNormalVector)[0]));
 
@@ -578,15 +777,25 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     for (size_t kk = 0; kk < bottomPelletCladSizeOfActiveSetBeforeUpdate; ++kk) {
       bottomPelletCladSurfaceTractionDOTnormalVector[kk] = - compute_scalar_product(&((*bottomPelletCladSlaveVerticesSurfaceTraction)[3*kk]), &((*bottomPelletCladSlaveVerticesNormalVector)[3*kk]));
     } // end for kk
-    suckItVec->setLocalValuesByGlobalID(bottomPelletCladSizeOfActiveSetBeforeUpdate, &(bottomPelletCladActiveSetTempDOFsIndicesBeforeUpdate[0]), &(bottomPelletCladSurfaceTractionDOTnormalVector[0]));
+    contactPressureVec->setLocalValuesByGlobalID(bottomPelletCladSizeOfActiveSetBeforeUpdate, &(bottomPelletCladActiveSetTempDOFsIndicesBeforeUpdate[0]), &(bottomPelletCladSurfaceTractionDOTnormalVector[0]));
 //
-    size_t const topPelletCladSizeOfActiveSetAfterUpdate = topPelletCladPointerToActiveSet->size();
+    size_t const topPelletCladSizeOfActiveSetAfterUpdate = topPelletCladActiveSet.size();
+
+    std::vector<size_t> topPelletCladActiveSetTempDOFsIndicesAfterUpdate;
+    tempDofManager->getDOFs(topPelletCladActiveSet, topPelletCladActiveSetTempDOFsIndicesAfterUpdate);
+    AMP_ASSERT( topPelletCladActiveSetTempDOFsIndicesAfterUpdate.size() == topPelletCladSizeOfActiveSetAfterUpdate );
+    std::vector<double> topPelletCladValuesForActiveSetAfterUpdate(topPelletCladSizeOfActiveSetAfterUpdate, 2.0); 
+    activeSetAfterUpdateVec->setLocalValuesByGlobalID(topPelletCladSizeOfActiveSetAfterUpdate, &(topPelletCladActiveSetTempDOFsIndicesAfterUpdate[0]), &(topPelletCladValuesForActiveSetAfterUpdate[0]));
+
+    std::vector<size_t> topPelletCladActiveSetDispDOFsIndicesAfterUpdate;
+    dispDofManager->getDOFs(topPelletCladActiveSet, topPelletCladActiveSetDispDOFsIndicesAfterUpdate);
+    AMP_ASSERT( topPelletCladActiveSetDispDOFsIndicesAfterUpdate.size() == 3*topPelletCladSizeOfActiveSetAfterUpdate );
 
     std::vector<double> const * topPelletCladSlaveVerticesNormalVector;
     std::vector<double> const * topPelletCladSlaveVerticesSurfaceTraction;
     topPelletCladContactOperator->getSlaveVerticesNormalVectorAndSurfaceTraction(topPelletCladSlaveVerticesNormalVector, topPelletCladSlaveVerticesSurfaceTraction);
     AMP_ASSERT( topPelletCladSlaveVerticesSurfaceTraction->size() == 3*topPelletCladSizeOfActiveSetBeforeUpdate);
-    AMP_ASSERT( topPelletCladSlaveVerticesNormalVector->size() == 3*topPelletCladSizeOfActiveSetAfterUpdate);
+    AMP_ASSERT( topPelletCladSlaveVerticesNormalVector->size() == 3*topPelletCladSizeOfActiveSetBeforeUpdate);
     surfaceTractionVec->setLocalValuesByGlobalID(3*topPelletCladSizeOfActiveSetBeforeUpdate, &(topPelletCladActiveSetDispDOFsIndicesBeforeUpdate[0]), &((*topPelletCladSlaveVerticesSurfaceTraction)[0]));
     normalVectorVec->setLocalValuesByGlobalID(3*topPelletCladSizeOfActiveSetBeforeUpdate, &(topPelletCladActiveSetDispDOFsIndicesBeforeUpdate[0]), &((*topPelletCladSlaveVerticesNormalVector)[0]));
 
@@ -594,32 +803,25 @@ for (size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoa
     for (size_t kk = 0; kk < topPelletCladSizeOfActiveSetBeforeUpdate; ++kk) {
       topPelletCladSurfaceTractionDOTnormalVector[kk] = - compute_scalar_product(&((*topPelletCladSlaveVerticesSurfaceTraction)[3*kk]), &((*topPelletCladSlaveVerticesNormalVector)[3*kk]));
     } // end for kk
-    suckItVec->setLocalValuesByGlobalID(topPelletCladSizeOfActiveSetBeforeUpdate, &(topPelletCladActiveSetTempDOFsIndicesBeforeUpdate[0]), &(topPelletCladSurfaceTractionDOTnormalVector[0]));
+    contactPressureVec->setLocalValuesByGlobalID(topPelletCladSizeOfActiveSetBeforeUpdate, &(topPelletCladActiveSetTempDOFsIndicesBeforeUpdate[0]), &(topPelletCladSurfaceTractionDOTnormalVector[0]));
     
 
-oldSolVec->subtract(columnSolVec, oldSolVec);
 #ifdef USE_EXT_SILO
+    if (scaleSolution != 1.0) {
+      columnSolVec->scale(scaleSolution);
+    }
     meshAdapter->displaceMesh(columnSolVec);
-    char outFileName[256];
-    sprintf(outFileName, "TATA_%d", 0);
-//    siloWriter->writeFile(outFileName, (activeSetIteration+1)+(thermalLoadingIteration)*maxActiveSetIterations);
-    siloWriter->writeFile(outFileName, TOTO_count);
+    siloWriter->writeFile(prefixFileName.c_str(), TOTO_count);
     columnSolVec->scale(-1.0);
     meshAdapter->displaceMesh(columnSolVec);
-    columnSolVec->scale(-1.0);
+    if (scaleSolution!= 1.0) {
+      columnSolVec->scale(-1.0 / scaleSolution);
+    } else {
+      columnSolVec->scale(-1.0);
+    }
 #endif
 
     if (!rank) { std::cout<<nChangesInActiveSet<<" CHANGES IN ACTIVE SET\n"; }
-
-double errL1Norm = oldSolVec->L1Norm();
-double solL1Norm = columnSolVec->L1Norm();
-double relErrL1Norm = errL1Norm / solL1Norm;
-double errL2Norm = oldSolVec->L2Norm();
-double solL2Norm = columnSolVec->L2Norm();
-double relErrL2Norm = errL2Norm / solL2Norm;
-    if (!rank) { std::cout<<"ERROR L1 NORM "<<errL1Norm<<" ("<<100.0*relErrL1Norm<<"%)    "; }
-    if (!rank) { std::cout<<"ERROR L2 NORM "<<errL2Norm<<" ("<<100.0*relErrL2Norm<<"%)  \n"; }
-oldSolVec->copyVector(columnSolVec);
 
     if (nChangesInActiveSet == 0) { break; }
 //    AMP_ASSERT( activeSetIteration != maxActiveSetIterations - 1 );
@@ -632,12 +834,6 @@ oldSolVec->copyVector(columnSolVec);
 
   meshAdapter->displaceMesh(columnSolVec);
 
-#ifdef USE_EXT_SILO
-  siloWriter->registerVector(columnSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution");
-  char outFileName[256];
-  sprintf(outFileName, "MPC_%d", 0);
-  siloWriter->writeFile(outFileName, 0);
-#endif
   fout.close();
 
   ut->passes(exeName);
