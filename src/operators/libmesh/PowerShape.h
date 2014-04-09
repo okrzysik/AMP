@@ -18,7 +18,7 @@
 /* AMP files */
 #include "operators/Operator.h"
 #include "operators/OperatorParameters.h"
-#include "PowerShapeParameters.h"
+#include "operators/libmesh/PowerShapeParameters.h"
 #include "vectors/Variable.h"
 #include "utils/InputDatabase.h"
 

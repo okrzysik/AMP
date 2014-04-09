@@ -6,8 +6,8 @@
 #include "boost/shared_ptr.hpp"
 
 /* AMP files*/
-#include "ElementOperation.h"
-#include "SourcePhysicsModel.h"
+#include "operators/ElementOperation.h"
+#include "operators/libmesh/SourcePhysicsModel.h"
 
 /* Libmesh files */
 #include "fe_type.h"

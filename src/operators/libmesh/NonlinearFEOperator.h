@@ -4,7 +4,7 @@
 
 /* AMP files */
 #include "operators/Operator.h"
-#include "FEOperatorParameters.h"
+#include "operators/libmesh/FEOperatorParameters.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "elem.h"

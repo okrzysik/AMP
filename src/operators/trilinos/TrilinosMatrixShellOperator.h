@@ -1,7 +1,7 @@
 #ifndef included_TrilinosMatrixShellOperator
 #define included_TrilinosMatrixShellOperator
 
-#include "LinearOperator.h"
+#include "operators/LinearOperator.h"
 
 #include "ml_include.h"
 

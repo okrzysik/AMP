@@ -30,7 +30,6 @@
 #include "operators/boundary/libmesh/RobinVectorCorrection.h"
 #include "operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
 #include "operators/boundary/DirichletMatrixCorrection.h"
-#include "operators/boundary/libmesh/RobinMatrixCorrection.h"
 #include "operators/boundary/libmesh/NeumannVectorCorrection.h"
 
 #include "operators/VectorCopyOperator.h"
@@ -39,7 +38,6 @@
 #include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/CoupledOperator.h"
 #include "operators/CoupledOperatorParameters.h"
-#include "operators/NodeToGaussPointOperator.h"
 #include "operators/map/AsyncMapColumnOperator.h"
 #include "operators/map/SubchannelToCladMap.h"
 #include "operators/map/CladToSubchannelMap.h"
