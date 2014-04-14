@@ -79,6 +79,11 @@ public:
      */
     virtual std::vector<MeshElement> getParents(GeomType type) const;
 
+    
+    //! Return the index of the element
+    BoxMesh::MeshElementIndex getIndex() const { return d_index; }
+
+
 protected:
 
     /** Default constructor

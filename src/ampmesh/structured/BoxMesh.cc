@@ -518,7 +518,7 @@ void BoxMesh::initialize()
                         AMP_ERROR("Not programmed for this dimension yet");
                     }
                     // Create the index (adjusting for periodic boundaries)
-                    MeshElementIndex index( PhysicalDim, 0, i, j, k );
+                    MeshElementIndex index( static_cast<GeomType>(PhysicalDim), 0, i, j, k );
                     if ( i<0 ) { index.index[0] += d_size[0]; }
                     if ( j<0 ) { index.index[1] += d_size[1]; }
                     if ( k<0 ) { index.index[2] += d_size[2]; }
@@ -793,6 +793,10 @@ MeshElement BoxMesh::getElement ( const MeshElementID &elem_id ) const
     structuredMeshElement elem( index, this );
     AMP_ASSERT(elem.globalID()==elem_id);
     return elem;
+}
+MeshElement BoxMesh::getElement ( const MeshElementIndex &index ) const
+{
+    return structuredMeshElement( index, this );
 }
 
 
