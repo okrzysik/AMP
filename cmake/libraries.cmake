@@ -1,3 +1,4 @@
+INCLUDE( ${AMP_SOURCE_DIR}/cmake/Find_BLAS_LAPACK.cmake )
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindPetsc.cmake )
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindTrilinos.cmake )
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindLibmesh.cmake )
@@ -460,90 +461,6 @@ MACRO ( CONFIGURE_MOAB )
         ADD_DEFINITIONS ( "-D USE_EXT_MOAB" )  
         MESSAGE( "Using MOAB" )
         MESSAGE( "   ${MOAB_LIBS}" )
-    ENDIF()
-ENDMACRO ()
-
-
-# Macro to configure the BLAS
-MACRO ( CONFIGURE_BLAS )
-    # Determine if we want to use BLAS
-    CHECK_ENABLE_FLAG(USE_EXT_BLAS 1 )
-    IF ( USE_EXT_BLAS )
-        IF ( BLAS_LIBRARIES )
-            # The user is specifying the blas command directly
-        ELSEIF ( BLAS_DIRECTORY )
-            # The user is specifying the blas directory
-            IF ( BLAS_LIB )
-                # The user is specifying both the blas directory and the blas library
-                FIND_LIBRARY ( BLAS_LIBRARIES NAMES ${BLAS_LIB} PATHS ${BLAS_DIRECTORY}  NO_DEFAULT_PATH )
-                IF ( NOT BLAS_LIBRARIES )
-                    MESSAGE( FATAL_ERROR "BLAS library not found in ${BLAS_DIRECTORY}" )
-                ENDIF()
-            ELSE()
-                # The user did not specify the library serach for a blas library
-                FIND_LIBRARY ( BLAS_LIBRARIES NAMES blas PATHS ${BLAS_DIRECTORY}  NO_DEFAULT_PATH )
-                IF ( NOT BLAS_LIBRARIES )
-                    MESSAGE( FATAL_ERROR "BLAS library not found in ${BLAS_DIRECTORY}" )
-                ENDIF()
-            ENDIF()
-        ELSEIF ( BLAS_LIB )
-            # The user is specifying the blas library (search for the file)
-            FIND_LIBRARY ( BLAS_LIBRARIES NAMES ${BLAS_LIB} )
-            IF ( NOT BLAS_LIBRARIES )
-                MESSAGE( FATAL_ERROR "BLAS library not found" )
-            ENDIF()
-        ELSE ()
-            # The user did not include BLAS directly, perform a search
-            INCLUDE ( FindBLAS )
-            IF ( NOT BLAS_FOUND )
-                MESSAGE( FATAL_ERROR "BLAS not found.  Try setting BLAS_DIRECTORY or BLAS_LIB" )
-            ENDIF()
-        ENDIF()
-        SET ( BLAS_LIBS ${BLAS_LIBRARIES} )
-        MESSAGE( "Using blas" )
-        MESSAGE( "   ${BLAS_LIBS}" )
-    ENDIF()
-ENDMACRO ()
-
-
-# Macro to configure the LAPACK
-MACRO ( CONFIGURE_LAPACK )
-    # Determine if we want to use LAPACK
-    CHECK_ENABLE_FLAG(USE_EXT_LAPACK 1 )
-    IF ( USE_EXT_LAPACK )
-        IF ( LAPACK_LIBRARIES )
-            # The user is specifying the lapack command directly
-        ELSEIF ( LAPACK_DIRECTORY )
-            # The user is specifying the lapack directory
-            IF ( LAPACK_LIB )
-                # The user is specifying both the lapack directory and the lapack library
-                FIND_LIBRARY ( LAPACK_LIBRARIES NAMES ${LAPACK_LIB} PATHS ${LAPACK_DIRECTORY}  NO_DEFAULT_PATH )
-                IF ( NOT LAPACK_LIBRARIES )
-                    MESSAGE( FATAL_ERROR "LAPACK library not found in ${LAPACK_DIRECTORY}" )
-                ENDIF()
-            ELSE()
-                # The user did not specify the library serach for a lapack library
-                FIND_LIBRARY ( LAPACK_LIBRARIES NAMES lapack PATHS ${LAPACK_DIRECTORY}  NO_DEFAULT_PATH )
-                IF ( NOT LAPACK_LIBRARIES )
-                    MESSAGE( FATAL_ERROR "LAPACK library not found in ${LAPACK_DIRECTORY}" )
-                ENDIF()
-            ENDIF()
-        ELSEIF ( LAPACK_LIB )
-            # The user is specifying the lapack library (search for the file)
-            FIND_LIBRARY ( LAPACK_LIBRARIES NAMES ${LAPACK_LIB} )
-            IF ( NOT LAPACK_LIBRARIES )
-                MESSAGE( FATAL_ERROR "LAPACK library not found" )
-            ENDIF()
-        ELSE ()
-            # The user did not include lapack directly, perform a search
-            INCLUDE ( FindLAPACK )
-            IF ( NOT LAPACK_FOUND )
-                MESSAGE( FATAL_ERROR "LAPACK not found.  Try setting LAPACK_DIRECTORY or LAPACK_LIB" )
-            ENDIF()
-        ENDIF()
-        SET ( LAPACK_LIBS ${LAPACK_LIBRARIES} )
-        MESSAGE( "Using lapack" )
-        MESSAGE( "   ${LAPACK_LIBS}" )
     ENDIF()
 ENDMACRO ()
 

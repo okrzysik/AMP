@@ -25,6 +25,7 @@
     // Note: windows has not been testeds
     #define USE_WINDOWS
     #include <windows.h>
+    #include <process.h>
     #include <stdio.h>   
     #include <tchar.h>
     #include <psapi.h>
@@ -34,6 +35,7 @@
     //#pragma comment(linker, /DEFAULTLIB:psapi.lib)
 #elif defined(__APPLE__)
     #define USE_MAC
+    #include <sys/time.h>
     #include <signal.h>
     #include <execinfo.h>
     #include <cxxabi.h>
@@ -49,6 +51,7 @@
     #include <execinfo.h>
     #include <dlfcn.h>
     #include <malloc.h>
+    #include <unistd.h>
 #else
     #error Unknown OS
 #endif
@@ -521,8 +524,51 @@ int Utilities::get_symbols( std::vector<void*>& address, std::vector<char>& type
     #endif
 }
 
+/****************************************************************************
+*  Functions to get the time and timer resolution                           *
+****************************************************************************/
+#if defined(USE_WINDOWS)
+    double Utilities::time() 
+    { 
+        LARGE_INTEGER end, f;
+        QueryPerformanceFrequency(&f);
+        QueryPerformanceCounter(&end);       
+        double time = ((double)end.QuadPart)/((double)f.QuadPart);
+        return time;
+    }
+    double Utilities::tick() 
+    { 
+        LARGE_INTEGER f;
+        QueryPerformanceFrequency(&f);
+        double resolution = ((double)1.0)/((double)f.QuadPart);
+        return resolution;
+    }
+#elif defined(USE_LINUX) || defined(USE_MAC)
+    double Utilities::time() 
+    { 
+        timeval current_time;
+        gettimeofday(&current_time,NULL);
+        double time = ((double)current_time.tv_sec)+1e-6*((double)current_time.tv_usec);
+        return time;
+    }
+    double Utilities::tick() 
+    { 
+        timeval start, end;
+        gettimeofday(&start,NULL);
+        gettimeofday(&end,NULL);
+        while ( end.tv_sec==start.tv_sec &&  end.tv_usec==start.tv_usec )
+            gettimeofday(&end,NULL);
+        double resolution = ((double)(end.tv_sec-start.tv_sec))+1e-6*((double)(end.tv_usec-start.tv_usec));
+        return resolution;
+    }
+#else
+    #error Unknown OS
+#endif
 
-// Print AMP Banner
+
+/****************************************************************************
+*  Print AMP Banner                                                         *
+****************************************************************************/
 void Utilities::printBanner()
 {
     std::ostringstream banner;
