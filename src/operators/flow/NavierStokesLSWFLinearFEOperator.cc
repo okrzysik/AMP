@@ -105,7 +105,11 @@ namespace AMP {
 
       for(unsigned int r = 0; r < numNodesInCurrElem; r++) {
         for(unsigned int d = 0; d < 10; d++) {
-          elementInputVectors[(10*r) + d]       = d_inVec->getValueByGlobalID( d_type0DofIndices[r][d]   );
+            if(d_inVec != NULL) {
+              elementInputVectors[(10*r) + d]       = d_inVec->getValueByGlobalID( d_type0DofIndices[r][d]   );
+            } else{
+              elementInputVectors[(10*r) + d]       = 0.0;
+            }
         }//end d
       }//end r     
 

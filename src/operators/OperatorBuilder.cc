@@ -27,6 +27,8 @@
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "operators/diffusion/FickSoretNonlinearFEOperator.h"
+#include "operators/flow/NavierStokesLSWFFEOperator.h"
+#include "operators/flow/NavierStokesLSWFLinearFEOperator.h"
 #include "operators/map/MapSurface.h"
 
 #include "discretization/DOF_Manager.h"
@@ -95,6 +97,14 @@ OperatorBuilder::createOperator(boost::shared_ptr<OperatorParameters>  in_params
     else if(name=="DiffusionNonlinearFEOperator")
     {
         retOperator.reset(new DiffusionNonlinearFEOperator(boost::dynamic_pointer_cast<DiffusionNonlinearFEOperatorParameters>(in_params)));
+    }
+    else if(name=="NavierStokesLSWFLinearFEOperator")
+    {
+        retOperator.reset(new NavierStokesLSWFLinearFEOperator(boost::dynamic_pointer_cast<NavierStokesLinearFEOperatorParameters>(in_params)));
+    }
+    else if(name=="NavierStokesLSWFFEOperator")
+    {
+        retOperator.reset(new NavierStokesLSWFFEOperator(boost::dynamic_pointer_cast<NavierStokesLSWFFEOperatorParameters>(in_params)));
     }
     else if(name=="FickSoretNonlinearFEOperator")
     {
@@ -211,6 +221,14 @@ OperatorBuilder::createOperator(AMP::Mesh::Mesh::shared_ptr meshAdapter,
     else if(operatorType=="DiffusionNonlinearFEOperator")
     {
         retOperator = OperatorBuilder::createNonlinearDiffusionOperator(meshAdapter, operator_db, elementPhysicsModel);
+    }
+    else if(operatorType=="NavierStokesLSWFLinearFEOperator")
+    {
+        retOperator = OperatorBuilder::createLinearNavierStokesLSWFOperator(meshAdapter, operator_db, elementPhysicsModel);
+    }
+    else if(operatorType=="NavierStokesLSWFFEOperator")
+    {
+        retOperator = OperatorBuilder::createNonlinearNavierStokesLSWFOperator(meshAdapter, operator_db, elementPhysicsModel);
     }
     else if(operatorType=="FickSoretNonlinearFEOperator")
     {
@@ -851,6 +869,99 @@ OperatorBuilder::createNonlinearMechanicsOperator( AMP::Mesh::Mesh::shared_ptr m
         new AMP::Operator::MechanicsNonlinearFEOperator( mechanicsOpParams ) );
   
     return mechanicsOp;
+}
+
+AMP::Operator::Operator::shared_ptr
+OperatorBuilder::createLinearNavierStokesLSWFOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                        boost::shared_ptr<AMP::Database> input_db,
+                        boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel)
+{
+  
+    if(elementPhysicsModel.get()==NULL)
+    {
+        AMP_INSIST(input_db->keyExists("FlowTransportModel"), "Key ''FlowTransportModel'' is missing!");
+      
+        boost::shared_ptr<AMP::Database> transportModel_db = input_db->getDatabase("FlowTransportModel");
+        elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
+    }
+  
+    AMP_INSIST(elementPhysicsModel.get()!=NULL,"NULL transport model");
+
+    // next create a ElementOperation object
+    AMP_INSIST(input_db->keyExists("FlowElement"), "Key ''FlowElement'' is missing!");
+    boost::shared_ptr<AMP::Operator::ElementOperation> flowLinElem = ElementOperationFactory::createElementOperation(input_db->getDatabase("FlowElement"));
+
+    // now create the linear flow operator
+    boost::shared_ptr<AMP::Database> flowLinFEOp_db;
+    if(input_db->getString("name")=="NavierStokesLSWFLinearFEOperator")
+    {
+        flowLinFEOp_db = input_db;
+    }
+    else
+    {
+        AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
+    }
+
+    AMP_INSIST(flowLinFEOp_db.get()!=NULL, "Error: The database object for FlowLinearFEOperator is NULL");
+
+    boost::shared_ptr<AMP::Operator::NavierStokesLinearFEOperatorParameters> flowOpParams(
+      new AMP::Operator::NavierStokesLinearFEOperatorParameters( flowLinFEOp_db ));
+    flowOpParams->d_transportModel = boost::dynamic_pointer_cast<FlowTransportModel>(elementPhysicsModel);
+    flowOpParams->d_elemOp = flowLinElem;
+    flowOpParams->d_Mesh = meshAdapter;
+    flowOpParams->d_inDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 10, true);
+    flowOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, 1, 10, true);
+
+    boost::shared_ptr<AMP::Operator::NavierStokesLSWFLinearFEOperator> flowOp (new AMP::Operator::NavierStokesLSWFLinearFEOperator( flowOpParams ));
+
+    return flowOp ;
+}
+
+
+AMP::Operator::Operator::shared_ptr
+OperatorBuilder::createNonlinearNavierStokesLSWFOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                           boost::shared_ptr<AMP::Database> input_db,
+                           boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel)
+{
+  
+    if(elementPhysicsModel.get()==NULL)
+    {
+        AMP_INSIST(input_db->keyExists("FlowTransportModel"), "Key ''FlowTransportModel'' is missing!");
+
+        boost::shared_ptr<AMP::Database> transportModel_db = input_db->getDatabase("FlowTransportModel");
+        elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
+    }
+  
+    AMP_INSIST(elementPhysicsModel.get()!=NULL,"NULL material model");
+
+    // next create a ElementOperation object
+    AMP_INSIST(input_db->keyExists("FlowElement"), "Key ''FlowElement'' is missing!");
+    boost::shared_ptr<AMP::Operator::ElementOperation> flowElem = ElementOperationFactory::createElementOperation(input_db->getDatabase("FlowElement"));
+
+    // now create the nonlinear mechanics operator
+    boost::shared_ptr<AMP::Database> flowFEOp_db;
+    if(input_db->getString("name")=="NavierStokesLSWFFEOperator")
+    {
+        flowFEOp_db = input_db;
+    }
+     else
+    {
+        AMP_INSIST(input_db->keyExists("name"), "Key ''name'' is missing!");
+    }
+  
+    AMP_INSIST(flowFEOp_db.get()!=NULL, "Error: The database object for FlowNonlinearFEOperator is NULL");
+
+    boost::shared_ptr<AMP::Operator::NavierStokesLSWFFEOperatorParameters> flowOpParams(
+        new AMP::Operator::NavierStokesLSWFFEOperatorParameters( flowFEOp_db ) );
+    flowOpParams->d_transportModel = boost::dynamic_pointer_cast<FlowTransportModel>(elementPhysicsModel);
+    flowOpParams->d_elemOp = flowElem;
+    flowOpParams->d_Mesh = meshAdapter;
+    flowOpParams->d_dofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::Vertex, 1, 10, true);
+    boost::shared_ptr<AMP::Operator::NavierStokesLSWFFEOperator> flowOp(
+        new AMP::Operator::NavierStokesLSWFFEOperator(flowOpParams) );
+  
+    return flowOp;
 }
 
 

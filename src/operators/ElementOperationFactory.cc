@@ -9,6 +9,8 @@
 #include "operators/mechanics/MechanicsNonlinearUpdatedLagrangianElement.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
 #include "operators/diffusion/DiffusionNonlinearElement.h"
+#include "operators/flow/NavierStokesLSWFLinearElement.h"
+#include "operators/flow/NavierStokesLSWFElement.h"
 #include "operators/mechanics/MechanicsElement.h"
 #include "operators/diffusion/DiffusionElement.h"
 
@@ -51,6 +53,14 @@ namespace AMP {
         else if (name=="DiffusionNonlinearElement")
         {
           retElementOp.reset(new DiffusionNonlinearElement(params));
+        }
+        else if (name=="NavierStokesLSWFLinearElement")
+        {
+          retElementOp.reset(new NavierStokesLSWFLinearElement(params));
+        }
+        else if (name=="NavierStokesLSWFElement")
+        {
+          retElementOp.reset(new NavierStokesLSWFElement(params));
         }
         else if (name=="MassLinearElement")
         {

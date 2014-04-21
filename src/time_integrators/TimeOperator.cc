@@ -62,6 +62,47 @@ TimeOperator::reset(const boost::shared_ptr<AMP::Operator::OperatorParameters>& 
 
 }
 
+void
+TimeOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+                 AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                 AMP::LinearAlgebra::Vector::shared_ptr r,
+                 const double a, const double b)
+{
+
+  // this routine evaluates a*[ ( M(u))/dt+fRhs(u) ] +b*f
+  // where the time operator is given by u_t = fRhs(u) 
+
+  boost::shared_ptr<AMP::LinearAlgebra::Vector>  fTmp;
+
+  AMP_INSIST(d_pMassOperator.get()!=NULL, "ERROR: AMP::TimeIntegrator::TimeIntegrator::TimeOperator::apply, the mass operator is NULL!");
+  AMP_INSIST(d_pRhsOperator.get()!=NULL, "ERROR: AMP::TimeIntegrator::TimeIntegrator::TimeOperator::apply, the rhs operator is NULL!");
+
+  if ( f.get()!=NULL)
+    AMP_ASSERT(f->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
+  if ( u.get()!=NULL)
+    AMP_ASSERT(u->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
+
+  d_pScratchVector = r->cloneVector();
+  d_pScratchVector->zero(); 
+
+  d_pMassOperator->apply(fTmp, u, r, 1.0/d_dCurrentDt, 0.0);
+  
+  d_pRhsOperator->apply(fTmp, u, d_pScratchVector, 1.0, 0.0);
+
+  r->add(*r, *d_pScratchVector);
+
+  if(f.get()==NULL)
+    {
+      r->scale(a);
+    }
+  else
+    {
+      r->axpby(b, a, *f);
+    }
+
+  r->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+}
+
 boost::shared_ptr<AMP::Operator::OperatorParameters>
 TimeOperator::getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u)
 {
@@ -71,7 +112,7 @@ TimeOperator::getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::
   timeOperator_db->putBool("bLinearMassOperator", d_bLinearMassOperator);
   timeOperator_db->putBool("bLinearRhsOperator", d_bLinearRhsOperator);
   timeOperator_db->putBool("bAlgebraicComponent", d_bAlgebraicComponent);
-  timeOperator_db->putDouble("ScalingFactor", 1.0);
+  timeOperator_db->putDouble("ScalingFactor", 1.0/d_dCurrentDt);
 
   boost::shared_ptr<TimeOperatorParameters> timeOperatorParameters(new AMP::TimeIntegrator::TimeOperatorParameters(timeOperator_db));
 

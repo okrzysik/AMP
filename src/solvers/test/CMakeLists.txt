@@ -522,6 +522,9 @@ IF( USE_EXT_PETSC )
     ADD_AMP_WEEKLY_TEST( testPetscSNESSolver-NonlinearFickSoret-1 2)
     ADD_AMP_TEST_PARALLEL( testPetscSNESSolver-NonlinearFickSoret-1 4 )
     ADD_AMP_TEST_1_2_4 ( testPetscSNESSolver-NonlinearFickSoret-2 )
+
+    ADD_AMP_PROVISIONAL_TEST ( testPetscSNESSolver-IncompressibleFlow-1 1)
+
 ENDIF()
 ADD_AMP_TEST_1_2_4 ( testMaterialModels_VonMisesPlasticity-1 )
 ADD_AMP_TEST_1_2_4 ( testMaterialModels_VonMisesPlasticity-2 )

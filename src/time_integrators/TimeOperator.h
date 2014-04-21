@@ -159,6 +159,10 @@ class TimeOperator: public AMP::Operator::Operator
    */
   AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable(){return d_pRhsOperator->getOutputVariable(); }
 
+  virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+          AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
+          const double a = -1.0, const double b = 1.0);
+
  protected:
   TimeOperator();
 

@@ -154,6 +154,14 @@ protected:
                                        boost::shared_ptr<AMP::Database> input_db,
                                        boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel);
 
+  static boost::shared_ptr<Operator> createLinearNavierStokesLSWFOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                                    boost::shared_ptr<AMP::Database> input_db,
+                                    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel);
+
+  static boost::shared_ptr<Operator> createNonlinearNavierStokesLSWFOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                                       boost::shared_ptr<AMP::Database> input_db,
+                                       boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel);
+
   static boost::shared_ptr<Operator>
   createLinearBVPOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                std::string operatorName,

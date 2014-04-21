@@ -204,8 +204,8 @@ namespace Operator {
         derror_i[8][3] = -1 * ((d_fmu/d_Re) * dphi[i][qp](1));
         derror_i[8][8] = phi[i][qp];
 
-        derror_i[9][1] = -1 * ((d_fmu/d_Re) * dphi[i][qp](0));
-        derror_i[9][3] = -1 * ((d_fmu/d_Re) * dphi[i][qp](2));
+        derror_i[9][1] = -1 * ((d_fmu/d_Re) * dphi[i][qp](2));
+        derror_i[9][3] = -1 * ((d_fmu/d_Re) * dphi[i][qp](0));
         derror_i[9][9] = phi[i][qp];
 
         for(unsigned int j = 0; j < num_nodes; j++) {
@@ -255,8 +255,8 @@ namespace Operator {
           derror_j[8][3] = -1 * ((d_fmu/d_Re) * dphi[j][qp](1));
           derror_j[8][8] = phi[j][qp];
 
-          derror_j[9][1] = -1 * ((d_fmu/d_Re) * dphi[j][qp](0));
-          derror_j[9][3] = -1 * ((d_fmu/d_Re) * dphi[j][qp](2));
+          derror_j[9][1] = -1 * ((d_fmu/d_Re) * dphi[j][qp](2));
+          derror_j[9][3] = -1 * ((d_fmu/d_Re) * dphi[j][qp](0));
           derror_j[9][9] = phi[j][qp];
 
           for(unsigned int ii = 0; ii < 10 ; ii++) {
