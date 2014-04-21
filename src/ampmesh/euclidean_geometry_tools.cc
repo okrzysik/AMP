@@ -70,9 +70,30 @@ double compute_vector_norm(double const * vector) {
 
 void normalize_vector(double * vector) {
   double vector_norm = compute_vector_norm(vector);
-  double normalizing_factor = 1.0 / vector_norm;
-  AMP_CHECK_ASSERT(normalizing_factor < 1.0e12);
-  for (unsigned int i = 0; i < 3; ++i) { vector[i] *= normalizing_factor; }
+  AMP_CHECK_ASSERT(vector_norm > 1.0e-14);
+  for (unsigned int i = 0; i < 3; ++i) { vector[i] /= vector_norm; }
+}
+
+void orthogonalize_vector_against_direction(double const * direction, double * vector) {
+  double scalar_product = compute_scalar_product(direction, vector);
+  double norm_squared = compute_scalar_product(direction, direction); 
+  AMP_CHECK_ASSERT(norm_squared > 1.0e-28);
+//  std::cout<<"orthogonalize  "<<norm_squared<<"  ";
+//  std::cout<<direction[0]<<"  "<<direction[1]<<"  "<<direction[2]<<"  ";
+//  std::cout<<vector[0]<<"  "<<vector[1]<<"  "<<vector[2]<<"  ";
+  for (unsigned int i = 0; i < 3; ++i) { vector[i] -= direction[i] * scalar_product / norm_squared; }
+//  std::cout<<vector[0]<<"  "<<vector[1]<<"  "<<vector[2]<<"\n";
+}
+
+void project_vector_onto_direction(double const * direction, double * vector) {
+  double scalar_product = compute_scalar_product(direction, vector);
+  double norm_squared = compute_scalar_product(direction, direction); 
+  AMP_CHECK_ASSERT(norm_squared > 1.0e-28);
+//  std::cout<<"project  "<<norm_squared<<"  ";
+//  std::cout<<direction[0]<<"  "<<direction[1]<<"  "<<direction[2]<<"  ";
+//  std::cout<<vector[0]<<"  "<<vector[1]<<"  "<<vector[2]<<"  ";
+  for (unsigned int i = 0; i < 3; ++i) { vector[i] = direction[i] * scalar_product / norm_squared; }
+//  std::cout<<vector[0]<<"  "<<vector[1]<<"  "<<vector[2]<<"\n";
 }
 
 double compute_distance_between_two_points(double const * start_point, double const * end_point) {

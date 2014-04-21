@@ -30,7 +30,8 @@ namespace AMP {
           @param [in] params 
           */
         NodeToFaceContactOperator (const boost::shared_ptr<ContactOperatorParameters> & params)
-          : ContactOperator(params)
+          : ContactOperator(params),
+            d_ContactIsFrictionless(false)
         {
           size_t rank = d_GlobalComm.getRank();
           std::string fileName = "debug_operator_" + boost::lexical_cast<std::string>(rank);
@@ -53,9 +54,33 @@ namespace AMP {
 
         void copyMasterToSlave(AMP::LinearAlgebra::Vector::shared_ptr u); 
 
+        void setSlaveToZero(AMP::LinearAlgebra::Vector::shared_ptr u);
+
+        void addShiftToSlave(AMP::LinearAlgebra::Vector::shared_ptr u);
+
         void initialize();
 
         size_t updateActiveSet(AMP::LinearAlgebra::Vector::shared_ptr displacementFieldVector, bool skipDisplaceMesh = false);
+
+        size_t updateActiveSetWithALittleHelp(AMP::LinearAlgebra::Vector::shared_ptr helpVector) {
+          AMP_ASSERT( d_ActiveSet.empty() ); // meant to be use as initial guess only!
+          AMP::LinearAlgebra::Vector::shared_ptr masterDisplacement = helpVector->select(AMP::LinearAlgebra::VS_Mesh(d_Mesh->Subset(d_MasterMeshID)), "dummy");
+          AMP_ASSERT( masterDisplacement->L2Norm() == 0.0 ); // need to change slightly correction otherwise
+          d_Mesh->displaceMesh(helpVector);
+          size_t const holdOn = updateActiveSet(helpVector, true);
+          size_t const sizeOfActiveSet = d_ActiveSet.size();
+          std::vector<size_t> dofIndices;
+          double shiftCorrection[3];
+          for (size_t i = 0; i < sizeOfActiveSet; ++i) {
+            d_DOFManager->getDOFs(d_ActiveSet[i], dofIndices);
+            AMP_ASSERT( dofIndices.size() == 3 );
+            helpVector->getLocalValuesByGlobalID(3, &(dofIndices[0]), &(shiftCorrection[0]));
+            std::transform(&(d_SlaveShift[3*i]), &(d_SlaveShift[3*i])+3, &(shiftCorrection[0]), &(d_SlaveShift[3*i]), std::plus<double>());
+          } // end for i
+          helpVector->scale(-1.0);
+          d_Mesh->displaceMesh(helpVector);
+          return holdOn;
+        }
 
         void uglyHack(AMP::LinearAlgebra::Vector::shared_ptr temperatureFieldVector, AMP::Discretization::DOFManager::shared_ptr temperatureDOFManager, 
             double thermalExpansionCoefficient, double referenceTemperature) {
@@ -66,9 +91,16 @@ namespace AMP {
         }
 
         void getSlaveVerticesNormalVectorAndSurfaceTraction(std::vector<double> const * & normalVector, std::vector<double> const * & surfaceTraction) const {
-          normalVector = & d_SlaveVerticesNormalVectors;
-          surfaceTraction = & d_SlaveVerticesSurfaceTraction;
+          normalVector = & d_SlaveVerticesNormalVectorBeforeUpdate;
+          surfaceTraction = & d_SlaveVerticesSurfaceTractionBeforeUpdate;
         }
+
+        void getSlaveVerticesNormalVectorAndShift(std::vector<double> const * & normalVector, std::vector<double> const * & shift) const {
+          normalVector = & d_SlaveVerticesNormalVector;
+          shift = & d_SlaveShift;
+        }
+
+        void setContactIsFrictionless(bool isItReally) { d_ContactIsFrictionless = isItReally; }
 
       protected :
 
@@ -101,15 +133,19 @@ namespace AMP {
         std::vector<size_t> d_MasterVerticesInverseMap;
         std::vector<size_t> d_MasterVerticesOwnerRanks;
         std::vector<double> d_MasterShapeFunctionsValues;
-        std::vector<double> d_SlaveVerticesShift;
+//        std::vector<double> d_SlaveVerticesShift;
 
         std::vector<AMP::Mesh::MeshElementID> d_MasterVolumesGlobalIDs;
         std::vector<size_t> d_MasterFacesLocalIndices;
-        std::vector<double> d_SlaveVerticesNormalVectors;
-        std::vector<double> d_SlaveVerticesSurfaceTraction;
+        std::vector<double> d_SlaveVerticesNormalVector;
+
+        std::vector<double> d_SlaveVerticesSurfaceTractionBeforeUpdate;
+        std::vector<double> d_SlaveVerticesNormalVectorBeforeUpdate;
 
         boost::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable; /**< Input variable */
         boost::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
+
+        bool d_ContactIsFrictionless;
 
         std::fstream d_fout;
     };
@@ -125,9 +161,14 @@ namespace AMP {
       double d_SlaveVertexSurfaceTraction[3];
     };
 
-   struct FaceData {
-     AMP::Mesh::MeshElementID d_FaceVerticesGlobalIDs[4];
-   };
+    struct AnotherDataWithNoName {
+      double d_NormalVector[3];
+      double d_Displacement[3];
+    };
+
+    struct FaceData {
+      AMP::Mesh::MeshElementID d_FaceVerticesGlobalIDs[4];
+    };
 
   }
 }

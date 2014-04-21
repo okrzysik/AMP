@@ -206,7 +206,10 @@ double NullVector::dot(const VectorOperations &) const
 }
 
 
-void NullVector::putRawData ( double * ) 
+void NullVector::putRawData ( const double * ) 
+{
+}
+void NullVector::copyOutRawData ( double *out ) const
 {
 }
 

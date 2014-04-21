@@ -81,7 +81,8 @@ namespace LinearAlgebra {
       virtual double maxNorm(void) const;
       virtual double dot(const VectorOperations &) const;
 
-      virtual void putRawData ( double * );
+      virtual void putRawData ( const double *in );
+      virtual void copyOutRawData ( double *out ) const;
 
       virtual size_t getLocalSize() const;
       virtual size_t getGlobalSize() const;

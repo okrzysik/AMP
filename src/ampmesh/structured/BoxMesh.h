@@ -73,6 +73,64 @@ class structuredMeshIterator;
 class BoxMesh: public AMP::Mesh::Mesh
 {
 public:
+    /**
+     * \class Box
+     * \brief Structure to identify a logical box
+     * \details  This class contains a logical box
+     */
+    class Box{
+      public:
+        /**
+         * \brief   Default constructor
+         * \details  The default constructor
+         * \param ifirst  First x-coordinate
+         * \param ilast   Last x-coordinate
+         * \param jfirst  First y-coordinate
+         * \param jlast   Last y-coordinate
+         * \param kfirst  First z-coordinate
+         * \param klast   Last z-coordinate
+         */
+        inline Box( int ifirst, int ilast, int jfirst=0, int jlast=0, int kfirst=0, int klast=0 ); 
+        inline Box();           //!< Empty constructor
+        int first[3];           //!< Starting element
+        int last[3];            //!< Ending element
+      private:
+    };
+
+    /**
+     * \class MeshElementIndex
+     * \brief Structure to uniquely identify an element
+     * \details  This class help convert between logical coordinates and the mesh element of interest
+     */
+    class MeshElementIndex{
+      public:
+        //! Empty constructor
+        inline MeshElementIndex(); 
+        /**
+         * \brief   Default constructor
+         * \details  The default constructor
+         * \param type  Element type
+         * \param side  Side of the parent element (ignored if it is the parent or vertex)
+         * \param x     Logical coordinate of the element
+         * \param y     Logical coordinate of the element
+         * \param x     Logical coordinate of the element
+         */
+        inline MeshElementIndex(GeomType type, unsigned char side, int x, int y=0, int z=0); 
+        inline bool operator== (const MeshElementIndex& rhs ) const;    //!< Operator ==
+        inline bool operator!= (const MeshElementIndex& rhs ) const;    //!< Operator !=
+        inline bool operator>  (const MeshElementIndex& rhs ) const;    //!< Operator >
+        inline bool operator>= (const MeshElementIndex& rhs ) const;    //!< Operator >=
+        inline bool operator<  (const MeshElementIndex& rhs ) const;    //!< Operator <
+        inline bool operator<= (const MeshElementIndex& rhs ) const;    //!< Operator <=
+      private:
+        unsigned char type;         //!<  Mesh element type
+        unsigned char side;         //!<  Are we dealing with x, y, or z faces/edges
+        int index[3];               //!<  Global x, y, z index (may be negitive with periodic boundaries)
+      friend class BoxMesh;
+      friend class structuredMeshElement;
+    };
+
+public:
 
 
     /**
@@ -94,6 +152,15 @@ public:
      * \param params Parameters for constructing a mesh from an input database
      */
     static size_t estimateMeshSize( const MeshParameters::shared_ptr &params );
+
+
+    /**
+     * \brief   Return the maximum number of processors that can be used with the mesh
+     * \details  This function will return the maximum number of processors that can 
+     *   be used with the mesh.
+     * \param params Parameters for constructing a mesh from an input database
+     */
+    static size_t maxProcs( const MeshParameters::shared_ptr &params );
 
 
     //! Deconstructor
@@ -231,56 +298,31 @@ public:
 #endif
 
 
-protected:
+    //! Return the global logical box
+    inline Box getGlobalBox( int gcw=0 ) const;
 
-    // Structure to uniquely identify an element
-    struct MeshElementIndex{
-        unsigned char type;     // Mesh element type
-        unsigned char side;     // Are we dealing with x, y, or z faces/edges
-        int index[3];           // Global x, y, z index (may be negitive with periodic boundaries)
-        MeshElementIndex() {    // Empty constructor
-            type = 0;
-            side = 0;
-            index[0] = 0;
-            index[1] = 0;
-            index[2] = 0;
-        };
-        MeshElementIndex(unsigned char type_in, unsigned char side_in, int x, int y=0, int z=0) {
-            type = type_in;
-            side = side_in;
-            index[0] = x;
-            index[1] = y;
-            index[2] = z;
-        };
-        inline bool operator== (const MeshElementIndex& rhs ) const {
-            return type==rhs.type && side==rhs.side && index[0]==rhs.index[0] 
-                && index[1]==rhs.index[1] && index[2]==rhs.index[2];
-        }
-        inline bool operator!= (const MeshElementIndex& rhs ) const {
-            return type!=rhs.type || side!=rhs.side || index[0]!=rhs.index[0] 
-                || index[1]!=rhs.index[1] || index[2]!=rhs.index[2];
-        }
-        inline bool operator> (const MeshElementIndex& rhs ) const {
-            if ( type < rhs.type ) { return false; }
-            else if ( type > rhs.type ) { return true; }
-            if ( side < rhs.side ) { return false; }
-            else if ( side > rhs.side ) { return true; }
-            for (int i=2; i>=0; i--) {
-                if ( index[i] < rhs.index[i] ) { return false; }
-                else if ( index[i] > rhs.index[i] ) { return true; }
-            }
-            return false;
-        }
-        inline bool operator>= (const MeshElementIndex& rhs ) const {
-            return this->operator>(rhs) || this->operator==(rhs);
-        }
-        inline bool operator< (const MeshElementIndex& rhs ) const {
-            return !this->operator>(rhs) && !this->operator==(rhs);
-        }
-        inline bool operator<= (const MeshElementIndex& rhs ) const {
-            return !this->operator>(rhs);
-        }
-    };
+
+    //! Return the local logical box
+    inline Box getLocalBox( int gcw=0 ) const;
+
+
+    //! Return the bool vector indicating which directions are periodic
+    inline std::vector<bool> periodic() const;
+
+
+    /**
+     * \brief    Return a mesh element given it's id.
+     * \details  This function queries the mesh to get an element given the mesh id.
+     *    This function is only required to return an element if the id is local.
+     *    Ideally, this should be done in O(1) time, but the implimentation is up to 
+     *    the underlying mesh.  The base class provides a basic implimentation, but 
+     *    uses mesh iterators and requires O(N) time on the number of elements in the mesh.
+     * \param index    Mesh element index we are requesting.
+     */
+    MeshElement getElement ( const MeshElementIndex &index ) const;
+
+
+protected:
 
     // Function to initialize the mesh data once the mesh has been created
     void initialize();
@@ -298,7 +340,7 @@ protected:
     // Internal data
     bool d_isPeriodic[3];                   // Which directions are periodic
     int d_size[3];                          // The size of the logical domain in each direction
-    int d_numBlocks[3];                     // The number of local boxes in each direction
+    int d_numBlocks[3];                     // The number of local box in each direction
     std::vector<MeshElementIndex> d_index;  // The indicies of the nodes we are storing
     std::vector<double> d_coord[3];         // The coordinates of the nodes
 
@@ -331,11 +373,19 @@ protected:
     // Note: this changes the x, y, and z values
     static void map_logical_sphere( size_t N, double r, double *x, double *y, double *z );
 
+    // Helper function to create the logical mesh
+    static void createLogicalMesh( boost::shared_ptr<AMP::Database> db,
+        std::vector<int>& meshSize, std::vector<bool>& isPeriodic, std::vector<int>& minSize );
+
 };
 
 
 } // Mesh namespace
 } // AMP namespace
+
+
+#include "ampmesh/structured/BoxMesh.inline.h"
+
 
 #endif
 

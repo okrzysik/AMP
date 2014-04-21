@@ -142,7 +142,7 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
         if ( !d_ownSubChannel[i] )
             continue;
         AMP::Mesh::MeshIterator localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
-        AMP::Mesh::Mesh::shared_ptr localSubchannel = d_Mesh->Subset( localSubchannelIt  );
+        AMP::Mesh::Mesh::shared_ptr localSubchannel = d_Mesh->Subset( localSubchannelIt, false );
         AMP::Mesh::MeshIterator face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(localSubchannel, 0);
         for (size_t j=0; j<face.size(); j++) {
             d_subchannelFace[i].push_back( *face );
@@ -206,12 +206,8 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
     std::vector<double> box = d_Mesh->getBoundingBox();
     const double height = box[5] - box[4];
 
-    // create vector of the mid points of each axial interval
-    std::vector<double> zMid(d_z.size()-1);
-    for (size_t j = 0; j < d_z.size()-1; ++j)
-       zMid[j] = d_z[j] + 0.5*(d_z[j+1] - d_z[j]);
-
-    AMP::Mesh::MeshIterator cell = d_Mesh->getIterator(AMP::Mesh::Volume, 0); // iterator for cells of mesh
+    // iterator for cells of mesh
+    AMP::Mesh::MeshIterator cell = d_Mesh->getIterator(AMP::Mesh::Volume, 0); 
 
     // put elements in array by subchannel
     std::vector<std::vector<AMP::Mesh::MeshElement> > d_elem(d_numSubchannels);
@@ -798,29 +794,30 @@ void SubchannelFourEqLinearOperator :: reset(const boost::shared_ptr<OperatorPar
                   std::vector<double> axialCell2Centroid = axialCell2.centroid();
                   // determine which cell is top cell
                   AMP::Mesh::MeshElement *topCell;
-                  std::vector<double> *topCellCentroid;
                   if (axialCell1Centroid[2] > cell1PlusFaceCentroid[2]) {
                      // axialCell1 is top cell
                      // ensure that axialCell2 is above
                      AMP_INSIST(axialCell2Centroid[2] < cell1PlusFaceCentroid[2],"Both adjacent cells are above axial face parent");
                      topCell = &axialCell1;
-                     topCellCentroid = &axialCell1Centroid;
                   } else {
                      // axialCell2 is top cell
                      // ensure that axialCell1 is above
                      AMP_INSIST(axialCell1Centroid[2] < cell1PlusFaceCentroid[2],"Both adjacent cells are above axial face parent");
                      topCell = &axialCell2;
-                     topCellCentroid = &axialCell2Centroid;
                   }
                   AMP::Mesh::MeshElement aboveLateralFace = getAxiallyAdjacentLateralFace(topCell,lateralFace,interiorLateralFaceMap);
                   dof_manager->getDOFs(aboveLateralFace.globalID(),gapPlusDofs);
                   w_plus = w_scale*d_frozenVec->getValueByGlobalID(gapPlusDofs[0]);
                }
 
-               if (m_gap_avg >= 0.0) w_axialDonor_plus = w_mid;
-               else                  w_axialDonor_plus = w_plus;
-               if (m_bottomMid >= 0.0) w_axialDonor_minus = w_minus;
-               else                    w_axialDonor_minus = w_mid;
+               if (m_gap_avg >= 0.0) 
+                  w_axialDonor_plus = w_mid;
+               else
+                  w_axialDonor_plus = w_plus;
+               if (m_bottomMid >= 0.0)
+                  w_axialDonor_minus = w_minus;
+               else
+                  w_axialDonor_minus = w_mid;
 
                // compute distance between centroids of cells adjacent to gap
                double x_distance = std::abs(cell1Centroid[0] - cell2Centroid[0]);
@@ -1072,27 +1069,35 @@ void SubchannelFourEqLinearOperator::fillSubchannelGrid(AMP::Mesh::Mesh::shared_
     d_Mesh->getComm().setGather(x);
     d_Mesh->getComm().setGather(y);
     d_Mesh->getComm().setGather(z);
-    double last = 1.0e300; // arbitary large number
     // erase duplicate x points
+    double last = 1.0e300; 
     for (std::set<double>::iterator it=x.begin(); it!=x.end(); ++it) {
-        if ( Utilities::approx_equal_abs(last,*it,1e-12) )
+        if ( Utilities::approx_equal_abs(last,*it,1e-12) ) {
             x.erase(it);
-        else
+            it = x.find(last);
+        } else {
             last = *it;
+        }
     }
     // erase duplicate y points
+    last = 1.0e300; 
     for (std::set<double>::iterator it=y.begin(); it!=y.end(); ++it) {
-        if ( Utilities::approx_equal_abs(last,*it,1e-12) )
+        if ( Utilities::approx_equal_abs(last,*it,1e-12) ) {
             y.erase(it);
-        else
+            it = y.find(last);
+        } else {
             last = *it;
+        }
     }
     // erase duplicate z points
+    last = 1.0e300; 
     for (std::set<double>::iterator it=z.begin(); it!=z.end(); ++it) {
-        if ( Utilities::approx_equal_abs(last,*it,1e-12) )
+        if ( Utilities::approx_equal_abs(last,*it,1e-12) ) {
             z.erase(it);
-        else
+            it = z.find(last);
+        } else {
             last = *it;
+        }
     }
     d_x = std::vector<double>(x.begin(),x.end());
     d_y = std::vector<double>(y.begin(),y.end());

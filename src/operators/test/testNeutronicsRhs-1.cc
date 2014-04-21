@@ -14,7 +14,7 @@
 #include "utils/Writer.h"
 #include "vectors/Vector.h"
 #include "operators/NeutronicsRhs.h"
-#include "operators/SourceNonlinearElement.h"
+#include "operators/libmesh/SourceNonlinearElement.h"
 #include "operators/ElementPhysicsModelFactory.h"
 #include "operators/ElementOperationFactory.h"
 

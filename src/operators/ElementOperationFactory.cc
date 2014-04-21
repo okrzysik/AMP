@@ -1,80 +1,61 @@
 
 #include "ElementOperationFactory.h"
 #include "utils/Utilities.h"
-#include "MassLinearElement.h"
-#include "SourceNonlinearElement.h"
-#include "operators/mechanics/MechanicsLinearElement.h"
-#include "operators/mechanics/MechanicsNonlinearElement.h"
-#include "operators/mechanics/MechanicsLinearUpdatedLagrangianElement.h"
-#include "operators/mechanics/MechanicsNonlinearUpdatedLagrangianElement.h"
-#include "operators/diffusion/DiffusionLinearElement.h"
-#include "operators/diffusion/DiffusionNonlinearElement.h"
-#include "operators/flow/NavierStokesLSWFLinearElement.h"
-#include "operators/flow/NavierStokesLSWFElement.h"
-#include "operators/mechanics/MechanicsElement.h"
-#include "operators/diffusion/DiffusionElement.h"
+
+#ifdef USE_EXT_LIBMESH
+    #include "operators/libmesh/MassLinearElement.h"
+    #include "operators/libmesh/SourceNonlinearElement.h"
+    #include "operators/mechanics/MechanicsLinearElement.h"
+    #include "operators/mechanics/MechanicsNonlinearElement.h"
+    #include "operators/mechanics/MechanicsLinearUpdatedLagrangianElement.h"
+    #include "operators/mechanics/MechanicsNonlinearUpdatedLagrangianElement.h"
+    #include "operators/diffusion/DiffusionLinearElement.h"
+    #include "operators/diffusion/DiffusionNonlinearElement.h"
+    #include "operators/mechanics/MechanicsElement.h"
+    #include "operators/diffusion/DiffusionElement.h"
+#endif
+
+
+#define resetElementOperation(NAME)                 \
+    do {                                            \
+        if ( name == #NAME )                        \
+            retElementOp.reset( new NAME(params) ); \
+    } while(0)
 
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    boost::shared_ptr<ElementOperation>
-      ElementOperationFactory::createElementOperation(boost::shared_ptr<Database>  elementOperationDb )
-      {
-        boost::shared_ptr<ElementOperation> retElementOp;
-        boost::shared_ptr<ElementOperationParameters> params;
 
-        AMP_INSIST(elementOperationDb.get()!=NULL, "ElementOperationFactory::createElementOperation:: NULL Database object input");
+boost::shared_ptr<ElementOperation>
+ElementOperationFactory::createElementOperation(boost::shared_ptr<Database>  elementOperationDb )
+{
+    boost::shared_ptr<ElementOperation> retElementOp;
+    boost::shared_ptr<ElementOperationParameters> params;
 
-        std::string name = elementOperationDb->getString("name");
+    AMP_INSIST(elementOperationDb.get()!=NULL, "ElementOperationFactory::createElementOperation:: NULL Database object input");
 
-        params.reset( new ElementOperationParameters(elementOperationDb));
+    std::string name = elementOperationDb->getString("name");
 
-        if(name=="MechanicsLinearElement")
-        {
-          retElementOp.reset(new MechanicsLinearElement(params));
-        }
-        else if(name=="MechanicsNonlinearElement")
-        {
-          retElementOp.reset(new MechanicsNonlinearElement(params));
-        }
-        else if(name=="MechanicsLinearUpdatedLagrangianElement")
-        {
-          retElementOp.reset(new MechanicsLinearUpdatedLagrangianElement(params));
-        }
-        else if(name=="MechanicsNonlinearUpdatedLagrangianElement")
-        {
-          retElementOp.reset(new MechanicsNonlinearUpdatedLagrangianElement(params));
-        }
-        else if (name=="DiffusionLinearElement")
-        {
-          retElementOp.reset(new DiffusionLinearElement(params));
-        }
-        else if (name=="DiffusionNonlinearElement")
-        {
-          retElementOp.reset(new DiffusionNonlinearElement(params));
-        }
-        else if (name=="NavierStokesLSWFLinearElement")
-        {
-          retElementOp.reset(new NavierStokesLSWFLinearElement(params));
-        }
-        else if (name=="NavierStokesLSWFElement")
-        {
-          retElementOp.reset(new NavierStokesLSWFElement(params));
-        }
-        else if (name=="MassLinearElement")
-        {
-          retElementOp.reset(new MassLinearElement(params));
-        }
-        else if (name=="SourceNonlinearElement")
-        {
-          retElementOp.reset(new SourceNonlinearElement(params));
-        }
+    params.reset( new ElementOperationParameters(elementOperationDb));
 
-        return retElementOp;
-      }
-  }
+    #ifdef USE_EXT_LIBMESH
+        resetElementOperation(MechanicsLinearElement);
+        resetElementOperation(MechanicsNonlinearElement);
+        resetElementOperation(MechanicsLinearUpdatedLagrangianElement);
+        resetElementOperation(MechanicsNonlinearUpdatedLagrangianElement);
+        resetElementOperation(DiffusionLinearElement);
+        resetElementOperation(DiffusionNonlinearElement);
+        resetElementOperation(MassLinearElement);
+        resetElementOperation(SourceNonlinearElement);
+    #endif
 
+    return retElementOp;
 }
+
+
+} // namespace Operator
+} // namespace AMP
+
 
 

@@ -23,14 +23,12 @@ ManagedEpetraVector::ManagedEpetraVector( shared_ptr alias ):
 void ManagedEpetraVector::copyVector(const Vector::const_shared_ptr &vec)
 {
     // there must be a more sensible way of doing this but I can't find the documentation - BP
-    if ( vec->isA<ManagedEpetraVector>() )
-    {
-      double scale = 1.0;
-      getEpetra_Vector().Scale(scale, vec->castTo<EpetraVector>().getEpetra_Vector());
-    }
-    else
-    {
-      Vector::copyVector ( vec );
+    if ( vec->isA<ManagedEpetraVector>() ) {
+        double scale = 1.0;
+        getEpetra_Vector().Scale(scale, vec->castTo<EpetraVector>().getEpetra_Vector());
+        copyGhostValues( vec );
+    } else {
+        Vector::copyVector( vec );
     }
 }
   

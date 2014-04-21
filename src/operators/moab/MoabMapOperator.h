@@ -19,7 +19,7 @@
 #include "vectors/Vector.h"
 #include "vectors/DataChangeFirer.h"
 #include "operators/ElementPhysicsModel.h"
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/OperatorBuilder.h"
 
 #include "operators/moab/MoabBasedOperator.h"

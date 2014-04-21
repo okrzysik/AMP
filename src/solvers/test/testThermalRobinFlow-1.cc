@@ -13,13 +13,13 @@
 
 #include "utils/Writer.h"
 #include "vectors/Vector.h"
-#include "operators/MassLinearElement.h"
+#include "operators/libmesh/MassLinearElement.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "operators/MassLinearFEOperator.h"
+#include "operators/libmesh/MassLinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
 #include "operators/diffusion/DiffusionTransportModel.h"
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/subchannel/FlowFrapconOperator.h"
 #include "operators/subchannel/FlowFrapconJacobian.h"
 #include "operators/NeutronicsRhs.h"
@@ -37,9 +37,9 @@
 #include "operators/boundary/NeumannVectorCorrectionParameters.h"
 #include "operators/boundary/DirichletMatrixCorrection.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/boundary/RobinMatrixCorrection.h"
+#include "operators/boundary/libmesh/RobinMatrixCorrection.h"
 #include "operators/boundary/RobinVectorCorrection.h"
-#include "operators/boundary/NeumannVectorCorrection.h"
+#include "operators/boundary/libmesh/NeumannVectorCorrection.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 
@@ -64,7 +64,6 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   AMP::PIO::logAllNodes(log_file);
 
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  std::string mesh_file = input_db->getString("Mesh");
 
   AMP::Mesh::MeshManagerParameters::shared_ptr mgrParams ( new AMP::Mesh::MeshManagerParameters ( input_db ) );
   AMP::Mesh::MeshManager::shared_ptr manager ( new AMP::Mesh::MeshManager ( mgrParams ) );
@@ -207,7 +206,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   flowOperator->setVector(cladVec);
   flowJacobian->setVector(cladVec);
 
-  double Cp, De, G, K, Re, Pr, heff, dz, nP;
+  double Cp, De, G, K, Re, Pr, heff, nP;
 
   Cp  = (flowDatabase)->getDouble("Heat_Capacity");
   De  = (flowDatabase)->getDouble("Channel_Diameter");
@@ -216,6 +215,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   Re  = (flowDatabase)->getDouble("Reynolds");
   Pr  = (flowDatabase)->getDouble("Prandtl");
   nP  = (flowDatabase)->getDouble("numpoints");
+  NULL_USE(Cp);  NULL_USE(G);  NULL_USE(nP);
 
   heff = (0.023*K/De)*pow(Re,0.8)*pow(Pr,0.4);
 

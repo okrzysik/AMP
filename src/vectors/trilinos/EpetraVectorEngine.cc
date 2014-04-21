@@ -291,6 +291,19 @@ EpetraVectorEngine::EpetraVectorEngine ( VectorEngineParameters::shared_ptr  ali
     return retVal;
   }
 
+  void EpetraVectorEngine::putRawData ( const double *in )
+  {
+    double *p;
+    getEpetra_Vector().ExtractView ( &p );
+    size_t N = getLocalSize();
+    memcpy(p,in,N*sizeof(double));
+  }
+
+  void EpetraVectorEngine::copyOutRawData ( double *out ) const
+  {
+    getEpetra_Vector().ExtractCopy ( out );
+  }
+
 }
 }
 

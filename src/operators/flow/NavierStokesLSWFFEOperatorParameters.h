@@ -4,7 +4,7 @@
 
 #include "operators/flow/FlowTransportModel.h"
 #include "operators/flow/NavierStokesConstants.h"
-#include "operators/FEOperatorParameters.h"
+#include "operators/libmesh/FEOperatorParameters.h"
 #include "vectors/Vector.h"
 
 namespace AMP {

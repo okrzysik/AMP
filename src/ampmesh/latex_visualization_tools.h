@@ -10,7 +10,9 @@ void write_cycle(unsigned int n, double const * * c, std::ostream & os = std::co
 void write_face(double const * * f, std::ostream & os = std::cout);
 void write_triangle(double const * * t, std::ostream & os = std::cout);
 
-void draw_point(double const * p, const std::string & option = "", std::ostream & os = std::cout);
+void draw_point(double const * p, const std::string & option = "", std::ostream & os = std::cout, const std::string & text = ".");
+void draw_line(double const * b, double const * e, const std::string & option = "", std::ostream & os = std::cout);
+void draw_line(unsigned int n, double const * l, const std::string & option = "", std::ostream & os = std::cout);
 void draw_triangle(triangle_t * t_ptr, const std::string & option = "", std::ostream & os = std::cout);
 void draw_face(hex8_element_t * e_ptr, unsigned int f, const std::string & option = "", std::ostream & os = std::cout);
 

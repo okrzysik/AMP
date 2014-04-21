@@ -6,7 +6,7 @@
 
 #include "boost/shared_ptr.hpp"
 
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/NeutronicsRhs.h"
 
 #include "utils/Database.h"
@@ -215,7 +215,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     double finalRhsNorm  = rhsVec->L2Norm();
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
-    std::cout << "Final Solution Norm: " << solVec->L2Norm()  << std::endl;
+    std::cout << "Final Solution Norm: " << finalSolutionNorm << std::endl;
     std::cout << "Final Rhs Norm: "      << finalRhsNorm      << std::endl;
 
     if( fabs(finalResidualNorm) > 1e-9 )

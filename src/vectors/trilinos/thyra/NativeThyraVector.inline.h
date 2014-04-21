@@ -53,15 +53,6 @@ inline void NativeThyraVector::getValuesByLocalID ( int numVals , size_t *ndx , 
 }
 
 
-inline void NativeThyraVector::copyOutRawData ( double **out )
-{
-    *out = new double [getLocalSize()];
-    std::copy ( getRawDataBlock<double> ( 0 ) ,
-                getRawDataBlock<double> ( 0 ) + getLocalSize() ,
-                *out );
-}
-
-
 inline Vector::shared_ptr  NativeThyraVector::getManagedVectorCopy ( AMP_MPI comm )
 {
     AMP_ERROR("Not programmed yet");

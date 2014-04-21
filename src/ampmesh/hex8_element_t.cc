@@ -164,10 +164,16 @@ void hex8_element_t::build_bounding_polyhedron() {
     tmp_triangles_ptr.push_back(new triangle_t(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]), get_support_point(faces[4*i+2])));
 
     //this might need scaling
-    if (tmp_triangles_ptr[0]->above_point(tmp_triangles_ptr[2]->get_centroid())) {
-      assert(tmp_triangles_ptr[0]->above_point(tmp_triangles_ptr[3]->get_centroid()));
-      assert(tmp_triangles_ptr[1]->above_point(tmp_triangles_ptr[2]->get_centroid()));
-      assert(tmp_triangles_ptr[1]->above_point(tmp_triangles_ptr[3]->get_centroid()));
+    double tolerance = 0.0;
+    tolerance += compute_distance_between_two_points(get_support_point(faces[4*i+0]), get_support_point(faces[4*i+1]));
+    tolerance += compute_distance_between_two_points(get_support_point(faces[4*i+1]), get_support_point(faces[4*i+2]));
+    tolerance += compute_distance_between_two_points(get_support_point(faces[4*i+2]), get_support_point(faces[4*i+3]));
+    tolerance += compute_distance_between_two_points(get_support_point(faces[4*i+3]), get_support_point(faces[4*i+0]));
+    tolerance *= 0.25e-12;
+    if (tmp_triangles_ptr[0]->above_point(tmp_triangles_ptr[2]->get_centroid(), tolerance)) {
+      assert(tmp_triangles_ptr[0]->above_point(tmp_triangles_ptr[3]->get_centroid(), tolerance));
+      assert(tmp_triangles_ptr[1]->above_point(tmp_triangles_ptr[2]->get_centroid(), tolerance));
+      assert(tmp_triangles_ptr[1]->above_point(tmp_triangles_ptr[3]->get_centroid(), tolerance));
       // will fail if the four points are coplanar
       /*      assert(!tmp_triangles[2].above_point(tmp_triangles[0].get_centroid()));
               assert(!tmp_triangles[2].above_point(tmp_triangles[1].get_centroid()));
@@ -182,10 +188,10 @@ void hex8_element_t::build_bounding_polyhedron() {
          assert(!tmp_triangles[0].above_point(tmp_triangles[3].get_centroid()));
          assert(!tmp_triangles[1].above_point(tmp_triangles[2].get_centroid()));
          assert(!tmp_triangles[1].above_point(tmp_triangles[3].get_centroid()));*/
-      assert(tmp_triangles_ptr[2]->above_point(tmp_triangles_ptr[0]->get_centroid()));
-      assert(tmp_triangles_ptr[2]->above_point(tmp_triangles_ptr[1]->get_centroid()));
-      assert(tmp_triangles_ptr[3]->above_point(tmp_triangles_ptr[0]->get_centroid()));
-      assert(tmp_triangles_ptr[3]->above_point(tmp_triangles_ptr[1]->get_centroid()));
+      assert(tmp_triangles_ptr[2]->above_point(tmp_triangles_ptr[0]->get_centroid(), tolerance));
+      assert(tmp_triangles_ptr[2]->above_point(tmp_triangles_ptr[1]->get_centroid(), tolerance));
+      assert(tmp_triangles_ptr[3]->above_point(tmp_triangles_ptr[0]->get_centroid(), tolerance));
+      assert(tmp_triangles_ptr[3]->above_point(tmp_triangles_ptr[1]->get_centroid(), tolerance));
       bounding_polyhedron.push_back(tmp_triangles_ptr[2]);
       bounding_polyhedron.push_back(tmp_triangles_ptr[3]);
       tmp_triangles_ptr[2] = NULL;
@@ -418,7 +424,7 @@ void hex8_element_t::get_basis_functions_derivatives(double const *x, double *ba
 void hex8_element_t::project_on_face(unsigned int f, double const *local_coordinates, double *local_coordinates_on_face, double *shift_global_coordinates) {
   AMP_CHECK_ASSERT(f < 6);
   std::vector<double> projection_local_coordinates(local_coordinates, local_coordinates+3);
-  if (f == 0) {
+/*  if (f == 0) {
     projection_local_coordinates[2] = -1.0;
   } else if (f == 1) {
     projection_local_coordinates[1] = -1.0;
@@ -433,13 +439,17 @@ void hex8_element_t::project_on_face(unsigned int f, double const *local_coordin
   } else {
     std::cerr<<"comment en es-tu arrive la tres cher?"<<std::endl;
     assert(false);
-  } // end if
+  } // end if*/
+map_local_to_face(f, local_coordinates, local_coordinates_on_face);
+map_face_to_local(f, local_coordinates_on_face, &(projection_local_coordinates[0]));
+
+
   std::vector<double> projection_global_coordinates(3);
   map_local_to_global(&(projection_local_coordinates[0]), &(projection_global_coordinates[0]));
-  std::vector<double> point_global_coordinates(3);
-  map_local_to_global(local_coordinates, (&point_global_coordinates[0]));
-  make_vector_from_two_points((&point_global_coordinates[0]), &(projection_global_coordinates[0]), shift_global_coordinates);
-  map_local_to_face(f, local_coordinates, local_coordinates_on_face);
+  std::vector<double> global_coordinates(3);
+  map_local_to_global(local_coordinates, (&global_coordinates[0]));
+  make_vector_from_two_points((&global_coordinates[0]), &(projection_global_coordinates[0]), shift_global_coordinates);
+//  map_local_to_face(f, local_coordinates, local_coordinates_on_face);
 }
 
 void hex8_element_t::compute_normal_to_face(unsigned int f, double const *local_coordinates, double const *global_coordinates, double *normal_vector) {
@@ -652,6 +662,31 @@ void hex8_element_t::compute_strain_tensor(double const *x, double const *u, dou
   } // end for i
 }
 
+void hex8_element_t::compute_rotation_tensor(double const *x, double const *u, double *omega) {
+  // ,x ,y ,z
+  double nabla_phi[24];
+  get_basis_functions_derivatives(x, nabla_phi);
+  double J[9], invJ[9], tmp[3];
+  compute_jacobian_matrix(x, J);
+  compute_inverse_3_by_3_matrix(J, invJ);
+  for (unsigned int i = 0; i < 8; ++i) {
+    tmp[0] = nabla_phi[0*8+i];
+    tmp[1] = nabla_phi[1*8+i];
+    tmp[2] = nabla_phi[2*8+i];
+    // apply transpose inverse jacobian matrix
+    nabla_phi[0*8+i] = invJ[0] * tmp[0] + invJ[3] * tmp[1] + invJ[6] * tmp[2];
+    nabla_phi[1*8+i] = invJ[1] * tmp[0] + invJ[4] * tmp[1] + invJ[7] * tmp[2];
+    nabla_phi[2*8+i] = invJ[2] * tmp[0] + invJ[5] * tmp[1] + invJ[8] * tmp[2];
+  } // end for i
+  std::fill(omega, omega+3, 0.0);
+  for (unsigned int i = 0; i < 8; ++i) {
+    // yz xz xy
+    omega[0] += u[3*i+1] * nabla_phi[2*8+i] - u[3*i+2] * nabla_phi[1*8+i];
+    omega[1] += u[3*i+0] * nabla_phi[2*8+i] - u[3*i+2] * nabla_phi[0*8+i];
+    omega[2] += u[3*i+0] * nabla_phi[1*8+i] - u[3*i+1] * nabla_phi[0*8+i];
+  } // end for i
+}
+
 void compute_constitutive_matrix(double const E, double const nu, double * C) {
   double const K = E / (3.0 * (1.0 - (2.0 * nu)));
   double const G = E / (2.0 * (1.0 + nu));
@@ -682,4 +717,19 @@ void compute_traction(double const * sigma, double const * n, double * t) {
   t[0] = sigma[0] * n[0] + sigma[5] * n[1] + sigma[4] * n[2];
   t[1] = sigma[5] * n[0] + sigma[1] * n[1] + sigma[3] * n[2];
   t[2] = sigma[4] * n[0] + sigma[3] * n[1] + sigma[2] * n[2];
+}
+
+double compute_von_mises_stress(double const * sigma) {
+  double sigma_v = std::sqrt(
+    0.5 * (
+      std::pow(sigma[0] - sigma[1], 2) + 
+      std::pow(sigma[1] - sigma[2], 2) + 
+      std::pow(sigma[2] - sigma[0], 2)
+    ) + 3.0 * (
+        std::pow(sigma[3], 2) + 
+        std::pow(sigma[4], 2) + 
+        std::pow(sigma[5], 2)
+    )
+  );
+  return sigma_v;
 }

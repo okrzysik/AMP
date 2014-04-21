@@ -21,10 +21,10 @@
 #include "utils/Writer.h"
 #include "ampmesh/MeshVariable.h"
 
-#include "operators/MassLinearElement.h"
+#include "operators/libmesh/MassLinearElement.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "operators/MassLinearFEOperator.h"
+#include "operators/libmesh/MassLinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
 #include "operators/diffusion/DiffusionTransportModel.h"
 #include "operators/ElementPhysicsModelFactory.h"
@@ -42,7 +42,7 @@
 #include "operators/RobinMatrixCorrection.h"
 #include "operators/RobinVectorCorrection.h"
 #include "operators/NeumannVectorCorrection.h"
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/NeutronicsRhs.h"
 #include "operators/CoupledOperator.h"
 #include "operators/CoupledOperatorParameters.h"
@@ -90,8 +90,6 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   AMP::LinearAlgebra::Variable::shared_ptr ConcentrationVar ( new AMP::Mesh::NodalScalarVariable ( "Concentration" ) );
   AMP::LinearAlgebra::Variable::shared_ptr inputOxygenVariable1  ( new AMP::Mesh::NodalScalarVariable ( "Concentration", meshAdapter1 ) );
   AMP::LinearAlgebra::Variable::shared_ptr outputOxygenVariable1 ( new AMP::Mesh::NodalScalarVariable ( "Concentration", meshAdapter1 ) );
-
-  double intguess = input_db->getDoubleWithDefault("InitialGuess",400);
 
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> TempOxyVariable(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
   TempOxyVariable->add(inputThermalVariable1);

@@ -27,19 +27,17 @@
 
 #include "operators/boundary/ColumnBoundaryOperator.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/boundary/RobinVectorCorrection.h"
-#include "operators/boundary/NeumannVectorCorrectionParameters.h"
+#include "operators/boundary/libmesh/RobinVectorCorrection.h"
+#include "operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
 #include "operators/boundary/DirichletMatrixCorrection.h"
-#include "operators/boundary/RobinMatrixCorrection.h"
-#include "operators/boundary/NeumannVectorCorrection.h"
+#include "operators/boundary/libmesh/NeumannVectorCorrection.h"
 
 #include "operators/VectorCopyOperator.h"
 
 #include "operators/IdentityOperator.h"
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/CoupledOperator.h"
 #include "operators/CoupledOperatorParameters.h"
-#include "operators/NodeToGaussPointOperator.h"
 #include "operators/map/AsyncMapColumnOperator.h"
 #include "operators/map/SubchannelToCladMap.h"
 #include "operators/map/CladToSubchannelMap.h"
@@ -504,7 +502,6 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
 
         boost::shared_ptr<AMP::Database> trilinosPreconditioner_db = columnPreconditioner_db->getDatabase("TrilinosPreconditioner");
         unsigned int N_preconditioners = linearColumnOperator->getNumberOfOperators();
-        //N_preconditioners--;    // Don't use a preconditioner for subchannel
         for(unsigned int id=0; id<N_preconditioners; id++) {
             boost::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(new AMP::Solver::SolverStrategyParameters(trilinosPreconditioner_db));
             trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator(id);

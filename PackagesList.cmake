@@ -47,7 +47,7 @@
 
 
 # Set the AMP source and install directories
-CMAKE_POLICY(SET CMP0014 OLD)
+#CMAKE_POLICY(SET CMP0014 OLD)
 IF ( NOT AMP_SOURCE_DIR )
     STRING(REGEX REPLACE "/PackagesList.cmake" "" AMP_SOURCE_DIR ${CMAKE_CURRENT_LIST_FILE} )
 ENDIF()
@@ -78,7 +78,7 @@ SET( AMP_PACKAGES_AND_DIRS_AND_CLASSIFICATIONS
 # Disable certain packages on certain platforms.
 # NOTE: This just makes the packages experimental 'EX' and therefore still allows the 
 #   user to enable the package explicitly but the package will not get enabled implicitly.
-PACKAGE_DISABLE_ON_PLATFORMS(AMP_OPERATORS Windows)
+PACKAGE_DISABLE_ON_PLATFORMS(AMP_OPERATORS Windows) 
 PACKAGE_DISABLE_ON_PLATFORMS(AMP_TIME_INTEGRATORS Windows)
 PACKAGE_DISABLE_ON_PLATFORMS(AMP_SOLVERS Windows)
 
@@ -88,6 +88,13 @@ PACKAGE_DISABLE_ON_PLATFORMS(AMP_SOLVERS Windows)
 IF ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}" )
     MESSAGE ( FATAL_ERROR "Building AMP in place is a bad idea" )
 ENDIF()
+
+
+# Get the mercurial revision
+EXECUTE_PROCESS(COMMAND hg id -i "${CMAKE_CURRENT_LIST_DIR}" OUTPUT_VARIABLE AMP_VERSION)
+STRING(REGEX REPLACE "(\r?\n)+$" "" AMP_VERSION "${AMP_VERSION}")
+FILE(WRITE  ${AMP_INSTALL_DIR}/include/AMP_Version.h "#define AMP_VERSION \"${AMP_VERSION}\"\n" )
+MESSAGE("AMP Version = ${AMP_VERSION}")
 
 
 # Initialize the libaries (flags will be overwritten when the libraries are configured)
@@ -155,7 +162,7 @@ CONFIGURE_LINE_COVERAGE()
 
 
 # Print the install directory
-MESSAGE ( "Installing AMP in "${AMP_INSTALL_DIR} )
+MESSAGE( "Installing AMP in ${AMP_INSTALL_DIR}" )
 
 
 # Create the fortran interface file

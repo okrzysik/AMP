@@ -1,0 +1,106 @@
+// This is the main multimesh that will contain all meshes
+Mesh{
+    MeshName = "AllMeshes"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+    LoadBalanceMethod = 2
+
+    // Pin meshes
+    Mesh_1 {
+        MeshName = "MultiPin"
+        MeshType = "Multimesh"
+        MeshDatabasePrefix = "Mesh_"
+        MeshArrayDatabasePrefix = "MeshArray_"
+        // The array of pins
+        MeshArray_1 {
+            N = 8
+            iterator = "%p"
+            indicies = 1, 2, 3, 4, 5, 6, 7, 8
+            MeshName = "pin_%p"
+            MeshType = "Multimesh"
+            MeshDatabasePrefix = "Mesh_"
+            MeshArrayDatabasePrefix = "MeshArray_"
+            x_offset = 0.0063, 0.0189, 0.0315, 0.0063, 0.0315, 0.0063, 0.0189, 0.0315
+            y_offset = 0.0063, 0.0063, 0.0063, 0.0189, 0.0189, 0.0315, 0.0315, 0.0315
+            z_offset = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            // The pellet meshes
+            Mesh_1{
+                MeshName = "PelletMeshes"
+                MeshType = "Multimesh"
+                MeshDatabasePrefix = "Mesh_"
+                MeshArrayDatabasePrefix = "MeshArray_"
+                MeshArray_1 {
+                    N = 3
+                    iterator = "%i"
+                    indicies = 1, 2, 3
+                    MeshName = "pellet_%i"
+                    MeshType = "AMP"
+                    dim = 3
+                    Generator = "cylinder"
+                    Size = 4, 5
+                    Range = 0.004025, 0, 0.0105
+                    x_offset = 0.0
+                    y_offset = 0.0
+                    z_offset = 0.0, 0.0105, 0.021
+                    Weight = 1.0
+                }
+            }
+            // The clad mesh
+            Mesh_2 {
+                MeshName = "clad"
+                MeshType = "AMP"
+                dim = 3
+                Generator = "tube"
+                Size = 3, 24, 15
+                Range = 0.004110, 0.004705, 0, 0.0315
+                x_offset = 0.0
+                y_offset = 0.0
+                z_offset = 0.0
+                Weight = 1.0
+            }
+        }
+    }
+
+    // Subchannel mesh
+    Mesh_2 {
+        MeshName = "subchannel"
+        MeshType = "AMP"
+        dim = 3
+        Generator = "cube"
+        Size = 4, 4, 10
+        LoadBalanceMinSize = 2,-1,-1
+        x_grid = 0.0, 0.0063, 0.0189, 0.0315, 0.0378
+        y_grid = 0.0, 0.0063, 0.0189, 0.0315, 0.0378
+        z_grid = 0.0, 0.00315, 0.0063, 0.00945, 0.0126, 0.01575, 0.0189, 0.02205, 0.0252, 0.02835, 0.0315
+    }
+}
+
+
+
+SubchannelToNodeMap{
+    MapType = "SubchannelToCladMap"
+    N_maps = 1
+    Mesh1 = "subchannel"
+    Surface1 = 4
+    Mesh2 = "clad"
+    Surface2 = 4
+    DOFsPerObject = 1
+    VariableName = "Temperature"
+}
+
+
+SubchannelToGPMap{
+    MapType = "SubchannelToCladGPMap"
+    N_maps = 1
+    Mesh1 = "subchannel"
+    Surface1 = 4
+    Mesh2 = "clad"
+    Surface2 = 4
+    DOFsPerObject = 4
+    VariableName = "Temperature"
+    GeomType = 2
+}
+
+
+

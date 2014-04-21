@@ -15,11 +15,138 @@
 
 #include "ampmesh/Mesh.h"
 #include "ampmesh/dendro/DendroSearch.h"
+#include "ampmesh/latex_visualization_tools.h"
+#include "ampmesh/euclidean_geometry_tools.h"
 
 #include <fstream>
 #include <iomanip>
 #include <numeric>
 #include <boost/lexical_cast.hpp>
+
+void draw_hex8_element_revisited(hex8_element_t * e_ptr, double const * point_of_view, std::ostream & os) {
+  os<<"\\tikzset{facestyle/.style={opacity=0.4,line join=round}}\n";
+  std::vector<std::string> options(6, "facestyle,");
+  triangle_t * * t_ptr = e_ptr->get_bounding_polyhedron();
+  for (unsigned int f = 0; f < 6; ++f) { 
+    if (compute_scalar_product(point_of_view, t_ptr[2*f]->get_normal()) > 0.0) {
+      options[f] += "fill=none";
+    } else {
+      options[f] += "fill=none,dotted";
+    } // end if
+    draw_face(e_ptr, f, options[f], os); 
+  } 
+  for (unsigned int p = 0; p < 8; ++p) {
+    draw_point(e_ptr->get_support_point(p), "", os, "$\\cdot$");
+  } // end for p
+}
+
+void drawOctant(double const * octant, double const * point_of_view, std::ostream &os) {
+  double x_min = octant[0];
+  double x_max = octant[1];
+  double y_min = octant[2];
+  double y_max = octant[3];
+  double z_min = octant[4];
+  double z_max = octant[5];
+  double support_points[24] = {
+    x_min, y_min, z_min,
+    x_max, y_min, z_min,
+    x_max, y_max, z_min,
+    x_min, y_max, z_min,
+    x_min, y_min, z_max,
+    x_max, y_min, z_max,
+    x_max, y_max, z_max,
+    x_min, y_max, z_max 
+  };
+  hex8_element_t volume_element(support_points);
+  draw_hex8_element_revisited(&volume_element, point_of_view, os);
+  double centroid_local_coordinates[3] = { 0.0, 0.0, 0.0 };
+  double centroid_global_coordinates[3];
+  volume_element.map_local_to_global(centroid_local_coordinates, centroid_global_coordinates);
+  draw_point(centroid_global_coordinates, "blue", os, "C");
+}
+
+void buildOctant(double const * space, size_t x, size_t y, size_t z, size_t level, size_t max_depth, double * octant) {
+  assert(level <= max_depth);
+  assert(x < static_cast<size_t>(1u << max_depth));
+  assert(x % static_cast<size_t>(1u << (max_depth - level)) == 0);
+  assert(y < static_cast<size_t>(1u << max_depth));
+  assert(y % static_cast<size_t>(1u << (max_depth - level)) == 0);
+  assert(z < static_cast<size_t>(1u << max_depth));
+  assert(z % static_cast<size_t>(1u << (max_depth - level)) == 0);
+  octant[0] = space[0] + (space[1] - space[0]) * static_cast<double>(x) / static_cast<double>(2 * max_depth);
+  octant[1] = space[0] + (space[1] - space[0]) * static_cast<double>(x + static_cast<size_t>(1u << (max_depth - level))) / static_cast<double>(2 * max_depth);
+  octant[2] = space[2] + (space[3] - space[2]) * static_cast<double>(y) / static_cast<double>(2 * max_depth);
+  octant[3] = space[2] + (space[3] - space[2]) * static_cast<double>(y + static_cast<size_t>(1u << (max_depth - level))) / static_cast<double>(2 * max_depth);
+  octant[4] = space[4] + (space[5] - space[4]) * static_cast<double>(z) / static_cast<double>(2 * max_depth);
+  octant[5] = space[4] + (space[5] - space[4]) * static_cast<double>(z + static_cast<size_t>(1u << (max_depth - level))) / static_cast<double>(2 * max_depth);
+}
+
+void drawOctant(double const * space, size_t x, size_t y, size_t z, size_t level, size_t max_depth, double const * point_of_view, std::ostream &os) {
+  double octant[8];
+  buildOctant(space, x, y, z, level, max_depth, octant);
+  drawOctant(octant, point_of_view, os);
+}
+
+void drawSpacePartition(AMP::Mesh::Mesh::shared_ptr meshAdapter, double const * point_of_view, std::ostream &os) {
+  std::vector<double> space = meshAdapter->getBoundingBox();
+  drawOctant(&(space[0]), 0, 0, 0, 0, 2, point_of_view, os);
+
+  drawOctant(&(space[0]), 0, 0, 0, 1, 2, point_of_view, os);
+  drawOctant(&(space[0]), 2, 0, 0, 1, 2, point_of_view, os);
+  drawOctant(&(space[0]), 2, 2, 0, 1, 2, point_of_view, os);
+  drawOctant(&(space[0]), 0, 2, 0, 1, 2, point_of_view, os);
+  drawOctant(&(space[0]), 0, 0, 2, 1, 2, point_of_view, os);
+  drawOctant(&(space[0]), 2, 0, 2, 1, 2, point_of_view, os);
+  drawOctant(&(space[0]), 2, 2, 2, 1, 2, point_of_view, os);
+  drawOctant(&(space[0]), 0, 2, 2, 1, 2, point_of_view, os);
+
+  drawOctant(&(space[0]), 0, 2, 2, 2, 2, point_of_view, os);
+  drawOctant(&(space[0]), 1, 2, 2, 2, 2, point_of_view, os);
+  drawOctant(&(space[0]), 1, 3, 2, 2, 2, point_of_view, os);
+  drawOctant(&(space[0]), 0, 3, 2, 2, 2, point_of_view, os);
+  drawOctant(&(space[0]), 0, 2, 3, 2, 2, point_of_view, os);
+  drawOctant(&(space[0]), 1, 2, 3, 2, 2, point_of_view, os);
+  drawOctant(&(space[0]), 1, 3, 3, 2, 2, point_of_view, os);
+  drawOctant(&(space[0]), 0, 3, 3, 2, 2, point_of_view, os);
+
+  drawOctant(&(space[0]), 2, 0, 0, 2, 2, point_of_view, os);
+  drawOctant(&(space[0]), 3, 0, 0, 2, 2, point_of_view, os);
+  drawOctant(&(space[0]), 3, 1, 0, 2, 2, point_of_view, os);
+  drawOctant(&(space[0]), 2, 1, 0, 2, 2, point_of_view, os);
+  drawOctant(&(space[0]), 2, 0, 1, 2, 2, point_of_view, os);
+  drawOctant(&(space[0]), 3, 0, 1, 2, 2, point_of_view, os);
+  drawOctant(&(space[0]), 3, 1, 1, 2, 2, point_of_view, os);
+  drawOctant(&(space[0]), 2, 1, 1, 2, 2, point_of_view, os);
+}
+
+void drawFacesOnBoundaryID(AMP::Mesh::Mesh::shared_ptr meshAdapter, int boundaryID, std::ostream &os, double const * point_of_view, const std::string & option = "") {
+  AMP::Mesh::MeshIterator boundaryIterator = meshAdapter->getBoundaryIDIterator(AMP::Mesh::Face, boundaryID);
+  AMP::Mesh::MeshIterator boundaryIterator_begin = boundaryIterator.begin(), 
+      boundaryIterator_end = boundaryIterator.end();
+  std::vector<AMP::Mesh::MeshElement> faceVertices;
+  std::vector<double> faceVertexCoordinates;
+  double faceData[12]={0.0};
+  double const * faceDataPtr[4] = { faceData, faceData+3, faceData+6, faceData+9 };
+
+  os<<std::setprecision(6)<<std::fixed;
+
+  for (boundaryIterator = boundaryIterator_begin; boundaryIterator != boundaryIterator_end; ++boundaryIterator) {
+    faceVertices = boundaryIterator->getElements(AMP::Mesh::Vertex);
+    AMP_ASSERT( faceVertices.size() == 4 );
+    for (size_t i = 0; i < 4; ++i) {
+      faceVertexCoordinates = faceVertices[i].coord();
+      AMP_ASSERT( faceVertexCoordinates.size() == 3 );
+      std::copy(faceVertexCoordinates.begin(), faceVertexCoordinates.end(), faceData+3*i);
+    } // end for i
+    triangle_t t(faceDataPtr[0], faceDataPtr[1], faceDataPtr[2]);
+
+    if (compute_scalar_product(point_of_view, t.get_normal()) > 0.0) {
+//    if (true) {
+      os<<"\\draw["<<option<<"]\n";
+      write_face(faceDataPtr, os);
+    } // end if
+  } // end for
+}
 
 double dummyFunction(const std::vector<double> &xyz, const int dof) {
   AMP_ASSERT(xyz.size() == 3);
@@ -46,22 +173,128 @@ void run(const std::string & meshFileName,
   int rank = globalComm.getRank();
   int npes = globalComm.getSize();
 
+  int size_radius = 16, size_height = 38;
+
+  int numberOfMeshes = npes;
   // Load the mesh
   globalComm.barrier();
   double meshBeginTime = MPI_Wtime();
   boost::shared_ptr<AMP::InputDatabase> mesh_db(new AMP::InputDatabase("input_db"));
-  mesh_db->putString("MeshName", "PelletMesh");
-  mesh_db->putString("MeshType", "libMesh");
-  mesh_db->putString("FileName", meshFileName);
-  mesh_db->putInteger("dim", 3);
+  mesh_db->putString("MeshName", "PelletMeshes");
+  mesh_db->putString("MeshType", "Multimesh");
+  mesh_db->putString("MeshDatabasePrefix", "Mesh_");
+  mesh_db->putString("MeshArrayDatabasePrefix", "MeshArray_");
+if (false) {
+  mesh_db->putDatabase("MeshArray_1");
+  boost::shared_ptr<AMP::Database> meshArray_db = mesh_db->getDatabase("MeshArray_1");
+  meshArray_db->putInteger("N", numberOfMeshes);
+  meshArray_db->putString("iterator", "%i");
+  std::vector<int> meshIndices;
+  std::vector<double> x_offset, y_offset, z_offset;
+  for (int i = 0; i < numberOfMeshes; ++i) {
+    meshIndices.push_back(i);
+    x_offset.push_back(0.0);
+    y_offset.push_back(0.0);
+    z_offset.push_back(0.0105*static_cast<double>(i));
+  } // end for i
+  meshArray_db->putIntegerArray("indicies", meshIndices);
+  meshArray_db->putString("MeshName", "Pellet_%i");
+  meshArray_db->putString("MeshType", "libMesh");
+  meshArray_db->putString("FileName", meshFileName);
+  meshArray_db->putInteger("dim", 3);
+  meshArray_db->putDoubleArray("x_offset", x_offset);
+  meshArray_db->putDoubleArray("y_offset", y_offset);
+  meshArray_db->putDoubleArray("z_offset", z_offset);
+} else {
+// WEAK SCALING
+  numRandomPts *= static_cast<size_t>(npes);
+
+  mesh_db->putDatabase("Mesh_1");
+  boost::shared_ptr<AMP::Database> meshArray_db = mesh_db->getDatabase("Mesh_1");
+  meshArray_db->putString("MeshName", "Cylinder_1");
+  meshArray_db->putString("MeshType", "AMP");
+  meshArray_db->putInteger("dim", 3);
+  meshArray_db->putDouble("x_offset", 0.0);
+  meshArray_db->putDouble("y_offset", 0.0);
+  meshArray_db->putDouble("z_offset", 0.0);
+  meshArray_db->putString("Generator", "cylinder");
+  std::vector<int> size;
+//if (true) {
+//  numRandomPts = 3200000;
+//  size.push_back(size_radius+48);
+//  size.push_back(size_height+38);
+//} else
+  if (npes == 1) {
+    size.push_back(size_radius);
+    size.push_back(size_height);
+  } else if (npes == 2) {
+    size.push_back(size_radius+5);
+    size.push_back(size_height+6);
+//    size.push_back(size_radius);
+//    size.push_back(size_height*2);
+  } else if (npes == 4) {
+    size.push_back(size_radius+9);
+    size.push_back(size_height+24);
+//    size.push_back(size_radius*2);
+//    size.push_back(size_height);
+  } else if (npes == 8) {
+    size.push_back(size_radius+16);
+    size.push_back(size_height+38);
+//    size.push_back(size_radius*2);
+//    size.push_back(size_height*2);
+  } else if (npes == 16) {
+    size.push_back(size_radius+29);
+    size.push_back(size_height+39);
+//    size.push_back(size_radius*2);
+//    size.push_back(size_height*4);
+  } else if (npes == 32) {
+    size.push_back(size_radius+48);
+    size.push_back(size_height+38);
+//    size.push_back(size_radius*4);
+//    size.push_back(size_height*2);
+  } else {
+    AMP_ASSERT(false);
+  }
+  std::vector<double> range;
+  range.push_back(0.004095);
+  range.push_back(0.0);
+  range.push_back(0.01);
+  meshArray_db->putIntegerArray("Size", size);
+  meshArray_db->putDoubleArray("Range", range);
+}
+  
+  
   boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
   meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
   globalComm.barrier();
   double meshEndTime = MPI_Wtime();
+  size_t numberGlobalVolumeElements = meshAdapter->numGlobalElements(AMP::Mesh::Volume);
+//  AMP_ASSERT(static_cast<size_t>(npes) * size_radius * size_radius * 4 * size_height == numberGlobalVolumeElements);
   if(!rank) {
+    std::cout<<"Number volume elements is "<<numberGlobalVolumeElements<<"\n";
     std::cout<<"Finished reading the mesh in "<<(meshEndTime - meshBeginTime)<<" seconds."<<std::endl;
   }
+  
+/*  double const point_of_view[3] = { 1.0, 1.0, 1.0 };
+
+  std::fstream fout;
+  std::string file_name;
+  file_name = "outer_surface_" + meshFileName;
+  fout.open(file_name.c_str(), std::fstream::out);
+  drawFacesOnBoundaryID(meshAdapter, 4, fout, point_of_view);
+  fout.close();
+  file_name = "top_surface_" + meshFileName;
+  fout.open(file_name.c_str(), std::fstream::out);
+  drawFacesOnBoundaryID(meshAdapter, 1, fout, point_of_view);
+  drawFacesOnBoundaryID(meshAdapter, 33, fout, point_of_view);
+  fout.close();
+*/
+  
+//  drawSpacePartition(meshAdapter, point_of_view, std::cout);
+//  std::cout<<std::flush;
+//  char a;
+//  std::cin>>a;
 
   // Build the vector field
   int DOFsPerNode = 1;
@@ -194,12 +427,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   int rank = globalComm.getRank();
   int npes = globalComm.getSize();
 
-  size_t n_k = 3;
+  size_t n_k = 1;
   std::string meshFileNames[] = { "pellet_1x.e", "pellet_2x.e", "pellet_4x.e" };
-  size_t meshNumElements[] = { 3705, 26146, 183210 };
+//  size_t meshNumElements[] = { 3705, 26146, 183210 };
 
   size_t n_j = 1;
-  size_t numRandomPts[] = { 10000, 20000, 40000, 80000, 160000 };
+  size_t numRandomPts[] = { 100000, 20000, 40000, 80000, 160000, 320000 };
 
   size_t n_i = 1;
   void (*randomPtsGenerators[])(int, size_t, std::vector<double>&) = { &genUniformPts };
@@ -213,18 +446,18 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     if (!rank) { 
       std::string fileName = prefixes[i] + "_" + suffix;
       fout.open(fileName.c_str(), std::fstream::out);
-      fout<<n_j<<"  "<<n_k<<"\n";
-      for (size_t j = 0; j < n_j; ++j) {
-        fout<<numRandomPts[j]<<"  ";
-      } // end for j
-      fout<<"\n";
-      for (size_t k = 0; k < n_k; ++k) { 
-        fout<<meshNumElements[k]<<"  ";
-      } // end for k
-      fout<<"\n";
+//      fout<<n_j<<"  "<<n_k<<"\n";
+//      for (size_t j = n_j-1; j < n_j; ++j) {
+//        fout<<numRandomPts[j]<<"  ";
+//      } // end for j
+//      fout<<"\n";
+//      for (size_t k = 0; k < n_k; ++k) { 
+//        fout<<meshNumElements[k]<<"  ";
+//      } // end for k
+//      fout<<"\n";
     } // end if
-    for (size_t j = 0; j < n_j; ++j) {
-      for (size_t k = 0; k < n_k; ++k) {
+    for (size_t j = n_j-1; j < n_j; ++j) {
+      for (size_t k = n_k-1; k < n_k; ++k) {
         std::vector<double> localTimingMeasurements;
         run(meshFileNames[k], numRandomPts[j], randomPtsGenerators[i], localTimingMeasurements);
         size_t numTimingMeasurements = localTimingMeasurements.size();
@@ -235,6 +468,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
           fout<<globalTimingMeasurements[0]<<"  " // setup
             <<globalTimingMeasurements[1]<<"  " // coarse
             <<globalTimingMeasurements[2]<<"  " // fine
+            <<globalTimingMeasurements[3]<<"  " // interpolation
+            <<globalTimingMeasurements[4]<<"  " // project on boundary
             <<globalTimingMeasurements[5]<<"  "<<std::flush; // coarse+fine
         } // end if
       } // end for k

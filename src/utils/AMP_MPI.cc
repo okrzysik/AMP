@@ -95,7 +95,7 @@ int MPI_CLASS::profile_level=127;
             return MPI_UNSIGNED_LONG;
         } else if ( sizeof(size_t) == size_longlong ) {
             MPI_WARNING("Using signed long long datatype for size_t in MPI");
-            return MPI_LONG_LONG;   // Note: this is not unsigned
+            return MPI_LONG_LONG_INT;   // Note: this is not unsigned
         } else {
             MPI_ERROR("No suitable datatype found");
         }
@@ -163,6 +163,11 @@ static inline unsigned long int signed_to_unsigned(long int x)
     const unsigned long int offset = static_cast<unsigned long int>(-std::numeric_limits<long int>::min());
     return ( x>=0 ) ? static_cast<unsigned long int>(x)+offset : offset-static_cast<unsigned long int>(-x);
 }
+static inline unsigned long long int signed_to_unsigned(long long int x) 
+{
+    const unsigned long long int offset = static_cast<unsigned long long int>(-std::numeric_limits<long long int>::min());
+    return ( x>=0 ) ? static_cast<unsigned long long int>(x)+offset : offset-static_cast<unsigned long long int>(-x);
+}
 static inline char unsigned_to_signed(unsigned char x) 
 {
     const unsigned char offset = static_cast<unsigned char>(-std::numeric_limits<char>::min());
@@ -177,6 +182,11 @@ static inline long int unsigned_to_signed(unsigned long int x)
 {
     const unsigned long int offset = static_cast<unsigned long int>(-std::numeric_limits<long int>::min());
     return ( x>=offset ) ? static_cast<unsigned long int>(x-offset) : -static_cast<unsigned long int>(offset-x);
+}
+static inline long long int unsigned_to_signed(unsigned long long int x) 
+{
+    const unsigned long long int offset = static_cast<unsigned long long int>(-std::numeric_limits<long long int>::min());
+    return ( x>=offset ) ? static_cast<unsigned long long int>(x-offset) : -static_cast<unsigned long long int>(offset-x);
 }
 
 
@@ -1481,31 +1491,68 @@ void MPI_CLASS::call_minReduce<long int>(long int *x, const int n, int *comm_ran
     }
     PROFILE_STOP("minReduce2<long int>",profile_level);
 }
-// size_t
-#ifdef USE_WINDOWS
-    template <>
-    void MPI_CLASS::call_minReduce<size_t>(const size_t *send, size_t *recv, const int n, int *comm_rank_of_min) const 
-    {
-        if ( sizeof(size_t)==sizeof(unsigned int) ) {
-            call_minReduce<unsigned int>( (const unsigned int*) send, (unsigned int*) recv, n, comm_rank_of_min); 
-        } else if ( sizeof(size_t)==sizeof(unsigned long long) ) {
-            call_minReduce<unsigned int>( (const unsigned long long*) send, (unsigned long long*) recv, n, comm_rank_of_min); 
-        } else {
-            MPI_ERROR("Unable to determine type of size_t");
-        }
+// unsigned long long int
+template <>
+void MPI_CLASS::call_minReduce<unsigned long long int>(const unsigned long long int *send, unsigned long long int *recv, const int n, int *comm_rank_of_min) const 
+{
+    PROFILE_START("minReduce1<long int>",profile_level);
+    if ( comm_rank_of_min==NULL ) {
+        long long int *x = new long long int[n];
+        long long int *y = new long long int[n];
+        for (int i=0; i<n; i++)
+            x[i] = unsigned_to_signed(send[i]);
+        MPI_Allreduce( (void*) x, (void*) y, n, MPI_LONG_LONG_INT, MPI_MIN, communicator);
+        for (int i=0; i<n; i++)
+            recv[i] = signed_to_unsigned(y[i]);
+        delete [] x;
+        delete [] y;
+    } else {
+        printf("minReduce<long long int> will use double\n");
+        double *tmp = new double[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = send[i];
+        call_minReduce<double>( tmp, n, comm_rank_of_min );
+        for (int i=0; i<n; i++)
+            recv[i] = static_cast<long long int>(tmp[i]);
     }
-    template <>
-    void MPI_CLASS::call_minReduce<size_t>(size_t *x, const int n, int *comm_rank_of_min) const 
-    {
-        if ( sizeof(size_t)==sizeof(unsigned int) ) {
-            call_minReduce<unsigned int>( (unsigned int*) x, n, comm_rank_of_min); 
-        } else if ( sizeof(size_t)==sizeof(unsigned long long) ) {
-            call_minReduce<unsigned int>( (unsigned long long*) x, n, comm_rank_of_min); 
-        } else {
-            MPI_ERROR("Unable to determine type of size_t");
-        }
+    PROFILE_STOP("minReduce1<long int>",profile_level);
+}
+template <>
+void MPI_CLASS::call_minReduce<unsigned long long int>(unsigned long long int *x, const int n, int *comm_rank_of_min) const 
+{
+    unsigned long long int *recv = new unsigned long long int[n];
+    call_minReduce<unsigned long long int>( x, recv, n, comm_rank_of_min); 
+    for (int i=0; i<n; i++)
+        x[i] = recv[i]; 
+    delete [] recv;
+}
+// long long int
+template <>
+void MPI_CLASS::call_minReduce<long long int>(const long long int *x, long long int *y, const int n, int *comm_rank_of_min) const 
+{
+    PROFILE_START("minReduce1<long int>",profile_level);
+    if ( comm_rank_of_min==NULL ) {
+        MPI_Allreduce( (void*) x, (void*) y, n, MPI_LONG_LONG_INT, MPI_MIN, communicator);
+    } else {
+        printf("minReduce<long long int> will use double\n");
+        double *tmp = new double[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = x[i];
+        call_minReduce<double>( tmp, n, comm_rank_of_min );
+        for (int i=0; i<n; i++)
+            y[i] = static_cast<long long int>(tmp[i]);
     }
-#endif
+    PROFILE_STOP("minReduce1<long int>",profile_level);
+}
+template <>
+void MPI_CLASS::call_minReduce<long long int>(long long int *x, const int n, int *comm_rank_of_min) const 
+{
+    long long int *recv = new long long int[n];
+    call_minReduce<long long int>( x, recv, n, comm_rank_of_min); 
+    for (int i=0; i<n; i++)
+        x[i] = signed_to_unsigned(recv[i]); 
+    delete [] recv;
+}
 // float
 template <>
 void MPI_CLASS::call_minReduce<float>(const float *x, float *y, const int n, int *comm_rank_of_min) const 
@@ -1881,31 +1928,68 @@ void MPI_CLASS::call_maxReduce<unsigned long int>(unsigned long int *x, const in
         delete [] tmp;
     }
 }
-// size_t
-#ifdef USE_WINDOWS
-    template <>
-    void MPI_CLASS::call_maxReduce<size_t>(const size_t *send, size_t *recv, const int n, int *comm_rank_of_max) const 
+// unsigned long long int
+template <>
+void MPI_CLASS::call_maxReduce<unsigned long long int>(const unsigned long long int *send, unsigned long long int *recv, const int n, int *comm_rank_of_max) const 
 {
-        if ( sizeof(size_t)==sizeof(unsigned int) ) {
-            call_maxReduce<unsigned int>( (const unsigned int*) send, (unsigned int*) recv, n, comm_rank_of_max); 
-        } else if ( sizeof(size_t)==sizeof(unsigned long long) ) {
-            call_maxReduce<unsigned int>( (const unsigned long long*) send, (unsigned long long*) recv, n, comm_rank_of_max); 
-        } else {
-            MPI_ERROR("Unable to determine type of size_t");
-        }
+    PROFILE_START("maxReduce1<long int>",profile_level);
+    if ( comm_rank_of_max==NULL ) {
+        long long int *x = new long long int[n];
+        long long int *y = new long long int[n];
+        for (int i=0; i<n; i++)
+            x[i] = unsigned_to_signed(send[i]);
+        MPI_Allreduce( (void*) x, (void*) y, n, MPI_LONG_LONG_INT, MPI_MAX, communicator);
+        for (int i=0; i<n; i++)
+            recv[i] = signed_to_unsigned(y[i]);
+        delete [] x;
+        delete [] y;
+    } else {
+        printf("maxReduce<long long int> will use double\n");
+        double *tmp = new double[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = send[i];
+        call_maxReduce<double>( tmp, n, comm_rank_of_max );
+        for (int i=0; i<n; i++)
+            recv[i] = static_cast<long long int>(tmp[i]);
     }
-    template <>
-    void MPI_CLASS::call_maxReduce<size_t>(size_t *x, const int n, int *comm_rank_of_max) const 
+    PROFILE_STOP("maxReduce1<long int>",profile_level);
+}
+template <>
+void MPI_CLASS::call_maxReduce<unsigned long long int>(unsigned long long int *x, const int n, int *comm_rank_of_max) const 
 {
-        if ( sizeof(size_t)==sizeof(unsigned int) ) {
-            call_maxReduce<unsigned int>( (const unsigned int*) send, (unsigned int*) recv, n, comm_rank_of_max); 
-        } else if ( sizeof(size_t)==sizeof(unsigned long long) ) {
-            call_maxReduce<unsigned int>( (const unsigned long long*) send, (unsigned long long*) recv, n, comm_rank_of_max); 
-        } else {
-            MPI_ERROR("Unable to determine type of size_t");
-        }
+    unsigned long long int *recv = new unsigned long long int[n];
+    call_maxReduce<unsigned long long int>( x, recv, n, comm_rank_of_max); 
+    for (int i=0; i<n; i++)
+        x[i] = recv[i]; 
+    delete [] recv;
+}
+// long long int
+template <>
+void MPI_CLASS::call_maxReduce<long long int>(const long long int *x, long long int *y, const int n, int *comm_rank_of_max) const 
+{
+    PROFILE_START("maxReduce1<long int>",profile_level);
+    if ( comm_rank_of_max==NULL ) {
+        MPI_Allreduce( (void*) x, (void*) y, n, MPI_LONG_LONG_INT, MPI_MAX, communicator);
+    } else {
+        printf("maxReduce<long long int> will use double\n");
+        double *tmp = new double[n];
+        for (int i=0; i<n; i++)
+            tmp[i] = x[i];
+        call_maxReduce<double>( tmp, n, comm_rank_of_max );
+        for (int i=0; i<n; i++)
+            y[i] = static_cast<long long int>(tmp[i]);
     }
-#endif
+    PROFILE_STOP("maxReduce1<long int>",profile_level);
+}
+template <>
+void MPI_CLASS::call_maxReduce<long long int>(long long int *x, const int n, int *comm_rank_of_max) const 
+{
+    long long int *recv = new long long int[n];
+    call_maxReduce<long long int>( x, recv, n, comm_rank_of_max); 
+    for (int i=0; i<n; i++)
+        x[i] = signed_to_unsigned(recv[i]); 
+    delete [] recv;
+}
 // float
 template <>
 void MPI_CLASS::call_maxReduce<float>(const float *x, float *y, const int n, int *comm_rank_of_max) const 

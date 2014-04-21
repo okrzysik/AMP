@@ -2,7 +2,7 @@
 #ifndef included_AMP_MechanicsNonlinearFEOperatorParameters
 #define included_AMP_MechanicsNonlinearFEOperatorParameters
 
-#include "operators/FEOperatorParameters.h"
+#include "operators/libmesh/FEOperatorParameters.h"
 #include "operators/mechanics/MechanicsMaterialModel.h"
 #include "operators/mechanics/MechanicsConstants.h"
 #include "discretization/DOF_Manager.h"

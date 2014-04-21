@@ -117,7 +117,7 @@ public:
     virtual size_t getLocalSize() const;
     virtual size_t getGlobalSize() const;
 
-    virtual void putRawData ( double * );
+    virtual void putRawData( const double * );
 
     virtual   BufferPtr   getNewBuffer ();
     virtual   bool        sameEngine ( VectorEngine & ) const;
@@ -130,7 +130,7 @@ public:
 
     virtual   AMP_MPI   getComm() const;
 
-    virtual void copyOutRawData ( double **out );
+    virtual void copyOutRawData( double *out ) const;
 
 protected:
     //! Empty constructor.

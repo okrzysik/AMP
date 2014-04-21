@@ -31,7 +31,7 @@
 #include "operators/OperatorBuilder.h"
 
 #include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/boundary/PressureBoundaryOperator.h"
+#include "operators/boundary/libmesh/PressureBoundaryOperator.h"
 
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 

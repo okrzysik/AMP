@@ -19,6 +19,11 @@ namespace Mesh {
  *   on a given mesh to apply to multiple meshes.  Note: all meshes within a multimesh
  *   are stored in a flat array.  This applies when we have a multimesh that may contain
  *   other multimeshes that may (or may not) overlap.
+ *
+ * Valid database entries:
+ *   LoadBalanceMethod - Method to use for load balancer
+ *                       1 - Use independent processor sets for all meshes (default)
+ *                       2 - Use all processors for all meshes
  */
 class MultiMesh: public Mesh
 {
@@ -61,6 +66,14 @@ public:
      */
     static size_t estimateMeshSize( const MeshParameters::shared_ptr &params );
 
+    /**
+     * \brief   Return the maximum number of processors that can be used with the mesh
+     * \details  This function will return the maximum number of processors that can 
+     *   be used with the mesh.
+     * \param params Parameters for constructing a mesh from an input database
+     */
+    static size_t maxProcs( const MeshParameters::shared_ptr &params );
+
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */
@@ -98,8 +111,10 @@ public:
      * \details  This function will subset a mesh over a given iterator.
      *   This will return a new mesh object.
      * \param iterator  MeshIterator used to subset
+     * \param isGlobal  Is the new subset mesh global over the entire mesh (true,default), 
+     *                  or do we only want to keep the local mesh (false)
      */
-    virtual boost::shared_ptr<Mesh>  Subset ( const MeshIterator &iterator ) const;
+    virtual boost::shared_ptr<Mesh>  Subset ( const MeshIterator &iterator, bool isGlobal=true ) const;
 
 
     /**
@@ -261,7 +276,7 @@ public:
     static LoadBalance  simulateBuildMesh( const MeshParameters::shared_ptr params, const std::vector<int> &comm_ranks );
 
     // Function to add a processor to the load balance simulation
-    static void addProcSimulation( const LoadBalance& mesh, std::vector<LoadBalance> &submeshes, int rank, char &decomp );
+    static bool addProcSimulation( const LoadBalance& mesh, std::vector<LoadBalance> &submeshes, int rank, char &decomp );
 
 private:
 

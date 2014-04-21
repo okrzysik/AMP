@@ -16,6 +16,9 @@ public:
     //! Empty MultiVectorIterator constructor
     structuredMeshIterator();
 
+    //! Default MultiVectorIterator constructor
+    structuredMeshIterator( boost::shared_ptr<std::vector<BoxMesh::MeshElementIndex> > elements, const AMP::Mesh::BoxMesh *mesh, size_t pos=0 );
+
     //! Deconstructor
     virtual ~structuredMeshIterator ();
 
@@ -71,9 +74,6 @@ public:
     using MeshIterator::operator+=;
 
 protected:
-
-    //! Default MultiVectorIterator constructor
-    structuredMeshIterator( boost::shared_ptr<std::vector<BoxMesh::MeshElementIndex> > elements, const AMP::Mesh::BoxMesh *mesh, size_t pos=0 );
 
     //! Clone the iterator
     virtual MeshIterator* clone() const;

@@ -84,11 +84,11 @@ namespace AMP {
         /**
           u^s = 0 
           */
-        void setSlaveToZero(AMP::LinearAlgebra::Vector::shared_ptr u);
+        virtual void setSlaveToZero(AMP::LinearAlgebra::Vector::shared_ptr u);
         /**
           u^s = u^s + d 
           */
-        void addShiftToSlave(AMP::LinearAlgebra::Vector::shared_ptr u); 
+        virtual void addShiftToSlave(AMP::LinearAlgebra::Vector::shared_ptr u); 
 
       protected :
         std::vector<size_t> d_SlaveIndices;

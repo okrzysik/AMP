@@ -26,7 +26,7 @@
 //BP the following two lines are probably unnecessary, not removing
 // prior to Jan, 2011 code camp.
 //JL
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 
 namespace AMP{
 namespace TimeIntegrator{

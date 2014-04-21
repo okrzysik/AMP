@@ -15,7 +15,7 @@
 
 #include "utils/Writer.h"
 #include "vectors/Vector.h"
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/NeutronicsRhs.h"
 #include "operators/NonlinearBVPOperator.h"
 
@@ -42,7 +42,7 @@
 
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/FickSoretNonlinearFEOperator.h"
-#include "operators/MassLinearFEOperator.h"
+#include "operators/libmesh/MassLinearFEOperator.h"
 #include "operators/OperatorBuilder.h"
 
 #include "operators/mechanics/MechanicsLinearElement.h"

@@ -3,7 +3,7 @@
 #define included_AMP_NavierStokesGalWFFEOperatorParameters
 
 #include "operators/flow/FlowTransportModel.h"
-#include "operators/LinearFEOperatorParameters.h"
+#include "operators/libmesh/LinearFEOperatorParameters.h"
 #include "vectors/Vector.h"
 
 namespace AMP {

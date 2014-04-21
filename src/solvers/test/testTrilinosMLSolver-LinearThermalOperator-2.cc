@@ -23,14 +23,14 @@
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
 #include "operators/diffusion/DiffusionTransportModel.h"
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/ElementPhysicsModelFactory.h"
 #include "operators/ElementOperationFactory.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 
 #include "operators/boundary/DirichletMatrixCorrection.h"
-#include "operators/boundary/NeumannVectorCorrection.h"
+#include "operators/boundary/libmesh/NeumannVectorCorrection.h"
 
 #include "solvers/trilinos/TrilinosMLSolver.h"
 

@@ -5,11 +5,17 @@
 #include <string>
 #include <cassert>
 #include <iostream>
+#include <iomanip>
 
 std::string rubiks_cube_color_arrangement[6] = { "orange", "green", "white", "blue", "yellow", "red" };
 
 void write_point(double const * p, std::ostream & os) {
+  std::streamsize old_precision = os.precision();
+  os.precision(5);
+  os.setf(std::ios::fixed);
   os<<"("<<p[0]<<","<<p[1]<<","<<p[2]<<")";
+  os.unsetf(std::ios::fixed);
+  os.precision(old_precision);
 }
 
 void write_cycle(unsigned int n, double const * * c, std::ostream & os) {
@@ -26,6 +32,23 @@ void write_face(double const * * f, std::ostream & os) {
 
 void write_triangle(double const * * t, std::ostream & os) {
   write_cycle(3, t, os);
+}
+
+void draw_line(double const * b, double const * e, const std::string & option, std::ostream & os) {
+  os<<"\\draw["<<option<<"]" ;
+  write_point(b, os);
+  os<<" -- ";
+  write_point(e, os);
+  os<<" ;\n";
+}
+
+void draw_line(unsigned int n, double const * l, const std::string & option, std::ostream & os) {
+  os<<"\\draw["<<option<<"]" ;
+  for (unsigned int i = 0; i < n; ++i) {
+    write_point(l+3*i, os);
+    os<<(i != n-1 ? " -- " : "");
+  }
+  os<<" ;\n";
 }
 
 void draw_face(hex8_element_t * e_ptr, unsigned int f, const std::string & option, std::ostream & os) {
@@ -108,9 +131,9 @@ void draw_hex8_element(hex8_element_t * e_ptr, double const * point_of_view, std
   } 
 }
 
-void draw_point(double const * p, const std::string & option, std::ostream & os) {
+void draw_point(double const * p, const std::string & option, std::ostream & os, const std::string & text) {
   os<<"\\node["<<option<<"] at ";
   write_point(p, os);
-  os<<" {.} ;\n";
+  os<<" {"<<text<<"} ;\n";
 }
 

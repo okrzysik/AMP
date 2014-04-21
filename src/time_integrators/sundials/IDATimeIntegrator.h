@@ -15,8 +15,8 @@
 //#include "operators/MassMatrix.h"
 #include "operators/LinearOperator.h"
 // added by JLEE
-#include "operators/MassLinearFEOperator.h"
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/MassLinearFEOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 
 /*
  #ifndef included_ImplicitTimeIntegrator

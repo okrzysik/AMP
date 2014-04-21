@@ -288,6 +288,16 @@ void  ManagedVector::setUpdateStatus ( UpdateState state )
     fireDataChange();
   }
 
+  void ManagedVector::putRawData ( const double *in )
+  {
+    d_Engine->putRawData ( in );
+  }
+
+  void ManagedVector::copyOutRawData ( double *in ) const
+  {
+    d_Engine->copyOutRawData ( in );
+  }
+
 
 }
 }

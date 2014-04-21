@@ -1,43 +1,44 @@
-
 #ifndef included_AMP_BoundaryOperator
 #define included_AMP_BoundaryOperator
 
 #include "operators/Operator.h"
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    //  An abstract base class for representing a linear operator.
-    class BoundaryOperator : public Operator 
-    {
 
-      public :
+//  An abstract base class for representing a linear operator.
+class BoundaryOperator : public Operator 
+{
 
-        BoundaryOperator (const boost::shared_ptr<OperatorParameters> & params)
-          : Operator (params) { }
+public :
 
-        virtual ~BoundaryOperator() { }
+    BoundaryOperator (const boost::shared_ptr<OperatorParameters> & params)
+        : Operator (params) { }
 
-        virtual void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr ) {
-          //Do nothing
-        }
+    virtual ~BoundaryOperator() { }
 
-        virtual void setRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr ) {
-          //Do nothing
-        }
+    virtual void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr ) {
+        // Do nothing
+    }
 
-        virtual void modifyInitialSolutionVector(AMP::LinearAlgebra::Vector::shared_ptr ) {
-          //Do nothing
-        }
+    virtual void setRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr ) {
+        // Do nothing
+    }
 
-      protected :
+    virtual void modifyInitialSolutionVector(AMP::LinearAlgebra::Vector::shared_ptr ) {
+        // Do nothing
+    }
 
-      private :
+protected :
 
-    };
+private :
 
-  }
-}
+};
+
+
+} // Namespace Operator
+} // Namespace AMP
 
 #endif
 

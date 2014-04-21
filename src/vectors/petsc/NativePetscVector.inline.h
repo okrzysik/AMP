@@ -82,15 +82,6 @@ inline void NativePetscVector::getValuesByLocalID ( int numVals , size_t *ndx , 
 }
 
 
-inline void NativePetscVector::copyOutRawData ( double **out )
-{
-    *out = new double [getLocalSize()];
-    std::copy ( getRawDataBlock<double> ( 0 ) ,
-                getRawDataBlock<double> ( 0 ) + getLocalSize() ,
-                *out );
-}
-
-
 inline Vector::shared_ptr  NativePetscVector::getManagedVectorCopy ( AMP_MPI comm )
 {
     Vector::shared_ptr  pRet = ManagedPetscVector::createFromPetscVec ( d_petscVec , comm );

@@ -13,7 +13,7 @@
 
 #include "utils/Writer.h"
 #include "vectors/Vector.h"
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/NeutronicsRhs.h"
 #include "operators/NonlinearBVPOperator.h"
 /* libMesh files */
@@ -33,7 +33,7 @@
 #include "elem.h"
 
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
-#include "operators/MassLinearFEOperator.h"
+#include "operators/libmesh/MassLinearFEOperator.h"
 
 #include "operators/IsotropicElasticModel.h"
 #include "operators/MechanicsLinearElement.h"

@@ -24,6 +24,7 @@ TrilinosThyraModelEvaluator::TrilinosThyraModelEvaluator( boost::shared_ptr<Tril
     d_linearOp = params->d_linearOp;
     d_icVec = params->d_icVec;
     d_preconditioner = params->d_preconditioner;
+    d_prePostOperator = params->d_prePostOperator;
 }
 
 
@@ -50,7 +51,7 @@ void TrilinosThyraModelEvaluator::setRhs( AMP::LinearAlgebra::Vector::const_shar
 void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBase::InArgs<double> &inArgs,
     const ::Thyra::ModelEvaluatorBase::OutArgs<double> &outArgs ) const
 {
-		 
+         
     AMP::LinearAlgebra::Vector::const_shared_ptr x = AMP::LinearAlgebra::ThyraVector::constView( inArgs.get_x().get() );
     AMP::LinearAlgebra::Vector::shared_ptr   f_out = AMP::LinearAlgebra::ThyraVector::view( outArgs.get_f().get() );
     //const Thyra::ConstDetachedVectorView<double> x(inArgs.get_x());
@@ -66,10 +67,31 @@ void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBa
     AMP_ASSERT(x->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
     AMP_ASSERT(d_rhs->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
 
+    const Teuchos::RCP<Thyra::PreconditionerBase<double> > W_prec_out = outArgs.get_W_prec();
+    if ( nonnull(W_prec_out) ) {
+        // Reset the preconditioner
+        AMP::LinearAlgebra::Vector::shared_ptr x2 = boost::const_pointer_cast<AMP::LinearAlgebra::Vector>(x);
+        boost::shared_ptr<AMP::Operator::OperatorParameters> op_params = d_nonlinearOp->getJacobianParameters(x2);
+        d_preconditioner->resetOperator(op_params);
+    }
+
     if ( f_out != NULL ) {
         // Evaluate the residual:  r = A(u) - rhs
         f_out->zero();
+        ::Thyra::ModelEvaluatorBase::Evaluation< ::Thyra::VectorBase<double> > eval = outArgs.get_f();
+        bool exact = true;
+        if (eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_EXACT) {
+            exact = true;
+        } else if (eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_APPROX_DERIV) {
+            exact = false;
+        } else if (eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_VERY_APPROX_DERIV) {
+            exact = false;
+        }
+        if ( d_prePostOperator != NULL )
+            d_prePostOperator->runPreApply( x, f_out, exact );
         d_nonlinearOp->apply( d_rhs, x, f_out, 1.0, -1.0 );
+        if ( d_prePostOperator != NULL )
+            d_prePostOperator->runPostApply( x, f_out, exact );
     }
 
     if ( outArgs.supports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_op) ) {
@@ -77,37 +99,7 @@ void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBa
         if ( W_out.get() != NULL ) {
             // Get the jacobian
             AMP_ERROR("Not finished");
-            /*boost::shared_ptr<AMP::Solver::TrilinosLinearOP> W_out = this->view( outArgs.get_W_op() );
-            Teuchos::RCP<Epetra_Operator> W_epetra = Thyra::get_Epetra_Operator(*W_out);
-            Teuchos::RCP<Epetra_CrsMatrix> W_epetracrs = rcp_dynamic_cast<Epetra_CrsMatrix>(W_epetra);
-            TEUCHOS_ASSERT(nonnull(W_epetracrs));
-            Epetra_CrsMatrix& DfDx = *W_epetracrs;
-            DfDx.PutScalar(0.0);
-            //
-            // Fill W = DfDx
-            //
-            // W = DfDx = [      1.0,  2*x[1] ]
-            //            [ 2*d*x[0],     -d  ]
-            //
-            double values[2];
-            int indexes[2];
-            // Row [0]
-            values[0] = 1.0;           indexes[0] = 0;
-            values[1] = 2.0*x[1];      indexes[1] = 1;
-            DfDx.SumIntoGlobalValues( 0, 2, values, indexes );
-            // Row [1]
-            values[0] = 2.0*d_*x[0];   indexes[0] = 0;
-            values[1] = -d_;           indexes[1] = 1;
-            DfDx.SumIntoGlobalValues( 1, 2, values, indexes );*/
         }
-    }
-
-    const Teuchos::RCP<Thyra::PreconditionerBase<double> > W_prec_out = outArgs.get_W_prec();
-    if ( nonnull(W_prec_out) ) {
-        // Reset the preconditioner
-        AMP::LinearAlgebra::Vector::shared_ptr x2 = boost::const_pointer_cast<AMP::LinearAlgebra::Vector>(x);
-        boost::shared_ptr<AMP::Operator::OperatorParameters> op_params = d_nonlinearOp->getJacobianParameters(x2);
-        d_preconditioner->resetOperator(op_params);
     }
 }
 

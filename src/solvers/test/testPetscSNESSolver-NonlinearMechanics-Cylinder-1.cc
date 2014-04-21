@@ -26,13 +26,13 @@
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
 
 #include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/boundary/PressureBoundaryOperator.h"
+#include "operators/boundary/libmesh/PressureBoundaryOperator.h"
 
 #include "operators/BVPOperatorParameters.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
-#include "operators/TrilinosMatrixShellOperator.h"
+#include "operators/trilinos/TrilinosMatrixShellOperator.h"
 
 #include "solvers/petsc/PetscKrylovSolverParameters.h"
 #include "solvers/petsc/PetscKrylovSolver.h"

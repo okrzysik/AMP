@@ -3,7 +3,7 @@
 #define included_AMP_NavierStokesLSWFFEOperator
 
 /* AMP files */
-#include "operators/NonlinearFEOperator.h"
+#include "operators/libmesh/NonlinearFEOperator.h"
 #include "operators/flow/NavierStokesConstants.h"
 #include "operators/flow/NavierStokesLSWFFEOperatorParameters.h"
 #include "operators/flow/NavierStokesLSWFElement.h"

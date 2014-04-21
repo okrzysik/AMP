@@ -425,7 +425,7 @@ size_t MultiVector::getGhostSize () const
 /****************************************************************
 * Functions to get access to the data                           *
 ****************************************************************/
-void  MultiVector::putRawData ( double *in )
+void  MultiVector::putRawData ( const double *in )
 {
     int cur_off = 0;
     for (size_t i=0; i!=d_vVectors.size(); i++ )
@@ -458,14 +458,13 @@ size_t MultiVector::sizeOfDataBlock ( size_t i ) const
     }
     return retVal;
 }
-void  MultiVector::copyOutRawData ( double ** out )
+void  MultiVector::copyOutRawData ( double * out ) const
 {
-    *out = new double [ getLocalSize() ];
     size_t curOffset = 0;
     for (size_t j = 0 ; j != d_vVectors.size() ; j++ )
     {
-      curOffset += d_vVectors[j]->getLocalSize();
-      d_vVectors[j]->copyOutRawData ( out + curOffset );
+        d_vVectors[j]->copyOutRawData( &out[curOffset] );
+        curOffset += d_vVectors[j]->getLocalSize();
     }
 }
 void * MultiVector::getRawDataBlockAsVoid ( size_t i )

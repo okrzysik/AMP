@@ -1,9 +1,17 @@
 # Macro to set AMP package flags and definitions
 # Note: order matters, ordered from least to most dependencies
 MACRO ( SET_AMP_PACKAGE_FLAGS )
-    
     # Set the AMP libraries and definitions
     SET( AMP_LIBS )
+    SET( USE_AMP_UTILITIES        OFF )
+    SET( USE_AMP_MESH             OFF )
+    SET( USE_AMP_DISCRETIZATION   OFF )
+    SET( USE_AMP_VECTORS          OFF )
+    SET( USE_AMP_MATRICES         OFF )
+    SET( USE_AMP_MATERIALS        OFF )
+    SET( USE_AMP_OPERATORS        OFF )
+    SET( USE_AMP_TIME_INTEGRATORS OFF )
+    SET( USE_AMP_SOLVERS          OFF )
     IF ( ${PROJECT_NAME}_ENABLE_AMP_UTILITIES )
         SET( USE_AMP_UTILS ON )
         ADD_DEFINITIONS ( -D USE_AMP_UTILS )  

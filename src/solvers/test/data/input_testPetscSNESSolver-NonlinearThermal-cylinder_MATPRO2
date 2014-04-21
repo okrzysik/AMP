@@ -167,8 +167,8 @@ NonlinearSolver{
     max_iterations = 500
     max_error = 1e-10
 
-    absoluteTolerance = 1.0e-12
-    relativeTolerance = 1.0e-12
+    absoluteTolerance = 1.0e-10
+    relativeTolerance = 1.0e-14
     stepTolerance = 1.0e-16
     maximumFunctionEvals = 10000
     usesJacobian=FALSE
@@ -180,7 +180,7 @@ NonlinearSolver{
         max_iterations = 100
         max_error = 1e-10
         ksp_type = "fgmres"
-        absolute_tolerance = 1.0e-9
+        absolute_tolerance = 1.0e-12
         relative_tolerance = 1.0e-06
         divergence_tolerance = 1.0e03
         max_krylov_dimension = 40
@@ -191,7 +191,7 @@ NonlinearSolver{
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100 -ksp_rtol 1.0e-9 -ksp_atol 1.0e-9"
 
         Preconditioner{
-          print_info_level = 10
+          print_info_level = 0
             max_iterations = 1
             max_error = 1e-15
         }

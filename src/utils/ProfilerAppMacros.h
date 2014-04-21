@@ -14,7 +14,8 @@
       if ( LEVEL <= global_profiler.get_level() )           \
         global_profiler.stop( NAME, FILE, LINE, LEVEL );    \
     } while(0)
-
+#define PROFILE_SCOPED_LEVEL(OBJ,NAME,FILE,LINE,LEVEL)      \
+    AMP::ScopedTimer OBJ( NAME, FILE, LINE, LEVEL )
 
 
 /*! \addtogroup Macros
@@ -69,6 +70,18 @@
     PROFILE_STOP_LEVEL( NAME, __FILE__, -1, GET_LEVEL(_0,##__VA_ARGS__,0) )
 
 
+/*! \def PROFILE_SCOPED(OBJ,NAME,..)
+ *  \brief Create and start a scoped timer
+ *  \details This create and start a ScopedTimer
+ *      See  \ref AMP::ProfilerApp "ProfilerApp" and
+ *     \ref AMP::ProfilerApp "ProfilerApp" for more info.
+ *  \param OBJ   Name of the object
+ *  \param NAME  Name of the timer
+ */
+#define PROFILE_SCOPED(OBJ,NAME,...) \
+    PROFILE_SCOPED_LEVEL(OBJ,NAME,__FILE__,__LINE__, GET_LEVEL(_0,##__VA_ARGS__,0))
+
+
 /*! \def PROFILE_SYNCRONIZE()
  *  \brief Syncronize the time across multiple processors
  *  \details This will syncronize time zero across all processors.
@@ -91,9 +104,10 @@
  *      An optional argument specifying the level to enable may be included.
  *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
  *  \param FILE  Name of the file to save
+ *  \param GLOBAL   Save all ranks in a single file
  */
-#define PROFILE_SAVE(FILE) \
-    global_profiler.save( FILE )
+#define PROFILE_SAVE(FILE,...) \
+    global_profiler.save( FILE, GET_LEVEL(_0,##__VA_ARGS__,0) )
 
 
 /*! \def PROFILE_STORE_TRACE(X)

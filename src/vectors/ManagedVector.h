@@ -127,8 +127,8 @@ public:
     virtual void setValuesByLocalID(int i, size_t * , const double *val);
     virtual void addValuesByLocalID(int i, size_t * , const double *val);
     virtual void addLocalValuesByGlobalID(int i, size_t * , const double *val);
-    virtual void putRawData ( double *in );
-    virtual void copyOutRawData ( double **in );
+    virtual void putRawData ( const double *in );
+    virtual void copyOutRawData ( double *in ) const;
     double L1Norm(void) const;
     double L2Norm(void) const;
     double maxNorm(void) const;

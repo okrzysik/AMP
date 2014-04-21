@@ -195,7 +195,7 @@ public:
     virtual size_t getLocalSize() const;
     virtual size_t getGlobalSize() const;
     virtual size_t getGhostSize() const;
-    virtual void   putRawData ( double * );
+    virtual void   putRawData ( const double * );
 
     // Vector engine functions
     virtual boost::shared_ptr<std::vector<double> >  getNewBuffer();
@@ -205,7 +205,7 @@ public:
     virtual const void          *getDataBlock ( size_t i ) const;
     virtual void              *getDataBlock ( size_t i );
 
-    virtual void   copyOutRawData ( double ** out );
+    virtual void   copyOutRawData ( double * out ) const;
 
 
 protected:

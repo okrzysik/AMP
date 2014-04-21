@@ -32,7 +32,7 @@ size_t Matrix::numGlobalRows() const
 }
 
 
-// Get the number of local rows in the matrix
+// Get the number of local columns in the matrix
 size_t Matrix::numLocalColumns() const
 {
     Discretization::DOFManager::shared_ptr DOF = getRightDOFManager();
@@ -40,7 +40,7 @@ size_t Matrix::numLocalColumns() const
 }
 
 
-// Get the number of local rows in the matrix
+// Get the number of global columns in the matrix
 size_t Matrix::numGlobalColumns() const
 {
     Discretization::DOFManager::shared_ptr DOF = getRightDOFManager();
