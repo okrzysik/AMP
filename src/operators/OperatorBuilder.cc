@@ -41,6 +41,8 @@
     #include "operators/diffusion/DiffusionLinearFEOperator.h"
     #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
     #include "operators/diffusion/FickSoretNonlinearFEOperator.h"
+    #include "operators/flow/NavierStokesLSWFLinearFEOperator.h"
+    #include "operators/flow/NavierStokesLSWFFEOperator.h"
     #include "operators/map/MapSurface.h"
 #endif
 
