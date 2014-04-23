@@ -574,6 +574,7 @@ ENDMACRO ()
 
 # Macro to configure system-specific libraries and flags
 MACRO ( CONFIGURE_SYSTEM )
+    SET_COMPILER()
     # Remove extra library links
     CHECK_ENABLE_FLAG( USE_STATIC 0 )
     IF ( USE_STATIC )
@@ -588,7 +589,6 @@ MACRO ( CONFIGURE_SYSTEM )
         FIND_LIBRARY ( PSAPI_LIB    NAMES Psapi    PATHS ${SYSTEM_PATHS}  NO_DEFAULT_PATH )
         FIND_LIBRARY ( DBGHELP_LIB  NAMES DbgHelp  PATHS ${SYSTEM_PATHS}  NO_DEFAULT_PATH )
         SET( SYSTEM_LIBS ${PSAPI_LIB} ${DBGHELP_LIB} )
-        MESSAGE("System libs: ${SYSTEM_LIBS}")
     ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
         # Linux specific system libraries
         SET( SYSTEM_LIBS "-lz -ldl" )
@@ -597,7 +597,7 @@ MACRO ( CONFIGURE_SYSTEM )
         ENDIF()
         IF ( USING_GCC )
             SET( SYSTEM_LIBS "${SYSTEM_LIBS} -lgfortran" )   # Needed for backtrace to print function names
-	ENDIF()
+	    ENDIF()
     ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
         # Max specific system libraries
         SET( SYSTEM_LIBS "-lz -ldl" )
@@ -606,6 +606,7 @@ MACRO ( CONFIGURE_SYSTEM )
     ELSE()
         MESSAGE( FATAL_ERROR "OS not detected" )
     ENDIF()
+        MESSAGE("System libs: ${SYSTEM_LIBS}")
 ENDMACRO ()
 
 
