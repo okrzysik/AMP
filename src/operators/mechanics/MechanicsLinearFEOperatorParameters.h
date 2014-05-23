@@ -2,7 +2,7 @@
 #ifndef included_AMP_MechanicsLinearFEOperatorParameters
 #define included_AMP_MechanicsLinearFEOperatorParameters
 
-#include "operators/LinearFEOperatorParameters.h"
+#include "operators/libmesh/LinearFEOperatorParameters.h"
 #include "operators/mechanics/MechanicsMaterialModel.h"
 
 #include <vector>

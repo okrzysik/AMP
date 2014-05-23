@@ -8,7 +8,7 @@
 
 #include "boost/shared_ptr.hpp"
 
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/NeutronicsRhs.h"
 
 #include "utils/Database.h"

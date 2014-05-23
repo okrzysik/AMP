@@ -187,7 +187,7 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
 void TrilinosNOXSolver::solve( boost::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                   boost::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START("solve");
+    //PROFILE_START("solve");
     // Get thyra vectors
     boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> initial =
         boost::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
@@ -235,7 +235,7 @@ void TrilinosNOXSolver::solve( boost::shared_ptr<const AMP::LinearAlgebra::Vecto
     AMP_ASSERT(thyraVec!=NULL);
     AMP_ASSERT(thyraVec->numVecs()==1);
     u->copyVector(thyraVec->getVec(0));
-    PROFILE_STOP("solve");
+    //PROFILE_STOP("solve");
 }
 
 

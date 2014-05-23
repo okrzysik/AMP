@@ -19,15 +19,15 @@
 #include "utils/Writer.h"
 #include "vectors/Vector.h"
 
-#include "operators/MassLinearElement.h"
-#include "operators/MassLinearFEOperator.h"
+#include "operators/libmesh/MassLinearElement.h"
+#include "operators/libmesh/MassLinearFEOperator.h"
 
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearElement.h"
 #include "operators/diffusion/DiffusionTransportModel.h"
 
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/subchannel/FlowFrapconOperator.h"
 #include "operators/subchannel/FlowFrapconJacobian.h"
 #include "operators/NeutronicsRhs.h"
@@ -36,12 +36,12 @@
 #include "operators/ElementOperationFactory.h"
 
 #include "operators/boundary/ColumnBoundaryOperator.h"
-#include "operators/boundary/NeumannVectorCorrectionParameters.h"
+#include "operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
 #include "operators/boundary/DirichletMatrixCorrection.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/boundary/RobinMatrixCorrection.h"
-#include "operators/boundary/RobinVectorCorrection.h"
-#include "operators/boundary/NeumannVectorCorrection.h"
+#include "operators/boundary/libmesh/RobinMatrixCorrection.h"
+#include "operators/boundary/libmesh/RobinVectorCorrection.h"
+#include "operators/boundary/libmesh/NeumannVectorCorrection.h"
 
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/CoupledOperator.h"

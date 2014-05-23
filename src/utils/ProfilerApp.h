@@ -4,7 +4,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <iostream>
+#include <vector>
 
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -48,9 +50,113 @@ namespace AMP {
 #define MAX_TRACE_TRACE 1e6                     // The maximum number of stored start and stop times per trace
                                                 // Note: this is only used if store_trace is set, and should be a power of 2
                                                 // Note: the maximum ammount of memory used per trace is 16*MAX_TRACE_TRACE bytes (plus the trace itself)
-#define MAX_TRACE_MEMORY 1e8                    // The maximum number of times to store the memory usage
+#define MAX_TRACE_MEMORY 0x6000000              // The maximum number of times to store the memory usage
 #define THREAD_HASH_SIZE 64                     // The size of the hash table to store the threads
 #define TIMER_HASH_SIZE 1024                    // The size of the hash table to store the timers
+
+
+/** \class id_struct
+  *
+  * Structure to store id string
+  */
+struct id_struct {
+    id_struct( ) { data.u64=0; }
+    id_struct(const id_struct& rhs) { data.u64=rhs.data.u64; }
+    id_struct& operator=(const id_struct& rhs) { this->data.u64=rhs.data.u64; return *this; }
+    id_struct(const std::string& rhs) { data.u64=0; rhs.copy(data.str,8); }
+    id_struct(const char* rhs) { data.u64=0; for (int i=0; i<8&&rhs[i]>0; i++) data.str[i]=rhs[i]; }
+    inline const char* c_str( ) const { return data.str; }
+    inline const std::string string( ) const { return std::string(data.str,0,8); }
+    inline bool operator==(const id_struct& rhs ) const { return data.u64==rhs.data.u64; }
+    inline bool operator!=(const id_struct& rhs ) const { return data.u64!=rhs.data.u64; }
+    inline bool operator>=(const id_struct& rhs ) const { return data.u64>=rhs.data.u64; }
+    inline bool operator> (const id_struct& rhs ) const { return data.u64> rhs.data.u64; }
+    inline bool operator< (const id_struct& rhs ) const { return data.u64< rhs.data.u64; }
+    inline bool operator<=(const id_struct& rhs ) const { return data.u64<=rhs.data.u64; }
+private:
+    union {
+        uint64_t u64;
+        char str[8];
+    } data;
+};
+
+
+/** \class TraceResults
+  *
+  * Structure to store results of a single trace from the profiler application.
+  * Note: field types and sizes are set to minimize the storage requirements 
+  *    of this structure (currently 48 bytes without active timers or traces).
+  */
+struct TraceResults {
+    id_struct id;                       //!<  ID of parent timer
+    short unsigned int N_active;        //!<  Number of active timers
+    short unsigned int thread;          //!<  Active thread
+    unsigned int rank;                  //!<  Rank
+    unsigned int N_trace;               //!<  Number of calls that we trace
+    float min;                          //!<  Minimum call time
+    float max;                          //!<  Maximum call time
+    float tot;                          //!<  Total call time
+    size_t N;                           //!<  Total number of calls
+    id_struct* active();                //!<  List of active timers
+    const id_struct* active() const;    //!<  List of active timers
+    double* start();                    //!<  Start times for each call
+    const double* start() const;        //!<  Start times for each call
+    double* stop();                     //!<  Stop times for each call
+    const double* stop() const;         //!<  Stop times for each call
+    TraceResults( );                    //!<  Empty constructor
+    ~TraceResults( );                   //!<  Destructor
+    TraceResults(const TraceResults&);  //!<  Copy constructor
+    TraceResults& operator=(const TraceResults&); //! Assignment operator
+    void allocate();                    //!<  Allocate the data
+    size_t size(bool store_trace=true) const; //!< The number of bytes needed to pack the trace
+    void pack( void* data ) const;      //!<  Pack the data to a buffer
+    void unpack( const void* data );    //!<  Unpack the data from a buffer
+private:
+    void *mem;
+};
+
+
+/** \class TimerResults
+  *
+  * Structure to store results of a single timer from the profiler application.
+  */
+struct TimerResults {
+    id_struct id;                       //!<  Timer ID
+    std::string message;                //!<  Timer message
+    std::string file;                   //!<  Timer file
+    std::string path;                   //!<  Timer file path
+    int start;                          //!<  Timer start line (-1: never defined)
+    int stop;                           //!<  Timer stop line (-1: never defined)
+    std::vector<TraceResults> trace;    //!< Trace data
+    size_t size(bool store_trace=true) const; //!< The number of bytes needed to pack the trace
+    void pack( void* data ) const;      //!<  Pack the data to a buffer
+    void unpack( const void* data );    //!<  Unpack the data from a buffer
+};
+
+
+/** \class MemoryResults
+  *
+  * Structure to store the memory results of a single rank.
+  */
+struct MemoryResults{
+    int rank;                           //!<  Rank
+    std::vector<double> time;           //!<  Time
+    std::vector<size_t> bytes;          //!<  Memory in use
+    size_t size() const;                //!< The number of bytes needed to pack the trace
+    void pack( void* data ) const;      //!<  Pack the data to a buffer
+    void unpack( const void* data );    //!<  Unpack the data from a buffer
+};
+
+
+/** \class TimerMemoryResults
+  *
+  * Structure to store results of timers and memory
+  */
+struct TimerMemoryResults {
+    int N_procs;
+    std::vector<TimerResults> timers;
+    std::vector<MemoryResults> memory;
+};
 
 
 /** \class ProfilerApp
@@ -171,8 +277,18 @@ public:
      * Note: .x.timer will automatically be appended to the filename, where x is the rank+1 of the process.
      * Note: .x.trace will automatically be appended to the filename when detailed traces are used.
      * @param filename      File name for saving the results
+     * @param global        Save a global file (true) or individual files (false)
      */
-    void save( const std::string& filename );
+    void save( const std::string& filename, bool global=false ) const;
+
+    /*!
+     * \brief  Function to load the profiling info
+     * \details  This will load the timing and trace info from a file
+     * @param filename      File name for loading the results
+     *                      Note: .x.timer will be automatically appended to the filename
+     * @param rank          Rank to load (-1: all ranks)
+     */
+    static TimerMemoryResults load( const std::string& filename, int rank=-1 );
 
     /*!
      * \brief  Function to syncronize the timers
@@ -232,13 +348,26 @@ public:
     void ignore_timer_errors(bool flag=false) { d_check_timer_error = flag; }
 
     /*!
-     * \brief  Function to change the behavior of timer errors
+     * \brief  Function to get the timer id
      * \details  This function returns the timer id given the message and filename
      * @param message     The timer message
      * @param filename    The filename
      */
-    // Function to return a hopefully unique id based on the message and filename
     static size_t get_timer_id( const char* message, const char* filename );
+
+    /*!
+     * \brief  Function to return the current timer results
+     * \details  This function will return a vector containing the 
+     *   current timing results for all threads.
+     */
+    std::vector<TimerResults> getTimerResults() const;
+
+    /*!
+     * \brief  Function to return the memory usage as a function of time
+     * \details  This function will return a vector containing the 
+     *   memory usage as a function of time
+     */
+    MemoryResults getMemoryResults() const;
 
 private:
 
@@ -395,10 +524,25 @@ private:
     static inline size_t get_trace_id( const size_t *trace );
 
     // Function to return the string of active timers
-    static std::string get_active_list( size_t *active, unsigned int myIndex, thread_info *head );
+    static std::vector<id_struct> get_active_list( size_t *active, unsigned int myIndex, thread_info *head );
 
     // Function to get the current memory usage
     static inline size_t get_memory_usage();
+
+    // Function to load a single timer file (appending the data to the vector)
+    static void load_timer( const std::string& filename, std::vector<TimerResults>& timers, 
+        int& N_procs, std::string& date, bool& load_trace, bool& load_memory );
+
+    // Function to load a single trace file (appending the data to the vector)
+    static void load_trace( const std::string& filename, std::vector<TimerResults>& timers );
+
+    // Function to load a single memory file
+    static void load_memory( const std::string& filename, std::vector<MemoryResults>& memory );
+
+    // Functions to send all timers/memory to rank 0
+    static void gather_timers( std::vector<TimerResults>& timers );
+    static void add_timers( std::vector<TimerResults>& timers, const std::vector<TimerResults> add );
+    static void gather_memory( std::vector<MemoryResults>& memory );
 
     // Handle to a mutex lock
     #ifdef USE_WINDOWS
@@ -417,10 +561,10 @@ private:
     TIME_TYPE d_construct_time;     // Store when the constructor was called
     TIME_TYPE d_frequency;          // Clock frequency (only used for windows)
     double d_shift;                 // Offset to add to all trace times when saving (used to syncronize the trace data)
-    size_t d_max_trace_remaining;   // The number of traces remaining to store for each thread
-    size_t d_N_memory_steps;        // The number of steps we have for the memory usage
-    double* d_time_memory;          // The times at which we know the memory usage
-    size_t* d_size_memory;          // The memory usage at each time
+    mutable size_t d_max_trace_remaining; // The number of traces remaining to store for each thread
+    mutable size_t d_N_memory_steps; // The number of steps we have for the memory usage
+    mutable double* d_time_memory;  // The times at which we know the memory usage
+    mutable size_t* d_size_memory;  // The memory usage at each time
 
 };
 

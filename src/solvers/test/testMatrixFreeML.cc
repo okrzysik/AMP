@@ -23,7 +23,7 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/TrilinosMatrixShellOperator.h"
+#include "operators/trilinos/TrilinosMatrixShellOperator.h"
 #include "operators/ColumnOperator.h"
 #include "mesh_communication.h"
 

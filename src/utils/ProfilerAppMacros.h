@@ -104,9 +104,10 @@
  *      An optional argument specifying the level to enable may be included.
  *      See  \ref AMP::ProfilerApp "ProfilerApp" for more info.
  *  \param FILE  Name of the file to save
+ *  \param GLOBAL   Save all ranks in a single file
  */
-#define PROFILE_SAVE(FILE) \
-    global_profiler.save( FILE )
+#define PROFILE_SAVE(FILE,...) \
+    global_profiler.save( FILE, GET_LEVEL(_0,##__VA_ARGS__,0) )
 
 
 /*! \def PROFILE_STORE_TRACE(X)

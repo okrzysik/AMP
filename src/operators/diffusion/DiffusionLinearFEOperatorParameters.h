@@ -1,7 +1,7 @@
 #ifndef included_AMP_DiffusionLinearFEOperatorParameters
 #define included_AMP_DiffusionLinearFEOperatorParameters
 
-#include "operators/LinearFEOperatorParameters.h"
+#include "operators/libmesh/LinearFEOperatorParameters.h"
 
 #include "operators/diffusion/DiffusionTransportModel.h"
 

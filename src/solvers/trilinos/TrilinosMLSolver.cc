@@ -7,7 +7,7 @@
 #include "matrices/Matrix.h"
 #include "matrices/trilinos/EpetraMatrix.h"
 #include "operators/LinearOperator.h"
-#include "operators/TrilinosMatrixShellOperator.h"
+#include "operators/trilinos/TrilinosMatrixShellOperator.h"
 
 namespace AMP {
 namespace Solver {

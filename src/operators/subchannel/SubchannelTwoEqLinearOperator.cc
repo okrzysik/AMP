@@ -51,6 +51,8 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 
     d_params = myparams;
 
+    // We require that subchannel in on an AMP structured 
+
     // Get the subchannel mesh coordinates
     AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( d_Mesh, d_x, d_y, d_z );
     d_numSubchannels = (d_x.size()-1)*(d_y.size()-1);
@@ -171,8 +173,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 
     // check to ensure frozen vector isn't null
     AMP_INSIST( (d_frozenVec.get() != NULL), "Null Frozen Vector inside Jacobian" );
-
-
+    AMP_ASSERT(*d_dofMap ==*(d_frozenVec->getDOFManager()));
     for (size_t isub =0; isub<d_numSubchannels; ++isub) {
         if ( !d_ownSubChannel[isub] )
             continue;
@@ -190,7 +191,6 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
         double D = d_channelDiam[isub]; // Channel hydraulic diameter
         double mass = d_channelMass[isub];  // Mass flow rate in the current subchannel
         int j = 1;
-        AMP_ASSERT(*d_dofMap ==*(d_frozenVec->getDOFManager()));
         AMP::Mesh::MeshIterator face = localSubchannelIt.begin();
         AMP::Mesh::MeshIterator end_face = localSubchannelIt.end();
         for(size_t iface = 0; iface < localSubchannelIt.size(); ++iface, ++j){

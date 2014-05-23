@@ -26,7 +26,7 @@
 //BP the following two lines are probably unnecessary, not removing
 // prior to Jan, 2011 code camp.
 //JL
-#include "operators/VolumeIntegralOperator.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
 
 namespace AMP{
 namespace TimeIntegrator{
@@ -158,6 +158,10 @@ class TimeOperator: public AMP::Operator::Operator
    * this is the output variable associated with the rhs operator.
    */
   AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable(){return d_pRhsOperator->getOutputVariable(); }
+
+  virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+          AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
+          const double a = -1.0, const double b = 1.0);
 
  protected:
   TimeOperator();

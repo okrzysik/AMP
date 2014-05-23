@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+using namespace AMP;
+
 #ifdef USE_WINDOWS
     #define TIME_TYPE LARGE_INTEGER
     #define get_time(x) QueryPerformanceCounter(x)
@@ -47,19 +49,20 @@ int run_tests( bool enable_trace, std::string save_name )
     const int N_it = 100;
     const int N_timers = 1000;
     int N_errors = 0;
+    int rank = AMP::AMP_MPI(AMP_COMM_WORLD).getRank();
 
     // Check that "MAIN" is active and "NULL" is not
     bool test1 = global_profiler.active("MAIN",__FILE__);
     bool test2 = global_profiler.active("NULL",__FILE__);
     if ( !test1 || test2 ) {
-        printf("Correct timers are not active\n");
+        std::cout << "Correct timers are not active\n";
         N_errors++;
     }
 
     // Test the scoped timer
     bool pass = call_recursive_scope( 5 );
     if ( !pass ) {
-        printf("Scoped timer fails\n");
+        std::cout << "Scoped timer fails\n";
         N_errors++;
     }
 
@@ -70,7 +73,7 @@ int run_tests( bool enable_trace, std::string save_name )
         char tmp[16];
         sprintf(tmp,"%04i",i);
         names[i] = std::string(tmp);
-        ids[i] = AMP::ProfilerApp::get_timer_id(names[i].c_str(),__FILE__);
+        ids[i] = ProfilerApp::get_timer_id(names[i].c_str(),__FILE__);
     }
 
     // Check that the start/stop command fail when they should
@@ -134,8 +137,85 @@ int run_tests( bool enable_trace, std::string save_name )
         PROFILE_STOP("allocate1");
     }
 
-    PROFILE_STOP("MAIN");
+    // Profile the save
+    PROFILE_START("SAVE");
     PROFILE_SAVE(save_name);
+    PROFILE_STOP("SAVE");
+
+    // Stop main
+    PROFILE_STOP("MAIN");
+
+    // Re-save the results
+    PROFILE_SAVE(save_name);
+
+    // Get the timers (sorting based on the timer ids)
+    std::vector<TimerResults> data1 = global_profiler.getTimerResults();
+    MemoryResults memory1 = global_profiler.getMemoryResults();
+    size_t bytes1[2]={0,0};
+    std::vector<id_struct> id1(data1.size());
+    for (size_t i=0; i<data1.size(); i++) {
+        bytes1[0] += data1[i].size(false);
+        bytes1[1] += data1[i].size(true);
+        id1[i] = data1[i].id;
+    }
+    Utilities::quicksort(id1,data1);
+
+    // Load the data from the file (sorting based on the timer ids)
+    PROFILE_START("LOAD");
+    TimerMemoryResults load_results = ProfilerApp::load(save_name,rank);
+    std::vector<TimerResults>& data2 = load_results.timers;
+    MemoryResults memory2;
+    if ( !load_results.memory.empty() )
+        memory2 = load_results.memory[0];
+    PROFILE_STOP("LOAD");
+    size_t bytes2[2]={0,0};
+    std::vector<id_struct> id2(data1.size());
+    for (size_t i=0; i<data2.size(); i++) {
+        bytes2[0] += data2[i].size(false);
+        bytes2[1] += data2[i].size(true);
+        id2[i] = data2[i].id;
+    }
+    Utilities::quicksort(id2,data2);
+
+    // Compare the sets of timers
+    bool error = false;
+    if ( data1.size()!=data2.size() || bytes1[0]==0 || bytes1[0]!=bytes2[0] || bytes1[1]!=bytes2[1] ) {
+        error = true;
+    } else {
+        for (size_t i=0; i<data1[i].trace.size(); i++) {
+            if ( data1[i].id!=data2[i].id || data1[i].trace.size()!=data2[i].trace.size() ) {
+                error = true;
+            } else {
+                for (size_t j=0; j<data1[i].trace.size(); j++) {
+                    if ( data1[i].trace[j].id!=data2[i].trace[j].id )
+                        error = true;
+                }
+            }
+        }
+    }
+    if ( error ) {
+        std::cout << "Timers do not match " << data1.size() << " " << data2.size() << 
+            " " << bytes1[0] << " " << bytes2[0] << " " << bytes1[1] << " " << bytes2[1] << " " << std::endl;
+        N_errors++;
+    }
+
+    // Compare the memory results
+    error = false;
+    if ( memory1.time.size()!=memory2.time.size() ) {
+        error = true;
+    } else {
+        for (size_t i=0; i<memory1.time.size(); i++) {
+            if ( memory1.time[i]!=memory2.time[i] || memory1.bytes[i]!=memory2.bytes[i] )
+                error = true;
+        }
+    }
+    if ( error ) {
+        std::cout << "Memory trace does not match\n";
+        N_errors++;
+    }
+
+    PROFILE_SAVE(save_name);
+    PROFILE_SAVE(save_name,true);
     return N_errors;
 }
 

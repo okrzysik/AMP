@@ -1,6 +1,7 @@
 #include "utils/ProfilerApp.h"
 #include "utils/Utilities.h"
 #include "utils/AMP_MPI.h"
+#include "utils/PIO.h"
 
 #include <stdio.h>
 #include <iostream>
@@ -9,10 +10,15 @@
 #include <time.h>
 #include <stdexcept>
 #include <vector>
+#include <map>
 
 #define ERROR_MSG AMP_ERROR
 
 #define MONITOR_PROFILER_PERFORMANCE 0
+
+#define pout    AMP::pout
+#define perr    AMP::perr
+#define printp  printf
 
 
 AMP::ProfilerApp global_profiler;
@@ -35,24 +41,29 @@ extern "C" {
     #include <tchar.h>
     #include <Psapi.h>
     #define get_time(x) QueryPerformanceCounter(x)
-    #define get_diff(start,end,f) (((double)(end.QuadPart-start.QuadPart))/((double)f.QuadPart))
     #define get_frequency(f) QueryPerformanceFrequency(f)
+    #define get_diff(start,end,f) \
+        static_cast<double>(end.QuadPart-start.QuadPart)/static_cast<double>(f.QuadPart)
 #elif defined(USE_LINUX)
     #include <signal.h>
     #include <execinfo.h>
     #include <dlfcn.h>
     #include <malloc.h>
     #define get_time(x) gettimeofday(x,NULL);
-    #define get_diff(start,end,f) (((double)end.tv_sec-start.tv_sec)+1e-6*((double)end.tv_usec-start.tv_usec))
     #define get_frequency(f) (*f=timeval())
+    #define get_diff(start,end,f) 1e-6*static_cast<double>( \
+        0xF4240*(static_cast<int64_t>(end.tv_sec)-static_cast<int64_t>(start.tv_sec)) + \
+                (static_cast<int64_t>(end.tv_usec)-static_cast<int64_t>(start.tv_usec)) )
 #elif defined(USE_MAC)
     #include <signal.h>
     #include <execinfo.h>
     #include <dlfcn.h>
     #include <mach/mach.h>
     #define get_time(x) gettimeofday(x,NULL);
-    #define get_diff(start,end,f) (((double)end.tv_sec-start.tv_sec)+1e-6*((double)end.tv_usec-start.tv_usec))
     #define get_frequency(f) (*f=timeval())
+    #define get_diff(start,end,f) 1e-6*static_cast<double>( \
+        0xF4240*(static_cast<int64_t>(end.tv_sec)-static_cast<int64_t>(start.tv_sec)) + \
+                (static_cast<int64_t>(end.tv_usec)-static_cast<int64_t>(start.tv_usec)) )
     #ifdef __LP64__
         #define ARCH_SIZE 64
     #else
@@ -81,6 +92,12 @@ extern "C" {
 
 
 namespace AMP {
+
+
+// Check the limits of the define variables
+#if MAX_TRACE_MEMORY > 0xFFFFFFFF
+    #error MAX_TRACE_MEMORY must be < 2^32
+#endif
 
 
 #define ASSERT(EXP) do {                                            \
@@ -184,7 +201,7 @@ template<class type> void check_allocate_array( type** data, size_t N_current, s
     static inline bool GET_LOCK(const HANDLE *lock) {
         int retval = WaitForSingleObject(*lock,INFINITE);
         if ( retval != WAIT_OBJECT_0 ) {
-            printf("Error locking mutex\n");
+            perr << "Error locking mutex\n";
             return true;
         }
 	    return false;
@@ -192,7 +209,7 @@ template<class type> void check_allocate_array( type** data, size_t N_current, s
     static inline bool RELEASE_LOCK(const HANDLE *lock) {
         int retval = ReleaseMutex(*lock);
         if ( retval == 0 ) {
-            printf("Error unlocking mutex\n");
+            perr << "Error unlocking mutex\n";
             return true;
         }
     	return false;
@@ -201,7 +218,7 @@ template<class type> void check_allocate_array( type** data, size_t N_current, s
     static inline bool GET_LOCK(const pthread_mutex_t *lock) {
         int retval = pthread_mutex_lock(const_cast<pthread_mutex_t*>(lock));
         if ( retval == -1 ) {
-            printf("Error locking mutex\n");
+            perr << "Error locking mutex\n";
             return true;
         }
 	    return false;
@@ -209,7 +226,7 @@ template<class type> void check_allocate_array( type** data, size_t N_current, s
     static inline bool RELEASE_LOCK(const pthread_mutex_t *lock) {
         int retval = pthread_mutex_unlock(const_cast<pthread_mutex_t*>(lock));
         if ( retval == -1 ) {
-            printf("Error unlocking mutex\n");
+            perr << "Error unlocking mutex\n";
             return true;
         }
 	    return false;
@@ -224,18 +241,56 @@ template<class type> void check_allocate_array( type** data, size_t N_current, s
 * Note: we want these functions to be safe to use, even if MPI    *
 *    has not been initialized.                                    *
 ******************************************************************/
-static inline int comm_size() {
+static inline int comm_size() 
+{
     return AMP::AMP_MPI(AMP_COMM_WORLD).getSize();
 
 }
-static inline int comm_rank() {
+static inline int comm_rank() 
+{
     return AMP::AMP_MPI(AMP_COMM_WORLD).getRank();
 }
-static inline void comm_barrier() {
+static inline void comm_barrier() 
+{
     AMP::AMP_MPI(AMP_COMM_WORLD).barrier();
 }
-static inline double comm_max_reduce(double val) {
+static inline double comm_max_reduce( const double val )
+{
     return AMP::AMP_MPI(AMP_COMM_WORLD).maxReduce(val);
+}
+static inline void comm_send1( const void *buf, size_t bytes, int dest, int tag )
+{
+    int N_send = (bytes+sizeof(double)-1)/sizeof(double);
+	AMP::AMP_MPI(AMP_COMM_WORLD).send<int>( &N_send, 1, dest, tag );
+    AMP::AMP_MPI(AMP_COMM_WORLD).send<double>( static_cast<const double*>(buf), N_send, dest, tag );
+}
+static inline void* comm_recv1( int source, int tag )
+{
+    int N_send = 0;
+	int length = 1;
+	AMP::AMP_MPI(AMP_COMM_WORLD).recv<int>( &N_send, length, source, false, tag );
+    double *buf = new double[N_send];
+    AMP::AMP_MPI(AMP_COMM_WORLD).recv<double>( buf, N_send, source, false, tag );
+    return buf;
+}
+template<class TYPE>
+static inline void comm_send2( const std::vector<TYPE>& data, int dest, int tag )
+{
+    int N = data.size();
+	AMP::AMP_MPI(AMP_COMM_WORLD).send<int>( &N, 1, dest, tag );
+    if ( N > 0 )
+        AMP::AMP_MPI(AMP_COMM_WORLD).send<TYPE>( &data[0], N, dest, tag );
+}
+template<class TYPE>
+static inline std::vector<TYPE> comm_recv2( int source, int tag )
+{
+    int N = 0;
+	int length = 1;
+	AMP::AMP_MPI(AMP_COMM_WORLD).recv<int>( &N, length, source, false, tag );
+    std::vector<TYPE> data(N);
+    if ( N > 0 )
+        AMP::AMP_MPI(AMP_COMM_WORLD).recv<TYPE>( &data[0], N, source, false, tag );
+    return data;
 }
 
 
@@ -262,48 +317,273 @@ static inline void unset_trace_bit( unsigned int i, unsigned int N, size_t *trac
 * Inline function to convert the timer id to a string                  *
 ***********************************************************************/
 #define N_BITS_ID 24    // The probability of a collision is ~N^2/2^N_bits (N is the number of timers)
-static inline void convert_timer_id( size_t key, char* str ) {
+static inline id_struct convert_timer_id( size_t key ) 
+{
     int N_bits = std::min<int>(N_BITS_ID,8*sizeof(unsigned int));
     // Get a new key that is representable by N bits
-    size_t id = key;
+    size_t id2 = key;
     if ( N_BITS_ID < 8*sizeof(size_t) ) {
         if ( sizeof(size_t)==4 )
-            id = (key*0x9E3779B9) >> (32-N_BITS_ID);
+            id2 = (key*0x9E3779B9) >> (32-N_BITS_ID);
         else if ( sizeof(size_t)==8 )
-            id = (key*0x9E3779B97F4A7C15) >> (64-N_BITS_ID);
+            id2 = (key*0x9E3779B97F4A7C15) >> (64-N_BITS_ID);
         else
             ERROR_MSG("Unhandled case");
     }
     // Convert the new key to a string
+    char id[20]={0};
     if ( N_bits <= 9 ) {
         // The id is < 512, store it as a 3-digit number        
-        sprintf(str,"%03u",static_cast<unsigned int>(id));
+        sprintf(id,"%03u",static_cast<unsigned int>(id2));
     } else if ( N_bits <= 16 ) {
         // The id is < 2^16, store it as a 4-digit hex
-        sprintf(str,"%04x",static_cast<unsigned int>(id));
+        sprintf(id,"%04x",static_cast<unsigned int>(id2));
     } else {
         // We will store the id use the 64 character set { 0-9 a-z A-Z & $ }
         int N = std::max(4,(N_bits+5)/6);    // The number of digits we need to use
-        size_t tmp1 = id;
+        size_t tmp1 = id2;
         for (int i=N-1; i>=0; i--) {
             unsigned char tmp2 = tmp1%64;
             tmp1 /= 64;
             if ( tmp2 < 10 )
-                str[i] = tmp2+48;
+                id[i] = tmp2+48;
             else if ( tmp2 < 36 )
-                str[i] = tmp2+(97-10);
+                id[i] = tmp2+(97-10);
             else if ( tmp2 < 62 )
-                str[i] = tmp2+(65-36);
+                id[i] = tmp2+(65-36);
             else if ( tmp2 < 63 )
-                str[i] = '&';
+                id[i] = '&';
             else if ( tmp2 < 64 )
-                str[i] = '$';
+                id[i] = '$';
             else
-                str[i] = 0;   // We should never use this character
+                id[i] = 0;   // We should never use this character
         }
-        str[N] = 0;
+        id[N] = 0;
+    }
+    return id_struct(id);
+}
+
+
+/***********************************************************************
+* TraceResults                                                         *
+***********************************************************************/
+TraceResults::TraceResults( ):
+    N_active(0), thread(0), rank(0), N_trace(0), 
+    min(1e100), max(0), tot(0), N(0), mem(NULL)
+{
+}
+TraceResults::~TraceResults( )
+{
+    delete [] reinterpret_cast<double*>(mem);
+    mem = NULL;
+}
+TraceResults::TraceResults(const TraceResults& rhs):
+    id(rhs.id), N_active(rhs.N_active), thread(rhs.thread), 
+    rank(rhs.rank), N_trace(rhs.N_trace), min(rhs.min), 
+    max(rhs.max), tot(rhs.tot), N(rhs.N), mem(NULL)
+{
+    allocate();
+    if ( mem!=NULL ) {
+        size_t N_mem = (N_active*sizeof(id_struct))/sizeof(double)+1 + 2*N_trace;
+        size_t N_bytes = N_mem*sizeof(double);
+        memcpy(mem,rhs.mem,N_bytes);
     }
 }
+TraceResults& TraceResults::operator=(const TraceResults& rhs)
+{
+    if ( this == &rhs )
+        return *this;
+    this->id = rhs.id;
+    this->thread = rhs.thread;
+    this->rank = rhs.rank;
+    this->N_active = rhs.N_active;
+    this->N_trace = rhs.N_trace;
+    this->N = rhs.N;
+    this->min = rhs.min;
+    this->max = rhs.max;
+    this->tot = rhs.tot;
+    allocate();
+    if ( mem!=NULL ) {
+        size_t N_mem = (this->N_active*sizeof(id_struct))/sizeof(double)+1 + 2*this->N_trace;
+        size_t N_bytes = N_mem*sizeof(double);
+        memcpy(this->mem,rhs.mem,N_bytes);
+    }
+    return *this;
+}
+void TraceResults::allocate( )
+{
+    delete [] reinterpret_cast<double*>(mem);
+    mem = NULL;
+    if ( N_active>0 || N_trace>0 ) {
+        size_t bytes = N_active*sizeof(id_struct) + 2*N_trace*sizeof(double);
+        mem = new double[bytes/sizeof(double)+1];
+        memset(mem,0,bytes);
+    }
+}
+id_struct* TraceResults::active( )
+{
+    return N_active>0 ? reinterpret_cast<id_struct*>(mem):NULL;
+}
+const id_struct* TraceResults::active( ) const
+{
+    return N_active>0 ? reinterpret_cast<const id_struct*>(mem):NULL;
+}
+double* TraceResults::start( )
+{
+    size_t offset = (N_active*sizeof(id_struct))/sizeof(double)+1;
+    return N_trace>0 ? &reinterpret_cast<double*>(mem)[offset]:NULL;
+}
+const double* TraceResults::start( ) const
+{
+    size_t offset = (N_active*sizeof(id_struct))/sizeof(double)+1;
+    return N_trace>0 ? &reinterpret_cast<const double*>(mem)[offset]:NULL;
+}
+double* TraceResults::stop( )
+{
+    size_t offset = (N_active*sizeof(id_struct))/sizeof(double)+1 + N_trace;
+    return N_trace>0 ? &reinterpret_cast<double*>(mem)[offset]:NULL;
+}
+const double* TraceResults::stop( ) const
+{
+    size_t offset = (N_active*sizeof(id_struct))/sizeof(double)+1 + N_trace;
+    return N_trace>0 ? &reinterpret_cast<const double*>(mem)[offset]:NULL;
+}
+size_t TraceResults::size( bool store_trace ) const
+{
+    size_t bytes = sizeof(TraceResults);
+    bytes += N_active*sizeof(id_struct);
+    if ( store_trace )
+        bytes += 2*N_trace*sizeof(double);
+    return bytes;
+}
+void TraceResults::pack( void* data_out ) const
+{
+    char *data = reinterpret_cast<char*>(data_out);
+    memcpy(data,this,sizeof(TraceResults));
+    if ( N_trace > 0 ) {
+        size_t pos = sizeof(TraceResults);
+        memcpy(&data[pos],start(),N_active);
+        pos += N_trace*sizeof(double);
+        memcpy(&data[pos],stop(),N_active);
+    }
+}
+void TraceResults::unpack( const void* data_in )
+{
+    const char *data = reinterpret_cast<const char*>(data_in);
+    delete [] reinterpret_cast<double*>(mem);
+    memcpy(this,data,sizeof(TraceResults));
+    mem = NULL;
+    allocate();
+    if ( N_trace > 0 ) {
+        size_t pos = sizeof(TraceResults);
+        memcpy(start(),&data[pos],N_active);
+        pos += N_trace*sizeof(double);
+        memcpy(stop(),&data[pos],N_active);
+    }
+}
+
+
+/***********************************************************************
+* TimerResults                                                         *
+***********************************************************************/
+size_t TimerResults::size( bool store_trace ) const
+{
+    size_t bytes = sizeof(id);              // id
+    bytes += sizeof(int) + message.size();  // message
+    bytes += sizeof(int) + file.size();     // file
+    bytes += sizeof(int) + path.size();     // path
+    bytes += 2*sizeof(int);                 // start/stop
+    bytes += sizeof(int);                   // trace
+    for (size_t i=0; i<trace.size(); i++)
+        bytes += trace[i].size(store_trace);
+    return bytes;
+}
+void TimerResults::pack( void* data_out ) const
+{
+    char *data = reinterpret_cast<char*>(data_out);
+    memcpy(data,&id,sizeof(id));
+    size_t pos = sizeof(id);
+    int *tmp = reinterpret_cast<int*>(&data[pos]);
+    tmp[0] = message.size();
+    tmp[1] = file.size();
+    tmp[2] = path.size();
+    tmp[3] = start;
+    tmp[4] = stop;
+    tmp[5] = trace.size();
+    pos += 6*sizeof(int);
+    memcpy(&data[pos],message.c_str(),tmp[0]);
+    pos += message.size();
+    memcpy(&data[pos],file.c_str(),tmp[1]);
+    pos += file.size();
+    memcpy(&data[pos],path.c_str(),tmp[2]);
+    pos += path.size();
+    for (size_t i=0; i<trace.size(); i++) {
+        trace[i].pack(&data[pos]);
+        pos += trace[i].size();
+    }
+}
+void TimerResults::unpack( const void* data_in )
+{
+    const char *data = reinterpret_cast<const char*>(data_in);
+    memcpy(&id,data,sizeof(id));
+    size_t pos = sizeof(id);
+    const int *tmp = reinterpret_cast<const int*>(&data[pos]);
+    pos += 6*sizeof(int);
+    message = std::string(&data[pos],tmp[0]);
+    pos += message.size();
+    file = std::string(&data[pos],tmp[1]);
+    pos += file.size();
+    path = std::string(&data[pos],tmp[2]);
+    pos += path.size();
+    start = tmp[3];
+    start = tmp[4];
+    trace.resize(tmp[5]);
+    for (size_t i=0; i<trace.size(); i++) {
+        trace[i].unpack(&data[pos]);
+        pos += trace[i].size();
+    }
+}
+
+
+/***********************************************************************
+* TimerResults                                                         *
+***********************************************************************/
+size_t MemoryResults::size( ) const
+{
+    size_t N_bytes = 2*sizeof(size_t);
+    N_bytes += time.size()*sizeof(double);
+    N_bytes += bytes.size()*sizeof(size_t);
+    return N_bytes;
+}
+void MemoryResults::pack( void* data_out ) const
+{
+    char *data = reinterpret_cast<char*>(data_out);
+    size_t *tmp = reinterpret_cast<size_t*>(data);
+    tmp[0] = static_cast<size_t>(rank);
+    tmp[1] = time.size();
+    if ( !time.empty() ) {
+        size_t pos = 2*sizeof(size_t);
+        memcpy(&data[pos],&time[0],tmp[1]*sizeof(double));
+        pos += time.size()*sizeof(double);
+        memcpy(&data[pos],&bytes[0],tmp[1]*sizeof(size_t));
+    }
+}
+void MemoryResults::unpack( const void* data_in )
+{
+    const char *data = reinterpret_cast<const char*>(data_in);
+    const size_t *tmp = reinterpret_cast<const size_t*>(data);
+    rank = static_cast<int>(tmp[0]);
+    size_t N = tmp[1];
+    time.resize(N);
+    bytes.resize(N);
+    if ( !time.empty() ) {
+        size_t pos = 2*sizeof(size_t);
+        memcpy(&time[0],&data[pos],tmp[1]*sizeof(double));
+        pos += time.size()*sizeof(double);
+        memcpy(&bytes[0],&data[pos],tmp[1]*sizeof(size_t));
+    }
+}
+
 
 /***********************************************************************
 * Consructor                                                           *
@@ -311,6 +591,8 @@ static inline void convert_timer_id( size_t key, char* str ) {
 ProfilerApp::ProfilerApp() {
     if ( 8*sizeof(size_t) != ARCH_SIZE )
         ERROR_MSG("Incorrectly identified architecture?\n");
+    if ( sizeof(id_struct)!=8 )
+        ERROR_MSG("id_struct is an unexpected size\n");
     get_frequency( &d_frequency );
     #ifdef USE_WINDOWS
         lock = CreateMutex (NULL, FALSE, NULL);
@@ -376,7 +658,8 @@ void ProfilerApp::syncronize() {
 /***********************************************************************
 * Function to start profiling a block of code                          *
 ***********************************************************************/
-void ProfilerApp::start( const std::string& message, const char* filename, const int line, const int level, const size_t timer_id ) 
+void ProfilerApp::start( const std::string& message, const char* filename, 
+    const int line, const int level, const size_t timer_id ) 
 {
     if ( level<0 || level>=128 )
         ERROR_MSG("level must be in the range 0-127");
@@ -397,7 +680,8 @@ void ProfilerApp::start( const std::string& message, const char* filename, const
         } else {
             // Throw an error
             std::stringstream msg;
-            msg << "Timer is already active, did you forget to call stop? (" << message << " in " << filename << " at line " << line << ")\n";
+            msg << "Timer is already active, did you forget to call stop? (" << 
+                message << " in " << filename << " at line " << line << ")\n";
             ERROR_MSG(msg.str());
         }
     }
@@ -420,7 +704,8 @@ void ProfilerApp::start( const std::string& message, const char* filename, const
     get_time(&timer->start_time);
     // Record the time of the memory usage
     if ( d_store_memory_data && thread_data->N_memory_steps<d_max_trace_remaining ) {
-        thread_data->time_memory[thread_data->N_memory_steps] = get_diff(d_construct_time,timer->start_time,d_frequency);
+        thread_data->time_memory[thread_data->N_memory_steps] = 
+            get_diff(d_construct_time,timer->start_time,d_frequency);
         thread_data->N_memory_steps++;
     }
     #if MONITOR_PROFILER_PERFORMANCE > 0
@@ -434,7 +719,8 @@ void ProfilerApp::start( const std::string& message, const char* filename, const
 /***********************************************************************
 * Function to stop profiling a block of code                           *
 ***********************************************************************/
-void ProfilerApp::stop( const std::string& message, const char* filename, const int line, const int level, const size_t timer_id ) 
+void ProfilerApp::stop( const std::string& message, const char* filename, 
+    const int line, const int level, const size_t timer_id ) 
 {
     if ( level<0 || level>=128 )
         ERROR_MSG("level must be in the range 0-127");
@@ -457,7 +743,8 @@ void ProfilerApp::stop( const std::string& message, const char* filename, const 
             this->start( message, filename, -1, level, timer_id );
         } else {
             std::stringstream msg;
-            msg << "Timer is not active, did you forget to call start? (" << message << " in " << filename << " at line " << line << ")\n";
+            msg << "Timer is not active, did you forget to call start? (" << 
+                message << " in " << filename << " at line " << line << ")\n";
             ERROR_MSG(msg.str());
         }
     }
@@ -584,38 +871,34 @@ void ProfilerApp::disable( )
 
 
 /***********************************************************************
-* Function to save the profiling info                                  *
+* Function to return the profiling info                                *
 ***********************************************************************/
-void ProfilerApp::save( const std::string& filename ) 
+std::vector<TimerResults> ProfilerApp::getTimerResults() const
 {
-    if ( this->d_level<0 ) {
-        printf("Warning: Timers are not enabled, no data will be saved\n");
-        return;
-    }
-    int N_procs = comm_size();
-    int rank = comm_rank();
     // Get the current time in case we need to "stop" and timers
     TIME_TYPE end_time;
     get_time(&end_time);
+    int rank = comm_rank();
     // Get the mutex for thread safety (we don't want the list changing while we are saving the data)
-    // Note: Because we don't block for most operations in the timer, this is not full proof, but should help
+    // Note: Because we don't block for most operations in the timer this is not full proof but should help
     bool error = GET_LOCK(&lock);
     if ( error )
-        return;
+        return std::vector<TimerResults>();
     // Get the thread specific data for each thread
     int N_threads2 = N_threads;     // Cache the number of threads since we are holing the lock
     thread_info **thread_data = new thread_info*[N_threads2];
     for (int i=0; i<N_threads2; i++)
         thread_data[i] = NULL;
     for (int i=0; i<THREAD_HASH_SIZE; i++) {
-        thread_info *ptr = const_cast<thread_info*>(thread_head[i]);  // It is safe to case to a non-volatile object since we hold the lock
+        // It is safe to case to a non-volatile object since we hold the lock
+        thread_info *ptr = const_cast<thread_info*>(thread_head[i]);  
         while ( ptr != NULL ) {
             if ( ptr->thread_num >= N_threads2 )
                 ERROR_MSG("Internal error (1)");
             if ( thread_data[ptr->thread_num] != NULL )
                 ERROR_MSG("Internal error (2)");
             thread_data[ptr->thread_num] = ptr;
-            ptr = const_cast<thread_info*>(ptr->next);    // It is safe to case to a non-volatile object since we hold the lock
+            ptr = const_cast<thread_info*>(ptr->next);
         }
     }
     for (int i=0; i<N_threads2; i++) {
@@ -625,77 +908,23 @@ void ProfilerApp::save( const std::string& filename )
             ERROR_MSG("Internal error (3)");
         }
     }
-    // Get the timer ids and sort the ids by the total time (maximum value for each thread) to create a global order to save the results
-    size_t *id_order = new size_t[N_timers];
-    double *total_time = new double[N_timers];
-    for (int i=0; i<N_timers; i++)
-        total_time[i] = 0.0;
-    int k = 0;
+    // Get a list of all timer ids
+    std::vector<size_t> ids;
     for (int i=0; i<TIMER_HASH_SIZE; i++) {
         store_timer_data_info *timer_global = const_cast<store_timer_data_info*>(timer_table[i]);
         while ( timer_global!=NULL ) {
-            id_order[k] = timer_global->id;
-            store_timer* timer = NULL;
-            for (int thread_id=0; thread_id<N_threads2; thread_id++) {
-                thread_info *head = thread_data[thread_id];
-                // Search for a timer that matches the current id, and save it
-                size_t key = GET_TIMER_HASH( id_order[k] );
-                timer = head->head[key];
-                while ( timer != NULL ) {
-                    if ( timer->id == id_order[k] )
-                        break;
-                    timer = timer->next;
-                }
-                if ( timer!=NULL ) {
-                    // Get the total running time of the timer
-                    total_time[k] = std::max(total_time[k],timer->total_time);
-                    // If the timer is still running, add the current processing to the totals
-                    if ( timer->is_active ) {
-                        double time = get_diff(timer->start_time,end_time,d_frequency);
-                        total_time[k] += time;
-                    }
-                }
-            }
-            k++;
+            ids.push_back(timer_global->id);
             timer_global = const_cast<store_timer_data_info*>(timer_global->next);
         }
     }
-    if ( k!=N_timers )
+    if ( (int)ids.size()!=N_timers )
         ERROR_MSG("Not all timers were found");
-    quicksort2(N_timers,total_time,id_order);
-    delete [] total_time;
-    // Open the file(s) for writing
-    char filename_timer[1000], filename_trace[1000], filename_memory[1000];
-    sprintf(filename_timer,"%s.%i.timer",filename.c_str(),rank+1);
-    sprintf(filename_trace,"%s.%i.trace",filename.c_str(),rank+1);
-    sprintf(filename_memory,"%s.%i.memory",filename.c_str(),rank+1);
-    FILE *timerFile = fopen(filename_timer,"wb");
-    if ( timerFile == NULL ) {
-        printf("Error opening file for writing (timer)");
-        delete [] thread_data;
-        delete [] id_order;
-        RELEASE_LOCK(&lock);
-        return;
-    }
-    FILE *traceFile = NULL;
-    if ( d_store_trace_data ) {
-        traceFile = fopen(filename_trace,"wb");
-        if ( traceFile == NULL ) {
-            printf("Error opening file for writing (trace)");
-            delete [] thread_data;
-            delete [] id_order;
-            fclose(timerFile);
-            RELEASE_LOCK(&lock);
-            return;
-        }
-    }
-    // Create the file header
-    fprintf(timerFile,"                  Message                      Filename          Thread  Start Line  Stop Line  N_calls  Min Time  Max Time  Total Time\n");
-    fprintf(timerFile,"---------------------------------------------------------------------------------------------------------------------------------------\n");
-    // Loop through the list of timers, storing the most expensive first
-    for (int i=N_timers-1; i>=0; i--) {
-        size_t id = id_order[i];                    // Get the timer id
-        size_t key = GET_TIMER_HASH( id );          // Get the timer hash key
+    // Begin storing the timers
+    std::vector<TimerResults> results(ids.size());
+    for (size_t i=0; i<ids.size(); i++) {
+        const size_t id = ids[i];
+        const size_t key = GET_TIMER_HASH( id );
+        results[i].id = convert_timer_id(id);
         // Search for the global timer info
         store_timer_data_info *timer_global = const_cast<store_timer_data_info*>(timer_table[key]);
         while ( timer_global!=NULL ) {
@@ -705,17 +934,15 @@ void ProfilerApp::save( const std::string& filename )
         }
         if ( timer_global==NULL ) {
             delete [] thread_data;
-            delete [] id_order;
-            fclose(timerFile);
-            if ( traceFile!=NULL)
-                fclose(traceFile);
             RELEASE_LOCK(&lock);
             ERROR_MSG("Internal error");
         }
-        const char* filename2 = timer_global->filename.c_str();
-        const char* message = timer_global->message.c_str();
-        int start_line = timer_global->start_line;
-        int stop_line = timer_global->stop_line;
+        // Copy the basic timer info
+        results[i].message = timer_global->message;
+        results[i].file = timer_global->filename;
+        results[i].path = timer_global->path;
+        results[i].start = timer_global->start_line;
+        results[i].stop = timer_global->stop_line;
         // Loop through the thread entries
         for (int thread_id=0; thread_id<N_threads2; thread_id++) {
             thread_info *head = thread_data[thread_id];
@@ -734,86 +961,6 @@ void ProfilerApp::save( const std::string& filename )
                 // The timer was not called, move on
                 continue;
             }
-            // Get the running times of the timer
-            double min_time = timer->min_time;
-            double max_time = timer->max_time;
-            double tot_time = timer->total_time;
-            // If the timer is still running, add the current processing to the totals
-            if ( timer->is_active ) {
-                double time = get_diff(timer->start_time,end_time,d_frequency);
-                if ( tot_time == 0.0 ) { 
-                    min_time = time;
-                    max_time = time;
-                    tot_time = time;
-                } else {
-                    min_time = std::min(min_time,time);
-                    max_time = std::max(max_time,time);
-                    tot_time += time;
-                }
-            }
-            // Save the timer to the file
-            fprintf(timerFile,"%30s  %30s   %4i   %7i    %7i  %8i     %8.3f  %8.3f  %10.3f\n",
-                message,filename2,thread_id,start_line,stop_line,timer->N_calls,min_time,max_time,tot_time);
-            timer = timer->next;
-        }
-    }
-    // Loop through all of the entries, saving the detailed data and the trace logs
-    fprintf(timerFile,"\n\n");
-    fprintf(timerFile,"<N_procs=%i,id=%i",N_procs,rank);
-    if ( d_store_trace_data )
-        fprintf(timerFile,",trace_file=%s",filename_trace);
-    if ( d_store_memory_data )
-        fprintf(timerFile,",memory_file=%s",filename_memory);
-    fprintf(timerFile,",date='%s'>\n",getDateString().c_str());
-    get_time(&end_time);
-    char id_str[16];
-    // Loop through the list of timers, storing the most expensive first
-    for (int i=N_timers-1; i>=0; i--) {
-        size_t id = id_order[i];                    // Get the timer id
-        size_t key = GET_TIMER_HASH( id );          // Get the timer hash key
-        // Search for the global timer info
-        store_timer_data_info *timer_global = const_cast<store_timer_data_info*>(timer_table[key]);
-        while ( timer_global!=NULL ) {
-            if ( timer_global->id == id ) 
-                break;
-            timer_global = const_cast<store_timer_data_info*>(timer_global->next);
-        }
-        if ( timer_global==NULL ) {
-            delete [] thread_data;
-            delete [] id_order;
-            fclose(timerFile);
-            if ( traceFile!=NULL)
-                fclose(traceFile);
-            RELEASE_LOCK(&lock);
-            ERROR_MSG("Internal error");
-        }
-        const char* filename2 = timer_global->filename.c_str();
-        const char* message = timer_global->message.c_str();
-        const char* path = timer_global->path.c_str();
-        int start_line = timer_global->start_line;
-        int stop_line = timer_global->stop_line;
-        // Loop through the thread entries
-        for (int thread_id=0; thread_id<N_threads2; thread_id++) {
-            thread_info *head = thread_data[thread_id];
-            // Search for a timer that matches the current id
-            store_timer* timer = head->head[key];
-            while ( timer != NULL ) {
-                if ( timer->id == id )
-                    break;
-                timer = timer->next;
-            }
-            if ( timer==NULL ) {
-                // The current thread does not have a copy of this timer, move on
-                continue;
-            }
-            if ( timer->N_calls==0 ) {
-                // The timer was not called, move on
-                continue;
-            }
-            // Get the running times of the timer
-            double min_time = timer->min_time;
-            double max_time = timer->max_time;
-            double tot_time = timer->total_time;
             // If the timer is still running, add the current processing time to the totals
             bool add_trace = false;
             double time = 0.0;
@@ -822,97 +969,110 @@ void ProfilerApp::save( const std::string& filename )
             if ( timer->is_active ) {
                 add_trace = true;
                 time = get_diff(timer->start_time,end_time,d_frequency);
-                min_time = std::min(min_time,time);
-                max_time = std::max(min_time,time);
-                tot_time += time;
                 // The timer is only a calling timer if it was active before and after the current timer
                 for (size_t i=0; i<TRACE_SIZE; i++)
                     active[i] = head->active[i] & timer->trace[i];
                 unset_trace_bit(timer->trace_index,TRACE_SIZE,active);
                 trace_id = get_trace_id( active );
             }
-            // Save the timer info
-            convert_timer_id(id,id_str);
-            fprintf(timerFile,"<timer:id=%s,message=%s,file=%s,path=%s,thread=%i,start=%i,stop=%i,N=%i,min=%e,max=%e,tot=%e>\n",
-                id_str,message,filename2,path,thread_id,start_line,stop_line,timer->N_calls,min_time,max_time,tot_time);
-            // Store each trace
+            // Loop through the trace entries
             store_trace *trace = timer->trace_head;
             while ( trace != NULL ) {
+                size_t k = results[i].trace.size();
+                results[i].trace.resize(k+1);
                 // Get the running times of the trace
-                double trace_min_time = trace->min_time;
-                double trace_max_time = trace->max_time;
-                double trace_tot_time = trace->total_time;
+                size_t N_stored_trace = 0;
+                if ( d_store_trace_data ) 
+                    N_stored_trace = std::min(trace->N_calls,static_cast<size_t>(MAX_TRACE_TRACE));
+                std::vector<id_struct> list = get_active_list( trace->trace, timer->trace_index, head );
+                results[i].trace[k].id = results[i].id;
+                results[i].trace[k].thread = thread_id;
+                results[i].trace[k].rank = rank;
+                results[i].trace[k].N = trace->N_calls;
+                results[i].trace[k].N_active = list.size();
+                results[i].trace[k].N_trace = N_stored_trace;
+                results[i].trace[k].min = trace->min_time;
+                results[i].trace[k].max = trace->max_time;
+                results[i].trace[k].tot = trace->total_time;
+                results[i].trace[k].allocate();
+                for (size_t j=0; j<list.size(); j++)
+                    results[i].trace[k].active()[j] = list[j];
                 // Determine if we need to add the running trace
                 if ( add_trace ) {
                     if ( trace_id == trace->id ) {
-                        trace_min_time = std::min(trace_min_time,time);
-                        trace_max_time = std::max(trace_min_time,time);
-                        trace_tot_time += time;
+                        results[i].trace[k].min = std::min<float>(results[i].trace[k].min,time);
+                        results[i].trace[k].max = std::max<float>(results[i].trace[k].max,time);
+                        results[i].trace[k].tot += time;
                         add_trace = false;
                     }
                 }
-                // Save the trace results
-                convert_timer_id(id,id_str);
-                std::string active_list = get_active_list( trace->trace, timer->trace_index, head );
-                fprintf(timerFile,"<trace:id=%s,thread=%i,N=%lu,min=%e,max=%e,tot=%e,active=%s>\n",
-                    id_str,thread_id,trace->N_calls,trace_min_time,trace_max_time,trace_tot_time,active_list.c_str());
                 // Save the detailed trace results (this is a binary file)
-                if ( d_store_trace_data ) { 
-                    convert_timer_id(id,id_str);
-                    size_t N_stored_trace = std::min(trace->N_calls,static_cast<size_t>(MAX_TRACE_TRACE));
-                    fprintf(traceFile,"id=%s,thread=%i,active=%s,N=%lu:",id_str,thread_id,active_list.c_str(),N_stored_trace);
-                    double *start = new double[N_stored_trace];
-                    double *stop = new double[N_stored_trace];
-                    for (size_t i=0; i<N_stored_trace; i++) {
-                        start[i] = trace->start_time[i] + d_shift;
-                        stop[i] = trace->end_time[i] + d_shift;
-                    }
-                    fwrite(start,sizeof(double),N_stored_trace,traceFile);
-                    fwrite(stop,sizeof(double),N_stored_trace,traceFile);
-                    fprintf(traceFile,"\n");
-                    delete [] start;
-                    delete [] stop;
+                double *start = results[i].trace[k].start();
+                double *stop  = results[i].trace[k].stop();
+                for (size_t m=0; m<N_stored_trace; m++) {
+                    start[m] = trace->start_time[m] + d_shift;
+                    stop[m]  = trace->end_time[m]   + d_shift;
                 }
                 // Advance to the next trace
                 trace = trace->next;
             }
             // Create a new trace if necessary
             if ( add_trace ) { 
-                convert_timer_id(id,id_str);
-                std::string active_list = get_active_list( active, timer->trace_index, head );
-                fprintf(timerFile,"<trace:id=%s,thread=%i,N=%i,min=%e,max=%e,tot=%e,active=%s>\n",
-                    id_str,thread_id,1,time,time,time,active_list.c_str());
-                // Save the detailed trace results (this is a binary file)
+                size_t k = results[i].trace.size();
+                results[i].trace.resize(k+1);
+                size_t N_stored_trace = 0;
+                if ( d_store_trace_data ) 
+                    N_stored_trace = 1;
+                std::vector<id_struct> list = get_active_list( active, timer->trace_index, head );
+                results[i].trace[k].id = results[i].id;
+                results[i].trace[k].thread = thread_id;
+                results[i].trace[k].rank = rank;
+                results[i].trace[k].N = 1;
+                results[i].trace[k].N_active = list.size();
+                results[i].trace[k].N_trace = N_stored_trace;
+                results[i].trace[k].min = time;
+                results[i].trace[k].max = time;
+                results[i].trace[k].tot = time;
+                results[i].trace[k].allocate();
+                for (size_t j=0; j<list.size(); j++)
+                    results[i].trace[k].active()[j] = list[j];
                 if ( d_store_trace_data ) { 
-                    double start_time_trace = get_diff(d_construct_time,timer->start_time,d_frequency) + d_shift;
-                    double end_time_trace = get_diff(d_construct_time,end_time,d_frequency) + d_shift;
-                    convert_timer_id(id,id_str);
-                    fprintf(traceFile,"id=%s,thread=%i,active=%s,N=%i:",id_str,thread_id,active_list.c_str(),1);
-                    fwrite(&start_time_trace,sizeof(double),1,traceFile);
-                    fwrite(&end_time_trace,sizeof(double),1,traceFile);
-                    fprintf(traceFile,"\n");
+                    double *start = results[i].trace[k].start();
+                    double *stop  = results[i].trace[k].stop();
+                    start[0] = get_diff(d_construct_time,timer->start_time,d_frequency) + d_shift;
+                    stop[0]  = get_diff(d_construct_time,end_time,d_frequency) + d_shift;
                 }
             }
         }
     }
-    // Close the file(s)
-    fclose(timerFile);
-    if ( traceFile!=NULL)
-        fclose(traceFile);
-    // Free temporary memory
-    delete [] thread_data;
-    delete [] id_order;
-    // Store the memory trace info
-    if ( d_store_memory_data ) {
-        // First unify the memory info from the different threads
-        std::vector<size_t> N_time;
-        std::vector<double*> data_time;
-        std::vector<size_t*> size_time;
-        for (int i=0; i<THREAD_HASH_SIZE; i++) {
-            volatile thread_info *thread_data = thread_head[i];
-            while ( thread_data != NULL ) {
-                // Copy the pointers so that we minimize the chance of the data being modified
-                size_t N = thread_data->N_memory_steps;
+    // Release the mutex
+    RELEASE_LOCK(&lock);
+    return results;
+}
+
+
+/***********************************************************************
+* Function to return the memory usage as a function of time            *
+***********************************************************************/
+MemoryResults ProfilerApp::getMemoryResults() const
+{
+    // Get the mutex for thread safety (we don't want the list changing while we are saving the data)
+    // Note: Because we don't block for most operations in the timer this is not full proof but should help
+    MemoryResults data;
+    data.rank = comm_rank();
+    bool error = GET_LOCK(&lock);
+    if ( error )
+        return data;
+    // First unify the memory info from the different threads
+    std::vector<size_t> N_time;
+    std::vector<double*> data_time;
+    std::vector<size_t*> size_time;
+    for (int i=0; i<THREAD_HASH_SIZE; i++) {
+        volatile thread_info *thread_data = thread_head[i];
+        while ( thread_data != NULL ) {
+            // Copy the pointers so that we minimize the chance of the data being modified
+            size_t N = thread_data->N_memory_steps;
+            if ( N>0 ) { 
                 double* time = thread_data->time_memory;
                 size_t* size = thread_data->size_memory;
                 thread_data->N_memory_steps = 0;
@@ -921,98 +1081,630 @@ void ProfilerApp::save( const std::string& filename )
                 N_time.push_back(N);
                 data_time.push_back(time);
                 size_time.push_back(size);
-                thread_data = thread_data->next;
             }
+            thread_data = thread_data->next;
         }
-        if ( (int) N_time.size() != N_threads )
-            ERROR_MSG("Unhandled case");
-        if ( d_N_memory_steps>0 ) {
-            N_time.push_back(d_N_memory_steps);
-            data_time.push_back(d_time_memory);
-            size_time.push_back(d_size_memory);
-        }
-        mergeArrays<double,size_t>( N_time.size(), &N_time[0], &data_time[0], &size_time[0],
-            &d_N_memory_steps, &d_time_memory, &d_size_memory );
-        for (size_t i=0; i<data_time.size(); i++) {
-            delete [] data_time[i];
-            delete [] size_time[i];
-        }
-        // Compress the results by removing values that have not changed
-        // Note: we will always keep the first and last values
-        if ( d_N_memory_steps > 2 ) {
-            size_t i = 1;
-            for (size_t j=1; j<d_N_memory_steps-1; j++) {
-                if ( d_size_memory[j]==d_size_memory[i-1] && d_size_memory[j]==d_size_memory[j+1] )
-                    continue;
-                d_time_memory[i] = d_time_memory[j];
-                d_size_memory[i] = d_size_memory[j];
-                i++;
-            }
-            d_time_memory[i] = d_time_memory[d_N_memory_steps-1];
-            d_size_memory[i] = d_size_memory[d_N_memory_steps-1];
-            d_N_memory_steps = i+1;
-        }
-        d_max_trace_remaining = std::max((size_t)MAX_TRACE_MEMORY-d_N_memory_steps,(size_t)0);
-        size_t max_mem_size = 0;
-        for (size_t i=0; i<d_N_memory_steps; i++)
-            max_mem_size = std::max(max_mem_size,d_size_memory[i]);
-        // Save the results
-        FILE* memoryFile = fopen(filename_memory,"wb");
-        if ( memoryFile == NULL ) {
-            printf("Error opening file for writing (memory)");
-            RELEASE_LOCK(&lock);
-            return;
-        }
-        size_t scale;
-        std::string units;
-        if ( max_mem_size < 0xFFFFFFFF ) {
-            scale = 1;
-            units = "bytes";
-        } else if ( max_mem_size < 0x3FFFFFFFFFF ) {
-            scale = 1024;
-            units = "kB";
-        } else if ( max_mem_size < 0xFFFFFFFFFFFFF ) {
-            scale = 1024*1024;
-            units = "MB";
-        } else {
-            scale = 1024*1024*1024;
-            units = "GB";
-        }
-        ASSERT(sizeof(unsigned int)==4);
-        fprintf(memoryFile,"N=%zi\n",d_N_memory_steps);
-        fprintf(memoryFile,"double,uint32,%s\n",units.c_str());
-        double *time = new double[d_N_memory_steps];
-        unsigned int *size = new unsigned int[d_N_memory_steps];
-        for (size_t i=0; i<d_N_memory_steps; i++) {
-            time[i] = d_time_memory[i] + d_shift;
-            size[i] = static_cast<unsigned int>(d_size_memory[i]/scale);
-        }
-        size_t N1 = fwrite(time,sizeof(double),d_N_memory_steps,memoryFile);
-        size_t N2 = fwrite(size,sizeof(unsigned int),d_N_memory_steps,memoryFile);
-        delete [] time;
-        delete [] size;
-        fprintf(memoryFile,"\n");
-        fclose(memoryFile);
-        if ( N1!=(size_t)d_N_memory_steps || N2!=(size_t)d_N_memory_steps )
-            ERROR_MSG("Failed to write memory results\n");
     }
+    if ( d_N_memory_steps>0 ) {
+        N_time.push_back(d_N_memory_steps);
+        data_time.push_back(d_time_memory);
+        size_time.push_back(d_size_memory);
+    }
+    mergeArrays<double,size_t>( N_time.size(), &N_time[0], &data_time[0], &size_time[0],
+        &d_N_memory_steps, &d_time_memory, &d_size_memory );
+    for (size_t i=0; i<data_time.size(); i++) {
+        delete [] data_time[i];
+        delete [] size_time[i];
+    }
+    // Compress the results by removing values that have not changed
+    // Note: we will always keep the first and last values
+    if ( d_N_memory_steps > 2 ) {
+        size_t i = 1;
+        for (size_t j=1; j<d_N_memory_steps-1; j++) {
+            if ( d_size_memory[j]==d_size_memory[i-1] && d_size_memory[j]==d_size_memory[j+1] )
+                continue;
+            d_time_memory[i] = d_time_memory[j];
+            d_size_memory[i] = d_size_memory[j];
+            i++;
+        }
+        d_time_memory[i] = d_time_memory[d_N_memory_steps-1];
+        d_size_memory[i] = d_size_memory[d_N_memory_steps-1];
+        d_N_memory_steps = i+1;
+    }
+    d_max_trace_remaining = std::max((size_t)MAX_TRACE_MEMORY-d_N_memory_steps,(size_t)0);
     // Release the mutex
     RELEASE_LOCK(&lock);
+    // Copy the results to the output vector
+    data.time.resize(d_N_memory_steps);
+    data.bytes.resize(d_N_memory_steps);
+    for (size_t i=0; i<d_N_memory_steps; i++) {
+        data.time[i]  = d_time_memory[i];
+        data.bytes[i] = d_size_memory[i];
+    }
+    return data;
+}
+
+
+/***********************************************************************
+* Function to save the profiling info                                  *
+***********************************************************************/
+void ProfilerApp::save( const std::string& filename, bool global ) const
+{
+    if ( this->d_level<0 ) {
+        pout << "Warning: Timers are not enabled, no data will be saved\n";
+        return;
+    }
+    int N_procs = comm_size();
+    int rank = comm_rank();
+    // Set the filenames
+    char filename_timer[1000], filename_trace[1000], filename_memory[1000];
+    if ( !global ) {
+        sprintf(filename_timer,"%s.%i.timer",filename.c_str(),rank+1);
+        sprintf(filename_trace,"%s.%i.trace",filename.c_str(),rank+1);
+        sprintf(filename_memory,"%s.%i.memory",filename.c_str(),rank+1);
+    } else {
+        sprintf(filename_timer,"%s.0.timer",filename.c_str());
+        sprintf(filename_trace,"%s.0.trace",filename.c_str());
+        sprintf(filename_memory,"%s.0.memory",filename.c_str());
+    }
+    // Get the current results
+    std::vector<TimerResults> results = getTimerResults();
+    if ( (int)results.size()!=N_timers )
+        ERROR_MSG("Not all timers were found");
+    if ( global ) {
+        // Gather the timers from all files (rank 0 will do all writing)
+        gather_timers( results );
+    }
+    if ( !results.empty() ) {
+        // Get the timer ids and sort the ids by the total time 
+        // to create a global order to save the results
+        std::vector<size_t> id_order(results.size(),0);
+        std::vector<double> total_time(results.size(),0);
+        for (size_t i=0; i<results.size(); i++) {
+            id_order[i] = i;
+            total_time[i] = 0.0;
+            std::vector<double> time_thread(N_threads,0);
+            for (size_t j=0; j<results[i].trace.size(); j++)
+                time_thread[results[i].trace[j].thread] += results[i].trace[j].tot;
+            for (int j=0; j<N_threads; j++)
+                total_time[i] = std::max(total_time[i],time_thread[j]);
+        }
+        quicksort2(N_timers,&total_time[0],&id_order[0]);
+        // Open the file(s) for writing
+        FILE *timerFile = fopen(filename_timer,"wb");
+        if ( timerFile == NULL ) {
+            perr << "Error opening file for writing (timer)";
+            return;
+        }
+        FILE *traceFile = NULL;
+        if ( d_store_trace_data ) {
+            traceFile = fopen(filename_trace,"wb");
+            if ( traceFile == NULL ) {
+                perr << "Error opening file for writing (trace)";
+                fclose(timerFile);
+                return;
+            }
+        }
+        // Create the file header
+        fprintf(timerFile,"                  Message                      Filename        ");
+        fprintf(timerFile,"  Thread  Start Line  Stop Line  N_calls  Min Time  Max Time  Total Time\n");
+        fprintf(timerFile,"---------------------------------------------------------------");
+        fprintf(timerFile,"------------------------------------------------------------------------\n");
+        // Loop through the list of timers, storing the most expensive first
+        for (int ii=N_timers-1; ii>=0; ii--) {
+            size_t i=id_order[ii];
+            std::vector<int> N_thread(N_threads,0);
+            std::vector<float> min_thread(N_threads,1e200);
+            std::vector<float> max_thread(N_threads,0);
+            std::vector<double> tot_thread(N_threads,0);
+            for (size_t j=0; j<results[i].trace.size(); j++) {
+                int k = results[i].trace[j].thread;
+                N_thread[k] += results[i].trace[j].N;
+                min_thread[k] = std::min(min_thread[k],results[i].trace[j].min);
+                max_thread[k] = std::max(max_thread[k],results[i].trace[j].max);
+                tot_thread[k] += results[i].trace[j].tot;
+            }
+            for (int j=0; j<N_threads; j++) {
+                if ( N_thread[j]==0 )
+                    continue;
+                // Save the timer to the file
+                fprintf(timerFile,"%30s  %30s   %4i   %7i    %7i  %8i     %8.3f  %8.3f  %10.3f\n",
+                    results[i].message.c_str(),results[i].file.c_str(),j,results[i].start,
+                    results[i].stop,N_thread[j],min_thread[j],max_thread[j],tot_thread[j]);
+            }
+        }
+        // Loop through all of the entries, saving the detailed data and the trace logs
+        fprintf(timerFile,"\n\n");
+        fprintf(timerFile,"<N_procs=%i,id=%i",N_procs,rank);
+        fprintf(timerFile,",store_trace=%i",d_store_trace_data?1:0);
+        fprintf(timerFile,",store_memory=%i",d_store_memory_data?1:0);
+        fprintf(timerFile,",date='%s'>\n",getDateString().c_str());
+        // Loop through the list of timers, storing the most expensive first
+        for (int ii=N_timers-1; ii>=0; ii--) {
+            size_t i=id_order[ii];
+            // Store the basic timer info
+            fprintf(timerFile,"<timer:id=%s,message=%s,file=%s,path=%s,start=%i,stop=%i>\n",
+                results[i].id.c_str(),results[i].message.c_str(),results[i].file.c_str(),
+                results[i].path.c_str(),results[i].start,results[i].stop);
+            // Store the trace data
+            for (size_t j=0; j<results[i].trace.size(); j++) {
+                const TraceResults& trace = results[i].trace[j];
+                std::string active;
+                for (size_t k=0; k<trace.N_active; k++)
+                    active += trace.active()[k].string() + " ";
+                fprintf(timerFile,"<trace:id=%s,thread=%i,rank=%i,N=%lu,min=%e,max=%e,tot=%e,active=[ %s]>\n",
+                    trace.id.c_str(),trace.thread,trace.rank,trace.N,trace.min,trace.max,trace.tot,active.c_str());
+                // Save the detailed trace results (this is a binary file)
+                if ( trace.N_trace > 0 ) { 
+                    fprintf(traceFile,"<id=%s,thread=%i,rank=%i,active=[ %s],N=%lu>\n",
+                        trace.id.c_str(),trace.thread,trace.rank,active.c_str(),
+                        static_cast<unsigned long>(trace.N_trace));
+                    fwrite(trace.start(),sizeof(double),trace.N_trace,traceFile);
+                    fwrite(trace.stop(), sizeof(double),trace.N_trace,traceFile);
+                    fprintf(traceFile,"\n");
+                }
+            }
+        }
+        // Close the file(s)
+        fclose(timerFile);
+        if ( traceFile!=NULL)
+            fclose(traceFile);
+    }
+    results.clear();
+    // Store the memory trace info
+    if ( d_store_memory_data ) {
+        FILE* memoryFile = fopen(filename_memory,"wb");
+        if ( memoryFile == NULL ) {
+            RELEASE_LOCK(&lock);
+            perr << "Error opening memory file" << std::endl;
+            return;
+        }
+        // Get the memory usage
+        std::vector<MemoryResults> data(1,getMemoryResults());
+        if ( global ) {
+            gather_memory( data );
+        }
+        for (size_t k=0; k<data.size(); k++) {
+            // Determine a scale factor so we can use unsigned int to store the memory
+            size_t max_mem_size = 0;
+            for (size_t i=0; i<data[k].bytes.size(); i++)
+                max_mem_size = std::max(max_mem_size,data[k].bytes[i]);
+            size_t scale;
+            std::string units;
+            if ( max_mem_size < 0xFFFFFFFF ) {
+                scale = 1;
+                units = "bytes";
+            } else if ( max_mem_size < 0x3FFFFFFFFFF ) {
+                scale = 1024;
+                units = "kB";
+            } else if ( max_mem_size < 0xFFFFFFFFFFFFF ) {
+                scale = 1024*1024;
+                units = "MB";
+            } else {
+                scale = 1024*1024*1024;
+                units = "GB";
+            }
+            // Copy the time and size to new buffers
+            double *time = new double[data[k].time.size()];
+            unsigned int *size = new unsigned int[data[k].bytes.size()];
+            for (size_t i=0; i<data[k].time.size(); i++) {
+                time[i] = data[k].time[i];
+                size[i] = static_cast<unsigned int>(data[k].bytes[i]/scale);
+            }
+            // Save the results
+            ASSERT(sizeof(unsigned int)==4);
+            fprintf(memoryFile,"<N=%zi,type1=%s,type2=%s,units=%s,rank=%i>\n",
+                data[k].time.size(),"double","uint32",units.c_str(),rank);
+            size_t N1 = fwrite(time,sizeof(double),d_N_memory_steps,memoryFile);
+            size_t N2 = fwrite(size,sizeof(unsigned int),d_N_memory_steps,memoryFile);
+            fprintf(memoryFile,"\n");
+            delete [] time;
+            delete [] size;
+            if ( N1!=(size_t)d_N_memory_steps || N2!=(size_t)d_N_memory_steps )
+                ERROR_MSG("Failed to write memory results\n");
+        }
+        fclose(memoryFile);
+    }
     #if MONITOR_PROFILER_PERFORMANCE > 0
-        printf("start = %e, stop = %e, block = %e, thread = %e, trace_id = %e\n",
+        printp("start = %e, stop = %e, block = %e, thread = %e, trace_id = %e\n",
             total_start_time,total_stop_time,total_block_time,total_thread_time,total_trace_id_time);
     #endif
 }
 
 
 /***********************************************************************
+* Load the timer and trace data                                        *
+***********************************************************************/
+static inline void get_field( const char* line, const char* name, char* data )
+{
+    const char* ptr = strstr( line, name );
+    if ( ptr==NULL ) {
+        data[0] = 0;
+    } else {
+        int i1 = -1;
+        int i2 = -1;
+        for (size_t i=0; i<1000; i++) {
+            if ( ptr[i]=='=' )
+                i1 = i+1;
+            if ( ptr[i]==',' || ptr[i]=='>' || ptr[i]=='\n' ) {
+                i2 = i;
+                break;
+            }
+        }
+        ASSERT(i1!=-1&&i2!=-1&&i2>i1);
+        memcpy(data,&ptr[i1],i2-i1);
+        data[i2-i1] = 0;
+    }
+}
+static std::vector<id_struct> get_active_ids( const char* active_list )
+{
+    std::vector<id_struct> ids;
+    size_t i1 = 0;
+    while ( active_list[i1] != 0 ) {
+        if ( active_list[i1]==' ' || active_list[i1]=='[' || active_list[i1]==']' ) {
+            i1++;
+            continue;
+        }
+        size_t i2 = i1+1;
+        while ( active_list[i2]!=' ' && active_list[i2]!=']' && active_list[i2]!=0 )
+            i2++;
+        char tmp[10]={0};
+        memcpy(tmp,&active_list[i1],i2-i1);
+        tmp[i2-i1] = 0;
+        ids.push_back(id_struct(tmp));
+        i1 = i2;
+    }
+    return ids;
+}
+TimerMemoryResults ProfilerApp::load( const std::string& filename, int rank )
+{
+    TimerMemoryResults data;
+    data.timers.clear();
+    data.memory.clear();
+    int N_procs;
+    std::string date;
+    bool trace_data, memory_data;
+    char timer[200], trace[200], memory[200];
+    if ( rank==-1 ) {
+        sprintf(timer,"%s.1.timer",filename.c_str());
+        sprintf(trace,"%s.1.trace",filename.c_str());
+        sprintf(memory,"%s.1.memory",filename.c_str());
+        load_timer(timer,data.timers,N_procs,date,trace_data,memory_data);
+        if ( trace_data )
+            load_trace(trace,data.timers);
+        if ( memory_data )
+            load_memory(memory,data.memory);
+        for (int i=1; i<N_procs; i++) {
+            sprintf(timer,"%s.%i.timer",filename.c_str(),i+1);
+            sprintf(trace,"%s.%i.trace",filename.c_str(),i+1);
+            sprintf(memory,"%s.%i.memory",filename.c_str(),i+1);
+            load_timer(timer,data.timers,N_procs,date,trace_data,memory_data);
+            if ( trace_data )
+                load_trace(trace,data.timers);
+            if ( memory_data )
+                load_memory(memory,data.memory);
+        }
+    } else {
+        sprintf(timer,"%s.%i.timer",filename.c_str(),rank+1);
+        sprintf(trace,"%s.%i.trace",filename.c_str(),rank+1);
+        sprintf(memory,"%s.%i.memory",filename.c_str(),rank+1);
+        load_timer(timer,data.timers,N_procs,date,trace_data,memory_data);
+        if ( trace_data )
+            load_trace(trace,data.timers);
+        if ( memory_data )
+            load_memory(memory,data.memory);
+    }
+    data.N_procs = N_procs;
+    return data;
+}
+void ProfilerApp::load_timer( const std::string& filename, std::vector<TimerResults>& data, 
+    int& N_procs, std::string& date, bool& trace_data, bool& memory_data )
+{
+    // Load the file to memory for reading
+    FILE *fid = fopen(filename.c_str(),"rb");
+    if (fid==NULL)
+        ERROR_MSG("Error opening file: "+filename);
+    fseek(fid , 0 , SEEK_END);
+    size_t file_length = ftell(fid);
+    if ( file_length > 0x80000000 ) {
+        // We do not yet support large files, we need to read the data in chunks
+        fclose(fid);
+        ERROR_MSG("Large timer files are not yet supported (likely to exhaust ram)");
+    }
+    char *buffer = new char[file_length+10];
+    memset(buffer,0,file_length+10);
+    rewind(fid);
+    size_t result = fread(buffer,1,file_length,fid);
+    if (result!=file_length) {
+        delete [] buffer;
+        ERROR_MSG("error reading file");
+    }
+    fclose(fid);
+    // Create a map of the ids and indicies of the timers (used for searching)
+    std::map<id_struct,size_t> id_map;
+    for (size_t i=0; i<data.size(); i++)
+        id_map.insert( std::pair<id_struct,size_t>(data[i].id,i) );
+    // Parse the data (this take most of the time)
+    N_procs=-1;
+    int rank=-1;
+    trace_data = false;
+    memory_data = false;
+    date = std::string();
+    size_t pos = 0;
+    char field[128];
+    memset(field,0,128);
+    while ( pos<file_length ) {
+        char *line = &buffer[pos];
+        int length = 0;
+        while ( line[length]>=32 )
+            ++length;
+        line[length] = 0;
+        if ( strncmp(line,"<N_procs=",9)==0 ) {
+            // Load the number of processors
+            get_field(line,"N_procs=",field);
+            N_procs = atoi(field);
+            if ( N_procs==0 )
+                ERROR_MSG("Error reading N_procs");
+            // Load the id/rank
+            get_field(line,"id=",field);
+            if ( field[0] != 0 )
+                rank = atoi(field);
+            get_field(line,"rank=",field);
+            if ( field[0] != 0 )
+                rank = atoi(field);
+            // Check if we stored the trace file (optional)
+            get_field(line,"store_trace=",field);
+            if ( field[0] != 0 )
+                trace_data = atoi(field)==1;
+            // Check if we stored the memory file (optional)
+            get_field(line,"store_memory=",field);
+            if ( field[0] != 0 )
+                memory_data = atoi(field)==1;
+            // Load the date (optional)
+            get_field(line,"date=",field);
+            if ( field[0] != 0 )
+                date = std::string(field);
+        } else if ( strncmp(line,"<timer:",7)==0 ) {
+            // Load the id
+            get_field(line,"id=",field);
+            ASSERT(field[0]!=0);
+            id_struct id( field );
+            // Find the timer
+            std::map<id_struct,size_t>::iterator it = id_map.find(id);
+            if ( it==id_map.end() ) {
+                // Create a new timer
+                size_t k = data.size();
+                id_map.insert( std::pair<id_struct,size_t>(id,k) );
+                data.resize(k+1);
+                TimerResults& timer = data[k];
+                timer.id = id;
+                // Load the message
+                get_field(line,"message=",field);
+                ASSERT(field[0]!=0);
+                timer.message = std::string(field);
+                // Load the filename
+                get_field(line,"file=",field);
+                ASSERT(field[0]!=0);
+                timer.file = std::string(field);
+                // Load the path
+                get_field(line,"path=",field);
+                if ( field[0]!=0 )
+                    timer.path = std::string(field);
+                // Load the start line
+                get_field(line,"start=",field);
+                ASSERT(field[0]!=0);
+                timer.start = atoi(field);
+                // Load the stop line
+                get_field(line,"stop=",field);
+                ASSERT(field[0]!=0);
+                timer.stop = atoi(field);
+            }
+        } else if ( strncmp(line,"<trace:",7)==0 ) {
+            // Load a trace
+            get_field(line,"id=",field);
+            ASSERT(field[0]!=0);
+            id_struct id( field );
+            std::map<id_struct,size_t>::iterator it = id_map.find(id);
+            if ( it==id_map.end() )
+                ERROR_MSG("trace did not find matching timer");
+            size_t index = it->second;
+            data[index].trace.resize(data[index].trace.size()+1);
+            TraceResults& trace = data[index].trace.back();
+            // Load the id
+            trace.id = id;
+            // Load the thread id
+            get_field(line,"thread=",field);
+            ASSERT(field[0]!=0);
+            trace.thread = atoi(field);
+            // Load the rank id
+            get_field(line,"rank=",field);
+            if ( field[0]!=0 )
+                trace.rank = atoi(field);
+            else
+                trace.rank = rank;
+            ASSERT(trace.rank>=0&&static_cast<int>(trace.rank)<N_procs);
+            // Load N
+            get_field(line,"N=",field);
+            ASSERT(field[0]!=0);
+            trace.N = atoi(field);
+            // Load min
+            get_field(line,"min=",field);
+            ASSERT(field[0]!=0);
+            trace.min = atof(field);
+            // Load max
+            get_field(line,"max=",field);
+            ASSERT(field[0]!=0);
+            trace.max = atof(field);
+            // Load tot
+            get_field(line,"tot=",field);
+            ASSERT(field[0]!=0);
+            trace.tot = atof(field);
+            // Load the active timers
+            get_field(line,"active=",field);
+            ASSERT(field[0]!=0);
+            std::vector<id_struct> active = get_active_ids(field);
+            trace.N_active = active.size();
+            // Load the trace data
+            trace.N_trace = 0;
+            // Save the active timers and trace data
+            trace.allocate();
+            for (size_t i=0; i<active.size(); i++)
+                trace.active()[i] = active[i];
+        }
+        pos += length+1;
+    }
+    delete [] buffer;
+}
+void ProfilerApp::load_trace( const std::string& filename, std::vector<TimerResults>& data )
+{
+    // Create a map of the ids and indicies of the timers (used for searching)
+    std::map<id_struct,size_t> id_map;
+    for (size_t i=0; i<data.size(); i++)
+        id_map.insert( std::pair<id_struct,size_t>(data[i].id,i) );
+    // Open the file for reading
+    FILE *fid = fopen(filename.c_str(),"rb");
+    if (fid==NULL)
+        ERROR_MSG("Error opening file: "+filename);
+    while ( 1 ) {
+        // Read the header
+        char line[512], field[128];
+        memset(line,0,512);
+        memset(field,0,128);
+        char *rtn = fgets(line,512,fid);
+        if ( rtn==NULL )
+            break;
+        if ( line[0] <= 10 )
+            continue;
+        // Get the id and find the appropriate timer
+        get_field(line,"id=",field);
+        ASSERT(field[0]!=0);
+        id_struct id( field );
+        std::map<id_struct,size_t>::iterator it = id_map.find(id);
+        if ( it==id_map.end() )
+            ERROR_MSG("Did not find matching timer");
+        TimerResults& timer = data[it->second];
+        // Read the remaining trace header data
+        get_field(line,"thread=",field);
+        ASSERT(field[0]!=0);
+        unsigned int thread = static_cast<unsigned int>(atoi(field));
+        get_field(line,"rank=",field);
+        ASSERT(field[0]!=0);
+        unsigned int rank = static_cast<unsigned int>(atoi(field));
+        get_field(line,"active=",field);
+        ASSERT(field[0]!=0);
+        std::vector<id_struct> active = get_active_ids(field);
+        get_field(line,"N=",field);
+        ASSERT(field[0]!=0);
+        unsigned long int N = strtoul(field,NULL,10);
+        // Find the appropriate trace
+        int index = -1;
+        for (size_t i=0; i<timer.trace.size(); i++) {
+            if ( timer.trace[i].thread != thread ||
+                 timer.trace[i].rank != rank ||
+                 timer.trace[i].N_active != active.size() )
+                continue;
+            bool active_match = true;
+            for (size_t j=0; j<active.size(); j++) {
+                if ( active[j] != timer.trace[i].active()[j] )
+                    active_match = false;
+            }
+            if ( !active_match )
+                continue;
+            index = static_cast<int>(i);
+        }
+        ASSERT(index!=-1);
+        TraceResults& trace = timer.trace[index];
+        ASSERT(trace.N_trace==0);  // Check that we do not have previous data
+        trace.N_trace = N;
+        trace.allocate();
+        for (size_t i=0; i<active.size(); i++)
+            trace.active()[i] = active[i];
+        // Read the data
+        size_t N1 = fread(trace.start(),sizeof(double),N,fid);
+        size_t N2 = fread(trace.stop(),sizeof(double),N,fid);
+        ASSERT(N1==N&&N2==N);
+        fread(field,1,1,fid);
+    }
+    fclose(fid);
+}
+inline size_t get_scale( const std::string& units )
+{
+    size_t scale = 1;
+    if ( units == "bytes" ) {
+        scale = 1;
+    } else if ( units == "kB" ) {
+        scale = 1024;
+    } else if ( units == "MB" ) {
+        scale = 1024*1024;
+    } else if ( units == "GB" ) {
+        scale = 1024*1024*1024;
+    } else {
+        ERROR_MSG("Not finished\n");
+    }
+    return scale;
+}
+void ProfilerApp::load_memory( const std::string& filename, std::vector<MemoryResults>& data )
+{
+    // Open the file for reading
+    FILE *fid = fopen(filename.c_str(),"rb");
+    if (fid==NULL)
+        ERROR_MSG("Error opening file: "+filename);
+    while ( 1 ) {
+        // Read the header
+        char line[512], field[128];
+        char *rtn = fgets(line,512,fid);
+        if ( rtn==NULL )
+            break;
+        if ( line[0] <= 10 )
+            continue;
+        data.resize(data.size()+1);
+        MemoryResults& memory = data.back();
+        // Get the header fields
+        get_field(line,"N=",field);
+        ASSERT(field[0]!=0);
+        unsigned long int N = strtoul(field,NULL,10);
+        get_field(line,"type1=",field);
+        ASSERT(field[0]!=0);
+        std::string type1(field);
+        get_field(line,"type2=",field);
+        ASSERT(field[0]!=0);
+        std::string type2(field);
+        get_field(line,"units=",field);
+        ASSERT(field[0]!=0);
+        size_t scale = get_scale(field);
+        get_field(line,"rank=",field);
+        ASSERT(field[0]!=0);
+        memory.rank = atoi(field);
+        // Get the data
+        if ( type1=="double" && type2=="uint32" ) {
+            double *time = new double[N];
+            unsigned int *size = new unsigned int[N];
+            size_t N1 = fread(time,sizeof(double),N,fid);
+            size_t N2 = fread(size,sizeof(unsigned int),N,fid);
+            ASSERT(N1==N&&N2==N);
+            memory.time.resize(N);
+            memory.bytes.resize(N);
+            for (size_t i=0; i<N; i++) {
+                memory.time[i] = time[i];
+                memory.bytes[i] = scale*size[i];
+            }
+            delete [] time;
+            delete [] size;
+        } else {
+            ERROR_MSG("Not finished\n");
+        }
+    }
+    fclose(fid);
+}
+
+
+/***********************************************************************
 * Function to get the list of active timers                            *
 ***********************************************************************/
-std::string ProfilerApp::get_active_list( size_t *active, unsigned int myIndex, thread_info *head )
+std::vector<id_struct> ProfilerApp::get_active_list( size_t *active, unsigned int myIndex, thread_info *head )
 {
-    char id_str[16];
-    std::string active_list = "[";
     unsigned int size_t_size = 8*sizeof(size_t);
+    std::vector<id_struct> active_list;
     for (unsigned int i=0; i<TRACE_SIZE; i++) {
         for (unsigned int j=0; j<size_t_size; j++) {
             unsigned int k = i*size_t_size + j;
@@ -1034,12 +1726,10 @@ std::string ProfilerApp::get_active_list( size_t *active, unsigned int myIndex, 
                 }
                 if ( timer_tmp==NULL )
                     ERROR_MSG("Internal Error");
-                convert_timer_id(timer_tmp->id,id_str);
-                active_list += " " + std::string(id_str);
+                active_list.push_back( convert_timer_id(timer_tmp->id) );
             }
         }
     }
-    active_list += " ]";
     return active_list;
 }
 
@@ -1182,7 +1872,8 @@ inline ProfilerApp::store_timer* ProfilerApp::get_block( thread_info *thread_dat
     int global_stop = global_info->stop_line;
     if ( ( start!=-1 && global_start==-1 ) || ( stop!=-1 && global_stop==-1 ) ) {
         // The global timer is incomplete, modify accordingly
-        // Note:  Technically this should be a blocking call, however it is possible to update the start/stop lines directly.  
+        // Note:  Technically this should be a blocking call, however it
+        //        is possible to update the start/stop lines directly.  
         if ( start!=-1 && global_start==-1 )
             global_info->start_line = start;
         if ( stop!=-1 && global_stop==-1 )
@@ -1194,14 +1885,16 @@ inline ProfilerApp::store_timer* ProfilerApp::get_block( thread_info *thread_dat
         // Multiple start lines were detected indicating duplicate timers
         std::stringstream msg;
         msg << "Multiple start calls with the same message are not allowed ("
-            << message << " in " << filename << " at lines " << start << ", " << global_info->start_line << ")\n";
+            << message << " in " << filename << " at lines " 
+            << start << ", " << global_info->start_line << ")\n";
         ERROR_MSG(msg.str());
     }
     if ( stop!=-1 && global_stop!=stop ) {
         // Multiple start lines were detected indicating duplicate timers
         std::stringstream msg;
         msg << "Multiple start calls with the same message are not allowed ("
-            << message << " in " << filename << " at lines " << stop << ", " << global_info->stop_line << ")\n";
+            << message << " in " << filename << " at lines " << stop 
+            << ", " << global_info->stop_line << ")\n";
         ERROR_MSG(msg.str());
     }
     #if MONITOR_PROFILER_PERFORMANCE > 1
@@ -1266,6 +1959,89 @@ ProfilerApp::store_timer_data_info* ProfilerApp::get_timer_data( size_t id )
         info = info->next;
     }
     return const_cast<store_timer_data_info*>(info);
+}
+
+
+/***********************************************************************
+* Gather all timers on rank 0                                          *
+***********************************************************************/
+void ProfilerApp::gather_timers( std::vector<TimerResults>& timers )
+{
+    comm_barrier();
+    int rank = comm_rank();
+    int N_procs = comm_size();
+    if ( rank==0 ) {
+        for (int r=1; r<N_procs; r++) {
+            const char *buffer = reinterpret_cast<const char*>(comm_recv1(r,0));
+            const size_t *tmp = reinterpret_cast<const size_t*>(buffer);
+            size_t N_timers = tmp[0];
+            ASSERT(N_timers<0x100000);
+            std::vector<TimerResults> add(N_timers);
+            size_t pos = sizeof(size_t);
+            for (size_t i=0; i<add.size(); i++) {
+                add[i].unpack(&buffer[pos]);
+                pos += add[i].size();
+            }
+            add_timers( timers, add );
+            delete [] reinterpret_cast<const double*>(buffer);
+        }
+    } else {
+        size_t N_bytes = sizeof(size_t);
+        for (size_t i=0; i<timers.size(); i++)
+            N_bytes += timers[i].size();
+        char *buffer = new char[N_bytes+8];
+        size_t *tmp = reinterpret_cast<size_t*>(buffer);
+        tmp[0] = timers.size();
+        size_t pos = sizeof(size_t);
+        for (size_t i=0; i<timers.size(); i++) {
+            timers[i].pack(&buffer[pos]);
+            pos += timers[i].size();
+        }
+        comm_send1( buffer, N_bytes, 0, 0 );
+        delete [] buffer;
+        timers.clear();
+    }
+    comm_barrier();
+}
+void ProfilerApp::gather_memory( std::vector<MemoryResults>& memory )
+{
+    comm_barrier();
+    int rank = comm_rank();
+    int N_procs = comm_size();
+    ASSERT(memory.size()==1);
+    if ( rank==0 ) {
+        memory.resize(N_procs);
+        for (int r=1; r<N_procs; r++) {
+            memory[r].rank = r;
+            memory[r].time = comm_recv2<double>(r,1);
+            memory[r].bytes = comm_recv2<size_t>(r,2);
+        }
+    } else {
+        ASSERT(memory[0].time.size()==memory[0].bytes.size());
+        comm_send2( memory[0].time,  0, 1 );
+        comm_send2( memory[0].bytes, 0, 2 );
+        memory.clear();
+    }
+    comm_barrier();
+}
+void ProfilerApp::add_timers( std::vector<TimerResults>& timers, 
+    const std::vector<TimerResults> add )
+{
+    std::map<id_struct,size_t> id_map;
+    for (size_t i=0; i<timers.size(); i++)
+        id_map.insert( std::pair<id_struct,size_t>(timers[i].id,i) );
+    for (size_t i=0; i<add.size(); i++) {
+        std::map<id_struct,size_t>::iterator it = id_map.find(add[i].id);
+        if ( it == id_map.end() ) {
+            size_t j = timers.size();
+            timers.push_back( add[i] );
+            id_map.insert( std::pair<id_struct,size_t>(timers[j].id,j) );
+        } else {
+            size_t j = it->second;
+            for (size_t k=0; k<add[i].trace.size(); k++)
+                timers[j].trace.push_back( add[i].trace[k] );
+        }
+    }
 }
 
 
@@ -1383,9 +2159,9 @@ inline size_t ProfilerApp::get_memory_usage( )
     size_t N_bytes = 0;
     #if defined(USE_LINUX)
         struct mallinfo meminfo = mallinfo();
-        size_t size_hblkhd = static_cast<size_t>( meminfo.hblkhd );
-        size_t size_uordblks = static_cast<size_t>( meminfo.uordblks );
-        N_bytes = static_cast<size_t>( size_hblkhd + size_uordblks );
+        size_t size_hblkhd = static_cast<unsigned int>( meminfo.hblkhd );
+        size_t size_uordblks = static_cast<unsigned int>( meminfo.uordblks );
+        N_bytes = size_hblkhd + size_uordblks;
     #elif defined(USE_MAC)
         struct task_basic_info t_info;
         mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
@@ -1398,6 +2174,7 @@ inline size_t ProfilerApp::get_memory_usage( )
         GetProcessMemoryInfo( GetCurrentProcess(), &memCounter, sizeof(memCounter) );
         N_bytes = memCounter.WorkingSetSize;
     #endif
+    ASSERT(N_bytes<1e12);
     return N_bytes;
 }
 

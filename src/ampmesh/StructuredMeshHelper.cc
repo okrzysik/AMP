@@ -1,4 +1,6 @@
-#include "StructuredMeshHelper.h"
+#include "ampmesh/StructuredMeshHelper.h"
+#include "ampmesh/structured/BoxMesh.h"
+#include "ampmesh/structured/structuredMeshIterator.h"
 
 namespace AMP {
 namespace Mesh {
@@ -77,25 +79,93 @@ AMP::Mesh::MeshIterator  StructuredMeshHelper::getFaceIterator(
     AMP::Mesh::Mesh::shared_ptr mesh, int gcw, int direction)
 {
     AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Face, gcw );
-    std::vector<AMP::Mesh::MeshElement> face_list;
-    face_list.reserve(iterator.size());
-    for(size_t i=0; i<iterator.size(); ++i ) {
-        std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements(AMP::Mesh::Vertex);
-        std::vector<double> center = iterator->centroid();
-        bool is_valid = true;
-        for (size_t j=0; j<nodes.size(); ++j) {
-            std::vector<double> coord = nodes[j].coord();
-            if ( !AMP::Utilities::approx_equal(coord[direction],center[direction],1e-12) )
-                is_valid = false;
+    boost::shared_ptr<AMP::Mesh::BoxMesh> boxmesh = boost::dynamic_pointer_cast<AMP::Mesh::BoxMesh>( mesh );
+    if ( boxmesh!=NULL ) {
+        // Optimization for AMP structured meshes
+        AMP::Mesh::BoxMesh::Box box = boxmesh->getLocalBox(gcw);
+        std::vector<bool> periodic = boxmesh->periodic();
+        int Nx = box.last[0]-box.first[0]+1;
+        int Ny = box.last[1]-box.first[1]+1;
+        int Nz = box.last[2]-box.first[2]+1;
+        boost::shared_ptr<std::vector<BoxMesh::MeshElementIndex> > face_list(
+            new std::vector<BoxMesh::MeshElementIndex>() );
+        if ( direction==0 ) {
+            face_list->reserve((Nx+1)*Ny*Nz);
+            for (int k=box.first[2]; k<=box.last[2]; k++) {
+                for (int j=box.first[1]; j<=box.last[1]; j++) {
+                    for (int i=box.first[0]; i<=box.last[0]+1; i++)
+                        face_list->push_back( AMP::Mesh::BoxMesh::MeshElementIndex(AMP::Mesh::Face,0,i,j,k) ); 
+                }
+            }
+        } else if ( direction==1 ) {
+            face_list->reserve(Nx*(Ny+1)*Nz);
+            for (int k=box.first[2]; k<=box.last[2]; k++) {
+                for (int i=box.first[0]; i<=box.last[0]; i++) {
+                    for (int j=box.first[1]; j<=box.last[1]+1; j++)
+                        face_list->push_back(  AMP::Mesh::BoxMesh::MeshElementIndex(AMP::Mesh::Face,1,i,j,k) ); 
+                }
+            }
+        } else if ( direction==2 ) {
+            face_list->reserve(Nx*Ny*(Nz+1));
+            for (int j=box.first[1]; j<=box.last[1]; j++) {
+                for (int i=box.first[0]; i<=box.last[0]; i++) {
+                    for (int k=box.first[2]; k<=box.last[2]+1; k++) 
+                        face_list->push_back( AMP::Mesh::BoxMesh::MeshElementIndex(AMP::Mesh::Face,2,i,j,k) ); 
+                }
+            }
+        } else {
+            AMP_ERROR("Unfinished");
         }
-        if ( is_valid )
-            face_list.push_back(*iterator);
-        ++iterator;
+        return structuredMeshIterator( face_list, boxmesh.get(), 0 );
+    } else {
+        // General case
+        std::vector<AMP::Mesh::MeshElement> face_list;
+        std::vector<double> face_index;
+        face_list.reserve(iterator.size());
+        face_index.reserve(iterator.size());
+        std::vector<double> x, y, z;
+        getXYZCoordinates( mesh, x, y, z );
+        std::vector<Utilities::triplet<int,int,int> > index;
+        for(size_t i=0; i<iterator.size(); ++i ) {
+            std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements(AMP::Mesh::Vertex);
+            std::vector<double> center = iterator->centroid();
+            bool is_valid = true;
+            for (size_t j=0; j<nodes.size(); ++j) {
+                std::vector<double> coord = nodes[j].coord();
+                if ( !AMP::Utilities::approx_equal(coord[direction],center[direction],1e-12) )
+                    is_valid = false;
+            }
+            if ( is_valid ) {
+                int i = 0;
+                Utilities::triplet<int,int,int> tmp(0,0,0);
+                if ( direction==0 && center.size()==3 ) {
+                    tmp.first  = Utilities::findfirst(z,center[2]-1e-12);
+                    tmp.second = Utilities::findfirst(y,center[1]-1e-12);
+                    tmp.third  = Utilities::findfirst(x,center[0]-1e-12);
+                } else if ( direction==1 && center.size()==3 ) {
+                    tmp.first  = Utilities::findfirst(z,center[2]-1e-12);
+                    tmp.second = Utilities::findfirst(x,center[0]-1e-12);
+                    tmp.third  = Utilities::findfirst(y,center[1]-1e-12);
+                } else if ( direction==2 && center.size()==3 ) {
+                    tmp.first  = Utilities::findfirst(y,center[1]-1e-12);
+                    tmp.second = Utilities::findfirst(x,center[0]-1e-12);
+                    tmp.third  = Utilities::findfirst(z,center[2]-1e-12);
+                } else {
+                    AMP_ERROR("Not finished");
+                }
+                face_list.push_back(*iterator);
+                index.push_back(tmp);
+            }
+            ++iterator;
+        }
+        // Sort the points in the direction first, then the coordinates
+        Utilities::quicksort(index,face_list);
+        boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
+            new std::vector<AMP::Mesh::MeshElement>() );
+        *elements = face_list;
+        return AMP::Mesh::MultiVectorIterator( elements );
     }
-    boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
-        new std::vector<AMP::Mesh::MeshElement>() );
-    *elements = face_list;
-    return AMP::Mesh::MultiVectorIterator( elements );
+    return AMP::Mesh::MeshIterator();
 }
 
 

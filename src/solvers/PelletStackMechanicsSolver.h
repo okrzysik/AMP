@@ -5,7 +5,7 @@
 #include "solvers/SolverStrategy.h"
 #include "solvers/ColumnSolver.h"
 #include "solvers/PelletStackMechanicsSolverParameters.h"
-#include "operators/PelletStackOperator.h"
+#include "operators/libmesh/PelletStackOperator.h"
 
 namespace AMP {
 namespace Solver {

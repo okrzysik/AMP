@@ -23,10 +23,10 @@
 
 #include "operators/diffusion/DiffusionLinearElement.h"
 #include "operators/diffusion/DiffusionTransportModel.h"
-#include "operators/VolumeIntegralOperator.h"
-#include "operators/MassLinearElement.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
+#include "operators/libmesh/MassLinearElement.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
-#include "operators/MassLinearFEOperator.h"
+#include "operators/libmesh/MassLinearFEOperator.h"
 #include "operators/boundary/DirichletMatrixCorrection.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/LinearBVPOperator.h"

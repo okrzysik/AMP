@@ -237,7 +237,13 @@ namespace Utilities
      * @return      Returns 0 if sucessful
      */
     int get_symbols( std::vector<void*>& address, std::vector<char>& type, std::vector<std::string>& obj );
-	
+
+    //! Function to get an arbitrary point in time
+    double time();
+
+    //! Function to get the resolution of time
+    double tick();
+
     //! Print AMP Banner
     void printBanner();
 

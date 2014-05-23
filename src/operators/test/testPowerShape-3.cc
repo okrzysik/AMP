@@ -17,7 +17,8 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 
-#include "../PowerShape.h"
+#include "operators/libmesh/PowerShape.h"
+
 
 #define ITFAILS ut.failure(__LINE__);
 #define UNIT_TEST(a) if (!(a)) ut.failure(__LINE__);

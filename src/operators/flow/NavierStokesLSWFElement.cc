@@ -169,9 +169,9 @@ namespace Operator {
       std::vector<std::vector<double> > derror(10, std::vector<double>(10,0));
 
       error[0] = (dudx + dvdy + dwdz ) ;
-      error[1] = (u * dudx + v * dudy + w * dudz ) + dpdx + ( dtxxdx + dtxydy + dtxzdz) ;
-      error[2] = (u * dvdx + v * dvdy + w * dvdz ) + dpdy + ( dtxydx + dtyydy + dtyzdz) ;
-      error[3] = (u * dwdx + v * dwdy + w * dwdz ) + dpdz + ( dtxzdx + dtyzdy + dtzzdz) ;
+      error[1] = (u * dudx + v * dudy + w * dudz ) + dpdx - ( dtxxdx + dtxydy + dtxzdz) ;
+      error[2] = (u * dvdx + v * dvdy + w * dvdz ) + dpdy - ( dtxydx + dtyydy + dtyzdz) ;
+      error[3] = (u * dwdx + v * dwdy + w * dwdz ) + dpdz - ( dtxzdx + dtyzdy + dtzzdz) ;
       error[4] = txx - 2.0 * (d_fmu/d_Re) * dudx; 
       error[5] = tyy - 2.0 * (d_fmu/d_Re) * dvdy; 
       error[6] = tzz - 2.0 * (d_fmu/d_Re) * dwdz; 
@@ -225,8 +225,8 @@ namespace Operator {
         derror[8][3] = -1 * ((d_fmu/d_Re) * dphi[k][qp](1));
         derror[8][8] = phi[k][qp];
 
-        derror[9][1] = -1 * ((d_fmu/d_Re) * dphi[k][qp](0));
-        derror[9][3] = -1 * ((d_fmu/d_Re) * dphi[k][qp](2));
+        derror[9][1] = -1 * ((d_fmu/d_Re) * dphi[k][qp](2));
+        derror[9][3] = -1 * ((d_fmu/d_Re) * dphi[k][qp](0));
         derror[9][9] = phi[k][qp];
 
         for(unsigned int ii = 0; ii < 10; ii++) {

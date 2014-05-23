@@ -345,7 +345,7 @@ bool libMeshElement::isInBlock(int id) const
     } else if ( (int)type==d_dim ) {
         // Entity is a libmesh node
         ::Elem* elem = (::Elem*) ptr_element;
-        in_block = elem->subdomain_id() == id;
+        in_block = (int) elem->subdomain_id() == id;
     } else  {
         // All other entities are on the boundary iff all of their verticies are on the surface
         AMP_ERROR("isInBlock is not currently implimented for anything but elements");

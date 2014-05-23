@@ -27,7 +27,7 @@
 
 #include "operators/boundary/DirichletMatrixCorrection.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/boundary/NeumannVectorCorrection.h"
+#include "operators/boundary/libmesh/NeumannVectorCorrection.h"
 
 #include "../BVPOperatorParameters.h"
 #include "../LinearBVPOperator.h"

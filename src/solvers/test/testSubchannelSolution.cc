@@ -23,6 +23,7 @@
 #include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/petsc/PetscSNESSolverParameters.h"
 #include "solvers/petsc/PetscSNESSolver.h"
+#include "solvers/BandedSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "utils/Writer.h"
@@ -87,7 +88,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     // get dof manager
     int DOFsPerFace[3]={0,0,2};
     AMP::Discretization::DOFManager::shared_ptr subchannelDOFManager = 
-        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
+        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
 
 //=============================================================================
 // physics model, parameters, and operator creation
@@ -228,12 +229,25 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
 
     // create preconditioner
-    boost::shared_ptr<AMP::Database> Preconditioner_db =  linearSolver_db->getDatabase("Preconditioner");
-    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> PreconditionerParams(new AMP::Solver::SolverStrategyParameters(Preconditioner_db));
+    boost::shared_ptr<AMP::Database> Preconditioner_db = linearSolver_db->getDatabase("Preconditioner");
+    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> PreconditionerParams(
+        new AMP::Solver::SolverStrategyParameters(Preconditioner_db));
     PreconditionerParams->d_pOperator = linearOperator;
-    boost::shared_ptr<AMP::Solver::TrilinosMLSolver> linearFlowPreconditioner(new AMP::Solver::TrilinosMLSolver(PreconditionerParams));
-    // set preconditioner
-    linearSolver->setPreconditioner(linearFlowPreconditioner);
+    std::string preconditioner = Preconditioner_db->getString("Type");
+    if ( preconditioner=="ML" ) {
+        boost::shared_ptr<AMP::Solver::TrilinosMLSolver> linearFlowPreconditioner(
+            new AMP::Solver::TrilinosMLSolver(PreconditionerParams));
+        linearSolver->setPreconditioner(linearFlowPreconditioner);
+    } else if ( preconditioner=="Banded" ) {
+        Preconditioner_db->putInteger("KL",2);
+        Preconditioner_db->putInteger("KU",2);
+        boost::shared_ptr<AMP::Solver::BandedSolver> linearFlowPreconditioner(
+            new AMP::Solver::BandedSolver(PreconditionerParams));
+        linearSolver->setPreconditioner(linearFlowPreconditioner);
+    } else if ( preconditioner=="None" ) {
+    } else {
+        AMP_ERROR("Invalid preconditioner type");
+    }
 
     // don't use zero initial guess
     nonlinearSolver->setZeroInitialGuess(false);

@@ -15,8 +15,8 @@
 #include "utils/Writer.h"
 #include "utils/ProfilerApp.h"
 #include "vectors/Vector.h"
-#include "operators/VolumeIntegralOperator.h"
-#include "operators/SourceNonlinearElement.h"
+#include "operators/libmesh/VolumeIntegralOperator.h"
+#include "operators/libmesh/SourceNonlinearElement.h"
 #include "operators/ElementPhysicsModelFactory.h"
 #include "operators/ElementOperationFactory.h"
 

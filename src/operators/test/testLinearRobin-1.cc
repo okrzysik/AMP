@@ -22,7 +22,7 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 
-#include "operators/boundary/RobinMatrixCorrection.h"
+#include "operators/boundary/libmesh/RobinMatrixCorrection.h"
 
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"

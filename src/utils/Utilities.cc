@@ -25,6 +25,7 @@
     // Note: windows has not been testeds
     #define USE_WINDOWS
     #include <windows.h>
+    #include <process.h>
     #include <stdio.h>   
     #include <tchar.h>
     #include <psapi.h>
@@ -34,6 +35,7 @@
     //#pragma comment(linker, /DEFAULTLIB:psapi.lib)
 #elif defined(__APPLE__)
     #define USE_MAC
+    #include <sys/time.h>
     #include <signal.h>
     #include <execinfo.h>
     #include <cxxabi.h>
@@ -49,6 +51,7 @@
     #include <execinfo.h>
     #include <dlfcn.h>
     #include <malloc.h>
+    #include <unistd.h>
 #else
     #error Unknown OS
 #endif
@@ -303,9 +306,9 @@ size_t Utilities::getMemoryUsage()
     size_t N_bytes = 0;
     #if defined(USE_LINUX)
         struct mallinfo meminfo = mallinfo();
-        size_t size_hblkhd = static_cast<size_t>( meminfo.hblkhd );
-        size_t size_uordblks = static_cast<size_t>( meminfo.uordblks );
-        N_bytes = static_cast<size_t>( size_hblkhd + size_uordblks );
+        size_t size_hblkhd = static_cast<unsigned int>( meminfo.hblkhd );
+        size_t size_uordblks = static_cast<unsigned int>( meminfo.uordblks );
+        N_bytes = size_hblkhd + size_uordblks;
     #elif defined(USE_MAC)
         struct task_basic_info t_info;
         mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
@@ -484,41 +487,88 @@ int Utilities::get_symbols( std::vector<void*>& address, std::vector<char>& type
     type.clear();
     obj.clear();
     #ifdef USE_NM
+        char *buf = new char[0x100000];
         try { 
-            char buf[1024];
-            int len = ::readlink("/proc/self/exe",buf,sizeof(buf)-1);
+            int len = ::readlink("/proc/self/exe",buf,900);
             if ( len==-1 )
                 return -2;
             buf[len] = '\0';
             char cmd[1024];
             sprintf(cmd,"nm --demangle --numeric-sort %s",buf);
             FILE *in = popen(cmd,"r");
-            if ( in==NULL )
+            if ( in==NULL ) {
+                delete [] buf;
                 return -2;
-            while ( fgets(buf,sizeof(buf)-1,in)!=NULL ) {
-                if ( buf[0] == ' ' )
+            }
+            while ( fgets(buf,0xFFFFF,in)!=NULL ) {
+                if ( buf[0]==' ' || buf==NULL )
                     continue;
                 char *a = buf;
-                char *b = strchr(a,' ');  b[0] = 0;  b++;
-                char *c = strchr(b,' ');  c[0] = 0;  c++;
+                char *b = strchr(a,' ');  if (b==NULL) {continue;}  b[0] = 0;  b++;
+                char *c = strchr(b,' ');  if (c==NULL) {continue;}  c[0] = 0;  c++;
                 char *d = strchr(c,'\n');  if ( d ) { d[0]=0; }
                 size_t add = strtoul(a,NULL,16);
                 address.push_back( reinterpret_cast<void*>(add) );
                 type.push_back( b[0] );
                 obj.push_back( std::string(c) );
-        	}
+            }
             pclose(in);
         } catch (...) {
+            delete [] buf;
             return -3;
         }
+        delete [] buf;
         return 0;
     #else
         return -1;
     #endif
 }
 
+/****************************************************************************
+*  Functions to get the time and timer resolution                           *
+****************************************************************************/
+#if defined(USE_WINDOWS)
+    double Utilities::time() 
+    { 
+        LARGE_INTEGER end, f;
+        QueryPerformanceFrequency(&f);
+        QueryPerformanceCounter(&end);       
+        double time = ((double)end.QuadPart)/((double)f.QuadPart);
+        return time;
+    }
+    double Utilities::tick() 
+    { 
+        LARGE_INTEGER f;
+        QueryPerformanceFrequency(&f);
+        double resolution = ((double)1.0)/((double)f.QuadPart);
+        return resolution;
+    }
+#elif defined(USE_LINUX) || defined(USE_MAC)
+    double Utilities::time() 
+    { 
+        timeval current_time;
+        gettimeofday(&current_time,NULL);
+        double time = ((double)current_time.tv_sec)+1e-6*((double)current_time.tv_usec);
+        return time;
+    }
+    double Utilities::tick() 
+    { 
+        timeval start, end;
+        gettimeofday(&start,NULL);
+        gettimeofday(&end,NULL);
+        while ( end.tv_sec==start.tv_sec &&  end.tv_usec==start.tv_usec )
+            gettimeofday(&end,NULL);
+        double resolution = ((double)(end.tv_sec-start.tv_sec))+1e-6*((double)(end.tv_usec-start.tv_usec));
+        return resolution;
+    }
+#else
+    #error Unknown OS
+#endif
 
-// Print AMP Banner
+
+/****************************************************************************
+*  Print AMP Banner                                                         *
+****************************************************************************/
 void Utilities::printBanner()
 {
     std::ostringstream banner;

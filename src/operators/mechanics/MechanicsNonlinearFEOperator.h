@@ -3,7 +3,7 @@
 #define included_AMP_MechanicsNonlinearFEOperator
 
 /* AMP files */
-#include "operators/NonlinearFEOperator.h"
+#include "operators/libmesh/NonlinearFEOperator.h"
 #include "operators/mechanics/MechanicsConstants.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperatorParameters.h"
 #include "operators/mechanics/MechanicsNonlinearElement.h"

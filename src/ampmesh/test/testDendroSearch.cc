@@ -176,7 +176,6 @@ void run(const std::string & meshFileName,
   int size_radius = 16, size_height = 38;
 
   int numberOfMeshes = npes;
-  numRandomPts *= static_cast<size_t>(npes);
   // Load the mesh
   globalComm.barrier();
   double meshBeginTime = MPI_Wtime();
@@ -207,6 +206,9 @@ if (false) {
   meshArray_db->putDoubleArray("y_offset", y_offset);
   meshArray_db->putDoubleArray("z_offset", z_offset);
 } else {
+// WEAK SCALING
+  numRandomPts *= static_cast<size_t>(npes);
+
   mesh_db->putDatabase("Mesh_1");
   boost::shared_ptr<AMP::Database> meshArray_db = mesh_db->getDatabase("Mesh_1");
   meshArray_db->putString("MeshName", "Cylinder_1");
@@ -217,6 +219,11 @@ if (false) {
   meshArray_db->putDouble("z_offset", 0.0);
   meshArray_db->putString("Generator", "cylinder");
   std::vector<int> size;
+//if (true) {
+//  numRandomPts = 3200000;
+//  size.push_back(size_radius+48);
+//  size.push_back(size_height+38);
+//} else
   if (npes == 1) {
     size.push_back(size_radius);
     size.push_back(size_height);
@@ -461,6 +468,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
           fout<<globalTimingMeasurements[0]<<"  " // setup
             <<globalTimingMeasurements[1]<<"  " // coarse
             <<globalTimingMeasurements[2]<<"  " // fine
+            <<globalTimingMeasurements[3]<<"  " // interpolation
+            <<globalTimingMeasurements[4]<<"  " // project on boundary
             <<globalTimingMeasurements[5]<<"  "<<std::flush; // coarse+fine
         } // end if
       } // end for k

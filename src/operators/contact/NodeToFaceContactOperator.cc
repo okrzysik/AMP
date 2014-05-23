@@ -42,9 +42,8 @@ namespace AMP {
       size_t const nInactiveSlaveVerticesBeforeUpdate = d_InactiveSet.size();
       size_t const nActiveSlaveVerticesBeforeUpdate = d_ActiveSet.size();
 
-// TODO:  find a better place to put these
-d_SlaveVerticesNormalVectors.resize(3*nActiveSlaveVerticesBeforeUpdate);
-d_SlaveVerticesSurfaceTraction.resize(3*nActiveSlaveVerticesBeforeUpdate);
+      d_SlaveVerticesNormalVectorBeforeUpdate.resize(3*nActiveSlaveVerticesBeforeUpdate);
+      d_SlaveVerticesSurfaceTractionBeforeUpdate.resize(3*nActiveSlaveVerticesBeforeUpdate);
 
       /** displace the mesh */
       if (!skipDisplaceMesh) {
@@ -131,8 +130,8 @@ for(unsigned int i = 0; i < npes; ++i) {
           hex8_element_t::get_local_coordinates_on_face(&(d_MasterShapeFunctionsValues[4*i]), sendProjectionDataBuffer[sendMap[i]].d_SlaveVertexLocalCoordOnMasterFace);
           ++sendCnts[sendToRank];
         } // end for i
-AMP_ASSERT( std::find(sendMap.begin(), sendMap.end(), nSendData) == sendMap.end() );
-AMP_ASSERT( std::find(recvMap.begin(), recvMap.end(), nSendData) == recvMap.end() );
+        AMP_ASSERT( std::find(sendMap.begin(), sendMap.end(), nSendData) == sendMap.end() );
+        AMP_ASSERT( std::find(recvMap.begin(), recvMap.end(), nSendData) == recvMap.end() );
         std::vector<int> recvCnts(npes, 0);
         d_GlobalComm.allToAll(1, &(sendCnts[0]), &(recvCnts[0]));
         std::vector<int> recvDisps(npes, 0);
@@ -160,11 +159,6 @@ AMP_ASSERT( std::find(recvMap.begin(), recvMap.end(), nSendData) == recvMap.end(
             masterVolumeVerticesGlobalIDs[j] = masterVolumeVertices[j].globalID();
           } // end for j
           hex8_element_t masterVolumeElement(masterVolumeVerticesCoordinates);
-//double pov[3] = { 1.0, 1.0, 1.0 };
-//draw_hex8_element(&masterVolumeElement, pov, d_fout);
-//for (size_t ii = 0; ii < 8; ++ii){
-//  draw_point(masterVolumeVerticesCoordinates+3*ii, "", d_fout);
-//} // end for ii 
           masterVolumeElement.compute_normal_to_face(recvProjectionDataBuffer[i].d_MasterFaceLocalIndex, recvProjectionDataBuffer[i].d_SlaveVertexLocalCoordOnMasterFace, sendStressStateDataBuffer[i].d_SlaveVertexNormalVector);
           double slaveVertexLocalCoordinates[3];
           hex8_element_t::map_face_to_local(recvProjectionDataBuffer[i].d_MasterFaceLocalIndex, recvProjectionDataBuffer[i].d_SlaveVertexLocalCoordOnMasterFace, slaveVertexLocalCoordinates);
@@ -173,16 +167,9 @@ AMP_ASSERT( std::find(recvMap.begin(), recvMap.end(), nSendData) == recvMap.end(
           AMP_ASSERT(displacementIndices.size() == 24);
           double displacementValues[24];
           displacementFieldVector->getValuesByGlobalID(24, &(displacementIndices[0]), &(displacementValues[0]));
-//std::transform(masterVolumeVerticesCoordinates, masterVolumeVerticesCoordinates+24, displacementValues, masterVolumeVerticesCoordinates, std::plus<double>());
-//hex8_element_t displacedMasterVolumeElement(masterVolumeVerticesCoordinates);
-//draw_hex8_element(&displacedMasterVolumeElement, pov, d_fout);
-//for (size_t ii = 0; ii < 8; ++ii){
-//  draw_point(masterVolumeVerticesCoordinates+3*ii, "", d_fout);
-//} // end for ii 
-
           double strainTensor[6];
           masterVolumeElement.compute_strain_tensor(slaveVertexLocalCoordinates, displacementValues, strainTensor);
-
+          // compute thermal strain
           if (d_TemperatureFieldVector.get() != NULL) {
             std::vector<size_t> temperatureIndices;
             d_TemperatureDOFManager->getDOFs(masterVolumeVerticesGlobalIDs, temperatureIndices);
@@ -203,48 +190,6 @@ AMP_ASSERT( std::find(recvMap.begin(), recvMap.end(), nSendData) == recvMap.end(
           double stressTensor[6];
           compute_stress_tensor(constitutiveMatrix, strainTensor, stressTensor);
           compute_traction(stressTensor, sendStressStateDataBuffer[i].d_SlaveVertexNormalVector, sendStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction);
-
-/*
-std::cout<<std::setprecision(6)<<std::fixed;
-draw_hex8_element(&masterVolumeElement, pov, std::cout);
-double slaveVertexGlobalCoordinates[3];
-masterVolumeElement.map_local_to_global(slaveVertexLocalCoordinates, slaveVertexGlobalCoordinates);
-
-unsigned int const * faceOrdering = masterVolumeElement.get_face(d_MasterFacesLocalIndices[i]);
-double scalingFactor = 0.0;
-for (size_t ll = 0; ll < 4; ++ll) {
-  scalingFactor += compute_distance_between_two_points(masterVolumeVerticesCoordinates+3*faceOrdering[ll], masterVolumeVerticesCoordinates+3*faceOrdering[(ll+1)%4]);
-} // end for ll
-scalingFactor *= 0.25;
-double normalVector[3];
-std::copy(sendStressStateDataBuffer[i].d_SlaveVertexNormalVector, sendStressStateDataBuffer[i].d_SlaveVertexNormalVector+3, normalVector);
-for (size_t mm = 0; mm < 3; ++mm) { scale_points(mm, scalingFactor, 1, normalVector); }
-translate_points(slaveVertexGlobalCoordinates, 1, normalVector);
-
-{
-std::string option = "darkgray,->";
-std::cout<<"\\draw["<<option<<"]" ;
-write_point(slaveVertexGlobalCoordinates);
-std::cout<<" -- ";
-write_point(normalVector);
-std::cout<<" ;\n";
-}
-double surfaceTraction[3];
-std::copy(sendStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction, sendStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction+3, surfaceTraction);
-normalize_vector(surfaceTraction);
-for (size_t mm = 0; mm < 3; ++mm) { scale_points(mm, scalingFactor, 1, surfaceTraction); }
-translate_points(slaveVertexGlobalCoordinates, 1, surfaceTraction);
-
-{
-std::string option = "pink,->";
-std::cout<<"\\draw["<<option<<"]" ;
-write_point(slaveVertexGlobalCoordinates);
-std::cout<<" -- ";
-write_point(surfaceTraction);
-std::cout<<" ;\n";
-}
-*/
-
         } // end for i
         recvProjectionDataBuffer.clear();
 
@@ -255,14 +200,11 @@ std::cout<<" ;\n";
             (!(recvStressStateDataBuffer.empty()) ? &(recvStressStateDataBuffer[0]) : NULL), &(recvCnts[0]), &(recvDisps[0]), true);
         sendStressStateDataBuffer.clear(); 
 
-//        d_SlaveVerticesNormalVectors.resize(3*nActiveSlaveVerticesBeforeUpdate);
-//        d_SlaveVerticesSurfaceTraction.resize(3*nActiveSlaveVerticesBeforeUpdate);
         for (size_t i = 0; i < nSendData; ++i) {
-//          std::copy(recvStressStateDataBuffer[i].d_SlaveVertexNormalVector, recvStressStateDataBuffer[i].d_SlaveVertexNormalVector+3, &(d_SlaveVerticesNormalVectors[3*recvMap[i]]));
-//          std::copy(recvStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction, recvStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction+3, &(d_SlaveVerticesSurfaceTraction[3*recvMap[i]]));
-          std::transform(recvStressStateDataBuffer[i].d_SlaveVertexNormalVector, recvStressStateDataBuffer[i].d_SlaveVertexNormalVector+3, &(d_SlaveVerticesNormalVectors[3*recvMap[i]]), std::bind1st(std::multiplies<double>(), -1.0));
-          std::transform(recvStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction, recvStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction+3, &(d_SlaveVerticesSurfaceTraction[3*recvMap[i]]), std::bind1st(std::multiplies<double>(), -1.0));
+          std::transform(recvStressStateDataBuffer[i].d_SlaveVertexNormalVector, recvStressStateDataBuffer[i].d_SlaveVertexNormalVector+3, &(d_SlaveVerticesNormalVectorBeforeUpdate[3*recvMap[i]]), std::bind1st(std::multiplies<double>(), -1.0));
+          std::transform(recvStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction, recvStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction+3, &(d_SlaveVerticesSurfaceTractionBeforeUpdate[3*recvMap[i]]), std::bind1st(std::multiplies<double>(), -1.0));
         } // end for i
+        
         recvStressStateDataBuffer.clear();
 
         std::vector<double>::iterator slaveVerticesShiftIterator = d_SlaveShift.begin();
@@ -270,90 +212,13 @@ std::cout<<" ;\n";
         std::vector<double>::iterator masterShapeFunctionsValuesIterator = d_MasterShapeFunctionsValues.begin();
         std::vector<AMP::Mesh::MeshElementID>::iterator masterVolumesGlobalIDsIterator = d_MasterVolumesGlobalIDs.begin();
         std::vector<size_t>::iterator masterFacesLocalIndicesIterator = d_MasterFacesLocalIndices.begin();
+        std::vector<double>::iterator slaveVerticesNormalVectorIterator = d_SlaveVerticesNormalVector.begin();
 
         std::vector<AMP::Mesh::MeshElementID>::iterator activeSetIterator = d_ActiveSet.begin();
         for (size_t i = 0; i < nActiveSlaveVerticesBeforeUpdate; ++i) {
-          double nDotT = compute_scalar_product(&(d_SlaveVerticesNormalVectors[3*i]), &(d_SlaveVerticesSurfaceTraction[3*i]));
-//          std::vector<double> slaveVertexCoordinates = d_Mesh->getElement(*activeSetIterator).coord();
-//          d_fout<<i<<"  "<<std::setprecision(15)<<"n.t = "<<nDotT<<"  "<<"f = "<<*masterFacesLocalIndicesIterator<<"  ";
-//          d_fout<<" n = ( "
-//            <<d_SlaveVerticesNormalVectors[3*i+0]<<" , "
-//            <<d_SlaveVerticesNormalVectors[3*i+1]<<" , "
-//            <<d_SlaveVerticesNormalVectors[3*i+2]<<" ) "
-//            <<" t = ( "
-//            <<d_SlaveVerticesSurfaceTraction[3*i+0]<<" , "
-//            <<d_SlaveVerticesSurfaceTraction[3*i+1]<<" , "
-//            <<d_SlaveVerticesSurfaceTraction[3*i+2]<<" ) "
-//            <<" x = ( "
-//            <<slaveVertexCoordinates[0]<<" , "
-//            <<slaveVertexCoordinates[1]<<" , "
-//            <<slaveVertexCoordinates[2]<<" ) ";
-
-/*
-std::vector<size_t> slaveVertexDisplacementDOFIndices;
-displacementFieldVector->getDOFManager()->getDOFs(*activeSetIterator, slaveVertexDisplacementDOFIndices);
-std::vector<double> slaveVertexDisplacementValues(3, 0.0);
-displacementFieldVector->getLocalValuesByGlobalID(3, &(slaveVertexDisplacementDOFIndices[0]), &(slaveVertexDisplacementValues[0]));
-std::transform(slaveVertexCoordinates.begin(), slaveVertexCoordinates.end(), slaveVertexDisplacementValues.begin(), slaveVertexCoordinates.begin(), std::plus<double>());
-draw_point(&(slaveVertexCoordinates[0]), "cyan", std::cout);
-
-std::cout<<std::setprecision(6)<<std::fixed;
-std::vector<AMP::Mesh::MeshElement> elementVertices = d_Mesh->getElement(*masterVolumesGlobalIDsIterator).getElements(AMP::Mesh::Vertex);
-//std::string colors[8] = { "red", "green", "blue", "cyan", "magenta", "lime", "olive", "orange" };
-double verticesCoordinates[24];
-for (size_t kk = 0; kk < 8; ++kk) {
-  std::vector<double> vertexCoordinates = elementVertices[kk].coord();
-//  draw_point(&(vertexCoordinates[0]), colors[kk], std::cout);
-  std::copy(vertexCoordinates.begin(), vertexCoordinates.end(), &(verticesCoordinates[3*kk]));
-} // end for kk
-hex8_element_t volumeElement(verticesCoordinates);
-double point_of_view[3] = { 1.0, 1.0, 1.0 };
-draw_hex8_element(&volumeElement, point_of_view, std::cout);
-double localCoordinatesOnFace[2];// = { 0.0, 0.0 };
-hex8_element_t::get_local_coordinates_on_face(&(*masterShapeFunctionsValuesIterator), localCoordinatesOnFace);
-
-double localCoordinates[3];
-volumeElement.map_face_to_local(d_MasterFacesLocalIndices[i], localCoordinatesOnFace, localCoordinates);
-double globalCoordinates[3];
-volumeElement.map_local_to_global(localCoordinates, globalCoordinates);
-//draw_point(globalCoordinates, "darkgray", std::cout);
-unsigned int const * faceOrdering = volumeElement.get_face(d_MasterFacesLocalIndices[i]);
-double scalingFactor = 0.0;
-for (size_t ll = 0; ll < 4; ++ll) {
-  scalingFactor += compute_distance_between_two_points(verticesCoordinates+3*faceOrdering[ll], verticesCoordinates+3*faceOrdering[(ll+1)%4]);
-} // end for ll
-scalingFactor *= 0.25;
-double normalVector[3];
-std::copy(&(d_SlaveVerticesNormalVectors[3*i]), &(d_SlaveVerticesNormalVectors[3*i])+3, normalVector);
-for (size_t mm = 0; mm < 3; ++mm) { scale_points(mm, scalingFactor, 1, normalVector); }
-translate_points(globalCoordinates, 1, normalVector);
-//draw_point(normalVector, "darkgray", std::cout);
-{
-std::string option = "darkgray,->";
-std::cout<<"\\draw["<<option<<"]" ;
-write_point(globalCoordinates);
-std::cout<<" -- ";
-write_point(normalVector);
-std::cout<<" ;\n";
-}
-double surfaceTraction[3];
-std::copy(&(d_SlaveVerticesSurfaceTraction[3*i]), &(d_SlaveVerticesSurfaceTraction[3*i])+3, surfaceTraction);
-normalize_vector(surfaceTraction);
-for (size_t mm = 0; mm < 3; ++mm) { scale_points(mm, scalingFactor, 1, surfaceTraction); }
-translate_points(globalCoordinates, 1, surfaceTraction);
-
-{
-std::string option = "pink,->";
-std::cout<<"\\draw["<<option<<"]" ;
-write_point(globalCoordinates);
-std::cout<<" -- ";
-write_point(surfaceTraction);
-std::cout<<" ;\n";
-}
-*/
-
+          double nDotT = compute_scalar_product(&(d_SlaveVerticesNormalVectorBeforeUpdate[3*i]), &(d_SlaveVerticesSurfaceTractionBeforeUpdate[3*i]));
+          std::vector<double> slaveVertexCoordinates = d_Mesh->getElement(*activeSetIterator).coord();
           if (nDotT > 1.0e-10) { 
-//            d_fout<<"@@@@@@@@@@@@@@@@\n";
             ++nActiveSlaveVerticesDeactivated;
             d_InactiveSet.push_back(*activeSetIterator);
             activeSetIterator = d_ActiveSet.erase(activeSetIterator);
@@ -362,6 +227,7 @@ std::cout<<" ;\n";
             masterShapeFunctionsValuesIterator = d_MasterShapeFunctionsValues.erase(masterShapeFunctionsValuesIterator, masterShapeFunctionsValuesIterator+4);
             masterVolumesGlobalIDsIterator = d_MasterVolumesGlobalIDs.erase(masterVolumesGlobalIDsIterator);
             masterFacesLocalIndicesIterator = d_MasterFacesLocalIndices.erase(masterFacesLocalIndicesIterator);
+            slaveVerticesNormalVectorIterator = d_SlaveVerticesNormalVector.erase(slaveVerticesNormalVectorIterator, slaveVerticesNormalVectorIterator+3);
           } else {
             d_fout<<"\n";
             ++activeSetIterator;
@@ -370,6 +236,7 @@ std::cout<<" ;\n";
             std::advance(masterShapeFunctionsValuesIterator, 4);
             ++masterVolumesGlobalIDsIterator;
             ++masterFacesLocalIndicesIterator;
+            std::advance(slaveVerticesNormalVectorIterator, 3);
           } // end if
         } // end for i
         AMP_ASSERT( activeSetIterator == d_ActiveSet.end() );
@@ -378,6 +245,8 @@ std::cout<<" ;\n";
         AMP_ASSERT( masterShapeFunctionsValuesIterator == d_MasterShapeFunctionsValues.end() );
         AMP_ASSERT( masterVolumesGlobalIDsIterator == d_MasterVolumesGlobalIDs.end() );
         AMP_ASSERT( masterFacesLocalIndicesIterator == d_MasterFacesLocalIndices.end() );
+        AMP_ASSERT( slaveVerticesNormalVectorIterator == d_SlaveVerticesNormalVector.end() );
+
       } // end if
 
       nInactiveSlaveVerticesActivated = static_cast<size_t>(std::count(flags.begin(), flags.end(), AMP::Mesh::DendroSearch::FoundOnBoundary)); // std::count returns ptrdiff_t 
@@ -397,7 +266,7 @@ std::cout<<" ;\n";
       size_t const nInactiveSlaveVerticesAfterUpdate = nInactiveSlaveVerticesBeforeUpdate + nActiveSlaveVerticesDeactivated - nInactiveSlaveVerticesActivated;
 
       size_t const nActiveSlaveVerticesTmp = d_ActiveSet.size();
-      d_SlaveVerticesNormalVectors.resize(3*nActiveSlaveVerticesAfterUpdate, 0.0);
+      d_SlaveVerticesNormalVector.resize(3*nActiveSlaveVerticesAfterUpdate, 0.0);
       d_SlaveShift.resize(3*nActiveSlaveVerticesAfterUpdate, 0.0);
       d_MasterVerticesGlobalIDs.resize(4*nActiveSlaveVerticesAfterUpdate, AMP::Mesh::MeshElementID());
       d_MasterShapeFunctionsValues.resize(4*nActiveSlaveVerticesAfterUpdate, 0.0);
@@ -467,7 +336,6 @@ std::cout<<" ;\n";
       tmpMasterFacesLocalIndices.clear();
 
       /** compute slave vertices shift correction */
-//      if (!skipDisplaceMesh) {
         std::vector<int> sendCnts(npes, 0);
         for (size_t i = nActiveSlaveVerticesTmp; i < nActiveSlaveVerticesAfterUpdate; ++i) {
 //          ++sendCnts[d_MasterVolumesGlobalIDs[i].owner_rank()];
@@ -524,23 +392,22 @@ std::cout<<" ;\n";
           getVectorIndicesFromGlobalIDs(masterVolumeVerticesGlobalIDs, displacementIndices);
           AMP_ASSERT(displacementIndices.size() == 24);
           double displacementValues[24];
-if (!skipDisplaceMesh) {
-          displacementFieldVector->getValuesByGlobalID(24, &(displacementIndices[0]), &(displacementValues[0]));
-} else {
-          std::fill(displacementValues, displacementValues+24, 0.0);
-} // end if
+          if (!skipDisplaceMesh) {
+            displacementFieldVector->getValuesByGlobalID(24, &(displacementIndices[0]), &(displacementValues[0]));
+          } else {
+            std::fill(displacementValues, displacementValues+24, 0.0);
+          } // end if
           double basis_functions_values_on_face[4];
           hex8_element_t::get_basis_functions_values_on_face(recvProjectionDataBuffer[i].d_SlaveVertexLocalCoordOnMasterFace, basis_functions_values_on_face);
-//          std::fill(&(sendProjOnMasterFaceDisplacements[3*i]), &(sendProjOnMasterFaceDisplacements[3*i])+3, 0.0);
           std::fill(sendProjOnMasterFaceData[i].d_Displacement, sendProjOnMasterFaceData[i].d_Displacement+3, 0.0);
           unsigned int const * faceOrdering = hex8_element_t::get_face(recvProjectionDataBuffer[i].d_MasterFaceLocalIndex);
           for (size_t j = 0; j < 4; ++j) {
             for (size_t k = 0; k < 3; ++k) {
-//              sendProjOnMasterFaceDisplacements[3*i+k] += displacementValues[3*faceOrdering[j]+k] * basis_functions_values_on_face[j];
               sendProjOnMasterFaceData[i].d_Displacement[k] += displacementValues[3*faceOrdering[j]+k] * basis_functions_values_on_face[j];
             } // end for k 
           } // end for j
-          std::transform(masterVolumeVerticesCoordinates, masterVolumeVerticesCoordinates+24, displacementValues, masterVolumeVerticesCoordinates, std::plus<double>());
+// nah
+//          std::transform(masterVolumeVerticesCoordinates, masterVolumeVerticesCoordinates+24, displacementValues, masterVolumeVerticesCoordinates, std::plus<double>());
           hex8_element_t masterVolumeElement(masterVolumeVerticesCoordinates);
           masterVolumeElement.compute_normal_to_face(recvProjectionDataBuffer[i].d_MasterFaceLocalIndex, recvProjectionDataBuffer[i].d_SlaveVertexLocalCoordOnMasterFace, sendProjOnMasterFaceData[i].d_NormalVector);
         } // end for i
@@ -570,21 +437,17 @@ if (!skipDisplaceMesh) {
           std::vector<size_t> activatedSlaveVertexDisplacementIndices;
           getVectorIndicesFromGlobalIDs(std::vector<AMP::Mesh::MeshElementID>(1, d_ActiveSet[nActiveSlaveVerticesTmp+i]), activatedSlaveVertexDisplacementIndices);
           AMP_ASSERT( activatedSlaveVertexDisplacementIndices.size() == 3 );
-if (!skipDisplaceMesh) {
-//          displacementFieldVector->getLocalValuesByGlobalID(3, &(activatedSlaveVertexDisplacementIndices[0]), activatedSlaveVertexDisplacementValues);
-          displacementFieldVector->getValuesByGlobalID(3, &(activatedSlaveVertexDisplacementIndices[0]), activatedSlaveVertexDisplacementValues);
-} else {
-         std::fill(activatedSlaveVertexDisplacementValues, activatedSlaveVertexDisplacementValues+3, 0.0);
-} // end if
-//          make_vector_from_two_points(activatedSlaveVertexDisplacementValues, &(recvProjOnMasterFaceDisplacements[3*sendMap[i]]), activatedSlaveVertexShiftCorrection);
+          if (!skipDisplaceMesh) {
+            displacementFieldVector->getValuesByGlobalID(3, &(activatedSlaveVertexDisplacementIndices[0]), activatedSlaveVertexDisplacementValues);
+          } else {
+            std::fill(activatedSlaveVertexDisplacementValues, activatedSlaveVertexDisplacementValues+3, 0.0);
+          } // end if
           make_vector_from_two_points(activatedSlaveVertexDisplacementValues, recvProjOnMasterFaceData[sendMap[i]].d_Displacement, activatedSlaveVertexShiftCorrection);
           std::transform(&(d_SlaveShift[3*(nActiveSlaveVerticesTmp+i)]), &(d_SlaveShift[3*(nActiveSlaveVerticesTmp+i)])+3, activatedSlaveVertexShiftCorrection, &(d_SlaveShift[3*(nActiveSlaveVerticesTmp+i)]), std::minus<double>());
-          std::transform(recvProjOnMasterFaceData[sendMap[i]].d_NormalVector, recvProjOnMasterFaceData[sendMap[i]].d_NormalVector+3, &(d_SlaveVerticesNormalVectors[3*(nActiveSlaveVerticesTmp+i)]), std::bind1st(std::multiplies<double>(), -1.0));
+          std::transform(recvProjOnMasterFaceData[sendMap[i]].d_NormalVector, recvProjOnMasterFaceData[sendMap[i]].d_NormalVector+3, &(d_SlaveVerticesNormalVector[3*(nActiveSlaveVerticesTmp+i)]), std::bind1st(std::multiplies<double>(), -1.0));
         } // end for i
         recvProjOnMasterFaceDisplacements.clear();
         recvProjOnMasterFaceData.clear();
-
-//      } // end if
 
       /** setup for apply */
       size_t const nConstraints = nActiveSlaveVerticesAfterUpdate;
@@ -651,29 +514,6 @@ if (!skipDisplaceMesh) {
         d_TransposeRecvCnts[i] *= d_DOFsPerNode; 
         d_TransposeRecvDisps[i] *= d_DOFsPerNode; 
       } // end for i
-
-/*
-      d_fout<<std::setprecision(15);
-      for (size_t i = 0; i < d_ActiveSet.size(); ++i) {
-        for (size_t j = 0; j < 4; ++j) {
-          d_fout<<"i="<<i<<"  "
-            <<"j="<<j<<"  "
-            <<"4*i+j="<<4*i+j<<"  "
-            <<"d_MasterShapeFunctionsValues[4*i+j]="<<d_MasterShapeFunctionsValues[4*i+j]<<"\n";
-        } // end for j
-        for (size_t k = 0; k < d_DOFsPerNode; ++k) {
-          d_fout<<"i="<<i<<"  "
-            <<"k="<<k<<"  "
-            <<"d_DOFsPerNode*i+k="<<d_DOFsPerNode*i+k<<"  "
-            <<"d_SlaveIndices[d_DOFsPerNode*i+k]="<<d_SlaveIndices[d_DOFsPerNode*i+k]<<"  "
-//            <<"d_SlaveVerticesShift[d_DOFsPerNode*i+k]="<<d_SlaveShift[d_DOFsPerNode*i+k]<<"\n";
-            <<"d_SlaveVerticesShift[d_DOFsPerNode*i+k]="<<d_SlaveShift[d_DOFsPerNode*i+k]<<"  "
-            <<"d_MasterVolumesGlobalIDs[i]="<<d_MasterVolumesGlobalIDs[i].local_id()<<" ("<<invRankMap[d_MasterVolumesGlobalIDs[i].owner_rank()]<<")  "
-            <<"d_MasterFacesLocalIndices[i]="<<d_MasterFacesLocalIndices[i]<<"\n";     
-        } // end for k
-      } // end for i
-d_fout<<std::flush;
-*/
 
       // TODO: need to be converted at some point...
       d_SlaveVerticesGlobalIDs = d_ActiveSet;
@@ -768,8 +608,8 @@ d_fout<<std::flush;
           } // end for k
         } // end for j
         if (d_ContactIsFrictionless) {
-          orthogonalize_vector_against_direction(&(d_SlaveVerticesNormalVectors[3*i]), &(slaveValues[d_DOFsPerNode*i]));
-          project_vector_onto_direction(&(d_SlaveVerticesNormalVectors[3*i]), tmp);
+          orthogonalize_vector_against_direction(&(d_SlaveVerticesNormalVector[3*i]), &(slaveValues[d_DOFsPerNode*i]));
+          project_vector_onto_direction(&(d_SlaveVerticesNormalVector[3*i]), tmp);
         } // end if
         std::transform(tmp, tmp+3, &(slaveValues[d_DOFsPerNode*i]), &(slaveValues[d_DOFsPerNode*i]), std::plus<double>());
       } // end for i
@@ -790,7 +630,7 @@ d_fout<<std::flush;
         for (size_t j = 0; j < 4; ++j) {
           u->getLocalValuesByGlobalID(d_DOFsPerNode, &(d_SlaveIndices[d_DOFsPerNode*i]), &(sendAddToMasterValues[d_DOFsPerNode*d_MasterVerticesMap[4*i+j]])); 
           if (d_ContactIsFrictionless) {
-            project_vector_onto_direction(&(d_SlaveVerticesNormalVectors[3*i]), &(sendAddToMasterValues[d_DOFsPerNode*d_MasterVerticesMap[4*i+j]]));
+            project_vector_onto_direction(&(d_SlaveVerticesNormalVector[3*i]), &(sendAddToMasterValues[d_DOFsPerNode*d_MasterVerticesMap[4*i+j]]));
           } // end if
           for (size_t k = 0; k < d_DOFsPerNode; ++k) {
             sendAddToMasterValues[d_DOFsPerNode*d_MasterVerticesMap[4*i+j]+k] *= d_MasterShapeFunctionsValues[4*i+j];
@@ -815,7 +655,7 @@ d_fout<<std::flush;
         std::vector<double> slaveValues(d_SlaveIndices.size());
         u->getLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(slaveValues[0]));
         for (size_t i = 0; i < d_SlaveVerticesGlobalIDs.size(); ++i) {
-          orthogonalize_vector_against_direction(&(d_SlaveVerticesNormalVectors[3*i]), &(slaveValues[d_DOFsPerNode*i]));
+          orthogonalize_vector_against_direction(&(d_SlaveVerticesNormalVector[3*i]), &(slaveValues[d_DOFsPerNode*i]));
         } // end for i
         u->setLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(slaveValues[0]));
       } else {
@@ -829,7 +669,7 @@ d_fout<<std::flush;
         std::vector<double> addToSlaveValues(d_SlaveIndices.size());
         for (size_t i = 0; i < d_SlaveVerticesGlobalIDs.size(); ++i) {
           std::copy(&(d_SlaveShift[3*i]), &(d_SlaveShift[3*i])+3, &(addToSlaveValues[d_DOFsPerNode*i]));
-          project_vector_onto_direction(&(d_SlaveVerticesNormalVectors[3*i]), &(addToSlaveValues[d_DOFsPerNode*i]));
+          project_vector_onto_direction(&(d_SlaveVerticesNormalVector[3*i]), &(addToSlaveValues[d_DOFsPerNode*i]));
         } // end for i
         u->addLocalValuesByGlobalID(d_SlaveIndices.size(), &(d_SlaveIndices[0]), &(addToSlaveValues[0])); 
       } else {

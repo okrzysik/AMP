@@ -1,3 +1,4 @@
+INCLUDE( ${AMP_SOURCE_DIR}/cmake/Find_BLAS_LAPACK.cmake )
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindPetsc.cmake )
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindTrilinos.cmake )
 INCLUDE( ${AMP_SOURCE_DIR}/cmake/FindLibmesh.cmake )
@@ -464,90 +465,6 @@ MACRO ( CONFIGURE_MOAB )
 ENDMACRO ()
 
 
-# Macro to configure the BLAS
-MACRO ( CONFIGURE_BLAS )
-    # Determine if we want to use BLAS
-    CHECK_ENABLE_FLAG(USE_EXT_BLAS 1 )
-    IF ( USE_EXT_BLAS )
-        IF ( BLAS_LIBRARIES )
-            # The user is specifying the blas command directly
-        ELSEIF ( BLAS_DIRECTORY )
-            # The user is specifying the blas directory
-            IF ( BLAS_LIB )
-                # The user is specifying both the blas directory and the blas library
-                FIND_LIBRARY ( BLAS_LIBRARIES NAMES ${BLAS_LIB} PATHS ${BLAS_DIRECTORY}  NO_DEFAULT_PATH )
-                IF ( NOT BLAS_LIBRARIES )
-                    MESSAGE( FATAL_ERROR "BLAS library not found in ${BLAS_DIRECTORY}" )
-                ENDIF()
-            ELSE()
-                # The user did not specify the library serach for a blas library
-                FIND_LIBRARY ( BLAS_LIBRARIES NAMES blas PATHS ${BLAS_DIRECTORY}  NO_DEFAULT_PATH )
-                IF ( NOT BLAS_LIBRARIES )
-                    MESSAGE( FATAL_ERROR "BLAS library not found in ${BLAS_DIRECTORY}" )
-                ENDIF()
-            ENDIF()
-        ELSEIF ( BLAS_LIB )
-            # The user is specifying the blas library (search for the file)
-            FIND_LIBRARY ( BLAS_LIBRARIES NAMES ${BLAS_LIB} )
-            IF ( NOT BLAS_LIBRARIES )
-                MESSAGE( FATAL_ERROR "BLAS library not found" )
-            ENDIF()
-        ELSE ()
-            # The user did not include BLAS directly, perform a search
-            INCLUDE ( FindBLAS )
-            IF ( NOT BLAS_FOUND )
-                MESSAGE( FATAL_ERROR "BLAS not found.  Try setting BLAS_DIRECTORY or BLAS_LIB" )
-            ENDIF()
-        ENDIF()
-        SET ( BLAS_LIBS ${BLAS_LIBRARIES} )
-        MESSAGE( "Using blas" )
-        MESSAGE( "   ${BLAS_LIBS}" )
-    ENDIF()
-ENDMACRO ()
-
-
-# Macro to configure the LAPACK
-MACRO ( CONFIGURE_LAPACK )
-    # Determine if we want to use LAPACK
-    CHECK_ENABLE_FLAG(USE_EXT_LAPACK 1 )
-    IF ( USE_EXT_LAPACK )
-        IF ( LAPACK_LIBRARIES )
-            # The user is specifying the lapack command directly
-        ELSEIF ( LAPACK_DIRECTORY )
-            # The user is specifying the lapack directory
-            IF ( LAPACK_LIB )
-                # The user is specifying both the lapack directory and the lapack library
-                FIND_LIBRARY ( LAPACK_LIBRARIES NAMES ${LAPACK_LIB} PATHS ${LAPACK_DIRECTORY}  NO_DEFAULT_PATH )
-                IF ( NOT LAPACK_LIBRARIES )
-                    MESSAGE( FATAL_ERROR "LAPACK library not found in ${LAPACK_DIRECTORY}" )
-                ENDIF()
-            ELSE()
-                # The user did not specify the library serach for a lapack library
-                FIND_LIBRARY ( LAPACK_LIBRARIES NAMES lapack PATHS ${LAPACK_DIRECTORY}  NO_DEFAULT_PATH )
-                IF ( NOT LAPACK_LIBRARIES )
-                    MESSAGE( FATAL_ERROR "LAPACK library not found in ${LAPACK_DIRECTORY}" )
-                ENDIF()
-            ENDIF()
-        ELSEIF ( LAPACK_LIB )
-            # The user is specifying the lapack library (search for the file)
-            FIND_LIBRARY ( LAPACK_LIBRARIES NAMES ${LAPACK_LIB} )
-            IF ( NOT LAPACK_LIBRARIES )
-                MESSAGE( FATAL_ERROR "LAPACK library not found" )
-            ENDIF()
-        ELSE ()
-            # The user did not include lapack directly, perform a search
-            INCLUDE ( FindLAPACK )
-            IF ( NOT LAPACK_FOUND )
-                MESSAGE( FATAL_ERROR "LAPACK not found.  Try setting LAPACK_DIRECTORY or LAPACK_LIB" )
-            ENDIF()
-        ENDIF()
-        SET ( LAPACK_LIBS ${LAPACK_LIBRARIES} )
-        MESSAGE( "Using lapack" )
-        MESSAGE( "   ${LAPACK_LIBS}" )
-    ENDIF()
-ENDMACRO ()
-
-
 # Macro to find and configure the sundials libraries
 MACRO ( CONFIGURE_SUNDIALS_LIBRARIES )
     # Determine if we want to use sundials
@@ -657,6 +574,7 @@ ENDMACRO ()
 
 # Macro to configure system-specific libraries and flags
 MACRO ( CONFIGURE_SYSTEM )
+    SET_COMPILER()
     # Remove extra library links
     CHECK_ENABLE_FLAG( USE_STATIC 0 )
     IF ( USE_STATIC )
@@ -671,7 +589,6 @@ MACRO ( CONFIGURE_SYSTEM )
         FIND_LIBRARY ( PSAPI_LIB    NAMES Psapi    PATHS ${SYSTEM_PATHS}  NO_DEFAULT_PATH )
         FIND_LIBRARY ( DBGHELP_LIB  NAMES DbgHelp  PATHS ${SYSTEM_PATHS}  NO_DEFAULT_PATH )
         SET( SYSTEM_LIBS ${PSAPI_LIB} ${DBGHELP_LIB} )
-        MESSAGE("System libs: ${SYSTEM_LIBS}")
     ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
         # Linux specific system libraries
         SET( SYSTEM_LIBS "-lz -ldl" )
@@ -680,7 +597,7 @@ MACRO ( CONFIGURE_SYSTEM )
         ENDIF()
         IF ( USING_GCC )
             SET( SYSTEM_LIBS "${SYSTEM_LIBS} -lgfortran" )   # Needed for backtrace to print function names
-	ENDIF()
+	    ENDIF()
     ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
         # Max specific system libraries
         SET( SYSTEM_LIBS "-lz -ldl" )
@@ -689,6 +606,7 @@ MACRO ( CONFIGURE_SYSTEM )
     ELSE()
         MESSAGE( FATAL_ERROR "OS not detected" )
     ENDIF()
+        MESSAGE("System libs: ${SYSTEM_LIBS}")
 ENDMACRO ()
 
 
@@ -757,14 +675,14 @@ MACRO ( CONFIGURE_AMP )
             MESSAGE( "Disabling AMP Materials" )
         ENDIF()
         # Check if we are using operators
-        IF ( (NOT USE_AMP_MESH) OR (NOT USE_AMP_VECTORS) OR (NOT USE_AMP_MATRICES) OR (NOT USE_EXT_LIBMESH) )
+        IF ( (NOT USE_AMP_MESH) OR (NOT USE_AMP_VECTORS) OR (NOT USE_AMP_MATRICES) )
             SET ( USE_AMP_OPERATORS 0 )
         ENDIF()
         IF ( NOT USE_AMP_OPERATORS )
             MESSAGE( "Disabling AMP Operators" )
         ENDIF()
         # Check if we are using solvers
-        IF ( (NOT USE_AMP_OPERATORS) )
+        IF ( (NOT USE_AMP_OPERATORS) OR (NOT USE_EXT_LIBMESH) )
             SET ( USE_AMP_SOLVERS 0 )
         ENDIF()
         IF ( NOT USE_AMP_SOLVERS )
