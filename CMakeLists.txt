@@ -9,13 +9,21 @@ MESSAGE ("Configuring AMP")
 MESSAGE ("===============")
 
 
+# Check if we used the TPL builder (required before PROJECT)
+SET( AMP_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros.cmake" )
+INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake" )
+IF ( TPL_DIRECTORY )
+    INCLUDE( ${TPL_DIRECTORY}/TPLs.cmake )
+    CONFIGURE_TPLs()
+ENDIF()
+
+
 # Set the project name
 PROJECT (AMP)
 
 
 # Check if we are only compiling docs
-INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros.cmake )
-INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake )
 CHECK_ENABLE_FLAG( ONLY_BUILD_DOCS 0 )
 
 

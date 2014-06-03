@@ -45,7 +45,7 @@ ENDMACRO ()
 # Add a package to the AMP library
 MACRO( ADD_AMP_LIBRARY PACKAGE )
     ADD_PACKAGE_TO_TEST_DEP_LIST( ${PACKAGE} )
-    INCLUDE_DIRECTORIES( ${AMP_INSTALL_DIR}/include/${PACKAGE} )
+    #INCLUDE_DIRECTORIES( ${AMP_INSTALL_DIR}/include/${PACKAGE} )
     ADD_SUBDIRECTORY( ${PACKAGE} )
 ENDMACRO()
 
@@ -377,7 +377,7 @@ MACRO( SET_COMPILER_FLAGS )
     ADD_USER_FLAGS()
     # Set the warnings to use
     SET_WARNINGS()
-ENDMACRO ()
+ENDMACRO()
 
 
 # Macro to copy data file at build time

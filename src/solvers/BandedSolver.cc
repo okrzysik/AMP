@@ -70,6 +70,8 @@ void BandedSolver::reset( boost::shared_ptr<SolverStrategyParameters> parameters
             if ( cols[k]<col_begin || cols[k]>=col_end )
                 AMP_ERROR("Matrix has entries that are non-local");
             int j = cols[k] - col_begin;
+            if ( j<i-KL || j>i+KU )
+                AMP_ERROR("Banded entry is out of bounds");
             AB[KL+KU+i-j+j*K] = values[k];
         }
     }
@@ -77,7 +79,12 @@ void BandedSolver::reset( boost::shared_ptr<SolverStrategyParameters> parameters
     // Factor the matrix
     int error = 0;
     Lapack::dgbtrf( M, N, KL, KU, AB, K, IPIV, error );
-    AMP_INSIST(error==0,"Error factoring matrix");
+    if ( error != 0 ) {
+        char msg[100];
+        sprintf(msg,"Error factoring matrix (%i)",error);
+        AMP_ERROR(msg);
+    }
+
 
     PROFILE_STOP("reset");
 }
@@ -106,8 +113,12 @@ void BandedSolver::solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // Solve the 
     int error = 0;
     Lapack::dgbtrs( 'N', N, KL, KU, 1, AB, 2*KL+KU+1, IPIV, B, N, error );
-    AMP_INSIST(error==0,"Error solving system");
     d_iNumberIterations = 1;
+    if ( error != 0 ) {
+        char msg[100];
+        sprintf(msg,"Error solving matrix (%i)",error);
+        AMP_ERROR(msg);
+    }
 
     // Copy the solution
     AMP_ASSERT(*rightDOF==*(u->getDOFManager()));
