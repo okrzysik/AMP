@@ -79,6 +79,11 @@ void BandedSolver::reset( boost::shared_ptr<SolverStrategyParameters> parameters
             }
             AB[KL+KU+i-j+j*K] = values[k];
         }
+        if ( AB[KL+KU+i*K]==0 ) {
+            char msg[100];
+            sprintf(msg,"Error diagonal entry M(%i,%i) = 0",i+1,i+1);
+            AMP_ERROR(msg);
+        }
     }
     
     // Factor the matrix

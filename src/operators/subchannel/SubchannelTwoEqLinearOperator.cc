@@ -160,6 +160,11 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 
     if ( d_nullFrozenvector ) {
         // We are done with the reset
+        // Set the matrix to a diagonal matrix
+        d_matrix->zero();
+        AMP::LinearAlgebra::Vector::shared_ptr diagonal = d_matrix->extractDiagonal();
+        diagonal->setToScalar(1.0);
+        d_matrix->setDiagonal(diagonal);
         PROFILE_STOP2("reset");
         return;
     }
