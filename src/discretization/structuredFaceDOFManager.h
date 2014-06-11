@@ -87,6 +87,7 @@ private:
 
     std::vector<AMP::Mesh::MeshElementID> d_local_ids[3];
     std::vector<AMP::Mesh::MeshElementID> d_remote_ids[3];
+    std::vector<size_t> d_local_dofs[3];
     std::vector<size_t> d_remote_dofs[3];
 };
 

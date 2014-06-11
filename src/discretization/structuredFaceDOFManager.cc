@@ -52,23 +52,26 @@ void structuredFaceDOFManager::initialize()
         d_remote_ids[d].resize(0);
         if ( d_DOFsPerFace[d]==0 )
             continue;
-        AMP::Mesh::MeshIterator localIterator = AMP::Mesh::StructuredMeshHelper::getFaceIterator(d_mesh,0,d);
-        AMP::Mesh::MeshIterator ghostIterator = AMP::Mesh::StructuredMeshHelper::getFaceIterator(d_mesh,d_gcw,d);
-        d_local_ids[d].reserve(localIterator.size());
-        d_remote_ids[d].reserve(ghostIterator.size()-localIterator.size());
+        const AMP::Mesh::MeshIterator localIterator = AMP::Mesh::StructuredMeshHelper::getFaceIterator(d_mesh,0,d);
+        const AMP::Mesh::MeshIterator ghostIterator = AMP::Mesh::StructuredMeshHelper::getFaceIterator(d_mesh,d_gcw,d);
+        d_local_ids[d].resize(localIterator.size());
+        d_local_dofs[d].resize(localIterator.size());
         AMP::Mesh::MeshIterator it = ghostIterator.begin();
+        for (size_t i=0; i<localIterator.size(); ++i, ++it) {
+            d_local_ids[d][i] = it->globalID();
+            d_local_dofs[d][i] = i;
+        }
+        d_remote_ids[d].reserve(ghostIterator.size()-localIterator.size());
+        it = ghostIterator.begin();
         for (size_t i=0; i<ghostIterator.size(); ++i, ++it) {
             AMP::Mesh::MeshElementID id = it->globalID();
-            if ( id.is_local() )
-                d_local_ids[d].push_back(id);
-            else
+            if ( !id.is_local() )
                 d_remote_ids[d].push_back(id);
         }
         AMP_ASSERT(d_local_ids[d].size()==localIterator.size());
         AMP_ASSERT(d_remote_ids[d].size()==ghostIterator.size()-localIterator.size());
-        // Sort the elements (they will be sorted by the meshID, then the rank on the 
-        // comm of the given mesh, then the element type, and finally the local id)
-        AMP::Utilities::quicksort(d_local_ids[d]);
+        // Sort the ids (keeping track of the original order)
+        AMP::Utilities::quicksort(d_local_ids[d],d_local_dofs[d]);
         AMP::Utilities::quicksort(d_remote_ids[d]);
     }
     // Get the number of local elements per processor and the global number of DOFs
@@ -78,6 +81,13 @@ void structuredFaceDOFManager::initialize()
     d_comm.sumScan<size_t>(&N_local,&d_end);
     d_begin = d_end-N_local;
     d_global = d_comm.bcast(d_end,d_comm.getSize()-1);
+    // Correct the local dof indicies
+    size_t offset = d_begin;
+    for (int d=0; d<3; d++) {
+        for (size_t i=0; i<d_local_ids[d].size(); ++i)
+            d_local_dofs[d][i] = d_begin + d_local_dofs[d][i]*d_DOFsPerFace[d];
+        offset += d_local_ids[d].size()*d_DOFsPerFace[d];
+    }
     // Determine the remote DOFs
     // Note: this must be done after d_local_id is set, d_begin and d_global are set, and remote_ids must be sorted.
     for (int d=0; d<3; d++)
@@ -94,7 +104,6 @@ void structuredFaceDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std:
     if ( id.type()!=AMP::Mesh::Face )
         return;
     // Search for the dof locally
-    size_t offset = d_begin;
     for (int d=0; d<3; d++) {
         if ( !d_local_ids[d].empty() ) {
             size_t index = AMP::Utilities::findfirst(d_local_ids[d],id);
@@ -103,11 +112,10 @@ void structuredFaceDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std:
                 // The id was found
                 dofs.resize(d_DOFsPerFace[d]);
                 for (int j=0; j<d_DOFsPerFace[d]; j++)
-                    dofs[j] = offset + index*d_DOFsPerFace[d] + j;
+                    dofs[j] = d_local_dofs[d][index] + j;
                 return;
             } 
         }
-        offset += d_local_ids[d].size()*d_DOFsPerFace[d];
     }
     // Search for the dof in the remote list
     for (int d=0; d<3; d++) {
@@ -141,7 +149,7 @@ AMP::Mesh::MeshIterator structuredFaceDOFManager::getIterator( ) const
 
 
 /****************************************************************
-* Return the remote DOFs for a vector                           *
+* Return the remote DOFs                                        *
 ****************************************************************/
 std::vector<size_t> structuredFaceDOFManager::getRemoteDOFs( ) const
 {

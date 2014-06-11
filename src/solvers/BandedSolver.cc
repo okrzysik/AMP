@@ -46,7 +46,7 @@ void BandedSolver::reset( boost::shared_ptr<SolverStrategyParameters> parameters
     rightDOF = matrix->getRightDOFManager();
     leftDOF = matrix->getLeftDOFManager();
     M = static_cast<int>(matrix->numLocalRows());
-    N = static_cast<int>(matrix->numGlobalColumns());
+    N = static_cast<int>(matrix->numLocalColumns());
 
     // Allocate space 
     delete [] AB;

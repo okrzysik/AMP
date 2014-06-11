@@ -109,7 +109,13 @@ inline void  NativePetscMatrix::setScalar ( double ans )
 {
     if ( ans != 0.0 )
         AMP_ERROR( "Cannot perform operation on NativePetscMatrix yet!" );
-    MatZeroEntries ( d_Mat );
+    MatZeroEntries( d_Mat );
+}
+
+
+inline void  NativePetscMatrix::zero ( )
+{
+    MatZeroEntries( d_Mat );
 }
 
 
@@ -117,6 +123,12 @@ inline void NativePetscMatrix::setDiagonal ( const Vector::shared_ptr &in )
 {
     const PetscVector &pVec = in->castTo<NativePetscVector> ();
     MatDiagonalSet ( d_Mat , pVec.getVec() , INSERT_VALUES );
+}
+   
+inline void NativePetscMatrix::setIdentity ( )
+{
+    MatZeroEntries( d_Mat );
+    MatShift( d_Mat, 1.0 );
 }
       
 

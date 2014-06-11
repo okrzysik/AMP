@@ -178,7 +178,7 @@ public:
       /** \brief  Set the non-zeros of the matrix to zero
         * \details  May not deallocate space.
         */
-      void         zero ();
+      virtual void zero () = 0;
 
       /** \brief  Retrieve a row of the matrix in compressed format
         * \param[in]  row Which row
@@ -192,6 +192,10 @@ public:
         * \param[in] in The values to set the diagonal to
         */
       virtual void setDiagonal ( const Vector::shared_ptr &in ) = 0;
+
+      /** \brief  Set the matrix to the identity matrix
+        */
+      virtual void setIdentity () = 0;
 
       /** \brief  Perform communication to ensure values in the
         * matrix are the same across cores.

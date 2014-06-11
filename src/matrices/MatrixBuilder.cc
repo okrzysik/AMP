@@ -56,6 +56,7 @@ AMP::LinearAlgebra::Matrix::shared_ptr  createManagedMatrix(
         resultDOF->getDOFs(obj.globalID(),ids);
         // Get the operand DOFs associated with the given element
         std::vector<size_t> row = operandDOF->getRowDOFs(obj);
+        AMP_ASSERT(!row.empty());
         size_t nnz = row.size();
         for (size_t i=0; i<row.size(); i++)
             columns[i] = (int) row[i];
