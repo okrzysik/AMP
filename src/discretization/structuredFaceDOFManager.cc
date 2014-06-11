@@ -15,7 +15,8 @@ namespace Discretization {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-DOFManager::shared_ptr  structuredFaceDOFManager::create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, int DOFsPerFace[3], int gcw )
+DOFManager::shared_ptr  structuredFaceDOFManager::create( 
+    boost::shared_ptr<AMP::Mesh::Mesh> mesh, int DOFsPerFace[3], int gcw )
 {
     if ( mesh.get()==NULL )
         return DOFManager::shared_ptr();

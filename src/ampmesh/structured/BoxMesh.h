@@ -377,6 +377,8 @@ protected:
     static void createLogicalMesh( boost::shared_ptr<AMP::Database> db,
         std::vector<int>& meshSize, std::vector<bool>& isPeriodic, std::vector<int>& minSize );
 
+private:
+    BoxMesh( ); // Private empty constructor
 };
 
 

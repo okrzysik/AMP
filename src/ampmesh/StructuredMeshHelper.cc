@@ -1,5 +1,7 @@
 #include "ampmesh/StructuredMeshHelper.h"
 #include "ampmesh/structured/BoxMesh.h"
+#include "ampmesh/MultiMesh.h"
+#include "ampmesh/MultiIterator.h"
 #include "ampmesh/structured/structuredMeshIterator.h"
 
 namespace AMP {
@@ -10,20 +12,18 @@ namespace Mesh {
 * Function to return the coordinates of a cube mesh         *
 ************************************************************/
 void StructuredMeshHelper::getXYZCoordinates(AMP::Mesh::Mesh::shared_ptr mesh, 
-        std::vector<double>& x_out, std::vector<double>& y_out, std::vector<double>& z_out )
+        std::vector<double>& x_out, std::vector<double>& y_out, std::vector<double>& z_out, bool check )
 {
     AMP_ASSERT(mesh!=NULL);
     std::set<double> x, y, z;
-    if ( mesh.get() != NULL ) {
-        AMP::Mesh::MeshIterator it = mesh->getIterator( AMP::Mesh::Vertex, 0 );
-        for (size_t i=0; i<it.size(); i++) {
-            std::vector<double> coord = it->coord();
-            AMP_ASSERT(coord.size()==3);
-            x.insert( coord[0] );
-            y.insert( coord[1] );
-            z.insert( coord[2] );
-            ++it;
-        }
+    AMP::Mesh::MeshIterator it = mesh->getIterator( AMP::Mesh::Vertex, 0 );
+    for (size_t i=0; i<it.size(); i++) {
+        std::vector<double> coord = it->coord();
+        AMP_ASSERT(coord.size()==3);
+        x.insert( coord[0] );
+        y.insert( coord[1] );
+        z.insert( coord[2] );
+        ++it;
     }
     mesh->getComm().setGather(x);
     mesh->getComm().setGather(y);
@@ -52,7 +52,8 @@ void StructuredMeshHelper::getXYZCoordinates(AMP::Mesh::Mesh::shared_ptr mesh,
     size_t Nx = x.size()-1;
     size_t Ny = y.size()-1;
     size_t Nz = z.size()-1;
-    AMP_ASSERT(Nx*Ny*Nz==mesh->numGlobalElements(AMP::Mesh::Volume));
+    if ( check )
+        AMP_ASSERT(Nx*Ny*Nz==mesh->numGlobalElements(AMP::Mesh::Volume));
 }
 
 
@@ -76,11 +77,27 @@ AMP::Mesh::MeshIterator  StructuredMeshHelper::getYZFaceIterator(
     return getFaceIterator( mesh, gcw, 0 );
 }
 AMP::Mesh::MeshIterator  StructuredMeshHelper::getFaceIterator(
-    AMP::Mesh::Mesh::shared_ptr mesh, int gcw, int direction)
+    AMP::Mesh::Mesh::shared_ptr mesh, int gcw, int direction )
 {
-    AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Face, gcw );
-    boost::shared_ptr<AMP::Mesh::BoxMesh> boxmesh = boost::dynamic_pointer_cast<AMP::Mesh::BoxMesh>( mesh );
-    if ( boxmesh!=NULL ) {
+    boost::shared_ptr<AMP::Mesh::MultiMesh> multimesh = 
+        boost::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    boost::shared_ptr<AMP::Mesh::BoxMesh> boxmesh = 
+        boost::dynamic_pointer_cast<AMP::Mesh::BoxMesh>( mesh );
+    if ( multimesh!=NULL ) {
+        // Optimization for multi-meshes
+        std::vector<AMP::Mesh::Mesh::shared_ptr> meshlist = multimesh->getMeshes();
+        if ( meshlist.size()==1 ) {
+            return getFaceIterator(meshlist[0],gcw,direction);
+        } else {
+            std::vector<boost::shared_ptr<AMP::Mesh::MeshIterator> > iterators(meshlist.size());
+            for (size_t i=0; i<meshlist.size(); i++) {
+                boost::shared_ptr<MeshIterator> iterator_ptr( new AMP::Mesh::MeshIterator(
+                    getFaceIterator(meshlist[i],gcw,direction) ) );
+                iterators[i] = iterator_ptr;
+            }
+            return AMP::Mesh::MultiIterator(iterators);
+        }
+    } else if ( boxmesh!=NULL ) {
         // Optimization for AMP structured meshes
         AMP::Mesh::BoxMesh::Box box = boxmesh->getLocalBox(gcw);
         std::vector<bool> periodic = boxmesh->periodic();
@@ -119,12 +136,13 @@ AMP::Mesh::MeshIterator  StructuredMeshHelper::getFaceIterator(
         return structuredMeshIterator( face_list, boxmesh.get(), 0 );
     } else {
         // General case
+        AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Face, gcw );
         std::vector<AMP::Mesh::MeshElement> face_list;
         std::vector<double> face_index;
         face_list.reserve(iterator.size());
         face_index.reserve(iterator.size());
         std::vector<double> x, y, z;
-        getXYZCoordinates( mesh, x, y, z );
+        getXYZCoordinates( mesh, x, y, z, false );
         std::vector<Utilities::triplet<int,int,int> > index;
         for(size_t i=0; i<iterator.size(); ++i ) {
             std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements(AMP::Mesh::Vertex);

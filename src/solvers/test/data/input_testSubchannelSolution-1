@@ -77,7 +77,8 @@ SubchannelPhysicsModel{
 }
 
 NonlinearSolver{
-    print_info_level = 7
+    print_info_level = 2
+    solver = "JFNK"
     max_iterations = 1000
     max_error = 1e-10
 
@@ -90,8 +91,10 @@ NonlinearSolver{
     SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ksp_ew_version 1 -snes_ls_alpha 0.001"
 
     LinearSolver{
-        print_info_level = 10
+        print_info_level = 1
         max_iterations = 1000
+        linearSolverType = "Belos"
+        linearSolver = "Pseudo Block GMRES"
         max_error = 1e-7
         ksp_type = "fgmres"
         absolute_tolerance = 1.0e-7

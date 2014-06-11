@@ -69,6 +69,7 @@
 #include "solvers/ColumnSolver.h"
 
 #include "ampmesh/StructuredMeshHelper.h"
+#include "discretization/structuredFaceDOFManager.h"
 
 
 // Function to get an arbitrary power profile (W/kg) assuming a density of 1 kg/m^3 for the volume integral
@@ -105,20 +106,11 @@ void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh, AMP::Mesh::Mesh::shared
 
     AMP::LinearAlgebra::Vector::shared_ptr flowVec;
     if ( subchannelMesh.get()!=NULL ) {
-        int DofsPerFace =  2;
+        int DOFsPerFace[3]={0,0,2};
         AMP::Discretization::DOFManager::shared_ptr faceDOFManager = 
-            AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), 
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace );
-        // dof manager for the scalar quanties on the z faces - for mapped temperature clad temp onto subchannel discretization
-        /*
-        AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager = 
-            AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), 
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 1);
-        */
+            AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
         // create solution, rhs, and residual vectors
-        flowVec = AMP::LinearAlgebra::createVector( faceDOFManager , flowVariable , true );
+        flowVec = AMP::LinearAlgebra::createVector( faceDOFManager, flowVariable, true );
     }
     globalMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( flowVec );
 
@@ -161,7 +153,8 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::Mesh::Mesh::shared_ptr subchannelMesh = manager->Subset("subchannel");
     AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
     if ( subchannelMesh.get()!=NULL ) {
-        xyFaceMesh = subchannelMesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh , 0 ) );
+        AMP::Mesh::MeshIterator face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0);
+        xyFaceMesh = subchannelMesh->Subset( face );
     }
 
     // Variables
@@ -249,12 +242,11 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFuelTemp; 
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFlowTemp;
     if ( subchannelMesh.get()!=NULL ) {
+        int DOFsPerFace[3]={0,0,1};
         AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager = 
-            AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), 
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 1);
-        subchannelFuelTemp = AMP::LinearAlgebra::createVector( scalarFaceDOFManager , thermalVariable );
-        subchannelFlowTemp = AMP::LinearAlgebra::createVector( scalarFaceDOFManager , thermalVariable );
+            AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
+        subchannelFuelTemp = AMP::LinearAlgebra::createVector( scalarFaceDOFManager, thermalVariable );
+        subchannelFlowTemp = AMP::LinearAlgebra::createVector( scalarFaceDOFManager, thermalVariable );
     }
 
     // get subchannel physics model
@@ -479,39 +471,44 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr globalThermalRhsVec = globalRhsMultiVector->subsetVectorForVariable(thermalVariable);
     AMP::LinearAlgebra::Vector::shared_ptr globalThermalResVec = globalResMultiVector->subsetVectorForVariable(thermalVariable);
 
+    // create nonlinear solver
+    boost::shared_ptr<AMP::Solver::SolverStrategy> nonlinearSolver;
+    { // Limit the scope so we can add an if else statement for Petsc vs NOX
 
-    // get nonlinear solver database
-    boost::shared_ptr<AMP::Database> nonlinearSolver_db = global_input_db->getDatabase("NonlinearSolver"); 
-    boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
+        // get nonlinear solver database
+        boost::shared_ptr<AMP::Database> nonlinearSolver_db = global_input_db->getDatabase("NonlinearSolver"); 
+        boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
 
-    // create nonlinear solver parameters
-    boost::shared_ptr<AMP::Solver::TrilinosNOXSolverParameters> nonlinearSolverParams(new AMP::Solver::TrilinosNOXSolverParameters(nonlinearSolver_db));
-    nonlinearSolverParams->d_comm = globalComm;
-    nonlinearSolverParams->d_pOperator = nonlinearCoupledOperator;
-    nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;
-    nonlinearSolverParams->d_pLinearOperator = linearColumnOperator;
-    boost::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(new AMP::Solver::TrilinosNOXSolver(nonlinearSolverParams));
+       // create nonlinear solver parameters
+       boost::shared_ptr<AMP::Solver::TrilinosNOXSolverParameters> nonlinearSolverParams(new AMP::Solver::TrilinosNOXSolverParameters(nonlinearSolver_db));
+       nonlinearSolverParams->d_comm = globalComm;
+       nonlinearSolverParams->d_pOperator = nonlinearCoupledOperator;
+       nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;
+       nonlinearSolverParams->d_pLinearOperator = linearColumnOperator;
+       boost::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(new AMP::Solver::TrilinosNOXSolver(nonlinearSolverParams));
 
-    // create preconditioner
-    boost::shared_ptr<AMP::Database> columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
-    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
-    columnPreconditionerParams->d_pOperator = linearColumnOperator;
-    columnPreconditioner.reset(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
+       // create preconditioner
 
-/*
-    boost::shared_ptr<AMP::Database> trilinosPreconditioner_db = columnPreconditioner_db->getDatabase("TrilinosPreconditioner");
-    unsigned int N_preconditioners = linearColumnOperator->getNumberOfOperators();
-    //N_preconditioners--;    // Don't use a preconditioner for subchannel
-    for(unsigned int id=0; id<N_preconditioners; id++) {
-        boost::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(new AMP::Solver::SolverStrategyParameters(trilinosPreconditioner_db));
-        trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator(id);
-        boost::shared_ptr<AMP::Solver::TrilinosMLSolver> trilinosPreconditioner(new AMP::Solver::TrilinosMLSolver(trilinosPreconditionerParams));
-        columnPreconditioner->append(trilinosPreconditioner);
+       boost::shared_ptr<AMP::Database> columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
+       boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
+       columnPreconditionerParams->d_pOperator = linearColumnOperator;
+       columnPreconditioner.reset(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
+
+      /*
+        boost::shared_ptr<AMP::Database> trilinosPreconditioner_db = columnPreconditioner_db->getDatabase("TrilinosPreconditioner");
+       unsigned int N_preconditioners = linearColumnOperator->getNumberOfOperators();
+       //N_preconditioners--;    // Don't use a preconditioner for subchannel
+       for(unsigned int id=0; id<N_preconditioners; id++) {
+           boost::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(new AMP::Solver::SolverStrategyParameters(trilinosPreconditioner_db));
+           trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator(id);
+           boost::shared_ptr<AMP::Solver::TrilinosMLSolver> trilinosPreconditioner(new AMP::Solver::TrilinosMLSolver(trilinosPreconditionerParams));
+          columnPreconditioner->append(trilinosPreconditioner);
+       }
+      */
+
+       // set preconditioner for the linear operator that preconditions the nonlinear problem.
+       //nonlinearSolver->getKrylovSolver()->setPreconditioner(columnPreconditioner);
     }
-*/
-
-    // set preconditioner for the linear operator that preconditions the nonlinear problem.
-    //nonlinearSolver->getKrylovSolver()->setPreconditioner(columnPreconditioner);
 
     // don't use zero initial guess
     nonlinearSolver->setZeroInitialGuess(false);
@@ -629,15 +626,12 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     if(subchannelMesh != NULL ){
         flowTempVec = subchannelFuelTemp->cloneVector(); 
         flowDensityVec = subchannelFuelTemp->cloneVector(); 
-        int DofsPerFace =  2;
+        int DOFsPerFace[3]={0,0,2};
         AMP::Discretization::DOFManager::shared_ptr faceDOFManager = 
-            AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), 
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace );
+            AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
+        DOFsPerFace[2]=1;
         AMP::Discretization::DOFManager::shared_ptr scalarFaceDOFManager = 
-            AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), 
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 1);
+            AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
         AMP::Mesh::MeshIterator face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
         std::vector<size_t> dofs;
         std::vector<size_t> scalarDofs;

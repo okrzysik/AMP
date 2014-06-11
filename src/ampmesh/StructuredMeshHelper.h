@@ -28,12 +28,13 @@ public :
      *   This function will require communication on the mesh and will throw an error if
      *   the mesh nodes are not aligned
      * \param mesh  Mesh that we want to use for the iterator
-     * \param x     x-coordinates
-     * \param y     y-coordinates
-     * \param z     z-coordinates
+     * \param x         x-coordinates
+     * \param y         y-coordinates
+     * \param z         z-coordinates
+     * \param check     Check that the total number of nodes is unchanged
      */
-    static void getXYZCoordinates(AMP::Mesh::Mesh::shared_ptr mesh, 
-        std::vector<double>& x, std::vector<double>& y, std::vector<double>& z );
+    static void getXYZCoordinates( AMP::Mesh::Mesh::shared_ptr mesh, 
+        std::vector<double>& x, std::vector<double>& y, std::vector<double>& z, bool check=true );
 
     /**
      * \brief Get an iterator over the faces in the x-y planes

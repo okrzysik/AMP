@@ -113,12 +113,12 @@ void testSubchannelHelpers( AMP::UnitTest* ut, std::string input_file ) {
     double prandtl  = subchannel_db->getDatabase("Defaults")->getDouble("prandtl");
     AMP::LinearAlgebra::Vector::shared_ptr flowVec, cladTemp;
     if ( subchannelMesh.get()!=NULL ) {
-        AMP::Mesh::MeshIterator it0 = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0);
-        AMP::Mesh::MeshIterator it1 = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1);
+        int DOFsPerFace[3]={0,0,2};
         AMP::Discretization::DOFManager::shared_ptr flowDOF = 
-            AMP::Discretization::simpleDOFManager::create( subchannelMesh, it1, it0, 2);
+            AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
+        DOFsPerFace[2]=1;
         AMP::Discretization::DOFManager::shared_ptr cladDOF = 
-            AMP::Discretization::simpleDOFManager::create( subchannelMesh, it1, it0, 1);
+            AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
         AMP::LinearAlgebra::Variable::shared_ptr flowVariable(new AMP::LinearAlgebra::Variable("Flow"));
         AMP::LinearAlgebra::Variable::shared_ptr thermalVariable(new AMP::LinearAlgebra::Variable("Temperature"));
         flowVec  = AMP::LinearAlgebra::createVector( flowDOF , flowVariable );

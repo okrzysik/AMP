@@ -95,6 +95,9 @@ void multiDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector <
 ****************************************************************/
 AMP::Mesh::MeshIterator multiDOFManager::getIterator( ) const
 {
+    if ( d_managers.size()==1 ) {
+        return d_managers[0]->getIterator();
+    }
     // Get the iterators for all sub DOFmanagers
     std::vector<boost::shared_ptr<AMP::Mesh::MeshIterator> >  iterators(d_managers.size());
     for (size_t i=0; i<d_managers.size(); i++)

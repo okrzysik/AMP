@@ -25,8 +25,9 @@
 
 #include "utils/Writer.h"
 #include "vectors/VectorBuilder.h"
-#include "discretization/simpleDOF_Manager.h"
 #include "ampmesh/StructuredMeshHelper.h"
+#include "discretization/structuredFaceDOFManager.h"
+#include "discretization/simpleDOF_Manager.h"
 
 
 // Function to get the linear heat generation rate
@@ -76,8 +77,6 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
     // Create the meshes from the input database
     boost::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh(meshParams);
-    AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
-    xyFaceMesh = subchannelMesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh , 0 ) );
 
     // get subchannel physics model
     boost::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");
@@ -87,7 +86,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     // Create the SubchannelOperatorParameters
     boost::shared_ptr<AMP::Database> nonlinearOperator_db = input_db->getDatabase("SubchannelTwoEqNonlinearOperator");
     boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( nonlinearOperator_db ));
-    subchannelOpParams->d_Mesh = xyFaceMesh ;
+    subchannelOpParams->d_Mesh = subchannelMesh;
     subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
     subchannelOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
     subchannelOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
@@ -99,7 +98,6 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
         boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
         subchannelMesh ,"SubchannelTwoEqNonlinearOperator",input_db,elementModel ));
   
-
     // create linear operator
     boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
         boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
@@ -113,16 +111,16 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Variable::shared_ptr inputVariable  = nonlinearOperator->getInputVariable();
     AMP::LinearAlgebra::Variable::shared_ptr outputVariable = nonlinearOperator->getOutputVariable();
 
-    int DofsPerFace =  2;
-    AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
-        AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), DofsPerFace );
+    // get dof manager
+    int DOFsPerFace[3]={0,0,2};
+    AMP::Discretization::DOFManager::shared_ptr faceDOFManager = 
+        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
 
     // create solution, rhs, and residual vectors
     AMP::LinearAlgebra::Vector::shared_ptr manufacturedVec = AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable, true );
     AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable,  true );
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( faceDOFManager, outputVariable, true );
     AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( faceDOFManager, outputVariable, true );
-
 
     // Get the problem parameters
     std::vector<double> box = subchannelMesh->getBoundingBox();
@@ -156,6 +154,8 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     std::cout<< "Enthalpy Solution:"<< hin <<std::endl;
 
     // Compute the manufactured solution
+    AMP::Mesh::Mesh::shared_ptr xyFaceMesh = 
+        subchannelMesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh , 0 ) );
     AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     std::vector<size_t> dofs;
     const double h_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
@@ -202,10 +202,8 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     nonlinearSolverParams->d_pLinearOperator = nonlinearOperator;
     nonlinearSolverParams->d_pInitialGuess = solVec;
 
-
     // create nonlinear solver
     boost::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(new AMP::Solver::TrilinosNOXSolver(nonlinearSolverParams));
-
 
     // create linear solver
     //nonlinearSolver->getKrylovSolver()->setPreconditioner(linearFlowPreconditioner);
@@ -219,8 +217,9 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     nonlinearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
 
     // Compute the flow temperature
-    AMP::Discretization::DOFManager::shared_ptr tempDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
-        AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 1 );
+    int tempDOFsPerFace[3]={0,0,1};
+    AMP::Discretization::DOFManager::shared_ptr tempDOFManager = 
+        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, tempDOFsPerFace, 0 );
     AMP::LinearAlgebra::Variable::shared_ptr  tempVariable( new AMP::LinearAlgebra::Variable("Temperature") );
     AMP::LinearAlgebra::Vector::shared_ptr tempVec = AMP::LinearAlgebra::createVector( tempDOFManager , tempVariable  , true );
     face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
@@ -256,16 +255,18 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     faceDOFManager->getDOFs( face->globalID(), dofs );
     tempDOFManager->getDOFs( face->globalID(), tdofs );
+    double TinSol  = tempVec->getValueByGlobalID(tdofs[0]);
     std::cout<< "Inlet Computed Enthalpy = " << h_scale*solVec->getValueByGlobalID(dofs[0]) << std::endl;
     std::cout<< "Inlet Computed Pressure = " << P_scale*solVec->getValueByGlobalID(dofs[1]) << std::endl;
-    std::cout<< "Inlet Computed Temperature = " << tempVec->getValueByGlobalID(tdofs[0]) << std::endl;
+    std::cout<< "Inlet Computed Temperature = " << TinSol << std::endl;
     std::cout << std::endl;
     face = --((xyFaceMesh->getIterator(AMP::Mesh::Face,0)).end());
     faceDOFManager->getDOFs( face->globalID(), dofs );
     tempDOFManager->getDOFs( face->globalID(), tdofs );
+    double ToutSol = tempVec->getValueByGlobalID(tdofs[0]);
     std::cout<< "Outlet Computed Enthalpy = " << h_scale*solVec->getValueByGlobalID(dofs[0]) << std::endl;
     std::cout<< "Outlet Computed Pressure = " << P_scale*solVec->getValueByGlobalID(dofs[1]) << std::endl;
-    std::cout<< "Outlet Computed Temperature = " << tempVec->getValueByGlobalID(tdofs[0]) << std::endl;
+    std::cout<< "Outlet Computed Temperature = " << ToutSol << std::endl;
 
     // Compute the error
     AMP::LinearAlgebra::Vector::shared_ptr absErrorVec = solVec->cloneVector();
@@ -284,10 +285,10 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
     // check that norm of relative error is less than tolerance
     double tol = input_db->getDoubleWithDefault("TOLERANCE",1e-6);
-    if(relErrorNorm > tol){
-        ut->failure(exeName+": manufactured solution test");
-    } else {
+    if( relErrorNorm<=tol && fabs(Tin-TinSol)<tol ){
         ut->passes(exeName+": manufactured solution test");
+    } else {
+        ut->failure(exeName+": manufactured solution test");
     }
 
     // Print final solution

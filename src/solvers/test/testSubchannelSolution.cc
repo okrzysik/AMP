@@ -1,3 +1,4 @@
+// This test checks the verification problem in SubChannelFlow.tex
 #include <string>
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
@@ -72,10 +73,6 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
     AMP::InputManager::getManager()->parseInputFile ( input_file , input_db );
 
-//=============================================================================
-// mesh and dof manager
-//=============================================================================
-
     // Get the Mesh database and create the mesh parameters
     AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
     boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
@@ -84,24 +81,6 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
     // Create the meshes from the input database
     boost::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh(meshParams);
-
-    // get dof manager
-    int DOFsPerFace[3]={0,0,2};
-    AMP::Discretization::DOFManager::shared_ptr subchannelDOFManager = 
-        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
-
-//=============================================================================
-// physics model, parameters, and operator creation
-//=============================================================================
-    // get input and output variables
-    AMP::LinearAlgebra::Variable::shared_ptr inputVariable  (new AMP::LinearAlgebra::Variable("flow"));
-    AMP::LinearAlgebra::Variable::shared_ptr outputVariable (new AMP::LinearAlgebra::Variable("flow"));
-
-    // create solution, rhs, and residual vectors
-    AMP::LinearAlgebra::Vector::shared_ptr manufacturedVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable,  true );
-    AMP::LinearAlgebra::Vector::shared_ptr solVec          = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable,  true );
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec          = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
-    AMP::LinearAlgebra::Vector::shared_ptr resVec          = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
 
     // get subchannel physics model
     boost::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");
@@ -132,9 +111,20 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     ut->passes(exeName+": creation");
     std::cout.flush();
 
-//=============================================================================
-// compute manufactured solution
-//=============================================================================
+    // get input and output variables
+    AMP::LinearAlgebra::Variable::shared_ptr inputVariable  (new AMP::LinearAlgebra::Variable("flow"));
+    AMP::LinearAlgebra::Variable::shared_ptr outputVariable (new AMP::LinearAlgebra::Variable("flow"));
+
+    // get dof manager
+    int DOFsPerFace[3]={0,0,2};
+    AMP::Discretization::DOFManager::shared_ptr faceDOFManager = 
+        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
+
+    // create solution, rhs, and residual vectors
+    AMP::LinearAlgebra::Vector::shared_ptr manufacturedVec = AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable, true );
+    AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable,  true );
+    AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( faceDOFManager, outputVariable, true );
+    AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( faceDOFManager, outputVariable, true );
 
     // Get the problem parameters
     std::vector<double> box = subchannelMesh->getBoundingBox();
@@ -175,7 +165,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     const double h_scale = 1.0/AMP::Operator::Subchannel::scaleEnthalpy;    // Scale to change the input vector back to correct units
     const double P_scale = 1.0/AMP::Operator::Subchannel::scalePressure;    // Scale to change the input vector back to correct units
     for (int i=0; i<(int)face.size(); i++){
-        subchannelDOFManager->getDOFs( face->globalID(), dofs );
+        faceDOFManager->getDOFs( face->globalID(), dofs );
         std::vector<double> coord = face->centroid();
         double z = coord[2];
         double h = getSolutionEnthalpy( Q, H, m, hin, z );
@@ -185,23 +175,15 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
         ++face;
     }
 
-//=============================================================================
-// compute initial guess
-//=============================================================================
-
     // Compute the initial guess solution
     face = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     for (int i=0; i<(int)face.size(); i++){
-        subchannelDOFManager->getDOFs( face->globalID(), dofs );
+        faceDOFManager->getDOFs( face->globalID(), dofs );
         solVec->setValueByGlobalID(dofs[0], AMP::Operator::Subchannel::scaleEnthalpy*hin);
         solVec->setValueByGlobalID(dofs[1], AMP::Operator::Subchannel::scalePressure*Pout);
         ++face;
     }
     solVec->copyVector(manufacturedVec);
-
-//=============================================================================
-// solve
-//=============================================================================
 
     // get nonlinear solver database
     boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
@@ -239,8 +221,8 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
             new AMP::Solver::TrilinosMLSolver(PreconditionerParams));
         linearSolver->setPreconditioner(linearFlowPreconditioner);
     } else if ( preconditioner=="Banded" ) {
-        Preconditioner_db->putInteger("KL",2);
-        Preconditioner_db->putInteger("KU",2);
+        Preconditioner_db->putInteger("KL",3);
+        Preconditioner_db->putInteger("KU",3);
         boost::shared_ptr<AMP::Solver::BandedSolver> linearFlowPreconditioner(
             new AMP::Solver::BandedSolver(PreconditionerParams));
         linearSolver->setPreconditioner(linearFlowPreconditioner);
@@ -256,20 +238,17 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     nonlinearSolver->solve(rhsVec, solVec);
     nonlinearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
 
-//=============================================================================
-// examine solution
-//=============================================================================
-
     // Compute the flow temperature
-    AMP::Discretization::DOFManager::shared_ptr tempDOFManager = AMP::Discretization::simpleDOFManager::create( subchannelMesh, 
-        AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,1), AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(subchannelMesh,0), 1 );
+    int tempDOFsPerFace[3]={0,0,1};
+    AMP::Discretization::DOFManager::shared_ptr tempDOFManager = 
+        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, tempDOFsPerFace, 0 );
     AMP::LinearAlgebra::Variable::shared_ptr  tempVariable( new AMP::LinearAlgebra::Variable("Temperature") );
     AMP::LinearAlgebra::Vector::shared_ptr tempVec = AMP::LinearAlgebra::createVector( tempDOFManager , tempVariable  , true );
     face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
     std::vector<size_t> tdofs;
     bool pass = true;
     for (int i=0; i<(int)face.size(); i++){
-        subchannelDOFManager->getDOFs( face->globalID(), dofs );
+        faceDOFManager->getDOFs( face->globalID(), dofs );
         tempDOFManager->getDOFs( face->globalID(), tdofs );
         double h = h_scale*solVec->getValueByGlobalID(dofs[0]);
         double P = P_scale*solVec->getValueByGlobalID(dofs[1]);
@@ -296,7 +275,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     // Print the Inlet/Outlet properties
     std::cout << std::endl << std::endl;
     face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
-    subchannelDOFManager->getDOFs( face->globalID(), dofs );
+    faceDOFManager->getDOFs( face->globalID(), dofs );
     tempDOFManager->getDOFs( face->globalID(), tdofs );
     double TinSol  = tempVec->getValueByGlobalID(tdofs[0]);
     std::cout<< "Inlet Computed Enthalpy = " << h_scale*solVec->getValueByGlobalID(dofs[0]) << std::endl;
@@ -304,7 +283,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     std::cout<< "Inlet Computed Temperature = " << TinSol << std::endl;
     std::cout << std::endl;
     face = --((xyFaceMesh->getIterator(AMP::Mesh::Face,0)).end());
-    subchannelDOFManager->getDOFs( face->globalID(), dofs );
+    faceDOFManager->getDOFs( face->globalID(), dofs );
     tempDOFManager->getDOFs( face->globalID(), tdofs );
     double ToutSol = tempVec->getValueByGlobalID(tdofs[0]);
     std::cout<< "Outlet Computed Enthalpy = " << h_scale*solVec->getValueByGlobalID(dofs[0]) << std::endl;
@@ -333,7 +312,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     int N_print = std::max(1,(int)face.size()/10);
     for (int i=0; i<(int)face.size(); i++){
         if ( i%N_print==0 ) {
-            subchannelDOFManager->getDOFs( face->globalID(), dofs );
+            faceDOFManager->getDOFs( face->globalID(), dofs );
             std::cout<< "Computed Enthalpy["<<i<<"] = "<< h_scale*solVec->getValueByGlobalID(dofs[0]) << std::endl;
             std::cout<< "Solution Enthalpy["<<i<<"] = "<< h_scale*manufacturedVec->getValueByGlobalID(dofs[0]) << std::endl;
             std::cout<< "Computed Pressure["<<i<<"] = "<< P_scale*solVec->getValueByGlobalID(dofs[1]) << std::endl;

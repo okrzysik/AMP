@@ -67,11 +67,16 @@ void BandedSolver::reset( boost::shared_ptr<SolverStrategyParameters> parameters
         size_t row = i + row_begin;
         matrix->getRowByGlobalID( row, cols, values );
         for (size_t k=0; k<cols.size(); k++) {
+            if ( values[k]==0 )
+                continue;
             if ( cols[k]<col_begin || cols[k]>=col_end )
                 AMP_ERROR("Matrix has entries that are non-local");
             int j = cols[k] - col_begin;
-            if ( j<i-KL || j>i+KU )
-                AMP_ERROR("Banded entry is out of bounds");
+            if ( j<i-KL || j>i+KU || j<0 || j>=N ) {
+                char tmp[100];
+                sprintf(tmp,"Banded entry is out of bounds (%i,%i,%e)",i,j,values[k]);
+                AMP_ERROR(tmp);
+            }
             AB[KL+KU+i-j+j*K] = values[k];
         }
     }
