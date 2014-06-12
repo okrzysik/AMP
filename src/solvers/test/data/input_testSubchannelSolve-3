@@ -797,6 +797,18 @@ NonlinearSolver {
                 coarse_type="Amesos-KLU"
                 PDE_equations = 1
             }
+
+            // Preconditioner for the subchannel
+            SubchannelPreconditioner{
+                Type = "Banded"         // ML, Banded, None
+                print_info_level = 0
+                max_iterations = 3
+                max_levels = 10
+                max_error = 1.0e-15
+                coarse_type="Amesos-KLU"
+                PDE_equations = 2
+            }
+
         }
     }
 }

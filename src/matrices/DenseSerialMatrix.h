@@ -168,6 +168,15 @@ public:
       */
     virtual void setDiagonal( const Vector::shared_ptr &in );
 
+    /** \brief  Set the matrix to the identity matrix
+     */
+    virtual void setIdentity();
+
+    /** \brief  Set the non-zeros of the matrix to zero
+      * \details  May not deallocate space.
+      */
+    virtual void zero();
+
     /** \brief  Perform communication to ensure values in the
       * matrix are the same across cores.
       */

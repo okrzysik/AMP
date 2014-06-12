@@ -46,7 +46,7 @@ void BandedSolver::reset( boost::shared_ptr<SolverStrategyParameters> parameters
     rightDOF = matrix->getRightDOFManager();
     leftDOF = matrix->getLeftDOFManager();
     M = static_cast<int>(matrix->numLocalRows());
-    N = static_cast<int>(matrix->numGlobalColumns());
+    N = static_cast<int>(matrix->numLocalColumns());
 
     // Allocate space 
     delete [] AB;
@@ -78,6 +78,11 @@ void BandedSolver::reset( boost::shared_ptr<SolverStrategyParameters> parameters
                 AMP_ERROR(tmp);
             }
             AB[KL+KU+i-j+j*K] = values[k];
+        }
+        if ( AB[KL+KU+i*K]==0 ) {
+            char msg[100];
+            sprintf(msg,"Error diagonal entry M(%i,%i) = 0",i+1,i+1);
+            AMP_ERROR(msg);
         }
     }
     

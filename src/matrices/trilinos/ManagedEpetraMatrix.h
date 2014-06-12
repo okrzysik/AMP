@@ -42,22 +42,22 @@ protected:
     virtual void multiply ( shared_ptr other_op , shared_ptr &result );
 
 public:
-      /** \brief Constructor
-        * \param[in] p  The description of the matrix
-        */
-      ManagedEpetraMatrix( boost::shared_ptr<ManagedEpetraMatrixParameters> p );
+    /** \brief Constructor
+      * \param[in] p  The description of the matrix
+      */
+    ManagedEpetraMatrix( boost::shared_ptr<ManagedEpetraMatrixParameters> p );
 
-      /** \brief Constructor from Epetra_CrsMatrix
-        * \param[in]  m  Matrix to wrap
-        * \param[in]  dele  If true, this class deletes the matrix
-        */
-      ManagedEpetraMatrix ( Epetra_CrsMatrix *m , bool dele = false );
+    /** \brief Constructor from Epetra_CrsMatrix
+      * \param[in]  m  Matrix to wrap
+      * \param[in]  dele  If true, this class deletes the matrix
+      */
+    ManagedEpetraMatrix ( Epetra_CrsMatrix *m , bool dele = false );
 
-      /** \brief Destructor
-        */
-      virtual ~ManagedEpetraMatrix() {}
+    /** \brief Destructor
+      */
+    virtual ~ManagedEpetraMatrix() {}
 
-      virtual void  createValuesByGlobalID ( int   num_rows ,
+    virtual void  createValuesByGlobalID ( int   num_rows ,
                                           int   num_cols ,
                                           int  *rows ,
                                           int  *cols ,
@@ -65,45 +65,31 @@ public:
 
 
 
-      virtual void mult(const Vector::const_shared_ptr in, Vector::shared_ptr out);
-      virtual void multTranspose (const Vector::const_shared_ptr in, Vector::shared_ptr out);
-      virtual Vector::shared_ptr  extractDiagonal ( Vector::shared_ptr buf = Vector::shared_ptr() ) const;
-      virtual void  scale ( double alpha );
-      virtual void  axpy ( double alpha , const Matrix &rhs );
-      virtual size_t  numGlobalRows () const { return d_epetraMatrix->NumGlobalRows(); }
-      virtual size_t  numGlobalColumns () const { return d_epetraMatrix->NumGlobalCols(); }
-      virtual void  addValuesByGlobalID ( int   num_rows ,
-                                          int   num_cols ,
-                                          int  *rows ,
-                                          int  *cols ,
-                                          double  *values );
-      virtual void  setValuesByGlobalID ( int   num_rows ,
-                                          int   num_cols ,
-                                          int  *rows ,
-                                          int  *cols ,
-                                          double  *values );
+    virtual void mult(const Vector::const_shared_ptr in, Vector::shared_ptr out);
+    virtual void multTranspose (const Vector::const_shared_ptr in, Vector::shared_ptr out);
+    virtual Vector::shared_ptr  extractDiagonal ( Vector::shared_ptr buf = Vector::shared_ptr() ) const;
+    virtual void  scale ( double alpha );
+    virtual void  axpy ( double alpha , const Matrix &rhs );
+    virtual size_t  numGlobalRows () const { return d_epetraMatrix->NumGlobalRows(); }
+    virtual size_t  numGlobalColumns () const { return d_epetraMatrix->NumGlobalCols(); }
+    virtual void  addValuesByGlobalID ( int num_rows, int num_cols, int *rows, int *cols, double *values );
+    virtual void  setValuesByGlobalID ( int num_rows, int num_cols, int *rows, int *cols, double *values );
+    virtual void  getRowByGlobalID ( int row, std::vector<unsigned int> &cols, std::vector<double> &values ) const;
+    virtual void  getValuesByGlobalID ( int num_rows, int num_cols, int *rows, int *cols, double *values ) const;
 
-      virtual void  getRowByGlobalID ( int row ,
-                                       std::vector<unsigned int> &cols,
-                                       std::vector<double>       &values ) const;
+    virtual void setScalar ( double );
+    virtual void setDiagonal ( const Vector::shared_ptr &in );
 
-      virtual void  getValuesByGlobalID ( int   num_rows ,
-                                          int   num_cols ,
-                                          int  *rows ,
-                                          int  *cols ,
-                                          double  *values ) const;
-
-      virtual void setScalar ( double );
-      virtual void setDiagonal ( const Vector::shared_ptr &in );
-
-      virtual void makeConsistent ();
-      virtual double  L1Norm() const;
-      virtual Matrix::shared_ptr cloneMatrix () const;
-      virtual Vector::shared_ptr  getRightVector () const;
-      virtual Vector::shared_ptr  getLeftVector () const;
-      virtual Discretization::DOFManager::shared_ptr  getRightDOFManager () const;
-      virtual Discretization::DOFManager::shared_ptr  getLeftDOFManager () const;
-      virtual void fillComplete();
+    virtual void makeConsistent ();
+    virtual double  L1Norm() const;
+    virtual Matrix::shared_ptr cloneMatrix () const;
+    virtual Vector::shared_ptr  getRightVector () const;
+    virtual Vector::shared_ptr  getLeftVector () const;
+    virtual Discretization::DOFManager::shared_ptr  getRightDOFManager () const;
+    virtual Discretization::DOFManager::shared_ptr  getLeftDOFManager () const;
+    virtual void fillComplete();
+    virtual void setIdentity();
+    virtual void zero();
 };
 
 

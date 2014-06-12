@@ -155,6 +155,10 @@ void DenseSerialMatrix::setScalar( double alpha )
     for (size_t i=0; i<d_rows*d_cols; i++)
         d_M[i] = alpha;
 }
+void DenseSerialMatrix::zero( )
+{
+    memset(d_M,0,d_rows*d_cols*sizeof(double));
+}
 
 
 /********************************************************
@@ -255,6 +259,13 @@ void DenseSerialMatrix::setDiagonal( const Vector::shared_ptr &in )
     for (size_t i=0; i<d_rows; i++)
         d_M[i+i*d_rows] = x[i];
     delete [] x;
+}
+void DenseSerialMatrix::setIdentity()
+{
+    AMP_ASSERT(d_cols==d_rows);
+    memset(d_M,0,d_rows*d_cols*sizeof(double));
+    for (size_t i=0; i<d_rows; i++)
+        d_M[i+i*d_rows] = 1.0;
 }
 
 

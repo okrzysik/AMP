@@ -68,6 +68,7 @@
 #include "solvers/petsc/PetscSNESSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 #include "solvers/ColumnSolver.h"
+#include "solvers/BandedSolver.h"
 
 #include "ampmesh/StructuredMeshHelper.h"
 #include "discretization/structuredFaceDOFManager.h"
@@ -290,7 +291,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
                 ut->passes(exeName+": creation");
                 std::cout.flush();
                 nonlinearColumnOperator->append(subchannelNonlinearOperator);
-                linearColumnOperator->append(subchannelLinearOperator);
+                // Do not add the subchannel to the linear operator (we will add it later)
             }
         }
     }
@@ -485,20 +486,50 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;
         nonlinearSolver.reset(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
 
-        // create preconditioner
+        // create preconditioner (thermal domains)
         boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
         boost::shared_ptr<AMP::Database> columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
-        boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
+        boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(
+            new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
         columnPreconditionerParams->d_pOperator = linearColumnOperator;
         columnPreconditioner.reset(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
         boost::shared_ptr<AMP::Database> trilinosPreconditioner_db = columnPreconditioner_db->getDatabase("TrilinosPreconditioner");
         unsigned int N_preconditioners = linearColumnOperator->getNumberOfOperators();
         for(unsigned int id=0; id<N_preconditioners; id++) {
-            boost::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(new AMP::Solver::SolverStrategyParameters(trilinosPreconditioner_db));
+            boost::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(
+                new AMP::Solver::SolverStrategyParameters(trilinosPreconditioner_db) );
             trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator(id);
-            boost::shared_ptr<AMP::Solver::TrilinosMLSolver> trilinosPreconditioner(new AMP::Solver::TrilinosMLSolver(trilinosPreconditionerParams));
+            boost::shared_ptr<AMP::Solver::TrilinosMLSolver> trilinosPreconditioner(
+                new AMP::Solver::TrilinosMLSolver(trilinosPreconditionerParams) );
             columnPreconditioner->append(trilinosPreconditioner);
+        }
+
+        // Create the subchannel preconditioner
+        if ( subchannelLinearOperator != NULL ) {
+            boost::shared_ptr<AMP::Database> subchannelPreconditioner_db = 
+                columnPreconditioner_db->getDatabase("SubchannelPreconditioner");
+            AMP_ASSERT(subchannelPreconditioner_db!=NULL);
+            boost::shared_ptr<AMP::Solver::SolverStrategyParameters> subchannelPreconditionerParams(
+                new AMP::Solver::SolverStrategyParameters(subchannelPreconditioner_db) );
+            subchannelPreconditionerParams->d_pOperator = subchannelLinearOperator;
+            std::string preconditioner = subchannelPreconditioner_db->getString("Type");
+            if ( preconditioner=="ML" ) {
+                boost::shared_ptr<AMP::Solver::TrilinosMLSolver> subchannelPreconditioner(
+                    new AMP::Solver::TrilinosMLSolver(subchannelPreconditionerParams) );
+                linearColumnOperator->append(subchannelLinearOperator);
+                columnPreconditioner->append(subchannelPreconditioner);
+            } else if ( preconditioner=="Banded" ) {
+                subchannelPreconditioner_db->putInteger("KL",3);
+                subchannelPreconditioner_db->putInteger("KU",3);
+                boost::shared_ptr<AMP::Solver::BandedSolver> subchannelPreconditioner(
+                    new AMP::Solver::BandedSolver(subchannelPreconditionerParams) );
+                linearColumnOperator->append(subchannelLinearOperator);
+                columnPreconditioner->append(subchannelPreconditioner);
+            } else if ( preconditioner=="None" ) {
+            } else {
+                AMP_ERROR("Invalid preconditioner type");
+            }
         }
 
         // create linear solver

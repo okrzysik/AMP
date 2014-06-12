@@ -49,11 +49,6 @@ inline double Matrix::getValueByGlobalID ( int row , int col ) const
     return rtn;
 }
 
-inline void Matrix::zero () 
-{ 
-    setScalar(0.0); 
-}
-
 inline std::ostream &operator << ( std::ostream &out , const Matrix::shared_ptr p )
 {
     return operator << ( out , *p );
