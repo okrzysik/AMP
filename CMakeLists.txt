@@ -15,7 +15,6 @@ INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros.cmake" )
 INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake" )
 IF ( TPL_DIRECTORY )
     INCLUDE( ${TPL_DIRECTORY}/TPLs.cmake )
-    CONFIGURE_TPLs()
 ENDIF()
 
 
@@ -32,10 +31,19 @@ ENABLE_LANGUAGE(C)
 ENABLE_LANGUAGE(CXX)
 
 
+# Re-include TPLs.cmake to fix bug with CMAKE_COMPILE_MODE being reset
+IF ( TPL_DIRECTORY )
+    INCLUDE( ${TPL_DIRECTORY}/TPLs.cmake )
+    CONFIGURE_TPLs()
+ENDIF()
+
+
 # Call TPLsList to get the TPLs
 INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/TPLsList.cmake )
 
 
+MESSAGE("TPL Location : ${TPL_DIRECTORY}")
+MESSAGE("COMPILE_MODE : ${CMAKE_BUILD_TYPE} " )
 # Call PackageList to get the pacakages, configure the directories and compilers, etc
 INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/PackagesList.cmake )
 

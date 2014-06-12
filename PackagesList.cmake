@@ -135,7 +135,6 @@ IF ( USE_FORTRAN )
     ENABLE_LANGUAGE (Fortran)
 ENDIF()
 
-
 # Set the compile flags
 IF ( NOT ONLY_BUILD_DOCS )
     CONFIGURE_SYSTEM()
