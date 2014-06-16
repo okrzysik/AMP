@@ -171,6 +171,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
     for (size_t isub =0; isub<d_numSubchannels; ++isub) {
         if ( !d_ownSubChannel[isub] )
             continue;
+        PROFILE_START("apply-subchannel");
 
         // Get the iterator over the faces in the local subchannel
         AMP::Mesh::MeshIterator localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelFace[isub] );
@@ -238,24 +239,21 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
             // energy residual
             // ======================================================
             if (face == localSubchannelIt.begin()){
-              /**
-                evaluate first residual entry, corresponding to inlet enthalpy:
-                \f[ R_0 = h_{in} - h(T_{in},p_{1-})\f]
-                */
-              R_h = h_in - h_eval;
+                // evaluate first residual entry, corresponding to inlet enthalpy:
+                //    \f[ R_0 = h_{in} - h(T_{in},p_{1-})\f]
+                R_h = h_in - h_eval;
             } else {
-              // residual at face corresponds to cell below
-              dof_manager->getDOFs( face->globalID(), dofs );
-              double h_plus = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
-              double z_plus = (face->centroid())[2];
-              --face;
-              dof_manager->getDOFs( face->globalID(), dofs );
-              double h_minus = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
-              double z_minus = (face->centroid())[2];
-              ++face;
-              double dz = z_plus - z_minus;
-
-              R_h = mass/dz*(h_plus - h_minus - dh[j-2]);
+                // residual at face corresponds to cell below
+                dof_manager->getDOFs( face->globalID(), dofs );
+                double h_plus = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+                double z_plus = (face->centroid())[2];
+                --face;
+                dof_manager->getDOFs( face->globalID(), dofs );
+                double h_minus = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
+                double z_minus = (face->centroid())[2];
+                ++face;
+                double dz = z_plus - z_minus;
+                R_h = mass/dz*(h_plus - h_minus - dh[j-2]);
             }
 
             // ======================================================
@@ -268,132 +266,132 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
             std::vector<double> minusFaceCentroid = face->centroid();
             double z_minus = minusFaceCentroid[2]; // z-coordinate of lower face
             if (face == end_face - 1){
-              R_p = p_minus - d_Pout;
+                R_p = p_minus - d_Pout;
             } else {
-              ++face;
-              dof_manager->getDOFs( face->globalID(), dofs );
-              double h_plus  = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at upper face
-              double p_plus  = P_scale*inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at upper face
-              std::vector<double> plusFaceCentroid = face->centroid();
-              double z_plus = plusFaceCentroid[2]; // z-coordinate of lower face
-              --face;
+                ++face;
+                dof_manager->getDOFs( face->globalID(), dofs );
+                double h_plus  = h_scale*inputVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at upper face
+                double p_plus  = P_scale*inputVec->getValueByGlobalID(dofs[1]); // pressure evaluated at upper face
+                std::vector<double> plusFaceCentroid = face->centroid();
+                double z_plus = plusFaceCentroid[2]; // z-coordinate of lower face
+                --face;
 
-              double h_avg   = (1.0/2.0)*(h_minus + h_plus); // enthalpy evaluated at cell center
-              double p_avg   = (1.0/2.0)*(p_minus + p_plus);       // pressure evaluated at cell center
+                double h_avg   = (1.0/2.0)*(h_minus + h_plus); // enthalpy evaluated at cell center
+                double p_avg   = (1.0/2.0)*(p_minus + p_plus);       // pressure evaluated at cell center
 
-              // evaluate density at upper face
-              std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
-              volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
-              volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,p_plus)));
-              std::vector<double> volumeResult_plus(1);
-              d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus); 
-              double rho_plus = 1.0/volumeResult_plus[0];
+                // evaluate density at upper face
+                std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
+                volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
+                volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,p_plus)));
+                std::vector<double> volumeResult_plus(1);
+                d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus); 
+                double rho_plus = 1.0/volumeResult_plus[0];
 
-              // evaluate density at lower face
-              std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_minus;
-              volumeArgMap_minus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_minus)));
-              volumeArgMap_minus.insert(std::make_pair("pressure",new std::vector<double>(1,p_minus)));
-              std::vector<double> volumeResult_minus(1);
-              d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus); 
-              double rho_minus = 1.0/volumeResult_minus[0];
+                // evaluate density at lower face
+                std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_minus;
+                volumeArgMap_minus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_minus)));
+                volumeArgMap_minus.insert(std::make_pair("pressure",new std::vector<double>(1,p_minus)));
+                std::vector<double> volumeResult_minus(1);
+                d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus); 
+                double rho_minus = 1.0/volumeResult_minus[0];
 
-              // evaluate density at cell center
-              std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_avg;
-              volumeArgMap_avg.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
-              volumeArgMap_avg.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
-              std::vector<double> volumeResult_avg(1);
-              d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_avg,volumeArgMap_avg);
-              double rho_avg = 1.0/volumeResult_avg[0];
+                // evaluate density at cell center
+                std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_avg;
+                volumeArgMap_avg.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
+                volumeArgMap_avg.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
+                std::vector<double> volumeResult_avg(1);
+                d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_avg,volumeArgMap_avg);
+                double rho_avg = 1.0/volumeResult_avg[0];
 
-              double u_plus  = mass / (A*rho_plus);  // velocity evaluated at upper face
-              double u_minus = mass / (A*rho_minus); // velocity evaluated at lower face
-              double u_avg = (1.0/2.0)*(u_minus + u_plus); // velocity evaluated at cell center
+                double u_plus  = mass / (A*rho_plus);  // velocity evaluated at upper face
+                double u_minus = mass / (A*rho_minus); // velocity evaluated at lower face
+                double u_avg = (1.0/2.0)*(u_minus + u_plus); // velocity evaluated at cell center
 
-              // evaluate temperature at cell center
-              std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
-              temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
-              temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
-              std::vector<double> temperatureResult(1);
-              d_subchannelPhysicsModel->getProperty("Temperature",temperatureResult,temperatureArgMap);
-              double T_avg = temperatureResult[0];
+                // evaluate temperature at cell center
+                std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
+                temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
+                temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
+                std::vector<double> temperatureResult(1);
+                d_subchannelPhysicsModel->getProperty("Temperature",temperatureResult,temperatureArgMap);
+                double T_avg = temperatureResult[0];
 
-              // evaluate viscosity at cell center
-              std::map<std::string, boost::shared_ptr<std::vector<double> > > viscosityArgMap;
-              viscosityArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,T_avg)));
-              viscosityArgMap.insert(std::make_pair("density",new std::vector<double>(1,rho_avg)));
-              std::vector<double> viscosityResult(1);
-              d_subchannelPhysicsModel->getProperty("DynamicViscosity",viscosityResult,viscosityArgMap);
-              double visc = viscosityResult[0];
+                // evaluate viscosity at cell center
+                std::map<std::string, boost::shared_ptr<std::vector<double> > > viscosityArgMap;
+                viscosityArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,T_avg)));
+                viscosityArgMap.insert(std::make_pair("density",new std::vector<double>(1,rho_avg)));
+                std::vector<double> viscosityResult(1);
+                d_subchannelPhysicsModel->getProperty("DynamicViscosity",viscosityResult,viscosityArgMap);
+                double visc = viscosityResult[0];
 
-              // evaluate friction factor
-              double Re = rho_avg*u_avg*D/visc;
-              double fl = 64.0/Re; // laminar friction factor
-              double fric; // friction factor
-              if (d_frictionModel == "Constant") {
-                 fric = d_friction;
-              } else {
-                 double ft = 0.; // turbulent friction factor evaluated from computed Re
-                 double ft4000 = 0.; // turbulent friction factor evaluated from Re = 4000
-                 if (d_frictionModel == "Blasius") {
-                    ft = 0.316*std::pow(Re,-0.25);
-                    ft4000 = 0.316*std::pow(4000.0,-0.25);
-                 } else if (d_frictionModel == "Drew") {
-                    ft = 0.0056 + 0.5*std::pow(Re,-0.32);
-                    ft4000 = 0.0056 + 0.5*std::pow(4000.0,-0.32);
-                 } else if (d_frictionModel == "Filonenko") {
-                    ft = std::pow(1.82*std::log(Re)-1.64,-2);
-                    ft4000 = std::pow(1.82*std::log(4000.0)-1.64,-2);
-                 } else if (d_frictionModel == "Selander") {
-                    ft = 4.0*std::pow(3.8*std::log(10.0/Re+0.2*d_roughness/D),-2);
-                    ft4000 = 4.0*std::pow(3.8*std::log(10.0/4000.0+0.2*d_roughness/D),-2);
-                 } else {
-                    AMP_ERROR("Invalid choice for Friction_Model.");
-                 }
-                 if (Re < 4000.0)
-                    fric = std::max(fl,ft4000);
-                 else
-                    fric = ft;
-             } 
-
-              // compute form loss coefficient
-              double K = 0.0;
-              for (size_t igrid=0; igrid < d_lossGrid.size(); igrid++){
-                 double zMin_grid = d_zMinGrid[igrid];
-                 double zMax_grid = d_zMaxGrid[igrid];
-                 AMP_INSIST((zMax_grid > zMin_grid),"Grid spacer zMin > zMax");
-                 double K_grid = d_lossGrid[igrid];
-                 double K_perLength = K_grid/(zMax_grid - zMin_grid);
-                 if (zMax_grid >= z_plus){
-                    double overlap = 0.0;
-                    if (zMin_grid >= z_plus){
-                       overlap = 0.0;
-                    } else if (zMin_grid > z_minus && zMin_grid < z_plus){
-                       overlap = z_plus - zMin_grid;
-                    } else if (zMin_grid <= z_minus){
-                       overlap = z_plus - z_minus;
+                // evaluate friction factor
+                double Re = rho_avg*u_avg*D/visc;
+                double fl = 64.0/Re; // laminar friction factor
+                double fric; // friction factor
+                if (d_frictionModel == "Constant") {
+                    fric = d_friction;
+                } else {
+                    double ft = 0.; // turbulent friction factor evaluated from computed Re
+                    double ft4000 = 0.; // turbulent friction factor evaluated from Re = 4000
+                    if (d_frictionModel == "Blasius") {
+                        ft = 0.316*std::pow(Re,-0.25);
+                        ft4000 = 0.316*std::pow(4000.0,-0.25);
+                    } else if (d_frictionModel == "Drew") {
+                        ft = 0.0056 + 0.5*std::pow(Re,-0.32);
+                        ft4000 = 0.0056 + 0.5*std::pow(4000.0,-0.32);
+                    } else if (d_frictionModel == "Filonenko") {
+                        ft = std::pow(1.82*std::log(Re)-1.64,-2);
+                        ft4000 = std::pow(1.82*std::log(4000.0)-1.64,-2);
+                    } else if (d_frictionModel == "Selander") {
+                        ft = 4.0*std::pow(3.8*std::log(10.0/Re+0.2*d_roughness/D),-2);
+                        ft4000 = 4.0*std::pow(3.8*std::log(10.0/4000.0+0.2*d_roughness/D),-2);
                     } else {
-                       AMP_ERROR("Unexpected position comparison for zMin_grid");
+                        AMP_ERROR("Invalid choice for Friction_Model.");
                     }
-                    K += overlap*K_perLength;
-                 } else if (zMax_grid < z_plus && zMax_grid > z_minus){
-                    double overlap = 0.0;
-                    if (zMin_grid > z_minus){
-                       overlap = zMax_grid - zMin_grid;
-                    } else if (zMin_grid <= z_minus){
-                       overlap = zMax_grid - z_minus;
-                    } else {
-                       AMP_ERROR("Unexpected position comparison for zMin_grid");
-                    }
-                    K += overlap*K_perLength;
-                 }
-              }
+                    if (Re < 4000.0)
+                        fric = std::max(fl,ft4000);
+                    else
+                        fric = ft;
+                } 
 
-              // evaluate residual: axial momentum equation
-              double dz = d_z[j]-d_z[j-1];
-              R_p = mass*(u_plus - u_minus)
-                + g * A * dz * rho_avg * std::cos(d_theta)
-                + 0.5*(dz * fric/D + K)* std::abs(mass/(A*rho_avg))*mass
-                + A*(p_plus - p_minus);
+                // compute form loss coefficient
+                double K = 0.0;
+                for (size_t igrid=0; igrid < d_lossGrid.size(); igrid++){
+                    double zMin_grid = d_zMinGrid[igrid];
+                    double zMax_grid = d_zMaxGrid[igrid];
+                    AMP_INSIST((zMax_grid > zMin_grid),"Grid spacer zMin > zMax");
+                    double K_grid = d_lossGrid[igrid];
+                    double K_perLength = K_grid/(zMax_grid - zMin_grid);
+                    if (zMax_grid >= z_plus){
+                        double overlap = 0.0;
+                        if (zMin_grid >= z_plus){
+                           overlap = 0.0;
+                        } else if (zMin_grid > z_minus && zMin_grid < z_plus){
+                           overlap = z_plus - zMin_grid;
+                        } else if (zMin_grid <= z_minus){
+                           overlap = z_plus - z_minus;
+                        } else {
+                           AMP_ERROR("Unexpected position comparison for zMin_grid");
+                        }
+                        K += overlap*K_perLength;
+                    } else if (zMax_grid < z_plus && zMax_grid > z_minus){
+                        double overlap = 0.0;
+                        if (zMin_grid > z_minus){
+                           overlap = zMax_grid - zMin_grid;
+                        } else if (zMin_grid <= z_minus){
+                           overlap = zMax_grid - z_minus;
+                        } else {
+                           AMP_ERROR("Unexpected position comparison for zMin_grid");
+                        }
+                        K += overlap*K_perLength;
+                    }
+                }
+
+                // evaluate residual: axial momentum equation
+                double dz = d_z[j]-d_z[j-1];
+                R_p = mass*(u_plus - u_minus)
+                    + g * A * dz * rho_avg * std::cos(d_theta)
+                    + 0.5*(dz * fric/D + K)* std::abs(mass/(A*rho_avg))*mass
+                    + A*(p_plus - p_minus);
             }
 
             // put residual value in residual vector
@@ -402,6 +400,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
             outputVec->setValueByGlobalID(dofs[1], Subchannel::scalePressure*R_p);
             ++face;
         }
+        PROFILE_STOP("apply-subchannel");
     }//end of isub
     if(f.get() == NULL) {
         outputVec->scale(a);
@@ -419,20 +418,20 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
 boost::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator :: 
 getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u) 
 {
-  boost::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
+    boost::shared_ptr<AMP::InputDatabase> tmp_db(new AMP::InputDatabase("Dummy"));
 
-  tmp_db->putString("name","SubchannelTwoEqLinearOperator");
+    tmp_db->putString("name","SubchannelTwoEqLinearOperator");
 
-  boost::shared_ptr<SubchannelOperatorParameters> outParams(new SubchannelOperatorParameters(tmp_db));
-  outParams->d_db = d_params->d_db; 
-  outParams->d_dofMap = d_params->d_dofMap; 
-  outParams->d_frozenSolution =  subsetInputVector( u );
-  outParams->d_subchannelPhysicsModel =  d_subchannelPhysicsModel;
-  outParams->clad_x = d_params->clad_x;
-  outParams->clad_y = d_params->clad_y;
-  outParams->clad_d = d_params->clad_d;
+    boost::shared_ptr<SubchannelOperatorParameters> outParams(new SubchannelOperatorParameters(tmp_db));
+    outParams->d_db = d_params->d_db; 
+    outParams->d_frozenSolution = subsetInputVector( u );
+    outParams->d_initialize = true;
+    outParams->d_subchannelPhysicsModel =  d_subchannelPhysicsModel;
+    outParams->clad_x = d_params->clad_x;
+    outParams->clad_y = d_params->clad_y;
+    outParams->clad_d = d_params->clad_d;
 
-  return outParams;
+    return outParams;
 }
 
 
@@ -442,7 +441,7 @@ double SubchannelTwoEqNonlinearOperator::getDoubleParameter(
 {
     bool keyExists = (myparams->d_db)->keyExists(paramString);
     if (keyExists) {
-       return (myparams->d_db)->getDouble(paramString);
+        return (myparams->d_db)->getDouble(paramString);
     } else {
         AMP_WARNING("Key '" + paramString + "' was not provided. Using default value: " << defaultValue << "\n");
         return defaultValue;
@@ -455,10 +454,10 @@ int SubchannelTwoEqNonlinearOperator::getIntegerParameter(
 {
     bool keyExists = (myparams->d_db)->keyExists(paramString);
     if (keyExists) {
-       return (myparams->d_db)->getInteger(paramString);
+        return (myparams->d_db)->getInteger(paramString);
     } else {
-       AMP_WARNING("Key '" + paramString + "' was not provided. Using default value: " << defaultValue << "\n");
-       return defaultValue;
+        AMP_WARNING("Key '" + paramString + "' was not provided. Using default value: " << defaultValue << "\n");
+        return defaultValue;
     }
 }
 
@@ -468,10 +467,10 @@ std::string SubchannelTwoEqNonlinearOperator::getStringParameter(
 {
     bool keyExists = (myparams->d_db)->keyExists(paramString);
     if (keyExists) {
-       return (myparams->d_db)->getString(paramString);
+        return (myparams->d_db)->getString(paramString);
     } else {
-       AMP_WARNING("Key '" + paramString + "' was not provided. Using default value: " << defaultValue << "\n");
-       return defaultValue;
+        AMP_WARNING("Key '" + paramString + "' was not provided. Using default value: " << defaultValue << "\n");
+        return defaultValue;
     }
 }
 
@@ -486,57 +485,41 @@ int SubchannelTwoEqNonlinearOperator::getSubchannelIndex( double x, double y )
 }
 
 
+/********************************************************************
+* Subset the vectors                                                *
+* Since this operator only deals with local data,                   *
+*    we can subset for the local comm instead of the mesh           *
+* This will avoid communication and syncronization                  *
+********************************************************************/
 AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqNonlinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
 {
-  AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
-  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
-  if(d_Mesh.get() != NULL) {
-    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
     AMP::LinearAlgebra::Vector::shared_ptr commVec = vec->select(commSelector, var->getName());
     return commVec->subsetVectorForVariable(var);
-  } else {
-    return vec->subsetVectorForVariable(var);
-  }
 }
-
 AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelTwoEqNonlinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
 {
-  AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
-  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
-  if(d_Mesh.get() != NULL) {
-    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
     AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
     return commVec->constSubsetVectorForVariable(var);
-  } else {
-    return vec->constSubsetVectorForVariable(var);
-  }
 }
-
 AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqNonlinearOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
 {
-  AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
-  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
-  if(d_Mesh.get() != NULL) {
-    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
     AMP::LinearAlgebra::Vector::shared_ptr commVec = vec->select(commSelector, var->getName());
     return commVec->subsetVectorForVariable(var);
-  } else {
-    return vec->subsetVectorForVariable(var);
-  }
 }
-
 AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelTwoEqNonlinearOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
 {
-  AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
-  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
-  if(d_Mesh.get() != NULL) {
-    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
     AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
     return commVec->constSubsetVectorForVariable(var);
-  } else {
-    return vec->constSubsetVectorForVariable(var);
-  }
 }
+
 
 }
 }

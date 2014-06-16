@@ -13,8 +13,6 @@ BandedSolver::BandedSolver( boost::shared_ptr<SolverStrategyParameters> paramete
     SolverStrategy(parameters),
     AB(NULL), IPIV(NULL), KL(0), KU(0)
 {
-    KL = parameters->d_db->getInteger("KL");
-    KU = parameters->d_db->getInteger("KU");
     reset( parameters );
 }
 
@@ -30,27 +28,33 @@ void BandedSolver::reset( boost::shared_ptr<SolverStrategyParameters> parameters
 {
     PROFILE_START("reset");
 
-    // Get the properties from the database
+    // Reset the parameters
     if ( parameters != NULL ) {
-        KL = parameters->d_db->getIntegerWithDefault("KL",KL);
-        KU = parameters->d_db->getIntegerWithDefault("KU",KU);
+        rightDOF.reset();
+        leftDOF.reset();
+        delete [] AB;
+        delete [] IPIV;
+        AB = NULL;
+        IPIV = NULL;
+        KL = parameters->d_db->getInteger("KL");
+        KU = parameters->d_db->getInteger("KU");
     }
-    int K = 2*KL+KU+1;
 
-    // Get the matrix
+    // Get the linear operator
     boost::shared_ptr<AMP::Operator::LinearOperator> linear_op = 
         boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
     AMP_INSIST(linear_op.get()!=NULL, "ERROR: BandedSolver requires a linear operator");
+
+    // Get the matrix
     AMP::LinearAlgebra::Matrix::shared_ptr matrix = linear_op->getMatrix();
-    AMP_INSIST(linear_op.get()!=NULL, "ERROR: BandedSolver requires a matrix");
+    AMP_INSIST(matrix.get()!=NULL, "ERROR: BandedSolver requires a matrix");
     rightDOF = matrix->getRightDOFManager();
     leftDOF = matrix->getLeftDOFManager();
     M = static_cast<int>(matrix->numLocalRows());
     N = static_cast<int>(matrix->numLocalColumns());
 
     // Allocate space 
-    delete [] AB;
-    delete [] IPIV;
+    int K = 2*KL+KU+1;
     int N2 = std::max(N,M);
     AB = new double[K*N2];
     IPIV = new int[N2];
@@ -94,7 +98,6 @@ void BandedSolver::reset( boost::shared_ptr<SolverStrategyParameters> parameters
         sprintf(msg,"Error factoring matrix (%i)",error);
         AMP_ERROR(msg);
     }
-
 
     PROFILE_STOP("reset");
 }

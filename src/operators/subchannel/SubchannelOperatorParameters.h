@@ -15,8 +15,8 @@ class SubchannelOperatorParameters : public OperatorParameters {
 public :
 
     //! Constructor
-    SubchannelOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
-        : OperatorParameters(db) {  }
+    SubchannelOperatorParameters(const boost::shared_ptr<AMP::Database> &db): 
+        OperatorParameters(db), d_initialize(false) {  }
 
     //! Destructor
     virtual ~SubchannelOperatorParameters() { }
@@ -28,7 +28,7 @@ public :
 
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenSolution;
 
-    boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap;
+    bool d_initialize;  // Do we want to initialize the matrix
 
     // Clad properties
     std::vector<double> clad_x, clad_y, clad_d;

@@ -67,6 +67,7 @@
 #include "solvers/trilinos/nox/TrilinosNOXSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 #include "solvers/ColumnSolver.h"
+#include "solvers/BandedSolver.h"
 
 #include "ampmesh/StructuredMeshHelper.h"
 #include "discretization/structuredFaceDOFManager.h"
@@ -282,13 +283,22 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
                     AMP::Operator::OperatorBuilder::createOperator( adapter ,"SubchannelTwoEqLinearOperator",
                     global_input_db, subchannelNonlinearOperator->getSubchannelPhysicsModel() ) );
                 //subchannelLinearOperator.reset( new AMP::Operator::IdentityOperator( nonlinearOpParams ) );
+                int DOFsPerFace[3]={0,0,2};
+                AMP::Discretization::DOFManager::shared_ptr flowDOFManager = 
+                    AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
+                AMP::LinearAlgebra::Vector::shared_ptr subchannelFlow = 
+                    AMP::LinearAlgebra::createVector( flowDOFManager, flowVariable );
                 subchannelNonlinearOperator->setVector(subchannelFuelTemp); 
-                subchannelLinearOperator->reset(subchannelNonlinearOperator->getJacobianParameters(subchannelFuelTemp));
+                boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelLinearParams = 
+                    boost::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>( 
+                    subchannelNonlinearOperator->getJacobianParameters(subchannelFlow) );
+                subchannelLinearParams->d_initialize = false;
+                subchannelLinearOperator->reset(subchannelLinearParams);
                 // pass creation test
                 ut->passes(exeName+": creation");
                 std::cout.flush();
                 nonlinearColumnOperator->append(subchannelNonlinearOperator);
-                linearColumnOperator->append(subchannelLinearOperator);
+                // Do not add the subchannel to the linear operator (we will add it later)
             }
         }
     }
@@ -475,39 +485,69 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Solver::SolverStrategy> nonlinearSolver;
     { // Limit the scope so we can add an if else statement for Petsc vs NOX
 
-        // get nonlinear solver database
+        // get the solver databases
         boost::shared_ptr<AMP::Database> nonlinearSolver_db = global_input_db->getDatabase("NonlinearSolver"); 
         boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
 
-       // create nonlinear solver parameters
-       boost::shared_ptr<AMP::Solver::TrilinosNOXSolverParameters> nonlinearSolverParams(new AMP::Solver::TrilinosNOXSolverParameters(nonlinearSolver_db));
-       nonlinearSolverParams->d_comm = globalComm;
-       nonlinearSolverParams->d_pOperator = nonlinearCoupledOperator;
-       nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;
-       nonlinearSolverParams->d_pLinearOperator = linearColumnOperator;
-       boost::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(new AMP::Solver::TrilinosNOXSolver(nonlinearSolverParams));
+        // create preconditioner (thermal domains)
+        boost::shared_ptr<AMP::Database> columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
+        boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(
+            new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
+        columnPreconditionerParams->d_pOperator = linearColumnOperator;
+        columnPreconditioner.reset(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
-       // create preconditioner
-
-       boost::shared_ptr<AMP::Database> columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
-       boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
-       columnPreconditionerParams->d_pOperator = linearColumnOperator;
-       columnPreconditioner.reset(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
-
-      /*
         boost::shared_ptr<AMP::Database> trilinosPreconditioner_db = columnPreconditioner_db->getDatabase("TrilinosPreconditioner");
-       unsigned int N_preconditioners = linearColumnOperator->getNumberOfOperators();
-       //N_preconditioners--;    // Don't use a preconditioner for subchannel
-       for(unsigned int id=0; id<N_preconditioners; id++) {
-           boost::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(new AMP::Solver::SolverStrategyParameters(trilinosPreconditioner_db));
-           trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator(id);
-           boost::shared_ptr<AMP::Solver::TrilinosMLSolver> trilinosPreconditioner(new AMP::Solver::TrilinosMLSolver(trilinosPreconditionerParams));
-          columnPreconditioner->append(trilinosPreconditioner);
-       }
-      */
+        unsigned int N_preconditioners = linearColumnOperator->getNumberOfOperators();
+        for(unsigned int id=0; id<N_preconditioners; id++) {
+            boost::shared_ptr<AMP::Solver::SolverStrategyParameters> trilinosPreconditionerParams(
+                new AMP::Solver::SolverStrategyParameters(trilinosPreconditioner_db) );
+            trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator(id);
+            boost::shared_ptr<AMP::Solver::TrilinosMLSolver> trilinosPreconditioner(
+                new AMP::Solver::TrilinosMLSolver(trilinosPreconditionerParams) );
+            columnPreconditioner->append(trilinosPreconditioner);
+        }
 
-       // set preconditioner for the linear operator that preconditions the nonlinear problem.
-       //nonlinearSolver->getKrylovSolver()->setPreconditioner(columnPreconditioner);
+        // Create the subchannel preconditioner
+        if ( subchannelLinearOperator != NULL ) {
+            boost::shared_ptr<AMP::Database> subchannelPreconditioner_db = 
+                columnPreconditioner_db->getDatabase("SubchannelPreconditioner");
+            AMP_ASSERT(subchannelPreconditioner_db!=NULL);
+            boost::shared_ptr<AMP::Solver::SolverStrategyParameters> subchannelPreconditionerParams(
+                new AMP::Solver::SolverStrategyParameters(subchannelPreconditioner_db) );
+            subchannelPreconditionerParams->d_pOperator = subchannelLinearOperator;
+            std::string preconditioner = subchannelPreconditioner_db->getString("Type");
+            if ( preconditioner=="ML" ) {
+                boost::shared_ptr<AMP::Solver::TrilinosMLSolver> subchannelPreconditioner(
+                    new AMP::Solver::TrilinosMLSolver(subchannelPreconditionerParams) );
+                linearColumnOperator->append(subchannelLinearOperator);
+                columnPreconditioner->append(subchannelPreconditioner);
+            } else if ( preconditioner=="Banded" ) {
+                subchannelPreconditioner_db->putInteger("KL",3);
+                subchannelPreconditioner_db->putInteger("KU",3);
+                boost::shared_ptr<AMP::Solver::BandedSolver> subchannelPreconditioner(
+                    new AMP::Solver::BandedSolver(subchannelPreconditionerParams) );
+                linearColumnOperator->append(subchannelLinearOperator);
+                columnPreconditioner->append(subchannelPreconditioner);
+            } else if ( preconditioner=="None" ) {
+            } else {
+                AMP_ERROR("Invalid preconditioner type");
+            }
+        }
+
+        // create nonlinear solver parameters
+        boost::shared_ptr<AMP::Solver::TrilinosNOXSolverParameters> nonlinearSolverParams(new AMP::Solver::TrilinosNOXSolverParameters(nonlinearSolver_db));
+        nonlinearSolverParams->d_comm = globalComm;
+        nonlinearSolverParams->d_pOperator = nonlinearCoupledOperator;
+        nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;
+        nonlinearSolverParams->d_pLinearOperator = linearColumnOperator;
+        boost::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(new AMP::Solver::TrilinosNOXSolver(nonlinearSolverParams));
+
+        /*// create linear solver
+        boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = 
+            boost::dynamic_pointer_cast<AMP::Solver::PetscSNESSolver>(nonlinearSolver)->getKrylovSolver();
+        // set preconditioner
+        linearSolver->setPreconditioner(columnPreconditioner);*/
+        
     }
 
     // don't use zero initial guess
@@ -575,7 +615,11 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         subchannelPressure->setToScalar(AMP::Operator::Subchannel::scalePressure*Pout); 
 
         // FIRST APPLY CALL
-        subchannelLinearOperator->reset(subchannelNonlinearOperator->getJacobianParameters(flowSolVec));
+        boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelLinearParams = 
+            boost::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>( 
+            subchannelNonlinearOperator->getJacobianParameters(flowSolVec) );
+        subchannelLinearParams->d_initialize = false;
+        subchannelLinearOperator->reset(subchannelLinearParams);
         subchannelLinearOperator->apply( flowRhsVec, flowSolVec, flowResVec, 1.0, -1.0);
     }
 

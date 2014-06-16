@@ -28,10 +28,6 @@ SubchannelTwoEqLinearOperator::SubchannelTwoEqLinearOperator(const boost::shared
     AMP_INSIST( params->d_db->keyExists("OutputVariable"), "Key 'OutputVariable' does not exist");
     std::string outVar = params->d_db->getString("OutputVariable");
     d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
-
-    d_dofMap = (params->d_dofMap);
-
-    d_nullFrozenvector = true; 
     
     d_params = params;
     d_initialized = false;
@@ -39,7 +35,7 @@ SubchannelTwoEqLinearOperator::SubchannelTwoEqLinearOperator(const boost::shared
 
 
 // reset
-void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
+void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorParameters>& params )
 {
     PROFILE_START("reset");
     d_initialized = true;
@@ -146,22 +142,16 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
         }
     }
 
-    // get frozen solution
-    if ((myparams->d_frozenSolution.get()) != NULL){ 
-        d_frozenVec = myparams->d_frozenSolution;
-        d_nullFrozenvector = false; 
-    }
+    // check to ensure frozen vector isn't null
+    d_frozenVec = myparams->d_frozenSolution;
+    AMP_INSIST(d_frozenVec.get()!=NULL, "Null Frozen Vector inside Jacobian" );
+    boost::shared_ptr<AMP::Discretization::DOFManager> dofMap = myparams->d_frozenSolution->getDOFManager();
 
-    if( d_matrix.get() == NULL ) {
-        AMP::LinearAlgebra::Vector::shared_ptr inVec  = AMP::LinearAlgebra::createVector(d_dofMap, getInputVariable(),  true);
-        AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(d_dofMap, getOutputVariable(), true);
-        d_matrix = AMP::LinearAlgebra::createMatrix(inVec, outVec);
-    }
+    // Create the matrix
+    d_matrix = AMP::LinearAlgebra::createMatrix(d_frozenVec,d_frozenVec);
 
-    if ( d_nullFrozenvector ) {
+    if ( !myparams->d_initialize ) {
         // We are done with the reset
-        // Set the matrix to a diagonal matrix
-        d_matrix->zero();
         d_matrix->setIdentity();
         PROFILE_STOP2("reset");
         return;
@@ -172,11 +162,6 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
     const double g = 9.805;          // acceleration due to gravity [m/s2]
     const double h_scale = 1.0/Subchannel::scaleEnthalpy;                 // Scale to change the input vector back to correct units
     const double P_scale = 1.0/Subchannel::scalePressure;                 // Scale to change the input vector back to correct units
-
-
-    // check to ensure frozen vector isn't null
-    AMP_INSIST( (d_frozenVec.get() != NULL), "Null Frozen Vector inside Jacobian" );
-    AMP_ASSERT(*d_dofMap ==*(d_frozenVec->getDOFManager()));
     for (size_t isub =0; isub<d_numSubchannels; ++isub) {
         if ( !d_ownSubChannel[isub] )
             continue;
@@ -197,7 +182,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
         AMP::Mesh::MeshIterator face = localSubchannelIt.begin();
         AMP::Mesh::MeshIterator end_face = localSubchannelIt.end();
         for(size_t iface = 0; iface < localSubchannelIt.size(); ++iface, ++j){
-            d_dofMap->getDOFs( face->globalID(), dofs );
+            dofMap->getDOFs( face->globalID(), dofs );
             // ======================================================
             // energy residual
             // ======================================================
@@ -209,7 +194,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
                 // residual at face corresponds to cell below
                 double z_plus = (face->centroid())[2];
                 --face;
-                d_dofMap->getDOFs( face->globalID(), dofs_minus );
+                dofMap->getDOFs( face->globalID(), dofs_minus );
                 double z_minus = (face->centroid())[2];
                 ++face;
                 double dz = z_plus - z_minus;
@@ -222,17 +207,17 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
             // axial momentum residual
             // ======================================================
             // residual at face corresponds to cell above
-            d_dofMap->getDOFs( face->globalID(), dofs );
+            dofMap->getDOFs( face->globalID(), dofs );
             double h_minus = h_scale*d_frozenVec->getValueByGlobalID(dofs[0]); // enthalpy evaluated at lower face
             double p_minus = P_scale*d_frozenVec->getValueByGlobalID(dofs[1]); // pressure evaluated at lower face
             std::vector<double> minusFaceCentroid = face->centroid();
             double z_minus = minusFaceCentroid[2]; // z-coordinate of lower face
             if (face == end_face - 1){
-                d_dofMap->getDOFs( face->globalID(), dofs );
+                dofMap->getDOFs( face->globalID(), dofs );
                 d_matrix->setValueByGlobalID(dofs[1], dofs[1], 1.0 );
             } else {
                 ++face;
-                d_dofMap->getDOFs( face->globalID(), dofs_plus );
+                dofMap->getDOFs( face->globalID(), dofs_plus );
                 std::vector<double> plusFaceCentroid = face->centroid();
                 double z_plus = plusFaceCentroid[2]; // z-coordinate of lower face
                 --face;
@@ -593,57 +578,42 @@ double SubchannelTwoEqLinearOperator::dfdp_upper(double h_minus, double p_minus,
   return (f_pert - f)/pert;
 }
 
+
+/********************************************************************
+* Subset the vectors                                                *
+* Since this operator only deals with local data,                   *
+*    we can subset for the local comm instead of the mesh           *
+* This will avoid communication and syncronization                  *
+********************************************************************/
 AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqLinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
 {
-  AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
-  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
-  if(d_Mesh.get() != NULL) {
-    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
     AMP::LinearAlgebra::Vector::shared_ptr commVec = vec->select(commSelector, var->getName());
     return commVec->subsetVectorForVariable(var);
-  } else {
-    return vec->subsetVectorForVariable(var);
-  }
 }
-
 AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelTwoEqLinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
 {
-  AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
-  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
-  if(d_Mesh.get() != NULL) {
-    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
     AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
     return commVec->constSubsetVectorForVariable(var);
-  } else {
-    return vec->constSubsetVectorForVariable(var);
-  }
 }
-
 AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqLinearOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
 {
-  AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
-  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
-  if(d_Mesh.get() != NULL) {
-    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
     AMP::LinearAlgebra::Vector::shared_ptr commVec = vec->select(commSelector, var->getName());
     return commVec->subsetVectorForVariable(var);
-  } else {
-    return vec->subsetVectorForVariable(var);
-  }
 }
-
 AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelTwoEqLinearOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
 {
-  AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
-  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
-  if(d_Mesh.get() != NULL) {
-    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
     AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
     return commVec->constSubsetVectorForVariable(var);
-  } else {
-    return vec->constSubsetVectorForVariable(var);
-  }
 }
+
 
 }
 }

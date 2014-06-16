@@ -193,7 +193,11 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
  
     // put manufactured RHS into resVec
     nonlinearOperator->reset(subchannelOpParams);
-    linearOperator->reset(nonlinearOperator->getJacobianParameters(solVec));
+    boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelLinearParams = 
+        boost::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>( 
+        nonlinearOperator->getJacobianParameters(solVec) );
+    subchannelLinearParams->d_initialize = false;
+    linearOperator->reset(subchannelLinearParams);
     linearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
    
     // create nonlinear solver parameters

@@ -81,13 +81,11 @@ namespace Operator {
 
       boost::shared_ptr<SubchannelOperatorParameters> d_params;
 
-      boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap;
-
       boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
     private :
 
-      bool d_initialized, d_nullFrozenvector;
+      bool d_initialized;
 
       // Function used in reset to get double parameter or use default if missing
       double getDoubleParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, double);

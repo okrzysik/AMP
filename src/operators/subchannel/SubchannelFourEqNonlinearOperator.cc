@@ -1120,8 +1120,8 @@ getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u)
 
   boost::shared_ptr<SubchannelOperatorParameters> outParams(new SubchannelOperatorParameters(tmp_db));
   outParams->d_db = d_params->d_db; 
-  outParams->d_dofMap = d_params->d_dofMap; 
   outParams->d_frozenSolution =  subsetInputVector( u );
+  outParams->d_initialize = true;
   outParams->d_subchannelPhysicsModel =  d_subchannelPhysicsModel;
   outParams->clad_x = d_params->clad_x;
   outParams->clad_y = d_params->clad_y;

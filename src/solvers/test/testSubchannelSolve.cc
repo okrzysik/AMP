@@ -285,8 +285,17 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
                     AMP::Operator::OperatorBuilder::createOperator( adapter ,"SubchannelTwoEqLinearOperator",
                     global_input_db, subchannelNonlinearOperator->getSubchannelPhysicsModel() ) );
                 //subchannelLinearOperator.reset( new AMP::Operator::IdentityOperator( nonlinearOpParams ) );
+                int DOFsPerFace[3]={0,0,2};
+                AMP::Discretization::DOFManager::shared_ptr flowDOFManager = 
+                    AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
+                AMP::LinearAlgebra::Vector::shared_ptr subchannelFlow = 
+                    AMP::LinearAlgebra::createVector( flowDOFManager, flowVariable );
                 subchannelNonlinearOperator->setVector(subchannelFuelTemp); 
-                subchannelLinearOperator->reset(subchannelNonlinearOperator->getJacobianParameters(subchannelFuelTemp));
+                boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelLinearParams = 
+                    boost::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>( 
+                    subchannelNonlinearOperator->getJacobianParameters(subchannelFlow) );
+                subchannelLinearParams->d_initialize = false;
+                subchannelLinearOperator->reset(subchannelLinearParams);
                 // pass creation test
                 ut->passes(exeName+": creation");
                 std::cout.flush();
@@ -478,16 +487,11 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Solver::SolverStrategy> nonlinearSolver;
     { // Limit the scope so we can add an if else statement for Petsc vs NOX
 
-        // create nonlinear solver parameters
+        // get the solver databases
         boost::shared_ptr<AMP::Database> nonlinearSolver_db = global_input_db->getDatabase("NonlinearSolver"); 
-        boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
-        nonlinearSolverParams->d_comm = globalComm;
-        nonlinearSolverParams->d_pOperator = nonlinearCoupledOperator;
-        nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;
-        nonlinearSolver.reset(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
+        boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
 
         // create preconditioner (thermal domains)
-        boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
         boost::shared_ptr<AMP::Database> columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
         boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(
             new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
@@ -532,11 +536,19 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
             }
         }
 
+        // create nonlinear solver parameters
+        boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
+        nonlinearSolverParams->d_comm = globalComm;
+        nonlinearSolverParams->d_pOperator = nonlinearCoupledOperator;
+        nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;
+        nonlinearSolver.reset(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
+
         // create linear solver
         boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = 
             boost::dynamic_pointer_cast<AMP::Solver::PetscSNESSolver>(nonlinearSolver)->getKrylovSolver();
         // set preconditioner
         linearSolver->setPreconditioner(columnPreconditioner);
+        
     }
 
     // don't use zero initial guess
@@ -604,7 +616,11 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         subchannelPressure->setToScalar(AMP::Operator::Subchannel::scalePressure*Pout); 
 
         // FIRST APPLY CALL
-        subchannelLinearOperator->reset(subchannelNonlinearOperator->getJacobianParameters(flowSolVec));
+        boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelLinearParams = 
+            boost::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>( 
+            subchannelNonlinearOperator->getJacobianParameters(flowSolVec) );
+        subchannelLinearParams->d_initialize = false;
+        subchannelLinearOperator->reset(subchannelLinearParams);
         subchannelLinearOperator->apply( flowRhsVec, flowSolVec, flowResVec, 1.0, -1.0);
     }
 

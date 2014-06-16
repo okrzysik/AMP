@@ -350,13 +350,13 @@ OperatorBuilder::createSubchannelTwoEqLinearOperator( AMP::Mesh::Mesh::shared_pt
 
     AMP_INSIST(subchannel_db.get()!=NULL, "Error: The database object for SubchannelTwoEqLinearOperator is NULL");
 
-    boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelParams(new AMP::Operator::SubchannelOperatorParameters( subchannel_db ));
+    boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelParams(
+        new AMP::Operator::SubchannelOperatorParameters( subchannel_db ) );
     subchannelParams->d_Mesh = meshAdapter;
     subchannelParams->d_subchannelPhysicsModel = transportModel ;
 
-    int DOFsPerFace[3]={0,0,2};
-    subchannelParams->d_dofMap = AMP::Discretization::structuredFaceDOFManager::create(meshAdapter,DOFsPerFace,0);
-    boost::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> subchannelOp (new AMP::Operator::SubchannelTwoEqLinearOperator( subchannelParams ));
+    boost::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> subchannelOp(
+        new AMP::Operator::SubchannelTwoEqLinearOperator( subchannelParams ) );
 
     return subchannelOp;
 }
