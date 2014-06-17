@@ -40,6 +40,8 @@ TrilinosMLSolver :: ~TrilinosMLSolver()
         ML_Destroy(&d_ml);
         d_ml = NULL;
     }
+    d_mlSolver.reset();
+    d_matrix.reset();   // Need to keep a copy of the matrix alive until after the solver is destroyed
 }
 
 void TrilinosMLSolver :: initialize(boost::shared_ptr<SolverStrategyParameters> const parameters) 
@@ -132,11 +134,10 @@ void TrilinosMLSolver :: registerOperator(const boost::shared_ptr<AMP::Operator:
             boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
         AMP_INSIST(linearOperator.get() != NULL, "linearOperator cannot be NULL");
 
-        boost::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> pMatrix = boost::dynamic_pointer_cast<
-            AMP::LinearAlgebra::EpetraMatrix>(linearOperator->getMatrix());
-        AMP_INSIST(pMatrix.get()!=NULL, "pMatrix cannot be NULL");
+        d_matrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(linearOperator->getMatrix());
+        AMP_INSIST(d_matrix.get()!=NULL, "d_matrix cannot be NULL");
 
-        d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(pMatrix->getEpetra_CrsMatrix(),
+        d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(d_matrix->getEpetra_CrsMatrix(),
             d_MLParameterList, false));
     } else {
         boost::shared_ptr<AMP::Operator::TrilinosMatrixShellOperator> matShellOperator = boost::dynamic_pointer_cast<
@@ -180,6 +181,8 @@ void TrilinosMLSolver :: reset(boost::shared_ptr<SolverStrategyParameters> )
         ML_Destroy(&d_ml);
         d_ml = NULL;
     }
+    d_mlSolver.reset();
+    d_matrix.reset();   // Need to keep a copy of the matrix alive until after the solver is destroyed
     registerOperator(d_pOperator);
     PROFILE_STOP("reset");
 }
@@ -307,9 +310,8 @@ void TrilinosMLSolver :: reSolveWithLU(boost::shared_ptr<const AMP::LinearAlgebr
         boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
     AMP_INSIST(linearOperator.get() != NULL, "linearOperator cannot be NULL");
 
-    boost::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> pMatrix = 
-        boost::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(linearOperator->getMatrix());
-    AMP_INSIST(pMatrix.get() != NULL, "pMatrix cannot be NULL");
+    d_matrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(linearOperator->getMatrix());
+    AMP_INSIST(d_matrix.get() != NULL, "d_matrix cannot be NULL");
 
     Teuchos::ParameterList tmpMLParameterList;
     tmpMLParameterList.set("ML output", d_iDebugPrintInfoLevel);
@@ -317,13 +319,13 @@ void TrilinosMLSolver :: reSolveWithLU(boost::shared_ptr<const AMP::LinearAlgebr
     tmpMLParameterList.set("PDE equations", d_mlOptions->d_pdeEquations);
     tmpMLParameterList.set("coarse: type", d_mlOptions->d_coarseType);
 
-    d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(pMatrix->getEpetra_CrsMatrix(),
+    d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(d_matrix->getEpetra_CrsMatrix(),
         tmpMLParameterList, false));
     d_bCreationPhase = true;
 
     solve(f, u);
 
-    d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(pMatrix->getEpetra_CrsMatrix(),
+    d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(d_matrix->getEpetra_CrsMatrix(),
         d_MLParameterList, false));
     d_bCreationPhase = true;
 
