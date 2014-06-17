@@ -172,15 +172,18 @@ void TrilinosMLSolver :: resetOperator(const boost::shared_ptr<AMP::Operator::Op
 void TrilinosMLSolver :: reset(boost::shared_ptr<SolverStrategyParameters> ) 
 {
     PROFILE_START("reset");
-    if(!d_bCreationPhase) {
-        if(d_bUseEpetra) {
-          d_mlSolver->DestroyPreconditioner();
-        } else {
-          ML_Aggregate_Destroy(&d_mlAggregate);
-          d_mlAggregate = NULL;
-        }
+    if ( !d_bCreationPhase && d_bUseEpetra ) {
+        d_mlSolver->DestroyPreconditioner();
     }
-    d_bCreationPhase = true;
+    if ( d_mlAggregate ) {
+        ML_Aggregate_Destroy(&d_mlAggregate);
+        d_mlAggregate = NULL;
+    }
+    if ( d_ml ) {
+        ML_Destroy(&d_ml);
+        d_ml = NULL;
+    }
+    registerOperator(d_pOperator);
     PROFILE_STOP("reset");
 }
 
