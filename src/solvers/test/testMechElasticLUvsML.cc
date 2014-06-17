@@ -6,7 +6,7 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include "mesh_communication.h"
+#include "libmesh/mesh_communication.h"
 
 #include "mpi.h"
 

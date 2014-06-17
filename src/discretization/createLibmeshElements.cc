@@ -2,11 +2,11 @@
 #include "createLibmeshElements.h"
 #include "utils/Utilities.h"
 
-#include "face_quad4.h"
-#include "face_quad9.h"
-#include "cell_hex8.h"
-#include "cell_hex27.h"
-#include "node.h"
+#include "libmesh/face_quad4.h"
+#include "libmesh/face_quad9.h"
+#include "libmesh/cell_hex8.h"
+#include "libmesh/cell_hex27.h"
+#include "libmesh/node.h"
 
 
 namespace AMP {

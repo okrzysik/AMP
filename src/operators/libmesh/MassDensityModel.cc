@@ -229,7 +229,7 @@ void MassDensityModel::getDensityChemical(std::vector<double> & result,
 
 void MassDensityModel::getDensityManufactured(std::vector<double> & result,
         const std::vector<double>& T, const std::vector<double>& U,
-        const std::vector<double>& B, const std::vector<Point>& xyz)
+        const std::vector<double>& B, const std::vector<libMesh::Point>& xyz)
 {
 
     AMP_ASSERT((T.size() == U.size()) && (U.size() == result.size()) && (B.size() == U.size()));

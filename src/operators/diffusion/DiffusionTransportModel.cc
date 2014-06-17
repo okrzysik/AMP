@@ -17,7 +17,7 @@
 namespace AMP {
 namespace Operator {
 
-const std::vector<Point> DiffusionTransportModel::d_DummyCoords=std::vector<Point>(0);
+const std::vector<libMesh::Point> DiffusionTransportModel::d_DummyCoords=std::vector<libMesh::Point>(0);
 
 DiffusionTransportModel::DiffusionTransportModel(
         const boost::shared_ptr<DiffusionTransportModelParameters>& params):
@@ -130,7 +130,7 @@ void DiffusionTransportModel::bilogScale
 
 void DiffusionTransportModel::getTransport(std::vector<double> & result,
         std::map<std::string, boost::shared_ptr<std::vector<double> > >& args,
-        const std::vector<Point>&)
+        const std::vector<libMesh::Point>&)
 {
     PROFILE_START("getTransport",7);
     boost::shared_ptr<std::vector<double> >scaledp;

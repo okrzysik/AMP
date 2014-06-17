@@ -20,7 +20,7 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 
-#include "libmesh.h"
+#include "libmesh/libmesh.h"
 
 #include "operators/diffusion/FickSoretNonlinearFEOperator.h"
 #include "operators/diffusion/DiffusionLinearFEOperator.h"

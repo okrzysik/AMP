@@ -5,7 +5,7 @@
 
 /* AMP files */
 #include "ampmesh/Mesh.h"
-#include "elem.h"
+#include "libmesh/elem.h"
 
 namespace AMP {
 namespace Discretization {

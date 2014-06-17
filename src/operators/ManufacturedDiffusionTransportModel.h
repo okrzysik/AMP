@@ -36,7 +36,7 @@ namespace Operator {
         
         virtual void getTransport(std::vector<double> & result,
 				  std::map<std::string, boost::shared_ptr<std::vector<double> > >& args,
-                                  const std::vector<Point>& Coordinates)
+                                  const std::vector<libMesh::Point>& Coordinates)
         {
             AMP_ASSERT((Coordinates.size() == result.size()));
 	    std::map<std::string, boost::shared_ptr<std::vector<double> > >::iterator it = args.find("temperature");

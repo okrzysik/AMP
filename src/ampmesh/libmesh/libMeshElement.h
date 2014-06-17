@@ -9,7 +9,7 @@
 #include "ampmesh/libmesh/libMeshIterator.h"
 
 // libMesh includes
-#include "elem.h"
+#include "libmesh/elem.h"
 
 namespace AMP {
 namespace Mesh {

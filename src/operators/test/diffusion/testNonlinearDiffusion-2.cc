@@ -20,7 +20,7 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 
-#include "libmesh.h"
+#include "libmesh/libmesh.h"
 
 #include "operators/diffusion/DiffusionTransportModel.h"
 #include "operators/diffusion/DiffusionConstants.h"

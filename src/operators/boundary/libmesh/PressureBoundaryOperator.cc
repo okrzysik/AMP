@@ -6,16 +6,16 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "ampmesh/Mesh.h"
 
-#include "enum_order.h"
-#include "enum_fe_family.h"
-#include "enum_quadrature_type.h"
-#include "string_to_enum.h"
-#include "auto_ptr.h"
-#include "fe_type.h"
-#include "fe_base.h"
-#include "quadrature.h"
-#include "cell_hex8.h"
-#include "node.h"
+#include "libmesh/enum_order.h"
+#include "libmesh/enum_fe_family.h"
+#include "libmesh/enum_quadrature_type.h"
+#include "libmesh/string_to_enum.h"
+#include "libmesh/auto_ptr.h"
+#include "libmesh/fe_type.h"
+#include "libmesh/fe_base.h"
+#include "libmesh/quadrature.h"
+#include "libmesh/cell_hex8.h"
+#include "libmesh/node.h"
 
 namespace AMP {
   namespace Operator {

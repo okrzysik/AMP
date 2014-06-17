@@ -18,7 +18,7 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 
-#include "libmesh.h"
+#include "libmesh/libmesh.h"
 
 #include "operators/diffusion/DiffusionNonlinearElement.h"
 #include "operators/diffusion/DiffusionLinearElement.h"

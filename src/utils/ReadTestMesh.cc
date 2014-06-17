@@ -1,9 +1,9 @@
 #if defined(USE_AMP_MESH) && defined(USE_EXT_LIBMESH)
 #include "ReadTestMesh.h"
 
-#include "elem.h"
-#include "cell_hex8.h"
-#include "boundary_info.h"
+#include "libmesh/elem.h"
+#include "libmesh/cell_hex8.h"
+#include "libmesh/boundary_info.h"
 
 #include <cstdio>
 

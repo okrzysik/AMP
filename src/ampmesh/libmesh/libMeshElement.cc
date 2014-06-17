@@ -1,7 +1,7 @@
 #include "ampmesh/libmesh/libMeshElement.h"
 #include "utils/Utilities.h"
 
-#include "boundary_info.h"
+#include "libmesh/boundary_info.h"
 
 namespace AMP {
 namespace Mesh {

@@ -20,6 +20,7 @@ namespace Operator {
 //Constructor
 SubchannelTwoEqLinearOperator::SubchannelTwoEqLinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params)
     : LinearOperator (params)
+    , d_machinePrecision(1.0e-15)
 {
     AMP_INSIST( params->d_db->keyExists("InputVariable"), "Key 'InputVariable' does not exist");
     std::string inpVar = params->d_db->getString("InputVariable");

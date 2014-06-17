@@ -29,7 +29,7 @@ public:
      */
     virtual void getTensorTransport(std::vector< std::vector< boost::shared_ptr<std::vector<double> > > >& result,
     		 std::map<std::string, boost::shared_ptr<std::vector<double> > >& args,
-             const std::vector<Point>& Coordinates=d_DummyCoords);
+             const std::vector<libMesh::Point>& Coordinates=d_DummyCoords);
 
 private:
     std::string d_RadiusArgument;

@@ -25,7 +25,7 @@
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/trilinos/TrilinosMatrixShellOperator.h"
 #include "operators/ColumnOperator.h"
-#include "mesh_communication.h"
+#include "libmesh/mesh_communication.h"
 
 #include "vectors/trilinos/EpetraVector.h"
 

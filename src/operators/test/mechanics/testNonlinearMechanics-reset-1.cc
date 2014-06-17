@@ -18,7 +18,7 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 
-#include "libmesh.h"
+#include "libmesh/libmesh.h"
 
 #include "operators/mechanics/VonMisesElastoPlasticModel.h"
 #include "operators/mechanics/MechanicsNonlinearElement.h"

@@ -35,7 +35,7 @@
 #include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
-#include "mesh_communication.h"
+#include "libmesh/mesh_communication.h"
 #include "ampmesh/libmesh/initializeLibMesh.h"
 #include "ampmesh/libmesh/libMesh.h"
 #include "utils/ReadTestMesh.h"

@@ -83,7 +83,7 @@ SourcePhysicsModel::SourcePhysicsModel (const boost::shared_ptr<SourcePhysicsMod
 void SourcePhysicsModel::getConstitutiveProperty( std::vector<double>& result, 
     const std::vector< std::vector<double> > & InputVec, 
     const std::vector< std::vector<double> > & ,
-    const std::vector<Point> & Coordinates )
+    const std::vector<libMesh::Point> & Coordinates )
 {
     PROFILE_START("getConstitutiveProperty",6);
     if ( d_physicsName=="DiffusionTransportModel" ) {

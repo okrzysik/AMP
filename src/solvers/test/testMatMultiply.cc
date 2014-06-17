@@ -19,12 +19,12 @@
 #include "ampmesh/libmesh/libMesh.h"
 
 // libmesh headers
-#include "mesh.h"
-#include "mesh_data.h"
-#include "mesh_generation.h"
-#include "boundary_info.h"
-#include "cell_hex8.h"
-#include "mesh_communication.h"
+#include "libmesh/mesh.h"
+#include "libmesh/mesh_data.h"
+#include "libmesh/mesh_generation.h"
+#include "libmesh/boundary_info.h"
+#include "libmesh/cell_hex8.h"
+#include "libmesh/mesh_communication.h"
 
 
 void myTest(AMP::UnitTest *ut, std::string mesh_file) {

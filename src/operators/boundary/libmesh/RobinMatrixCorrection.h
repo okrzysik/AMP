@@ -10,16 +10,16 @@
 #include "discretization/createLibmeshElements.h"
 
 /* Libmesh files */
-#include "fe_type.h"
-#include "fe_base.h"
-#include "elem.h"
-#include "quadrature.h"
+#include "libmesh/fe_type.h"
+#include "libmesh/fe_base.h"
+#include "libmesh/elem.h"
+#include "libmesh/quadrature.h"
 
-#include "enum_order.h"
-#include "enum_fe_family.h"
-#include "enum_quadrature_type.h"
-#include "auto_ptr.h"
-#include "string_to_enum.h"
+#include "libmesh/enum_order.h"
+#include "libmesh/enum_fe_family.h"
+#include "libmesh/enum_quadrature_type.h"
+#include "libmesh/auto_ptr.h"
+#include "libmesh/string_to_enum.h"
 
 #include <string>
 

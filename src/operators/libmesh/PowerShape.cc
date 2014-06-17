@@ -17,13 +17,13 @@
 #include "PowerShape.h"
 #include "PowerShapeParameters.h"
 #include "vectors/Vector.h"
-#include "cell_hex8.h"
+#include "libmesh/cell_hex8.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 
 #include "utils/InputDatabase.h"
 #include "ampmesh/Mesh.h"
-#include "string_to_enum.h"
+#include "libmesh/string_to_enum.h"
 #include "VolumeIntegralOperator.h"
 
 /*Boost Files */

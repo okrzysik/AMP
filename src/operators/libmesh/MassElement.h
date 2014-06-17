@@ -10,10 +10,10 @@
 #include "operators/libmesh/MassDensityModel.h"
 
 /* Libmesh files */
-#include "fe_type.h"
-#include "fe_base.h"
-#include "quadrature_gauss.h"
-#include "elem.h"
+#include "libmesh/fe_type.h"
+#include "libmesh/fe_base.h"
+#include "libmesh/quadrature_gauss.h"
+#include "libmesh/elem.h"
 
 namespace AMP {
 namespace Operator {

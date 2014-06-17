@@ -10,7 +10,7 @@
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
 
-#include "libmesh.h"
+#include "libmesh/libmesh.h"
 
 #include "operators/ElementOperationFactory.h"
 
