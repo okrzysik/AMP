@@ -44,6 +44,7 @@ COPY_MESH_FILE ( clad_1x_2pellet.e )
 
 # Add matrix test
 ADD_AMP_TEST_1_2_4( test_Matrix )
+ADD_AMP_TEST_1_2_4( test_RectangularMatricesMultiplication )
 
 ADD_SUBDIRECTORY ( extra_tests )
 
