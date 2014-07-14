@@ -5,30 +5,30 @@
 
 #include "boost/shared_ptr.hpp"
 
-#include "mesh.h"
-#include "mesh_communication.h"
-#include "equation_systems.h"
-#include "fe.h"
-#include "quadrature_gauss.h"
-#include "dof_map.h"
-#include "linear_implicit_system.h"
-#include "elem.h"
-#include "boundary_info.h"
+#include "libmesh/mesh.h"
+#include "libmesh/mesh_communication.h"
+#include "libmesh/equation_systems.h"
+#include "libmesh/fe.h"
+#include "libmesh/quadrature_gauss.h"
+#include "libmesh/dof_map.h"
+#include "libmesh/linear_implicit_system.h"
+#include "libmesh/elem.h"
+#include "libmesh/boundary_info.h"
 
 
 #include "utils/ReadTestMesh.h"
 
 /* Libmesh files */
-#include "fe_type.h"
-#include "fe_base.h"
-#include "elem.h"
-#include "quadrature.h"
+#include "libmesh/fe_type.h"
+#include "libmesh/fe_base.h"
+#include "libmesh/elem.h"
+#include "libmesh/quadrature.h"
 
-#include "enum_order.h"
-#include "enum_fe_family.h"
-#include "enum_quadrature_type.h"
-#include "auto_ptr.h"
-#include "string_to_enum.h"
+#include "libmesh/enum_order.h"
+#include "libmesh/enum_fe_family.h"
+#include "libmesh/enum_quadrature_type.h"
+#include "libmesh/auto_ptr.h"
+#include "libmesh/string_to_enum.h"
 
 //Using mesh and function calls from testLibmeshFaceStuff.cc
 

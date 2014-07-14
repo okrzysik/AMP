@@ -11,10 +11,10 @@
 #include "MechanicsMaterialModel.h"
 
 /* Libmesh files */
-#include "elem.h"
-#include "fe_type.h"
-#include "fe_base.h"
-#include "quadrature.h"
+#include "libmesh/elem.h"
+#include "libmesh/fe_type.h"
+#include "libmesh/fe_base.h"
+#include "libmesh/quadrature.h"
 
 namespace AMP {
 namespace Operator {

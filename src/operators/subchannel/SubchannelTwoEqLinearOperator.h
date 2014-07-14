@@ -105,7 +105,10 @@ private :
 
     unsigned int d_solutionSize; // size of solution vector
 
-    static const double d_machinePrecision = 1.0e-15; // machine precision; used in perturbation for derivatives
+//    static const double d_machinePrecision = 1.0e-15; // machine precision; used in perturbation for derivatives
+    const double d_machinePrecision; // static const double is not allowed in iso c++11
+                                     // either remove static or use std::numeric_limits<T> 
+                                     // by qdi june 14
 
     // Derivative of enthalpy with respect to pressure
     double dhdp(double,double);

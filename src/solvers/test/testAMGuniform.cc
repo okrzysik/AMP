@@ -13,7 +13,7 @@
 #include "vectors/Vector.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
-#include "mesh_communication.h"
+#include "libmesh/mesh_communication.h"
 #include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/libmesh/initializeLibMesh.h"
 #include "utils/AMPManager.h"

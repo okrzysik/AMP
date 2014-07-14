@@ -181,12 +181,13 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
             for (int i=0; i<=(int)type; i++) {
                 const AMP::Mesh::GeomType type2 = (AMP::Mesh::GeomType) i;
                 std::vector<AMP::Mesh::MeshElement> pieces = element.getElements(type2);
-                if ( pieces.empty() )
+                std::vector<AMP::Mesh::MeshElementID> ids(pieces.size());
+                for (size_t j=0; j<pieces.size(); j++)
+                    ids[j] = pieces[j].globalID();
+                AMP::Utilities::unique(ids);
+                if ( pieces.empty() || pieces.size()!=ids.size() ) {
+                    pieces = element.getElements(type2);
                     elements_pass = false;
-                AMP::Utilities::quicksort(pieces);
-                for (size_t j=1; j<pieces.size(); j++) {
-                    if ( pieces[j]==pieces[j-1] )
-                        elements_pass = false;  // Repeated elements
                 }
             }
             std::vector< AMP::Mesh::MeshElement::shared_ptr > neighbors = element.getNeighbors();

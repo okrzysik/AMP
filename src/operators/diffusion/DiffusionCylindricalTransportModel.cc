@@ -12,7 +12,7 @@
 #include <map>
 
 /* Libmesh files */
-#include "point.h"
+#include "libmesh/point.h"
 
 namespace AMP {
 namespace Operator {
@@ -30,7 +30,7 @@ DiffusionCylindricalTransportModel::
 getTensorTransport(
 	std::vector< std::vector< boost::shared_ptr<std::vector<double> > > >& result,
 	std::map<std::string, boost::shared_ptr<std::vector<double> > >& args,
-    const std::vector<Point>& coordinates)
+    const std::vector<libMesh::Point>& coordinates)
 {
 	boost::shared_ptr<std::vector<double> >scaledp;
 	double lower,upper;

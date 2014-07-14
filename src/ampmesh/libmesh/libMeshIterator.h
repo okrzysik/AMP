@@ -5,7 +5,7 @@
 #include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/MeshIterator.h"
 
-#include "mesh.h"
+#include "libmesh/mesh.h"
 
 namespace AMP { 
 namespace Mesh {

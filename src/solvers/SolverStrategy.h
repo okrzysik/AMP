@@ -72,7 +72,7 @@ public:
      * need to provide an implementation of.
      * @param[in] initialGuess: shared pointer to the initial guess vector.
      */
-    virtual void setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) { }
+    virtual void setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess );
    
     /**
      * Specify stopping criteria.
@@ -119,7 +119,7 @@ public:
      *  of vectors, but no vector may be owned by multiple solvers.
      * \param vec   The multivector to append
      */
-    virtual void appendSolutionVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> vec ) {}
+    virtual void appendSolutionVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> vec );
 
     /**
      * \brief  Append the vectors of interest to the rhs vector
@@ -128,7 +128,7 @@ public:
      *  of vectors, but no vector may be owned by multiple solvers.
      * \param vec   The multivector to append
      */
-    virtual void appendRhsVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> vec ) {}
+    virtual void appendRhsVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> vec );
 
     /**
      * \brief  Registers a writer with the solver
@@ -148,8 +148,8 @@ public:
      * \param f  The global rhs multivector.
      * \param u  The global solution multivector.
      */
-    virtual void formRhs( double t,   AMP::LinearAlgebra::Vector::shared_ptr       f,
-                                    AMP::LinearAlgebra::Vector::const_shared_ptr u) {};
+    virtual void formRhs( double t,   AMP::LinearAlgebra::Vector::shared_ptr f,
+                                    AMP::LinearAlgebra::Vector::const_shared_ptr u);
 
     /**
      * Resets the operator registered with the solver with new parameters if necessary
@@ -163,7 +163,7 @@ public:
      * @param parameters
      *        SolverStrategyParameters object that is NULL by default
      */
-    virtual void reset(boost::shared_ptr<SolverStrategyParameters> parameters){ }
+    virtual void reset(boost::shared_ptr<SolverStrategyParameters> parameters);
 
     /**
      * Return a shared pointer to the operator registered with the solver.

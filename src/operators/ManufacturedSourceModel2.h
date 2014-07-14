@@ -33,7 +33,7 @@ class ManufacturedSourceModel2  : public ElementPhysicsModel
     
             
     virtual void getManufacturedSource2(std::vector<double> & result,
-                              const std::vector<double>& T,const std::vector<Point>& Coordinates)
+                              const std::vector<double>& T,const std::vector<libMesh::Point>& Coordinates)
     {
         AMP_ASSERT((Coordinates.size() == T.size())&&(T.size() == result.size()));
         

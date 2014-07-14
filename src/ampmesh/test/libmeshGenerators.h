@@ -7,11 +7,11 @@
 // LibMesh include
 #include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/libmesh/initializeLibMesh.h"
-#include "mesh.h"
-#include "mesh_data.h"
-#include "mesh_generation.h"
-#include "boundary_info.h"
-#include "cell_hex8.h"
+#include "libmesh/mesh.h"
+#include "libmesh/mesh_data.h"
+#include "libmesh/mesh_generation.h"
+#include "libmesh/boundary_info.h"
+#include "libmesh/cell_hex8.h"
 
 namespace AMP {
 namespace unit_test {

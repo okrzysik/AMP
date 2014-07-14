@@ -5,8 +5,8 @@
 #include "ampmesh/libmesh/initializeLibMesh.h"
 
 // LibMesh include
-#include "mesh.h"
-#include "mesh_data.h"
+#include "libmesh/mesh.h"
+#include "libmesh/mesh_data.h"
 
 
 namespace AMP {

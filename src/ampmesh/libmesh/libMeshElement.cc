@@ -1,7 +1,7 @@
 #include "ampmesh/libmesh/libMeshElement.h"
 #include "utils/Utilities.h"
 
-#include "boundary_info.h"
+#include "libmesh/boundary_info.h"
 
 namespace AMP {
 namespace Mesh {
@@ -11,8 +11,7 @@ namespace Mesh {
 static unsigned int libMeshElementTypeID = TYPE_HASH(libMeshElement);
 
 // Functions to create new ids by mixing existing ids
-static unsigned int mix2ids(unsigned int, unsigned int);
-static unsigned int mix3ids(unsigned int, unsigned int, unsigned int);
+static unsigned int generate_id( const std::vector<unsigned int>& ids );
 
 
 /********************************************************
@@ -180,7 +179,7 @@ std::vector<MeshElement> libMeshElement::getElements(const GeomType type) const
             // We need to generate a vaild id and owning processor
             unsigned int n_node_min = ((unsigned int)type) + 1;
             AMP_ASSERT(element->n_nodes()>=n_node_min);
-            std::vector< ::Node* > nodes(element->n_nodes());
+            std::vector< ::Node*> nodes(element->n_nodes());
             std::vector<unsigned int> node_ids(element->n_nodes());
             for (size_t j=0; j<nodes.size(); j++) {
                 nodes[j] = element->get_node(j);
@@ -188,12 +187,8 @@ std::vector<MeshElement> libMeshElement::getElements(const GeomType type) const
             }
             AMP::Utilities::quicksort(node_ids,nodes);
             element->processor_id() = nodes[0]->processor_id();
-            if ( n_node_min==2 ) 
-                element->set_id() = mix2ids(node_ids[0],node_ids[1]);
-            else if ( n_node_min==3 ) 
-                element->set_id() = mix3ids(node_ids[0],node_ids[1],node_ids[2]);
-            else
-                AMP_ERROR("Internal error");
+            unsigned int id = generate_id(node_ids);
+            element->set_id() = id;
             // Create the libMeshElement
             children[i] = libMeshElement( d_dim, type, element, d_rank, d_meshID, d_mesh );            
         }
@@ -355,26 +350,34 @@ bool libMeshElement::isInBlock(int id) const
 
 
 /****************************************************************
-* Functions to mix ids                                          *
+* Functions to generate a new id based on the nodes             *
+* Note: this function requires the node ids to be sorted        *
 ****************************************************************/
-unsigned int mix2ids(unsigned int a, unsigned int b)
+static unsigned int fliplr( unsigned int x )
 {
-    return mix3ids(a,b,0);
-    //return (a<<15) + b;
+    unsigned int y = 0;
+    unsigned int mask1 = 1;
+    unsigned int mask2 = mask1 << (sizeof(unsigned int)*8-1);
+    for (size_t i=0; i<sizeof(unsigned int)*8; i++) {
+        y += (x&mask1) ? mask2:0;
+        mask1<<=1;
+        mask2>>=1;
+    }
+    return y;
 }
-unsigned int mix3ids(unsigned int a, unsigned int b, unsigned int c)
+unsigned int generate_id( const std::vector<unsigned int>& ids )
 {
-    //return (a<<22) + (b<<11)  + c;
-    a=a-b;  a=a-c;  a=a^(c>>13);
-    b=b-c;  b=b-a;  b=b^(a<<8);
-    c=c-a;  c=c-b;  c=c^(b>>13);
-    a=a-b;  a=a-c;  a=a^(c>>12);
-    b=b-c;  b=b-a;  b=b^(a<<16);
-    c=c-a;  c=c-b;  c=c^(b>>5);
-    a=a-b;  a=a-c;  a=a^(c>>3);
-    b=b-c;  b=b-a;  b=b^(a<<10);
-    c=c-a;  c=c-b;  c=c^(b>>15);
-    return c;
+    unsigned int id0 = ids[0];
+    unsigned int id_diff[100];
+    for (size_t i=1; i<ids.size(); i++)
+        id_diff[i-1] = ids[i]-ids[i-1];
+    unsigned int tmp = 0;
+    for (size_t i=0; i<ids.size()-1; i++) {
+        unsigned int shift = (7*i)%13;
+        tmp = tmp ^ (id_diff[i]<<shift);
+    }
+    unsigned int id = id0 ^ (fliplr(tmp)>>1);
+    return id;
 }
 
 

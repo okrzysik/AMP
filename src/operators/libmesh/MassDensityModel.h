@@ -8,7 +8,7 @@
 #include "materials/Material.h"
 #include "materials/Property.h"
 #include "utils/ManufacturedSolution.h"
-#include "point.h"
+#include "libmesh/point.h"
 
 namespace AMP {
 namespace Operator {
@@ -50,7 +50,7 @@ public:
 
     virtual void getDensityManufactured(std::vector<double> & result,
             const std::vector<double>& T, const std::vector<double>& U,
-            const std::vector<double>& B, const std::vector<Point>& xyz);
+            const std::vector<double>& B, const std::vector<libMesh::Point>& xyz);
 
     //For LinearOperator's Reset/Init
 

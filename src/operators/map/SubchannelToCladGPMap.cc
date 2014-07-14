@@ -3,19 +3,19 @@
 #include "utils/ProfilerApp.h"
 
 /* Libmesh files */
-#include "fe_type.h"
-#include "fe_base.h"
-#include "elem.h"
-#include "quadrature.h"
+#include "libmesh/fe_type.h"
+#include "libmesh/fe_base.h"
+#include "libmesh/elem.h"
+#include "libmesh/quadrature.h"
 
-#include "enum_order.h"
-#include "enum_fe_family.h"
-#include "enum_quadrature_type.h"
-#include "auto_ptr.h"
-#include "string_to_enum.h"
+#include "libmesh/enum_order.h"
+#include "libmesh/enum_fe_family.h"
+#include "libmesh/enum_quadrature_type.h"
+#include "libmesh/auto_ptr.h"
+#include "libmesh/string_to_enum.h"
 
-#include "face_quad4.h"
-#include "node.h"
+#include "libmesh/face_quad4.h"
+#include "libmesh/node.h"
 
 
 namespace AMP {
@@ -72,7 +72,7 @@ bool SubchannelToCladGPMap::validMapType ( const std::string &t )
 /************************************************************************
 *  Fill the return vector for the given subchannel                      *
 ************************************************************************/    
-void SubchannelToCladGPMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_ptr vec, double range[4], 
+void SubchannelToCladGPMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_ptr vec, double[4], 
     AMP::Mesh::Mesh::shared_ptr mesh, const std::vector<AMP::Mesh::MeshElementID>& ids, 
     const std::vector<double>& z, const std::vector<double>& f )
 {
@@ -95,7 +95,8 @@ void SubchannelToCladGPMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared
 /************************************************************************
 *  Function to build the z-coordinates of the gauss points              *
 ************************************************************************/
-std::vector<SubchannelToCladGPMap::gaussPointZCoord> SubchannelToCladGPMap::getGaussPoints( AMP::Mesh::Mesh::shared_ptr mesh, 
+std::vector<SubchannelToCladGPMap::gaussPointZCoord> SubchannelToCladGPMap::getGaussPoints( 
+    AMP::Mesh::Mesh::shared_ptr, 
     const std::vector<AMP::Mesh::MeshElementID>& ids )
 {
     std::vector<SubchannelToCladGPMap::gaussPointZCoord> z_pos;

@@ -8,7 +8,7 @@
 #include "materials/Material.h"
 #include "operators/ElementPhysicsModelParameters.h"
 
-#include "point.h"
+#include "libmesh/point.h"
 
 
 namespace AMP {
@@ -43,7 +43,7 @@ public :
     void getConstitutiveProperty( std::vector<double> & result, 
                                   const std::vector< std::vector<double> > & InputVec, 
                                   const std::vector< std::vector<double> > & ,
-                                  const std::vector<Point> & Coordinates  );
+                                  const std::vector<libMesh::Point> & Coordinates  );
 
 protected :
 

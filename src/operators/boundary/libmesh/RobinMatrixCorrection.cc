@@ -6,14 +6,14 @@
 
 /* Libmesh files */
 
-#include "enum_order.h"
-#include "enum_fe_family.h"
-#include "enum_quadrature_type.h"
-#include "auto_ptr.h"
-#include "string_to_enum.h"
+#include "libmesh/enum_order.h"
+#include "libmesh/enum_fe_family.h"
+#include "libmesh/enum_quadrature_type.h"
+#include "libmesh/auto_ptr.h"
+#include "libmesh/string_to_enum.h"
 
-#include "face_quad4.h"
-#include "node.h"
+#include "libmesh/face_quad4.h"
+#include "libmesh/node.h"
 
 #include <string>
 

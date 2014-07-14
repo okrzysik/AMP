@@ -7,7 +7,7 @@
 #include "operators/libmesh/LinearFEOperatorParameters.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
-#include "elem.h"
+#include "libmesh/elem.h"
 
 namespace AMP {
 namespace Operator {

@@ -20,7 +20,7 @@
 
 #include "discretization/simpleDOF_Manager.h"
 
-#include "mesh_generation.h"
+#include "libmesh/mesh_generation.h"
 
 #include "operators/mechanics/IsotropicElasticModel.h"
 #include "operators/mechanics/MechanicsLinearElement.h"

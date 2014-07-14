@@ -2,8 +2,8 @@
 #include "NonlinearFEOperator.h"
 #include "utils/Utilities.h"
 #include "utils/ProfilerApp.h"
-#include "cell_hex8.h"
-#include "node.h"
+#include "libmesh/cell_hex8.h"
+#include "libmesh/node.h"
 
 namespace AMP {
 namespace Operator {

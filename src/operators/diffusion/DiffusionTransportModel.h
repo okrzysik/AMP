@@ -13,7 +13,7 @@
 #include "operators/diffusion/DiffusionConstants.h"
 
 /* Libmesh files */
-#include "point.h"
+#include "libmesh/point.h"
 
 namespace AMP {
 namespace Operator {
@@ -106,7 +106,7 @@ class DiffusionTransportModel  : public ElementPhysicsModel
 
     virtual void getTransport(std::vector<double> & result,
              std::map<std::string, boost::shared_ptr<std::vector<double> > >& args,
-             const std::vector<Point>& Coordinates=d_DummyCoords);
+             const std::vector<libMesh::Point>& Coordinates=d_DummyCoords);
 
     AMP::Materials::Material::shared_ptr getMaterial(){return d_material;}
     AMP::Materials::PropertyPtr getProperty(){return d_property;}
@@ -171,7 +171,7 @@ protected: // used to be private
 
     std::vector<double> d_MaterialParameters;
 
-    static const std::vector<Point> d_DummyCoords;
+    static const std::vector<libMesh::Point> d_DummyCoords;
 
     bool d_IsTensor;
 };

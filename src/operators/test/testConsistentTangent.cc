@@ -18,8 +18,8 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 
-#include "libmesh.h"
-#include "mesh_communication.h"
+#include "libmesh/libmesh.h"
+#include "libmesh/mesh_communication.h"
 
 #include "operators/OperatorBuilder.h"
 #include "operators/mechanics/MechanicsLinearFEOperator.h"

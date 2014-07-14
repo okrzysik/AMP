@@ -11,10 +11,10 @@
 #include "operators/diffusion/DiffusionTransportTensorModel.h"
 
 /* Libmesh files */
-#include "fe_type.h"
-#include "fe_base.h"
-#include "elem.h"
-#include "quadrature_gauss.h"
+#include "libmesh/fe_type.h"
+#include "libmesh/fe_base.h"
+#include "libmesh/elem.h"
+#include "libmesh/quadrature_gauss.h"
 
 namespace AMP {
 namespace Operator {

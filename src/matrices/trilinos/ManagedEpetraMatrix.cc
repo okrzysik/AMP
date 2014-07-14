@@ -134,8 +134,8 @@ void ManagedEpetraMatrix::multiply ( shared_ptr other_op, shared_ptr &result )
 ********************************************************/
 void ManagedEpetraMatrix::mult ( Vector::const_shared_ptr in, Vector::shared_ptr out )
 {
-    AMP_ASSERT ( in->getGlobalSize() == numGlobalRows() );
-    AMP_ASSERT ( out->getGlobalSize() == numGlobalColumns() );
+    AMP_ASSERT ( in->getGlobalSize() == numGlobalColumns() );
+    AMP_ASSERT ( out->getGlobalSize() == numGlobalRows() );
     boost::shared_ptr<const EpetraVector>  in_view = boost::dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
     boost::shared_ptr<EpetraVector>  out_view = boost::dynamic_pointer_cast<EpetraVector>( EpetraVector::view( out ) );
     const Epetra_Vector &in_vec = in_view->getEpetra_Vector();

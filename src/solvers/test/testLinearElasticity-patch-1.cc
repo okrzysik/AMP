@@ -8,12 +8,12 @@
 #include <fstream>
 
 /* libMesh files */
-#include "mesh.h"
-#include "mesh_generation.h"
-#include "mesh_communication.h"
-#include "elem.h"
-#include "cell_hex8.h"
-#include "boundary_info.h"
+#include "libmesh/mesh.h"
+#include "libmesh/mesh_generation.h"
+#include "libmesh/mesh_communication.h"
+#include "libmesh/elem.h"
+#include "libmesh/cell_hex8.h"
+#include "libmesh/boundary_info.h"
 
 /* AMP files */
 #include "utils/Database.h"

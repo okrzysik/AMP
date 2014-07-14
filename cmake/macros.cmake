@@ -256,7 +256,7 @@ MACRO ( SET_WARNINGS )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wno-reorder " )
     # Disable warnings that occur frequently, but should be fixed eventually
     SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -Wno-unused-variable" )
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wno-unused-variable" )
+    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wno-unused-variable -Wno-unknown-pragmas" )
     # Add gcc specific flags
     SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS}" )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}" )
@@ -283,7 +283,7 @@ MACRO ( SET_WARNINGS )
     #         This occurs commonly for error flags and internal variables that are helpful for debugging
     #    654: overloaded virtual function "" is only partially overridden in class " "
     #    869: parameter "xxx" was never referenced
-    #         I believe this is bad practice and should be fixed, but it may require a broader discussion (it is built into the design of Operator)
+    #         I believe this is bad practice and should be fixed but it generates a lot of warnings
     #    981: operands are evaluated in unspecified order
     #         This can occur when an implicit conversion take place in a function call 
     #   1011: missing return statement at end of non-void function

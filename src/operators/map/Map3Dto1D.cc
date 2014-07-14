@@ -5,19 +5,19 @@
 #include "discretization/DOF_Manager.h"
 
 /* Libmesh files */
-#include "fe_type.h"
-#include "fe_base.h"
-#include "elem.h"
-#include "quadrature.h"
+#include "libmesh/fe_type.h"
+#include "libmesh/fe_base.h"
+#include "libmesh/elem.h"
+#include "libmesh/quadrature.h"
 
-#include "enum_order.h"
-#include "enum_fe_family.h"
-#include "enum_quadrature_type.h"
-#include "auto_ptr.h"
-#include "string_to_enum.h"
+#include "libmesh/enum_order.h"
+#include "libmesh/enum_fe_family.h"
+#include "libmesh/enum_quadrature_type.h"
+#include "libmesh/auto_ptr.h"
+#include "libmesh/string_to_enum.h"
 
-#include "face_quad4.h"
-#include "node.h"
+#include "libmesh/face_quad4.h"
+#include "libmesh/node.h"
 
 
 namespace AMP {
@@ -64,7 +64,8 @@ void Map3Dto1D :: reset(const boost::shared_ptr<OperatorParameters>& params)
 } 
 
 
-void Map3Dto1D :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
+void Map3Dto1D :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr, 
+    AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
 {
   AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
@@ -78,8 +79,9 @@ void Map3Dto1D :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::Line
 
 }
 
-void Map3Dto1D :: apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-    AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
+void Map3Dto1D :: apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr, 
+    AMP::LinearAlgebra::Vector::const_shared_ptr u,
+    AMP::LinearAlgebra::Vector::shared_ptr, const double, const double )
 {
     const unsigned int numPoints = outputVec->getLocalSize();
     std::vector<double> mapValues(numPoints,0);
@@ -204,8 +206,9 @@ void Map3Dto1D :: apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP
 }
 
 
-void Map3Dto1D :: apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-    AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
+void Map3Dto1D :: apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr, 
+    AMP::LinearAlgebra::Vector::const_shared_ptr u,
+    AMP::LinearAlgebra::Vector::shared_ptr, const double, const double )
 { 
 
     const unsigned int numPoints = outputVec->getLocalSize();

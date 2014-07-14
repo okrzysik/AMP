@@ -21,12 +21,12 @@
 
 
 // LibMesh include
-#include "mesh.h"
-#include "mesh_data.h"
-#include "mesh_generation.h"
-#include "boundary_info.h"
-#include "parallel.h"
-#include "exodusII_io_helper.h"
+#include "libmesh/mesh.h"
+#include "libmesh/mesh_data.h"
+#include "libmesh/mesh_generation.h"
+#include "libmesh/boundary_info.h"
+#include "libmesh/parallel.h"
+#include "libmesh/exodusII_io_helper.h"
 
 namespace AMP {
 namespace Mesh {
@@ -507,11 +507,12 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         // Read an existing mesh
         std::string fname = database->getString("FileName");
         if ( fname.rfind(".exd") < fname.size() || fname.rfind(".e") < fname.size() ) {
-            ::ExodusII_IO_Helper exio_helper;
-            exio_helper.open(fname.c_str());        // Open the exodus file, if possible
+            ::Parallel::Communicator comm;
+            ::ExodusII_IO_Helper exio_helper(comm);
+            exio_helper.open(fname.c_str(), true);  // Open the exodus file, if possible
             exio_helper.read_header();              // Read the header
             exio_helper.close();                    // Close the file
-            NumberOfElements = exio_helper.get_num_elem();
+            NumberOfElements = exio_helper.num_elem;
             AMP_ASSERT(NumberOfElements>0);
         } else {
             AMP_ERROR("Unkown mesh type, use key NumberOfElements to specify the mesh size");
@@ -695,7 +696,7 @@ std::vector<int> libMesh::getBlockIDs ( ) const
 {
     return d_block_ids;
 }
-MeshIterator libMesh::getBlockIDIterator ( const GeomType type, const int id, const int gcw ) const
+MeshIterator libMesh::getBlockIDIterator ( const GeomType, const int, const int ) const
 {
     AMP_ERROR("getBoundaryIDIterator is not implimented yet");
     return MeshIterator();

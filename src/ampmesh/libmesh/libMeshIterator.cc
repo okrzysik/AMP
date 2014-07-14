@@ -3,7 +3,7 @@
 #include "utils/Utilities.h"
 
 // libMesh includes
-#include "elem.h"
+#include "libmesh/elem.h"
 
 namespace AMP {
 namespace Mesh {

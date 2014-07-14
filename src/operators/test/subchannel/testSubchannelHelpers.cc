@@ -10,10 +10,12 @@
 #include "ampmesh/StructuredMeshHelper.h"
 #include "ampmesh/Mesh.h"
 #include "discretization/simpleDOF_Manager.h"
+#include "discretization/structuredFaceDOFManager.h"
 #include "vectors/VectorBuilder.h"
 #include "vectors/VectorSelector.h"
 #include "operators/subchannel/SubchannelHelpers.h"
 #include "operators/subchannel/SubchannelConstants.h"
+
 
 #include <iostream>
 #include <string>

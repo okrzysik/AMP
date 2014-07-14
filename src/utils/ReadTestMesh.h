@@ -4,7 +4,7 @@
 
 #include "boost/shared_ptr.hpp"
 
-#include "mesh.h"
+#include "libmesh/mesh.h"
 
 #include "utils/InputDatabase.h"
 

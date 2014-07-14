@@ -6,7 +6,7 @@
 #include <string.h>
 
 // LibMesh include
-#include "mesh.h"
+#include "libmesh/mesh.h"
 
 // Petsc include (needed to fix PETSC_COMM_WORLD problem with libmesh)
 #ifdef USE_EXT_PETSC

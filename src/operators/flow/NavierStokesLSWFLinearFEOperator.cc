@@ -2,8 +2,8 @@
 #include "operators/flow/NavierStokesLSWFLinearFEOperator.h"
 #include "matrices/MatrixBuilder.h"
 #include "vectors/VectorBuilder.h"
-#include "cell_hex27.h"
-#include "node.h"
+#include "libmesh/cell_hex27.h"
+#include "libmesh/node.h"
 
 namespace AMP {
   namespace Operator {

@@ -49,7 +49,7 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
     setMeshID();
     d_name = "NULL";
 }
-Mesh::Mesh( const Mesh::shared_ptr &old_mesh )
+Mesh::Mesh( const Mesh::shared_ptr & )
 {
     AMP_ERROR("Copy constructor is not Implimented Yet");
 }
@@ -388,27 +388,27 @@ MeshIterator Mesh::getBlockIDIterator ( const GeomType, const int, const int ) c
     AMP_ERROR("getBlockIDIterator is not implimented for the base class");
     return MeshIterator();
 }
-size_t Mesh::numLocalElements( const GeomType type ) const
+size_t Mesh::numLocalElements( const GeomType ) const
 {
     AMP_ERROR("numLocalElements is not implimented for the base class");
     return 0;
 }
-size_t Mesh::numGlobalElements( const GeomType type ) const
+size_t Mesh::numGlobalElements( const GeomType ) const
 {
     AMP_ERROR("numGlobalElements is not implimented for the base class");
     return 0;
 }
-size_t Mesh::numGhostElements( const GeomType type, int gcw ) const
+size_t Mesh::numGhostElements( const GeomType, int ) const
 {
     AMP_ERROR("numGhostElements is not implimented for the base class");
     return 0;
 }
-void Mesh::displaceMesh( std::vector<double> x )
+void Mesh::displaceMesh( std::vector<double> )
 {
     AMP_ERROR("displaceMesh is not implimented for the base class");
 }
 #ifdef USE_AMP_VECTORS
-void Mesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
+void Mesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
     AMP_ERROR("displaceMesh is not implimented for the base class");
 }

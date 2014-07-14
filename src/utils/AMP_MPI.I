@@ -270,7 +270,7 @@ template<> inline std::string AMP_MPI::bcast<std::string>(const std::string valu
     delete [] str;
     return result;
 }
-template <> inline void AMP_MPI::bcast<std::string>(std::string *x, const int n, const int root) const 
+template <> inline void AMP_MPI::bcast<std::string>(std::string*, const int, const int ) const 
 {
     AMP_ERROR("Cannot bcast an array of strings");
 }
@@ -417,8 +417,8 @@ inline void AMP_MPI::allGather(const type x_in, type *x_out) const
 }
 // Specialization of AMP_MPI::allGather for std::string
 template <>
-inline int AMP_MPI::allGather<std::string>(const std::string *send_data, const int send_cnt, 
-    std::string *recv_data, int *recv_cnt, int* recv_disp, bool known_recv) const
+inline int AMP_MPI::allGather<std::string>(const std::string*, const int, 
+    std::string*, int*, int*, bool ) const
 {
     AMP_ERROR("Cannot allGather an array of strings");
     return 0;
