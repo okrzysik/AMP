@@ -104,13 +104,22 @@ AMP::Mesh::MeshIterator  StructuredMeshHelper::getFaceIterator(
         int Nx = box.last[0]-box.first[0]+1;
         int Ny = box.last[1]-box.first[1]+1;
         int Nz = box.last[2]-box.first[2]+1;
+        int last[3] = {1,1,1};
+        if ( gcw==0 ) {
+            AMP::Mesh::BoxMesh::Box global_box = boxmesh->getGlobalBox(0);
+            for (int d=0; d<3; d++) {
+                if ( periodic[0] || box.last[d]!=global_box.last[d] )
+                last[d] = 0;
+            }
+        }
         boost::shared_ptr<std::vector<BoxMesh::MeshElementIndex> > face_list(
             new std::vector<BoxMesh::MeshElementIndex>() );
+        face_list->reserve(4*Nx*Ny*Nz);
         if ( direction==0 ) {
             face_list->reserve((Nx+1)*Ny*Nz);
             for (int k=box.first[2]; k<=box.last[2]; k++) {
                 for (int j=box.first[1]; j<=box.last[1]; j++) {
-                    for (int i=box.first[0]; i<=box.last[0]+1; i++)
+                    for (int i=box.first[0]; i<=box.last[0]+last[0]; i++)
                         face_list->push_back( AMP::Mesh::BoxMesh::MeshElementIndex(AMP::Mesh::Face,0,i,j,k) ); 
                 }
             }
@@ -118,15 +127,15 @@ AMP::Mesh::MeshIterator  StructuredMeshHelper::getFaceIterator(
             face_list->reserve(Nx*(Ny+1)*Nz);
             for (int k=box.first[2]; k<=box.last[2]; k++) {
                 for (int i=box.first[0]; i<=box.last[0]; i++) {
-                    for (int j=box.first[1]; j<=box.last[1]+1; j++)
-                        face_list->push_back(  AMP::Mesh::BoxMesh::MeshElementIndex(AMP::Mesh::Face,1,i,j,k) ); 
+                    for (int j=box.first[1]; j<=box.last[1]+last[1]; j++)
+                        face_list->push_back( AMP::Mesh::BoxMesh::MeshElementIndex(AMP::Mesh::Face,1,i,j,k) ); 
                 }
             }
         } else if ( direction==2 ) {
             face_list->reserve(Nx*Ny*(Nz+1));
             for (int j=box.first[1]; j<=box.last[1]; j++) {
                 for (int i=box.first[0]; i<=box.last[0]; i++) {
-                    for (int k=box.first[2]; k<=box.last[2]+1; k++) 
+                    for (int k=box.first[2]; k<=box.last[2]+last[2]; k++) 
                         face_list->push_back( AMP::Mesh::BoxMesh::MeshElementIndex(AMP::Mesh::Face,2,i,j,k) ); 
                 }
             }

@@ -113,13 +113,11 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> linearOpParams(   new AMP::Operator::SubchannelOperatorParameters( linearOperator_db ));
     nonlinearOpParams->d_Mesh = subchannelMesh ;
     nonlinearOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
-    nonlinearOpParams->d_dofMap = subchannelDOFManager;
     nonlinearOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
     nonlinearOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
     nonlinearOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
     linearOpParams->d_Mesh = subchannelMesh ;
     linearOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
-    linearOpParams->d_dofMap = subchannelDOFManager;
     linearOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
     linearOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
     linearOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");

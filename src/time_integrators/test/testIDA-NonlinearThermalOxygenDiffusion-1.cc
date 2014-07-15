@@ -24,22 +24,6 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 
-/* libMesh files */
-#include "libmesh_config.h"
-#include "libmesh.h"
-#include "mesh.h"
-#include "mesh_generation.h"
-#include "equation_systems.h"
-#include "fe.h"
-#include "quadrature_gauss.h"
-#include "dof_map.h"
-#include "sparse_matrix.h"
-#include "petsc_matrix.h"
-#include "petsc_vector.h"
-#include "dense_matrix.h"
-#include "linear_implicit_system.h"
-#include "elem.h"
-
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/diffusion/FickSoretNonlinearFEOperator.h"
 #include "operators/libmesh/MassLinearFEOperator.h"

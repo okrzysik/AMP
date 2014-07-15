@@ -48,7 +48,8 @@ void Test(AMP::UnitTest *ut, std::string exeName)
 
   // get dof manager
   int DofsPerFace[3] = {0,0,2};
-  AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DofsPerFace, 1 );
+  AMP::Discretization::DOFManager::shared_ptr faceDOFManager = 
+    AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DofsPerFace, 1 );
 
   // get input and output variables
   AMP::LinearAlgebra::Variable::shared_ptr inputVariable  (new AMP::LinearAlgebra::Variable("flow"));
@@ -61,20 +62,23 @@ void Test(AMP::UnitTest *ut, std::string exeName)
 
   // create subchannel physics model
   boost::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( new AMP::Operator::ElementPhysicsModelParameters(subchannelPhysics_db));
-  boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel>  subchannelPhysicsModel (new AMP::Operator::SubchannelPhysicsModel(params));
+  boost::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( 
+    new AMP::Operator::ElementPhysicsModelParameters(subchannelPhysics_db));
+  boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel>  subchannelPhysicsModel(
+    new AMP::Operator::SubchannelPhysicsModel(params));
 
   // get nonlinear operator database
   boost::shared_ptr<AMP::Database> subchannelOperator_db = input_db->getDatabase("SubchannelTwoEqNonlinearOperator");
   // set operator parameters
-  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
-  subchannelOpParams->d_Mesh = subchannelMesh ;
+  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(
+    new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
+  subchannelOpParams->d_Mesh = subchannelMesh;
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
-  subchannelOpParams->d_dofMap = faceDOFManager ;
   subchannelOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
   subchannelOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
   subchannelOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
-  boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOperator (new AMP::Operator::SubchannelTwoEqNonlinearOperator(subchannelOpParams));
+  boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> subchannelOperator(
+    new AMP::Operator::SubchannelTwoEqNonlinearOperator(subchannelOpParams));
 
   // report successful creation
   ut->passes(exeName+": creation");

@@ -103,7 +103,8 @@ void Test(AMP::UnitTest *ut, std::string exeName)
 
   // get dof manager
   int DOFsPerFace[3]={0,0,2};
-  AMP::Discretization::DOFManager::shared_ptr faceDOFManager = AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
+  AMP::Discretization::DOFManager::shared_ptr faceDOFManager = 
+    AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
 
   // get input and output variables
   AMP::LinearAlgebra::Variable::shared_ptr inputVariable  (new AMP::LinearAlgebra::Variable("flow"));
@@ -134,22 +135,25 @@ void Test(AMP::UnitTest *ut, std::string exeName)
 
   // create subchannel physics model
   boost::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( new AMP::Operator::ElementPhysicsModelParameters(subchannelPhysics_db));
-  boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel>  subchannelPhysicsModel (new AMP::Operator::SubchannelPhysicsModel(params));
+  boost::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( 
+    new AMP::Operator::ElementPhysicsModelParameters(subchannelPhysics_db));
+  boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel>  subchannelPhysicsModel(
+    new AMP::Operator::SubchannelPhysicsModel(params));
 
   // create linear operator
   // get linear operator database
   boost::shared_ptr<AMP::Database> subchannelOperator_db = input_db->getDatabase("SubchannelTwoEqLinearOperator");
   // set operator parameters
-  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
+  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(
+    new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
   subchannelOpParams->d_Mesh = subchannelMesh ;
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
   subchannelOpParams->d_frozenSolution = FrozenVec ;
-  subchannelOpParams->d_dofMap = faceDOFManager ;
   subchannelOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
   subchannelOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
   subchannelOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
-  boost::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> subchannelOperator (new AMP::Operator::SubchannelTwoEqLinearOperator(subchannelOpParams));
+  boost::shared_ptr<AMP::Operator::SubchannelTwoEqLinearOperator> subchannelOperator(
+    new AMP::Operator::SubchannelTwoEqLinearOperator(subchannelOpParams));
 
   // report successful creation
   ut->passes(exeName+": creation");
@@ -223,6 +227,7 @@ void Test(AMP::UnitTest *ut, std::string exeName)
       SolVec->setValueByGlobalID(dofs[1],P_scale*1.0);
     
       subchannelOperator->setFrozenVector(FrozenVec);
+      subchannelOpParams->d_initialize = true;
       subchannelOperator->reset(subchannelOpParams);
       subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
     

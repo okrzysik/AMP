@@ -88,6 +88,7 @@ COPY_TEST_DATA_FILE( input_linearMechanics+ThermalDiffusion-UO2MSRZC09-1        
 COPY_TEST_DATA_FILE( input_linearMechanics+FickDiffusion-TUI-1                          mechanics/data )
 COPY_TEST_DATA_FILE( input_linearMechanics+FickDiffusion-UO2MSRZC09-1                   mechanics/data )
 COPY_TEST_DATA_FILE( input_linearThermalDiffusion+FickDiffusion-TUI-1                   diffusion/data )
+COPY_TEST_DATA_FILE( input_linearBVP-Thermal+Fick+Dirichlet-TUI-1                       diffusion/data )
 COPY_TEST_DATA_FILE( input_linearBVP-Thermal+Fick+Dirichlet-UO2MSRZC09-1                diffusion/data )
 COPY_TEST_DATA_FILE( input_linearBVP-Thermal+Fick+Robin-TUI-1                           diffusion/data )
 COPY_TEST_DATA_FILE( input_linearBVP-Thermal+Fick+Robin-UO2MSRZC09-1                    diffusion/data )

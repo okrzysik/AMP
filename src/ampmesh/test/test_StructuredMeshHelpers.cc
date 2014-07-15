@@ -11,6 +11,7 @@
 void runTest( AMP::UnitTest *ut )
 {
     // Create a simple structured mesh
+    size_t N_faces_tot = 227;
     AMP::unit_test::AMPCubeGenerator3<3,4,5> generator;
     generator.build_mesh();
     AMP::Mesh::Mesh::shared_ptr mesh = generator.getMesh();
@@ -24,6 +25,10 @@ void runTest( AMP::UnitTest *ut )
     size_t N_x_faces = mesh->getComm().sumReduce(x_faces.size());
     size_t N_y_faces = mesh->getComm().sumReduce(y_faces.size());
     size_t N_z_faces = mesh->getComm().sumReduce(z_faces.size());
+    if ( N_faces_tot == N_faces )
+        ut->passes("Total number of faces match");
+    else
+        ut->failure("Total number of faces match");
     if ( N_x_faces+N_y_faces+N_z_faces == N_faces )
         ut->passes("Number of faces match");
     else

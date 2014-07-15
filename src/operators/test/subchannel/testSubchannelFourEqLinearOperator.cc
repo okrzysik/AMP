@@ -455,16 +455,17 @@ void Test(AMP::UnitTest *ut, const std::string& exeName)
   // get linear operator database
   boost::shared_ptr<AMP::Database> subchannelOperator_db = input_db->getDatabase("SubchannelFourEqLinearOperator");
   // set operator parameters
-  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
-  subchannelOpParams->d_Mesh = subchannelMesh ;
+  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(
+    new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
+  subchannelOpParams->d_Mesh = subchannelMesh;
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
   subchannelOpParams->d_frozenSolution = FrozenVec;
-  subchannelOpParams->d_dofMap = subchannelDOFManager;
   subchannelOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
   subchannelOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
   subchannelOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
   // create linear operator
-  boost::shared_ptr<AMP::Operator::SubchannelFourEqLinearOperator> subchannelOperator (new AMP::Operator::SubchannelFourEqLinearOperator(subchannelOpParams));
+  boost::shared_ptr<AMP::Operator::SubchannelFourEqLinearOperator> subchannelOperator(
+    new AMP::Operator::SubchannelFourEqLinearOperator(subchannelOpParams));
 
   // report successful creation
   ut->passes(exeName+": linear operator creation");
@@ -591,6 +592,7 @@ void Test(AMP::UnitTest *ut, const std::string& exeName)
 
   // apply the operator
   subchannelOperator->setFrozenVector(FrozenVec);
+  subchannelOpParams->d_initialize = true;
   subchannelOperator->reset(subchannelOpParams);
   subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
 

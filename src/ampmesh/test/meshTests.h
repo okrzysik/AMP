@@ -76,22 +76,21 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
         ut->failure("regular iterator size()");
     size_t number_of_local_elements = 0;
     size_t number_of_ghost_elements = 0;
-    std::set<AMP::Mesh::MeshElementID>  ids;
-    AMP::Mesh::MeshIterator  cur_it = iterator.begin();
-    while ( cur_it != end_it ) {
-        AMP::Mesh::MeshElementID id = cur_it->globalID();
-        ids.insert ( id );
+    std::set<AMP::Mesh::MeshElementID>  id_set;
+    AMP::Mesh::MeshIterator  it = iterator.begin();
+    for (size_t i=0; i<iterator.size(); i++, ++it) {
+        AMP::Mesh::MeshElementID id = it->globalID();
+        id_set.insert ( id );
         if ( id.is_local() )
             number_of_local_elements++;
         else
             number_of_ghost_elements++;
-        ++cur_it;   // Pre-increment is faster than post-increment
     }
     if ( number_of_local_elements==N_local && number_of_ghost_elements==N_ghost )
         ut->passes("regular iterator count");
     else
         ut->failure("regular iterator count");
-    if ( ids.size() == N_local+N_ghost )
+    if ( id_set.size() == N_local+N_ghost )
         ut->passes("regular iterator uniqueness");
     else
         ut->failure("regular iterator uniqueness");
@@ -133,15 +132,18 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
     bool elements_pass = true;
     bool block_pass = true;
     int neighbor_pass = 1;
-    cur_it = iterator.begin();
     int myRank = mesh->getComm().getRank();
     int maxRank = mesh->getComm().getSize()-1;
     std::vector<int> blockIds = mesh->getBlockIDs();
-    while ( cur_it != end_it ) {
-        AMP::Mesh::MeshElement element = *cur_it;
+    std::vector<AMP::Mesh::MeshElementID> ids;
+    ids.reserve(iterator.size());
+    it = iterator.begin();
+    for (size_t i=0; i<iterator.size(); i++, ++it) {
+        ids.push_back(it->globalID());
+        AMP::Mesh::MeshElement element = *it;
         // Get the current id
         AMP::Mesh::MeshElementID id = element.globalID();
-        if ( id != cur_it->globalID() )
+        if ( id != it->globalID() )
             id_pass = false;
         // Get the owner rank
         AMP::Mesh::MeshID meshID = id.meshID();
@@ -181,7 +183,7 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
             for (int i=0; i<=(int)type; i++) {
                 const AMP::Mesh::GeomType type2 = (AMP::Mesh::GeomType) i;
                 std::vector<AMP::Mesh::MeshElement> pieces = element.getElements(type2);
-                std::vector<AMP::Mesh::MeshElementID> ids(pieces.size());
+                ids.resize(pieces.size());
                 for (size_t j=0; j<pieces.size(); j++)
                     ids[j] = pieces[j].globalID();
                 AMP::Utilities::unique(ids);
@@ -203,7 +205,6 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
             if ( ownerRank>maxRank || ownerRank<0 || ownerRank==myRank )
                 id_pass = false;
         }
-        ++cur_it;   // Pre-increment is faster than post-increment
     }
     if ( id_pass && type_pass && volume_pass && coord_pass && elements_pass && neighbor_pass==1 && block_pass ) {
         ut->passes( "elements passed" );
@@ -228,15 +229,14 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
             ut->failure("Element is not in a block");
     }
     // Check that we can get the element from the global id for all elements
-    cur_it = iterator.begin();
+    it = iterator.begin();
     bool getElem_pass = true;
-    for (size_t i=0; i<cur_it.size(); i++) {
-        AMP::Mesh::MeshElementID id1 = cur_it->globalID();
+    for (size_t i=0; i<it.size(); i++, ++it) {
+        AMP::Mesh::MeshElementID id1 = it->globalID();
         AMP::Mesh::MeshElement elem = mesh->getElement(id1);
         AMP::Mesh::MeshElementID id2 = elem.globalID();
         if ( id1 != id2 )
             getElem_pass = false;
-        ++cur_it;
     }
     if ( getElem_pass )
         ut->passes( "Got elements from element ids" );

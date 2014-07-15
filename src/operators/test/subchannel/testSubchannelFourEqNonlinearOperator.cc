@@ -156,15 +156,16 @@ void Test(AMP::UnitTest *ut, std::string exeName)
   // get nonlinear operator database
   boost::shared_ptr<AMP::Database> subchannelOperator_db = input_db->getDatabase("SubchannelFourEqNonlinearOperator");
   // set operator parameters
-  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
+  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(
+    new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
   subchannelOpParams->d_Mesh = subchannelMesh ;
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
-  subchannelOpParams->d_dofMap = subchannelDOFManager;
   subchannelOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
   subchannelOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
   subchannelOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
   // create nonlinear operator
-  boost::shared_ptr<AMP::Operator::SubchannelFourEqNonlinearOperator> subchannelOperator (new AMP::Operator::SubchannelFourEqNonlinearOperator(subchannelOpParams));
+  boost::shared_ptr<AMP::Operator::SubchannelFourEqNonlinearOperator> subchannelOperator(
+    new AMP::Operator::SubchannelFourEqNonlinearOperator(subchannelOpParams));
   // reset the nonlinear operator
   subchannelOperator->reset(subchannelOpParams);
 
