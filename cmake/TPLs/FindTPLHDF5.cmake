@@ -4,7 +4,7 @@ VERIFY_PATH( ${HDF5_INCLUDE_DIRS} )
 VERIFY_PATH( ${HDF5_LIBRARY_DIRS} )
 TRIBITS_TPL_DECLARE_LIBRARIES( HDF5
     REQUIRED_HEADERS hdf5.h
-    REQUIRED_LIBS_NAMES hdf5_fortran hdf5hl_fortran hdf5 hdf5_hl z
+    REQUIRED_LIBS_NAMES hdf5_fortran hdf5hl_fortran hdf5 hdf5_hl z dl
 )
 
 IF(TPL_ENABLE_MPI)
