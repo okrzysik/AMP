@@ -13,13 +13,14 @@ namespace Discretization {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-DOFManager::shared_ptr  simpleDOFManager::create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::GeomType type, int gcw, int DOFsPerObject, bool split )
+DOFManager::shared_ptr  simpleDOFManager::create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, 
+    AMP::Mesh::GeomType type, int gcw, int DOFsPerObject, bool split )
 {
     if ( mesh.get()==NULL )
         return DOFManager::shared_ptr();
     if ( split && boost::dynamic_pointer_cast<AMP::Mesh::MultiMesh>(mesh).get()!=NULL ) {
         // We want to split the DOFs by the mesh
-        std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
+        std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getLocalBaseMeshIDs();
         std::vector<DOFManager::shared_ptr> managers;
         for (size_t i=0; i<meshIDs.size(); i++) {
             AMP::Mesh::Mesh::shared_ptr subMesh = mesh->Subset(meshIDs[i]);
