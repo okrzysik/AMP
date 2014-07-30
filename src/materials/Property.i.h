@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <sstream>
 
 namespace AMP {
 namespace Materials {
@@ -191,7 +192,19 @@ const std::map< std::string,boost::shared_ptr<std::vector<Number> > >& args)
         for (typename std::map<std::string, boost::shared_ptr<std::vector<Number> > >::const_iterator
                 it = args.begin(); it != args.end(); it++) {
             if ( !in_range(it->first,*(it->second)) )
-                AMP_ERROR("Property '"+it->first+"' out of range in function '"+d_name+"'.");
+            {
+                std::vector<Number> range = get_arg_range(it->first);
+                std::vector<Number> &values = *(it->second);
+                std::stringstream ss;
+                ss << "Property '"+it->first+"' out of range in function '"+d_name+"'." << std::endl;
+                ss << "Values are ";
+                for( size_t i=0; i<values.size(); ++i )
+                    ss << values[i] << " ";
+                ss << std::endl;
+                ss << "Valid range is [" << range[0] << "," << range[1] << "]" << std::endl;
+                AMP_ERROR(ss.str());
+            }
+
         }
     }
     evalvActual(r, args);
