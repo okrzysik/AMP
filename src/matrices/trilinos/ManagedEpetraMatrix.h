@@ -78,7 +78,7 @@ public:
     virtual void  getValuesByGlobalID ( int num_rows, int num_cols, int *rows, int *cols, double *values ) const;
 
     virtual void setScalar ( double );
-    virtual void setDiagonal ( const Vector::shared_ptr &in );
+    virtual void setDiagonal ( Vector::const_shared_ptr in );
 
     virtual void makeConsistent ();
     virtual double  L1Norm() const;

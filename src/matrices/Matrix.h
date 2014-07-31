@@ -191,7 +191,7 @@ public:
       /** \brief  Set the diagonal to the values in a vector
         * \param[in] in The values to set the diagonal to
         */
-      virtual void setDiagonal ( const Vector::shared_ptr &in ) = 0;
+      virtual void setDiagonal ( Vector::const_shared_ptr in ) = 0;
 
       /** \brief  Set the matrix to the identity matrix
         */

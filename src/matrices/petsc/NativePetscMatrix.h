@@ -70,7 +70,7 @@ public:
     virtual void getRowByGlobalID( int row , std::vector<unsigned int> &cols , std::vector<double> &values ) const;
 
     virtual void setScalar( double );
-    virtual void setDiagonal( const Vector::shared_ptr &in );
+    virtual void setDiagonal( Vector::const_shared_ptr in );
 
     virtual void makeConsistent();
     virtual Vector::shared_ptr  extractDiagonal( Vector::shared_ptr p = Vector::shared_ptr() ) const;
