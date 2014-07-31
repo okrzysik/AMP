@@ -210,7 +210,7 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
 
 
   inline
-  bool  Vector::equals ( Vector::shared_ptr &rhs , double  tol )
+  bool  Vector::equals ( Vector::const_shared_ptr rhs , double  tol ) const
   {
     return equals (*rhs,tol);
   }

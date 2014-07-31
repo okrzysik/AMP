@@ -632,7 +632,7 @@ double Vector::localMaxNorm(void) const
     }
     return ans;
 }
-double Vector::localDot( const boost::shared_ptr<const Vector> &x ) const
+double Vector::localDot( boost::shared_ptr<const Vector> x ) const
 {
     AMP_ASSERT ( getLocalSize() == x->getLocalSize() );
     const_iterator  curMe = begin();
@@ -663,14 +663,14 @@ void Vector::setCommunicationList ( CommunicationList::shared_ptr  comm )
 
 
 
-bool Vector::equals ( Vector &rhs , double tol )
+bool Vector::equals ( Vector const & rhs , double tol ) const
 {
     int RetVal = 0;
     if (( getGlobalSize() == rhs.getGlobalSize() ) && ( getLocalSize() == rhs.getLocalSize() ))
     {
-      VectorDataIterator cur1 = begin();
-      VectorDataIterator cur2 = rhs.begin();
-      VectorDataIterator last = end();
+      ConstVectorDataIterator cur1 = begin();
+      ConstVectorDataIterator cur2 = rhs.begin();
+      ConstVectorDataIterator last = end();
       bool failed = false;
       while ( cur1 != last )
       {

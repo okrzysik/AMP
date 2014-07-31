@@ -551,7 +551,7 @@ public:
       * \brief Return the local dot product of this vector with the argument vector.
       * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
      */
-    virtual double localDot ( const boost::shared_ptr<const Vector> &x ) const;
+    virtual double localDot ( boost::shared_ptr<const Vector> x ) const;
 
     /**
       * \brief  Determine if two vectors are equal using an absolute tolerance
@@ -559,16 +559,16 @@ public:
       * \param[in] tol Tolerance of comparison
       * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
       */
-    bool  equals ( Vector::shared_ptr &rhs , double  tol = 0.000001 );
+    bool  equals ( Vector::const_shared_ptr rhs , double  tol = 0.000001 ) const;
 
     /**
-      * \fn equals (Vector & rhs , double tol )
+      * \fn equals (Vector & const rhs , double tol )
       * \brief  Determine if two vectors are equal using an absolute tolerance
       * \param[in] rhs Vector to compare to
       * \param[in] tol Tolerance of comparison
       * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
       */
-    virtual bool  equals ( Vector & rhs , double  tol = 0.000001 ); // Will be const one day soon
+    virtual bool  equals ( Vector const & rhs , double  tol = 0.000001 ) const;
     //@}
 
 
