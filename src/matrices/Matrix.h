@@ -91,7 +91,7 @@ public:
         * \param[in] X matrix
         * \details  Compute \f$\mathbf{THIS} = \alpha\mathbf{X} + \mathbf{THIS}\f$
         */
-      void  axpy ( double alpha , const Matrix::shared_ptr  &X );
+      void  axpy ( double alpha , Matrix::const_shared_ptr X );
 
 
       /** \brief  Add values to those in the matrix

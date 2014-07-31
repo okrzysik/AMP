@@ -232,7 +232,7 @@ public:
       *   is assumed that rhs has consistent ghost values.
       * \param[in] rhs  a shared pointer to the Vector to copy the data from
      */
-    virtual void copyVector ( const Vector::const_shared_ptr &rhs );
+    virtual void copyVector ( Vector::const_shared_ptr rhs );
 
     /** \brief  Swap the data in this Bector for another
       * \param[in]  other  Vector to swap data with
@@ -256,7 +256,7 @@ public:
         \endcode
       * without a and b exchanging pointers.
      */
-    void swapVectors ( Vector::shared_ptr &other );
+    void swapVectors ( Vector::shared_ptr other );
 
     /* \brief  Returns true if this vector has this element
      * \param[in]  GID  The global ID of the element
@@ -311,7 +311,7 @@ public:
       *  \param[in]  other  Vector to be aliased
       *  \details  This will make <i>this</i> "point" to other.
      */
-    void aliasVector ( Vector::shared_ptr &other );
+    void aliasVector ( Vector::shared_ptr other );
 
     /**\brief Copy data into this vector
       *\param[in] buf  Buffer to copy from

@@ -42,7 +42,7 @@ Vector::shared_ptr NullVector::cloneVector(const Variable::shared_ptr name) cons
 }
 
 
-void NullVector::copyVector( const Vector::const_shared_ptr &rhs )
+void NullVector::copyVector( Vector::const_shared_ptr rhs )
 {
 }
 

@@ -216,13 +216,13 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
   }
 
   inline
-  void  Vector::swapVectors ( shared_ptr &other )
+  void  Vector::swapVectors ( shared_ptr other )
   {
     swapVectors ( *other );
   }
 
   inline
-  void  Vector::aliasVector ( shared_ptr &other )
+  void  Vector::aliasVector ( shared_ptr other )
   {
     aliasVector ( *other );
   }

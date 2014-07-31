@@ -45,7 +45,7 @@ namespace LinearAlgebra {
       template <typename RETURN_TYPE>
       const RETURN_TYPE *  getRawDataBlock() const;
 
-      virtual void copyVector( const Vector::const_shared_ptr &rhs );
+      virtual void copyVector( Vector::const_shared_ptr rhs );
       virtual void swapVectors(Vector &);
       virtual void aliasVector(Vector &);
 

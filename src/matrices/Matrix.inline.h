@@ -27,7 +27,7 @@ inline Matrix :: ~Matrix ()
 {
 }
 
-inline void  Matrix::axpy ( double alpha , const Matrix::shared_ptr  &x ) 
+inline void  Matrix::axpy ( double alpha , Matrix::const_shared_ptr  x ) 
 { 
     axpy( alpha , *x ); 
 }
