@@ -693,7 +693,7 @@ AMP::Operator::Operator::shared_ptr
 OperatorBuilder::createNonlinearFickSoretOperator(  AMP::Mesh::Mesh::shared_ptr meshAdapter,
                             std::string operatorName,
                             boost::shared_ptr<AMP::Database> input_db,
-                            boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel,
+                            boost::shared_ptr<AMP::Operator::ElementPhysicsModel>,
                             boost::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory)
 {
     boost::shared_ptr<Operator> retOperator;
@@ -1283,7 +1283,7 @@ boost::shared_ptr<BoundaryOperator>
 OperatorBuilder::createDirichletMatrixCorrection( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                           boost::shared_ptr<AMP::Database> input_db,
                           AMP::Operator::Operator::shared_ptr volumeOperator,
-                          boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel )
+                          boost::shared_ptr<AMP::Operator::ElementPhysicsModel> )
 {
     boost::shared_ptr<BoundaryOperator> retOperator;
     boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator = 
@@ -1304,7 +1304,7 @@ boost::shared_ptr<BoundaryOperator>
 OperatorBuilder::createMassMatrixCorrection( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                          boost::shared_ptr<AMP::Database> input_db,
                          AMP::Operator::Operator::shared_ptr volumeOperator,
-                         boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel )
+                         boost::shared_ptr<AMP::Operator::ElementPhysicsModel> )
 {
     boost::shared_ptr<BoundaryOperator> retOperator;
     boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator = 

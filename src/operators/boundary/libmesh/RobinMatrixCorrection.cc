@@ -172,7 +172,7 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
             globalIDs[j] = currNodes[j].globalID();
 
         // Get the libmesh element
-        d_currElemPtr = libmeshElements.getElement( bnd1->globalID() );
+        const libMesh::Elem* currElemPtr = libmeshElements.getElement( bnd1->globalID() );
 
         // Get the DOF indicies for the matrix
         d_dofManager->getDOFs(globalIDs, dofIndices);
@@ -186,7 +186,7 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
         d_phi = &(d_fe->get_phi());
         d_JxW = &(d_fe->get_JxW());
 
-        d_fe->reinit ( d_currElemPtr );
+        d_fe->reinit( currElemPtr );
 
         const std::vector<Real> & JxW = (*d_JxW);
         const std::vector<std::vector<Real> > & phi = (*d_phi);

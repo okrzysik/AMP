@@ -13,7 +13,7 @@ void testLibmeshElement( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh )
         AMP::Mesh::MeshIterator iterator = mesh->getIterator(AMP::Mesh::Volume,1);
         list.reinit( iterator );
         for (size_t i=0; i<iterator.size(); i++) {
-            ::Elem* elem = list.getElement( iterator->globalID() );
+            const libMesh::Elem* elem = list.getElement( iterator->globalID() );
             AMP_ASSERT(AMP::Utilities::approx_equal(elem->volume(),iterator->volume()));
             ++iterator;
         }
@@ -25,7 +25,7 @@ void testLibmeshElement( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh )
         AMP::Mesh::MeshIterator iterator = mesh->getIterator(AMP::Mesh::Face,1);
         list.reinit( iterator );
         for (size_t i=0; i<iterator.size(); i++) {
-            ::Elem* elem = list.getElement( iterator->globalID() );
+            const libMesh::Elem* elem = list.getElement( iterator->globalID() );
             AMP_ASSERT(AMP::Utilities::approx_equal(elem->volume(),iterator->volume()));
             ++iterator;
         }

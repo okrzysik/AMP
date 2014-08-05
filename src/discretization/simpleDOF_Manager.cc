@@ -33,6 +33,8 @@ DOFManager::shared_ptr  simpleDOFManager::create( boost::shared_ptr<AMP::Mesh::M
     // We are ready to create the simpleDOFManager
     boost::shared_ptr<simpleDOFManager> rtn( new simpleDOFManager() );
     rtn->d_mesh = mesh;
+    rtn->d_isBaseMesh = mesh->isBaseMesh();
+    rtn->d_meshID = mesh->meshID();
     rtn->d_type = type;
     rtn->d_comm = mesh->getComm();
     rtn->DOFsPerElement = DOFsPerObject;
@@ -62,6 +64,8 @@ DOFManager::shared_ptr  simpleDOFManager::create( boost::shared_ptr<AMP::Mesh::M
     // Create the simpleDOFManager
     boost::shared_ptr<simpleDOFManager> rtn( new simpleDOFManager() );
     rtn->d_mesh = mesh;
+    rtn->d_isBaseMesh = mesh->isBaseMesh();
+    rtn->d_meshID = mesh->meshID();
     rtn->d_type = type;
     rtn->d_comm = mesh->getComm();
     rtn->DOFsPerElement = DOFsPerElement;
@@ -83,6 +87,8 @@ DOFManager::shared_ptr  simpleDOFManager::create( const AMP::Mesh::MeshIterator 
     // Create the simpleDOFManager
     boost::shared_ptr<simpleDOFManager> rtn( new simpleDOFManager() );
     rtn->d_mesh = AMP::Mesh::Mesh::shared_ptr();
+    rtn->d_isBaseMesh = false;
+    rtn->d_meshID = AMP::Mesh::MeshID();
     rtn->d_type = type;
     rtn->d_comm = AMP_MPI(AMP_COMM_SELF);
     rtn->DOFsPerElement = DOFsPerElement;
@@ -146,17 +152,16 @@ boost::shared_ptr<DOFManager>  simpleDOFManager::subset( const AMP::Mesh::Mesh::
 {
 
     // Check if we are dealing with a single mesh for both the internal and desired mesh
-    if ( mesh->isBaseMesh() && d_mesh->isBaseMesh() ) {
-        if ( mesh->meshID() == d_mesh->meshID() )
-            return shared_from_this();
-        else
-            return boost::shared_ptr<DOFManager>();
+    if ( mesh->meshID() == d_meshID ) {
+        return shared_from_this();
+    } else if ( mesh->isBaseMesh() && d_isBaseMesh ) {
+        return boost::shared_ptr<DOFManager>();
     } 
     // Check if the desired mesh is a multimesh that contains the current mesh
     std::vector<AMP::Mesh::MeshID> ids = mesh->getLocalMeshIDs();
     bool found_local = false;
     for (size_t i=0; i<ids.size(); i++) {
-        if ( ids[i] == d_mesh->meshID() )
+        if ( ids[i] == d_meshID )
             found_local = true;
     }
     AMP_MPI comm(AMP_COMM_NULL);

@@ -80,6 +80,12 @@ void Map3to1to3::addTo1DMap ( std::multimap<double,double> &map, double z , doub
 {
     map.insert ( std::pair<double,double> ( z , val ) );
 }
+void Map3to1to3::addTo1DMap ( std::multimap<double,double> &map, 
+    const std::vector<double>& z, const std::vector<double>& val )
+{
+    for (size_t i=0; i<z.size(); i++)
+        map.insert( std::pair<double,double>( z[i], val[i] ) );
+}
 
 
 /********************************************************

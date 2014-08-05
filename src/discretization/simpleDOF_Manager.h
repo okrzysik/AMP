@@ -116,6 +116,8 @@ private:
 
     // Data members
     boost::shared_ptr<AMP::Mesh::Mesh>  d_mesh;
+    bool                                d_isBaseMesh;
+    AMP::Mesh::MeshID                   d_meshID;
     AMP::Mesh::GeomType d_type;
     AMP::Mesh::MeshIterator d_localIterator;
     AMP::Mesh::MeshIterator d_ghostIterator;

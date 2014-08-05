@@ -61,67 +61,67 @@ Vector::~Vector()
 /****************************************************************
 * Subset, View, and Select                                      *
 ****************************************************************/
-void Vector::selectInto ( const VectorSelector &s , Vector::shared_ptr retVal )
+Vector::shared_ptr Vector::selectInto ( const VectorSelector &s )
 {
+    Vector::shared_ptr subvector;
     if ( s.isSelected ( shared_from_this () ) ) {
         // Subset the vector
-        Vector::shared_ptr subvector = s.subset( shared_from_this() );
-        if ( subvector.get() == NULL )
-            return;
-        retVal->castTo<MultiVector>().addVector ( subvector );
-        // Check the global size of the new vector to make sure it is <= the current size
-        size_t N1 = this->getGlobalSize();
-        size_t N2 = subvector->getGlobalSize();
-        AMP_ASSERT(N2<=N1);
+        subvector = s.subset( shared_from_this() );
+        if ( subvector != NULL ) {
+            // Check the global size of the new vector to make sure it is <= the current size
+            size_t N1 = this->getGlobalSize();
+            size_t N2 = subvector->getGlobalSize();
+            AMP_ASSERT(N2<=N1);
+        }
     }
+    return subvector;
 }
-void Vector::constSelectInto ( const VectorSelector &s , Vector::shared_ptr retVal ) const
+Vector::const_shared_ptr Vector::selectInto ( const VectorSelector &s ) const
 {
+    Vector::const_shared_ptr subvector;
     if ( s.isSelected ( shared_from_this () ) ) {
         // Subset the vector
-        Vector::const_shared_ptr subvector = s.subset( shared_from_this() );
-        if ( subvector.get() == NULL )
-            return;
-        // Cast away the const (this is a temporary workaround)
-        Vector::shared_ptr subvector2 = boost::const_pointer_cast<Vector>( subvector );
-        retVal->castTo<MultiVector>().addVector ( subvector2 );
-        // Check the global size of the new vector to make sure it is <= the current size
-        size_t N1 = this->getGlobalSize();
-        size_t N2 = subvector->getGlobalSize();
-        AMP_ASSERT(N2<=N1);
+        subvector = s.subset( shared_from_this() );
+        if ( subvector != NULL ) {
+            // Check the global size of the new vector to make sure it is <= the current size
+            size_t N1 = this->getGlobalSize();
+            size_t N2 = subvector->getGlobalSize();
+            AMP_ASSERT(N2<=N1);
+        }
     }
+    return subvector;
 }
-Vector::shared_ptr  Vector::select ( const VectorSelector &s , const std::string &name )
+Vector::shared_ptr  Vector::select ( const VectorSelector &s, const std::string &variable_name )
 {
     if ( dynamic_cast<const VS_ByVariableName*>(&s) ) {
         std::string name = dynamic_cast<const VS_ByVariableName*>(&s)->getName();
         if ( name==this->getVariable()->getName() )
             return shared_from_this();
     }
-    // Create a new multivector to hold the subset
-    AMP_MPI comm = s.communicator( shared_from_this() );
-    Vector::shared_ptr  retVal = MultiVector::create( name, comm );
-    // Add the subset vector
-    selectInto ( s , retVal );
-    if ( retVal->numberOfDataBlocks() )
-        return retVal;
-    return Vector::shared_ptr();
+    Vector::shared_ptr  retVal = this->selectInto( s );
+    if ( retVal != NULL ) {
+        if ( boost::dynamic_pointer_cast<MultiVector>(retVal)==NULL )
+            retVal = MultiVector::view( retVal, retVal->getComm() );
+        Variable::shared_ptr var( new Variable(variable_name) );
+        retVal->setVariable(var);
+    }
+    return retVal;
 }
-Vector::const_shared_ptr  Vector::constSelect ( const VectorSelector &s , const std::string &name ) const
+Vector::const_shared_ptr  Vector::constSelect ( const VectorSelector &s, const std::string &variable_name ) const
 {
     if ( dynamic_cast<const VS_ByVariableName*>(&s) ) {
         std::string name = dynamic_cast<const VS_ByVariableName*>(&s)->getName();
         if ( name==this->getVariable()->getName() )
             return shared_from_this();
     }
-    // Create a new multivector to hold the subset
-    AMP_MPI comm = s.communicator( shared_from_this() );
-    Vector::shared_ptr  retVal = MultiVector::create( name, comm );
-    // Add the subset vector
-    constSelectInto ( s , retVal );
-    if ( retVal->numberOfDataBlocks() )
-        return retVal;
-    return Vector::shared_ptr();
+    Vector::const_shared_ptr  retVal = this->selectInto( s );
+    if ( retVal != NULL ) {
+        if ( boost::dynamic_pointer_cast<const MultiVector>(retVal)==NULL )
+            retVal = MultiVector::view( retVal, retVal->getComm() );
+        Variable::shared_ptr var( new Variable(variable_name) );
+        boost::const_pointer_cast<Vector>(retVal)->setVariable(var);
+    }
+    return retVal;
 }
 void Vector::registerView ( Vector::shared_ptr v ) const
 {

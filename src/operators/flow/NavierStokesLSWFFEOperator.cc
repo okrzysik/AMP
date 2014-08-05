@@ -182,7 +182,7 @@ namespace AMP {
 
     }
 
-    void NavierStokesLSWFFEOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
+    void NavierStokesLSWFFEOperator :: reset(const boost::shared_ptr<OperatorParameters>& )
     {
        // DO Nothing
     }

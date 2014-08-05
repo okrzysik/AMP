@@ -2,6 +2,7 @@
 
 #include "ampmesh/MultiIterator.h"
 #include "utils/Utilities.h"
+#include "utils/ProfilerApp.h"
 
 
 namespace AMP {
@@ -12,11 +13,12 @@ namespace Discretization {
 * Constructors                                                  *
 ****************************************************************/
 DOFManager::shared_ptr  subsetDOFManager::create( boost::shared_ptr<const DOFManager> parentDOFManager, 
-    const std::vector <size_t> &dofs, const AMP::Mesh::MeshIterator &iterator, AMP_MPI comm_in )
+    const std::vector <size_t> &dofs, const AMP::Mesh::MeshIterator &iterator, const AMP_MPI& comm_in )
 {
     // Limit the new comm to be <= the parent comm
     if ( parentDOFManager.get()==NULL || comm_in.isNull() )
         return DOFManager::shared_ptr();
+    PROFILE_START("subsetDOFManager",1);
     AMP_MPI comm = AMP_MPI::intersect( parentDOFManager->getComm(), comm_in );
     // Set the basic info
     boost::shared_ptr<subsetDOFManager> subsetDOF( new subsetDOFManager() );
@@ -42,11 +44,15 @@ DOFManager::shared_ptr  subsetDOFManager::create( boost::shared_ptr<const DOFMan
     subsetDOF->d_begin = subsetDOF->d_end - N_local;
     subsetDOF->d_global = subsetDOF->d_comm.bcast(subsetDOF->d_end,subsetDOF->d_comm.getSize()-1);
     // Return if the subset DOF is empty
-    if ( subsetDOF->d_global==0 )
+    if ( subsetDOF->d_global==0 ) {
+        PROFILE_STOP2("subsetDOFManager",1);
         return DOFManager::shared_ptr();
+    }
     // Return if the subset DOF == parent DOF
-    if ( subsetDOF->d_global==parentDOFManager->numGlobalDOF() )
+    if ( subsetDOF->d_global==parentDOFManager->numGlobalDOF() ) {
+        PROFILE_STOP2("subsetDOFManager",1);
         return boost::const_pointer_cast<DOFManager>(parentDOFManager);
+    }
     // Determine which remote DOFs we will need to keep
     size_t *send_data = NULL;
     if ( N_local > 0 )
@@ -75,6 +81,7 @@ DOFManager::shared_ptr  subsetDOFManager::create( boost::shared_ptr<const DOFMan
             k++;
         }
     }
+    PROFILE_STOP("subsetDOFManager",1);
     if ( subsetDOF->numGlobalDOF() == 0 )
         return DOFManager::shared_ptr();
     return subsetDOF;

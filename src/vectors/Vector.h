@@ -1076,12 +1076,10 @@ protected:
       * \details  vector must be a MultiVector.  The easiest way to ensure this is to
       * create it with the select method.
       */
-    virtual void       selectInto ( const VectorSelector &criterion , Vector::shared_ptr vector );
+    virtual  Vector::shared_ptr selectInto( const VectorSelector &criterion );
 
-    // This is the const version of selectInto.  Currently this is a protected function because
-    // we do not have a concept of a const multivector yet and this results in destryoing 
-    // const correctness.  Use this function with caution.  
-    virtual void       constSelectInto ( const VectorSelector &criterion , Vector::shared_ptr vector ) const;
+    // This is the const version of selectInto.  
+    virtual  Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const;
 
     /** \brief  A default RNG to use when one is not specified
       */

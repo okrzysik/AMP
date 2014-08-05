@@ -78,7 +78,7 @@ namespace AMP {
          * Returns the 6x1 stress vector at the current gauss point. 
          * Used in UpdatedLagrangian calculations.
          */
-        virtual void getStressForUpdatedLagrangian(double currentStress[6]) { }
+        virtual void getStressForUpdatedLagrangian(double[6]) { }
 
         /**
          * Given a strain, the stress state is calculated in ths function. It is

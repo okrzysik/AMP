@@ -81,6 +81,15 @@ public:
       */
     static boost::shared_ptr<MultiVector>   view ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
 
+    /** \brief Create a multivector view of a vector
+      * \param[in] vec  The vector to view
+      * \param[in] comm  Communicator to create the MultiVector on
+      * \details  If vec is a MultiVector, it is returned.  Otherwise, a MultiVector is created
+      * and vec is added to it.  If vec is not a parallel vector (such as a SimpleVector), comm
+      * must be specified.
+      */
+    static boost::shared_ptr<const MultiVector>   view ( Vector::const_shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
+
     /** \brief Encapsulate a vector in a MultiVector
       * \param[in] vec  The vector to view
       * \param[in] comm  Communicator to create the MultiVector on
@@ -210,8 +219,8 @@ public:
 
 protected:
 
-    virtual void selectInto ( const VectorSelector & , Vector::shared_ptr );
-    virtual void constSelectInto ( const VectorSelector &criterion , Vector::shared_ptr vector ) const;
+    virtual Vector::shared_ptr selectInto ( const VectorSelector & );
+    virtual Vector::const_shared_ptr selectInto ( const VectorSelector &criterion ) const;
 
     //! The communicator this multivector is on
     AMP_MPI                    d_Comm;

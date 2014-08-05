@@ -1,7 +1,21 @@
 #ifdef USE_EXT_LIBMESH
+
 #include "createLibmeshElements.h"
 #include "utils/Utilities.h"
+#include "utils/ProfilerApp.h"
+#include "ampmesh/Mesh.h"
+#include "ampmesh/MeshElement.h"
 
+#include "libmesh/quadrature.h"
+#include "libmesh/fe_type.h"
+#include "libmesh/fe_base.h"
+#include "libmesh/elem.h"
+#include "libmesh/quadrature.h"
+#include "libmesh/enum_order.h"
+#include "libmesh/enum_fe_family.h"
+#include "libmesh/enum_quadrature_type.h"
+#include "libmesh/auto_ptr.h"
+#include "libmesh/string_to_enum.h"
 #include "libmesh/face_quad4.h"
 #include "libmesh/face_quad9.h"
 #include "libmesh/cell_hex8.h"
@@ -22,14 +36,38 @@ createLibmeshElements::createLibmeshElements()
 // De-constuctor
 createLibmeshElements::~createLibmeshElements() 
 {
-    reinit( AMP::Mesh::MeshIterator() );
+    reinit( AMP::Mesh::MeshIterator(), 
+        libMeshEnums::INVALID_Q_RULE, libMeshEnums::INVALID_ORDER, 
+        boost::shared_ptr<const libMesh::FEType>() );
 }
 
 
 // Re-initialize the class
 void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in )
 {
+    reinit( iterator_in, 
+        libMeshEnums::INVALID_Q_RULE, libMeshEnums::INVALID_ORDER, 
+        boost::shared_ptr<const libMesh::FEType>() );
+}
+
+
+// Re-initialize the class
+void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in, 
+    libMeshEnums::QuadratureType qtype, libMeshEnums::Order qorder,
+    boost::shared_ptr<const libMesh::FEType> type, bool cache_fe )
+{
+    PROFILE_START("reinit");
     // Destroy the existing libmesh elements
+    for (size_t i=0; i<d_base_element.size(); i++) {
+        delete d_base_element[i];
+        d_base_element[i] = NULL;
+    }
+    d_base_element.resize(0);
+    for (size_t i=0; i<d_rule_element.size(); i++) {
+        delete d_rule_element[i];
+        d_rule_element[i] = NULL;
+    }
+    d_rule_element.resize(0);
     for (size_t i=0; i<d_elements.size(); i++) {
         for(size_t j=0; j<d_elements[i]->n_nodes(); j++) {
             delete d_elements[i]->get_node(j);
@@ -38,54 +76,156 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in )
         delete d_elements[i];
         d_elements[i] = NULL;
     }
-    d_elements.resize(0);
     d_ids.resize(0);
+    d_index.resize(0);
+    d_elements.resize(0);
+    d_base_element.resize(0);
+    d_rule_element.resize(0);
+    d_base.reset();
+    d_rule.reset();
     // Create the new libmesh elements
+    d_qtype = qtype;
+    d_qorder = qorder;
+    d_type = type;
     AMP::Mesh::MeshIterator iterator = iterator_in.begin();
-    d_ids.resize(iterator.size());
-    d_elements.resize(iterator.size(),NULL);
-    for (size_t i=0; i<iterator.size(); i++) {
-        d_ids[i] = iterator->globalID();
+    if ( d_type!=NULL ) {
         int dim = (int) iterator->elementType();
-        std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements(AMP::Mesh::Vertex);
-        if ( dim==3 && nodes.size()==8 ) {
-            // We are dealing with a hex8 element
-            d_elements[i] = new ::Hex8;
-        } else if ( dim==3 && nodes.size()==27 ) {
-            // We are dealing with a hex27 element
-            d_elements[i] = new ::Hex27;
-        } else if ( dim==2 && nodes.size()==4 ) {
-            // We are dealing with a hex8 element
-            d_elements[i] = new ::Quad4;
-        } else if ( dim==2 && nodes.size()==4 ) {
-            // We are dealing with a hex8 element
-            d_elements[i] = new ::Quad9;
-        } else {
-            AMP_ERROR("Unknown element type");
+        d_rule.reset( libMesh::QBase::build(d_qtype,dim,d_qorder).release() );
+        d_base.reset(libMesh::FEBase::build(dim,*d_type).release() );
+        d_base->attach_quadrature_rule(d_rule.get());
+    }
+    const size_t N = iterator.size();
+    d_ids.resize(N);
+    std::vector<libMesh::Elem*> elements(N,NULL);
+    std::vector<libMesh::FEBase*> base(N,NULL);
+    std::vector<libMesh::QBase*> rule(N,NULL);
+    for (size_t i=0; i<N; ++i, ++iterator) {
+        d_ids[i] = iterator->globalID();
+        // Create the libmesh element
+        elements[i] = createLibmeshElements::createElement( *iterator );
+        // Create the libmesh QBase and FEBase for the element
+        if ( d_type!=NULL && cache_fe ) {
+            int dim = (int) iterator->elementType();
+            rule[i] = libMesh::QBase::build(d_qtype,dim,d_qorder).release();
+            base[i] = libMesh::FEBase::build(dim,*d_type).release();
+            base[i]->attach_quadrature_rule(rule[i]);
+            base[i]->reinit(elements[i]);
         }
-        for(size_t j=0; j<nodes.size(); j++) {
-            std::vector<double> pt = nodes[j].coord();
-            if ( pt.size()==3 )
-                d_elements[i]->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
-            else if ( pt.size()==2 )
-                d_elements[i]->set_node(j) = new ::Node(pt[0], pt[1], 0, j);
-            else
-                AMP_ERROR("Unsupported physical dimension");
-        }
-        ++iterator;
     }
     // Sort the ids and elements for fast search
-    AMP::Utilities::quicksort( d_ids, d_elements );
+    d_index.resize(N,0);
+    for (size_t i=0; i<N; i++)
+        d_index[i] = i;
+    AMP::Utilities::quicksort( d_ids, d_index );
+    d_elements.resize(N,NULL);
+    for (size_t i=0; i<N; i++)
+        d_elements[i] = elements[d_index[i]];
+    if ( !d_base_element.empty() ) {
+        d_base_element.resize(N,NULL);
+        d_rule_element.resize(N);
+        for (size_t i=0; i<N; i++)
+            d_base_element[i] = base[d_index[i]];
+        for (size_t i=0; i<N; i++)
+            d_rule_element[i] = rule[d_index[i]];
+    }
+    PROFILE_STOP("reinit");
+}
+
+
+// Create a libmesh element
+libMesh::Elem* createLibmeshElements::createElement( const AMP::Mesh::MeshElement& elem )
+{
+    int dim = (int) elem.elementType();
+    std::vector<AMP::Mesh::MeshElement> nodes = elem.getElements(AMP::Mesh::Vertex);
+    libMesh::Elem* element = NULL;
+    // Create the libmesh element
+    if ( dim==3 && nodes.size()==8 ) {
+        // We are dealing with a hex8 element
+        element = new libMesh::Hex8;
+    } else if ( dim==3 && nodes.size()==27 ) {
+        // We are dealing with a hex27 element
+        element = new libMesh::Hex27;
+    } else if ( dim==2 && nodes.size()==4 ) {
+        // We are dealing with a hex8 element
+        element = new libMesh::Quad4;
+    } else if ( dim==2 && nodes.size()==4 ) {
+        // We are dealing with a hex8 element
+        element = new libMesh::Quad9;
+    } else {
+        AMP_ERROR("Unknown element type");
+    }
+    for(size_t j=0; j<nodes.size(); j++) {
+        std::vector<double> pt = nodes[j].coord();
+        if ( pt.size()==3 )
+            element->set_node(j) = new libMesh::Node(pt[0], pt[1], pt[2], j);
+        else if ( pt.size()==2 )
+            element->set_node(j) = new libMesh::Node(pt[0], pt[1], 0, j);
+        else
+            AMP_ERROR("Unsupported physical dimension");
+    }
+    return element;
 }
 
 
 // Search and return the desired libmesh element
-::Elem* createLibmeshElements::getElement( const AMP::Mesh::MeshElementID &id )
+const libMesh::Elem* createLibmeshElements::getElement( const AMP::Mesh::MeshElementID &id ) const
 {
+    PROFILE_START("getElement",2);
     size_t index = AMP::Utilities::findfirst( d_ids, id );
-    if ( index==d_ids.size() ) { index--; }
+    index = std::min<size_t>(index,d_ids.size()-1);
     AMP_INSIST(d_ids[index]==id,"Desired element was not found");
+    PROFILE_STOP("getElement",2);
     return d_elements[index];
+}
+
+
+// Search and return the desired libmesh FEBase
+const libMesh::FEBase* createLibmeshElements::getFEBase( const AMP::Mesh::MeshElementID &id ) const
+{
+    PROFILE_START("getFEBase",2);
+    const libMesh::FEBase* result = NULL;
+    if ( d_base!=NULL ) {
+        size_t index = AMP::Utilities::findfirst( d_ids, id );
+        index = std::min<size_t>(index,d_ids.size()-1);
+        AMP_INSIST(d_ids[index]==id,"Desired element was not found");
+        if ( !d_base_element.empty() ) {
+            result = d_base_element[index];
+        } else {
+            if ( d_last_id!=id ) {
+                const libMesh::Elem* elem = d_elements[index];
+                d_base->reinit(elem);
+                d_last_id = id;
+            }
+            result = d_base.get();
+        }
+    }
+    PROFILE_STOP("getFEBase",2);
+    return result;
+}
+
+
+// Search and return the desired libmesh FEBase
+const libMesh::QBase* createLibmeshElements::getQBase( const AMP::Mesh::MeshElementID &id ) const
+{
+    PROFILE_START("getQBase",2);
+    const libMesh::QBase* result = NULL;
+    if ( d_rule!=NULL ) {
+        size_t index = AMP::Utilities::findfirst( d_ids, id );
+        index = std::min<size_t>(index,d_ids.size()-1);
+        AMP_INSIST(d_ids[index]==id,"Desired element was not found");
+        if ( !d_rule_element.empty() ) {
+            result = d_rule_element[index];
+        } else {
+            if ( d_last_id!=id ) {
+                const libMesh::Elem* elem = d_elements[index];
+                d_base->reinit(elem);
+                d_last_id = id;
+            }
+            result = d_rule.get();
+        }
+    }
+    PROFILE_STOP("getQBase",2);
+    return result;
 }
 
 

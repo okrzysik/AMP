@@ -70,6 +70,13 @@ protected:
      */
     void addTo1DMap( std::multimap<double,double> &map, double z , double val );
 
+    /** \brief  Add an ordered pair to the set of interpolant values
+     * \param map           The map to add the point to
+     * \param [in] z        The ordinate
+     * \param [in] val      The abscissa
+     */
+    void addTo1DMap( std::multimap<double,double> &map, const std::vector<double>& z, const std::vector<double>& val );
+
     /** \brief   A virtual method to construct the map from a vector
      * \details  This function constructs the map from a given vector.
      *    The inherited class must impliment this function

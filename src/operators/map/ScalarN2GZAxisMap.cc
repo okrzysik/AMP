@@ -81,22 +81,29 @@ bool ScalarN2GZAxisMap::validMapType ( const std::string &t )
 *  It loops through all values in "cur", storing the value iv using     *
 *  the z-position as the 1D key.                                        *
 ************************************************************************/
-std::multimap<double,double>  ScalarN2GZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
+std::multimap<double,double>  ScalarN2GZAxisMap::buildMap( 
+    AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
     const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator &iterator )
 {
+    if ( iterator.size()==0 )
+        return std::multimap<double,double>();
     PROFILE_START("buildMap");
     std::multimap<double,double> map;
     AMP::Discretization::DOFManager::shared_ptr  dof = vec->getDOFManager( );
-    AMP::Mesh::MeshIterator cur = iterator.begin();
-    std::vector<size_t> ids;
-    for (size_t i=0; i<cur.size(); i++) {
-        dof->getDOFs( cur->globalID(), ids );
-        AMP_ASSERT(ids.size()==1);
-        double val = vec->getValueByGlobalID ( ids[0] );
-        std::vector<double> x = cur->coord();
-        addTo1DMap( map, x[2], val );
-        ++cur;
+    size_t N = iterator.size();
+    std::vector<AMP::Mesh::MeshElementID> ids(N);
+    std::vector<double> z(N,0.0);
+    AMP::Mesh::MeshIterator it = iterator.begin();
+    for (size_t i=0; i<N; ++i, ++it) {
+        ids[i] = it->globalID();
+        z[i] = it->coord(2);
     }
+    std::vector<size_t> dofs(N);
+    dof->getDOFs( ids, dofs );
+    AMP_ASSERT(ids.size()==dofs.size());
+    std::vector<double> vals(N);
+    vec->getValuesByGlobalID( N, &dofs[0], &vals[0] );
+    addTo1DMap( map, z, vals );
     PROFILE_STOP("buildMap");
     return map;
 }
@@ -105,7 +112,8 @@ std::multimap<double,double>  ScalarN2GZAxisMap::buildMap( AMP::LinearAlgebra::V
 /************************************************************************
 *  Function to build the z-coordinates of the gauss points              *
 ************************************************************************/
-AMP::LinearAlgebra::Vector::const_shared_ptr ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator& iterator )
+AMP::LinearAlgebra::Vector::const_shared_ptr 
+ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator& iterator )
 {
     if ( iterator.size()==0 )
         return AMP::LinearAlgebra::Vector::const_shared_ptr();
@@ -113,6 +121,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr ScalarN2GZAxisMap::getGaussPoints( 
         return d_z_coord1;
     if ( iterator==d_dstIterator2 && d_z_coord2.get()!=NULL )
         return d_z_coord2;
+    PROFILE_START("getGaussPoints");
     AMP::Discretization::DOFManager::shared_ptr GpDofMap = 
         AMP::Discretization::simpleDOFManager::create(iterator,4);
     AMP::LinearAlgebra::Variable::shared_ptr var(new AMP::LinearAlgebra::Variable("gauss_z"));
@@ -138,6 +147,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr ScalarN2GZAxisMap::getGaussPoints( 
         }
         ++cur;
     }
+    PROFILE_STOP("getGaussPoints");
     return z_pos;
 }
 
@@ -145,8 +155,9 @@ AMP::LinearAlgebra::Vector::const_shared_ptr ScalarN2GZAxisMap::getGaussPoints( 
 /************************************************************************
 *  buildReturn                                                          *
 ************************************************************************/
-void ScalarN2GZAxisMap::buildReturn ( AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr, 
-    const AMP::Mesh::MeshIterator &iterator, const std::map<double,double> &map )
+void ScalarN2GZAxisMap::buildReturn ( AMP::LinearAlgebra::Vector::shared_ptr vec, 
+    const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator &iterator, 
+    const std::map<double,double> &map )
 {
     if ( iterator.size()==0 )
         return;
@@ -156,18 +167,15 @@ void ScalarN2GZAxisMap::buildReturn ( AMP::LinearAlgebra::Vector::shared_ptr vec
     // Convert the map to a std::vector
     AMP_ASSERT(map.size()>1);
     std::vector<double> z(map.size()), f(map.size());
-    size_t i=0;
-    for (std::map<double,double>::const_iterator it=map.begin(); it!=map.end(); ++it) {
-        z[i] = it->first;
-        f[i] = it->second;
-        i++;
+    std::map<double,double>::const_iterator it_map = map.begin();
+    for (size_t i=0; it_map!=map.end(); ++it_map, ++i) {
+        z[i] = it_map->first;
+        f[i] = it_map->second;
     }
     for (size_t i=1; i<z.size(); i++)
         AMP_ASSERT(z[i]>(z[i-1]+TOL));
     double z0 = z[0];
     double z1 = z[z.size()-1];
-    double v0 = f[0];
-    double v1 = f[z.size()-1];
 
     // Get the coordinates of the gauss points
     AMP::LinearAlgebra::Vector::const_shared_ptr z_pos = getGaussPoints( iterator );
@@ -178,64 +186,44 @@ void ScalarN2GZAxisMap::buildReturn ( AMP::LinearAlgebra::Vector::shared_ptr vec
     AMP::Discretization::DOFManager::shared_ptr  gaussDOFs = z_pos->getDOFManager( );
 
     // Loop through the points in the output vector
-    AMP::Mesh::MeshIterator cur = iterator.begin();
+    size_t N0 = iterator.size();
+    std::vector<size_t> dofs;
+    std::vector<double> zi;
+    dofs.reserve(N0);
+    zi.reserve(N0);
     std::vector<size_t> id1, id2;
-    std::vector<double> zi, fi;
-    std::vector<bool> keep;
-    for (i=0; i<cur.size(); i++) {
-
-        // Get the DOFs
-        DOFs->getDOFs( cur->globalID(), id1 );
-        gaussDOFs->getDOFs( cur->globalID(), id2 );
+    std::vector<double> zi2;
+    AMP::Mesh::MeshIterator it_mesh = iterator.begin();
+    for (size_t i=0; i<N0; ++i, ++it_mesh) {
+        // Get the local DOFs
+        DOFs->getDOFs( it_mesh->globalID(), id1 );
+        gaussDOFs->getDOFs( it_mesh->globalID(), id2 );
         AMP_ASSERT(id1.size()==id2.size());
-        size_t N = id1.size();
-        zi.resize(N);
-        fi.resize(N);
-        keep.resize(N);
-
+        size_t N2 = id1.size();
         // Get the coordinates of the gauss points
-        z_pos->getLocalValuesByGlobalID(N,&id2[0],&zi[0]);
-
-        bool keep_all = true;
-        for (size_t j=0; j<N; j++) {
-            // Check the endpoints
-            keep[j] = true;
-            if ( fabs(zi[j]-z0) <= TOL ) {
-                // We are within TOL of the first point
-                zi[j] = v0;
-                continue;
-            } else if ( fabs(zi[j]-z1) <= TOL ) {
-                // We are within TOL of the last point
-                zi[j] = v1;
-                continue;
-            } else if ( zi[j]<z0 || zi[j]>z1 ) {
+        zi2.resize(N2);
+        z_pos->getLocalValuesByGlobalID(N2,&id2[0],&zi2[0]);
+        for (size_t j=0; j<N2; j++) {
+            if ( zi2[j]<z0-TOL || zi2[j]>z1+TOL ) {
                 // We are outside the bounds of the map
-                keep[j] = false;
-                keep_all = false;
                 continue;
             } 
-
-            // Find the first point > the current position
-            size_t k = AMP::Utilities::findfirst(z,zi[j]);
-            if ( k==0 ) { k++; }
-            if ( k==z.size() ) { k--; }
-
-            // Perform linear interpolation
-            double wt = (zi[j]-z[k-1])/(z[k]-z[k-1]);
-            fi[j] = (1.0-wt)*f[k-1] + wt*f[k];
+            dofs.push_back(id1[j]);
+            zi.push_back(zi2[j]);
         }
-
-        if ( keep_all ) {
-            vec->setLocalValuesByGlobalID( N, &id1[0], &fi[0] );
-        } else {
-            for (size_t j=0; j<N; j++) {
-                if ( keep[j] )
-                    vec->setLocalValueByGlobalID( id1[j], fi[j] );
-            }
-        }
-
-        ++cur;
     }
+    std::vector<double> fi(zi.size());
+    for (size_t i=0; i<zi.size(); i++) {
+        // Find the first point > the current position
+        size_t k = AMP::Utilities::findfirst(z,zi[i]);
+        k = std::max<size_t>(k,1);
+        k = std::min<size_t>(k,z.size()-1);
+        // Perform linear interpolation
+        double wt = (zi[i]-z[k-1])/(z[k]-z[k-1]);
+        fi[i] = (1.0-wt)*f[k-1] + wt*f[k];
+    }
+    vec->setLocalValuesByGlobalID( dofs.size(), &dofs[0], &fi[0] );
+
     PROFILE_STOP("buildReturn");
 }
 

@@ -631,6 +631,12 @@ std::vector<double> structuredMeshElement::coord() const
         coord[i] = d_mesh->d_coord[i][pos];
     return coord;
 }
+double structuredMeshElement::coord(int i) const
+{
+    size_t pos = AMP::Utilities::findfirst(d_mesh->d_index,d_index);
+    AMP_ASSERT( d_globalID.type()==Vertex && d_mesh->d_index[pos]==d_index );
+    return d_mesh->d_coord[i][pos];
+}
 
 
 /****************************************************************
