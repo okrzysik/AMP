@@ -210,19 +210,19 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
 
 
   inline
-  bool  Vector::equals ( Vector::shared_ptr &rhs , double  tol )
+  bool  Vector::equals ( Vector::const_shared_ptr rhs , double  tol ) const
   {
     return equals (*rhs,tol);
   }
 
   inline
-  void  Vector::swapVectors ( shared_ptr &other )
+  void  Vector::swapVectors ( shared_ptr other )
   {
     swapVectors ( *other );
   }
 
   inline
-  void  Vector::aliasVector ( shared_ptr &other )
+  void  Vector::aliasVector ( shared_ptr other )
   {
     aliasVector ( *other );
   }

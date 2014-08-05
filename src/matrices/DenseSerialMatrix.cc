@@ -247,7 +247,7 @@ Vector::shared_ptr  DenseSerialMatrix::extractDiagonal( Vector::shared_ptr buf )
     delete [] k;
     return out;
 }
-void DenseSerialMatrix::setDiagonal( const Vector::shared_ptr &in )
+void DenseSerialMatrix::setDiagonal( Vector::const_shared_ptr in )
 {
     AMP_ASSERT(d_cols==d_rows);
     AMP_ASSERT(in->getGlobalSize()==d_rows);

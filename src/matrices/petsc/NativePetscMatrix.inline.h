@@ -119,7 +119,7 @@ inline void  NativePetscMatrix::zero ( )
 }
 
 
-inline void NativePetscMatrix::setDiagonal ( const Vector::shared_ptr &in )
+inline void NativePetscMatrix::setDiagonal ( Vector::const_shared_ptr in )
 {
     const PetscVector &pVec = in->castTo<NativePetscVector> ();
     MatDiagonalSet ( d_Mat , pVec.getVec() , INSERT_VALUES );
