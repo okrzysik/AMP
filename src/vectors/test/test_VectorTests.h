@@ -50,7 +50,7 @@ void CopyVectorConsistency( AMP::UnitTest *utils )
     size_t numGhosts = commList->getGhostIDList().size();
 
     vec1->setRandomValues ();
-    vec2->copyVector ( vec1 );
+    vec2->copyVector( vec1 );
     if ( numGhosts ) {
         t1 = new double[ numGhosts ];
         t2 = new double[ numGhosts ];
@@ -67,7 +67,7 @@ void CopyVectorConsistency( AMP::UnitTest *utils )
     }
 
     vec1->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    vec3->copyVector ( vec1 );
+    vec3->copyVector( vec1 );
     if ( numGhosts ) {
         vec1->getValuesByGlobalID ( numGhosts , ndx , t1 );
         vec3->getValuesByGlobalID ( numGhosts , ndx , t2 );
@@ -256,7 +256,7 @@ void AbsVector( AMP::UnitTest *utils )
         AMP::LinearAlgebra::Vector::shared_ptr  vec1 ( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vec2 = vec1->cloneVector ();
         vec1->setRandomValues ();
-        vec2->copyVector ( vec1 );
+        vec2->copyVector( vec1 );
         vec2->scale ( -1.0 );
         vec2->abs ( vec2 );
         if ( vec1->equals ( vec2 ) )
@@ -858,7 +858,7 @@ class AxpbyVector
         AMP::LinearAlgebra::Vector::shared_ptr  vectord ( VECTOR_FACTORY::getVector() );
         vectora->setRandomValues ();
         vectorb->setRandomValues ();
-        vectorc->copyVector ( vectorb );
+        vectorc->copyVector( vectorb );
         vectorb1->linearSum ( alpha , vectora , beta , vectorb );
         vectorb->linearSum ( alpha , vectora , beta , vectorb );
         vectorc->axpby ( alpha , beta , vectora );
@@ -899,7 +899,7 @@ class CopyVector
         AMP::LinearAlgebra::Vector::shared_ptr  vectorc ( VECTOR_FACTORY::getVector() );
 
         vectora->setRandomValues ();
-        vectorb->copyVector ( vectora );
+        vectorb->copyVector( vectora );
         vectorc->subtract ( vectora , vectorb );
         if ( vectorc->maxNorm() == 0 )
           utils->passes ( "copy vector 1" );

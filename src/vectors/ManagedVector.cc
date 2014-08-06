@@ -78,7 +78,7 @@ Vector::const_shared_ptr  ManagedVector::constSubsetVectorForVariable ( const Va
 
 
 
-  void ManagedVector::copyVector ( Vector::const_shared_ptr other )
+  void ManagedVector::copyVector( Vector::const_shared_ptr other )
   {
     boost::shared_ptr<const ManagedVector> rhs_managed = boost::dynamic_pointer_cast<const ManagedVector>( other );
     boost::shared_ptr<Vector> vec1;

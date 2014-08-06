@@ -232,7 +232,7 @@ public:
       *   is assumed that rhs has consistent ghost values.
       * \param[in] rhs  a shared pointer to the Vector to copy the data from
      */
-    virtual void copyVector ( Vector::const_shared_ptr rhs );
+    virtual void copyVector( Vector::const_shared_ptr rhs );
 
     /** \brief  Swap the data in this Bector for another
       * \param[in]  other  Vector to swap data with

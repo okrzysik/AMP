@@ -320,7 +320,7 @@ void  Vector::setRandomValues ( RNG::shared_ptr rng )
 /****************************************************************
 * Basic linear algebra                                          *
 ****************************************************************/
-void Vector::copyVector ( Vector::const_shared_ptr rhs )
+void Vector::copyVector( Vector::const_shared_ptr rhs )
 {
     if ( rhs->getLocalSize() != getLocalSize() )
         AMP_ERROR( "Destination vector and source vector not the same size" );

@@ -103,7 +103,7 @@ inline Teuchos::RCP<const Thyra::VectorBase<double> >  NativeThyraVector::getThy
 }
 
 
-inline void NativeThyraVector::copyVector(const Vector::const_shared_ptr &src_vec)
+inline void NativeThyraVector::copyVector( Vector::const_shared_ptr src_vec )
 {
     Thyra::copy<double>( *(getThyraVec(src_vec)), d_thyraVec.ptr() );
 }

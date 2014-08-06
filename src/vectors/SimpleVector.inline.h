@@ -1,4 +1,3 @@
-#include "MultiVector.h"
 #include "VectorSelector.h"
 
 namespace AMP {
@@ -6,11 +5,11 @@ namespace LinearAlgebra {
 
 
 inline 
-void SimpleVector::copyVector(const Vector &src_vec)
+void SimpleVector::copyVector( Vector::const_shared_ptr src_vec )
 {
-    if ( getLocalSize() != src_vec.getLocalSize() )
+    if ( getLocalSize() != src_vec->getLocalSize() )
         AMP_ERROR( "Mismatched vectors" );
-    ConstVectorDataIterator it = src_vec.begin();
+    ConstVectorDataIterator it = src_vec->begin();
     for (size_t i=0; i<getLocalSize(); i++) {
         d_Data[i] = *it;
         ++it;

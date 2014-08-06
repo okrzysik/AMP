@@ -20,7 +20,7 @@ ManagedEpetraVector::ManagedEpetraVector( shared_ptr alias ):
 {
 }
 
-void ManagedEpetraVector::copyVector(Vector::const_shared_ptr vec)
+void ManagedEpetraVector::copyVector( Vector::const_shared_ptr vec )
 {
     // there must be a more sensible way of doing this but I can't find the documentation - BP
     if ( vec->isA<ManagedEpetraVector>() ) {

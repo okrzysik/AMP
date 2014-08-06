@@ -142,7 +142,7 @@ inline void NativePetscVector::swapVectors(Vector &other)
 }
 
 
-inline void NativePetscVector::copyVector(Vector::const_shared_ptr src_vec)
+inline void NativePetscVector::copyVector( Vector::const_shared_ptr src_vec )
 {
     resetArray();
     VecCopy ( src_vec->castTo<NativePetscVector> ().getVec() , d_petscVec );
@@ -160,7 +160,7 @@ inline void  NativePetscVector::setToScalar(double alpha)
 inline void  NativePetscVector::scale(double alpha, const VectorOperations &x)
 {
     resetArray();
-    copyVector ( x.castTo<Vector>().shared_from_this() );
+    copyVector( x.castTo<Vector>().shared_from_this() );
     VecScale ( d_petscVec , alpha );
 }
 
@@ -235,7 +235,7 @@ inline void  NativePetscVector::divide( const VectorOperations &x, const VectorO
 inline void  NativePetscVector::reciprocal(const VectorOperations &x)
 {
     resetArray();
-    copyVector ( x.castTo<Vector>().shared_from_this() );
+    copyVector( x.castTo<Vector>().shared_from_this() );
     VecReciprocal ( d_petscVec );
 }
 
@@ -263,7 +263,7 @@ inline void  NativePetscVector::axpby(double alpha, double beta, const VectorOpe
 inline void  NativePetscVector::abs(const VectorOperations &x)
 {
     resetArray();
-    copyVector ( x.castTo<Vector>().shared_from_this() );
+    copyVector( x.castTo<Vector>().shared_from_this() );
     VecAbs ( d_petscVec );
 }
 

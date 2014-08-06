@@ -87,7 +87,7 @@ public:
     virtual Vector::const_shared_ptr  constSubsetVectorForVariable ( const Variable::shared_ptr &name ) const;
     virtual size_t  numberOfDataBlocks () const;
     virtual size_t  sizeOfDataBlock ( size_t i ) const;
-    virtual void copyVector ( Vector::const_shared_ptr src_vec  );
+    virtual void copyVector( Vector::const_shared_ptr src_vec  );
     virtual void swapVectors ( Vector &other );
     virtual void aliasVector ( Vector &other );
 

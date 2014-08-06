@@ -679,7 +679,7 @@ void MultiVector::setUpdateStatus ( UpdateState state )
 }
 
 
-void MultiVector::copyVector ( Vector::const_shared_ptr src )
+void MultiVector::copyVector( Vector::const_shared_ptr src )
 {
     boost::shared_ptr<const MultiVector> rhs = boost::dynamic_pointer_cast<const MultiVector>(src);
     if ( rhs.get()!=NULL ) {
