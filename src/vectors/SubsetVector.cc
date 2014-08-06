@@ -101,7 +101,7 @@ Vector::const_shared_ptr  SubsetVector::view ( Vector::const_shared_ptr v , Vari
     // Create the data blocks 
     // For now use one datablock for each value, this needs to be changed
     retVal->d_dataBlockPtr = data_ptr;
-    retVal->d_dataBlockSize = std::vector<size_t>(data_ptr.size(),2);
+    retVal->d_dataBlockSize = std::vector<size_t>(data_ptr.size(),1);
     PROFILE_STOP("view",2);
     return retVal;
 }

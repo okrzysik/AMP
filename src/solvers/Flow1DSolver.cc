@@ -107,6 +107,14 @@ Flow1DSolver::solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
   }//end for i
 }
 
+
+AMP::LinearAlgebra::Variable::shared_ptr Flow1DSolver::getInputVariable(int) 
+{
+    return d_inpVariable;
+}
+
+
+
 }
 }
 
