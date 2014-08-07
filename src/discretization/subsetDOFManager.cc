@@ -18,7 +18,7 @@ DOFManager::shared_ptr  subsetDOFManager::create( boost::shared_ptr<const DOFMan
     // Limit the new comm to be <= the parent comm
     if ( parentDOFManager.get()==NULL || comm_in.isNull() )
         return DOFManager::shared_ptr();
-    PROFILE_START("subsetDOFManager",1);
+    PROFILE_START("subsetDOFManager",2);
     AMP_MPI comm = AMP_MPI::intersect( parentDOFManager->getComm(), comm_in );
     // Set the basic info
     boost::shared_ptr<subsetDOFManager> subsetDOF( new subsetDOFManager() );
@@ -45,12 +45,12 @@ DOFManager::shared_ptr  subsetDOFManager::create( boost::shared_ptr<const DOFMan
     subsetDOF->d_global = subsetDOF->d_comm.bcast(subsetDOF->d_end,subsetDOF->d_comm.getSize()-1);
     // Return if the subset DOF is empty
     if ( subsetDOF->d_global==0 ) {
-        PROFILE_STOP2("subsetDOFManager",1);
+        PROFILE_STOP2("subsetDOFManager",2);
         return DOFManager::shared_ptr();
     }
     // Return if the subset DOF == parent DOF
     if ( subsetDOF->d_global==parentDOFManager->numGlobalDOF() ) {
-        PROFILE_STOP2("subsetDOFManager",1);
+        PROFILE_STOP2("subsetDOFManager",2);
         return boost::const_pointer_cast<DOFManager>(parentDOFManager);
     }
     // Determine which remote DOFs we will need to keep
@@ -81,7 +81,7 @@ DOFManager::shared_ptr  subsetDOFManager::create( boost::shared_ptr<const DOFMan
             k++;
         }
     }
-    PROFILE_STOP("subsetDOFManager",1);
+    PROFILE_STOP("subsetDOFManager",2);
     if ( subsetDOF->numGlobalDOF() == 0 )
         return DOFManager::shared_ptr();
     return subsetDOF;
