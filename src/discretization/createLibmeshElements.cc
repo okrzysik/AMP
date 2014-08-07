@@ -88,7 +88,7 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
     d_qorder = qorder;
     d_type = type;
     AMP::Mesh::MeshIterator iterator = iterator_in.begin();
-    if ( d_type!=NULL ) {
+    if ( d_type!=NULL && iterator.size()>0 ) {
         int dim = (int) iterator->elementType();
         d_rule.reset( libMesh::QBase::build(d_qtype,dim,d_qorder).release() );
         d_base.reset(libMesh::FEBase::build(dim,*d_type).release() );

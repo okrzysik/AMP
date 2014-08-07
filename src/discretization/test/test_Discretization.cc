@@ -13,7 +13,7 @@ int main ( int argc , char ** argv )
     //startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup(argc,argv,startup_properties);
     AMP::UnitTest ut;
-
+/*
     // Run the simpleDOFManager tests
     testSimpleDOFManager<AMPCubeGenerator<10> >( &ut );
     testSimpleDOFManager<AMPMultiMeshGenerator>( &ut );
@@ -39,7 +39,7 @@ int main ( int argc , char ** argv )
         testSubsetDOFManager<ExodusReaderGenerator<3>,false>( &ut );
         testSubsetDOFManager<MultiMeshGenerator,false>( &ut );
         testSubsetDOFManager<MultiMeshGenerator,true>( &ut );
-    #endif
+    #endif*/
 
     // Run the tests for the structureMeshDOFManager
     testStructureDOFManager<AMPCubeGenerator<10>,1,0,0,1>( &ut );
