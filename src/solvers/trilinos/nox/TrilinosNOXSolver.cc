@@ -4,6 +4,7 @@
 #include "vectors/trilinos/thyra/ThyraVector.h"
 #include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
 #include "solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
+#include "solvers/trilinos/nox/AndersonStatusTest.h"
 
 
 // Trilinos includes
@@ -15,6 +16,8 @@
 #include "NOX_StatusTest_MaxIters.H"
 #include "NOX_StatusTest_NormWRMS.H"
 #include "NOX_StatusTest_FiniteValue.H"
+#include "NOX_StatusTest_NormUpdate.H"
+#include "NOX_StatusTest_RelativeNormF.H"
 #include "NOX_Solver_Factory.H"
 #include "BelosTypes.hpp"
 #include "NOX_Thyra_MatrixFreeJacobianOperator.hpp"
@@ -121,20 +124,17 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
     // Create the convergence tests (these will need to be on the input database)
     Teuchos::RCP<NOX::StatusTest::NormF> absresid =
         Teuchos::rcp(new NOX::StatusTest::NormF(d_dMaxError));
-    //Teuchos::RCP<NOX::StatusTest::NormWRMS> wrms =
-    //    Teuchos::rcp(new NOX::StatusTest::NormWRMS(linearRelativeTolerance,d_dMaxError));
-    Teuchos::RCP<NOX::StatusTest::Combo> converged =
-        Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
-    converged->addStatusTest(absresid);
-    //converged->addStatusTest(wrms);
     Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters =
         Teuchos::rcp(new NOX::StatusTest::MaxIters(d_iMaxIterations));
     Teuchos::RCP<NOX::StatusTest::FiniteValue> fv =
         Teuchos::rcp(new NOX::StatusTest::FiniteValue);
+    Teuchos::RCP<NOX::StatusTest::NormWRMS> wrms =
+        Teuchos::rcp(new NOX::StatusTest::NormWRMS(d_dMaxError,d_dMaxError) );
     d_status = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
     d_status->addStatusTest(fv);
-    d_status->addStatusTest(converged);
+    d_status->addStatusTest(absresid);
     d_status->addStatusTest(maxiters);
+    d_status->addStatusTest(wrms);
     // Create nox parameter list
     d_nlParams = Teuchos::rcp(new Teuchos::ParameterList);
     std::string solverType = nonlinear_db->getString("solver");
@@ -147,6 +147,12 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
         d_nlParams->sublist("Anderson Parameters").set("Storage Depth", depth);
         d_nlParams->sublist("Anderson Parameters").set("Mixing Parameter", mixing);
         d_nlParams->sublist("Anderson Parameters").sublist("Preconditioning").set("Precondition",d_precOp.get()!=NULL);
+        Teuchos::RCP<NOX::StatusTest::RelativeNormF> relresid =
+            Teuchos::rcp(new NOX::StatusTest::RelativeNormF(d_dMaxError) );
+        d_status->addStatusTest(relresid);
+        Teuchos::RCP<AndersonStatusTest> andersonTest =
+            Teuchos::rcp(new AMP::Solver::AndersonStatusTest(nonlinear_db) );
+        d_status->addStatusTest(andersonTest);
     }
     std::string lineSearchMethod = nonlinear_db->getStringWithDefault("lineSearchMethod","Polynomial");
     d_nlParams->sublist("Line Search").set("Method", lineSearchMethod);
