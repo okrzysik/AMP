@@ -580,41 +580,5 @@ double SubchannelTwoEqLinearOperator::dfdp_upper(double h_minus, double p_minus,
 }
 
 
-/********************************************************************
-* Subset the vectors                                                *
-* Since this operator only deals with local data,                   *
-*    we can subset for the local comm instead of the mesh           *
-* This will avoid communication and syncronization                  *
-********************************************************************/
-AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqLinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
-{
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
-    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
-    AMP::LinearAlgebra::Vector::shared_ptr commVec = vec->select(commSelector, var->getName());
-    return commVec->subsetVectorForVariable(var);
-}
-AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelTwoEqLinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
-{
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
-    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
-    AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
-    return commVec->constSubsetVectorForVariable(var);
-}
-AMP::LinearAlgebra::Vector::shared_ptr  SubchannelTwoEqLinearOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
-{
-    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
-    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
-    AMP::LinearAlgebra::Vector::shared_ptr commVec = vec->select(commSelector, var->getName());
-    return commVec->subsetVectorForVariable(var);
-}
-AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelTwoEqLinearOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
-{
-    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
-    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
-    AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
-    return commVec->constSubsetVectorForVariable(var);
-}
-
-
 }
 }
