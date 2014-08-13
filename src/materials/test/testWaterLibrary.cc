@@ -9,6 +9,7 @@
 #include <valarray>
 #include <vector>
 
+#include "materials/WaterLibrary.h"
 #include "materials/Material.h"
 #include "utils/Utilities.h"
 #include "utils/AMPManager.h"
@@ -58,6 +59,7 @@ int main ( int argc , char **argv )
 		   AMP::voodoo::Factory<AMP::Materials::Material>::instance().create("WaterLibrary"); // get water library
            PropertyPtr temperatureProperty	= mat->property("Temperature");			// temperature property
 	   PropertyPtr liquidEnthalpyProperty	= mat->property("SaturatedLiquidEnthalpy");	// saturated liquid enthalpy property
+	   PropertyPtr vaporEnthalpyProperty	= mat->property("SaturatedVaporEnthalpy");	// saturated vapor enthalpy property
 	   PropertyPtr volumeProperty		= mat->property("SpecificVolume");		// specific volume property
 	   PropertyPtr conductivityProperty	= mat->property("ThermalConductivity");		// thermal conductivity property
 	   PropertyPtr viscosityProperty	= mat->property("DynamicViscosity");		// dynamic viscosity property
@@ -94,10 +96,10 @@ int main ( int argc , char **argv )
 	   std::vector<double> viscosityOutput(n);		// dynamic viscosity output
 	   std::vector<double> enthalpyOutput(n);		// enthalpy output
 	   std::vector<double> temperatureIdenticalOutput(n);		// temperature output array with identical values
-	   for (size_t i=0; i<n; i++) 
+	   for (size_t i=0; i<n; i++)
 	   {
 		(*temperatureIdenticalInput)[i]=400.0;	// temperature: 400 K
-		(*enthalpyIdenticalInput)[i]=500.0e3;	// enthalpy: 500 kJ/kg 
+		(*enthalpyIdenticalInput)[i]=500.0e3;	// enthalpy: 500 kJ/kg
 		(*pressureIdenticalInput)[i]=1.0e6;	// pressure: 1 MPa
 	   }
 	(*enthalpyInput)[0] = 500.0e3;
@@ -119,7 +121,7 @@ int main ( int argc , char **argv )
 	(*densityInput)[0] = 937.871;
 	(*densityInput)[1] = 659.388;
 	(*densityInput)[2] = 996.526;
-	   
+
 	   // Block for temporary variables
 	   {
 		// argument maps for each property function
@@ -150,17 +152,17 @@ int main ( int argc , char **argv )
 		   std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureIdenticalArgMap;
 		   temperatureIdenticalArgMap.insert( std::make_pair( "enthalpy", enthalpyIdenticalInput ) );
 		   temperatureIdenticalArgMap.insert( std::make_pair( "pressure", pressureIdenticalInput ) );
-	
+
 		// evaluate properties
 		   // temperature
 		   temperatureProperty->evalv(temperatureOutput, temperatureArgMap);
 		   //saturated liquid enthalpy
 		   liquidEnthalpyProperty->evalv(liquidEnthalpyOutput, liquidEnthalpyArgMap);
-		   // specific volume 
+		   // specific volume
 		   volumeProperty->evalv(volumeOutput, volumeArgMap);
-		   // thermal conductivity 
+		   // thermal conductivity
 		   conductivityProperty->evalv(conductivityOutput, conductivityArgMap);
-		   // dynamic viscosity 
+		   // dynamic viscosity
 		   viscosityProperty->evalv(viscosityOutput, viscosityArgMap);
 		   // enthalpy
 		   enthalpyProperty->evalv(enthalpyOutput, enthalpyArgMap);
@@ -437,7 +439,7 @@ int main ( int argc , char **argv )
            // Test if thermodyamic properties are consistent
            bool allCorrect = true;
            bool allConsistent = true;
-           
+
            checkConsistency(430.39e3,15.0e6,373.15,allCorrect,allConsistent);
            checkConsistency(1334.4e3,20.0e6,573.15,allCorrect,allConsistent);
            checkConsistency(176.37e3,10.0e6,313.15,allCorrect,allConsistent);
@@ -448,6 +450,270 @@ int main ( int argc , char **argv )
 	   else ut.failure("Thermodynamic property value test");
 	   if (allConsistent) ut.passes("Thermodynamic property consistency test");
 	   else ut.failure("Thermodynamic property consistency test");
+
+       // Extra tests of extended-range Temperature and Specific Volume properties
+       // Comparisons are to Matlab-computed values from Retran-3D source (see WaterLibrary.cc)
+       // Matlab script used to generate values is located in data/waterlibrary.m
+       AMP::pout << "\nExtended library tests:\n============================\n";
+       bool extra_passed = true;
+       boost::shared_ptr<std::vector<double> > pvec( new std::vector<double>(1) );
+       boost::shared_ptr<std::vector<double> > hvec( new std::vector<double>(1) );
+       double expected;
+
+       // Test saturated liquid enthalpy
+       std::map<std::string, boost::shared_ptr<std::vector<double> > > pArgs;
+       pArgs.insert( std::make_pair( "pressure", pvec ) );
+       std::vector<double> h(1);
+       double tol = 1e-6;
+
+       // p=800 psi -- Eq. 5a
+       (*pvec)[0] = 5.51580582e6;
+       expected = 1.18586462e6;
+       liquidEnthalpyProperty->evalv(h,pArgs);
+       if(!AMP::Utilities::approx_equal(h[0],expected,tol))
+       {
+           AMP::pout << "Saturated liquid enthalpy test 1 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << h[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // p=2000 psi -- Eq. 5b
+       (*pvec)[0] = 1.37895146e7;
+       expected = 1.56325778e6;
+       liquidEnthalpyProperty->evalv(h,pArgs);
+       if(!AMP::Utilities::approx_equal(h[0],expected,tol))
+       {
+           AMP::pout << "Saturated liquid enthalpy test 2 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << h[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // p=3000 psi -- Eq. 5c
+       (*pvec)[0] = 2.06842718e7;
+       expected = 1.86516705e6;
+       liquidEnthalpyProperty->evalv(h,pArgs);
+       if(!AMP::Utilities::approx_equal(h[0],expected,tol))
+       {
+           AMP::pout << "Saturated liquid enthalpy test 3 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << h[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // Test saturated vapor enthalpy
+
+       // p=800 psi -- Eq. 6a
+       (*pvec)[0] = 5.51580582e6;
+       expected = 2.78981197e6;
+       vaporEnthalpyProperty->evalv(h,pArgs);
+       if(!AMP::Utilities::approx_equal(h[0],expected,tol))
+       {
+           AMP::pout << "Saturated vapor enthalpy test 1 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << h[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // p = 2000 psi -- Eq. 6b
+       (*pvec)[0] = 1.37895146e7;
+       expected = 2.64769923e6;
+       vaporEnthalpyProperty->evalv(h,pArgs);
+       if(!AMP::Utilities::approx_equal(h[0],expected,tol))
+       {
+           AMP::pout << "Saturated vapor enthalpy test 2 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << h[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // p=3000 psi -- Eq. 5c
+       (*pvec)[0] = 2.06842718e7;
+       expected = 2.37307137e6;
+       vaporEnthalpyProperty->evalv(h,pArgs);
+       if(!AMP::Utilities::approx_equal(h[0],expected,tol))
+       {
+           AMP::pout << "Saturated vapor enthalpy test 3 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << h[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // Test TemperatureProp
+       std::map<std::string, boost::shared_ptr<std::vector<double> > > hpArgs;
+       hpArgs.insert( std::make_pair( "enthalpy", hvec ) );
+       hpArgs.insert( std::make_pair( "pressure", pvec ) );
+       std::vector<double> T(1);
+
+       // h = 400 Btu/lbm, p = 4000 psi -- Eq. 6b
+       (*hvec)[0] = 9.304e5;
+       (*pvec)[0] = 2.75790291e7;
+       expected = 488.207658;
+       temperatureProperty->evalv(T,hpArgs);
+       if(!AMP::Utilities::approx_equal(T[0],expected,tol))
+       {
+           AMP::pout << "Extended temperature test 1 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << T[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // h = 1400 Btu/lbm, p = 4000 psi -- Eq. 6d
+       (*hvec)[0] = 3.2564e6;
+       (*pvec)[0] = 2.75790291e7;
+       expected = 808.434684;
+       temperatureProperty->evalv(T,hpArgs);
+       if(!AMP::Utilities::approx_equal(T[0],expected,tol))
+       {
+           AMP::pout << "Extended temperature test 2 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << T[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // h = 400 Btu/lbm, p = 2000 psi -- Eq. 6a
+       (*hvec)[0] = 9.304e5;
+       (*pvec)[0] = 1.37895146e7;
+       expected = 489.651055;
+       temperatureProperty->evalv(T,hpArgs);
+       if(!AMP::Utilities::approx_equal(T[0],expected,tol))
+       {
+           AMP::pout << "Extended temperature test 3 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << T[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // h = 800 Btu/lbm, p = 2000 psi -- Eq. 6a at saturated liquid enthalpy
+       (*hvec)[0] = 1.8608e6;
+       (*pvec)[0] = 1.37895146e7;
+       expected = 609.133190;
+       temperatureProperty->evalv(T,hpArgs);
+       if(!AMP::Utilities::approx_equal(T[0],expected,tol))
+       {
+           AMP::pout << "Extended temperature test 4 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << T[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // h = 1400 Btu/lbm, p = 2000 psi -- Eq. 6c
+       (*hvec)[0] = 3.2564e6;
+       (*pvec)[0] = 1.37895146e7;
+       expected = 748.333926;
+       temperatureProperty->evalv(T,hpArgs);
+       if(!AMP::Utilities::approx_equal(T[0],expected,tol))
+       {
+           AMP::pout << "Extended temperature test 5 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << T[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // Test TemperatureProp
+       std::vector<double> V(1);
+
+       // h=200 Btu/lbm, p = 4000 psi -- Eq. 8a
+       (*hvec)[0] = 4.652e5;
+       (*pvec)[0] = 2.75790291e7;
+       expected = 1.03475993e-3;
+       volumeProperty->evalv(V,hpArgs);
+       if(!AMP::Utilities::approx_equal(V[0],expected,tol))
+       {
+           AMP::pout << "Extended specific volume test 1 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // h=600 Btu/lbm, p = 4000 psi -- Eq. 8b
+       (*hvec)[0] = 1.3956e6;
+       (*pvec)[0] = 2.75790291e7;
+       expected = 1.37847268e-3;
+       volumeProperty->evalv(V,hpArgs);
+       if(!AMP::Utilities::approx_equal(V[0],expected,tol))
+       {
+           AMP::pout << "Extended specific volume test 2 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // h=950 Btu/lbm, p = 4000 psi -- Eq. 8d
+       (*hvec)[0] = 2.2097e6;
+       (*pvec)[0] = 2.75790291e7;
+       expected = 3.18909350e-3;
+       volumeProperty->evalv(V,hpArgs);
+       if(!AMP::Utilities::approx_equal(V[0],expected,tol))
+       {
+           AMP::pout << "Extended specific volume test 3 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // h=1400 Btu/lbm, p = 4000 psi -- Eq. 8c
+       (*hvec)[0] = 3.2564e6;
+       (*pvec)[0] = 2.75790291e7;
+       expected = 1.07502487e-2;
+       volumeProperty->evalv(V,hpArgs);
+       if(!AMP::Utilities::approx_equal(V[0],expected,tol))
+       {
+           AMP::pout << "Extended specific volume test 4 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // h=200 Btu/lbm, p = 2000 psi -- Eq. 8a
+       (*hvec)[0] = 4.652e5;
+       (*pvec)[0] = 1.37895146e7;
+       expected = 1.04365756e-3;
+       volumeProperty->evalv(V,hpArgs);
+       if(!AMP::Utilities::approx_equal(V[0],expected,tol))
+       {
+           AMP::pout << "Extended specific volume test 5 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // h=500 Btu/lbm, p = 2000 psi -- Eq. 8b
+       (*hvec)[0] = 1.163e6;
+       (*pvec)[0] = 1.37895146e7;
+       expected = 1.267956e-3;
+       volumeProperty->evalv(V,hpArgs);
+       if(!AMP::Utilities::approx_equal(V[0],expected,tol))
+       {
+           AMP::pout << "Extended specific volume test 6 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // h=800 Btu/lbm, p = 2000 psi -- Eq. 8b and 8c at saturated values
+       (*hvec)[0] = 1.8608e6;
+       (*pvec)[0] = 1.37895146e7;
+       expected = 4.45266612e-3;
+       volumeProperty->evalv(V,hpArgs);
+       if(!AMP::Utilities::approx_equal(V[0],expected,tol))
+       {
+           AMP::pout << "Extended specific volume test 7 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // h=1400 Btu/lbm, p = 2000 psi -- Eq. 8c
+       (*hvec)[0] = 3.2564e6;
+       (*pvec)[0] = 1.37895146e7;
+       expected = 2.16299275e-2;
+       volumeProperty->evalv(V,hpArgs);
+       if(!AMP::Utilities::approx_equal(V[0],expected,tol))
+       {
+           AMP::pout << "Extended specific volume test 8 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
+           extra_passed = false;
+       }
+
+       // h=1040 Btu/lbm, p = 3000 psi -- Eq. 8d
+       (*hvec)[0] = 2.41904e6;
+       (*pvec)[0] = 2.06842718e7;
+       expected = 5.7290921e-3;
+       volumeProperty->evalv(V,hpArgs);
+       if(!AMP::Utilities::approx_equal(V[0],expected,tol))
+       {
+           AMP::pout << "Extended specific volume test 9 failed." << std::endl;
+           AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
+           extra_passed = false;
+       }
+
+	   if (extra_passed) ut.passes("Extended water library tests.");
+	   else ut.failure("Extended water library tests.");
+
    }
    catch( std::exception &err )
    {
