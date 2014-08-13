@@ -627,12 +627,10 @@ boost::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool
 {
     if ( iterator_in.size()==0 )
         return boost::shared_ptr<Mesh>();
-    GeomType type = null;
     AMP_ASSERT(iterator_in.size()>0);
     MeshIterator iterator = iterator_in.begin();
+    GeomType type = iterator->elementType();
     for (size_t i=0; i<iterator.size(); i++) {
-        if ( type==null )
-            type = iterator->elementType();
         if ( type!= iterator->elementType() )
             AMP_ERROR("Subset mesh requires all of the elements to be the same type");
         ++iterator;
@@ -1029,7 +1027,7 @@ bool MultiMesh::addProcSimulation( const LoadBalance& mesh, std::vector<LoadBala
     AMP_ASSERT(submeshes.size()==multimeshParams->params.size());
     bool added = false;
     if ( method==1 ) {
-        if ( mesh.getRanks().size()==submeshes.size() ) {
+        if ( mesh.getRanks().size()+1==submeshes.size() ) {
             // Special case where the domain decomposition changes
             std::vector<int> rank2(1,0);
             for (size_t i=0; i<submeshes.size(); i++) {
@@ -1040,7 +1038,8 @@ bool MultiMesh::addProcSimulation( const LoadBalance& mesh, std::vector<LoadBala
             added = true;
         } else if ( mesh.getRanks().size()<submeshes.size() ) {
             // We need to create new group sets
-            const std::vector<int>& ranks = mesh.getRanks();
+            std::vector<int> ranks = mesh.getRanks();
+            ranks.push_back(rank);
             int N_procs = (int) ranks.size();
             // Create the weights
             std::vector<double> weights(submeshes.size(),0);
