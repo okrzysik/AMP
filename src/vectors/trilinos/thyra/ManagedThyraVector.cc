@@ -67,7 +67,7 @@ Vector::shared_ptr  ManagedThyraVector::cloneVector ( const Variable::shared_ptr
 /****************************************************************
 * Copy the vector                                               *
 ****************************************************************/
-void ManagedThyraVector::copyVector(const Vector::const_shared_ptr &vec)
+void ManagedThyraVector::copyVector( Vector::const_shared_ptr vec )
 {
     Vector::shared_ptr engineVec = boost::dynamic_pointer_cast<Vector>( d_Engine );
     engineVec->copyVector( vec );

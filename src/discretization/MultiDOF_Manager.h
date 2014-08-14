@@ -35,7 +35,7 @@ public:
      * \param comm  Comm over which the DOFManager will exist
      * \param managers  List of the DOFManagers on the current processor
      */
-    multiDOFManager ( AMP_MPI comm, std::vector<DOFManager::shared_ptr> managers );
+    multiDOFManager ( const AMP_MPI& comm, std::vector<DOFManager::shared_ptr> managers );
 
     //! Deconstructor
     virtual ~multiDOFManager();
@@ -103,7 +103,7 @@ public:
      * \details  This will subset a DOF manager for a given communicator.
      * \param[in]  comm         The communicator to use to subset
      */
-    virtual DOFManager::shared_ptr subset( AMP_MPI comm );
+    virtual DOFManager::shared_ptr subset( const AMP_MPI& comm );
 
 
     /** \brief Subset the DOF Manager for a mesh
@@ -122,7 +122,7 @@ public:
      * \param[in]  iterator     The mesh iterator for the subset
      * \param[in]  comm         The desired comm
      */
-    virtual DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator, AMP_MPI comm );
+    virtual DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator, const AMP_MPI& comm );
 
 
 private:

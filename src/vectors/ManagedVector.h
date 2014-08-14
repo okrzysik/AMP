@@ -76,6 +76,7 @@ public:
     * \return The engine
     */
     VectorEngine::shared_ptr  getVectorEngine();
+    VectorEngine::const_shared_ptr  getVectorEngine() const;
     std::string type () const;
     virtual Vector::const_iterator begin() const;
     virtual Vector::const_iterator end() const;
@@ -86,7 +87,7 @@ public:
     virtual Vector::const_shared_ptr  constSubsetVectorForVariable ( const Variable::shared_ptr &name ) const;
     virtual size_t  numberOfDataBlocks () const;
     virtual size_t  sizeOfDataBlock ( size_t i ) const;
-    virtual void copyVector ( const Vector::const_shared_ptr &src_vec  );
+    virtual void copyVector( Vector::const_shared_ptr src_vec  );
     virtual void swapVectors ( Vector &other );
     virtual void aliasVector ( Vector &other );
 
@@ -139,8 +140,8 @@ public:
 
 protected:
 
-    virtual void  selectInto ( const VectorSelector & , shared_ptr );
-    virtual void  constSelectInto ( const VectorSelector &criterion , Vector::shared_ptr vector ) const;
+    virtual Vector::shared_ptr selectInto ( const VectorSelector & );
+    virtual Vector::const_shared_ptr selectInto ( const VectorSelector & ) const;
 
 
     /**\brief  A method that is called whenever data changes.  This fires

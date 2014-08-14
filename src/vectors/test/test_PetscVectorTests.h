@@ -190,7 +190,7 @@ class StaticCopyPetscVector
         AMP::LinearAlgebra::Vector::shared_ptr  vectora ( VECTOR_FACTORY::getNativeVector() );
         vectora->setToScalar ( 1. );
         AMP::LinearAlgebra::Vector::shared_ptr  vector_dup = VECTOR_FACTORY::getManagedVector();
-        vector_dup->copyVector ( vectora );
+        vector_dup->copyVector( vectora );
         double t = vector_dup->L1Norm();
         if ( vector_dup->getGlobalSize() == vectora->getGlobalSize() )
           utils->passes ( "global size equality" );
@@ -222,7 +222,7 @@ class CopyPetscVector
         AMP::LinearAlgebra::Vector::shared_ptr  vectorb ( VECTOR_FACTORY::getNativeVector() );
         AMP::LinearAlgebra::Vector::shared_ptr  vectorc ( VECTOR_FACTORY::getNativeVector() );
         vectora->setRandomValues ();
-        vectorb->copyVector ( vectora );
+        vectorb->copyVector( vectora );
         vectorc->subtract ( vectora , vectorb );
         if ( vectorc->maxNorm() < 0.0000001 )
           utils->passes ("native petsc copy");
@@ -251,7 +251,7 @@ class VerifyPointwiseMaxAbsPetscVector
         AMP::LinearAlgebra::Vector::shared_ptr  vectore = VECTOR_FACTORY::getManagedVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectorf = VECTOR_FACTORY::getManagedVector();
 
-        vectord->copyVector ( vectora );
+        vectord->copyVector( vectora );
         vectore->setToScalar ( .65 );
 
         Vec  veca, vecb, vecc, vecd, vece, vecf;
@@ -293,7 +293,7 @@ class VerifyPointwiseMaxPetscVector
         AMP::LinearAlgebra::Vector::shared_ptr  vectore = VECTOR_FACTORY::getManagedVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectorf = VECTOR_FACTORY::getManagedVector();
 
-        vectord->copyVector ( vectora );
+        vectord->copyVector( vectora );
         vectore->setToScalar ( .35 );
 
         Vec  veca, vecb, vecc, vecd, vece, vecf;
@@ -335,7 +335,7 @@ class VerifyPointwiseMinPetscVector
         AMP::LinearAlgebra::Vector::shared_ptr  vectore = VECTOR_FACTORY::getManagedVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectorf = VECTOR_FACTORY::getManagedVector();
 
-        vectord->copyVector ( vectora );
+        vectord->copyVector( vectora );
         vectore->setToScalar ( .35 );
 
         Vec  veca, vecb, vecc, vecd, vece, vecf;
@@ -378,7 +378,7 @@ class VerifyAXPBYPCZPetscVector
         AMP::LinearAlgebra::Vector::shared_ptr  vectore = VECTOR_FACTORY::getManagedVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectorf = VECTOR_FACTORY::getManagedVector();
 
-        vectord->copyVector ( vectora );
+        vectord->copyVector( vectora );
         vectore->setToScalar ( -.5 );
         vectorf->setToScalar ( 3.45678 );
 
@@ -419,8 +419,8 @@ class VerifyAYPXPetscVector
         AMP::LinearAlgebra::Vector::shared_ptr  vectorc = VECTOR_FACTORY::getManagedVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectord = VECTOR_FACTORY::getManagedVector();
 
-        vectorc->copyVector ( vectora );
-        vectord->copyVector ( vectorb );
+        vectorc->copyVector( vectora );
+        vectord->copyVector( vectorb );
 
         Vec  veca, vecb, vecc, vecd;
 
@@ -454,7 +454,7 @@ class VerifyExpPetscVector
         vectora->abs ( vectora );
 
         AMP::LinearAlgebra::Vector::shared_ptr  vectorb = VECTOR_FACTORY::getManagedVector();
-        vectorb->copyVector ( vectora );
+        vectorb->copyVector( vectora );
 
         Vec  veca, vecb;
 
@@ -486,7 +486,7 @@ class VerifyLogPetscVector
         vectora->abs ( vectora );
 
         AMP::LinearAlgebra::Vector::shared_ptr  vectorb = VECTOR_FACTORY::getManagedVector();
-        vectorb->copyVector ( vectora );
+        vectorb->copyVector( vectora );
 
         Vec  veca, vecb;
 
@@ -540,7 +540,7 @@ class VerifyNormsPetscVector
           utils->failure ( "inf norm: native norm does not equal interface norm for native vector" );
 
         AMP::LinearAlgebra::Vector::shared_ptr  vectorc = VECTOR_FACTORY::getManagedVector();
-        vectorc->copyVector ( vectora );
+        vectorc->copyVector( vectora );
 
 
         Vec  vecc;
@@ -630,9 +630,9 @@ class VerifyAXPBYPetscVector
         vectorb->setToScalar ( 2.0 );
 
         AMP::LinearAlgebra::Vector::shared_ptr  vectorc = VECTOR_FACTORY::getManagedVector();
-        vectorc->copyVector ( vectora );
+        vectorc->copyVector( vectora );
         AMP::LinearAlgebra::Vector::shared_ptr  vectord = VECTOR_FACTORY::getManagedVector();
-        vectord->copyVector ( vectorb );
+        vectord->copyVector( vectorb );
 
 
 
@@ -688,8 +688,8 @@ class VerifySwapPetscVector
 
         vectora->setRandomValues();
         vectorb->setToScalar ( 99. );
-        vectorc->copyVector ( vectora );
-        vectord->copyVector ( vectorb );
+        vectorc->copyVector( vectora );
+        vectord->copyVector( vectorb );
         checkPetscError<VECTOR_FACTORY> ( utils , VecSwap ( veca , vecb ) );
         vectorc->subtract ( vectorc , vectorb );
         vectord->subtract ( vectord , vectora );
@@ -697,8 +697,8 @@ class VerifySwapPetscVector
           utils->passes ( "Swap vectors native interface works with native vectors" );
         else
           utils->failure ( "Swap vectors native interface fails with native vectors" );
-        vectorc->copyVector ( vectora );
-        vectord->copyVector ( vectorb );
+        vectorc->copyVector( vectora );
+        vectord->copyVector( vectorb );
         vectora->swapVectors ( vectorb );
         vectorc->subtract ( vectorc , vectorb );
         vectord->subtract ( vectord , vectora );
@@ -717,8 +717,8 @@ class VerifySwapPetscVector
         vecf = vectorf->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
         vectore->setRandomValues();
         vectorf->setToScalar ( 99. );
-        vectorg->copyVector ( vectore );
-        vectorh->copyVector ( vectorf );
+        vectorg->copyVector( vectore );
+        vectorh->copyVector( vectorf );
         checkPetscError<VECTOR_FACTORY> ( utils , VecSwap ( vece , vecf ) );
         vectorg->subtract ( vectorg , vectorf );
         vectorh->subtract ( vectorh , vectore );
@@ -727,9 +727,9 @@ class VerifySwapPetscVector
         else
           utils->failure ( "Swap vectors native interface fails with managed vectors" );
 
-        vectorg->copyVector ( vectore );
+        vectorg->copyVector( vectore );
         vectorh->subtract ( vectore , vectorg );
-        vectorh->copyVector ( vectorf );
+        vectorh->copyVector( vectorf );
         vectore->swapVectors ( vectorf );
         vectorg->subtract ( vectorg , vectorf );
         vectorh->subtract ( vectorh , vectore );
@@ -791,9 +791,9 @@ class VerifyMaxPointwiseDividePetscVector
         vectorb->setToScalar( 3.14159 );
 
         AMP::LinearAlgebra::Vector::shared_ptr  vectorc = VECTOR_FACTORY::getManagedVector();
-        vectorc->copyVector ( vectora );
+        vectorc->copyVector( vectora );
         AMP::LinearAlgebra::Vector::shared_ptr  vectord = VECTOR_FACTORY::getManagedVector();
-        vectord->copyVector ( vectorb );
+        vectord->copyVector( vectorb );
 
         Vec  veca, vecb, vecc, vecd;
         veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
@@ -832,7 +832,7 @@ class VerifyAbsPetscVector
 
         vectora->setRandomValues();
         vectora->addScalar ( vectora , 1. );
-        vectorb->copyVector ( vectora );
+        vectorb->copyVector( vectora );
         vectora->scale ( -1. );
         checkPetscError<VECTOR_FACTORY> ( utils , VecAbs ( veca ) );
         vectorb->subtract ( vectora , vectorb );
@@ -852,7 +852,7 @@ class VerifyAbsPetscVector
 
         vectorc->setRandomValues ();
         vectorc->addScalar ( vectorc , 1. );
-        vectord->copyVector ( vectorc );
+        vectord->copyVector( vectorc );
         vectorc->scale ( -1. );
         checkPetscError<VECTOR_FACTORY> ( utils , VecAbs ( vecc ) );
         vectord->subtract ( vectorc , vectord );
@@ -881,8 +881,8 @@ class VerifyPointwiseMultPetscVector
 
         vectora->setRandomValues ();
         vectorb->setToScalar ( 4.567 );
-        vectorc->copyVector ( vectora );
-        vectord->copyVector ( vectorb );
+        vectorc->copyVector( vectora );
+        vectord->copyVector( vectorb );
 
         Vec  veca, vecb;
         veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
@@ -904,8 +904,8 @@ class VerifyPointwiseMultPetscVector
 
         vectore->setRandomValues ();
         vectorf->setToScalar ( 4.567 );
-        vectorg->copyVector ( vectore );
-        vectorh->copyVector ( vectorf );
+        vectorg->copyVector( vectore );
+        vectorh->copyVector( vectorf );
 
         Vec  vece, vecf;
         vece = vectore->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
@@ -937,8 +937,8 @@ class VerifyPointwiseDividePetscVector
         AMP::LinearAlgebra::Vector::shared_ptr  vectord ( VECTOR_FACTORY::getNativeVector() );
         vectora->setRandomValues ();
         vectorb->setToScalar ( 4.567 );
-        vectorc->copyVector ( vectora );
-        vectord->copyVector ( vectorb );
+        vectorc->copyVector( vectora );
+        vectord->copyVector( vectorb );
 
         Vec  veca, vecb;
         veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
@@ -959,8 +959,8 @@ class VerifyPointwiseDividePetscVector
 
         vectore->setRandomValues ();
         vectorf->setToScalar ( 4.567 );
-        vectorg->copyVector ( vectore );
-        vectorh->copyVector ( vectorf );
+        vectorg->copyVector( vectore );
+        vectorh->copyVector( vectorf );
 
         Vec  vece, vecf;
         vece = vectore->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
@@ -991,7 +991,7 @@ public:
         vectora->setRandomValues();
 
         AMP::LinearAlgebra::Vector::shared_ptr  vectorb ( VECTOR_FACTORY::getManagedVector() );
-        vectorb->copyVector ( vectora );
+        vectorb->copyVector( vectora );
 
         Vec  veca, vecb;
         veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
@@ -1129,9 +1129,9 @@ class VerifyAXPYPetscVector
 
         vectora->setRandomValues();
         vectorb->setRandomValues();
-        vectora_orig->copyVector ( vectora );
-        vectora2->copyVector ( vectora );
-        vectorb2->copyVector ( vectorb );
+        vectora_orig->copyVector( vectora );
+        vectora2->copyVector( vectora );
+        vectorb2->copyVector( vectorb );
         checkPetscError<VECTOR_FACTORY> ( utils , VecAXPY ( veca , 1.23456 , vecb ) );
         vectora2->axpy ( 1.23456 , vectorb2, vectora2 );
         #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
@@ -1152,10 +1152,10 @@ class VerifyAXPYPetscVector
         AMP::LinearAlgebra::Vector::shared_ptr  vectord = VECTOR_FACTORY::getManagedVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectord2 = VECTOR_FACTORY::getManagedVector();
 
-        vectorc->copyVector ( vectora_orig );
-        vectorc2->copyVector ( vectora_orig );
-        vectord->copyVector ( vectorb );
-        vectord2->copyVector ( vectorb2 );
+        vectorc->copyVector( vectora_orig );
+        vectorc2->copyVector( vectora_orig );
+        vectord->copyVector( vectorb );
+        vectord2->copyVector( vectorb2 );
 
         Vec  vecc, vecd, vecc2, vecd2;
         vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
@@ -1215,8 +1215,8 @@ class VerifyScalePetscVector
             utils->failure("PETSc scale create");
 
         vectora->setRandomValues();
-        vectorb->copyVector ( vectora );
-        vectora2->copyVector ( vectora );
+        vectorb->copyVector( vectora );
+        vectora2->copyVector( vectora );
         double norm1 , norm2;
         checkPetscError<VECTOR_FACTORY> ( utils , VecScale ( veca , 1.23456 ) );
         norm1 = vectora->L2Norm ();
@@ -1239,8 +1239,8 @@ class VerifyScalePetscVector
 
         AMP::LinearAlgebra::Vector::shared_ptr  vectorc = VECTOR_FACTORY::getManagedVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectord = VECTOR_FACTORY::getManagedVector();
-        vectorc->copyVector ( vectora );
-        vectord->copyVector ( vectora );
+        vectorc->copyVector( vectora );
+        vectord->copyVector( vectora );
 
         Vec  vecc;
         vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
@@ -1292,8 +1292,8 @@ class VerifyDotPetscVector
 
         AMP::LinearAlgebra::Vector::shared_ptr  vectorc = VECTOR_FACTORY::getManagedVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectord = VECTOR_FACTORY::getManagedVector();
-        vectorc->copyVector ( vectora );
-        vectord->copyVector ( vectorb );
+        vectorc->copyVector( vectora );
+        vectord->copyVector( vectorb );
         Vec  vecc, vecd;
         vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
         vecd = vectord->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
@@ -1311,8 +1311,8 @@ class VerifyDotPetscVector
 
         AMP::LinearAlgebra::Vector::shared_ptr  vectore = VECTOR_FACTORY::getManagedVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectorf = VECTOR_FACTORY::getManagedVector();
-        vectore->copyVector ( vectora );
-        vectorf->copyVector ( vectorb );
+        vectore->copyVector( vectora );
+        vectorf->copyVector( vectorb );
         Vec  vece, vecf;
         vece = vectore->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
         vecf = vectorf->castTo<AMP::LinearAlgebra::PetscVector>().getVec();

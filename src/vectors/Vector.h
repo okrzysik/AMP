@@ -232,7 +232,7 @@ public:
       *   is assumed that rhs has consistent ghost values.
       * \param[in] rhs  a shared pointer to the Vector to copy the data from
      */
-    virtual void copyVector ( const Vector::const_shared_ptr &rhs );
+    virtual void copyVector( Vector::const_shared_ptr rhs );
 
     /** \brief  Swap the data in this Bector for another
       * \param[in]  other  Vector to swap data with
@@ -256,7 +256,7 @@ public:
         \endcode
       * without a and b exchanging pointers.
      */
-    void swapVectors ( Vector::shared_ptr &other );
+    void swapVectors ( Vector::shared_ptr other );
 
     /* \brief  Returns true if this vector has this element
      * \param[in]  GID  The global ID of the element
@@ -311,7 +311,7 @@ public:
       *  \param[in]  other  Vector to be aliased
       *  \details  This will make <i>this</i> "point" to other.
      */
-    void aliasVector ( Vector::shared_ptr &other );
+    void aliasVector ( Vector::shared_ptr other );
 
     /**\brief Copy data into this vector
       *\param[in] buf  Buffer to copy from
@@ -551,7 +551,7 @@ public:
       * \brief Return the local dot product of this vector with the argument vector.
       * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
      */
-    virtual double localDot ( const boost::shared_ptr<const Vector> &x ) const;
+    virtual double localDot ( boost::shared_ptr<const Vector> x ) const;
 
     /**
       * \brief  Determine if two vectors are equal using an absolute tolerance
@@ -559,16 +559,16 @@ public:
       * \param[in] tol Tolerance of comparison
       * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
       */
-    bool  equals ( Vector::shared_ptr &rhs , double  tol = 0.000001 );
+    bool  equals ( Vector::const_shared_ptr rhs , double  tol = 0.000001 ) const;
 
     /**
-      * \fn equals (Vector & rhs , double tol )
+      * \fn equals (Vector & const rhs , double tol )
       * \brief  Determine if two vectors are equal using an absolute tolerance
       * \param[in] rhs Vector to compare to
       * \param[in] tol Tolerance of comparison
       * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
       */
-    virtual bool  equals ( Vector & rhs , double  tol = 0.000001 ); // Will be const one day soon
+    virtual bool  equals ( Vector const & rhs , double  tol = 0.000001 ) const;
     //@}
 
 
@@ -1076,12 +1076,10 @@ protected:
       * \details  vector must be a MultiVector.  The easiest way to ensure this is to
       * create it with the select method.
       */
-    virtual void       selectInto ( const VectorSelector &criterion , Vector::shared_ptr vector );
+    virtual  Vector::shared_ptr selectInto( const VectorSelector &criterion );
 
-    // This is the const version of selectInto.  Currently this is a protected function because
-    // we do not have a concept of a const multivector yet and this results in destryoing 
-    // const correctness.  Use this function with caution.  
-    virtual void       constSelectInto ( const VectorSelector &criterion , Vector::shared_ptr vector ) const;
+    // This is the const version of selectInto.  
+    virtual  Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const;
 
     /** \brief  A default RNG to use when one is not specified
       */

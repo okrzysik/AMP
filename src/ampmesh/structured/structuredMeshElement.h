@@ -41,8 +41,17 @@ public:
     //! Return the volume of the current element (does not apply to verticies)
     virtual double volume() const;
 
-    //! Return the coordinates of all verticies composing the element
+    //! Return the coordinates of the vertex (only applies to verticies)
     virtual std::vector<double> coord() const;
+
+    /**
+     * \brief     Return the coordinate of the vertex
+     * \details   This function returns the coordinates of the vertex 
+     *   in the given direction (only applies to verticies).
+     *   Note: This is a faster access for obtaining a single coordinate
+     * \param i     The direction requested.  Equivalent to coord()[i]
+     */
+    virtual double coord( int i ) const;
 
     /**
      * \brief     Return true if the element contains the point

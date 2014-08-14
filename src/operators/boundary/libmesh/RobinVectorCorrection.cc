@@ -112,21 +112,11 @@ void RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
     {
 
         AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
-        AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
+        const AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
 
         for (; bnd1 != end_bnd1; ++bnd1)
         {
             PROFILE_START("prepare element",2);
-
-            boost::shared_ptr < ::FEType > d_feType ( new ::FEType(d_feTypeOrder, d_feFamily) );
-            boost::shared_ptr < ::FEBase > d_fe( (::FEBase::build(2, (*d_feType))).release() );
-
-            if(d_qruleOrderName == "DEFAULT") {
-                d_qruleOrder = d_feType->default_quadrature_order();
-            } else {
-                d_qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(d_qruleOrderName);
-            }
-            boost::shared_ptr < ::QBase > d_qrule( (::QBase::build(d_qruleType, 2, d_qruleOrder)).release() );
 
             // Get the nodes for the current element
             d_currNodes = bnd1->getElements(AMP::Mesh::Vertex);
@@ -143,16 +133,16 @@ void RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
                 gpDOFManager->getDOFs (bnd1->globalID(), gpDofs);
                 AMP_ASSERT(gpDofs.size()>0);
             }
-            // Get the libmesh element
-            ::Elem* currElemPtr = libmeshElements.getElement( bnd1->globalID() );
 
-            d_fe->attach_quadrature_rule( d_qrule.get() );
+            // Get the current libmesh element
+            const libMesh::FEBase* fe = d_libmeshElements.getFEBase( bnd1->globalID() );
+            const libMesh::QBase* rule = d_libmeshElements.getQBase( bnd1->globalID() );
+            AMP_ASSERT(fe!=NULL);
+            AMP_ASSERT(rule!=NULL);
+            const unsigned int numGaussPts = rule->n_points(); 
 
-            d_fe->reinit ( currElemPtr );
-
-            const std::vector<Real> JxW = d_fe->get_JxW();
-            const std::vector<std::vector<Real> > phi = d_fe->get_phi();
-            unsigned int numGaussPts = d_qrule->n_points(); 
+            const std::vector<Real> JxW = fe->get_JxW();
+            const std::vector<std::vector<Real> > phi = fe->get_phi();
             PROFILE_STOP("prepare element",2);
 
             std::vector<std::vector<double> > inputArgs(d_elementInputVec.size(),std::vector<double>(numNodesInCurrElem));
@@ -187,7 +177,7 @@ void RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
             std::vector<double> gpValues(gpDofs.size(),0.0);
             std::vector<double> addValues(dofs.size(),0.0);
             uInternal->getValuesByGlobalID( dofs.size(), &dofs[0], &values[0] );
-            for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
+            for (unsigned int qp = 0; qp<numGaussPts; qp++)
             {
                 Real phi_val = 0.0;
                 for (unsigned int l = 0; l < numNodesInCurrElem ; l++)
@@ -202,7 +192,7 @@ void RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
                 } else {
                     d_variableFlux->getValuesByGlobalID( gpDofs.size(), &gpDofs[0], &gpValues[0] );
                 }
-                for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
+                for (unsigned int qp = 0; qp<numGaussPts; qp++)
                 {
                     Real phi_val = 0.0;
                     if ( !d_isFluxGaussPtVector ){

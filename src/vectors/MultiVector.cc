@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "utils/Utilities.h"
+#include "utils/ProfilerApp.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/MultiDOF_Manager.h"
 
@@ -88,9 +89,31 @@ boost::shared_ptr<MultiVector>  MultiVector::view ( Vector::shared_ptr &vec, AMP
         if ( comm.isNull() )
             comm = vec->getComm();
         retval = create ( vec->getVariable()->getName(), comm, std::vector<Vector::shared_ptr>(1,vec) );
-        if ( vec->isA<DataChangeFirer>() ) {
-            vec->castTo<DataChangeFirer>().registerListener ( retval.get() );
+    }
+    return retval;
+}
+boost::shared_ptr<const MultiVector>  MultiVector::view ( Vector::const_shared_ptr &vec, AMP_MPI comm )
+{
+    boost::shared_ptr<const MultiVector>  retval;
+    // Check to see if this is a multivector
+    if ( vec->isA<const MultiVector>() ) {
+        if ( !comm.isNull() )
+            AMP_ASSERT( comm.compare(vec->getComm()) != 0 );
+        retval = boost::dynamic_pointer_cast<const MultiVector>( vec );
+    }
+    // Check to see if the engine is a multivector
+    if ( vec->isA<const ManagedVector>() ) {
+        if ( vec->castTo<const ManagedVector>().getVectorEngine()->isA<const MultiVector>() ) {
+            if ( !comm.isNull() )
+                AMP_ASSERT( comm.compare(vec->getComm()) != 0 );
+            retval = boost::dynamic_pointer_cast<const MultiVector>( vec->castTo<const ManagedVector>().getVectorEngine() );
         }
+    }
+    // If still don't have a multivector, make one
+    if ( !retval ) {
+        if ( comm.isNull() )
+            comm = vec->getComm();
+        retval = const_create( vec->getVariable()->getName(), comm, std::vector<Vector::const_shared_ptr>(1,vec) );
     }
     return retval;
 }
@@ -181,39 +204,45 @@ void MultiVector::replaceSubVector(Vector::shared_ptr oldVec, Vector::shared_ptr
 /****************************************************************
 * Select into the vector                                        *
 ****************************************************************/
-void MultiVector::selectInto ( const VectorSelector &s, Vector::shared_ptr retVec )
+Vector::shared_ptr MultiVector::selectInto ( const VectorSelector &s )
 {
     // Subset each vector
     std::vector<Vector::shared_ptr> subvectors;
-    //vector_iterator  cur = beginVector();
     for (size_t i=0; i!=d_vVectors.size(); i++) {
-        // Get the comm to operate on
-        AMP_MPI comm = s.communicator( d_vVectors[i] );
         // Subset the individual vector
-        Vector::shared_ptr  retVec2 = MultiVector::create ( "tmp_vector", comm );
-        d_vVectors[i]->selectInto ( s, retVec2 );
-        if ( retVec2->getDOFManager()->numGlobalDOF() > 0 )
-            subvectors.push_back( retVec2 );
+        Vector::shared_ptr  retVec2 = d_vVectors[i]->selectInto(s);
+        AMP_ASSERT(boost::dynamic_pointer_cast<MultiVector>(retVec2)==NULL);
+        if ( retVec2 != NULL ) {
+            if ( retVec2->getDOFManager()->numGlobalDOF() > 0 )
+                subvectors.push_back( retVec2 );
+        }
     }
     // Add the subsets to the multivector
-    retVec->castTo<MultiVector>().addVector ( subvectors );
+    AMP_MPI comm = s.communicator( shared_from_this() );
+    boost::shared_ptr<MultiVector>  retVec = MultiVector::create( "tmp_vector", comm, subvectors );
+    if ( retVec->getDOFManager()->numGlobalDOF() == 0 )
+        retVec.reset();
+    return retVec;
 }
-void MultiVector::constSelectInto ( const VectorSelector &s, Vector::shared_ptr retVec ) const
+Vector::const_shared_ptr MultiVector::selectInto ( const VectorSelector &s ) const
 {
     // Subset each vector
-    std::vector<Vector::shared_ptr> subvectors;
-    //vector_iterator  cur = beginVector();
+    std::vector<Vector::const_shared_ptr> subvectors;
     for (size_t i=0; i!=d_vVectors.size(); i++) {
-        // Get the comm to operate on
-        AMP_MPI comm = s.communicator( d_vVectors[i] );
         // Subset the individual vector
-        Vector::shared_ptr  retVec2 = MultiVector::create ( "tmp_vector", comm );
-        d_vVectors[i]->selectInto ( s, retVec2 );
-        if ( retVec2->getDOFManager()->numGlobalDOF() > 0 )
-            subvectors.push_back( retVec2 );
+        Vector::const_shared_ptr  retVec2 = d_vVectors[i]->selectInto(s);
+        AMP_ASSERT(boost::dynamic_pointer_cast<const MultiVector>(retVec2)==NULL);
+        if ( retVec2 != NULL ) {
+            if ( retVec2->getDOFManager()->numGlobalDOF() > 0 )
+                subvectors.push_back( retVec2 );
+        }
     }
     // Add the subsets to the multivector
-    retVec->castTo<MultiVector>().addVector ( subvectors );
+    AMP_MPI comm = s.communicator( shared_from_this() );
+    boost::shared_ptr<const MultiVector>  retVec = MultiVector::const_create( "tmp_vector", comm, subvectors );
+    if ( retVec->getDOFManager()->numGlobalDOF() == 0 )
+        retVec.reset();
+    return retVec;
 }
 
 
@@ -650,7 +679,7 @@ void MultiVector::setUpdateStatus ( UpdateState state )
 }
 
 
-void MultiVector::copyVector ( const Vector::const_shared_ptr &src )
+void MultiVector::copyVector( Vector::const_shared_ptr src )
 {
     boost::shared_ptr<const MultiVector> rhs = boost::dynamic_pointer_cast<const MultiVector>(src);
     if ( rhs.get()!=NULL ) {
@@ -900,6 +929,7 @@ void MultiVector::getValuesByLocalID ( int num, size_t *indices, double *out_val
 void  MultiVector::partitionGlobalValues ( const int num, const size_t *indices, const double *vals,
     std::vector<std::vector<size_t> > &out_indices, std::vector<std::vector<double> > &out_vals, std::vector<std::vector<int> > *remap ) const
 {
+    PROFILE_START("partitionGlobalValues",2);
     const size_t neg_one = ~((size_t)0);
     std::vector<size_t> globalDOFs(num,neg_one);
     for (int i=0; i<num; i++)
@@ -934,6 +964,7 @@ void  MultiVector::partitionGlobalValues ( const int num, const size_t *indices,
             }
         }
     }
+    PROFILE_STOP("partitionGlobalValues",2);
 }
 
 
@@ -945,6 +976,7 @@ void  MultiVector::partitionLocalValues ( const int num, const size_t *indices, 
 {
     if ( num == 0 )
         return;
+    PROFILE_START("partitionLocalValues",2);
     // Convert the local ids to global ids
     size_t begin_DOF = d_DOFManager->beginDOF();
     size_t end_DOF = d_DOFManager->endDOF();
@@ -968,6 +1000,7 @@ void  MultiVector::partitionLocalValues ( const int num, const size_t *indices, 
             AMP_ASSERT(out_indices[i][j]<end_DOF);
         }
     }
+    PROFILE_STOP("partitionLocalValues",2);
 }
 
 

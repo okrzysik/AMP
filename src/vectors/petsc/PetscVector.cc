@@ -18,13 +18,11 @@ void PetscVector::dataChanged ()
 Vector::const_shared_ptr  PetscVector::constView ( Vector::const_shared_ptr inVector )
 {
     Vector::shared_ptr  retVal;
-
-    if ( inVector->isA<PetscVector> () )
+    if ( inVector->isA<PetscVector> () ) {
         return inVector;
-    if ( inVector->hasView<PetscVector> () )
+    } else if ( inVector->hasView<PetscVector> () ) {
         return inVector->getView<PetscVector>();
-  
-    if ( inVector->isA<ManagedVector> () ) {
+    } else if ( inVector->isA<ManagedVector> () ) {
         Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
         retVal = Vector::shared_ptr ( new ManagedPetscVector( inVector2 ) );
         retVal->setVariable ( inVector->getVariable() );
@@ -44,14 +42,11 @@ Vector::const_shared_ptr  PetscVector::constView ( Vector::const_shared_ptr inVe
         t->setUpdateStatusPtr ( inVector->getUpdateStatusPtr () );
         retVal = Vector::shared_ptr ( t );
         inVector->registerView ( retVal );
-    } else if ( inVector->isA<SimpleVector> () ) {
+    } else {
         Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
         retVal = view ( MultiVector::view ( inVector2, inVector->getComm() ) );
         inVector->registerView ( retVal );
-    } else {
-        AMP_ERROR( "Nobody uses constView, anyway" );
     }
-
     return retVal;
 }
 
@@ -59,7 +54,6 @@ Vector::const_shared_ptr  PetscVector::constView ( Vector::const_shared_ptr inVe
 Vector::shared_ptr  PetscVector::view ( Vector::shared_ptr inVector )
 {
     Vector::shared_ptr  retVal;
-
     if ( inVector->isA<PetscVector> () ) {
         retVal = inVector;
     } else if ( inVector->hasView<PetscVector> () ) {
@@ -81,13 +75,11 @@ Vector::shared_ptr  PetscVector::view ( Vector::shared_ptr inVector )
         newVector->setUpdateStatusPtr ( inVector->getUpdateStatusPtr () );
         retVal = Vector::shared_ptr ( newVector );
         inVector->registerView ( retVal );
-    } else if ( inVector->isA<SimpleVector> () ) {
+    } else {
+        // Create a multivector to wrap the given vector and create a view
         retVal = view ( MultiVector::view ( inVector, inVector->getComm() ) );
         inVector->registerView ( retVal );
-    } else {
-        AMP_ERROR( "Failed view" );
     }
-
     return retVal;
 }
 

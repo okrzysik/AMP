@@ -72,7 +72,7 @@ public:
 
     using Vector::cloneVector;
     virtual Vector::shared_ptr cloneVector(const Variable::shared_ptr ) const;
-    virtual void copyVector(const Vector::const_shared_ptr &vec);
+    virtual void copyVector( Vector::const_shared_ptr vec );
 
     virtual void swapVectors(Vector &other);
     virtual void aliasVector(Vector & );

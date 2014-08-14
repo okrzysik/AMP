@@ -168,7 +168,7 @@ std::vector<double> MeshElement::coord() const
 double MeshElement::coord(int i) const
 {
     if ( element==NULL )
-        return this->coord()[i];
+        return element->coord()[i];
     return element->coord(i);
 }
 bool MeshElement::isOnSurface() const

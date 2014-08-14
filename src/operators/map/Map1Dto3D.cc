@@ -226,7 +226,7 @@ void Map1Dto3D :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::Line
 }
 
 void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-    AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
+    AMP::LinearAlgebra::Vector::shared_ptr, const double , const double )
 { 
 
     if ( d_MapMesh.get()==NULL ) 
@@ -310,8 +310,9 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::
 
 }
 
-void Map1Dto3D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-    AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
+void Map1Dto3D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr, 
+    AMP::LinearAlgebra::Vector::const_shared_ptr u,
+    AMP::LinearAlgebra::Vector::shared_ptr, const double , const double )
 { 
 
   if ( d_MapMesh.get()==NULL ) 

@@ -1,7 +1,11 @@
 #include "NodeToGaussPointOperator.h"
 #include "utils/ProfilerApp.h"
+#include "ampmesh/Mesh.h"
+#include "discretization/createLibmeshElements.h"
+
 
 /* Libmesh files */
+#include "libmesh/quadrature.h"
 #include "libmesh/fe_type.h"
 #include "libmesh/fe_base.h"
 #include "libmesh/elem.h"
@@ -20,16 +24,55 @@ namespace Operator {
 // Constructor
 NodeToGaussPointOperator::NodeToGaussPointOperator (const boost::shared_ptr<OperatorParameters> & params) : Operator (params)
 {
+    PROFILE_START("NodeToGaussPointOperator");
     d_NodalVariable.reset(new AMP::LinearAlgebra::Variable(params->d_db->getString("InputVariable")));
     d_GaussPtVariable.reset(new AMP::LinearAlgebra::Variable(params->d_db->getString("OutputVariable")));
     d_UseSurfaceElements = (params->d_db)->getBoolWithDefault("UseSurfaceElements", true);
-    // Create a list of the libmesh elements
+    // Get the iterator for the mesh
+    int dim = 0;
     if(d_UseSurfaceElements) {
+        dim = 2;
         d_iterator = d_Mesh->getIterator(AMP::Mesh::Face, 0);
     } else {
+        dim = 3;
         d_iterator = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
     }
-    d_libmeshElements.reinit( d_iterator );
+    // Initialize some libmesh variables
+    libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
+    libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
+    libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
+    libMeshEnums::QuadratureType qtype = libMesh::Utility::string_to_enum<QuadratureType>("QGAUSS");
+    libMesh::AutoPtr<libMesh::FEType> feType( new libMesh::FEType(feTypeOrder, feFamily) );
+    libMesh::AutoPtr<libMesh::QBase> qrule = libMesh::QBase::build(qtype,dim,qruleOrder);
+    libMesh::AutoPtr<libMesh::FEBase> febase = libMesh::FEBase::build(dim,*feType);
+    febase->attach_quadrature_rule(qrule.get());
+    // Cache data for all elements (improves performance)
+    d_nodes.resize(d_iterator.size());
+    d_N_quad.resize(d_iterator.size(),0);
+    d_phi.resize(d_iterator.size());
+    AMP::Mesh::MeshIterator iterator = d_iterator.begin();
+    for (size_t i=0; i<iterator.size(); ++i, ++iterator) {
+        // Cache the nodes for all elements
+        std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements(AMP::Mesh::Vertex);  
+        d_nodes[i].resize(nodes.size());
+        for (size_t j=0; j<nodes.size(); j++)
+            d_nodes[i][j] = nodes[j].globalID();
+        size_t N_nodes = d_nodes[i].size();
+        // Cache the shape functions for all elements
+        libMesh::Elem* elem = AMP::Discretization::createLibmeshElements::createElement( *iterator );
+        febase->reinit(elem);
+        const std::vector<std::vector<Real> >& phi = febase->get_phi();
+        AMP_ASSERT(d_nodes[i].size()==N_nodes);
+        d_N_quad[i] = phi[0].size();
+        d_phi[i].resize(d_N_quad[i]*N_nodes,0);
+        for (size_t j=0; j<phi.size(); j++) {
+            AMP_ASSERT(phi[j].size()==d_N_quad[i]);
+            for (size_t k=0; k<phi[j].size(); k++)
+                d_phi[i][j+k*N_nodes] = phi[j][k];
+        }
+        delete elem;
+    }
+    PROFILE_STOP("NodeToGaussPointOperator");
 }
 
 
@@ -40,68 +83,53 @@ void NodeToGaussPointOperator::apply(AMP::LinearAlgebra::Vector::const_shared_pt
 { 
     PROFILE_START("apply");
 
+    PROFILE_START("subsetInputVector");
     AMP::LinearAlgebra::Vector::const_shared_ptr nodalVec = subsetInputVector(u);
+    PROFILE_STOP("subsetInputVector");
+    PROFILE_START("subsetOutputVector");
     AMP::LinearAlgebra::Vector::shared_ptr gaussPtVec = subsetOutputVector(r);
+    PROFILE_STOP("subsetOutputVector");
 
     AMP_ASSERT(nodalVec->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
 
+    PROFILE_START("getDOFManager");
     AMP::Discretization::DOFManager::shared_ptr dof_map = nodalVec->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr gaussPt_dof_map = gaussPtVec->getDOFManager();
-
-    int dim=0;
-    if(d_UseSurfaceElements)
-        dim = 2;
-    else
-        dim = 3;
-    libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
-    libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
-    libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
-    boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", dim, qruleOrder)).release() );
-    boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
+    PROFILE_STOP("getDOFManager");
 
     AMP::Mesh::MeshIterator iterator = d_iterator.begin();
-    for (size_t i=0; i<iterator.size(); i++) {
+    std::vector<size_t> gaussPtIndices, bndGlobalIds;
+    for (size_t i=0; i<iterator.size(); ++i, ++iterator) {
 
         // Get the dofs for the gauss points
-        std::vector<size_t> gaussPtIndices; 
         gaussPt_dof_map->getDOFs( iterator->globalID(), gaussPtIndices );
 
         // Check if we need to set any gauss points for the current element
-        if ( gaussPtIndices.size()==0 ) {
-            ++iterator;
+        if ( gaussPtIndices.size()==0 )
             continue;
-        }
-
-        // Get the nodes comprising the current element
-        std::vector<AMP::Mesh::MeshElement> d_currNodes = iterator->getElements(AMP::Mesh::Vertex);  
-
-        // Get the current libmesh element
-        ::Elem* currElem = d_libmeshElements.getElement( iterator->globalID() );
-        boost::shared_ptr< ::FEBase > d_fe( (::FEBase::build(dim, (*d_feType))).release() );
-        d_fe->attach_quadrature_rule( d_qrule.get() );
-        d_fe->reinit(currElem);
+        unsigned int N_quad = d_N_quad[i];
+        AMP_ASSERT(gaussPtIndices.size()==N_quad);
 
         // Get the dofs for the nodes
-        std::vector<size_t> bndGlobalIds;
-        std::vector<AMP::Mesh::MeshElementID> globalIds(d_currNodes.size()) ;
-        for (size_t j=0; j<d_currNodes.size(); j++)
-            globalIds[j] = d_currNodes[j].globalID();
-        dof_map->getDOFs(globalIds, bndGlobalIds);
+        size_t N_nodes = d_nodes[i].size();
+        dof_map->getDOFs(d_nodes[i],bndGlobalIds);
+        AMP_ASSERT(bndGlobalIds.size()==N_nodes);
 
-        // Get the values at the gauss points
-        const std::vector<std::vector<Real> >& phi = d_fe->get_phi();
-        AMP_ASSERT(gaussPtIndices.size()==d_qrule->n_points());
-        std::vector<double>  computedAtGauss(d_qrule->n_points(), 0.0);
-        for (unsigned int j = 0; j < bndGlobalIds.size(); ++j){
-            double computedAtNode = nodalVec->getValueByGlobalID(bndGlobalIds[j]); 
-            for (unsigned int qp = 0; qp < d_qrule->n_points(); ++qp){
-                computedAtGauss[qp] += ( computedAtNode * phi[j][qp] );
+        // Get the values at the nodes
+        double nodeVals[16];
+        nodalVec->getValuesByGlobalID( N_nodes, &bndGlobalIds[0], nodeVals );
+
+        // Set the values at the gauss points
+        double computedAtGauss[27];
+        memset(computedAtGauss,0,27*sizeof(double));
+        for (unsigned int j=0; j<N_nodes; ++j) {
+            double computedAtNode = nodeVals[j];
+            for (unsigned int qp=0; qp<N_quad; ++qp){
+                computedAtGauss[qp] += ( computedAtNode * d_phi[i][j+qp*N_nodes] );
             }//end for qp
         }//end for j
+        gaussPtVec->setLocalValuesByGlobalID( N_quad, &gaussPtIndices[0], computedAtGauss);
 
-        gaussPtVec->setLocalValuesByGlobalID( gaussPtIndices.size(),&gaussPtIndices[0], &computedAtGauss[0]);
-
-        ++iterator;
     }//end for
     PROFILE_STOP("apply");
 }// end apply

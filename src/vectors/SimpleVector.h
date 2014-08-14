@@ -87,7 +87,7 @@ namespace LinearAlgebra {
       virtual size_t  numberOfDataBlocks () const;
       virtual size_t  sizeOfDataBlock ( size_t i = 0 ) const;
       using Vector::copyVector;
-      virtual void copyVector(const Vector &src_vec);
+      virtual void copyVector( Vector::const_shared_ptr src_vec );
       virtual void swapVectors(Vector &other);
       virtual void aliasVector(Vector &other);
       virtual void setValuesByLocalID ( int num , size_t *indices , const double *vals );

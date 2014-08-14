@@ -7,10 +7,11 @@
 namespace AMP {
 namespace Solver {
 
-  typedef SolverStrategyParameters Flow1DSolverParameters;
+typedef SolverStrategyParameters Flow1DSolverParameters;
 
-  class Flow1DSolver: public SolverStrategy {
-    public:
+
+class Flow1DSolver: public SolverStrategy {
+public:
 
       Flow1DSolver(boost::shared_ptr<Flow1DSolverParameters> parameters);
       
@@ -27,11 +28,9 @@ namespace Solver {
     
     void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params);
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1) {
-      return d_inpVariable;
-    }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
 
-    protected:
+protected:
 
     int d_numpoints; /**< Number of points in z direction */
 
@@ -61,7 +60,8 @@ namespace Solver {
     AMP::LinearAlgebra::Vector::shared_ptr d_Rhs;
     AMP::LinearAlgebra::Vector::shared_ptr d_Sol;
     
-  };
+};
+
 
 }
 }

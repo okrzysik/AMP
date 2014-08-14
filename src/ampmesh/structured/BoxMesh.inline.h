@@ -88,7 +88,7 @@ inline std::vector<bool> BoxMesh::periodic() const
 {
     std::vector<bool> per(static_cast<int>(GeomDim));
     for (int d=0; d<static_cast<int>(GeomDim); d++)
-        per[d] = d_isPeriodic[2*d+1];
+        per[d] = d_isPeriodic[d];
     return per;
 }
 inline BoxMesh::Box BoxMesh::getGlobalBox( int gcw ) const
@@ -97,6 +97,10 @@ inline BoxMesh::Box BoxMesh::getGlobalBox( int gcw ) const
     for (int d=0; d<static_cast<int>(GeomDim); d++) {
         box.first[d] = -gcw;
         box.last[d] = d_size[d]+gcw-1;
+        if ( !d_isPeriodic[d] ) {
+            box.first[d] = std::max(box.first[d],0);
+            box.last[d]  = std::min(box.last[d],d_size[d]-1);
+        }
     }
     return box;
 }
@@ -108,9 +112,9 @@ inline BoxMesh::Box BoxMesh::getLocalBox( int gcw ) const
     for (int d=0; d<static_cast<int>(GeomDim); d++) {
         box.first[d] = range[2*d+0]-gcw;
         box.last[d]  = range[2*d+1]+gcw-1;
-        if ( box.first[d]+d_size[d] <= box.last[d] ) {
-            box.first[d] = 0;
-            box.last[d] = d_size[d]-1;
+        if ( !d_isPeriodic[d] ) {
+            box.first[d] = std::max(box.first[d],0);
+            box.last[d]  = std::min(box.last[d],d_size[d]-1);
         }
     }
     return box;

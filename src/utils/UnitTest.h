@@ -103,7 +103,7 @@ protected:
 
 private:
     // Make the copy constructor private 
-    UnitTest(const UnitTest& /*p*/) {}
+    UnitTest(const UnitTest&) {}
 
     // Function to pack the messages into a single data stream and send to the given processor
     // Note: This function does not return until the message stream has been sent

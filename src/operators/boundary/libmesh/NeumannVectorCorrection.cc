@@ -30,11 +30,19 @@ NeumannVectorCorrection::NeumannVectorCorrection(const boost::shared_ptr<Neumann
     std::string feTypeOrderName = (params->d_db)->getStringWithDefault("FE_ORDER", "FIRST");
     std::string feFamilyName = (params->d_db)->getStringWithDefault("FE_FAMILY", "LAGRANGE");
     std::string qruleTypeName = (params->d_db)->getStringWithDefault("QRULE_TYPE", "QGAUSS");
-    d_qruleOrderName = (params->d_db)->getStringWithDefault("QRULE_ORDER", "DEFAULT");
+    std::string qruleOrderName = (params->d_db)->getStringWithDefault("QRULE_ORDER", "DEFAULT");
 
-    d_feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
-    d_feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>(feFamilyName);
+    // Create the libmesh qruleOrder, qruleType, and FEType
+    const unsigned int dim = 2;
+    libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
+    libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>(feFamilyName);
+    d_type.reset( new libMesh::FEType(feTypeOrder, feFamily) );
     d_qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>(qruleTypeName);
+    if ( qruleOrderName == "DEFAULT" ) {
+        d_qruleOrder = d_type->default_quadrature_order();
+    } else {
+        d_qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(qruleOrderName);
+    }
 
     d_variable = params->d_variable;
 
@@ -102,7 +110,7 @@ void NeumannVectorCorrection :: reset(const boost::shared_ptr<OperatorParameters
         AMP::Mesh::MeshIterator iterator2 = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[j], 0 );
         iterator = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, iterator, iterator2 );
     }
-    libmeshElements.reinit( iterator );
+    d_libmeshElements.reinit( iterator, d_qruleType, d_qruleOrder, d_type );
 }
 
 
@@ -144,19 +152,6 @@ void NeumannVectorCorrection :: addRHScorrection(AMP::LinearAlgebra::Vector::sha
           {
             count++;
 
-            const unsigned int dimension = 2;
-
-            boost::shared_ptr < ::FEType > d_feType ( new ::FEType(d_feTypeOrder, d_feFamily) );
-            boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(dimension, (*d_feType))).release() );
-
-            if(d_qruleOrderName == "DEFAULT") {
-              d_qruleOrder = d_feType->default_quadrature_order();
-            } else {
-              d_qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(d_qruleOrderName);
-            }
-            boost::shared_ptr < ::QBase > d_qrule( (::QBase::build(d_qruleType, dimension, d_qruleOrder)).release() );
-
-
             d_currNodes = bnd->getElements(AMP::Mesh::Vertex);
             unsigned int numNodesInCurrElem = d_currNodes.size();
 
@@ -171,24 +166,24 @@ void NeumannVectorCorrection :: addRHScorrection(AMP::LinearAlgebra::Vector::sha
               fluxDOFManager->getDOFs (bnd->globalID(), fluxDofs);
             }
 
-            // Get the libmesh element
-            ::Elem* currElemPtr = libmeshElements.getElement( bnd->globalID() );
+            // Get the current libmesh element
+            const libMesh::FEBase* fe = d_libmeshElements.getFEBase( bnd->globalID() );
+            const libMesh::QBase* rule = d_libmeshElements.getQBase( bnd->globalID() );
+            AMP_ASSERT(fe!=NULL);
+            AMP_ASSERT(rule!=NULL);
+            const unsigned int numGaussPts = rule->n_points(); 
 
-            d_fe->attach_quadrature_rule( d_qrule.get() );
-
-            d_fe->reinit ( currElemPtr );
-
-            const std::vector<std::vector<Real> > phi = d_fe->get_phi();
-            const std::vector<Real> djxw = d_fe->get_JxW();
+            const std::vector<std::vector<Real> > phi = fe->get_phi();
+            const std::vector<Real> djxw = fe->get_JxW();
 
             std::vector<std::vector<double> > temp(1) ;
-            std::vector<double> gamma(d_qrule->n_points(), gammaValue);
+            std::vector<double> gamma(numGaussPts, gammaValue);
 
             dofs.resize(numNodesInCurrElem);
             for (size_t n = 0; n < dofIndices.size() ; n++)
               dofs[n] = dofIndices[n][d_dofIds[j][k]];
 
-            for (size_t qp = 0; qp < d_qrule->n_points(); qp++) {
+            for (size_t qp = 0; qp<numGaussPts; qp++) {
               if(d_isConstantFlux)
               {
                 temp[0].push_back(d_neumannValues[j][k]);
@@ -215,7 +210,7 @@ void NeumannVectorCorrection :: addRHScorrection(AMP::LinearAlgebra::Vector::sha
 
             for(unsigned int i = 0; i < dofIndices.size() ; i++)    // Loop over nodes
             {
-              for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++) 
+              for(unsigned int qp = 0; qp<numGaussPts; qp++) 
               {
                 flux[i] +=  (gamma[qp])*djxw[qp]*phi[i][qp]*temp[0][qp];
               }//end for qp

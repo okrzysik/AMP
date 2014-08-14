@@ -45,7 +45,7 @@ public:
      * \param[in]  N_local  The local number of DOFs
      * \param[in]  comm     The comm over which the DOFManager exists
      */
-    DOFManager( size_t N_local, AMP_MPI comm );
+    DOFManager( size_t N_local, const AMP_MPI& comm );
 
     //! Deconstructor
     virtual ~DOFManager();
@@ -115,7 +115,7 @@ public:
  
 
     //! Get the comm for the DOFManger
-    virtual AMP_MPI  getComm() const;
+    inline const AMP_MPI& getComm() const { return d_comm; }
  
 
     //! Get the remote DOFs for a vector
@@ -130,7 +130,7 @@ public:
      * \details  This will subset a DOF manager for a given communicator.
      * \param[in]  comm         The communicator to use to subset
      */
-    virtual DOFManager::shared_ptr subset( AMP_MPI comm );
+    virtual DOFManager::shared_ptr subset( const AMP_MPI& comm );
 
 
     /** \brief Subset the DOF Manager for a mesh
@@ -149,7 +149,7 @@ public:
      * \param[in]  iterator     The mesh iterator for the subset
      * \param[in]  comm         The desired comm
      */
-    virtual DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator, AMP_MPI comm );
+    virtual DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator, const AMP_MPI& comm );
 
 protected:
 

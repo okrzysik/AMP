@@ -115,15 +115,16 @@ void NodeToNodeMap::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr,
     PROFILE_START("applyStart");
 
     // Subset the vector for the variable (we only need the local portion of the vector)
-    PROFILE_START("subset");
+    PROFILE_START("subset",1);
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
     AMP::LinearAlgebra::Vector::const_shared_ptr  commSubsetVec = u->constSelect(commSelector, u->getVariable()->getName());
     AMP::LinearAlgebra::Vector::const_shared_ptr  curPhysics = commSubsetVec->constSubsetVectorForVariable(var);
-    PROFILE_STOP("subset");
+    PROFILE_STOP("subset",1);
     AMP_INSIST( curPhysics , "apply received bogus stuff" );
 
     // Get the DOFs to send
+    PROFILE_START("getDOFs",1);
     AMP::Discretization::DOFManager::shared_ptr DOF = curPhysics->getDOFManager();
     std::vector<size_t> dofs(DofsPerObj*d_sendList.size());
     std::vector<size_t> local_dofs(DofsPerObj);
@@ -133,11 +134,15 @@ void NodeToNodeMap::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr,
         for (int j=0; j<DofsPerObj; j++)
             dofs[j+i*DofsPerObj] = local_dofs[j];
     }
+    PROFILE_STOP("getDOFs",1);
 
-    // Get the DOFs to send
+    // Get the values to send
+    PROFILE_START("getValues",1);
     curPhysics->getValuesByGlobalID( dofs.size(), getPtr( dofs ), getPtr( d_sendBuffer ) );
+    PROFILE_STOP("getValues",1);
 
     // Start the communication
+    PROFILE_START("startCommunication",1);
     std::vector<MPI_Request>::iterator  curReq = beginRequests();
     for (int i=0; i<d_MapComm.getSize(); i++) {
         int count  = DofsPerObj*d_count[i];
@@ -154,6 +159,7 @@ void NodeToNodeMap::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr,
             ++curReq;
         }
     }
+    PROFILE_STOP("startCommunication",1);
     PROFILE_STOP("applyStart");
 }
 

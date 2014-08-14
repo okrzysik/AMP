@@ -51,7 +51,7 @@ public:
 
     using Vector::cloneVector;
     virtual Vector::shared_ptr  cloneVector( const Variable::shared_ptr var ) const;
-    virtual void copyVector(const Vector::const_shared_ptr &vec);
+    virtual void copyVector( Vector::const_shared_ptr vec );
     virtual void assemble() {}
     ManagedVector* getNewRawPtr() const;
 

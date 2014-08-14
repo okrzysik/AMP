@@ -286,9 +286,9 @@ Vector::shared_ptr  ManagedEpetraMatrix::extractDiagonal ( Vector::shared_ptr v 
                          "extractDiagonal" );
     return retVal;
 }
-void ManagedEpetraMatrix::setDiagonal( const Vector::shared_ptr &in )
+void ManagedEpetraMatrix::setDiagonal( Vector::const_shared_ptr in )
 {
-    const Epetra_Vector& vec = EpetraVector::view( in )->castTo<EpetraVector>().getEpetra_Vector();
+    const Epetra_Vector& vec = EpetraVector::constView( in )->castTo<EpetraVector>().getEpetra_Vector();
     VerifyEpetraReturn( d_epetraMatrix->ReplaceDiagonalValues( vec ), "setDiagonal" );
 }
 void ManagedEpetraMatrix::setIdentity( )

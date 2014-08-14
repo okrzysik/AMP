@@ -34,13 +34,13 @@ namespace LinearAlgebra {
       vec2 = AMP::SubsetVector ( vec1 , subsetVar )
 
       // Copy the sparse vector data to a dense vector
-      vec3.copyVector ( vec2 );
+      vec3.copyVector( vec2 );
 
       // Perform whatever math
       performComputation ( vec3 );
 
       // Copy data back to vec2, and, consequently, vec1
-      vec2.copyVector ( vec3 );
+      vec2.copyVector( vec3 );
     \endcode
   */
 class  SubsetVector : public Vector

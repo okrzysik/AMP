@@ -13,7 +13,7 @@ namespace Discretization {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-DOFManager::DOFManager ( size_t N_local, AMP_MPI comm )
+DOFManager::DOFManager ( size_t N_local, const AMP_MPI& comm )
 {
     d_comm = comm;
     d_comm.sumScan(&N_local,&d_end,1);
@@ -100,15 +100,6 @@ size_t DOFManager::numGlobalDOF( ) const
 
 
 /****************************************************************
-* Return the communicator                                       *
-****************************************************************/
-AMP_MPI DOFManager::getComm( ) const
-{
-    return d_comm;
-}
-
-
-/****************************************************************
 * Return the global number of D.O.F.s                           *
 ****************************************************************/
 std::vector<size_t> DOFManager::getRemoteDOFs( ) const
@@ -160,9 +151,9 @@ bool DOFManager::operator!=( const DOFManager &rhs ) const
 /****************************************************************
 * Subset the DOF manager                                        *
 ****************************************************************/
-boost::shared_ptr<DOFManager>  DOFManager::subset( AMP_MPI comm )
+boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP_MPI& comm )
 {
-    if ( comm == d_comm ) 
+    if ( comm.compare(d_comm)!=0 ) 
         return shared_from_this();
     std::vector<size_t> local_dofs(numLocalDOF(),beginDOF());
     for (size_t i=0; i<numLocalDOF(); i++)
@@ -220,7 +211,7 @@ boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::Mesh::shared
         return boost::shared_ptr<DOFManager>();
     return subsetDOFManager::create( shared_from_this(), dofs, subsetIterator, comm );
 }
-boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::MeshIterator &iterator, AMP_MPI comm )
+boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::MeshIterator &iterator, const AMP_MPI& comm )
 {
     // Get the intesection of the current iterator with the given iterator
     AMP::Mesh::MeshIterator intersection = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Intersection, iterator, getIterator() );

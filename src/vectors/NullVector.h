@@ -45,7 +45,7 @@ namespace LinearAlgebra {
       template <typename RETURN_TYPE>
       const RETURN_TYPE *  getRawDataBlock() const;
 
-      virtual void copyVector( const Vector::const_shared_ptr &rhs );
+      virtual void copyVector( Vector::const_shared_ptr rhs );
       virtual void swapVectors(Vector &);
       virtual void aliasVector(Vector &);
 
@@ -96,8 +96,8 @@ namespace LinearAlgebra {
 
     protected:
 
-      virtual void  selectInto ( const VectorSelector & , Vector::shared_ptr ) {}
-      virtual void  const_selectInto ( const VectorSelector & , Vector::shared_ptr ) const {}
+      virtual Vector::shared_ptr  selectInto ( const VectorSelector & ) { return Vector::shared_ptr(); }
+      virtual Vector::const_shared_ptr  selectInto ( const VectorSelector & ) const { return Vector::const_shared_ptr(); }
 
       virtual void *getRawDataBlockAsVoid ( size_t );
       virtual const void *getRawDataBlockAsVoid ( size_t ) const;

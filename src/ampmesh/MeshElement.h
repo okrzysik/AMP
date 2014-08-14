@@ -75,6 +75,15 @@ public:
 
 
     /**
+     * \brief     Return the coordinate of the vertex
+     * \details   This function returns the coordinates of the vertex 
+     *   in the given direction (only applies to verticies).
+     * \param i     The direction requested.  Equivalent to coord()[i]
+     */
+    virtual double coord( int i ) const;
+
+
+    /**
      * \brief     Return the centroid of the element
      * \details   This function returns the centroid of the element.  The
      *   centroid is defined as the average of the coordinates of the verticies.

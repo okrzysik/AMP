@@ -11,7 +11,7 @@ namespace Discretization {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-multiDOFManager::multiDOFManager ( AMP_MPI globalComm, std::vector<DOFManager::shared_ptr> managers )
+multiDOFManager::multiDOFManager ( const AMP_MPI& globalComm, std::vector<DOFManager::shared_ptr> managers )
 {
     d_managers = managers;
     d_comm = globalComm;
@@ -218,27 +218,19 @@ std::vector<DOFManager::shared_ptr>  multiDOFManager::getDOFManagers() const
 /****************************************************************
 * Subset the DOF manager                                        *
 ****************************************************************/
-boost::shared_ptr<DOFManager>  multiDOFManager::subset( AMP_MPI comm_in )
+boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP_MPI& comm_in )
 {
-    // Get the comm for the new DOFManager
+    // Check if we are dealing with a compatible comm
     if ( comm_in.compare(d_comm)!=0 ) 
         return shared_from_this();
+    // Get the comm for the new DOFManager
     AMP_MPI comm = AMP_MPI::intersect( comm_in, d_comm );
     // Subset all of the DOFManagers within this DOFManager
-    bool changed = false;
     std::vector<DOFManager::shared_ptr> sub_managers;
     for (size_t i=0; i<d_managers.size(); i++) {
         DOFManager::shared_ptr subset = d_managers[i]->subset(comm);
-        if ( subset.get()!=d_managers[i].get() )
-            changed = true;
         if ( subset!=NULL ) 
             sub_managers.push_back( subset );
-    }
-    // Check if the DOF manager changed and the comms are compatible
-    if ( comm.compare(d_comm)!=0 ) {
-        changed = comm.anyReduce( changed );
-        if ( !changed ) 
-            return shared_from_this();
     }
     // Check that we have a valid DOF manager somewhere
     bool valid_DOF = !sub_managers.empty();
@@ -284,7 +276,7 @@ boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::Mesh::s
     // Create the new multiDOFManager
     return boost::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
 }
-boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::MeshIterator &iterator, AMP_MPI comm_in )
+boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::MeshIterator &iterator, const AMP_MPI& comm_in )
 {
     // Get the comm for the new DOFManager
     AMP_MPI comm = AMP_MPI::intersect( comm_in, d_comm );

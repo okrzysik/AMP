@@ -6,6 +6,8 @@
 #include "vectors/VectorBuilder.h"
 #include "vectors/MultiVector.h"
 #include "discretization/subsetDOFManager.h"
+#include "utils/ProfilerApp.h"
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -20,6 +22,7 @@ Vector::shared_ptr  SubsetVector::view ( Vector::shared_ptr v , Variable::shared
 }
 Vector::const_shared_ptr  SubsetVector::view ( Vector::const_shared_ptr v , Variable::shared_ptr var_in )
 {
+    PROFILE_START("view",2);
     boost::shared_ptr<SubsetVariable> var = boost::dynamic_pointer_cast<SubsetVariable>( var_in );
     AMP_ASSERT( var.get() != NULL );
     if ( boost::dynamic_pointer_cast<const MultiVector>(v) ) {
@@ -32,21 +35,28 @@ Vector::const_shared_ptr  SubsetVector::view ( Vector::const_shared_ptr v , Vari
             if ( sub_vec!=NULL ) 
                 vec_list.push_back(sub_vec);
         }
-        if ( vec_list.empty() )
+        if ( vec_list.empty() ) {
+            PROFILE_STOP2("view",2);
             return Vector::const_shared_ptr();
+        }
         AMP::Discretization::DOFManager::shared_ptr parentDOF = v->getDOFManager();
         AMP::Discretization::DOFManager::shared_ptr subsetDOF = var->getSubsetDOF( parentDOF );
+        PROFILE_STOP2("view",2);
         return MultiVector::const_create( v->getVariable()->getName(), subsetDOF->getComm(), vec_list );
     }
     // Subset the DOFManager and create a new communication list
     AMP::Discretization::DOFManager::shared_ptr parentDOF = v->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr subsetDOF = var->getSubsetDOF( parentDOF );
-    if ( subsetDOF.get() == NULL )
+    if ( subsetDOF.get() == NULL ) {
+        PROFILE_STOP2("view",2);
         return Vector::shared_ptr();
-    if ( subsetDOF->numGlobalDOF() == 0 )
+    } else if ( subsetDOF->numGlobalDOF() == 0 ) {
+        PROFILE_STOP2("view",2);
         return Vector::shared_ptr();
-    if ( subsetDOF==parentDOF )
+    } else if ( subsetDOF==parentDOF ) {
+        PROFILE_STOP2("view",2);
         return v;
+    }
     std::vector<size_t> remote_DOFs = subsetDOF->getRemoteDOFs();
     bool ghosts = subsetDOF->getComm().anyReduce(!remote_DOFs.empty());
     AMP::LinearAlgebra::CommunicationList::shared_ptr commList;
@@ -92,6 +102,7 @@ Vector::const_shared_ptr  SubsetVector::view ( Vector::const_shared_ptr v , Vari
     // For now use one datablock for each value, this needs to be changed
     retVal->d_dataBlockPtr = data_ptr;
     retVal->d_dataBlockSize = std::vector<size_t>(data_ptr.size(),1);
+    PROFILE_STOP("view",2);
     return retVal;
 }
 Vector::shared_ptr  SubsetVector::cloneVector ( Variable::shared_ptr var ) const

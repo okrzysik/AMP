@@ -252,6 +252,13 @@ std::vector<double> libMeshElement::coord() const
         x[i] = (*node)(i);
     return x;
 }
+double libMeshElement::coord(int i) const
+{
+    if ( d_globalID.type() != Vertex )
+        AMP_ERROR("coord is only defined for Nodes");
+    ::Node* node = (::Node*) ptr_element;
+    return (*node)(i);
+}
 std::vector<double> libMeshElement::centroid() const
 {
     if ( d_globalID.type()==Vertex )

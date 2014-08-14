@@ -7,13 +7,11 @@ namespace LinearAlgebra {
 Vector::const_shared_ptr  SundialsVector::constView ( Vector::const_shared_ptr inVector )
 {
     Vector::shared_ptr  retVal;
-
-    if ( inVector->isA<SundialsVector> () )
+    if ( inVector->isA<SundialsVector> () ) {
         return inVector;
-    if ( inVector->hasView<SundialsVector> () )
+    } else if ( inVector->hasView<SundialsVector> () ) {
         return inVector->getView<SundialsVector>();
-
-    if ( inVector->isA<ManagedVector> () ) {
+    } else if ( inVector->isA<ManagedVector> () ) {
         Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
         retVal = Vector::shared_ptr ( new ManagedSundialsVector ( inVector2 ) );
         inVector->registerView ( retVal );
@@ -36,9 +34,11 @@ Vector::const_shared_ptr  SundialsVector::constView ( Vector::const_shared_ptr i
         retVal = Vector::shared_ptr ( t );
         inVector->registerView ( retVal );
     } else {
-        AMP_ERROR( "Cannot create view!" );
+        // Create a multivector to wrap the given vector and create a view
+        Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
+        retVal = view ( MultiVector::view( inVector2, inVector->getComm() ) );
+        inVector2->registerView( retVal );
     }
-
     return retVal;
 }
 
@@ -46,13 +46,11 @@ Vector::const_shared_ptr  SundialsVector::constView ( Vector::const_shared_ptr i
 Vector::shared_ptr  SundialsVector::view ( Vector::shared_ptr inVector )
 {
     Vector::shared_ptr  retVal;
-
-    if ( inVector->isA<SundialsVector> () )
-        return inVector;
-    if ( inVector->hasView<SundialsVector> () )
-        return inVector->getView<SundialsVector>();
-
-    if ( inVector->isA<ManagedVector> () ) {
+    if ( inVector->isA<SundialsVector> () ) {
+        retVal = inVector;
+    } else if ( inVector->hasView<SundialsVector> () ) {
+        retVal = inVector->getView<SundialsVector>();
+    } else if ( inVector->isA<ManagedVector> () ) {
         retVal = Vector::shared_ptr ( new ManagedSundialsVector ( inVector ) );
         inVector->registerView ( retVal );
     } else if ( inVector->isA<VectorEngine> () ) {
@@ -73,9 +71,10 @@ Vector::shared_ptr  SundialsVector::view ( Vector::shared_ptr inVector )
         retVal = Vector::shared_ptr ( t );
         inVector->registerView ( retVal );
     } else {
-        AMP_ERROR( "Cannot create view!" );
+        // Create a multivector to wrap the given vector and create a view
+        retVal = view ( MultiVector::view( inVector, inVector->getComm() ) );
+        inVector->registerView( retVal );
     }
-
     return retVal;
 }
 

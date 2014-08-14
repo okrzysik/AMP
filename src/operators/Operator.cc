@@ -1,6 +1,7 @@
-
 #include "operators/Operator.h"
 #include "utils/Utilities.h"
+#include "utils/ProfilerApp.h"
+
 
 namespace AMP {
 namespace Operator {
@@ -60,57 +61,73 @@ void Operator :: getFromInput(const boost::shared_ptr<AMP::Database>& db)
 
 AMP::LinearAlgebra::Vector::shared_ptr  Operator::subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
 {
+    PROFILE_START("subsetOutputVector",1);
     AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    AMP::LinearAlgebra::Vector::shared_ptr retvec;
     if(d_Mesh.get() != NULL) {
         AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, vec->getVariable()->getName());
         AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec = meshSubsetVec->subsetVectorForVariable(var);
-        return varSubsetVec;
+        retvec = varSubsetVec;
     } else {
-        return vec->subsetVectorForVariable(var);
+        retvec = vec->subsetVectorForVariable(var);
     }
+    PROFILE_STOP("subsetOutputVector",1);
+    return retvec;
 }
 
 
 AMP::LinearAlgebra::Vector::shared_ptr  Operator::subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
 {
+    PROFILE_START("subsetInputVector",1);
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    AMP::LinearAlgebra::Vector::shared_ptr retvec;
     if(d_Mesh.get() != NULL) {
         AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = vec->select(meshSelector, vec->getVariable()->getName());
         AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec = meshSubsetVec->subsetVectorForVariable(var);
-        return varSubsetVec;
+        retvec = varSubsetVec;
     } else {
-        return vec->subsetVectorForVariable(var);
+        retvec = vec->subsetVectorForVariable(var);
     }
+    PROFILE_STOP("subsetInputVector",1);
+    return retvec;
 }
 
 
 AMP::LinearAlgebra::Vector::const_shared_ptr  Operator::subsetOutputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
 {
+    PROFILE_START("constSubsetOutputVector",1);
     AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    AMP::LinearAlgebra::Vector::const_shared_ptr retvec;
     if(d_Mesh.get() != NULL) {
         AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
         AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, vec->getVariable()->getName());
         AMP::LinearAlgebra::Vector::const_shared_ptr varSubsetVec = meshSubsetVec->constSubsetVectorForVariable(var);
-        return varSubsetVec;
+        retvec = varSubsetVec;
     } else {
-        return vec->constSubsetVectorForVariable(var);
+        retvec = vec->constSubsetVectorForVariable(var);
     }
+    PROFILE_STOP("constSubsetOutputVector",1);
+    return retvec;
 }
 
 
 AMP::LinearAlgebra::Vector::const_shared_ptr  Operator::subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
 {
+    PROFILE_START("constSubsetInputVector",1);
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    AMP::LinearAlgebra::Vector::const_shared_ptr retvec;
     if(d_Mesh.get() != NULL) {
         AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
         AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec = vec->constSelect(meshSelector, vec->getVariable()->getName());
         AMP::LinearAlgebra::Vector::const_shared_ptr varSubsetVec = meshSubsetVec->constSubsetVectorForVariable(var);
-        return varSubsetVec;
+        retvec = varSubsetVec;
     } else {
-        return vec->constSubsetVectorForVariable(var);
+        retvec = vec->constSubsetVectorForVariable(var);
     }
+    PROFILE_STOP("constSubsetInputVector",1);
+    return retvec;
 }
 
 

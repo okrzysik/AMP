@@ -39,17 +39,17 @@ namespace LinearAlgebra {
 
 
     public:
-      /** \brief The basic buffer type of vectors
-        */
-      typedef std::vector< double >                 Buffer;
+      //! The basic buffer type of vectors
+      typedef std::vector<double>                   Buffer;
 
-      /** \brief A shared pointer to the buffer
-        */
-      typedef boost::shared_ptr <Buffer>            BufferPtr;
+      //! A shared pointer to the buffer
+      typedef boost::shared_ptr<Buffer>             BufferPtr;
 
-      /** \brief A shared pointer to an engine
-        */
-      typedef boost::shared_ptr <VectorEngine>      shared_ptr;
+      //! A shared pointer to an engine
+      typedef boost::shared_ptr<VectorEngine>       shared_ptr;
+
+      //! A const shared pointer to an engine
+      typedef boost::shared_ptr<const VectorEngine> const_shared_ptr;
 
       /** \brief  Destructor
         */

@@ -48,7 +48,7 @@ void LinearFEOperator :: reset(const boost::shared_ptr<OperatorParameters>& para
     AMP_ASSERT((*d_inDofMap)==(*d_matrix->getRightDOFManager()));
 
     AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
-    AMP::Mesh::MeshIterator end_el = el.end();
+    const AMP::Mesh::MeshIterator end_el = el.end();
 
     this->preAssembly(params);
 

@@ -34,7 +34,7 @@ public:
      * \param[in] comm      The new comm for the subset DOF Manager
      */
     static DOFManager::shared_ptr create( boost::shared_ptr<const DOFManager> parentDOFManager, 
-        const std::vector <size_t> &dofs, const AMP::Mesh::MeshIterator &iterator, AMP_MPI comm );
+        const std::vector <size_t> &dofs, const AMP::Mesh::MeshIterator &iterator, const AMP_MPI& comm );
 
 
     /** \brief Get the entry indices of DOFs given a mesh element ID

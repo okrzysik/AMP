@@ -96,7 +96,7 @@ namespace Operator {
 
     protected :
 
-      Discretization::createLibmeshElements libmeshElements;
+      Discretization::createLibmeshElements d_libmeshElements;
 
       std::vector<short int> d_boundaryIds;
 
@@ -126,12 +126,9 @@ namespace Operator {
 
       boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 
-      std::string         d_qruleOrderName; 
-
-      libMeshEnums::Order d_feTypeOrder;
-      libMeshEnums::FEFamily d_feFamily;
+      boost::shared_ptr<const libMesh::FEType> d_type;
+      libMeshEnums::Order d_qruleOrder; 
       libMeshEnums::QuadratureType d_qruleType;
-      libMeshEnums::Order d_qruleOrder;
 
       std::vector<AMP::Mesh::MeshElement> d_currNodes;
 

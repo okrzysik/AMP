@@ -120,8 +120,6 @@ namespace Operator {
     
     boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 
-    ::Elem* d_currElemPtr;
-
     AMP::Discretization::DOFManager::shared_ptr d_dofManager; 
 
   private :
