@@ -112,7 +112,7 @@ September 1998");
     static const double       CondParams[1] = {0};
     static const std::string  CondArgs[CondNumArgs] = {"temperature", "density"};
     static const double       CondTminVal = 200.0;        // minimum temperature [K]
-    static const double       CondTmaxVal = 1000;        // maximum temperature [K] (arbitrary "very high" temperature)
+    static const double       CondTmaxVal = 1500;        // maximum temperature [K] (arbitrary "very high" temperature)
     static const double       CondRhominVal = 318;        // minimum density [kg/m3]
     static const double       CondRhomaxVal = 1200.;    // maximum density [kg/m3] (arbitrary "very high" density)
     static const double       CondRanges[2][2]={{CondTminVal, CondTmaxVal}, {CondRhominVal, CondRhomaxVal}};
@@ -124,7 +124,7 @@ September 1998");
     static const double       ConvParams[1] = {0};
     static const std::string  ConvArgs[ConvNumArgs] = {"temperature", "density", "diameter", "reynolds", "prandtl"};
     static const double       ConvTminVal = 200.0;        // minimum temperature [K]
-    static const double       ConvTmaxVal = 1000;        // maximum temperature [K] (arbitrary "very high" temperature)
+    static const double       ConvTmaxVal = 1500;        // maximum temperature [K] (arbitrary "very high" temperature)
     static const double       ConvRhominVal = 318;        // minimum density [kg/m3]
     static const double       ConvRhomaxVal = 1200.;    // maximum density [kg/m3] (arbitrary "very high" density)
     static const double       ConvDminVal   = 0.0;        // minimum diameter [m]
@@ -147,7 +147,7 @@ September 1998");
                                 -0.0270448,-0.0253093,-0.0267758,-0.0822904,0.0602253,-0.0202595};
     static const std::string  ViscArgs[ViscNumArgs] = {"temperature", "density"};
     static const double       ViscTminVal = 0.0;        // minimum temperature [K]
-    static const double       ViscTmaxVal = 1.0e3;        // maximum temperature [K] (arbitrary "very high" temperature)
+    static const double       ViscTmaxVal = 1.5e3;        // maximum temperature [K] (arbitrary "very high" temperature)
     static const double       ViscRhominVal = 318;        // minimum density [kg/m3]
     static const double       ViscRhomaxVal = 1200.;    // maximum density [kg/m3] (arbitrary "very high" density)
     static const double       ViscRanges[2][2]={{ViscTminVal, ViscTmaxVal}, {ViscRhominVal, ViscRhomaxVal}};
@@ -159,7 +159,7 @@ September 1998");
                                     -0.00106377488,0.0000006177396046};
     static const std::string  EnthalpyArgs[EnthalpyNumArgs] = {"temperature", "pressure"};
     static const double       EnthalpyTminVal = 0.0;        // minimum temperature [K]
-    static const double       EnthalpyTmaxVal = 1.0e3;        // maximum temperature [K] (arbitrary "very high" temperature)
+    static const double       EnthalpyTmaxVal = 1.5e3;        // maximum temperature [K] (arbitrary "very high" temperature)
     static const double       EnthalpyPminVal = 689.4757;        // minimum pressure [Pa]
     //static const double       EnthalpyPmaxVal = 22119759.4074;    // critical pressure; maximum pressure [Pa]
     static const double       EnthalpyPmaxVal = 4.1369e7; // This is limiting value of correlation (6000 psi), not the critical pressure [Pa]
@@ -887,6 +887,10 @@ September 1998");
             for (size_t j=0; j<6; j++)
                 expsum = expsum + b[i][j]*pow(Tstar/T-1,(double)j)*pow(rho/rhostar-1,(double)i);
         u = u0*exp(rho/rhostar*expsum);
+
+        // According to the source of the correlation, it seems that the viscosity
+        // is currently in micro Pa-s rather than Pa-s.  If this correlation is
+        // to be used, this value should be verified.
 
         return u;
     }
