@@ -35,7 +35,7 @@ SubchannelTwoEqNonlinearOperator::SubchannelTwoEqNonlinearOperator(const boost::
 // reset
 void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
 {
-    boost::shared_ptr<SubchannelOperatorParameters> myparams = 
+    boost::shared_ptr<SubchannelOperatorParameters> myparams =
         boost::dynamic_pointer_cast<SubchannelOperatorParameters>(params);
     AMP_INSIST( ((myparams.get()) != NULL), "NULL parameters" );
     AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
@@ -47,13 +47,13 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
 
     // Get the properties from the database
     d_Pout = getDoubleParameter(myparams,"Exit_Pressure",15.5132e6);
-    d_Tin  = getDoubleParameter(myparams,"Inlet_Temperature",569.26);  
-    d_mass = getDoubleParameter(myparams,"Inlet_Mass_Flow_Rate",0.3522*d_numSubchannels);  
-    d_gamma     = getDoubleParameter(myparams,"Fission_Heating_Coefficient",0.0);  
-    d_theta     = getDoubleParameter(myparams,"Channel_Angle",0.0);  
-    d_reynolds  = getDoubleParameter(myparams,"Reynolds",0.0);  
-    d_prandtl   = getDoubleParameter(myparams,"Prandtl",0.0);  
-    d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
+    d_Tin  = getDoubleParameter(myparams,"Inlet_Temperature",569.26);
+    d_mass = getDoubleParameter(myparams,"Inlet_Mass_Flow_Rate",0.3522*d_numSubchannels);
+    d_gamma     = getDoubleParameter(myparams,"Fission_Heating_Coefficient",0.0);
+    d_theta     = getDoubleParameter(myparams,"Channel_Angle",0.0);
+    d_reynolds  = getDoubleParameter(myparams,"Reynolds",0.0);
+    d_prandtl   = getDoubleParameter(myparams,"Prandtl",0.0);
+    d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);
     d_source = getStringParameter(myparams,"Heat_Source_Type","totalHeatGeneration");
     d_frictionModel = getStringParameter(myparams,"Friction_Model","Constant");
     d_NGrid = getIntegerParameter(myparams,"Number_GridSpacers",0);
@@ -69,10 +69,10 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
         AMP_WARNING("Field 'ChannelFractions' is obsolete and should be removed from database");
     if ( (myparams->d_db)->keyExists("Mass_Flow_Rate") )
         AMP_WARNING("Field 'Mass_Flow_Rate' is obsolete and should be removed from database");
-    
+
     // Get the subchannel properties from the mesh
     std::vector<double> x, y;
-    Subchannel::getSubchannelProperties( d_Mesh, myparams->clad_x, myparams->clad_y, myparams->clad_d, 
+    Subchannel::getSubchannelProperties( d_Mesh, myparams->clad_x, myparams->clad_y, myparams->clad_d,
         x, y, d_channelArea, d_channelDiam, d_rodDiameter, d_rodFraction );
     AMP_ASSERT(d_channelArea.size()==d_numSubchannels);
     double total_area = 0.0;
@@ -84,15 +84,15 @@ void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorP
 
     // get additional parameters based on heat source type
     if ((d_source == "totalHeatGeneration")||(d_source == "totalHeatGenerationWithDiscretizationError")) {
-        d_Q    = getDoubleParameter(myparams,"Rod_Power",66.81e3);  
+        d_Q    = getDoubleParameter(myparams,"Rod_Power",66.81e3);
         d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
     }
 
     // get additional parameters based on friction model
     if (d_frictionModel == "Constant") {
-        d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
+        d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);
     } else if (d_frictionModel == "Selander"){
-        d_roughness = getDoubleParameter(myparams,"Surface_Roughness",0.0015e-3);  
+        d_roughness = getDoubleParameter(myparams,"Surface_Roughness",0.0015e-3);
     }
 
     // get form loss parameters if there are grid spacers
@@ -185,14 +185,14 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
         dof_manager->getDOFs( (localSubchannelIt.begin())->globalID(), dofs );
 
         double h_in  = h_scale*inputVec->getValueByGlobalID(dofs[0]);
-        double P_in  = P_scale*inputVec->getValueByGlobalID(dofs[1]);    
+        double P_in  = P_scale*inputVec->getValueByGlobalID(dofs[1]);
 
         // evaluate enthalpy at inlet
         std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
         enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,d_Tin)));
         enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,P_in)));
         std::vector<double> enthalpyResult(1);
-        d_subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
+        d_subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap);
         double h_eval = enthalpyResult[0];
 
         // compute the enthalpy change in each interval
@@ -206,7 +206,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                 face_ids[j] = face->globalID();
                 ++face;
             }
-            flux = Subchannel::getHeatFluxClad( d_z, face_ids, d_channelDiam[isub], d_reynolds, d_prandtl, 
+            flux = Subchannel::getHeatFluxClad( d_z, face_ids, d_channelDiam[isub], d_reynolds, d_prandtl,
                 d_rodFraction[isub], d_subchannelPhysicsModel, inputVec, d_cladTemperature );
         } else if (d_source == "averageHeatFlux") {
             AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
@@ -229,7 +229,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
         double A = d_channelArea[isub];     // Channel area
         double D = d_channelDiam[isub]; // Channel hydraulic diameter
         double mass = d_channelMass[isub];  // Mass flow rate in the current subchannel
-        double R_h, R_p; 
+        double R_h, R_p;
         int j = 1;
         AMP::Mesh::MeshIterator face = localSubchannelIt.begin();
         AMP::Mesh::MeshIterator end_face = localSubchannelIt.end();
@@ -284,7 +284,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                 volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
                 volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,p_plus)));
                 std::vector<double> volumeResult_plus(1);
-                d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus); 
+                d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus);
                 double rho_plus = 1.0/volumeResult_plus[0];
 
                 // evaluate density at lower face
@@ -292,8 +292,12 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                 volumeArgMap_minus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_minus)));
                 volumeArgMap_minus.insert(std::make_pair("pressure",new std::vector<double>(1,p_minus)));
                 std::vector<double> volumeResult_minus(1);
-                d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus); 
+                d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus);
                 double rho_minus = 1.0/volumeResult_minus[0];
+
+                double u_plus  = mass / (A*rho_plus);  // velocity evaluated at upper face
+                double u_minus = mass / (A*rho_minus); // velocity evaluated at lower face
+                double u_avg = (1.0/2.0)*(u_minus + u_plus); // velocity evaluated at cell center
 
                 // evaluate density at cell center
                 std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_avg;
@@ -303,33 +307,37 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                 d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_avg,volumeArgMap_avg);
                 double rho_avg = 1.0/volumeResult_avg[0];
 
-                double u_plus  = mass / (A*rho_plus);  // velocity evaluated at upper face
-                double u_minus = mass / (A*rho_minus); // velocity evaluated at lower face
-                double u_avg = (1.0/2.0)*(u_minus + u_plus); // velocity evaluated at cell center
-
-                // evaluate temperature at cell center
-                std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
-                temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
-                temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
-                std::vector<double> temperatureResult(1);
-                d_subchannelPhysicsModel->getProperty("Temperature",temperatureResult,temperatureArgMap);
-                double T_avg = temperatureResult[0];
-
-                // evaluate viscosity at cell center
-                std::map<std::string, boost::shared_ptr<std::vector<double> > > viscosityArgMap;
-                viscosityArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,T_avg)));
-                viscosityArgMap.insert(std::make_pair("density",new std::vector<double>(1,rho_avg)));
-                std::vector<double> viscosityResult(1);
-                d_subchannelPhysicsModel->getProperty("DynamicViscosity",viscosityResult,viscosityArgMap);
-                double visc = viscosityResult[0];
-
-                // evaluate friction factor
-                double Re = rho_avg*u_avg*D/visc;
-                double fl = 64.0/Re; // laminar friction factor
                 double fric; // friction factor
-                if (d_frictionModel == "Constant") {
+                if (d_frictionModel == "Constant")
+                {
                     fric = d_friction;
-                } else {
+                }
+                else
+                {
+                    std::stringstream ss;
+                    ss << "Dynamic viscosity calculation may be incorrect" << std::endl
+                       << "Verify units of the correlation if using non-constant friction model." << std::endl;
+                    AMP_WARNING(ss.str());
+
+                    // evaluate temperature at cell center
+                    std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
+                    temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
+                    temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
+                    std::vector<double> temperatureResult(1);
+                    d_subchannelPhysicsModel->getProperty("Temperature",temperatureResult,temperatureArgMap);
+                    double T_avg = temperatureResult[0];
+
+                    // evaluate viscosity at cell center
+                    std::map<std::string, boost::shared_ptr<std::vector<double> > > viscosityArgMap;
+                    viscosityArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,T_avg)));
+                    viscosityArgMap.insert(std::make_pair("density",new std::vector<double>(1,rho_avg)));
+                    std::vector<double> viscosityResult(1);
+                    d_subchannelPhysicsModel->getProperty("DynamicViscosity",viscosityResult,viscosityArgMap);
+                    double visc = viscosityResult[0];
+
+                    // evaluate friction factor
+                    double Re = rho_avg*u_avg*D/visc;
+                    double fl = 64.0/Re; // laminar friction factor
                     double ft = 0.; // turbulent friction factor evaluated from computed Re
                     double ft4000 = 0.; // turbulent friction factor evaluated from Re = 4000
                     if (d_frictionModel == "Blasius") {
@@ -351,7 +359,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                         fric = std::max(fl,ft4000);
                     else
                         fric = ft;
-                } 
+                }
 
                 // compute form loss coefficient
                 double K = 0.0;
@@ -415,15 +423,15 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
     PROFILE_STOP("apply");
 }
 
-boost::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator :: 
-getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u) 
+boost::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator ::
+getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u)
 {
     boost::shared_ptr<AMP::InputDatabase> tmp_db(new AMP::InputDatabase("Dummy"));
 
     tmp_db->putString("name","SubchannelTwoEqLinearOperator");
 
     boost::shared_ptr<SubchannelOperatorParameters> outParams(new SubchannelOperatorParameters(tmp_db));
-    outParams->d_db = d_params->d_db; 
+    outParams->d_db = d_params->d_db;
     outParams->d_frozenSolution = subsetInputVector( u );
     outParams->d_initialize = true;
     outParams->d_subchannelPhysicsModel =  d_subchannelPhysicsModel;
@@ -449,7 +457,7 @@ double SubchannelTwoEqNonlinearOperator::getDoubleParameter(
 }
 
 // function used in reset to get integer parameter or set default if missing
-int SubchannelTwoEqNonlinearOperator::getIntegerParameter(	
+int SubchannelTwoEqNonlinearOperator::getIntegerParameter(
     boost::shared_ptr<SubchannelOperatorParameters> myparams, std::string paramString, int defaultValue )
 {
     bool keyExists = (myparams->d_db)->keyExists(paramString);

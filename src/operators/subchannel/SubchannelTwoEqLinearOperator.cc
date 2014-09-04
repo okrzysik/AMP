@@ -29,7 +29,7 @@ SubchannelTwoEqLinearOperator::SubchannelTwoEqLinearOperator(const boost::shared
     AMP_INSIST( params->d_db->keyExists("OutputVariable"), "Key 'OutputVariable' does not exist");
     std::string outVar = params->d_db->getString("OutputVariable");
     d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
-    
+
     d_params = params;
     d_initialized = false;
 }
@@ -40,7 +40,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 {
     PROFILE_START("reset");
     d_initialized = true;
-    boost::shared_ptr<SubchannelOperatorParameters> myparams = 
+    boost::shared_ptr<SubchannelOperatorParameters> myparams =
         boost::dynamic_pointer_cast<SubchannelOperatorParameters>(params);
 
     AMP_INSIST( ((myparams.get()) != NULL), "NULL parameters" );
@@ -48,7 +48,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 
     d_params = myparams;
 
-    // We require that subchannel in on an AMP structured 
+    // We require that subchannel in on an AMP structured
 
     // Get the subchannel mesh coordinates
     AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( d_Mesh, d_x, d_y, d_z );
@@ -56,13 +56,13 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 
     // Get the properties from the database
     d_Pout = getDoubleParameter(myparams,"Exit_Pressure",15.5132e6);
-    d_Tin  = getDoubleParameter(myparams,"Inlet_Temperature",569.26);  
-    d_mass = getDoubleParameter(myparams,"Inlet_Mass_Flow_Rate",0.3522*d_numSubchannels);  
-    d_gamma     = getDoubleParameter(myparams,"Fission_Heating_Coefficient",0.0);  
-    d_theta     = getDoubleParameter(myparams,"Channel_Angle",0.0);  
-    d_reynolds  = getDoubleParameter(myparams,"Reynolds",0.0);  
-    d_prandtl   = getDoubleParameter(myparams,"Prandtl",0.0);  
-    d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
+    d_Tin  = getDoubleParameter(myparams,"Inlet_Temperature",569.26);
+    d_mass = getDoubleParameter(myparams,"Inlet_Mass_Flow_Rate",0.3522*d_numSubchannels);
+    d_gamma     = getDoubleParameter(myparams,"Fission_Heating_Coefficient",0.0);
+    d_theta     = getDoubleParameter(myparams,"Channel_Angle",0.0);
+    d_reynolds  = getDoubleParameter(myparams,"Reynolds",0.0);
+    d_prandtl   = getDoubleParameter(myparams,"Prandtl",0.0);
+    d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);
     d_source = getStringParameter(myparams,"Heat_Source_Type","totalHeatGeneration");
     d_frictionModel = getStringParameter(myparams,"Friction_Model","Constant");
     d_NGrid = getIntegerParameter(myparams,"Number_GridSpacers",0);
@@ -78,10 +78,10 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
         AMP_WARNING("Field 'ChannelFractions' is obsolete and should be removed from database");
     if ( (myparams->d_db)->keyExists("Mass_Flow_Rate") )
         AMP_WARNING("Field 'Mass_Flow_Rate' is obsolete and should be removed from database");
-    
+
     // Get the subchannel properties from the mesh
     std::vector<double> x, y;
-    Subchannel::getSubchannelProperties( d_Mesh, myparams->clad_x, myparams->clad_y, myparams->clad_d, 
+    Subchannel::getSubchannelProperties( d_Mesh, myparams->clad_x, myparams->clad_y, myparams->clad_d,
         x, y, d_channelArea, d_channelDiam, d_rodDiameter, d_rodFraction );
     AMP_ASSERT(d_channelArea.size()==d_numSubchannels);
     double total_area = 0.0;
@@ -93,15 +93,15 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 
     // get additional parameters based on heat source type
     if (d_source == "totalHeatGeneration") {
-        d_Q    = getDoubleParameter(myparams,"Rod_Power",66.81e3);  
+        d_Q    = getDoubleParameter(myparams,"Rod_Power",66.81e3);
         d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
     }
 
     // get additional parameters based on friction model
     if (d_frictionModel == "Constant") {
-        d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
+        d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);
     } else if (d_frictionModel == "Selander"){
-        d_roughness = getDoubleParameter(myparams,"Surface_Roughness",0.0015e-3);  
+        d_roughness = getDoubleParameter(myparams,"Surface_Roughness",0.0015e-3);
     }
 
     // get form loss parameters if there are grid spacers
@@ -230,7 +230,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
                 volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
                 volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,p_plus)));
                 std::vector<double> volumeResult_plus(1);
-                d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus); 
+                d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus);
                 double v_plus = volumeResult_plus[0];
 
                 // evaluate specific volume at lower face
@@ -238,7 +238,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
                 volumeArgMap_minus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_minus)));
                 volumeArgMap_minus.insert(std::make_pair("pressure",new std::vector<double>(1,p_minus)));
                 std::vector<double> volumeResult_minus(1);
-                d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus); 
+                d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus);
                 double v_minus = volumeResult_minus[0];
 
                 // evaluate friction factor
@@ -291,21 +291,21 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 
                 // compute Jacobian entries
                 double dz = d_z[j]-d_z[j-1];
-                double A_j = -1.0*std::pow(mass/A,2)*dvdh_minus - 
+                double A_j = -1.0*std::pow(mass/A,2)*dvdh_minus -
                     2.0*g*dz*std::cos(d_theta)*dvdh_minus/std::pow(v_plus+v_minus,2) +
-                    (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_minus + 
+                    (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_minus +
                     dz/D*dfdh_minus*(v_plus + v_minus));
-                double B_j = -1.0*std::pow(mass/A,2)*dvdp_minus - 
+                double B_j = -1.0*std::pow(mass/A,2)*dvdp_minus -
                     2.0*g*dz*std::cos(d_theta)*dvdp_minus/std::pow(v_plus+v_minus,2) +
-                    (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_minus + 
+                    (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_minus +
                     dz/D*dfdp_minus*(v_plus + v_minus)) - 1;
-                double C_j = std::pow(mass/A,2)*dvdh_plus - 
+                double C_j = std::pow(mass/A,2)*dvdh_plus -
                     2.0*g*dz*std::cos(d_theta)*dvdh_plus/std::pow(v_plus+v_minus,2) +
-                    (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_plus + 
+                    (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdh_plus +
                     dz/D*dfdh_plus*(v_plus + v_minus));
-                double D_j = std::pow(mass/A,2)*dvdp_plus - 
+                double D_j = std::pow(mass/A,2)*dvdp_plus -
                     2.0*g*dz*std::cos(d_theta)*dvdp_plus/std::pow(v_plus+v_minus,2)+
-                    (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_plus + 
+                    (1.0/4.0)*std::pow(mass/A,2)*((dz*fric/D + K)*dvdp_plus +
                     dz/D*dfdp_plus*(v_plus + v_minus)) + 1;
 
                 d_matrix->setValueByGlobalID(dofs[1] , dofs[0]       , A*A_j );
@@ -384,7 +384,7 @@ double SubchannelTwoEqLinearOperator::dhdp(double T, double p){
   enthalpyArgMap_pert.insert(std::make_pair("temperature",new std::vector<double>(1,T)));
   enthalpyArgMap_pert.insert(std::make_pair("pressure",   new std::vector<double>(1,p+pert)));
   std::vector<double> enthalpyResult_pert(1);
-  d_subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult_pert,enthalpyArgMap_pert); 
+  d_subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult_pert,enthalpyArgMap_pert);
   double h_pert = enthalpyResult_pert[0];
 
   // calculate unperturbed value
@@ -392,7 +392,7 @@ double SubchannelTwoEqLinearOperator::dhdp(double T, double p){
   enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,T)));
   enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,p)));
   std::vector<double> enthalpyResult(1);
-  d_subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
+  d_subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap);
   double h = enthalpyResult[0];
 
   // calculate derivative
@@ -410,7 +410,7 @@ double SubchannelTwoEqLinearOperator::dvdh(double h, double p){
   specificVolumeArgMap_pert.insert(std::make_pair("enthalpy",new std::vector<double>(1,h+pert)));
   specificVolumeArgMap_pert.insert(std::make_pair("pressure",new std::vector<double>(1,p)));
   std::vector<double> specificVolumeResult_pert(1);
-  d_subchannelPhysicsModel->getProperty("SpecificVolume",specificVolumeResult_pert,specificVolumeArgMap_pert); 
+  d_subchannelPhysicsModel->getProperty("SpecificVolume",specificVolumeResult_pert,specificVolumeArgMap_pert);
   double v_pert = specificVolumeResult_pert[0];
 
   // calculate unperturbed value
@@ -418,7 +418,7 @@ double SubchannelTwoEqLinearOperator::dvdh(double h, double p){
   specificVolumeArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h)));
   specificVolumeArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,p)));
   std::vector<double> specificVolumeResult(1);
-  d_subchannelPhysicsModel->getProperty("SpecificVolume",specificVolumeResult,specificVolumeArgMap); 
+  d_subchannelPhysicsModel->getProperty("SpecificVolume",specificVolumeResult,specificVolumeArgMap);
   double v = specificVolumeResult[0];
 
   // calculate derivative
@@ -436,7 +436,7 @@ double SubchannelTwoEqLinearOperator::dvdp(double h, double p){
   specificVolumeArgMap_pert.insert(std::make_pair("enthalpy",new std::vector<double>(1,h)));
   specificVolumeArgMap_pert.insert(std::make_pair("pressure",new std::vector<double>(1,p+pert)));
   std::vector<double> specificVolumeResult_pert(1);
-  d_subchannelPhysicsModel->getProperty("SpecificVolume",specificVolumeResult_pert,specificVolumeArgMap_pert); 
+  d_subchannelPhysicsModel->getProperty("SpecificVolume",specificVolumeResult_pert,specificVolumeArgMap_pert);
   double v_pert = specificVolumeResult_pert[0];
 
   // calculate unperturbed value
@@ -444,7 +444,7 @@ double SubchannelTwoEqLinearOperator::dvdp(double h, double p){
   specificVolumeArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h)));
   specificVolumeArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,p)));
   std::vector<double> specificVolumeResult(1);
-  d_subchannelPhysicsModel->getProperty("SpecificVolume",specificVolumeResult,specificVolumeArgMap); 
+  d_subchannelPhysicsModel->getProperty("SpecificVolume",specificVolumeResult,specificVolumeArgMap);
   double v = specificVolumeResult[0];
 
   // calculate derivative
@@ -452,7 +452,17 @@ double SubchannelTwoEqLinearOperator::dvdp(double h, double p){
 }
 
 // friction factor
-double SubchannelTwoEqLinearOperator::friction(double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D){
+double SubchannelTwoEqLinearOperator::friction(double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D)
+{
+
+   if (d_frictionModel == "Constant")
+       return d_friction;
+
+   std::stringstream ss;
+   ss << "Dynamic viscosity calculation may be incorrect" << std::endl
+      << "Verify units of the correlation if using non-constant friction model." << std::endl;
+   AMP_WARNING(ss.str());
+
    double h_avg   = (1.0/2.0)*(h_minus + h_plus); // enthalpy evaluated at cell center
    double p_avg   = (1.0/2.0)*(p_minus + p_plus);       // pressure evaluated at cell center
 
@@ -461,7 +471,7 @@ double SubchannelTwoEqLinearOperator::friction(double h_minus, double p_minus, d
    volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
    volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,p_plus)));
    std::vector<double> volumeResult_plus(1);
-   d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus); 
+   d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_plus,volumeArgMap_plus);
    double v_plus = volumeResult_plus[0];
 
    // evaluate specific volume at lower face
@@ -469,7 +479,7 @@ double SubchannelTwoEqLinearOperator::friction(double h_minus, double p_minus, d
    volumeArgMap_minus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_minus)));
    volumeArgMap_minus.insert(std::make_pair("pressure",new std::vector<double>(1,p_minus)));
    std::vector<double> volumeResult_minus(1);
-   d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus); 
+   d_subchannelPhysicsModel->getProperty("SpecificVolume",volumeResult_minus,volumeArgMap_minus);
    double v_minus = volumeResult_minus[0];
 
    double v_avg = 0.5*(v_plus + v_minus);
@@ -478,7 +488,7 @@ double SubchannelTwoEqLinearOperator::friction(double h_minus, double p_minus, d
    double u_plus  = mass * v_plus  / A; // velocity evaluated at upper face
    double u_minus = mass * v_minus / A; // velocity evaluated at lower face
    double u_avg = (1.0/2.0)*(u_minus + u_plus); // velocity evaluated at cell center
-   
+
    // evaluate temperature at cell center
    std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
    temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
@@ -486,7 +496,7 @@ double SubchannelTwoEqLinearOperator::friction(double h_minus, double p_minus, d
    std::vector<double> temperatureResult(1);
    d_subchannelPhysicsModel->getProperty("Temperature",temperatureResult,temperatureArgMap);
    double T_avg = temperatureResult[0];
-  
+
    // evaluate viscosity at cell center
    std::map<std::string, boost::shared_ptr<std::vector<double> > > viscosityArgMap;
    viscosityArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,T_avg)));
@@ -499,32 +509,29 @@ double SubchannelTwoEqLinearOperator::friction(double h_minus, double p_minus, d
     double Re = rho_avg*u_avg*D/visc;
     double fl = 64.0/Re; // laminar friction factor
     double fric; // friction factor
-    if (d_frictionModel == "Constant") {
-       fric = d_friction;
+    double ft = 0.; // turbulent friction factor evaluated from computed Re
+    double ft4000 = 0.; // turbulent friction factor evaluated from Re = 4000
+    if (d_frictionModel == "Blasius") {
+      ft = 0.316*std::pow(Re,-0.25);
+      ft4000 = 0.316*std::pow(4000.0,-0.25);
+    } else if (d_frictionModel == "Drew") {
+      ft = 0.0056 + 0.5*std::pow(Re,-0.32);
+      ft4000 = 0.0056 + 0.5*std::pow(4000.0,-0.32);
+    } else if (d_frictionModel == "Filonenko") {
+      ft = std::pow(1.82*std::log(Re)-1.64,-2);
+      ft4000 = std::pow(1.82*std::log(4000.0)-1.64,-2);
+    } else if (d_frictionModel == "Selander") {
+      ft = 4.0*std::pow(3.8*std::log(10.0/Re+0.2*d_roughness/D),-2);
+      ft4000 = 4.0*std::pow(3.8*std::log(10.0/4000.0+0.2*d_roughness/D),-2);
     } else {
-       double ft = 0.; // turbulent friction factor evaluated from computed Re
-       double ft4000 = 0.; // turbulent friction factor evaluated from Re = 4000
-       if (d_frictionModel == "Blasius") {
-          ft = 0.316*std::pow(Re,-0.25);
-          ft4000 = 0.316*std::pow(4000.0,-0.25);
-       } else if (d_frictionModel == "Drew") {
-          ft = 0.0056 + 0.5*std::pow(Re,-0.32);
-          ft4000 = 0.0056 + 0.5*std::pow(4000.0,-0.32);
-       } else if (d_frictionModel == "Filonenko") {
-          ft = std::pow(1.82*std::log(Re)-1.64,-2);
-          ft4000 = std::pow(1.82*std::log(4000.0)-1.64,-2);
-       } else if (d_frictionModel == "Selander") {
-          ft = 4.0*std::pow(3.8*std::log(10.0/Re+0.2*d_roughness/D),-2);
-          ft4000 = 4.0*std::pow(3.8*std::log(10.0/4000.0+0.2*d_roughness/D),-2);
-       } else {
-          AMP_ERROR("Invalid choice for Friction_Model.");
-       }
-       if (Re < 4000.0)
-          fric = std::max(fl,ft4000);
-       else
-          fric = ft;
-   } 
-   return fric;
+      AMP_ERROR("Invalid choice for Friction_Model.");
+    }
+    if (Re < 4000.0)
+      fric = std::max(fl,ft4000);
+    else
+      fric = ft;
+
+    return fric;
 }
 
 // derivative of friction with respect to lower enthalpy
@@ -535,7 +542,7 @@ double SubchannelTwoEqLinearOperator::dfdh_lower(double h_minus, double p_minus,
 
   double f_pert = friction(h_minus+pert, p_minus, h_plus, p_plus, mass, A, D); // calculate perturbed value
   double f      = friction(h_minus,      p_minus, h_plus, p_plus, mass, A, D); // calculate unperturbed value
-  
+
   // calculate derivative
   return (f_pert - f)/pert;
 }
@@ -548,7 +555,7 @@ double SubchannelTwoEqLinearOperator::dfdh_upper(double h_minus, double p_minus,
 
   double f_pert = friction(h_minus, p_minus, h_plus+pert, p_plus, mass, A, D); // calculate perturbed value
   double f      = friction(h_minus, p_minus, h_plus,      p_plus, mass, A, D); // calculate unperturbed value
-  
+
   // calculate derivative
   return (f_pert - f)/pert;
 }
@@ -561,7 +568,7 @@ double SubchannelTwoEqLinearOperator::dfdp_lower(double h_minus, double p_minus,
 
   double f_pert = friction(h_minus, p_minus+pert, h_plus, p_plus, mass, A, D); // calculate perturbed value
   double f      = friction(h_minus, p_minus,      h_plus, p_plus, mass, A, D); // calculate unperturbed value
-  
+
   // calculate derivative
   return (f_pert - f)/pert;
 }
@@ -574,7 +581,7 @@ double SubchannelTwoEqLinearOperator::dfdp_upper(double h_minus, double p_minus,
 
   double f_pert = friction(h_minus, p_minus, h_plus, p_plus+pert, mass, A, D); // calculate perturbed value
   double f      = friction(h_minus, p_minus, h_plus, p_plus,      mass, A, D);      // calculate unperturbed value
-  
+
   // calculate derivative
   return (f_pert - f)/pert;
 }
