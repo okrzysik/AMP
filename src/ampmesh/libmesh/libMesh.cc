@@ -56,7 +56,6 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ):
         GeomDim = (GeomType) PhysicalDim;
         // Create the libMesh objects
         d_libMesh = boost::shared_ptr< ::Mesh>( new ::Mesh(PhysicalDim) );
-        d_libMeshData = boost::shared_ptr< ::MeshData>( new ::MeshData(*d_libMesh) );
         if ( d_db->keyExists("FileName") ) {
             // Read an existing mesh
             d_libMesh->read(d_db->getString("FileName"));
@@ -108,7 +107,6 @@ libMesh::libMesh( boost::shared_ptr< ::Mesh> mesh, std::string name )
 {
     // Set the base properties
     d_libMesh = mesh;
-    d_libMeshData = boost::shared_ptr< ::MeshData>( new ::MeshData(*d_libMesh) );
     #ifdef USE_EXT_MPI
         this->d_comm = AMP_MPI( (MPI_Comm) ::Parallel::Communicator_World.get() );
         AMP_ASSERT(d_comm!=AMP_MPI(AMP_COMM_NULL));
@@ -137,7 +135,6 @@ libMesh::~libMesh()
     d_ghostSurfaceElements.clear();
     d_boundarySets.clear();
     // We need to clear all libmesh objects before libmeshInit
-    d_libMeshData.reset();
     d_libMesh.reset();
     libmeshInit.reset();
 }

@@ -221,7 +221,6 @@ private:
 
     // libMesh objects
     boost::shared_ptr< ::Mesh>          d_libMesh;
-    boost::shared_ptr< ::MeshData>      d_libMeshData;
 
     // Some basic internal data
     std::vector<size_t> n_local, n_global, n_ghost;
