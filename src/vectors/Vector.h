@@ -453,6 +453,8 @@ public:
       * \param[in] x a vector
       * \param[in] y a vector
       * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
+      *    Note: after this call, the data may not be in a consistent state,
+      *    and may require calling makeConsistent(SET) if consistency is required.
      */
     void axpy ( double alpha , Vector::const_shared_ptr x , Vector::const_shared_ptr y );
     /**
@@ -460,7 +462,9 @@ public:
       * \param[in] beta a scalar
       * \param[in] x  a vector
       * \brief Set this vector alpha * x + this.
-      * \f$\mathit{this}_i = \alpha x_i + \beta \mathit{this}_i \f$
+      *    \f$\mathit{this}_i = \alpha x_i + \beta \mathit{this}_i \f$
+      *    Note: after this call, the data may not be in a consistent state,
+      *    and may require calling makeConsistent(SET) if consistency is required.
       */
     void axpby( double alpha , double beta , Vector::const_shared_ptr x );
 
