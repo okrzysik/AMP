@@ -277,18 +277,18 @@ September 1998");
                 EnthalpyRanges ){}    // Range of variables
 
         virtual double eval( std::vector<double>& args );
-        double NewtonSolve(double,double,double);
     private:
+        double MfpSolve(double,double,double,double);
         double Residual(double,double,double);
-        static const double Newton_atol; // absolute tolerance for Newton solve
-        static const double Newton_rtol; // relative tolerance for Newton solve
-        static const unsigned int Newton_maxIter; // maximum number of iterations for Newton solve
-        static const double machinePrecision; // machine precision; used in perturbation for numerical Jacobian
+        static const double Mfp_atol; // absolute tolerance for MFP solve
+        static const double Mfp_rtol; // relative tolerance for MFP solve
+        static const double Mfp_ftol; // function tolerance for MFP solve
+        static const unsigned int Mfp_maxIter; // maximum number of iterations for MFP solve
     };
-    const double EnthalpyProp::Newton_atol = 1.0e-7; // absolute tolerance for Newton solve
-    const double EnthalpyProp::Newton_rtol = 1.0e-7; // relative tolerance for Newton solve
-    const unsigned int EnthalpyProp::Newton_maxIter = 1000; // maximum number of iterations for Newton solve
-    const double EnthalpyProp::machinePrecision = 1.0e-15; // machine precision; used in perturbation for numerical Jacobian
+    const double EnthalpyProp::Mfp_atol = 1.0e-7; // absolute tolerance for MFP solve
+    const double EnthalpyProp::Mfp_rtol = 1.0e-7; // relative tolerance for MFP solve
+    const double EnthalpyProp::Mfp_ftol = 1.0e-14; // function tolerance for MFP solve
+    const unsigned int EnthalpyProp::Mfp_maxIter = 1000; // maximum number of iterations for MFP solve
 
 
 //=================== Functions =====================================================
@@ -900,25 +900,14 @@ September 1998");
             double P            = args[1];  // local pressure in Pa
             double h;                       // specific enthalpy in J/kg
 
-        // convert SI units to units used in correlation
-        double P_brit = P*1.45037738e-4;    // [Pa] to [psi]
-        double P_crit = 3208.2; // critical pressure [psi]
-        double h_guess = 0.0; // enthalpy guess for Newton solve
-        if (P_brit < P_crit){
-            // guess some h < hf and > 0
-            // get hf
-            SaturatedLiquidEnthalpyProp liquidEnthalpyProperty;
-            std::vector<double> liqEnthalpyArgs;
-            liqEnthalpyArgs.push_back(P);
-            double hf = liquidEnthalpyProperty.eval(liqEnthalpyArgs);
-            // pick h_guess such that: 0 < h_guess < hf
-            h_guess = hf/2.0;
-        } else { // P_brit >= P_crit
-            // guess some h <= h_crit
-            h_guess = 700.0/4.29922614e-4; // h_crit = 906 Btu/lb -> choose 700 Btu/lb and convert to SI
-        }
-
-        h = NewtonSolve(h_guess, T, P);
+        double hmin = 0.1; // Can't be zero
+        double hmax = TempHmaxVal; // Max value we can evaluate the Temperature
+        // We used to do this solve using Newton's method, however, there
+        //  were occasional instabilities when evaluating at large temperatures.
+        // Switching to the Method of False Position for improved robustness,
+        //  it appears to use approximately twice as many function evaluations
+        //  as Newton on average.
+        h = MfpSolve(hmin,hmax,T,P);
         return h;
     }
 
@@ -932,34 +921,48 @@ September 1998");
         return (T - tempResult);
     }
 
-    inline double EnthalpyProp::NewtonSolve(double guess, double param1, double param2)
+    // Use Method of False Position (MFP) to solve for enthalpy
+    inline double EnthalpyProp::MfpSolve(double hmin, double hmax, double T, double P)
     {
-        double x_new = guess;
-        double x_old = guess;
-        bool converged = false;
-        for (unsigned int iter=1; iter<=Newton_maxIter; ++iter){
-            x_old = x_new;
-                        double b_perturb = sqrt(machinePrecision);
-            double perturbation = (1.0+x_new)*b_perturb;
-            // numerical Jacobian with forward perturbation
-            double J = (Residual(x_old+perturbation,param1,param2) - Residual(x_old,param1,param2))/perturbation;
-            double dx = -1.0*Residual(x_old,param1,param2)/J;
-            x_new = x_old + dx;
-            // check convergence
-            double abs_err = std::abs(x_new - x_old); // absolute error
-            double rel_err = 0.0; // relative error
-            if (x_old != 0.0){ // test to ensure no division by zero
-                rel_err = std::abs((x_new - x_old)/x_old);
+        // enthalpy values at left (l), right (r), and middle (m) as well as
+        //  residual evaluated at these points
+        double l, r, m, fl, fr, fm;
+        l = hmin;
+        r = hmax;
+        fl = Residual(hmin,T,P);
+        fr = Residual(hmax,T,P);
+        double ftol = 1e-14;
+
+        AMP_ASSERT( fl*fr < 0.0 ); // Must have initial bounding box
+        unsigned int iter = 0;
+        while( (r-l)>Mfp_atol && (r-l)/r>Mfp_rtol )
+        {
+            iter++;
+            m = r - (fr*(r-l) / (fr-fl) );
+            fm = Residual(m,T,P);
+            // If fm and fl have opposite sides, the root must lie in the left
+            //  "half" the new range is [l,m]
+            if( fm * fl < 0.0 )
+            {
+                r  = m;
+                fr = fm;
             }
-            if ((abs_err < Newton_atol) && (rel_err < Newton_rtol)){
-                converged = true;
+            // Otherwise the root lies in the right "half" and the new range is [m,r]
+            else
+            {
+                l  = m;
+                fl = fm;
+            }
+            if( std::abs(fm) < Mfp_ftol )
                 break;
+            if( iter >= Mfp_maxIter )
+            {
+                AMP_ERROR("MFP solve failed to converge for property function evaluation.");
             }
         }
-        if (!converged){
-            AMP_ERROR("Newton solve failed to converge for property function evaluation.");
-        }
-        return x_new;
+
+        // Return point with smallest function value
+        return std::abs(fl) < std::abs(fr) ? l : r;
     }
 }
 //=================== Materials =====================================================
