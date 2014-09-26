@@ -72,7 +72,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     std::vector<AMP::Mesh::MeshElement> nodes = el->getElements(AMP::Mesh::Vertex);
     for(size_t i = 0 ; i < nodes.size() ; i++) {
       std::vector<double> pt = nodes[i].coord();
-      fprintf(fp, "nd = %d, x = %.15lf, y = %.15lf, z = %.15lf \n", (int) i, pt[0], pt[1], pt[2] );
+      fprintf(fp, "nd = %d, x = %.15f, y = %.15f, z = %.15f \n", (int) i, pt[0], pt[1], pt[2] );
     }
   }
 
@@ -127,9 +127,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     T->setValueByGlobalID(d_dofIndices[i], 300*(i+1));
   }
 
-  fprintf(fp, " dx/dxi = %.15lf, dydxi = %.15lf, dzdxi = %.15lf \n", dxyzdxi[0](0) , dxyzdxi[0](1), dxyzdxi[0](2));
-  fprintf(fp, " dx/deta = %.15lf, dydeta = %.15lf, dzdeta = %.15lf \n", dxyzdeta[0](0) , dxyzdeta[0](1), dxyzdeta[0](2));
-  fprintf(fp, " dx/dzeta = %.15lf, dydzeta = %.15lf, dzdzeta = %.15lf \n", dxyzdzeta[0](0) , dxyzdzeta[0](1), dxyzdzeta[0](2));
+  fprintf(fp, " dx/dxi = %.15f, dydxi = %.15f, dzdxi = %.15f \n", dxyzdxi[0](0) , dxyzdxi[0](1), dxyzdxi[0](2));
+  fprintf(fp, " dx/deta = %.15f, dydeta = %.15f, dzdeta = %.15f \n", dxyzdeta[0](0) , dxyzdeta[0](1), dxyzdeta[0](2));
+  fprintf(fp, " dx/dzeta = %.15f, dydzeta = %.15f, dzdzeta = %.15f \n", dxyzdzeta[0](0) , dxyzdzeta[0](1), dxyzdzeta[0](2));
 
   std::vector<Real> Jinv1(3);
   std::vector<Real> Jinv2(3);
@@ -165,8 +165,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
            lib_dTdz   += (dphidz[i][0]*T->getValueByGlobalID(d_dofIndices[i]));
   }
 
-  fprintf(fp, " dT/dx = %.15lf, dTdy = %.15lf, dTdz = %.15lf \n", dTdx , dTdy , dTdz );
-  fprintf(fp, " lib_dT/dx = %.15lf, lib_dTdy = %.15lf, lib_dTdz = %.15lf \n", lib_dTdx , lib_dTdy , lib_dTdz );
+  fprintf(fp, " dT/dx = %.15f, dTdy = %.15f, dTdz = %.15f \n", dTdx , dTdy , dTdz );
+  fprintf(fp, " lib_dT/dx = %.15f, lib_dTdy = %.15f, lib_dTdz = %.15f \n", lib_dTdx , lib_dTdy , lib_dTdz );
   fclose(fp);
 }
 
