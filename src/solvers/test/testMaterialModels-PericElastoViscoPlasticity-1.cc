@@ -157,7 +157,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   fout = fopen("pevp_stress_strain_results.txt","w");
   for(int i = 0; i < max_load; i++) {
     //fprintf(fout,"%15.8lf%15.8lf%15.8lf%15.8lf%15.8lf%15.8lf%15.8lf\n",eph11[i],sig11[i],slope[i],eph11p[i],sig11p[i],slope_p[i],sig11_init[i]);
-    fprintf(fout,"%15.8lf%15.8lf%15.8lf%15.8lf%15.8lf%15.8lf%15.8lf\n",time[i],eph11[i],sig11[i],slope[i],eph11p[i],sig11p[i],slope_p[i]);
+    fprintf(fout,"%15.8f%15.8f%15.8f%15.8f%15.8f%15.8f%15.8f\n",time[i],eph11[i],sig11[i],slope[i],eph11p[i],sig11p[i],slope_p[i]);
   }
   fclose(fout);
 

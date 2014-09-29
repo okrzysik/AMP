@@ -132,7 +132,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   FILE *fout;
   fout = fopen("vmik_stress_strain_results.txt","w");
   for(int i = 0; i < max_num; i++) {
-    fprintf(fout,"%15.8lf%15.8lf%15.8lf%15.8lf%15.8lf%15.8lf%15.8lf\n",eph11[i],sig11[i],slope[i],eph11p[i],sig11p[i],slope_p[i],sig11_init[i]);
+    fprintf(fout,"%15.8f%15.8f%15.8f%15.8f%15.8f%15.8f%15.8f\n",eph11[i],sig11[i],slope[i],eph11p[i],sig11p[i],slope_p[i],sig11_init[i]);
   }
   fclose(fout);
 

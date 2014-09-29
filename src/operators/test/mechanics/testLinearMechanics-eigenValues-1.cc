@@ -113,7 +113,7 @@ void myTest(AMP::UnitTest *ut)
       std::vector<double> matVals;
       mechMat->getRowByGlobalID(i, matCols, matVals);
       for(unsigned int j = 0; j < matCols.size(); j++) {
-        fprintf(fp, "A(%d, %d) = %.15lf ; \n", (i + 1), (int)(matCols[j] + 1), matVals[j]);
+        fprintf(fp, "A(%d, %d) = %.15f ; \n", (i + 1), (int)(matCols[j] + 1), matVals[j]);
       }//end for j
       fprintf(fp, "\n");
     }//end for i
@@ -123,7 +123,7 @@ void myTest(AMP::UnitTest *ut)
 
     for(int i = 0; nd != end_nd; ++nd, ++i) {
       std::vector<double> pt = nd->coord();
-      fprintf(fp, "nd = %d, x = %.15lf, y = %.15lf, z = %.15lf \n", i, pt[0], pt[1], pt[2]);
+      fprintf(fp, "nd = %d, x = %.15f, y = %.15f, z = %.15f \n", i, pt[0], pt[1], pt[2]);
       std::vector<size_t> globalIds;
       dofMap->getDOFs(nd->globalID(), globalIds);
       fprintf(fp, "nd = %d, d0 = %d, d1 = %d, d2 = %d \n", i, (int)globalIds[0], (int)globalIds[1], (int)globalIds[2]);

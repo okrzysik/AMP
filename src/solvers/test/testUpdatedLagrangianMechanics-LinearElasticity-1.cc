@@ -322,7 +322,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       std::vector<double> matVals;
       mechMat->getRowByGlobalID(i, matCols, matVals);
       for(unsigned int j = 0; j < matCols.size(); j++) {
-        fprintf(fp, "A(%d, %d) = %.15lf ; \n", (i + 1), (int)(matCols[j] + 1), matVals[j]);
+        fprintf(fp, "A(%d, %d) = %.15f ; \n", (i + 1), (int)(matCols[j] + 1), matVals[j]);
       }//end for j
       fprintf(fp, "\n");
     }//end for i

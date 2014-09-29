@@ -197,7 +197,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   //double TotalUnloadingSteps = NumberOfLoadingSteps - TotalLoadingSteps;
 
   if(ExtractData) {
-    fprintf(fout123,"%lf %lf %lf %lf\n",301.0,0.0,0.0,0.0);
+    fprintf(fout123,"%f %f %f %f\n",301.0,0.0,0.0,0.0);
   }
 
   for (int step=0;step<NumberOfLoadingSteps; step++)
@@ -255,7 +255,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
     //double prev_stress, prev_strain, slope;
     if(ExtractData) {
-      fprintf(fout123,"%lf %lf %lf %lf\n",finalTemperature,finalMaxU,finalMaxV,finalMaxW);
+      fprintf(fout123,"%f %f %f %f\n",finalTemperature,finalMaxU,finalMaxV,finalMaxW);
     }
   }
 
