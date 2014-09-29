@@ -130,14 +130,14 @@ ColumnTimeOperator::getFromInput(const boost::shared_ptr<AMP::Database> &db)
 }
   
 void
-ColumnTimeOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-              AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b)
+ColumnTimeOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr /* f */, AMP::LinearAlgebra::Vector::const_shared_ptr /* u */, 
+              AMP::LinearAlgebra::Vector::shared_ptr r, const double /* a */, const double /* b */)
 {
   abort();
 }
 
 void
-ColumnTimeOperator::append(boost::shared_ptr< Operator > op)
+ColumnTimeOperator::append(boost::shared_ptr< Operator > /* op */)
 {
   AMP::pout << "Error: ColumnTimeOperator::append(): this routine is disabled for ColumnTimeOperators" << std::endl;
 }

@@ -261,7 +261,7 @@ void IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db 
    
  
     double 
-    IDATimeIntegrator::getNextDt(const bool good_solution)
+    IDATimeIntegrator::getNextDt(const bool /* good_solution */)
     {
         int ierr = IDAGetCurrentStep(d_ida_mem, &d_current_dt);
         AMP_ASSERT(ierr!=IDA_SUCCESS);
@@ -269,7 +269,7 @@ void IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db 
         return d_current_dt;
     }
     
-    int IDATimeIntegrator::advanceSolution( const double dt, const bool first_step )
+    int IDATimeIntegrator::advanceSolution( const double dt, const bool /* first_step */ )
     {
         int retval = IDA_SUCCESS;
         double hin_actual=0.0;

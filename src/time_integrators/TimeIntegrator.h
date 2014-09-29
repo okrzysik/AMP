@@ -179,7 +179,7 @@ public:
     *  of vectors, but no vector may be owned by multiple solvers.
     * \param vec   The multivector to append
     */
-   virtual void appendSolutionVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> vec ) {}
+   virtual void appendSolutionVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> /* vec */ ) {}
 
    /**
     * \brief  Append the vectors of interest to the rhs vector
@@ -188,7 +188,7 @@ public:
     *  of vectors, but no vector may be owned by multiple solvers.
     * \param vec   The multivector to append
     */
-   virtual void appendRhsVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> vec ) {}
+   virtual void appendRhsVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> /* vec */ ) {}
 
    /**
     * \brief  Registers a writer with the solver
