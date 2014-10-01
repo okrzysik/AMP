@@ -51,6 +51,7 @@ SET(AMP_TPLS_FINDMODS_CLASSIFICATIONS
     BLAS                "${AMP_SOURCE_DIR}/cmake/TPLs/"         PS
     LAPACK              "${AMP_SOURCE_DIR}/cmake/TPLs/"         PS
     BOOST               "${AMP_SOURCE_DIR}/cmake/TPLs/"         PS
+    ZLIB                "${AMP_SOURCE_DIR}/cmake/TPLs/"         PS
     HDF5                "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
     SILO                "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS
     SUNDIALS            "${AMP_SOURCE_DIR}/cmake/TPLs/"         SS

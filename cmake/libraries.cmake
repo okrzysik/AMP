@@ -32,7 +32,7 @@ MACRO( CONFIGURE_TPLs )
         SET( USE_EXT_BOOST true )
         SET( BOOST_DIRECTORY "${BOOST_INSTALL_DIR}" )
     ENDIF()
-    CHECK_ENABLE_FLAG(USE_EXT_BOOST 0 )
+    CHECK_ENABLE_FLAG(USE_EXT_ZLIB 0 )
     IF ( ZLIB_INSTALL_DIR )
         SET( USE_EXT_ZLIB true )
         SET( ZLIB_DIRECTORY "${ZLIB_INSTALL_DIR}" )
@@ -237,6 +237,29 @@ MACRO ( CONFIGURE_HDF5 )
     ENDIF()
 ENDMACRO ()
 
+# Macro to find and configure zlib
+MACRO ( CONFIGURE_ZLIB )
+    # Determine if we want to use zlib
+    CHECK_ENABLE_FLAG(USE_EXT_ZLIB 1 )
+    IF ( USE_EXT_ZLIB )
+        # Check if we specified the silo directory
+        IF ( ZLIB_DIRECTORY )
+            VERIFY_PATH ( ${ZLIB_DIRECTORY} )
+            INCLUDE_DIRECTORIES ( ${ZLIB_DIRECTORY}/include )
+            SET ( ZLIB_INCLUDE ${ZLIB_DIRECTORY}/include )
+            FIND_LIBRARY ( ZLIB_LIB    NAMES z    PATHS ${ZLIB_DIRECTORY}/lib  NO_DEFAULT_PATH )
+        ELSE()
+# we can use system lib most of the time...
+#            MESSAGE( FATAL_ERROR "Default search for hdf5 is not yet supported.  Use -D HDF5_DIRECTORY=" )
+        ENDIF()
+        SET ( ZLIB_LIBS
+            ${ZLIB_LIB}
+        )
+        ADD_DEFINITIONS ( "-D USE_EXT_ZLIB" )  
+        MESSAGE( "Using zlib" )
+        MESSAGE( "   ${ZLIB_LIB}" )
+    ENDIF()
+ENDMACRO ()
 
 # Macro to find and configure the X11 libraries
 MACRO ( CONFIGURE_X11_LIBRARIES )
@@ -653,16 +676,19 @@ MACRO ( CONFIGURE_SYSTEM )
         SET( SYSTEM_LIBS ${PSAPI_LIB} ${DBGHELP_LIB} )
     ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
         # Linux specific system libraries
-        SET( SYSTEM_LIBS "-lz -ldl" )
+        SET( SYSTEM_LIBS "-ldl" )
         IF ( NOT USE_STATIC )
             SET( SYSTEM_LIBS "${SYSTEM_LIBS} -rdynamic" )   # Needed for backtrace to print function names
         ENDIF()
         IF ( USING_GCC )
             SET( SYSTEM_LIBS "${SYSTEM_LIBS} -lgfortran" )   # Needed for backtrace to print function names
-	    ENDIF()
+	ENDIF()
     ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
         # Max specific system libraries
-        SET( SYSTEM_LIBS "-lz -ldl" )
+        SET( SYSTEM_LIBS "-ldl" )
+        IF ( USING_GCC )
+            SET( SYSTEM_LIBS "${SYSTEM_LIBS} -lgfortran" )
+	ENDIF()
     ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Generic" )
         # Generic system libraries
     ELSE()
