@@ -57,7 +57,7 @@ public:
   /**
    * Destructor
    */
-  ~MMS() { }
+  virtual ~MMS() { }
   /**
    * Mutator for Youngs modulus E
    */
