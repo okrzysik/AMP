@@ -68,11 +68,11 @@ extern "C"{
 #include "petsc.h"
 }
 
-void computeForcingTerms(AMP::Mesh::Mesh::shared_ptr meshAdapter,
-    boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeOp,
-    boost::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
-    AMP::LinearAlgebra::Vector::shared_ptr forcingTermsVec,
-    bool verbose = false) {
+void computeForcingTerms(AMP::Mesh::Mesh::shared_ptr /* meshAdapter */,
+    boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> /* volumeOp */,
+    boost::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> /* manufacturedSolution */,
+    AMP::LinearAlgebra::Vector::shared_ptr /* forcingTermsVec */,
+    bool /* verbose = false */) {
   // Create integration point vectors and compute values
 AMP_ERROR("Not converted yet"); /*
   boost::shared_ptr<AMP::LinearAlgebra::MultiVariable>  multivariable = 
