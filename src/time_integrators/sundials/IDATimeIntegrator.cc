@@ -351,7 +351,7 @@ void IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db 
     }
     
     
-    int IDATimeIntegrator::IDAResTrial(realtype tt, N_Vector yy, N_Vector yp,
+    int IDATimeIntegrator::IDAResTrial(realtype /* tt */, N_Vector yy, N_Vector yp,
                                        N_Vector rr, void *user_data)
     {
         
@@ -384,9 +384,9 @@ void IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db 
         
     }
     
-    int IDATimeIntegrator::IDAPrecSetup(realtype tt, N_Vector yy, N_Vector yp, N_Vector rr,
+    int IDATimeIntegrator::IDAPrecSetup(realtype tt, N_Vector yy, N_Vector /* yp */, N_Vector /* rr */,
                                         realtype cj, void *user_data,
-                                        N_Vector tmp1, N_Vector tmp2, N_Vector tmp3)
+                                        N_Vector /* tmp1 */, N_Vector /* tmp2 */, N_Vector /* tmp3 */)
     {
         int last_order, current_order;
         double last_stepsize, current_stepsize;
@@ -440,10 +440,10 @@ void IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db 
     }
     
     
-    int IDATimeIntegrator::IDAPrecSolve(realtype tt, N_Vector yy, N_Vector yp, N_Vector rr,
+    int IDATimeIntegrator::IDAPrecSolve(realtype /* tt */, N_Vector /* yy */, N_Vector /* yp */, N_Vector /* rr */,
                                         N_Vector rvec, N_Vector zvec,
-                                        realtype cj, realtype delta,
-                                        void *user_data, N_Vector tmp)
+                                        realtype /* cj */, realtype /* delta */,
+                                        void *user_data, N_Vector /* tmp */)
     {
         AMP::LinearAlgebra::ExternalVectorDeleter d;
         AMP::LinearAlgebra::Vector * pr = static_cast<AMP::LinearAlgebra::ManagedSundialsVector*>(rvec->content);
