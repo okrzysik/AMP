@@ -249,8 +249,7 @@ MACRO ( CONFIGURE_ZLIB )
             SET ( ZLIB_INCLUDE ${ZLIB_DIRECTORY}/include )
             FIND_LIBRARY ( ZLIB_LIB    NAMES z    PATHS ${ZLIB_DIRECTORY}/lib  NO_DEFAULT_PATH )
         ELSE()
-# we can use system lib most of the time...
-#            MESSAGE( FATAL_ERROR "Default search for hdf5 is not yet supported.  Use -D HDF5_DIRECTORY=" )
+            FIND_LIBRARY ( ZLIB_LIB    NAMES z ) 
         ENDIF()
         SET ( ZLIB_LIBS
             ${ZLIB_LIB}
@@ -677,6 +676,7 @@ MACRO ( CONFIGURE_SYSTEM )
     ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
         # Linux specific system libraries
         SET( SYSTEM_LIBS "-ldl" )
+        CONFIGURE_ZLIB()
         IF ( NOT USE_STATIC )
             SET( SYSTEM_LIBS "${SYSTEM_LIBS} -rdynamic" )   # Needed for backtrace to print function names
         ENDIF()
@@ -686,6 +686,7 @@ MACRO ( CONFIGURE_SYSTEM )
     ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
         # Max specific system libraries
         SET( SYSTEM_LIBS "-ldl" )
+        CONFIGURE_ZLIB()
         IF ( USING_GCC )
             SET( SYSTEM_LIBS "${SYSTEM_LIBS} -lgfortran" )
 	ENDIF()
