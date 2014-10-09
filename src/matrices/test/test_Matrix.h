@@ -64,7 +64,7 @@ public:
     {
         PROFILE_START("getVector");
         AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::LinearAlgebra::Variable("a") );
-        AMP::LinearAlgebra::Variable::shared_ptr vector = AMP::LinearAlgebra::createVector( DOFs, variable );
+        AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::createVector( DOFs, variable );
         PROFILE_STOP("getVector");
         return vector;
     }
