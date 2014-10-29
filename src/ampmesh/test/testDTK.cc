@@ -3,7 +3,7 @@
 #include <utils/InputDatabase.h>
 #include <utils/Writer.h>
 #include <utils/PIO.h>
-#include <ampmesh/mesh.h>
+#include <ampmesh/Mesh.h>
 #include <discretization/simpleDOF_Manager.h>
 #include <vectors/VectorBuilder.h>
 #include <vectors/MultiVariable.h>
@@ -140,35 +140,51 @@ void read_displacement()
     AMP::Mesh::Mesh::shared_ptr sourceMesh = AMP::Mesh::Mesh::buildMesh(sourceMeshParams);
     AMP::pout<<"***Loading the source mesh"<<std::endl;
 
+    size_t const numLocalNodesOnSource = sourceMesh->numLocalElements(AMP::Mesh::Vertex);
+    std::cout<<"number local vertices is "<<numLocalNodesOnSource<<"\n";
+
     // build source vectors
     AMP::pout<<"Building the source vector"<<std::endl;
     bool const split = true;
     int const ghostWidth = 0;
     int const dofsPerNode = 3;
     AMP::Discretization::DOFManager::shared_ptr sourceDofManager = AMP::Discretization::simpleDOFManager::create(sourceMesh, AMP::Mesh::Vertex, ghostWidth, dofsPerNode);
-  AMP::LinearAlgebra::Variable::shared_ptr variable(new AMP::LinearAlgebra::Variable("data"));
-  AMP::LinearAlgebra::Vector::shared_ptr sourceVector = AMP::LinearAlgebra::createVector(sourceDofManager, variable, split);
+    AMP::LinearAlgebra::Variable::shared_ptr variable(new AMP::LinearAlgebra::Variable("data"));
+    AMP::LinearAlgebra::Vector::shared_ptr sourceVector = AMP::LinearAlgebra::createVector(sourceDofManager, variable, split);
 
-std::cout<<"HERE"<<std::endl;
     std::string filename("/Users/qdi/Desktop/read_displacement/displacement");
     std::ifstream fin(filename.c_str());
     std::size_t n;
     fin>>n;
-    ++n; // TODO:  I don't like that
-    std::cout<<"Number of nodes ="<<n;
+//    ++n; // TODO:  I don't like that
+    std::cout<<"Number of nodes ="<<n<<"\n";
     std::vector<double> x(n), y(n), z(n);
     int node;
     for (std::size_t i = 0; i < n; ++i) {
         fin>>node>>x[i]>>y[i]>>z[i];
-        std::cout<<i<<"  "<<node<<"  "<<std::setprecision(15)<<x[i]<<"  "<<y[i]<<"  "<<z[i]<<"\n";
+        sourceVector->setValueByGlobalID(3*i+0, x[i]);
+        sourceVector->setValueByGlobalID(3*i+1, y[i]);
+        sourceVector->setValueByGlobalID(3*i+2, z[i]);
+//        std::cout<<i<<"  "<<node<<"  "<<std::setprecision(15)<<x[i]<<"  "<<y[i]<<"  "<<z[i]<<"\n";
     } // end for i
-    if (!fin.eof()) std::cerr<<"WARNING:  didn't reach EOF"<<std::endl;
+    if (!fin.eof()) throw std::runtime_error("Did not reach EOF when reading displacement file");
     fin.close();
+#ifdef USE_EXT_SILO
+  AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("silo");
+  siloWriter->setDecomposition(1);
+  siloWriter->registerVector(sourceVector, sourceMesh, AMP::Mesh::Vertex, "vector");
+  siloWriter->writeFile("plain", 0);
+#endif
+    sourceMesh->displaceMesh(sourceVector);
+#ifdef USE_EXT_SILO
+  siloWriter->writeFile("plain", 1);
+#endif
 }
 
 
 void testDTK(AMP::UnitTest *ut, std::string exeName) {
   read_displacement();
+return ;
 abort();
   // build source and target meshes
   AMP::pout<<"Loading the source mesh"<<std::endl;
