@@ -133,6 +133,7 @@ void RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
             for(unsigned int i = 0; i < numNodesInCurrElem ; i++) 
               dofManager->getDOFs(d_currNodes[i].globalID(), dofIndices[i]);
 
+            dofs.resize(numNodesInCurrElem);
             for (size_t n = 0; n < dofIndices.size() ; n++)
               dofs[n] = dofIndices[n][d_dofIds[nid][k]];
 
