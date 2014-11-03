@@ -24,9 +24,6 @@ void RobinVectorCorrection::reset(const boost::shared_ptr<OperatorParameters>& p
     AMP_INSIST( ((params.get()) != NULL), "NULL parameters" );
     AMP_INSIST( (((params->d_db).get()) != NULL), "NULL database" );
 
-    AMP_INSIST( (params->d_db)->keyExists("fConductivity"), "Missing key: effective convective coefficient" );
-    d_hef = (params->d_db)->getDouble("fConductivity");
-
     d_skipParams = (params->d_db)->getBoolWithDefault("skip_params", false);
 
     AMP_INSIST( (params->d_db)->keyExists("alpha"), "Missing key: prefactor alpha" );
@@ -106,32 +103,44 @@ void RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
     unsigned int numIds = d_boundaryIds.size();
     std::vector<size_t> gpDofs;
     std::vector<size_t> dofs;
+    std::vector<std::vector<size_t> > dofIndices;
     std::vector<size_t> dofsElementVec;
     PROFILE_START("integration loop");
     for (unsigned int nid = 0; nid < numIds; nid++)
     {
+        unsigned int numDofIds = d_dofIds[nid].size();
 
-        AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
-        const AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
-
-        for (; bnd1 != end_bnd1; ++bnd1)
+        for(unsigned int k = 0; k < numDofIds; k++)
         {
+
+          AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
+          const AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
+
+          for (; bnd1 != end_bnd1; ++bnd1)
+          {
             PROFILE_START("prepare element",2);
 
             // Get the nodes for the current element
             d_currNodes = bnd1->getElements(AMP::Mesh::Vertex);
             unsigned int numNodesInCurrElem = d_currNodes.size();
 
+            dofIndices.resize(numNodesInCurrElem);
             // Get the dofs for the vectors
             std::vector<AMP::Mesh::MeshElementID> ids(d_currNodes.size());
             for (size_t i=0; i<d_currNodes.size(); i++)
-                ids[i] = d_currNodes[i].globalID();
-            dofManager->getDOFs( ids, dofs );
+              ids[i] = d_currNodes[i].globalID();
+
+            for(unsigned int i = 0; i < numNodesInCurrElem ; i++) 
+              dofManager->getDOFs(d_currNodes[i].globalID(), dofIndices[i]);
+
+            for (size_t n = 0; n < dofIndices.size() ; n++)
+              dofs[n] = dofIndices[n][d_dofIds[nid][k]];
+
             AMP_ASSERT(dofs.size()==numNodesInCurrElem);
 
             if(d_isFluxGaussPtVector && d_IsCoupledBoundary[nid]){
-                gpDOFManager->getDOFs (bnd1->globalID(), gpDofs);
-                AMP_ASSERT(gpDofs.size()>0);
+              gpDOFManager->getDOFs (bnd1->globalID(), gpDofs);
+              AMP_ASSERT(gpDofs.size()>0);
             }
 
             // Get the current libmesh element
@@ -152,24 +161,24 @@ void RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
             PROFILE_START("get conductance",2);
             if(d_robinPhysicsModel.get() != NULL) 
             {
-                unsigned int startIdx = 0;
-                if(d_isFluxGaussPtVector && d_IsCoupledBoundary[nid]){
-                    d_variableFlux->getValuesByGlobalID( gpDofs.size(), &gpDofs[0], &inputArgsAtGpts[0][0] );
-                    startIdx = 1;
+              unsigned int startIdx = 0;
+              if(d_isFluxGaussPtVector && d_IsCoupledBoundary[nid]){
+                d_variableFlux->getValuesByGlobalID( gpDofs.size(), &gpDofs[0], &inputArgsAtGpts[0][0] );
+                startIdx = 1;
+              }
+              for(unsigned int m = startIdx; m < d_elementInputVec.size(); m++){
+                // Note: elementInputVecs may use different DOFManagers from u and r internal
+                d_elementInputVec[m]->getDOFManager()->getDOFs( ids, dofsElementVec );
+                AMP_ASSERT(dofsElementVec.size()==dofs.size());
+                d_elementInputVec[m]->getValuesByGlobalID( dofs.size(), &dofsElementVec[0], &inputArgs[m][0] );
+                for (size_t qp = 0; qp < numGaussPts; qp++){ 
+                  for (size_t n = 0; n < numNodesInCurrElem ; n++) {
+                    inputArgsAtGpts[m][qp] += phi[n][qp] * inputArgs[m][n];
+                  }
                 }
-                for(unsigned int m = startIdx; m < d_elementInputVec.size(); m++){
-                    // Note: elementInputVecs may use different DOFManagers from u and r internal
-                    d_elementInputVec[m]->getDOFManager()->getDOFs( ids, dofsElementVec );
-                    AMP_ASSERT(dofsElementVec.size()==dofs.size());
-                    d_elementInputVec[m]->getValuesByGlobalID( dofs.size(), &dofsElementVec[0], &inputArgs[m][0] );
-                    for (size_t qp = 0; qp < numGaussPts; qp++){ 
-                        for (size_t n = 0; n < numNodesInCurrElem ; n++) {
-                            inputArgsAtGpts[m][qp] += phi[n][qp] * inputArgs[m][n];
-                        }
-                    }
-                }
-            
-                d_robinPhysicsModel->getConductance(beta, gamma, inputArgsAtGpts);
+              }
+
+              d_robinPhysicsModel->getConductance(beta, gamma, inputArgsAtGpts);
             }
             PROFILE_STOP("get conductance",2);
             PROFILE_START("perform integration",2);
@@ -179,36 +188,37 @@ void RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
             uInternal->getValuesByGlobalID( dofs.size(), &dofs[0], &values[0] );
             for (unsigned int qp = 0; qp<numGaussPts; qp++)
             {
-                Real phi_val = 0.0;
-                for (unsigned int l = 0; l < numNodesInCurrElem ; l++)
-                  phi_val += phi[l][qp] * values[l];
-                for (unsigned int j = 0; j < numNodesInCurrElem ; j++)
-                  addValues[j] += (JxW[qp] * phi[j][qp] * beta[qp] * phi_val);
+              Real phi_val = 0.0;
+              for (unsigned int l = 0; l < numNodesInCurrElem ; l++)
+                phi_val += phi[l][qp] * values[l];
+              for (unsigned int j = 0; j < numNodesInCurrElem ; j++)
+                addValues[j] += (JxW[qp] * phi[j][qp] * beta[qp] * phi_val);
             }//end for qp
             if ( d_IsCoupledBoundary[nid] )
             {
+              if ( !d_isFluxGaussPtVector ){
+                d_variableFlux->getValuesByGlobalID( dofs.size(), &dofs[0], &values[0] );
+              } else {
+                d_variableFlux->getValuesByGlobalID( gpDofs.size(), &gpDofs[0], &gpValues[0] );
+              }
+              for (unsigned int qp = 0; qp<numGaussPts; qp++)
+              {
+                Real phi_val = 0.0;
                 if ( !d_isFluxGaussPtVector ){
-                    d_variableFlux->getValuesByGlobalID( dofs.size(), &dofs[0], &values[0] );
+                  for (unsigned int l = 0; l < numNodesInCurrElem ; l++)
+                    phi_val += phi[l][qp] * values[l];
                 } else {
-                    d_variableFlux->getValuesByGlobalID( gpDofs.size(), &gpDofs[0], &gpValues[0] );
+                  phi_val =  gpValues[qp];
                 }
-                for (unsigned int qp = 0; qp<numGaussPts; qp++)
-                {
-                    Real phi_val = 0.0;
-                    if ( !d_isFluxGaussPtVector ){
-                        for (unsigned int l = 0; l < numNodesInCurrElem ; l++)
-                            phi_val += phi[l][qp] * values[l];
-                    } else {
-                        phi_val =  gpValues[qp];
-                    }
-                    for (unsigned int j = 0; j < numNodesInCurrElem ; j++)
-                        addValues[j] += -1 * (JxW[qp] * phi[j][qp] * gamma[qp] * phi_val);
-                }//end for qp
+                for (unsigned int j = 0; j < numNodesInCurrElem ; j++)
+                  addValues[j] += -1 * (JxW[qp] * phi[j][qp] * gamma[qp] * phi_val);
+              }//end for qp
             }//coupled
             rInternal->addValuesByGlobalID( dofs.size(), &dofs[0], &addValues[0] );
             PROFILE_STOP("perform integration",2);
 
-        }//end for bnd
+          }//end for bnd
+        }//end for dof ids
     }//end for nid
     PROFILE_STOP("integration loop");
 
@@ -216,14 +226,14 @@ void RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
     //std::cout << rInternal << std::endl;
 
     if (f.get() == NULL) {
-        rInternal->scale(a);
+      rInternal->scale(a);
     } else {
-        AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = this->subsetOutputVector(f);
-        if (fInternal.get() == NULL) {
-            rInternal->scale(a);
-        } else {
-            rInternal->axpby(b, a, fInternal);
-        }
+      AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = this->subsetOutputVector(f);
+      if (fInternal.get() == NULL) {
+        rInternal->scale(a);
+      } else {
+        rInternal->axpby(b, a, fInternal);
+      }
     }
     PROFILE_STOP("apply");
 }
@@ -231,19 +241,19 @@ void RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
 
 boost::shared_ptr<OperatorParameters> RobinVectorCorrection::getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>&)
 {
-    boost::shared_ptr<AMP::InputDatabase> tmp_db(new AMP::InputDatabase("Dummy"));
-    tmp_db->putBool("skip_params", true);
-    tmp_db->putBool("skip_rhs_correction", true);
-    tmp_db->putBool("skip_matrix_correction", false);
-    tmp_db->putBool("IsFluxGaussPtVector", d_isFluxGaussPtVector );
-    boost::shared_ptr<RobinMatrixCorrectionParameters> outParams(
-        new RobinMatrixCorrectionParameters(tmp_db));
+  boost::shared_ptr<AMP::InputDatabase> tmp_db(new AMP::InputDatabase("Dummy"));
+  tmp_db->putBool("skip_params", true);
+  tmp_db->putBool("skip_rhs_correction", true);
+  tmp_db->putBool("skip_matrix_correction", false);
+  tmp_db->putBool("IsFluxGaussPtVector", d_isFluxGaussPtVector );
+  boost::shared_ptr<RobinMatrixCorrectionParameters> outParams(
+      new RobinMatrixCorrectionParameters(tmp_db));
 
-    outParams->d_robinPhysicsModel = d_robinPhysicsModel;
-    outParams->d_elementInputVec   = d_elementInputVec;
-    outParams->d_variableFlux      = d_variableFlux;
+  outParams->d_robinPhysicsModel = d_robinPhysicsModel;
+  outParams->d_elementInputVec   = d_elementInputVec;
+  outParams->d_variableFlux      = d_variableFlux;
 
-    return outParams;
+  return outParams;
 }
 
 

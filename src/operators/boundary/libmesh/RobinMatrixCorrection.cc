@@ -71,9 +71,6 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
       AMP_INSIST( (myparams->d_db)->keyExists("gamma"), "Missing key: total prefactor gamma" );
       d_gamma = (myparams->d_db)->getDouble("gamma");
       
-      AMP_INSIST( (myparams->d_db)->keyExists("fConductivity"), "Missing key: effective convective coefficient" );
-      d_hef   = (myparams->d_db)->getDouble("fConductivity");
-      
       AMP_INSIST( (params->d_db)->keyExists("number_of_ids"), "Key ''number_of_ids'' is missing!" );
       int numIds = (params->d_db)->getInteger("number_of_ids");
       
@@ -141,7 +138,9 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
     std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> elementInputVec = myparams->d_elementInputVec;
 
     std::vector<size_t> gpDofs, dofsElementVec;
-    std::vector<size_t> dofIndices; 
+    std::vector<std::vector<size_t> > dofIndices;
+    std::vector<size_t> dofs;
+
     AMP::Discretization::DOFManager::shared_ptr gpDOFManager; 
     if(d_isFluxGaussPtVector && myparams->d_variableFlux.get()!=NULL ){
       gpDOFManager = (myparams->d_variableFlux)->getDOFManager();
@@ -149,89 +148,99 @@ void RobinMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>&
 
     for(unsigned int nid = 0; nid < numIds; nid++)
     {
-      AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
-      AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
-      for( ; bnd1 != end_bnd1; ++bnd1)
+      unsigned int numDofIds = d_dofIds[nid].size();
+
+      for(unsigned int k = 0; k < numDofIds; k++)
       {
+        AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
+        AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
+        for( ; bnd1 != end_bnd1; ++bnd1)
+        {
 
-        boost::shared_ptr < ::FEType > d_feType ( new ::FEType(d_feTypeOrder, d_feFamily) );
-        boost::shared_ptr < ::FEBase > d_fe( (::FEBase::build(2, (*d_feType))).release() );
+          boost::shared_ptr < ::FEType > d_feType ( new ::FEType(d_feTypeOrder, d_feFamily) );
+          boost::shared_ptr < ::FEBase > d_fe( (::FEBase::build(2, (*d_feType))).release() );
 
-        if(d_qruleOrderName == "DEFAULT") {
-          d_qruleOrder = d_feType->default_quadrature_order();
-        } else {
-          d_qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(d_qruleOrderName);
-        }
-        boost::shared_ptr < ::QBase > d_qrule( (::QBase::build(d_qruleType, 2, d_qruleOrder)).release() );
+          if(d_qruleOrderName == "DEFAULT") {
+            d_qruleOrder = d_feType->default_quadrature_order();
+          } else {
+            d_qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(d_qruleOrderName);
+          }
+          boost::shared_ptr < ::QBase > d_qrule( (::QBase::build(d_qruleType, 2, d_qruleOrder)).release() );
 
-        // Get the nodes for the element and their global ids
-        std::vector<AMP::Mesh::MeshElement> currNodes = bnd1->getElements(AMP::Mesh::Vertex);
-        dofIndices.resize(currNodes.size());
-        std::vector<AMP::Mesh::MeshElementID> globalIDs(currNodes.size()); 
-        for(size_t j=0; j<currNodes.size(); j++)
+          // Get the nodes for the element and their global ids
+          std::vector<AMP::Mesh::MeshElement> currNodes = bnd1->getElements(AMP::Mesh::Vertex);
+          dofIndices.resize(currNodes.size());
+          std::vector<AMP::Mesh::MeshElementID> globalIDs(currNodes.size()); 
+          for(size_t j=0; j<currNodes.size(); j++)
             globalIDs[j] = currNodes[j].globalID();
 
-        // Get the libmesh element
-        const libMesh::Elem* currElemPtr = libmeshElements.getElement( bnd1->globalID() );
+          // Get the libmesh element
+          const libMesh::Elem* currElemPtr = libmeshElements.getElement( bnd1->globalID() );
 
-        // Get the DOF indicies for the matrix
-        d_dofManager->getDOFs(globalIDs, dofIndices);
+          // Get the DOF indicies for the matrix
+          for(unsigned int i = 0; i < currNodes.size(); i++) 
+            d_dofManager->getDOFs(globalIDs, dofIndices[i]);
 
-        if(d_isFluxGaussPtVector && myparams->d_variableFlux.get()!=NULL ){
-          gpDOFManager->getDOFs (bnd1->globalID(), gpDofs);
-        }
+          dofs.resize(currNodes.size());
+          for (size_t n = 0; n < dofIndices.size() ; n++)
+            dofs[n] = dofIndices[n][d_dofIds[nid][k]];
 
-        d_fe->attach_quadrature_rule( d_qrule.get() );
-
-        d_phi = &(d_fe->get_phi());
-        d_JxW = &(d_fe->get_JxW());
-
-        d_fe->reinit( currElemPtr );
-
-        const std::vector<Real> & JxW = (*d_JxW);
-        const std::vector<std::vector<Real> > & phi = (*d_phi);
-        unsigned int numGaussPts = d_qrule->n_points(); 
-
-        std::vector<std::vector<double> > inputArgs(elementInputVec.size(),std::vector<double>(currNodes.size()));
-        std::vector<std::vector<double> > inputArgsAtGpts(elementInputVec.size(),std::vector<double>(numGaussPts));
-        std::vector<double> beta(numGaussPts,d_beta);
-        std::vector<double> gamma(numGaussPts,d_gamma);
-        if(d_robinPhysicsModel.get() != NULL) 
-        {
-          unsigned int startIdx = 0;
-          if(d_isFluxGaussPtVector){
-            (myparams->d_variableFlux)->getValuesByGlobalID( gpDofs.size(), &gpDofs[0], &inputArgsAtGpts[0][0] );
-            startIdx = 1;
+          if(d_isFluxGaussPtVector && myparams->d_variableFlux.get()!=NULL ){
+            gpDOFManager->getDOFs (bnd1->globalID(), gpDofs);
           }
 
-          for(unsigned int m = startIdx ; m < elementInputVec.size(); m++){
-            elementInputVec[m]->getDOFManager()->getDOFs( globalIDs, dofsElementVec );
-            AMP_ASSERT(dofsElementVec.size()==dofIndices.size());
-            elementInputVec[m]->getValuesByGlobalID( dofsElementVec.size(), &dofsElementVec[0], &inputArgs[m][0] );
-            for (size_t qp = 0; qp < currNodes.size(); qp++){ 
-              for (size_t n = 0; n < currNodes.size(); n++) {
-                inputArgsAtGpts[m][qp] += phi[n][qp] * inputArgs[m][n];
+          d_fe->attach_quadrature_rule( d_qrule.get() );
+
+          d_phi = &(d_fe->get_phi());
+          d_JxW = &(d_fe->get_JxW());
+
+          d_fe->reinit( currElemPtr );
+
+          const std::vector<Real> & JxW = (*d_JxW);
+          const std::vector<std::vector<Real> > & phi = (*d_phi);
+          unsigned int numGaussPts = d_qrule->n_points(); 
+
+          std::vector<std::vector<double> > inputArgs(elementInputVec.size(),std::vector<double>(currNodes.size()));
+          std::vector<std::vector<double> > inputArgsAtGpts(elementInputVec.size(),std::vector<double>(numGaussPts));
+          std::vector<double> beta(numGaussPts,d_beta);
+          std::vector<double> gamma(numGaussPts,d_gamma);
+          if(d_robinPhysicsModel.get() != NULL) 
+          {
+            unsigned int startIdx = 0;
+            if(d_isFluxGaussPtVector){
+              (myparams->d_variableFlux)->getValuesByGlobalID( gpDofs.size(), &gpDofs[0], &inputArgsAtGpts[0][0] );
+              startIdx = 1;
+            }
+
+            for(unsigned int m = startIdx ; m < elementInputVec.size(); m++){
+              elementInputVec[m]->getDOFManager()->getDOFs( globalIDs, dofsElementVec );
+              AMP_ASSERT(dofsElementVec.size()==dofIndices.size());
+              elementInputVec[m]->getValuesByGlobalID( dofsElementVec.size(), &dofsElementVec[0], &inputArgs[m][0] );
+              for (size_t qp = 0; qp < currNodes.size(); qp++){ 
+                for (size_t n = 0; n < currNodes.size(); n++) {
+                  inputArgsAtGpts[m][qp] += phi[n][qp] * inputArgs[m][n];
+                }
               }
             }
+
+            d_robinPhysicsModel->getConductance(beta, gamma, inputArgsAtGpts);
           }
 
-          d_robinPhysicsModel->getConductance(beta, gamma, inputArgsAtGpts);
-        }
-
-        double temp;
-        for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
-        {
-          for (unsigned int j=0; j < currNodes.size(); j++)
+          double temp;
+          for(unsigned int qp = 0; qp < d_qrule->n_points(); qp++)
           {
-            for (unsigned int i=0; i < currNodes.size(); i++)
+            for (unsigned int j=0; j < currNodes.size(); j++)
             {
-              temp =  beta[qp] * ( JxW[qp]*phi[j][qp]*phi[i][qp] ) ;
-              inputMatrix->addValueByGlobalID ( dofIndices[j], dofIndices[i], temp );
-            }//end for i
-          }//end for j
-        }//end for qp
+              for (unsigned int i=0; i < currNodes.size(); i++)
+              {
+                temp =  beta[qp] * ( JxW[qp]*phi[j][qp]*phi[i][qp] ) ;
+                inputMatrix->addValueByGlobalID ( dofs[j], dofs[i], temp );
+              }//end for i
+            }//end for j
+          }//end for qp
 
-      }//end for bnd
+        }//end for bnd
+      }//end dof ids
 
     }// end for nid
 
