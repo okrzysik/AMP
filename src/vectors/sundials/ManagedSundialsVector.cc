@@ -67,7 +67,7 @@ Vector::shared_ptr  ManagedSundialsVector::cloneVector ( const Variable::shared_
 }
 ManagedSundialsVector  *ManagedSundialsVector::rawClone () const
 {
-    boost::shared_ptr<ManagedVectorParameters> p ( new ManagedSundialsVectorParameters );
+    AMP::shared_ptr<ManagedVectorParameters> p ( new ManagedSundialsVectorParameters );
     if ( !d_vBuffer ) {
         p->d_Engine = d_Engine->cloneEngine ( VectorEngine::BufferPtr () );
     } else {
@@ -76,7 +76,7 @@ ManagedSundialsVector  *ManagedSundialsVector::rawClone () const
     }
     p->d_CommList = getCommunicationList();
     p->d_DOFManager = getDOFManager();
-    ManagedSundialsVector *retVal = new ManagedSundialsVector ( boost::dynamic_pointer_cast<VectorParameters> ( p ) );
+    ManagedSundialsVector *retVal = new ManagedSundialsVector ( AMP::dynamic_pointer_cast<VectorParameters> ( p ) );
     return retVal;
 }
 

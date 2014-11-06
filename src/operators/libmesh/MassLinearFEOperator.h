@@ -9,7 +9,7 @@
 #include "utils/Utilities.h"
 
 /* Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include <vector>
 
@@ -20,11 +20,11 @@ namespace AMP {
     {
       public :
 
-        MassLinearFEOperator(const boost::shared_ptr<MassLinearFEOperatorParameters>& params);
+        MassLinearFEOperator(const AMP::shared_ptr<MassLinearFEOperatorParameters>& params);
 
         virtual ~MassLinearFEOperator() { }
 
-        void preAssembly(const boost::shared_ptr<AMP::Operator::OperatorParameters>&);
+        void preAssembly(const AMP::shared_ptr<AMP::Operator::OperatorParameters>&);
 
         void postAssembly();
 
@@ -36,7 +36,7 @@ namespace AMP {
 
         AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() ;
 
-        boost::shared_ptr<MassDensityModel> getDensityModel() { return d_densityModel; };
+        AMP::shared_ptr<MassDensityModel> getDensityModel() { return d_densityModel; };
 
       protected :
 
@@ -60,13 +60,13 @@ namespace AMP {
 
         std::vector<std::vector<double> > d_elementMassMatrix;
 
-        boost::shared_ptr<MassLinearElement> d_massLinElem;
+        AMP::shared_ptr<MassLinearElement> d_massLinElem;
 
-        boost::shared_ptr<MassDensityModel> d_densityModel;
+        AMP::shared_ptr<MassDensityModel> d_densityModel;
 
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
 
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
       private :
 

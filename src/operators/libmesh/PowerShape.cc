@@ -27,7 +27,7 @@
 #include "VolumeIntegralOperator.h"
 
 /*Boost Files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include <vector>
 #include <cmath>
@@ -41,7 +41,7 @@ namespace AMP {
      * values from the parameters.                                          *
      *************************************************************************
      */
-    PowerShape:: PowerShape(boost::shared_ptr<PowerShapeParameters> parameters)
+    PowerShape:: PowerShape(AMP::shared_ptr<PowerShapeParameters> parameters)
       :Operator(parameters) {
         AMP_ASSERT(parameters);
         d_Mesh = parameters->d_Mesh;
@@ -63,7 +63,7 @@ namespace AMP {
      *  default values.                                                      *
      *************************************************************************
      */
-    void PowerShape::reset(const boost::shared_ptr<OperatorParameters> & parameters) {
+    void PowerShape::reset(const AMP::shared_ptr<OperatorParameters> & parameters) {
       AMP_ASSERT(parameters.get() != NULL);
       d_db = parameters->d_db;
 
@@ -114,7 +114,7 @@ namespace AMP {
      * with those found in input.                                               *
      ****************************************************************************
      */
-    void PowerShape::getFromDatabase(boost::shared_ptr<AMP::Database> db) {
+    void PowerShape::getFromDatabase(AMP::shared_ptr<AMP::Database> db) {
       AMP_ASSERT(db);
 
       //d_Variable = createOutputVariable("RelativePower");
@@ -604,8 +604,8 @@ namespace AMP {
 
           // this is the volume integral operator that will be used to make the integral of the power density the value the user specified.
           d_db->putDatabase("VolumeIntegral");
-          boost::shared_ptr<AMP::Database> volume_db = d_db->getDatabase("VolumeIntegral");
-          boost::shared_ptr<AMP::Database> act_db;
+          AMP::shared_ptr<AMP::Database> volume_db = d_db->getDatabase("VolumeIntegral");
+          AMP::shared_ptr<AMP::Database> act_db;
 
           volume_db->putString("name","VolumeIntegralOperator");
 
@@ -618,14 +618,14 @@ namespace AMP {
           volume_db->putDatabase("ActiveInputVariables");
           volume_db->putDatabase("SourceElement");
 
-          boost::shared_ptr<AMP::Database> source_db = volume_db->getDatabase("SourceElement");
+          AMP::shared_ptr<AMP::Database> source_db = volume_db->getDatabase("SourceElement");
           source_db->putString("name", "SourceNonlinearElement");
 
           act_db = volume_db->getDatabase("ActiveInputVariables");
           act_db->putString("ActiveVariable_0",(u->getVariable())->getName());
-          boost::shared_ptr<AMP::Operator::ElementPhysicsModel> emptyModel;
-          boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeIntegralOperator =
-            boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(d_Mesh, "VolumeIntegral", d_db, emptyModel));
+          AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> emptyModel;
+          AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeIntegralOperator =
+            AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(d_Mesh, "VolumeIntegral", d_db, emptyModel));
 
           int DOFsPerNode = 1;
           int nodalGhostWidth= 1;
@@ -773,7 +773,7 @@ namespace AMP {
      * \brief Write out class version number and data members to database.   *
      *************************************************************************
      */
-    void PowerShape::putToDatabase(boost::shared_ptr<AMP::Database> db)
+    void PowerShape::putToDatabase(AMP::shared_ptr<AMP::Database> db)
     {
       AMP_ASSERT(!db.use_count());
       db->putInteger("numXmoments", d_numXmoments);

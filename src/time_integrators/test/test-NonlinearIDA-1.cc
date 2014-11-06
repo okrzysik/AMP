@@ -3,7 +3,7 @@
 #include "utils/UnitTest.h"
 #include "utils/AMP_MPI.h"
 #include "materials/Material.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
@@ -76,7 +76,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut)
     
     AMP::PIO::logOnlyNodeZero(log_file);
     
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
     input_db->printClassData(AMP::plog);
     
@@ -86,33 +86,33 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut)
     
     
     AMP_INSIST(input_db->keyExists("DiffusionLinearElement"), "Key ''DiffusionLinearElement'' is missing!");
-    boost::shared_ptr<AMP::Database> elemOp_db = input_db->getDatabase("DiffusionLinearElement");
-    boost::shared_ptr<AMP::Operator::ElementOperationParameters> elemOpParams (new AMP::Operator::ElementOperationParameters( elemOp_db ));
-    boost::shared_ptr<AMP::Operator::DiffusionLinearElement> thermLinElem (new AMP::Operator::DiffusionLinearElement( elemOpParams ));
+    AMP::shared_ptr<AMP::Database> elemOp_db = input_db->getDatabase("DiffusionLinearElement");
+    AMP::shared_ptr<AMP::Operator::ElementOperationParameters> elemOpParams (new AMP::Operator::ElementOperationParameters( elemOp_db ));
+    AMP::shared_ptr<AMP::Operator::DiffusionLinearElement> thermLinElem (new AMP::Operator::DiffusionLinearElement( elemOpParams ));
     
     AMP_INSIST(input_db->keyExists("DiffusionNonlinearElement"), "Key ''DiffusionNonlinearElement'' is missing!");
-    boost::shared_ptr<AMP::Database> nonlinear_elemOp_db = input_db->getDatabase("DiffusionNonlinearElement");
-    boost::shared_ptr<AMP::Operator::ElementOperationParameters> nonlinear_elemOpParams (new AMP::Operator::ElementOperationParameters( nonlinear_elemOp_db ));
-    boost::shared_ptr<AMP::Operator::DiffusionNonlinearElement> thermNonlinElem (new AMP::Operator::DiffusionNonlinearElement( nonlinear_elemOpParams ));
+    AMP::shared_ptr<AMP::Database> nonlinear_elemOp_db = input_db->getDatabase("DiffusionNonlinearElement");
+    AMP::shared_ptr<AMP::Operator::ElementOperationParameters> nonlinear_elemOpParams (new AMP::Operator::ElementOperationParameters( nonlinear_elemOp_db ));
+    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearElement> thermNonlinElem (new AMP::Operator::DiffusionNonlinearElement( nonlinear_elemOpParams ));
     
     
     AMP_INSIST(input_db->keyExists( "DiffusionTransportModel_Nonlinear"),"Key ''DiffusionTransportModel_Nonlinear'' is missing!");
-    boost::shared_ptr<AMP::Database> thermModel_db_nonlinear = input_db->getDatabase("DiffusionTransportModel_Nonlinear");
-    boost::shared_ptr<AMP::Operator::DiffusionTransportModelParameters> thermModelParams_nonlinear(new AMP::Operator::DiffusionTransportModelParameters(thermModel_db_nonlinear ) );
-    boost::shared_ptr<AMP::Operator::DiffusionTransportModel> thermalDiffnModel_nonlinear (new AMP::Operator::DiffusionTransportModel( thermModelParams_nonlinear));
+    AMP::shared_ptr<AMP::Database> thermModel_db_nonlinear = input_db->getDatabase("DiffusionTransportModel_Nonlinear");
+    AMP::shared_ptr<AMP::Operator::DiffusionTransportModelParameters> thermModelParams_nonlinear(new AMP::Operator::DiffusionTransportModelParameters(thermModel_db_nonlinear ) );
+    AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> thermalDiffnModel_nonlinear (new AMP::Operator::DiffusionTransportModel( thermModelParams_nonlinear));
     
     AMP_INSIST(input_db->keyExists( "DiffusionTransportModel_Linear"),"Key ''DiffusionTransportModel_Linear'' is missing!");
-    boost::shared_ptr<AMP::Database> thermModel_db_linear = input_db->getDatabase("DiffusionTransportModel_Linear");
-    boost::shared_ptr<AMP::Operator::DiffusionTransportModelParameters> thermModelParams_linear(new AMP::Operator::DiffusionTransportModelParameters(thermModel_db_linear ) );
-    boost::shared_ptr<AMP::Operator::DiffusionTransportModel> thermalDiffnModel_linear (new AMP::Operator::DiffusionTransportModel( thermModelParams_linear));
+    AMP::shared_ptr<AMP::Database> thermModel_db_linear = input_db->getDatabase("DiffusionTransportModel_Linear");
+    AMP::shared_ptr<AMP::Operator::DiffusionTransportModelParameters> thermModelParams_linear(new AMP::Operator::DiffusionTransportModelParameters(thermModel_db_linear ) );
+    AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> thermalDiffnModel_linear (new AMP::Operator::DiffusionTransportModel( thermModelParams_linear));
     
     AMP_INSIST(input_db->keyExists("DiffusionNonlinearFEOperator"), "Key ''DiffusionNonlinearFEOperator'' is missing!");
-    boost::shared_ptr<AMP::Database> thermNonlinAssembly_db = input_db->getDatabase("DiffusionNonlinearFEOperator");
-    boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperatorParameters> thermNonlinOpParams(new AMP::Operator::DiffusionNonlinearFEOperatorParameters(thermNonlinAssembly_db ));
+    AMP::shared_ptr<AMP::Database> thermNonlinAssembly_db = input_db->getDatabase("DiffusionNonlinearFEOperator");
+    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperatorParameters> thermNonlinOpParams(new AMP::Operator::DiffusionNonlinearFEOperatorParameters(thermNonlinAssembly_db ));
     
     AMP_INSIST(input_db->keyExists("DiffusionLinearFEOperator"), "Key ''DiffusionLinearFEOperator'' is missing!");
-    boost::shared_ptr<AMP::Database> thermLinAssembly_db = input_db->getDatabase("DiffusionLinearFEOperator");
-    boost::shared_ptr<AMP::Operator::DiffusionLinearFEOperatorParameters> thermLinOpParams(new AMP::Operator::DiffusionLinearFEOperatorParameters(thermLinAssembly_db ));
+    AMP::shared_ptr<AMP::Database> thermLinAssembly_db = input_db->getDatabase("DiffusionLinearFEOperator");
+    AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperatorParameters> thermLinOpParams(new AMP::Operator::DiffusionLinearFEOperatorParameters(thermLinAssembly_db ));
     
     thermNonlinOpParams->d_elemOp = thermNonlinElem;
     //thermNonlinOpParams->d_elemOp_linear = thermLinElem;
@@ -123,36 +123,36 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut)
     thermLinOpParams->d_transportModel = thermalDiffnModel_linear;
     thermLinOpParams->d_MeshAdapter     = manager.getMesh("ida"); 
     
-    boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator>   thermNonlinOp (new  AMP::Operator::DiffusionNonlinearFEOperator( thermNonlinOpParams ));
-    boost::shared_ptr<AMP::Operator::DiffusionLinearFEOperator>      thermLinOp    (new  AMP::Operator::DiffusionLinearFEOperator   ( thermLinOpParams    ));
+    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator>   thermNonlinOp (new  AMP::Operator::DiffusionNonlinearFEOperator( thermNonlinOpParams ));
+    AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperator>      thermLinOp    (new  AMP::Operator::DiffusionLinearFEOperator   ( thermLinOpParams    ));
     
     
     AMP_INSIST(input_db->keyExists("DirichletVectorCorrection"), "Key ''DirichletVectorCorrection'' is missing!");
-    boost::shared_ptr<AMP::Database> temp1_db = input_db->getDatabase("DirichletVectorCorrection");
-    boost::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> temp1_dirichletVecParams (new AMP::Operator::DirichletVectorCorrectionParameters(temp1_db));
+    AMP::shared_ptr<AMP::Database> temp1_db = input_db->getDatabase("DirichletVectorCorrection");
+    AMP::shared_ptr<AMP::Operator::DirichletVectorCorrectionParameters> temp1_dirichletVecParams (new AMP::Operator::DirichletVectorCorrectionParameters(temp1_db));
     
     /// put source with mass matrix
     AMP_INSIST(input_db->keyExists("MassLinearElement"), "Key ''MassLinearElement'' is missing!");
-    boost::shared_ptr<AMP::Database> srcmass_db = input_db->getDatabase("MassLinearElement");
-    boost::shared_ptr<AMP::Operator::ElementOperationParameters> srcmassParams (new AMP::Operator::ElementOperationParameters( srcmass_db ));
-    boost::shared_ptr<AMP::MassLinearElement> massLinElem (new AMP::MassLinearElement( srcmassParams ));
+    AMP::shared_ptr<AMP::Database> srcmass_db = input_db->getDatabase("MassLinearElement");
+    AMP::shared_ptr<AMP::Operator::ElementOperationParameters> srcmassParams (new AMP::Operator::ElementOperationParameters( srcmass_db ));
+    AMP::shared_ptr<AMP::MassLinearElement> massLinElem (new AMP::MassLinearElement( srcmassParams ));
     
     AMP_INSIST(input_db->keyExists("MassDensityModel"),"Key ''MassDensityModel'' is missing!");
-    boost::shared_ptr<AMP::Database> massModel_db = input_db->getDatabase("MassDensityModel");
-    boost::shared_ptr<AMP::Operator::MassDensityModelParameters> massModelParams(new    AMP::Operator::MassDensityModelParameters(massModel_db ) );
-    boost::shared_ptr<AMP::Operator::MassDensityModel> massDensityModel (new AMP::Operator::MassDensityModel(massModelParams));
+    AMP::shared_ptr<AMP::Database> massModel_db = input_db->getDatabase("MassDensityModel");
+    AMP::shared_ptr<AMP::Operator::MassDensityModelParameters> massModelParams(new    AMP::Operator::MassDensityModelParameters(massModel_db ) );
+    AMP::shared_ptr<AMP::Operator::MassDensityModel> massDensityModel (new AMP::Operator::MassDensityModel(massModelParams));
     
     AMP_INSIST(input_db->keyExists("MassLinearFEOperator"), "Key ''MassLinearFEOperator'' is missing!");
-    boost::shared_ptr<AMP::Database> srcAssembly_db = input_db->getDatabase("MassLinearFEOperator");
-    boost::shared_ptr<AMP::Operator::MassLinearFEOperatorParameters> srcOpParams(new AMP::Operator::MassLinearFEOperatorParameters(srcAssembly_db ));
+    AMP::shared_ptr<AMP::Database> srcAssembly_db = input_db->getDatabase("MassLinearFEOperator");
+    AMP::shared_ptr<AMP::Operator::MassLinearFEOperatorParameters> srcOpParams(new AMP::Operator::MassLinearFEOperatorParameters(srcAssembly_db ));
     
     //ida
     AMP_INSIST(input_db->keyExists("IDATimeIntegrator"), "Key ''IDATimeIntegrator'' is missing!");
-    boost::shared_ptr<AMP::Database> ida_db = input_db->getDatabase("IDATimeIntegrator");
+    AMP::shared_ptr<AMP::Database> ida_db = input_db->getDatabase("IDATimeIntegrator");
     
     //idaTimeOperator
-    boost::shared_ptr<AMP::Database> idaTimeOp_db = input_db->getDatabase("IDATimeOperator");
-    boost::shared_ptr<AMP::Database> linearTimeOp_db = input_db->getDatabase("LinearTimeOperator");
+    AMP::shared_ptr<AMP::Database> idaTimeOp_db = input_db->getDatabase("IDATimeOperator");
+    AMP::shared_ptr<AMP::Database> linearTimeOp_db = input_db->getDatabase("LinearTimeOperator");
     
     
     // Copied and pasted from testPetscSNESSolver-NonlinearThermal-1.cc
@@ -162,13 +162,13 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut)
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     
     AMP_INSIST(input_db->keyExists("NeutronicsOperator"), "Key ''NeutronicsOperator'' is missing!");
-    boost::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("NeutronicsOperator");
-    boost::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
+    AMP::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("NeutronicsOperator");
+    AMP::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
     //neutronicsParams->d_MeshAdapter = meshAdapter;
     AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapter = manager.getMesh("ida");
     neutronicsParams->d_MeshAdapter = manager.getMesh("ida");
     
-    boost::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
+    AMP::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
     
     AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = meshAdapter->createVector( SpecificPowerVar );
@@ -181,9 +181,9 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut)
     
     AMP_INSIST( input_db->keyExists("VolumeIntegralOperator"), "key missing!" );
     
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
-    boost::shared_ptr<AMP::Database> sourceDatabase = input_db->getDatabase("VolumeIntegralOperator");
-    boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator = boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
+    AMP::shared_ptr<AMP::Database> sourceDatabase = input_db->getDatabase("VolumeIntegralOperator");
+    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator = AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 																								"VolumeIntegralOperator",
 																								input_db,
 																								stransportModel));
@@ -205,16 +205,16 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut)
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     
     //do we really need dynamic cast here?
-    srcOpParams->d_elemOp = boost::dynamic_pointer_cast<AMP::Operator::ElementOperation>(massLinElem);
+    srcOpParams->d_elemOp = AMP::dynamic_pointer_cast<AMP::Operator::ElementOperation>(massLinElem);
     //srcOpParams->d_elemOp = massLinElem;
     srcOpParams->d_densityModel = massDensityModel;
     srcOpParams->d_MeshAdapter     = manager.getMesh("ida"); 
-    boost::shared_ptr<AMP::Operator::MassLinearFEOperator>   srcOp (new  AMP::Operator::MassLinearFEOperator( srcOpParams ));
+    AMP::shared_ptr<AMP::Operator::MassLinearFEOperator>   srcOp (new  AMP::Operator::MassLinearFEOperator( srcOpParams ));
     
     
     
-    boost::shared_ptr<AMP::Database> pcSolver_db = input_db->getDatabase("Preconditioner");
-    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> pcSolverParams(new AMP::Solver::SolverStrategyParameters(pcSolver_db));
+    AMP::shared_ptr<AMP::Database> pcSolver_db = input_db->getDatabase("Preconditioner");
+    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> pcSolverParams(new AMP::Solver::SolverStrategyParameters(pcSolver_db));
     
     if(pcSolverParams.get() == NULL) {
         ut->failure("Testing SolverStrategyParameters's constructor: FAIL");
@@ -288,7 +288,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut)
     */
     //pcSolverParams->d_pOperator = thermLinOp;
     
-    boost::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(new AMP::Solver::TrilinosMLSolver(pcSolverParams));
+    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(new AMP::Solver::TrilinosMLSolver(pcSolverParams));
     
     if(pcSolver.get() == NULL) {
         ut->failure("Testing TrilinosMLSolver's constructor: FAIL");
@@ -296,16 +296,16 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut)
         ut->passes("Testing TrilinosMLSolver's constructor: PASS");
     }
     
-    boost::shared_ptr<AMP::Operator::OperatorParameters> TimeOp_Params ( new AMP::TimeIntegrator::IDATimeOperatorParameters(idaTimeOp_db));
-    boost::shared_ptr<AMP::TimeIntegrator::IDATimeOperatorParameters> idaTimeOp_Params = boost::dynamic_pointer_cast<AMP::TimeIntegrator::IDATimeOperatorParameters>(TimeOp_Params);
+    AMP::shared_ptr<AMP::Operator::OperatorParameters> TimeOp_Params ( new AMP::TimeIntegrator::IDATimeOperatorParameters(idaTimeOp_db));
+    AMP::shared_ptr<AMP::TimeIntegrator::IDATimeOperatorParameters> idaTimeOp_Params = AMP::dynamic_pointer_cast<AMP::TimeIntegrator::IDATimeOperatorParameters>(TimeOp_Params);
     idaTimeOp_Params->d_pRhsOperator=thermNonlinOp;
     idaTimeOp_Params->d_pMassOperator=srcOp;
     
-    boost::shared_ptr<AMP::TimeIntegrator::IDATimeOperator> idaTimeOp (new AMP::TimeIntegrator::IDATimeOperator(TimeOp_Params));
+    AMP::shared_ptr<AMP::TimeIntegrator::IDATimeOperator> idaTimeOp (new AMP::TimeIntegrator::IDATimeOperator(TimeOp_Params));
     
-    boost::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> linearTimeOp_Params ( new AMP::TimeIntegrator::TimeOperatorParameters(linearTimeOp_db));
+    AMP::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> linearTimeOp_Params ( new AMP::TimeIntegrator::TimeOperatorParameters(linearTimeOp_db));
     
-    boost::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> time_Params( new AMP::TimeIntegrator::IDATimeIntegratorParameters(ida_db));
+    AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> time_Params( new AMP::TimeIntegrator::IDATimeIntegratorParameters(ida_db));
     
     if( (time_Params.get()) == NULL ) {
         ut->failure("Testing IDATimeIntegratorParameters' Constructor");
@@ -333,7 +333,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut)
     time_Params->d_ic_vector = ic_vector;
     
     time_Params->d_pMassOperator = srcOp;
-    boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegratorParameters> ida_Params = boost::dynamic_pointer_cast<AMP::TimeIntegrator::IDATimeIntegratorParameters>(time_Params);
+    AMP::shared_ptr<AMP::TimeIntegrator::IDATimeIntegratorParameters> ida_Params = AMP::dynamic_pointer_cast<AMP::TimeIntegrator::IDATimeIntegratorParameters>(time_Params);
     ida_Params->d_ic_vector_prime = ic_vector_prime;
     ida_Params->d_pPreconditioner = pcSolver;
     ida_Params->d_pLinearOperator = thermLinOp;
@@ -353,7 +353,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut)
     }
     
     
-    boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> idaOp(pIDAOp);
+    AMP::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> idaOp(pIDAOp);
     
     if(idaOp == NULL) {
         ut->failure("Testing IDATimeIntegrator's constructor: part 2");

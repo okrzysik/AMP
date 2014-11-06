@@ -1,11 +1,10 @@
-
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include "applyTests.h"
 #include "utils/Utilities.h"
+#include "utils/shared_ptr.h"
 #include <exception>
-#include <boost/shared_ptr.hpp>
 #include <utils/Castable.h>
 
 void adjust(AMP::LinearAlgebra::Vector::shared_ptr vec, const double *shift, const double *scale, const size_t nshift)
@@ -14,7 +13,7 @@ void adjust(AMP::LinearAlgebra::Vector::shared_ptr vec, const double *shift, con
     vec->scale(scale[0]);
     vec->addScalar(vec, shift[0]);
   } else {
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVector> mvec = boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(vec);
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> mvec = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(vec);
     size_t nvecs = mvec->getNumberOfSubvectors();
     AMP_INSIST(nshift <= nvecs, "not enough subvectors");
     for (size_t i=0; i<nshift; i++) {
@@ -32,7 +31,7 @@ void adjust(AMP::LinearAlgebra::Vector::shared_ptr vec, const double shift, cons
 }
 
 void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
-    boost::shared_ptr<AMP::Operator::Operator> testOperator,
+    AMP::shared_ptr<AMP::Operator::Operator> testOperator,
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec, AMP::LinearAlgebra::Vector::shared_ptr solVec,
     AMP::LinearAlgebra::Vector::shared_ptr resVec, const double shift, const double scale)
 {
@@ -40,7 +39,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
 }
 
 void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
-    boost::shared_ptr<AMP::Operator::Operator> testOperator,
+    AMP::shared_ptr<AMP::Operator::Operator> testOperator,
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec, AMP::LinearAlgebra::Vector::shared_ptr solVec,
     AMP::LinearAlgebra::Vector::shared_ptr resVec, const double *shift, const double *scale, const size_t nshift)
 {

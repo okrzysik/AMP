@@ -51,13 +51,13 @@ public:
         Teuchos::RCP<const Thyra::VectorSpaceBase<double> > space = Thyra::create_VectorSpace( epetra_map );
         Teuchos::RCP<Thyra::VectorBase<double> > thyra_v = Thyra::create_Vector( epetra_v, space );
         // Create the NativeThyraVector
-        boost::shared_ptr<AMP::LinearAlgebra::NativeThyraVectorParameters> params( 
+        AMP::shared_ptr<AMP::LinearAlgebra::NativeThyraVectorParameters> params( 
             new AMP::LinearAlgebra::NativeThyraVectorParameters() );
         params->d_InVec = thyra_v;
         params->d_local = local_size;
         params->d_comm = global_comm;
         params->d_var = getVariable();
-        boost::shared_ptr<AMP::LinearAlgebra::NativeThyraVector> vec( 
+        AMP::shared_ptr<AMP::LinearAlgebra::NativeThyraVector> vec( 
             new AMP::LinearAlgebra::NativeThyraVector( params ) );
         return vec;
     }
@@ -100,17 +100,17 @@ public:
         // Create an arbitrary vector
         AMP::LinearAlgebra::Vector::shared_ptr vec1 = FACTORY::getVector();
         // Create the managed vector
-        boost::shared_ptr<AMP::LinearAlgebra::ManagedThyraVector> vec2 = 
-            boost::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedThyraVector>(
+        AMP::shared_ptr<AMP::LinearAlgebra::ManagedThyraVector> vec2 = 
+            AMP::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedThyraVector>(
             AMP::LinearAlgebra::ThyraVector::view(vec1) );
         // Create a native ThyraVector from the managed vector
-        boost::shared_ptr<AMP::LinearAlgebra::NativeThyraVectorParameters> params( 
+        AMP::shared_ptr<AMP::LinearAlgebra::NativeThyraVectorParameters> params( 
             new AMP::LinearAlgebra::NativeThyraVectorParameters() );
         params->d_InVec = vec2->getVec();
         params->d_local = vec2->getLocalSize();
         params->d_comm = vec2->getComm();
         params->d_var = getVariable();
-        boost::shared_ptr<AMP::LinearAlgebra::NativeThyraVector> vec3( 
+        AMP::shared_ptr<AMP::LinearAlgebra::NativeThyraVector> vec3( 
             new AMP::LinearAlgebra::NativeThyraVector( params ) );
         return vec3;
     }
@@ -121,8 +121,8 @@ public:
 template <typename FACTORY>
 void testBelosThyraVector( AMP::UnitTest *utils )
 {
-    boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> vector = 
-        boost::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(FACTORY::getVector());
+    AMP::shared_ptr<AMP::LinearAlgebra::ThyraVector> vector = 
+        AMP::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(FACTORY::getVector());
     typedef Thyra::MultiVectorBase<double> TMVB;
     Teuchos::RCP<Belos::OutputManager<double> > outputmgr = Teuchos::rcp(new Belos::OutputManager<double>());
     bool pass = Belos::TestMultiVecTraits<double,TMVB>(outputmgr,vector->getVec());

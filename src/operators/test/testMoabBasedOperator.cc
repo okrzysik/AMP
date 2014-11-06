@@ -42,10 +42,10 @@
 //---------------------------------------------------------------------------//
 
 typedef AMP::Operator::MoabBasedOperator            MoabBasedOp;
-typedef boost::shared_ptr< MoabBasedOp >            SP_MoabBasedOp;
+typedef AMP::shared_ptr< MoabBasedOp >            SP_MoabBasedOp;
 
 typedef AMP::Operator::MoabBasedOperatorParameters  MoabOpParams;
-typedef boost::shared_ptr<MoabOpParams>             SP_MoabOpParams;
+typedef AMP::shared_ptr<MoabOpParams>             SP_MoabOpParams;
 
 typedef AMP::LinearAlgebra::Vector                  AMPVec;
 typedef AMP::LinearAlgebra::Vector::shared_ptr      SP_AMPVec;
@@ -154,16 +154,16 @@ void moabInterface(AMP::UnitTest *ut)
     //  Read Input File.
     //--------------------------------------------------
 
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
 
     //--------------------------------------------------
     //   Create the Mesh.
     //--------------------------------------------------
-    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
     mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-    boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(mgrParams);
+    AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(mgrParams);
 
     // Put moab mesh filename onto DB
     std::string moabMeshFile = "input.h5m";
@@ -171,14 +171,14 @@ void moabInterface(AMP::UnitTest *ut)
 
     // Build operator params
     typedef AMP::Operator::MoabBasedOperatorParameters MoabOpParams;
-    typedef boost::shared_ptr< MoabOpParams >          SP_MoabOpParams;
+    typedef AMP::shared_ptr< MoabOpParams >          SP_MoabOpParams;
 
     AMP::pout << "Building Moab Operator Parameters" << std::endl;
     SP_MoabOpParams moabParams( new MoabOpParams( input_db ) );
 
     // Build operator
     typedef AMP::Operator::MoabBasedOperator MoabBasedOp;
-    typedef boost::shared_ptr< MoabBasedOp > SP_MoabBasedOp;
+    typedef AMP::shared_ptr< MoabBasedOp > SP_MoabBasedOp;
 
     AMP::pout << "Building Moab Operator" << std::endl;
     SP_MoabBasedOp moabOp( new MoabDummyOperator( moabParams ) );
@@ -190,10 +190,10 @@ void moabInterface(AMP::UnitTest *ut)
     // Create Parameters for Map Operator
     AMP::pout << "Creating map operator" << std::endl;
     typedef AMP::Operator::MoabMapOperatorParameters    MoabMapParams;
-    typedef boost::shared_ptr< MoabMapParams >          SP_MoabMapParams;
+    typedef AMP::shared_ptr< MoabMapParams >          SP_MoabMapParams;
 
     typedef AMP::Operator::MoabMapOperator              MoabMap;
-    typedef boost::shared_ptr< MoabMap>                 SP_MoabMap;
+    typedef AMP::shared_ptr< MoabMap>                 SP_MoabMap;
 
     input_db->putString("MoabMapVariable","TEMPERATURE");
     SP_MoabMapParams mapParams( new MoabMapParams( input_db ) );

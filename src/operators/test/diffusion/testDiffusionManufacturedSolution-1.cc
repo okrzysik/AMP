@@ -6,7 +6,7 @@
 #include <limits>
 #include <cmath>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -53,7 +53,7 @@ void bvpTest1(AMP::UnitTest *ut, std::string exeName)
   AMP::PIO::logOnlyNodeZero(log_file);
 
   // Input database
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
@@ -62,47 +62,47 @@ void bvpTest1(AMP::UnitTest *ut, std::string exeName)
 //   Create the Mesh.
 //--------------------------------------------------
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-  boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+  AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
   mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+  AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 //--------------------------------------------------
 
   // Create nonlinear diffusion BVP operator and access volume nonlinear Diffusion operator
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> nonlinearPhysicsModel;
-  boost::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> nonlinearPhysicsModel;
+  AMP::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
     AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 						   "ThermalNonlinearBVPOperator",
 						   input_db,
 						   nonlinearPhysicsModel);
-  boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
-          boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(nlinBVPOperator);
-  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nlinOp =
-         boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinBVPOp->getVolumeOperator());
+  AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
+          AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(nlinBVPOperator);
+  AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nlinOp =
+         AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinBVPOp->getVolumeOperator());
   
   // use the linear BVP operator to create a linear diffusion operator with bc's
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> linearPhysicsModel;
-  //boost::shared_ptr<AMP::InputDatabase> bvp_db =
-  //        boost::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase("ThermalLinearBVPOperator"));
-  //boost::shared_ptr<AMP::Operator::Operator> linBVPOperator =
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> linearPhysicsModel;
+  //AMP::shared_ptr<AMP::InputDatabase> bvp_db =
+  //        AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase("ThermalLinearBVPOperator"));
+  //AMP::shared_ptr<AMP::Operator::Operator> linBVPOperator =
   //        AMP::Operator::OperatorBuilder::createOperator(meshAdapter, bvp_db, linearPhysicsModel);
-  //boost::shared_ptr<AMP::Operator::LinearBVPOperator> linBVPOp =
-  //        boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(linBVPOperator);
-  //boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> linOp =
-  //        boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(linBVPOp->getVolumeOperator());
+  //AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linBVPOp =
+  //        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(linBVPOperator);
+  //AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> linOp =
+  //        AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(linBVPOp->getVolumeOperator());
 
   // Get source mass operator
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
-  boost::shared_ptr<AMP::Operator::Operator> sourceOperator =
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
+  AMP::shared_ptr<AMP::Operator::Operator> sourceOperator =
     AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 						   "ManufacturedSourceOperator",
 						   input_db,
 						   sourcePhysicsModel);
-  boost::shared_ptr<AMP::Operator::MassLinearFEOperator> sourceOp =
-         boost::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>(sourceOperator);
+  AMP::shared_ptr<AMP::Operator::MassLinearFEOperator> sourceOp =
+         AMP::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>(sourceOperator);
 
-  boost::shared_ptr<AMP::Operator::MassDensityModel> densityModel = sourceOp->getDensityModel();
-  boost::shared_ptr<AMP::ManufacturedSolution> mfgSolution = densityModel->getManufacturedSolution();
+  AMP::shared_ptr<AMP::Operator::MassDensityModel> densityModel = sourceOp->getDensityModel();
+  AMP::shared_ptr<AMP::ManufacturedSolution> mfgSolution = densityModel->getManufacturedSolution();
 
   // Set up input and output vectors
   //AMP::LinearAlgebra::Variable::shared_ptr solVar = nlinOp->getInputVariable(nlinOp->getPrincipalVariableId());

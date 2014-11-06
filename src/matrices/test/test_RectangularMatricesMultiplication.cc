@@ -18,7 +18,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
   // build mesh database 
-  boost::shared_ptr<AMP::Database> database(new AMP::MemoryDatabase("Mesh"));
+  AMP::shared_ptr<AMP::Database> database(new AMP::MemoryDatabase("Mesh"));
   database->putString("MeshName", "cube");
   database->putString("MeshType", "AMP");
   database->putInteger("dim", 3);
@@ -32,9 +32,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   range[1] = range[3] = range[5] = 1.0;
   database->putDoubleArray("Range", range);
   // create mesh
-  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
   params->setComm(globalComm);
-  boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params); 
+  AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params); 
   // create two different dof managers
   AMP::Discretization::DOFManager::shared_ptr firstDofManager = AMP::Discretization::simpleDOFManager::create(mesh, AMP::Mesh::Vertex, 1, 1, true);
   AMP::Discretization::DOFManager::shared_ptr secondDofManager = AMP::Discretization::simpleDOFManager::create(mesh, AMP::Mesh::Volume, 0, 8, true);

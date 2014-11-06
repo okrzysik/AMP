@@ -2,12 +2,12 @@
 #define included_SolverStrategy
 
 #include "SolverStrategyParameters.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "vectors/Vector.h"
 #include "vectors/MultiVector.h"
 #include "utils/Writer.h"
 #include "operators/Operator.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 
 namespace AMP {
@@ -23,7 +23,7 @@ class SolverStrategy
 {
 public:
 
-    typedef boost::shared_ptr<AMP::Solver::SolverStrategy>  shared_ptr;
+    typedef AMP::shared_ptr<AMP::Solver::SolverStrategy>  shared_ptr;
 
     /**
      * Default constructor
@@ -44,7 +44,7 @@ public:
      *                          4. type: bool, name: zero_initial_guess, default value: false, 
      *                             acceptable values (TRUE, FALSE)
      */
-    SolverStrategy(boost::shared_ptr<SolverStrategyParameters> parameters);
+    SolverStrategy(AMP::shared_ptr<SolverStrategyParameters> parameters);
 
     /**
      * Default destructor. Currently does not do anything.
@@ -57,22 +57,22 @@ public:
      * @param[in]  f    shared pointer to right hand side vector
      * @param[out] u    shared pointer to approximate computed solution 
      */
-    virtual void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
-		      boost::shared_ptr<AMP::LinearAlgebra::Vector>  u) = 0;
+    virtual void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
+		      AMP::shared_ptr<AMP::LinearAlgebra::Vector>  u) = 0;
 
     /**
      * Initialize the solution vector and potentially create internal vectors needed for solution
      * @param[in] parameters    The parameters object contains a database object. 
      *                          Currently there are no required fields for the database object.
     */
-   virtual void initialize(boost::shared_ptr<SolverStrategyParameters> const parameters);
+   virtual void initialize(AMP::shared_ptr<SolverStrategyParameters> const parameters);
 
     /**
      * Provide the initial guess for the solver. This is a pure virtual function that the derived classes
      * need to provide an implementation of.
      * @param[in] initialGuess: shared pointer to the initial guess vector.
      */
-    virtual void setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess );
+    virtual void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess );
    
     /**
      * Specify stopping criteria.
@@ -110,7 +110,7 @@ public:
      * Register the operator that the solver will use during solves
      * @param [in] op shared pointer to operator \f$A()\f$ for equation \f$A(u) = f\f$ 
      */
-    virtual void registerOperator(const boost::shared_ptr<AMP::Operator::Operator> op){d_pOperator = op;}
+    virtual void registerOperator(const AMP::shared_ptr<AMP::Operator::Operator> op){d_pOperator = op;}
 
     /**
      * \brief  Append the vectors of interest to the solution vector
@@ -119,7 +119,7 @@ public:
      *  of vectors, but no vector may be owned by multiple solvers.
      * \param vec   The multivector to append
      */
-    virtual void appendSolutionVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> vec );
+    virtual void appendSolutionVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> vec );
 
     /**
      * \brief  Append the vectors of interest to the rhs vector
@@ -128,7 +128,7 @@ public:
      *  of vectors, but no vector may be owned by multiple solvers.
      * \param vec   The multivector to append
      */
-    virtual void appendRhsVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> vec );
+    virtual void appendRhsVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> vec );
 
     /**
      * \brief  Registers a writer with the solver
@@ -136,7 +136,7 @@ public:
      *  may then register any vector components it "owns" with the writer.
      * \param writer   The writer to register
      */
-    virtual void registerWriter( boost::shared_ptr<AMP::Utilities::Writer> writer ) { d_writer=writer; }
+    virtual void registerWriter( AMP::shared_ptr<AMP::Utilities::Writer> writer ) { d_writer=writer; }
 
     /**
      * \brief Prepare for solve. 
@@ -156,23 +156,23 @@ public:
      * @param parameters
      *        OperatorParameters object that is NULL by default
      */
-    virtual void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> parameters);
+    virtual void resetOperator(const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters);
 
     /**
      * Resets the solver internally with new parameters if necessary
      * @param parameters
      *        SolverStrategyParameters object that is NULL by default
      */
-    virtual void reset(boost::shared_ptr<SolverStrategyParameters> parameters);
+    virtual void reset(AMP::shared_ptr<SolverStrategyParameters> parameters);
 
     /**
      * Return a shared pointer to the operator registered with the solver.
      */
-    virtual boost::shared_ptr<AMP::Operator::Operator> getOperator(void) { return d_pOperator; }
+    virtual AMP::shared_ptr<AMP::Operator::Operator> getOperator(void) { return d_pOperator; }
 
 protected:
    
-    void getFromInput(const boost::shared_ptr<AMP::Database>& db);
+    void getFromInput(const AMP::shared_ptr<AMP::Database>& db);
 
     int d_iNumberIterations;             // iterations in solver
    
@@ -192,9 +192,9 @@ protected:
 
     static int d_iInstanceId;       // used to differentiate between different instances of the class
 
-    boost::shared_ptr<AMP::Operator::Operator> d_pOperator;
+    AMP::shared_ptr<AMP::Operator::Operator> d_pOperator;
 
-    boost::shared_ptr<AMP::Utilities::Writer> d_writer;
+    AMP::shared_ptr<AMP::Utilities::Writer> d_writer;
 
 
 private:

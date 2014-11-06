@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "materials/Material.h"
 #include "materials/Property.h"
@@ -23,7 +23,7 @@ typedef ElementPhysicsModelParameters DiffusionTransportModelParameters;
 class DiffusionTransportModel  : public ElementPhysicsModel
 {
   public :
-    DiffusionTransportModel(const boost::shared_ptr<DiffusionTransportModelParameters>& params);
+    DiffusionTransportModel(const AMP::shared_ptr<DiffusionTransportModelParameters>& params);
 
     virtual ~DiffusionTransportModel() {}
 
@@ -99,13 +99,13 @@ class DiffusionTransportModel  : public ElementPhysicsModel
 
     double getDefault(size_t i){return d_defaults[i];}
 
-    static boost::shared_ptr<std::vector<double> >
+    static AMP::shared_ptr<std::vector<double> >
         bilogTransform(const std::vector<double> &u, const double a, const double b);
 
     static void bilogScale(std::vector<double> &u, const double a, const double b);
 
     virtual void getTransport(std::vector<double> & result,
-             std::map<std::string, boost::shared_ptr<std::vector<double> > >& args,
+             std::map<std::string, AMP::shared_ptr<std::vector<double> > >& args,
              const std::vector<libMesh::Point>& Coordinates=d_DummyCoords);
 
     AMP::Materials::Material::shared_ptr getMaterial(){return d_material;}

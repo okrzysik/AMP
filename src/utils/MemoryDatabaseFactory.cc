@@ -16,8 +16,8 @@ namespace AMP {
 /**
  * Build a new MemoryDatabase object.
  */
- boost::shared_ptr<Database> MemoryDatabaseFactory::allocate(const std::string& name) {
-  boost::shared_ptr<MemoryDatabase> database(new MemoryDatabase(name));
+ AMP::shared_ptr<Database> MemoryDatabaseFactory::allocate(const std::string& name) {
+  AMP::shared_ptr<MemoryDatabase> database(new MemoryDatabase(name));
    return database;
 }
 

@@ -2,7 +2,7 @@
 #define  included_ElementOperationFactory
 
 /* Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "operators/ElementOperation.h"
 
@@ -15,7 +15,7 @@ class ElementOperationFactory{
   ElementOperationFactory(){}
   ~ElementOperationFactory(){}
 
-  static boost::shared_ptr<ElementOperation> createElementOperation(boost::shared_ptr<AMP::Database>  input_db);
+  static AMP::shared_ptr<ElementOperation> createElementOperation(AMP::shared_ptr<AMP::Database>  input_db);
 
 };  
 

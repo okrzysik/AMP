@@ -88,7 +88,7 @@ class PETScInterfaceLeftVectorFactory
         ::Mat m = matrix->castTo<AMP::LinearAlgebra::PetscMatrix>().getMat ();
         ::Vec v;
         MatGetVecs ( m , &v , 0 );
-        boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> p( 
+        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> p( 
             new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
         AMP::LinearAlgebra::Vector::shared_ptr  vector( new AMP::LinearAlgebra::NativePetscVector ( p ) );
         vector->setVariable( getVariable() );
@@ -129,7 +129,7 @@ public:
         ::Mat m = matrix->castTo<AMP::LinearAlgebra::PetscMatrix>().getMat ();
         ::Vec v;
         MatGetVecs ( m , &v , 0 );
-        boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> p( 
+        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> p( 
             new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
         AMP::LinearAlgebra::Vector::shared_ptr  vector( new AMP::LinearAlgebra::NativePetscVector ( p ) );
         vector->setVariable( getVariable() );

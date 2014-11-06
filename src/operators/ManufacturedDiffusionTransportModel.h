@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "ampmesh/Mesh.h"
 #include "discretization/DOF_Manager.h"
 #include "materials/Material.h"
@@ -22,7 +22,7 @@ namespace Operator {
     class ManufacturedDiffusionTransportModel  : public DiffusionTransportModel
     {
         public :
-        ManufacturedDiffusionTransportModel(const boost::shared_ptr<
+        ManufacturedDiffusionTransportModel(const AMP::shared_ptr<
                                 DiffusionTransportModelParameters>& params):
         DiffusionTransportModel(params)
         {
@@ -35,11 +35,11 @@ namespace Operator {
     
         
         virtual void getTransport(std::vector<double> & result,
-				  std::map<std::string, boost::shared_ptr<std::vector<double> > >& args,
+				  std::map<std::string, AMP::shared_ptr<std::vector<double> > >& args,
                                   const std::vector<libMesh::Point>& Coordinates)
         {
             AMP_ASSERT((Coordinates.size() == result.size()));
-	    std::map<std::string, boost::shared_ptr<std::vector<double> > >::iterator it = args.find("temperature");
+	    std::map<std::string, AMP::shared_ptr<std::vector<double> > >::iterator it = args.find("temperature");
 	    AMP_ASSERT(it != args.end());
 	    std::vector<double> &T(*(it->second));
 	    AMP_ASSERT(T.size() == result.size());

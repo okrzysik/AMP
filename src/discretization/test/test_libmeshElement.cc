@@ -45,13 +45,13 @@ int main ( int argc , char ** argv )
 
     // Run the tests
     {
-        boost::shared_ptr<AMP::unit_test::MeshGenerator> generator( new AMP::unit_test::ExodusReaderGenerator<> );
+        AMP::shared_ptr<AMP::unit_test::MeshGenerator> generator( new AMP::unit_test::ExodusReaderGenerator<> );
         generator->build_mesh();
         testLibmeshElement( &ut, generator->getMesh() );
-        generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::AMPCubeGenerator<5> );
+        generator = AMP::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::AMPCubeGenerator<5> );
         generator->build_mesh();
         testLibmeshElement( &ut, generator->getMesh() );
-        generator = boost::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::AMPMultiMeshGenerator );
+        generator = AMP::shared_ptr<AMP::unit_test::MeshGenerator>( new AMP::unit_test::AMPMultiMeshGenerator );
         generator->build_mesh();
         testLibmeshElement( &ut, generator->getMesh() );
     }

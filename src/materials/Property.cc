@@ -15,10 +15,10 @@ namespace AMP {
 namespace Materials {
 
 template<>
-std::map<std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> >
-Property<double>::make_map(const boost::shared_ptr<AMP::LinearAlgebra::MultiVector> &args)
+std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector> >
+Property<double>::make_map(const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args)
 {
-	std::map<std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> > result;
+	std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector> > result;
 	if (d_n_arguments>0) {
 		size_t xls = d_translator.size();
 		AMP_INSIST(xls>0, "attempt to make MultiVector map without setting translator");
@@ -41,18 +41,18 @@ Property<double>::make_map(const boost::shared_ptr<AMP::LinearAlgebra::MultiVect
 }
 
 template<>
-void Property<double>::evalv(boost::shared_ptr<AMP::LinearAlgebra::Vector>& r,
-const std::map< std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> >& args)
+void Property<double>::evalv(AMP::shared_ptr<AMP::LinearAlgebra::Vector>& r,
+const std::map< std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector> >& args)
 {
 	AMP_ASSERT(in_range(args));
 	evalvActual(*r, args);
 }
 
 template<>
-void Property<double>::evalv(boost::shared_ptr<AMP::LinearAlgebra::Vector>& r,
-const boost::shared_ptr<AMP::LinearAlgebra::MultiVector>& args)
+void Property<double>::evalv(AMP::shared_ptr<AMP::LinearAlgebra::Vector>& r,
+const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector>& args)
 {
-	std::map<std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> > mapargs = make_map(args);
+	std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector> > mapargs = make_map(args);
 	evalv(r, mapargs);
 }
 

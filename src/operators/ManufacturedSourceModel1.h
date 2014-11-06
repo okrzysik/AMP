@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <string>
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "ElementPhysicsModel.h"
 #include "materials/Material.h"
@@ -20,7 +20,7 @@ typedef ElementPhysicsModelParameters ManufacturedSourceModel1Parameters;
 class ManufacturedSourceModel1  : public ElementPhysicsModel
 {
 public :
-    ManufacturedSourceModel1(const boost::shared_ptr<
+    ManufacturedSourceModel1(const AMP::shared_ptr<
                             ManufacturedSourceModel1Parameters>& params):
     ElementPhysicsModel(params)
     {

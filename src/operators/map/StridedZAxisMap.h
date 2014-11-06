@@ -26,7 +26,7 @@ public:
     /** \brief   Standard constructor
      * \param[in] params  Input parameters
      */
-    StridedZAxisMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &params );
+    StridedZAxisMap ( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &params );
 
     //! Destructor
     virtual ~StridedZAxisMap ();

@@ -8,15 +8,15 @@ namespace AMP {
   namespace Operator {
 
     MechanicsLinearFEOperator :: MechanicsLinearFEOperator (
-        const boost::shared_ptr<MechanicsLinearFEOperatorParameters> & params)
+        const AMP::shared_ptr<MechanicsLinearFEOperatorParameters> & params)
       : LinearFEOperator (params) {
         AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
         d_useUpdatedLagrangian = (params->d_db)->getBoolWithDefault("USE_UPDATED_LAGRANGIAN", false);
         if(d_useUpdatedLagrangian) {
-          d_mechLinULElem = boost::dynamic_pointer_cast<MechanicsLinearUpdatedLagrangianElement>(d_elemOp);
+          d_mechLinULElem = AMP::dynamic_pointer_cast<MechanicsLinearUpdatedLagrangianElement>(d_elemOp);
           AMP_INSIST( ((d_mechLinULElem.get()) != NULL), "d_elemOp is not of type MechanicsLinearUpdatedLagrangianElement" );
         } else {
-          d_mechLinElem = boost::dynamic_pointer_cast<MechanicsLinearElement>(d_elemOp);
+          d_mechLinElem = AMP::dynamic_pointer_cast<MechanicsLinearElement>(d_elemOp);
           AMP_INSIST( ((d_mechLinElem.get()) != NULL), "d_elemOp is not of type MechanicsLinearElement" );
         }
         d_materialModel = params->d_materialModel;
@@ -86,9 +86,9 @@ namespace AMP {
       return d_outVariable;
     }
 
-    void MechanicsLinearFEOperator :: preAssembly(const boost::shared_ptr<OperatorParameters>& oparams) {
+    void MechanicsLinearFEOperator :: preAssembly(const AMP::shared_ptr<OperatorParameters>& oparams) {
       if(d_useUpdatedLagrangian) {
-        boost::shared_ptr<MechanicsLinearFEOperatorParameters> params = boost::dynamic_pointer_cast<MechanicsLinearFEOperatorParameters>(oparams);
+        AMP::shared_ptr<MechanicsLinearFEOperatorParameters> params = AMP::dynamic_pointer_cast<MechanicsLinearFEOperatorParameters>(oparams);
         AMP_INSIST( (params != NULL), "NULL params" );
 
         if((d_dispVec == NULL) and (params->d_dispVec != NULL)) {

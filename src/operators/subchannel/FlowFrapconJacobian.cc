@@ -15,7 +15,7 @@ namespace AMP {
 namespace Operator {
 
 
-FlowFrapconJacobian::FlowFrapconJacobian(const boost::shared_ptr<FlowFrapconJacobianParameters> & params)
+FlowFrapconJacobian::FlowFrapconJacobian(const AMP::shared_ptr<FlowFrapconJacobianParameters> & params)
     : Operator (params)
 {
     std::string inpVar = params->d_db->getString("InputVariable");
@@ -54,10 +54,10 @@ AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::getOutputVariable(
 }
 
 
-void FlowFrapconJacobian :: reset(const boost::shared_ptr<OperatorParameters>& params)
+void FlowFrapconJacobian :: reset(const AMP::shared_ptr<OperatorParameters>& params)
 {
-    boost::shared_ptr<FlowFrapconJacobianParameters> myparams = 
-      boost::dynamic_pointer_cast<FlowFrapconJacobianParameters>(params);
+    AMP::shared_ptr<FlowFrapconJacobianParameters> myparams = 
+      AMP::dynamic_pointer_cast<FlowFrapconJacobianParameters>(params);
 
     AMP_INSIST( ((myparams.get()) != NULL), "NULL parameters" );
     AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );

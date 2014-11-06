@@ -15,7 +15,7 @@
 #include "getkeys.h"
 #include "Utilities.h"
 
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include <boost/scoped_ptr.hpp>
 
 #include <boost/mpl/size.hpp>
@@ -67,7 +67,7 @@ namespace AMP
 		template<class BaseClass, typename Key>  																\
 		struct RegistrationBase<BaseClass, Key, TypeListNumber> 												\
 		{																										\
-			virtual boost::shared_ptr<BaseClass> create(BOOST_PP_ENUM(TypeListNumber, PARAM, ~)) const=0;		\
+			virtual AMP::shared_ptr<BaseClass> create(BOOST_PP_ENUM(TypeListNumber, PARAM, ~)) const=0;		\
 		};
 
 		// Currently, BOOST_PP_LIMIT_REPEAT=256, which is the maximum number of factories that can be created.
@@ -86,7 +86,7 @@ namespace AMP
 		{																																		\
 		public:																																	\
 			friend class Singleton< Factory<BaseClass, Key, TypeListNumber> >;																	\
-			bool Register( const Key& key, boost::shared_ptr< RegistrationBase<BaseClass, Key, TypeListNumber> > reg )							\
+			bool Register( const Key& key, AMP::shared_ptr< RegistrationBase<BaseClass, Key, TypeListNumber> > reg )							\
 			{																																	\
 					return regMapPtr->insert(typename RegistrationMap::value_type(key, reg)).second;											\
 			}																																	\
@@ -104,7 +104,7 @@ namespace AMP
 				return true;																													\
 			}																																	\
 																																				\
-			boost::shared_ptr<BaseClass> create( const Key& id BOOST_PP_COMMA_IF(TypeListNumber) BOOST_PP_ENUM(TypeListNumber,PARAM,~) ) const 	\
+			AMP::shared_ptr<BaseClass> create( const Key& id BOOST_PP_COMMA_IF(TypeListNumber) BOOST_PP_ENUM(TypeListNumber,PARAM,~) ) const 	\
 			{																																	\
 				RegistrationMapIterator iter(regMapPtr->find(id));																				\
 				if(iter==regMapPtr->end()) 																										\
@@ -118,7 +118,7 @@ namespace AMP
 			}																																	\
 																																				\
 		private:																																\
-			typedef typename std::map< Key, boost::shared_ptr< RegistrationBase<BaseClass, Key, TypeListNumber> > > RegistrationMap;			\
+			typedef typename std::map< Key, AMP::shared_ptr< RegistrationBase<BaseClass, Key, TypeListNumber> > > RegistrationMap;			\
 			typedef typename RegistrationMap::const_iterator RegistrationMapIterator;															\
 			boost::scoped_ptr<RegistrationMap> regMapPtr;																						\
 			Factory() : regMapPtr(new RegistrationMap){}																						\
@@ -136,16 +136,16 @@ namespace AMP
 			{																																																				\
 				try 																																																		\
 				{																																																			\
-					Factory<BaseClass, Key, TypeListNumber> ::instance().Register( key, boost::shared_ptr< RegistrationBase<BaseClass, Key, TypeListNumber> >(new Registration<BaseClass, Derived, Key, TypeListNumber>) );	\
+					Factory<BaseClass, Key, TypeListNumber> ::instance().Register( key, AMP::shared_ptr< RegistrationBase<BaseClass, Key, TypeListNumber> >(new Registration<BaseClass, Derived, Key, TypeListNumber>) );	\
 				}																																																			\
 				catch (...){}																																																\
 			}																																																				\
 			virtual ~Registration(){}																																														\
 																																																							\
 		private:																																																			\
-			boost::shared_ptr<BaseClass> create( BOOST_PP_ENUM(TypeListNumber, PARAM, ~) ) const																															\
+			AMP::shared_ptr<BaseClass> create( BOOST_PP_ENUM(TypeListNumber, PARAM, ~) ) const																															\
 			{																																																				\
-				return boost::shared_ptr<BaseClass>( new Derived( BOOST_PP_ENUM_PARAMS(TypeListNumber, Param) ) );																											\
+				return AMP::shared_ptr<BaseClass>( new Derived( BOOST_PP_ENUM_PARAMS(TypeListNumber, Param) ) );																											\
 			}																																																				\
 			Registration(){}																																																\
 			Registration( const Registration<BaseClass, Derived, Key, TypeListNumber>& );																																	\

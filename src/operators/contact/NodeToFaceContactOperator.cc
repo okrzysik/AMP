@@ -183,8 +183,8 @@ for(unsigned int i = 0; i < npes; ++i) {
           } // end if
 
           // compute surface traction at slave vertex
-          double youngsModulus = boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getYoungsModulus();
-          double poissonsRatio = boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getPoissonsRatio();
+          double youngsModulus = AMP::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getYoungsModulus();
+          double poissonsRatio = AMP::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(d_MasterMechanicsMaterialModel)->getPoissonsRatio();
           double constitutiveMatrix[36];
           compute_constitutive_matrix(youngsModulus, poissonsRatio, constitutiveMatrix);
           double stressTensor[6];
@@ -550,7 +550,7 @@ for(unsigned int i = 0; i < npes; ++i) {
       return d_GlobalComm.sumReduce(nInactiveSlaveVerticesActivated + nActiveSlaveVerticesDeactivated);
     }
 
-    void NodeToFaceContactOperator::reset(const boost::shared_ptr<OperatorParameters> & params) {
+    void NodeToFaceContactOperator::reset(const AMP::shared_ptr<OperatorParameters> & params) {
       AMP_INSIST( (params != NULL), "NULL parameter" );
       AMP_INSIST( ((params->d_db) != NULL), "NULL database" );
     }

@@ -5,13 +5,13 @@
 #include <limits>
 #include "utils/Utilities.h"
 #include "ManufacturedSolution.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP{
 
 using std::valarray;
 
-ManufacturedSolution::ManufacturedSolution(boost::shared_ptr<Database> db):
+ManufacturedSolution::ManufacturedSolution(AMP::shared_ptr<Database> db):
 		d_internalParameters(false), d_c(1), d_a(1),
 		d_h(std::valarray<std::valarray<double> >(std::valarray<double>(3), 3)),
 		d_hs(std::valarray<std::valarray<double> >(std::valarray<double>(3), 3)),

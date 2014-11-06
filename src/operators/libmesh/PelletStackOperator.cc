@@ -6,7 +6,7 @@
 namespace AMP {
   namespace Operator {
 
-    PelletStackOperator :: PelletStackOperator(const boost::shared_ptr<PelletStackOperatorParameters> & params)
+    PelletStackOperator :: PelletStackOperator(const AMP::shared_ptr<PelletStackOperatorParameters> & params)
       : Operator(params) {
         d_totalNumberOfPellets = (params->d_db)->getInteger("TOTAL_NUMBER_OF_PELLETS");
         d_useSerial = (params->d_db)->getBoolWithDefault("USE_SERIAL", false);
@@ -41,8 +41,8 @@ namespace AMP {
         }//end for pellId
       }
 
-    void PelletStackOperator :: reset(const boost::shared_ptr<OperatorParameters>& params) {
-      boost::shared_ptr<PelletStackOperatorParameters> myParams = boost::dynamic_pointer_cast<PelletStackOperatorParameters>(params);
+    void PelletStackOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params) {
+      AMP::shared_ptr<PelletStackOperatorParameters> myParams = AMP::dynamic_pointer_cast<PelletStackOperatorParameters>(params);
       d_currentPellet = myParams->d_currentPellet;
     }
 
@@ -175,7 +175,7 @@ namespace AMP {
       size_t numMaps = d_n2nMaps->getNumberOfOperators();
       if(currPellIdx != -1) {
         for(size_t m = 0; m < numMaps; m++) {
-          boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
+          AMP::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = AMP::dynamic_pointer_cast<
             AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
           if(currMap->getMesh(2) == d_meshes[currPellIdx]) {
             currMap->applyStart(nullVec, u, nullVec, 1.0, 0.0);
@@ -185,7 +185,7 @@ namespace AMP {
       }
       if(prevPellIdx != -1) {
         for(size_t m = 0; m < numMaps; m++) {
-          boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
+          AMP::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = AMP::dynamic_pointer_cast<
             AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
           if(currMap->getMesh(1) == d_meshes[prevPellIdx]) {
             currMap->applyStart(nullVec, u, nullVec, 1.0, 0.0);
@@ -195,7 +195,7 @@ namespace AMP {
       }
       if(currPellIdx != -1) {
         for(size_t m = 0; m < numMaps; m++) {
-          boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
+          AMP::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = AMP::dynamic_pointer_cast<
             AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
           if((currMap->getMesh(2)) == d_meshes[currPellIdx]) {
             currMap->applyFinish(nullVec, u, nullVec, 1.0, 0.0);
@@ -205,7 +205,7 @@ namespace AMP {
       }
       if(prevPellIdx != -1) {
         for(size_t m = 0; m < numMaps; m++) {
-          boost::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = boost::dynamic_pointer_cast<
+          AMP::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = AMP::dynamic_pointer_cast<
             AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
           if((currMap->getMesh(1)) == d_meshes[prevPellIdx]) {
             currMap->applyFinish(nullVec, u, nullVec, 1.0, 0.0);

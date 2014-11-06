@@ -22,7 +22,7 @@ namespace AMP {
         /**
           Constructor.
           */
-        MechanicsNonlinearFEOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
+        MechanicsNonlinearFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
           : FEOperatorParameters(db) { }
 
         /**
@@ -30,9 +30,9 @@ namespace AMP {
           */
         virtual ~MechanicsNonlinearFEOperatorParameters() { }
 
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
+        AMP::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
 
-        boost::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
+        AMP::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
 
         AMP::LinearAlgebra::Vector::shared_ptr d_ReferenceTemperature; /**< Reference temperature */
 

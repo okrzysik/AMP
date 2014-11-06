@@ -13,7 +13,7 @@
 namespace AMP {
 namespace Operator {
     
-MassElement :: MassElement (const boost::shared_ptr<ElementOperationParameters> & params) :
+MassElement :: MassElement (const AMP::shared_ptr<ElementOperationParameters> & params) :
     ElementOperation(params),
     d_elem(NULL)
 {
@@ -64,7 +64,7 @@ MassElement :: MassElement (const boost::shared_ptr<ElementOperationParameters> 
 
 void MassElement :: initializeForCurrentElement(
         const ::Elem* elem,
-        const boost::shared_ptr<MassDensityModel> & densityModel )
+        const AMP::shared_ptr<MassDensityModel> & densityModel )
 {
     d_elem = elem;
     

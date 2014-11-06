@@ -20,7 +20,7 @@ Operator :: Operator(void)
 }
  
 
-Operator :: Operator(const boost::shared_ptr<OperatorParameters> & params)
+Operator :: Operator(const AMP::shared_ptr<OperatorParameters> & params)
 {
     AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
 
@@ -39,7 +39,7 @@ Operator :: Operator(const boost::shared_ptr<OperatorParameters> & params)
 }
  
 
-void Operator :: reset(const boost::shared_ptr<OperatorParameters>& params)
+void Operator :: reset(const AMP::shared_ptr<OperatorParameters>& params)
 {
     AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
 
@@ -51,7 +51,7 @@ void Operator :: reset(const boost::shared_ptr<OperatorParameters>& params)
 }
 
 
-void Operator :: getFromInput(const boost::shared_ptr<AMP::Database>& db)
+void Operator :: getFromInput(const AMP::shared_ptr<AMP::Database>& db)
 {
     AMP_INSIST( ((db.get()) != NULL), "NULL database" );
 

@@ -1,7 +1,7 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -32,7 +32,7 @@ void ElementOperationFactoryTest(AMP::UnitTest *ut)
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-  boost::shared_ptr<AMP::InputDatabase> outerInput_db(new AMP::InputDatabase("outerInput_db"));
+  AMP::shared_ptr<AMP::InputDatabase> outerInput_db(new AMP::InputDatabase("outerInput_db"));
   AMP::InputManager::getManager()->parseInputFile(outerInput_file, outerInput_db);
   outerInput_db->printClassData(AMP::plog);
   
@@ -45,19 +45,19 @@ void ElementOperationFactoryTest(AMP::UnitTest *ut)
     
     AMP_INSIST( outerInput_db->keyExists(key), "key missing!" );
     std::string inputFile = outerInput_db->getString(key);
-    boost::shared_ptr<AMP::InputDatabase> innerInput_db(new AMP::InputDatabase("innerInput_db"));
+    AMP::shared_ptr<AMP::InputDatabase> innerInput_db(new AMP::InputDatabase("innerInput_db"));
     AMP::InputManager::getManager()->parseInputFile(inputFile, innerInput_db);
     innerInput_db->printClassData(AMP::plog);
     
     AMP_INSIST(innerInput_db->keyExists("ElementOperation"), "Key ''ElementOperation'' is missing!");
-    boost::shared_ptr<AMP::Database> elemOp_db = innerInput_db->getDatabase("ElementOperation");
+    AMP::shared_ptr<AMP::Database> elemOp_db = innerInput_db->getDatabase("ElementOperation");
     std::string name = elemOp_db->getString("name");
-    boost::shared_ptr<AMP::Operator::ElementOperation> elementOperation =
+    AMP::shared_ptr<AMP::Operator::ElementOperation> elementOperation =
       AMP::Operator::ElementOperationFactory::createElementOperation(elemOp_db);
     
     if(name=="MechanicsLinearElement")
       {
-    boost::shared_ptr<AMP::Operator::MechanicsLinearElement> mechOperation = boost::dynamic_pointer_cast<AMP::Operator::MechanicsLinearElement>(elementOperation );
+    AMP::shared_ptr<AMP::Operator::MechanicsLinearElement> mechOperation = AMP::dynamic_pointer_cast<AMP::Operator::MechanicsLinearElement>(elementOperation );
     if(mechOperation.get()!=NULL)
       {
         ut->passes(exeName + " : " + inputFile + " : MechanicsLinearElement");
@@ -69,7 +69,7 @@ void ElementOperationFactoryTest(AMP::UnitTest *ut)
       }
     else if(name=="DiffusionLinearElement")
       {
-    boost::shared_ptr<AMP::Operator::DiffusionLinearElement> diffusionOperation = boost::dynamic_pointer_cast<AMP::Operator::DiffusionLinearElement>(elementOperation);
+    AMP::shared_ptr<AMP::Operator::DiffusionLinearElement> diffusionOperation = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionLinearElement>(elementOperation);
     if(diffusionOperation.get()!=NULL)
       {
         ut->passes(exeName + " : " + inputFile + " : DiffusionLinearElement");
@@ -81,7 +81,7 @@ void ElementOperationFactoryTest(AMP::UnitTest *ut)
       }
     else if(name=="MechanicsNonlinearElement")
       {
-    boost::shared_ptr<AMP::Operator::MechanicsNonlinearElement> mechOperation = boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearElement>(elementOperation );
+    AMP::shared_ptr<AMP::Operator::MechanicsNonlinearElement> mechOperation = AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearElement>(elementOperation );
     if(mechOperation.get()!=NULL)
       {
         ut->passes(exeName + " : " + inputFile + " : MechanicsNonlinearElement");
@@ -93,7 +93,7 @@ void ElementOperationFactoryTest(AMP::UnitTest *ut)
       }
     else if(name=="DiffusionNonlinearElement")
       {
-    boost::shared_ptr<AMP::Operator::DiffusionNonlinearElement> diffusionOperation = boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearElement>(elementOperation);
+    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearElement> diffusionOperation = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearElement>(elementOperation);
     if(diffusionOperation.get()!=NULL)
       {
         ut->passes(exeName + " : " + inputFile + " : DiffusionNonlinearElement");
@@ -105,7 +105,7 @@ void ElementOperationFactoryTest(AMP::UnitTest *ut)
       }
     else if(name=="MassLinearElement")
       {
-    boost::shared_ptr<AMP::Operator::MassLinearElement> massOperation = boost::dynamic_pointer_cast<AMP::Operator::MassLinearElement>(elementOperation);
+    AMP::shared_ptr<AMP::Operator::MassLinearElement> massOperation = AMP::dynamic_pointer_cast<AMP::Operator::MassLinearElement>(elementOperation);
     if(massOperation.get()!=NULL)
       {
         ut->passes(exeName + " : " + inputFile + " : MassLinearElement");

@@ -21,7 +21,7 @@ namespace LinearAlgebra {
     public:
       /** \brief Convenince typedef 
         */
-      typedef boost::shared_ptr<VectorEntryMapParameters>    shared_ptr;
+      typedef AMP::shared_ptr<VectorEntryMapParameters>    shared_ptr;
 
       /** \brief A sorting of the entities of the vector
         */
@@ -98,7 +98,7 @@ namespace LinearAlgebra {
 
       /** \brief  Convenience typedef
         */
-      typedef  boost::shared_ptr<VectorEntryMap>          shared_ptr;
+      typedef  AMP::shared_ptr<VectorEntryMap>          shared_ptr;
 
       /** \brief Constructor
         * \param[in] ptr  The parameters used to create this VectorEntryMap

@@ -3,8 +3,7 @@
 
 #include "utils/Utilities.h"
 #include <utils/Castable.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include "utils/shared_ptr.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -31,13 +30,13 @@ namespace LinearAlgebra {
   * variable is combined with a particular mesh, a vector of the appropriate
   * size can be created.
   */
-class Variable: public boost::enable_shared_from_this<Variable>
+class Variable: public AMP::enable_shared_from_this<Variable>
 {
 public:
 
     //!  Shared pointer name
-    typedef boost::shared_ptr<Variable>         shared_ptr;
-    typedef boost::shared_ptr<const Variable>   const_shared_ptr;
+    typedef AMP::shared_ptr<Variable>         shared_ptr;
+    typedef AMP::shared_ptr<const Variable>   const_shared_ptr;
 
 
     /** \brief  Construct a variable with a name

@@ -8,7 +8,7 @@ NonlinearKrylovAcceleratorParameters :: NonlinearKrylovAcceleratorParameters()
 {
 }
 
-NonlinearKrylovAcceleratorParameters :: NonlinearKrylovAcceleratorParameters(const boost::shared_ptr<AMP::Database> &database)
+NonlinearKrylovAcceleratorParameters :: NonlinearKrylovAcceleratorParameters(const AMP::shared_ptr<AMP::Database> &database)
 : SolverStrategyParameters(database)
 {
 }

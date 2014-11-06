@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP{
 
@@ -15,7 +15,7 @@ namespace AMP{
   {
     public:
 
-      typedef boost::shared_ptr<ParameterBase> shared_ptr;
+      typedef AMP::shared_ptr<ParameterBase> shared_ptr;
 
       ParameterBase();
       virtual ~ParameterBase();

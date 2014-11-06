@@ -671,7 +671,7 @@ namespace LinearAlgebra {
 
 void ManagedPetscVector::initPetsc ()
 {
-    AMP_MPI comm = boost::dynamic_pointer_cast<ManagedVectorParameters>( getParameters() )->d_Engine->getComm();
+    AMP_MPI comm = AMP::dynamic_pointer_cast<ManagedVectorParameters>( getParameters() )->d_Engine->getComm();
     VecCreate( comm.getCommunicator() , &d_petscVec);
 
     d_petscVec->data = this;
@@ -765,8 +765,8 @@ ManagedPetscVector  *ManagedPetscVector::petscDuplicate ()
 
 void  ManagedPetscVector::copyFromPetscVec ( Vector &dest , Vec source )
 {
-    boost::shared_ptr<ManagedVectorParameters> params = 
-        boost::dynamic_pointer_cast<ManagedVectorParameters>(dest.castTo<ManagedVector>().getParameters());
+    AMP::shared_ptr<ManagedVectorParameters> params = 
+        AMP::dynamic_pointer_cast<ManagedVectorParameters>(dest.castTo<ManagedVector>().getParameters());
     if ( !params ) throw ( "Incompatible vector types" );
 
     if ( sizeof(PetscInt) < 8 )
@@ -783,16 +783,16 @@ void  ManagedPetscVector::copyFromPetscVec ( Vector &dest , Vec source )
 }
 
 
-boost::shared_ptr<AMP::LinearAlgebra::Vector>  ManagedPetscVector::createFromPetscVec ( Vec source , AMP_MPI &comm )
+AMP::shared_ptr<AMP::LinearAlgebra::Vector>  ManagedPetscVector::createFromPetscVec ( Vec source , AMP_MPI &comm )
 {
     PetscInt  local_size, global_size, local_start , local_end;
     VecGetLocalSize ( source , &local_size );
     VecGetSize ( source , &global_size );
     VecGetOwnershipRange ( source , &local_start , &local_end );
-    boost::shared_ptr<ManagedVectorParameters> t ( new ManagedPetscVectorParameters () );
+    AMP::shared_ptr<ManagedVectorParameters> t ( new ManagedPetscVectorParameters () );
     VectorEngineParameters::shared_ptr ve_params ( new EpetraVectorEngineParameters ( local_size , global_size , comm ) );
     t->d_Engine = VectorEngine::shared_ptr( new EpetraVectorEngine ( ve_params , VectorEngine::BufferPtr ( new VectorEngine::Buffer ( local_size ) ) ) );
-    ManagedPetscVector *pRetVal_t = new ManagedPetscVector ( boost::dynamic_pointer_cast<VectorParameters> ( t ) );
+    ManagedPetscVector *pRetVal_t = new ManagedPetscVector ( AMP::dynamic_pointer_cast<VectorParameters> ( t ) );
     Vector::shared_ptr pRetVal ( pRetVal_t );
     return pRetVal;
 }

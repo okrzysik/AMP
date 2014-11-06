@@ -1,7 +1,7 @@
 #ifndef included_RowOperatorParameters
 #define included_RowOperatorParameters
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "operators/OperatorParameters.h"
 #include "operators/Operator.h"
 
@@ -12,15 +12,15 @@ class RowOperatorParameters: public OperatorParameters
 {
   public:
   
-    RowOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
+    RowOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
         : OperatorParameters(db) { }
 
     virtual ~RowOperatorParameters(){ };
 
 
-    std::vector< boost::shared_ptr<AMP::Operator> > d_Operator;
+    std::vector< AMP::shared_ptr<AMP::Operator> > d_Operator;
 
-    std::vector< boost::shared_ptr<AMP::OperatorParameters> > d_OperatorParameters;
+    std::vector< AMP::shared_ptr<AMP::OperatorParameters> > d_OperatorParameters;
 
     std::vector< double > scalea;
 

@@ -38,21 +38,21 @@ void  setBoundary ( int id , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Me
 void  runTest ( const std::string &fname , AMP::UnitTest *ut )
 {
     // Read the input file
-    boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
+    AMP::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
     AMP::InputManager::getManager()->parseInputFile ( fname , input_db );
     input_db->printClassData (AMP::plog);
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
-    boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(mesh_db));
     params->setComm(globalComm);
 
     // Create the meshes from the input database
-    boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
+    AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
 
     // Get the database for the node to node maps
-    boost::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
+    AMP::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
 
     // Create a simple DOFManager and the vectors
     int DOFsPerNode = map_db->getInteger("DOFsPerObject");
@@ -63,7 +63,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
 
     // Test the creation/destruction of ScalarZAxisMap (no apply call)
     try { 
-        boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  gapmaps;
+        AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  gapmaps;
         gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap> ( mesh, map_db );
         gapmaps.reset();
         ut->passes("Created / Destroyed ScalarZAxisMap");
@@ -72,7 +72,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     }
     
     // Perform a complete test of ScalarZAxisMap
-    boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  gapmaps;
+    AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  gapmaps;
     gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap> ( mesh, map_db );
 
     // Create the vectors

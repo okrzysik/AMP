@@ -22,7 +22,7 @@ namespace AMP {
       public :
         // the parameter object for the column operator is intentionally meant not to do
         // anything ColumnOperator specific. Please keep that way
-        ColumnOperator(const boost::shared_ptr<OperatorParameters>& params)
+        ColumnOperator(const AMP::shared_ptr<OperatorParameters>& params)
           : Operator () { (void) params; }
 
         /** Default empty constructor */
@@ -41,15 +41,15 @@ namespace AMP {
           @param u The solution vector that is used to construct the jacobian
           @return The parameters required to construct the jacobian.
           */
-        virtual boost::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u);
+        virtual AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u);
 
-        virtual void reset(const boost::shared_ptr<OperatorParameters>& params);
+        virtual void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
         /**
          * \param op
          *            shared pointer to an operator to append to the existing column of operators
          */
-        virtual void append(boost::shared_ptr< Operator > op);
+        virtual void append(AMP::shared_ptr< Operator > op);
 
         /**
          * returns a MultiVariable object corresponding to the ColumnOperator
@@ -60,15 +60,15 @@ namespace AMP {
 
         virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
-        bool isValidInput(boost::shared_ptr<AMP::LinearAlgebra::Vector> &u);
+        bool isValidInput(AMP::shared_ptr<AMP::LinearAlgebra::Vector> &u);
 
-        boost::shared_ptr< Operator > getOperator(size_t i){return d_Operators[i]; }
+        AMP::shared_ptr< Operator > getOperator(size_t i){return d_Operators[i]; }
 
         size_t getNumberOfOperators(void){return d_Operators.size(); }
 
       protected :
 
-        std::vector< boost::shared_ptr< Operator > > d_Operators;
+        std::vector< AMP::shared_ptr< Operator > > d_Operators;
 
       private :
 

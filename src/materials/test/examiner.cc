@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
 	{
 		infile = string(argv[1]);
 	}
-	boost::shared_ptr<AMP::InputDatabase> inDb(new AMP::InputDatabase("inDb"));
+	AMP::shared_ptr<AMP::InputDatabase> inDb(new AMP::InputDatabase("inDb"));
 	AMP::InputManager::getManager()->parseInputFile(infile, inDb);
 
 	string format;
@@ -117,8 +117,8 @@ int main(int argc, char* argv[])
 	vector<size_t> narg(nargs);
 	vector<double> lowarg(nargs), hiarg(nargs);
 
-	// Create a map that will hold the input variable name and a corresponding boost pointer to a vector of input values
-	std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
+	// Create a map that will hold the input variable name and a corresponding pointer to a vector of input values
+	std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
 	for (size_t i=0; i<nargs; i++) {
 		argMap.insert(std::make_pair(names[i], new std::vector<double>(1)));
 	}

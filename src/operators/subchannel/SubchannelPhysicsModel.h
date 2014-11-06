@@ -2,7 +2,7 @@
 #define included_AMP_SubchannelPhysicsModel
 
 #include <cstring>
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include <map>
 #include <vector>
 
@@ -27,7 +27,7 @@ public :
      /**
        Constructor
        */
-     SubchannelPhysicsModel (const boost::shared_ptr<ElementPhysicsModelParameters>& params );
+     SubchannelPhysicsModel (const AMP::shared_ptr<ElementPhysicsModelParameters>& params );
 
      /**
        Destructor
@@ -42,7 +42,7 @@ public :
        */
      void getProperty(    std::string property,
                           std::vector<double>                & result, 
-                          std::map<std::string, boost::shared_ptr<std::vector<double> > > & args);
+                          std::map<std::string, AMP::shared_ptr<std::vector<double> > > & args);
 
      /**
        Function to return a pointer to the material

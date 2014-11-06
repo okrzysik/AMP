@@ -93,7 +93,7 @@ public:
 	 acceptable values ("RIGHT", "LEFT", "SYMMETRIC" )
          active only when uses_preconditioner set to true
      */
-    PetscKrylovSolver(boost::shared_ptr<PetscKrylovSolverParameters> parameters);
+    PetscKrylovSolver(AMP::shared_ptr<PetscKrylovSolverParameters> parameters);
 
     /**
      * Default destructor. Currently destroys the PETSc KSP object if it was created internally. 
@@ -105,8 +105,8 @@ public:
      * @param [in] f : shared pointer to right hand side vector
      * @param [out] u : shared pointer to approximate computed solution 
      */
-    void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
-	     boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);
+    void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
+	     AMP::shared_ptr<AMP::LinearAlgebra::Vector>  u);
 
     /**
      * returns the internally stored PETSc KSP object
@@ -123,36 +123,36 @@ public:
      * Initialize the PetscKrylovSolver. Should not be necessary for the user to call in general.
      * @param parameters
      */
-    void initialize(boost::shared_ptr<SolverStrategyParameters> const parameters);
+    void initialize(AMP::shared_ptr<SolverStrategyParameters> const parameters);
 
     /**
      * returns a shared pointer to a preconditioner object. The preconditioner is derived from
      * a SolverStrategy class
      */
-    inline boost::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner(void){ return d_pPreconditioner; }
+    inline AMP::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner(void){ return d_pPreconditioner; }
 
     /**
      * sets a shared pointer to a preconditioner object. The preconditioner is derived from
      * a SolverStrategy class
      * @param pc shared pointer to preconditioner
      */
-    inline void setPreconditioner(boost::shared_ptr<AMP::Solver::SolverStrategy> pc){d_pPreconditioner = pc;}
+    inline void setPreconditioner(AMP::shared_ptr<AMP::Solver::SolverStrategy> pc){d_pPreconditioner = pc;}
 
     /**
      * Register the operator that the solver will use during solves
      * @param [in] op shared pointer to operator $A()$ for equation \f$A(u) = f\f$ 
      */
-    void registerOperator(const boost::shared_ptr<AMP::Operator::Operator> op);
+    void registerOperator(const AMP::shared_ptr<AMP::Operator::Operator> op);
 
     /**
      * Resets the registered operator internally with new parameters if necessary
      * @param parameters    OperatorParameters object that is NULL by default
      */
-    void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> parameters);
+    void resetOperator(const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters);
   
 protected:
   
-    void getFromInput(const boost::shared_ptr<AMP::Database>& db);
+    void getFromInput(const AMP::shared_ptr<AMP::Database>& db);
   
 private:
   
@@ -193,17 +193,17 @@ private:
     #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
         // The following KSP solver keeps a reference to these vectors around. 
         // By declaring the vectors here, we ensure correct behavior during destruction.
-        // This will ensure that the boost::shared_ptr destructor calls VecDestroy on
+        // This will ensure that the AMP::shared_ptr destructor calls VecDestroy on
         // the last reference.
         AMP::LinearAlgebra::Vector::const_shared_ptr  fVecView;
         AMP::LinearAlgebra::Vector::shared_ptr  uVecView;
     #endif
 
-    boost::shared_ptr<PetscMonitor> d_PetscMonitor;
+    AMP::shared_ptr<PetscMonitor> d_PetscMonitor;
 
     KSP d_KrylovSolver;
 
-    boost::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+    AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 
 };
 

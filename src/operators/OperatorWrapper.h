@@ -19,7 +19,7 @@ namespace AMP {
           d_operator = op;
         }
 
-        void reset(const boost::shared_ptr<OperatorParameters>& params) {
+        void reset(const AMP::shared_ptr<OperatorParameters>& params) {
           d_operator->reset(params);
         }
 
@@ -35,13 +35,13 @@ namespace AMP {
           return (d_operator->getMeshAdapter());
         }
 
-        boost::shared_ptr<OperatorParameters> 
-          getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u) {
+        AMP::shared_ptr<OperatorParameters> 
+          getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u) {
             AMP::LinearAlgebra::Vector::shared_ptr uTmp = createCorrectInputVector(u);
             return (d_operator->getJacobianParameters(uTmp));
           }
 
-        bool isValidInput(boost::shared_ptr<AMP::LinearAlgebra::Vector>& u) {
+        bool isValidInput(AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u) {
           AMP::LinearAlgebra::Vector::shared_ptr uTmp = createCorrectInputVector(u);
           return (d_operator->isValidInput(uTmp));
         }
@@ -54,7 +54,7 @@ namespace AMP {
         }
 
         void setFullVector(AMP::Vector::shared_ptr u) {
-          d_fullVector = boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(
+          d_fullVector = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(
               AMP::LinearAlgebra::MultiVector::view(u, u->getComm()));
         }
 
@@ -68,7 +68,7 @@ namespace AMP {
         }
 
         Operator::shared_ptr d_operator;
-        boost::shared_ptr<AMP::LinearAlgebra::MultiVector> d_fullVector;
+        AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> d_fullVector;
     };
 
   }

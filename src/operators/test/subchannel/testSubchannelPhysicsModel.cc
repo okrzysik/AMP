@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -52,13 +52,13 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
   std::cout << "\nInput file is " << input_file << std::endl;
 
   // parse input database file
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  boost::shared_ptr<AMP::Database> subchannel_db = input_db->getDatabase("SubchannelPhysicsModel");
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( new AMP::Operator::ElementPhysicsModelParameters(subchannel_db));
-  boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel>  subchannelPhysicsModel (new AMP::Operator::SubchannelPhysicsModel(params));
+  AMP::shared_ptr<AMP::Database> subchannel_db = input_db->getDatabase("SubchannelPhysicsModel");
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( new AMP::Operator::ElementPhysicsModelParameters(subchannel_db));
+  AMP::shared_ptr<AMP::Operator::SubchannelPhysicsModel>  subchannelPhysicsModel (new AMP::Operator::SubchannelPhysicsModel(params));
 
   if(subchannelPhysicsModel.get()){
 	  ut->passes(exeName+": creation");
@@ -71,41 +71,41 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
   // =======================================================
   // create input argument maps
   const unsigned int n = 3;
-  boost::shared_ptr<std::vector<double> > enthalpyInput(new std::vector<double>(n));
+  AMP::shared_ptr<std::vector<double> > enthalpyInput(new std::vector<double>(n));
   (*enthalpyInput)[0] = 500.0e3;
   (*enthalpyInput)[1] = 1.0e6;
   (*enthalpyInput)[2] = 100.0e3;
-  boost::shared_ptr<std::vector<double> > pressureInput(new std::vector<double>(n));
+  AMP::shared_ptr<std::vector<double> > pressureInput(new std::vector<double>(n));
   (*pressureInput)[0] = 1.0e6;
   (*pressureInput)[1] = 15.0e6;
   (*pressureInput)[2] = 30.0e3;
-  boost::shared_ptr<std::vector<double> > temperatureInput(new std::vector<double>(n));
+  AMP::shared_ptr<std::vector<double> > temperatureInput(new std::vector<double>(n));
   (*temperatureInput)[0] = 400.0;
   (*temperatureInput)[1] = 600.0;
   (*temperatureInput)[2] = 300.0;
-  boost::shared_ptr<std::vector<double> > temperatureInput2(new std::vector<double>(n));
+  AMP::shared_ptr<std::vector<double> > temperatureInput2(new std::vector<double>(n));
   (*temperatureInput2)[0] = 392.140;
   (*temperatureInput2)[1] = 504.658;
   (*temperatureInput2)[2] = 297.004;
-  boost::shared_ptr<std::vector<double> > densityInput(new std::vector<double>(n));
+  AMP::shared_ptr<std::vector<double> > densityInput(new std::vector<double>(n));
   (*densityInput)[0] = 937.871;
   (*densityInput)[1] = 659.388;
   (*densityInput)[2] = 996.526;
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > temperatureArgs;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > temperatureArgs;
   temperatureArgs.insert(std::make_pair("enthalpy",enthalpyInput));
   temperatureArgs.insert(std::make_pair("pressure",pressureInput));
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > liquidEnthalpyArgs;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > liquidEnthalpyArgs;
   liquidEnthalpyArgs.insert(std::make_pair("pressure",pressureInput));
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > volumeArgs;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > volumeArgs;
   volumeArgs.insert(std::make_pair("enthalpy",enthalpyInput));
   volumeArgs.insert(std::make_pair("pressure",pressureInput));
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > conductivityArgs;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > conductivityArgs;
   conductivityArgs.insert(std::make_pair("temperature",temperatureInput));
   conductivityArgs.insert(std::make_pair("density",densityInput));
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > viscosityArgs;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > viscosityArgs;
   viscosityArgs.insert(std::make_pair("temperature",temperatureInput));
   viscosityArgs.insert(std::make_pair("density",densityInput));
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > enthalpyArgs;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > enthalpyArgs;
   enthalpyArgs.insert(std::make_pair("temperature",temperatureInput2));
   enthalpyArgs.insert(std::make_pair("pressure",pressureInput));
 
@@ -148,22 +148,22 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
   // create input argument maps
   enthalpyInput->resize(1);
   temperatureInput->resize(1);
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > temperatureArgs1;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > temperatureArgs1;
   temperatureArgs1.insert(std::make_pair("enthalpy",enthalpyInput));
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > temperatureArgs0;
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > liquidEnthalpyArgs0;
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > volumeArgs1;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > temperatureArgs0;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > liquidEnthalpyArgs0;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > volumeArgs1;
   volumeArgs1.insert(std::make_pair("enthalpy",enthalpyInput));
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > volumeArgs0;
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > conductivityArgs1;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > volumeArgs0;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > conductivityArgs1;
   conductivityArgs1.insert(std::make_pair("temperature",temperatureInput));
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > conductivityArgs0;
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > viscosityArgs1;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > conductivityArgs0;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > viscosityArgs1;
   viscosityArgs1.insert(std::make_pair("temperature",temperatureInput));
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > viscosityArgs0;
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > enthalpyArgs1;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > viscosityArgs0;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > enthalpyArgs1;
   enthalpyArgs1.insert(std::make_pair("temperature",temperatureInput));
-  std::map<std::string,boost::shared_ptr<std::vector<double> > > enthalpyArgs0;
+  std::map<std::string,AMP::shared_ptr<std::vector<double> > > enthalpyArgs0;
 
   // evaluate property functions
   std::vector<double> temperatureResult1Arg(1);

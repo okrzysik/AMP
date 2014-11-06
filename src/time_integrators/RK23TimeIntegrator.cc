@@ -20,7 +20,7 @@ namespace TimeIntegrator{
 *                                                                      *
 ************************************************************************
 */
-RK23TimeIntegrator::RK23TimeIntegrator( boost::shared_ptr<TimeIntegratorParameters> parameters ):TimeIntegrator(parameters)
+RK23TimeIntegrator::RK23TimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters ):TimeIntegrator(parameters)
 {
   initialize( parameters );
 }
@@ -44,7 +44,7 @@ RK23TimeIntegrator::~RK23TimeIntegrator()
 ************************************************************************
 */
 void
-RK23TimeIntegrator::initialize( boost::shared_ptr<TimeIntegratorParameters> parameters )
+RK23TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
    AMP_ASSERT(parameters.get() != (TimeIntegratorParameters*) NULL);
 
@@ -59,7 +59,7 @@ RK23TimeIntegrator::initialize( boost::shared_ptr<TimeIntegratorParameters> para
 }
 
 void
-RK23TimeIntegrator::reset( boost::shared_ptr<TimeIntegratorParameters> parameters )
+RK23TimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
    AMP_ASSERT(parameters.get() != (TimeIntegratorParameters*) NULL);
 
@@ -102,7 +102,7 @@ RK23TimeIntegrator::setupVectors( void )
 int 
 RK23TimeIntegrator::advanceSolution( const double dt, const bool first_step )
 {
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> f;
+  AMP::shared_ptr<AMP::LinearAlgebra::Vector> f;
   
   if(first_step)
     {
@@ -194,7 +194,7 @@ RK23TimeIntegrator::updateSolution(void )
 ************************************************************************
 */
 void
-RK23TimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db )
+RK23TimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 {
    if ( input_db->keyExists("initial_timestep") ) 
      {

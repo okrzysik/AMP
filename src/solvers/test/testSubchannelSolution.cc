@@ -4,7 +4,7 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include "ampmesh/Mesh.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
@@ -70,26 +70,26 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
     // Read the input file
-    boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
+    AMP::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
     AMP::InputManager::getManager()->parseInputFile ( input_file , input_db );
 
     // Get the Mesh database and create the mesh parameters
     AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-    boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
     meshParams->setComm(globalComm);
 
     // Create the meshes from the input database
-    boost::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh(meshParams);
+    AMP::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh(meshParams);
 
     // get subchannel physics model
-    boost::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( new AMP::Operator::ElementPhysicsModelParameters(subchannelPhysics_db));
-    boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel>  subchannelPhysicsModel (new AMP::Operator::SubchannelPhysicsModel(params));
+    AMP::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( new AMP::Operator::ElementPhysicsModelParameters(subchannelPhysics_db));
+    AMP::shared_ptr<AMP::Operator::SubchannelPhysicsModel>  subchannelPhysicsModel (new AMP::Operator::SubchannelPhysicsModel(params));
 
     // Create the SubchannelOperatorParameters
-    boost::shared_ptr<AMP::Database> nonlinearOperator_db = input_db->getDatabase("SubchannelTwoEqNonlinearOperator");
-    boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( nonlinearOperator_db ));
+    AMP::shared_ptr<AMP::Database> nonlinearOperator_db = input_db->getDatabase("SubchannelTwoEqNonlinearOperator");
+    AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(new AMP::Operator::SubchannelOperatorParameters( nonlinearOperator_db ));
     subchannelOpParams->d_Mesh = subchannelMesh;
     subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
     subchannelOpParams->clad_x = input_db->getDatabase("CladProperties")->getDoubleArray("x");
@@ -97,14 +97,14 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     subchannelOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
 
     // create nonlinear operator
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    boost::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> nonlinearOperator =
-        boost::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
+    AMP::shared_ptr<AMP::Operator::SubchannelTwoEqNonlinearOperator> nonlinearOperator =
+        AMP::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
         subchannelMesh ,"SubchannelTwoEqNonlinearOperator",input_db,elementModel ));
   
     // create linear operator
-    boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
-        boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
+    AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
+        AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>(AMP::Operator::OperatorBuilder::createOperator(
         subchannelMesh ,"SubchannelTwoEqLinearOperator",input_db,elementModel ));
   
     // pass creation test
@@ -140,13 +140,13 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     double hin = 0.0;
     double rho = 1000;
     for (int i=0; i<3; i++) {
-        std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
+        std::map<std::string, AMP::shared_ptr<std::vector<double> > > enthalpyArgMap;
         enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,Tin)));
         enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,Pin)));
         std::vector<double> enthalpyResult(1);
         subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap); 
         hin = enthalpyResult[0];
-        std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
+        std::map<std::string, AMP::shared_ptr<std::vector<double> > > volumeArgMap_plus;
         volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,hin)));
         volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,Pin)));
         std::vector<double> volumeResult_plus(1);
@@ -186,22 +186,22 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     solVec->copyVector(manufacturedVec);
 
     // get nonlinear solver database
-    boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
+    AMP::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
   
     // get linear solver database
-    boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
+    AMP::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
  
     // put manufactured RHS into resVec
     nonlinearOperator->reset(subchannelOpParams);
-    boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelLinearParams = 
-        boost::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>( 
+    AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelLinearParams = 
+        AMP::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>( 
         nonlinearOperator->getJacobianParameters(solVec) );
     subchannelLinearParams->d_initialize = false;
     linearOperator->reset(subchannelLinearParams);
     linearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
    
     // create nonlinear solver parameters
-    boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
+    AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm = globalComm;
@@ -209,25 +209,25 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     nonlinearSolverParams->d_pInitialGuess = solVec;
 
     // create nonlinear solver
-    boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
+    AMP::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
 
     // create linear solver
-    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
+    AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
 
     // create preconditioner
-    boost::shared_ptr<AMP::Database> Preconditioner_db = linearSolver_db->getDatabase("Preconditioner");
-    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> PreconditionerParams(
+    AMP::shared_ptr<AMP::Database> Preconditioner_db = linearSolver_db->getDatabase("Preconditioner");
+    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> PreconditionerParams(
         new AMP::Solver::SolverStrategyParameters(Preconditioner_db));
     PreconditionerParams->d_pOperator = linearOperator;
     std::string preconditioner = Preconditioner_db->getString("Type");
     if ( preconditioner=="ML" ) {
-        boost::shared_ptr<AMP::Solver::TrilinosMLSolver> linearFlowPreconditioner(
+        AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> linearFlowPreconditioner(
             new AMP::Solver::TrilinosMLSolver(PreconditionerParams));
         linearSolver->setPreconditioner(linearFlowPreconditioner);
     } else if ( preconditioner=="Banded" ) {
         Preconditioner_db->putInteger("KL",3);
         Preconditioner_db->putInteger("KU",3);
-        boost::shared_ptr<AMP::Solver::BandedSolver> linearFlowPreconditioner(
+        AMP::shared_ptr<AMP::Solver::BandedSolver> linearFlowPreconditioner(
             new AMP::Solver::BandedSolver(PreconditionerParams));
         linearSolver->setPreconditioner(linearFlowPreconditioner);
     } else if ( preconditioner=="None" ) {
@@ -256,14 +256,14 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
         tempDOFManager->getDOFs( face->globalID(), tdofs );
         double h = h_scale*solVec->getValueByGlobalID(dofs[0]);
         double P = P_scale*solVec->getValueByGlobalID(dofs[1]);
-        std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
+        std::map<std::string, AMP::shared_ptr<std::vector<double> > > temperatureArgMap;
         temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h)));
         temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P)));
         std::vector<double> temperatureResult(1);
         subchannelPhysicsModel->getProperty("Temperature", temperatureResult, temperatureArgMap); 
         tempVec->setValueByGlobalID(tdofs[0],temperatureResult[0]);
         // Check that we recover the enthalapy from the temperature
-        std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
+        std::map<std::string, AMP::shared_ptr<std::vector<double> > > enthalpyArgMap;
         enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,temperatureResult[0])));
         enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,P)));
         std::vector<double> enthalpyResult(1);

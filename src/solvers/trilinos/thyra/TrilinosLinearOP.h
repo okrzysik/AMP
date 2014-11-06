@@ -44,8 +44,8 @@ private:
     TrilinosLinearOP();
 
     //! Data variables
-    boost::shared_ptr<AMP::Operator::Operator>      d_operator;
-    boost::shared_ptr<AMP::Solver::SolverStrategy>  d_solver;
+    AMP::shared_ptr<AMP::Operator::Operator>      d_operator;
+    AMP::shared_ptr<AMP::Solver::SolverStrategy>  d_solver;
 
 };
 

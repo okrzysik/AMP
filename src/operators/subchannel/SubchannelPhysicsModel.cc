@@ -15,7 +15,7 @@ namespace AMP {
 namespace Operator {
 
 SubchannelPhysicsModel::SubchannelPhysicsModel(
-        const boost::shared_ptr<ElementPhysicsModelParameters>& params):
+        const AMP::shared_ptr<ElementPhysicsModelParameters>& params):
         ElementPhysicsModel(params)
 {
 	// get material key
@@ -57,7 +57,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
 	}
 
 	if (params->d_db->keyExists("Defaults")) {
-		boost::shared_ptr<Database> defaults_db = params->d_db->getDatabase("Defaults"); // get defaults database
+		AMP::shared_ptr<Database> defaults_db = params->d_db->getDatabase("Defaults"); // get defaults database
 		std::vector<std::string> defaultkeys = defaults_db->getAllKeys(); // get defaults database keys
 		// check that all default argument names are in the list of property argument names
 		// map each default string to a boolean indicating if the default was found in at least one property argument list
@@ -122,7 +122,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
 void SubchannelPhysicsModel::getProperty(
 	std::string property,
 	std::vector<double> & result,
-        std::map<std::string, boost::shared_ptr<std::vector<double> > > & args)
+        std::map<std::string, AMP::shared_ptr<std::vector<double> > > & args)
 {
     // evaluate material property
     std::map<std::string,AMP::Materials::PropertyPtr>::iterator it = d_properties.find(property);

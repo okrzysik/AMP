@@ -27,8 +27,8 @@ namespace Materials {
 template <class Number>
 template <class INPUT_VTYPE, class RETURN_VTYPE>
 void TensorProperty<Number>::evalvActual(
-		std::vector<std::vector<boost::shared_ptr<RETURN_VTYPE> > >& r,
-		const std::map< std::string, boost::shared_ptr<INPUT_VTYPE> >& args)
+		std::vector<std::vector<AMP::shared_ptr<RETURN_VTYPE> > >& r,
+		const std::map< std::string, AMP::shared_ptr<INPUT_VTYPE> >& args)
 {
   size_t rdim0 = r.size();										// dimension 0 of results tensor to return
   size_t rdim1 = r[0].size();									// dimension 1 of results tensor to return
@@ -51,11 +51,11 @@ void TensorProperty<Number>::evalvActual(
   std::vector<Number> eval_args( Property<Number>::d_n_arguments );				// list of arguments for each input type
   std::vector<typename INPUT_VTYPE::iterator> parameter_iter;
   std::vector<size_t> parameter_indices;
-  std::vector< typename std::map<std::string, boost::shared_ptr<INPUT_VTYPE> >::const_iterator > parameter_map_iter;
+  std::vector< typename std::map<std::string, AMP::shared_ptr<INPUT_VTYPE> >::const_iterator > parameter_map_iter;
 
   // Walk through d_arguments and set the iterator at the beginning of the map vector to which it corresponds
   for ( size_t i=0; i<Property<Number>::d_arguments.size(); ++i ) {
-	  typename std::map<std::string, boost::shared_ptr<INPUT_VTYPE> >::const_iterator mapIter;
+	  typename std::map<std::string, AMP::shared_ptr<INPUT_VTYPE> >::const_iterator mapIter;
 	  mapIter = args.find(Property<Number>::d_arguments[i]);
 	  if( mapIter==args.end() )
 	  {
@@ -114,8 +114,8 @@ void TensorProperty<Number>::evalvActual(
 }
 
 template<class Number>
-void TensorProperty<Number>::evalv(std::vector< std::vector< boost::shared_ptr<std::vector<Number> > > >& r,
-const std::map< std::string, boost::shared_ptr<std::vector<Number> > >& args)
+void TensorProperty<Number>::evalv(std::vector< std::vector< AMP::shared_ptr<std::vector<Number> > > >& r,
+const std::map< std::string, AMP::shared_ptr<std::vector<Number> > >& args)
 {
 	AMP_ASSERT(this->in_range(args));
 	evalvActual(r, args);

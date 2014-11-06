@@ -2,7 +2,7 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
@@ -29,25 +29,25 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
 
     AMP::PIO::logAllNodes(log_file);
 
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
 
 //--------------------------------------------------
 //   Create the Mesh.
 //--------------------------------------------------
-    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
     mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 
 //--------------------------------------------------
 //  Construct PowerShape.
 //--------------------------------------------------
     AMP_INSIST(input_db->keyExists("MyPowerShape"), "Key ''MyPowerShape'' is missing!");
-    boost::shared_ptr<AMP::Database>  shape_db = input_db->getDatabase("MyPowerShape");
-    boost::shared_ptr<AMP::Operator::PowerShapeParameters> shape_params(new AMP::Operator::PowerShapeParameters( shape_db ));
+    AMP::shared_ptr<AMP::Database>  shape_db = input_db->getDatabase("MyPowerShape");
+    AMP::shared_ptr<AMP::Operator::PowerShapeParameters> shape_params(new AMP::Operator::PowerShapeParameters( shape_db ));
     shape_params->d_Mesh = meshAdapter;
-    boost::shared_ptr<AMP::Operator::PowerShape> shape(new AMP::Operator::PowerShape( shape_params ));
+    AMP::shared_ptr<AMP::Operator::PowerShape> shape(new AMP::Operator::PowerShape( shape_params ));
 
     // Create a DOF manager for a gauss point vector 
     int DOFsPerNode = 8;

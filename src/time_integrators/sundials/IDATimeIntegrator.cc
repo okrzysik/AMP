@@ -23,7 +23,7 @@ namespace TimeIntegrator{
 /************************************************************************
 *  Constructor.                                                         *
 ************************************************************************/
-IDATimeIntegrator::IDATimeIntegrator( boost::shared_ptr< TimeIntegratorParameters > parameters ):TimeIntegrator(parameters)
+IDATimeIntegrator::IDATimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters ):TimeIntegrator(parameters)
 {
     initialize( parameters );
 }
@@ -47,27 +47,27 @@ IDATimeIntegrator::~IDATimeIntegrator()
 /************************************************************************
 * Initialize.                                                           *
 ************************************************************************/
-void IDATimeIntegrator::initialize( boost::shared_ptr< TimeIntegratorParameters> parameters )
+void IDATimeIntegrator::initialize( AMP::shared_ptr< TimeIntegratorParameters> parameters )
 {
     #ifdef DEBUG_CHECK_ASSERTIONS
         assert(parameters.get() != NULL);
     #endif
     getFromInput( parameters->d_db );
         
-    boost::shared_ptr< IDATimeIntegratorParameters > params = boost::dynamic_pointer_cast< IDATimeIntegratorParameters > (parameters);
+    AMP::shared_ptr< IDATimeIntegratorParameters > params = AMP::dynamic_pointer_cast< IDATimeIntegratorParameters > (parameters);
     d_solution_prime = (params->d_ic_vector_prime)->cloneVector();
     d_solution_prime->copyVector(params->d_ic_vector_prime);
         
     d_pPreconditioner = params->d_pPreconditioner;
 
     // reuse the time integrator database, and put additional fields in
-    boost::shared_ptr<AMP::Database> timeOperator_db = params->d_db;
+    AMP::shared_ptr<AMP::Database> timeOperator_db = params->d_db;
     timeOperator_db->putDouble("CurrentDt", d_current_dt);
     timeOperator_db->putDouble("CurrentTime", d_current_time);
     timeOperator_db->putString("name", "TimeOperator");
 
     // setup the parameter object for the IDATimeOperator
-    boost::shared_ptr<AMP::TimeIntegrator::IDATimeOperatorParameters> idaTimeOp_Params ( new AMP::TimeIntegrator::IDATimeOperatorParameters(params->d_db));
+    AMP::shared_ptr<AMP::TimeIntegrator::IDATimeOperatorParameters> idaTimeOp_Params ( new AMP::TimeIntegrator::IDATimeOperatorParameters(params->d_db));
         
     idaTimeOp_Params->d_pRhsOperator = parameters->d_operator;
     idaTimeOp_Params->d_pMassOperator = parameters->d_pMassOperator;
@@ -76,14 +76,14 @@ void IDATimeIntegrator::initialize( boost::shared_ptr< TimeIntegratorParameters>
     idaTimeOp_Params->d_Mesh = (parameters->d_operator)->getMesh();
           
     // create the time operator
-    boost::shared_ptr<AMP::TimeIntegrator::IDATimeOperator> idaTimeOp(new AMP::TimeIntegrator::IDATimeOperator(idaTimeOp_Params));
+    AMP::shared_ptr<AMP::TimeIntegrator::IDATimeOperator> idaTimeOp(new AMP::TimeIntegrator::IDATimeOperator(idaTimeOp_Params));
     d_pIDATimeOperator = idaTimeOp;
         
     // if we want to create the LinearTimeOperator internally
     if(d_createLinearOperatorInternally) {
         if(d_bLinearRhsOperator && d_bLinearMassOperator) {
-            boost::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> linearTimeOperatorParams = boost::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperatorParameters>(idaTimeOp->getJacobianParameters(d_solution));
-            boost::shared_ptr<AMP::Database> timeOperator_db = linearTimeOperatorParams->d_db;
+            AMP::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> linearTimeOperatorParams = AMP::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperatorParameters>(idaTimeOp->getJacobianParameters(d_solution));
+            AMP::shared_ptr<AMP::Database> timeOperator_db = linearTimeOperatorParams->d_db;
             timeOperator_db->putDouble("CurrentDt", d_current_dt);
             timeOperator_db->putDouble("CurrentTime", d_current_time);
             timeOperator_db->putString("name", "TimeOperator");
@@ -125,7 +125,7 @@ void IDATimeIntegrator::initializeIDA()
     ierr = IDASetId(d_ida_mem, id);
     AMP_ASSERT(ierr==IDA_SUCCESS);
         
-    // boost::shared_ptr<AMP::LinearAlgebra::SundialsVector> pSun_nvec =  boost::dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(pSundials_sol);
+    // AMP::shared_ptr<AMP::LinearAlgebra::SundialsVector> pSun_nvec =  AMP::dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(pSundials_sol);
                 
     ierr = IDAInit(d_ida_mem, IDAResTrial, d_initial_time, pSundials_sol->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector(), pSundials_sol_prime->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector());
     AMP_ASSERT(ierr==IDA_SUCCESS);        
@@ -180,7 +180,7 @@ void IDATimeIntegrator::initializeIDA()
 }
     
 
-void IDATimeIntegrator::reset( boost::shared_ptr< TimeIntegratorParameters > parameters )
+void IDATimeIntegrator::reset( AMP::shared_ptr< TimeIntegratorParameters > parameters )
 {
     #ifdef DEBUG_CHECK_ASSERTIONS
         AMP_ASSERT(parameters.get() != NULL);
@@ -220,7 +220,7 @@ void IDATimeIntegrator::updateSolution( void )
 /************************************************************************
 * Read input from database.                                             *
 ************************************************************************/
-void IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db )
+void IDATimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 {
     if ( input_db->keyExists("bLinearMassOperator") ) {
         d_bLinearMassOperator = input_db->getBool("bLinearMassOperator");
@@ -355,7 +355,7 @@ void IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db 
                                        N_Vector rr, void *user_data)
     {
         
-        boost::shared_ptr<AMP::LinearAlgebra::Vector> f;
+        AMP::shared_ptr<AMP::LinearAlgebra::Vector> f;
         
         
         AMP::LinearAlgebra::ExternalVectorDeleter d;
@@ -363,8 +363,8 @@ void IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db 
 
         AMP::LinearAlgebra::Vector * pyy = static_cast<AMP::LinearAlgebra::ManagedSundialsVector*>(yy->content);
         AMP::LinearAlgebra::Vector * pyp = static_cast<AMP::LinearAlgebra::ManagedSundialsVector*>(yp->content);
-        boost::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy (pyy, d);
-        boost::shared_ptr<AMP::LinearAlgebra::Vector> amp_yp (pyp, d);
+        AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy (pyy, d);
+        AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_yp (pyp, d);
         amp_yy->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
         amp_yp->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
         
@@ -416,19 +416,19 @@ void IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db 
           AMP::LinearAlgebra::ExternalVectorDeleter d;
 
           AMP::LinearAlgebra::Vector * pyy = static_cast<AMP::LinearAlgebra::ManagedSundialsVector*>(yy->content);
-          boost::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy (pyy, d);
-          boost::shared_ptr<AMP::Operator::OperatorParameters> jacParams = ((IDATimeIntegrator*)user_data)->getIDATimeOperator()->getJacobianParameters(amp_yy);
-          boost::shared_ptr<AMP::Database> &db = jacParams->d_db;
+          AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy (pyy, d);
+          AMP::shared_ptr<AMP::Operator::OperatorParameters> jacParams = ((IDATimeIntegrator*)user_data)->getIDATimeOperator()->getJacobianParameters(amp_yy);
+          AMP::shared_ptr<AMP::Database> &db = jacParams->d_db;
           db->putDouble("ScalingFactor", cj);
           db->putDouble("CurrentTime", tt);
-          boost::shared_ptr<AMP::Solver::SolverStrategy> pSolver = ((IDATimeIntegrator*)user_data)->getPreconditioner();
+          AMP::shared_ptr<AMP::Solver::SolverStrategy> pSolver = ((IDATimeIntegrator*)user_data)->getPreconditioner();
           //double currentTime = ((IDATimeIntegrator *)user_data)->getCurrentTime();
 
           // BP:  commenting out these lines that appear to be buggy
           // I will need to fix these lines so that the current time is set through the database object
           // we can have column time operators and in that case the lines below fail
           //          if (((IDATimeIntegrator *)user_data)->getBoolManufacturedProblem()) {
-          //          boost::shared_ptr<AMP::TimeIntegrator::LinearTimeOperator> pLinearTimeOperator = boost::dynamic_pointer_cast<AMP::TimeIntegrator::LinearTimeOperator> ( pSolver->getOperator() );          
+          //          AMP::shared_ptr<AMP::TimeIntegrator::LinearTimeOperator> pLinearTimeOperator = AMP::dynamic_pointer_cast<AMP::TimeIntegrator::LinearTimeOperator> ( pSolver->getOperator() );          
           //          AMP_INSIST(pLinearTimeOperator!=NULL, "In IDATimeIntegrator::IDAPrecSetup - pLinearTimeOperator is NULL");
           //          pLinearTimeOperator->registerCurrentTime(currentTime);
           pSolver->resetOperator(jacParams);
@@ -448,33 +448,33 @@ void IDATimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db 
         AMP::LinearAlgebra::ExternalVectorDeleter d;
         AMP::LinearAlgebra::Vector * pr = static_cast<AMP::LinearAlgebra::ManagedSundialsVector*>(rvec->content);
         AMP::LinearAlgebra::Vector * pz = static_cast<AMP::LinearAlgebra::ManagedSundialsVector*>(zvec->content);
-        boost::shared_ptr<AMP::LinearAlgebra::Vector> amp_rvec (pr, d);
-        boost::shared_ptr<AMP::LinearAlgebra::Vector> amp_zvec (pz, d);
+        AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_rvec (pr, d);
+        AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_zvec (pz, d);
         
         ((IDATimeIntegrator*)user_data)->getPreconditioner()->solve(amp_rvec, amp_zvec);
         
         return(IDA_SUCCESS);
     }
     
-    boost::shared_ptr<IDATimeOperator> IDATimeIntegrator::getIDATimeOperator() const
+    AMP::shared_ptr<IDATimeOperator> IDATimeIntegrator::getIDATimeOperator() const
     {
         return(d_pIDATimeOperator);
     }
     
-    boost::shared_ptr<LinearTimeOperator> IDATimeIntegrator::getLinearTimeOperator() const
+    AMP::shared_ptr<LinearTimeOperator> IDATimeIntegrator::getLinearTimeOperator() const
     {
         return(d_pLinearTimeOperator);
     }
     
     
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> IDATimeIntegrator::getResidualVector() const
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> IDATimeIntegrator::getResidualVector() const
     {
         return(d_residual);
         
     }
     
     
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> IDATimeIntegrator::getSourceTerm() const
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> IDATimeIntegrator::getSourceTerm() const
     {
         return(d_pSourceTerm);
     }

@@ -28,7 +28,7 @@ public:
      * member function.
      *
      */
-   OxideTimeIntegrator( boost::shared_ptr<TimeIntegratorParameters> parameters);
+   OxideTimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters);
 
     //! Empty destructor for TimeIntegrator
     virtual ~OxideTimeIntegrator();
@@ -37,14 +37,14 @@ public:
      * Initialize state of time integrator.  This includes creating
      * solution vector and initializing solver components.
      */
-    virtual void initialize( boost::shared_ptr<TimeIntegratorParameters> parameters);
+    virtual void initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters);
 
     /**
      * Resets the internal state of the time integrator as needed.
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset.
      */
-    virtual void reset(boost::shared_ptr<TimeIntegratorParameters> parameters);
+    virtual void reset(AMP::shared_ptr<TimeIntegratorParameters> parameters);
 
     /*!
      * @brief Integrate through the specified time increment in days.

@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -46,25 +46,25 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
   //--------------------------------------------------
   //   Create the Mesh.
   //--------------------------------------------------
-  boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-  boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+  AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
   mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+  AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear mechanics
   AMP_INSIST( input_db->keyExists("testNonlinearMechanicsOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
-  boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
+  AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearMechanicsOperator = 
+    AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 														    "testNonlinearMechanicsOperator",
 														    input_db,
 														    mechanicsMaterialModel));
@@ -74,17 +74,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   // create a nonlinear BVP operator for nonlinear thermal diffusion
   AMP_INSIST( input_db->keyExists("testNonlinearThermalOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
-  boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
+  AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = 
+    AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 														    "testNonlinearThermalOperator",
 														    input_db,
 														    thermalTransportModel));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a column operator object for nonlinear thermomechanics
-  boost::shared_ptr<AMP::Operator::OperatorParameters> params;
-  boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearThermoMechanicsOperator(new AMP::Operator::ColumnOperator(params));
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> params;
+  AMP::shared_ptr<AMP::Operator::ColumnOperator> nonlinearThermoMechanicsOperator(new AMP::Operator::ColumnOperator(params));
   nonlinearThermoMechanicsOperator->append(nonlinearMechanicsOperator);
   nonlinearThermoMechanicsOperator->append(nonlinearThermalOperator);
 
@@ -99,12 +99,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // initialize the input multi-variable
-  boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsVolumeOperator = boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsOperator->getVolumeOperator());
-  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator = boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearThermalOperator->getVolumeOperator());
+  AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsVolumeOperator = AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(nonlinearMechanicsOperator->getVolumeOperator());
+  AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearThermalOperator->getVolumeOperator());
 
   // initialize the input multi-variable
-  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputMultiVariable = 
-      boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( mechanicsVolumeOperator->getInputVariable() );
+  AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputMultiVariable = 
+      AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( mechanicsVolumeOperator->getInputVariable() );
   std::vector<AMP::LinearAlgebra::Variable::shared_ptr> inputVariables;
   std::vector<AMP::Discretization::DOFManager::shared_ptr> inputDOFs;
   for (size_t i=0; i<inputMultiVariable->numVariables(); i++) {
@@ -129,12 +129,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::LinearAlgebra::Variable::shared_ptr outputVariable = nonlinearThermoMechanicsOperator->getOutputVariable();
 
   // create solution, rhs, and residual vectors
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> solVec = AMP::LinearAlgebra::MultiVector::create ( inputMultiVariable, meshAdapter->getComm() );
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> resVec = AMP::LinearAlgebra::MultiVector::create ( outputVariable, meshAdapter->getComm() );
+  AMP::shared_ptr<AMP::LinearAlgebra::Vector> solVec = AMP::LinearAlgebra::MultiVector::create ( inputMultiVariable, meshAdapter->getComm() );
+  AMP::shared_ptr<AMP::LinearAlgebra::Vector> resVec = AMP::LinearAlgebra::MultiVector::create ( outputVariable, meshAdapter->getComm() );
   for (size_t i=0; i<inputVariables.size(); i++) {
       if ( inputVariables[i].get() != NULL ) {
-          boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(solVec)->addVector( AMP::LinearAlgebra::createVector( inputDOFs[i], inputVariables[i] ) );
-          boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(resVec)->addVector( AMP::LinearAlgebra::createVector( inputDOFs[i], inputVariables[i] ) );
+          AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(solVec)->addVector( AMP::LinearAlgebra::createVector( inputDOFs[i], inputVariables[i] ) );
+          AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(resVec)->addVector( AMP::LinearAlgebra::createVector( inputDOFs[i], inputVariables[i] ) );
       }
   }
 
@@ -149,7 +149,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 //  AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = AMP::LinearAlgebra::createVector( nodalDofMap, (thermalVolumeOperator->getInputVariable())->getVariable(AMP::Operator::Diffusion::TEMPERATURE) );
 //  placeholder line till diffusion is converted:
   AMP::LinearAlgebra::Variable::shared_ptr temperatureVariable = 
-     boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(thermalVolumeOperator->getInputVariable())->getVariable(AMP::Operator::Diffusion::TEMPERATURE);
+     AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(thermalVolumeOperator->getInputVariable())->getVariable(AMP::Operator::Diffusion::TEMPERATURE);
   AMP::LinearAlgebra::Vector::shared_ptr referenceTemperatureVec = AMP::LinearAlgebra::createVector( nodalDofMap, temperatureVariable );
   referenceTemperatureVec->setToScalar(300.0);
   mechanicsVolumeOperator->setReferenceTemperature(referenceTemperatureVec);

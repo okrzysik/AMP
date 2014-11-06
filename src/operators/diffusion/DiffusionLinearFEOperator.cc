@@ -18,13 +18,13 @@ AMP::LinearAlgebra::Variable::shared_ptr DiffusionLinearFEOperator::getOutputVar
 }
 
 
-DiffusionLinearFEOperator::DiffusionLinearFEOperator(const boost::shared_ptr<
+DiffusionLinearFEOperator::DiffusionLinearFEOperator(const AMP::shared_ptr<
     DiffusionLinearFEOperatorParameters> & params) :
     LinearFEOperator(params) 
 {
     AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
 
-    d_diffLinElem = boost::dynamic_pointer_cast<DiffusionLinearElement>(d_elemOp);
+    d_diffLinElem = AMP::dynamic_pointer_cast<DiffusionLinearElement>(d_elemOp);
 
     AMP_INSIST( ((d_diffLinElem.get()) != NULL), "d_elemOp is not of type DiffusionLinearElement" );
 
@@ -42,11 +42,11 @@ DiffusionLinearFEOperator::DiffusionLinearFEOperator(const boost::shared_ptr<
 }
 
 
-void DiffusionLinearFEOperator::preAssembly(const boost::shared_ptr<
+void DiffusionLinearFEOperator::preAssembly(const AMP::shared_ptr<
     OperatorParameters>& oparams) 
 {
-    boost::shared_ptr<DiffusionLinearFEOperatorParameters> params =
-        boost::dynamic_pointer_cast<DiffusionLinearFEOperatorParameters>(oparams);
+    AMP::shared_ptr<DiffusionLinearFEOperatorParameters> params =
+        AMP::dynamic_pointer_cast<DiffusionLinearFEOperatorParameters>(oparams);
 
     if( d_iDebugPrintInfoLevel > 7 )
     {
@@ -228,7 +228,7 @@ void DiffusionLinearFEOperator::postElementOperation()
 }
 
 
-boost::shared_ptr<DiffusionTransportModel> DiffusionLinearFEOperator::getTransportModel(){
+AMP::shared_ptr<DiffusionTransportModel> DiffusionLinearFEOperator::getTransportModel(){
     return d_transportModel;
 }
 

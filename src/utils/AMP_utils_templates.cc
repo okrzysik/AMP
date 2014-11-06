@@ -1,4 +1,4 @@
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include <vector>
 #include <list>
 #include <complex>
@@ -8,7 +8,7 @@
 #include "MemoryDatabase.h"
 #include "Parser.h"
 
-template class std::list< boost::shared_ptr<AMP::Database> >;
+template class std::list< AMP::shared_ptr<AMP::Database> >;
 template class std::vector<std::complex<double> >;
 template class std::vector< std::string >;
 template class std::vector<unsigned char >;
@@ -16,7 +16,7 @@ template class std::vector<AMP::DatabaseBox >;
 //template class AMP::DebugAppender::shared_ptr;
 //template class AMP::Database::shared_ptr;
 //template class AMP::MemoryDatabase::shared_ptr;
-template class boost::detail::sp_counted_impl_p<AMP::MemoryDatabase>;
+//template class boost::detail::sp_counted_impl_p<AMP::MemoryDatabase>;
 
 
 /*

@@ -69,7 +69,7 @@ Parser::~Parser()
 
 int Parser::parse(
    const std::string& filename,
-   FILE* fstream, boost::shared_ptr<Database> database)
+   FILE* fstream, AMP::shared_ptr<Database> database)
 {
    d_errors     = 0;
    d_warnings   = 0;
@@ -218,10 +218,10 @@ void Parser::setLine(const std::string& line)
 *************************************************************************
 */
 
- boost::shared_ptr<Database> Parser::getDatabaseWithKey(const std::string& key) {
-   boost::shared_ptr<Database> returnPtr;
+ AMP::shared_ptr<Database> Parser::getDatabaseWithKey(const std::string& key) {
+   AMP::shared_ptr<Database> returnPtr;
   
-  std::list< boost::shared_ptr<Database> >::iterator i = d_scope_stack.begin();
+  std::list< AMP::shared_ptr<Database> >::iterator i = d_scope_stack.begin();
   for ( ; i!=d_scope_stack.end(); i++) {
     if ((*i)->keyExists(key)) return((*i));
    }

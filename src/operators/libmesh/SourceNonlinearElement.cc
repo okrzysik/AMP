@@ -14,7 +14,7 @@
 namespace AMP {
 namespace Operator {
 
-SourceNonlinearElement :: SourceNonlinearElement (const boost::shared_ptr<ElementOperationParameters> & params) :
+SourceNonlinearElement :: SourceNonlinearElement (const AMP::shared_ptr<ElementOperationParameters> & params) :
     ElementOperation(params),
     d_elementOutputVector(NULL),
     d_elem(NULL)
@@ -66,7 +66,7 @@ SourceNonlinearElement :: SourceNonlinearElement (const boost::shared_ptr<Elemen
 }
 
 
-void SourceNonlinearElement :: initializeForCurrentElement( const ::Elem* elem, const boost::shared_ptr<SourcePhysicsModel> & sourcePhysicsModel)
+void SourceNonlinearElement :: initializeForCurrentElement( const ::Elem* elem, const AMP::shared_ptr<SourcePhysicsModel> & sourcePhysicsModel)
 {
     d_elem = elem;
 

@@ -14,7 +14,7 @@ namespace Operator {
   class CoupledChannelToCladMapOperator : public Operator
   {
     public :
-      CoupledChannelToCladMapOperator(const boost::shared_ptr<CoupledChannelToCladMapOperatorParameters>& params);
+      CoupledChannelToCladMapOperator(const AMP::shared_ptr<CoupledChannelToCladMapOperatorParameters>& params);
 
       virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         return d_flowVariable;
@@ -38,10 +38,10 @@ namespace Operator {
       AMP::LinearAlgebra::Vector::shared_ptr d_subchannelTemperature;
       AMP::LinearAlgebra::Vector::shared_ptr d_subchannelDensity;
 
-      boost::shared_ptr< AMP::Operator::Operator> d_thermalMapOperator;
-      boost::shared_ptr< AMP::Operator::Operator> d_densityMapOperator;
+      AMP::shared_ptr< AMP::Operator::Operator> d_thermalMapOperator;
+      AMP::shared_ptr< AMP::Operator::Operator> d_densityMapOperator;
 
-      boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
+      AMP::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
 
   };

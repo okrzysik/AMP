@@ -6,7 +6,7 @@
 #endif
 
 #ifndef included_Pointer
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #endif
 
 #ifndef included_Database
@@ -43,7 +43,7 @@ public:
     * Construct and initialize a parameter list according to input
     * data.  Guess what the required and optional keywords are.
     */
-   SolverStrategyParameters(const boost::shared_ptr<AMP::Database> &db);
+   SolverStrategyParameters(const AMP::shared_ptr<AMP::Database> &db);
 
    /**
     * Destructor.
@@ -55,9 +55,9 @@ public:
    *  Documentation for parameters required by each solver can be found in the
    *  documentation for the solver.
    */
-   boost::shared_ptr<AMP::Database> d_db;
+   AMP::shared_ptr<AMP::Database> d_db;
    
-   boost::shared_ptr<AMP::Operator::Operator> d_pOperator;
+   AMP::shared_ptr<AMP::Operator::Operator> d_pOperator;
 
 protected:
 private:

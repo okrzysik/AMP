@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -38,13 +38,13 @@ void thermalOxygenDiffusionTest(AMP::UnitTest *ut, std::string exeName)
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
   // Get the Mesh database and create the mesh parameters
-  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(database));
+  AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(database));
   meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
 
   // Create the meshes from the input database
@@ -55,41 +55,41 @@ void thermalOxygenDiffusionTest(AMP::UnitTest *ut, std::string exeName)
   // create a nonlinear BVP operator for nonlinear thermal
   AMP_INSIST( input_db->keyExists("testNonlinearThermalOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+  AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = 
+    AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
     AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "testNonlinearThermalOperator", input_db ) );
-  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nonlinearThermalVolumeOperator = boost::dynamic_pointer_cast<
+  AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nonlinearThermalVolumeOperator = AMP::dynamic_pointer_cast<
     AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearThermalOperator->getVolumeOperator());
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalMaterialModel = nonlinearThermalVolumeOperator->getTransportModel();
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalMaterialModel = nonlinearThermalVolumeOperator->getTransportModel();
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a nonlinear BVP operator for nonlinear oxygen diffusion
   AMP_INSIST( input_db->keyExists("testNonlinearOxygenOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearOxygenOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+  AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearOxygenOperator = 
+    AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
     AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "testNonlinearOxygenOperator", input_db ) );
-  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nonlinearOxygenVolumeOperator = boost::dynamic_pointer_cast<
+  AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nonlinearOxygenVolumeOperator = AMP::dynamic_pointer_cast<
     AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearOxygenOperator->getVolumeOperator());
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> oxygenTransportModel = nonlinearOxygenVolumeOperator->getTransportModel();
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> oxygenTransportModel = nonlinearOxygenVolumeOperator->getTransportModel();
 
-  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> fickOperator = boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearOxygenOperator->getVolumeOperator());
+  AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> fickOperator = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearOxygenOperator->getVolumeOperator());
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a column operator object for nonlinear thermothermal
-  boost::shared_ptr<AMP::Operator::OperatorParameters> params;
-  boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearThermalOxygenOperator(new AMP::Operator::ColumnOperator(params));
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> params;
+  AMP::shared_ptr<AMP::Operator::ColumnOperator> nonlinearThermalOxygenOperator(new AMP::Operator::ColumnOperator(params));
   nonlinearThermalOxygenOperator->append(nonlinearThermalOperator);
   nonlinearThermalOxygenOperator->append(nonlinearOxygenOperator);
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // initialize the input multi-variable
-  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> volumeOperator = boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearThermalOperator->getVolumeOperator());
-  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputVariable(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
+  AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> volumeOperator = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearThermalOperator->getVolumeOperator());
+  AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputVariable(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
 //inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
 //inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
-  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> tmp = 
-    boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( volumeOperator->getInputVariable() );
+  AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> tmp = 
+    AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( volumeOperator->getInputVariable() );
   for (size_t i=0; i<tmp->numVariables(); i++) {
       if ( tmp->getVariable(i).get() != NULL )
           inputVariable->add(tmp->getVariable(i));
@@ -114,10 +114,10 @@ void thermalOxygenDiffusionTest(AMP::UnitTest *ut, std::string exeName)
   // set up the frozen variables for each operator
   // first get defaults
   double defTemp, defConc;
-  boost::shared_ptr<AMP::Operator::DiffusionTransportModel> thermalTransportModel =
-          boost::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>(thermalMaterialModel);
-  boost::shared_ptr<AMP::Operator::DiffusionTransportModel> oxyModel =
-          boost::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>(oxygenTransportModel);
+  AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> thermalTransportModel =
+          AMP::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>(thermalMaterialModel);
+  AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> oxyModel =
+          AMP::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>(oxygenTransportModel);
   defConc = thermalTransportModel->getDefault(AMP::Operator::Diffusion::CONCENTRATION);
   defTemp = thermalTransportModel->getDefault(AMP::Operator::Diffusion::TEMPERATURE);
 
@@ -161,8 +161,8 @@ void thermalOxygenDiffusionTest(AMP::UnitTest *ut, std::string exeName)
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // now construct the linear BVP operator for thermal
   AMP_INSIST( input_db->keyExists("testLinearThermalOperator"), "key missing!" );
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator = 
+    AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 														 "testLinearThermalOperator",
 														 input_db,
 														 thermalMaterialModel));
@@ -170,15 +170,15 @@ void thermalOxygenDiffusionTest(AMP::UnitTest *ut, std::string exeName)
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // now construct the linear BVP operator for oxygen
   AMP_INSIST( input_db->keyExists("testLinearOxygenOperator"), "key missing!" );
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearOxygenOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearOxygenOperator = 
+    AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 														 "testLinearOxygenOperator",
 														 input_db,
 														 oxygenTransportModel));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a column operator object for linear thermomechanics
-  boost::shared_ptr<AMP::Operator::ColumnOperator> linearThermalOxygenOperator(new AMP::Operator::ColumnOperator(params));
+  AMP::shared_ptr<AMP::Operator::ColumnOperator> linearThermalOxygenOperator(new AMP::Operator::ColumnOperator(params));
   linearThermalOxygenOperator->append(linearThermalOperator);
   linearThermalOxygenOperator->append(linearOxygenOperator);
 
@@ -186,12 +186,12 @@ void thermalOxygenDiffusionTest(AMP::UnitTest *ut, std::string exeName)
 
   // test apply
   std::string  msgPrefix=exeName + " : apply";
-  boost::shared_ptr<AMP::Operator::Operator> testOperator = boost::dynamic_pointer_cast<AMP::Operator::Operator>(nonlinearThermalOxygenOperator);
+  AMP::shared_ptr<AMP::Operator::Operator> testOperator = AMP::dynamic_pointer_cast<AMP::Operator::Operator>(nonlinearThermalOxygenOperator);
   applyTests(ut, msgPrefix, testOperator, rhsVec, solVec, resVec, shift, scale, 2);
 
   ut->passes(msgPrefix);
 
-  boost::shared_ptr<AMP::Operator::OperatorParameters> resetParams = nonlinearThermalOxygenOperator->getJacobianParameters(solVec);
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> resetParams = nonlinearThermalOxygenOperator->getJacobianParameters(solVec);
 
   ut->passes(exeName + " : getJacobianParameters");
 

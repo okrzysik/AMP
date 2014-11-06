@@ -56,7 +56,7 @@ public:
      */
     void reinit( const AMP::Mesh::MeshIterator &iterator, 
         libMeshEnums::QuadratureType qtype, libMeshEnums::Order qorder,
-        boost::shared_ptr<const libMesh::FEType> type,
+        AMP::shared_ptr<const libMesh::FEType> type,
         bool cache_fe=false );
 
     /**
@@ -92,10 +92,10 @@ private:
     std::vector<size_t> d_index;
     libMeshEnums::QuadratureType d_qtype;
     libMeshEnums::Order d_qorder;
-    boost::shared_ptr<const libMesh::FEType> d_type;
+    AMP::shared_ptr<const libMesh::FEType> d_type;
     mutable AMP::Mesh::MeshElementID d_last_id;
-    boost::shared_ptr<libMesh::FEBase> d_base;
-    boost::shared_ptr<libMesh::QBase> d_rule;
+    AMP::shared_ptr<libMesh::FEBase> d_base;
+    AMP::shared_ptr<libMesh::QBase> d_rule;
     std::vector<libMesh::Elem*> d_elements;
     std::vector<libMesh::FEBase*> d_base_element;
     std::vector<libMesh::QBase*> d_rule_element;

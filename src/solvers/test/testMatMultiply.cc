@@ -31,14 +31,14 @@ void myTest(AMP::UnitTest *ut, std::string mesh_file) {
     std::string log_file = "output_testMatMultiply";
     AMP::PIO::logOnlyNodeZero(log_file);
 
-    boost::shared_ptr<AMP::InputDatabase> mesh_file_db(new AMP::InputDatabase("mesh_file_db"));
+    AMP::shared_ptr<AMP::InputDatabase> mesh_file_db(new AMP::InputDatabase("mesh_file_db"));
     AMP::InputManager::getManager()->parseInputFile(mesh_file, mesh_file_db);
 
     // Create a libmesh mesh
     AMP::AMP_MPI comm(AMP_COMM_SELF);
-    boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(comm));
+    AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(comm));
     const unsigned int mesh_dim = 3;
-    boost::shared_ptr< ::Mesh > myMesh(new ::Mesh(mesh_dim));
+    AMP::shared_ptr< ::Mesh > myMesh(new ::Mesh(mesh_dim));
     AMP::readTestMesh(mesh_file, myMesh);
     MeshCommunication().broadcast(*(myMesh.get()));
     myMesh->prepare_for_use(false);

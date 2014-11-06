@@ -11,41 +11,41 @@
 namespace AMP {
 namespace Solver {
 
-CoupledFlow1DSolver::CoupledFlow1DSolver(boost::shared_ptr<SolverStrategyParameters> parameters):SolverStrategy(parameters)
+CoupledFlow1DSolver::CoupledFlow1DSolver(AMP::shared_ptr<SolverStrategyParameters> parameters):SolverStrategy(parameters)
 {
   assert(parameters.get()!=NULL);
 
-    boost::shared_ptr<CoupledFlow1DSolverParameters> params =
-        boost::dynamic_pointer_cast<CoupledFlow1DSolverParameters>(parameters);
+    AMP::shared_ptr<CoupledFlow1DSolverParameters> params =
+        AMP::dynamic_pointer_cast<CoupledFlow1DSolverParameters>(parameters);
 
         std::string flowOutVar =( (params->d_pOperator)->getOutputVariable())->getName() ;
 
-        d_pOperator = boost::dynamic_pointer_cast<AMP::Operator::CoupledFlowFrapconOperator>(params->d_pOperator);
+        d_pOperator = AMP::dynamic_pointer_cast<AMP::Operator::CoupledFlowFrapconOperator>(params->d_pOperator);
 
-        d_flow1DSolver = boost::dynamic_pointer_cast<Flow1DSolver>(params->d_flow1DSolver);
+        d_flow1DSolver = AMP::dynamic_pointer_cast<Flow1DSolver>(params->d_flow1DSolver);
         std::string flowInpVar = (d_flow1DSolver->getInputVariable())->getName(); 
 
- 	boost::shared_ptr<AMP::InputDatabase> tmp_db1 (new AMP::InputDatabase("Dummy"));
+ 	AMP::shared_ptr<AMP::InputDatabase> tmp_db1 (new AMP::InputDatabase("Dummy"));
         tmp_db1->putInteger("BoundaryId",4);
         tmp_db1->putString("InputVariable", flowOutVar );
         tmp_db1->putString("OutputVariable", flowInpVar );
-	boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowInternal3to1Params (new AMP::Operator::MapOperatorParameters( tmp_db1 ));
+	AMP::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowInternal3to1Params (new AMP::Operator::MapOperatorParameters( tmp_db1 ));
 	mapflowInternal3to1Params->d_MapMesh = (d_flow1DSolver->getOperator())->getMesh();
 	mapflowInternal3to1Params->d_MapComm = mapflowInternal3to1Params->d_MapMesh->getComm();
 	d_flowInternal3to1.reset(new AMP::Operator::Map3Dto1D(mapflowInternal3to1Params) );
 
-	boost::shared_ptr<AMP::InputDatabase> tmp_db2 (new AMP::InputDatabase("Dummy"));
+	AMP::shared_ptr<AMP::InputDatabase> tmp_db2 (new AMP::InputDatabase("Dummy"));
         tmp_db2->putInteger("BoundaryId",4);
         tmp_db2->putString("InputVariable", flowInpVar );
         tmp_db2->putString("OutputVariable", flowOutVar );
-	boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowInternal1to3Params (new AMP::Operator::MapOperatorParameters( tmp_db2 ));
+	AMP::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowInternal1to3Params (new AMP::Operator::MapOperatorParameters( tmp_db2 ));
 	mapflowInternal1to3Params->d_MapMesh = (d_flow1DSolver->getOperator())->getMesh();
 	mapflowInternal1to3Params->d_MapComm = mapflowInternal1to3Params->d_MapMesh->getComm();
 	d_flowInternal1to3.reset(new AMP::Operator::Map1Dto3D(mapflowInternal1to3Params) );
 
-	(boost::dynamic_pointer_cast<AMP::Operator::Map3Dto1D> (d_flowInternal3to1) )->setZLocations( (boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_flowInternal1to3) )->getZLocations());
+	(AMP::dynamic_pointer_cast<AMP::Operator::Map3Dto1D> (d_flowInternal3to1) )->setZLocations( (AMP::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_flowInternal1to3) )->getZLocations());
 
-	int d_numpoints = (boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_flowInternal1to3) )->getNumZlocations();
+	int d_numpoints = (AMP::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_flowInternal1to3) )->getNumZlocations();
         d_SimpleVariable.reset(new AMP::LinearAlgebra::Variable(flowInpVar));
 
 	d_flowInput = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, d_SimpleVariable ); 
@@ -58,13 +58,13 @@ CoupledFlow1DSolver::~CoupledFlow1DSolver()
 }
 
 void
-CoupledFlow1DSolver::setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>   )
+CoupledFlow1DSolver::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector>   )
 {
   
 }
 
 void
-CoupledFlow1DSolver::reset(boost::shared_ptr<SolverStrategyParameters> )
+CoupledFlow1DSolver::reset(AMP::shared_ptr<SolverStrategyParameters> )
 {
 
   if(d_pOperator.get()!=NULL)
@@ -73,7 +73,7 @@ CoupledFlow1DSolver::reset(boost::shared_ptr<SolverStrategyParameters> )
 }
 
 void
-CoupledFlow1DSolver::resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params)
+CoupledFlow1DSolver::resetOperator(const AMP::shared_ptr<AMP::Operator::OperatorParameters> params)
 {
   if(d_pOperator.get()!=NULL)
     {
@@ -82,8 +82,8 @@ CoupledFlow1DSolver::resetOperator(const boost::shared_ptr<AMP::Operator::Operat
 }
 
   void
-CoupledFlow1DSolver::solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
-		          boost::shared_ptr<AMP::LinearAlgebra::Vector>  u)
+CoupledFlow1DSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
+		          AMP::shared_ptr<AMP::LinearAlgebra::Vector>  u)
 {
 	AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
   
@@ -94,8 +94,8 @@ CoupledFlow1DSolver::solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  
     d_Rhs = f->constSubsetVectorForVariable(d_outVariable);
     AMP_ASSERT(d_Rhs->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
 
-    (boost::dynamic_pointer_cast<AMP::Operator::Map3Dto1D> (d_flowInternal3to1))->setVector(d_flowInput);
-    (boost::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_flowInternal1to3))->setVector(d_Sol );
+    (AMP::dynamic_pointer_cast<AMP::Operator::Map3Dto1D> (d_flowInternal3to1))->setVector(d_flowInput);
+    (AMP::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_flowInternal1to3))->setVector(d_Sol );
 
     d_flowInternal3to1->apply(nullVec, d_Rhs, nullVec, -1, 1);
     d_flow1DSolver->solve(d_flowInput, d_flowOutput);

@@ -15,7 +15,7 @@ namespace AMP {
 
         BlockOperator();
 
-        BlockOperator(const boost::shared_ptr<OperatorParameters>& params);
+        BlockOperator(const AMP::shared_ptr<OperatorParameters>& params);
 
         virtual ~BlockOperator() { }
 
@@ -27,9 +27,9 @@ namespace AMP {
 
         bool supportsMatrixFunctions();
 
-        void setBlock(int row, int col, boost::shared_ptr<Operator> op);
+        void setBlock(int row, int col, AMP::shared_ptr<Operator> op);
 
-        void reset(const boost::shared_ptr<OperatorParameters>& params);
+        void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
         void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
             AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
@@ -58,7 +58,7 @@ namespace AMP {
         int d_iNumRowBlocks;
         int d_iNumColumnBlocks;
 
-        std::vector<std::vector<boost::shared_ptr<Operator> > > d_blocks;
+        std::vector<std::vector<AMP::shared_ptr<Operator> > > d_blocks;
 
         std::vector<int> d_firstRowId;
         std::vector<int> d_firstColumnId;

@@ -27,21 +27,21 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
   AMP_INSIST( input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!" );
-  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
-  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
   meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
   AMP_INSIST( input_db->keyExists("testNonlinearMechanicsOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-  boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> testNonlinOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+  AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> testNonlinOperator = 
+    AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "testNonlinearMechanicsOperator", input_db, elementPhysicsModel));
 

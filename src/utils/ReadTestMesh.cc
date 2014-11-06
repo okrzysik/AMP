@@ -9,7 +9,7 @@
 
 namespace AMP {
 
-  void readBinaryTestMesh(std::string mesh_file, boost::shared_ptr< ::Mesh> mesh) {
+  void readBinaryTestMesh(std::string mesh_file, AMP::shared_ptr< ::Mesh> mesh) {
     FILE* fp = fopen(mesh_file.c_str(), "rb");
 
     int num_nodes;
@@ -94,7 +94,7 @@ namespace AMP {
     fclose(fp);
   }
 
-  void readTestMesh(std::string mesh_file, boost::shared_ptr< ::Mesh > mesh) {
+  void readTestMesh(std::string mesh_file, AMP::shared_ptr< ::Mesh > mesh) {
     FILE* fp = fopen(mesh_file.c_str(), "r");
     char str[256];
     int n;
@@ -200,9 +200,9 @@ namespace AMP {
     fclose(fp);
   }
 
-  void readTestMesh(boost::shared_ptr<AMP::InputDatabase> mesh_file_db, 
-      boost::shared_ptr< ::Mesh > mesh) {
-    boost::shared_ptr<AMP::Database> mesh_db = mesh_file_db->getDatabase("Mesh");
+  void readTestMesh(AMP::shared_ptr<AMP::InputDatabase> mesh_file_db, 
+      AMP::shared_ptr< ::Mesh > mesh) {
+    AMP::shared_ptr<AMP::Database> mesh_db = mesh_file_db->getDatabase("Mesh");
     int num_elem = mesh_db->getInteger("NumberOfElements");
     int num_nodes = mesh_db->getInteger("NumberOfNodes");
     int num_boundaryNodeIds = mesh_db->getInteger("NumberOfBoundaryNodeIds");

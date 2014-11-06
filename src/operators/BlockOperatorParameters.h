@@ -4,7 +4,7 @@
 
 #include "operators/OperatorParameters.h"
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP {
   namespace Operator {
@@ -12,12 +12,12 @@ namespace AMP {
     class BlockOperatorParameters : public OperatorParameters {
       public :
 
-        BlockOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
+        BlockOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
           : OperatorParameters(db) { }
 
         virtual ~BlockOperatorParameters() { }
 
-        std::vector<std::vector<boost::shared_ptr<OperatorParameters> > > d_blockParams;
+        std::vector<std::vector<AMP::shared_ptr<OperatorParameters> > > d_blockParams;
     };
 
   }  

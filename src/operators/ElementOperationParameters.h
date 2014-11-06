@@ -2,7 +2,7 @@
 #ifndef included_AMP_ElementOperationParameters
 #define included_AMP_ElementOperationParameters
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 
@@ -23,7 +23,7 @@ namespace Operator {
       /**
         Constructor.
         */
-      ElementOperationParameters(const boost::shared_ptr<AMP::Database> & db)
+      ElementOperationParameters(const AMP::shared_ptr<AMP::Database> & db)
         : d_db(db) { }
 
       /**
@@ -31,7 +31,7 @@ namespace Operator {
         */
       virtual ~ElementOperationParameters() { }
 
-      boost::shared_ptr<AMP::Database> d_db; /**< Database object which needs to be 
+      AMP::shared_ptr<AMP::Database> d_db; /**< Database object which needs to be 
                                                initialized specific to the element operation. */
 
     protected :

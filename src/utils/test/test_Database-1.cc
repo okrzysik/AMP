@@ -23,7 +23,7 @@
 #include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 
 /************************************************************************
@@ -40,10 +40,10 @@ void readInputDatabase(AMP::UnitTest *ut)
     AMP::PIO::logOnlyNodeZero(log_file);
 
     // Create input database and parse all data in input file.
-    boost::shared_ptr<AMP::InputDatabase> input_db ( new AMP::InputDatabase("input_db") );
+    AMP::shared_ptr<AMP::InputDatabase> input_db ( new AMP::InputDatabase("input_db") );
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
 
-    boost::shared_ptr<AMP::Database> tmp_db = input_db->getDatabase("Try");
+    AMP::shared_ptr<AMP::Database> tmp_db = input_db->getDatabase("Try");
     int number = tmp_db->getInteger("number");
 
     if(number>0) {
@@ -69,7 +69,7 @@ void readInputDatabase(AMP::UnitTest *ut)
 template<class DATABASE>
 void testCreateDatabase(AMP::UnitTest *ut)
 {
-    boost::shared_ptr<DATABASE> db ( new DATABASE("database") );
+    AMP::shared_ptr<DATABASE> db ( new DATABASE("database") );
     db->create("database");
 
     int lower[3]={0,0,0}, upper[3]={10,10,10};

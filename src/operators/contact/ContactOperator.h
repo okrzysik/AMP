@@ -23,7 +23,7 @@ namespace AMP {
           Constructor. This resets the matrix shared pointer.
           @param [in] params 
           */
-        ContactOperator (const boost::shared_ptr<ContactOperatorParameters> & params)
+        ContactOperator (const AMP::shared_ptr<ContactOperatorParameters> & params)
           : ConstraintsEliminationOperator(params)
         {
           d_Mesh = (params->d_Mesh);
@@ -79,7 +79,7 @@ namespace AMP {
         std::vector<AMP::Mesh::MeshElementID> d_InactiveSet;
         std::vector<AMP::Mesh::MeshElementID> d_ActiveSet;
 
-        boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> d_MasterMechanicsMaterialModel;
+        AMP::shared_ptr<AMP::Operator::MechanicsMaterialModel> d_MasterMechanicsMaterialModel;
 
       private :
 

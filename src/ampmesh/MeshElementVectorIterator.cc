@@ -16,10 +16,10 @@ MultiVectorIterator::MultiVectorIterator()
 {
     typeID = MultiVectorIteratorTypeID;
     iterator = NULL;
-    d_elements = boost::shared_ptr<std::vector<MeshElement> >();
+    d_elements = AMP::shared_ptr<std::vector<MeshElement> >();
     d_pos = 0;
 }
-MultiVectorIterator::MultiVectorIterator( boost::shared_ptr<std::vector<MeshElement> > elements, size_t pos )
+MultiVectorIterator::MultiVectorIterator( AMP::shared_ptr<std::vector<MeshElement> > elements, size_t pos )
 {
     typeID = MultiVectorIteratorTypeID;
     iterator = NULL;

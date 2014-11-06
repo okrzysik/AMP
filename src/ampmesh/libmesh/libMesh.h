@@ -59,7 +59,7 @@ public:
      * \param mesh The mesh in libmesh we want to use to construct the new mesh object
      * \param name The name of the new mesh object
      */
-    libMesh ( boost::shared_ptr< ::Mesh> mesh, std::string name );
+    libMesh ( AMP::shared_ptr< ::Mesh> mesh, std::string name );
 
     //! Deconstructor
     virtual ~libMesh ();
@@ -183,7 +183,7 @@ public:
 
 
     //! Return the underlying libMesh object
-    inline boost::shared_ptr< ::Mesh> getlibMesh( ) const { return d_libMesh; }
+    inline AMP::shared_ptr< ::Mesh> getlibMesh( ) const { return d_libMesh; }
 
 
 #ifdef USE_AMP_VECTORS
@@ -195,7 +195,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N 
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh ( boost::shared_ptr<const AMP::LinearAlgebra::Vector> x );
+    virtual void displaceMesh ( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x );
 #endif
 
 
@@ -220,26 +220,26 @@ private:
     void initialize( );
 
     // libMesh objects
-    boost::shared_ptr< ::Mesh>          d_libMesh;
+    AMP::shared_ptr< ::Mesh>          d_libMesh;
 
     // Some basic internal data
     std::vector<size_t> n_local, n_global, n_ghost;
-    boost::shared_ptr<initializeLibMesh> libmeshInit;
+    AMP::shared_ptr<initializeLibMesh> libmeshInit;
 
     // Data used to store the node neighbor lists
     std::vector<unsigned int> neighborNodeIDs;
     std::vector< std::vector< ::Node* > > neighborNodes;
 
     // Data used to elements that libmesh doesn't create
-    std::map< GeomType, boost::shared_ptr<std::vector<MeshElement> > >  d_localElements;
-    std::map< GeomType, boost::shared_ptr<std::vector<MeshElement> > >  d_ghostElements;
+    std::map< GeomType, AMP::shared_ptr<std::vector<MeshElement> > >  d_localElements;
+    std::map< GeomType, AMP::shared_ptr<std::vector<MeshElement> > >  d_ghostElements;
 
     // Data used to store the boundary elements
-    std::map< std::pair<int,GeomType>, boost::shared_ptr<std::vector<MeshElement> > >  d_boundarySets;
+    std::map< std::pair<int,GeomType>, AMP::shared_ptr<std::vector<MeshElement> > >  d_boundarySets;
 
     // Data used to store the surface elements
-    std::vector< boost::shared_ptr<std::vector<MeshElement> > >  d_localSurfaceElements;
-    std::vector< boost::shared_ptr<std::vector<MeshElement> > >  d_ghostSurfaceElements;
+    std::vector< AMP::shared_ptr<std::vector<MeshElement> > >  d_localSurfaceElements;
+    std::vector< AMP::shared_ptr<std::vector<MeshElement> > >  d_ghostSurfaceElements;
 
     // Data used to store block info
     std::vector<int> d_block_ids;

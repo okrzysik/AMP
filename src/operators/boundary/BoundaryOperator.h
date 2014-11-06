@@ -13,7 +13,7 @@ class BoundaryOperator : public Operator
 
 public :
 
-    BoundaryOperator (const boost::shared_ptr<OperatorParameters> & params)
+    BoundaryOperator (const AMP::shared_ptr<OperatorParameters> & params)
         : Operator (params) { }
 
     virtual ~BoundaryOperator() { }

@@ -10,7 +10,7 @@ namespace AMP {
 
     class MeshBasedOperator : public Operator {
       public :
-        MeshBasedOperator(const boost::shared_ptr<MeshBasedOperatorParameters> & params)
+        MeshBasedOperator(const AMP::shared_ptr<MeshBasedOperatorParameters> & params)
           : Operator(params) {
             d_Mesh = params->d_Mesh;
           }

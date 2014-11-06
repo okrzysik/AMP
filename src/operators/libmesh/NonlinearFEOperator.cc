@@ -9,7 +9,7 @@ namespace AMP {
 namespace Operator {
 
 
-NonlinearFEOperator :: NonlinearFEOperator(const boost::shared_ptr<FEOperatorParameters>& params)
+NonlinearFEOperator :: NonlinearFEOperator(const AMP::shared_ptr<FEOperatorParameters>& params)
   : Operator(params)
 {
     d_elemOp = (params->d_elemOp);

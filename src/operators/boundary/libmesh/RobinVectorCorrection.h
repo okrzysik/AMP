@@ -42,7 +42,7 @@ namespace Operator {
         conditions. Since it is derived from NeumannVectorCorrection, its constructor
         will be called to read the required parameters.
         */
-      RobinVectorCorrection(const boost::shared_ptr<NeumannVectorCorrectionParameters> & params)
+      RobinVectorCorrection(const AMP::shared_ptr<NeumannVectorCorrectionParameters> & params)
         : NeumannVectorCorrection (params)
       {
           reset(params);
@@ -61,13 +61,13 @@ namespace Operator {
         This function can be used to change the Robin boundary conditions i.e., change the
         RHS flux values.
         */
-      void reset(const boost::shared_ptr<OperatorParameters>& params);
+      void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
       /**
         This function returns a parameter object that can be used to reset the corresponding
         RobinMatrixCorrection operator.
         */
-      boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
+      AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
     protected :
 

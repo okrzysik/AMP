@@ -33,10 +33,10 @@ static double interp_linear(const std::vector<double>& x, const std::vector<doub
 /************************************************************************
 *  Default constructor                                                  *
 ************************************************************************/
-SubchannelToCladGPMap::SubchannelToCladGPMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &p )
+SubchannelToCladGPMap::SubchannelToCladGPMap ( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : SubchannelToCladMap ( p )
 {
-    boost::shared_ptr<SubchannelToCladMapParameters>  params = boost::dynamic_pointer_cast<SubchannelToCladGPMapParameters> ( p );
+    AMP::shared_ptr<SubchannelToCladMapParameters>  params = AMP::dynamic_pointer_cast<SubchannelToCladGPMapParameters> ( p );
     AMP_ASSERT( params );
     int DofsPerObj = params->d_db->getInteger ( "DOFsPerObject" );
     AMP_INSIST(DofsPerObj==4,"SubchannelToCladGPMap is currently only designed for 4 Gp per elem");
@@ -106,10 +106,10 @@ std::vector<SubchannelToCladGPMap::gaussPointZCoord> SubchannelToCladGPMap::getG
         // Create the libmesh element
         libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
         libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
-        boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
-        boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
+        AMP::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
+        AMP::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
         libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
-        boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
+        AMP::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
         d_fe->attach_quadrature_rule( d_qrule.get() );
         d_fe->reinit ( libmeshElements.getElement( ids[i] ));
         // Get the current position and DOF

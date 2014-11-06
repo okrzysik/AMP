@@ -5,7 +5,7 @@
 namespace AMP{
 namespace TimeIntegrator{
 
-BackwardEulerTimeOperator::BackwardEulerTimeOperator(boost::shared_ptr<AMP::Operator::OperatorParameters > params):TimeOperator(params)
+BackwardEulerTimeOperator::BackwardEulerTimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > params):TimeOperator(params)
 {
 }
 
@@ -19,7 +19,7 @@ BackwardEulerTimeOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
   // this routine evaluates a*[ ( M(u)-M(uOld) )/dt-fRhs(u) -source_term] +b*f
   // where the time operator is given by u_t = fRhs(u) 
 
-  boost::shared_ptr<AMP::LinearAlgebra::Vector>  fTmp;
+  AMP::shared_ptr<AMP::LinearAlgebra::Vector>  fTmp;
 
   AMP_INSIST(d_pRhsOperator.get()!=NULL, "ERROR: AMP::TimeIntegrator::TimeIntegrator::TimeOperator::apply, the rhs operator is NULL!");
   

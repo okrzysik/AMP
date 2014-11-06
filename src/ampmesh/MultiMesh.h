@@ -103,7 +103,7 @@ public:
      *    matches the meshID of the mesh, and a null pointer otherwise.
      * \param meshID  MeshID of the desired mesh
      */
-    virtual boost::shared_ptr<Mesh>  Subset( MeshID meshID ) const;
+    virtual AMP::shared_ptr<Mesh>  Subset( MeshID meshID ) const;
 
 
     /**
@@ -114,7 +114,7 @@ public:
      * \param isGlobal  Is the new subset mesh global over the entire mesh (true,default), 
      *                  or do we only want to keep the local mesh (false)
      */
-    virtual boost::shared_ptr<Mesh>  Subset ( const MeshIterator &iterator, bool isGlobal=true ) const;
+    virtual AMP::shared_ptr<Mesh>  Subset ( const MeshIterator &iterator, bool isGlobal=true ) const;
 
 
     /**
@@ -128,7 +128,7 @@ public:
      *    It is strongly recommended to use the meshID when possible.
      * \param name  Name of the desired mesh
      */
-    virtual boost::shared_ptr<Mesh>  Subset ( std::string name ) const;
+    virtual AMP::shared_ptr<Mesh>  Subset ( std::string name ) const;
 
 
     /**
@@ -264,7 +264,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N 
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh ( boost::shared_ptr<const AMP::LinearAlgebra::Vector> x );
+    virtual void displaceMesh ( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x );
 #endif
 
 
@@ -284,7 +284,7 @@ private:
     MultiMesh ( ) {};
 
     //! Function to create the databases for the meshes within the multimesh
-    static std::vector<boost::shared_ptr<AMP::Database> >  createDatabases(boost::shared_ptr<AMP::Database> database);
+    static std::vector<AMP::shared_ptr<AMP::Database> >  createDatabases(AMP::shared_ptr<AMP::Database> database);
 
     //! A list of all meshes in the multimesh
     std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;

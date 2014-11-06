@@ -7,11 +7,11 @@ namespace AMP {
 namespace Operator {
 
 
-AsyncMapOperator::AsyncMapOperator ( const boost::shared_ptr <OperatorParameters> &p )
+AsyncMapOperator::AsyncMapOperator ( const AMP::shared_ptr <OperatorParameters> &p )
     : AsynchronousOperator ( p )
 {
     // Fill some basic info
-    boost::shared_ptr<AsyncMapOperatorParameters> params = boost::dynamic_pointer_cast<AsyncMapOperatorParameters>(p);
+    AMP::shared_ptr<AsyncMapOperatorParameters> params = AMP::dynamic_pointer_cast<AsyncMapOperatorParameters>(p);
     d_MapComm = params->d_MapComm;
     d_mesh1 = params->d_Mesh1;
     d_mesh2 = params->d_Mesh2;
@@ -24,7 +24,7 @@ AsyncMapOperator::AsyncMapOperator ( const boost::shared_ptr <OperatorParameters
         meshes.push_back( d_mesh1 );
     if ( d_mesh2.get() != NULL )
         meshes.push_back( d_mesh2 );
-    d_Mesh = boost::shared_ptr<AMP::Mesh::MultiMesh>(new AMP::Mesh::MultiMesh(d_MapComm,meshes));
+    d_Mesh = AMP::shared_ptr<AMP::Mesh::MultiMesh>(new AMP::Mesh::MultiMesh(d_MapComm,meshes));
     // Get the input variable
     bool var = params->d_db->keyExists("VariableName");
     bool var1 = params->d_db->keyExists("VariableName1");

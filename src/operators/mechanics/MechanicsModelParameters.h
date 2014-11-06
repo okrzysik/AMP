@@ -16,7 +16,7 @@ namespace AMP {
       public :
 
         /** Constructor */
-        MechanicsModelParameters(const boost::shared_ptr<AMP::Database> & db)
+        MechanicsModelParameters(const AMP::shared_ptr<AMP::Database> & db)
           : ElementPhysicsModelParameters(db) { }
 
         /** Destructor */
@@ -24,7 +24,7 @@ namespace AMP {
 
         /** A vector of deformation gradient values, which are required to
          * compute the stress and/or tangent. */
-        boost::shared_ptr<AMP::LinearAlgebra::Vector> d_deformationGradient;
+        AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_deformationGradient;
 
     };
 

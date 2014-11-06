@@ -18,7 +18,7 @@ namespace Operator {
 class CoupledOperator : public ColumnOperator
 {
 public :
-    CoupledOperator(const boost::shared_ptr<OperatorParameters>& params);
+    CoupledOperator(const AMP::shared_ptr<OperatorParameters>& params);
 
     virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
            AMP::LinearAlgebra::Vector::const_shared_ptr u,
@@ -26,24 +26,24 @@ public :
            const double a = -1.0,
            const double b = 1.0);
 
-    boost::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u)
+    AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u)
     {
         return (d_Operators[3]->getJacobianParameters(u));
     }
 
-    boost::shared_ptr<AMP::Operator::Operator> getMapOperator() {
+    AMP::shared_ptr<AMP::Operator::Operator> getMapOperator() {
         return d_Operators[2];
     }
 
-    void setMapOperator( boost::shared_ptr<AMP::Operator::Operator> op ) {
+    void setMapOperator( AMP::shared_ptr<AMP::Operator::Operator> op ) {
         d_Operators[2] = op;
     }
 
-    boost::shared_ptr<AMP::Operator::Operator> getBVPOperator() {
+    AMP::shared_ptr<AMP::Operator::Operator> getBVPOperator() {
         return d_Operators[3];
     }
 
-    void setBVPOperator( boost::shared_ptr<AMP::Operator::Operator> op ) {
+    void setBVPOperator( AMP::shared_ptr<AMP::Operator::Operator> op ) {
         d_Operators[3] = op;
     }
 
@@ -51,13 +51,13 @@ public :
         return d_Operators[3]->getOutputVariable();
     }
 
-    virtual void append(boost::shared_ptr< Operator > op) {
+    virtual void append(AMP::shared_ptr< Operator > op) {
         AMP_ASSERT(d_Operators.size() < 4);
         AMP_ASSERT(op.get() != NULL);
         d_Operators.push_back(op);
     }
 
-    bool isValidInput(boost::shared_ptr<AMP::LinearAlgebra::Vector> &u)
+    bool isValidInput(AMP::shared_ptr<AMP::LinearAlgebra::Vector> &u)
     {
         return d_Operators[3]->isValidInput(u);
     }

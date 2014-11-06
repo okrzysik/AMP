@@ -1,7 +1,7 @@
 #ifndef included_AMP_DOF_ManagerParameters
 #define included_AMP_DOF_ManagerParameters
 
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include "ampmesh/Mesh.h"
 
 namespace AMP {
@@ -20,25 +20,25 @@ class DOFManagerParameters
 {
 public:
 
-    typedef boost::shared_ptr<AMP::Discretization::DOFManagerParameters>  shared_ptr;
+    typedef AMP::shared_ptr<AMP::Discretization::DOFManagerParameters>  shared_ptr;
 
     //! Empty constructor for a DOF manager object
     DOFManagerParameters( );
 
     //! Default constructor for a DOF manager object
-    DOFManagerParameters( boost::shared_ptr<AMP::Mesh::Mesh> mesh );
+    DOFManagerParameters( AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     //! Return the mesh
-    boost::shared_ptr<AMP::Mesh::Mesh> getMesh() { return mesh; }
+    AMP::shared_ptr<AMP::Mesh::Mesh> getMesh() { return mesh; }
 
 
 protected:
 
     //! Pointer to the underlying Mesh (may be NULL)
-    boost::shared_ptr<AMP::Mesh::Mesh>  mesh;
+    AMP::shared_ptr<AMP::Mesh::Mesh>  mesh;
 
     //! Pointer to the underlying VectorSpace (may be NULL)
-    //boost::shared_ptr<AMP::Discretization::VectorSpace>  vectorSpace;
+    //AMP::shared_ptr<AMP::Discretization::VectorSpace>  vectorSpace;
 
 };
 

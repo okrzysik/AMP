@@ -14,7 +14,7 @@ namespace Operator {
     public:
       /** Constructor
         */
-      AsynchronousColumnOperator ( const boost::shared_ptr < OperatorParameters > & );
+      AsynchronousColumnOperator ( const AMP::shared_ptr < OperatorParameters > & );
 
       virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u, 
           AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
@@ -25,7 +25,7 @@ namespace Operator {
       virtual void applyStart(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u, 
              AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
-      virtual void append(boost::shared_ptr< Operator > op);
+      virtual void append(AMP::shared_ptr< Operator > op);
   };
 
 }

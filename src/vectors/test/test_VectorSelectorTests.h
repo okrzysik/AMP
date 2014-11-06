@@ -99,9 +99,9 @@ void test_VS_ByVariableName( AMP::UnitTest *ut )
             pass = false;
         }
     } else {
-        if ( boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(vec2) ) {
+        if ( AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(vec2) ) {
             ut->expected_failure("Subsetting a multivector of multivectors by name is not functional yet");
-        } else if ( boost::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedVector>(vec2) ) {
+        } else if ( AMP::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedVector>(vec2) ) {
             ut->expected_failure("Subsetting a multivector of multivectors by name is not functional yet");
         } else {
             ut->failure ( "Did not find a vector" );

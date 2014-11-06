@@ -23,12 +23,12 @@ void myTest(AMP::UnitTest *ut, std::string input_file) {
     AMP::PIO::logOnlyNodeZero(log_file);
 
     // Read the input file
-    boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
+    AMP::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
     AMP::InputManager::getManager()->parseInputFile ( input_file , input_db );
 
     // Get the Mesh database and create the mesh parameters
-    boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
     params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
 
     // Create the meshes from the input database
@@ -54,7 +54,7 @@ void myTest(AMP::UnitTest *ut, std::string input_file) {
 
     AMP::LinearAlgebra::Variable::shared_ptr scalarVar (new AMP::LinearAlgebra::Variable("scalarVar"));
     AMP::LinearAlgebra::Variable::shared_ptr vectorVar (new AMP::LinearAlgebra::Variable("multiVar"));
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVector>  multiVarVec =  AMP::LinearAlgebra::MultiVector::create( "MultiVec", mesh->getComm() );
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector>  multiVarVec =  AMP::LinearAlgebra::MultiVector::create( "MultiVec", mesh->getComm() );
     multiVarVec->addVector( AMP::LinearAlgebra::createVector( vectorDOFs , vectorVar ) );
     multiVarVec->addVector( AMP::LinearAlgebra::createVector( scalarDOFs , scalarVar ) );
 

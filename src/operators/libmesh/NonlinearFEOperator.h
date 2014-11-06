@@ -25,7 +25,7 @@ class NonlinearFEOperator : public Operator
 public :
 
     //! Constructor. This copies the share pointer to the element operation from the input parameter object.
-    NonlinearFEOperator(const boost::shared_ptr<FEOperatorParameters>& params);
+    NonlinearFEOperator(const AMP::shared_ptr<FEOperatorParameters>& params);
 
     //! Destructor
     virtual ~NonlinearFEOperator();
@@ -84,7 +84,7 @@ protected :
 
     size_t d_currElemIdx;
 
-    boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
+    AMP::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
 
 };
 

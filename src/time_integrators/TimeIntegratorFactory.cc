@@ -39,16 +39,16 @@ TimeIntegratorFactory::~TimeIntegratorFactory()
 {
 }
 
-boost::shared_ptr<TimeIntegrator>
-TimeIntegratorFactory::createTimeIntegrator( boost::shared_ptr<TimeIntegratorParameters > timeIntegratorParameters)
+AMP::shared_ptr<TimeIntegrator>
+TimeIntegratorFactory::createTimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters > timeIntegratorParameters)
 {
   AMP_ASSERT(timeIntegratorParameters.get()!=NULL);
 
-  boost::shared_ptr<TimeIntegrator> timeIntegrator;
+  AMP::shared_ptr<TimeIntegrator> timeIntegrator;
   
   std::string timeIntegratorName = "";
   
-  boost::shared_ptr<AMP::Database> db( timeIntegratorParameters->d_db );
+  AMP::shared_ptr<AMP::Database> db( timeIntegratorParameters->d_db );
 
    if (db->keyExists("timeIntegrator_name")) 
    {

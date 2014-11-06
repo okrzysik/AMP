@@ -17,18 +17,18 @@ NativeThyraVector::NativeThyraVector ( VectorParameters::shared_ptr in_params ):
     ThyraVector(), 
     VectorEngine()
 { 
-    boost::shared_ptr<NativeThyraVectorParameters> params = 
-        boost::dynamic_pointer_cast<NativeThyraVectorParameters>(in_params);
+    AMP::shared_ptr<NativeThyraVectorParameters> params = 
+        AMP::dynamic_pointer_cast<NativeThyraVectorParameters>(in_params);
     AMP_ASSERT(params!=NULL);
     AMP_ASSERT(!params->d_comm.isNull());
     AMP_ASSERT(params->d_InVec.get()!=NULL);
     Thyra::Ordinal dim = params->d_InVec->space()->dim();
     AMP_ASSERT(params->d_comm.sumReduce(params->d_local)==static_cast<size_t>(dim));
-    boost::shared_ptr<CommunicationListParameters> communicationListParams( new CommunicationListParameters() );
+    AMP::shared_ptr<CommunicationListParameters> communicationListParams( new CommunicationListParameters() );
     communicationListParams->d_comm = params->d_comm;
     communicationListParams->d_localsize = params->d_local;
-    d_CommList = boost::shared_ptr<CommunicationList>( new CommunicationList(communicationListParams ) );
-    d_DOFManager = boost::shared_ptr<Discretization::DOFManager>( new Discretization::DOFManager(params->d_local,params->d_comm) );
+    d_CommList = AMP::shared_ptr<CommunicationList>( new CommunicationList(communicationListParams ) );
+    d_DOFManager = AMP::shared_ptr<Discretization::DOFManager>( new Discretization::DOFManager(params->d_local,params->d_comm) );
     d_local = params->d_local;
     d_thyraVec = params->d_InVec;
     d_pVariable = params->d_var;
@@ -48,12 +48,12 @@ NativeThyraVector::~NativeThyraVector ()
 ************************************************************************/
 Vector::shared_ptr NativeThyraVector::cloneVector(const Variable::shared_ptr var ) const 
 { 
-    boost::shared_ptr<NativeThyraVectorParameters> params( new NativeThyraVectorParameters() );
+    AMP::shared_ptr<NativeThyraVectorParameters> params( new NativeThyraVectorParameters() );
     params->d_InVec = d_thyraVec->clone_v();
     params->d_local = d_local;
     params->d_comm = getComm();
     params->d_var = var;
-    return boost::shared_ptr<NativeThyraVector>( new NativeThyraVector(params) );
+    return AMP::shared_ptr<NativeThyraVector>( new NativeThyraVector(params) );
 }
 
 

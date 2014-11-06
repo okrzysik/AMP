@@ -12,7 +12,7 @@ namespace AMP {
     {
       public:
 
-        LinearBoundaryOperatorParameters(const boost::shared_ptr<AMP::Database> & db) : 
+        LinearBoundaryOperatorParameters(const AMP::shared_ptr<AMP::Database> & db) : 
           OperatorParameters(db){}
 
         virtual ~LinearBoundaryOperatorParameters(){}

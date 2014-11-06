@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "libmesh/mesh.h"
 #include "libmesh/mesh_communication.h"
@@ -35,7 +35,7 @@
 void calculateGrad(AMP::UnitTest *ut)
 {
   const unsigned int mesh_dim = 3;
-  boost::shared_ptr< Mesh > mesh(new Mesh(mesh_dim));
+  AMP::shared_ptr< Mesh > mesh(new Mesh(mesh_dim));
 
   AMP::readTestMesh("distortedElementMesh", mesh);
 

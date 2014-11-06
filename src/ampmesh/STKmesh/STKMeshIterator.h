@@ -1,7 +1,7 @@
 #ifndef included_AMP_STKMeshIterators
 #define included_AMP_STKMeshIterators
 
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include "ampmesh/STKmesh/STKMesh.h"
 #include "ampmesh/MeshIterator.h"
 
@@ -12,7 +12,7 @@ namespace Mesh {
 class STKMeshIterator: public MeshIterator {
 public:
 
-    typedef boost::shared_ptr<std::vector<stk::mesh::Entity*> > MeshPtr ;
+    typedef AMP::shared_ptr<std::vector<stk::mesh::Entity*> > MeshPtr ;
 
     //! Empty MeshIterator constructor
     STKMeshIterator();

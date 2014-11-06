@@ -46,7 +46,7 @@ namespace AMP {
           will be ignored if the corresponding variable is not active.
           5) OutputVariable (No default value) - Name of the output variable
           */
-        MechanicsNonlinearFEOperator(const boost::shared_ptr<MechanicsNonlinearFEOperatorParameters>& params);
+        MechanicsNonlinearFEOperator(const AMP::shared_ptr<MechanicsNonlinearFEOperatorParameters>& params);
 
         /**
           Destructor.
@@ -56,13 +56,13 @@ namespace AMP {
         /**
           This is used to update the operator between successive solves with the operator. 
           */
-        void reset(const boost::shared_ptr<OperatorParameters>& );
+        void reset(const AMP::shared_ptr<OperatorParameters>& );
 
         /**
           This is used to compute the information required to reset the corresponding Linear (Jacobian) operator
           */
-        boost::shared_ptr<OperatorParameters> 
-          getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
+        AMP::shared_ptr<OperatorParameters> 
+          getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
         /**
           This function is used to set the reference temperature when using temperature dependent material models.
@@ -99,7 +99,7 @@ namespace AMP {
           */
         void printStressAndStrain(AMP::LinearAlgebra::Vector::shared_ptr u, const std::string & fname);
 
-        boost::shared_ptr<MechanicsMaterialModel> getMaterialModel() { return d_materialModel; }
+        AMP::shared_ptr<MechanicsMaterialModel> getMaterialModel() { return d_materialModel; }
 
       protected :
 
@@ -115,7 +115,7 @@ namespace AMP {
           @param [in] u  input vector
           @param [out] r output vector
           */
-        void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, boost::shared_ptr<AMP::LinearAlgebra::Vector> r);
+        void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::shared_ptr<AMP::LinearAlgebra::Vector> r);
 
         /**
           This function is called at the end of the FE assembly.
@@ -155,11 +155,11 @@ namespace AMP {
 
         std::vector<double> d_elementOutputVector; /**< Element output vector. */
 
-        boost::shared_ptr<MechanicsNonlinearElement> d_mechNonlinElem; /**< Element operation. */
+        AMP::shared_ptr<MechanicsNonlinearElement> d_mechNonlinElem; /**< Element operation. */
 
-        boost::shared_ptr<MechanicsNonlinearUpdatedLagrangianElement> d_mechNULElem; /**< Nonlinear Updated Lagrangian Element operation. */
+        AMP::shared_ptr<MechanicsNonlinearUpdatedLagrangianElement> d_mechNULElem; /**< Nonlinear Updated Lagrangian Element operation. */
 
-        boost::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
+        AMP::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
 
         std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> d_inVec; /**< Input vector. */
 
@@ -187,11 +187,11 @@ namespace AMP {
 
         bool d_isInitialized; /**< A flag that is true if init() has been called and false otherwsie. */
 
-        boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; /**< Input variables. */
+        AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; /**< Input variables. */
 
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output variable */
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output variable */
 
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
+        AMP::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[Mechanics::TOTAL_NUMBER_OF_VARIABLES];
 
         std::vector<AMP::Mesh::MeshElement> d_currNodes; 
 

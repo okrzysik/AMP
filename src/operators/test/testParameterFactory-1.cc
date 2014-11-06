@@ -1,7 +1,7 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -25,7 +25,7 @@ void ParameterFactoryTest(AMP::UnitTest *ut)
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
@@ -33,25 +33,25 @@ void ParameterFactoryTest(AMP::UnitTest *ut)
   std::string mesh_file = input_db->getString("Mesh");
 
   // Create the mesh parameter object
-  boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+  AMP::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
   database->putInteger("dim",3);
   database->putString("MeshName","mesh");
   database->putString("MeshType","libMesh");
   database->putString("FileName",mesh_file);
-  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
   params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
 
   // Create the mesh
   AMP::Mesh::Mesh::shared_ptr  meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
 
   AMP_INSIST(input_db->keyExists("Parameter"), "Key ''Parameter'' is missing!");
-  boost::shared_ptr<AMP::Database> elemOp_db = input_db->getDatabase("Parameter");
-  boost::shared_ptr<AMP::Operator::OperatorParameters> operatorParameters = AMP::Operator::ParameterFactory::createParameter(elemOp_db, meshAdapter);
+  AMP::shared_ptr<AMP::Database> elemOp_db = input_db->getDatabase("Parameter");
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> operatorParameters = AMP::Operator::ParameterFactory::createParameter(elemOp_db, meshAdapter);
 
   if(elemOp_db->getString("name")=="DirichletMatrixCorrection")
     {
       
-      boost::shared_ptr<AMP::Operator::DirichletMatrixCorrectionParameters> operatorParams = boost::dynamic_pointer_cast<AMP::Operator::DirichletMatrixCorrectionParameters>(operatorParameters);
+      AMP::shared_ptr<AMP::Operator::DirichletMatrixCorrectionParameters> operatorParams = AMP::dynamic_pointer_cast<AMP::Operator::DirichletMatrixCorrectionParameters>(operatorParameters);
       
       if(operatorParams.get()!=NULL)
     {

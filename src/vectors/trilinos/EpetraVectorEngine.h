@@ -32,7 +32,7 @@ public:
         * \param[in]  ecomm         An Epetra_MpiComm for constructing the vector on
         * \details  This allows construction of an EpetraVectorEngine from handy Epetra objects
         */
-      EpetraVectorEngineParameters ( size_t local_size , size_t global_size , boost::shared_ptr<Epetra_Map> emap , AMP_MPI ecomm );
+      EpetraVectorEngineParameters ( size_t local_size , size_t global_size , AMP::shared_ptr<Epetra_Map> emap , AMP_MPI ecomm );
 
       /** \brief  Return the Epetra_Map for this engine
         * \return  The Epetra_Map
@@ -60,7 +60,7 @@ private:
       size_t                             d_begin;       // Starting DOF
       size_t                             d_end;         // Ending DOF
       size_t                             d_global;      // Number of global DOFs
-      boost::shared_ptr<Epetra_Map>      d_emap;        // Epetra map
+      AMP::shared_ptr<Epetra_Map>      d_emap;        // Epetra map
       AMP_MPI                            d_comm;        // Comm
 };
 

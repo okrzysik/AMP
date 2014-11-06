@@ -13,10 +13,10 @@ namespace Operator {
     }
   }
 
-  boost::shared_ptr<OperatorParameters> ColumnBoundaryOperator :: 
+  AMP::shared_ptr<OperatorParameters> ColumnBoundaryOperator :: 
     getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u) {
-      boost::shared_ptr<AMP::Database> db;
-      boost::shared_ptr<ColumnBoundaryOperatorParameters> opParameters(new ColumnBoundaryOperatorParameters(db));
+      AMP::shared_ptr<AMP::Database> db;
+      AMP::shared_ptr<ColumnBoundaryOperatorParameters> opParameters(new ColumnBoundaryOperatorParameters(db));
 
       (opParameters->d_OperatorParameters).resize(d_Operators.size());
 
@@ -27,9 +27,9 @@ namespace Operator {
       return opParameters;
     }
 
-  void ColumnBoundaryOperator :: reset(const boost::shared_ptr<OperatorParameters>& params) {
-    boost::shared_ptr<ColumnBoundaryOperatorParameters> columnParameters = 
-      boost::dynamic_pointer_cast<ColumnBoundaryOperatorParameters>(params);
+  void ColumnBoundaryOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params) {
+    AMP::shared_ptr<ColumnBoundaryOperatorParameters> columnParameters = 
+      AMP::dynamic_pointer_cast<ColumnBoundaryOperatorParameters>(params);
 
     AMP_INSIST( (columnParameters.get() != NULL), "ColumnBoundaryOperator::reset parameter object is NULL" );
 
@@ -41,7 +41,7 @@ namespace Operator {
     }
   }
 
-  void ColumnBoundaryOperator :: append(boost::shared_ptr< BoundaryOperator > op) {
+  void ColumnBoundaryOperator :: append(AMP::shared_ptr< BoundaryOperator > op) {
     AMP_INSIST( (op.get() != NULL), "AMP::Operator::ColumnBoundaryOperator::appendRow input argument is a NULL operator");
 
     d_Operators.push_back(op);

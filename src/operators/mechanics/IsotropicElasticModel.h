@@ -4,7 +4,7 @@
 
 #include "MechanicsMaterialModel.h"
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {
@@ -13,7 +13,7 @@ class IsotropicElasticModel : public MechanicsMaterialModel
 {
 public :
 
-    IsotropicElasticModel(const boost::shared_ptr<MechanicsMaterialModelParameters>& );
+    IsotropicElasticModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
 
     virtual ~IsotropicElasticModel() { }
 

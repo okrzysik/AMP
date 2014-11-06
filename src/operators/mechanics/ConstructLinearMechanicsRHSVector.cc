@@ -2,10 +2,10 @@
 #include "ConstructLinearMechanicsRHSVector.h"
 #include "libmesh/cell_hex8.h"
 
-void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh, boost::shared_ptr<AMP::Database> input_db,  
+void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh, AMP::shared_ptr<AMP::Database> input_db,  
     AMP::LinearAlgebra::Variable::shared_ptr temperatureVar, AMP::LinearAlgebra::Variable::shared_ptr displacementVar,
-    const boost::shared_ptr<AMP::LinearAlgebra::Vector> &currTemperatureVec,
-    const boost::shared_ptr<AMP::LinearAlgebra::Vector> &prevTemperatureVec,
+    const AMP::shared_ptr<AMP::LinearAlgebra::Vector> &currTemperatureVec,
+    const AMP::shared_ptr<AMP::LinearAlgebra::Vector> &prevTemperatureVec,
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec) {
   currTemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
   prevTemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
@@ -13,12 +13,12 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh, boost::share
   AMP::LinearAlgebra::Vector::shared_ptr rInternal = rhsVec->subsetVectorForVariable(displacementVar);
   rInternal->zero();
 
-  boost::shared_ptr<AMP::Database> elementRhsDatabase = input_db->getDatabase("RhsElements");
-  boost::shared_ptr<AMP::Database> materialModelDatabase = input_db->getDatabase("RhsMaterialModel");
+  AMP::shared_ptr<AMP::Database> elementRhsDatabase = input_db->getDatabase("RhsElements");
+  AMP::shared_ptr<AMP::Database> materialModelDatabase = input_db->getDatabase("RhsMaterialModel");
 
-  boost::shared_ptr < ::FEType > feType;
-  boost::shared_ptr < ::FEBase > fe;
-  boost::shared_ptr < ::QBase > qrule;
+  AMP::shared_ptr < ::FEType > feType;
+  AMP::shared_ptr < ::FEBase > fe;
+  AMP::shared_ptr < ::QBase > qrule;
 
   std::string feTypeOrderName = elementRhsDatabase->getStringWithDefault("FE_ORDER", "FIRST");
   libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
@@ -49,7 +49,7 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh, boost::share
   const std::vector<std::vector<RealGradient> > & dphi = (fe->get_dphi());
   const std::vector<std::vector<Real> > & phi = (fe->get_phi());
 
-  boost::shared_ptr<AMP::Materials::Material> material;
+  AMP::shared_ptr<AMP::Materials::Material> material;
   double youngsModulus = 1.0e10, poissonsRatio = 0.33, thermalExpansionCoefficient = 2.0e-6;
   double default_BURNUP, default_OXYGEN_CONCENTRATION;
 
@@ -136,15 +136,15 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh, boost::share
       }//end k
 
       if(useMaterialsLibrary == true) {
-        std::map<std::string, boost::shared_ptr<std::vector<double> > > inputMaterialParameters;
+        std::map<std::string, AMP::shared_ptr<std::vector<double> > > inputMaterialParameters;
 
         std::string temperatureString = "temperature"; // in the future get from input file
         std::string burnupString = "burnup"; // in the future get from input file
         std::string oxygenString = "concentration"; // in the future get from input file
 
-        boost::shared_ptr<std::vector<double> > tempVec(new std::vector<double> );      
-        boost::shared_ptr<std::vector<double> > burnupVec(new std::vector<double> );      
-        boost::shared_ptr<std::vector<double> > oxygenVec(new std::vector<double> );      
+        AMP::shared_ptr<std::vector<double> > tempVec(new std::vector<double> );      
+        AMP::shared_ptr<std::vector<double> > burnupVec(new std::vector<double> );      
+        AMP::shared_ptr<std::vector<double> > oxygenVec(new std::vector<double> );      
 
         inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec) ); 
         inputMaterialParameters.insert( std::make_pair( burnupString, burnupVec) );

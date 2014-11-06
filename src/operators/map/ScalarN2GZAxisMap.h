@@ -41,7 +41,7 @@ public:
     /** \brief   Standard constructor
      * \param[in] params  Input parameters
      */
-    ScalarN2GZAxisMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &params );
+    ScalarN2GZAxisMap ( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &params );
 
     //! Destructor
     virtual ~ScalarN2GZAxisMap ();

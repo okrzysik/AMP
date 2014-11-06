@@ -109,7 +109,7 @@ class TrilinosMLSolver: public SolverStrategy {
 
       26. name: null_space_add_default_vectors, type: bool, (optional), default value: true
       */
-      TrilinosMLSolver(boost::shared_ptr<TrilinosMLSolverParameters> parameters);
+      TrilinosMLSolver(AMP::shared_ptr<TrilinosMLSolverParameters> parameters);
 
     /**
      * Default destructor
@@ -121,13 +121,13 @@ class TrilinosMLSolver: public SolverStrategy {
      @param [in] f : shared pointer to right hand side vector
      @param [out] u : shared pointer to approximate computed solution 
      */
-    void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-        boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
+    void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u);
 
     /**
      * Return a shared pointer to the ML_Epetra::MultiLevelPreconditioner object
      */
-    inline const boost::shared_ptr<ML_Epetra::MultiLevelPreconditioner> getMLSolver(void){ return d_mlSolver; }
+    inline const AMP::shared_ptr<ML_Epetra::MultiLevelPreconditioner> getMLSolver(void){ return d_mlSolver; }
 
     /**
      * Initialize the solution vector and potentially create internal vectors needed for solution
@@ -136,20 +136,20 @@ class TrilinosMLSolver: public SolverStrategy {
      This routine assumes that a non-NULL operator of type LinearOperator has been registered with the solver.
      The LinearOperator currently is assumed to contain a pointer to an EpetraMatrix object.
      */
-    void initialize(boost::shared_ptr<SolverStrategyParameters> const parameters);
+    void initialize(AMP::shared_ptr<SolverStrategyParameters> const parameters);
 
     /**
      * Register the operator that the solver will use during solves
      @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$ 
      */
-    void registerOperator(const boost::shared_ptr<AMP::Operator::Operator> op);
+    void registerOperator(const AMP::shared_ptr<AMP::Operator::Operator> op);
 
     /**
      * Resets the associated operator internally with new parameters if necessary
      * @param [in] params
      *        OperatorParameters object that is NULL by default
      */
-    void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params);
+    void resetOperator(const AMP::shared_ptr<AMP::Operator::OperatorParameters> params);
 
     /**
      * Resets the solver internally with new parameters if necessary
@@ -159,21 +159,21 @@ class TrilinosMLSolver: public SolverStrategy {
      * and recreates it based on the parameters object. See constructor for
      * fields required for parameter object.
      */
-    void reset(boost::shared_ptr<SolverStrategyParameters> params);
+    void reset(AMP::shared_ptr<SolverStrategyParameters> params);
 
   protected:
 
-    void reSolveWithLU(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-        boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
+    void reSolveWithLU(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u);
 
-    void getFromInput(const boost::shared_ptr<AMP::Database>& db);
+    void getFromInput(const AMP::shared_ptr<AMP::Database>& db);
 
     void convertMLoptionsToTeuchosParameterList();
 
     void buildML();
 
-    void computeCoordinates(  const boost::shared_ptr<AMP::Operator::Operator> op );
-    void computeNullSpace(    const boost::shared_ptr<AMP::Operator::Operator> op );
+    void computeCoordinates(  const AMP::shared_ptr<AMP::Operator::Operator> op );
+    void computeNullSpace(    const AMP::shared_ptr<AMP::Operator::Operator> op );
 
   private:
 
@@ -190,10 +190,10 @@ class TrilinosMLSolver: public SolverStrategy {
     double d_dAbsoluteTolerance;
     double d_dDivergenceTolerance;
 
-    boost::shared_ptr<MLoptions> d_mlOptions; 
+    AMP::shared_ptr<MLoptions> d_mlOptions; 
 
-    boost::shared_ptr<ML_Epetra::MultiLevelPreconditioner> d_mlSolver;
-    boost::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> d_matrix;
+    AMP::shared_ptr<ML_Epetra::MultiLevelPreconditioner> d_mlSolver;
+    AMP::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> d_matrix;
     Teuchos::ParameterList d_MLParameterList;
 
     std::vector<double> d_x_values;

@@ -3,7 +3,7 @@
 #include "utils/Utilities.h"
 #include <string>
 #include "utils/AMPManager.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
@@ -28,8 +28,8 @@ void test_with_shape(AMP::UnitTest *ut )
 //  Read Input File.
 //--------------------------------------------------
 
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
-    boost::shared_ptr<AMP::Database> mesh_db = input_db->putDatabase("Mesh");
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::shared_ptr<AMP::Database> mesh_db = input_db->putDatabase("Mesh");
     mesh_db->putString("FileName","cylinder270.e");
     mesh_db->putString("MeshType","libMesh");
     mesh_db->putString("MeshName","fuel");
@@ -40,14 +40,14 @@ void test_with_shape(AMP::UnitTest *ut )
 //--------------------------------------------------
 //   Create the Mesh.
 //--------------------------------------------------
-    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
     mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 
 //--------------------------------------------------
 //  Construct PowerShape for a radial only term.
 //--------------------------------------------------
-    boost::shared_ptr<AMP::Database> shape_db = input_db->putDatabase("shape_db");
+    AMP::shared_ptr<AMP::Database> shape_db = input_db->putDatabase("shape_db");
     shape_db->putString("coordinateSystem","cylindrical");
     shape_db->putString("type","zernikeRadial");
     shape_db->putInteger("print_info_level",1);
@@ -73,9 +73,9 @@ void test_with_shape(AMP::UnitTest *ut )
         moments[nMoments-1] = -1.;
         shape_db->putDoubleArray("Moments", moments);
       } 
-      boost::shared_ptr<AMP::Operator::PowerShapeParameters> shape_params(new AMP::Operator::PowerShapeParameters( shape_db ));
+      AMP::shared_ptr<AMP::Operator::PowerShapeParameters> shape_params(new AMP::Operator::PowerShapeParameters( shape_db ));
       shape_params->d_Mesh = meshAdapter;
-      boost::shared_ptr<AMP::Operator::PowerShape> shape(new AMP::Operator::PowerShape( shape_params ));
+      AMP::shared_ptr<AMP::Operator::PowerShape> shape(new AMP::Operator::PowerShape( shape_params ));
     
       // Create a shared pointer to a Variable - Power - Output because it will be used in the "residual" location of apply. 
       AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerShapeVar(new AMP::LinearAlgebra::Variable("SpecificPowerInWattsPerKg"));
@@ -129,9 +129,9 @@ void test_with_shape(AMP::UnitTest *ut )
         moments[i-1] = -1.;
         shape_db->putDoubleArray("Moments", moments);
       } 
-      boost::shared_ptr<AMP::Operator::PowerShapeParameters> shape_params(new AMP::Operator::PowerShapeParameters( shape_db ));
+      AMP::shared_ptr<AMP::Operator::PowerShapeParameters> shape_params(new AMP::Operator::PowerShapeParameters( shape_db ));
       shape_params->d_Mesh = meshAdapter;
-      boost::shared_ptr<AMP::Operator::PowerShape> shape(new AMP::Operator::PowerShape( shape_params ));
+      AMP::shared_ptr<AMP::Operator::PowerShape> shape(new AMP::Operator::PowerShape( shape_params ));
       AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerShapeVar(new AMP::LinearAlgebra::Variable("SpecificPowerShape") );
     
       // Create a vector associated with the Variable.

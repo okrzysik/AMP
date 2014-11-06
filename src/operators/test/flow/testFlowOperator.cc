@@ -3,7 +3,7 @@
 #include "utils/Utilities.h"
 #include <string>
 #include "materials/Material.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
@@ -33,7 +33,7 @@ void adjust(const AMP::LinearAlgebra::Vector::shared_ptr vec,
 }
 
 void applyTest(AMP::UnitTest *ut, std::string msgPrefix,
-    boost::shared_ptr<AMP::Operator::Operator> &testOperator,
+    AMP::shared_ptr<AMP::Operator::Operator> &testOperator,
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec, AMP::LinearAlgebra::Vector::shared_ptr solVec,
     AMP::LinearAlgebra::Vector::shared_ptr resVec, AMP::LinearAlgebra::Vector::shared_ptr workVec)
 {
@@ -188,9 +188,9 @@ void flowTest(AMP::UnitTest *ut )
   
 
   // Construct a smart pointer to a new database.
-  //  #include "boost/shared_ptr.hpp"
+  //  #include "utils/shared_ptr.h"
   //  #include "utils/InputDatabase.h"
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
 
   // Fill the database from the input file.
   //  #include "utils/InputManager.h"
@@ -202,8 +202,8 @@ void flowTest(AMP::UnitTest *ut )
   AMP::PIO::logAllNodes(log_file);
 
   // Get the Mesh database and create the mesh parameters
-  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
   params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
 
   // Create the meshes from the input database
@@ -218,8 +218,8 @@ void flowTest(AMP::UnitTest *ut )
 
   AMP_INSIST(input_db->keyExists("FlowFrapconOperator"), "Key ''FlowFrapconOperator'' is missing!");
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
-  boost::shared_ptr<AMP::Operator::FlowFrapconOperator> flowOperator = boost::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "FlowFrapconOperator", input_db, flowtransportModel ));
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
+  AMP::shared_ptr<AMP::Operator::FlowFrapconOperator> flowOperator = AMP::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "FlowFrapconOperator", input_db, flowtransportModel ));
 
   AMP::LinearAlgebra::Variable::shared_ptr   inputVariable  =  flowOperator->getInputVariable() ;
   AMP::LinearAlgebra::Variable::shared_ptr   outputVariable =  flowOperator->getOutputVariable() ;
@@ -236,7 +236,7 @@ void flowTest(AMP::UnitTest *ut )
 
   ut->passes(exeName +  ": create");
 
-  boost::shared_ptr<AMP::Operator::Operator> testOperator = boost::dynamic_pointer_cast<AMP::Operator::Operator>(flowOperator);
+  AMP::shared_ptr<AMP::Operator::Operator> testOperator = AMP::dynamic_pointer_cast<AMP::Operator::Operator>(flowOperator);
 //  flowOperator->apply(nullVec, TemperatureInKelvinVec, flowOutputVec, 1., 0.);
 
   // test apply

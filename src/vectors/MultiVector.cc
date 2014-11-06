@@ -22,66 +22,66 @@ MultiVector::MultiVector ( const std::string& name )
     d_pVariable.reset( new MultiVariable( name ) );
     d_CommCreated = false;
 }
-boost::shared_ptr<MultiVector>  MultiVector::create( Variable::shared_ptr variable, AMP_MPI comm, 
+AMP::shared_ptr<MultiVector>  MultiVector::create( Variable::shared_ptr variable, AMP_MPI comm, 
     const std::vector<Vector::shared_ptr>& vecs )
 {
-    boost::shared_ptr<MultiVector>  retval( new MultiVector(variable->getName()) );
+    AMP::shared_ptr<MultiVector>  retval( new MultiVector(variable->getName()) );
     retval->d_Comm = comm;
     retval->addVector(vecs);
     return retval;
 }
-boost::shared_ptr<MultiVector>  MultiVector::create( const std::string &name, AMP_MPI comm,
+AMP::shared_ptr<MultiVector>  MultiVector::create( const std::string &name, AMP_MPI comm,
     const std::vector<Vector::shared_ptr>& vecs )
 {
     Variable::shared_ptr  variable( new Variable( name ) );
     return MultiVector::create( variable, comm, vecs );
 }
-boost::shared_ptr<const MultiVector>  MultiVector::const_create( Variable::shared_ptr variable, AMP_MPI comm, 
+AMP::shared_ptr<const MultiVector>  MultiVector::const_create( Variable::shared_ptr variable, AMP_MPI comm, 
     const std::vector<Vector::const_shared_ptr>& vecs )
 {
     std::vector<Vector::shared_ptr> vecs2(vecs.size());
     for (size_t i=0; i<vecs.size(); i++)
-        vecs2[i] = boost::const_pointer_cast<Vector>(vecs[i]);
+        vecs2[i] = AMP::const_pointer_cast<Vector>(vecs[i]);
     return MultiVector::create( variable, comm, vecs2 );
 }
-boost::shared_ptr<const MultiVector>  MultiVector::const_create( const std::string &name, AMP_MPI comm,
+AMP::shared_ptr<const MultiVector>  MultiVector::const_create( const std::string &name, AMP_MPI comm,
     const std::vector<Vector::const_shared_ptr>& vecs )
 {
     Variable::shared_ptr  variable( new Variable( name ) );
     std::vector<Vector::shared_ptr> vecs2(vecs.size());
     for (size_t i=0; i<vecs.size(); i++)
-        vecs2[i] = boost::const_pointer_cast<Vector>(vecs[i]);
+        vecs2[i] = AMP::const_pointer_cast<Vector>(vecs[i]);
     return MultiVector::create( variable, comm, vecs2 );
 }
-boost::shared_ptr<MultiVector>  MultiVector::encapsulate ( Vector::shared_ptr &vec, AMP_MPI comm )
+AMP::shared_ptr<MultiVector>  MultiVector::encapsulate ( Vector::shared_ptr &vec, AMP_MPI comm )
 {
     if ( vec->isA<MultiVector>() ) {
         if ( !comm.isNull() )
             AMP_ASSERT( comm.compare(vec->getComm()) != 0 );
-        return boost::dynamic_pointer_cast<MultiVector>( vec );
+        return AMP::dynamic_pointer_cast<MultiVector>( vec );
     }
     if ( comm.isNull() )
         comm = vec->getComm();
-    boost::shared_ptr<MultiVector>  retval = create( vec->getVariable()->getName(), comm, std::vector<Vector::shared_ptr>(1,vec) );
+    AMP::shared_ptr<MultiVector>  retval = create( vec->getVariable()->getName(), comm, std::vector<Vector::shared_ptr>(1,vec) );
     if ( vec->isA<DataChangeFirer>() )
         vec->castTo<DataChangeFirer>().registerListener ( &(retval->castTo<DataChangeListener>()) );
     return retval;
 }
-boost::shared_ptr<MultiVector>  MultiVector::view ( Vector::shared_ptr &vec, AMP_MPI comm )
+AMP::shared_ptr<MultiVector>  MultiVector::view ( Vector::shared_ptr &vec, AMP_MPI comm )
 {
-    boost::shared_ptr<MultiVector>  retval;
+    AMP::shared_ptr<MultiVector>  retval;
     // Check to see if this is a multivector
     if ( vec->isA<MultiVector>() ) {
         if ( !comm.isNull() )
             AMP_ASSERT( comm.compare(vec->getComm()) != 0 );
-        retval = boost::dynamic_pointer_cast<MultiVector>( vec );
+        retval = AMP::dynamic_pointer_cast<MultiVector>( vec );
     }
     // Check to see if the engine is a multivector
     if ( vec->isA<ManagedVector>() ) {
         if ( vec->castTo<ManagedVector>().getVectorEngine()->isA<MultiVector>() ) {
             if ( !comm.isNull() )
                 AMP_ASSERT( comm.compare(vec->getComm()) != 0 );
-            retval = boost::dynamic_pointer_cast<MultiVector> ( vec->castTo<ManagedVector>().getVectorEngine() );
+            retval = AMP::dynamic_pointer_cast<MultiVector> ( vec->castTo<ManagedVector>().getVectorEngine() );
         }
     }
     // If still don't have a multivector, make one
@@ -92,21 +92,21 @@ boost::shared_ptr<MultiVector>  MultiVector::view ( Vector::shared_ptr &vec, AMP
     }
     return retval;
 }
-boost::shared_ptr<const MultiVector>  MultiVector::view ( Vector::const_shared_ptr &vec, AMP_MPI comm )
+AMP::shared_ptr<const MultiVector>  MultiVector::view ( Vector::const_shared_ptr &vec, AMP_MPI comm )
 {
-    boost::shared_ptr<const MultiVector>  retval;
+    AMP::shared_ptr<const MultiVector>  retval;
     // Check to see if this is a multivector
     if ( vec->isA<const MultiVector>() ) {
         if ( !comm.isNull() )
             AMP_ASSERT( comm.compare(vec->getComm()) != 0 );
-        retval = boost::dynamic_pointer_cast<const MultiVector>( vec );
+        retval = AMP::dynamic_pointer_cast<const MultiVector>( vec );
     }
     // Check to see if the engine is a multivector
     if ( vec->isA<const ManagedVector>() ) {
         if ( vec->castTo<const ManagedVector>().getVectorEngine()->isA<const MultiVector>() ) {
             if ( !comm.isNull() )
                 AMP_ASSERT( comm.compare(vec->getComm()) != 0 );
-            retval = boost::dynamic_pointer_cast<const MultiVector>( vec->castTo<const ManagedVector>().getVectorEngine() );
+            retval = AMP::dynamic_pointer_cast<const MultiVector>( vec->castTo<const ManagedVector>().getVectorEngine() );
         }
     }
     // If still don't have a multivector, make one
@@ -131,12 +131,12 @@ void MultiVector::addVector ( std::vector<Vector::shared_ptr> v )
     // Add the vectors
     for (size_t i=0; i<v.size(); i++) {
         if ( v[i].get() != NULL ) {
-            boost::shared_ptr<MultiVector> vec;
+            AMP::shared_ptr<MultiVector> vec;
             if ( v[i]->isA<MultiVector>() ) {
-                vec = boost::dynamic_pointer_cast<MultiVector>( v[i] );
+                vec = AMP::dynamic_pointer_cast<MultiVector>( v[i] );
             } else if ( v[i]->isA<ManagedVector>() ) {
                 if ( v[i]->castTo<ManagedVector>().getVectorEngine()->isA<MultiVector>() ) {
-                    vec = boost::dynamic_pointer_cast<MultiVector> ( v[i]->castTo<ManagedVector>().getVectorEngine() );
+                    vec = AMP::dynamic_pointer_cast<MultiVector> ( v[i]->castTo<ManagedVector>().getVectorEngine() );
                 }
             }
             if ( vec.get() != NULL ) {
@@ -154,7 +154,7 @@ void MultiVector::addVector ( std::vector<Vector::shared_ptr> v )
                 }
             }
             // Append the variable if we have a multivariable
-            boost::shared_ptr<MultiVariable> multiVar = boost::dynamic_pointer_cast<MultiVariable>(d_pVariable);
+            AMP::shared_ptr<MultiVariable> multiVar = AMP::dynamic_pointer_cast<MultiVariable>(d_pVariable);
             if ( multiVar!=NULL )
                 multiVar->add( v[i]->getVariable() );
         }
@@ -211,7 +211,7 @@ Vector::shared_ptr MultiVector::selectInto ( const VectorSelector &s )
     for (size_t i=0; i!=d_vVectors.size(); i++) {
         // Subset the individual vector
         Vector::shared_ptr  retVec2 = d_vVectors[i]->selectInto(s);
-        AMP_ASSERT(boost::dynamic_pointer_cast<MultiVector>(retVec2)==NULL);
+        AMP_ASSERT(AMP::dynamic_pointer_cast<MultiVector>(retVec2)==NULL);
         if ( retVec2 != NULL ) {
             if ( retVec2->getDOFManager()->numGlobalDOF() > 0 )
                 subvectors.push_back( retVec2 );
@@ -219,7 +219,7 @@ Vector::shared_ptr MultiVector::selectInto ( const VectorSelector &s )
     }
     // Add the subsets to the multivector
     AMP_MPI comm = s.communicator( shared_from_this() );
-    boost::shared_ptr<MultiVector>  retVec = MultiVector::create( "tmp_vector", comm, subvectors );
+    AMP::shared_ptr<MultiVector>  retVec = MultiVector::create( "tmp_vector", comm, subvectors );
     if ( retVec->getDOFManager()->numGlobalDOF() == 0 )
         retVec.reset();
     return retVec;
@@ -231,7 +231,7 @@ Vector::const_shared_ptr MultiVector::selectInto ( const VectorSelector &s ) con
     for (size_t i=0; i!=d_vVectors.size(); i++) {
         // Subset the individual vector
         Vector::const_shared_ptr  retVec2 = d_vVectors[i]->selectInto(s);
-        AMP_ASSERT(boost::dynamic_pointer_cast<const MultiVector>(retVec2)==NULL);
+        AMP_ASSERT(AMP::dynamic_pointer_cast<const MultiVector>(retVec2)==NULL);
         if ( retVec2 != NULL ) {
             if ( retVec2->getDOFManager()->numGlobalDOF() > 0 )
                 subvectors.push_back( retVec2 );
@@ -239,7 +239,7 @@ Vector::const_shared_ptr MultiVector::selectInto ( const VectorSelector &s ) con
     }
     // Add the subsets to the multivector
     AMP_MPI comm = s.communicator( shared_from_this() );
-    boost::shared_ptr<const MultiVector>  retVec = MultiVector::const_create( "tmp_vector", comm, subvectors );
+    AMP::shared_ptr<const MultiVector>  retVec = MultiVector::const_create( "tmp_vector", comm, subvectors );
     if ( retVec->getDOFManager()->numGlobalDOF() == 0 )
         retVec.reset();
     return retVec;
@@ -594,7 +594,7 @@ Vector::shared_ptr  MultiVector::subsetVectorForVariable ( const Variable::share
     // If no vectors were found, check if the variable is actually a multivariable and subset on it
     const AMP_MPI &comm = getComm();
     if ( comm.sumReduce(subvectors.size())==0 ) {
-        boost::shared_ptr<MultiVariable> multivariable = boost::dynamic_pointer_cast<MultiVariable>(name);
+        AMP::shared_ptr<MultiVariable> multivariable = AMP::dynamic_pointer_cast<MultiVariable>(name);
         if ( multivariable.get() != NULL ) {
             bool all_found = true;
             std::vector<Vector::shared_ptr> sub_subvectors(multivariable->numVariables());
@@ -617,7 +617,7 @@ Vector::shared_ptr  MultiVector::subsetVectorForVariable ( const Variable::share
     int N_procs = comm.sumReduce<int>(subvectors.empty()?0:1);
     if ( N_procs==0 )
         return Vector::shared_ptr();
-    boost::shared_ptr<MultiVector> retVal;
+    AMP::shared_ptr<MultiVector> retVal;
     if ( N_procs == comm.getSize() ) {
         // All processor have a variable
         retVal = create ( name, getComm() );
@@ -681,7 +681,7 @@ void MultiVector::setUpdateStatus ( UpdateState state )
 
 void MultiVector::copyVector( Vector::const_shared_ptr src )
 {
-    boost::shared_ptr<const MultiVector> rhs = boost::dynamic_pointer_cast<const MultiVector>(src);
+    AMP::shared_ptr<const MultiVector> rhs = AMP::dynamic_pointer_cast<const MultiVector>(src);
     if ( rhs.get()!=NULL ) {
         // We are dealing with 2 multivectors
         AMP_ASSERT(rhs->d_vVectors.size()==d_vVectors.size());
@@ -737,14 +737,14 @@ void                     MultiVector::swapEngines ( VectorEngine::shared_ptr p )
 
 VectorEngine::shared_ptr MultiVector::cloneEngine ( VectorEngine::BufferPtr  ) const
 {
-    return boost::dynamic_pointer_cast<VectorEngine> ( Vector::cloneVector ( "engine_clone" ) );
+    return AMP::dynamic_pointer_cast<VectorEngine> ( Vector::cloneVector ( "engine_clone" ) );
 }
 
 
 
 Vector::shared_ptr MultiVector::cloneVector(const Variable::shared_ptr name) const
 {
-    boost::shared_ptr<MultiVector> retVec( new MultiVector( name->getName() ) );
+    AMP::shared_ptr<MultiVector> retVec( new MultiVector( name->getName() ) );
     retVec->d_Comm = d_Comm;
     retVec->d_DOFManager = d_DOFManager;
     retVec->d_CommList = d_CommList;

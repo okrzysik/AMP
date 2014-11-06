@@ -25,14 +25,14 @@ void testSubchannelHelpers( AMP::UnitTest* ut, std::string input_file ) {
     const double pi = 3.1415926535897932;
 
     // Read the input file
-    boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
+    AMP::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
     AMP::InputManager::getManager()->parseInputFile ( input_file , input_db );
     input_db->printClassData(AMP::plog);
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
-    boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(database));
+    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(database));
     meshParams->setComm(globalComm);
 
     // Get the meshes and clad properties
@@ -108,9 +108,9 @@ void testSubchannelHelpers( AMP::UnitTest* ut, std::string input_file ) {
         ut->failure("Flat shape gives correct flux");
 
     // Test getHeatFluxClad
-    boost::shared_ptr<AMP::Database> subchannel_db = input_db->getDatabase("SubchannelPhysicsModel");
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( new AMP::Operator::ElementPhysicsModelParameters(subchannel_db));
-    boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel>  subchannelPhysicsModel (new AMP::Operator::SubchannelPhysicsModel(params));
+    AMP::shared_ptr<AMP::Database> subchannel_db = input_db->getDatabase("SubchannelPhysicsModel");
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( new AMP::Operator::ElementPhysicsModelParameters(subchannel_db));
+    AMP::shared_ptr<AMP::Operator::SubchannelPhysicsModel>  subchannelPhysicsModel (new AMP::Operator::SubchannelPhysicsModel(params));
     double reynolds = subchannel_db->getDatabase("Defaults")->getDouble("reynolds");
     double prandtl  = subchannel_db->getDatabase("Defaults")->getDouble("prandtl");
     AMP::LinearAlgebra::Vector::shared_ptr flowVec, cladTemp;
@@ -128,7 +128,7 @@ void testSubchannelHelpers( AMP::UnitTest* ut, std::string input_file ) {
         double clad_temp = 632;
         double flow_temp = 570;
         double pressure = 1.6e7;
-        std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
+        std::map<std::string, AMP::shared_ptr<std::vector<double> > > enthalpyArgMap;
         enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,flow_temp)));
         enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,pressure)));
         std::vector<double> enthalpyResult(1);

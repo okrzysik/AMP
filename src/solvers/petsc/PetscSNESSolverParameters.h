@@ -1,7 +1,7 @@
 #ifndef included_AMP_PetscSNESSolverParameters
 #define included_AMP_PetscSNESSolverParameters
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/Database.h"
 #include "utils/AMP_MPI.h"
 #include "solvers/SolverStrategyParameters.h"
@@ -46,13 +46,13 @@ namespace Solver {
   class PetscSNESSolverParameters: public SolverStrategyParameters{
   public:
     PetscSNESSolverParameters(){}
-    PetscSNESSolverParameters(const boost::shared_ptr<AMP::Database> &db);
+    PetscSNESSolverParameters(const AMP::shared_ptr<AMP::Database> &db);
     virtual ~PetscSNESSolverParameters(){}
 
     AMP_MPI d_comm;
 
-    boost::shared_ptr<PetscKrylovSolver> d_pKrylovSolver;
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pInitialGuess;
+    AMP::shared_ptr<PetscKrylovSolver> d_pKrylovSolver;
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pInitialGuess;
 
   protected:
   private:

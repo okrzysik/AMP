@@ -3,7 +3,7 @@
 #include "utils/UnitTest.h"
 #include "utils/AMP_MPI.h"
 #include "materials/Material.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
@@ -37,16 +37,16 @@ void LinearTimeOperatorTest(AMP::UnitTest *ut )
     
     AMP::PIO::logOnlyNodeZero(log_file);
     
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
     input_db->printClassData(AMP::plog);
     
     AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
     mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
     
     //--------------------------------------------------
     // Create a DOF manager for a nodal vector 
@@ -59,9 +59,9 @@ void LinearTimeOperatorTest(AMP::UnitTest *ut )
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a linear BVP operator
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
 
-    boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
                                                                                                AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 																	      "LinearOperator",
 																	      input_db,
@@ -69,8 +69,8 @@ void LinearTimeOperatorTest(AMP::UnitTest *ut )
 
     // ---------------------------------------------------------------------------------------
     // create a mass linear BVP operator
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
-    boost::shared_ptr<AMP::Operator::LinearBVPOperator> massOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
+    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> massOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
                                                                                                AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 																	      "MassLinearOperator",
 																	      input_db,

@@ -9,7 +9,7 @@ namespace AMP {
   namespace Operator {
     class MeshBasedOperatorParameters : public OperatorParameters {
       public:
-        MeshBasedOperatorParameters(const boost::shared_ptr<AMP::Database> & db)
+        MeshBasedOperatorParameters(const AMP::shared_ptr<AMP::Database> & db)
           : OperatorParameters(db) {  }
 
         virtual ~MeshBasedOperatorParameters() { }

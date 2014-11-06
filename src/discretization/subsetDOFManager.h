@@ -1,8 +1,7 @@
 #ifndef included_subsetDOF_Manager
 #define included_subsetDOF_Manager
 
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include "utils/shared_ptr.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "discretization/DOF_Manager.h"
@@ -33,7 +32,7 @@ public:
      * \param[in] iterator  The iterator over the subset of elements in the subsetDOFManager
      * \param[in] comm      The new comm for the subset DOF Manager
      */
-    static DOFManager::shared_ptr create( boost::shared_ptr<const DOFManager> parentDOFManager, 
+    static DOFManager::shared_ptr create( AMP::shared_ptr<const DOFManager> parentDOFManager, 
         const std::vector <size_t> &dofs, const AMP::Mesh::MeshIterator &iterator, const AMP_MPI& comm );
 
 
@@ -83,7 +82,7 @@ public:
 
 
     //! Get the parent DOFManager
-    virtual boost::shared_ptr<const DOFManager>  getDOFManager() const;
+    virtual AMP::shared_ptr<const DOFManager>  getDOFManager() const;
 
 
 protected:
@@ -94,7 +93,7 @@ protected:
 private:
 
     //! The parent DOF Manager
-    boost::shared_ptr<const DOFManager> d_parentDOFManager;
+    AMP::shared_ptr<const DOFManager> d_parentDOFManager;
 
     //! The parent begin, end, and global DOFs
     size_t d_parentBegin, d_parentEnd, d_parentGlobal;

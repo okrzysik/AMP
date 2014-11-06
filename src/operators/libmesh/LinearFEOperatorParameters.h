@@ -14,7 +14,7 @@ namespace AMP {
         /**
           Constructor.
           */
-        LinearFEOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
+        LinearFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
           : FEOperatorParameters(db) {  }
 
         /**
@@ -22,8 +22,8 @@ namespace AMP {
           */
         virtual ~LinearFEOperatorParameters() {}
 
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
+        AMP::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
+        AMP::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
 
       protected :
 

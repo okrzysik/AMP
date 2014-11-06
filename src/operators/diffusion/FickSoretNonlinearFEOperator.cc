@@ -7,17 +7,17 @@
 namespace AMP {
 namespace Operator {
 
-    FickSoretNonlinearFEOperator::FickSoretNonlinearFEOperator(const boost::shared_ptr<OperatorParameters> & params)
+    FickSoretNonlinearFEOperator::FickSoretNonlinearFEOperator(const AMP::shared_ptr<OperatorParameters> & params)
     {
-      boost::shared_ptr<FickSoretNonlinearFEOperatorParameters> fsParams =
-        boost::dynamic_pointer_cast<FickSoretNonlinearFEOperatorParameters>(params);
+      AMP::shared_ptr<FickSoretNonlinearFEOperatorParameters> fsParams =
+        AMP::dynamic_pointer_cast<FickSoretNonlinearFEOperatorParameters>(params);
 
       // get databases for each sub-operator
-      boost::shared_ptr<Database> &db(params->d_db);
+      AMP::shared_ptr<Database> &db(params->d_db);
 
-      boost::shared_ptr<Database> ficksoretDb = db->getDatabase(fsParams->d_name);
-      boost::shared_ptr<Database> fickDb = db->getDatabase(ficksoretDb->getString("FickOperator"));
-      boost::shared_ptr<Database> soretDb = db->getDatabase(ficksoretDb->getString("SoretOperator"));
+      AMP::shared_ptr<Database> ficksoretDb = db->getDatabase(fsParams->d_name);
+      AMP::shared_ptr<Database> fickDb = db->getDatabase(ficksoretDb->getString("FickOperator"));
+      AMP::shared_ptr<Database> soretDb = db->getDatabase(ficksoretDb->getString("SoretOperator"));
 
       // verify operator and sub-operator names are correct
       std::string name = ficksoretDb->getString("name");
@@ -29,8 +29,8 @@ namespace Operator {
       AMP_INSIST(soretName == "DiffusionNonlinearFEOperator", "Soret operator has incorrect name");
 
       // check transport models correct
-      boost::shared_ptr<Database> fickModelDb = db->getDatabase(fickDb->getString("LocalModel"));
-      boost::shared_ptr<Database> soretModelDb = db->getDatabase(soretDb->getString("LocalModel"));
+      AMP::shared_ptr<Database> fickModelDb = db->getDatabase(fickDb->getString("LocalModel"));
+      AMP::shared_ptr<Database> soretModelDb = db->getDatabase(soretDb->getString("LocalModel"));
       std::string fickModelProp = fickModelDb->getString("Property");
       std::string soretModelProp = soretModelDb->getString("Property");
       AMP_INSIST(fickModelProp == "FickCoefficient", "FickCoefficient property was not specified");
@@ -43,8 +43,8 @@ namespace Operator {
       AMP_INSIST(soretPrincipal == 0, "Soret operator cannot have temperature PrincipalVariable");
 
       // verify active variables are correct
-      boost::shared_ptr<Database> fickActiveDb = fickDb->getDatabase("ActiveInputVariables");
-      boost::shared_ptr<Database> soretActiveDb = soretDb->getDatabase("ActiveInputVariables");
+      AMP::shared_ptr<Database> fickActiveDb = fickDb->getDatabase("ActiveInputVariables");
+      AMP::shared_ptr<Database> soretActiveDb = soretDb->getDatabase("ActiveInputVariables");
       bool fickActive = fickActiveDb->keyExists("concentration");
       fickActive = fickActive and fickActiveDb->keyExists("temperature");
       bool soretActive = soretActiveDb->keyExists("temperature");
@@ -82,14 +82,14 @@ namespace Operator {
       if (fsParams->d_FickOperator.get() != NULL) {
         d_FickOperator = fsParams->d_FickOperator;
       } else {
-        boost::shared_ptr<DiffusionNonlinearFEOperatorParameters> fickParams(
+        AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> fickParams(
             new DiffusionNonlinearFEOperatorParameters(fickDb));
         d_FickOperator.reset(new DiffusionNonlinearFEOperator(fickParams));
       }
       if (fsParams->d_SoretOperator.get() != NULL) {
         d_SoretOperator = fsParams->d_SoretOperator;
       } else {
-        boost::shared_ptr<DiffusionNonlinearFEOperatorParameters> soretParams(
+        AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> soretParams(
             new DiffusionNonlinearFEOperatorParameters(soretDb));
         d_SoretOperator.reset(new DiffusionNonlinearFEOperator(soretParams));
       }

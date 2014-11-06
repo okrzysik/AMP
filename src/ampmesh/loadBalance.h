@@ -27,7 +27,7 @@ public:
      * \param N_elements    Optional argument specifying the number of elements on the mesh
      *                      (0: Get the number of elements through a call to Mesh::estimateMeshSize())
      */
-    LoadBalance( boost::shared_ptr<MeshParameters> params, const std::vector<int> &ranks, size_t N_elements=0 );
+    LoadBalance( AMP::shared_ptr<MeshParameters> params, const std::vector<int> &ranks, size_t N_elements=0 );
 
     /**
      * \brief    Advanced constructor
@@ -38,7 +38,7 @@ public:
      * \param decomp  Domain decomposition for the submeshes
      *                (0: General, 1: No set of submeshes share a rank, and all ranks are used)
      */
-    LoadBalance( boost::shared_ptr<MeshParameters> params, const std::vector<int>& ranks, const std::vector<LoadBalance>& submeshes, int decomp );
+    LoadBalance( AMP::shared_ptr<MeshParameters> params, const std::vector<int>& ranks, const std::vector<LoadBalance>& submeshes, int decomp );
 
     //! Empty constructor
     LoadBalance();
@@ -64,7 +64,7 @@ public:
     void changeRanks( const std::vector<int> &ranks );
 
     //! Function to get the mesh parameters
-    boost::shared_ptr<MeshParameters> getParams() const { return d_params; }
+    AMP::shared_ptr<MeshParameters> getParams() const { return d_params; }
 
     /**
      * \brief    Print the mesh hierarchy
@@ -93,7 +93,7 @@ private:
     size_t              d_N_elements;
     size_t              d_max_ranks;
     std::vector<int>    d_ranks;
-    boost::shared_ptr<MeshParameters> d_params;
+    AMP::shared_ptr<MeshParameters> d_params;
     std::vector<LoadBalance>  d_submeshes;
 
     // Special flag used to identify key decompositions

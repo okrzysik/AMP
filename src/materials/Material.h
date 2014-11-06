@@ -5,7 +5,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include <boost/mpl/list.hpp>
 
 #include "utils/Utilities.h"
@@ -15,12 +15,12 @@
 
 // do not use property name with an embedded underscore
 #define INSERT_PROPERTY_IN_MAP(name,space) \
-	d_propertyMap->insert(std::make_pair( #name, boost::shared_ptr<space::name##Prop>(new space::name##Prop)));
+	d_propertyMap->insert(std::make_pair( #name, AMP::shared_ptr<space::name##Prop>(new space::name##Prop)));
 
 namespace AMP {
 namespace Materials {
 
-typedef boost::shared_ptr<Property<double> > PropertyPtr;
+typedef AMP::shared_ptr<Property<double> > PropertyPtr;
 
 /**
  * Material base class.
@@ -41,7 +41,7 @@ public:
 	typedef boost::mpl::list<> factory_constructor_typeList;
 
 	/// specific shared pointer for this class
-	typedef boost::shared_ptr<Material> shared_ptr;
+	typedef AMP::shared_ptr<Material> shared_ptr;
 
 	static size_t counter;
 

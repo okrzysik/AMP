@@ -10,7 +10,7 @@ namespace Operator {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-DirichletMatrixCorrection::DirichletMatrixCorrection(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & params) : 
+DirichletMatrixCorrection::DirichletMatrixCorrection(const AMP::shared_ptr<DirichletMatrixCorrectionParameters> & params) : 
     BoundaryOperator (params)
 {
     d_variable = params->d_variable;
@@ -28,10 +28,10 @@ DirichletMatrixCorrection::DirichletMatrixCorrection(const boost::shared_ptr<Dir
 /****************************************************************
 * Reset                                                         *
 ****************************************************************/
-void DirichletMatrixCorrection :: reset(const boost::shared_ptr<OperatorParameters>& params)
+void DirichletMatrixCorrection :: reset(const AMP::shared_ptr<OperatorParameters>& params)
 {
-    boost::shared_ptr<DirichletMatrixCorrectionParameters> myParams = 
-        boost::dynamic_pointer_cast<DirichletMatrixCorrectionParameters>(params);
+    AMP::shared_ptr<DirichletMatrixCorrectionParameters> myParams = 
+        AMP::dynamic_pointer_cast<DirichletMatrixCorrectionParameters>(params);
 
     AMP_INSIST( ((myParams.get()) != NULL), "NULL parameters" );
 
@@ -52,7 +52,7 @@ void DirichletMatrixCorrection :: reset(const boost::shared_ptr<OperatorParamete
         applyMatrixCorrection();
     }//end if
 }
-void DirichletMatrixCorrection :: parseParams(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & params)
+void DirichletMatrixCorrection :: parseParams(const AMP::shared_ptr<DirichletMatrixCorrectionParameters> & params)
 {
     AMP_INSIST( (((params->d_db).get()) != NULL), "NULL database" );
     bool skipParams = (params->d_db)->getBoolWithDefault("skip_params", false);
@@ -176,7 +176,7 @@ void DirichletMatrixCorrection :: initRhsCorrectionSet()
     if(!d_skipRHSsetCorrection) {
         int numIds = d_dofIds.size();
         char key[100];
-        boost::shared_ptr<AMP::InputDatabase> tmp_db(new AMP::InputDatabase("Dummy"));
+        AMP::shared_ptr<AMP::InputDatabase> tmp_db(new AMP::InputDatabase("Dummy"));
         tmp_db->putBool("skip_params", false);
         tmp_db->putBool("isAttachedToVolumeOperator", false);      
         tmp_db->putInteger("number_of_ids", numIds);
@@ -199,7 +199,7 @@ void DirichletMatrixCorrection :: initRhsCorrectionSet()
             }//end for i
         }//end for j
 
-        boost::shared_ptr<DirichletVectorCorrectionParameters> setDispOpParams(
+        AMP::shared_ptr<DirichletVectorCorrectionParameters> setDispOpParams(
             new DirichletVectorCorrectionParameters(tmp_db));
         setDispOpParams->d_variable = d_variable;
         setDispOpParams->d_Mesh = d_Mesh;

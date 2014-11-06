@@ -31,7 +31,7 @@ namespace Operator {
 	 4. name: useSameLocalModelForVolumeAndBoundaryOperators, type: bool, (optional), default value: FALSE, when set to
 	    to TRUE the same local model is used for both the volume and boundary operators
         */
-      LinearBVPOperator(const boost::shared_ptr<BVPOperatorParameters>& parameters);
+      LinearBVPOperator(const AMP::shared_ptr<BVPOperatorParameters>& parameters);
 
       /**
        * virtual destructor which does nothing
@@ -41,7 +41,7 @@ namespace Operator {
       /**
        * This function is useful for re-initializing/updating an operator
        */
-      void reset(const boost::shared_ptr<OperatorParameters>& );
+      void reset(const AMP::shared_ptr<OperatorParameters>& );
 
       AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() 
       {
@@ -53,9 +53,9 @@ namespace Operator {
         return d_volumeOperator->getOutputVariable();
       }
 
-      boost::shared_ptr< LinearOperator > getVolumeOperator(){ return d_volumeOperator; }
+      AMP::shared_ptr< LinearOperator > getVolumeOperator(){ return d_volumeOperator; }
 
-      boost::shared_ptr< BoundaryOperator > getBoundaryOperator(){ return d_boundaryOperator; }
+      AMP::shared_ptr< BoundaryOperator > getBoundaryOperator(){ return d_boundaryOperator; }
 
       void modifyRHSvector(AMP::LinearAlgebra::Vector::shared_ptr rhs);
 
@@ -64,13 +64,13 @@ namespace Operator {
       /**
        * shared pointer to a nonlinear volume or interior spatial operator
        */
-      boost::shared_ptr< LinearOperator > d_volumeOperator;
+      AMP::shared_ptr< LinearOperator > d_volumeOperator;
 
       /**
        *  shared pointer to a boundary or surface operator that is responsible
        for apply operations on the boundary of the domain
        */
-      boost::shared_ptr< BoundaryOperator > d_boundaryOperator;
+      AMP::shared_ptr< BoundaryOperator > d_boundaryOperator;
 
     private :
 

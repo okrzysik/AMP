@@ -24,19 +24,19 @@ namespace AMP {
 namespace Operator {
 
 
-Map3Dto1D :: Map3Dto1D(const boost::shared_ptr<OperatorParameters>& params): 
+Map3Dto1D :: Map3Dto1D(const AMP::shared_ptr<OperatorParameters>& params): 
     MapOperator (params)
 {
-    boost::shared_ptr<MapOperatorParameters> myparams = 
-        boost::dynamic_pointer_cast<MapOperatorParameters>(params);
+    AMP::shared_ptr<MapOperatorParameters> myparams = 
+        AMP::dynamic_pointer_cast<MapOperatorParameters>(params);
     reset(myparams);
 }
 
 
-void Map3Dto1D :: reset(const boost::shared_ptr<OperatorParameters>& params)
+void Map3Dto1D :: reset(const AMP::shared_ptr<OperatorParameters>& params)
 {
-    boost::shared_ptr<MapOperatorParameters> myparams =
-        boost::dynamic_pointer_cast<MapOperatorParameters>(params);
+    AMP::shared_ptr<MapOperatorParameters> myparams =
+        AMP::dynamic_pointer_cast<MapOperatorParameters>(params);
 
     AMP_INSIST( ((myparams.get()) != NULL), "NULL parameter" );
     AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
@@ -112,11 +112,11 @@ void Map3Dto1D :: apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr,
             libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
             libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
 
-            boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
-            boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
+            AMP::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
+            AMP::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
 
             libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
-            boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
+            AMP::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
 
             d_fe->attach_quadrature_rule( d_qrule.get() );
 

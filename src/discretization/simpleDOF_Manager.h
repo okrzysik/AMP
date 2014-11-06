@@ -1,8 +1,7 @@
 #ifndef included_simpleDOF_Manager
 #define included_simpleDOF_Manager
 
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include "utils/shared_ptr.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "discretization/DOF_Manager.h"
@@ -39,7 +38,7 @@ public:
      * \param DOFsPerElement The desired number of DOFs pere element
      * \param split         Do we want to split the DOFManager by the meshes returning a multiDOFManager
      */
-    static DOFManager::shared_ptr  create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, 
+    static DOFManager::shared_ptr  create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh, 
         AMP::Mesh::GeomType type, int gcw, int DOFsPerElement, bool split=true );
 
 
@@ -51,7 +50,7 @@ public:
      * \param it2           The iterator over the elements (excluding ghost cells)
      * \param DOFsPerElement The desired number of DOFs pere element
      */
-    static DOFManager::shared_ptr  create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, 
+    static DOFManager::shared_ptr  create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh, 
         const AMP::Mesh::MeshIterator it1, const AMP::Mesh::MeshIterator it2, int DOFsPerElement );
 
 
@@ -115,7 +114,7 @@ private:
     void initialize();
 
     // Data members
-    boost::shared_ptr<AMP::Mesh::Mesh>  d_mesh;
+    AMP::shared_ptr<AMP::Mesh::Mesh>  d_mesh;
     bool                                d_isBaseMesh;
     AMP::Mesh::MeshID                   d_meshID;
     std::vector<AMP::Mesh::MeshID>      d_baseMeshIDs;  // Must be global list

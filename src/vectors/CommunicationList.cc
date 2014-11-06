@@ -1,10 +1,10 @@
 #include <vector>
 #include "Vector.h"
 #include "utils/Utilities.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 //class Vector;
-//typedef  boost::shared_ptr<Vector>   Vector_shared_ptr;
+//typedef  AMP::shared_ptr<Vector>   Vector_shared_ptr;
 
 
 namespace AMP {

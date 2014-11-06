@@ -28,17 +28,17 @@ public:
 
     virtual void build_mesh() {
         // Create the parameter object
-        boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+        AMP::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
         database->putInteger("dim",3);
         database->putString("MeshName","cube_mesh");
         database->putString("Generator","cube");
         database->putIntegerArray("size",std::vector<int>(3,SIZE));
         database->putDoubleArray("xmin",std::vector<double>(3,-1.0));
         database->putDoubleArray("xmax",std::vector<double>(3,1.0));
-        boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+        AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
         params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
         // Create a libMesh mesh
-        mesh = boost::shared_ptr<AMP::Mesh::libMesh> (new AMP::Mesh::libMesh(params));    
+        mesh = AMP::shared_ptr<AMP::Mesh::libMesh> (new AMP::Mesh::libMesh(params));    
     }
 
     static std::string name() { return "LibMeshCubeGenerator"; }
@@ -52,7 +52,7 @@ class  ExodusReaderGenerator : public MeshGenerator
 public:
     virtual void build_mesh() {
         // Create the parameter object
-        boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+        AMP::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
         database->putInteger("dim",3);
         database->putString("MeshName","exodus reader mesh");
         if ( FILE==1 ) {
@@ -64,10 +64,10 @@ public:
         } else {
             AMP_ERROR("Bad file for generator");
         }
-        boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+        AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
         params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
         // Create a libMesh mesh
-        mesh = boost::shared_ptr<AMP::Mesh::libMesh>(new AMP::Mesh::libMesh(params));    
+        mesh = AMP::shared_ptr<AMP::Mesh::libMesh>(new AMP::Mesh::libMesh(params));    
     }
 
     static std::string name() { return "ExodusReaderGenerator"; }
@@ -81,13 +81,13 @@ public:
     virtual void build_mesh() {
         int N_meshes = 4;
         // Create the multimesh database
-        boost::shared_ptr<AMP::MemoryDatabase> meshDatabase(new AMP::MemoryDatabase("Mesh"));
+        AMP::shared_ptr<AMP::MemoryDatabase> meshDatabase(new AMP::MemoryDatabase("Mesh"));
         meshDatabase->putString("MeshName","PelletMeshes");
         meshDatabase->putString("MeshType","Multimesh");
         meshDatabase->putString("MeshDatabasePrefix","Mesh_");
         meshDatabase->putString("MeshArrayDatabasePrefix","MeshArray_");
         // Create the mesh array database
-        boost::shared_ptr<Database> meshArrayDatabase = meshDatabase->putDatabase("MeshArray_1");
+        AMP::shared_ptr<Database> meshArrayDatabase = meshDatabase->putDatabase("MeshArray_1");
         meshArrayDatabase->putInteger("N",N_meshes);
         meshArrayDatabase->putString("iterator","%i");
         std::vector<int> indexArray(N_meshes);
@@ -105,7 +105,7 @@ public:
             range[3] = 0.005;
             range[5] = 0.005;
             // Create a generic MeshParameters object
-            boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+            AMP::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
             meshArrayDatabase->putString("MeshType","AMP");
             meshArrayDatabase->putString("Generator","cube");
             meshArrayDatabase->putIntegerArray("Size",size);
@@ -119,7 +119,7 @@ public:
             offsetArray[i] = ((double) i)*0.0105;
         meshArrayDatabase->putDoubleArray("z_offset",offsetArray);
         // Create the parameter object
-        boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(meshDatabase));
+        AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(meshDatabase));
         params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
         // Create the mesh
         mesh = AMP::Mesh::Mesh::buildMesh(params);
@@ -185,13 +185,13 @@ public:
 
         // Initialize libmesh
         AMP::AMP_MPI comm(AMP_COMM_SELF);
-        libmeshInit = boost::shared_ptr<AMP::Mesh::initializeLibMesh>(new AMP::Mesh::initializeLibMesh(comm));
+        libmeshInit = AMP::shared_ptr<AMP::Mesh::initializeLibMesh>(new AMP::Mesh::initializeLibMesh(comm));
 
         const unsigned int mesh_dim = 3;
         const unsigned int num_elem = 3;
         const unsigned int num_nodes = 16;
 
-        boost::shared_ptr< ::Mesh > local_mesh(new ::Mesh(mesh_dim));
+        AMP::shared_ptr< ::Mesh > local_mesh(new ::Mesh(mesh_dim));
         local_mesh->reserve_elem(num_elem);
         local_mesh->reserve_nodes(num_nodes);
 
@@ -235,7 +235,7 @@ public:
     }
 
 protected:
-    boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
+    AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
 };
 
 

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -39,16 +39,16 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-  boost::shared_ptr<AMP::Operator::VonMises_IsotropicKinematicHardening> vmikModel;
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+  AMP::shared_ptr<AMP::Operator::VonMises_IsotropicKinematicHardening> vmikModel;
 
-  boost::shared_ptr<AMP::Database> matModelDatabase = input_db->getDatabase("MechanicsMaterialModel");
+  AMP::shared_ptr<AMP::Database> matModelDatabase = input_db->getDatabase("MechanicsMaterialModel");
   elementPhysicsModel = AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel(matModelDatabase);
-  vmikModel = boost::dynamic_pointer_cast<AMP::Operator::VonMises_IsotropicKinematicHardening>(elementPhysicsModel);
+  vmikModel = AMP::dynamic_pointer_cast<AMP::Operator::VonMises_IsotropicKinematicHardening>(elementPhysicsModel);
 
   vmikModel->preNonlinearInit(true, true);
   vmikModel->nonlinearInitGaussPointOperation(500.0);

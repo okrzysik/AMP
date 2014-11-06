@@ -79,39 +79,39 @@ Mesh Mesh::copy() const
 /********************************************************
 * Create a mesh from the input database                 *
 ********************************************************/
-boost::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_ptr &params )
+AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_ptr &params )
 {
-    boost::shared_ptr<AMP::Database> database = params->d_db;
+    AMP::shared_ptr<AMP::Database> database = params->d_db;
     AMP_ASSERT(database!=NULL);
     AMP_INSIST(database->keyExists("MeshType"),"MeshType must exist in input database");
     AMP_INSIST(database->keyExists("MeshName"),"MeshName must exist in input database");
     std::string MeshType = database->getString("MeshType");
     std::string MeshName = database->getString("MeshName");
-    boost::shared_ptr<AMP::Mesh::Mesh> mesh;
+    AMP::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( MeshType == std::string("Multimesh") ) {
         // The mesh is a multimesh
-        mesh = boost::shared_ptr<AMP::Mesh::MultiMesh>(new AMP::Mesh::MultiMesh(params) );
+        mesh = AMP::shared_ptr<AMP::Mesh::MultiMesh>(new AMP::Mesh::MultiMesh(params) );
     } else if ( MeshType == std::string("AMP") ) {
         // The mesh is a AMP mesh
-        mesh = boost::shared_ptr<AMP::Mesh::BoxMesh>(new AMP::Mesh::BoxMesh(params) );
+        mesh = AMP::shared_ptr<AMP::Mesh::BoxMesh>(new AMP::Mesh::BoxMesh(params) );
     } else if ( MeshType == std::string("libMesh") ) {
         // The mesh is a libmesh mesh
         #ifdef USE_EXT_LIBMESH
-            mesh = boost::shared_ptr<AMP::Mesh::libMesh>(new AMP::Mesh::libMesh(params) );
+            mesh = AMP::shared_ptr<AMP::Mesh::libMesh>(new AMP::Mesh::libMesh(params) );
         #else
             AMP_ERROR("AMP was compiled without support for libMesh");
         #endif
     } else if ( MeshType == std::string("STKMesh") ) {
         // The mesh is a libmesh mesh
         #ifdef USE_TRILINOS_STKMESH
-            mesh = boost::shared_ptr<AMP::Mesh::STKMesh>(new AMP::Mesh::STKMesh(params) );
+            mesh = AMP::shared_ptr<AMP::Mesh::STKMesh>(new AMP::Mesh::STKMesh(params) );
         #else
             AMP_ERROR("AMP was compiled without support for STKMesh");
         #endif
     } else if ( MeshType==std::string("moab") || MeshType==std::string("MOAB") ) {
         // The mesh is a MOAB mesh
         #ifdef USE_EXT_MOAB
-            mesh = boost::shared_ptr<AMP::Mesh::moabMesh>(new AMP::Mesh::moabMesh(params) );
+            mesh = AMP::shared_ptr<AMP::Mesh::moabMesh>(new AMP::Mesh::moabMesh(params) );
         #else
             AMP_ERROR("AMP was compiled without support for MOAB");
         #endif
@@ -129,7 +129,7 @@ boost::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared
 ********************************************************/
 size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
-    boost::shared_ptr<AMP::Database> database = params->d_db;
+    AMP::shared_ptr<AMP::Database> database = params->d_db;
     AMP_ASSERT(database!=NULL);
     size_t meshSize = 0;
     if ( database->keyExists("NumberOfElements") ) {
@@ -145,7 +145,7 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     // This is being called through the base class, call the appropriate function
     AMP_INSIST(database->keyExists("MeshType"),"MeshType must exist in input database");
     std::string MeshType = database->getString("MeshType");
-    boost::shared_ptr<AMP::Mesh::Mesh> mesh;
+    AMP::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( MeshType == std::string("Multimesh") ) {
         // The mesh is a multimesh
         meshSize = AMP::Mesh::MultiMesh::estimateMeshSize(params);
@@ -182,12 +182,12 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 ********************************************************/
 size_t Mesh::maxProcs( const MeshParameters::shared_ptr &params )
 {
-    boost::shared_ptr<AMP::Database> database = params->d_db;
+    AMP::shared_ptr<AMP::Database> database = params->d_db;
     AMP_ASSERT(database!=NULL);
     // This is being called through the base class, call the appropriate function
     AMP_INSIST(database->keyExists("MeshType"),"MeshType must exist in input database");
     std::string MeshType = database->getString("MeshType");
-    boost::shared_ptr<AMP::Mesh::Mesh> mesh;
+    AMP::shared_ptr<AMP::Mesh::Mesh> mesh;
     size_t maxSize = 0;
     if ( MeshType == std::string("Multimesh") ) {
         // The mesh is a multimesh
@@ -261,32 +261,32 @@ std::vector<MeshID> Mesh::getLocalBaseMeshIDs() const
 /********************************************************
 * Function to return the mesh with the given ID         *
 ********************************************************/
-boost::shared_ptr<Mesh>  Mesh::Subset( MeshID meshID ) const {
+AMP::shared_ptr<Mesh>  Mesh::Subset( MeshID meshID ) const {
     if ( d_meshID==meshID ) 
-        return boost::const_pointer_cast<Mesh>( shared_from_this() );
+        return AMP::const_pointer_cast<Mesh>( shared_from_this() );
     else
-        return boost::shared_ptr<Mesh>();
+        return AMP::shared_ptr<Mesh>();
 }
 
 
 /********************************************************
 * Function to return the mesh with the given name       *
 ********************************************************/
-boost::shared_ptr<Mesh>  Mesh::Subset( std::string name ) const {
+AMP::shared_ptr<Mesh>  Mesh::Subset( std::string name ) const {
     if ( d_name==name ) 
-        return boost::const_pointer_cast<Mesh>( shared_from_this() );
+        return AMP::const_pointer_cast<Mesh>( shared_from_this() );
     else
-        return boost::shared_ptr<Mesh>();
+        return AMP::shared_ptr<Mesh>();
 }
 
 
 /********************************************************
 * Function to subset a mesh using a mesh iterator       *
 ********************************************************/
-boost::shared_ptr<Mesh> Mesh::Subset( const MeshIterator &iterator, bool isGlobal ) const
+AMP::shared_ptr<Mesh> Mesh::Subset( const MeshIterator &iterator, bool isGlobal ) const
 {
-    boost::shared_ptr<const Mesh> this_mesh( shared_from_this() );
-    boost::shared_ptr<SubsetMesh> mesh( new SubsetMesh( this_mesh, iterator, isGlobal ) );
+    AMP::shared_ptr<const Mesh> this_mesh( shared_from_this() );
+    AMP::shared_ptr<SubsetMesh> mesh( new SubsetMesh( this_mesh, iterator, isGlobal ) );
     return mesh;
 }
 
@@ -327,7 +327,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  Mesh::getPositionVector( std::string nam
     #ifdef USE_AMP_DISCRETIZATION
         AMP::Discretization::DOFManager::shared_ptr DOFs = 
             AMP::Discretization::simpleDOFManager::create( 
-            boost::const_pointer_cast<Mesh>(shared_from_this()), 
+            AMP::const_pointer_cast<Mesh>(shared_from_this()), 
             AMP::Mesh::Vertex, gcw, PhysicalDim, true );
         AMP::LinearAlgebra::Variable::shared_ptr nodalVariable( new AMP::LinearAlgebra::Variable(name) );
         AMP::LinearAlgebra::Vector::shared_ptr position = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, true );
@@ -353,10 +353,10 @@ AMP::LinearAlgebra::Vector::shared_ptr  Mesh::getPositionVector( std::string nam
 /********************************************************
 * Functions that aren't implimented for the base class  *
 ********************************************************/
-boost::shared_ptr<Mesh> Mesh::Subset( Mesh & ) const
+AMP::shared_ptr<Mesh> Mesh::Subset( Mesh & ) const
 {
     AMP_ERROR("Subset is not implimented for the base class");
-    return boost::shared_ptr<Mesh>();
+    return AMP::shared_ptr<Mesh>();
 }
 MeshIterator Mesh::getIterator( const GeomType, const int ) const
 {
@@ -441,7 +441,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         } else if ( union_ids.size()==B.size() ) {
             return MeshIterator(B);
         } else {
-            boost::shared_ptr<std::vector<MeshElement> > elements( new std::vector<MeshElement>(union_ids.size()) );
+            AMP::shared_ptr<std::vector<MeshElement> > elements( new std::vector<MeshElement>(union_ids.size()) );
             curA = A.begin();
             for (size_t i=0; i<A.size(); i++) {
                 MeshElementID idA = curA->globalID();
@@ -497,7 +497,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         } else if ( intersection.size()==B.size() ) {
             return MeshIterator(B);
         } else {
-            boost::shared_ptr<std::vector<MeshElement> > elements( new std::vector<MeshElement>(intersection.size()) );
+            AMP::shared_ptr<std::vector<MeshElement> > elements( new std::vector<MeshElement>(intersection.size()) );
             curB = B.begin();
             for (size_t i=0; i<B.size(); i++) {
                 MeshElementID idB = curB->globalID();
@@ -530,7 +530,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         if ( compliment.size()==A.size() ) {
             return MeshIterator(A);
         } else {
-            boost::shared_ptr<std::vector<MeshElement> > elements( new std::vector<MeshElement>(compliment.size()) );
+            AMP::shared_ptr<std::vector<MeshElement> > elements( new std::vector<MeshElement>(compliment.size()) );
             curA = A.begin();
             for (size_t i=0; i<A.size(); i++) {
                 MeshElementID idA = curA->globalID();

@@ -6,7 +6,7 @@
 #include "ColumnOperatorParameters.h"
 #include "operators/Operator.h"
 /*Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include <vector>
 
@@ -21,18 +21,18 @@ namespace Operator {
   class CoupledOperatorParameters : public ColumnOperatorParameters {
     public :
 
-      CoupledOperatorParameters(const boost::shared_ptr<AMP::Database>& db)
+      CoupledOperatorParameters(const AMP::shared_ptr<AMP::Database>& db)
         : ColumnOperatorParameters(db) { }
 
       virtual ~CoupledOperatorParameters() { }
 
-      boost::shared_ptr<Operator> d_NodeToGaussPointOperator;
+      AMP::shared_ptr<Operator> d_NodeToGaussPointOperator;
 
-      boost::shared_ptr<Operator> d_CopyOperator;
+      AMP::shared_ptr<Operator> d_CopyOperator;
 
-      boost::shared_ptr<Operator> d_MapOperator;
+      AMP::shared_ptr<Operator> d_MapOperator;
 
-      boost::shared_ptr<Operator> d_BVPOperator;
+      AMP::shared_ptr<Operator> d_BVPOperator;
   };
 
 }  

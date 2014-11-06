@@ -30,7 +30,7 @@ class DatabaseFactory
    /*
     * Build a new Database instance.
     */
-   virtual boost::shared_ptr<Database> allocate(const std::string& name) = 0;
+   virtual AMP::shared_ptr<Database> allocate(const std::string& name) = 0;
    virtual ~DatabaseFactory () {}
 };
 

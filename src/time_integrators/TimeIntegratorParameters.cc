@@ -3,7 +3,7 @@
 namespace AMP{
 namespace TimeIntegrator{
 
-TimeIntegratorParameters::TimeIntegratorParameters(const boost::shared_ptr<AMP::Database> db)
+TimeIntegratorParameters::TimeIntegratorParameters(const AMP::shared_ptr<AMP::Database> db)
 {
    d_db = db;
    d_ic_vector.reset();

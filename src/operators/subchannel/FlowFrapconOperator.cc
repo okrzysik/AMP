@@ -16,10 +16,10 @@
 namespace AMP {
 namespace Operator {
 
-void FlowFrapconOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
+void FlowFrapconOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params)
 {
-      boost::shared_ptr<FlowFrapconOperatorParameters> myparams = 
-        boost::dynamic_pointer_cast<FlowFrapconOperatorParameters>(params);
+      AMP::shared_ptr<FlowFrapconOperatorParameters> myparams = 
+        AMP::dynamic_pointer_cast<FlowFrapconOperatorParameters>(params);
 
       AMP_INSIST( ((myparams.get()) != NULL), "NULL parameters" );
       AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
@@ -78,13 +78,13 @@ void FlowFrapconOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
       // AMP::LinearAlgebra::Variable::shared_ptr localVar ( new AMP::LinearAlgebra::Variable(d_cladVec->getVariable()->getName() ) ); 
       // d_localCladVec = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, localVar ); 
       // 
-      // boost::shared_ptr<AMP::InputDatabase> map3to1_db (new AMP::InputDatabase("Dummy"));
+      // AMP::shared_ptr<AMP::InputDatabase> map3to1_db (new AMP::InputDatabase("Dummy"));
       // map3to1_db->putInteger("BoundaryId",4);
       // map3to1_db->putString("InputVariable",localVar->getName());
       // map3to1_db->putString("OutputVariable",localVar->getName());
-      // boost::shared_ptr<AMP::Operator::MapOperatorParameters> map3to1Params (new AMP::Operator::MapOperatorParameters( map3to1_db ));
+      // AMP::shared_ptr<AMP::Operator::MapOperatorParameters> map3to1Params (new AMP::Operator::MapOperatorParameters( map3to1_db ));
       // map3to1Params->d_MeshAdapter = d_MeshAdapter;
-      // boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladto1 (new AMP::Operator::Map3Dto1D( map3to1Params ));
+      // AMP::shared_ptr<AMP::Operator::Map3Dto1D> mapCladto1 (new AMP::Operator::Map3Dto1D( map3to1Params ));
       // 
       // mapCladto1->setZLocations( d_Map1to3->getZLocations());
       // 
@@ -144,10 +144,10 @@ void FlowFrapconOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
 }
 
 
-boost::shared_ptr<OperatorParameters> FlowFrapconOperator :: 
-    getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u) 
+AMP::shared_ptr<OperatorParameters> FlowFrapconOperator :: 
+    getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u) 
 {
-        boost::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
+        AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
 
         tmp_db->putString("name","FlowFrapconOperator");
         tmp_db->putInteger("numpoints",d_numpoints);
@@ -159,7 +159,7 @@ boost::shared_ptr<OperatorParameters> FlowFrapconOperator ::
         tmp_db->putDouble("Reynolds",d_Re);
         tmp_db->putDouble("Prandtl",d_Pr);
 
-        boost::shared_ptr<FlowFrapconJacobianParameters> outParams(new FlowFrapconJacobianParameters(tmp_db));
+        AMP::shared_ptr<FlowFrapconJacobianParameters> outParams(new FlowFrapconJacobianParameters(tmp_db));
         outParams->d_frozenSolution = subsetInputVector(u); 
         return outParams;
 }

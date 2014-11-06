@@ -45,16 +45,16 @@ AMP::LinearAlgebra::Vector::shared_ptr createVector(
     range[3] = 1.0;
     range[5] = 1.0;
     // Create a generic MeshParameters object
-    boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+    AMP::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
     database->putInteger("dim",3);
     database->putString("MeshName","mesh1");
     database->putString("Generator","cube");
     database->putIntegerArray("Size",size);
     database->putDoubleArray("Range",range);
-    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
     params->setComm(comm);
     // Create an AMP mesh
-    AMP::Mesh::Mesh::shared_ptr mesh = boost::shared_ptr<AMP::Mesh::BoxMesh>(new AMP::Mesh::BoxMesh(params));
+    AMP::Mesh::Mesh::shared_ptr mesh = AMP::shared_ptr<AMP::Mesh::BoxMesh>(new AMP::Mesh::BoxMesh(params));
     // Create the DOF Manager
     AMP::Discretization::DOFManager::shared_ptr DOF = 
         AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1,true);

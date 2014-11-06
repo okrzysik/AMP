@@ -34,9 +34,9 @@ Vector::shared_ptr  EpetraVector::view ( Vector::shared_ptr inVector )
             AMP_ERROR("View of multi-block MultiVector is not supported yet");
         }
     } else if ( inVector->isA<ManagedVector>() ) {
-        boost::shared_ptr<Vector> root = inVector->castTo<ManagedVector>().getRootVector();
+        AMP::shared_ptr<Vector> root = inVector->castTo<ManagedVector>().getRootVector();
         if ( root==inVector ) {
-            boost::shared_ptr<ManagedEpetraVector> managed( new ManagedEpetraVector ( root ) );
+            AMP::shared_ptr<ManagedEpetraVector> managed( new ManagedEpetraVector ( root ) );
             retVal = managed;
         } else {
             retVal = view ( root );
@@ -53,16 +53,16 @@ Vector::const_shared_ptr  EpetraVector::constView ( Vector::const_shared_ptr inV
         return inVector;
     } else if ( inVector->isA<MultiVector>() ) {
         if ( inVector->numberOfDataBlocks() == 1 ) {
-            boost::shared_ptr<MultiVector> multivector = boost::dynamic_pointer_cast<MultiVector>(boost::const_pointer_cast<Vector>(inVector) );
+            AMP::shared_ptr<MultiVector> multivector = AMP::dynamic_pointer_cast<MultiVector>(AMP::const_pointer_cast<Vector>(inVector) );
             retVal = constView ( multivector->getVector ( 0 ) );
         } else {
             AMP_ERROR("View of multi-block MultiVector is not supported yet");
         }
     } else if ( inVector->isA<ManagedVector>() ) {
-        boost::shared_ptr<ManagedVector> managedVector = boost::dynamic_pointer_cast<ManagedVector>(boost::const_pointer_cast<Vector>(inVector) );
-        boost::shared_ptr<Vector> root = managedVector->getRootVector();
+        AMP::shared_ptr<ManagedVector> managedVector = AMP::dynamic_pointer_cast<ManagedVector>(AMP::const_pointer_cast<Vector>(inVector) );
+        AMP::shared_ptr<Vector> root = managedVector->getRootVector();
         if ( root==inVector ) {
-            boost::shared_ptr<ManagedEpetraVector> managed( new ManagedEpetraVector ( root ) );
+            AMP::shared_ptr<ManagedEpetraVector> managed( new ManagedEpetraVector ( root ) );
             retVal = managed;
         } else {
             retVal = constView ( root );

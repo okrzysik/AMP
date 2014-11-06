@@ -45,7 +45,7 @@ public:
       * \param[in] comm  Communicator to build the MultiVector on
       * \param[in] vecs  Optional list of vectors in the MultiVector
       */
-    static boost::shared_ptr<MultiVector>  create ( Variable::shared_ptr name, AMP_MPI comm, 
+    static AMP::shared_ptr<MultiVector>  create ( Variable::shared_ptr name, AMP_MPI comm, 
         const std::vector<Vector::shared_ptr>& vecs=std::vector<Vector::shared_ptr>() );
 
     /** \brief Create a new multivector in parallel
@@ -53,7 +53,7 @@ public:
       * \param[in] comm  Communicator to build the MultiVector on
       * \param[in] vecs  Optional list of vectors in the MultiVector
       */
-    static boost::shared_ptr<MultiVector>  create ( const std::string &name, AMP_MPI comm, 
+    static AMP::shared_ptr<MultiVector>  create ( const std::string &name, AMP_MPI comm, 
         const std::vector<Vector::shared_ptr>& vecs=std::vector<Vector::shared_ptr>() );
 
     /** \brief Create a new multivector in parallel
@@ -61,7 +61,7 @@ public:
       * \param[in] comm  Communicator to build the MultiVector on
       * \param[in] vecs  Optional list of vectors in the MultiVector
       */
-    static boost::shared_ptr<const MultiVector>  const_create ( Variable::shared_ptr name, AMP_MPI comm, 
+    static AMP::shared_ptr<const MultiVector>  const_create ( Variable::shared_ptr name, AMP_MPI comm, 
         const std::vector<Vector::const_shared_ptr>& vecs=std::vector<Vector::const_shared_ptr>() );
 
     /** \brief Create a new multivector in parallel
@@ -69,7 +69,7 @@ public:
       * \param[in] comm  Communicator to build the MultiVector on
       * \param[in] vecs  Optional list of vectors in the MultiVector
       */
-    static boost::shared_ptr<const MultiVector>  const_create ( const std::string &name, AMP_MPI comm, 
+    static AMP::shared_ptr<const MultiVector>  const_create ( const std::string &name, AMP_MPI comm, 
         const std::vector<Vector::const_shared_ptr>& vecs=std::vector<Vector::const_shared_ptr>() );
 
     /** \brief Create a multivector view of a vector
@@ -79,7 +79,7 @@ public:
       * and vec is added to it.  If vec is not a parallel vector (such as a SimpleVector), comm
       * must be specified.
       */
-    static boost::shared_ptr<MultiVector>   view ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
+    static AMP::shared_ptr<MultiVector>   view ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
 
     /** \brief Create a multivector view of a vector
       * \param[in] vec  The vector to view
@@ -88,7 +88,7 @@ public:
       * and vec is added to it.  If vec is not a parallel vector (such as a SimpleVector), comm
       * must be specified.
       */
-    static boost::shared_ptr<const MultiVector>   view ( Vector::const_shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
+    static AMP::shared_ptr<const MultiVector>   view ( Vector::const_shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
 
     /** \brief Encapsulate a vector in a MultiVector
       * \param[in] vec  The vector to view
@@ -97,7 +97,7 @@ public:
       * and vec is added to it.  If vec is not a parallel vector (such as a SimpleVector), comm
       * must be specified.
       */
-    static boost::shared_ptr<MultiVector>   encapsulate ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
+    static AMP::shared_ptr<MultiVector>   encapsulate ( Vector::shared_ptr &vec , AMP_MPI comm = AMP_MPI(AMP_COMM_NULL) );
 
     /** \brief Replace a vector in a MultiVector
       * \details  This function will replace a given vector in the multivector with a different
@@ -207,9 +207,9 @@ public:
     virtual void   putRawData ( const double * );
 
     // Vector engine functions
-    virtual boost::shared_ptr<std::vector<double> >  getNewBuffer();
+    virtual AMP::shared_ptr<std::vector<double> >  getNewBuffer();
     virtual bool               sameEngine ( VectorEngine &rhs ) const;
-    virtual VectorEngine::shared_ptr cloneEngine ( boost::shared_ptr<std::vector<double> > ) const;
+    virtual VectorEngine::shared_ptr cloneEngine ( AMP::shared_ptr<std::vector<double> > ) const;
     virtual void               swapEngines ( VectorEngine::shared_ptr p );
     virtual const void          *getDataBlock ( size_t i ) const;
     virtual void              *getDataBlock ( size_t i );

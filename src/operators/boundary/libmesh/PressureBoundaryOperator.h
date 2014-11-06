@@ -9,7 +9,7 @@ namespace AMP {
 
     class PressureBoundaryOperator : public BoundaryOperator {
       public:
-        PressureBoundaryOperator(const boost::shared_ptr<OperatorParameters> & params);
+        PressureBoundaryOperator(const AMP::shared_ptr<OperatorParameters> & params);
 
         virtual ~PressureBoundaryOperator() { }
 
@@ -24,7 +24,7 @@ namespace AMP {
         }
 
       protected:
-        boost::shared_ptr<AMP::Operator::TractionBoundaryOperator> d_tractionOp; 
+        AMP::shared_ptr<AMP::Operator::TractionBoundaryOperator> d_tractionOp; 
     };
 
   }

@@ -1,7 +1,7 @@
 #ifndef included_AMP_structuredMeshIterators
 #define included_AMP_structuredMeshIterators
 
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include "ampmesh/structured/structuredMeshElement.h"
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/MeshIterator.h"
@@ -17,7 +17,7 @@ public:
     structuredMeshIterator();
 
     //! Default MultiVectorIterator constructor
-    structuredMeshIterator( boost::shared_ptr<std::vector<BoxMesh::MeshElementIndex> > elements, const AMP::Mesh::BoxMesh *mesh, size_t pos=0 );
+    structuredMeshIterator( AMP::shared_ptr<std::vector<BoxMesh::MeshElementIndex> > elements, const AMP::Mesh::BoxMesh *mesh, size_t pos=0 );
 
     //! Deconstructor
     virtual ~structuredMeshIterator ();
@@ -83,7 +83,7 @@ protected:
 private:
     // Data members
     size_t d_pos;
-    boost::shared_ptr<std::vector<BoxMesh::MeshElementIndex> > d_elements;
+    AMP::shared_ptr<std::vector<BoxMesh::MeshElementIndex> > d_elements;
     const AMP::Mesh::BoxMesh *d_mesh;
     structuredMeshElement d_cur_element;
 };

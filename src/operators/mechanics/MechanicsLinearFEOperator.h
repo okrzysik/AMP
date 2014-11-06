@@ -39,7 +39,7 @@ namespace AMP {
           3) InputVariable (No default value) - Name of the input variable
           4) OutputVariable (No default value) - Name of the output variable
           */
-        MechanicsLinearFEOperator(const boost::shared_ptr<MechanicsLinearFEOperatorParameters>& params);
+        MechanicsLinearFEOperator(const AMP::shared_ptr<MechanicsLinearFEOperatorParameters>& params);
 
         /**
           Destructor
@@ -49,7 +49,7 @@ namespace AMP {
         /**
           This is called at the start of the FE assembly. The matrix is set to 0.
           */
-        void preAssembly(const boost::shared_ptr<OperatorParameters>& params);
+        void preAssembly(const AMP::shared_ptr<OperatorParameters>& params);
 
         /**
           This is called at the end of the FE assembly. The entries of the matrix corresponding
@@ -99,11 +99,11 @@ namespace AMP {
 
         std::vector<std::vector<double> > d_elementStiffnessMatrix; /**< Element stiffness matrix. */
 
-        boost::shared_ptr< MechanicsLinearElement > d_mechLinElem; /**< Element operation. */
+        AMP::shared_ptr< MechanicsLinearElement > d_mechLinElem; /**< Element operation. */
 
-        boost::shared_ptr< MechanicsLinearUpdatedLagrangianElement > d_mechLinULElem; /**< Linear Updated Lagrangian Element operation. */
+        AMP::shared_ptr< MechanicsLinearUpdatedLagrangianElement > d_mechLinULElem; /**< Linear Updated Lagrangian Element operation. */
 
-        boost::shared_ptr< MechanicsMaterialModel > d_materialModel; /**< Material model. */
+        AMP::shared_ptr< MechanicsMaterialModel > d_materialModel; /**< Material model. */
 
         AMP::LinearAlgebra::Vector::shared_ptr d_refXYZ; /**< Reference x, y and z coordinates. */
 
@@ -111,9 +111,9 @@ namespace AMP {
 
         bool d_useUpdatedLagrangian;
 
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Input variable */
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Input variable */
 
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output variable */
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output variable */
 
     };
 

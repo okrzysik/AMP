@@ -19,12 +19,12 @@ namespace Operator {
     public :
 
       //! Constructor
-      SubchannelFourEqLinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params);
+      SubchannelFourEqLinearOperator(const AMP::shared_ptr<SubchannelOperatorParameters> & params);
 
       //! Destructor
       virtual ~SubchannelFourEqLinearOperator() { }
 
-      void reset(const boost::shared_ptr<OperatorParameters>& params);
+      void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
       AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         return d_inpVariable;
@@ -46,10 +46,10 @@ namespace Operator {
       }
       
       //! Gets parameters from nonlinear operator for use in linear operator
-      boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
+      AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
       //! Get the element physics model
-      boost::shared_ptr<SubchannelPhysicsModel> getSubchannelPhysicsModel() { return d_subchannelPhysicsModel; }
+      AMP::shared_ptr<SubchannelPhysicsModel> getSubchannelPhysicsModel() { return d_subchannelPhysicsModel; }
     
       //! Get the Inlet Temperature [K]
       double getInletTemperature() { return d_Tin; }
@@ -58,7 +58,7 @@ namespace Operator {
       double getOutletPressure() { return d_Pout; }
 
       //! Get the current operator parameters
-      boost::shared_ptr<SubchannelOperatorParameters> getParams() { return d_params; }
+      AMP::shared_ptr<SubchannelOperatorParameters> getParams() { return d_params; }
 
       //! Makes map of lateral gaps to their centroids
       void getLateralFaces(
@@ -79,30 +79,30 @@ namespace Operator {
 
     protected:
 
-      boost::shared_ptr<SubchannelOperatorParameters> d_params;
+      AMP::shared_ptr<SubchannelOperatorParameters> d_params;
 
-      boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
+      AMP::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
     private :
 
       bool d_initialized;
 
       // Function used in reset to get double parameter or use default if missing
-      double getDoubleParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, double);
+      double getDoubleParameter(AMP::shared_ptr<SubchannelOperatorParameters>, std::string, double);
 
       // Function used in reset to get integer parameter or use default if missing
-      int getIntegerParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, int);
+      int getIntegerParameter(AMP::shared_ptr<SubchannelOperatorParameters>, std::string, int);
 
       // Function used in reset to get string parameter or use default if missing
-      std::string getStringParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, std::string);
+      std::string getStringParameter(AMP::shared_ptr<SubchannelOperatorParameters>, std::string, std::string);
 
       // Function used in reset to get bool parameter or use default if missing
-      bool getBoolParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, bool);
+      bool getBoolParameter(AMP::shared_ptr<SubchannelOperatorParameters>, std::string, bool);
 
-      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
-      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
-      boost::shared_ptr<AMP::LinearAlgebra::Vector> d_cladTemperature;
-      boost::shared_ptr<AMP::LinearAlgebra::Vector> d_frozenVec;
+      AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
+      AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+      AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_cladTemperature;
+      AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_frozenVec;
 
       bool d_forceNoConduction; // option to force conduction terms to zero; used for testing
       bool d_forceNoTurbulence; // option to force turbulence terms to zero; used for testing

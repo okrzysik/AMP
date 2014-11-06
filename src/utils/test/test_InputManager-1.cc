@@ -22,7 +22,7 @@
 #include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
 #include "utils/PIO.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 
 /************************************************************************
@@ -39,7 +39,7 @@ void mytest(AMP::UnitTest *ut)
     AMP::PIO::logOnlyNodeZero(log_file);
 
     // Create input database and parse all data in input file.
-    boost::shared_ptr<AMP::InputDatabase> input_db ( new AMP::InputDatabase("input_db") );
+    AMP::shared_ptr<AMP::InputDatabase> input_db ( new AMP::InputDatabase("input_db") );
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
 
     if ( !input_db->getBool("filename") ) 

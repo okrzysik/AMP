@@ -20,7 +20,7 @@ public :
 
     //! Default constructors
     SubchannelToPointMapParameters(): 
-        OperatorParameters(boost::shared_ptr<AMP::Database>()), 
+        OperatorParameters(AMP::shared_ptr<AMP::Database>()), 
         d_comm(AMP_COMM_WORLD) {};
 
     //! Deconstructor
@@ -35,7 +35,7 @@ public :
     std::vector<double> z;      //!< z-coordinate of the points to fill
     
     // Subchannel physics model
-    boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
+    AMP::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
     // Output variable (may be null on processors where x is empty)
     // Valid variables are: "Density", "Temperature"

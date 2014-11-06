@@ -1,7 +1,7 @@
 #ifndef included_AMP_TrilinosNOXSolverParameters
 #define included_AMP_TrilinosNOXSolverParameters
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/Database.h"
 #include "utils/AMP_MPI.h"
 #include "solvers/SolverStrategyParameters.h"
@@ -20,7 +20,7 @@ namespace Solver {
 class TrilinosNOXSolverParameters: public SolverStrategyParameters{
 public:
     TrilinosNOXSolverParameters(){}
-    TrilinosNOXSolverParameters(const boost::shared_ptr<AMP::Database> &db):SolverStrategyParameters(db) {}
+    TrilinosNOXSolverParameters(const AMP::shared_ptr<AMP::Database> &db):SolverStrategyParameters(db) {}
     virtual ~TrilinosNOXSolverParameters(){}
 
     AMP_MPI d_comm;

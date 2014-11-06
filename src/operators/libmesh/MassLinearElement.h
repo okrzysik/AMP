@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 /* AMP files */
 #include "operators/libmesh/MassElement.h"
@@ -16,7 +16,7 @@ class MassLinearElement : public MassElement
 {
 public :
         
-    MassLinearElement(const boost::shared_ptr<ElementOperationParameters>& params) :
+    MassLinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
         MassElement(params), 
         d_elementMassMatrix(NULL), 
         d_equation(MassDensityModel::UnknownMassEquation)

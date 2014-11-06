@@ -30,7 +30,7 @@ class MoabBasedOperatorParameters : public AMP::Operator::OperatorParameters
     public :
 
         // Typedefs
-        typedef boost::shared_ptr<AMP::Database>    SP_Database;
+        typedef AMP::shared_ptr<AMP::Database>    SP_Database;
         typedef AMP::Operator::OperatorParameters   Base;
 
         // Constructor

@@ -134,14 +134,14 @@ public:
     * exists in the database, then the old key record is deleted and the new
     * one is silently created in its place.
     */
-   virtual boost::shared_ptr<Database> putDatabase(const std::string& key);
+   virtual AMP::shared_ptr<Database> putDatabase(const std::string& key);
 
    /**
     * Get the database with the specified key name.  If the specified
     * key does not exist in the database or it is not a database, then
     * an error message is printed and the program exits.
     */
-   virtual boost::shared_ptr<Database> getDatabase(const std::string& key);
+   virtual AMP::shared_ptr<Database> getDatabase(const std::string& key);
 
    /**
     * Return whether the specified key represents a boolean entry.  If
@@ -722,7 +722,7 @@ private:
       int                         d_array_size;         // size of array data
       bool                        d_accessed;           // whether accessed
       bool                        d_from_default;       // from default key
-      boost::shared_ptr<Database>  d_database;        // sub-database
+      AMP::shared_ptr<Database>  d_database;        // sub-database
       std::vector<unsigned char>   d_boolean;         // boolean array value
       std::vector<DatabaseBox>     d_box;             // box array value
       std::vector<char>            d_char;            // char array value

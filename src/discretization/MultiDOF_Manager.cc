@@ -99,14 +99,14 @@ AMP::Mesh::MeshIterator multiDOFManager::getIterator( ) const
         return d_managers[0]->getIterator();
     }
     // Get the iterators for all sub DOFmanagers
-    std::vector<boost::shared_ptr<AMP::Mesh::MeshIterator> >  iterators(d_managers.size());
+    std::vector<AMP::shared_ptr<AMP::Mesh::MeshIterator> >  iterators(d_managers.size());
     for (size_t i=0; i<d_managers.size(); i++)
-        iterators[i] = boost::shared_ptr<AMP::Mesh::MeshIterator>( new AMP::Mesh::MeshIterator(d_managers[i]->getIterator()) );
+        iterators[i] = AMP::shared_ptr<AMP::Mesh::MeshIterator>( new AMP::Mesh::MeshIterator(d_managers[i]->getIterator()) );
     // Get the list of unique elements
     size_t N_tot = 0;
     for (size_t i=0; i<iterators.size(); i++)
         N_tot += iterators[i]->size();
-    boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( new std::vector<AMP::Mesh::MeshElement>(0) );
+    AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( new std::vector<AMP::Mesh::MeshElement>(0) );
     elements->reserve( N_tot );
     for (size_t i=0; i<iterators.size(); i++) {
         AMP::Mesh::MeshIterator it2 = iterators[i]->begin();
@@ -218,7 +218,7 @@ std::vector<DOFManager::shared_ptr>  multiDOFManager::getDOFManagers() const
 /****************************************************************
 * Subset the DOF manager                                        *
 ****************************************************************/
-boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP_MPI& comm_in )
+AMP::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP_MPI& comm_in )
 {
     // Check if we are dealing with a compatible comm
     if ( comm_in.compare(d_comm)!=0 ) 
@@ -236,11 +236,11 @@ boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP_MPI& comm_in )
     bool valid_DOF = !sub_managers.empty();
     valid_DOF = comm.anyReduce( valid_DOF );
     if ( !valid_DOF )
-        return boost::shared_ptr<DOFManager>();
+        return AMP::shared_ptr<DOFManager>();
     // Create the new multiDOFManager
-    return boost::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
+    return AMP::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
 }
-boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
+AMP::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
 {
     // Get the comm for the new DOFManager
     AMP_MPI comm(AMP_COMM_NULL);
@@ -251,7 +251,7 @@ boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::Mesh::s
         comm = d_comm;
     }
     if ( comm.isNull() )
-        return boost::shared_ptr<DOFManager>();
+        return AMP::shared_ptr<DOFManager>();
     // Subset all of the DOFManagers within this DOFManager
     bool changed = false;
     std::vector<DOFManager::shared_ptr> sub_managers;
@@ -272,11 +272,11 @@ boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::Mesh::s
     bool valid_DOF = !sub_managers.empty();
     valid_DOF = comm.anyReduce( valid_DOF );
     if ( !valid_DOF )
-        return boost::shared_ptr<DOFManager>();
+        return AMP::shared_ptr<DOFManager>();
     // Create the new multiDOFManager
-    return boost::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
+    return AMP::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
 }
-boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::MeshIterator &iterator, const AMP_MPI& comm_in )
+AMP::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::MeshIterator &iterator, const AMP_MPI& comm_in )
 {
     // Get the comm for the new DOFManager
     AMP_MPI comm = AMP_MPI::intersect( comm_in, d_comm );
@@ -300,9 +300,9 @@ boost::shared_ptr<DOFManager>  multiDOFManager::subset( const AMP::Mesh::MeshIte
     bool valid_DOF = !sub_managers.empty();
     valid_DOF = comm.anyReduce( valid_DOF );
     if ( !valid_DOF )
-        return boost::shared_ptr<DOFManager>();
+        return AMP::shared_ptr<DOFManager>();
     // Create the new multiDOFManager
-    return boost::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
+    return AMP::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
 }
 
 

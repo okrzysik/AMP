@@ -25,7 +25,7 @@ namespace AMP {
 
   InputManager *InputManager::s_manager_instance = NULL;
   bool InputManager::s_registered_callback = false;
-  boost::shared_ptr<Database> InputManager::s_input_db = boost::shared_ptr<Database>();
+  AMP::shared_ptr<Database> InputManager::s_input_db = AMP::shared_ptr<Database>();
 
   /*
   *************************************************************************
@@ -110,10 +110,10 @@ namespace AMP {
   *************************************************************************
   */
 
-  boost::shared_ptr<InputDatabase>
+  AMP::shared_ptr<InputDatabase>
     InputManager::parseInputFile(const std::string& filename)
     {
-      boost::shared_ptr<InputDatabase> db (new InputDatabase("main"));
+      AMP::shared_ptr<InputDatabase> db (new InputDatabase("main"));
       this->parseInputFile(filename, db);
       return(db);
     }
@@ -126,7 +126,7 @@ namespace AMP {
    *									*
   *************************************************************************
   */
-  boost::shared_ptr<Database> InputManager::getInputDatabase() 
+  AMP::shared_ptr<Database> InputManager::getInputDatabase() 
   {
     return(s_input_db);
   }
@@ -140,7 +140,7 @@ namespace AMP {
   */
 
   void InputManager::parseInputFile(
-      const std::string& filename, boost::shared_ptr<InputDatabase> db)
+      const std::string& filename, AMP::shared_ptr<InputDatabase> db)
   {
     FILE* fstream = NULL;
     if (comm.getRank() == 0) {

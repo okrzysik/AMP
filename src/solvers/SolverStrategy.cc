@@ -31,7 +31,7 @@ SolverStrategy::SolverStrategy()
     d_dMaxError            = 0;
     d_iObjectId            = 0;
 }
-SolverStrategy::SolverStrategy(boost::shared_ptr<SolverStrategyParameters> parameters)
+SolverStrategy::SolverStrategy(AMP::shared_ptr<SolverStrategyParameters> parameters)
 {
     AMP_INSIST(parameters.get()!=NULL,"NULL SolverStrategyParameters object");
 
@@ -59,7 +59,7 @@ SolverStrategy::~SolverStrategy()
 /****************************************************************
 * Initialize                                                    *
 ****************************************************************/
-void SolverStrategy::getFromInput(const boost::shared_ptr<AMP::Database>& db)
+void SolverStrategy::getFromInput(const AMP::shared_ptr<AMP::Database>& db)
 {
     AMP_INSIST(db.get()!=NULL,"InputDatabase object must be non-NULL");
     d_iMaxIterations = db->getIntegerWithDefault("max_iterations", 1);
@@ -67,7 +67,7 @@ void SolverStrategy::getFromInput(const boost::shared_ptr<AMP::Database>& db)
     d_iDebugPrintInfoLevel = db->getIntegerWithDefault("print_info_level", 0);
     d_bUseZeroInitialGuess = db->getBoolWithDefault("zero_initial_guess", true);
 }
-void SolverStrategy::initialize(boost::shared_ptr< SolverStrategyParameters >  const parameters)
+void SolverStrategy::initialize(AMP::shared_ptr< SolverStrategyParameters >  const parameters)
 {
     AMP_INSIST(parameters.get()!=NULL, "SolverStrategyParameters object cannot be NULL");
 }
@@ -76,14 +76,14 @@ void SolverStrategy::initialize(boost::shared_ptr< SolverStrategyParameters >  c
 /****************************************************************
 * Reset                                                         *
 ****************************************************************/
-void SolverStrategy::resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params)
+void SolverStrategy::resetOperator(const AMP::shared_ptr<AMP::Operator::OperatorParameters> params)
 {
     if(d_pOperator.get()!=NULL)
     {
         d_pOperator->reset(params);
     }
 }
-void SolverStrategy::reset(boost::shared_ptr<SolverStrategyParameters> parameters)
+void SolverStrategy::reset(AMP::shared_ptr<SolverStrategyParameters> parameters)
 {
 }
 
@@ -100,7 +100,7 @@ void SolverStrategy::setConvergenceTolerance(
     d_iMaxIterations = max_iterations;
     d_dMaxError      = max_error;
 }
-void SolverStrategy::setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess )
+void SolverStrategy::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess )
 {
 }
 
@@ -108,10 +108,10 @@ void SolverStrategy::setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vect
 /****************************************************************
 * Empty functions                                               *
 ****************************************************************/
-void SolverStrategy::appendSolutionVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> vec )
+void SolverStrategy::appendSolutionVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> vec )
 {
 }
-void SolverStrategy::appendRhsVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> vec ) 
+void SolverStrategy::appendRhsVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> vec ) 
 {
 }
 void SolverStrategy::formRhs( double t,   AMP::LinearAlgebra::Vector::shared_ptr f,

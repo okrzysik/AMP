@@ -15,7 +15,7 @@ namespace Mesh {
 /********************************************************
 * Constructors                                          *
 ********************************************************/
-SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh, 
+SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh, 
     const AMP::Mesh::MeshIterator iterator_in, bool isGlobal )
 {
     this->d_parent_mesh = mesh;
@@ -61,10 +61,10 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh,
     }
     // Create a list of all elements of the desired type
     d_max_gcw = d_parent_mesh->getMaxGhostWidth();
-    d_elements = std::vector<std::vector<boost::shared_ptr<std::vector<MeshElement> > > >((int)GeomDim+1);
+    d_elements = std::vector<std::vector<AMP::shared_ptr<std::vector<MeshElement> > > >((int)GeomDim+1);
     for (int i=0; i<=GeomDim; i++) {
-        d_elements[i] = std::vector<boost::shared_ptr<std::vector<MeshElement> > >( 
-            d_max_gcw+1, boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>() ) );
+        d_elements[i] = std::vector<AMP::shared_ptr<std::vector<MeshElement> > >( 
+            d_max_gcw+1, AMP::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>() ) );
     }
     int gcw = 0;
     while ( 1 ) {
@@ -72,7 +72,7 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh,
         MeshIterator iterator2 = iterator1.begin();
         if ( gcw>0 ) 
             iterator2 = Mesh::getIterator( Complement, iterator1, mesh->getIterator(GeomDim,0) );
-        d_elements[GeomDim][gcw] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(iterator2.size()) );
+        d_elements[GeomDim][gcw] = AMP::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(iterator2.size()) );
         for (size_t i=0; i<iterator2.size(); i++) {
             d_elements[GeomDim][gcw]->operator[](i) = *iterator2;
             ++iterator2;
@@ -84,7 +84,7 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh,
     }
     // Create a list of all elements that compose the elements of GeomType
     for (int t=0; t<(int)GeomDim; t++) {
-        d_elements[t] = std::vector<boost::shared_ptr<std::vector<MeshElement> > >(d_max_gcw+1);
+        d_elements[t] = std::vector<AMP::shared_ptr<std::vector<MeshElement> > >(d_max_gcw+1);
         for (int gcw=0; gcw<=d_max_gcw; gcw++) {
             std::set<MeshElement> list;
             iterator = this->getIterator(GeomDim,gcw);
@@ -110,7 +110,7 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh,
                 }
                 ++iterator;
             }
-            d_elements[t][gcw] = boost::shared_ptr<std::vector<MeshElement> >( 
+            d_elements[t][gcw] = AMP::shared_ptr<std::vector<MeshElement> >( 
                 new std::vector<MeshElement>(list.begin(),list.end()) );
         }
     }
@@ -203,13 +203,13 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh,
                 MeshIterator iterator1 = MultiVectorIterator( d_elements[t][gcw], 0 );
                 MeshIterator iterator2 = d_parent_mesh->getBoundaryIDIterator((GeomType)t,boundary_ids[i],gcw);
                 iterator = Mesh::getIterator( Intersection, iterator1, iterator2 );
-                boost::shared_ptr<std::vector<MeshElement> > elements;
+                AMP::shared_ptr<std::vector<MeshElement> > elements;
                 if ( iterator.size()==0 ) {
-                    elements = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(0) );
+                    elements = AMP::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(0) );
                 } else if ( iterator.size() == iterator1.size() ) {
                     elements = d_elements[t][gcw];
                 } else {
-                    elements = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(iterator.size()) );
+                    elements = AMP::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(iterator.size()) );
                     for (size_t j=0; j<iterator.size(); j++) {
                         elements->operator[](j) = *iterator;
                         ++iterator;
@@ -224,7 +224,7 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh,
                 map_id.id = boundary_ids[i];
                 map_id.type = (GeomType)t;
                 map_id.gcw = gcw;
-                std::pair< map_id_struct, boost::shared_ptr<std::vector<MeshElement> > > data( map_id, elements );
+                std::pair< map_id_struct, AMP::shared_ptr<std::vector<MeshElement> > > data( map_id, elements );
                 d_boundarySets.insert( data );
                 new_boundary_ids.insert( boundary_ids[i] );
             }
@@ -243,20 +243,20 @@ SubsetMesh::SubsetMesh( boost::shared_ptr<const Mesh> mesh,
         d_boundaryIdSets = std::vector<int>(new_boundary_ids.begin(),new_boundary_ids.end());
     }
     // Create the surface sets
-    d_surface = std::vector<std::vector<boost::shared_ptr<std::vector<MeshElement> > > >((int)GeomDim+1);
+    d_surface = std::vector<std::vector<AMP::shared_ptr<std::vector<MeshElement> > > >((int)GeomDim+1);
     for (int t=0; t<=(int)GeomDim; t++) {
-        d_surface[t] = std::vector<boost::shared_ptr<std::vector<MeshElement> > >(d_max_gcw+1);
+        d_surface[t] = std::vector<AMP::shared_ptr<std::vector<MeshElement> > >(d_max_gcw+1);
         for (int gcw=0; gcw<=d_max_gcw; gcw++) {
             MeshIterator iterator1 = MultiVectorIterator( d_elements[t][gcw], 0 );
             MeshIterator iterator2 = d_parent_mesh->getSurfaceIterator((GeomType)t,gcw);
             iterator = Mesh::getIterator( Intersection, iterator1, iterator2 );
-            boost::shared_ptr<std::vector<MeshElement> > elements;
+            AMP::shared_ptr<std::vector<MeshElement> > elements;
             if ( iterator.size()==0 ) {
-                elements = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(0) );
+                elements = AMP::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(0) );
             } else if ( iterator.size() == iterator1.size() ) {
                 elements = d_elements[t][gcw];
             } else {
-                elements = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(iterator.size()) );
+                elements = AMP::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(iterator.size()) );
                 for (size_t j=0; j<iterator.size(); j++) {
                     elements->operator[](j) = *iterator;
                     ++iterator;
@@ -333,23 +333,23 @@ std::vector<MeshID> SubsetMesh::getLocalBaseMeshIDs() const
 /********************************************************
 * Function to return the mesh with the given ID         *
 ********************************************************/
-boost::shared_ptr<Mesh>  SubsetMesh::Subset( MeshID meshID ) const
+AMP::shared_ptr<Mesh>  SubsetMesh::Subset( MeshID meshID ) const
 {
     if ( d_meshID==meshID || d_parent_mesh->meshID()==meshID ) 
-        return boost::const_pointer_cast<Mesh>( shared_from_this() );
+        return AMP::const_pointer_cast<Mesh>( shared_from_this() );
     else
-        return boost::shared_ptr<Mesh>();
+        return AMP::shared_ptr<Mesh>();
 }
 
 
 /********************************************************
 * Function to return the mesh with the given name       *
 ********************************************************/
-boost::shared_ptr<Mesh>  SubsetMesh::Subset( std::string name ) const {
+AMP::shared_ptr<Mesh>  SubsetMesh::Subset( std::string name ) const {
     if ( d_name==name || d_parent_mesh->getName()==name ) 
-        return boost::const_pointer_cast<Mesh>( shared_from_this() );
+        return AMP::const_pointer_cast<Mesh>( shared_from_this() );
     else
-        return boost::shared_ptr<Mesh>();
+        return AMP::shared_ptr<Mesh>();
 }
 
 
@@ -363,9 +363,9 @@ MeshIterator SubsetMesh::getIterator( const GeomType type, const int gcw ) const
         gcw2 = (int) d_elements[type].size()-1;
     if ( gcw2 == 0 )
         return MultiVectorIterator( d_elements[type][0], 0 );
-    std::vector<boost::shared_ptr<MeshIterator> > iterators(gcw2+1);
+    std::vector<AMP::shared_ptr<MeshIterator> > iterators(gcw2+1);
     for (int i=0; i<=gcw2; i++)
-        iterators[i] = boost::shared_ptr<MeshIterator>( new MultiVectorIterator( d_elements[type][i], 0 ) );
+        iterators[i] = AMP::shared_ptr<MeshIterator>( new MultiVectorIterator( d_elements[type][i], 0 ) );
     return MultiIterator( iterators, 0 );
 }
 MeshIterator SubsetMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
@@ -374,9 +374,9 @@ MeshIterator SubsetMesh::getSurfaceIterator( const GeomType type, const int gcw 
         return MultiVectorIterator( d_surface[type][0], 0 );
     if ( gcw >= (int) d_surface[type].size() ) 
         AMP_ERROR("Maximum ghost width exceeded");
-    std::vector<boost::shared_ptr<MeshIterator> > iterators(gcw+1);
+    std::vector<AMP::shared_ptr<MeshIterator> > iterators(gcw+1);
     for (int i=0; i<=gcw; i++)
-        iterators[i] = boost::shared_ptr<MeshIterator>( new MultiVectorIterator( d_surface[type][i], 0 ) );
+        iterators[i] = AMP::shared_ptr<MeshIterator>( new MultiVectorIterator( d_surface[type][i], 0 ) );
     return MultiIterator( iterators, 0 );
 }
 std::vector<int> SubsetMesh::getBoundaryIDs ( ) const
@@ -385,17 +385,17 @@ std::vector<int> SubsetMesh::getBoundaryIDs ( ) const
 }
 MeshIterator SubsetMesh::getBoundaryIDIterator ( const GeomType type, const int id, const int gcw ) const
 {
-    std::vector<boost::shared_ptr<MeshIterator> > iterators;
+    std::vector<AMP::shared_ptr<MeshIterator> > iterators;
     iterators.reserve( gcw+1 );
     for (int i=0; i<=gcw; i++) {
         map_id_struct map_id;
         map_id.id = id;
         map_id.type = type;
         map_id.gcw = i;
-        std::map< map_id_struct, boost::shared_ptr<std::vector<MeshElement> > >::const_iterator  map_it = d_boundarySets.find(map_id);
+        std::map< map_id_struct, AMP::shared_ptr<std::vector<MeshElement> > >::const_iterator  map_it = d_boundarySets.find(map_id);
         if ( map_it == d_boundarySets.end() )
             continue;
-        iterators.push_back( boost::shared_ptr<MeshIterator>( new MultiVectorIterator( map_it->second, 0 ) ) );
+        iterators.push_back( AMP::shared_ptr<MeshIterator>( new MultiVectorIterator( map_it->second, 0 ) ) );
     }
     if ( iterators.empty() )
         return MeshIterator();

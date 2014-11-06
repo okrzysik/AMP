@@ -5,10 +5,10 @@ namespace AMP {
 namespace Operator {
 
 
-void MapOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
+void MapOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params)
 {
-    boost::shared_ptr<MapOperatorParameters> myparams =
-    boost::dynamic_pointer_cast<MapOperatorParameters>(params);
+    AMP::shared_ptr<MapOperatorParameters> myparams =
+    AMP::dynamic_pointer_cast<MapOperatorParameters>(params);
 
     AMP_INSIST( myparams.get()!=NULL, "NULL parameter" );
     AMP_INSIST( myparams->d_db.get()!=NULL, "NULL database" );

@@ -50,7 +50,7 @@ STKMesh::STKMesh( const MeshParameters::shared_ptr &params_in ):
     AMP_INSIST(params.get(),"Params must not be null");
     AMP_INSIST(d_comm!=AMP_MPI(AMP_COMM_NULL),"Communicator must be set");
     // Intialize STKMesh
-    STKmeshInit = boost::shared_ptr<initializeSTKMesh>(new initializeSTKMesh(d_comm));
+    STKmeshInit = AMP::shared_ptr<initializeSTKMesh>(new initializeSTKMesh(d_comm));
     // Load the mesh
     if ( d_db.get() ) {
         // Database exists
@@ -62,7 +62,7 @@ STKMesh::STKMesh( const MeshParameters::shared_ptr &params_in ):
         GeomDim = (GeomType) PhysicalDim;
         if ( d_db->keyExists("FileName") ) {
             // Read an existing mesh
-            d_STKIOFixture = boost::shared_ptr<stk::io::util::IO_Fixture>
+            d_STKIOFixture = AMP::shared_ptr<stk::io::util::IO_Fixture>
                 (new  stk::io::util::IO_Fixture(d_comm.getCommunicator()));
             d_STKIOFixture->initialize_meta_data(d_db->getString("FileName"));
             stk::mesh::fem::FEMMetaData & meta_data = d_STKIOFixture->meta_data();
@@ -74,7 +74,7 @@ STKMesh::STKMesh( const MeshParameters::shared_ptr &params_in ):
             d_STKIORegion = d_STKIOFixture->input_ioss_region();
         } else if ( d_db->keyExists("Generator") ) {
             std::string generator = d_db->getString("Generator");
-            d_STKGMeshFixture = boost::shared_ptr<stk::io::util::Gmesh_STKmesh_Fixture>
+            d_STKGMeshFixture = AMP::shared_ptr<stk::io::util::Gmesh_STKmesh_Fixture>
                 (new  stk::io::util::Gmesh_STKmesh_Fixture(d_comm.getCommunicator(),generator));
             d_STKMeshMeta.reset(&d_STKGMeshFixture->getFEMMetaData(), NullDeleter());
             d_STKMeshBulk.reset(&d_STKGMeshFixture->getBulkData(),    NullDeleter());
@@ -97,7 +97,7 @@ STKMesh::STKMesh( const MeshParameters::shared_ptr &params_in ):
     PROFILE_STOP("constructor");
 }
 
-STKMesh::STKMesh( boost::shared_ptr<stk::mesh::BulkData> mesh, std::string name )
+STKMesh::STKMesh( AMP::shared_ptr<stk::mesh::BulkData> mesh, std::string name )
 {
     // Set the base properties
     const stk::mesh::MetaData *meta_data = &mesh->mesh_meta_data();
@@ -257,8 +257,8 @@ void STKMesh::initialize()
         }
         size_t N_global = d_comm.sumReduce(N_local);
         AMP_ASSERT(N_global>=n_global[i]);
-        boost::shared_ptr<std::vector<MeshElement> >  local_elements( new std::vector<MeshElement>(N_local) );
-        boost::shared_ptr<std::vector<MeshElement> >  ghost_elements( new std::vector<MeshElement>(N_ghost) );
+        AMP::shared_ptr<std::vector<MeshElement> >  local_elements( new std::vector<MeshElement>(N_local) );
+        AMP::shared_ptr<std::vector<MeshElement> >  ghost_elements( new std::vector<MeshElement>(N_ghost) );
         N_local = 0;
         N_ghost = 0;
         for (std::set<MeshElement>::iterator it2 = element_list.begin(); it2!=element_list.end(); ++it2) {
@@ -273,8 +273,8 @@ void STKMesh::initialize()
         }
         AMP::Utilities::quicksort(*local_elements);  // Make sure the elments are sorted for searching
         AMP::Utilities::quicksort(*ghost_elements);  // Make sure the elments are sorted for searching
-        std::pair< GeomType, boost::shared_ptr<std::vector<MeshElement> > > local_pair( type, local_elements );
-        std::pair< GeomType, boost::shared_ptr<std::vector<MeshElement> > > ghost_pair( type, ghost_elements );
+        std::pair< GeomType, AMP::shared_ptr<std::vector<MeshElement> > > local_pair( type, local_elements );
+        std::pair< GeomType, AMP::shared_ptr<std::vector<MeshElement> > > ghost_pair( type, ghost_elements );
         d_localElements.insert( local_pair );
         d_ghostElements.insert( ghost_pair );
         n_local[type] = local_elements->size();
@@ -282,8 +282,8 @@ void STKMesh::initialize()
         n_ghost[type] = ghost_elements->size();
     }
     // Construct the boundary elements for Node and Elem
-    d_localSurfaceElements = std::vector< boost::shared_ptr<std::vector<MeshElement> > >((int)GeomDim+1);
-    d_ghostSurfaceElements = std::vector< boost::shared_ptr<std::vector<MeshElement> > >((int)GeomDim+1);
+    d_localSurfaceElements = std::vector< AMP::shared_ptr<std::vector<MeshElement> > >((int)GeomDim+1);
+    d_ghostSurfaceElements = std::vector< AMP::shared_ptr<std::vector<MeshElement> > >((int)GeomDim+1);
     std::set< stk::mesh::Entity* > localBoundaryElements;
     std::set< stk::mesh::Entity* > ghostBoundaryElements;
     std::set< stk::mesh::Entity* > localBoundaryNodes;
@@ -314,7 +314,7 @@ void STKMesh::initialize()
         }
     }
 
-    d_localSurfaceElements[GeomDim] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(localBoundaryElements.size()) );
+    d_localSurfaceElements[GeomDim] = AMP::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(localBoundaryElements.size()) );
     std::set< stk::mesh::Entity* >::iterator elem_iterator = localBoundaryElements.begin();
     for (size_t i=0; i<localBoundaryElements.size(); i++) {
         (*d_localSurfaceElements[GeomDim])[i] = STKMeshElement(PhysicalDim, *elem_iterator, rank, d_meshID, this );
@@ -323,7 +323,7 @@ void STKMesh::initialize()
     AMP::Utilities::quicksort(*d_localSurfaceElements[GeomDim]);
 
 
-    d_ghostSurfaceElements[GeomDim] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(ghostBoundaryElements.size()) );
+    d_ghostSurfaceElements[GeomDim] = AMP::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(ghostBoundaryElements.size()) );
     elem_iterator = ghostBoundaryElements.begin();
     for (size_t i=0; i<ghostBoundaryElements.size(); i++) {
         (*d_ghostSurfaceElements[GeomDim])[i] = STKMeshElement(PhysicalDim, *elem_iterator, rank, d_meshID, this );
@@ -332,7 +332,7 @@ void STKMesh::initialize()
     AMP::Utilities::quicksort(*d_ghostSurfaceElements[GeomDim]);
 
 
-    d_localSurfaceElements[Vertex] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(localBoundaryNodes.size()) );
+    d_localSurfaceElements[Vertex] = AMP::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(localBoundaryNodes.size()) );
     std::set< stk::mesh::Entity* >::iterator node_iterator = localBoundaryNodes.begin();
     for (size_t i=0; i<localBoundaryNodes.size(); i++) {
         (*d_localSurfaceElements[Vertex])[i] = STKMeshElement(PhysicalDim, *node_iterator, rank, d_meshID, this );
@@ -341,7 +341,7 @@ void STKMesh::initialize()
     AMP::Utilities::quicksort(*d_localSurfaceElements[Vertex]);
 
 
-    d_ghostSurfaceElements[Vertex] = boost::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(ghostBoundaryNodes.size()) );
+    d_ghostSurfaceElements[Vertex] = AMP::shared_ptr<std::vector<MeshElement> >( new std::vector<MeshElement>(ghostBoundaryNodes.size()) );
     node_iterator = ghostBoundaryNodes.begin();
     for (size_t i=0; i<ghostBoundaryNodes.size(); i++) {
         (*d_ghostSurfaceElements[Vertex])[i] = STKMeshElement(PhysicalDim,  *node_iterator, rank, d_meshID, this );
@@ -371,9 +371,9 @@ void STKMesh::initialize()
             }
             ++it;
         }
-        d_localSurfaceElements[type2] = boost::shared_ptr<std::vector<MeshElement> >(
+        d_localSurfaceElements[type2] = AMP::shared_ptr<std::vector<MeshElement> >(
             new std::vector<MeshElement>(local.begin(),local.end()) );
-        d_ghostSurfaceElements[type2] = boost::shared_ptr<std::vector<MeshElement> >(
+        d_ghostSurfaceElements[type2] = AMP::shared_ptr<std::vector<MeshElement> >(
             new std::vector<MeshElement>(ghost.begin(),ghost.end()) );
         AMP::Utilities::quicksort(*d_localSurfaceElements[type2]);
         AMP::Utilities::quicksort(*d_ghostSurfaceElements[type2]);
@@ -407,7 +407,7 @@ void STKMesh::initialize()
                 ++curElem;
             }
             // Create the boundary list
-            boost::shared_ptr<std::vector<MeshElement> > list( new std::vector<MeshElement>(N) );
+            AMP::shared_ptr<std::vector<MeshElement> > list( new std::vector<MeshElement>(N) );
             curElem = iterator.begin();
             endElem = iterator.end();
             N = 0;
@@ -420,7 +420,7 @@ void STKMesh::initialize()
             }
             // Store the list
             std::pair<int,GeomType> mapid = std::pair<int,GeomType>(id,type);
-            std::pair< std::pair<int,GeomType>, boost::shared_ptr<std::vector<MeshElement> > > entry(mapid,list);
+            std::pair< std::pair<int,GeomType>, AMP::shared_ptr<std::vector<MeshElement> > > entry(mapid,list);
             d_boundarySets.insert(entry);
         }
     }
@@ -450,7 +450,7 @@ void STKMesh::initialize()
 ********************************************************/
 size_t STKMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
-    boost::shared_ptr<AMP::Database> database = params->getDatabase();
+    AMP::shared_ptr<AMP::Database> database = params->getDatabase();
     AMP_ASSERT(database.get()!=NULL);
     size_t NumberOfElements=0;
     if ( database->keyExists("NumberOfElements") ) {
@@ -567,16 +567,16 @@ MeshIterator STKMesh::getIterator( const GeomType type, const int gcw ) const
 MeshIterator STKMesh::getSurfaceIterator ( const GeomType type, const int gcw ) const
 {
     AMP_ASSERT( type>=0 && type<=GeomDim );
-    boost::shared_ptr<std::vector<MeshElement> > local = d_localSurfaceElements[type];
-    boost::shared_ptr<std::vector<MeshElement> > ghost = d_ghostSurfaceElements[type];
+    AMP::shared_ptr<std::vector<MeshElement> > local = d_localSurfaceElements[type];
+    AMP::shared_ptr<std::vector<MeshElement> > ghost = d_ghostSurfaceElements[type];
     if ( local.get()==NULL || ghost.get()==NULL )
         AMP_ERROR("Surface iterator over the given geometry type is not supported");
     if ( gcw == 0 ) {
         return MultiVectorIterator( local, 0 );
     } else if ( gcw == 1 ) {
         std::vector<MeshIterator::shared_ptr> iterators(2);
-        iterators[0] = boost::shared_ptr<MeshIterator>( new MultiVectorIterator( local, 0 ) );
-        iterators[1] = boost::shared_ptr<MeshIterator>( new MultiVectorIterator( ghost, 0 ) );
+        iterators[0] = AMP::shared_ptr<MeshIterator>( new MultiVectorIterator( local, 0 ) );
+        iterators[1] = AMP::shared_ptr<MeshIterator>( new MultiVectorIterator( ghost, 0 ) );
         return MultiIterator( iterators, 0 );
     } else {
         AMP_ERROR("STKmesh has maximum ghost width of 1");
@@ -606,8 +606,8 @@ MeshIterator STKMesh::getBoundaryIDIterator ( const GeomType type, const int id,
 {
     AMP_INSIST(gcw==0,"Iterator over ghost boundary elements is not supported yet");
     std::pair<int,GeomType> mapid = std::pair<int,GeomType>(id,type);
-    std::map< std::pair<int,GeomType>, boost::shared_ptr<std::vector<MeshElement> > >::const_iterator it;
-    boost::shared_ptr<std::vector<MeshElement> > list( new std::vector<MeshElement>() );
+    std::map< std::pair<int,GeomType>, AMP::shared_ptr<std::vector<MeshElement> > >::const_iterator it;
+    AMP::shared_ptr<std::vector<MeshElement> > list( new std::vector<MeshElement>() );
     it = d_boundarySets.find(mapid);
     if ( it != d_boundarySets.end() )
         list = it->second;
@@ -661,7 +661,7 @@ MeshElement STKMesh::getElement ( const MeshElementID &elem_id ) const
         return STKMeshElement( (int)PhysicalDim,  node,  rank, mesh_id, this );
     }
     // All other types are stored in sorted lists
-    boost::shared_ptr<std::vector<MeshElement> > list;
+    AMP::shared_ptr<std::vector<MeshElement> > list;
     if ( (int) elem_id.owner_rank() == d_comm.getRank() )
         list = (d_localElements.find(elem_id.type()))->second;
     else

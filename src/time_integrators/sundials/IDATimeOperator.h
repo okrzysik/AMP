@@ -2,7 +2,7 @@
 #define included_IDATimeOperator
 
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "operators/Operator.h"
 #include "operators/OperatorParameters.h"
 #include "operators/libmesh/MassLinearFEOperator.h"
@@ -39,14 +39,14 @@ namespace TimeIntegrator{
      * Main constructor.
      @param [in] params: shared pointer to TimeOperatorParameters object.
      */
-    IDATimeOperator(boost::shared_ptr<AMP::Operator::OperatorParameters > params);
+    IDATimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > params);
 
     /**
      * virtual destructor
      */
     virtual ~IDATimeOperator();
     
-    //virtual void reset(const boost::shared_ptr<AMP::Operator::OperatorParameters>& params);
+    //virtual void reset(const AMP::shared_ptr<AMP::Operator::OperatorParameters>& params);
     
       /**
         The function that computes the residual.
@@ -67,13 +67,13 @@ namespace TimeIntegrator{
      * registers the time derivative vector provided by IDA with this operator
      @param [in] vec   shared pointer to time derivative computed by IDA
      */
-    void registerIDATimeDerivative(boost::shared_ptr<AMP::LinearAlgebra::Vector> vec) {d_pIDATimeDerivative = vec; }
+    void registerIDATimeDerivative(AMP::shared_ptr<AMP::LinearAlgebra::Vector> vec) {d_pIDATimeDerivative = vec; }
 
     /**
      * registers a source term if any
      @param [in] vec   shared pointer to vector for source term
      */
-    void registerSourceTerm(boost::shared_ptr<AMP::LinearAlgebra::Vector> vec) {d_pSourceTerm = vec; }
+    void registerSourceTerm(AMP::shared_ptr<AMP::LinearAlgebra::Vector> vec) {d_pSourceTerm = vec; }
 
     /**
      * sets the current time for the operator
@@ -85,7 +85,7 @@ namespace TimeIntegrator{
 
     IDATimeOperator();
     
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pIDATimeDerivative;
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pIDATimeDerivative;
     
     bool d_cloningHappened;
     

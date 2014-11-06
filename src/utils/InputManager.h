@@ -12,7 +12,7 @@
 
 
 #include "InputDatabase.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #ifndef included_String
 #include <string>
 #define included_String
@@ -59,7 +59,7 @@ namespace AMP {
   {
     public:
 
-      typedef boost::shared_ptr<InputManager> shared_ptr;
+      typedef AMP::shared_ptr<InputManager> shared_ptr;
 
       /**
        * Return a pointer to the single instance of the input manager.
@@ -96,10 +96,10 @@ namespace AMP {
        * AMP class:
        *
        *       // get root database
-       *        boost::shared_ptr<Database> root_db =
+       *        AMP::shared_ptr<Database> root_db =
        *          InputManager::getManager()->getInputDatabase();
        *       // get class's sub-database
-       *        boost::shared_ptr<Database> class_db = root_db->getDatabase("MyClass");
+       *        AMP::shared_ptr<Database> class_db = root_db->getDatabase("MyClass");
        *       // get parameter(s) from sub-database
        *       int dummy = class_db->getInteger("dummy");
        *      
@@ -113,19 +113,19 @@ namespace AMP {
        * This function is intended for AMP classes in which there is no
        * easy or efficient way to supply input parameters.
        */
-      static boost::shared_ptr<Database> getInputDatabase();
+      static AMP::shared_ptr<Database> getInputDatabase();
 
       /**
        * Create a new database named "main" from the specified input file.
        */
-      virtual boost::shared_ptr<InputDatabase> parseInputFile(
+      virtual AMP::shared_ptr<InputDatabase> parseInputFile(
           const std::string& filename);
 
       /**
        * Parse data from the specified file into the existing database.
        */
       virtual void parseInputFile(
-          const std::string& filename, boost::shared_ptr<InputDatabase> db);
+          const std::string& filename, AMP::shared_ptr<InputDatabase> db);
 
     protected:
       /**
@@ -150,7 +150,7 @@ namespace AMP {
       static InputManager *s_manager_instance;
       static bool s_registered_callback;
 
-      static boost::shared_ptr<Database> s_input_db;
+      static AMP::shared_ptr<Database> s_input_db;
   };
 
 

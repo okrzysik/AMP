@@ -9,7 +9,7 @@ namespace AMP {
 
     class SecondOperator : public OnePointOperator {
       public :
-        SecondOperator(const boost::shared_ptr<OperatorParameters> & params) : OnePointOperator(params) {
+        SecondOperator(const AMP::shared_ptr<OperatorParameters> & params) : OnePointOperator(params) {
           d_constant = 3.0;
           d_primaryVar.reset(new AMP::LinearAlgebra::Variable(params->d_db->getString("PrimaryVariable")));
           d_secondaryVar.reset(new AMP::LinearAlgebra::Variable(params->d_db->getString("SecondaryVariable")));
@@ -30,7 +30,7 @@ namespace AMP {
         }
 
         AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
-          boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(new AMP::LinearAlgebra::MultiVariable("MultiVariable"));
+          AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(new AMP::LinearAlgebra::MultiVariable("MultiVariable"));
           retVariable->add(d_primaryVar);
           retVariable->add(d_secondaryVar);
           return retVariable;

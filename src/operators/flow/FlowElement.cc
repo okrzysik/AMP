@@ -14,7 +14,7 @@
 namespace AMP {
 namespace Operator {
 
-FlowElement :: FlowElement (const boost::shared_ptr<ElementOperationParameters> & params) :
+FlowElement :: FlowElement (const AMP::shared_ptr<ElementOperationParameters> & params) :
     ElementOperation(params),
     d_elem(NULL)
 {

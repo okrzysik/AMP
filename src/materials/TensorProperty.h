@@ -80,8 +80,8 @@ private:
 	template<class INPUT_VTYPE, class RETURN_VTYPE>
 	void
 	evalvActual(
-		std::vector<std::vector<boost::shared_ptr<RETURN_VTYPE> > >& r,
-		const std::map<std::string, boost::shared_ptr<INPUT_VTYPE> >& args);
+		std::vector<std::vector<AMP::shared_ptr<RETURN_VTYPE> > >& r,
+		const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE> >& args);
 public:
 
 	/**
@@ -106,8 +106,8 @@ public:
 	 */
 	virtual void
 	evalv(
-		std::vector<std::vector<boost::shared_ptr<std::vector<Number> > > >& r,
-		const std::map<std::string, boost::shared_ptr<std::vector<Number> > >& args);
+		std::vector<std::vector<AMP::shared_ptr<std::vector<Number> > > >& r,
+		const std::map<std::string, AMP::shared_ptr<std::vector<Number> > >& args);
 
 	/** Wrapper function that calls evalvActual for each argument set
 	 *  \param r tensor of AMP vectors of return values
@@ -122,8 +122,8 @@ public:
 	 */
 	virtual void
 	evalv(
-		std::vector<std::vector<boost::shared_ptr<AMP::LinearAlgebra::Vector> > >& r,
-		const std::map<std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> >& args);
+		std::vector<std::vector<AMP::shared_ptr<AMP::LinearAlgebra::Vector> > >& r,
+		const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector> >& args);
 
 	/** Wrapper function that calls evalvActualVector for each argument set
 	 *  \param r tensor of AMP vectors of return values
@@ -135,8 +135,8 @@ public:
 	 */
 	virtual void
 	evalv(
-		std::vector<std::vector<boost::shared_ptr<AMP::LinearAlgebra::Vector> > >& r,
-		const boost::shared_ptr<AMP::LinearAlgebra::MultiVector>& args);
+		std::vector<std::vector<AMP::shared_ptr<AMP::LinearAlgebra::Vector> > >& r,
+		const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector>& args);
 
 	// disable scalar evaluator
 	virtual Number
@@ -146,33 +146,33 @@ public:
 	// disable scalar evaluator
 	virtual void
 	evalv(std::vector<Number>& r,
-		const std::map<std::string, boost::shared_ptr<std::vector<Number> > >& args)
+		const std::map<std::string, AMP::shared_ptr<std::vector<Number> > >& args)
 	{AMP_INSIST(false, "cannot use scalar evaluator from tensor property");}
 
 	// disable scalar evaluator
 	virtual void
-	evalv(boost::shared_ptr<AMP::LinearAlgebra::Vector>& r,
-		const std::map<std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> >& args)
+	evalv(AMP::shared_ptr<AMP::LinearAlgebra::Vector>& r,
+		const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector> >& args)
 	{AMP_INSIST(false, "cannot use scalar evaluator from tensor property");}
 
 	// disable scalar evaluator
 	virtual void
-	evalv(boost::shared_ptr<AMP::LinearAlgebra::Vector>& r,
-		const boost::shared_ptr<AMP::LinearAlgebra::MultiVector>& args)
+	evalv(AMP::shared_ptr<AMP::LinearAlgebra::Vector>& r,
+		const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector>& args)
 	{AMP_INSIST(false, "cannot use scalar evaluator from tensor property");}
 };
 
 template<>
 void
 TensorProperty<double>::evalv(
-	std::vector<std::vector<boost::shared_ptr<AMP::LinearAlgebra::Vector> > >& r,
-	const std::map<std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> >& args);
+	std::vector<std::vector<AMP::shared_ptr<AMP::LinearAlgebra::Vector> > >& r,
+	const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector> >& args);
 
 template<>
 void
 TensorProperty<double>::evalv(
-	std::vector<std::vector<boost::shared_ptr<AMP::LinearAlgebra::Vector> > >& r,
-	const boost::shared_ptr<AMP::LinearAlgebra::MultiVector>& args);
+	std::vector<std::vector<AMP::shared_ptr<AMP::LinearAlgebra::Vector> > >& r,
+	const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector>& args);
 
 } // namespace Materials
 } // namespace AMP

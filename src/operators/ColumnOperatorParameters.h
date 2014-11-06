@@ -6,7 +6,7 @@
 #include "operators/OperatorParameters.h"
 
 /*Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include <vector>
 
@@ -21,12 +21,12 @@ namespace Operator {
   class ColumnOperatorParameters : public OperatorParameters {
     public :
 
-      ColumnOperatorParameters(const boost::shared_ptr<AMP::Database>& db)
+      ColumnOperatorParameters(const AMP::shared_ptr<AMP::Database>& db)
         : OperatorParameters(db) { }
 
       virtual ~ColumnOperatorParameters() { }
 
-      std::vector< boost::shared_ptr< OperatorParameters > > d_OperatorParameters;
+      std::vector< AMP::shared_ptr< OperatorParameters > > d_OperatorParameters;
   };
 
 }  

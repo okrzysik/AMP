@@ -8,7 +8,7 @@
 
 #include "ColumnOperatorParameters.h"
 #include "utils/Utilities.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP{
 namespace Operator {
@@ -17,9 +17,9 @@ namespace Operator {
   {
     public :
 
-      typedef boost::shared_ptr <RowOperator>  shared_ptr;
+      typedef AMP::shared_ptr <RowOperator>  shared_ptr;
 
-      RowOperator(const boost::shared_ptr<OperatorParameters> & params)
+      RowOperator(const AMP::shared_ptr<OperatorParameters> & params)
         : Operator () { 
           (void) params; 
           getAllJacobian = false;
@@ -28,10 +28,10 @@ namespace Operator {
 
       virtual ~RowOperator(){ }
 
-      virtual void reset(const boost::shared_ptr<OperatorParameters>& params)
+      virtual void reset(const AMP::shared_ptr<OperatorParameters>& params)
       {
-        boost::shared_ptr<ColumnOperatorParameters> fParams =
-          boost::dynamic_pointer_cast<ColumnOperatorParameters>(params);
+        AMP::shared_ptr<ColumnOperatorParameters> fParams =
+          AMP::dynamic_pointer_cast<ColumnOperatorParameters>(params);
 
         AMP_INSIST( (fParams.get() != NULL), "RowOperator::reset parameter object is NULL" );
 
@@ -48,7 +48,7 @@ namespace Operator {
         scalea[idx]=a;
       }
 
-      void  append(boost::shared_ptr< Operator > op, double a)
+      void  append(AMP::shared_ptr< Operator > op, double a)
       {
         AMP_INSIST( (op.get() != NULL), "AMP::RowOperator::appendRow input argument is a NULL operator");
 
@@ -69,14 +69,14 @@ namespace Operator {
           AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
           const double a = -1.0, const double b = 1.0);
 
-      virtual boost::shared_ptr<OperatorParameters>
+      virtual AMP::shared_ptr<OperatorParameters>
         getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u)
         {
-          boost::shared_ptr<AMP::Database> db;
+          AMP::shared_ptr<AMP::Database> db;
 
-          boost::shared_ptr<ColumnOperatorParameters> opParameters(new ColumnOperatorParameters(db));
+          AMP::shared_ptr<ColumnOperatorParameters> opParameters(new ColumnOperatorParameters(db));
           
-          boost::shared_ptr<OperatorParameters> rtParameters(new OperatorParameters(db));
+          AMP::shared_ptr<OperatorParameters> rtParameters(new OperatorParameters(db));
 
           if(getAllJacobian)
           {
@@ -87,7 +87,7 @@ namespace Operator {
               (opParameters->d_OperatorParameters)[i] = (d_Operators[i]->getJacobianParameters(u));
             }
 
-            rtParameters = boost::dynamic_pointer_cast<OperatorParameters>(opParameters);
+            rtParameters = AMP::dynamic_pointer_cast<OperatorParameters>(opParameters);
 
           }else{
             (opParameters->d_OperatorParameters).resize(d_paramsize);
@@ -97,7 +97,7 @@ namespace Operator {
               (opParameters->d_OperatorParameters)[i] = (d_Operators[i]->getJacobianParameters(u));
             }
 
-            rtParameters = boost::dynamic_pointer_cast<OperatorParameters>(opParameters);
+            rtParameters = AMP::dynamic_pointer_cast<OperatorParameters>(opParameters);
             //rtParameters = (d_Operators[0]->getJacobianParameters(u));
 
           }
@@ -109,13 +109,13 @@ namespace Operator {
         return d_OutputVariable;
       }
 
-      boost::shared_ptr< Operator > getOperator(const int i){return d_Operators[i]; }
+      AMP::shared_ptr< Operator > getOperator(const int i){return d_Operators[i]; }
 
       int getNumberOfOperators(void){return d_Operators.size(); }
 
     protected :
 
-      std::vector< boost::shared_ptr< Operator > > d_Operators;
+      std::vector< AMP::shared_ptr< Operator > > d_Operators;
 
       std::vector< double > scalea;
       int d_paramsize ;

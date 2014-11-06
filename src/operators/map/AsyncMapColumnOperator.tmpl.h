@@ -17,7 +17,7 @@ struct MapConstructionParam {
     AMP_MPI                             comm;
     MapConstructionType                 construction;
     MapDominance                        dominance;
-    boost::shared_ptr<AMP::Database>    database;
+    AMP::shared_ptr<AMP::Database>    database;
     std::string                         meshName;
     AMP::Mesh::Mesh::shared_ptr         mesh;
     std::string                         mapType;
@@ -28,12 +28,12 @@ extern size_t globalMapTagOffset;      // We need a global unique tag offset for
 
 
 template <typename MAP_TYPE>
-boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build ( 
-    AMP::Mesh::Mesh::shared_ptr manager, boost::shared_ptr<Database> database )
+AMP::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build ( 
+    AMP::Mesh::Mesh::shared_ptr manager, AMP::shared_ptr<Database> database )
 {
 
-    boost::shared_ptr<AsyncMapColumnOperatorParameters>  newParams ( new AsyncMapColumnOperatorParameters ( database ) );
-    boost::shared_ptr<AsyncMapColumnOperator>  newMapColumn ( new AsyncMapColumnOperator ( newParams ) );
+    AMP::shared_ptr<AsyncMapColumnOperatorParameters>  newParams ( new AsyncMapColumnOperatorParameters ( database ) );
+    AMP::shared_ptr<AsyncMapColumnOperator>  newMapColumn ( new AsyncMapColumnOperator ( newParams ) );
 
     // Check that the map type matches the maps we are building
     AMP_ASSERT(database->keyExists("MapType"));
@@ -44,7 +44,7 @@ boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build (
     int N_maps = database->getInteger("N_maps");
 
     // Create the databases for the individual maps
-    std::vector<boost::shared_ptr<AMP::Database> >  map_databases = createDatabases(database);
+    std::vector<AMP::shared_ptr<AMP::Database> >  map_databases = createDatabases(database);
 
     // Loop through the maps
     AMP_MPI managerComm = manager->getComm();
@@ -55,8 +55,8 @@ boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build (
         std::string meshName2 = map_databases[i]->getString("Mesh2");
 
         // Subset the multmesh for the 2 meshes
-        boost::shared_ptr<AMP::Mesh::Mesh> mesh1 = manager->Subset(meshName1);
-        boost::shared_ptr<AMP::Mesh::Mesh> mesh2 = manager->Subset(meshName2);
+        AMP::shared_ptr<AMP::Mesh::Mesh> mesh1 = manager->Subset(meshName1);
+        AMP::shared_ptr<AMP::Mesh::Mesh> mesh2 = manager->Subset(meshName2);
         int inComm = -1;
         if ( mesh1 || mesh2 )
             inComm = 1;
@@ -70,7 +70,7 @@ boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build (
             continue;
 
         // Create the map parameters
-        boost::shared_ptr<AsyncMapOperatorParameters>  mapParams( new typename MAP_TYPE::Parameters( map_databases[i] ) );
+        AMP::shared_ptr<AsyncMapOperatorParameters>  mapParams( new typename MAP_TYPE::Parameters( map_databases[i] ) );
         mapParams->d_MapComm = mapComm;
         mapParams->d_Mesh1 = mesh1;
         mapParams->d_Mesh2 = mesh2;
@@ -80,7 +80,7 @@ boost::shared_ptr<AsyncMapColumnOperator>  AsyncMapColumnOperator::build (
         mapParams->callMakeConsistentSet = false;
 
         // Create the map
-        boost::shared_ptr <AsyncMapOperator>  mapOp ( new MAP_TYPE ( mapParams ) );
+        AMP::shared_ptr <AsyncMapOperator>  mapOp ( new MAP_TYPE ( mapParams ) );
         newMapColumn->append ( mapOp );
 
     }

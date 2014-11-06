@@ -12,7 +12,7 @@ class  InstantiateTimeIntegratorParameter
       template <typename UTILS>
       static void  run_test ( UTILS *utils )
       {
-         boost::shared_ptr<AMP::InputDatabase> new_db ( new AMP::InputDatabase ( "Dummy db" ) );
+         AMP::shared_ptr<AMP::InputDatabase> new_db ( new AMP::InputDatabase ( "Dummy db" ) );
          AMP::TimeIntegrator::TimeIntegratorParameters  params ( new_db );
          utils->passes("instantiate TimeIntegratorParameters");
       }

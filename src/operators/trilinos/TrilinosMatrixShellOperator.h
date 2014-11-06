@@ -14,18 +14,18 @@ class TrilinosMatrixShellOperator : public LinearOperator
 {
 public:
 
-    TrilinosMatrixShellOperator(const boost::shared_ptr<OperatorParameters>& params);
+    TrilinosMatrixShellOperator(const AMP::shared_ptr<OperatorParameters>& params);
 
     virtual ~TrilinosMatrixShellOperator() { }
 
-    void setOperator(boost::shared_ptr<Operator> op); 
+    void setOperator(AMP::shared_ptr<Operator> op); 
 
-    void setNodalDofMap(boost::shared_ptr<AMP::Discretization::DOFManager> dofMap);
+    void setNodalDofMap(AMP::shared_ptr<AMP::Discretization::DOFManager> dofMap);
 
     void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
-    void reset(const boost::shared_ptr<OperatorParameters>& params);
+    void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
@@ -44,9 +44,9 @@ public:
 
 private:
 
-    boost::shared_ptr<AMP::Discretization::DOFManager> d_nodalDofMap;
+    AMP::shared_ptr<AMP::Discretization::DOFManager> d_nodalDofMap;
 
-    boost::shared_ptr<Operator> d_operator;
+    AMP::shared_ptr<Operator> d_operator;
 
     void (*d_getRow)(void* object, int row, std::vector<unsigned int> &cols, std::vector<double> &values);
 

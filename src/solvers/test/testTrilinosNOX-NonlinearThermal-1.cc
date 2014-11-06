@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/NeutronicsRhs.h"
@@ -55,7 +55,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
     size_t N_error0 = ut->NumFailLocal();;
 
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
     input_db->printClassData(AMP::plog);
 
@@ -63,10 +63,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     //   Create the Mesh.
     //--------------------------------------------------
     AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
     mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
     //--------------------------------------------------
 
     //--------------------------------------------------
@@ -85,19 +85,19 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists("testNonlinearThermalOperator"), "key missing!" );
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
-    boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = 
-        boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
+    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = 
+        AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 										    "testNonlinearThermalOperator",
 										    input_db,
 										    thermalTransportModel));
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the input variable
-    boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator =
-	    boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearThermalOperator->getVolumeOperator());
+    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> thermalVolumeOperator =
+	    AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nonlinearThermalOperator->getVolumeOperator());
 
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> thermalVariable = thermalVolumeOperator->getOutputVariable();
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> thermalVariable = thermalVolumeOperator->getOutputVariable();
 
     // create solution, rhs, and residual vectors
     AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
@@ -110,8 +110,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists("testLinearThermalOperator"), "key missing!" );
-    boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator = 
-        boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator = 
+        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
 		AMP::Operator::OperatorBuilder::createOperator( meshAdapter,
 		"testLinearThermalOperator", input_db, thermalTransportModel ) );
 
@@ -132,9 +132,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     //  CREATE THE NEUTRONICS SOURCE  //
     ////////////////////////////////////
     AMP_INSIST(input_db->keyExists("NeutronicsOperator"), "Key ''NeutronicsOperator'' is missing!");
-    boost::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("NeutronicsOperator");
-    boost::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
-    boost::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
+    AMP::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("NeutronicsOperator");
+    AMP::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
+    AMP::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
 
     AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
@@ -147,9 +147,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
     AMP_INSIST( input_db->keyExists("VolumeIntegralOperator"), "key missing!" );
 
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
-    boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator = 
-        boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
+    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator = 
+        AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 																						          "VolumeIntegralOperator",
 																						          input_db,
 																						          stransportModel));
@@ -173,25 +173,25 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
         ut->failure("the rhs norm after modifyRHSvector has changed.");
 
     // Get the solver databases
-    boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
-    boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
+    AMP::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
+    AMP::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
 
     // Create the preconditioner
-    boost::shared_ptr<AMP::Database> thermalPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
-    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams(
+    AMP::shared_ptr<AMP::Database> thermalPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
+    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams(
         new AMP::Solver::SolverStrategyParameters(thermalPreconditioner_db));
     thermalPreconditionerParams->d_pOperator = linearThermalOperator;
-    boost::shared_ptr<AMP::Solver::TrilinosMLSolver> linearThermalPreconditioner(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams));
+    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> linearThermalPreconditioner(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams));
 
     // Crete the solvers
-    boost::shared_ptr<AMP::Solver::TrilinosNOXSolverParameters> nonlinearSolverParams(new
+    AMP::shared_ptr<AMP::Solver::TrilinosNOXSolverParameters> nonlinearSolverParams(new
         AMP::Solver::TrilinosNOXSolverParameters(nonlinearSolver_db));
     nonlinearSolverParams->d_comm = globalComm;
     nonlinearSolverParams->d_pOperator = nonlinearThermalOperator;
     nonlinearSolverParams->d_pLinearOperator = nonlinearThermalOperator;
     nonlinearSolverParams->d_pInitialGuess = solVec;
     nonlinearSolverParams->d_preconditioner = linearThermalPreconditioner;
-    boost::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(new AMP::Solver::TrilinosNOXSolver(nonlinearSolverParams));
+    AMP::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(new AMP::Solver::TrilinosNOXSolver(nonlinearSolverParams));
 
     nonlinearThermalOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
     double initialResidualNorm  = resVec->L2Norm();

@@ -21,11 +21,11 @@ namespace AMP {
     {
       public :
 
-        NavierStokesLSWFFEOperator(const boost::shared_ptr<NavierStokesLSWFFEOperatorParameters>& params);
+        NavierStokesLSWFFEOperator(const AMP::shared_ptr<NavierStokesLSWFFEOperatorParameters>& params);
 
         virtual ~NavierStokesLSWFFEOperator() { }
 
-        void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  r);
+        void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::shared_ptr<AMP::LinearAlgebra::Vector>  r);
 
         void postAssembly();
 
@@ -33,10 +33,10 @@ namespace AMP {
 
         void postElementOperation();
 
-        void reset(const boost::shared_ptr<OperatorParameters>& );
+        void reset(const AMP::shared_ptr<OperatorParameters>& );
 
-        boost::shared_ptr<OperatorParameters> 
-          getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
+        AMP::shared_ptr<OperatorParameters> 
+          getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
 /*        
         void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr frozenVec) {
@@ -65,9 +65,9 @@ namespace AMP {
 
         std::vector<double> d_elementOutputVector; 
 
-        boost::shared_ptr<NavierStokesLSWFElement> d_nsLSWFElem; 
+        AMP::shared_ptr<NavierStokesLSWFElement> d_nsLSWFElem; 
 
-        boost::shared_ptr<FlowTransportModel> d_transportModel; 
+        AMP::shared_ptr<FlowTransportModel> d_transportModel; 
 
 //        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_inVec; 
         AMP::LinearAlgebra::Vector::const_shared_ptr d_inVec; 
@@ -78,11 +78,11 @@ namespace AMP {
 
         std::vector<bool> d_isFrozen; 
 
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariables;
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariables; 
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariables;
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariables; 
 
-//        boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap;
+//        AMP::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
+        AMP::shared_ptr<AMP::Discretization::DOFManager> d_dofMap;
 
         std::vector<AMP::Mesh::MeshElement> d_currNodes; 
 

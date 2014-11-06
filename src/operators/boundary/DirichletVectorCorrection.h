@@ -26,7 +26,7 @@ namespace AMP {
         /**
           Constructor
           */
-        DirichletVectorCorrection(const boost::shared_ptr<DirichletVectorCorrectionParameters> & params)
+        DirichletVectorCorrection(const AMP::shared_ptr<DirichletVectorCorrectionParameters> & params)
           : BoundaryOperator (params)
         {
           d_variable = params->d_variable;
@@ -68,13 +68,13 @@ namespace AMP {
         /**
           This function can be used to change the Dirichlet boundary conditions, if required.
           */
-        void reset(const boost::shared_ptr<OperatorParameters>& params);
+        void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
         /**
           This function returns a parameter object that can be used to reset the corresponding
           DirichletMatrixCorrection operator.
           */
-        boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
+        AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
         void setRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) {
           this->applyZeroValues(rhs);

@@ -2,7 +2,7 @@
 #ifndef included_AMP_OperatorParameters
 #define included_AMP_OperatorParameters
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/ParameterBase.h"
@@ -25,7 +25,7 @@ namespace AMP {
          * Construct and initialize a parameter list according to input
          * data.  Guess what the required and optional keywords are.
          */
-        OperatorParameters(const boost::shared_ptr<AMP::Database> & db)
+        OperatorParameters(const AMP::shared_ptr<AMP::Database> & db)
           : d_db(db) {  }
 
         /**
@@ -38,7 +38,7 @@ namespace AMP {
          *  Documentation for parameters required by each solver can be found in the
          *  documentation for the solver.
          */
-        boost::shared_ptr<AMP::Database> d_db;
+        AMP::shared_ptr<AMP::Database> d_db;
 
         AMP::Mesh::Mesh::shared_ptr d_Mesh;
 

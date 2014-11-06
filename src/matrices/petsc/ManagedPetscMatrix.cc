@@ -62,14 +62,14 @@ PetscErrorCode _AMP_GetVecs(Mat m,Vec *right,Vec *left)
     MatShellGetContext ( m , &ctx );
     AMP::LinearAlgebra::Matrix    *pMatrix = static_cast<AMP::LinearAlgebra::ManagedPetscMatrix *> ( ctx );
     if(right!=PETSC_NULL) {
-        boost::shared_ptr<AMP::LinearAlgebra::PetscVector> pRight = 
-            boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(
+        AMP::shared_ptr<AMP::LinearAlgebra::PetscVector> pRight = 
+            AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(
             AMP::LinearAlgebra::PetscVector::view( pMatrix->getRightVector() ) );
         VecDuplicate( pRight->getVec(), right );
     }
     if(left!=PETSC_NULL) {
-        boost::shared_ptr<AMP::LinearAlgebra::PetscVector> pLeft = 
-            boost::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(
+        AMP::shared_ptr<AMP::LinearAlgebra::PetscVector> pLeft = 
+            AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(
             AMP::LinearAlgebra::PetscVector::view( pMatrix->getLeftVector() ) );
         VecDuplicate( pLeft->getVec(), left );
     }
@@ -108,8 +108,8 @@ namespace LinearAlgebra {
 
 void  ManagedPetscMatrix::initPetscMat ()
 {
-    boost::shared_ptr<ManagedPetscMatrixParameters> params = 
-        boost::dynamic_pointer_cast<ManagedPetscMatrixParameters>( d_pParameters );
+    AMP::shared_ptr<ManagedPetscMatrixParameters> params = 
+        AMP::dynamic_pointer_cast<ManagedPetscMatrixParameters>( d_pParameters );
     MPI_Comm petsc_comm = params->getEpetraComm().getCommunicator();
     size_t N_col_local = params->getLocalNumberOfColumns();
     size_t N_row_local = params->getLocalNumberOfRows();
@@ -136,7 +136,7 @@ void  ManagedPetscMatrix::initPetscMat ()
 ManagedPetscMatrix::ManagedPetscMatrix ( MatrixParameters::shared_ptr params ) :
     Matrix ( params ),
     PetscMatrix ( params ),
-    ManagedEpetraMatrix ( boost::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( params ) )
+    ManagedEpetraMatrix ( AMP::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( params ) )
 {
 //    std::cout << "ManagedPetscMatrix:: WARNING!!!!!! the matrix is currently assumed to be square. This needs to be fixed!!!" << std::endl;
     initPetscMat ();
@@ -180,7 +180,7 @@ Matrix::shared_ptr   ManagedPetscMatrix::duplicateMat ( Mat m , AMP_MPI comm )
 
 void  ManagedPetscMatrix::copyFromMat ( Mat m )
 {
-    boost::shared_ptr<ManagedPetscMatrixParameters> params = boost::dynamic_pointer_cast<ManagedPetscMatrixParameters>(d_pParameters);
+    AMP::shared_ptr<ManagedPetscMatrixParameters> params = AMP::dynamic_pointer_cast<ManagedPetscMatrixParameters>(d_pParameters);
     AMP::Discretization::DOFManager::shared_ptr rowDOF = params->getLeftDOFManager();
     //AMP::Discretization::DOFManager::shared_ptr colDOF = params->getRightDOFManager();
     for (size_t i=rowDOF->beginDOF(); i<rowDOF->endDOF(); i++) {

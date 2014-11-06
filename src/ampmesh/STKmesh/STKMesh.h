@@ -61,7 +61,7 @@ public:
      * \param mesh The mesh in STKmesh we want to use to construct the new mesh object
      * \param name The name of the new mesh object
      */
-    STKMesh ( boost::shared_ptr< stk::mesh::BulkData> mesh, std::string name );
+    STKMesh ( AMP::shared_ptr< stk::mesh::BulkData> mesh, std::string name );
 
     //! Deconstructor
     virtual ~STKMesh ();
@@ -185,8 +185,8 @@ public:
 
 
     //! Return the underlying STKMesh object
-    inline boost::shared_ptr< stk::mesh::BulkData> getSTKMeshBulk()         const { return d_STKMeshBulk; }
-    inline boost::shared_ptr< stk::mesh::fem::FEMMetaData> getSTKMeshMeta() const { return d_STKMeshMeta; }
+    inline AMP::shared_ptr< stk::mesh::BulkData> getSTKMeshBulk()         const { return d_STKMeshBulk; }
+    inline AMP::shared_ptr< stk::mesh::fem::FEMMetaData> getSTKMeshMeta() const { return d_STKMeshMeta; }
 
 
 #ifdef USE_AMP_VECTORS
@@ -198,7 +198,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh ( boost::shared_ptr<const AMP::LinearAlgebra::Vector> x );
+    virtual void displaceMesh ( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x );
 #endif
 
 
@@ -223,32 +223,32 @@ private:
     void initialize( );
 
     // STKMesh objects
-    boost::shared_ptr<stk::mesh::BulkData>             d_STKMeshBulk;
-    boost::shared_ptr<stk::mesh::fem::FEMMetaData>     d_STKMeshMeta;
+    AMP::shared_ptr<stk::mesh::BulkData>             d_STKMeshBulk;
+    AMP::shared_ptr<stk::mesh::fem::FEMMetaData>     d_STKMeshMeta;
     Teuchos::RCP<Ioss::Region>                         d_STKIORegion;
-    boost::shared_ptr<stk::io::util::IO_Fixture>       d_STKIOFixture;
-    boost::shared_ptr<stk::io::util::Gmesh_STKmesh_Fixture> d_STKGMeshFixture;
+    AMP::shared_ptr<stk::io::util::IO_Fixture>       d_STKIOFixture;
+    AMP::shared_ptr<stk::io::util::Gmesh_STKmesh_Fixture> d_STKGMeshFixture;
 
     // Some basic internal data
     std::vector<unsigned> n_local;
     std::vector<unsigned> n_global;
     std::vector<unsigned> n_ghost;
-    boost::shared_ptr<initializeSTKMesh> STKmeshInit;
+    AMP::shared_ptr<initializeSTKMesh> STKmeshInit;
 
     // Data used to store the node neighbor lists
     std::vector<unsigned int> neighborNodeIDs;
     std::vector< std::vector< stk::mesh::Entity* > > neighborNodes;
 
     // Data used to elements that STKmesh doesn't create
-    std::map< GeomType, boost::shared_ptr<std::vector<MeshElement> > >  d_localElements;
-    std::map< GeomType, boost::shared_ptr<std::vector<MeshElement> > >  d_ghostElements;
+    std::map< GeomType, AMP::shared_ptr<std::vector<MeshElement> > >  d_localElements;
+    std::map< GeomType, AMP::shared_ptr<std::vector<MeshElement> > >  d_ghostElements;
 
     // Data used to store the boundary elements
-    std::map< std::pair<int,GeomType>, boost::shared_ptr<std::vector<MeshElement> > >  d_boundarySets;
+    std::map< std::pair<int,GeomType>, AMP::shared_ptr<std::vector<MeshElement> > >  d_boundarySets;
 
     // Data used to store the surface elements
-    std::vector< boost::shared_ptr<std::vector<MeshElement> > >  d_localSurfaceElements;
-    std::vector< boost::shared_ptr<std::vector<MeshElement> > >  d_ghostSurfaceElements;
+    std::vector< AMP::shared_ptr<std::vector<MeshElement> > >  d_localSurfaceElements;
+    std::vector< AMP::shared_ptr<std::vector<MeshElement> > >  d_ghostSurfaceElements;
 
     // Data used to store block info
     std::vector<int> d_block_ids;

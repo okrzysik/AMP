@@ -157,7 +157,7 @@ public:
 
       virtual void copyOutRawData ( double *out ) const;
 
-      virtual boost::shared_ptr<ParameterBase> getParameters ();
+      virtual AMP::shared_ptr<ParameterBase> getParameters ();
 
       // We can always delete a NativePetscVector
       virtual bool petscHoldsView() const { return false; }

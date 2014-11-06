@@ -18,7 +18,7 @@ SimpleVector::SimpleVector ():
 }
 Vector::shared_ptr  SimpleVector::create ( size_t localSize , Variable::shared_ptr var )
 {
-    boost::shared_ptr<SimpleVector> retVal( new SimpleVector );
+    AMP::shared_ptr<SimpleVector> retVal( new SimpleVector );
     retVal->d_startIndex = 0;
     retVal->setVariable ( var );
     retVal->d_Data.resize ( localSize );
@@ -32,7 +32,7 @@ Vector::shared_ptr  SimpleVector::create ( size_t localSize , Variable::shared_p
 }
 Vector::shared_ptr  SimpleVector::create ( size_t localSize , Variable::shared_ptr var, AMP_MPI comm )
 {
-    boost::shared_ptr<SimpleVector> retVal( new SimpleVector );
+    AMP::shared_ptr<SimpleVector> retVal( new SimpleVector );
     retVal->d_startIndex = 0;
     retVal->setVariable ( var );
     retVal->d_Data.resize ( localSize );
@@ -47,7 +47,7 @@ Vector::shared_ptr  SimpleVector::create ( Variable::shared_ptr var,
     AMP::Discretization::DOFManager::shared_ptr DOFs, 
     AMP::LinearAlgebra::CommunicationList::shared_ptr commlist )
 {
-    boost::shared_ptr<SimpleVector> retVal( new SimpleVector );
+    AMP::shared_ptr<SimpleVector> retVal( new SimpleVector );
     retVal->d_startIndex = DOFs->beginDOF();
     retVal->setVariable ( var );
     retVal->d_Data.resize (  DOFs->numLocalDOF() );

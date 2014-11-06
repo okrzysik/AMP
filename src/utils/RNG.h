@@ -2,7 +2,7 @@
 #define included_AMP_RNG_h
 
 
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 
 namespace AMP {
 
@@ -17,7 +17,7 @@ public:
 
     /**\brief Shorthand for shared pointer to RNGParameters
      */
-    typedef boost::shared_ptr<RNGParameters>  shared_ptr;
+    typedef AMP::shared_ptr<RNGParameters>  shared_ptr;
 
     /**\brief Seed to use when creating an RNG
      */
@@ -66,7 +66,7 @@ protected:
 public:
     /**\brief Shorthand for shared pointer to RNG
      */
-    typedef  boost::shared_ptr<RNG>   shared_ptr;
+    typedef  AMP::shared_ptr<RNG>   shared_ptr;
 
     /**\brief Initialization function to be called at program start
      *\details  Computes the static constants

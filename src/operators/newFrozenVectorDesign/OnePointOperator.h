@@ -9,7 +9,7 @@ namespace AMP {
 
     class OnePointOperator : public Operator {
       public :
-        OnePointOperator(const boost::shared_ptr<OperatorParameters> & params) : Operator(params) {
+        OnePointOperator(const AMP::shared_ptr<OperatorParameters> & params) : Operator(params) {
           d_constant = 0.0;
         }
 

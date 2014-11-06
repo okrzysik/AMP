@@ -41,13 +41,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
   const unsigned int mesh_dim = 3;
-  boost::shared_ptr< ::Mesh > mesh(new ::Mesh(mesh_dim));
+  AMP::shared_ptr< ::Mesh > mesh(new ::Mesh(mesh_dim));
 
   std::string mesh_file = input_db->getString("mesh_file");
 
@@ -62,14 +62,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::shared_ptr (
       new AMP::Mesh::libMesh (mesh, "TestMesh") );
 
-  boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> nonlinOperator =
-    boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+  AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> nonlinOperator =
+    AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "NonlinearMechanicsOperator", input_db));
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel = nonlinOperator->getMaterialModel();
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel = nonlinOperator->getMaterialModel();
 
-  boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> linOperator =
-    boost::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
+  AMP::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> linOperator =
+    AMP::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "LinearMechanicsOperator", input_db, elementPhysicsModel));
 
@@ -186,7 +186,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
 int main(int argc, char *argv[]) {
 
   AMP::AMPManager::startup(argc, argv);
-  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(AMP_COMM_WORLD));
+  AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(AMP_COMM_WORLD));
 
   AMP::UnitTest ut;
 

@@ -6,7 +6,7 @@
 #include <limits>
 #include <cmath>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -56,7 +56,7 @@ void bvpTest1(AMP::UnitTest *ut, std::string exeName, std::string meshName)
   AMP::PIO::logOnlyNodeZero(log_file);
 
   // Input database
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
@@ -64,45 +64,45 @@ void bvpTest1(AMP::UnitTest *ut, std::string exeName, std::string meshName)
 //   Create the Mesh.
 //--------------------------------------------------
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase(meshName.c_str());
-  boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+  AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase(meshName.c_str());
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
   mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+  AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 //--------------------------------------------------
 
   // Create nonlinear diffusion BVP operator and access volume nonlinear Diffusion operator
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> nonlinearPhysicsModel;
-  boost::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> nonlinearPhysicsModel;
+  AMP::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
     AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 						   "FickNonlinearBVPOperator",
 						   input_db,
 						   nonlinearPhysicsModel);
-  boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
-          boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(nlinBVPOperator);
-  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nlinOp =
-         boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinBVPOp->getVolumeOperator());
+  AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
+          AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(nlinBVPOperator);
+  AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> nlinOp =
+         AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinBVPOp->getVolumeOperator());
   
   // use the linear BVP operator to create a linear diffusion operator with bc's
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> linearPhysicsModel;
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> linearPhysicsModel;
 
   // Get source mass operator
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
-  boost::shared_ptr<AMP::Operator::Operator> sourceOperator =
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
+  AMP::shared_ptr<AMP::Operator::Operator> sourceOperator =
     AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 						   "ManufacturedSourceOperator",
 						   input_db,
 						   sourcePhysicsModel);
-  boost::shared_ptr<AMP::Operator::MassLinearFEOperator> sourceOp =
-         boost::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>(sourceOperator);
+  AMP::shared_ptr<AMP::Operator::MassLinearFEOperator> sourceOp =
+         AMP::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>(sourceOperator);
 
 
-  boost::shared_ptr<AMP::Operator::MassDensityModel> densityModel = sourceOp->getDensityModel();
-  boost::shared_ptr<AMP::ManufacturedSolution> mfgSolution = densityModel->getManufacturedSolution();
+  AMP::shared_ptr<AMP::Operator::MassDensityModel> densityModel = sourceOp->getDensityModel();
+  AMP::shared_ptr<AMP::ManufacturedSolution> mfgSolution = densityModel->getManufacturedSolution();
 
   // Set up input and output variables
-  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> tmp = 
-      boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( nlinOp->getInputVariable() );
-  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> solVar(new AMP::LinearAlgebra::MultiVariable(tmp->getName()));
+  AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> tmp = 
+      AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( nlinOp->getInputVariable() );
+  AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> solVar(new AMP::LinearAlgebra::MultiVariable(tmp->getName()));
   for (size_t i=0; i<tmp->numVariables(); i++) {
       if ( tmp->getVariable(i).get() != NULL )
           solVar->add( tmp->getVariable(i) );
@@ -130,10 +130,10 @@ void bvpTest1(AMP::UnitTest *ut, std::string exeName, std::string meshName)
   rhsVec->setToScalar(0.0);
 
   // Fill in manufactured solution
-  //boost::shared_ptr<AMP::Database> source_db = input_db->getDatabase("ManufacturedSourceOperator");
+  //AMP::shared_ptr<AMP::Database> source_db = input_db->getDatabase("ManufacturedSourceOperator");
   //std::string sourceModelName = source_db->getString("LocalModel");
-  //boost::shared_ptr<AMP::Database> sourceModel_db = input_db->getDatabase(sourceModelName);
-  //boost::shared_ptr<AMP::Database> mfgSolution_db = sourceModel_db->getDatabase("ManufacturedSolution");
+  //AMP::shared_ptr<AMP::Database> sourceModel_db = input_db->getDatabase(sourceModelName);
+  //AMP::shared_ptr<AMP::Database> mfgSolution_db = sourceModel_db->getDatabase("ManufacturedSolution");
   /*bool isCylindrical = false;
   if (mfgSolution_db->keyExists("Geometry")) {
 	  std::string geom = mfgSolution_db->getString("Geometry");

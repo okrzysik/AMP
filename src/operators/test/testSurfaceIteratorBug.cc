@@ -40,7 +40,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
@@ -48,12 +48,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   bool setConstantValue = input_db->getBool("SetConstantValue");
 
   // Get the Mesh database and create the mesh parameters
-  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
   params->setComm(globalComm);
 
   // Create the meshes from the input database
-  boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
+  AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
 
   // Create a nodal scalar vector
   AMP::LinearAlgebra::Variable::shared_ptr var(new  AMP::LinearAlgebra::Variable("myVar")); 
@@ -86,13 +86,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
     // Create the libmesh element
     // Note: This must be done inside the loop because libmesh's reinit function doesn't seem to work properly
-    boost::shared_ptr < ::FEType > feType( new ::FEType(feTypeOrder, feFamily) );
-    boost::shared_ptr < ::FEBase > fe( (::FEBase::build(2, (*feType))).release() );
+    AMP::shared_ptr < ::FEType > feType( new ::FEType(feTypeOrder, feFamily) );
+    AMP::shared_ptr < ::FEBase > fe( (::FEBase::build(2, (*feType))).release() );
     const std::vector<std::vector<Real> > &phi = fe->get_phi();
     const std::vector<Real> &djxw = fe->get_JxW();
     libMeshEnums::QuadratureType qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>("QGAUSS");
     libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
-    boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, 2, qruleOrder)).release() );
+    AMP::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, 2, qruleOrder)).release() );
     fe->attach_quadrature_rule( qrule.get() );
     ::Elem* currElemPtr = new ::Quad4;
     for(size_t i=0; i<nodes.size(); i++) {

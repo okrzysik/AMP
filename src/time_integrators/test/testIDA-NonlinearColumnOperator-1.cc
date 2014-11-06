@@ -3,7 +3,7 @@
 #include "utils/UnitTest.h"
 #include "utils/AMP_MPI.h"
 #include "materials/Material.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
@@ -56,7 +56,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
@@ -64,10 +64,10 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
 //   Create the Mesh.
 //--------------------------------------------------
     AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
     mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 //--------------------------------------------------
 
 //--------------------------------------------------
@@ -86,64 +86,64 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   // create a nonlinear BVP operator for thermal operator
   AMP_INSIST( input_db->keyExists("NonlinearThermalOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-  boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = boost::dynamic_pointer_cast<
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
+  AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator = AMP::dynamic_pointer_cast<
     AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 											"NonlinearThermalOperator",
 											input_db,
 											elementModel));
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a column rhs operator object with the nonlinear thermal in it for use in the nonlinear problem definition
-  boost::shared_ptr<AMP::Operator::OperatorParameters> params;
-  boost::shared_ptr<AMP::Operator::ColumnOperator> columnNonlinearRhsOperator(new AMP::Operator::ColumnOperator(params));
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> params;
+  AMP::shared_ptr<AMP::Operator::ColumnOperator> columnNonlinearRhsOperator(new AMP::Operator::ColumnOperator(params));
   columnNonlinearRhsOperator->append(nonlinearThermalOperator);
   // ---------------------------------------------------------------------------------------
   // create a linear BVP operator
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator;
-  linearThermalOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator;
+  linearThermalOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 																       "LinearThermalOperator",
 																       input_db,
 																       elementModel));
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create a column rhs operator object with the linear thermal in it for use in the linear problem definition
-  boost::shared_ptr<AMP::Operator::OperatorParameters> rhsparams;
-  boost::shared_ptr<AMP::Operator::ColumnOperator> columnLinearRhsOperator(new AMP::Operator::ColumnOperator(rhsparams));
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> rhsparams;
+  AMP::shared_ptr<AMP::Operator::ColumnOperator> columnLinearRhsOperator(new AMP::Operator::ColumnOperator(rhsparams));
   columnLinearRhsOperator->append(linearThermalOperator);
   
   // ---------------------------------------------------------------------------------------
   // create a mass linear BVP operator
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> massOperator;
-  massOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> massOperator;
+  massOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 															      "MassOperator",
 															      input_db,
 															      massElementModel));
   
   // ---------------------------------------------------------------------------------------
   // create a column mass operator object for use in the nonlinear and linear problem definition
-  boost::shared_ptr<AMP::Operator::OperatorParameters> massParams;
-  boost::shared_ptr<AMP::Operator::ColumnOperator> columnMassOperator(new AMP::Operator::ColumnOperator(massParams));
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> massParams;
+  AMP::shared_ptr<AMP::Operator::ColumnOperator> columnMassOperator(new AMP::Operator::ColumnOperator(massParams));
   columnMassOperator->append(massOperator);
   
   // ---------------------------------------------------------------------------------------
   // create a  time operator for use in the preconditioner
-  boost::shared_ptr<AMP::InputDatabase> timeOperator_db(new AMP::InputDatabase("TimeOperatorDatabase"));
+  AMP::shared_ptr<AMP::InputDatabase> timeOperator_db(new AMP::InputDatabase("TimeOperatorDatabase"));
   timeOperator_db->putDouble("CurrentDt", 0.01);
   timeOperator_db->putString("name", "TimeOperator");
   timeOperator_db->putBool("bLinearMassOperator", true);
   timeOperator_db->putBool("bLinearRhsOperator", false);
   timeOperator_db->putDouble("ScalingFactor", 1.0/0.01);
 
-  boost::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(new AMP::TimeIntegrator::TimeOperatorParameters(timeOperator_db));
+  AMP::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(new AMP::TimeIntegrator::TimeOperatorParameters(timeOperator_db));
   timeOperatorParameters->d_pRhsOperator = columnLinearRhsOperator;
   timeOperatorParameters->d_pMassOperator = columnMassOperator;
   timeOperatorParameters->d_Mesh = meshAdapter;
-  boost::shared_ptr<AMP::TimeIntegrator::ColumnTimeOperator> columnLinearTimeOperator( new  AMP::TimeIntegrator::ColumnTimeOperator(timeOperatorParameters));
+  AMP::shared_ptr<AMP::TimeIntegrator::ColumnTimeOperator> columnLinearTimeOperator( new  AMP::TimeIntegrator::ColumnTimeOperator(timeOperatorParameters));
   
   // ---------------------------------------------------------------------------------------
   // create vectors for initial conditions (IC) and time derivative at IC
 
-  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> outputVar = boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(columnNonlinearRhsOperator->getOutputVariable());
+  AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> outputVar = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(columnNonlinearRhsOperator->getOutputVariable());
   
   AMP::LinearAlgebra::Vector::shared_ptr initialCondition      = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
   AMP::LinearAlgebra::Vector::shared_ptr initialConditionPrime = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
@@ -152,10 +152,10 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   // ---------------------------------------------------------------------------------------
   //  create neutronics source
   AMP_INSIST(input_db->keyExists("NeutronicsOperator"), "Key ''NeutronicsOperator'' is missing!");
-  boost::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("NeutronicsOperator");
-  boost::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
+  AMP::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("NeutronicsOperator");
+  AMP::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
   neutronicsParams->d_Mesh = meshAdapter;
-  boost::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
+  AMP::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
   
   AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
   AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
@@ -169,8 +169,8 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   
   AMP_INSIST( input_db->keyExists("VolumeIntegralOperator"), "key missing!" );
   
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceTransportModel;
-  boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator = boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceTransportModel;
+  AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator = AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 																							      "VolumeIntegralOperator",
 																							      input_db,
 																							      sourceTransportModel));
@@ -229,10 +229,10 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
 
   // get the ida database
   AMP_INSIST(input_db->keyExists("IDATimeIntegrator"), "Key ''IDATimeIntegrator'' is missing!");
-  boost::shared_ptr<AMP::Database> ida_db = input_db->getDatabase("IDATimeIntegrator");
+  AMP::shared_ptr<AMP::Database> ida_db = input_db->getDatabase("IDATimeIntegrator");
   // initialize the column preconditioner which is a diagonal block preconditioner
-  boost::shared_ptr<AMP::Database> columnPreconditioner_db = ida_db->getDatabase("Preconditioner");
-  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
+  AMP::shared_ptr<AMP::Database> columnPreconditioner_db = ida_db->getDatabase("Preconditioner");
+  AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
   if(columnPreconditionerParams.get() == NULL) {
     ut->failure("Testing SolverStrategyParameters's constructor: FAIL");
   } else {
@@ -240,12 +240,12 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
   }
   
   columnPreconditionerParams->d_pOperator = columnLinearTimeOperator;
-  boost::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
+  AMP::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
-  boost::shared_ptr<AMP::Database> thermalPreconditioner_db = columnPreconditioner_db->getDatabase("thermalPreconditioner"); 
-  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams(new AMP::Solver::SolverStrategyParameters(thermalPreconditioner_db));
+  AMP::shared_ptr<AMP::Database> thermalPreconditioner_db = columnPreconditioner_db->getDatabase("thermalPreconditioner"); 
+  AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams(new AMP::Solver::SolverStrategyParameters(thermalPreconditioner_db));
   thermalPreconditionerParams->d_pOperator = columnLinearTimeOperator->getOperator(0);
-  boost::shared_ptr<AMP::Solver::TrilinosMLSolver> linearThermalPreconditioner(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams));
+  AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> linearThermalPreconditioner(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams));
 
   columnPreconditioner->append(linearThermalPreconditioner);
   
@@ -257,7 +257,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
 
   // ---------------------------------------------------------------------------------------
   // create the IDA time integrator
-  boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegratorParameters> time_Params( new AMP::TimeIntegrator::IDATimeIntegratorParameters(ida_db));
+  AMP::shared_ptr<AMP::TimeIntegrator::IDATimeIntegratorParameters> time_Params( new AMP::TimeIntegrator::IDATimeIntegratorParameters(ida_db));
   
   if( (time_Params.get()) == NULL ) {
     ut->failure("Testing IDATimeIntegratorParameters' Constructor");
@@ -277,7 +277,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     
   std::cout << "Before IDATimeIntegrator" << std::endl;
 #ifdef USE_EXT_SUNDIALS
-  boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(new AMP::TimeIntegrator::IDATimeIntegrator(time_Params));
+  AMP::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(new AMP::TimeIntegrator::IDATimeIntegrator(time_Params));
   
   if(pIDATimeIntegrator.get() == NULL) {
     ut->failure("Testing IDATimeIntegrator's constructor");

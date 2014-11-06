@@ -4,7 +4,7 @@
 
 #include "MechanicsMaterialModel.h"
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include <vector>
 
@@ -67,7 +67,7 @@ namespace Operator {
         (15) Creep_Delta_Time {d_Delta_Time} [1.0 days (d) by default] - This is used in the calculation of the 
         creep strain inside the clad. 
         */
-      GeneralCladThermalCreepPlasticModel(const boost::shared_ptr<MechanicsMaterialModelParameters>& );
+      GeneralCladThermalCreepPlasticModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
 
       /**
         Destructor.

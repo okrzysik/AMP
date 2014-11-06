@@ -4,7 +4,7 @@
 #include <string>
 #include <valarray>
 #include "operators/ElementPhysicsModel.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "materials/Material.h"
 #include "materials/Property.h"
 #include "utils/ManufacturedSolution.h"
@@ -30,7 +30,7 @@ public:
         ThermalSrc, FickSrc, SoretSrc, FickSoretSrc, UnknownManufacturedEquation
     };
 
-    MassDensityModel(const boost::shared_ptr<MassDensityModelParameters>& params);
+    MassDensityModel(const AMP::shared_ptr<MassDensityModelParameters>& params);
 
     virtual ~MassDensityModel()
     {
@@ -78,7 +78,7 @@ public:
     {
     }
 
-    boost::shared_ptr<ManufacturedSolution> getManufacturedSolution()
+    AMP::shared_ptr<ManufacturedSolution> getManufacturedSolution()
             {return d_ManufacturedSolution;}
 
     MassEquation getEquation(){return d_equation;}
@@ -109,7 +109,7 @@ private:
 
     size_t d_BilogIndex;
 
-    boost::shared_ptr<ManufacturedSolution> d_ManufacturedSolution;
+    AMP::shared_ptr<ManufacturedSolution> d_ManufacturedSolution;
 
     ManufacturedEquation d_ManufacturedEquation;
 

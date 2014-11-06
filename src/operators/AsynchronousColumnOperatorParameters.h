@@ -10,7 +10,7 @@ namespace Operator {
   {
     public:
 
-      AsynchronousColumnOperatorParameters ( const boost::shared_ptr<AMP::Database> &db )
+      AsynchronousColumnOperatorParameters ( const AMP::shared_ptr<AMP::Database> &db )
         : OperatorParameters ( db )
       {
       }

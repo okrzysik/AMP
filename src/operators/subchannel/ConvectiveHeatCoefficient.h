@@ -7,7 +7,7 @@
 
 #include "operators/ElementPhysicsModelFactory.h"
 #include "operators/boundary/libmesh/RobinPhysicsModel.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {
@@ -16,7 +16,7 @@ class ConvectiveHeatCoefficient  : public RobinPhysicsModel
  {
     public :
       
-      ConvectiveHeatCoefficient(const boost::shared_ptr<RobinPhysicsModelParameters>& params);
+      ConvectiveHeatCoefficient(const AMP::shared_ptr<RobinPhysicsModelParameters>& params);
 
       virtual ~ConvectiveHeatCoefficient() {}
 

@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 /* AMP files */
 #include "operators/diffusion/DiffusionElement.h"
@@ -14,7 +14,7 @@ namespace Operator {
 class DiffusionLinearElement: public DiffusionElement {
 public:
 
-    DiffusionLinearElement(const boost::shared_ptr<ElementOperationParameters>& params) :
+    DiffusionLinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
         DiffusionElement(params),
         d_elementStiffnessMatrix(NULL)
     {

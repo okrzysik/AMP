@@ -2,7 +2,7 @@
 #define included_AMP_MeshID
 
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 
 
 namespace AMP {

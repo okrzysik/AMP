@@ -18,10 +18,10 @@ void SimpleVector::copyVector( Vector::const_shared_ptr src_vec )
 
 
 inline
-boost::shared_ptr<ParameterBase> SimpleVector::getParameters ()
+AMP::shared_ptr<ParameterBase> SimpleVector::getParameters ()
 {
     AMP_ERROR( "Not implemented" );
-    return boost::shared_ptr<ParameterBase> ();
+    return AMP::shared_ptr<ParameterBase> ();
 }
 
 

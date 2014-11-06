@@ -11,13 +11,13 @@ IdentityOperator :: IdentityOperator () :
 {
 }
 
-IdentityOperator :: IdentityOperator (const boost::shared_ptr<OperatorParameters> & params) :
+IdentityOperator :: IdentityOperator (const AMP::shared_ptr<OperatorParameters> & params) :
     LinearOperator (params) 
 {
     reset(params);
 }
 
-void IdentityOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
+void IdentityOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params)
 {
     if ( params->d_db.get() != NULL ) {
         if ( params->d_db->keyExists("InputVariable") ) {
@@ -31,7 +31,7 @@ void IdentityOperator :: reset(const boost::shared_ptr<OperatorParameters>& para
     }
 }
 
-void IdentityOperator :: setMatrix(const boost::shared_ptr<AMP::LinearAlgebra::Matrix> & in_mat) 
+void IdentityOperator :: setMatrix(const AMP::shared_ptr<AMP::LinearAlgebra::Matrix> & in_mat) 
 {
     AMP_ERROR("setMatrix is invalid for the Identity operator");
 }

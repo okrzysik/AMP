@@ -3,7 +3,7 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "materials/Material.h"
 
@@ -14,17 +14,17 @@
 
 void myTest(AMP::UnitTest *ut, std::string exeName) {
   std::string matname = "UO2_MSRZC_09";
-  boost::shared_ptr<AMP::Materials::Material> material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(matname);
+  AMP::shared_ptr<AMP::Materials::Material> material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(matname);
 
-  std::map<std::string, boost::shared_ptr<std::vector<double> > > inputMaterialParameters;
+  std::map<std::string, AMP::shared_ptr<std::vector<double> > > inputMaterialParameters;
 
   std::string temperatureString = "temperature"; 
   std::string burnupString = "burnup"; 
   std::string oxygenString = "concentration"; 
 
-  boost::shared_ptr<std::vector<double> > tempVec(new std::vector<double> );      
-  boost::shared_ptr<std::vector<double> > burnupVec(new std::vector<double> );      
-  boost::shared_ptr<std::vector<double> > oxygenVec(new std::vector<double> );      
+  AMP::shared_ptr<std::vector<double> > tempVec(new std::vector<double> );      
+  AMP::shared_ptr<std::vector<double> > burnupVec(new std::vector<double> );      
+  AMP::shared_ptr<std::vector<double> > oxygenVec(new std::vector<double> );      
 
   tempVec->push_back(310.0);
   burnupVec->push_back(0.0);

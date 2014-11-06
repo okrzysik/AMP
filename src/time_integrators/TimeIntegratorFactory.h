@@ -60,7 +60,7 @@ public:
     * Factory method for generating multilevel solvers with characteristics
     * specified by parameters.
     */
-   boost::shared_ptr<TimeIntegrator> createTimeIntegrator( boost::shared_ptr<TimeIntegratorParameters> timeIntegratorParameters);
+   AMP::shared_ptr<TimeIntegrator> createTimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> timeIntegratorParameters);
 
 protected:
 private:  

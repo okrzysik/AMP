@@ -7,7 +7,7 @@ namespace Operator {
 
 
 AsynchronousOperator::AsynchronousOperator
-                       ( const boost::shared_ptr < OperatorParameters > &params )
+                       ( const AMP::shared_ptr < OperatorParameters > &params )
       : Operator ( params )
 {
     // Initialize the request list to an empty vector
@@ -20,7 +20,7 @@ AsynchronousOperator::~AsynchronousOperator ()
 }
 
 
-/*bool AsynchronousOperator::continueAsynchronousConstruction ( const boost::shared_ptr < OperatorParameters > & )
+/*bool AsynchronousOperator::continueAsynchronousConstruction ( const AMP::shared_ptr < OperatorParameters > & )
 {
     return true;
 }*/

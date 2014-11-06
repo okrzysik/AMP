@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -44,26 +44,26 @@ void linearTest1(AMP::UnitTest *ut, std::string exeName)
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
   // Read the input file
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
   // Get the Mesh database and create the mesh parameters
-  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
   params->setComm(globalComm);
 
   // Create the meshes from the input database
-  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
+  AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(params);
 
 
-  boost::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> diffOp;
-  boost::shared_ptr<AMP::InputDatabase> diffLinFEOp_db =
-          boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("LinearDiffusionOp"));
+  AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> diffOp;
+  AMP::shared_ptr<AMP::InputDatabase> diffLinFEOp_db =
+          AMP::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("LinearDiffusionOp"));
 
-  diffOp = boost::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(
+  diffOp = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,"LinearDiffusionOp",input_db));
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel = diffOp->getTransportModel();
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel = diffOp->getTransportModel();
 
   AMP::LinearAlgebra::Variable::shared_ptr diffSolVar = diffOp->getInputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr diffRhsVar = diffOp->getOutputVariable();
@@ -89,15 +89,15 @@ void linearTest1(AMP::UnitTest *ut, std::string exeName)
   ut->passes(exeName);
 
   // Test reset
-  boost::shared_ptr<AMP::Operator::DiffusionLinearFEOperatorParameters> diffOpParams(new
+  AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperatorParameters> diffOpParams(new
       AMP::Operator::DiffusionLinearFEOperatorParameters( diffLinFEOp_db ));
-  diffOpParams->d_transportModel = boost::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>(elementModel);
+  diffOpParams->d_transportModel = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>(elementModel);
   diffOp->reset(diffOpParams);
 
   ut->passes(exeName);
 
   // Test eigenvalues (run output through mathematica)
-  boost::shared_ptr<AMP::LinearAlgebra::Matrix> diffMat = diffOp->getMatrix();
+  AMP::shared_ptr<AMP::LinearAlgebra::Matrix> diffMat = diffOp->getMatrix();
 
   int nranks = globalComm.getSize();
 
@@ -162,7 +162,7 @@ void linearTest1(AMP::UnitTest *ut, std::string exeName)
 // 
 //   AMP::PIO::logOnlyNodeZero(log_file);
 // 
-//   boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+//   AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
 //   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
 //   input_db->printClassData(AMP::plog);
 // 
@@ -175,15 +175,15 @@ void linearTest1(AMP::UnitTest *ut, std::string exeName)
 //   meshAdapter->readExodusIIFile ( mesh_file.c_str() );
 // 
 //   // create the linear diffusion operator
-//   boost::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> diffOp;
-//   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-//   boost::shared_ptr<AMP::InputDatabase> diffLinFEOp_db =
-//           boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("LinearDiffusionOp"));
-//   diffOp = boost::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(
+//   AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> diffOp;
+//   AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
+//   AMP::shared_ptr<AMP::InputDatabase> diffLinFEOp_db =
+//           AMP::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("LinearDiffusionOp"));
+//   diffOp = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(
 //                                        AMP::Operator::OperatorBuilder::createOperator(meshAdapter, diffLinFEOp_db, elementModel));
 // 
 //   // first test: reset with a NULL parameter object
-//   boost::shared_ptr<OperatorParameters> resetParameters;
+//   AMP::shared_ptr<OperatorParameters> resetParameters;
 //   bool passed=false;
 //   try
 //     {
@@ -221,8 +221,8 @@ void linearTest1(AMP::UnitTest *ut, std::string exeName)
 //     }
 // 
 // 
-//   boost::shared_ptr<AMP::Operator::DiffusionLinearFEOperatorParameters> diffusionOpParams(new AMP::Operator::DiffusionLinearFEOperatorParameters( diffLinFEOp_db ));
-//   resetParameters = boost::dynamic_pointer_cast<OperatorParameters>(diffusionOpParams);
+//   AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperatorParameters> diffusionOpParams(new AMP::Operator::DiffusionLinearFEOperatorParameters( diffLinFEOp_db ));
+//   resetParameters = AMP::dynamic_pointer_cast<OperatorParameters>(diffusionOpParams);
 //   AMP_INSIST(resetParameters.get()!=NULL, "unable to create parameters");
 //   
 //   passed=false;
@@ -244,9 +244,9 @@ void linearTest1(AMP::UnitTest *ut, std::string exeName)
 //     }
 // 
 //   // third test: use a parameter object without a element operation object
-//   boost::shared_ptr<AMP::Database> transportModel_db = input_db->getDatabase("DiffusionTransportModel");
-//   boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
-//   boost::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel = boost::dynamic_pointer_cast<DiffusionTransportModel>(elementPhysicsModel);
+//   AMP::shared_ptr<AMP::Database> transportModel_db = input_db->getDatabase("DiffusionTransportModel");
+//   AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
+//   AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel = AMP::dynamic_pointer_cast<DiffusionTransportModel>(elementPhysicsModel);
 //   AMP_INSIST(transportModel.get()!=NULL, "unable to create transport model");
 //   diffusionOpParams->d_transportModel = transportModel;
 // 
@@ -270,7 +270,7 @@ void linearTest1(AMP::UnitTest *ut, std::string exeName)
 // 
 //   // next create a ElementOperation object
 //   AMP_INSIST(input_db->keyExists("DiffusionElement"), "Key ''DiffusionElement'' is missing!");
-//   boost::shared_ptr<AMP::Operator::ElementOperation> diffusionLinElem = ElementOperationFactory::createElementOperation(input_db->getDatabase("DiffusionElement"));
+//   AMP::shared_ptr<AMP::Operator::ElementOperation> diffusionLinElem = ElementOperationFactory::createElementOperation(input_db->getDatabase("DiffusionElement"));
 // 
 // }
 

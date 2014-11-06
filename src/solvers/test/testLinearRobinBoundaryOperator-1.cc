@@ -12,7 +12,7 @@
 #include "materials/Material.h"
 
 #include <string>
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/Utilities.h"
 #include "vectors/Variable.h"
 
@@ -60,9 +60,9 @@ void linearRobinTest(AMP::UnitTest *ut, std::string exeName )
     //  #include "materials/Material.h"
 
     // Construct a smart pointer to a new database.
-    //  #include "boost/shared_ptr.hpp"
+    //  #include "utils/shared_ptr.h"
     //  #include "utils/InputDatabase.h"
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
 
 
     // Fill the database from the input file.
@@ -79,10 +79,10 @@ void linearRobinTest(AMP::UnitTest *ut, std::string exeName )
     //   Create the Mesh.
     //--------------------------------------------------
     AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
     mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 
     //--------------------------------------------------
     //   Create DOF Managers.
@@ -101,9 +101,9 @@ void linearRobinTest(AMP::UnitTest *ut, std::string exeName )
     //------------------------------------------
     //   CREATE THE THERMAL BVP OPERATOR  //
     //------------------------------------------
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
-    boost::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator = 
-        boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( 
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
+    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator = 
+        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( 
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,"DiffusionBVPOperator",input_db,transportModel));
 
     AMP::LinearAlgebra::Vector::shared_ptr TemperatureInKelvinVec = AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable(), split );
@@ -121,13 +121,13 @@ void linearRobinTest(AMP::UnitTest *ut, std::string exeName )
     boundaryOp = diffusionOperator->getBoundaryOperator(); 
 
     AMP::Operator::Operator::shared_ptr  robinBoundaryOp;
-    robinBoundaryOp = (boost::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator>(boundaryOp) )->getBoundaryOperator(0);
+    robinBoundaryOp = (AMP::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator>(boundaryOp) )->getBoundaryOperator(0);
 
-    boost::shared_ptr<AMP::InputDatabase> robinboundaryDatabase = boost::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase("RobinMatrixCorrection"));
+    AMP::shared_ptr<AMP::InputDatabase> robinboundaryDatabase = AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase("RobinMatrixCorrection"));
 
     robinboundaryDatabase->putBool("constant_flux", false);
     robinboundaryDatabase->putBool("skip_matrix_correction", true);
-    boost::shared_ptr<AMP::Operator::RobinMatrixCorrectionParameters> correctionParameters(
+    AMP::shared_ptr<AMP::Operator::RobinMatrixCorrectionParameters> correctionParameters(
         new AMP::Operator::RobinMatrixCorrectionParameters( robinboundaryDatabase ) );
     //------------------------------------------
 
@@ -189,8 +189,8 @@ void linearRobinTest(AMP::UnitTest *ut, std::string exeName )
 
     AMP_INSIST( input_db->keyExists("VolumeIntegralOperator"), "key missing!" );
 
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
-    boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator = boost::dynamic_pointer_cast<
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
+    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator = AMP::dynamic_pointer_cast<
     AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 											  "VolumeIntegralOperator",
 											  input_db,
@@ -221,10 +221,10 @@ void linearRobinTest(AMP::UnitTest *ut, std::string exeName )
     AMP_INSIST(input_db->keyExists("LinearSolver"),   "Key ''LinearSolver'' is missing!");
 
     // Read the input file onto a database.
-    boost::shared_ptr<AMP::Database>                 mlSolver_db   = input_db->getDatabase("LinearSolver"); 
+    AMP::shared_ptr<AMP::Database>                 mlSolver_db   = input_db->getDatabase("LinearSolver"); 
 
     // Fill in the parameters fo the class with the info on the database.
-    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams (new AMP::Solver::SolverStrategyParameters(mlSolver_db));
+    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams (new AMP::Solver::SolverStrategyParameters(mlSolver_db));
 
     // Define the operature to be used by the Solver.
     mlSolverParams->d_pOperator = diffusionOperator;
@@ -237,7 +237,7 @@ void linearRobinTest(AMP::UnitTest *ut, std::string exeName )
     std::cout<<"Initial Solution Norm: "<<initSolNorm<<std::endl;
 
     // Create the ML Solver
-    boost::shared_ptr<AMP::Solver::TrilinosMLSolver>         mlSolver(new AMP::Solver::TrilinosMLSolver(mlSolverParams));
+    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver>         mlSolver(new AMP::Solver::TrilinosMLSolver(mlSolverParams));
 
     // Use a random initial guess?
     mlSolver->setZeroInitialGuess(false);

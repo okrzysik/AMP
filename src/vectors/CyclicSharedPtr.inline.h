@@ -19,7 +19,7 @@ namespace LinearAlgebra {
   template <typename T , typename DELETER>
   void CyclicSharedPtr<T,DELETER>::createCyclicSharedPtr ()
   {
-    d_pThis = new boost::shared_ptr<T> ( dynamic_cast<T *> ( this ) , DELETER () );
+    d_pThis = new AMP::shared_ptr<T> ( dynamic_cast<T *> ( this ) , DELETER () );
   }
 
   template <typename T , typename DELETER>

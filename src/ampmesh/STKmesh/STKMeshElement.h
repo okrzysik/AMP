@@ -2,7 +2,7 @@
 #define included_AMP_STKMeshElement
 
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "ampmesh/STKmesh/STKMesh.h"
@@ -94,7 +94,7 @@ protected:
      *        type      Element type
      */
     STKMeshElement(int dim, stk::mesh::Entity* element, unsigned int rank, MeshID meshID, const STKMesh* mesh );
-    STKMeshElement(int dim, boost::shared_ptr<stk::mesh::Entity> element, unsigned int rank, MeshID meshID, const STKMesh* mesh );
+    STKMeshElement(int dim, AMP::shared_ptr<stk::mesh::Entity> element, unsigned int rank, MeshID meshID, const STKMesh* mesh );
 
     //! Clone the iterator
     virtual MeshElement* clone() const;

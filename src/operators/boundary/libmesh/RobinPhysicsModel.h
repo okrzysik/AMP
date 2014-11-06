@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "operators/ElementPhysicsModel.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "materials/Material.h"
 #include "materials/Property.h"
 //#include "RobinPhysicsModelParameters.h"
@@ -20,7 +20,7 @@ class RobinPhysicsModel  : public ElementPhysicsModel
  {
     public :
       
-      RobinPhysicsModel(const boost::shared_ptr<RobinPhysicsModelParameters>& params)
+      RobinPhysicsModel(const AMP::shared_ptr<RobinPhysicsModelParameters>& params)
         : ElementPhysicsModel(params), d_numActiveVariables(0)
       {
           reset(params);
@@ -28,11 +28,11 @@ class RobinPhysicsModel  : public ElementPhysicsModel
 
       virtual ~RobinPhysicsModel() {}
 
-      virtual void reset(const boost::shared_ptr<RobinPhysicsModelParameters>& params) {
+      virtual void reset(const AMP::shared_ptr<RobinPhysicsModelParameters>& params) {
           if (params->d_db->keyExists("Number_Active_Variables")) {
               d_numActiveVariables   =  (params->d_db)->getInteger("Number_Active_Variables");
           }
-          boost::shared_ptr<AMP::Database> activeDb;
+          AMP::shared_ptr<AMP::Database> activeDb;
           if (params->d_db->keyExists("ActiveInputVariables")){
             activeDb = params->d_db->getDatabase("ActiveInputVariables");
             unsigned int numactive = activeDb->getAllKeys().size();

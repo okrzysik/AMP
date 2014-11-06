@@ -27,14 +27,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
   params->setComm(globalComm);
-  boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
+  AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
 
   AMP::LinearAlgebra::Variable::shared_ptr var(new  AMP::LinearAlgebra::Variable("myVar")); 
   AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,1,true);  
@@ -46,11 +46,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   scalarVec->zero();
   vectorVec->zero();
 
-  boost::shared_ptr<AMP::Database>  bnd_db = input_db->getDatabase("NeumannVectorCorrection1");
-  boost::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> vectorCorrectionParameters (new AMP::Operator::NeumannVectorCorrectionParameters( bnd_db ) );
+  AMP::shared_ptr<AMP::Database>  bnd_db = input_db->getDatabase("NeumannVectorCorrection1");
+  AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> vectorCorrectionParameters (new AMP::Operator::NeumannVectorCorrectionParameters( bnd_db ) );
   vectorCorrectionParameters->d_variable = var;
   vectorCorrectionParameters->d_Mesh = mesh;
-  boost::shared_ptr<AMP::Operator::NeumannVectorCorrection> neumannBndOp (new AMP::Operator::NeumannVectorCorrection(vectorCorrectionParameters));
+  AMP::shared_ptr<AMP::Operator::NeumannVectorCorrection> neumannBndOp (new AMP::Operator::NeumannVectorCorrection(vectorCorrectionParameters));
 
   neumannBndOp->addRHScorrection(scalarVec);
   AMP::pout << scalarVec << std::endl;

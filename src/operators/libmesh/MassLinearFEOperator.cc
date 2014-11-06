@@ -17,12 +17,12 @@ AMP::LinearAlgebra::Variable::shared_ptr MassLinearFEOperator :: getOutputVariab
 }
 
 
-MassLinearFEOperator :: MassLinearFEOperator (const boost::shared_ptr<MassLinearFEOperatorParameters> & params)
+MassLinearFEOperator :: MassLinearFEOperator (const AMP::shared_ptr<MassLinearFEOperatorParameters> & params)
     : LinearFEOperator (params) 
 {
     AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
 
-    d_massLinElem = boost::dynamic_pointer_cast<MassLinearElement>(d_elemOp);
+    d_massLinElem = AMP::dynamic_pointer_cast<MassLinearElement>(d_elemOp);
 
     AMP_INSIST( ((d_massLinElem.get()) != NULL), "d_elemOp is not of type MassLinearElement" );
 
@@ -54,7 +54,7 @@ MassLinearFEOperator :: MassLinearFEOperator (const boost::shared_ptr<MassLinear
 }
 
 
-void MassLinearFEOperator :: preAssembly(const boost::shared_ptr<AMP::Operator::OperatorParameters>&) 
+void MassLinearFEOperator :: preAssembly(const AMP::shared_ptr<AMP::Operator::OperatorParameters>&) 
 {
     d_matrix->zero();
 

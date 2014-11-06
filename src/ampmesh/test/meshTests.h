@@ -246,7 +246,7 @@ void ElementIteratorTest( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh, A
 
 
 // Check the different mesh element iterators
-void MeshIteratorTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
+void MeshIteratorTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     char message[1000];
     // Loop through different ghost widths
@@ -289,12 +289,12 @@ void MeshIteratorTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mes
 
 
 // Test operator operations for iterator
-void MeshIteratorOperationTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
+void MeshIteratorOperationTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // Create some iterators to work with
     AMP::Mesh::MeshIterator A = mesh->getIterator(AMP::Mesh::Vertex,1);
     AMP::Mesh::MeshIterator B = mesh->getIterator(mesh->getGeomType(),0);
-    boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
+    AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
         new std::vector<AMP::Mesh::MeshElement>(A.size()) );
     AMP::Mesh::MeshIterator tmp = A.begin();
     for (size_t i=0; i<A.size(); i++) {
@@ -332,7 +332,7 @@ void MeshIteratorOperationTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::
 
 
 // Test set operations for the iterators
-void MeshIteratorSetOPTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
+void MeshIteratorSetOPTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     AMP::Mesh::MeshIterator A = mesh->getIterator(AMP::Mesh::Vertex,1);
     AMP::Mesh::MeshIterator B = mesh->getIterator(AMP::Mesh::Vertex,0);
@@ -363,7 +363,7 @@ void MeshIteratorSetOPTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh
 
 
 // Test the number of elements in the mesh
-void MeshCountTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
+void MeshCountTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     AMP::AMP_MPI comm = mesh->getComm();
     for (int i=0; i<=(int)mesh->getGeomType(); i++) {
@@ -398,7 +398,7 @@ void MeshCountTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 
 
 // Test some basic Mesh properties
-void MeshBasicTest( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
+void MeshBasicTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // test that we can get the mesh ID
     AMP::Mesh::MeshID meshID = mesh->meshID();
@@ -575,7 +575,7 @@ void VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr m
             AMP::Mesh::MeshIterator iterator = mesh->getSurfaceIterator( type, gcw );
             size_t global_size = mesh->getComm().sumReduce(iterator.size());
             bool passes = global_size>0;
-            if ( boost::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>(mesh).get()==NULL ) {
+            if ( AMP::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>(mesh).get()==NULL ) {
                 if ( mesh->numGlobalElements(type) >= 100 )
                     passes = passes && (global_size < mesh->numGlobalElements(type));
             }

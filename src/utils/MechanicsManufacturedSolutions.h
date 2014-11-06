@@ -11,7 +11,7 @@ namespace MechanicsManufacturedSolution {
  */
 class MMS {
 public:
-  typedef boost::shared_ptr<MMS> shared_ptr;
+  typedef AMP::shared_ptr<MMS> shared_ptr;
   /**
    * Default constructor
    * @param YM  Youngs modulus
@@ -223,11 +223,11 @@ class MMSBuilder {
 public:
   MMSBuilder() { }
 
-  static boost::shared_ptr<MMS> createMMS(boost::shared_ptr<AMP::Database> mmsDatabase) {
-    boost::shared_ptr<MMS> mms;
+  static AMP::shared_ptr<MMS> createMMS(AMP::shared_ptr<AMP::Database> mmsDatabase) {
+    AMP::shared_ptr<MMS> mms;
     std::string name = mmsDatabase->getStringWithDefault("name", "One");
-    if (name == "Trigonometric") { mms = boost::shared_ptr<MMS>(new MMSTrigonometric); }
-    else if (name == "Linear") { mms = boost::shared_ptr<MMS>(new MMSLinear); }
+    if (name == "Trigonometric") { mms = AMP::shared_ptr<MMS>(new MMSTrigonometric); }
+    else if (name == "Linear") { mms = AMP::shared_ptr<MMS>(new MMSLinear); }
     else { std::cerr<<"Error: AMP::MechanicsManufacturedSolution::MMS"<<name<<" is not defined"<<std::endl; assert(false); }
     if (mmsDatabase->keyExists("scale_x")) { mms->scaleX(mmsDatabase->getDouble("scale_x")); }
     if (mmsDatabase->keyExists("scale_y")) { mms->scaleY(mmsDatabase->getDouble("scale_y")); }

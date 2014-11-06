@@ -11,7 +11,7 @@
 #include "utils/InputDatabase.h"
 #endif
 #ifndef included_tbox_Pointer
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #endif
 #ifndef included_TimeIntegrator
 #include "TimeIntegrator.h"
@@ -81,7 +81,7 @@ public:
     * member function.
     *
     */
-  ImplicitTimeIntegrator( boost::shared_ptr< TimeIntegratorParameters > parameters);
+  ImplicitTimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters);
 
    /**
     * Empty destructor for ImplicitTimeIntegrator
@@ -92,14 +92,14 @@ public:
     * Initialize state of time integrator.  This includes creating
     * solution vector and initializing solver components.
     */
-   void initialize( boost::shared_ptr< TimeIntegratorParameters > parameters);
+   void initialize( AMP::shared_ptr< TimeIntegratorParameters > parameters);
 
    /**
    * Resets the internal state of the time integrator as needed.
    * A parameter argument is passed to allow for general flexibility
    * in determining what needs to be reset Typically used after a regrid.
    */
-   virtual void reset( boost::shared_ptr< TimeIntegratorParameters > parameters) = 0;
+   virtual void reset( AMP::shared_ptr< TimeIntegratorParameters > parameters) = 0;
 
    /*!
     * @brief Integrate through the
@@ -168,21 +168,21 @@ public:
     *
     * When assertion checking is active, the database pointer must be non-null.
     */
-   void putToDatabase(boost::shared_ptr<AMP::Database> db);
+   void putToDatabase(AMP::shared_ptr<AMP::Database> db);
 
-   boost::shared_ptr<AMP::Solver::SolverStrategy> getSolver(void){ return d_solver; }
+   AMP::shared_ptr<AMP::Solver::SolverStrategy> getSolver(void){ return d_solver; }
 
  protected:
-      virtual void initializeTimeOperator(boost::shared_ptr< TimeIntegratorParameters > parameters);
+      virtual void initializeTimeOperator(AMP::shared_ptr< TimeIntegratorParameters > parameters);
 
       /*
        * Pointer to solver objects and patch
        * hierarchy.  The strategies provide nonlinear equation and solver 
        * routines for treating the nonlinear problem on the hierarchy.
        */
-      boost::shared_ptr<AMP::Solver::SolverStrategy> d_solver;
+      AMP::shared_ptr<AMP::Solver::SolverStrategy> d_solver;
       
-      boost::shared_ptr< TimeOperatorParameters > d_pTimeOperatorParameters;
+      AMP::shared_ptr< TimeOperatorParameters > d_pTimeOperatorParameters;
 private:
    /*
     * Read input data from specified database and initialize class members.
@@ -191,7 +191,7 @@ private:
     *
     * When assertion checking is active, the database pointer must be non-null.
     */
-   void getFromInput(boost::shared_ptr<AMP::Database> db);
+   void getFromInput(AMP::shared_ptr<AMP::Database> db);
 
    /*
     * Read object state from restart database and initialize class members.

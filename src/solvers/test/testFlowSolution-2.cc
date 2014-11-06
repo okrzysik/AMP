@@ -4,7 +4,7 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
@@ -62,13 +62,13 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     double t0 = AMP::AMP_MPI::time();
 
     // Read the input file
-    boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
+    AMP::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
     AMP::InputManager::getManager()->parseInputFile ( input_file , input_db );
     input_db->printClassData(AMP::plog);
 
     // Get the Mesh database and create the mesh parameters
-    boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
     params->setComm(globalComm);
 
     // Create the meshes from the input database
@@ -103,17 +103,17 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     // Creating the parameters that will form the right-hand side for the thermal calculation.
     //--------------------------------------------------
     AMP_INSIST(input_db->keyExists("PowerNeutronicsOperator"), "Key ''PowerNeutronicsOperator'' is missing!");
-    boost::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("PowerNeutronicsOperator");
-    boost::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
+    AMP::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("PowerNeutronicsOperator");
+    AMP::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
     neutronicsParams->d_Mesh = meshAdapter1;
 
     //----------------------------------------------------------------------------
     //  Constructing the neutornicsRHS for the Thermal diffusion source (aka specific power).
     //----------------------------------------------------------------------------
-    boost::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator;
+    AMP::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator;
     AMP::LinearAlgebra::Vector::shared_ptr   specificPowerGpVec;
     if ( meshAdapter1.get()!=NULL ) {
-        neutronicsOperator = boost::shared_ptr<AMP::Operator::NeutronicsRhs>(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
+        neutronicsOperator = AMP::shared_ptr<AMP::Operator::NeutronicsRhs>(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
         AMP::LinearAlgebra::Variable::shared_ptr specificPowerGpVar = neutronicsOperator->getOutputVariable();
         specificPowerGpVec = AMP::LinearAlgebra::createVector( gaussPointDOF1, specificPowerGpVar, true );
     }
@@ -140,7 +140,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     //----------------------------------------------------------------------------
     //  Create a global multivariable with the temperature and displacement on each mesh.
     //----------------------------------------------------------------------------
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> globalMultiVar(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> globalMultiVar(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
     globalMultiVar->add(thermalVar);
 
     //----------------------------------------------------------------------------
@@ -174,73 +174,73 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     //-----------------------------------------------
     //   CREATE THE NONLINEAR AND LINEAR THERMAL OPERATOR 1 ----
     //-----------------------------------------------
-    boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> thermalNonlinearOperator1;
-    boost::shared_ptr<AMP::Operator::LinearBVPOperator> thermalLinearOperator1;
+    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> thermalNonlinearOperator1;
+    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> thermalLinearOperator1;
     if ( meshAdapter1.get()!=NULL ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector1( meshAdapter1 );
         AMP_INSIST( input_db->keyExists("NonlinearThermalOperator1"), "key missing!" );
-        boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel1;
-        thermalNonlinearOperator1 = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( 
+        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel1;
+        thermalNonlinearOperator1 = AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( 
             AMP::Operator::OperatorBuilder::createOperator( meshAdapter1, "NonlinearThermalOperator1", input_db, thermalTransportModel1));
 
-        boost::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel1;
-        thermalLinearOperator1 = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel1;
+        thermalLinearOperator1 = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator( meshAdapter1, "LinearThermalOperator1", input_db, thermalTransportModel1) );
     }
 
     //----------------------------------------------------------
     //  Integrate Nuclear Rhs over Density * Volume //
     //----------------------------------------------------------
-    boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> specificPowerGpVecToPowerDensityNodalVecOperatator;
+    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> specificPowerGpVecToPowerDensityNodalVecOperatator;
     if ( meshAdapter1.get()!=NULL ) {
         AMP_INSIST( input_db->keyExists("VolumeIntegralOperator"), "key missing!" );
-        boost::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
-        specificPowerGpVecToPowerDensityNodalVecOperatator = boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
+        specificPowerGpVecToPowerDensityNodalVecOperatator = AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
             AMP::Operator::OperatorBuilder::createOperator( meshAdapter1, "VolumeIntegralOperator", input_db, stransportModel) );
     }
 
     //--------------------------------------------
     //   CREATE THE NONLINEAR AND LINEAR THERMAL OPERATOR 2 ----
     //--------------------------------------------
-    boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> thermalNonlinearOperator2;
-    boost::shared_ptr<AMP::Operator::LinearBVPOperator> thermalLinearOperator2;
+    AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> thermalNonlinearOperator2;
+    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> thermalLinearOperator2;
     if ( meshAdapter2.get()!=NULL ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector2( meshAdapter2 );
         AMP_INSIST( input_db->keyExists("NonlinearThermalOperator2"), "key missing!" );
 
-        boost::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel2;
-        thermalNonlinearOperator2 = boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel2;
+        thermalNonlinearOperator2 = AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(meshAdapter2,
 											    "NonlinearThermalOperator2",
 											    input_db,
 											    thermalTransportModel2));
 
-        boost::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel2;
-        thermalLinearOperator2 = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel2;
+        thermalLinearOperator2 = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator( meshAdapter2, "LinearThermalOperator2", input_db, transportModel2 ) );
     }
 
     //--------------------------------------
     //     CREATE THE FLOW OPERATOR   ------
     //--------------------------------------
-    boost::shared_ptr<AMP::Operator::FlowFrapconOperator> flowOperator;
-    boost::shared_ptr<AMP::Operator::FlowFrapconJacobian> flowJacobian;
+    AMP::shared_ptr<AMP::Operator::FlowFrapconOperator> flowOperator;
+    AMP::shared_ptr<AMP::Operator::FlowFrapconJacobian> flowJacobian;
     if ( meshAdapter2.get()!=NULL ) {
         AMP_INSIST(input_db->keyExists("FlowFrapconOperator"), "Key ''FlowFrapconOperator'' is missing!");
 
-        boost::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
-        flowOperator = boost::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter2,
+        AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
+        flowOperator = AMP::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter2,
 																							  "FlowFrapconOperator",
 																							  input_db,
 																							  flowtransportModel));
 
-        flowJacobian = boost::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter2,
+        flowJacobian = AMP::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter2,
 																							  "FlowFrapconJacobian",
 																							  input_db,
 																							  flowtransportModel));
     }
 
-    boost::shared_ptr<AMP::InputDatabase> flowDatabase = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("FlowFrapconOperator"));
+    AMP::shared_ptr<AMP::InputDatabase> flowDatabase = AMP::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("FlowFrapconOperator"));
 
     //double Cp, De, G, K, Re, Pr, heff, nP;
     double De, K, Re, Pr, heff;
@@ -262,7 +262,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     //-------------------------------------
     // CREATE THE PELLET-CLAD MAP OPERATORS
     //-------------------------------------
-    boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  mapPelletAndClad;
+    AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  mapPelletAndClad;
     mapPelletAndClad = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap> ( manager, input_db->getDatabase("PelletAndCladMaps") );
     mapPelletAndClad->setVector( thermalMapVec );
 
@@ -270,39 +270,39 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     //---------------------------------------------------------------------------
     // CREATE THE FLOW MAP OPERATORS
     //---------------------------------------------------------------------------
-    boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladTo1DFlow1;
-    boost::shared_ptr<AMP::Operator::Map3Dto1D> mapCladTo1DFlow2;
-    boost::shared_ptr<AMP::Operator::Map1Dto3D> map1DFlowTo3DFlow1;
-    boost::shared_ptr<AMP::Operator::Map1Dto3D> map1DFlowTo3DFlow2;
-    boost::shared_ptr<AMP::Operator::MapSurface>  map3DFlowToClad;
+    AMP::shared_ptr<AMP::Operator::Map3Dto1D> mapCladTo1DFlow1;
+    AMP::shared_ptr<AMP::Operator::Map3Dto1D> mapCladTo1DFlow2;
+    AMP::shared_ptr<AMP::Operator::Map1Dto3D> map1DFlowTo3DFlow1;
+    AMP::shared_ptr<AMP::Operator::Map1Dto3D> map1DFlowTo3DFlow2;
+    AMP::shared_ptr<AMP::Operator::MapSurface>  map3DFlowToClad;
     AMP::LinearAlgebra::Vector::shared_ptr cladVec;
     AMP::LinearAlgebra::Vector::shared_ptr flowSol1DVec;
     AMP::LinearAlgebra::Vector::shared_ptr flowSolVec;
     AMP::LinearAlgebra::Vector::shared_ptr flowRhsVec;
     AMP::LinearAlgebra::Vector::shared_ptr flowResVec;
     if ( meshAdapter2.get()!=NULL ) {
-        boost::shared_ptr<AMP::InputDatabase> mapcladflow_db  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapCladto1DFlow"));
-        boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapcladflowParams (new AMP::Operator::MapOperatorParameters( mapcladflow_db ));
+        AMP::shared_ptr<AMP::InputDatabase> mapcladflow_db  = AMP::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapCladto1DFlow"));
+        AMP::shared_ptr<AMP::Operator::MapOperatorParameters> mapcladflowParams (new AMP::Operator::MapOperatorParameters( mapcladflow_db ));
         mapcladflowParams->d_Mesh = meshAdapter2;
         mapcladflowParams->d_MapMesh = meshAdapter2;
         mapcladflowParams->d_MapComm = meshAdapter2->getComm();  
-        mapCladTo1DFlow1 = boost::shared_ptr<AMP::Operator::Map3Dto1D>(new AMP::Operator::Map3Dto1D( mapcladflowParams ));
-        mapCladTo1DFlow2 = boost::shared_ptr<AMP::Operator::Map3Dto1D>(new AMP::Operator::Map3Dto1D( mapcladflowParams ));
+        mapCladTo1DFlow1 = AMP::shared_ptr<AMP::Operator::Map3Dto1D>(new AMP::Operator::Map3Dto1D( mapcladflowParams ));
+        mapCladTo1DFlow2 = AMP::shared_ptr<AMP::Operator::Map3Dto1D>(new AMP::Operator::Map3Dto1D( mapcladflowParams ));
 
-        boost::shared_ptr<AMP::InputDatabase> mapflowclad_db  = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("Map1DFlowto3DFlow"));
-        boost::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowcladParams (new AMP::Operator::MapOperatorParameters( mapflowclad_db ));
+        AMP::shared_ptr<AMP::InputDatabase> mapflowclad_db  = AMP::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("Map1DFlowto3DFlow"));
+        AMP::shared_ptr<AMP::Operator::MapOperatorParameters> mapflowcladParams (new AMP::Operator::MapOperatorParameters( mapflowclad_db ));
         mapflowcladParams->d_Mesh = meshAdapter2;
         mapflowcladParams->d_MapMesh = meshAdapter2;
         mapflowcladParams->d_MapComm = meshAdapter2->getComm(); 
-        map1DFlowTo3DFlow1 = boost::shared_ptr<AMP::Operator::Map1Dto3D>(new AMP::Operator::Map1Dto3D( mapflowcladParams ));
-        map1DFlowTo3DFlow2 = boost::shared_ptr<AMP::Operator::Map1Dto3D>(new AMP::Operator::Map1Dto3D( mapflowcladParams ));
+        map1DFlowTo3DFlow1 = AMP::shared_ptr<AMP::Operator::Map1Dto3D>(new AMP::Operator::Map1Dto3D( mapflowcladParams ));
+        map1DFlowTo3DFlow2 = AMP::shared_ptr<AMP::Operator::Map1Dto3D>(new AMP::Operator::Map1Dto3D( mapflowcladParams ));
 
         mapCladTo1DFlow1->setZLocations( map1DFlowTo3DFlow1->getZLocations());
         mapCladTo1DFlow2->setZLocations( map1DFlowTo3DFlow2->getZLocations());
         size_t flowVecSize = map1DFlowTo3DFlow1->getNumZlocations();
 
-        boost::shared_ptr<AMP::InputDatabase> mapFlowToClad_db = boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapFlowtoClad"));
-        map3DFlowToClad = boost::dynamic_pointer_cast<AMP::Operator::MapSurface>( 
+        AMP::shared_ptr<AMP::InputDatabase> mapFlowToClad_db = AMP::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("MapFlowtoClad"));
+        map3DFlowToClad = AMP::dynamic_pointer_cast<AMP::Operator::MapSurface>( 
             AMP::Operator::OperatorBuilder::createOperator(meshAdapter2, meshAdapter2, meshAdapter2->getComm(), mapFlowToClad_db ) );
         map3DFlowToClad->setVector(thermalMapToCladVec);
         //------------------------------------------
@@ -358,31 +358,31 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 
     //------------------------------------------
 
-    boost::shared_ptr<AMP::InputDatabase> tmp1_db (new AMP::InputDatabase("Dummy"));
-    boost::shared_ptr<AMP::Operator::OperatorParameters> columnMapsParams (new AMP::Operator::OperatorParameters(tmp1_db));
-    boost::shared_ptr<AMP::Operator::ColumnOperator>     columnMapstoCladOperator(new AMP::Operator::ColumnOperator(columnMapsParams));
+    AMP::shared_ptr<AMP::InputDatabase> tmp1_db (new AMP::InputDatabase("Dummy"));
+    AMP::shared_ptr<AMP::Operator::OperatorParameters> columnMapsParams (new AMP::Operator::OperatorParameters(tmp1_db));
+    AMP::shared_ptr<AMP::Operator::ColumnOperator>     columnMapstoCladOperator(new AMP::Operator::ColumnOperator(columnMapsParams));
     columnMapstoCladOperator->append(mapPelletAndClad);
     if ( map3DFlowToClad.get() != NULL )
         columnMapstoCladOperator->append(map3DFlowToClad);
 
     //------------------------------------------
-    boost::shared_ptr<AMP::Operator::RobinVectorCorrection> robinBoundaryOp1;
-    boost::shared_ptr<AMP::Operator::RobinVectorCorrection> robinBoundaryOp2;
-    boost::shared_ptr<AMP::Operator::RobinVectorCorrection> robinBoundaryOp3;
-    boost::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> correctionParameters1;
-    boost::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> correctionParameters2;
-    boost::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> correctionParameters3;
+    AMP::shared_ptr<AMP::Operator::RobinVectorCorrection> robinBoundaryOp1;
+    AMP::shared_ptr<AMP::Operator::RobinVectorCorrection> robinBoundaryOp2;
+    AMP::shared_ptr<AMP::Operator::RobinVectorCorrection> robinBoundaryOp3;
+    AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> correctionParameters1;
+    AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> correctionParameters2;
+    AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> correctionParameters3;
     if ( thermalNonlinearOperator1.get() != NULL ) {
-        robinBoundaryOp1 = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( thermalNonlinearOperator1->getBoundaryOperator()  );
-        correctionParameters1 = boost::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp1->getParameters());
+        robinBoundaryOp1 = AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( thermalNonlinearOperator1->getBoundaryOperator()  );
+        correctionParameters1 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp1->getParameters());
         robinBoundaryOp1->setVariableFlux( thermalMapCladToPelletVec );
         robinBoundaryOp1->reset(correctionParameters1);
     }
     if ( thermalNonlinearOperator2.get() != NULL ) {
-        robinBoundaryOp2 = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( (boost::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator> ( thermalNonlinearOperator2->getBoundaryOperator() ) )->getBoundaryOperator(0) );
-        robinBoundaryOp3 = boost::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( (boost::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator> ( thermalNonlinearOperator2->getBoundaryOperator() ) )->getBoundaryOperator(1) );
-        correctionParameters2 = boost::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp2->getParameters());
-        correctionParameters3 = boost::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp3->getParameters());
+        robinBoundaryOp2 = AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( (AMP::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator> ( thermalNonlinearOperator2->getBoundaryOperator() ) )->getBoundaryOperator(0) );
+        robinBoundaryOp3 = AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( (AMP::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator> ( thermalNonlinearOperator2->getBoundaryOperator() ) )->getBoundaryOperator(1) );
+        correctionParameters2 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp2->getParameters());
+        correctionParameters3 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp3->getParameters());
         robinBoundaryOp2->setVariableFlux( thermalMapToCladVec );
         robinBoundaryOp3->setVariableFlux( thermalMapToCladVec );
         robinBoundaryOp2->reset(correctionParameters2);
@@ -395,49 +395,49 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 
     //-------------------------------------
     //Coupling Map to the Nonlinear Operators
-    boost::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
-    boost::shared_ptr<AMP::Operator::OperatorParameters> columnNonlinearParams (new AMP::Operator::OperatorParameters(tmp_db));
-    boost::shared_ptr<AMP::Operator::ColumnOperator>     columnNonlinearOperator(new AMP::Operator::ColumnOperator(columnNonlinearParams));
+    AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
+    AMP::shared_ptr<AMP::Operator::OperatorParameters> columnNonlinearParams (new AMP::Operator::OperatorParameters(tmp_db));
+    AMP::shared_ptr<AMP::Operator::ColumnOperator>     columnNonlinearOperator(new AMP::Operator::ColumnOperator(columnNonlinearParams));
     if ( thermalNonlinearOperator1.get() != NULL ) {
-        boost::shared_ptr<AMP::Operator::CoupledOperatorParameters> coupledNonlinearParams1(new AMP::Operator::CoupledOperatorParameters(tmp_db));
+        AMP::shared_ptr<AMP::Operator::CoupledOperatorParameters> coupledNonlinearParams1(new AMP::Operator::CoupledOperatorParameters(tmp_db));
         coupledNonlinearParams1->d_MapOperator = mapPelletAndClad;
         coupledNonlinearParams1->d_BVPOperator = thermalNonlinearOperator1;
-        boost::shared_ptr<AMP::Operator::CoupledOperator> coupledNonlinearOperator1(new AMP::Operator::CoupledOperator(coupledNonlinearParams1));
+        AMP::shared_ptr<AMP::Operator::CoupledOperator> coupledNonlinearOperator1(new AMP::Operator::CoupledOperator(coupledNonlinearParams1));
         columnNonlinearOperator->append(coupledNonlinearOperator1);
     }
     if ( thermalNonlinearOperator2.get() != NULL ) {
-        boost::shared_ptr<AMP::Operator::CoupledOperatorParameters> coupledNonlinearParams2(new AMP::Operator::CoupledOperatorParameters(tmp_db));
+        AMP::shared_ptr<AMP::Operator::CoupledOperatorParameters> coupledNonlinearParams2(new AMP::Operator::CoupledOperatorParameters(tmp_db));
         coupledNonlinearParams2->d_MapOperator = columnMapstoCladOperator;
         coupledNonlinearParams2->d_BVPOperator = thermalNonlinearOperator2;
-        boost::shared_ptr<AMP::Operator::CoupledOperator> coupledNonlinearOperator2(new AMP::Operator::CoupledOperator(coupledNonlinearParams2));
+        AMP::shared_ptr<AMP::Operator::CoupledOperator> coupledNonlinearOperator2(new AMP::Operator::CoupledOperator(coupledNonlinearParams2));
         columnNonlinearOperator->append(coupledNonlinearOperator2);
     }
     if ( flowOperator.get() != NULL ) {
-        boost::shared_ptr<AMP::Operator::CoupledFlowFrapconOperatorParameters> coupledNonlinearParams3(new AMP::Operator::CoupledFlowFrapconOperatorParameters(tmp_db));
+        AMP::shared_ptr<AMP::Operator::CoupledFlowFrapconOperatorParameters> coupledNonlinearParams3(new AMP::Operator::CoupledFlowFrapconOperatorParameters(tmp_db));
         coupledNonlinearParams3->d_Map3to1 = mapCladTo1DFlow1 ;
         coupledNonlinearParams3->d_FlowOperator = flowOperator;
         coupledNonlinearParams3->d_Map1to3 = map1DFlowTo3DFlow1;
         coupledNonlinearParams3->d_Mesh = meshAdapter2;
-        boost::shared_ptr<AMP::Operator::CoupledFlowFrapconOperator>           coupledNonlinearOperator3(new AMP::Operator::CoupledFlowFrapconOperator(coupledNonlinearParams3));
+        AMP::shared_ptr<AMP::Operator::CoupledFlowFrapconOperator>           coupledNonlinearOperator3(new AMP::Operator::CoupledFlowFrapconOperator(coupledNonlinearParams3));
         columnNonlinearOperator->append(coupledNonlinearOperator3);
     }
 
     //---------------------------------------
     //Column of Coupled Operators
-    boost::shared_ptr<AMP::Operator::OperatorParameters> columnLinearParams(new AMP::Operator::OperatorParameters(tmp_db));
-    boost::shared_ptr<AMP::Operator::ColumnOperator>     coupledLinearOperator(new AMP::Operator::ColumnOperator(columnLinearParams));
+    AMP::shared_ptr<AMP::Operator::OperatorParameters> columnLinearParams(new AMP::Operator::OperatorParameters(tmp_db));
+    AMP::shared_ptr<AMP::Operator::ColumnOperator>     coupledLinearOperator(new AMP::Operator::ColumnOperator(columnLinearParams));
     if ( thermalLinearOperator1.get() != NULL )
         coupledLinearOperator->append(thermalLinearOperator1);
     if ( thermalLinearOperator2.get() != NULL )
         coupledLinearOperator->append(thermalLinearOperator2);
-    boost::shared_ptr<AMP::Operator::CoupledFlowFrapconOperator> coupledlinearOperator3;
+    AMP::shared_ptr<AMP::Operator::CoupledFlowFrapconOperator> coupledlinearOperator3;
     if ( flowJacobian.get() != NULL ) {
-        boost::shared_ptr<AMP::Operator::CoupledFlowFrapconOperatorParameters> coupledlinearParams3(new AMP::Operator::CoupledFlowFrapconOperatorParameters(tmp_db));
+        AMP::shared_ptr<AMP::Operator::CoupledFlowFrapconOperatorParameters> coupledlinearParams3(new AMP::Operator::CoupledFlowFrapconOperatorParameters(tmp_db));
         coupledlinearParams3->d_Map3to1 = mapCladTo1DFlow2 ;
         coupledlinearParams3->d_FlowOperator = flowJacobian;
         coupledlinearParams3->d_Map1to3 = map1DFlowTo3DFlow2;
         coupledlinearParams3->d_Mesh = meshAdapter2;
-        coupledlinearOperator3 = boost::shared_ptr<AMP::Operator::CoupledFlowFrapconOperator>(new AMP::Operator::CoupledFlowFrapconOperator(coupledlinearParams3));
+        coupledlinearOperator3 = AMP::shared_ptr<AMP::Operator::CoupledFlowFrapconOperator>(new AMP::Operator::CoupledFlowFrapconOperator(coupledlinearParams3));
         coupledLinearOperator->append(coupledlinearOperator3);
     }
 
@@ -463,60 +463,60 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
         AMP::pout<<"Initial Flow Residual Norm: "<<std::setprecision(12)<<flowResVec->L2Norm()<<std::endl;
 
     //------------------------------------------------------------------
-    boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver");
-    boost::shared_ptr<AMP::Database>    linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver");
+    AMP::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver");
+    AMP::shared_ptr<AMP::Database>    linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver");
 
     //----------------------------------------------------------------//
     // initialize the nonlinear solver
-    boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
+    AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = columnNonlinearOperator;
     nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector ;
-    boost::shared_ptr<AMP::Solver::PetscSNESSolver>  nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
+    AMP::shared_ptr<AMP::Solver::PetscSNESSolver>  nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
 
     //-------------------------------------------------------------------------//
     // initialize the column preconditioner which is a diagonal block preconditioner
-    boost::shared_ptr<AMP::Database>                 columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
-    boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
+    AMP::shared_ptr<AMP::Database>                 columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
+    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
     columnPreconditionerParams->d_pOperator = coupledLinearOperator;
-    boost::shared_ptr<AMP::Solver::ColumnSolver>             columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
+    AMP::shared_ptr<AMP::Solver::ColumnSolver>             columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
     //---------------
     if ( thermalLinearOperator1.get() != NULL ) {
-        boost::shared_ptr<AMP::Database> thermalPreconditioner_db1 = columnPreconditioner_db->getDatabase("pelletThermalPreconditioner");
-        boost::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams1(new AMP::Solver::SolverStrategyParameters(thermalPreconditioner_db1));
+        AMP::shared_ptr<AMP::Database> thermalPreconditioner_db1 = columnPreconditioner_db->getDatabase("pelletThermalPreconditioner");
+        AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams1(new AMP::Solver::SolverStrategyParameters(thermalPreconditioner_db1));
         thermalPreconditionerParams1->d_pOperator = thermalLinearOperator1;
-        boost::shared_ptr<AMP::Solver::TrilinosMLSolver> thermalPreconditioner1(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams1));
+        AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> thermalPreconditioner1(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams1));
         columnPreconditioner->append(thermalPreconditioner1);
     }
     if ( thermalLinearOperator2.get() != NULL ) {
-        boost::shared_ptr<AMP::Database> thermalPreconditioner_db2 = columnPreconditioner_db->getDatabase("cladThermalPreconditioner");
-        boost::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams2(new AMP::Solver::SolverStrategyParameters(thermalPreconditioner_db2));
+        AMP::shared_ptr<AMP::Database> thermalPreconditioner_db2 = columnPreconditioner_db->getDatabase("cladThermalPreconditioner");
+        AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams2(new AMP::Solver::SolverStrategyParameters(thermalPreconditioner_db2));
         thermalPreconditionerParams2->d_pOperator = thermalLinearOperator2;
-        boost::shared_ptr<AMP::Solver::TrilinosMLSolver> thermalPreconditioner2(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams2));
+        AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> thermalPreconditioner2(new AMP::Solver::TrilinosMLSolver(thermalPreconditionerParams2));
         columnPreconditioner->append(thermalPreconditioner2);
     }
     if ( flowJacobian.get() != NULL ) {
-        boost::shared_ptr<AMP::Database> JacobianSolver_db = input_db->getDatabase("Flow1DSolver"); 
-        boost::shared_ptr<AMP::Solver::SolverStrategyParameters> flowSolverParams (new AMP::Solver::SolverStrategyParameters(JacobianSolver_db));
+        AMP::shared_ptr<AMP::Database> JacobianSolver_db = input_db->getDatabase("Flow1DSolver"); 
+        AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> flowSolverParams (new AMP::Solver::SolverStrategyParameters(JacobianSolver_db));
         flowSolverParams->d_pOperator = flowJacobian;
-        boost::shared_ptr<AMP::Solver::Flow1DSolver> flowJacobianSolver(new AMP::Solver::Flow1DSolver(flowSolverParams));
+        AMP::shared_ptr<AMP::Solver::Flow1DSolver> flowJacobianSolver(new AMP::Solver::Flow1DSolver(flowSolverParams));
 
-        boost::shared_ptr<AMP::InputDatabase> CoupledJacobianSolver_db (new AMP::InputDatabase("Dummy"));
+        AMP::shared_ptr<AMP::InputDatabase> CoupledJacobianSolver_db (new AMP::InputDatabase("Dummy"));
         CoupledJacobianSolver_db->putInteger("max_iterations",1); 
         CoupledJacobianSolver_db->putDouble("max_error",1.0e-6); 
-        boost::shared_ptr<AMP::Solver::CoupledFlow1DSolverParameters> coupledFlowSolverParams (new AMP::Solver::CoupledFlow1DSolverParameters(CoupledJacobianSolver_db ));
+        AMP::shared_ptr<AMP::Solver::CoupledFlow1DSolverParameters> coupledFlowSolverParams (new AMP::Solver::CoupledFlow1DSolverParameters(CoupledJacobianSolver_db ));
         coupledFlowSolverParams->d_flow1DSolver = flowJacobianSolver;
-        coupledFlowSolverParams->d_pOperator = boost::dynamic_pointer_cast< AMP::Operator::Operator>(coupledlinearOperator3);
-        boost::shared_ptr<AMP::Solver::CoupledFlow1DSolver> CoupledFlowJacobianSolver(new AMP::Solver::CoupledFlow1DSolver(coupledFlowSolverParams));
+        coupledFlowSolverParams->d_pOperator = AMP::dynamic_pointer_cast< AMP::Operator::Operator>(coupledlinearOperator3);
+        AMP::shared_ptr<AMP::Solver::CoupledFlow1DSolver> CoupledFlowJacobianSolver(new AMP::Solver::CoupledFlow1DSolver(coupledFlowSolverParams));
         columnPreconditioner->append(CoupledFlowJacobianSolver);
     }
 
     //--------------------------------------------------------------------//
     // register the preconditioner with the Jacobian free Krylov solver
-    boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
+    AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
     linearSolver->setPreconditioner(columnPreconditioner);
 
     //-------------------------------------

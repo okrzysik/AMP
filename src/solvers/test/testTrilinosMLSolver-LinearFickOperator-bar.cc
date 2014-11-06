@@ -6,7 +6,7 @@
 #include "utils/AMP_MPI.h"
 #include "utils/UnitTest.h"
 #include "materials/Material.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
@@ -51,9 +51,9 @@ void linearFickTest(AMP::UnitTest *ut )
   ////////////////////////////////////
 
   // Construct a smart pointer to a new database.
-  //  #include "boost/shared_ptr.hpp"
+  //  #include "utils/shared_ptr.h"
   //  #include "utils/InputDatabase.h"
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
 
   // Fill the database from the input file.
   //  #include "utils/InputManager.h"
@@ -68,10 +68,10 @@ void linearFickTest(AMP::UnitTest *ut )
 //   Create the Mesh.
 //--------------------------------------------------
     AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
     mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 //--------------------------------------------------
 
 //--------------------------------------------------
@@ -87,8 +87,8 @@ void linearFickTest(AMP::UnitTest *ut )
   //   CREATE THE DIFFUSION OPERATOR  //
   ////////////////////////////////////
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 																						       "DiffusionBVPOperator",
 																						       input_db,
 																						       transportModel));
@@ -99,7 +99,7 @@ void linearFickTest(AMP::UnitTest *ut )
 
   RightHandSideVec->setToScalar(0.);
 
-  boost::shared_ptr<AMP::Operator::BoundaryOperator> boundaryOp;
+  AMP::shared_ptr<AMP::Operator::BoundaryOperator> boundaryOp;
   boundaryOp = diffusionOperator->getBoundaryOperator();
 
   boundaryOp->addRHScorrection(RightHandSideVec);
@@ -109,10 +109,10 @@ void linearFickTest(AMP::UnitTest *ut )
   AMP_INSIST(input_db->keyExists("LinearSolver"),   "Key ''LinearSolver'' is missing!");
 
   // Read the input file onto a database.
-  boost::shared_ptr<AMP::Database>                 mlSolver_db   = input_db->getDatabase("LinearSolver"); 
+  AMP::shared_ptr<AMP::Database>                 mlSolver_db   = input_db->getDatabase("LinearSolver"); 
 
   // Fill in the parameters for the class with the info on the database.
-  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams (new AMP::Solver::SolverStrategyParameters(mlSolver_db));
+  AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams (new AMP::Solver::SolverStrategyParameters(mlSolver_db));
 
   // Define the operator to be used by the Solver.
   mlSolverParams->d_pOperator = diffusionOperator;
@@ -132,7 +132,7 @@ void linearFickTest(AMP::UnitTest *ut )
   std::cout<<"RHS Norm: "<<rhsNorm<<std::endl;
 
   // Create the ML Solver
-  boost::shared_ptr<AMP::Solver::TrilinosMLSolver>         mlSolver(new AMP::Solver::TrilinosMLSolver(mlSolverParams));
+  AMP::shared_ptr<AMP::Solver::TrilinosMLSolver>         mlSolver(new AMP::Solver::TrilinosMLSolver(mlSolverParams));
 
   // Use a random initial guess?
   mlSolver->setZeroInitialGuess(false);

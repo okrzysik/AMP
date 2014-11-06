@@ -73,7 +73,7 @@ S(r) = - D(r) (u''(r) + u'(r)/r - gamma [u'(r)]^2) ");
 
 Dr_nonlinear::Dr_nonlinear()
 {
-		d_propertyMap = new std::map<std::string, boost::shared_ptr<Property<double> > >();
+		d_propertyMap = new std::map<std::string, AMP::shared_ptr<Property<double> > >();
 		INSERT_PROPERTY_IN_MAP(FickCoefficient, 	Dr_nonlinear_NS);
 }
 

@@ -27,7 +27,7 @@ public:
      *                          1. type: integer, name: KU (required)
      *                             acceptable values (non-negative integer values)
      */
-    BandedSolver( boost::shared_ptr<SolverStrategyParameters> parameters );
+    BandedSolver( AMP::shared_ptr<SolverStrategyParameters> parameters );
 
     /**
      * Default destructor. Currently does not do anything.
@@ -40,22 +40,22 @@ public:
      * @param[in]  f    shared pointer to right hand side vector
      * @param[out] u    shared pointer to approximate computed solution 
      */
-    virtual void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-		      boost::shared_ptr<AMP::LinearAlgebra::Vector> u );
+    virtual void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+		      AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
     /**
      * Resets the operator registered with the solver with new parameters if necessary
      * @param parameters
      *        OperatorParameters object that is NULL by default
      */
-    virtual void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> parameters);
+    virtual void resetOperator(const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters);
 
     /**
      * Resets the solver internally with new parameters if necessary
      * @param parameters
      *        BandedSolverParameters object that is NULL by default
      */
-    virtual void reset(boost::shared_ptr<SolverStrategyParameters> parameters);
+    virtual void reset(AMP::shared_ptr<SolverStrategyParameters> parameters);
 
 
 protected:

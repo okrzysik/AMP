@@ -2,7 +2,7 @@
 #define included_TimeIntegratorParameters
 
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/Database.h"
 #include "utils/ParameterBase.h"
 #include "vectors/Vector.h"
@@ -34,9 +34,9 @@ class TimeIntegratorParameters: public ParameterBase
 {
 public:
    //! Convience typedef
-   typedef boost::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters>  shared_ptr;
+   typedef AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters>  shared_ptr;
 
-   TimeIntegratorParameters(const boost::shared_ptr<AMP::Database> db);
+   TimeIntegratorParameters(const AMP::shared_ptr<AMP::Database> db);
 
    virtual ~TimeIntegratorParameters();
    /**
@@ -44,7 +44,7 @@ public:
    *  Documentation for parameters required by each integrator can be found in the
    *  documentation for the integrator.
    */
-   boost::shared_ptr<AMP::Database> d_db;
+   AMP::shared_ptr<AMP::Database> d_db;
 
    /**
     * String used to identify specific class instantiation of the time integrator
@@ -54,28 +54,28 @@ public:
    /**
     * Initial conditions vector
     */
-   boost::shared_ptr<AMP::LinearAlgebra::Vector> d_ic_vector;
+   AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_ic_vector;
 
    /**
     * source term for time integration, can also include boundary conditions for IBVP problems
     */
-   boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
+   AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
 
    /**
     * The operator is the right hand side operator for an explicit integrator when the time integration problem is : u_t = f(u)
     * but in the case of implicit time integrators the operator represents u_t-f(u) 
     */
-   boost::shared_ptr< AMP::Operator::Operator > d_operator;
+   AMP::shared_ptr< AMP::Operator::Operator > d_operator;
 
    /**
     * The operator is the left hand side mass operator (for FEM formulations)
     */
-   boost::shared_ptr< AMP::Operator::Operator > d_pMassOperator;
+   AMP::shared_ptr< AMP::Operator::Operator > d_pMassOperator;
 
    /**
     * algebraic variable
     */
-   boost::shared_ptr<AMP::LinearAlgebra::Variable> d_pAlgebraicVariable;
+   AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_pAlgebraicVariable;
 
 protected:
 

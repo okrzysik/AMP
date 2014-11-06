@@ -3,7 +3,7 @@
 #define included_AMP_ElementPhysicsModel
 
 #include "ElementPhysicsModelParameters.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {
@@ -18,7 +18,7 @@ namespace Operator {
       /**
         Constructor.
         */
-      ElementPhysicsModel(const boost::shared_ptr<ElementPhysicsModelParameters>& params)  {
+      ElementPhysicsModel(const AMP::shared_ptr<ElementPhysicsModelParameters>& params)  {
         d_iDebugPrintInfoLevel = (params->d_db)->getIntegerWithDefault("print_info_level", 0);
       }
 

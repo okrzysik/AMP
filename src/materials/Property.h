@@ -7,7 +7,7 @@
 #include <map>
 #include <limits>
 #include <algorithm>
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include "utils/Utilities.h"
 #include "vectors/MultiVector.h"
 #include <map>
@@ -206,7 +206,7 @@ public:
 
 	//! determine if a set of sets of values are all within range or not
 	template<class INPUT_VTYPE>
-	bool in_range(const std::map<std::string, boost::shared_ptr<INPUT_VTYPE> > &values);
+	bool in_range(const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE> > &values);
 
 	//! set the translation table between property arguments and AMP::Multivector entries
 	void set_translator(const std::map<std::string, std::string> &xlator)
@@ -227,8 +227,8 @@ public:
 	}
 
 	//! converts AMP::MultiVector to a map of pointers to AMP::Vectors based on argument names
-	std::map<std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> >
-	make_map(const boost::shared_ptr<AMP::LinearAlgebra::MultiVector> &args);
+	std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector> >
+	make_map(const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args);
 
 	//! indicator for scalar evaluator
 	virtual bool isScalar(){return true;}
@@ -282,7 +282,7 @@ private:
 	template<class INPUT_VTYPE, class RETURN_VTYPE>
 	void
 	evalvActual(RETURN_VTYPE& r,
-		const std::map<std::string, boost::shared_ptr<INPUT_VTYPE> >& args);
+		const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE> >& args);
 public:
 
 	/**
@@ -304,7 +304,7 @@ public:
 	 */
 	void virtual
 	evalv(std::vector<Number>& r,
-		const std::map<std::string, boost::shared_ptr<std::vector<Number> > >& args);
+		const std::map<std::string, AMP::shared_ptr<std::vector<Number> > >& args);
 
 	/** Wrapper function that calls evalvActual for each argument set
 	 *  \param r AMP vector of return values
@@ -318,8 +318,8 @@ public:
 	 *  returned in (*r[k][j])[i].
 	 */
 	void virtual
-	evalv(boost::shared_ptr<AMP::LinearAlgebra::Vector>& r,
-		const std::map<std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> >& args);
+	evalv(AMP::shared_ptr<AMP::LinearAlgebra::Vector>& r,
+		const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector> >& args);
 
 	/** Wrapper function that calls evalvActual for each argument set
 	 *  \param r AMP vector of return values
@@ -330,26 +330,26 @@ public:
 	 *  Upon invocation, the \a args parameter is converted to a map of AMP vectors via make_map() and passed to another version of evalv.
 	 */
 	void virtual
-	evalv(boost::shared_ptr<AMP::LinearAlgebra::Vector>& r,
-		const boost::shared_ptr<AMP::LinearAlgebra::MultiVector>& args);
+	evalv(AMP::shared_ptr<AMP::LinearAlgebra::Vector>& r,
+		const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector>& args);
 
 };
 
 template<>
-std::map<std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> >
+std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector> >
 Property<double>::make_map(
-	const boost::shared_ptr<AMP::LinearAlgebra::MultiVector> &args);
+	const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args);
 
 template<>
 void
 Property<double>::evalv(
-	boost::shared_ptr<AMP::LinearAlgebra::Vector>& r,
-	const std::map<std::string, boost::shared_ptr<AMP::LinearAlgebra::Vector> >& args);
+	AMP::shared_ptr<AMP::LinearAlgebra::Vector>& r,
+	const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector> >& args);
 
 template<>
 void
-Property<double>::evalv(boost::shared_ptr<AMP::LinearAlgebra::Vector>& r,
-	const boost::shared_ptr<AMP::LinearAlgebra::MultiVector>& args);
+Property<double>::evalv(AMP::shared_ptr<AMP::LinearAlgebra::Vector>& r,
+	const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector>& args);
 
 } // namespace Materials
 } // namespace AMP

@@ -15,16 +15,16 @@ class SubchannelOperatorParameters : public OperatorParameters {
 public :
 
     //! Constructor
-    SubchannelOperatorParameters(const boost::shared_ptr<AMP::Database> &db): 
+    SubchannelOperatorParameters(const AMP::shared_ptr<AMP::Database> &db): 
         OperatorParameters(db), d_initialize(false) {  }
 
     //! Destructor
     virtual ~SubchannelOperatorParameters() { }
 
     // pointer to subchannel physics model
-    boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
+    AMP::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
-    boost::shared_ptr<RobinPhysicsModel> d_dittusBoelterCoefficient;
+    AMP::shared_ptr<RobinPhysicsModel> d_dittusBoelterCoefficient;
 
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenSolution;
 

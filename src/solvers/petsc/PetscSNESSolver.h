@@ -97,7 +97,7 @@ public:
      12. name: operatorComponentToEnableBoundsCheck, type: integer, default value: none 
      acceptable values ()
     */
-     PetscSNESSolver(boost::shared_ptr< PetscSNESSolverParameters> parameters);
+     PetscSNESSolver(AMP::shared_ptr< PetscSNESSolverParameters> parameters);
 
      /**
       * Default destructor.
@@ -109,15 +109,15 @@ public:
     @param [in] f : shared pointer to right hand side vector
     @param [out] u : shared pointer to approximate computed solution 
      */
-    void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
-	       boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);
+    void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
+	       AMP::shared_ptr<AMP::LinearAlgebra::Vector>  u);
     
     
    /**
     * Initialize the solution vector by copying the initial guess vector
     * @param [in] initialGuess: shared pointer to the initial guess vector.
     */
-    void setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess );
+    void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess );
 
     /**
      * return the PETSc SNES solver object
@@ -133,17 +133,17 @@ public:
     /**
      * Returns a shared pointer to the PetscKrylovSolver used internally for the linear solves
      */
-    boost::shared_ptr<PetscKrylovSolver> getKrylovSolver( void ) { return d_pKrylovSolver; }
+    AMP::shared_ptr<PetscKrylovSolver> getKrylovSolver( void ) { return d_pKrylovSolver; }
 
     /**
      * Return a shared pointer to the solution vector
      */
-    boost::shared_ptr<AMP::LinearAlgebra::Vector>  getSolution( void ) { return d_pSolutionVector; }
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector>  getSolution( void ) { return d_pSolutionVector; }
 
     /**
      * Return a shared pointer to the scratch vector used internally.
      */
-    boost::shared_ptr<AMP::LinearAlgebra::Vector>  getScratchVector( void ) { return d_pScratchVector; }
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector>  getScratchVector( void ) { return d_pScratchVector; }
 
     /**
      * Return the number of line search precheck attempts that were made for the current step
@@ -158,11 +158,11 @@ public:
 protected:
 private:
 
-    void initialize(boost::shared_ptr<SolverStrategyParameters> parameters);
+    void initialize(AMP::shared_ptr<SolverStrategyParameters> parameters);
     
-    void getFromInput(const boost::shared_ptr<AMP::Database> db);
+    void getFromInput(const AMP::shared_ptr<AMP::Database> db);
     
-    void setSNESFunction( boost::shared_ptr<const AMP::LinearAlgebra::Vector>  rhs);
+    void setSNESFunction( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  rhs);
     
     static PetscErrorCode apply(SNES snes,Vec x,Vec f,void *ctx);
     
@@ -174,7 +174,7 @@ private:
 				      void* ctx);
     
     
-    static bool isVectorValid ( boost::shared_ptr<AMP::Operator::Operator> &op , AMP::LinearAlgebra::Vector::shared_ptr &v , AMP_MPI comm );
+    static bool isVectorValid ( AMP::shared_ptr<AMP::Operator::Operator> &op , AMP::LinearAlgebra::Vector::shared_ptr &v , AMP_MPI comm );
 
 #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
     static PetscErrorCode lineSearchPreCheck(SNES snes, Vec x, Vec y, void *checkctx, PetscTruth *changed_y);
@@ -208,16 +208,16 @@ private:
     
     AMP_MPI d_comm;
     
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionVector;
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pResidualVector;
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector;
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionVector;
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pResidualVector;
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector;
     
-    boost::shared_ptr<PetscMonitor> d_PetscMonitor;
+    AMP::shared_ptr<PetscMonitor> d_PetscMonitor;
     
     #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
         // The following SNES solver keeps a reference to certain vectors around. 
         // By declaring the vectors here, we ensure correct behavior during destruction.
-        // This will ensure that the boost::shared_ptr destructor calls VecDestroy on the last reference.
+        // This will ensure that the AMP::shared_ptr destructor calls VecDestroy on the last reference.
         std::list<AMP::LinearAlgebra::Vector::const_shared_ptr>  d_refVectors;
     #endif
     
@@ -225,7 +225,7 @@ private:
     
     Mat d_Jacobian;
 
-    boost::shared_ptr<PetscKrylovSolver> d_pKrylovSolver;
+    AMP::shared_ptr<PetscKrylovSolver> d_pKrylovSolver;
     
   };
   

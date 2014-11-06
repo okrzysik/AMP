@@ -1,7 +1,7 @@
 #ifndef included_AMP_MultiIterator
 #define included_AMP_MultiIterator
 
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshIterator.h"
 
@@ -23,7 +23,7 @@ public:
     MultiIterator();
 
     //! Default MultiIterator constructor
-    MultiIterator( std::vector<boost::shared_ptr<MeshIterator> > iterators, size_t global_pos=0 );
+    MultiIterator( std::vector<AMP::shared_ptr<MeshIterator> > iterators, size_t global_pos=0 );
 
     //! Deconstructor
     virtual ~MultiIterator ();
@@ -88,7 +88,7 @@ private:
     // Data members
     size_t d_localPos, d_globalPos, d_iteratorNum, d_globalSize;
     std::vector<size_t> d_iteratorSize;
-    std::vector<boost::shared_ptr<MeshIterator> > d_iterators;
+    std::vector<AMP::shared_ptr<MeshIterator> > d_iterators;
     MeshIterator cur_iterator;
 };
 

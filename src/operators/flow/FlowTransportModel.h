@@ -8,7 +8,7 @@
 
 #include "materials/Material.h"
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {
@@ -19,7 +19,7 @@ namespace Operator {
   {
     public :
 
-      FlowTransportModel(const boost::shared_ptr<FlowTransportModelParameters>& params)
+      FlowTransportModel(const AMP::shared_ptr<FlowTransportModelParameters>& params)
         : ElementPhysicsModel(params) { 
           d_useMaterialsLibrary = (params->d_db)->getBoolWithDefault("USE_MATERIALS_LIBRARY",false);
 

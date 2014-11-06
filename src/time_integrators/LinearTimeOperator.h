@@ -7,7 +7,7 @@
 
 #include "operators/LinearOperator.h"
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "vectors/Vector.h"
 #include "utils/Utilities.h"
 #include "operators/OperatorParameters.h"
@@ -31,7 +31,7 @@ class LinearTimeOperator: public AMP::Operator::LinearOperator
 {
  public:
 
-  LinearTimeOperator(boost::shared_ptr<AMP::Operator::OperatorParameters > params);
+  LinearTimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > params);
   virtual ~LinearTimeOperator();
      
   /**
@@ -39,22 +39,22 @@ class LinearTimeOperator: public AMP::Operator::LinearOperator
    * \param params
    *        parameter object containing parameters to change
    */
-  virtual void reset(const boost::shared_ptr<AMP::Operator::OperatorParameters>& params);
+  virtual void reset(const AMP::shared_ptr<AMP::Operator::OperatorParameters>& params);
 
-  void registerRhsOperator(boost::shared_ptr< AMP::Operator::LinearOperator > op) {d_pRhsOperator = op; }
-  void registerMassOperator(boost::shared_ptr< AMP::Operator::LinearOperator > op) {d_pMassOperator = op; }
+  void registerRhsOperator(AMP::shared_ptr< AMP::Operator::LinearOperator > op) {d_pRhsOperator = op; }
+  void registerMassOperator(AMP::shared_ptr< AMP::Operator::LinearOperator > op) {d_pMassOperator = op; }
 
-  boost::shared_ptr< Operator > getRhsOperator(void){ return d_pRhsOperator; }
-  boost::shared_ptr< Operator > getMassOperator(void){ return d_pMassOperator; }
+  AMP::shared_ptr< Operator > getRhsOperator(void){ return d_pRhsOperator; }
+  AMP::shared_ptr< Operator > getMassOperator(void){ return d_pMassOperator; }
 
-  void setPreviousSolution(boost::shared_ptr<AMP::LinearAlgebra::Vector> previousSolution){ d_pPreviousTimeSolution = previousSolution; }
+  void setPreviousSolution(AMP::shared_ptr<AMP::LinearAlgebra::Vector> previousSolution){ d_pPreviousTimeSolution = previousSolution; }
   
   void setDt(double dt) {d_dCurrentDt = dt; }
 
   // added by JL
   void setScalingFactor(double scalingFactor) {d_dScalingFactor = scalingFactor;}
 
-  boost::shared_ptr<AMP::Operator::OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u); 
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u); 
 
   // added by JL //correction by RS
   AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(){ return d_pRhsOperator->getInputVariable(); }
@@ -68,7 +68,7 @@ class LinearTimeOperator: public AMP::Operator::LinearOperator
  protected:
   LinearTimeOperator();
 
-  void getFromInput(const boost::shared_ptr<AMP::Database> &db);
+  void getFromInput(const AMP::shared_ptr<AMP::Database> &db);
 
   bool d_bModifyRhsOperatorMatrix;
 
@@ -80,13 +80,13 @@ class LinearTimeOperator: public AMP::Operator::LinearOperator
   double d_dScalingFactor;
   double d_dCurrentDt;
   
-  boost::shared_ptr< AMP::Operator::LinearOperator > d_pRhsOperator;
+  AMP::shared_ptr< AMP::Operator::LinearOperator > d_pRhsOperator;
 
-  boost::shared_ptr< AMP::Operator::LinearOperator > d_pMassOperator;
+  AMP::shared_ptr< AMP::Operator::LinearOperator > d_pMassOperator;
 
-  boost::shared_ptr<AMP::LinearAlgebra::Vector>  d_pPreviousTimeSolution;
+  AMP::shared_ptr<AMP::LinearAlgebra::Vector>  d_pPreviousTimeSolution;
   
-  boost::shared_ptr<AMP::LinearAlgebra::Vector>  d_pScratchVector;
+  AMP::shared_ptr<AMP::LinearAlgebra::Vector>  d_pScratchVector;
 
   double d_current_time;
   double d_beta;

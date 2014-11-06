@@ -2,7 +2,7 @@
 #include <cstring>
 
 #include "SourcePhysicsModel.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/ProfilerApp.h"
 #include "materials/Material.h"
 #include "operators/ElementPhysicsModel.h"
@@ -17,7 +17,7 @@ namespace AMP {
 namespace Operator {
 
 
-SourcePhysicsModel::SourcePhysicsModel (const boost::shared_ptr<SourcePhysicsModelParameters>& params ): 
+SourcePhysicsModel::SourcePhysicsModel (const AMP::shared_ptr<SourcePhysicsModelParameters>& params ): 
     ElementPhysicsModel(params)
 {
     d_useMaterialsLibrary = (params->d_db)->getBoolWithDefault("USE_MATERIALS_LIBRARY",false);
@@ -47,17 +47,17 @@ SourcePhysicsModel::SourcePhysicsModel (const boost::shared_ptr<SourcePhysicsMod
 
     if ( d_physicsName=="DiffusionTransportModel" ) {
         d_elementPhysicsModel.reset( new AMP::Operator::DiffusionTransportModel(
-            boost::dynamic_pointer_cast<DiffusionTransportModelParameters>(d_elementPhysicsParams) ) ); 
-        boost::shared_ptr<DiffusionTransportModel> tmp = boost::dynamic_pointer_cast<DiffusionTransportModel>(d_elementPhysicsModel);  
+            AMP::dynamic_pointer_cast<DiffusionTransportModelParameters>(d_elementPhysicsParams) ) ); 
+        AMP::shared_ptr<DiffusionTransportModel> tmp = AMP::dynamic_pointer_cast<DiffusionTransportModel>(d_elementPhysicsModel);  
         d_property = tmp->getProperty();
 
         const std::string temperatureString = "temperature"; // in the future get from input file
         const std::string burnupString = "burnup"; // in the future get from input file
         const std::string oxygenString = "concentration"; // in the future get from input file
 
-        boost::shared_ptr<std::vector<double> > tempVec(   new std::vector<double>(1,d_DefaultTemperature) );
-        boost::shared_ptr<std::vector<double> > burnupVec( new std::vector<double>(1,d_DefaultBurnup) );
-        boost::shared_ptr<std::vector<double> > oxygenVec( new std::vector<double>(1,d_DefaultConcentration) );
+        AMP::shared_ptr<std::vector<double> > tempVec(   new std::vector<double>(1,d_DefaultTemperature) );
+        AMP::shared_ptr<std::vector<double> > burnupVec( new std::vector<double>(1,d_DefaultBurnup) );
+        AMP::shared_ptr<std::vector<double> > oxygenVec( new std::vector<double>(1,d_DefaultConcentration) );
 
         d_inputMaterialParameters.clear();
         d_inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec) );
@@ -67,14 +67,14 @@ SourcePhysicsModel::SourcePhysicsModel (const boost::shared_ptr<SourcePhysicsMod
     } else if ( d_physicsName=="MassDensityModel" ) {
         if ( d_useMaterialsLibrary ) {    
             d_elementPhysicsModel.reset( new AMP::Operator::MassDensityModel(
-                boost::dynamic_pointer_cast<MassDensityModelParameters>(d_elementPhysicsParams) ) );
+                AMP::dynamic_pointer_cast<MassDensityModelParameters>(d_elementPhysicsParams) ) );
         }
     } else if ( d_physicsName=="ManufacturedSourceModel1" ) {
         d_elementPhysicsModel.reset( new AMP::Operator::ManufacturedSourceModel1(
-            boost::dynamic_pointer_cast<ManufacturedSourceModel1Parameters>(d_elementPhysicsParams)  )); 
+            AMP::dynamic_pointer_cast<ManufacturedSourceModel1Parameters>(d_elementPhysicsParams)  )); 
     } else if ( d_physicsName=="ManufacturedSourceModel2" ) {
         d_elementPhysicsModel.reset( new AMP::Operator::ManufacturedSourceModel2(
-            boost::dynamic_pointer_cast<ManufacturedSourceModel2Parameters>(d_elementPhysicsParams) ) ); 
+            AMP::dynamic_pointer_cast<ManufacturedSourceModel2Parameters>(d_elementPhysicsParams) ) ); 
     }
 
 }
@@ -87,9 +87,9 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double>& result,
 {
     PROFILE_START("getConstitutiveProperty",6);
     if ( d_physicsName=="DiffusionTransportModel" ) {
-        boost::shared_ptr<DiffusionTransportModel> tmp = boost::dynamic_pointer_cast<DiffusionTransportModel>(d_elementPhysicsModel);  
+        AMP::shared_ptr<DiffusionTransportModel> tmp = AMP::dynamic_pointer_cast<DiffusionTransportModel>(d_elementPhysicsModel);  
 
-        std::map<std::string, boost::shared_ptr<std::vector<double> > >::iterator it = d_inputMaterialParameters.find("temperature");
+        std::map<std::string, AMP::shared_ptr<std::vector<double> > >::iterator it = d_inputMaterialParameters.find("temperature");
         AMP_ASSERT(it!=d_inputMaterialParameters.end());
         std::vector<double>& tempVec = *(it->second);
 
@@ -118,7 +118,7 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double>& result,
                 result[i] = d_constantProperty * InputVec[0][i];
             }
         } else {
-            boost::shared_ptr<MassDensityModel> tmp = boost::dynamic_pointer_cast<MassDensityModel>(d_elementPhysicsModel);  
+            AMP::shared_ptr<MassDensityModel> tmp = AMP::dynamic_pointer_cast<MassDensityModel>(d_elementPhysicsModel);  
 
             std::string eqnname = d_elementPhysicsParams->d_db->getString("Equation");
             AMP_INSIST((eqnname == "ThermalSource"), "SourcePhysicsModel should be implemented by User for this Equation"); 
@@ -143,7 +143,7 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double>& result,
         //AMP::pout<<" Power [W/m^3]: "<< result[0] << " Specific Power[W/kg]: "<<InputVec[0][0] <<" Density [kg/m^3]: " << result[0]/InputVec[0][0] <<std::endl;
     
     } else if ( d_physicsName=="ManufacturedSourceModel1" ) {
-        boost::shared_ptr<ManufacturedSourceModel1> tmp = boost::dynamic_pointer_cast<ManufacturedSourceModel1>(d_elementPhysicsModel);  
+        AMP::shared_ptr<ManufacturedSourceModel1> tmp = AMP::dynamic_pointer_cast<ManufacturedSourceModel1>(d_elementPhysicsModel);  
 
         if ( InputVec.size()==1 ) {
             std::vector<double> DefaultVec;
@@ -158,7 +158,7 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double>& result,
         }
 
     } else if (d_physicsName=="ManufacturedSourceModel2") {
-        boost::shared_ptr<ManufacturedSourceModel2> tmp = boost::dynamic_pointer_cast<ManufacturedSourceModel2>(d_elementPhysicsModel);  
+        AMP::shared_ptr<ManufacturedSourceModel2> tmp = AMP::dynamic_pointer_cast<ManufacturedSourceModel2>(d_elementPhysicsModel);  
 
         if ( InputVec.size()==1 ) {
             std::vector<double> DefaultVec;

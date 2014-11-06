@@ -16,15 +16,15 @@ namespace Operator {
   class CoupledFlowFrapconOperator : public ColumnOperator
   {
     public :
-      CoupledFlowFrapconOperator(const boost::shared_ptr<OperatorParameters>& params);
+      CoupledFlowFrapconOperator(const AMP::shared_ptr<OperatorParameters>& params);
 
-      boost::shared_ptr<OperatorParameters>
+      AMP::shared_ptr<OperatorParameters>
         getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u)
         {
           return (d_Operators[2]->getJacobianParameters(u));
         }
 
-      void reset(const boost::shared_ptr<OperatorParameters>& params){
+      void reset(const AMP::shared_ptr<OperatorParameters>& params){
         d_Operators[2]->reset(params);
       }
 
@@ -39,7 +39,7 @@ namespace Operator {
       void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
           AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
-      virtual void append(boost::shared_ptr< Operator > op) {
+      virtual void append(AMP::shared_ptr< Operator > op) {
         AMP_ASSERT(d_Operators.size() < 3);
         AMP_ASSERT(op.get() != NULL);
         d_Operators.push_back(op);
@@ -51,7 +51,7 @@ namespace Operator {
 
     private :
 
-      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
+      AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
 
       int d_numpoints; /**< Number of points in z direction */
 

@@ -8,7 +8,7 @@
 #include "vectors/Vector.h"
 
 /* Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {
@@ -21,7 +21,7 @@ namespace Operator {
   class PowerShapeParameters : public OperatorParameters {
     public :
       
-      PowerShapeParameters(const boost::shared_ptr<AMP::Database> &db)
+      PowerShapeParameters(const AMP::shared_ptr<AMP::Database> &db)
     : OperatorParameters(db){} 
 
   };

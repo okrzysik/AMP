@@ -9,7 +9,7 @@
 //#include "ampmesh/MeshUtils.h"
 
 /* Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {
@@ -22,12 +22,12 @@ namespace Operator {
   class NeutronicsRhsParameters : public OperatorParameters {
     public :
       
-      typedef boost::shared_ptr<AMP::Database>  SP_Database;
+      typedef AMP::shared_ptr<AMP::Database>  SP_Database;
 
       NeutronicsRhsParameters(const SP_Database &db)
     : OperatorParameters(db){} 
 
-//      boost::shared_ptr<AMP::MeshUtils> d_MeshUtils; 
+//      AMP::shared_ptr<AMP::MeshUtils> d_MeshUtils; 
 
   };
 

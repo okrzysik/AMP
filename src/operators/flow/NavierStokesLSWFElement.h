@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 /* AMP files */
 #include "operators/flow/FlowElement.h"
@@ -18,7 +18,7 @@ class NavierStokesLSWFElement : public FlowElement
 public :
 
     //! Constructor.
-    NavierStokesLSWFElement(const boost::shared_ptr<ElementOperationParameters>& params) :
+    NavierStokesLSWFElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
         FlowElement(params),
         d_elementOutputVector(NULL)
     { 

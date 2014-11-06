@@ -8,7 +8,7 @@
 #include "operators/boundary/BoundaryOperator.h"
 
 /*Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {
@@ -21,18 +21,18 @@ namespace Operator {
   class BVPOperatorParameters : public OperatorParameters {
   public :
 
-      BVPOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
+      BVPOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
         : OperatorParameters(db) { }
 
       virtual ~BVPOperatorParameters() { }
 
-      boost::shared_ptr<OperatorParameters> d_volumeOperatorParams;
+      AMP::shared_ptr<OperatorParameters> d_volumeOperatorParams;
 
-      boost::shared_ptr<OperatorParameters> d_boundaryOperatorParams;
+      AMP::shared_ptr<OperatorParameters> d_boundaryOperatorParams;
 
-      boost::shared_ptr<Operator> d_volumeOperator;
+      AMP::shared_ptr<Operator> d_volumeOperator;
 
-      boost::shared_ptr<BoundaryOperator> d_boundaryOperator;
+      AMP::shared_ptr<BoundaryOperator> d_boundaryOperator;
 
   };
 

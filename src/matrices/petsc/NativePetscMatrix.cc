@@ -58,14 +58,14 @@ Vector::shared_ptr NativePetscMatrix::getRightVector () const
 {
     Vec a;
     MatGetVecs ( d_Mat , &a , PETSC_NULL );
-    boost::shared_ptr<NativePetscVectorParameters> npvParam ( new NativePetscVectorParameters( a, true ) );
+    AMP::shared_ptr<NativePetscVectorParameters> npvParam ( new NativePetscVectorParameters( a, true ) );
     return Vector::shared_ptr ( new NativePetscVector ( npvParam ) );
 }
 Vector::shared_ptr NativePetscMatrix::getLeftVector () const
 {
     Vec a;
     MatGetVecs ( d_Mat , PETSC_NULL , &a );
-    boost::shared_ptr<NativePetscVectorParameters> npvParam ( new NativePetscVectorParameters( a, true ) );
+    AMP::shared_ptr<NativePetscVectorParameters> npvParam ( new NativePetscVectorParameters( a, true ) );
     return Vector::shared_ptr ( new NativePetscVector ( npvParam ) );
 }
 Discretization::DOFManager::shared_ptr NativePetscMatrix::getRightDOFManager () const

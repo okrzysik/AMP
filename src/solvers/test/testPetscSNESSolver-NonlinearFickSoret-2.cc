@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/NeutronicsRhs.h"
@@ -62,7 +62,7 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
@@ -70,10 +70,10 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
 //   Create the Mesh.
 //--------------------------------------------------
     AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
     mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 //--------------------------------------------------
 
 //--------------------------------------------------
@@ -90,34 +90,34 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   AMP_INSIST( input_db->keyExists("testNonlinearFickSoretBVPOperator"), "key missing!" );
 
   // Create nonlinear FickSoret BVP operator and access volume nonlinear FickSoret operator
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-  boost::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+  AMP::shared_ptr<AMP::Operator::Operator> nlinBVPOperator =
     AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
                            "testNonlinearFickSoretBVPOperator",
                            input_db,
                            elementPhysicsModel);
-  boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
-          boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(nlinBVPOperator);
-  boost::shared_ptr<AMP::Operator::FickSoretNonlinearFEOperator> nlinOp =
-         boost::dynamic_pointer_cast<AMP::Operator::FickSoretNonlinearFEOperator>(nlinBVPOp->getVolumeOperator());
-  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> fickOp =
-         boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinOp->getFickOperator());
-  boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> soretOp =
-         boost::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinOp->getSoretOperator());
+  AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nlinBVPOp =
+          AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(nlinBVPOperator);
+  AMP::shared_ptr<AMP::Operator::FickSoretNonlinearFEOperator> nlinOp =
+         AMP::dynamic_pointer_cast<AMP::Operator::FickSoretNonlinearFEOperator>(nlinBVPOp->getVolumeOperator());
+  AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> fickOp =
+         AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinOp->getFickOperator());
+  AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> soretOp =
+         AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(nlinOp->getSoretOperator());
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // use the linear BVP operator to create a Fick linear operator with bc's
   AMP_INSIST( input_db->keyExists("testLinearFickBVPOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::Operator> linBVPOperator =
+  AMP::shared_ptr<AMP::Operator::Operator> linBVPOperator =
     AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
                            "testLinearFickBVPOperator",
                            input_db,
                            elementPhysicsModel);
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> linBVPOp =
-          boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(linBVPOperator);
-  //boost::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> linOp =
- //         boost::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(linBVPOp->getVolumeOperator());
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linBVPOp =
+          AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(linBVPOperator);
+  //AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> linOp =
+ //         AMP::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(linBVPOp->getVolumeOperator());
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // Set up input and output variables
@@ -125,7 +125,7 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   //AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
   AMP::LinearAlgebra::Variable::shared_ptr tVar(new AMP::LinearAlgebra::Variable("temp") );
   AMP::LinearAlgebra::Variable::shared_ptr cVar(fickOp->getOutputVariable() );
-  boost::shared_ptr<AMP::LinearAlgebra::Variable> fsOutVar(nlinBVPOp->getOutputVariable());
+  AMP::shared_ptr<AMP::LinearAlgebra::Variable> fsOutVar(nlinBVPOp->getOutputVariable());
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create solution, rhs, and residual vectors
@@ -179,12 +179,12 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
 
   //----------------------------------------------------------------------------------------------------------------------------------------------/
 
-  boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
-  boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
+  AMP::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
+  AMP::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // initialize the nonlinear solver
-  boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new
+  AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new
       AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
 
   // change the next line to get the correct communicator out
@@ -192,17 +192,17 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   nonlinearSolverParams->d_pOperator = nlinBVPOp;
   nonlinearSolverParams->d_pInitialGuess = solVec;
 
-  boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
+  AMP::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
-  boost::shared_ptr<AMP::Database> fickPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
-  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> fickPreconditionerParams(new AMP::Solver::SolverStrategyParameters(fickPreconditioner_db));
+  AMP::shared_ptr<AMP::Database> fickPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
+  AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> fickPreconditionerParams(new AMP::Solver::SolverStrategyParameters(fickPreconditioner_db));
   fickPreconditionerParams->d_pOperator = linBVPOp;
-  boost::shared_ptr<AMP::Solver::TrilinosMLSolver> linearFickPreconditioner(new AMP::Solver::TrilinosMLSolver(fickPreconditionerParams));
+  AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> linearFickPreconditioner(new AMP::Solver::TrilinosMLSolver(fickPreconditionerParams));
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // register the preconditioner with the Jacobian free Krylov solver
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
+  AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
 
   linearSolver->setPreconditioner(linearFickPreconditioner);
 
@@ -231,8 +231,8 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
   AMP::LinearAlgebra::Variable::shared_ptr soretCoeffVar(new AMP::LinearAlgebra::Variable("SoretCoefficient"));
   AMP::LinearAlgebra::Vector::shared_ptr fickCoeffVec  = AMP::LinearAlgebra::createVector( nodalDofMap, fickCoeffVar );
   AMP::LinearAlgebra::Vector::shared_ptr soretCoeffVec = AMP::LinearAlgebra::createVector( nodalDofMap, soretCoeffVar );
-  boost::shared_ptr<AMP::Operator::DiffusionTransportModel> fickModel = fickOp->getTransportModel();
-  boost::shared_ptr<AMP::Operator::DiffusionTransportModel> soretModel = soretOp->getTransportModel();
+  AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> fickModel = fickOp->getTransportModel();
+  AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> soretModel = soretOp->getTransportModel();
 
   {
       int zeroGhostWidth = 0;
@@ -251,10 +251,10 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
       solVec->getValuesByGlobalID(nnodes, &gids[0], &conc[0]);
       // this is  used to plot the fick and soret coefficnets used.  commenting it out till someone finds out.
       // This is kevin - i found out because the vector wasn't used when silo is not enabled.
-      std::map<std::string,  boost::shared_ptr<std::vector<double> > > args;
-      args.insert(std::make_pair("temperature",   boost::shared_ptr<std::vector<double> >(&temp,null_deleter())));
-      args.insert(std::make_pair("concentration", boost::shared_ptr<std::vector<double> >(&conc,null_deleter())));
-      args.insert(std::make_pair("burnup",        boost::shared_ptr<std::vector<double> >(&burn,null_deleter())));
+      std::map<std::string,  AMP::shared_ptr<std::vector<double> > > args;
+      args.insert(std::make_pair("temperature",   AMP::shared_ptr<std::vector<double> >(&temp,null_deleter())));
+      args.insert(std::make_pair("concentration", AMP::shared_ptr<std::vector<double> >(&conc,null_deleter())));
+      args.insert(std::make_pair("burnup",        AMP::shared_ptr<std::vector<double> >(&burn,null_deleter())));
       fickModel->getTransport(fickCoeff, args); 
       soretModel->getTransport(soretCoeff, args ); 
       fickCoeffVec->setValuesByGlobalID(nnodes, &gids[0], &fickCoeff[0]);

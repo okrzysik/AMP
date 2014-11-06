@@ -10,7 +10,7 @@ namespace AMP {
     class PelletStackOperator : public Operator 
     {
       public :
-        PelletStackOperator(const boost::shared_ptr<PelletStackOperatorParameters> & params);
+        PelletStackOperator(const AMP::shared_ptr<PelletStackOperatorParameters> & params);
 
         virtual ~PelletStackOperator() { }
 
@@ -28,7 +28,7 @@ namespace AMP {
 
         bool useScaling();
 
-        void reset(const boost::shared_ptr<OperatorParameters>& params);
+        void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
         void applyUnscaling(AMP::LinearAlgebra::Vector::shared_ptr f);
 
@@ -60,7 +60,7 @@ namespace AMP {
         AMP::LinearAlgebra::Vector::shared_ptr d_frozenVectorForMaps;
         bool d_frozenVectorSet;
         AMP_MPI d_pelletStackComm;
-        boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  d_n2nMaps;
+        AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  d_n2nMaps;
     };
 
   }

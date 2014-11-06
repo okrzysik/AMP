@@ -2,7 +2,7 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
@@ -36,16 +36,16 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
 
     AMP::PIO::logAllNodes(log_file);
 
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
 
 //--------------------------------------------------
 //   Create the Mesh.
 //--------------------------------------------------
-    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
     mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
     
     std::string interfaceVarName = "interVar";
 
@@ -53,10 +53,10 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
 //  Construct PowerShape.
 //--------------------------------------------------
     AMP_INSIST(input_db->keyExists("PowerShape"), "Key ''PowerShape'' is missing!");
-    boost::shared_ptr<AMP::Database>  shape_db = input_db->getDatabase("PowerShape");
-    boost::shared_ptr<AMP::Operator::PowerShapeParameters> shape_params(new AMP::Operator::PowerShapeParameters( shape_db ));
+    AMP::shared_ptr<AMP::Database>  shape_db = input_db->getDatabase("PowerShape");
+    AMP::shared_ptr<AMP::Operator::PowerShapeParameters> shape_params(new AMP::Operator::PowerShapeParameters( shape_db ));
     shape_params->d_Mesh = meshAdapter;
-    boost::shared_ptr<AMP::Operator::PowerShape> shape(new AMP::Operator::PowerShape( shape_params ));
+    AMP::shared_ptr<AMP::Operator::PowerShape> shape(new AMP::Operator::PowerShape( shape_params ));
 
     // Create a DOF manager for a gauss point vector 
     int DOFsPerElement = 8;
@@ -82,11 +82,11 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
 
   AMP_INSIST( input_db->keyExists("VolumeIntegralOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
-  boost::shared_ptr<AMP::Database> volumeDatabase = input_db->getDatabase("VolumeIntegralOperator");
-  boost::shared_ptr<AMP::Database> inputVarDB = volumeDatabase->getDatabase("ActiveInputVariables");
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
+  AMP::shared_ptr<AMP::Database> volumeDatabase = input_db->getDatabase("VolumeIntegralOperator");
+  AMP::shared_ptr<AMP::Database> inputVarDB = volumeDatabase->getDatabase("ActiveInputVariables");
   inputVarDB->putString("ActiveVariable_0",interfaceVarName);
-  boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeOp = boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+  AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeOp = AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 																							"VolumeIntegralOperator",
 																							input_db,
 																							transportModel));

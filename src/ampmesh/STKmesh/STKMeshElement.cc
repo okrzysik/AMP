@@ -68,7 +68,7 @@ STKMeshElement::STKMeshElement(int dim, stk::mesh::Entity* STKmesh_element, unsi
     const bool is_local     = owner_rank==d_rank;
     d_globalID = MeshElementID(is_local, type, local_id, owner_rank, meshID);
 }
-STKMeshElement::STKMeshElement(int dim, boost::shared_ptr< stk::mesh::Entity > STKmesh_element,
+STKMeshElement::STKMeshElement(int dim, AMP::shared_ptr< stk::mesh::Entity > STKmesh_element,
                                unsigned int rank, MeshID meshID, const STKMesh* mesh) :
     d_dim   ( dim),
     d_rank  ( rank),
@@ -196,7 +196,7 @@ std::vector< MeshElement::shared_ptr > STKMeshElement::getNeighbors() const
         neighbors.resize(neighbor_nodes.size(), MeshElement::shared_ptr());
         for (size_t i=0; i<neighbor_nodes.size(); i++) {
             // There are no NULL neighbors
-            boost::shared_ptr<STKMeshElement> neighbor(new STKMeshElement( d_dim, neighbor_nodes[i], d_rank, d_meshID, d_mesh ) );
+            AMP::shared_ptr<STKMeshElement> neighbor(new STKMeshElement( d_dim, neighbor_nodes[i], d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;
         }
     } else if ( (int) d_globalID.type() == d_dim ) {
@@ -226,7 +226,7 @@ std::vector< MeshElement::shared_ptr > STKMeshElement::getNeighbors() const
         neighbors.resize(adjacent_entities.size());
         for (size_t i=0; i<neighbors.size(); i++) {
             stk::mesh::Entity *neighbor_elem = adjacent_entities[i];
-            boost::shared_ptr<STKMeshElement> neighbor(new STKMeshElement( d_dim, neighbor_elem, d_rank, d_meshID, d_mesh ) );
+            AMP::shared_ptr<STKMeshElement> neighbor(new STKMeshElement( d_dim, neighbor_elem, d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;
         }
     } else {

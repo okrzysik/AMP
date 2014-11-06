@@ -23,7 +23,7 @@
 #include "utils/InputDatabase.h"
 
 /*Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 /*LibMesh Includes */
 #include "libmesh/fe_type.h"
@@ -47,12 +47,12 @@ class PowerShape : public  Operator {
 
     public:
       //typedef AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>      HexGaussPointVariable;
-      //typedef boost::shared_ptr<HexGaussPointVariable>      SP_HexGaussPointVariable;
-      typedef boost::shared_ptr<PowerShapeParameters>                  SP_Parameters;
-      typedef boost::shared_ptr<OperatorParameters>            SP_OperatorParameters;
+      //typedef AMP::shared_ptr<HexGaussPointVariable>      SP_HexGaussPointVariable;
+      typedef AMP::shared_ptr<PowerShapeParameters>                  SP_Parameters;
+      typedef AMP::shared_ptr<OperatorParameters>            SP_OperatorParameters;
       typedef std::vector<double>                                            Vec_Dbl;
-      typedef boost::shared_ptr<Vec_Dbl>                                  SP_Vec_Dbl; 
-      typedef boost::shared_ptr<AMP::Database>                           SP_Database;
+      typedef AMP::shared_ptr<Vec_Dbl>                                  SP_Vec_Dbl; 
+      typedef AMP::shared_ptr<AMP::Database>                           SP_Database;
     
   private:
     // Defines fission data types.
@@ -192,9 +192,9 @@ class PowerShape : public  Operator {
 
       //SP_HexGaussPointVariable d_Variable;
 
-      boost::shared_ptr < ::FEType > d_feType;
-      boost::shared_ptr < ::FEBase > d_fe;
-      boost::shared_ptr < ::QBase >  d_qrule;
+      AMP::shared_ptr < ::FEType > d_feType;
+      AMP::shared_ptr < ::FEBase > d_fe;
+      AMP::shared_ptr < ::QBase >  d_qrule;
 
       AMP::Mesh::Mesh::shared_ptr d_Mesh;
         void createCurrentLibMeshElement();

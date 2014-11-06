@@ -3,7 +3,7 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include "materials/Material.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
@@ -36,15 +36,15 @@ void sourceTest(AMP::UnitTest *ut , std::string exeName)
   std::cout << "testing with input file " << input_file << std::endl;
   
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-  boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+  AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
   mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-  boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+  AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 
 //--------------------------------------------------
 //   CREATE THE VOLUME INTEGRAL OPERATOR -----------
@@ -52,11 +52,11 @@ void sourceTest(AMP::UnitTest *ut , std::string exeName)
 
   AMP_INSIST( input_db->keyExists("NeutronicsRhs"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> unusedModel;
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> unusedModel;
 
   // Construct with OperatorBuilder
   {
-    boost::shared_ptr<AMP::Operator::NeutronicsRhs> ntxBld = boost::dynamic_pointer_cast<AMP::Operator::NeutronicsRhs>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+    AMP::shared_ptr<AMP::Operator::NeutronicsRhs> ntxBld = AMP::dynamic_pointer_cast<AMP::Operator::NeutronicsRhs>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 																				      "NeutronicsRhs",
 																				      input_db,
 																				      unusedModel));

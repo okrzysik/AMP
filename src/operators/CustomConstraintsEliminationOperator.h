@@ -12,7 +12,7 @@ namespace AMP {
 
       public :
 
-        CustomConstraintsEliminationOperator (const boost::shared_ptr<OperatorParameters> & params);
+        CustomConstraintsEliminationOperator (const AMP::shared_ptr<OperatorParameters> & params);
 
         void addSlaveToMaster(AMP::LinearAlgebra::Vector::shared_ptr u);
 

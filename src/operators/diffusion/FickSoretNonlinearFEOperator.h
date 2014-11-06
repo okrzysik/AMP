@@ -2,7 +2,7 @@
 #define included_AMP_FickSoretNonlinearFEOperator
 
 /* AMP files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "discretization/DOF_Manager.h"
@@ -19,16 +19,16 @@ namespace Operator {
   {
   public :
 
-    typedef boost::shared_ptr <FickSoretNonlinearFEOperator>  shared_ptr;
+    typedef AMP::shared_ptr <FickSoretNonlinearFEOperator>  shared_ptr;
 
-    FickSoretNonlinearFEOperator(const boost::shared_ptr<OperatorParameters> & params);
+    FickSoretNonlinearFEOperator(const AMP::shared_ptr<OperatorParameters> & params);
 
     virtual ~FickSoretNonlinearFEOperator(){ }
 
-    virtual void reset(const boost::shared_ptr<OperatorParameters>& params)
+    virtual void reset(const AMP::shared_ptr<OperatorParameters>& params)
     {
-        boost::shared_ptr<FickSoretNonlinearFEOperatorParameters> fsParams =
-            boost::dynamic_pointer_cast<FickSoretNonlinearFEOperatorParameters>(params);
+        AMP::shared_ptr<FickSoretNonlinearFEOperatorParameters> fsParams =
+            AMP::dynamic_pointer_cast<FickSoretNonlinearFEOperatorParameters>(params);
 
         d_FickOperator->reset(fsParams->d_FickParameters);
         d_SoretOperator->reset(fsParams->d_SoretParameters);
@@ -38,8 +38,8 @@ namespace Operator {
             AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
             const double a = -1.0, const double b = 1.0);
 
-    virtual boost::shared_ptr<OperatorParameters>
-      getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u)
+    virtual AMP::shared_ptr<OperatorParameters>
+      getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u)
     {
         return d_FickOperator->getJacobianParameters(u);
     }

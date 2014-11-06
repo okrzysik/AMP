@@ -12,7 +12,7 @@ namespace Operator {
 class GaussPointToGaussPointMap : public NodeToNodeMap {
 public:
 
-    GaussPointToGaussPointMap(const boost::shared_ptr<AMP::Operator::OperatorParameters> & params);
+    GaussPointToGaussPointMap(const AMP::shared_ptr<AMP::Operator::OperatorParameters> & params);
 
     virtual void applyStart(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
             AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
@@ -29,7 +29,7 @@ public:
     virtual ~GaussPointToGaussPointMap() { }
 
 protected:
-    void createIdxMap(boost::shared_ptr<AMP::Operator::OperatorParameters> params);
+    void createIdxMap(AMP::shared_ptr<AMP::Operator::OperatorParameters> params);
 
     void correctLocalOrdering();
 

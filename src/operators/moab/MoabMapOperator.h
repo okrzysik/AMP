@@ -57,15 +57,15 @@ class MoabMapOperator : public AMP::Operator::Operator
         typedef AMP::Operator::ElementPhysicsModel             ElemPhysModel;
         typedef AMP::Operator::VolumeIntegralOperator          VolIntOp;
 
-        typedef boost::shared_ptr<Base>                        SP_Base;
-        typedef boost::shared_ptr<Database>                    SP_Database;
-        typedef boost::shared_ptr<InpDatabase>                 SP_InpDatabase;
-        typedef boost::shared_ptr<ElemPhysModel>               SP_ElemPhysModel;
-        typedef boost::shared_ptr<VolIntOp>                    SP_VolIntOp;
-        typedef boost::shared_ptr< ::FEBase >                  SP_FEBase;
-        typedef boost::shared_ptr<MoabBasedOperator>           SP_MoabOp;
-        typedef boost::shared_ptr<MoabMapOperatorParameters>   SP_MoabMapParams;
-        typedef boost::shared_ptr< moab::Coupler >             SP_Coupler;
+        typedef AMP::shared_ptr<Base>                        SP_Base;
+        typedef AMP::shared_ptr<Database>                    SP_Database;
+        typedef AMP::shared_ptr<InpDatabase>                 SP_InpDatabase;
+        typedef AMP::shared_ptr<ElemPhysModel>               SP_ElemPhysModel;
+        typedef AMP::shared_ptr<VolIntOp>                    SP_VolIntOp;
+        typedef AMP::shared_ptr< ::FEBase >                  SP_FEBase;
+        typedef AMP::shared_ptr<MoabBasedOperator>           SP_MoabOp;
+        typedef AMP::shared_ptr<MoabMapOperatorParameters>   SP_MoabMapParams;
+        typedef AMP::shared_ptr< moab::Coupler >             SP_Coupler;
 
         typedef std::vector<double> Vec_Dbl;
 

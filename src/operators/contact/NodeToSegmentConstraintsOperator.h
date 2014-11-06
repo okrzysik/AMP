@@ -5,7 +5,7 @@
 
 #include <vector>
 #include <fstream>
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include <operators/Operator.h>
 #include <operators/contact/NodeToSegmentConstraintsOperatorParameters.h>
 #include <matrices/Matrix.h>
@@ -31,7 +31,7 @@ namespace AMP {
           Constructor. This resets the matrix shared pointer.
           @param [in] params 
           */
-        NodeToSegmentConstraintsOperator (const boost::shared_ptr<NodeToSegmentConstraintsOperatorParameters> & params)
+        NodeToSegmentConstraintsOperator (const AMP::shared_ptr<NodeToSegmentConstraintsOperatorParameters> & params)
           : Operator(params)
         {
           AMP_INSIST( params->d_db->keyExists("InputVariable"), "key not found" );
@@ -72,7 +72,7 @@ namespace AMP {
          * \param params
          *        parameter object containing parameters to change
          */
-        virtual void reset(const boost::shared_ptr<OperatorParameters> & params);
+        virtual void reset(const AMP::shared_ptr<OperatorParameters> & params);
 
         /**
           The apply function for this operator, A, performs the following operation:
@@ -150,8 +150,8 @@ namespace AMP {
         std::vector<double> d_MasterShapeFunctionsValues;
         std::vector<double> d_SlaveVerticesShift;
 
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable; /**< Input variable */
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable; /**< Input variable */
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
 
         std::fstream d_fout;
     };

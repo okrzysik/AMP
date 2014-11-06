@@ -9,11 +9,11 @@ namespace AMP {
   namespace Operator {
 
     NavierStokesLSWFLinearFEOperator :: NavierStokesLSWFLinearFEOperator (
-        const boost::shared_ptr<NavierStokesLinearFEOperatorParameters> & params)
+        const AMP::shared_ptr<NavierStokesLinearFEOperatorParameters> & params)
       : LinearFEOperator (params) {
         AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
 
-        d_flowLSWFLinElem = boost::dynamic_pointer_cast<NavierStokesLSWFLinearElement>(d_elemOp);
+        d_flowLSWFLinElem = AMP::dynamic_pointer_cast<NavierStokesLSWFLinearElement>(d_elemOp);
 
         AMP_INSIST( ((d_flowLSWFLinElem.get()) != NULL), "d_elemOp is not of type NavierStokesLSWFLinearElement" );
 
@@ -31,7 +31,7 @@ namespace AMP {
         InternalVariableNames[NavierStokes::SHEARSTRESS]= "SHEARSTRESS";
 
         AMP_INSIST( params->d_db->keyExists("ActiveInputVariables"), "key not found" );
-        boost::shared_ptr<AMP::Database> activeInpVar_db = params->d_db->getDatabase("ActiveInputVariables");
+        AMP::shared_ptr<AMP::Database> activeInpVar_db = params->d_db->getDatabase("ActiveInputVariables");
         for(unsigned int i = 0; i < InternalVariableNames.size(); i++) {
             std::string varName = activeInpVar_db->getString(InternalVariableNames[i]);
             AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new AMP::LinearAlgebra::Variable(varName) );
@@ -56,10 +56,10 @@ namespace AMP {
         }
       }
 
-    void NavierStokesLSWFLinearFEOperator :: preAssembly(const boost::shared_ptr<OperatorParameters>& oparams) 
+    void NavierStokesLSWFLinearFEOperator :: preAssembly(const AMP::shared_ptr<OperatorParameters>& oparams) 
     {
 
-      boost::shared_ptr<NavierStokesLinearFEOperatorParameters> params = boost::dynamic_pointer_cast<NavierStokesLinearFEOperatorParameters>(oparams);
+      AMP::shared_ptr<NavierStokesLinearFEOperatorParameters> params = AMP::dynamic_pointer_cast<NavierStokesLinearFEOperatorParameters>(oparams);
 
       if(params->d_frozenVec.get()!=NULL){
         d_inVec = mySubsetVector(params->d_frozenVec, d_inpVariables);

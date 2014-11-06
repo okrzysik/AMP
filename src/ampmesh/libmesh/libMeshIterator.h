@@ -1,7 +1,7 @@
 #ifndef included_AMP_libMeshIterators
 #define included_AMP_libMeshIterators
 
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/MeshIterator.h"
 

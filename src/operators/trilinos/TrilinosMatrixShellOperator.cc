@@ -6,7 +6,7 @@ namespace AMP {
 namespace Operator {
 
 
-TrilinosMatrixShellOperator :: TrilinosMatrixShellOperator(const boost::shared_ptr<OperatorParameters>& params) :
+TrilinosMatrixShellOperator :: TrilinosMatrixShellOperator(const AMP::shared_ptr<OperatorParameters>& params) :
     LinearOperator (params),
     d_getRow(NULL)
 { 
@@ -27,7 +27,7 @@ void TrilinosMatrixShellOperator :: apply(AMP::LinearAlgebra::Vector::const_shar
 }
 
 
-void TrilinosMatrixShellOperator :: reset(const boost::shared_ptr<OperatorParameters>& params) 
+void TrilinosMatrixShellOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params) 
 {
     d_operator->reset(params);
 }
@@ -45,13 +45,13 @@ AMP::LinearAlgebra::Variable::shared_ptr TrilinosMatrixShellOperator :: getInput
 }
 
 
-void TrilinosMatrixShellOperator :: setOperator(boost::shared_ptr<Operator> op) 
+void TrilinosMatrixShellOperator :: setOperator(AMP::shared_ptr<Operator> op) 
 {
     d_operator = op;
 }
 
 
-void TrilinosMatrixShellOperator :: setNodalDofMap(boost::shared_ptr<AMP::Discretization::DOFManager> dofMap) 
+void TrilinosMatrixShellOperator :: setNodalDofMap(AMP::shared_ptr<AMP::Discretization::DOFManager> dofMap) 
 {
     d_nodalDofMap = dofMap;
 }

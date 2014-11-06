@@ -11,7 +11,7 @@ namespace Operator {
 class MapOperatorParameters : public OperatorParameters {
 public :
 
-      MapOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
+      MapOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
         : OperatorParameters(db), d_MapComm(AMP_COMM_NULL) {  }
 
       virtual ~MapOperatorParameters() { }

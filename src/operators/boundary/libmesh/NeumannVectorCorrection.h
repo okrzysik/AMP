@@ -37,7 +37,7 @@ namespace Operator {
     public :
 
       //! Constructor. This function reads all the parameters required for surface elements.
-      NeumannVectorCorrection(const boost::shared_ptr<NeumannVectorCorrectionParameters> & params);
+      NeumannVectorCorrection(const AMP::shared_ptr<NeumannVectorCorrectionParameters> & params);
 
       /**
         Set the variable for the vector that will used with this operator.
@@ -63,7 +63,7 @@ namespace Operator {
       /**
         This function reads parameters related to boundary Ids
         */
-      virtual void reset(const boost::shared_ptr<OperatorParameters>& params);
+      virtual void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
       /**
         Adds a vector to the RHS vector.
@@ -74,9 +74,9 @@ namespace Operator {
         This function returns a parameter object that can be used to reset the corresponding
         NeumannVectorCorrection operator.
         */
-      boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
+      AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
-      boost::shared_ptr<OperatorParameters> getParameters() {
+      AMP::shared_ptr<OperatorParameters> getParameters() {
         return d_params;
       }
 
@@ -84,7 +84,7 @@ namespace Operator {
 
       void setFrozenVector ( AMP::LinearAlgebra::Vector::shared_ptr f );
 
-      boost::shared_ptr<RobinPhysicsModel>  getRobinPhysicsModel () { return d_robinPhysicsModel; }
+      AMP::shared_ptr<RobinPhysicsModel>  getRobinPhysicsModel () { return d_robinPhysicsModel; }
 
       std::vector<short int> getBoundaryIds() const { return d_boundaryIds; }
 
@@ -122,11 +122,11 @@ namespace Operator {
 
       std::vector<short int> d_numDofIds;
 
-      boost::shared_ptr<NeumannVectorCorrectionParameters> d_params;
+      AMP::shared_ptr<NeumannVectorCorrectionParameters> d_params;
 
-      boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
+      AMP::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 
-      boost::shared_ptr<const libMesh::FEType> d_type;
+      AMP::shared_ptr<const libMesh::FEType> d_type;
       libMeshEnums::Order d_qruleOrder; 
       libMeshEnums::QuadratureType d_qruleType;
 

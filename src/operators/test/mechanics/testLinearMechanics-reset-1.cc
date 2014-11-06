@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -34,21 +34,21 @@ void myTest(AMP::UnitTest *ut)
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
-  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
   meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
   AMP_INSIST(input_db->keyExists("Isotropic_Model"), "Key ''Isotropic_Model'' is missing!");
-  boost::shared_ptr<AMP::Database> matModel_db = input_db->getDatabase("Isotropic_Model");
-  boost::shared_ptr<AMP::Operator::MechanicsMaterialModelParameters> matModelParams(new
+  AMP::shared_ptr<AMP::Database> matModel_db = input_db->getDatabase("Isotropic_Model");
+  AMP::shared_ptr<AMP::Operator::MechanicsMaterialModelParameters> matModelParams(new
       AMP::Operator::MechanicsMaterialModelParameters( matModel_db ) );
-  boost::shared_ptr<AMP::Operator::IsotropicElasticModel> isotropicModel (new AMP::Operator::IsotropicElasticModel( matModelParams));
+  AMP::shared_ptr<AMP::Operator::IsotropicElasticModel> isotropicModel (new AMP::Operator::IsotropicElasticModel( matModelParams));
 
   for(int useReduced = 0; useReduced < 2; useReduced++) {
 
@@ -60,38 +60,38 @@ void myTest(AMP::UnitTest *ut)
       AMP_INSIST(input_db->keyExists("Mechanics_Linear_Element_Normal"), "Key ''Mechanics_Linear_Element_Normal'' is missing!");
       mechElemDbStr = "Mechanics_Linear_Element_Normal";
     }
-    boost::shared_ptr<AMP::Database> elemOp_db = input_db->getDatabase(mechElemDbStr);
-    boost::shared_ptr<AMP::Operator::ElementOperationParameters> elemOpParams(
+    AMP::shared_ptr<AMP::Database> elemOp_db = input_db->getDatabase(mechElemDbStr);
+    AMP::shared_ptr<AMP::Operator::ElementOperationParameters> elemOpParams(
         new AMP::Operator::ElementOperationParameters( elemOp_db ));
-    boost::shared_ptr<AMP::Operator::MechanicsLinearElement> mechLinElem(
+    AMP::shared_ptr<AMP::Operator::MechanicsLinearElement> mechLinElem(
         new AMP::Operator::MechanicsLinearElement( elemOpParams ));
 
     AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
     AMP_INSIST(input_db->keyExists("Mechanics_Assembly"), "Key ''Mechanics_Assembly'' is missing!");
-    boost::shared_ptr<AMP::Database> mechAssembly_db = input_db->getDatabase("Mechanics_Assembly");
-    boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperatorParameters> mechOpParams(new
+    AMP::shared_ptr<AMP::Database> mechAssembly_db = input_db->getDatabase("Mechanics_Assembly");
+    AMP::shared_ptr<AMP::Operator::MechanicsLinearFEOperatorParameters> mechOpParams(new
         AMP::Operator::MechanicsLinearFEOperatorParameters( mechAssembly_db ));
     mechOpParams->d_materialModel = isotropicModel;
     mechOpParams->d_elemOp = mechLinElem;
     mechOpParams->d_Mesh = meshAdapter;
     mechOpParams->d_inDofMap = dofMap;
     mechOpParams->d_outDofMap = dofMap;
-    boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechOp (new AMP::Operator::MechanicsLinearFEOperator( mechOpParams ));
+    AMP::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechOp (new AMP::Operator::MechanicsLinearFEOperator( mechOpParams ));
 
     AMP::LinearAlgebra::Variable::shared_ptr mechVariable = mechOp->getOutputVariable();
 
     AMP_INSIST(input_db->keyExists("Displacement_Boundary"), "Key ''Displacement_Boundary'' is missing!");
-    boost::shared_ptr<AMP::Database> disp_db = input_db->getDatabase("Displacement_Boundary");
-    boost::shared_ptr<AMP::Operator::DirichletMatrixCorrectionParameters> dirichletOpParams (new 
+    AMP::shared_ptr<AMP::Database> disp_db = input_db->getDatabase("Displacement_Boundary");
+    AMP::shared_ptr<AMP::Operator::DirichletMatrixCorrectionParameters> dirichletOpParams (new 
         AMP::Operator::DirichletMatrixCorrectionParameters( disp_db ) );
     dirichletOpParams->d_inputMatrix = mechOp->getMatrix();
     //This is just the variable used to extract the dof_map.
     //This boundary operator itself has an empty input and output variable
     dirichletOpParams->d_variable = mechVariable;
     dirichletOpParams->d_Mesh = meshAdapter;
-    boost::shared_ptr<AMP::Operator::DirichletMatrixCorrection> dirichletMatOp (new 
+    AMP::shared_ptr<AMP::Operator::DirichletMatrixCorrection> dirichletMatOp (new 
         AMP::Operator::DirichletMatrixCorrection( dirichletOpParams ) );
 
     AMP::LinearAlgebra::Vector::shared_ptr mechSolVec = AMP::LinearAlgebra::createVector(dofMap, mechVariable, true);

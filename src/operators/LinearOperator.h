@@ -2,7 +2,7 @@
 #ifndef included_AMP_LinearOperator
 #define included_AMP_LinearOperator
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "matrices/Matrix.h"
 #include "operators/Operator.h"
 #include "operators/OperatorParameters.h"
@@ -26,7 +26,7 @@ public :
      * Constructor. This resets the matrix shared pointer.
      * @param [in] params 
      */
-    LinearOperator (const boost::shared_ptr<OperatorParameters> & params);
+    LinearOperator (const AMP::shared_ptr<OperatorParameters> & params);
 
     //! Destructor
     virtual ~LinearOperator() { }
@@ -47,20 +47,20 @@ public :
     /**
      * @return The matrix representation of this linear operator.
      */
-    boost::shared_ptr<AMP::LinearAlgebra::Matrix> getMatrix();
+    AMP::shared_ptr<AMP::LinearAlgebra::Matrix> getMatrix();
 
     /**
      * Copies the shared pointer for the matrix representation of this linear operator.
      *  @param [in] in_mat The matrix representation of this linear operator.
      */
-    virtual void setMatrix(const boost::shared_ptr<AMP::LinearAlgebra::Matrix> & in_mat);
+    virtual void setMatrix(const AMP::shared_ptr<AMP::LinearAlgebra::Matrix> & in_mat);
 
 protected :
 
     //! Empty constructor
     LinearOperator( );
 
-    boost::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix; /**< The matrix shared pointer. */
+    AMP::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix; /**< The matrix shared pointer. */
 
 private :
 

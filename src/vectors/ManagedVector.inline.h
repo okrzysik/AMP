@@ -148,13 +148,13 @@ inline bool ManagedVector::isAnAliasOf ( Vector::shared_ptr rhs )
 }
 
 
-inline boost::shared_ptr<ParameterBase>  ManagedVector::getParameters ()
+inline AMP::shared_ptr<ParameterBase>  ManagedVector::getParameters ()
 {
-    return boost::dynamic_pointer_cast<ParameterBase> ( d_pParameters );
+    return AMP::dynamic_pointer_cast<ParameterBase> ( d_pParameters );
 }
 
 
-inline  boost::shared_ptr<ManagedVectorParameters>  ManagedVector::getManagedVectorParameters ()
+inline  AMP::shared_ptr<ManagedVectorParameters>  ManagedVector::getManagedVectorParameters ()
 {
     return d_pParameters;
 }
@@ -368,9 +368,9 @@ inline void ManagedVector::setRandomValues(void)
 }
 
 
-inline boost::shared_ptr<Vector>  ManagedVector::cloneVector ( const Variable::shared_ptr name ) const
+inline AMP::shared_ptr<Vector>  ManagedVector::cloneVector ( const Variable::shared_ptr name ) const
 {
-    boost::shared_ptr<Vector> retVal ( getNewRawPtr() );
+    AMP::shared_ptr<Vector> retVal ( getNewRawPtr() );
     if ( !d_vBuffer )
     {
       retVal->castTo<ManagedVector>().d_Engine = d_Engine->cloneEngine ( VectorEngine::BufferPtr() );

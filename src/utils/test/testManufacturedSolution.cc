@@ -16,16 +16,16 @@
 #include "../ManufacturedSolution.h"
 #include "../Database.h"
 #include "../MemoryDatabase.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 
 void testit(AMP::UnitTest *ut,
 		std::string geom, std::string order, std::string bc,
 		double x, double y, double z)
 {
-    boost::shared_ptr<AMP::Database> db(
-        boost::dynamic_pointer_cast<AMP::Database>(
-            boost::shared_ptr<AMP::MemoryDatabase>(
+    AMP::shared_ptr<AMP::Database> db(
+        AMP::dynamic_pointer_cast<AMP::Database>(
+            AMP::shared_ptr<AMP::MemoryDatabase>(
                 new AMP::MemoryDatabase("ManufacturedSolution") ) ) );
 
     db->putString("Geometry", geom);

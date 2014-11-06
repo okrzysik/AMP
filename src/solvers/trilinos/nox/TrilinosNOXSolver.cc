@@ -38,13 +38,13 @@ TrilinosNOXSolver::TrilinosNOXSolver():
 {
 
 }
-TrilinosNOXSolver::TrilinosNOXSolver(boost::shared_ptr<TrilinosNOXSolverParameters> parameters):
+TrilinosNOXSolver::TrilinosNOXSolver(AMP::shared_ptr<TrilinosNOXSolverParameters> parameters):
     SolverStrategy(parameters)
 {
     TrilinosNOXSolver();
     initialize(parameters);
 }
-void TrilinosNOXSolver::reset(boost::shared_ptr<SolverStrategyParameters> parameters)
+void TrilinosNOXSolver::reset(AMP::shared_ptr<SolverStrategyParameters> parameters)
 {
     initialize(parameters);
 }
@@ -56,24 +56,24 @@ TrilinosNOXSolver::~TrilinosNOXSolver()
 /****************************************************************
 *  Initialize                                                   *
 ****************************************************************/
-void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> parameters )
+void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> parameters )
 {
     // Copy the parameters
-    boost::shared_ptr<TrilinosNOXSolverParameters> params =
-        boost::dynamic_pointer_cast<TrilinosNOXSolverParameters>( parameters );
+    AMP::shared_ptr<TrilinosNOXSolverParameters> params =
+        AMP::dynamic_pointer_cast<TrilinosNOXSolverParameters>( parameters );
     AMP_ASSERT(params.get()!=NULL);
     AMP_ASSERT(params->d_db.get()!=NULL);
     d_comm = params->d_comm;
     if ( params->d_pInitialGuess.get()!=NULL )
         d_initialGuess = params->d_pInitialGuess;
     AMP_ASSERT(d_initialGuess!=NULL);
-    boost::shared_ptr<AMP::Database> nonlinear_db = parameters->d_db;
-    boost::shared_ptr<AMP::Database> linear_db = nonlinear_db->getDatabase("LinearSolver");
+    AMP::shared_ptr<AMP::Database> nonlinear_db = parameters->d_db;
+    AMP::shared_ptr<AMP::Database> linear_db = nonlinear_db->getDatabase("LinearSolver");
     AMP_ASSERT(linear_db!=NULL);
     // Create the default OStream
     Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::VerboseObjectBase::getDefaultOStream();
     // Create a model evaluator
-    boost::shared_ptr<TrilinosThyraModelEvaluatorParameters> modelParams( new TrilinosThyraModelEvaluatorParameters );
+    AMP::shared_ptr<TrilinosThyraModelEvaluatorParameters> modelParams( new TrilinosThyraModelEvaluatorParameters );
     modelParams->d_nonlinearOp = d_pOperator;
     modelParams->d_linearOp = params->d_pLinearOperator;
     modelParams->d_icVec = d_initialGuess;
@@ -190,19 +190,19 @@ void TrilinosNOXSolver::initialize( boost::shared_ptr<SolverStrategyParameters> 
 /****************************************************************
 *  Solve                                                        *
 ****************************************************************/
-void TrilinosNOXSolver::solve( boost::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                  boost::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void TrilinosNOXSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                  AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     //PROFILE_START("solve");
     // Get thyra vectors
-    boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> initial =
-        boost::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
+    AMP::shared_ptr<AMP::LinearAlgebra::ThyraVector> initial =
+        AMP::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
         AMP::LinearAlgebra::ThyraVector::view( d_initialGuess ) );
-    boost::shared_ptr<AMP::LinearAlgebra::ThyraVector> U =
-        boost::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
+    AMP::shared_ptr<AMP::LinearAlgebra::ThyraVector> U =
+        AMP::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
         AMP::LinearAlgebra::ThyraVector::view( u ) );
-    boost::shared_ptr<const AMP::LinearAlgebra::ThyraVector> F =
-        boost::dynamic_pointer_cast<const AMP::LinearAlgebra::ThyraVector>(
+    AMP::shared_ptr<const AMP::LinearAlgebra::ThyraVector> F =
+        AMP::dynamic_pointer_cast<const AMP::LinearAlgebra::ThyraVector>(
         AMP::LinearAlgebra::ThyraVector::constView( f ) );
     // Set the rhs for the thyra model
     d_thyraModel->setRhs( f );

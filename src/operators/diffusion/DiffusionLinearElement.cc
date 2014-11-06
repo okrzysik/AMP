@@ -24,10 +24,10 @@ namespace AMP {
 			AMP_ASSERT(d_num_dofs == num_local_dofs);
 
 			std::vector<double> conductivity(d_qrule->n_points());
-		    std::vector<std::vector< boost::shared_ptr<std::vector<double> > > > conductivityTensor(3,
-			        std::vector<boost::shared_ptr<std::vector<double> > >(3));
+		    std::vector<std::vector< AMP::shared_ptr<std::vector<double> > > > conductivityTensor(3,
+			        std::vector<AMP::shared_ptr<std::vector<double> > >(3));
 			if (d_transportModel->isaTensor()) {
-				d_transportTensorModel = boost::dynamic_pointer_cast<DiffusionTransportTensorModel>(d_transportModel);
+				d_transportTensorModel = AMP::dynamic_pointer_cast<DiffusionTransportTensorModel>(d_transportModel);
 				for (int i=0; i<3; i++) for (int j=0; j<3; j++) {
 					std::vector<double> *vd = new std::vector<double>(d_qrule->n_points());
 					conductivityTensor[i][j].reset(vd);
@@ -35,7 +35,7 @@ namespace AMP {
 			}
 
 			if (d_transportAtGauss) {
-				std::map<std::string,  boost::shared_ptr<std::vector<double> > > args;
+				std::map<std::string,  AMP::shared_ptr<std::vector<double> > > args;
 				if(!d_LocalTemperature.empty()) {
 					std::vector<double>* temperature = new std::vector<double>(d_qrule->n_points());
 					for (unsigned int qp = 0; qp < d_qrule->n_points(); qp++) {
@@ -44,7 +44,7 @@ namespace AMP {
 							(*temperature)[qp] += d_LocalTemperature[j] * phi[j][qp];
 						}//end for j
 					}//end for qp
-					args.insert(std::make_pair("temperature",   boost::shared_ptr<std::vector<double> >(temperature)));
+					args.insert(std::make_pair("temperature",   AMP::shared_ptr<std::vector<double> >(temperature)));
 				}
 				if(!d_LocalConcentration.empty()) {        
 					std::vector<double>* concentration = new std::vector<double>(d_qrule->n_points());
@@ -54,7 +54,7 @@ namespace AMP {
 							(*concentration)[qp] += d_LocalConcentration[j] * phi[j][qp];
 						}//end for j
 					}//end for qp
-					args.insert(std::make_pair("concentration", boost::shared_ptr<std::vector<double> >(concentration)));
+					args.insert(std::make_pair("concentration", AMP::shared_ptr<std::vector<double> >(concentration)));
 				}
 				if(!d_LocalBurnup.empty()) {
 					std::vector<double>* burnup = new std::vector<double>(d_qrule->n_points());
@@ -64,7 +64,7 @@ namespace AMP {
 							(*burnup)[qp] += d_LocalBurnup[j] * phi[j][qp];
 						}//end for j
 					}//end for qp
-					args.insert(std::make_pair("burnup",        boost::shared_ptr<std::vector<double> >(burnup)));
+					args.insert(std::make_pair("burnup",        AMP::shared_ptr<std::vector<double> >(burnup)));
 				}
 				if (not d_transportModel->isaTensor()) {
 					d_transportModel->getTransport(conductivity, args, q_point);
@@ -76,14 +76,14 @@ namespace AMP {
 				std::vector<double> &temperature(*new std::vector<double>(d_LocalTemperature));
 				std::vector<double> &concentration(*new std::vector<double>(d_LocalConcentration));
 				std::vector<double> &burnup(*new std::vector<double>(d_LocalBurnup));
-				std::map<std::string,  boost::shared_ptr<std::vector<double> > > args;
-				args.insert(std::make_pair("temperature",   boost::shared_ptr<std::vector<double> >(&temperature)));
-				args.insert(std::make_pair("concentration", boost::shared_ptr<std::vector<double> >(&concentration)));
-				args.insert(std::make_pair("burnup",        boost::shared_ptr<std::vector<double> >(&burnup)));
+				std::map<std::string,  AMP::shared_ptr<std::vector<double> > > args;
+				args.insert(std::make_pair("temperature",   AMP::shared_ptr<std::vector<double> >(&temperature)));
+				args.insert(std::make_pair("concentration", AMP::shared_ptr<std::vector<double> >(&concentration)));
+				args.insert(std::make_pair("burnup",        AMP::shared_ptr<std::vector<double> >(&burnup)));
 
 				std::vector<double> nodalConductivity(num_local_dofs);
-			    std::vector<std::vector< boost::shared_ptr<std::vector<double> > > > nodalConductivityTensor(3,
-						std::vector<boost::shared_ptr<std::vector<double> > >  (3));
+			    std::vector<std::vector< AMP::shared_ptr<std::vector<double> > > > nodalConductivityTensor(3,
+						std::vector<AMP::shared_ptr<std::vector<double> > >  (3));
 				if (not d_transportModel->isaTensor()) {
 					d_transportModel->getTransport(nodalConductivity, args, q_point);
 				} else {

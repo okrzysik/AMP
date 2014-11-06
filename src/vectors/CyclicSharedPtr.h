@@ -24,7 +24,7 @@ namespace LinearAlgebra {
   class CyclicSharedPtr
   {
     private:
-      boost::shared_ptr<T>  *d_pThis;
+      AMP::shared_ptr<T>  *d_pThis;
 
     public:
       /** \brief  Construct the CyclicSharedPtr class.  This does not create a cycle.

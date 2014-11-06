@@ -94,10 +94,10 @@ public:
     virtual bool isAnAliasOf ( Vector &rhs );
     virtual bool isAnAliasOf ( Vector::shared_ptr rhs );
     using Vector::cloneVector;
-    virtual boost::shared_ptr<Vector>  cloneVector ( const Variable::shared_ptr name ) const;
-    virtual boost::shared_ptr<ParameterBase>  getParameters () ;
+    virtual AMP::shared_ptr<Vector>  cloneVector ( const Variable::shared_ptr name ) const;
+    virtual AMP::shared_ptr<ParameterBase>  getParameters () ;
 
-    virtual boost::shared_ptr<ManagedVectorParameters>  getManagedVectorParameters () ;
+    virtual AMP::shared_ptr<ManagedVectorParameters>  getManagedVectorParameters () ;
 
     virtual size_t getLocalSize() const;
     virtual size_t getGlobalSize() const;
@@ -157,7 +157,7 @@ protected:
     VectorEngine::shared_ptr     d_Engine;
     /**\brief  The parameters used to create this vector
      */
-     boost::shared_ptr<ManagedVectorParameters>  d_pParameters;
+     AMP::shared_ptr<ManagedVectorParameters>  d_pParameters;
 
     /**\brief  Function that returns a pointer to a managed vector
      */

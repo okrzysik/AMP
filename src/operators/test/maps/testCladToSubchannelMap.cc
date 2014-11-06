@@ -40,7 +40,7 @@ AMP::Mesh::MeshIterator getZFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel,
         }
         ++iterator;
     }
-    boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( new std::vector<AMP::Mesh::MeshElement>() );
+    AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( new std::vector<AMP::Mesh::MeshElement>() );
     elements->reserve(xyFace.size());
     for (std::multimap<double,AMP::Mesh::MeshElement>::iterator it=xyFace.begin(); it!=xyFace.end(); ++it)
         elements->push_back( it->second );
@@ -51,14 +51,14 @@ AMP::Mesh::MeshIterator getZFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel,
 void  runTest ( const std::string &fname , AMP::UnitTest *ut )
 {
     // Read the input file
-    boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
+    AMP::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
     AMP::InputManager::getManager()->parseInputFile ( fname , input_db );
     input_db->printClassData (AMP::plog);
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
-    boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(mesh_db));
     params->setComm(globalComm);
 
     // Create the meshes from the input database
@@ -77,7 +77,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     }
 
     // Get the database for the map
-    boost::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
+    AMP::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
 
     // Create the DOFManagers and the vectors
     //int DOFsPerNode = map_db->getInteger("DOFsPerObject");
@@ -114,7 +114,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
 
     // Test the creation/destruction of CladToSubchannelMap (no apply call)
     try { 
-        boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  map;
+        AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  map;
         map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap>( manager, map_db );
         map.reset();
         ut->passes("Created / Destroyed CladToSubchannelMap");
@@ -123,7 +123,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     }
 
     // Perform a complete test of CladToSubchannelMap
-    boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  map;
+    AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  map;
     map = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::CladToSubchannelMap>( manager, map_db );
     map->setVector( T2 );
     

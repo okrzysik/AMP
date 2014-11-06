@@ -28,7 +28,7 @@ namespace Operator {
         Constructor creates a simpleVariables for Input and Output. The reset is called to 
         read the flow parameters.
         */
-      FlowFrapconJacobian(const boost::shared_ptr<FlowFrapconJacobianParameters> & params);
+      FlowFrapconJacobian(const AMP::shared_ptr<FlowFrapconJacobianParameters> & params);
 
       /**
         Destructor
@@ -50,7 +50,7 @@ namespace Operator {
         This function reads the entries of the database for the flow operator
         and can also be used to change the parameters if required.
         */
-      void reset(const boost::shared_ptr<OperatorParameters>& params);
+      void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
 /*
       static bool sort_nodes_in_z ( const ::Node *one , const ::Node *two ) {
@@ -147,7 +147,7 @@ namespace Operator {
       }
 
       /*
-         boost::shared_ptr< std::vector<double>  > getFlowSolution() {
+         AMP::shared_ptr< std::vector<double>  > getFlowSolution() {
          return flowSolutionVector;
          }
          */
@@ -180,16 +180,16 @@ namespace Operator {
 
       double d_Pr; /**< Prandtl Number */
 
-      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Input Variable */
+      AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Input Variable */
 
-      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output Variable */
+      AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output Variable */
       
-      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
+      AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
 
-//      boost::shared_ptr<AMP::Operator::Map3Dto1D> d_Map3to1;
+//      AMP::shared_ptr<AMP::Operator::Map3Dto1D> d_Map3to1;
       AMP::LinearAlgebra::Vector::shared_ptr   flowInput; 
 
-//      boost::shared_ptr<AMP::Operator::Map1Dto3D> d_Map1to3;
+//      AMP::shared_ptr<AMP::Operator::Map1Dto3D> d_Map1to3;
       AMP::LinearAlgebra::Vector::shared_ptr   flowOutput; 
 
     protected :

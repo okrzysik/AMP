@@ -4,7 +4,7 @@
 
 #include "ElementOperationParameters.h"
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP {
 namespace Operator {
@@ -21,7 +21,7 @@ namespace Operator {
       /** 
         Constructor.
         */
-      ElementOperation(const boost::shared_ptr<ElementOperationParameters>& ) {  }
+      ElementOperation(const AMP::shared_ptr<ElementOperationParameters>& ) {  }
 
       /**
         Destructor.

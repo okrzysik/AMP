@@ -16,7 +16,7 @@ namespace Operator {
 
 
 //Constructor
-SubchannelFourEqNonlinearOperator::SubchannelFourEqNonlinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params)
+SubchannelFourEqNonlinearOperator::SubchannelFourEqNonlinearOperator(const AMP::shared_ptr<SubchannelOperatorParameters> & params)
     : Operator (params)
 {
     AMP_INSIST( params->d_db->keyExists("InputVariable"), "Key 'InputVariable' does not exist");
@@ -32,10 +32,10 @@ SubchannelFourEqNonlinearOperator::SubchannelFourEqNonlinearOperator(const boost
 }
 
 // reset
-void SubchannelFourEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
+void SubchannelFourEqNonlinearOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params)
 {
-      boost::shared_ptr<SubchannelOperatorParameters> myparams = 
-        boost::dynamic_pointer_cast<SubchannelOperatorParameters>(params);
+      AMP::shared_ptr<SubchannelOperatorParameters> myparams = 
+        AMP::dynamic_pointer_cast<SubchannelOperatorParameters>(params);
       AMP_INSIST( ((myparams.get()) != NULL), "NULL parameters" );
       AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
       d_params = myparams;
@@ -148,7 +148,7 @@ void SubchannelFourEqNonlinearOperator :: reset(const boost::shared_ptr<Operator
 }
 
 // function used in reset to get double parameter or set default if missing
-double SubchannelFourEqNonlinearOperator::getDoubleParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+double SubchannelFourEqNonlinearOperator::getDoubleParameter(	AMP::shared_ptr<SubchannelOperatorParameters> myparams,
 								std::string paramString,
                                                                 double defaultValue)
 {
@@ -162,7 +162,7 @@ double SubchannelFourEqNonlinearOperator::getDoubleParameter(	boost::shared_ptr<
 }
 
 // function used in reset to get integer parameter or set default if missing
-int SubchannelFourEqNonlinearOperator::getIntegerParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+int SubchannelFourEqNonlinearOperator::getIntegerParameter(	AMP::shared_ptr<SubchannelOperatorParameters> myparams,
 								std::string paramString,
                                                                 int defaultValue)
 {
@@ -176,7 +176,7 @@ int SubchannelFourEqNonlinearOperator::getIntegerParameter(	boost::shared_ptr<Su
 }
 
 // function used in reset to get string parameter or set default if missing
-std::string SubchannelFourEqNonlinearOperator::getStringParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+std::string SubchannelFourEqNonlinearOperator::getStringParameter(	AMP::shared_ptr<SubchannelOperatorParameters> myparams,
 									std::string paramString,
                                                                 	std::string defaultValue)
 {
@@ -190,7 +190,7 @@ std::string SubchannelFourEqNonlinearOperator::getStringParameter(	boost::shared
 }
 
 // function used in reset to get bool parameter or set default if missing
-bool SubchannelFourEqNonlinearOperator::getBoolParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+bool SubchannelFourEqNonlinearOperator::getBoolParameter(	AMP::shared_ptr<SubchannelOperatorParameters> myparams,
 									std::string paramString,
                                                                 	bool defaultValue)
 {
@@ -480,7 +480,7 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
             continue;
 
           // extract subchannel cells from d_elem[isub]
-          boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > subchannelElements( new std::vector<AMP::Mesh::MeshElement>() );
+          AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement> > subchannelElements( new std::vector<AMP::Mesh::MeshElement>() );
           subchannelElements->reserve(d_numSubchannels);
           for(size_t ielem=0; ielem<d_elem[isub].size(); ++ielem){
             subchannelElements->push_back(d_elem[isub][ielem]);
@@ -1111,14 +1111,14 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
       }// end loop over lateral faces
 }// end of apply function
 
-boost::shared_ptr<OperatorParameters> SubchannelFourEqNonlinearOperator :: 
-getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u) 
+AMP::shared_ptr<OperatorParameters> SubchannelFourEqNonlinearOperator :: 
+getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u) 
 {
-  boost::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
+  AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
 
   tmp_db->putString("name","SubchannelFourEqLinearOperator");
 
-  boost::shared_ptr<SubchannelOperatorParameters> outParams(new SubchannelOperatorParameters(tmp_db));
+  AMP::shared_ptr<SubchannelOperatorParameters> outParams(new SubchannelOperatorParameters(tmp_db));
   outParams->d_db = d_params->d_db; 
   outParams->d_frozenSolution =  subsetInputVector( u );
   outParams->d_initialize = true;
@@ -1187,7 +1187,7 @@ double SubchannelFourEqNonlinearOperator::Volume(double h, double p)
    // evaluates specific volume
    // h: enthalpy
    // p: pressure
-   std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
+   std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
    argMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h)));
    argMap.insert(std::make_pair("pressure",new std::vector<double>(1,p)));
    std::vector<double> result(1);
@@ -1200,7 +1200,7 @@ double SubchannelFourEqNonlinearOperator::Temperature(double h, double p)
    // evaluates temperature
    // h: enthalpy
    // p: pressure
-   std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
+   std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
    argMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h)));
    argMap.insert(std::make_pair("pressure",new std::vector<double>(1,p)));
    std::vector<double> result(1);
@@ -1213,7 +1213,7 @@ double SubchannelFourEqNonlinearOperator::ThermalConductivity(double T, double r
    // evaluates thermal conductivity
    // T: temperature
    // rho: density
-   std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
+   std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
    argMap.insert(std::make_pair("temperature",new std::vector<double>(1,T)));
    argMap.insert(std::make_pair("density",new std::vector<double>(1,rho)));
    std::vector<double> result(1);
@@ -1226,7 +1226,7 @@ double SubchannelFourEqNonlinearOperator::DynamicViscosity(double T, double rho)
    // evaluates dynamic viscosity
    // T: temperature
    // rho: density
-   std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
+   std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
    argMap.insert(std::make_pair("temperature",new std::vector<double>(1,T)));
    argMap.insert(std::make_pair("density",new std::vector<double>(1,rho)));
    std::vector<double> result(1);
@@ -1239,7 +1239,7 @@ double SubchannelFourEqNonlinearOperator::Enthalpy(double T, double p)
    // evaluates specific enthalpy
    // T: temperature
    // p: pressure
-   std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
+   std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
    argMap.insert(std::make_pair("temperature",new std::vector<double>(1,T)));
    argMap.insert(std::make_pair("pressure",new std::vector<double>(1,p)));
    std::vector<double> result(1);

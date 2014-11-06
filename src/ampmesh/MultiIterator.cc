@@ -20,13 +20,13 @@ MultiIterator::MultiIterator()
 {
     typeID = MultiIteratorTypeID;
     iterator = NULL;
-    d_iterators = std::vector<boost::shared_ptr<MeshIterator> >(0);
+    d_iterators = std::vector<AMP::shared_ptr<MeshIterator> >(0);
     d_iteratorSize = std::vector<size_t>(0);
     d_localPos = 0;
     d_globalPos = 0;
     d_iteratorNum = 0;
 }
-MultiIterator::MultiIterator( std::vector<boost::shared_ptr<MeshIterator> > iterators, size_t global_pos )
+MultiIterator::MultiIterator( std::vector<AMP::shared_ptr<MeshIterator> > iterators, size_t global_pos )
 {
     typeID = MultiIteratorTypeID;
     iterator = NULL;

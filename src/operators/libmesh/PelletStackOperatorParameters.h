@@ -10,7 +10,7 @@ namespace AMP {
     class PelletStackOperatorParameters : public OperatorParameters {
       public :
 
-        PelletStackOperatorParameters(const boost::shared_ptr<AMP::Database>& db)
+        PelletStackOperatorParameters(const AMP::shared_ptr<AMP::Database>& db)
           : OperatorParameters(db) {
             d_currentPellet = static_cast<unsigned int>(-1);
           }
@@ -19,7 +19,7 @@ namespace AMP {
 
         unsigned int d_currentPellet;
         AMP_MPI d_pelletStackComm;
-        boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator> d_n2nMaps;
+        AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> d_n2nMaps;
     };
 
   }  

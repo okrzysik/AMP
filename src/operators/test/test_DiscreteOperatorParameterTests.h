@@ -12,7 +12,7 @@ class  InstantiateOperatorParameter
       template <typename UTILS>
       static void  run_test ( UTILS *utils )
       {
-         boost::shared_ptr<AMP::InputDatabase> new_db ( new AMP::InputDatabase ( "Dummy db" ) );
+         AMP::shared_ptr<AMP::InputDatabase> new_db ( new AMP::InputDatabase ( "Dummy db" ) );
          AMP::Operator::OperatorParameters  params ( new_db );
          utils->passes("instantiate OperatorParameters");
       }

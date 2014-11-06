@@ -14,7 +14,7 @@
 namespace AMP {
 namespace Operator {
 
-MechanicsElement :: MechanicsElement (const boost::shared_ptr<ElementOperationParameters> & params) :
+MechanicsElement :: MechanicsElement (const AMP::shared_ptr<ElementOperationParameters> & params) :
     ElementOperation(params),
     d_elem(NULL)
 {

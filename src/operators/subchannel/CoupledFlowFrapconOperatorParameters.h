@@ -6,7 +6,7 @@
 #include "operators/ColumnOperatorParameters.h"
 #include "operators/Operator.h"
 /*Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include <vector>
 
@@ -21,16 +21,16 @@ namespace Operator {
   class CoupledFlowFrapconOperatorParameters : public ColumnOperatorParameters {
     public :
 
-      CoupledFlowFrapconOperatorParameters(const boost::shared_ptr<AMP::Database>& db)
+      CoupledFlowFrapconOperatorParameters(const AMP::shared_ptr<AMP::Database>& db)
         : ColumnOperatorParameters(db) { }
 
       virtual ~CoupledFlowFrapconOperatorParameters() { }
 
-      boost::shared_ptr<Operator> d_Map3to1 ;
+      AMP::shared_ptr<Operator> d_Map3to1 ;
 
-      boost::shared_ptr<Operator> d_Map1to3 ;
+      AMP::shared_ptr<Operator> d_Map1to3 ;
 
-      boost::shared_ptr<Operator> d_FlowOperator;
+      AMP::shared_ptr<Operator> d_FlowOperator;
   };
 
 }  

@@ -8,7 +8,7 @@ namespace AMP {
   namespace Operator {
 /*
     NavierStokesGalWFFEOperator :: NavierStokesGalWFFEOperator (
-        const boost::shared_ptr<NavierStokesGalWFFEOperatorParameters> & params)
+        const AMP::shared_ptr<NavierStokesGalWFFEOperatorParameters> & params)
       : NonlinearFEOperator (params) {
 
         AMP_INSIST( ((params.get()) != NULL), "NULL parameter!" );
@@ -23,7 +23,7 @@ namespace AMP {
         d_coupledFormulation = (params->d_db)->getBoolWithDefault("VELOCITY_PRESSURE_COUPLING", true);
 
         AMP_INSIST( params->d_db->keyExists("ActiveInputVariables"), "key not found" );
-        boost::shared_ptr<AMP::Database> activeInpVar_db = params->d_db->getDatabase("ActiveInputVariables");
+        AMP::shared_ptr<AMP::Database> activeInpVar_db = params->d_db->getDatabase("ActiveInputVariables");
 
         AMP_INSIST(activeInpVar_db->keyExists("VELOCITY"), "VELOCITY must be active");
         AMP_INSIST(activeInpVar_db->keyExists("PRESSURE"), "PRESSURE must be active");
@@ -105,7 +105,7 @@ namespace AMP {
     }
 
     void NavierStokesGalWFFEOperator :: preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-        boost::shared_ptr<AMP::LinearAlgebra::Vector>  &r) {
+        AMP::shared_ptr<AMP::LinearAlgebra::Vector>  &r) {
       if(!d_isInitialized) {
         init();
       }
@@ -200,14 +200,14 @@ namespace AMP {
       d_isInitialized = true;
     }
 
-    void NavierStokesGalWFFEOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
+    void NavierStokesGalWFFEOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params)
     {
       if(!d_isInitialized) {
         init();
       }
 
-      boost::shared_ptr<NavierStokesGalWFFEOperatorParameters> myParams =
-        boost::dynamic_pointer_cast<NavierStokesGalWFFEOperatorParameters>(params); 
+      AMP::shared_ptr<NavierStokesGalWFFEOperatorParameters> myParams =
+        AMP::dynamic_pointer_cast<NavierStokesGalWFFEOperatorParameters>(params); 
 
       AMP_INSIST( ((myParams.get()) != NULL), "Null parameter!" );
 
@@ -223,15 +223,15 @@ namespace AMP {
 
     }
 
-    boost::shared_ptr<OperatorParameters> NavierStokesGalWFFEOperator ::
-      getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u) {
+    AMP::shared_ptr<OperatorParameters> NavierStokesGalWFFEOperator ::
+      getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u) {
 
         if(!d_isInitialized) {
           init();
         }
 
         // set up a database for the linear operator params
-        boost::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
+        AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
         tmp_db->putBool("isAttachedToNonlinearOperator", true);
         tmp_db->putBool("isNonlinearOperatorInitialized", true);
 
@@ -244,7 +244,7 @@ namespace AMP {
         }
 
         // create the linear operator params
-        boost::shared_ptr<NavierStokesLinearFEOperatorParameters> outParams(new
+        AMP::shared_ptr<NavierStokesLinearFEOperatorParameters> outParams(new
             NavierStokesLinearFEOperatorParameters(tmp_db));
 
         (outParams->d_frozenVec).resize(NavierStokes::TOTAL_NUMBER_OF_VARIABLES);

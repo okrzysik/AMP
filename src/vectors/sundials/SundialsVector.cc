@@ -12,13 +12,13 @@ Vector::const_shared_ptr  SundialsVector::constView ( Vector::const_shared_ptr i
     } else if ( inVector->hasView<SundialsVector> () ) {
         return inVector->getView<SundialsVector>();
     } else if ( inVector->isA<ManagedVector> () ) {
-        Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
+        Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
         retVal = Vector::shared_ptr ( new ManagedSundialsVector ( inVector2 ) );
         inVector->registerView ( retVal );
     } else if ( inVector->isA<VectorEngine> () ) {
-        Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
+        Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
         ManagedSundialsVectorParameters *new_params = new ManagedSundialsVectorParameters;
-        new_params->d_Engine = boost::dynamic_pointer_cast<VectorEngine> ( inVector2 );
+        new_params->d_Engine = AMP::dynamic_pointer_cast<VectorEngine> ( inVector2 );
         new_params->d_CloneEngine = false;
         if ( inVector->getCommunicationList().get()!=NULL )
             new_params->d_CommList = inVector->getCommunicationList();
@@ -35,7 +35,7 @@ Vector::const_shared_ptr  SundialsVector::constView ( Vector::const_shared_ptr i
         inVector->registerView ( retVal );
     } else {
         // Create a multivector to wrap the given vector and create a view
-        Vector::shared_ptr inVector2 = boost::const_pointer_cast<Vector>( inVector );
+        Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
         retVal = view ( MultiVector::view( inVector2, inVector->getComm() ) );
         inVector2->registerView( retVal );
     }
@@ -55,7 +55,7 @@ Vector::shared_ptr  SundialsVector::view ( Vector::shared_ptr inVector )
         inVector->registerView ( retVal );
     } else if ( inVector->isA<VectorEngine> () ) {
         ManagedSundialsVectorParameters *new_params = new ManagedSundialsVectorParameters;
-        new_params->d_Engine = boost::dynamic_pointer_cast<VectorEngine> ( inVector );
+        new_params->d_Engine = AMP::dynamic_pointer_cast<VectorEngine> ( inVector );
         new_params->d_CloneEngine = false;
         if ( inVector->getCommunicationList().get()!=NULL )
             new_params->d_CommList = inVector->getCommunicationList();

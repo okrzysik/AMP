@@ -17,7 +17,7 @@
 #endif
 #include "Database.h"
 #include <list>
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #ifndef included_String
 #include <string>
 #define included_String
@@ -53,7 +53,7 @@ namespace AMP {
 class Parser
 {
 public:
-      typedef boost::shared_ptr<Parser> shared_ptr;
+      typedef AMP::shared_ptr<Parser> shared_ptr;
 
    /**
     * The parser constructor simply creates an uninitialized parser object.
@@ -83,7 +83,7 @@ public:
     */
    int parse(
       const std::string& filename,
-      FILE* fstream, boost::shared_ptr<Database> database);
+      FILE* fstream, AMP::shared_ptr<Database> database);
 
    /**
     * Return the total number of errors resulting from the parse.
@@ -106,7 +106,7 @@ public:
     * Return the current database scope.  The current scope is modified
     * through the enterScope() and leaveScope() member functions.
     */
-    boost::shared_ptr<Database> & getScope();
+    AMP::shared_ptr<Database> & getScope();
 
    /**
     * Create a new database scope with the specified name.  This new scope
@@ -124,7 +124,7 @@ public:
     * Lookup the scope that contains the specified key.  If the scope does
     * not exist, then return a NULL pointer to the database.
     */
-    boost::shared_ptr<Database> getDatabaseWithKey(const std::string& name);
+    AMP::shared_ptr<Database> getDatabaseWithKey(const std::string& name);
 
    /**
     * Save the current context and switch to the specified input file.
@@ -199,7 +199,7 @@ private:
 
    std::list< Parser::ParseData > d_parse_stack;
 
-   std::list< boost::shared_ptr<Database> > d_scope_stack;
+   std::list< AMP::shared_ptr<Database> > d_scope_stack;
 
    static Parser* s_default_parser;
    

@@ -17,7 +17,7 @@ namespace Solver {
 /****************************************************************
 *  Constructors                                                 *
 ****************************************************************/
-TrilinosThyraModelEvaluator::TrilinosThyraModelEvaluator( boost::shared_ptr<TrilinosThyraModelEvaluatorParameters> params )
+TrilinosThyraModelEvaluator::TrilinosThyraModelEvaluator( AMP::shared_ptr<TrilinosThyraModelEvaluatorParameters> params )
 {
     AMP_ASSERT(params->d_nonlinearOp!=NULL);
     d_nonlinearOp = params->d_nonlinearOp;
@@ -70,8 +70,8 @@ void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBa
     const Teuchos::RCP<Thyra::PreconditionerBase<double> > W_prec_out = outArgs.get_W_prec();
     if ( nonnull(W_prec_out) ) {
         // Reset the preconditioner
-        AMP::LinearAlgebra::Vector::shared_ptr x2 = boost::const_pointer_cast<AMP::LinearAlgebra::Vector>(x);
-        boost::shared_ptr<AMP::Operator::OperatorParameters> op_params = d_nonlinearOp->getJacobianParameters(x2);
+        AMP::LinearAlgebra::Vector::shared_ptr x2 = AMP::const_pointer_cast<AMP::LinearAlgebra::Vector>(x);
+        AMP::shared_ptr<AMP::Operator::OperatorParameters> op_params = d_nonlinearOp->getJacobianParameters(x2);
         d_preconditioner->resetOperator(op_params);
     }
 
@@ -109,14 +109,14 @@ void TrilinosThyraModelEvaluator::evalModelImpl( const ::Thyra::ModelEvaluatorBa
 ****************************************************************/
 Teuchos::RCP<const ::Thyra::VectorSpaceBase<double> > TrilinosThyraModelEvaluator::get_x_space() const
 {
-    boost::shared_ptr<LinearAlgebra::ThyraVectorWrapper> vec( 
+    AMP::shared_ptr<LinearAlgebra::ThyraVectorWrapper> vec( 
         new LinearAlgebra::ThyraVectorWrapper(std::vector<LinearAlgebra::Vector::shared_ptr>(1,d_icVec) ) );    
     Teuchos::RCP<LinearAlgebra::ThyraVectorSpaceWrapper> vector_space(new LinearAlgebra::ThyraVectorSpaceWrapper(vec));
     return vector_space;
 }
 Teuchos::RCP<const ::Thyra::VectorSpaceBase<double> > TrilinosThyraModelEvaluator::get_f_space() const
 {
-    boost::shared_ptr<LinearAlgebra::ThyraVectorWrapper> vec( 
+    AMP::shared_ptr<LinearAlgebra::ThyraVectorWrapper> vec( 
         new LinearAlgebra::ThyraVectorWrapper(std::vector<LinearAlgebra::Vector::shared_ptr>(1,d_icVec) ) );    
     Teuchos::RCP<LinearAlgebra::ThyraVectorSpaceWrapper> vector_space(new LinearAlgebra::ThyraVectorSpaceWrapper(vec));
     return vector_space;
@@ -174,13 +174,13 @@ Teuchos::RCP< ::Thyra::PreconditionerBase<double> > TrilinosThyraModelEvaluator:
 * Return the views to the TrilinosLinearOP                      *
 ****************************************************************/
 template<class T> static void nullDeleter( T* ) {};
-boost::shared_ptr<AMP::Solver::TrilinosLinearOP> TrilinosThyraModelEvaluator::view( Teuchos::RCP< Thyra::LinearOpBase<double> > op )
+AMP::shared_ptr<AMP::Solver::TrilinosLinearOP> TrilinosThyraModelEvaluator::view( Teuchos::RCP< Thyra::LinearOpBase<double> > op )
 {
     if ( op.is_null() )
-        return boost::shared_ptr<AMP::Solver::TrilinosLinearOP>();
+        return AMP::shared_ptr<AMP::Solver::TrilinosLinearOP>();
     AMP::Solver::TrilinosLinearOP* tmp = dynamic_cast<AMP::Solver::TrilinosLinearOP*>(op.get());
     AMP_ASSERT(tmp!=NULL);
-    return boost::shared_ptr<AMP::Solver::TrilinosLinearOP>( tmp, nullDeleter<AMP::Solver::TrilinosLinearOP> );
+    return AMP::shared_ptr<AMP::Solver::TrilinosLinearOP>( tmp, nullDeleter<AMP::Solver::TrilinosLinearOP> );
 }
 
 

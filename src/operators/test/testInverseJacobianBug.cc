@@ -1,5 +1,5 @@
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include <iostream>
 #include <cstdio>
@@ -43,7 +43,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
   
-  boost::shared_ptr< ::Mesh > mesh(new ::Mesh(3));
+  AMP::shared_ptr< ::Mesh > mesh(new ::Mesh(3));
   MeshTools::Generation::build_cube((*(mesh.get())), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, HEX8, false);
 
   ::Elem* elemPtr = mesh->elem(0);
@@ -79,8 +79,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
   libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
 
-  boost::shared_ptr < ::FEType > feType( new ::FEType(feTypeOrder, feFamily) );
-  boost::shared_ptr < ::FEBase > fe( (::FEBase::build(3, (*feType))).release() );
+  AMP::shared_ptr < ::FEType > feType( new ::FEType(feTypeOrder, feFamily) );
+  AMP::shared_ptr < ::FEBase > fe( (::FEBase::build(3, (*feType))).release() );
 
 //  const std::vector<std::vector<Real> > &phi = fe->get_phi();
   const std::vector<std::vector<Real> > &dphidxi   = fe->get_dphidxi();
@@ -97,7 +97,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   
   libMeshEnums::QuadratureType qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>("QGAUSS");
   libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
-  boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, 3, qruleOrder)).release() );
+  AMP::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, 3, qruleOrder)).release() );
  
   fe->attach_quadrature_rule( qrule.get() );
     

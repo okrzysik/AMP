@@ -11,7 +11,7 @@ namespace Operator {
 
 
 // Constructor
-SubchannelToPointMap::SubchannelToPointMap(const boost::shared_ptr<SubchannelToPointMapParameters>& params)
+SubchannelToPointMap::SubchannelToPointMap(const AMP::shared_ptr<SubchannelToPointMapParameters>& params)
 {
     // Copy the inputs
     AMP_ASSERT(params!=NULL);
@@ -61,7 +61,7 @@ void SubchannelToPointMap::apply(AMP::LinearAlgebra::Vector::const_shared_ptr, A
             double output_face = 0.0;
             faceDOFManager->getDOFs( it->globalID(), dofs );
             AMP_ASSERT(dofs.size()==2);
-            std::map<std::string, boost::shared_ptr<std::vector<double> > > subchannelArgMap;
+            std::map<std::string, AMP::shared_ptr<std::vector<double> > > subchannelArgMap;
             subchannelArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_scale*uInternal->getValueByGlobalID(dofs[0]))));
             subchannelArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P_scale*uInternal->getValueByGlobalID(dofs[1]))));
             if ( d_outputVar->getName()=="Density" ) {

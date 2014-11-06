@@ -7,10 +7,9 @@
 #include <map>
 #include <set>
 
-#include "boost/smart_ptr/shared_ptr.hpp"
-
 #include "utils/AMP_MPI.h"
 #include "utils/Database.h"
+#include "utils/shared_ptr.h"
 
 #ifdef USE_AMP_MESH
     #include "ampmesh/Mesh.h"
@@ -38,7 +37,7 @@ class Writer
 public:
 
     //!  Convenience typedef
-    typedef boost::shared_ptr<AMP::Utilities::Writer>  shared_ptr;
+    typedef AMP::shared_ptr<AMP::Utilities::Writer>  shared_ptr;
 
     /**
      * \brief   Function to build a writer
@@ -49,14 +48,14 @@ public:
      *                        otherwise an empty writer will be created.
      *               "Ascii" - A simple ascii writer
      */
-    static boost::shared_ptr<AMP::Utilities::Writer> buildWriter( std::string type );
+    static AMP::shared_ptr<AMP::Utilities::Writer> buildWriter( std::string type );
 
     /**
      * \brief   Function to build a writer
      * \details This function will build a default writer for use.
      * \param db   Input database for the writer
      */
-    static boost::shared_ptr<AMP::Utilities::Writer> buildWriter( boost::shared_ptr<AMP::Database> db );
+    static AMP::shared_ptr<AMP::Utilities::Writer> buildWriter( AMP::shared_ptr<AMP::Database> db );
 
     //!  Default constructor
     Writer();

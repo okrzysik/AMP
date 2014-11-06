@@ -2,7 +2,7 @@
 #define included_AMP_Map1Dto3D
 
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "operators/Operator.h"
 #include "operators/OperatorParameters.h"
 #include "operators/map/MapOperator.h"
@@ -28,7 +28,7 @@ class Map1Dto3D : public MapOperator
 public:
 
     //! Default Constructor
-    Map1Dto3D(const boost::shared_ptr<OperatorParameters>& params);
+    Map1Dto3D(const AMP::shared_ptr<OperatorParameters>& params);
 
     //! De-constructor
     virtual ~Map1Dto3D() { }
@@ -37,7 +37,7 @@ public:
       This function reads the entries of the database for the operator
       and can also be used to change the parameters if required.
      */
-    void reset(const boost::shared_ptr<OperatorParameters>& );
+    void reset(const AMP::shared_ptr<OperatorParameters>& );
 
     /**
       For this operator the apply function would map the solution by injunction from 
@@ -97,9 +97,9 @@ protected:
 
     AMP::LinearAlgebra::Vector::shared_ptr outputVec;
 
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
 
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; 
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; 
 
     std::vector<double> d_zLocations; /**< std vector to store 1D z locations. */
 

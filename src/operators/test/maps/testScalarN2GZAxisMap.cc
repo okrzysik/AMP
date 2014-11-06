@@ -60,11 +60,11 @@ void  setGpBoundary ( int id , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::
     libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
     libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
 
-    boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
-    boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
+    AMP::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
+    AMP::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
 
     libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
-    boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
+    AMP::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 
@@ -94,21 +94,21 @@ void  setGpBoundary ( int id , AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::
 void  runTest ( const std::string &fname , AMP::UnitTest *ut )
 {
     // Read the input file
-    boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
+    AMP::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
     AMP::InputManager::getManager()->parseInputFile ( fname , input_db );
     input_db->printClassData (AMP::plog);
 
     // Get the Mesh database and create the mesh parameters
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
-    boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(mesh_db));
     params->setComm(globalComm);
 
     // Create the meshes from the input database
-    boost::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
+    AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh(params);
 
     // Get the database for the node to node maps
-    boost::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
+    AMP::shared_ptr<AMP::Database> map_db = input_db->getDatabase( "MeshToMeshMaps" );
 
     // Create a simple DOFManager and the vectors
     int DOFsPerObject = map_db->getInteger("DOFsPerObject");
@@ -120,7 +120,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
 
     // Test the creation/destruction of ScalarN2GZAxisMap (no apply call)
     try { 
-        boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  gapmaps;
+        AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  gapmaps;
         gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarN2GZAxisMap> ( mesh, map_db );
         gapmaps.reset();
         ut->passes("Created / Destroyed ScalarN2GZAxisMap");
@@ -129,7 +129,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     }
     
     // Perform a complete test of ScalarN2GZAxisMap
-    boost::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  gapmaps;
+    AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator>  gapmaps;
     gapmaps = AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarN2GZAxisMap> ( mesh, map_db );
 
     // Create the vectors

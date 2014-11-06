@@ -15,7 +15,7 @@
 #define included_String
 #endif
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP {
 
@@ -67,7 +67,7 @@ namespace AMP {
    * 
    * 
    * This Appender could be use to log warning message using:
-   * boost::shared_ptr<Logger::Appender> appender = new ConsoleAppender()
+   * AMP::shared_ptr<Logger::Appender> appender = new ConsoleAppender()
    * Logger.getInstance() -> setWarningAppender(appender);
    *
    * Normally this would be done at the start of an application.
@@ -77,7 +77,7 @@ namespace AMP {
 
     public:
 
-      typedef boost::shared_ptr<Logger> shared_ptr;
+      typedef AMP::shared_ptr<Logger> shared_ptr;
 
       /*!
        * Interface for class that does the logging for the Logger.
@@ -88,7 +88,7 @@ namespace AMP {
 
         public:
 
-          typedef boost::shared_ptr<Appender> shared_ptr;
+          typedef AMP::shared_ptr<Appender> shared_ptr;
 
           /*! 
            * Log a message with file and location information.
@@ -140,7 +140,7 @@ namespace AMP {
        *
        * Default is to log to perr.
        */
-      void setAbortAppender(boost::shared_ptr<Appender> appender);
+      void setAbortAppender(AMP::shared_ptr<Appender> appender);
 
       /*!
        * Set the Appender for logging warning messages to an
@@ -148,7 +148,7 @@ namespace AMP {
        *
        * Default is to log to plog.
        */
-      void setWarningAppender(boost::shared_ptr<Appender> appender);
+      void setWarningAppender(AMP::shared_ptr<Appender> appender);
 
       /*!
        * Set the Appender for logging debug messages to an
@@ -156,7 +156,7 @@ namespace AMP {
        *
        * Default is to log to plog.
        */
-      void setDebugAppender(boost::shared_ptr<Appender> appender);
+      void setDebugAppender(AMP::shared_ptr<Appender> appender);
 
 
       /*!
@@ -196,9 +196,9 @@ namespace AMP {
       /*
        * Appenders for each type of logging.
        */
-      boost::shared_ptr<Appender> d_abort_appender;
-      boost::shared_ptr<Appender> d_warning_appender;
-      boost::shared_ptr<Appender> d_debug_appender;
+      AMP::shared_ptr<Appender> d_abort_appender;
+      AMP::shared_ptr<Appender> d_warning_appender;
+      AMP::shared_ptr<Appender> d_debug_appender;
 
       /*
        * Logging state (on or off)

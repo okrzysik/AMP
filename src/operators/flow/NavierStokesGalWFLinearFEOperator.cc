@@ -9,11 +9,11 @@ namespace AMP {
   namespace Operator {
 /*
     NavierStokesGalWFLinearFEOperator :: NavierStokesGalWFLinearFEOperator (
-        const boost::shared_ptr<NavierStokesLinearFEOperatorParameters> & params)
+        const AMP::shared_ptr<NavierStokesLinearFEOperatorParameters> & params)
       : LinearFEOperator (params) {
         AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
 
-        d_flowGalWFLinElem = boost::dynamic_pointer_cast<NavierStokesGalWFLinearElement>(d_elemOp);
+        d_flowGalWFLinElem = AMP::dynamic_pointer_cast<NavierStokesGalWFLinearElement>(d_elemOp);
 
         AMP_INSIST( ((d_flowGalWFLinElem.get()) != NULL), "d_elemOp is not of type NavierStokesGalWFLinearElement" );
 
@@ -29,7 +29,7 @@ namespace AMP {
         }//end for i
 
         AMP_INSIST( params->d_db->keyExists("ActiveInputVariables"), "key not found" );
-        boost::shared_ptr<AMP::Database> activeInpVar_db = params->d_db->getDatabase("ActiveInputVariables");
+        AMP::shared_ptr<AMP::Database> activeInpVar_db = params->d_db->getDatabase("ActiveInputVariables");
 
         AMP_INSIST(activeInpVar_db->keyExists("VELOCITY"), "VELOCITY must be active");
         AMP_INSIST(activeInpVar_db->keyExists("PRESSURE"), "VELOCITY must be active");
@@ -60,10 +60,10 @@ namespace AMP {
         }
       }
 
-    void NavierStokesGalWFLinearFEOperator :: preAssembly(const boost::shared_ptr<OperatorParameters>& oparams) 
+    void NavierStokesGalWFLinearFEOperator :: preAssembly(const AMP::shared_ptr<OperatorParameters>& oparams) 
     {
 
-      boost::shared_ptr<NavierStokesLinearFEOperatorParameters> params = boost::dynamic_pointer_cast<NavierStokesLinearFEOperatorParameters>(oparams);
+      AMP::shared_ptr<NavierStokesLinearFEOperatorParameters> params = AMP::dynamic_pointer_cast<NavierStokesLinearFEOperatorParameters>(oparams);
 
       if((d_inVec[NavierStokes::VELOCITY].get() == NULL) and (params->d_frozenVec[NavierStokes::VELOCITY].get() != NULL)) {
         d_inVec[NavierStokes::VELOCITY] = params->d_frozenVec[NavierStokes::VELOCITY]->cloneVector();

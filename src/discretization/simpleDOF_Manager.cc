@@ -13,12 +13,12 @@ namespace Discretization {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-DOFManager::shared_ptr  simpleDOFManager::create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, 
+DOFManager::shared_ptr  simpleDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh, 
     AMP::Mesh::GeomType type, int gcw, int DOFsPerObject, bool split )
 {
     if ( mesh.get()==NULL )
         return DOFManager::shared_ptr();
-    if ( split && boost::dynamic_pointer_cast<AMP::Mesh::MultiMesh>(mesh).get()!=NULL ) {
+    if ( split && AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>(mesh).get()!=NULL ) {
         // We want to split the DOFs by the mesh
         std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getLocalBaseMeshIDs();
         std::vector<DOFManager::shared_ptr> managers;
@@ -27,11 +27,11 @@ DOFManager::shared_ptr  simpleDOFManager::create( boost::shared_ptr<AMP::Mesh::M
             if ( subMesh.get() != NULL )
                 managers.push_back( create( subMesh, type, gcw, DOFsPerObject, false ) );
         }
-        boost::shared_ptr<multiDOFManager> rtn( new multiDOFManager( mesh->getComm(), managers ) );
+        AMP::shared_ptr<multiDOFManager> rtn( new multiDOFManager( mesh->getComm(), managers ) );
         return rtn;
     } 
     // We are ready to create the simpleDOFManager
-    boost::shared_ptr<simpleDOFManager> rtn( new simpleDOFManager() );
+    AMP::shared_ptr<simpleDOFManager> rtn( new simpleDOFManager() );
     rtn->d_mesh = mesh;
     rtn->d_type = type;
     rtn->d_comm = mesh->getComm();
@@ -41,7 +41,7 @@ DOFManager::shared_ptr  simpleDOFManager::create( boost::shared_ptr<AMP::Mesh::M
     rtn->initialize();
     return rtn;
 }
-DOFManager::shared_ptr  simpleDOFManager::create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, const AMP::Mesh::MeshIterator it1, const AMP::Mesh::MeshIterator it2, int DOFsPerElement )
+DOFManager::shared_ptr  simpleDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh, const AMP::Mesh::MeshIterator it1, const AMP::Mesh::MeshIterator it2, int DOFsPerElement )
 {
     // Check the iterators
     AMP::Mesh::MeshIterator intersection = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Intersection, it1, it2 );
@@ -60,7 +60,7 @@ DOFManager::shared_ptr  simpleDOFManager::create( boost::shared_ptr<AMP::Mesh::M
         ++tmp;
     }
     // Create the simpleDOFManager
-    boost::shared_ptr<simpleDOFManager> rtn( new simpleDOFManager() );
+    AMP::shared_ptr<simpleDOFManager> rtn( new simpleDOFManager() );
     rtn->d_mesh = mesh;
     rtn->d_type = type;
     rtn->d_comm = mesh->getComm();
@@ -81,7 +81,7 @@ DOFManager::shared_ptr  simpleDOFManager::create( const AMP::Mesh::MeshIterator 
         ++tmp;
     }
     // Create the simpleDOFManager
-    boost::shared_ptr<simpleDOFManager> rtn( new simpleDOFManager() );
+    AMP::shared_ptr<simpleDOFManager> rtn( new simpleDOFManager() );
     rtn->d_mesh = AMP::Mesh::Mesh::shared_ptr();
     rtn->d_type = type;
     rtn->d_comm = AMP_MPI(AMP_COMM_SELF);
@@ -156,7 +156,7 @@ void simpleDOFManager::initialize()
 /****************************************************************
 * Subset the DOF manager                                        *
 ****************************************************************/
-boost::shared_ptr<DOFManager>  simpleDOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
+AMP::shared_ptr<DOFManager>  simpleDOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
 {
 
     // Check if we are dealing with a single mesh for both the internal and desired mesh
@@ -165,13 +165,13 @@ boost::shared_ptr<DOFManager>  simpleDOFManager::subset( const AMP::Mesh::Mesh::
         return shared_from_this();
     } else if ( mesh->isBaseMesh() && d_isBaseMesh ) {
         // Both meshes are base meshes and the ids do not match
-        return boost::shared_ptr<DOFManager>();
+        return AMP::shared_ptr<DOFManager>();
     } else if ( d_baseMeshIDs.size()==1 && mesh->isBaseMesh() ) {
         // The subsetting mesh is a base mesh and we only contain one mesh
         if ( d_baseMeshIDs[0]==mesh->meshID() )
             return shared_from_this();
         else
-            return boost::shared_ptr<DOFManager>();
+            return AMP::shared_ptr<DOFManager>();
     } 
     // Check if the desired mesh is a multimesh that contains the current mesh
     std::vector<AMP::Mesh::MeshID> ids = mesh->getLocalMeshIDs();

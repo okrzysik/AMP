@@ -48,22 +48,22 @@ void nekPipeOperator(AMP::UnitTest *ut)
 
     // Build new database
     AMP::pout << "Building Input Database" << std::endl;
-    boost::shared_ptr< AMP::InputDatabase > nekDB( new AMP::InputDatabase("Nek_DB") );
+    AMP::shared_ptr< AMP::InputDatabase > nekDB( new AMP::InputDatabase("Nek_DB") );
     nekDB->putString("NekProblemName","pipe");
 
     // Build operator params
     typedef AMP::Operator::NekMoabOperatorParameters NekOpParams;
-    typedef boost::shared_ptr< NekOpParams >         SP_NekOpParams;
+    typedef AMP::shared_ptr< NekOpParams >         SP_NekOpParams;
 
     AMP::pout << "Building Nek Operator Parameters" << std::endl;
     SP_NekOpParams nekParams( new NekOpParams( nekDB ) );
 
     // Build operator
     typedef AMP::Operator::NekMoabOperator   NekOp;
-    typedef boost::shared_ptr< NekOp >       SP_NekOp;
+    typedef AMP::shared_ptr< NekOp >       SP_NekOp;
 
     typedef AMP::Operator::MoabBasedOperator MoabBasedOp;
-    typedef boost::shared_ptr< MoabBasedOp > SP_MoabBasedOp;
+    typedef AMP::shared_ptr< MoabBasedOp > SP_MoabBasedOp;
 
     AMP::pout << "Building Nek Operator" << std::endl;
     SP_MoabBasedOp nekOp( new NekOp( nekParams ) );
@@ -73,7 +73,7 @@ void nekPipeOperator(AMP::UnitTest *ut)
     nekOp->apply( nullVec, nullVec, nullVec, 0.0, 0.0 );
 
     // Read AMP pellet mesh from file
-    boost::shared_ptr<AMP::Database> meshDB = nekDB->putDatabase("Mesh");
+    AMP::shared_ptr<AMP::Database> meshDB = nekDB->putDatabase("Mesh");
     meshDB->putString("FileName","pellet_1x.e");
     meshDB->putString("MeshName","fuel");
     meshDB->putString("MeshType","libMesh");
@@ -87,7 +87,7 @@ void nekPipeOperator(AMP::UnitTest *ut)
     // Create Mesh
     AMP::pout << "Creating AMP mesh" << std::endl;
     typedef AMP::Mesh::MeshParameters        MeshParams;
-    typedef boost::shared_ptr< MeshParams >  SP_MeshParams;
+    typedef AMP::shared_ptr< MeshParams >  SP_MeshParams;
 
     typedef AMP::Mesh::Mesh                     AMPMesh;
     typedef AMP::Mesh::Mesh::shared_ptr         SP_AMPMesh;
@@ -100,10 +100,10 @@ void nekPipeOperator(AMP::UnitTest *ut)
     // Create Parameters for Map Operator
     AMP::pout << "Creating map operator" << std::endl;
     typedef AMP::Operator::MoabMapOperatorParameters    MoabMapParams;
-    typedef boost::shared_ptr< MoabMapParams >          SP_MoabMapParams;
+    typedef AMP::shared_ptr< MoabMapParams >          SP_MoabMapParams;
 
     typedef AMP::Operator::MoabMapOperator              MoabMap;
-    typedef boost::shared_ptr< MoabMap>                 SP_MoabMap;
+    typedef AMP::shared_ptr< MoabMap>                 SP_MoabMap;
 
     nekDB->putString("MoabMapVariable","VPRESS");
     nekDB->putString("InterpolateToType","GaussPoint");
@@ -116,7 +116,7 @@ void nekPipeOperator(AMP::UnitTest *ut)
 
     // Create variable to hold pressure data
     typedef AMP::LinearAlgebra::Variable AMPVar;
-    typedef boost::shared_ptr< AMPVar >  SP_AMPVar;
+    typedef AMP::shared_ptr< AMPVar >  SP_AMPVar;
 
     SP_AMPVar allGPPressures( new AMPVar( "AllGaussPointPressures" ) );
     SP_AMPVar allNodePressures( new AMPVar( "AllNodalPressures" ) );

@@ -23,13 +23,13 @@ static T* getPtr( std::vector<T> &x ) {
 /********************************************************
 * Constructor                                           *
 ********************************************************/
-NodeToNodeMap::NodeToNodeMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> & params )
+NodeToNodeMap::NodeToNodeMap ( const AMP::shared_ptr<AMP::Operator::OperatorParameters> & params )
        : AMP::Operator::AsyncMapOperator ( params )
 {
     // Cast the params appropriately
     d_OutputVector = AMP::LinearAlgebra::Vector::shared_ptr ();
     AMP_ASSERT ( params );
-    NodeToNodeMapParameters &Params = *(boost::dynamic_pointer_cast<NodeToNodeMapParameters> ( params ) );
+    NodeToNodeMapParameters &Params = *(AMP::dynamic_pointer_cast<NodeToNodeMapParameters> ( params ) );
 
     // Set class members
     dim = -1;

@@ -12,7 +12,7 @@ namespace Operator {
   class NeumannVectorCorrectionParameters : public OperatorParameters {
     public :
 
-      NeumannVectorCorrectionParameters(const boost::shared_ptr<AMP::Database> &db)
+      NeumannVectorCorrectionParameters(const AMP::shared_ptr<AMP::Database> &db)
         : OperatorParameters(db) {  }
 
       virtual ~NeumannVectorCorrectionParameters() { }
@@ -21,7 +21,7 @@ namespace Operator {
  
       AMP::LinearAlgebra::Vector::shared_ptr d_variableFlux;
 
-      boost::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
+      AMP::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 
   };
 

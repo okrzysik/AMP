@@ -10,7 +10,7 @@ namespace AMP {
     class TractionBoundaryOperatorParameters : public OperatorParameters {
       public :
 
-        TractionBoundaryOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
+        TractionBoundaryOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
           : OperatorParameters(db) {  }
 
         virtual ~TractionBoundaryOperatorParameters() { }

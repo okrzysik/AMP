@@ -7,7 +7,7 @@
 namespace AMP {
   namespace Operator {
 
-    NonlinearBVPOperator :: NonlinearBVPOperator(const boost::shared_ptr<BVPOperatorParameters>& params)
+    NonlinearBVPOperator :: NonlinearBVPOperator(const AMP::shared_ptr<BVPOperatorParameters>& params)
       : Operator (params) 
     {
       d_volumeOperator = params->d_volumeOperator;
@@ -20,7 +20,7 @@ namespace AMP {
           AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r, double a, double b)
       {
         PROFILE_START("apply");
-        boost::shared_ptr<AMP::LinearAlgebra::Vector> nullRhs;
+        AMP::shared_ptr<AMP::LinearAlgebra::Vector> nullRhs;
 
         AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
 
@@ -81,11 +81,11 @@ namespace AMP {
         PROFILE_STOP("apply");
       }
 
-    void NonlinearBVPOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
+    void NonlinearBVPOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params)
     {
       PROFILE_START("reset");
-      boost::shared_ptr<BVPOperatorParameters> inParams = 
-        boost::dynamic_pointer_cast<BVPOperatorParameters>(params);
+      AMP::shared_ptr<BVPOperatorParameters> inParams = 
+        AMP::dynamic_pointer_cast<BVPOperatorParameters>(params);
 
       AMP_INSIST( (inParams.get() != NULL), "NonlinearBVPOperator :: reset Null parameter" );
 
@@ -94,11 +94,11 @@ namespace AMP {
       PROFILE_STOP("reset");
     }
 
-    boost::shared_ptr<OperatorParameters> NonlinearBVPOperator :: getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u)
+    AMP::shared_ptr<OperatorParameters> NonlinearBVPOperator :: getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u)
     {
       PROFILE_START("getJacobianParameters");
-      boost::shared_ptr<AMP::Database> db;
-      boost::shared_ptr<BVPOperatorParameters> outParams(new BVPOperatorParameters(db));
+      AMP::shared_ptr<AMP::Database> db;
+      AMP::shared_ptr<BVPOperatorParameters> outParams(new BVPOperatorParameters(db));
 
       outParams->d_volumeOperatorParams = d_volumeOperator->getJacobianParameters(u);
       outParams->d_boundaryOperatorParams = d_boundaryOperator->getJacobianParameters(u);

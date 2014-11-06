@@ -12,7 +12,7 @@ namespace AMP {
 namespace Operator {
 
 
-LinearFEOperator :: LinearFEOperator(const boost::shared_ptr<LinearFEOperatorParameters>& params) :
+LinearFEOperator :: LinearFEOperator(const AMP::shared_ptr<LinearFEOperatorParameters>& params) :
     LinearOperator(params),
     d_currElemPtr(NULL)
 { 
@@ -28,7 +28,7 @@ LinearFEOperator :: LinearFEOperator(const boost::shared_ptr<LinearFEOperatorPar
 }
 
 
-void LinearFEOperator :: reset(const boost::shared_ptr<OperatorParameters>& params) 
+void LinearFEOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params) 
 {
     PROFILE_START("reset");
     AMP_INSIST( (params != NULL), "NULL parameter" );

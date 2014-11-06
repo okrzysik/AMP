@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 /* AMP files */
 #include "MechanicsElement.h"
@@ -28,7 +28,7 @@ public :
     enum MaterialUpdateType {RESET, JACOBIAN};
 
     //! Constructor.
-    MechanicsNonlinearElement(const boost::shared_ptr<ElementOperationParameters>& params) :
+    MechanicsNonlinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
         MechanicsElement(params),
         d_elementOutputVector(NULL)
     { 

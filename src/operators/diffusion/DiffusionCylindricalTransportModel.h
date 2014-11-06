@@ -19,7 +19,7 @@ typedef ElementPhysicsModelParameters DiffusionCylindricalTransportModelParamete
 class DiffusionCylindricalTransportModel  : public DiffusionTransportTensorModel
 {
 public:
-	DiffusionCylindricalTransportModel(const boost::shared_ptr<DiffusionTransportTensorModelParameters> params);
+	DiffusionCylindricalTransportModel(const AMP::shared_ptr<DiffusionTransportTensorModelParameters> params);
 
     /**
      * \brief transport model returning a vector of tensors for cylindrical symmetry
@@ -27,8 +27,8 @@ public:
      * \param args args[j][i] is j-th material evalv argument
      * \param Coordinates vector of points that define the spatial location
      */
-    virtual void getTensorTransport(std::vector< std::vector< boost::shared_ptr<std::vector<double> > > >& result,
-    		 std::map<std::string, boost::shared_ptr<std::vector<double> > >& args,
+    virtual void getTensorTransport(std::vector< std::vector< AMP::shared_ptr<std::vector<double> > > >& result,
+    		 std::map<std::string, AMP::shared_ptr<std::vector<double> > >& args,
              const std::vector<libMesh::Point>& Coordinates=d_DummyCoords);
 
 private:

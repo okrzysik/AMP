@@ -22,7 +22,7 @@ namespace Operator {
 
 
 // Constructor
-NodeToGaussPointOperator::NodeToGaussPointOperator (const boost::shared_ptr<OperatorParameters> & params) : Operator (params)
+NodeToGaussPointOperator::NodeToGaussPointOperator (const AMP::shared_ptr<OperatorParameters> & params) : Operator (params)
 {
     PROFILE_START("NodeToGaussPointOperator");
     d_NodalVariable.reset(new AMP::LinearAlgebra::Variable(params->d_db->getString("InputVariable")));

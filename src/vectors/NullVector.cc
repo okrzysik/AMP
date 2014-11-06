@@ -30,9 +30,9 @@ NullVector::~NullVector()
 }
 
 
-boost::shared_ptr<ParameterBase> NullVector::getParameters () 
+AMP::shared_ptr<ParameterBase> NullVector::getParameters () 
 { 
-    return boost::shared_ptr<ParameterBase> (); 
+    return AMP::shared_ptr<ParameterBase> (); 
 }
 
 

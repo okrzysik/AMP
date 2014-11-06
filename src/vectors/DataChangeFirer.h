@@ -1,7 +1,7 @@
 #ifndef included_AMP_DataChangeFirer_h
 #define included_AMP_DataChangeFirer_h
 
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include <algorithm>
 #include <deque>
 

@@ -9,7 +9,7 @@ namespace AMP {
 namespace Solver {
 
 
-BandedSolver::BandedSolver( boost::shared_ptr<SolverStrategyParameters> parameters ):
+BandedSolver::BandedSolver( AMP::shared_ptr<SolverStrategyParameters> parameters ):
     SolverStrategy(parameters),
     AB(NULL), IPIV(NULL), KL(0), KU(0)
 {
@@ -24,7 +24,7 @@ BandedSolver::~BandedSolver()
 }
 
 
-void BandedSolver::reset( boost::shared_ptr<SolverStrategyParameters> parameters ) 
+void BandedSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters ) 
 {
     PROFILE_START("reset");
 
@@ -41,8 +41,8 @@ void BandedSolver::reset( boost::shared_ptr<SolverStrategyParameters> parameters
     }
 
     // Get the linear operator
-    boost::shared_ptr<AMP::Operator::LinearOperator> linear_op = 
-        boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
+    AMP::shared_ptr<AMP::Operator::LinearOperator> linear_op = 
+        AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
     AMP_INSIST(linear_op.get()!=NULL, "ERROR: BandedSolver requires a linear operator");
 
     // Get the matrix
@@ -103,18 +103,18 @@ void BandedSolver::reset( boost::shared_ptr<SolverStrategyParameters> parameters
 }
 
 
-void BandedSolver::resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params) 
+void BandedSolver::resetOperator(const AMP::shared_ptr<AMP::Operator::OperatorParameters> params) 
 {
     PROFILE_START("resetOperator");
     AMP_INSIST((d_pOperator.get() != NULL), "ERROR: BandedSolver::resetOperator() operator cannot be NULL");
     d_pOperator->reset(params);
-    reset( boost::shared_ptr<SolverStrategyParameters>() );
+    reset( AMP::shared_ptr<SolverStrategyParameters>() );
     PROFILE_STOP("resetOperator");
 }
 
 
-void BandedSolver::solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> u )
+void BandedSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START("solve");
     

@@ -35,16 +35,16 @@ public:
     * Construct and initialize a parameter list according to input
     * data.  See Application for a list of required and optional keywords.
     */
-   NonlinearKrylovAcceleratorParameters( const boost::shared_ptr<AMP::Database> &database );
+   NonlinearKrylovAcceleratorParameters( const AMP::shared_ptr<AMP::Database> &database );
 
    /**
     * Destructor.
     */
    virtual ~NonlinearKrylovAcceleratorParameters();
 
-   boost::shared_ptr< SolverStrategy> d_pPreconditioner;
+   AMP::shared_ptr< SolverStrategy> d_pPreconditioner;
 
-   boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pInitialGuess;
+   AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pInitialGuess;
 
 };
 

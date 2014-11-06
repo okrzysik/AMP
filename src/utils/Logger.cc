@@ -154,17 +154,17 @@ void Logger::logDebug(const std::string &message,
 /*
  * Set appenders.
  */
-void Logger::setAbortAppender(boost::shared_ptr<Appender> appender) {
+void Logger::setAbortAppender(AMP::shared_ptr<Appender> appender) {
    d_abort_appender = appender;
 }
 
 
-void Logger::setWarningAppender(boost::shared_ptr<Appender> appender) {
+void Logger::setWarningAppender(AMP::shared_ptr<Appender> appender) {
    d_warning_appender = appender;
 }
 
 
-void Logger::setDebugAppender(boost::shared_ptr<Appender> appender) {
+void Logger::setDebugAppender(AMP::shared_ptr<Appender> appender) {
    d_debug_appender = appender;
 }
 

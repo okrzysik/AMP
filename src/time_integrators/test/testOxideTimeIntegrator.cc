@@ -17,13 +17,13 @@ void OxideTest( AMP::UnitTest *ut, std::string input_file )
     // Load the input file    
     std::string log_file = input_file + ".log";  
     AMP::PIO::logOnlyNodeZero(log_file);
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
     input_db->printClassData(AMP::plog);
     
     // Get the Mesh database and create the mesh parameters
-    boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
     params->setComm(globalComm);
 
@@ -53,8 +53,8 @@ void OxideTest( AMP::UnitTest *ut, std::string input_file )
     AMP_ASSERT(fabs(temp_vec->min()-T0)/T0<1e-9);
 
     // Create the oxide time integrator
-    boost::shared_ptr<AMP::TimeIntegrator::OxideTimeIntegratorParameters> parameters( 
-        new AMP::TimeIntegrator::OxideTimeIntegratorParameters(boost::shared_ptr<AMP::Database>()) );
+    AMP::shared_ptr<AMP::TimeIntegrator::OxideTimeIntegratorParameters> parameters( 
+        new AMP::TimeIntegrator::OxideTimeIntegratorParameters(AMP::shared_ptr<AMP::Database>()) );
     parameters->d_mesh = surface;
     parameters->d_temp = temp_vec;
     parameters->depth  = 1e-3;

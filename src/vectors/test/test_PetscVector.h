@@ -80,10 +80,10 @@ public:
         int a , b;
         VecGetOwnershipRange ( ans, &a, &b );
         AMP_ASSERT(b-a==(int)localSize);
-        boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams( 
+        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams( 
             new AMP::LinearAlgebra::NativePetscVectorParameters( ans, true ) );
         npvParams->d_Deleteable = true;
-        boost::shared_ptr<AMP::LinearAlgebra::NativePetscVector> retVal( new AMP::LinearAlgebra::NativePetscVector( npvParams ) );
+        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVector> retVal( new AMP::LinearAlgebra::NativePetscVector( npvParams ) );
         retVal->setVariable ( AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable( "petsc vector" ) ) );
         return retVal;
     }
@@ -101,7 +101,7 @@ public:
 
     static void  destroyNativeVector ( AMP::LinearAlgebra::Vector::shared_ptr rhs )
     {
-        destroyNativeVector ( *boost::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVector> ( rhs ) ); 
+        destroyNativeVector ( *AMP::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVector> ( rhs ) ); 
     }
 
     static AMP::LinearAlgebra::Vector::shared_ptr getManagedVector()

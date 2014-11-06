@@ -350,7 +350,7 @@ std::vector<std::vector<double> > TensorFickProp::evalTensor(
 CylindricallySymmetric::CylindricallySymmetric()
 {
 	d_propertyMap = new std::map<std::string,
-			boost::shared_ptr<AMP::Materials::Property<double> > >();
+			AMP::shared_ptr<AMP::Materials::Property<double> > >();
 	INSERT_PROPERTY_IN_MAP( ScalarRadialFick, CylindricallySymmetric_NS);
 	INSERT_PROPERTY_IN_MAP( RadialFick,       CylindricallySymmetric_NS);
 	INSERT_PROPERTY_IN_MAP( LongitudinalFick, CylindricallySymmetric_NS);

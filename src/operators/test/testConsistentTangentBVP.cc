@@ -42,14 +42,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
   std::string mesh_file = input_db->getString("mesh_file");
 
   const unsigned int mesh_dim = 3;
-  boost::shared_ptr< ::Mesh > mesh(new ::Mesh(mesh_dim));
+  AMP::shared_ptr< ::Mesh > mesh(new ::Mesh(mesh_dim));
 
   if(ut->rank() == 0) {
     AMP::readTestMesh(mesh_file, mesh);
@@ -62,17 +62,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::shared_ptr(
       new AMP::Mesh::libMesh(mesh, "TestMesh") );
 
-  boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinOperator =
-    boost::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
+  AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinOperator =
+    AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "NonlinearMechanicsOperator", input_db ));
 
-  boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechNonlinOperator = 
-    boost::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>( nonlinOperator->getVolumeOperator() );
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel = mechNonlinOperator->getMaterialModel();
+  AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechNonlinOperator = 
+    AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>( nonlinOperator->getVolumeOperator() );
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel = mechNonlinOperator->getMaterialModel();
 
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> linOperator =
-    boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linOperator =
+    AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
           "LinearMechanicsOperator", input_db, elementPhysicsModel));
 
@@ -189,7 +189,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
 int main(int argc, char *argv[]) {
 
   AMP::AMPManager::startup(argc, argv);
-  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(AMP_COMM_WORLD));
+  AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(AMP_COMM_WORLD));
 
   AMP::UnitTest ut;
 

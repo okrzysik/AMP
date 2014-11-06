@@ -15,7 +15,7 @@ class MatrixParameters
 {
 public:
     //! Convenience typedef
-    typedef boost::shared_ptr<MatrixParameters>     shared_ptr;
+    typedef AMP::shared_ptr<MatrixParameters>     shared_ptr;
 
     /** \brief Constructor
       * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )

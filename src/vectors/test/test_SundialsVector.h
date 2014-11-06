@@ -76,7 +76,7 @@ class  SimplePetscVectorFactory
     { VecDestroy ( rhs.getVec() ); }
 
     static void  destroyNativeVector ( AMP::LinearAlgebra::Vector::shared_ptr rhs )
-    {  destroyNativeVector ( *boost::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVector> ( rhs ) ); }
+    {  destroyNativeVector ( *AMP::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVector> ( rhs ) ); }
 
     static AMP::LinearAlgebra::Vector::shared_ptr getManagedVector()
     {

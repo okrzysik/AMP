@@ -75,7 +75,7 @@ class  ColumnTimeOperator: public AMP::Operator::ColumnOperator
      
     */
 
-    ColumnTimeOperator(boost::shared_ptr<AMP::Operator::OperatorParameters > params);
+    ColumnTimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > params);
 
     /**
      * virtual destructor
@@ -87,7 +87,7 @@ class  ColumnTimeOperator: public AMP::Operator::ColumnOperator
      * \param params
      *        parameter object containing parameters to change
      */
-    virtual void reset(const boost::shared_ptr<AMP::Operator::OperatorParameters>& params);
+    virtual void reset(const AMP::shared_ptr<AMP::Operator::OperatorParameters>& params);
     
     /**
      * The apply routine for the column operator calls apply on each of the component operators
@@ -99,46 +99,46 @@ class  ColumnTimeOperator: public AMP::Operator::ColumnOperator
      * \param op
      *            shared pointer to an operator to append to the existing column of operators
      */
-    virtual void append(boost::shared_ptr< AMP::Operator::Operator > op);
+    virtual void append(AMP::shared_ptr< AMP::Operator::Operator > op);
     
     /**
      * This function registers a rhs operator with the TimeOperator class
      @param [in] op : shared pointer to Operator
     */
-    void registerRhsOperator(boost::shared_ptr< AMP::Operator::ColumnOperator > op) {d_pRhsOperator = op; }
+    void registerRhsOperator(AMP::shared_ptr< AMP::Operator::ColumnOperator > op) {d_pRhsOperator = op; }
 
     /**
      * This function registers a mass operator with the TimeOperator class. Not necessary
      * for FD or FVM discretizations
      */
-   void registerMassOperator(boost::shared_ptr< AMP::Operator::ColumnOperator > op) {d_pMassOperator = op; }
+   void registerMassOperator(AMP::shared_ptr< AMP::Operator::ColumnOperator > op) {d_pMassOperator = op; }
     
    /**
     * return a shared pointer to the rhs operator
     */
-    boost::shared_ptr< Operator > getRhsOperator(void){ return d_pRhsOperator; }
+    AMP::shared_ptr< Operator > getRhsOperator(void){ return d_pRhsOperator; }
     
     /**
      * return a shared pointer to the mass operator
      */
-    boost::shared_ptr< Operator > getMassOperator(void){ return d_pMassOperator; }
+    AMP::shared_ptr< Operator > getMassOperator(void){ return d_pMassOperator; }
     
   protected:
     
     ColumnTimeOperator();
     
-    void getFromInput(const boost::shared_ptr<AMP::Database>&);
+    void getFromInput(const AMP::shared_ptr<AMP::Database>&);
     
     /**
      * rhs and mass operators are intentionally chosen to be column
      */
-    boost::shared_ptr< AMP::Operator::ColumnOperator > d_pRhsOperator;
+    AMP::shared_ptr< AMP::Operator::ColumnOperator > d_pRhsOperator;
     
-    boost::shared_ptr< AMP::Operator::ColumnOperator > d_pMassOperator;
+    AMP::shared_ptr< AMP::Operator::ColumnOperator > d_pMassOperator;
     
-    boost::shared_ptr<AMP::LinearAlgebra::Vector>  d_pPreviousTimeSolution;
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector>  d_pPreviousTimeSolution;
     
-    boost::shared_ptr<AMP::LinearAlgebra::Vector>  d_pSourceTerm;
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector>  d_pSourceTerm;
     
   private:
     

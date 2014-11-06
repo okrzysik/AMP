@@ -4,7 +4,7 @@
 #include "utils/Castable.h"
 #include "utils/ParameterBase.h"
 #include "vectors/Vector.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "matrices/MatrixParameters.h"
 
 namespace AMP {
@@ -26,8 +26,8 @@ class Matrix : public Castable
 {
 public:
       //! Convenience typedef
-      typedef  boost::shared_ptr<Matrix>        shared_ptr;
-      typedef  boost::shared_ptr<const Matrix>  const_shared_ptr;
+      typedef  AMP::shared_ptr<Matrix>        shared_ptr;
+      typedef  AMP::shared_ptr<const Matrix>  const_shared_ptr;
 
       /** \brief Constructor
         * \param[in] params  Description of the matrix

@@ -9,7 +9,7 @@ namespace Operator {
     class MassAssemblyParameters : public AssemblyParameters {
         public :
         
-        MassAssemblyParameters(const boost::shared_ptr<AMP::Database> &db)
+        MassAssemblyParameters(const AMP::shared_ptr<AMP::Database> &db)
         : AssemblyParameters(db) {  }
         
         virtual ~MassAssemblyParameters() {}

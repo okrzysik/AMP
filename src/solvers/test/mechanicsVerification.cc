@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 
 /* Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 /* libMesh files */
 #include "libmesh/mesh.h"
@@ -69,14 +69,14 @@ extern "C"{
 }
 
 void computeForcingTerms(AMP::Mesh::Mesh::shared_ptr /* meshAdapter */,
-    boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> /* volumeOp */,
-    boost::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> /* manufacturedSolution */,
+    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> /* volumeOp */,
+    AMP::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> /* manufacturedSolution */,
     AMP::LinearAlgebra::Vector::shared_ptr /* forcingTermsVec */,
     bool /* verbose = false */) {
   // Create integration point vectors and compute values
 AMP_ERROR("Not converted yet"); /*
-  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable>  multivariable = 
-     boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( volumeOp->getInputVariable() );
+  AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable>  multivariable = 
+     AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( volumeOp->getInputVariable() );
   AMP::LinearAlgebra::Variable::shared_ptr variable = multivariable->getVariable(0);
   AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF = 
      AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,3);
@@ -145,7 +145,7 @@ AMP_ERROR("Not converted yet"); /*
 
 /** Compute exact solution */
 void computeExactSolution(AMP::Mesh::Mesh::shared_ptr meshAdapter,
-    boost::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
+    AMP::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
     AMP::LinearAlgebra::Vector::shared_ptr exactSolutionsVec,
     bool verbose = false) {
   // Loop over all nodes
@@ -181,21 +181,21 @@ void linearElasticTest(AMP::UnitTest *ut,
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
   /** Reading the input file */
-  boost::shared_ptr<AMP::InputDatabase> inputDatabase(new AMP::InputDatabase("inputDB"));
+  AMP::shared_ptr<AMP::InputDatabase> inputDatabase(new AMP::InputDatabase("inputDB"));
   AMP::InputManager::getManager()->parseInputFile(inputFile, inputDatabase);
   inputDatabase->printClassData(AMP::plog);
 
   AMP::Mesh::Mesh::shared_ptr meshAdapter;
-  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
+  AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
 
   //Regular grid mesh file
   bool useRegularGridMesh = inputDatabase->getBool("UseRegularGridMesh");
   if(useRegularGridMesh) {
 
-    libmeshInit = boost::shared_ptr<AMP::Mesh::initializeLibMesh>(new  AMP::Mesh::initializeLibMesh(AMP::AMP_MPI(AMP_COMM_WORLD)));
+    libmeshInit = AMP::shared_ptr<AMP::Mesh::initializeLibMesh>(new  AMP::Mesh::initializeLibMesh(AMP::AMP_MPI(AMP_COMM_WORLD)));
     std::string mesh_file = inputDatabase->getString("mesh_file");
     const unsigned int mesh_dim = 3;
-    boost::shared_ptr< ::Mesh > myMesh(new ::Mesh(mesh_dim));
+    AMP::shared_ptr< ::Mesh > myMesh(new ::Mesh(mesh_dim));
 
     bool binaryMeshes = inputDatabase->getBool("BinaryMeshes");
     if(binaryMeshes) {
@@ -215,10 +215,10 @@ void linearElasticTest(AMP::UnitTest *ut,
 //   Create the Mesh.
 //--------------------------------------------------
     AMP_INSIST(inputDatabase->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-    boost::shared_ptr<AMP::Database>  mesh_db = inputDatabase->getDatabase("Mesh");
-    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database>  mesh_db = inputDatabase->getDatabase("Mesh");
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
     mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-    boost::shared_ptr<AMP::Mesh::Mesh> manager = AMP::Mesh::Mesh::buildMesh(mgrParams);
+    AMP::shared_ptr<AMP::Mesh::Mesh> manager = AMP::Mesh::Mesh::buildMesh(mgrParams);
 //--------------------------------------------------
 
     /** Reading the mesh */
@@ -238,17 +238,17 @@ void linearElasticTest(AMP::UnitTest *ut,
 
 
   /** Create the linear mechanics operator */
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
-    boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter, "MechanicsBVPOperator", inputDatabase, elementPhysicsModel));
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOperator =
+    AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter, "MechanicsBVPOperator", inputDatabase, elementPhysicsModel));
   //AMP::LinearAlgebra::Variable::shared_ptr var = bvpOperator->getOutputVariable();
 
 
   /** Create a manufactured solution */
-  boost::shared_ptr<AMP::Database> mmsDatabase = inputDatabase->getDatabase("ManufacturedSolution");
+  AMP::shared_ptr<AMP::Database> mmsDatabase = inputDatabase->getDatabase("ManufacturedSolution");
   AMP::MechanicsManufacturedSolution::MMS::shared_ptr manufacturedSolution = AMP::MechanicsManufacturedSolution::MMSBuilder::createMMS(mmsDatabase);
-  double nu = boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(elementPhysicsModel)->getPoissonsRatio();
-  double E = boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(elementPhysicsModel)->getYoungsModulus();
+  double nu = AMP::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(elementPhysicsModel)->getPoissonsRatio();
+  double E = AMP::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(elementPhysicsModel)->getYoungsModulus();
   manufacturedSolution->setPoissonsRatio(nu);
   manufacturedSolution->setYoungsModulus(E);
 
@@ -300,7 +300,7 @@ void linearElasticTest(AMP::UnitTest *ut,
   } // end if typeCoeffAB
   // TODO: I'll move this later to the MMSBuiler
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
   /** Vectors: solution, right-hand side, residual */
   AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF = 
@@ -310,19 +310,19 @@ void linearElasticTest(AMP::UnitTest *ut,
   //AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,bvpOperator->getOutputVariable());
 
   /** Create an operator to get manufactured solution and forcing terms */
-  boost::shared_ptr<AMP::Operator::Operator> volumeOp = AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+  AMP::shared_ptr<AMP::Operator::Operator> volumeOp = AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 												       "VolumeIntegral",
 												       inputDatabase,
 												       dummyModel);
   
   /** Compute the forcing terms */
   rhsVec->zero();
-  boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeIntegralOp = boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(volumeOp);
+  AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeIntegralOp = AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(volumeOp);
   computeForcingTerms(meshAdapter, volumeIntegralOp, manufacturedSolution, rhsVec, true);
 
   /** Compute Dirichlet values */
 AMP_ERROR("Not converted yet"); /*
-  boost::shared_ptr<AMP::Operator::DirichletMatrixCorrection> dirichletMatOp = boost::dynamic_pointer_cast<
+  AMP::shared_ptr<AMP::Operator::DirichletMatrixCorrection> dirichletMatOp = AMP::dynamic_pointer_cast<
     AMP::Operator::DirichletMatrixCorrection>(bvpOperator->getBoundaryOperator()); 
   std::vector<short int> dirichletBoundaryIds =  dirichletMatOp->getBoundaryIds();
   std::vector<std::vector<unsigned int> > dirichletDofIds =  dirichletMatOp->getDofIds();
@@ -344,8 +344,8 @@ AMP_ERROR("Not converted yet"); /*
 
 
   // Compute Neumann values
-  boost::shared_ptr<AMP::Operator::NeumannVectorCorrection> neumannVecOp =
-    boost::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrection>(
+  AMP::shared_ptr<AMP::Operator::NeumannVectorCorrection> neumannVecOp =
+    AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrection>(
 									AMP::Operator::OperatorBuilder::createBoundaryOperator(meshAdapter,
 															       "NeumannCorrection",
 															       inputDatabase,
@@ -389,20 +389,20 @@ AMP_ERROR("Not converted yet"); /*
   double initResidualNorm = resVec->L2Norm();
   AMP::pout<<"Initial Residual Norm: "<<initResidualNorm<<std::endl;
 
-  boost::shared_ptr<AMP::Database> solverDatabase = inputDatabase->getDatabase("LinearSolver"); 
+  AMP::shared_ptr<AMP::Database> solverDatabase = inputDatabase->getDatabase("LinearSolver"); 
 
   // ---- first initialize the preconditioner
-  boost::shared_ptr<AMP::Database> precondDatabase = solverDatabase->getDatabase("Preconditioner"); 
-  boost::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams(new AMP::Solver::TrilinosMLSolverParameters(precondDatabase));
+  AMP::shared_ptr<AMP::Database> precondDatabase = solverDatabase->getDatabase("Preconditioner"); 
+  AMP::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams(new AMP::Solver::TrilinosMLSolverParameters(precondDatabase));
   pcSolverParams->d_pOperator = bvpOperator;
-  boost::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(new AMP::Solver::TrilinosMLSolver(pcSolverParams));
+  AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(new AMP::Solver::TrilinosMLSolver(pcSolverParams));
 
   // initialize the linear solver
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new AMP::Solver::PetscKrylovSolverParameters(solverDatabase));
+  AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new AMP::Solver::PetscKrylovSolverParameters(solverDatabase));
   linearSolverParams->d_pOperator = bvpOperator;
   linearSolverParams->d_comm = globalComm;
   linearSolverParams->d_pPreconditioner = pcSolver;
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
+  AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
   linearSolver->setZeroInitialGuess(true);
   linearSolver->solve(rhsVec, solVec);
 
@@ -411,7 +411,7 @@ AMP_ERROR("Not converted yet"); /*
 
   std::string fname = exeName + "_StressAndStrain.txt";
 
-  boost::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(bvpOperator->getVolumeOperator())->printStressAndStrain(solVec, fname);
+  AMP::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(bvpOperator->getVolumeOperator())->printStressAndStrain(solVec, fname);
 
   bvpOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
 

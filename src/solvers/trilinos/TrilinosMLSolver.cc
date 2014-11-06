@@ -22,7 +22,7 @@ TrilinosMLSolver :: TrilinosMLSolver()
     d_mlAggregate = NULL;
     d_bCreationPhase = true; 
 }
-TrilinosMLSolver :: TrilinosMLSolver(boost::shared_ptr<SolverStrategyParameters> parameters)
+TrilinosMLSolver :: TrilinosMLSolver(AMP::shared_ptr<SolverStrategyParameters> parameters)
     :SolverStrategy(parameters) 
 {
     d_ml = NULL;
@@ -44,7 +44,7 @@ TrilinosMLSolver :: ~TrilinosMLSolver()
     d_matrix.reset();   // Need to keep a copy of the matrix alive until after the solver is destroyed
 }
 
-void TrilinosMLSolver :: initialize(boost::shared_ptr<SolverStrategyParameters> const parameters) 
+void TrilinosMLSolver :: initialize(AMP::shared_ptr<SolverStrategyParameters> const parameters) 
 {
     getFromInput(parameters->d_db);
     if(d_pOperator.get() != NULL) {
@@ -52,7 +52,7 @@ void TrilinosMLSolver :: initialize(boost::shared_ptr<SolverStrategyParameters> 
     }
 }
 
-void TrilinosMLSolver :: getFromInput(const boost::shared_ptr<AMP::Database> &db) 
+void TrilinosMLSolver :: getFromInput(const AMP::shared_ptr<AMP::Database> &db) 
 {
     d_bRobustMode = db->getBoolWithDefault("ROBUST_MODE", false);
     d_bUseEpetra = db->getBoolWithDefault("USE_EPETRA", true);
@@ -102,7 +102,7 @@ void TrilinosMLSolver :: convertMLoptionsToTeuchosParameterList()
 }
 
     
-void TrilinosMLSolver :: registerOperator(const boost::shared_ptr<AMP::Operator::Operator> op) 
+void TrilinosMLSolver :: registerOperator(const AMP::shared_ptr<AMP::Operator::Operator> op) 
 {
     d_pOperator = op;
     AMP_INSIST(d_pOperator.get()!=NULL,"ERROR: TrilinosMLSolver::initialize() operator cannot be NULL");
@@ -130,17 +130,17 @@ void TrilinosMLSolver :: registerOperator(const boost::shared_ptr<AMP::Operator:
             d_mlOptions->d_pdeEquations  == 3 : true,
             "Null space construction only available for mechanics (PDE_equations=3)");
 
-        boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator = 
-            boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
+        AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator = 
+            AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
         AMP_INSIST(linearOperator.get() != NULL, "linearOperator cannot be NULL");
 
-        d_matrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(linearOperator->getMatrix());
+        d_matrix = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(linearOperator->getMatrix());
         AMP_INSIST(d_matrix.get()!=NULL, "d_matrix cannot be NULL");
 
         d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(d_matrix->getEpetra_CrsMatrix(),
             d_MLParameterList, false));
     } else {
-        boost::shared_ptr<AMP::Operator::TrilinosMatrixShellOperator> matShellOperator = boost::dynamic_pointer_cast<
+        AMP::shared_ptr<AMP::Operator::TrilinosMatrixShellOperator> matShellOperator = AMP::dynamic_pointer_cast<
             AMP::Operator::TrilinosMatrixShellOperator>(d_pOperator);
         AMP_ASSERT(matShellOperator.get() != NULL);
 
@@ -160,17 +160,17 @@ void TrilinosMLSolver :: registerOperator(const boost::shared_ptr<AMP::Operator:
 }
 
 
-void TrilinosMLSolver :: resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params) 
+void TrilinosMLSolver :: resetOperator(const AMP::shared_ptr<AMP::Operator::OperatorParameters> params) 
 {
     PROFILE_START("resetOperator");
     AMP_INSIST((d_pOperator.get() != NULL), "ERROR: TrilinosMLSolver::resetOperator() operator cannot be NULL");
     d_pOperator->reset(params);
-    reset( boost::shared_ptr<SolverStrategyParameters>() );
+    reset( AMP::shared_ptr<SolverStrategyParameters>() );
     PROFILE_STOP("resetOperator");
 }
 
 
-void TrilinosMLSolver :: reset(boost::shared_ptr<SolverStrategyParameters> ) 
+void TrilinosMLSolver :: reset(AMP::shared_ptr<SolverStrategyParameters> ) 
 {
     PROFILE_START("reset");
     if ( d_mlAggregate ) {
@@ -188,8 +188,8 @@ void TrilinosMLSolver :: reset(boost::shared_ptr<SolverStrategyParameters> )
 }
 
 
-void TrilinosMLSolver :: solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> u) 
+void TrilinosMLSolver :: solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> u) 
 {
     PROFILE_START("solve");
     // in this case we make the assumption we can access a EpetraMat for now
@@ -212,7 +212,7 @@ void TrilinosMLSolver :: solve(boost::shared_ptr<const AMP::LinearAlgebra::Vecto
         d_bCreationPhase = false;
     }
 
-    boost::shared_ptr <AMP::LinearAlgebra::Vector> r;
+    AMP::shared_ptr <AMP::LinearAlgebra::Vector> r;
 
     bool computeResidual = false;
     if( d_bRobustMode || (d_iDebugPrintInfoLevel > 1) ) {
@@ -297,8 +297,8 @@ void TrilinosMLSolver :: solve(boost::shared_ptr<const AMP::LinearAlgebra::Vecto
 }
 
 
-void TrilinosMLSolver :: reSolveWithLU(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> u) 
+void TrilinosMLSolver :: reSolveWithLU(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> u) 
 {
     PROFILE_START("reSolveWithLU");
 
@@ -306,11 +306,11 @@ void TrilinosMLSolver :: reSolveWithLU(boost::shared_ptr<const AMP::LinearAlgebr
         AMP_ERROR("Robust mode can only be used with Epetra matrices.");
     }
 
-    boost::shared_ptr<AMP::Operator::LinearOperator> linearOperator = 
-        boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
+    AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator = 
+        AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pOperator);
     AMP_INSIST(linearOperator.get() != NULL, "linearOperator cannot be NULL");
 
-    d_matrix = boost::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(linearOperator->getMatrix());
+    d_matrix = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(linearOperator->getMatrix());
     AMP_INSIST(d_matrix.get() != NULL, "d_matrix cannot be NULL");
 
     Teuchos::ParameterList tmpMLParameterList;
@@ -392,7 +392,7 @@ void TrilinosMLSolver :: buildML()
 }
 
 
-void TrilinosMLSolver :: computeCoordinates( const boost::shared_ptr<AMP::Operator::Operator> op ) 
+void TrilinosMLSolver :: computeCoordinates( const AMP::shared_ptr<AMP::Operator::Operator> op ) 
 {
     // Get mesh adapter for this operator
     AMP::Mesh::Mesh::shared_ptr myMesh = op->getMesh();
@@ -419,7 +419,7 @@ void TrilinosMLSolver :: computeCoordinates( const boost::shared_ptr<AMP::Operat
 }
 
 
-void TrilinosMLSolver :: computeNullSpace( const boost::shared_ptr<AMP::Operator::Operator> op ) 
+void TrilinosMLSolver :: computeNullSpace( const AMP::shared_ptr<AMP::Operator::Operator> op ) 
 {
     // Get mesh adapter for this operator
     AMP::Mesh::Mesh::shared_ptr myMesh = op->getMesh();

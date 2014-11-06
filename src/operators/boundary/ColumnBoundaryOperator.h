@@ -24,7 +24,7 @@ namespace Operator {
   {
 
     public :
-      ColumnBoundaryOperator(const boost::shared_ptr<OperatorParameters>& params)
+      ColumnBoundaryOperator(const AMP::shared_ptr<OperatorParameters>& params)
         : BoundaryOperator (params) { }
 
       virtual ~ColumnBoundaryOperator() { }
@@ -40,17 +40,17 @@ namespace Operator {
         @param u The solution vector that is used to construct the jacobian
         @return The parameters required to construct the jacobian.
         */
-      virtual boost::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u);
+      virtual AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u);
 
-      virtual void reset(const boost::shared_ptr<OperatorParameters>& params);
+      virtual void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
       /**
        * \param op
        *            shared pointer to an operator to append to the existing column of operators
        */
-      virtual void append(boost::shared_ptr< BoundaryOperator > op);
+      virtual void append(AMP::shared_ptr< BoundaryOperator > op);
 
-      boost::shared_ptr< BoundaryOperator > getBoundaryOperator(int i){ return d_Operators[i]; }
+      AMP::shared_ptr< BoundaryOperator > getBoundaryOperator(int i){ return d_Operators[i]; }
 
       size_t  numberOfBoundaryOperators () { return d_Operators.size(); }
 
@@ -62,7 +62,7 @@ namespace Operator {
 
     protected :
 
-      std::vector< boost::shared_ptr< BoundaryOperator > > d_Operators;
+      std::vector< AMP::shared_ptr< BoundaryOperator > > d_Operators;
 
     private :
 

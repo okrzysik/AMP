@@ -20,7 +20,7 @@ namespace TimeIntegrator{
 /***********************************************************************
 *  Constructor.                                                        *
 ***********************************************************************/
-BackwardEulerTimeIntegrator::BackwardEulerTimeIntegrator( boost::shared_ptr< TimeIntegratorParameters > parameters ):ImplicitTimeIntegrator(parameters)
+BackwardEulerTimeIntegrator::BackwardEulerTimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters ):ImplicitTimeIntegrator(parameters)
 {
    initialize( parameters );
 }
@@ -37,7 +37,7 @@ BackwardEulerTimeIntegrator::~BackwardEulerTimeIntegrator()
 /***********************************************************************
 * Initialize.                                                          *
 ***********************************************************************/
-void BackwardEulerTimeIntegrator::initialize( boost::shared_ptr< TimeIntegratorParameters> parameters )
+void BackwardEulerTimeIntegrator::initialize( AMP::shared_ptr< TimeIntegratorParameters> parameters )
 {
    AMP_ASSERT(parameters.get() != NULL);
 
@@ -53,7 +53,7 @@ void BackwardEulerTimeIntegrator::initialize( boost::shared_ptr< TimeIntegratorP
 
    d_solver->registerOperator(d_operator);
 }
-void BackwardEulerTimeIntegrator::reset( boost::shared_ptr< TimeIntegratorParameters > parameters )
+void BackwardEulerTimeIntegrator::reset( AMP::shared_ptr< TimeIntegratorParameters > parameters )
 {
    AMP_ASSERT(parameters.get() != NULL);
 
@@ -88,7 +88,7 @@ void BackwardEulerTimeIntegrator::updateSolution( void )
 * Read input from database.                                            *
 *                                                                      *
 ***********************************************************************/
-void BackwardEulerTimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db )
+void BackwardEulerTimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 {
    if ( input_db->keyExists("initial_timestep") ) {
       d_initial_dt = input_db->getDouble("initial_timestep");
@@ -115,7 +115,7 @@ bool BackwardEulerTimeIntegrator::checkNewSolution( void ) const
     */
    return(true);
 }
-void BackwardEulerTimeIntegrator::initializeTimeOperator(boost::shared_ptr< TimeIntegratorParameters > parameters)
+void BackwardEulerTimeIntegrator::initializeTimeOperator(AMP::shared_ptr< TimeIntegratorParameters > parameters)
 {
     d_pTimeOperatorParameters.reset( new TimeOperatorParameters(parameters->d_db) );
 

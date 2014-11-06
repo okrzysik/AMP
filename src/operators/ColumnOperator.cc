@@ -18,11 +18,11 @@ namespace AMP {
         }
       }
 
-    boost::shared_ptr<OperatorParameters>
+    AMP::shared_ptr<OperatorParameters>
       ColumnOperator :: getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u)
       {
-        boost::shared_ptr<AMP::Database> db;
-        boost::shared_ptr<ColumnOperatorParameters> opParameters(new ColumnOperatorParameters(db));
+        AMP::shared_ptr<AMP::Database> db;
+        AMP::shared_ptr<ColumnOperatorParameters> opParameters(new ColumnOperatorParameters(db));
 
         (opParameters->d_OperatorParameters).resize(d_Operators.size());
 
@@ -34,10 +34,10 @@ namespace AMP {
       }
 
     void
-      ColumnOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
+      ColumnOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params)
       {
-        boost::shared_ptr<ColumnOperatorParameters> columnParameters =
-          boost::dynamic_pointer_cast<ColumnOperatorParameters>(params);
+        AMP::shared_ptr<ColumnOperatorParameters> columnParameters =
+          AMP::dynamic_pointer_cast<ColumnOperatorParameters>(params);
 
         AMP_INSIST( (columnParameters.get() != NULL), "ColumnOperator::reset parameter object is NULL" );
 
@@ -50,7 +50,7 @@ namespace AMP {
       }
 
     void
-      ColumnOperator :: append(boost::shared_ptr< Operator > op)
+      ColumnOperator :: append(AMP::shared_ptr< Operator > op)
       {
         AMP_INSIST( (op.get() != NULL), "AMP::ColumnOperator::appendRow input argument is a NULL operator");
 
@@ -59,7 +59,7 @@ namespace AMP {
 
     AMP::LinearAlgebra::Variable::shared_ptr ColumnOperator::getInputVariable()
     {
-      boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable( new AMP::LinearAlgebra::MultiVariable("ColumnVariable"));
+      AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable( new AMP::LinearAlgebra::MultiVariable("ColumnVariable"));
 
       for(unsigned int i = 0; i < d_Operators.size(); i++)
       {
@@ -76,7 +76,7 @@ namespace AMP {
 
     AMP::LinearAlgebra::Variable::shared_ptr ColumnOperator::getOutputVariable()
     {
-      boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable( new AMP::LinearAlgebra::MultiVariable("ColumnVariable"));
+      AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable( new AMP::LinearAlgebra::MultiVariable("ColumnVariable"));
 
       for(unsigned int i = 0; i < d_Operators.size(); i++)
       {
@@ -92,7 +92,7 @@ namespace AMP {
     }
 
     bool
-      ColumnOperator::isValidInput(boost::shared_ptr<AMP::LinearAlgebra::Vector> &u)
+      ColumnOperator::isValidInput(AMP::shared_ptr<AMP::LinearAlgebra::Vector> &u)
       {
         bool bRetVal=true;
 

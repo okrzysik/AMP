@@ -4,7 +4,7 @@
 
 
 #include <fstream>
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include <operators/contact/ContactOperator.h>
 #include <matrices/Matrix.h>
 #include <vectors/Vector.h>
@@ -29,7 +29,7 @@ namespace AMP {
           Constructor. This resets the matrix shared pointer.
           @param [in] params 
           */
-        NodeToFaceContactOperator (const boost::shared_ptr<ContactOperatorParameters> & params)
+        NodeToFaceContactOperator (const AMP::shared_ptr<ContactOperatorParameters> & params)
           : ContactOperator(params),
             d_ContactIsFrictionless(false)
         {
@@ -48,7 +48,7 @@ namespace AMP {
          * \param params
          *        parameter object containing parameters to change
          */
-        void reset(const boost::shared_ptr<OperatorParameters> & params);
+        void reset(const AMP::shared_ptr<OperatorParameters> & params);
 
         void addSlaveToMaster(AMP::LinearAlgebra::Vector::shared_ptr u);
 
@@ -142,8 +142,8 @@ namespace AMP {
         std::vector<double> d_SlaveVerticesSurfaceTractionBeforeUpdate;
         std::vector<double> d_SlaveVerticesNormalVectorBeforeUpdate;
 
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable; /**< Input variable */
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable; /**< Input variable */
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
 
         bool d_ContactIsFrictionless;
 

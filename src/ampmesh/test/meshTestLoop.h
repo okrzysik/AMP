@@ -13,7 +13,7 @@
 #include "utils/ProfilerApp.h"
 
 
-void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
+void MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     PROFILE_START("MeshTestLoop");
     // Run some basic sanity checks
@@ -31,7 +31,7 @@ void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
     // Test the node neighbors
     getNodeNeighbors( ut, mesh );
     // Test displacement
-    if ( boost::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>(mesh).get()!=NULL )
+    if ( AMP::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>(mesh).get()!=NULL )
         ut->expected_failure("Displace mesh tests are not valid for sub-meshes");
     else
         DisplaceMesh( ut, mesh );
@@ -55,7 +55,7 @@ void MeshTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
 }
 
 
-void MeshVectorTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
+void MeshVectorTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // Run the vector tests
     #ifdef USE_AMP_VECTORS
@@ -69,7 +69,7 @@ void MeshVectorTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> m
 }
 
 
-void MeshMatrixTestLoop( AMP::UnitTest *ut, boost::shared_ptr<AMP::Mesh::Mesh> mesh )
+void MeshMatrixTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // Run the matrix tests
     #ifdef USE_AMP_MATRICES

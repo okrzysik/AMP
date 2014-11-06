@@ -3,7 +3,7 @@
 
 #include "vectors/Vector.h"
 #include "matrices/Matrix.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP {
 namespace LinearAlgebra {

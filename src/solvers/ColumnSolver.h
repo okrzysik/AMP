@@ -32,7 +32,7 @@ namespace Solver {
        class SolverStrategy. The IterationType must currently either be "GaussSeidel"
        or "SymmetricGaussSeidel"
        */
-      ColumnSolver(boost::shared_ptr<SolverStrategyParameters> parameters);
+      ColumnSolver(AMP::shared_ptr<SolverStrategyParameters> parameters);
 
       /**
        * destructor, currently does nothing
@@ -45,25 +45,25 @@ namespace Solver {
        @param [in] f shared pointer to right hand side
        @param [out] u shared pointer to computed approximate solution
        */
-      void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f, boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);
+      void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f, AMP::shared_ptr<AMP::LinearAlgebra::Vector>  u);
 
       /**
        * sets the initial guess
        @param [in] initialGuess shared pointer to initialGuess vector
        */
-      void setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess );
+      void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess );
 
       /**
        * @param [in] solver
        *            shared pointer to a solver to append to the existing column of solvers
        */
-      void append(boost::shared_ptr<AMP::Solver::SolverStrategy> solver);
+      void append(AMP::shared_ptr<AMP::Solver::SolverStrategy> solver);
 
       /**
        * returns a shared pointer to the i-th solver
        @param [in] i integer index for solver to extract
        */
-      boost::shared_ptr<AMP::Solver::SolverStrategy> getSolver(const int i){return d_Solvers[i]; }
+      AMP::shared_ptr<AMP::Solver::SolverStrategy> getSolver(const int i){return d_Solvers[i]; }
 
       int getNumberOfSolvers() {
         return d_Solvers.size();
@@ -74,15 +74,15 @@ namespace Solver {
        * @param params
        *        OperatorParameters object that is NULL by default
        */
-      void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params);
+      void resetOperator(const AMP::shared_ptr<AMP::Operator::OperatorParameters> params);
 
     protected :
 
-      void GaussSeidel(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  &f, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u);
+      void GaussSeidel(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  &f, AMP::shared_ptr<AMP::LinearAlgebra::Vector>  &u);
 
-      void SymmetricGaussSeidel(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  &f, boost::shared_ptr<AMP::LinearAlgebra::Vector>  &u);
+      void SymmetricGaussSeidel(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  &f, AMP::shared_ptr<AMP::LinearAlgebra::Vector>  &u);
 
-      std::vector< boost::shared_ptr<AMP::Solver::SolverStrategy> > d_Solvers;
+      std::vector< AMP::shared_ptr<AMP::Solver::SolverStrategy> > d_Solvers;
       /**
        * type of block iteration, valid values: GaussSeidel, SymmetricGaussSeidel
        */

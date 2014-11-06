@@ -15,7 +15,7 @@ class ParameterFactory{
   ParameterFactory(){}
   ~ParameterFactory(){}
 
-  static boost::shared_ptr<OperatorParameters>  createParameter(boost::shared_ptr<AMP::Database>  input_db, AMP::Mesh::Mesh::shared_ptr  mesh);
+  static AMP::shared_ptr<OperatorParameters>  createParameter(AMP::shared_ptr<AMP::Database>  input_db, AMP::Mesh::Mesh::shared_ptr  mesh);
 
 };
   

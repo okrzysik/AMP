@@ -2,7 +2,7 @@
 #define included_AMP_VectorOperations
 
 
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include <vector>
 
 #include "utils/Castable.h"

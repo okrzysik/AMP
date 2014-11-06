@@ -2,7 +2,7 @@
 #define included_AMP_ElementPhysicsModelFactory
 
 /* Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "operators/ElementPhysicsModel.h"
 
@@ -14,7 +14,7 @@ class ElementPhysicsModelFactory{
   ElementPhysicsModelFactory(){}
   ~ElementPhysicsModelFactory(){}
 
-  static boost::shared_ptr<ElementPhysicsModel> createElementPhysicsModel(boost::shared_ptr<AMP::Database>  input_db);
+  static AMP::shared_ptr<ElementPhysicsModel> createElementPhysicsModel(AMP::shared_ptr<AMP::Database>  input_db);
 
 };
   

@@ -44,11 +44,11 @@ namespace LinearAlgebra {
 
       /** \brief Range map for the Epetra_CrsMatrix
         */
-      boost::shared_ptr<Epetra_Map>   d_RangeMap;
+      AMP::shared_ptr<Epetra_Map>   d_RangeMap;
 
       /** \brief Domain map for the Epetra_CrsMatrix
         */
-      boost::shared_ptr<Epetra_Map>   d_DomainMap;
+      AMP::shared_ptr<Epetra_Map>   d_DomainMap;
 
       /** \brief Indicates if the destructor calls delete
         */

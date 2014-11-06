@@ -6,7 +6,7 @@
 #include "Database.h"
 #include "Parser.h"
 #include <string>
-#include "boost/shared_ptr.hpp" 
+#include "utils/shared_ptr.h" 
 
 using namespace std;
 typedef ostringstream ostrstream;
@@ -2472,7 +2472,7 @@ static KeyData* lookup_variable(
    result->d_integer    = 0;
 
    Parser *parser = Parser::getParser();
-   boost::shared_ptr<Database> db = parser->getDatabaseWithKey(key);
+   AMP::shared_ptr<Database> db = parser->getDatabaseWithKey(key);
 
    if (db.get()==NULL) {
       string tmp("Variable ``");

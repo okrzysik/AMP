@@ -19,7 +19,7 @@ class AsyncMapOperator : public AsynchronousOperator
 {
 public:
     //! Constructor
-    AsyncMapOperator ( const boost::shared_ptr <OperatorParameters> & );
+    AsyncMapOperator ( const AMP::shared_ptr <OperatorParameters> & );
 
     virtual ~AsyncMapOperator ();
 

@@ -5,7 +5,7 @@ namespace LinearAlgebra {
   inline
   ManagedVector *ManagedPetscVector::getNewRawPtr () const
   { 
-    return new ManagedPetscVector ( boost::dynamic_pointer_cast<VectorParameters> ( d_pParameters ) ); 
+    return new ManagedPetscVector ( AMP::dynamic_pointer_cast<VectorParameters> ( d_pParameters ) ); 
   }
 
   inline
@@ -17,7 +17,7 @@ namespace LinearAlgebra {
   inline
   ManagedPetscVector  *ManagedPetscVector::rawClone () const
   {
-    boost::shared_ptr<ManagedVectorParameters> p ( new ManagedPetscVectorParameters );
+    AMP::shared_ptr<ManagedVectorParameters> p ( new ManagedPetscVectorParameters );
     if ( !d_vBuffer )
     {
       p->d_Engine = d_Engine->cloneEngine ( VectorEngine::BufferPtr () );
@@ -29,7 +29,7 @@ namespace LinearAlgebra {
     }
     p->d_CommList = getCommunicationList();
     p->d_DOFManager = getDOFManager();
-    ManagedPetscVector *retVal = new ManagedPetscVector ( boost::dynamic_pointer_cast<VectorParameters> ( p ) );
+    ManagedPetscVector *retVal = new ManagedPetscVector ( AMP::dynamic_pointer_cast<VectorParameters> ( p ) );
     return retVal;
   }
 

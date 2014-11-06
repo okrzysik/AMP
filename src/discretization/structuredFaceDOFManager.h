@@ -1,8 +1,7 @@
 #ifndef included_structuredFaceDOFManager
 #define included_structuredFaceDOFManager
 
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include "utils/shared_ptr.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "discretization/DOF_Manager.h"
@@ -38,7 +37,7 @@ public:
      * \param DOFsPerFace   The desired number of DOFs per face (x,y,z)
      * \param gcw           The desired ghost width (based on the volumes)
      */
-    static DOFManager::shared_ptr  create( boost::shared_ptr<AMP::Mesh::Mesh> mesh, int DOFsPerFace[3], int gcw );
+    static DOFManager::shared_ptr  create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh, int DOFsPerFace[3], int gcw );
 
 
     //! Deconstructor
@@ -81,7 +80,7 @@ private:
     void initialize();
 
     // Data members
-    boost::shared_ptr<AMP::Mesh::Mesh>  d_mesh;
+    AMP::shared_ptr<AMP::Mesh::Mesh>  d_mesh;
     int d_DOFsPerFace[3];
     int d_gcw;
 

@@ -197,7 +197,7 @@ MatTestResult testMaterial(string &name) {
 
 		// set up std::vector arguments to evalv
 		std::vector<double> value(npoints), nominal;
-		map<string, boost::shared_ptr<vector<double> > > args;
+		map<string, AMP::shared_ptr<vector<double> > > args;
 		for (size_t i = 0; i < nargs; i++) {
 			args.insert(
 					std::make_pair(argnames[i],
@@ -217,8 +217,8 @@ MatTestResult testMaterial(string &name) {
 		// set up AMP::MultiVector arguments to evalv
 		AMP::LinearAlgebra::Vector::shared_ptr argsMultiVecVec =
 				AMP::LinearAlgebra::MultiVector::create("argsMultiVec", AMP_COMM_SELF);
-		boost::shared_ptr<AMP::LinearAlgebra::MultiVector> argsMultiVec =
-				boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(argsMultiVecVec);
+		AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> argsMultiVec =
+				AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(argsMultiVecVec);
 		for (size_t i=0; i<nargs; i++) {
 			argsMultiVec->addVector(toosmallVec[i]); // extra junk, should be ignored
 			argsMultiVec->addVector(justrightVec[i]); // paydirt
@@ -496,9 +496,9 @@ MatTestResult testMaterial(string &name) {
 			}
 
 			// set up reduced argument list
-			map<string, boost::shared_ptr<vector<double> > > argsm(args);
+			map<string, AMP::shared_ptr<vector<double> > > argsm(args);
 			if( nargs>0 ) {
-				map<string, boost::shared_ptr<vector<double> > >::iterator argend = argsm.end();
+				map<string, AMP::shared_ptr<vector<double> > >::iterator argend = argsm.end();
 				--argend;
 				argsm.erase(argend);
 			}
@@ -526,8 +526,8 @@ MatTestResult testMaterial(string &name) {
 
 			results.propResults[type].isVector = true;
 
-			boost::shared_ptr<AMP::Materials::VectorProperty<double> > vectorProperty =
-					boost::dynamic_pointer_cast<AMP::Materials::VectorProperty<double> >(property);
+			AMP::shared_ptr<AMP::Materials::VectorProperty<double> > vectorProperty =
+					AMP::dynamic_pointer_cast<AMP::Materials::VectorProperty<double> >(property);
 
 			// check that scalar nature is not signaled
 			if (vectorProperty->isScalar()) {
@@ -634,11 +634,11 @@ MatTestResult testMaterial(string &name) {
 				results.propResults[type].vector[0] = false;
 				results.propResults[type].unknown = true;
 			}
-			std::vector<boost::shared_ptr<std::vector<double> > >stdEval(nvec);
-			std::vector<boost::shared_ptr<std::vector<double> > >nominalEval(nvec);
+			std::vector<AMP::shared_ptr<std::vector<double> > >stdEval(nvec);
+			std::vector<AMP::shared_ptr<std::vector<double> > >nominalEval(nvec);
 			for (size_t i=0; i<nvec; i++) {
-				stdEval[i] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(npoints));
-				nominalEval[i] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(npoints));
+				stdEval[i] = AMP::shared_ptr<std::vector<double> >(new std::vector<double>(npoints));
+				nominalEval[i] = AMP::shared_ptr<std::vector<double> >(new std::vector<double>(npoints));
 			}
 
 			// check that number of components is positive
@@ -830,9 +830,9 @@ MatTestResult testMaterial(string &name) {
 			}
 
 			// set up reduced argument list
-			map<string, boost::shared_ptr<vector<double> > > argsm(args);
+			map<string, AMP::shared_ptr<vector<double> > > argsm(args);
 			if( nargs>0 ) {
-				map<string, boost::shared_ptr<vector<double> > >::iterator argend = argsm.end();
+				map<string, AMP::shared_ptr<vector<double> > >::iterator argend = argsm.end();
 				--argend;
 				argsm.erase(argend);
 			}
@@ -859,8 +859,8 @@ MatTestResult testMaterial(string &name) {
 
 			results.propResults[type].isTensor = true;
 
-			boost::shared_ptr<AMP::Materials::TensorProperty<double> > tensorProperty =
-					boost::dynamic_pointer_cast<AMP::Materials::TensorProperty<double> >(property);
+			AMP::shared_ptr<AMP::Materials::TensorProperty<double> > tensorProperty =
+					AMP::dynamic_pointer_cast<AMP::Materials::TensorProperty<double> >(property);
 
 			// check that scalar nature is not signaled
 			if (tensorProperty->isScalar()) {
@@ -967,13 +967,13 @@ MatTestResult testMaterial(string &name) {
 				results.propResults[type].tensor[0] = false;
 				results.propResults[type].unknown = true;
 			}
-			std::vector<std::vector<boost::shared_ptr<std::vector<double> > > > stdEval(nvecs[0],
-					    std::vector<boost::shared_ptr<std::vector<double> > >(nvecs[1]));
-			std::vector<std::vector<boost::shared_ptr<std::vector<double> > > > nominalEval(nvecs[0],
-		    			std::vector<boost::shared_ptr<std::vector<double> > >(nvecs[1]));
+			std::vector<std::vector<AMP::shared_ptr<std::vector<double> > > > stdEval(nvecs[0],
+					    std::vector<AMP::shared_ptr<std::vector<double> > >(nvecs[1]));
+			std::vector<std::vector<AMP::shared_ptr<std::vector<double> > > > nominalEval(nvecs[0],
+		    			std::vector<AMP::shared_ptr<std::vector<double> > >(nvecs[1]));
 			for (size_t i=0; i<nvecs[0]; i++) for (size_t j=0; j<nvecs[1]; j++) {
-				stdEval[i][j] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(npoints));
-				nominalEval[i][j] = boost::shared_ptr<std::vector<double> >(new std::vector<double>(npoints));
+				stdEval[i][j] = AMP::shared_ptr<std::vector<double> >(new std::vector<double>(npoints));
+				nominalEval[i][j] = AMP::shared_ptr<std::vector<double> >(new std::vector<double>(npoints));
 			}
 
 			// check that number of components is positive
@@ -1173,9 +1173,9 @@ MatTestResult testMaterial(string &name) {
 			}
 
 			// set up reduced argument list
-			map<string, boost::shared_ptr<vector<double> > > argsm(args);
+			map<string, AMP::shared_ptr<vector<double> > > argsm(args);
 			if( nargs>0 ) {
-				map<string, boost::shared_ptr<vector<double> > >::iterator argend = argsm.end();
+				map<string, AMP::shared_ptr<vector<double> > >::iterator argend = argsm.end();
 				--argend;
 				argsm.erase(argend);
 			}

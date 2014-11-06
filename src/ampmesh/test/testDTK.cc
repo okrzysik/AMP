@@ -127,7 +127,7 @@ void read_displacement()
 {
     // load the source mesh
     AMP::pout<<"Loading the source mesh"<<std::endl;
-    boost::shared_ptr<AMP::InputDatabase> sourceMeshDatabase(new AMP::InputDatabase("SourceMesh"));
+    AMP::shared_ptr<AMP::InputDatabase> sourceMeshDatabase(new AMP::InputDatabase("SourceMesh"));
     sourceMeshDatabase->putString("MeshName", "mesh");
     sourceMeshDatabase->putString("MeshType", "libMesh");
     sourceMeshDatabase->putString("FileName", "/Users/qdi/Desktop/read_displacement/layer2_exodus.e");
@@ -135,7 +135,7 @@ void read_displacement()
     sourceMeshDatabase->putDouble("x_offset", 0.0);
     sourceMeshDatabase->putDouble("y_offset", 0.0);
     sourceMeshDatabase->putDouble("z_offset", 0.0);
-    boost::shared_ptr<AMP::Mesh::MeshParameters> sourceMeshParams(new AMP::Mesh::MeshParameters(sourceMeshDatabase));
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> sourceMeshParams(new AMP::Mesh::MeshParameters(sourceMeshDatabase));
     sourceMeshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
     AMP::Mesh::Mesh::shared_ptr sourceMesh = AMP::Mesh::Mesh::buildMesh(sourceMeshParams);
     AMP::pout<<"***Loading the source mesh"<<std::endl;
@@ -188,7 +188,7 @@ return ;
 abort();
   // build source and target meshes
   AMP::pout<<"Loading the source mesh"<<std::endl;
-  boost::shared_ptr<AMP::InputDatabase> sourceMeshDatabase(new AMP::InputDatabase("SourceMesh"));
+  AMP::shared_ptr<AMP::InputDatabase> sourceMeshDatabase(new AMP::InputDatabase("SourceMesh"));
   sourceMeshDatabase->putString("MeshName", "mesh");
   sourceMeshDatabase->putString("MeshType", "libMesh");
   sourceMeshDatabase->putString("FileName", "/Users/qdi/Meshes/coupling.e");
@@ -196,12 +196,12 @@ abort();
   sourceMeshDatabase->putDouble("x_offset", 0.0);
   sourceMeshDatabase->putDouble("y_offset", 0.0);
   sourceMeshDatabase->putDouble("z_offset", 0.0);
-  boost::shared_ptr<AMP::Mesh::MeshParameters> sourceMeshParams(new AMP::Mesh::MeshParameters(sourceMeshDatabase));
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> sourceMeshParams(new AMP::Mesh::MeshParameters(sourceMeshDatabase));
   sourceMeshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
   AMP::Mesh::Mesh::shared_ptr sourceMesh = AMP::Mesh::Mesh::buildMesh(sourceMeshParams);
   
   AMP::pout<<"Building the target mesh"<<std::endl;
-  boost::shared_ptr<AMP::InputDatabase> targetMeshDatabase(new AMP::InputDatabase("TargetMesh"));
+  AMP::shared_ptr<AMP::InputDatabase> targetMeshDatabase(new AMP::InputDatabase("TargetMesh"));
   targetMeshDatabase->putString("MeshName", "mesh");
   targetMeshDatabase->putString("MeshType", "AMP");
   targetMeshDatabase->putInteger("dim", 3);
@@ -213,7 +213,7 @@ abort();
   targetMeshDatabase->putIntegerArray("Size", size);
   std::vector<double> const range = sourceMesh->getBoundingBox();
   targetMeshDatabase->putDoubleArray("Range", range);
-  boost::shared_ptr<AMP::Mesh::MeshParameters> targetMeshParams(new AMP::Mesh::MeshParameters(targetMeshDatabase));
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> targetMeshParams(new AMP::Mesh::MeshParameters(targetMeshDatabase));
   targetMeshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
   AMP::Mesh::Mesh::shared_ptr targetMesh = AMP::Mesh::Mesh::buildMesh(targetMeshParams);
 

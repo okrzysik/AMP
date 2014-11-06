@@ -14,18 +14,18 @@ namespace Solver {
   class CoupledFlow1DSolver: public SolverStrategy {
     public:
 
-      CoupledFlow1DSolver(boost::shared_ptr<SolverStrategyParameters> parameters);
+      CoupledFlow1DSolver(AMP::shared_ptr<SolverStrategyParameters> parameters);
       
       virtual ~CoupledFlow1DSolver();
 
-    void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
-	       boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);
+    void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
+	       AMP::shared_ptr<AMP::LinearAlgebra::Vector>  u);
     
-    void setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess );
+    void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess );
 
-    void reset(boost::shared_ptr<SolverStrategyParameters> );
+    void reset(AMP::shared_ptr<SolverStrategyParameters> );
 
-    void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params);
+    void resetOperator(const AMP::shared_ptr<AMP::Operator::OperatorParameters> params);
 
     protected:
 
@@ -33,12 +33,12 @@ namespace Solver {
 
     std::vector<double> zPoints; 
     
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; 
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; 
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; 
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; 
 
     private:
 
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
 
     AMP::LinearAlgebra::Vector::const_shared_ptr d_Rhs;
     AMP::LinearAlgebra::Vector::shared_ptr d_Sol;
@@ -48,7 +48,7 @@ namespace Solver {
     AMP::Operator::MapOperator::shared_ptr d_flowInternal3to1;
     AMP::Operator::MapOperator::shared_ptr d_flowInternal1to3;
 
-    boost::shared_ptr<AMP::Solver::Flow1DSolver> d_flow1DSolver;
+    AMP::shared_ptr<AMP::Solver::Flow1DSolver> d_flow1DSolver;
   };
 
 }

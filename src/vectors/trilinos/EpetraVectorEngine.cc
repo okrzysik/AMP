@@ -34,7 +34,7 @@ EpetraVectorEngineParameters::EpetraVectorEngineParameters ( size_t local_size ,
     d_comm.sumScan( &local_size, &d_end, 1 );
     d_begin = d_end - local_size;
 }
-EpetraVectorEngineParameters::EpetraVectorEngineParameters ( size_t local_size , size_t global_size , boost::shared_ptr<Epetra_Map> emap , AMP_MPI ecomm ):
+EpetraVectorEngineParameters::EpetraVectorEngineParameters ( size_t local_size , size_t global_size , AMP::shared_ptr<Epetra_Map> emap , AMP_MPI ecomm ):
     VectorEngineParameters(),
     d_begin(0),
     d_end(0),
@@ -66,8 +66,8 @@ Epetra_Map  &EpetraVectorEngineParameters::getEpetraMap()
     //std::vector<int> ids(local_size,0);
     //for (size_t i=0; i<local_size; i++)
     //    ids[i] = (int) (i+d_begin);
-    //d_emap = boost::shared_ptr<Epetra_Map> ( new Epetra_Map ( (int) d_global, (int) local_size, &ids[0], 0, comm ) );
-    d_emap = boost::shared_ptr<Epetra_Map> ( new Epetra_Map ( (int) d_global, (int) local_size, 0, comm ) );
+    //d_emap = AMP::shared_ptr<Epetra_Map> ( new Epetra_Map ( (int) d_global, (int) local_size, &ids[0], 0, comm ) );
+    d_emap = AMP::shared_ptr<Epetra_Map> ( new Epetra_Map ( (int) d_global, (int) local_size, 0, comm ) );
     // Check the map to make sure it is correct
     AMP_ASSERT(local_size==(size_t)d_emap->NumMyPoints());
     AMP_ASSERT(d_global==(size_t)d_emap->NumGlobalPoints());

@@ -11,7 +11,7 @@ namespace AMP {
     class NodeToSegmentConstraintsOperatorParameters : public OperatorParameters {
       public :
 
-        NodeToSegmentConstraintsOperatorParameters (const boost::shared_ptr<AMP::Database> &db)
+        NodeToSegmentConstraintsOperatorParameters (const AMP::shared_ptr<AMP::Database> &db)
           : OperatorParameters(db) {  }
 
         virtual ~NodeToSegmentConstraintsOperatorParameters () { }

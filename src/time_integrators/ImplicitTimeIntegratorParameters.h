@@ -6,7 +6,7 @@
 #endif
 
 #ifndef included_tbox_Pointer
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #endif
 
 #ifndef included_tbox_InputDatabase
@@ -38,7 +38,7 @@ namespace TimeIntegrator{
 class ImplicitTimeIntegratorParameters: public TimeIntegratorParameters
 {
 public:
-  ImplicitTimeIntegratorParameters( boost::shared_ptr<AMP::Database> db);
+  ImplicitTimeIntegratorParameters( AMP::shared_ptr<AMP::Database> db);
   
   virtual ~ImplicitTimeIntegratorParameters();
   
@@ -47,7 +47,7 @@ public:
    * The strategies provide nonlinear equation and solver 
    * routines for treating the nonlinear problem on the hierarchy.
    */
-  boost::shared_ptr<AMP::Solver::SolverStrategy> d_solver;
+  AMP::shared_ptr<AMP::Solver::SolverStrategy> d_solver;
  protected:
   
  private:

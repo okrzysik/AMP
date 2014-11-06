@@ -32,7 +32,7 @@ public :
       temporarily not used in any formulation.
       3) OutputVariable - Name of the output variable
       */
-    VolumeIntegralOperator(const boost::shared_ptr<VolumeIntegralOperatorParameters> & params);
+    VolumeIntegralOperator(const AMP::shared_ptr<VolumeIntegralOperatorParameters> & params);
 
     /**
       Destructor.
@@ -42,15 +42,15 @@ public :
     /**
       This is used to update the operator between successive solves with the operator. 
       */
-    void reset(const boost::shared_ptr<OperatorParameters>&);
+    void reset(const AMP::shared_ptr<OperatorParameters>&);
 
     /**
       This is used to compute the information required to reset the corresponding Linear (Jacobian) operator
       */
-    boost::shared_ptr<OperatorParameters>
-      getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>&);
+    AMP::shared_ptr<OperatorParameters>
+      getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>&);
 
-    void setAuxVariable(const boost::shared_ptr<AMP::LinearAlgebra::MultiVariable>& var) {
+    void setAuxVariable(const AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable>& var) {
       d_auxVariables = var;
     }
 
@@ -62,17 +62,17 @@ public :
       return d_outVariable;
     }
 
-    boost::shared_ptr<SourcePhysicsModel> getSourcePhysicsModel(){
+    AMP::shared_ptr<SourcePhysicsModel> getSourcePhysicsModel(){
       return d_sourcePhysicsModel;
     }
 
-    boost::shared_ptr<SourceNonlinearElement> getSourceElement() { 
+    AMP::shared_ptr<SourceNonlinearElement> getSourceElement() { 
       return d_srcNonlinElem;
     }
 
     /*
-       boost::shared_ptr<AMP::LinearAlgebra::Matrix> getLinearizedVolumeIntegralOperator(
-       const boost::shared_ptr<OperatorParameters>& params);
+       AMP::shared_ptr<AMP::LinearAlgebra::Matrix> getLinearizedVolumeIntegralOperator(
+       const AMP::shared_ptr<OperatorParameters>& params);
      */
 
 protected :
@@ -101,15 +101,15 @@ protected :
 
     void getNodeDofIndicesForCurrentElement();
 
-    void init(const boost::shared_ptr<VolumeIntegralOperatorParameters>& params);
+    void init(const AMP::shared_ptr<VolumeIntegralOperatorParameters>& params);
 
     std::string d_isInputType; 
 
     std::vector<double> d_elementOutputVector;/**< Output vector for the Element Operation. */
 
-    boost::shared_ptr<SourceNonlinearElement> d_srcNonlinElem;/**< Element Operation. */
+    AMP::shared_ptr<SourceNonlinearElement> d_srcNonlinElem;/**< Element Operation. */
 
-    boost::shared_ptr<SourcePhysicsModel> d_sourcePhysicsModel;/**< Source Physics Model. */
+    AMP::shared_ptr<SourcePhysicsModel> d_sourcePhysicsModel;/**< Source Physics Model. */
 
     std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> d_inVec;/**< Input vector for active variables. */
 
@@ -128,15 +128,15 @@ protected :
 
   private :
 
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables;/**< Input Active variables. */
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables;/**< Input Active variables. */
 
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_auxVariables;/**< Input Auxillary variables. */
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_auxVariables;/**< Input Auxillary variables. */
 
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;/**< Output variables. */
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;/**< Output variables. */
 
-    // boost::shared_ptr<AMP::LinearAlgebra::Matrix> d_pDiagonalMatrix;
-    // boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pDiagonalVector;
-    // boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pNullVector;
+    // AMP::shared_ptr<AMP::LinearAlgebra::Matrix> d_pDiagonalMatrix;
+    // AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pDiagonalVector;
+    // AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pNullVector;
     // bool d_bMatrixAndVectorsCloned;
 };
 

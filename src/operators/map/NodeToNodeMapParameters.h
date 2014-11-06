@@ -16,7 +16,7 @@ namespace Operator {
       size_t                                        d_NumPartners;
       
 
-      NodeToNodeMapParameters ( const boost::shared_ptr<AMP::Database> &db )
+      NodeToNodeMapParameters ( const AMP::shared_ptr<AMP::Database> &db )
         : AsyncMapOperatorParameters ( db )
       {
       }

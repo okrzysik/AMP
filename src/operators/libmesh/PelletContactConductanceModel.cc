@@ -8,18 +8,18 @@ namespace AMP {
 
 
     PelletContactConductanceModel :: PelletContactConductanceModel(const
-        boost::shared_ptr<RobinPhysicsModelParameters>& params) : RobinPhysicsModel (params) {
+        AMP::shared_ptr<RobinPhysicsModelParameters>& params) : RobinPhysicsModel (params) {
       d_nTransportModels   =  (params->d_db)->getInteger("Number_TransportModels");
       d_transportModels.resize( d_nTransportModels );
-      boost::shared_ptr<ElementPhysicsModel> elementPhysicsModel;
+      AMP::shared_ptr<ElementPhysicsModel> elementPhysicsModel;
 
       for (unsigned int i = 0; i < d_nTransportModels ; i++)
       {
         char key[100];
         sprintf(key, "DiffusionTransportModel_%d", (int)i);
-        boost::shared_ptr<Database> transportModel_db = (params->d_db)->getDatabase(key);
+        AMP::shared_ptr<Database> transportModel_db = (params->d_db)->getDatabase(key);
         elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel(transportModel_db);
-        d_transportModels[i] = boost::dynamic_pointer_cast<DiffusionTransportModel>(elementPhysicsModel) ;
+        d_transportModels[i] = AMP::dynamic_pointer_cast<DiffusionTransportModel>(elementPhysicsModel) ;
       }
     }
 

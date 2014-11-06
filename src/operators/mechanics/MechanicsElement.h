@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 /* AMP files */
 #include "operators/ElementOperation.h"
@@ -42,7 +42,7 @@ namespace Operator {
         4) QRULE_TYPE (QGAUSS by default) - Type of numerical integration scheme used.
         5) QRULE_ORDER (DEFAULT by default) - Order of the numerical integration scheme.
         */
-      MechanicsElement(const boost::shared_ptr<ElementOperationParameters>& params);
+      MechanicsElement(const AMP::shared_ptr<ElementOperationParameters>& params);
 
       /**
         Destructor.
@@ -57,7 +57,7 @@ namespace Operator {
         @param [in] materialModel Shared pointer to the mechanics material model used in the current element.
         */
       void initializeForCurrentElement( const ::Elem *elem, 
-          const boost::shared_ptr<MechanicsMaterialModel> & materialModel )
+          const AMP::shared_ptr<MechanicsMaterialModel> & materialModel )
       {
         d_elem = elem;
         d_materialModel = materialModel;
@@ -75,19 +75,19 @@ namespace Operator {
       bool d_useReducedIntegration; /**< A flag that is true if reduced integration 
                                       scheme is used and false otherwise. */
 
-      boost::shared_ptr < ::FEType > d_feType; /**< Type of polynomial used for the
+      AMP::shared_ptr < ::FEType > d_feType; /**< Type of polynomial used for the
                                                  finite element shape functions. This includes
                                                  both the polynomial order: 
                                                  First order/Second order etc. and polynomial family:
                                                  Lagrange/Hierarchic/Hermite etc.  */
 
-      boost::shared_ptr < ::FEBase > d_fe; /**< Finite element shape functions. */
+      AMP::shared_ptr < ::FEBase > d_fe; /**< Finite element shape functions. */
 
-      boost::shared_ptr < ::QBase > d_qrule; /**< Quadtrature rule used for numerical integration. */
+      AMP::shared_ptr < ::QBase > d_qrule; /**< Quadtrature rule used for numerical integration. */
 
       const ::Elem *d_elem; /**< Pointer to the current element within the finite element assembly. */
 
-      boost::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Shared pointer to
+      AMP::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Shared pointer to
                                                                    the mechanics material 
                                                                    model used in the current element. */
 

@@ -35,12 +35,12 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
         return AMP::LinearAlgebra::Vector::shared_ptr();
     AMP_ASSERT(variable.get()!=NULL);
     // Check if we are dealing with a multiDOFManager
-    boost::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF;
+    AMP::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF;
     if ( split )
-        multiDOF = boost::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>(DOFs);
+        multiDOF = AMP::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>(DOFs);
     // Check if we are dealing with a multiVariable
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> multiVariable =
-        boost::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(variable);
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> multiVariable =
+        AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(variable);
     if ( multiVariable.get() != NULL ) {
         // We are dealing with a MultiVariable, first check that there are no duplicate or null variables
         for (size_t i=0; i<multiVariable->numVariables(); i++) {
@@ -63,7 +63,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
         AMP_MPI comm = DOFs->getComm();
         AMP_ASSERT( !comm.isNull() );
         comm.barrier();
-        boost::shared_ptr<AMP::LinearAlgebra::MultiVector> multiVector = AMP::LinearAlgebra::MultiVector::create( variable, comm );
+        AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> multiVector = AMP::LinearAlgebra::MultiVector::create( variable, comm );
         multiVector->addVector(vectors);
         return multiVector;
     } else if (  multiDOF.get() != NULL ) {
@@ -77,7 +77,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
         AMP_MPI comm = DOFs->getComm();
         AMP_ASSERT( !comm.isNull() );
         comm.barrier();
-        boost::shared_ptr<AMP::LinearAlgebra::MultiVector> multiVector = AMP::LinearAlgebra::MultiVector::create( variable, comm );
+        AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> multiVector = AMP::LinearAlgebra::MultiVector::create( variable, comm );
         multiVector->addVector(vectors);
         return multiVector;
     } else {
@@ -103,9 +103,9 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
         comm.barrier();
         // Create the vector parameters
         #if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
-            boost::shared_ptr<AMP::LinearAlgebra::ManagedPetscVectorParameters> mvparams(
+            AMP::shared_ptr<AMP::LinearAlgebra::ManagedPetscVectorParameters> mvparams(
                 new AMP::LinearAlgebra::ManagedPetscVectorParameters() );
-            boost::shared_ptr<AMP::LinearAlgebra::EpetraVectorEngineParameters> eveparams(
+            AMP::shared_ptr<AMP::LinearAlgebra::EpetraVectorEngineParameters> eveparams(
                 new AMP::LinearAlgebra::EpetraVectorEngineParameters( DOFs->numLocalDOF(), DOFs->numGlobalDOF(), DOFs->getComm() ) );
             comm.barrier();
             AMP::LinearAlgebra::VectorEngine::BufferPtr t_buffer ( new AMP::LinearAlgebra::VectorEngine::Buffer( DOFs->numLocalDOF() ) );
@@ -122,9 +122,9 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
             comm.barrier();
             return vector;
         #elif defined(USE_EXT_TRILINOS)
-            boost::shared_ptr<AMP::LinearAlgebra::ManagedVectorParameters> mvparams(
+            AMP::shared_ptr<AMP::LinearAlgebra::ManagedVectorParameters> mvparams(
                 new AMP::LinearAlgebra::ManagedVectorParameters() );
-            boost::shared_ptr<AMP::LinearAlgebra::EpetraVectorEngineParameters> eveparams(
+            AMP::shared_ptr<AMP::LinearAlgebra::EpetraVectorEngineParameters> eveparams(
                 new AMP::LinearAlgebra::EpetraVectorEngineParameters( DOFs->numLocalDOF(), DOFs->numGlobalDOF(), DOFs->getComm() ) );
             comm.barrier();
             AMP::LinearAlgebra::VectorEngine::BufferPtr t_buffer ( new AMP::LinearAlgebra::VectorEngine::Buffer( DOFs->numLocalDOF() ) );

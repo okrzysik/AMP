@@ -38,7 +38,7 @@ namespace TimeIntegrator{
 *************************************************************************
 */
 
-ImplicitTimeIntegrator::ImplicitTimeIntegrator( boost::shared_ptr< TimeIntegratorParameters > parameters):TimeIntegrator(parameters)
+ImplicitTimeIntegrator::ImplicitTimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters):TimeIntegrator(parameters)
 {   
    initialize(parameters);
 }
@@ -61,9 +61,9 @@ ImplicitTimeIntegrator::~ImplicitTimeIntegrator()
 *************************************************************************
 */
 
-void ImplicitTimeIntegrator::initialize( boost::shared_ptr< TimeIntegratorParameters > parameters)
+void ImplicitTimeIntegrator::initialize( AMP::shared_ptr< TimeIntegratorParameters > parameters)
 {
-  boost::shared_ptr< ImplicitTimeIntegratorParameters>  params = boost::dynamic_pointer_cast<ImplicitTimeIntegratorParameters>(parameters);
+  AMP::shared_ptr< ImplicitTimeIntegratorParameters>  params = AMP::dynamic_pointer_cast<ImplicitTimeIntegratorParameters>(parameters);
    
   if(params.get()!=NULL)
    {
@@ -119,7 +119,7 @@ ImplicitTimeIntegrator::advanceSolution(const double dt, const bool first_step)
                       d_current_dt,
                       d_old_dt);
       
-      boost::shared_ptr<AMP::LinearAlgebra::Vector> rhs;
+      AMP::shared_ptr<AMP::LinearAlgebra::Vector> rhs;
       rhs.reset();
       
       d_solver->setInitialGuess(d_solution);      
@@ -140,7 +140,7 @@ ImplicitTimeIntegrator::advanceSolution(const double dt, const bool first_step)
 *************************************************************************
 */
 
-void ImplicitTimeIntegrator::getFromInput(boost::shared_ptr<AMP::Database> db)
+void ImplicitTimeIntegrator::getFromInput(AMP::shared_ptr<AMP::Database> db)
 {
    AMP_ASSERT(db.get()!=NULL);  
 }
@@ -154,7 +154,7 @@ void ImplicitTimeIntegrator::getFromInput(boost::shared_ptr<AMP::Database> db)
 */
 
 void 
-ImplicitTimeIntegrator::putToDatabase(boost::shared_ptr<AMP::Database> db)
+ImplicitTimeIntegrator::putToDatabase(AMP::shared_ptr<AMP::Database> db)
 {
    TimeIntegrator::putToDatabase(db);
 }
@@ -188,7 +188,7 @@ ImplicitTimeIntegrator::printClassData(std::ostream& os) const
 }
 
 void
-ImplicitTimeIntegrator::initializeTimeOperator(boost::shared_ptr< TimeIntegratorParameters > )
+ImplicitTimeIntegrator::initializeTimeOperator(AMP::shared_ptr< TimeIntegratorParameters > )
 {
   
  

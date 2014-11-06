@@ -18,17 +18,17 @@ namespace LinearAlgebra {
 ****************************************************************/
 Vector::shared_ptr  SubsetVector::view ( Vector::shared_ptr v , Variable::shared_ptr var_in )
 {
-    return boost::const_pointer_cast<Vector>( SubsetVector::view( Vector::const_shared_ptr(v), var_in ) );
+    return AMP::const_pointer_cast<Vector>( SubsetVector::view( Vector::const_shared_ptr(v), var_in ) );
 }
 Vector::const_shared_ptr  SubsetVector::view ( Vector::const_shared_ptr v , Variable::shared_ptr var_in )
 {
     PROFILE_START("view",2);
-    boost::shared_ptr<SubsetVariable> var = boost::dynamic_pointer_cast<SubsetVariable>( var_in );
+    AMP::shared_ptr<SubsetVariable> var = AMP::dynamic_pointer_cast<SubsetVariable>( var_in );
     AMP_ASSERT( var.get() != NULL );
-    if ( boost::dynamic_pointer_cast<const MultiVector>(v) ) {
+    if ( AMP::dynamic_pointer_cast<const MultiVector>(v) ) {
         // We are dealing with a multivector, it is more efficient to subset the individual pieces,
         // then create a new mulitvector
-        boost::shared_ptr<const MultiVector> mv = boost::dynamic_pointer_cast<const MultiVector>(v);
+        AMP::shared_ptr<const MultiVector> mv = AMP::dynamic_pointer_cast<const MultiVector>(v);
         std::vector<Vector::const_shared_ptr> vec_list;
         for (size_t i=0; i<mv->getNumberOfSubvectors(); i++) {
             Vector::const_shared_ptr sub_vec = SubsetVector::view( mv->getVector(i), var_in );
@@ -71,13 +71,13 @@ Vector::const_shared_ptr  SubsetVector::view ( Vector::const_shared_ptr v , Vari
         commList = AMP::LinearAlgebra::CommunicationList::shared_ptr( new AMP::LinearAlgebra::CommunicationList(params) );
     }
     // Create the new subset vector
-    boost::shared_ptr<SubsetVector> retVal( new SubsetVector() );
+    AMP::shared_ptr<SubsetVector> retVal( new SubsetVector() );
     retVal->setVariable( var );
-    retVal->d_ViewVector = boost::const_pointer_cast<Vector>( v );
+    retVal->d_ViewVector = AMP::const_pointer_cast<Vector>( v );
     retVal->d_DOFManager = subsetDOF;
     retVal->setCommunicationList( commList );
-    boost::shared_ptr<AMP::Discretization::subsetDOFManager> tmp = 
-        boost::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( subsetDOF );
+    AMP::shared_ptr<AMP::Discretization::subsetDOFManager> tmp = 
+        AMP::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( subsetDOF );
     if ( tmp != NULL ) {
         retVal->d_SubsetLocalIDToViewGlobalID = tmp->getLocalParentDOFs();
     } else if ( subsetDOF->numLocalDOF() == parentDOF->numLocalDOF() ) {
@@ -168,8 +168,8 @@ void  SubsetVector::addLocalValuesByGlobalID ( int cnt, size_t *ndx,  const doub
         for (int i=0; i<cnt; i++)
             parentDOFs[i] = ndx[i] + offset;
     } else {
-        boost::shared_ptr<AMP::Discretization::subsetDOFManager> DOFManager = 
-            boost::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( d_DOFManager );
+        AMP::shared_ptr<AMP::Discretization::subsetDOFManager> DOFManager = 
+            AMP::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( d_DOFManager );
         std::vector<size_t>  subsetDOFs(cnt);
         for (int i=0; i<cnt; i++)
             subsetDOFs[i] = ndx[i];
@@ -190,8 +190,8 @@ void  SubsetVector::getLocalValuesByGlobalID ( int cnt , size_t *ndx , double *v
         for (int i=0; i<cnt; i++)
             parentDOFs[i] = ndx[i] + offset;
     } else {
-        boost::shared_ptr<AMP::Discretization::subsetDOFManager> DOFManager = 
-            boost::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( d_DOFManager );
+        AMP::shared_ptr<AMP::Discretization::subsetDOFManager> DOFManager = 
+            AMP::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( d_DOFManager );
         std::vector<size_t>  subsetDOFs(cnt);
         for (int i=0; i<cnt; i++)
             subsetDOFs[i] = ndx[i];
@@ -212,8 +212,8 @@ void  SubsetVector::setLocalValuesByGlobalID ( int cnt , size_t *ndx ,  const do
         for (int i=0; i<cnt; i++)
             parentDOFs[i] = ndx[i] + offset;
     } else {
-        boost::shared_ptr<AMP::Discretization::subsetDOFManager> DOFManager = 
-            boost::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( d_DOFManager );
+        AMP::shared_ptr<AMP::Discretization::subsetDOFManager> DOFManager = 
+            AMP::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( d_DOFManager );
         std::vector<size_t>  subsetDOFs(cnt);
         for (int i=0; i<cnt; i++)
             subsetDOFs[i] = ndx[i];

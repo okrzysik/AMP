@@ -19,7 +19,7 @@ public:
 
     // Constructors
     MultiMeshParameters( ): MeshParameters() {}
-    MultiMeshParameters(const boost::shared_ptr<AMP::Database> db): MeshParameters(db) {}
+    MultiMeshParameters(const AMP::shared_ptr<AMP::Database> db): MeshParameters(db) {}
 
 protected:
 

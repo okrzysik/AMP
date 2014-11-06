@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 /* AMP files */
 #include "MechanicsElement.h"
@@ -23,7 +23,7 @@ class MechanicsLinearElement : public MechanicsElement
 public :
 
     //! Constructor.
-    MechanicsLinearElement(const boost::shared_ptr<ElementOperationParameters>& params) :
+    MechanicsLinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
         MechanicsElement(params),
         d_elementStiffnessMatrix(NULL)
     { 

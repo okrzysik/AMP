@@ -31,7 +31,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
 #endif
 
-  boost::shared_ptr<AMP::InputDatabase> global_input_db(new AMP::InputDatabase("global_input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> global_input_db(new AMP::InputDatabase("global_input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, global_input_db);
   global_input_db->printClassData(AMP::plog);
 
@@ -40,14 +40,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   bool useThermalLoad = global_input_db->getBool("USE_THERMAL_LOAD");
 
   AMP_INSIST(global_input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  boost::shared_ptr<AMP::Database> mesh_db = global_input_db->getDatabase("Mesh");
-  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  AMP::shared_ptr<AMP::Database> mesh_db = global_input_db->getDatabase("Mesh");
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
   meshParams->setComm(globalComm);
   AMP::Mesh::Mesh::shared_ptr manager = AMP::Mesh::Mesh::buildMesh(meshParams);
 
-  boost::shared_ptr<AMP::Operator::CoupledOperator> coupledOp;
-  boost::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator;
-  boost::shared_ptr<AMP::Operator::PelletStackOperator> pelletStackOp; 
+  AMP::shared_ptr<AMP::Operator::CoupledOperator> coupledOp;
+  AMP::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator;
+  AMP::shared_ptr<AMP::Operator::PelletStackOperator> pelletStackOp; 
   helperCreateAllOperatorsForPelletMechanics(manager, globalComm, global_input_db, coupledOp, linearColumnOperator, pelletStackOp);
 
   AMP::LinearAlgebra::Vector::shared_ptr solVec, rhsVec, scaledRhsVec;
@@ -73,21 +73,21 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   solVec->zero();
   helperApplyBoundaryCorrectionsForPelletMechanics(coupledOp, solVec, rhsVec);
 
-  boost::shared_ptr<AMP::Database> nonlinearSolver_db = global_input_db->getDatabase("NonlinearSolver");
-  boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver");
-  boost::shared_ptr<AMP::Database> pelletStackSolver_db = linearSolver_db->getDatabase("PelletStackSolver");
+  AMP::shared_ptr<AMP::Database> nonlinearSolver_db = global_input_db->getDatabase("NonlinearSolver");
+  AMP::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver");
+  AMP::shared_ptr<AMP::Database> pelletStackSolver_db = linearSolver_db->getDatabase("PelletStackSolver");
 
-  boost::shared_ptr<AMP::Solver::SolverStrategy> pelletStackSolver;
+  AMP::shared_ptr<AMP::Solver::SolverStrategy> pelletStackSolver;
   helperBuildStackSolverForPelletMechanics(pelletStackSolver_db, pelletStackOp, linearColumnOperator, pelletStackSolver);
 
-  boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new
+  AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new
       AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
   nonlinearSolverParams->d_comm = globalComm;
   nonlinearSolverParams->d_pOperator = coupledOp;
   nonlinearSolverParams->d_pInitialGuess = solVec;
-  boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
+  AMP::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
 
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
+  AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
   linearSolver->setPreconditioner(pelletStackSolver);
 
 #ifdef USE_EXT_SILO

@@ -1,7 +1,7 @@
 #ifndef included_AMP_Operator
 #define included_AMP_Operator
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "operators/OperatorParameters.h"
 
@@ -27,13 +27,13 @@ namespace Operator {
 class Operator {
 public :
 
-    typedef boost::shared_ptr<AMP::Operator::Operator>  shared_ptr;
+    typedef AMP::shared_ptr<AMP::Operator::Operator>  shared_ptr;
 
     //! Default constructor
     Operator(void);
 
     //! Constructor
-    Operator(const boost::shared_ptr<OperatorParameters> & params);
+    Operator(const AMP::shared_ptr<OperatorParameters> & params);
 
     //! Destructor
     virtual ~Operator() { }
@@ -43,7 +43,7 @@ public :
       * \param params
       *    parameter object containing parameters to change
       */
-     virtual void reset(const boost::shared_ptr<OperatorParameters>& params);
+     virtual void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
     /**
       This base class can not give a meaningful definition of apply. See the derived classes for
@@ -62,10 +62,10 @@ public :
      * a parameter object instead of the Jacobian itself is meant 
      * to give users more flexibility.
      */
-    virtual boost::shared_ptr<OperatorParameters> 
-      getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& ) {
+    virtual AMP::shared_ptr<OperatorParameters> 
+      getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& ) {
          //Implemented in derived class.
-         boost::shared_ptr<OperatorParameters> emptyPointer;
+         AMP::shared_ptr<OperatorParameters> emptyPointer;
          return emptyPointer;
       }
 
@@ -99,7 +99,7 @@ public :
     virtual AMP::LinearAlgebra::Vector::shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec);
     virtual AMP::LinearAlgebra::Vector::const_shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec);
 
-    virtual bool isValidInput(boost::shared_ptr<AMP::LinearAlgebra::Vector>&){return true; }
+    virtual bool isValidInput(AMP::shared_ptr<AMP::LinearAlgebra::Vector>&){return true; }
 
     AMP::Mesh::Mesh::shared_ptr getMesh() {
         return d_Mesh;
@@ -108,7 +108,7 @@ public :
 
 protected :
 
-    void getFromInput(const boost::shared_ptr<AMP::Database>& db);
+    void getFromInput(const AMP::shared_ptr<AMP::Database>& db);
 
     int d_iDebugPrintInfoLevel;
 

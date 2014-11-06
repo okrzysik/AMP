@@ -8,10 +8,10 @@ namespace AMP {
 namespace Operator {
 
 
-CoupledOperator::CoupledOperator(const boost::shared_ptr<OperatorParameters>& params)
+CoupledOperator::CoupledOperator(const AMP::shared_ptr<OperatorParameters>& params)
     : ColumnOperator(params)
 {
-    boost::shared_ptr<CoupledOperatorParameters> myparams = boost::dynamic_pointer_cast<CoupledOperatorParameters>(params);
+    AMP::shared_ptr<CoupledOperatorParameters> myparams = AMP::dynamic_pointer_cast<CoupledOperatorParameters>(params);
     d_Operators.push_back(myparams->d_NodeToGaussPointOperator);
     d_Operators.push_back(myparams->d_CopyOperator);
     d_Operators.push_back(myparams->d_MapOperator);

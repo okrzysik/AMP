@@ -14,7 +14,7 @@ namespace Operator {
       AMP::LinearAlgebra::Variable::shared_ptr   d_Input , d_Output;
 
     public:
-      EpetraMatrixOperator ( const boost::shared_ptr<EpetraMatrixOperatorParameters>  & params ) : LinearOperator ( params )
+      EpetraMatrixOperator ( const AMP::shared_ptr<EpetraMatrixOperatorParameters>  & params ) : LinearOperator ( params )
       {
         AMP::LinearAlgebra::Matrix::shared_ptr  t ( new AMP::LinearAlgebra::ManagedEpetraMatrix ( params->d_Matrix ) );
         setMatrix ( t );

@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 /* AMP files*/
 
@@ -16,7 +16,7 @@ namespace Operator {
 class DiffusionNonlinearElement: public DiffusionElement {
 public:
 
-    DiffusionNonlinearElement(const boost::shared_ptr<ElementOperationParameters>& params) :
+    DiffusionNonlinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
         DiffusionElement(params),
         d_elementOutputVector(NULL),
         d_transportOutputVector(NULL),

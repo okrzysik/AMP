@@ -14,8 +14,7 @@
 #endif
 
 #include "utils/PIO.h"
-#include "boost/shared_ptr.hpp"
-#include "boost/enable_shared_from_this.hpp"
+#include "utils/shared_ptr.h"
 #include <string>
 
 
@@ -41,7 +40,7 @@ class VectorParameters : public ParameterBase, public Castable
 {
 public:
     //! Convenience typedef
-    typedef boost::shared_ptr<VectorParameters>   shared_ptr;
+    typedef AMP::shared_ptr<VectorParameters>   shared_ptr;
 
     //! The CommunicationList for a vector
     CommunicationList::shared_ptr             d_CommList;
@@ -81,7 +80,7 @@ class ManagedVector;
   * \f$\mathbf{\tilde{u}}\f$ and \f$\mathbf{f}\f$ are Vectors.
   */
 
-class Vector : virtual public VectorOperations, public boost::enable_shared_from_this<Vector>
+class Vector : virtual public VectorOperations, public AMP::enable_shared_from_this<Vector>
 {
 public:
     /**\brief Flag to choose algorithm for makeConsistent
@@ -92,12 +91,12 @@ public:
     /** \typedef shared_ptr
       * \brief Shorthand for shared pointer to Vector
       */
-    typedef boost::shared_ptr <Vector>     shared_ptr;
+    typedef AMP::shared_ptr <Vector>     shared_ptr;
 
     /** \typedef shared_ptr
       * \brief Shorthand for shared pointer to Vector
       */
-    typedef boost::shared_ptr <const Vector>     const_shared_ptr;
+    typedef AMP::shared_ptr <const Vector>     const_shared_ptr;
 
     /** \brief Return the name of the vector
       */
@@ -267,7 +266,7 @@ public:
     /** \brief Return a parameters description of this vector
       * \return Parameters
       */
-    boost::shared_ptr<ParameterBase> getParameters();
+    AMP::shared_ptr<ParameterBase> getParameters();
 
     /** \brief  Selects a portion of this vector and creates a view.
       * \param[in]  criterion  The method for deciding inclusion in the view
@@ -555,7 +554,7 @@ public:
       * \brief Return the local dot product of this vector with the argument vector.
       * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
      */
-    virtual double localDot ( boost::shared_ptr<const Vector> x ) const;
+    virtual double localDot ( AMP::shared_ptr<const Vector> x ) const;
 
     /**
       * \brief  Determine if two vectors are equal using an absolute tolerance
@@ -1060,7 +1059,7 @@ public:
       *  of the current vector only (not vectors it contains).  
       *  It should NOT be used by users.
       */
-    boost::shared_ptr<UpdateState>  getUpdateStatusPtr() const;
+    AMP::shared_ptr<UpdateState>  getUpdateStatusPtr() const;
 
 
     /** \brief  Tie the current update state to another
@@ -1069,7 +1068,7 @@ public:
       *  It should NOT be used by users.
       * \param  rhs Pointer to share update state with
       */
-    void setUpdateStatusPtr ( boost::shared_ptr<UpdateState> rhs );
+    void setUpdateStatusPtr ( AMP::shared_ptr<UpdateState> rhs );
 
 
 protected:
@@ -1096,7 +1095,7 @@ protected:
       * are the same without a call to makeConsistent.
       * \see makeConsistent
       */
-    void  copyGhostValues ( const boost::shared_ptr<const Vector> &rhs );
+    void  copyGhostValues ( const AMP::shared_ptr<const Vector> &rhs );
 
     /** \brief Notify listeners that data has changed in this vector.
       */
@@ -1138,7 +1137,7 @@ protected:
       *\details A Vector can be in one of three states. This is the current state of the vector
       * Because a vector can be composed of vectors, the update state needs to be shared between them
       */
-    boost::shared_ptr<UpdateState>  d_UpdateState;
+    AMP::shared_ptr<UpdateState>  d_UpdateState;
 
     /**\brief  The Variable associated with this Vector
       */
@@ -1163,9 +1162,9 @@ private:
     // output stream for vector data
     std::ostream* d_output_stream;
 
-    boost::shared_ptr<std::vector<double> >         d_Ghosts;
-    boost::shared_ptr<std::vector<double> >         d_AddBuffer;
-    boost::shared_ptr<std::vector<boost::weak_ptr<Vector> > >  d_Views;
+    AMP::shared_ptr<std::vector<double> >         d_Ghosts;
+    AMP::shared_ptr<std::vector<double> >         d_AddBuffer;
+    AMP::shared_ptr<std::vector<AMP::weak_ptr<Vector> > >  d_Views;
 
 };
 

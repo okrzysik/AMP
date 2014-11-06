@@ -12,7 +12,7 @@
 #include "utils/InputDatabase.h"
 
 /*Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include <vector>
 
@@ -30,12 +30,12 @@ namespace Operator {
 
     public:
       //typedef AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>      HexGaussPointVariable;
-      //typedef boost::shared_ptr<HexGaussPointVariable>      SP_HexGaussPointVariable;
-      typedef boost::shared_ptr<NeutronicsRhsParameters>               SP_Parameters;
-      typedef boost::shared_ptr<OperatorParameters>            SP_OperatorParameters;
+      //typedef AMP::shared_ptr<HexGaussPointVariable>      SP_HexGaussPointVariable;
+      typedef AMP::shared_ptr<NeutronicsRhsParameters>               SP_Parameters;
+      typedef AMP::shared_ptr<OperatorParameters>            SP_OperatorParameters;
       typedef std::vector<double>                                            Vec_Dbl;
-      typedef boost::shared_ptr<Vec_Dbl>                                  SP_Vec_Dbl; 
-      typedef boost::shared_ptr<AMP::Database>                           SP_Database;
+      typedef AMP::shared_ptr<Vec_Dbl>                                  SP_Vec_Dbl; 
+      typedef AMP::shared_ptr<AMP::Database>                           SP_Database;
     
       //! Neutronics Input Types
       enum SourceType{ Power, Oxygen, Metal, FissionGas, Isotopes, NUM_SOURCE_TYPES };

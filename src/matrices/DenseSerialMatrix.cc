@@ -35,12 +35,12 @@ DenseSerialMatrix::~DenseSerialMatrix()
 Matrix::shared_ptr  DenseSerialMatrix::transpose() const
 {
     // Create the matrix parameters
-    boost::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params( 
+    AMP::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params( 
         new AMP::LinearAlgebra::MatrixParameters( d_DOFManagerRight, d_DOFManagerLeft, d_comm ) );
     params->d_VariableLeft = d_VariableRight;
     params->d_VariableRight = d_VariableLeft;
     // Create the matrix
-    boost::shared_ptr<AMP::LinearAlgebra::DenseSerialMatrix>  newMatrix( new AMP::LinearAlgebra::DenseSerialMatrix(params) );
+    AMP::shared_ptr<AMP::LinearAlgebra::DenseSerialMatrix>  newMatrix( new AMP::LinearAlgebra::DenseSerialMatrix(params) );
     double *M2 = newMatrix->d_M;
     for (size_t i=0; i<d_rows; i++) {
         for (size_t j=0; j<d_cols; j++) {
@@ -52,12 +52,12 @@ Matrix::shared_ptr  DenseSerialMatrix::transpose() const
 Matrix::shared_ptr  DenseSerialMatrix::cloneMatrix() const
 {
     // Create the matrix parameters
-    boost::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params( 
+    AMP::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params( 
         new AMP::LinearAlgebra::MatrixParameters( d_DOFManagerLeft, d_DOFManagerRight, d_comm ) );
     params->d_VariableLeft = d_VariableLeft;
     params->d_VariableRight = d_VariableRight;
     // Create the matrix
-    boost::shared_ptr<AMP::LinearAlgebra::DenseSerialMatrix>  newMatrix( new AMP::LinearAlgebra::DenseSerialMatrix(params) );
+    AMP::shared_ptr<AMP::LinearAlgebra::DenseSerialMatrix>  newMatrix( new AMP::LinearAlgebra::DenseSerialMatrix(params) );
     double *M2 = newMatrix->d_M;
     memcpy(M2,d_M,d_cols*d_rows*sizeof(double));
     return newMatrix;
@@ -318,22 +318,22 @@ void DenseSerialMatrix::multiply( Matrix::shared_ptr other_op, Matrix::shared_pt
     size_t K = this->numGlobalColumns();
     size_t M = other_op->numGlobalColumns();
     // Create the matrix parameters
-    boost::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params( 
+    AMP::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params( 
         new AMP::LinearAlgebra::MatrixParameters( d_DOFManagerLeft, other_op->getRightDOFManager(), d_comm ) );
     params->d_VariableLeft = d_VariableLeft;
     params->d_VariableRight = d_VariableRight;
     // Create the matrix
-    boost::shared_ptr<AMP::LinearAlgebra::DenseSerialMatrix>  newMatrix( new AMP::LinearAlgebra::DenseSerialMatrix(params) );
+    AMP::shared_ptr<AMP::LinearAlgebra::DenseSerialMatrix>  newMatrix( new AMP::LinearAlgebra::DenseSerialMatrix(params) );
     result = newMatrix;
     memset(newMatrix->d_M,0,K*M*sizeof(double));
     // Perform the muliplication
-    if ( boost::dynamic_pointer_cast<DenseSerialMatrix>(other_op)==NULL ) {
+    if ( AMP::dynamic_pointer_cast<DenseSerialMatrix>(other_op)==NULL ) {
         // X is an unknown matrix type
         AMP_ERROR("Not programmed yet");
     } else {
         // We are dealing with all DenseSerialMatrix classes
         const double *A = d_M;
-        const double *B = boost::dynamic_pointer_cast<DenseSerialMatrix>(other_op)->d_M;
+        const double *B = AMP::dynamic_pointer_cast<DenseSerialMatrix>(other_op)->d_M;
         double *C = newMatrix->d_M;
         for (size_t m=0; m<M; m++) {
             for (size_t k=0; k<K; k++) {

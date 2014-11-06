@@ -23,7 +23,7 @@ class DirichletMatrixCorrection : public BoundaryOperator
 public :
 
     //! Constructor
-    DirichletMatrixCorrection(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & params);
+    DirichletMatrixCorrection(const AMP::shared_ptr<DirichletMatrixCorrectionParameters> & params);
 
     //! Destructor
     virtual ~DirichletMatrixCorrection() { }
@@ -44,14 +44,14 @@ public :
         //Do Nothing
     }
 
-    void parseParams(const boost::shared_ptr<DirichletMatrixCorrectionParameters> & );
+    void parseParams(const AMP::shared_ptr<DirichletMatrixCorrectionParameters> & );
 
     /**
       This function modifies the entries of the matrix formed by the volume operator
       in order to impose Dirichlet boundary conditions. This function can also be used
       to change the Dirichlet boundary conditions, if required.
       */
-    void reset(const boost::shared_ptr<OperatorParameters>& );
+    void reset(const AMP::shared_ptr<OperatorParameters>& );
 
     /**
       Adds a vector to the RHS vector. This is one of the steps for imposing Dirichlet boundary conditions.  
@@ -88,7 +88,7 @@ protected :
 
     AMP::LinearAlgebra::Vector::shared_ptr d_dispVals;
 
-    boost::shared_ptr<DirichletVectorCorrection> d_rhsCorrectionSet;
+    AMP::shared_ptr<DirichletVectorCorrection> d_rhsCorrectionSet;
 
     bool d_symmetricCorrection;
 

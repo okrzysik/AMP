@@ -20,7 +20,7 @@ class SubchannelTwoEqNonlinearOperator : public Operator
 public:
 
     //! Constructor
-    SubchannelTwoEqNonlinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params);
+    SubchannelTwoEqNonlinearOperator(const AMP::shared_ptr<SubchannelOperatorParameters> & params);
 
     //! Destructor
     virtual ~SubchannelTwoEqNonlinearOperator() { }
@@ -36,7 +36,7 @@ public:
     void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
-    void reset(const boost::shared_ptr<OperatorParameters>& params);
+    void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         return d_inpVariable;
@@ -51,10 +51,10 @@ public:
     }
       
     //! Gets parameters from nonlinear operator for use in linear operator
-    boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
+    AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
     //! Get the element physics model
-    boost::shared_ptr<SubchannelPhysicsModel> getSubchannelPhysicsModel() { return d_subchannelPhysicsModel; }
+    AMP::shared_ptr<SubchannelPhysicsModel> getSubchannelPhysicsModel() { return d_subchannelPhysicsModel; }
 
     //! Get the Inlet Temperature [K]
     double getInletTemperature() { return d_Tin; }
@@ -63,30 +63,30 @@ public:
     double getOutletPressure() { return d_Pout; }
 
     //! Get the current operator parameters
-    boost::shared_ptr<SubchannelOperatorParameters> getParams() { return d_params; }
+    AMP::shared_ptr<SubchannelOperatorParameters> getParams() { return d_params; }
 
 protected:
 
-    boost::shared_ptr<SubchannelOperatorParameters> d_params;
+    AMP::shared_ptr<SubchannelOperatorParameters> d_params;
 
-    boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
+    AMP::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
 private :
 
     bool d_initialized; 
 
     // Function used in reset to get double parameter or use default if missing
-    double getDoubleParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, double);
+    double getDoubleParameter(AMP::shared_ptr<SubchannelOperatorParameters>, std::string, double);
 
     // Function used in reset to get integer parameter or use default if missing
-    int getIntegerParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, int);
+    int getIntegerParameter(AMP::shared_ptr<SubchannelOperatorParameters>, std::string, int);
 
     // Function used in reset to get double parameter or use default if missing
-    std::string getStringParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, std::string);
+    std::string getStringParameter(AMP::shared_ptr<SubchannelOperatorParameters>, std::string, std::string);
 
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> d_cladTemperature;
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_cladTemperature;
 
     double d_Pout;      // exit pressure [Pa]
     double d_Tin;       // inlet temperature [K]

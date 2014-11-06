@@ -35,7 +35,7 @@ public:
     /** \brief   Standard constructor
      * \param[in] params  Input parameters
      */
-    Map3to1to3 ( const boost::shared_ptr<OperatorParameters> & params );
+    Map3to1to3 ( const AMP::shared_ptr<OperatorParameters> & params );
 
     //!  Destructor
     virtual ~Map3to1to3 ();

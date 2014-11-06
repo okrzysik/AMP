@@ -188,7 +188,7 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 
 Steel316_MSRZC_09::Steel316_MSRZC_09()
 {
-		d_propertyMap = new std::map<std::string, boost::shared_ptr<Property<double> > >();
+		d_propertyMap = new std::map<std::string, AMP::shared_ptr<Property<double> > >();
 		INSERT_PROPERTY_IN_MAP(ThermalConductivity, 	Steel316_MSRZC_09_NS);
 		INSERT_PROPERTY_IN_MAP(Density, 				Steel316_MSRZC_09_NS);
 		INSERT_PROPERTY_IN_MAP(HeatCapacityPressure, 	Steel316_MSRZC_09_NS);

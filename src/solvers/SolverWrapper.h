@@ -14,14 +14,14 @@ namespace AMP {
 
         virtual ~SolverWrapper() { }
 
-        void setSolver(boost::shared_ptr<SolverStrategy> in) {
+        void setSolver(AMP::shared_ptr<SolverStrategy> in) {
           d_solver = in;
           d_pOperator = in->getOperator();
         }
 
-        void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
-            boost::shared_ptr<AMP::LinearAlgebra::Vector>  u) {
-          boost::shared_ptr<AMP::Operator::OperatorWrapper> wrapOp = boost::dynamic_pointer_cast<
+        void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
+            AMP::shared_ptr<AMP::LinearAlgebra::Vector>  u) {
+          AMP::shared_ptr<AMP::Operator::OperatorWrapper> wrapOp = AMP::dynamic_pointer_cast<
             AMP::Operator::OperatorWrapper>(d_pOperator);
           wrapOp->setFullVector(u);
           AMP::Vector::shared_ptr uTmp = u->subsetVectorForVariable(d_pOperator->getOutputVariable());
@@ -29,7 +29,7 @@ namespace AMP {
         }
 
       protected:
-        boost::shared_ptr<SolverStrategy> d_solver;
+        AMP::shared_ptr<SolverStrategy> d_solver;
     };
 
   }

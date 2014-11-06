@@ -7,7 +7,7 @@
 #include <string>
 #include <cstdlib>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -39,7 +39,7 @@ void myTest(AMP::UnitTest *ut)
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-  boost::shared_ptr<AMP::InputDatabase> outerInput_db(new AMP::InputDatabase(
+  AMP::shared_ptr<AMP::InputDatabase> outerInput_db(new AMP::InputDatabase(
         "outerInput_db"));
   AMP::InputManager::getManager()->parseInputFile(outerInput_file,
       outerInput_db);
@@ -47,8 +47,8 @@ void myTest(AMP::UnitTest *ut)
 
   // Get the Mesh database and create the mesh parameters
   AMP_INSIST(outerInput_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  boost::shared_ptr<AMP::Database> database = outerInput_db->getDatabase( "Mesh" );
-  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  AMP::shared_ptr<AMP::Database> database = outerInput_db->getDatabase( "Mesh" );
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
   params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
 
   // Create the meshes from the input database
@@ -66,7 +66,7 @@ void myTest(AMP::UnitTest *ut)
     std::string innerInput_file = outerInput_db->getString(key);
     std::cout << "Running test " << i+1 << " of " << numTests << ": " << innerInput_file << std::endl;
 
-    boost::shared_ptr<AMP::InputDatabase> innerInput_db(
+    AMP::shared_ptr<AMP::InputDatabase> innerInput_db(
         new AMP::InputDatabase("innerInput_db"));
     AMP::InputManager::getManager()->parseInputFile(innerInput_file,
         innerInput_db);
@@ -84,8 +84,8 @@ void myTest(AMP::UnitTest *ut)
     std::vector<int> dofsPerNodeArr = innerInput_db->getIntegerArray("dofsPerNode");
 
     // create a column operator object
-    boost::shared_ptr<AMP::Operator::OperatorParameters> params;
-    boost::shared_ptr<AMP::Operator::ColumnOperator> columnOperator(
+    AMP::shared_ptr<AMP::Operator::OperatorParameters> params;
+    AMP::shared_ptr<AMP::Operator::ColumnOperator> columnOperator(
         new AMP::Operator::ColumnOperator(params));
 
     std::vector<AMP::LinearAlgebra::Variable::shared_ptr> inputVariables;
@@ -102,15 +102,15 @@ void myTest(AMP::UnitTest *ut)
       sprintf(testOpName, "testOperator%d", opN);
       AMP_INSIST(innerInput_db->keyExists(testOpName), "key missing!  "+innerInput_file);
 
-      boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-      boost::shared_ptr<AMP::Database> testOp_db =
+      AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+      AMP::shared_ptr<AMP::Database> testOp_db =
         innerInput_db->getDatabase(testOpName);
-      boost::shared_ptr<AMP::Operator::Operator> testOperator =
+      AMP::shared_ptr<AMP::Operator::Operator> testOperator =
         AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
             testOpName, innerInput_db, elementPhysicsModel);
 
-      boost::shared_ptr<AMP::Operator::LinearOperator> myLinOp =
-        boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(
+      AMP::shared_ptr<AMP::Operator::LinearOperator> myLinOp =
+        AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>(
             testOperator);
       AMP_INSIST(myLinOp != NULL, "Is not a linear operator!");
 
@@ -122,10 +122,10 @@ void myTest(AMP::UnitTest *ut)
 
       // this only works as long at least one of the operators is diffusion and
       // its transport model has defaults defined
-      boost::shared_ptr<AMP::Database> model_db;
+      AMP::shared_ptr<AMP::Database> model_db;
       if (testOp_db->keyExists("VolumeOperator"))
       {
-        boost::shared_ptr<AMP::Database> volOp_db = innerInput_db->getDatabase(testOp_db->getString("VolumeOperator"));
+        AMP::shared_ptr<AMP::Database> volOp_db = innerInput_db->getDatabase(testOp_db->getString("VolumeOperator"));
         if ((volOp_db->getName() == "DiffusionNonlinearFEOperator")||(volOp_db->getName() == "DiffusionLinearFEOperator"))
         {
           model_db = innerInput_db->getDatabase(volOp_db->getString("LocalModel"));
@@ -144,7 +144,7 @@ void myTest(AMP::UnitTest *ut)
     {
         // Create the vectors
         AMP::LinearAlgebra::Variable::shared_ptr tmp_var(new AMP::LinearAlgebra::MultiVariable("columnInputVariable"));
-        boost::shared_ptr<AMP::LinearAlgebra::MultiVector> solVec = AMP::LinearAlgebra::MultiVector::create ( tmp_var, meshAdapter->getComm() );
+        AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> solVec = AMP::LinearAlgebra::MultiVector::create ( tmp_var, meshAdapter->getComm() );
         for (size_t i=0; i<inputVariables.size(); i++) {
             if ( inputVariables[i].get() != NULL )
                 solVec->addVector( AMP::LinearAlgebra::createVector( dofMapVec[i], inputVariables[i] ) );
@@ -171,8 +171,8 @@ void myTest(AMP::UnitTest *ut)
 #if 0
     // test getJacobianParameters
     msgPrefix=exeName + " : " + innerInput_file;
-    boost::shared_ptr<AMP::LinearAlgebra::Vector> nullGuess;
-    boost::shared_ptr<AMP::Operator::OperatorParameters> jacobianParameters = testOperator->getJacobianParameters(nullGuess);
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> nullGuess;
+    AMP::shared_ptr<AMP::Operator::OperatorParameters> jacobianParameters = testOperator->getJacobianParameters(nullGuess);
     if(jacobianParameters.get()!=NULL)
     {
       ut.passes(msgPrefix + "getJacobianParameters (should return NULL for now)");

@@ -9,7 +9,7 @@
 
 #include "materials/Material.h"
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 namespace AMP {
   namespace Operator {
@@ -34,7 +34,7 @@ namespace AMP {
          from the database object contained in the parameter object, params. This key specifies 
          whether or not the AMP::materials interface is used in this model.
          */
-        MechanicsMaterialModel(const boost::shared_ptr<MechanicsMaterialModelParameters>& params)
+        MechanicsMaterialModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& params)
           : ElementPhysicsModel(params) { 
             d_useMaterialsLibrary = (params->d_db)->getBoolWithDefault("USE_MATERIALS_LIBRARY",false);
 
@@ -213,7 +213,7 @@ namespace AMP {
           d_currentTime = currTime;
         }
 
-        boost::shared_ptr<AMP::Materials::Material> getMaterial() {
+        AMP::shared_ptr<AMP::Materials::Material> getMaterial() {
           return d_material;
         }
 
@@ -234,7 +234,7 @@ namespace AMP {
 
         bool d_checkCladOrPellet;
 
-        boost::shared_ptr<AMP::Materials::Material> d_material; /**< Shared pointer to the materials object. */
+        AMP::shared_ptr<AMP::Materials::Material> d_material; /**< Shared pointer to the materials object. */
 
       private :
 

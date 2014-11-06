@@ -12,12 +12,12 @@ namespace AMP {
   namespace Operator {
 
     NavierStokesLSWFFEOperator :: NavierStokesLSWFFEOperator (
-        const boost::shared_ptr<NavierStokesLSWFFEOperatorParameters> & params)
+        const AMP::shared_ptr<NavierStokesLSWFFEOperatorParameters> & params)
       : NonlinearFEOperator (params) {
         AMP_INSIST( ((params.get()) != NULL), "NULL parameter!" );
         AMP_INSIST( (((params->d_db).get()) != NULL), "NULL database!" );
 
-        d_nsLSWFElem = boost::dynamic_pointer_cast<NavierStokesLSWFElement>(d_elemOp);
+        d_nsLSWFElem = AMP::dynamic_pointer_cast<NavierStokesLSWFElement>(d_elemOp);
 
         AMP_INSIST( ((d_nsLSWFElem.get()) != NULL), "d_elemOp is not of type NavierStokesLSWFElement" );
 
@@ -41,7 +41,7 @@ namespace AMP {
           d_inpVariables->add(dummyVar);
         }//end for i
         AMP_INSIST( params->d_db->keyExists("ActiveInputVariables"), "key not found" );
-        boost::shared_ptr<AMP::Database> activeInpVar_db = params->d_db->getDatabase("ActiveInputVariables");
+        AMP::shared_ptr<AMP::Database> activeInpVar_db = params->d_db->getDatabase("ActiveInputVariables");
 
         std::vector<std::string> InternalVariableNames(NavierStokes::TOTAL_NUMBER_OF_VARIABLES);
         InternalVariableNames[NavierStokes::PRESSURE]= "PRESSURE";
@@ -182,21 +182,21 @@ namespace AMP {
 
     }
 
-    void NavierStokesLSWFFEOperator :: reset(const boost::shared_ptr<OperatorParameters>& )
+    void NavierStokesLSWFFEOperator :: reset(const AMP::shared_ptr<OperatorParameters>& )
     {
        // DO Nothing
     }
 
-    boost::shared_ptr<OperatorParameters> NavierStokesLSWFFEOperator ::
-      getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u) {
+    AMP::shared_ptr<OperatorParameters> NavierStokesLSWFFEOperator ::
+      getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u) {
 
         // set up a database for the linear operator params
-        boost::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
+        AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
         tmp_db->putBool("reset_reuses_matrix", true);
         tmp_db->putBool("isAttachedToNonlinearOperator", true);
 
         // create the linear operator params
-        boost::shared_ptr<NavierStokesLinearFEOperatorParameters> outParams(new
+        AMP::shared_ptr<NavierStokesLinearFEOperatorParameters> outParams(new
             NavierStokesLinearFEOperatorParameters(tmp_db));
 /*
         for(unsigned int i = 0; i < NavierStokes::TOTAL_NUMBER_OF_VARIABLES; i++) {

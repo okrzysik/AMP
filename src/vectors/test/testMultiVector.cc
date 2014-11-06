@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -30,29 +30,29 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     AMP::PIO::logOnlyNodeZero(log_file);
 
     // Read the input file
-    boost::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
+    AMP::shared_ptr<AMP::InputDatabase>  input_db ( new AMP::InputDatabase ( "input_db" ) );
     AMP::InputManager::getManager()->parseInputFile ( input_file , input_db );
 
     // Get the Mesh database and create the mesh parameters
-    boost::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
     params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
 
     // Create the meshes from the input database
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh(params);
 
     // Construct Variables
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable1(new AMP::LinearAlgebra::Variable("Var1"));
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable2(new AMP::LinearAlgebra::Variable("Var2"));
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable3(new AMP::LinearAlgebra::Variable("Var3"));
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> Variable4(new AMP::LinearAlgebra::Variable("Var4"));
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar( new AMP::LinearAlgebra::Variable("dummy"));
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> Variable1(new AMP::LinearAlgebra::Variable("Var1"));
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> Variable2(new AMP::LinearAlgebra::Variable("Var2"));
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> Variable3(new AMP::LinearAlgebra::Variable("Var3"));
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> Variable4(new AMP::LinearAlgebra::Variable("Var4"));
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar( new AMP::LinearAlgebra::Variable("dummy"));
 
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> subVariable (new AMP::LinearAlgebra::MultiVariable("subVar"));
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> subVariable (new AMP::LinearAlgebra::MultiVariable("subVar"));
     subVariable->add( Variable1 );
     subVariable->add( Variable2 );
 
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> fullVariable(new AMP::LinearAlgebra::MultiVariable("fullVariable"));
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> fullVariable(new AMP::LinearAlgebra::MultiVariable("fullVariable"));
     fullVariable->add( Variable1 );
     fullVariable->add( Variable2 );
     fullVariable->add( Variable3 );

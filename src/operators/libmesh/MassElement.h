@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 /* AMP files */
 #include "operators/ElementOperation.h"
@@ -22,20 +22,20 @@ namespace Operator {
     {
         public :
         
-        MassElement(const boost::shared_ptr<ElementOperationParameters>& params);
+        MassElement(const AMP::shared_ptr<ElementOperationParameters>& params);
         
         virtual ~MassElement() {  }
         
         void initializeForCurrentElement( const ::Elem *elem,
-                  const boost::shared_ptr<MassDensityModel> & densityModel );
+                  const AMP::shared_ptr<MassDensityModel> & densityModel );
         
         protected :
         
-        boost::shared_ptr < ::FEType > d_feType;
+        AMP::shared_ptr < ::FEType > d_feType;
         
-        boost::shared_ptr < ::FEBase > d_fe;
+        AMP::shared_ptr < ::FEBase > d_fe;
         
-        boost::shared_ptr < ::QBase > d_qrule;
+        AMP::shared_ptr < ::QBase > d_qrule;
         
         const std::vector<Real> *d_JxW;
         
@@ -43,7 +43,7 @@ namespace Operator {
         
         const ::Elem *d_elem;
         
-        boost::shared_ptr<MassDensityModel> d_densityModel;
+        AMP::shared_ptr<MassDensityModel> d_densityModel;
         
         private :
         

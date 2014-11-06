@@ -10,7 +10,7 @@ class BackwardEulerTimeOperator: public TimeOperator
 {
  public:
 
-  BackwardEulerTimeOperator(boost::shared_ptr<AMP::Operator::OperatorParameters > params);
+  BackwardEulerTimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > params);
   
   void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
          AMP::LinearAlgebra::Vector::const_shared_ptr u,

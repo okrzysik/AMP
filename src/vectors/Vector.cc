@@ -27,12 +27,12 @@ RNG::shared_ptr  Vector::d_DefaultRNG;
 ****************************************************************/
 Vector::Vector ()
 {
-    d_Ghosts = boost::shared_ptr<std::vector<double> > ( new std::vector<double> );
-    d_AddBuffer = boost::shared_ptr<std::vector<double> > ( new std::vector<double> );
+    d_Ghosts = AMP::shared_ptr<std::vector<double> > ( new std::vector<double> );
+    d_AddBuffer = AMP::shared_ptr<std::vector<double> > ( new std::vector<double> );
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = UNCHANGED;
-    d_Views = boost::shared_ptr<std::vector<boost::weak_ptr <Vector> > >( 
-        new std::vector<boost::weak_ptr <Vector> >() );
+    d_Views = AMP::shared_ptr<std::vector<AMP::weak_ptr <Vector> > >( 
+        new std::vector<AMP::weak_ptr <Vector> >() );
 }  
 Vector::Vector( VectorParameters::shared_ptr  parameters)
 {
@@ -45,8 +45,8 @@ Vector::Vector( VectorParameters::shared_ptr  parameters)
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = UNCHANGED;
     d_DOFManager = parameters->d_DOFManager;
-    d_Views = boost::shared_ptr<std::vector<boost::weak_ptr <Vector> > >( 
-        new std::vector<boost::weak_ptr <Vector> >() );
+    d_Views = AMP::shared_ptr<std::vector<AMP::weak_ptr <Vector> > >( 
+        new std::vector<AMP::weak_ptr <Vector> >() );
 }
 
 
@@ -100,7 +100,7 @@ Vector::shared_ptr  Vector::select ( const VectorSelector &s, const std::string 
     }
     Vector::shared_ptr  retVal = this->selectInto( s );
     if ( retVal != NULL ) {
-        if ( boost::dynamic_pointer_cast<MultiVector>(retVal)==NULL )
+        if ( AMP::dynamic_pointer_cast<MultiVector>(retVal)==NULL )
             retVal = MultiVector::view( retVal, retVal->getComm() );
         Variable::shared_ptr var( new Variable(variable_name) );
         retVal->setVariable(var);
@@ -116,10 +116,10 @@ Vector::const_shared_ptr  Vector::constSelect ( const VectorSelector &s, const s
     }
     Vector::const_shared_ptr  retVal = this->selectInto( s );
     if ( retVal != NULL ) {
-        if ( boost::dynamic_pointer_cast<const MultiVector>(retVal)==NULL )
+        if ( AMP::dynamic_pointer_cast<const MultiVector>(retVal)==NULL )
             retVal = MultiVector::view( retVal, retVal->getComm() );
         Variable::shared_ptr var( new Variable(variable_name) );
-        boost::const_pointer_cast<Vector>(retVal)->setVariable(var);
+        AMP::const_pointer_cast<Vector>(retVal)->setVariable(var);
     }
     return retVal;
 }
@@ -545,7 +545,7 @@ double Vector::max () const
 }
 double Vector::dot(const VectorOperations &x) const
 {
-    boost::shared_ptr<const Vector> vec = x.castTo<const Vector>().shared_from_this();
+    AMP::shared_ptr<const Vector> vec = x.castTo<const Vector>().shared_from_this();
     double ans = localDot( vec );
     if ( getCommunicationList() )
         ans = getComm().sumReduce(ans);
@@ -632,7 +632,7 @@ double Vector::localMaxNorm(void) const
     }
     return ans;
 }
-double Vector::localDot( boost::shared_ptr<const Vector> x ) const
+double Vector::localDot( AMP::shared_ptr<const Vector> x ) const
 {
     AMP_ASSERT ( getLocalSize() == x->getLocalSize() );
     const_iterator  curMe = begin();
@@ -656,8 +656,8 @@ void Vector::setCommunicationList ( CommunicationList::shared_ptr  comm )
     d_CommList = comm;
     if ( comm ) {
       addCommunicationListToParameters ( comm );
-      d_Ghosts = boost::shared_ptr<std::vector<double> > ( new std::vector<double> ( d_CommList->getVectorReceiveBufferSize() ) );
-      d_AddBuffer = boost::shared_ptr<std::vector<double> > ( new std::vector<double> ( d_CommList->getVectorReceiveBufferSize() ) );
+      d_Ghosts = AMP::shared_ptr<std::vector<double> > ( new std::vector<double> ( d_CommList->getVectorReceiveBufferSize() ) );
+      d_AddBuffer = AMP::shared_ptr<std::vector<double> > ( new std::vector<double> ( d_CommList->getVectorReceiveBufferSize() ) );
     }
 }
 
@@ -804,7 +804,7 @@ void Vector::makeConsistent ( ScatterType  t )
 
 
 
-void Vector::copyGhostValues ( const boost::shared_ptr<const Vector> &rhs )
+void Vector::copyGhostValues ( const AMP::shared_ptr<const Vector> &rhs )
 {
     if ( getGhostSize() == 0 ) {
         // No ghosts to fill, we don't need to do anything

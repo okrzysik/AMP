@@ -16,7 +16,7 @@
 #include <complex>
 #include "PIO.h"
 #include <string>
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 
 namespace AMP {
@@ -50,7 +50,7 @@ class Database
 {
 public:
    
-      typedef boost::shared_ptr<Database> shared_ptr;
+      typedef AMP::shared_ptr<Database> shared_ptr;
 
    /**
     * Enumerated type indicating what type of values is stored in
@@ -159,7 +159,7 @@ public:
     *
     * @param key Key name in database.
     */
-   virtual boost::shared_ptr<Database> putDatabase(const std::string& key) = 0;
+   virtual AMP::shared_ptr<Database> putDatabase(const std::string& key) = 0;
 
    /**
     * Get the database with the specified key name.  If the specified
@@ -168,7 +168,7 @@ public:
     *
     * @param key Key name in database.
     */
-   virtual boost::shared_ptr<Database> getDatabase(const std::string& key) = 0;
+   virtual AMP::shared_ptr<Database> getDatabase(const std::string& key) = 0;
 
    /**
     * Return whether the specified key represents a boolean entry.  If

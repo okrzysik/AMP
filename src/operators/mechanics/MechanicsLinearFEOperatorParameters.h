@@ -21,7 +21,7 @@ namespace AMP {
         /**
           Constructor.
           */
-        MechanicsLinearFEOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
+        MechanicsLinearFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
           : LinearFEOperatorParameters(db) {  }
 
         /**
@@ -29,7 +29,7 @@ namespace AMP {
           */
         virtual ~MechanicsLinearFEOperatorParameters() { }
 
-        boost::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
+        AMP::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
 
         AMP::LinearAlgebra::Vector::shared_ptr d_dispVec; /**< Displacement vector, which is passed from 
                                                             MechanicsNonlinearFEOperator to MechanicsLinearFEOperator. */

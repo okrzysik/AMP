@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -43,18 +43,18 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-  boost::shared_ptr<AMP::Operator::ElasticDamageThermalStrainModel> edtsModel;
-  //boost::shared_ptr<AMP::IsotropicElasticModel> vmepModel;
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
+  AMP::shared_ptr<AMP::Operator::ElasticDamageThermalStrainModel> edtsModel;
+  //AMP::shared_ptr<AMP::IsotropicElasticModel> vmepModel;
 
-  boost::shared_ptr<AMP::Database> matModelDatabase = input_db->getDatabase("MechanicsMaterialModel");
+  AMP::shared_ptr<AMP::Database> matModelDatabase = input_db->getDatabase("MechanicsMaterialModel");
   elementPhysicsModel = AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel(matModelDatabase);
-  edtsModel = boost::dynamic_pointer_cast<AMP::Operator::ElasticDamageThermalStrainModel>(elementPhysicsModel);
-  //vmepModel = boost::dynamic_pointer_cast<AMP::IsotropicElasticModel>(elementPhysicsModel);
+  edtsModel = AMP::dynamic_pointer_cast<AMP::Operator::ElasticDamageThermalStrainModel>(elementPhysicsModel);
+  //vmepModel = AMP::dynamic_pointer_cast<AMP::IsotropicElasticModel>(elementPhysicsModel);
 
   edtsModel->preNonlinearInit(true, true);
   edtsModel->nonlinearInitGaussPointOperation(300.0);

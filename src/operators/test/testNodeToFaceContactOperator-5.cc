@@ -70,7 +70,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   globalComm.barrier();
   double inpReadBeginTime = MPI_Wtime();
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
@@ -95,8 +95,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   double meshBeginTime = MPI_Wtime();
 
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
-  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
   meshParams->setComm(globalComm);
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
@@ -114,96 +114,96 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       AMP::Mesh::Vertex, nodalGhostWidth, dofsPerNode, split);
 
   // Build a column operator and a column preconditioner
-  boost::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
-  boost::shared_ptr<AMP::Operator::ColumnOperator> columnOperator(new AMP::Operator::ColumnOperator(emptyParams));
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
+  AMP::shared_ptr<AMP::Operator::ColumnOperator> columnOperator(new AMP::Operator::ColumnOperator(emptyParams));
 
-  boost::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase("LinearSolver"); 
-  boost::shared_ptr<AMP::Database> columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
-  boost::shared_ptr<AMP::Solver::ColumnSolverParameters> columnPreconditionerParams(new AMP::Solver::ColumnSolverParameters(columnPreconditioner_db));
+  AMP::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase("LinearSolver"); 
+  AMP::shared_ptr<AMP::Database> columnPreconditioner_db = linearSolver_db->getDatabase("Preconditioner");
+  AMP::shared_ptr<AMP::Solver::ColumnSolverParameters> columnPreconditionerParams(new AMP::Solver::ColumnSolverParameters(columnPreconditioner_db));
   columnPreconditionerParams->d_pOperator = columnOperator;
-  boost::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
+  AMP::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
   // Get the mechanics material models for the contact operator and for computing stresses
-  boost::shared_ptr<AMP::Database> fuelModel_db = input_db->getDatabase("FuelMechanicsMaterialModel");
-  boost::shared_ptr<AMP::Operator::MechanicsModelParameters> fuelMechanicsMaterialModelParams(new AMP::Operator::MechanicsModelParameters(fuelModel_db));
-  boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> fuelMechanicsMaterialModel(new AMP::Operator::IsotropicElasticModel(fuelMechanicsMaterialModelParams));
-  boost::shared_ptr<AMP::Database> cladModel_db = input_db->getDatabase("CladMechanicsMaterialModel");
-  boost::shared_ptr<AMP::Operator::MechanicsModelParameters> cladMechanicsMaterialModelParams(new AMP::Operator::MechanicsModelParameters(cladModel_db));
-  boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> cladMechanicsMaterialModel(new AMP::Operator::IsotropicElasticModel(cladMechanicsMaterialModelParams));
+  AMP::shared_ptr<AMP::Database> fuelModel_db = input_db->getDatabase("FuelMechanicsMaterialModel");
+  AMP::shared_ptr<AMP::Operator::MechanicsModelParameters> fuelMechanicsMaterialModelParams(new AMP::Operator::MechanicsModelParameters(fuelModel_db));
+  AMP::shared_ptr<AMP::Operator::MechanicsMaterialModel> fuelMechanicsMaterialModel(new AMP::Operator::IsotropicElasticModel(fuelMechanicsMaterialModelParams));
+  AMP::shared_ptr<AMP::Database> cladModel_db = input_db->getDatabase("CladMechanicsMaterialModel");
+  AMP::shared_ptr<AMP::Operator::MechanicsModelParameters> cladMechanicsMaterialModelParams(new AMP::Operator::MechanicsModelParameters(cladModel_db));
+  AMP::shared_ptr<AMP::Operator::MechanicsMaterialModel> cladMechanicsMaterialModel(new AMP::Operator::IsotropicElasticModel(cladMechanicsMaterialModelParams));
 
   // Build the contact operators
-  boost::shared_ptr<AMP::Operator::NodeToFaceContactOperator> bottomPelletTopPelletContactOperator;
-  boost::shared_ptr<AMP::Operator::NodeToFaceContactOperator> bottomPelletCladContactOperator;
-  boost::shared_ptr<AMP::Operator::NodeToFaceContactOperator> topPelletCladContactOperator;
+  AMP::shared_ptr<AMP::Operator::NodeToFaceContactOperator> bottomPelletTopPelletContactOperator;
+  AMP::shared_ptr<AMP::Operator::NodeToFaceContactOperator> bottomPelletCladContactOperator;
+  AMP::shared_ptr<AMP::Operator::NodeToFaceContactOperator> topPelletCladContactOperator;
 
-  boost::shared_ptr<AMP::Database> bottomPelletTopPelletContact_db = input_db->getDatabase("BottomPelletTopPelletContactOperator");
-  boost::shared_ptr<AMP::Operator::ContactOperatorParameters> bottomPelletTopPelletContactOperatorParams(new AMP::Operator::ContactOperatorParameters(bottomPelletTopPelletContact_db));
+  AMP::shared_ptr<AMP::Database> bottomPelletTopPelletContact_db = input_db->getDatabase("BottomPelletTopPelletContactOperator");
+  AMP::shared_ptr<AMP::Operator::ContactOperatorParameters> bottomPelletTopPelletContactOperatorParams(new AMP::Operator::ContactOperatorParameters(bottomPelletTopPelletContact_db));
   bottomPelletTopPelletContactOperatorParams->d_DOFsPerNode = dofsPerNode;
   bottomPelletTopPelletContactOperatorParams->d_DOFManager = dispDofManager;
   bottomPelletTopPelletContactOperatorParams->d_GlobalComm = globalComm;
   bottomPelletTopPelletContactOperatorParams->d_Mesh = meshAdapter;
   bottomPelletTopPelletContactOperatorParams->d_MasterMechanicsMaterialModel = fuelMechanicsMaterialModel;
   bottomPelletTopPelletContactOperatorParams->reset();
-  bottomPelletTopPelletContactOperator = boost::shared_ptr<AMP::Operator::NodeToFaceContactOperator>(new AMP::Operator::NodeToFaceContactOperator(bottomPelletTopPelletContactOperatorParams));
+  bottomPelletTopPelletContactOperator = AMP::shared_ptr<AMP::Operator::NodeToFaceContactOperator>(new AMP::Operator::NodeToFaceContactOperator(bottomPelletTopPelletContactOperatorParams));
   bottomPelletTopPelletContactOperator->initialize();
   bottomPelletTopPelletContactOperator->setContactIsFrictionless(contactIsFrictionless);
 //  bottomPelletTopPelletContactOperator->setContactIsFrictionless(bottomPelletTopPelletContact_db->getBoolWithDefault("ContactIsFrictionless", false));
 
-  boost::shared_ptr<AMP::Database> bottomPelletCladContact_db = input_db->getDatabase("BottomPelletCladContactOperator");
-  boost::shared_ptr<AMP::Operator::ContactOperatorParameters> bottomPelletCladContactOperatorParams(new AMP::Operator::ContactOperatorParameters(bottomPelletCladContact_db));
+  AMP::shared_ptr<AMP::Database> bottomPelletCladContact_db = input_db->getDatabase("BottomPelletCladContactOperator");
+  AMP::shared_ptr<AMP::Operator::ContactOperatorParameters> bottomPelletCladContactOperatorParams(new AMP::Operator::ContactOperatorParameters(bottomPelletCladContact_db));
   bottomPelletCladContactOperatorParams->d_DOFsPerNode = dofsPerNode;
   bottomPelletCladContactOperatorParams->d_DOFManager = dispDofManager;
   bottomPelletCladContactOperatorParams->d_GlobalComm = globalComm;
   bottomPelletCladContactOperatorParams->d_Mesh = meshAdapter;
   bottomPelletCladContactOperatorParams->d_MasterMechanicsMaterialModel = fuelMechanicsMaterialModel;
   bottomPelletCladContactOperatorParams->reset();
-  bottomPelletCladContactOperator = boost::shared_ptr<AMP::Operator::NodeToFaceContactOperator>(new AMP::Operator::NodeToFaceContactOperator(bottomPelletCladContactOperatorParams));
+  bottomPelletCladContactOperator = AMP::shared_ptr<AMP::Operator::NodeToFaceContactOperator>(new AMP::Operator::NodeToFaceContactOperator(bottomPelletCladContactOperatorParams));
   bottomPelletCladContactOperator->initialize();
   bottomPelletCladContactOperator->setContactIsFrictionless(contactIsFrictionless);
 //  bottomPelletCladContactOperator->setContactIsFrictionless(bottomPelletCladContact_db->getBoolWithDefault("ContactIsFrictionless", false));
 
-  boost::shared_ptr<AMP::Database> topPelletCladContact_db = input_db->getDatabase("TopPelletCladContactOperator");
-  boost::shared_ptr<AMP::Operator::ContactOperatorParameters> topPelletCladContactOperatorParams(new AMP::Operator::ContactOperatorParameters(topPelletCladContact_db));
+  AMP::shared_ptr<AMP::Database> topPelletCladContact_db = input_db->getDatabase("TopPelletCladContactOperator");
+  AMP::shared_ptr<AMP::Operator::ContactOperatorParameters> topPelletCladContactOperatorParams(new AMP::Operator::ContactOperatorParameters(topPelletCladContact_db));
   topPelletCladContactOperatorParams->d_DOFsPerNode = dofsPerNode;
   topPelletCladContactOperatorParams->d_DOFManager = dispDofManager;
   topPelletCladContactOperatorParams->d_GlobalComm = globalComm;
   topPelletCladContactOperatorParams->d_Mesh = meshAdapter;
   topPelletCladContactOperatorParams->d_MasterMechanicsMaterialModel = fuelMechanicsMaterialModel;
   topPelletCladContactOperatorParams->reset();
-  topPelletCladContactOperator = boost::shared_ptr<AMP::Operator::NodeToFaceContactOperator>(new AMP::Operator::NodeToFaceContactOperator(topPelletCladContactOperatorParams));
+  topPelletCladContactOperator = AMP::shared_ptr<AMP::Operator::NodeToFaceContactOperator>(new AMP::Operator::NodeToFaceContactOperator(topPelletCladContactOperatorParams));
   topPelletCladContactOperator->initialize();
   topPelletCladContactOperator->setContactIsFrictionless(contactIsFrictionless);
 //  topPelletCladContactOperator->setContactIsFrictionless(topPelletCladContact_db->getBoolWithDefault("ContactIsFrictionless", false));
 
   // Build the BVP operators
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> bottomPelletBVPOperator;
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> topPelletBVPOperator;
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> cladBVPOperator;
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> bottomPelletBVPOperator;
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> topPelletBVPOperator;
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> cladBVPOperator;
 
 
   AMP::Mesh::MeshID bottomPelletMeshID = bottomPelletTopPelletContactOperator->getMasterMeshID();
   AMP_ASSERT(bottomPelletMeshID == bottomPelletCladContactOperator->getMasterMeshID());
   AMP::Mesh::Mesh::shared_ptr bottomPelletMeshAdapter = meshAdapter->Subset(bottomPelletMeshID);
   if (bottomPelletMeshAdapter.get() != NULL) {
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> bottomPelletElementPhysicsModel;
-    bottomPelletBVPOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(bottomPelletMeshAdapter,
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> bottomPelletElementPhysicsModel;
+    bottomPelletBVPOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(bottomPelletMeshAdapter,
                                                                                                                                            "BottomPelletBVPOperator",
                                                                                                                                            input_db,
                                                                                                                                            bottomPelletElementPhysicsModel));
     columnOperator->append(bottomPelletBVPOperator);
 
     if (!useML) {
-      boost::shared_ptr<AMP::Database> bottomPelletSolver_db = columnPreconditioner_db->getDatabase("DummySolver"); 
-      boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> bottomPelletSolverParams(new AMP::Solver::PetscKrylovSolverParameters(bottomPelletSolver_db));
+      AMP::shared_ptr<AMP::Database> bottomPelletSolver_db = columnPreconditioner_db->getDatabase("DummySolver"); 
+      AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> bottomPelletSolverParams(new AMP::Solver::PetscKrylovSolverParameters(bottomPelletSolver_db));
       bottomPelletSolverParams->d_pOperator = bottomPelletBVPOperator;
       bottomPelletSolverParams->d_comm = bottomPelletMeshAdapter->getComm();
-      boost::shared_ptr<AMP::Solver::PetscKrylovSolver> bottomPelletSolver(new AMP::Solver::PetscKrylovSolver(bottomPelletSolverParams));
+      AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> bottomPelletSolver(new AMP::Solver::PetscKrylovSolver(bottomPelletSolverParams));
       columnPreconditioner->append(bottomPelletSolver);
     } else {
-      boost::shared_ptr<AMP::Database> bottomPelletSolver_db = columnPreconditioner_db->getDatabase("MLSolver"); 
-      boost::shared_ptr<AMP::Solver::SolverStrategyParameters> bottomPelletSolverParams(new AMP::Solver::SolverStrategyParameters(bottomPelletSolver_db));
+      AMP::shared_ptr<AMP::Database> bottomPelletSolver_db = columnPreconditioner_db->getDatabase("MLSolver"); 
+      AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> bottomPelletSolverParams(new AMP::Solver::SolverStrategyParameters(bottomPelletSolver_db));
       bottomPelletSolverParams->d_pOperator = bottomPelletBVPOperator;
-      boost::shared_ptr<AMP::Solver::TrilinosMLSolver> bottomPelletSolver(new AMP::Solver::TrilinosMLSolver(bottomPelletSolverParams));
+      AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> bottomPelletSolver(new AMP::Solver::TrilinosMLSolver(bottomPelletSolverParams));
       columnPreconditioner->append(bottomPelletSolver);
     } // end if
   } // end if
@@ -212,25 +212,25 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP_ASSERT(topPelletMeshID == topPelletCladContactOperator->getMasterMeshID());
   AMP::Mesh::Mesh::shared_ptr topPelletMeshAdapter = meshAdapter->Subset(topPelletMeshID);
   if (topPelletMeshAdapter.get() != NULL) {
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> topPelletElementPhysicsModel;
-    topPelletBVPOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(topPelletMeshAdapter,
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> topPelletElementPhysicsModel;
+    topPelletBVPOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(topPelletMeshAdapter,
                                                                                                                                         "TopPelletBVPOperator",
                                                                                                                                         input_db,
                                                                                                                                         topPelletElementPhysicsModel));
     columnOperator->append(topPelletBVPOperator);
 
     if (!useML) {
-      boost::shared_ptr<AMP::Database> topPelletSolver_db = columnPreconditioner_db->getDatabase("DummySolver"); 
-      boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> topPelletSolverParams(new AMP::Solver::PetscKrylovSolverParameters(topPelletSolver_db));
+      AMP::shared_ptr<AMP::Database> topPelletSolver_db = columnPreconditioner_db->getDatabase("DummySolver"); 
+      AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> topPelletSolverParams(new AMP::Solver::PetscKrylovSolverParameters(topPelletSolver_db));
       topPelletSolverParams->d_pOperator = topPelletBVPOperator;
       topPelletSolverParams->d_comm = topPelletMeshAdapter->getComm();
-      boost::shared_ptr<AMP::Solver::PetscKrylovSolver> topPelletSolver(new AMP::Solver::PetscKrylovSolver(topPelletSolverParams));
+      AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> topPelletSolver(new AMP::Solver::PetscKrylovSolver(topPelletSolverParams));
       columnPreconditioner->append(topPelletSolver);
     } else {
-      boost::shared_ptr<AMP::Database> topPelletSolver_db = columnPreconditioner_db->getDatabase("MLSolver"); 
-      boost::shared_ptr<AMP::Solver::SolverStrategyParameters> topPelletSolverParams(new AMP::Solver::SolverStrategyParameters(topPelletSolver_db));
+      AMP::shared_ptr<AMP::Database> topPelletSolver_db = columnPreconditioner_db->getDatabase("MLSolver"); 
+      AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> topPelletSolverParams(new AMP::Solver::SolverStrategyParameters(topPelletSolver_db));
       topPelletSolverParams->d_pOperator = topPelletBVPOperator;
-      boost::shared_ptr<AMP::Solver::TrilinosMLSolver> topPelletSolver(new AMP::Solver::TrilinosMLSolver(topPelletSolverParams));
+      AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> topPelletSolver(new AMP::Solver::TrilinosMLSolver(topPelletSolverParams));
       columnPreconditioner->append(topPelletSolver);
     } // end if
   } // end if
@@ -239,25 +239,25 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP_ASSERT(cladMeshID == topPelletCladContactOperator->getSlaveMeshID());
   AMP::Mesh::Mesh::shared_ptr cladMeshAdapter = meshAdapter->Subset(cladMeshID);
   if (cladMeshAdapter.get() != NULL) {
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> cladElementPhysicsModel;
-    cladBVPOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(cladMeshAdapter,
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> cladElementPhysicsModel;
+    cladBVPOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(cladMeshAdapter,
                                                                                                                                    "CladBVPOperator",
                                                                                                                                    input_db,
                                                                                                                                    cladElementPhysicsModel));
     columnOperator->append(cladBVPOperator);
 
     if (useML) {
-      boost::shared_ptr<AMP::Database> cladSolver_db = columnPreconditioner_db->getDatabase("MLSolver"); 
-      boost::shared_ptr<AMP::Solver::SolverStrategyParameters> cladSolverParams(new AMP::Solver::SolverStrategyParameters(cladSolver_db));
+      AMP::shared_ptr<AMP::Database> cladSolver_db = columnPreconditioner_db->getDatabase("MLSolver"); 
+      AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> cladSolverParams(new AMP::Solver::SolverStrategyParameters(cladSolver_db));
       cladSolverParams->d_pOperator = cladBVPOperator;
-      boost::shared_ptr<AMP::Solver::TrilinosMLSolver> cladSolver(new AMP::Solver::TrilinosMLSolver(cladSolverParams));
+      AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> cladSolver(new AMP::Solver::TrilinosMLSolver(cladSolverParams));
       columnPreconditioner->append(cladSolver);
     } else {
-      boost::shared_ptr<AMP::Database> cladSolver_db = columnPreconditioner_db->getDatabase("DummySolver"); 
-      boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> cladSolverParams(new AMP::Solver::PetscKrylovSolverParameters(cladSolver_db));
+      AMP::shared_ptr<AMP::Database> cladSolver_db = columnPreconditioner_db->getDatabase("DummySolver"); 
+      AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> cladSolverParams(new AMP::Solver::PetscKrylovSolverParameters(cladSolver_db));
       cladSolverParams->d_pOperator = cladBVPOperator;
       cladSolverParams->d_comm = cladMeshAdapter->getComm();
-      boost::shared_ptr<AMP::Solver::PetscKrylovSolver> cladSolver(new AMP::Solver::PetscKrylovSolver(cladSolverParams));
+      AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> cladSolver(new AMP::Solver::PetscKrylovSolver(cladSolverParams));
       columnPreconditioner->append(cladSolver);
    } // end if
 
@@ -265,24 +265,24 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
 
 {
-  boost::shared_ptr<AMP::Database> bottomPelletTopPelletContactPreconditioner_db = columnPreconditioner_db->getDatabase("ContactPreconditioner"); 
-  boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolverParameters> bottomPelletTopPelletContactPreconditionerParams(new AMP::Solver::ConstraintsEliminationSolverParameters(bottomPelletTopPelletContactPreconditioner_db));
+  AMP::shared_ptr<AMP::Database> bottomPelletTopPelletContactPreconditioner_db = columnPreconditioner_db->getDatabase("ContactPreconditioner"); 
+  AMP::shared_ptr<AMP::Solver::ConstraintsEliminationSolverParameters> bottomPelletTopPelletContactPreconditionerParams(new AMP::Solver::ConstraintsEliminationSolverParameters(bottomPelletTopPelletContactPreconditioner_db));
   bottomPelletTopPelletContactPreconditionerParams->d_pOperator = bottomPelletTopPelletContactOperator;
-  boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolver> bottomPelletTopPelletContactPreconditioner(new AMP::Solver::ConstraintsEliminationSolver(bottomPelletTopPelletContactPreconditionerParams));
+  AMP::shared_ptr<AMP::Solver::ConstraintsEliminationSolver> bottomPelletTopPelletContactPreconditioner(new AMP::Solver::ConstraintsEliminationSolver(bottomPelletTopPelletContactPreconditionerParams));
   columnPreconditioner->append(bottomPelletTopPelletContactPreconditioner);
 }
 {
-  boost::shared_ptr<AMP::Database> bottomPelletCladContactPreconditioner_db = columnPreconditioner_db->getDatabase("ContactPreconditioner"); 
-  boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolverParameters> bottomPelletCladContactPreconditionerParams(new AMP::Solver::ConstraintsEliminationSolverParameters(bottomPelletCladContactPreconditioner_db));
+  AMP::shared_ptr<AMP::Database> bottomPelletCladContactPreconditioner_db = columnPreconditioner_db->getDatabase("ContactPreconditioner"); 
+  AMP::shared_ptr<AMP::Solver::ConstraintsEliminationSolverParameters> bottomPelletCladContactPreconditionerParams(new AMP::Solver::ConstraintsEliminationSolverParameters(bottomPelletCladContactPreconditioner_db));
   bottomPelletCladContactPreconditionerParams->d_pOperator = bottomPelletCladContactOperator;
-  boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolver> bottomPelletCladContactPreconditioner(new AMP::Solver::ConstraintsEliminationSolver(bottomPelletCladContactPreconditionerParams));
+  AMP::shared_ptr<AMP::Solver::ConstraintsEliminationSolver> bottomPelletCladContactPreconditioner(new AMP::Solver::ConstraintsEliminationSolver(bottomPelletCladContactPreconditionerParams));
   columnPreconditioner->append(bottomPelletCladContactPreconditioner);
 }
 {
-  boost::shared_ptr<AMP::Database> topPelletCladContactPreconditioner_db = columnPreconditioner_db->getDatabase("ContactPreconditioner"); 
-  boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolverParameters> topPelletCladContactPreconditionerParams(new AMP::Solver::ConstraintsEliminationSolverParameters(topPelletCladContactPreconditioner_db));
+  AMP::shared_ptr<AMP::Database> topPelletCladContactPreconditioner_db = columnPreconditioner_db->getDatabase("ContactPreconditioner"); 
+  AMP::shared_ptr<AMP::Solver::ConstraintsEliminationSolverParameters> topPelletCladContactPreconditionerParams(new AMP::Solver::ConstraintsEliminationSolverParameters(topPelletCladContactPreconditioner_db));
   topPelletCladContactPreconditionerParams->d_pOperator = topPelletCladContactOperator;
-  boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolver> topPelletCladContactPreconditioner(new AMP::Solver::ConstraintsEliminationSolver(topPelletCladContactPreconditionerParams));
+  AMP::shared_ptr<AMP::Solver::ConstraintsEliminationSolver> topPelletCladContactPreconditioner(new AMP::Solver::ConstraintsEliminationSolver(topPelletCladContactPreconditionerParams));
   columnPreconditioner->append(topPelletCladContactPreconditioner);
 }
 
@@ -305,8 +305,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   } // end if
 
   // Items for computing the RHS correction due to thermal expansion
-  boost::shared_ptr<AMP::Database> fuelTemperatureRhs_db = input_db->getDatabase("FuelTemperatureRHSVectorCorrection");
-  boost::shared_ptr<AMP::Database> cladTemperatureRhs_db = input_db->getDatabase("CladTemperatureRHSVectorCorrection");
+  AMP::shared_ptr<AMP::Database> fuelTemperatureRhs_db = input_db->getDatabase("FuelTemperatureRHSVectorCorrection");
+  AMP::shared_ptr<AMP::Database> cladTemperatureRhs_db = input_db->getDatabase("CladTemperatureRHSVectorCorrection");
   AMP::LinearAlgebra::Variable::shared_ptr tempVar(new AMP::LinearAlgebra::Variable("temperature"));
   AMP::LinearAlgebra::Variable::shared_ptr dispVar = columnOperator->getOutputVariable();
   AMP::Discretization::DOFManager::shared_ptr tempDofManager = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, 1 , split);
@@ -482,9 +482,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
 
   // Build a matrix shell operator to use the column operator with the petsc krylov solvers
-  boost::shared_ptr<AMP::Database> matrixShellDatabase = input_db->getDatabase("MatrixShellOperator");
-  boost::shared_ptr<AMP::Operator::OperatorParameters> matrixShellParams(new AMP::Operator::OperatorParameters(matrixShellDatabase));
-  boost::shared_ptr<AMP::Operator::PetscMatrixShellOperator> matrixShellOperator(new AMP::Operator::PetscMatrixShellOperator(matrixShellParams));
+  AMP::shared_ptr<AMP::Database> matrixShellDatabase = input_db->getDatabase("MatrixShellOperator");
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> matrixShellParams(new AMP::Operator::OperatorParameters(matrixShellDatabase));
+  AMP::shared_ptr<AMP::Operator::PetscMatrixShellOperator> matrixShellOperator(new AMP::Operator::PetscMatrixShellOperator(matrixShellParams));
 
   int numBottomPelletLocalNodes = 0;
   int numTopPelletLocalNodes = 0;
@@ -499,11 +499,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   matrixShellOperator->setMatLocalColumnSize(matLocalSize);
   matrixShellOperator->setOperator(columnOperator); 
 
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
+  AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
   linearSolverParams->d_pOperator = matrixShellOperator;
   linearSolverParams->d_comm = globalComm;
   linearSolverParams->d_pPreconditioner = columnPreconditioner;
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
+  AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
 //  linearSolver->setZeroInitialGuess(true);
   linearSolver->setInitialGuess(columnSolVec);
 

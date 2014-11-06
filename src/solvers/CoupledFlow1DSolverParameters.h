@@ -1,7 +1,7 @@
 #ifndef included_AMP_CoupledFlowFrapconParameters
 #define included_AMP_CoupledFlowFrapconParameters
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/Database.h"
 #include "operators/subchannel/CoupledFlowFrapconOperator.h"
 #include "SolverStrategyParameters.h"
@@ -13,12 +13,12 @@ namespace Solver {
   class CoupledFlow1DSolverParameters: public SolverStrategyParameters{
   public:
     CoupledFlow1DSolverParameters(){}
-    CoupledFlow1DSolverParameters(const boost::shared_ptr<AMP::Database> &db): 
+    CoupledFlow1DSolverParameters(const AMP::shared_ptr<AMP::Database> &db): 
       SolverStrategyParameters(db){ }
     virtual ~CoupledFlow1DSolverParameters(){}
 
-    boost::shared_ptr<AMP::Solver::SolverStrategy> d_flow1DSolver;
-    boost::shared_ptr<AMP::Operator::Operator> d_pOperator;
+    AMP::shared_ptr<AMP::Solver::SolverStrategy> d_flow1DSolver;
+    AMP::shared_ptr<AMP::Operator::Operator> d_pOperator;
 
   protected:
   private:

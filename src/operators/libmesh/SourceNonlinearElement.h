@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 /* AMP files*/
 #include "operators/ElementOperation.h"
@@ -37,7 +37,7 @@ public :
       4) QRULE_ORDER (DEFAULT by default) - Order of the numerical integration scheme.
       5) INTEGRATEVOLUME (TRUE by default)- Bool to choose to Integrate (Contradiction to the class ???).
      */
-    SourceNonlinearElement(const boost::shared_ptr<ElementOperationParameters>& params);
+    SourceNonlinearElement(const AMP::shared_ptr<ElementOperationParameters>& params);
 
     //! Destructor.
     virtual ~SourceNonlinearElement() { }
@@ -49,7 +49,7 @@ public :
       @param [in] elem Pointer to the current element within a finite element assembly.
       @param [in] sourceTransportModel Shared pointer to the Source Physics Model used in the current element.
      */
-    void initializeForCurrentElement( const ::Elem *elem, const boost::shared_ptr<SourcePhysicsModel> & sourceTransportModel);
+    void initializeForCurrentElement( const ::Elem *elem, const AMP::shared_ptr<SourcePhysicsModel> & sourceTransportModel);
 
     void setElementInputVector( const std::vector<std::vector<double> > & elementInputVector ) 
     {
@@ -85,7 +85,7 @@ public :
       */
     void apply();
 
-    boost::shared_ptr < ::FEBase > getFEBase(){
+    AMP::shared_ptr < ::FEBase > getFEBase(){
         return d_fe;
     }
 
@@ -104,11 +104,11 @@ protected :
 
     std::vector<std::vector <double> > d_elementOtherVectors;
 
-    boost::shared_ptr < ::FEType > d_feType;
+    AMP::shared_ptr < ::FEType > d_feType;
 
-    boost::shared_ptr < ::FEBase > d_fe;
+    AMP::shared_ptr < ::FEBase > d_fe;
 
-    boost::shared_ptr < ::QBase > d_qrule;
+    AMP::shared_ptr < ::QBase > d_qrule;
 
     const std::vector<Real> *d_JxW;
 
@@ -122,7 +122,7 @@ protected :
 
     bool d_integrateVolume;
 
-    boost::shared_ptr<SourcePhysicsModel> d_sourcePhysicsModel;
+    AMP::shared_ptr<SourcePhysicsModel> d_sourcePhysicsModel;
 
 private :
 

@@ -4,7 +4,7 @@
 
 #include "MechanicsMaterialModel.h"
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include <vector>
 
@@ -15,7 +15,7 @@ namespace Operator {
   {
     public :
 
-      ThermalVonMisesMatModel(const boost::shared_ptr<MechanicsMaterialModelParameters>& );
+      ThermalVonMisesMatModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
 
       virtual ~ThermalVonMisesMatModel() { }
 

@@ -4,7 +4,7 @@
 #include <string>
 #include "utils/AMPManager.h"
 #include "materials/Material.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
@@ -32,8 +32,8 @@
 
 
 void resetTests( AMP::UnitTest *ut, std::string msgPrefix,
-    boost::shared_ptr<AMP::Mesh::Mesh> , boost::shared_ptr<AMP::Operator::Operator> ,
-    boost::shared_ptr<AMP::InputDatabase> )
+    AMP::shared_ptr<AMP::Mesh::Mesh> , AMP::shared_ptr<AMP::Operator::Operator> ,
+    AMP::shared_ptr<AMP::InputDatabase> )
 {
     ut->passes(msgPrefix);
     std::cout.flush();
@@ -50,7 +50,7 @@ void adjust(const AMP::LinearAlgebra::Vector::shared_ptr vec,
 }
 
 void applyTest(AMP::UnitTest *ut, std::string msgPrefix,
-    boost::shared_ptr<AMP::Operator::Operator> &testOperator,
+    AMP::shared_ptr<AMP::Operator::Operator> &testOperator,
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec, AMP::LinearAlgebra::Vector::shared_ptr solVec,
     AMP::LinearAlgebra::Vector::shared_ptr resVec, AMP::LinearAlgebra::Vector::shared_ptr workVec)
 {
@@ -204,16 +204,16 @@ void sourceTest(AMP::UnitTest *ut , std::string exeName)
     std::cout << "testing with input file " << input_file << std::endl;
     std::cout.flush();
 
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
     input_db->printClassData(AMP::plog);
 
     AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
 
-    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
     mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 
     //--------------------------------------------------
     //   CREATE THE VOLUME INTEGRAL OPERATOR -----------
@@ -221,11 +221,11 @@ void sourceTest(AMP::UnitTest *ut , std::string exeName)
 
     AMP_INSIST( input_db->keyExists("VolumeIntegralOperator"), "key missing!" );
 
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
-    boost::shared_ptr<AMP::Database> sourceDatabase = input_db->getDatabase("VolumeIntegralOperator");
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
+    AMP::shared_ptr<AMP::Database> sourceDatabase = input_db->getDatabase("VolumeIntegralOperator");
     AMP::pout << "before sourceOp"<<std::endl;
-    boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator = 
-        boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+    AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator = 
+        AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
             AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
             "VolumeIntegralOperator",
             input_db,
@@ -255,7 +255,7 @@ void sourceTest(AMP::UnitTest *ut , std::string exeName)
     std::string msgPrefix=exeName+": VolumeIntegralOperator reset";
     // test reset
     try {
-        boost::shared_ptr<AMP::Operator::VolumeIntegralOperatorParameters> volumeIntegralParameters(
+        AMP::shared_ptr<AMP::Operator::VolumeIntegralOperatorParameters> volumeIntegralParameters(
             new AMP::Operator::VolumeIntegralOperatorParameters( sourceDatabase ) );
         sourceOperator->reset(volumeIntegralParameters);
         ut->passes(msgPrefix + " : pass ");
@@ -267,7 +267,7 @@ void sourceTest(AMP::UnitTest *ut , std::string exeName)
 
     // test apply
     msgPrefix=exeName + ": VolumeIntegralOperator apply";
-    boost::shared_ptr<AMP::Operator::Operator> testOperator = boost::dynamic_pointer_cast<AMP::Operator::Operator>(sourceOperator);
+    AMP::shared_ptr<AMP::Operator::Operator> testOperator = AMP::dynamic_pointer_cast<AMP::Operator::Operator>(sourceOperator);
     applyTest(ut, msgPrefix, testOperator, rhsVec, solVec, resVec, workVec);
 
     ut->passes(msgPrefix);

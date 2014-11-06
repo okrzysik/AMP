@@ -52,12 +52,12 @@ void EpetraMatrix::setEpetraMaps ( Vector::shared_ptr range , Vector::shared_ptr
         AMP_INSIST(range->getGlobalSize()<0x80000000,"Epetra does not support vectors with global size greater than 2^31");
         int N_global = static_cast<int>( range->getGlobalSize() ) ;
         int N_local = static_cast<int>( range->getLocalSize() ) ;
-        d_RangeMap = boost::shared_ptr<Epetra_Map> ( new Epetra_Map( N_global, N_local, 0, comm ) );
+        d_RangeMap = AMP::shared_ptr<Epetra_Map> ( new Epetra_Map( N_global, N_local, 0, comm ) );
         if ( domain ) {
             AMP_INSIST(domain->getGlobalSize()<0x80000000,"Epetra does not support vectors with global size greater than 2^31");
             N_global = static_cast<int>( domain->getGlobalSize() ) ;
             N_local = static_cast<int>( domain->getLocalSize() ) ;
-            d_DomainMap = boost::shared_ptr<Epetra_Map> ( new Epetra_Map( N_global, N_local, 0, comm ) );
+            d_DomainMap = AMP::shared_ptr<Epetra_Map> ( new Epetra_Map( N_global, N_local, 0, comm ) );
         }
     }  
 }

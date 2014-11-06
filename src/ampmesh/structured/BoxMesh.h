@@ -14,8 +14,7 @@
     }
 #endif
 
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include "utils/shared_ptr.h"
 #include <vector>
 #include <map>
 
@@ -294,7 +293,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N 
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh ( boost::shared_ptr<const AMP::LinearAlgebra::Vector> x );
+    virtual void displaceMesh ( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x );
 #endif
 
 
@@ -345,7 +344,7 @@ protected:
     std::vector<double> d_coord[3];         // The coordinates of the nodes
 
     // Basic mesh data
-    typedef boost::shared_ptr<std::vector<MeshElementIndex> >   ElementIndexList;
+    typedef AMP::shared_ptr<std::vector<MeshElementIndex> >   ElementIndexList;
     std::vector<ElementIndexList>   d_elements[4];
     size_t N_global[4];
 
@@ -374,7 +373,7 @@ protected:
     static void map_logical_sphere( size_t N, double r, double *x, double *y, double *z );
 
     // Helper function to create the logical mesh
-    static void createLogicalMesh( boost::shared_ptr<AMP::Database> db,
+    static void createLogicalMesh( AMP::shared_ptr<AMP::Database> db,
         std::vector<int>& meshSize, std::vector<bool>& isPeriodic, std::vector<int>& minSize );
 
 private:

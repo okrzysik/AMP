@@ -15,9 +15,9 @@ namespace Utilities {
 /************************************************************
 * Builder                                                   *
 ************************************************************/
-boost::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::string type )
+AMP::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::string type )
 {
-    boost::shared_ptr<AMP::Utilities::Writer> writer;
+    AMP::shared_ptr<AMP::Utilities::Writer> writer;
     if ( type=="None" || type=="none" || type=="NONE" ) {
         writer.reset( new AMP::Utilities::NullWriter() );
     } else if ( type=="Silo" || type=="silo" || type=="SILO" ) {
@@ -33,10 +33,10 @@ boost::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::string type 
     }
     return writer;
 }
-boost::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( boost::shared_ptr<AMP::Database> db )
+AMP::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( AMP::shared_ptr<AMP::Database> db )
 {
     std::string type = db->getString("Name");
-    boost::shared_ptr<AMP::Utilities::Writer> writer = Writer::buildWriter(type);
+    AMP::shared_ptr<AMP::Utilities::Writer> writer = Writer::buildWriter(type);
     if ( db->keyExists("Decomposition") )
         writer->setDecomposition( db->getInteger("Decomposition") );
     return writer;

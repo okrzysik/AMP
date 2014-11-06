@@ -631,7 +631,7 @@ void BoxMesh::initialize()
     for (int d=0; d<=PhysicalDim; d++) {
         d_surface_list[d] = std::vector<ElementIndexList>(d_max_gcw+1);
         for (int gcw=0; gcw<=d_max_gcw; gcw++) {
-            d_surface_list[d][gcw] = boost::shared_ptr<std::vector<MeshElementIndex> >(
+            d_surface_list[d][gcw] = AMP::shared_ptr<std::vector<MeshElementIndex> >(
                 new std::vector<MeshElementIndex>() );
             d_surface_list[d][gcw]->reserve( d_elements[d][gcw]->size() );
             for (size_t k=0; k<d_elements[d][gcw]->size(); k++) {
@@ -714,7 +714,7 @@ size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
     // Check for valid inputs
     AMP_INSIST(params.get(),"Params must not be null");
-    boost::shared_ptr<AMP::Database> db = params->getDatabase( );
+    AMP::shared_ptr<AMP::Database> db = params->getDatabase( );
     AMP_INSIST(db.get(),"Database must exist");
     size_t N_elements = 0;
     if ( db->keyExists("NumberOfElements") ) {
@@ -745,7 +745,7 @@ size_t BoxMesh::maxProcs( const MeshParameters::shared_ptr &params )
 {
     // Check for valid inputs
     AMP_INSIST(params.get(),"Params must not be null");
-    boost::shared_ptr<AMP::Database> db = params->getDatabase( );
+    AMP::shared_ptr<AMP::Database> db = params->getDatabase( );
     AMP_INSIST(db.get(),"Database must exist");
     size_t maxProcs = 1;
     if ( db->keyExists("LoadBalanceMinSize") ) {
@@ -844,10 +844,10 @@ MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
     AMP_ASSERT(type<=3);
     AMP_ASSERT(gcw<(int)d_elements[type].size());
     // Construct a list of iterators over the elements of interest
-    std::vector<boost::shared_ptr<MeshIterator> > iterator_list;
+    std::vector<AMP::shared_ptr<MeshIterator> > iterator_list;
     iterator_list.reserve(gcw+1);
     for (int i=0; i<=gcw; i++) {
-        iterator_list.push_back( boost::shared_ptr<MeshIterator>(
+        iterator_list.push_back( AMP::shared_ptr<MeshIterator>(
             new structuredMeshIterator( d_elements[type][i], this, 0 ) ) );
     }
     // Create the iterator
@@ -864,10 +864,10 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
     AMP_ASSERT(type<=3);
     AMP_ASSERT(gcw<(int)d_surface_list[type].size());
     // Construct a list of iterators over the elements of interest
-    std::vector<boost::shared_ptr<MeshIterator> > iterator_list;
+    std::vector<AMP::shared_ptr<MeshIterator> > iterator_list;
     iterator_list.reserve(gcw+1);
     for (int i=0; i<=gcw; i++) {
-        iterator_list.push_back( boost::shared_ptr<MeshIterator>(
+        iterator_list.push_back( AMP::shared_ptr<MeshIterator>(
             new structuredMeshIterator( d_surface_list[type][i], this, 0 ) ) );
     }
     // Create the iterator
@@ -889,10 +889,10 @@ MeshIterator BoxMesh::getBoundaryIDIterator ( const GeomType type, const int id,
         return MeshIterator();
     AMP_ASSERT(gcw<(int)it->second.size());
     // Construct a list of iterators over the elements of interest
-    std::vector<boost::shared_ptr<MeshIterator> > iterator_list;
+    std::vector<AMP::shared_ptr<MeshIterator> > iterator_list;
     iterator_list.reserve(gcw+1);
     for (int i=0; i<=gcw; i++) {
-        iterator_list.push_back( boost::shared_ptr<MeshIterator>(
+        iterator_list.push_back( AMP::shared_ptr<MeshIterator>(
             new structuredMeshIterator( it->second[i], this, 0 ) ) );
     }
     // Create the iterator
@@ -1178,7 +1178,7 @@ void BoxMesh::map_logical_sphere( size_t N, double r, double *x, double *y, doub
 /****************************************************************
 * Helper function to create the logical mesh                    *
 ****************************************************************/
-void BoxMesh::createLogicalMesh( boost::shared_ptr<AMP::Database> db,
+void BoxMesh::createLogicalMesh( AMP::shared_ptr<AMP::Database> db,
     std::vector<int>& meshSize, std::vector<bool>& isPeriodic, std::vector<int>& minSize ) 
 {
     // Get mandatory fields from the database

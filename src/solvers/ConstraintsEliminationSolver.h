@@ -11,8 +11,8 @@ namespace AMP {
 
     class ConstraintsEliminationSolver : public SolverStrategy {
       public:
-        ConstraintsEliminationSolver(boost::shared_ptr<ConstraintsEliminationSolverParameters> params);
-        void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f, boost::shared_ptr<AMP::LinearAlgebra::Vector> u);
+        ConstraintsEliminationSolver(AMP::shared_ptr<ConstraintsEliminationSolverParameters> params);
+        void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f, AMP::shared_ptr<AMP::LinearAlgebra::Vector> u);
     };
 
   }

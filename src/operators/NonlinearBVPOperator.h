@@ -32,7 +32,7 @@ namespace AMP {
          4. name: useSameLocalModelForVolumeAndBoundaryOperators, type: bool, (optional), default value: FALSE, when set to
          to TRUE the same local model is used for both the volume and boundary operators
          */
-        NonlinearBVPOperator(const boost::shared_ptr<BVPOperatorParameters>& parameters);
+        NonlinearBVPOperator(const AMP::shared_ptr<BVPOperatorParameters>& parameters);
 
         /**
          * virtual destructor which does nothing
@@ -53,7 +53,7 @@ namespace AMP {
          * \param params
          *        parameter object containing parameters to change
          */
-        void reset(const boost::shared_ptr<OperatorParameters>& params);
+        void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
         /**
          * Returns a shared pointer to a OperatorParameters object that can be used to construct
@@ -63,11 +63,11 @@ namespace AMP {
          * \param x
          *        This function takes as input a current vector x at which the Jacobian or tangent matrix needs to be constructed
          */
-        boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& x);
+        AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& x);
 
-        boost::shared_ptr< Operator > getVolumeOperator(){ return d_volumeOperator; }
+        AMP::shared_ptr< Operator > getVolumeOperator(){ return d_volumeOperator; }
 
-        boost::shared_ptr< BoundaryOperator > getBoundaryOperator(){ return d_boundaryOperator; }
+        AMP::shared_ptr< BoundaryOperator > getBoundaryOperator(){ return d_boundaryOperator; }
 
         void modifyRHSvector(AMP::LinearAlgebra::Vector::shared_ptr rhs);
 
@@ -90,12 +90,12 @@ namespace AMP {
         /**
          * shared pointer to a nonlinear volume or interior spatial operator
          */
-        boost::shared_ptr< Operator > d_volumeOperator;
+        AMP::shared_ptr< Operator > d_volumeOperator;
 
         /**
          *  shared pointer to a boundary or surface operator that is responsible for apply operations on the boundary of the domain
          */
-        boost::shared_ptr< BoundaryOperator > d_boundaryOperator;
+        AMP::shared_ptr< BoundaryOperator > d_boundaryOperator;
 
       private :
 

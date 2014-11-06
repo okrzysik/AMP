@@ -30,7 +30,7 @@ int main ( int argc , char **argv )
    try
    {
 	   // test constructors
-	   boost::shared_ptr<AMP::Materials::Material> mat =
+	   AMP::shared_ptr<AMP::Materials::Material> mat =
 			   AMP::voodoo::Factory<AMP::Materials::Material>::instance().create("UO2_MSRZC_09");
 	   PropertyPtr prop=mat->property("ThermalConductivity");
 
@@ -49,8 +49,8 @@ int main ( int argc , char **argv )
 
 	   // test material accessors, all arguments present
 	   size_t n=10;
-	   boost::shared_ptr<std::vector<double> > tv(new std::vector<double>(n));
-	   boost::shared_ptr<std::vector<double> > uv(new std::vector<double>(n));
+	   AMP::shared_ptr<std::vector<double> > tv(new std::vector<double>(n));
+	   AMP::shared_ptr<std::vector<double> > uv(new std::vector<double>(n));
 	   vector<double> tcv(n);
 	   for (size_t i=0; i<n; i++) 
 	   {
@@ -59,7 +59,7 @@ int main ( int argc , char **argv )
 	   
 	   // Block for temporary variables
 	   {
-		   std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
+		   std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
 		   argMap.insert( std::make_pair( "temperature", tv ) );
 		   argMap.insert( std::make_pair( "concentration", uv ) );
 
@@ -78,7 +78,7 @@ int main ( int argc , char **argv )
 	   
 	   // Block for temporary variables
 	   {
-		   std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
+		   std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
 		   argMap.insert( std::make_pair( "temperature", tv ) );
 		   std::vector<double> tcv_def(tcv);
 		   prop->evalv(tcv_def, argMap);
@@ -87,7 +87,7 @@ int main ( int argc , char **argv )
 
 	   // test material accessors, no arguments present
 	   {
-		   std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
+		   std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
 		   std::vector<double> tcv_def(tcv);
 		   prop->evalv(tcv_def, argMap);
 		   for (size_t i=0; i<n; i++) {good = good && AMP::Utilities::approx_equal(tcv[i], tcv_def[i]);}

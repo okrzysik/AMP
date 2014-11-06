@@ -8,7 +8,7 @@ namespace Operator {
 
 
 ConvectiveHeatCoefficient :: ConvectiveHeatCoefficient( const
-    boost::shared_ptr<RobinPhysicsModelParameters>& params) : RobinPhysicsModel (params) 
+    AMP::shared_ptr<RobinPhysicsModelParameters>& params) : RobinPhysicsModel (params) 
 {
     AMP_INSIST( (params->d_db->keyExists("Material")), "Convective Heat  Coefficient Key ''Material'' is missing!" );
     std::string matname = params->d_db->getString("Material");
@@ -24,7 +24,7 @@ ConvectiveHeatCoefficient :: ConvectiveHeatCoefficient( const
     for (size_t i=0; i<d_defaults.size(); ++i) { d_defaults[i] = ranges[i][0]*(1.0000001);}
     if (params->d_db->keyExists("Defaults")) {
         // check for correct names
-        boost::shared_ptr<Database> defaults_db = params->d_db->getDatabase("Defaults");
+        AMP::shared_ptr<Database> defaults_db = params->d_db->getDatabase("Defaults");
         std::vector<std::string> defaultkeys = defaults_db->getAllKeys();
         AMP_INSIST(defaultkeys.size() == d_property->get_number_arguments(),
             "Incorrect number of defaults supplied.");
@@ -50,7 +50,7 @@ void ConvectiveHeatCoefficient :: getConductance(std::vector<double> & beta,
     std::vector<double> & gamma, const std::vector<std::vector <double> > & inputVectors)
 {
     AMP_ASSERT(inputVectors.size()==4);
-    std::map<std::string, boost::shared_ptr<std::vector<double> > > argMap;
+    std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
     argMap.insert(std::make_pair("temperature",new std::vector<double>(inputVectors[0].begin(), inputVectors[0].end())));
     argMap.insert(std::make_pair("density",new std::vector<double>(inputVectors[2].begin(), inputVectors[2].end())));
     argMap.insert(std::make_pair("diameter",new std::vector<double>(inputVectors[3].begin(), inputVectors[3].end())));

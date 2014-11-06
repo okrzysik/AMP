@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 /* AMP files */
 #include "operators/ElementOperation.h"
@@ -23,21 +23,21 @@ class DiffusionElement: public ElementOperation {
 public:
 
     DiffusionElement(
-            const boost::shared_ptr<ElementOperationParameters>& params);
+            const AMP::shared_ptr<ElementOperationParameters>& params);
 
     virtual ~DiffusionElement() {
     }
 
     void initializeForCurrentElement(const ::Elem *elem,
-            const boost::shared_ptr<DiffusionTransportModel> & transportModel);
+            const AMP::shared_ptr<DiffusionTransportModel> & transportModel);
 
 protected:
 
-    boost::shared_ptr< ::FEType> d_feType;
+    AMP::shared_ptr< ::FEType> d_feType;
 
-    boost::shared_ptr< ::FEBase> d_fe;
+    AMP::shared_ptr< ::FEBase> d_fe;
 
-    boost::shared_ptr< ::QBase> d_qrule;
+    AMP::shared_ptr< ::QBase> d_qrule;
 
     const std::vector<Real> *d_JxW;
 
@@ -47,8 +47,8 @@ protected:
 
     const ::Elem *d_elem;
 
-    boost::shared_ptr<DiffusionTransportModel> d_transportModel;
-    boost::shared_ptr<DiffusionTransportTensorModel> d_transportTensorModel;
+    AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
+    AMP::shared_ptr<DiffusionTransportTensorModel> d_transportTensorModel;
 
 private:
 

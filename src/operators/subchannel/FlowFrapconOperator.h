@@ -26,7 +26,7 @@ namespace Operator {
         Constructor creates a simpleVariables for Input and Output. The reset is called to 
         read the flow parameters.
         */
-      FlowFrapconOperator(const boost::shared_ptr<FlowFrapconOperatorParameters> & params)
+      FlowFrapconOperator(const AMP::shared_ptr<FlowFrapconOperatorParameters> & params)
         : Operator (params)
       {
         std::string inpVar = params->d_db->getString("InputVariable");
@@ -58,7 +58,7 @@ namespace Operator {
         This function reads the entries of the database for the flow operator
         and can also be used to change the parameters if required.
         */
-      void reset(const boost::shared_ptr<OperatorParameters>& params);
+      void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
 /*
       static bool sort_nodes_in_z ( const ::Node *one , const ::Node *two ) {
@@ -143,7 +143,7 @@ namespace Operator {
         This function returns a parameter object that can be used to reset the corresponding
         FlowFrapconOperator operator.
         */
-      boost::shared_ptr<OperatorParameters> getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
+      AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
 
       short int d_boundaryId;
@@ -172,9 +172,9 @@ namespace Operator {
 
       /* Since the map has been taken out the Flow operator 
          now expects a SimpleVariable for input & output */
-      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Simple Input Variable */
+      AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Simple Input Variable */
 
-      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Simple Output Variable */
+      AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Simple Output Variable */
 
     private :
 

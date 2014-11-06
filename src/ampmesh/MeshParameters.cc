@@ -10,11 +10,11 @@ namespace Mesh {
 ********************************************************/
 MeshParameters::MeshParameters( )
 {
-    d_db = boost::shared_ptr<AMP::Database>();
+    d_db = AMP::shared_ptr<AMP::Database>();
     MAX_GCW_WIDTH = 1;
     comm = AMP::AMP_MPI(AMP_COMM_NULL);
 }
-MeshParameters::MeshParameters( const boost::shared_ptr<AMP::Database>  db )
+MeshParameters::MeshParameters( const AMP::shared_ptr<AMP::Database>  db )
 {
     d_db = db;
     MAX_GCW_WIDTH = 1;
@@ -42,7 +42,7 @@ void MeshParameters::setComm ( AMP::AMP_MPI comm_in )
 /********************************************************
 * Return the database                                   *
 ********************************************************/
-boost::shared_ptr<AMP::Database> MeshParameters::getDatabase ( )
+AMP::shared_ptr<AMP::Database> MeshParameters::getDatabase ( )
 {
     return d_db;
 }

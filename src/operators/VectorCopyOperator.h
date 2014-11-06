@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <iostream>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "operators/VectorCopyOperatorParameters.h"
 #include "operators/Operator.h"
 #include "vectors/Vector.h"
@@ -17,7 +17,7 @@ namespace Operator {
 class VectorCopyOperator : public Operator {
 public:
 
-  VectorCopyOperator(const boost::shared_ptr<VectorCopyOperatorParameters> &params);
+  VectorCopyOperator(const AMP::shared_ptr<VectorCopyOperatorParameters> &params);
 
   virtual ~VectorCopyOperator(){}
   
@@ -33,8 +33,8 @@ public:
 
  private:
   // vector to copy into
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> d_copyVector;
-  boost::shared_ptr<AMP::LinearAlgebra::Variable> d_copyVariable;
+  AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_copyVector;
+  AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_copyVariable;
   
 };
  

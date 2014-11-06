@@ -12,14 +12,14 @@ class DiffusionLinearFEOperatorParameters: public LinearFEOperatorParameters {
 public:
 
     DiffusionLinearFEOperatorParameters(
-            const boost::shared_ptr<AMP::Database> &db) :
+            const AMP::shared_ptr<AMP::Database> &db) :
         LinearFEOperatorParameters(db) {
     }
 
     virtual ~DiffusionLinearFEOperatorParameters() {
     }
 
-    boost::shared_ptr<DiffusionTransportModel> d_transportModel;
+    AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
 
     AMP::LinearAlgebra::Vector::shared_ptr d_temperature;
 

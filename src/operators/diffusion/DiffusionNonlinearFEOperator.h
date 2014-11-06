@@ -17,16 +17,16 @@ namespace AMP {
     class DiffusionNonlinearFEOperator: public NonlinearFEOperator {
       public:
 
-        typedef boost::shared_ptr<DiffusionNonlinearFEOperator> shared_ptr;
+        typedef AMP::shared_ptr<DiffusionNonlinearFEOperator> shared_ptr;
 
-        DiffusionNonlinearFEOperator(const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters>& params);
+        DiffusionNonlinearFEOperator(const AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters>& params);
 
         virtual ~DiffusionNonlinearFEOperator() {}
 
-        void reset(const boost::shared_ptr<OperatorParameters>&);
+        void reset(const AMP::shared_ptr<OperatorParameters>&);
 
-        boost::shared_ptr<OperatorParameters>
-          getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>&);
+        AMP::shared_ptr<OperatorParameters>
+          getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>&);
 
         void setInputVariableName(const std::string & name, int varId = -1);
 
@@ -48,7 +48,7 @@ namespace AMP {
 
         std::vector<unsigned int> getNonPrincipalVariableIds();
 
-        boost::shared_ptr<DiffusionTransportModel> getTransportModel();
+        AMP::shared_ptr<DiffusionTransportModel> getTransportModel();
 
         std::vector<AMP::LinearAlgebra::Vector::shared_ptr> getFrozen();
 
@@ -76,13 +76,13 @@ namespace AMP {
 
         void postElementOperation();
 
-        void init(const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters>& params);
+        void init(const AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters>& params);
 
         std::vector<double> d_elementOutputVector;
 
-        boost::shared_ptr<DiffusionNonlinearElement> d_diffNonlinElem;
+        AMP::shared_ptr<DiffusionNonlinearElement> d_diffNonlinElem;
 
-        boost::shared_ptr<DiffusionTransportModel> d_transportModel;
+        AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
 
         std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> d_inVec;
 
@@ -90,7 +90,7 @@ namespace AMP {
 
         AMP::LinearAlgebra::Vector::shared_ptr d_outVec;
 
-        boost::shared_ptr<std::vector<double> > d_TransportGauss;
+        AMP::shared_ptr<std::vector<double> > d_TransportGauss;
         AMP::LinearAlgebra::Vector::shared_ptr d_TransportNodal;
 
         std::vector<bool> d_isActive;
@@ -99,9 +99,9 @@ namespace AMP {
 
       private:
 
-        boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables;
+        AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables;
 
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
         unsigned int d_PrincipalVariable;
 
@@ -111,7 +111,7 @@ namespace AMP {
 
         std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_Frozen;
 
-        void resetFrozen(const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters> params);
+        void resetFrozen(const AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> params);
     };
 
   }

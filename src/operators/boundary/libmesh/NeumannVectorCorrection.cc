@@ -22,7 +22,7 @@ namespace Operator {
 
 
 // Constructor
-NeumannVectorCorrection::NeumannVectorCorrection(const boost::shared_ptr<NeumannVectorCorrectionParameters> & params) :
+NeumannVectorCorrection::NeumannVectorCorrection(const AMP::shared_ptr<NeumannVectorCorrectionParameters> & params) :
     BoundaryOperator (params)
 {
     d_params = params;
@@ -50,10 +50,10 @@ NeumannVectorCorrection::NeumannVectorCorrection(const boost::shared_ptr<Neumann
 }
 
 
-void NeumannVectorCorrection :: reset(const boost::shared_ptr<OperatorParameters>& params)
+void NeumannVectorCorrection :: reset(const AMP::shared_ptr<OperatorParameters>& params)
 {
-    boost::shared_ptr<NeumannVectorCorrectionParameters> myparams = 
-        boost::dynamic_pointer_cast<NeumannVectorCorrectionParameters>(params);
+    AMP::shared_ptr<NeumannVectorCorrectionParameters> myparams = 
+        AMP::dynamic_pointer_cast<NeumannVectorCorrectionParameters>(params);
 
     AMP_INSIST( ((myparams.get()) != NULL), "NULL parameters" );
     AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
@@ -236,10 +236,10 @@ void NeumannVectorCorrection :: apply(AMP::LinearAlgebra::Vector::const_shared_p
     //Do Nothing
 }
 
-boost::shared_ptr<OperatorParameters> NeumannVectorCorrection :: getJacobianParameters(
-    const boost::shared_ptr<AMP::LinearAlgebra::Vector>& ) 
+AMP::shared_ptr<OperatorParameters> NeumannVectorCorrection :: getJacobianParameters(
+    const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& ) 
 {
-    boost::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
+    AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
 
     tmp_db->putString("FE_ORDER","FIRST");
     tmp_db->putString("FE_FAMILY","LAGRANGE");
@@ -272,7 +272,7 @@ boost::shared_ptr<OperatorParameters> NeumannVectorCorrection :: getJacobianPara
 
     tmp_db->putBool("skip_params", true);
 
-    boost::shared_ptr<NeumannVectorCorrectionParameters> outParams(new NeumannVectorCorrectionParameters(tmp_db));
+    AMP::shared_ptr<NeumannVectorCorrectionParameters> outParams(new NeumannVectorCorrectionParameters(tmp_db));
 
     return outParams;
 }

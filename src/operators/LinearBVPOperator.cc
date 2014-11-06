@@ -9,18 +9,18 @@
 namespace AMP {
   namespace Operator {
 
-    LinearBVPOperator :: LinearBVPOperator(const boost::shared_ptr<BVPOperatorParameters>& params)
+    LinearBVPOperator :: LinearBVPOperator(const AMP::shared_ptr<BVPOperatorParameters>& params)
       : LinearOperator (params) 
     {
-      d_volumeOperator = boost::dynamic_pointer_cast<LinearOperator>(params->d_volumeOperator);
+      d_volumeOperator = AMP::dynamic_pointer_cast<LinearOperator>(params->d_volumeOperator);
       d_boundaryOperator = params->d_boundaryOperator;
       d_Mesh = d_volumeOperator->getMesh();
       d_matrix = d_volumeOperator->getMatrix();
     }
 
-    void LinearBVPOperator :: reset(const boost::shared_ptr<OperatorParameters>& params) {
-      boost::shared_ptr<BVPOperatorParameters> inParams = 
-        boost::dynamic_pointer_cast<BVPOperatorParameters>(params);
+    void LinearBVPOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params) {
+      AMP::shared_ptr<BVPOperatorParameters> inParams = 
+        AMP::dynamic_pointer_cast<BVPOperatorParameters>(params);
 
       AMP_INSIST( (inParams.get() != NULL), "LinearBVPOperator :: reset Null parameter" );
 
@@ -30,22 +30,22 @@ namespace AMP {
       // This logic does not work with NeumannVectorCorrection boundary
       // operator. As Neumann does not do a matrix correction and its params is
       // not derived from LinearBoundaryOperatorParameters - Allu 
-      boost::shared_ptr<LinearBoundaryOperatorParameters> linearBoundaryParams =
-        boost::dynamic_pointer_cast<LinearBoundaryOperatorParameters>(inParams->d_boundaryOperatorParams);
+      AMP::shared_ptr<LinearBoundaryOperatorParameters> linearBoundaryParams =
+        AMP::dynamic_pointer_cast<LinearBoundaryOperatorParameters>(inParams->d_boundaryOperatorParams);
 
       if(linearBoundaryParams != NULL) {
         linearBoundaryParams->d_inputMatrix = d_volumeOperator->getMatrix();
         d_boundaryOperator->reset(linearBoundaryParams);
       } else {
-        boost::shared_ptr<ColumnBoundaryOperatorParameters> columnBoundaryParams =
-          boost::dynamic_pointer_cast<ColumnBoundaryOperatorParameters>(inParams->d_boundaryOperatorParams);
+        AMP::shared_ptr<ColumnBoundaryOperatorParameters> columnBoundaryParams =
+          AMP::dynamic_pointer_cast<ColumnBoundaryOperatorParameters>(inParams->d_boundaryOperatorParams);
 
         AMP_ASSERT(columnBoundaryParams != NULL);
 
         for(unsigned int i = 0; i < columnBoundaryParams->d_OperatorParameters.size(); i++) {
-          boost::shared_ptr< OperatorParameters > cparams = columnBoundaryParams->d_OperatorParameters[i];
-          boost::shared_ptr<LinearBoundaryOperatorParameters> linearBoundaryParams =
-            boost::dynamic_pointer_cast<LinearBoundaryOperatorParameters>(cparams);
+          AMP::shared_ptr< OperatorParameters > cparams = columnBoundaryParams->d_OperatorParameters[i];
+          AMP::shared_ptr<LinearBoundaryOperatorParameters> linearBoundaryParams =
+            AMP::dynamic_pointer_cast<LinearBoundaryOperatorParameters>(cparams);
           if(linearBoundaryParams != NULL) {
             linearBoundaryParams->d_inputMatrix = d_volumeOperator->getMatrix();
           }          

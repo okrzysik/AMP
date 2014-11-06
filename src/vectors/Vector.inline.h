@@ -49,9 +49,9 @@ inline size_t Vector::getGhostSize() const
 /****************************************************************
 * Get basic info                                                *
 ****************************************************************/
-inline boost::shared_ptr<ParameterBase> Vector::getParameters ()
+inline AMP::shared_ptr<ParameterBase> Vector::getParameters ()
 {
-    return  boost::shared_ptr<ParameterBase> ( );
+    return  AMP::shared_ptr<ParameterBase> ( );
 }
 inline CommunicationList::shared_ptr  Vector::getCommunicationList () const
 {
@@ -326,13 +326,13 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
   }
 
   inline
-  boost::shared_ptr<Vector::UpdateState>  Vector::getUpdateStatusPtr () const
+  AMP::shared_ptr<Vector::UpdateState>  Vector::getUpdateStatusPtr () const
   {
     return d_UpdateState;
   }
 
   inline
-  void Vector::setUpdateStatusPtr ( boost::shared_ptr<UpdateState> rhs )
+  void Vector::setUpdateStatusPtr ( AMP::shared_ptr<UpdateState> rhs )
   {
     d_UpdateState = rhs;
   }

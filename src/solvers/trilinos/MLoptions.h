@@ -3,7 +3,7 @@
 #define included_MLoptions 
 
 #include "utils/Database.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include <string>
 
 namespace AMP {
@@ -11,11 +11,11 @@ namespace AMP {
 
     class MLoptions {
       public: 
-        MLoptions(const boost::shared_ptr<AMP::Database> &db); 
+        MLoptions(const AMP::shared_ptr<AMP::Database> &db); 
 
         ~MLoptions() { }
 
-        static void addDefaults(const std::string & problemType, const boost::shared_ptr<AMP::Database> &db);
+        static void addDefaults(const std::string & problemType, const AMP::shared_ptr<AMP::Database> &db);
 
         std::string d_problemType;
         int d_maxLevels;

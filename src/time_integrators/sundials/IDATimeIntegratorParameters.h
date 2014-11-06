@@ -49,26 +49,26 @@ namespace TimeIntegrator{
     class IDATimeIntegratorParameters: public TimeIntegratorParameters
         {
         public:
-            IDATimeIntegratorParameters(const boost::shared_ptr<AMP::Database> db);
+            IDATimeIntegratorParameters(const AMP::shared_ptr<AMP::Database> db);
             
             virtual ~IDATimeIntegratorParameters();
             
 
-            boost::shared_ptr<AMP::LinearAlgebra::Vector> d_ic_vector_prime;
+            AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_ic_vector_prime;
 
             // Needs to be fixed - JL
-            boost::shared_ptr< IDATimeOperator > d_pIDATimeOperator;
-            boost::shared_ptr< LinearTimeOperator > d_pLinearTimeOperator;
-            boost::shared_ptr<TimeOperatorParameters> d_pLinearTimeOperatorParameters;
+            AMP::shared_ptr< IDATimeOperator > d_pIDATimeOperator;
+            AMP::shared_ptr< LinearTimeOperator > d_pLinearTimeOperator;
+            AMP::shared_ptr<TimeOperatorParameters> d_pLinearTimeOperatorParameters;
     
-            boost::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
-            boost::shared_ptr< AMP::Operator::LinearOperator > d_pLinearOperator;
+            AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+            AMP::shared_ptr< AMP::Operator::LinearOperator > d_pLinearOperator;
 
 
             //source term
             // temp operators
-            boost::shared_ptr< AMP::Operator::Operator > d_temp_operator_1;
-            boost::shared_ptr< AMP::Operator::Operator > d_temp_operator_2;
+            AMP::shared_ptr< AMP::Operator::Operator > d_temp_operator_1;
+            AMP::shared_ptr< AMP::Operator::Operator > d_temp_operator_2;
     
         protected:
             

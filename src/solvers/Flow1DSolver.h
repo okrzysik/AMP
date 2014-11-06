@@ -13,20 +13,20 @@ typedef SolverStrategyParameters Flow1DSolverParameters;
 class Flow1DSolver: public SolverStrategy {
 public:
 
-      Flow1DSolver(boost::shared_ptr<Flow1DSolverParameters> parameters);
+      Flow1DSolver(AMP::shared_ptr<Flow1DSolverParameters> parameters);
       
      virtual ~Flow1DSolver();
 
-    void solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
-	       boost::shared_ptr<AMP::LinearAlgebra::Vector>  u);
+    void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
+	       AMP::shared_ptr<AMP::LinearAlgebra::Vector>  u);
     
-    void setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess );
+    void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess );
 
-    void initialize(boost::shared_ptr<SolverStrategyParameters> const parameters);
+    void initialize(AMP::shared_ptr<SolverStrategyParameters> const parameters);
 
-    void reset(boost::shared_ptr<SolverStrategyParameters> );
+    void reset(AMP::shared_ptr<SolverStrategyParameters> );
     
-    void resetOperator(const boost::shared_ptr<AMP::Operator::OperatorParameters> params);
+    void resetOperator(const AMP::shared_ptr<AMP::Operator::OperatorParameters> params);
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(int varId = -1);
 
@@ -52,8 +52,8 @@ protected:
 
     double d_Pr;
 
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; 
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; 
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; 
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; 
 
     private:
 

@@ -23,7 +23,7 @@ namespace Operator {
 
 
 // Constructor
-GaussPointToGaussPointMap::GaussPointToGaussPointMap(const boost::shared_ptr<AMP::Operator::OperatorParameters> & params)
+GaussPointToGaussPointMap::GaussPointToGaussPointMap(const AMP::shared_ptr<AMP::Operator::OperatorParameters> & params)
     : NodeToNodeMap(params) 
 {
     createIdxMap(params);
@@ -82,9 +82,9 @@ void GaussPointToGaussPointMap :: correctLocalOrdering()
 }
 
 
-void GaussPointToGaussPointMap :: createIdxMap(boost::shared_ptr<AMP::Operator::OperatorParameters> params) 
+void GaussPointToGaussPointMap :: createIdxMap(AMP::shared_ptr<AMP::Operator::OperatorParameters> params) 
 {
-      boost::shared_ptr<AMP::Database> db = params->d_db;
+      AMP::shared_ptr<AMP::Database> db = params->d_db;
       std::string feTypeOrderName = db->getStringWithDefault("FE_ORDER", "FIRST");
       libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
 
@@ -98,7 +98,7 @@ void GaussPointToGaussPointMap :: createIdxMap(boost::shared_ptr<AMP::Operator::
 
       int faceDim = db->getIntegerWithDefault("DIMENSION", 2);
 
-      boost::shared_ptr < ::FEType > feType(new ::FEType(feTypeOrder, feFamily) ); 
+      AMP::shared_ptr < ::FEType > feType(new ::FEType(feTypeOrder, feFamily) ); 
 
       libMeshEnums::Order qruleOrder;
 
@@ -108,7 +108,7 @@ void GaussPointToGaussPointMap :: createIdxMap(boost::shared_ptr<AMP::Operator::
         qruleOrder = Utility::string_to_enum<libMeshEnums::Order>(qruleOrderName);
       }
 
-      boost::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, faceDim, qruleOrder)).release() ); 
+      AMP::shared_ptr < ::QBase > qrule( (::QBase::build(qruleType, faceDim, qruleOrder)).release() ); 
       qrule->init(QUAD4, 0);
 
       unsigned int numGaussPtsPerElem = qrule->n_points();
@@ -145,7 +145,7 @@ void GaussPointToGaussPointMap :: createIdxMap(boost::shared_ptr<AMP::Operator::
           elem->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
         }//end for j
 
-        boost::shared_ptr < ::FEBase > fe( (::FEBase::build(faceDim, (*feType))).release() ); 
+        AMP::shared_ptr < ::FEBase > fe( (::FEBase::build(faceDim, (*feType))).release() ); 
         fe->attach_quadrature_rule( qrule.get() );
         fe->reinit(elem);
 
@@ -169,7 +169,7 @@ void GaussPointToGaussPointMap :: createIdxMap(boost::shared_ptr<AMP::Operator::
 
       db->putInteger("DOFsPerObject", dofsPerElem);
       db->putString("VariableName", "GaussPoints");
-      boost::shared_ptr<AMP::Operator::NodeToNodeMap> n2nMap(new AMP::Operator::NodeToNodeMap(params));
+      AMP::shared_ptr<AMP::Operator::NodeToNodeMap> n2nMap(new AMP::Operator::NodeToNodeMap(params));
       n2nMap->setVector(outVec);
 
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -187,7 +187,7 @@ void GaussPointToGaussPointMap :: createIdxMap(boost::shared_ptr<AMP::Operator::
           elem->set_node(j) = new ::Node(pt[0], pt[1], pt[2], j);
         }//end for j
 
-        boost::shared_ptr < ::FEBase > fe( (::FEBase::build(faceDim, (*feType))).release() ); 
+        AMP::shared_ptr < ::FEBase > fe( (::FEBase::build(faceDim, (*feType))).release() ); 
         fe->attach_quadrature_rule( qrule.get() );
         fe->reinit(elem);
 

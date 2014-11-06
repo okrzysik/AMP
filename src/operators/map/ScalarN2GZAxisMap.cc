@@ -29,10 +29,10 @@ namespace Operator {
 /************************************************************************
 *  Default constructor                                                  *
 ************************************************************************/
-ScalarN2GZAxisMap::ScalarN2GZAxisMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &p )
+ScalarN2GZAxisMap::ScalarN2GZAxisMap ( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : Map3to1to3 ( p )
 {
-    boost::shared_ptr <Map3to1to3Parameters>  params = boost::dynamic_pointer_cast<Map3to1to3Parameters> ( p );
+    AMP::shared_ptr <Map3to1to3Parameters>  params = AMP::dynamic_pointer_cast<Map3to1to3Parameters> ( p );
     AMP_ASSERT ( params );
 
     int DofsPerObj = params->d_db->getInteger ( "DOFsPerObject" );
@@ -132,10 +132,10 @@ ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator& iterator )
         // Create the libmesh element
         libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>("FIRST");
         libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
-        boost::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
-        boost::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
+        AMP::shared_ptr < ::FEType > d_feType ( new ::FEType(feTypeOrder, feFamily) );
+        AMP::shared_ptr < ::FEBase > d_fe ( (::FEBase::build(2, (*d_feType))).release() );
         libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>("SECOND");
-        boost::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
+        AMP::shared_ptr < ::QBase > d_qrule ( (::QBase::build("QGAUSS", 2, qruleOrder)).release() );
         d_fe->attach_quadrature_rule( d_qrule.get() );
         d_fe->reinit ( libmeshElements.getElement( cur->globalID() ));
         // Get the current position and DOF

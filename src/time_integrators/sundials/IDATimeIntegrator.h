@@ -126,7 +126,7 @@ namespace TimeIntegrator{
        
       */
       
-      IDATimeIntegrator( boost::shared_ptr< TimeIntegratorParameters > parameters );
+      IDATimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters );
       
       /**
        * Destructor.
@@ -136,14 +136,14 @@ namespace TimeIntegrator{
       /**
        * Initialize from parameter list.
        */
-      void initialize( boost::shared_ptr< TimeIntegratorParameters > parameters );
+      void initialize( AMP::shared_ptr< TimeIntegratorParameters > parameters );
       
       /**
        * Resets the internal state of the time integrator as needed.
        * A parameter argument is passed to allow for general flexibility
        * in determining what needs to be reset Typically used after a regrid.
        */
-      void reset( boost::shared_ptr< TimeIntegratorParameters > parameters);
+      void reset( AMP::shared_ptr< TimeIntegratorParameters > parameters);
       
       /**
        * Specify initial time step.
@@ -182,17 +182,17 @@ namespace TimeIntegrator{
       /**
        * return a pointer to the IDA time operator, deprecated
        */
-      boost::shared_ptr<IDATimeOperator> getIDATimeOperator() const; //BP, can go
+      AMP::shared_ptr<IDATimeOperator> getIDATimeOperator() const; //BP, can go
 
       /**
        * return a pointer to the linear time operator used by the preconditioner
        */
-      boost::shared_ptr<LinearTimeOperator> getLinearTimeOperator() const;
+      AMP::shared_ptr<LinearTimeOperator> getLinearTimeOperator() const;
 
       /**
        * return a shared pointer to the residual vector
        */
-      boost::shared_ptr<AMP::LinearAlgebra::Vector> getResidualVector() const;
+      AMP::shared_ptr<AMP::LinearAlgebra::Vector> getResidualVector() const;
 
       /**
        * added by Gary, need discussion whether to deprecate
@@ -202,17 +202,17 @@ namespace TimeIntegrator{
       /**
        * return a shared pointer to the solution at the current time step
        */
-      boost::shared_ptr<AMP::LinearAlgebra::Vector> getSolution() const;
+      AMP::shared_ptr<AMP::LinearAlgebra::Vector> getSolution() const;
 
       /**
        * return a shared pointer to the source term at the current time step
        */
-      boost::shared_ptr<AMP::LinearAlgebra::Vector> getSourceTerm() const;
+      AMP::shared_ptr<AMP::LinearAlgebra::Vector> getSourceTerm() const;
 
       /**
        * return a shared pointer to the preconditioner being used
        */
-      inline boost::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner(void){ return d_pPreconditioner; }
+      inline AMP::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner(void){ return d_pPreconditioner; }
 
       /**
        * return a void * pointer to the IDA_mem data structure used by IDA
@@ -222,7 +222,7 @@ namespace TimeIntegrator{
       /**
        * not sure why this variable exists and is public, BP
        */
-      boost::shared_ptr<AMP::LinearAlgebra::Vector> d_residual;           
+      AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_residual;           
       
     private:
       /**
@@ -235,7 +235,7 @@ namespace TimeIntegrator{
       /**
        * Read data from input database.
        */
-      void getFromInput( boost::shared_ptr<AMP::Database> input_db ); // note that this was "protected" (and not virtual) in TimeIntegrator.h
+      void getFromInput( AMP::shared_ptr<AMP::Database> input_db ); // note that this was "protected" (and not virtual) in TimeIntegrator.h
       // and BackwardEulerTimeIntegrator has own its implementation of getFromInput - overridden...?
       
       // we definitely need this
@@ -272,16 +272,16 @@ namespace TimeIntegrator{
       bool d_bLinearRhsOperator;
       bool d_bManufacturedProblem;
       
-      boost::shared_ptr<IDATimeOperator> d_pIDATimeOperator; //BP, can go, but need to be careful
-      boost::shared_ptr<LinearTimeOperator> d_pLinearTimeOperator;    
-      boost::shared_ptr<AMP::LinearAlgebra::Vector> d_solution_prime;
+      AMP::shared_ptr<IDATimeOperator> d_pIDATimeOperator; //BP, can go, but need to be careful
+      AMP::shared_ptr<LinearTimeOperator> d_pLinearTimeOperator;    
+      AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_solution_prime;
       
       
       // volume operator
-      //boost::shared_ptr<VolumeIntegralOperator> d_volumeIntegralOperator;
+      //AMP::shared_ptr<VolumeIntegralOperator> d_volumeIntegralOperator;
       
       
-      boost::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+      AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
     };
 
 }

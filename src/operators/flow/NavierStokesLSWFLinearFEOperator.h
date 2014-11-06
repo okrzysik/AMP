@@ -17,11 +17,11 @@ namespace AMP {
     {
       public :
 
-        NavierStokesLSWFLinearFEOperator(const boost::shared_ptr<NavierStokesLinearFEOperatorParameters>& params);
+        NavierStokesLSWFLinearFEOperator(const AMP::shared_ptr<NavierStokesLinearFEOperatorParameters>& params);
 
         virtual ~NavierStokesLSWFLinearFEOperator() { }
 
-        void preAssembly(const boost::shared_ptr<OperatorParameters>& params);
+        void preAssembly(const AMP::shared_ptr<OperatorParameters>& params);
 
         void postAssembly();
 
@@ -44,14 +44,14 @@ namespace AMP {
         std::vector<std::vector<size_t> > d_type0DofIndices; 
         std::vector<std::vector<size_t> > d_type1DofIndices; 
 
-//        boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap;
+//        AMP::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
+        AMP::shared_ptr<AMP::Discretization::DOFManager> d_dofMap;
 
         std::vector<std::vector<double> > d_elementStiffnessMatrix; 
 
-        boost::shared_ptr< NavierStokesLSWFLinearElement > d_flowLSWFLinElem; 
+        AMP::shared_ptr< NavierStokesLSWFLinearElement > d_flowLSWFLinElem; 
 
-        boost::shared_ptr<FlowTransportModel> d_transportModel; 
+        AMP::shared_ptr<FlowTransportModel> d_transportModel; 
 
         AMP::LinearAlgebra::Vector::shared_ptr d_inVec;
 
@@ -59,9 +59,9 @@ namespace AMP {
             AMP::LinearAlgebra::Variable::shared_ptr var);
       private :
 
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariables; /**< Input variables. */
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariables; /**< Input variables. */
 
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariables; /**< Output variables. */
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariables; /**< Output variables. */
 
     };
 

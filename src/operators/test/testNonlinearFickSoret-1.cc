@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -51,7 +51,7 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
     std::cout.flush();
 
     // Test create
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase(
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase(
             "input_db"));
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
     input_db->printClassData(AMP::plog);
@@ -60,47 +60,47 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
 //   Create the Mesh.
 //--------------------------------------------------
     AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-    boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-    boost::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
+    AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(new AMP::Mesh::MeshParameters(mesh_db));
     mgrParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-    boost::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
+    AMP::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh(mgrParams);
 //--------------------------------------------------
 
-    boost::shared_ptr<AMP::Operator::FickSoretNonlinearFEOperator> fsOp;
-    boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    boost::shared_ptr<AMP::InputDatabase> fsOp_db =
-            boost::dynamic_pointer_cast<AMP::InputDatabase>(
+    AMP::shared_ptr<AMP::Operator::FickSoretNonlinearFEOperator> fsOp;
+    AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
+    AMP::shared_ptr<AMP::InputDatabase> fsOp_db =
+            AMP::dynamic_pointer_cast<AMP::InputDatabase>(
                     input_db->getDatabase("NonlinearFickSoretOp"));
-    boost::shared_ptr<AMP::Operator::Operator> nonlinearOperator =
+    AMP::shared_ptr<AMP::Operator::Operator> nonlinearOperator =
       AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 						     "NonlinearFickSoretOp",
 						     input_db,
 						     elementModel);
-    fsOp = boost::dynamic_pointer_cast<AMP::Operator::FickSoretNonlinearFEOperator>(
+    fsOp = AMP::dynamic_pointer_cast<AMP::Operator::FickSoretNonlinearFEOperator>(
             nonlinearOperator);
-    boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> fickOp =
+    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> fickOp =
             fsOp->getFickOperator();
-    boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> soretOp =
+    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperator> soretOp =
             fsOp->getSoretOperator();
 
     ut->passes(exeName + ": create");
     std::cout.flush();
 
     // set up defaults for materials arguments and create transport model
-    boost::shared_ptr<AMP::Operator::DiffusionTransportModel> fickModel =
+    AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> fickModel =
             fickOp->getTransportModel();
-    boost::shared_ptr<AMP::Operator::DiffusionTransportModel> soretModel =
+    AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> soretModel =
             soretOp->getTransportModel();
 
     // create parameters for reset test
-    boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperatorParameters>
+    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperatorParameters>
             fickOpParams(new AMP::Operator::DiffusionNonlinearFEOperatorParameters(fsOp_db));
-    boost::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperatorParameters>
+    AMP::shared_ptr<AMP::Operator::DiffusionNonlinearFEOperatorParameters>
             soretOpParams(new AMP::Operator::DiffusionNonlinearFEOperatorParameters(fsOp_db));
     fickOpParams->d_transportModel = fickModel;
     soretOpParams->d_transportModel = soretModel;
-    boost::shared_ptr<AMP::Database> fsOpBase_db(boost::dynamic_pointer_cast<AMP::Database>(fsOp_db));
-    boost::shared_ptr<AMP::Operator::FickSoretNonlinearFEOperatorParameters>
+    AMP::shared_ptr<AMP::Database> fsOpBase_db(AMP::dynamic_pointer_cast<AMP::Database>(fsOp_db));
+    AMP::shared_ptr<AMP::Operator::FickSoretNonlinearFEOperatorParameters>
         fsOpParams(new AMP::Operator::FickSoretNonlinearFEOperatorParameters(fsOpBase_db));
     fsOpParams->d_FickParameters = fickOpParams;
     fsOpParams->d_SoretParameters = soretOpParams;
@@ -176,11 +176,11 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
     if(defaults.size() > 1) cVec->setToScalar(defaults[1]);  // compile error
     if(defaults.size() > 2) bVec->setToScalar(defaults[2]);  // compile error
     // set up input multivariable and output variable
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> fsInpVar(new AMP::LinearAlgebra::MultiVariable("fsInput"));
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> fsInpVar(new AMP::LinearAlgebra::MultiVariable("fsInput"));
     fsInpVar->add(tVar);
     fsInpVar->add(cVar);
     fsInpVar->add(bVar);
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> fsOutVar(fickOp->getOutputVariable());
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> fsOutVar(fickOp->getOutputVariable());
 
     std::string msgPrefix = exeName + ": apply ";
     AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsInpVar );

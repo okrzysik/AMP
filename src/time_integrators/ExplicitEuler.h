@@ -21,7 +21,7 @@ public:
    /**
     * Constructor that accepts parameter list.
     */
-   ExplicitEuler(  boost::shared_ptr<TimeIntegratorParameters> parameters );
+   ExplicitEuler(  AMP::shared_ptr<TimeIntegratorParameters> parameters );
 
    /**
     * Destructor.
@@ -31,14 +31,14 @@ public:
    /**
     * Initialize from parameter list.
     */
-   void initialize( boost::shared_ptr<TimeIntegratorParameters> parameters );
+   void initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters );
 
    /**
    * Resets the internal state of the time integrator as needed.
    * A parameter argument is passed to allow for general flexibility
    * in determining what needs to be reset Typically used after a regrid.
    */
-   void reset( boost::shared_ptr<TimeIntegratorParameters> parameters);
+   void reset( AMP::shared_ptr<TimeIntegratorParameters> parameters);
 
    /**
     * Specify initial time step.
@@ -71,7 +71,7 @@ private:
    /**
     * Read data from input database.
     */
-   void getFromInput( boost::shared_ptr<AMP::Database> input_db );
+   void getFromInput( AMP::shared_ptr<AMP::Database> input_db );
 
    /**
    * setup the vectors used by BE
@@ -82,8 +82,8 @@ private:
 
    double d_initial_dt;
 
-   boost::shared_ptr<AMP::LinearAlgebra::Vector> d_new_solution;
-   boost::shared_ptr<AMP::LinearAlgebra::Vector> d_f_vec;
+   AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_new_solution;
+   AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_f_vec;
 
 };
 

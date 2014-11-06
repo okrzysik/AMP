@@ -79,19 +79,19 @@ AMP::Mesh::MeshIterator  StructuredMeshHelper::getYZFaceIterator(
 AMP::Mesh::MeshIterator  StructuredMeshHelper::getFaceIterator(
     AMP::Mesh::Mesh::shared_ptr mesh, int gcw, int direction )
 {
-    boost::shared_ptr<AMP::Mesh::MultiMesh> multimesh = 
-        boost::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
-    boost::shared_ptr<AMP::Mesh::BoxMesh> boxmesh = 
-        boost::dynamic_pointer_cast<AMP::Mesh::BoxMesh>( mesh );
+    AMP::shared_ptr<AMP::Mesh::MultiMesh> multimesh = 
+        AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    AMP::shared_ptr<AMP::Mesh::BoxMesh> boxmesh = 
+        AMP::dynamic_pointer_cast<AMP::Mesh::BoxMesh>( mesh );
     if ( multimesh!=NULL ) {
         // Optimization for multi-meshes
         std::vector<AMP::Mesh::Mesh::shared_ptr> meshlist = multimesh->getMeshes();
         if ( meshlist.size()==1 ) {
             return getFaceIterator(meshlist[0],gcw,direction);
         } else {
-            std::vector<boost::shared_ptr<AMP::Mesh::MeshIterator> > iterators(meshlist.size());
+            std::vector<AMP::shared_ptr<AMP::Mesh::MeshIterator> > iterators(meshlist.size());
             for (size_t i=0; i<meshlist.size(); i++) {
-                boost::shared_ptr<MeshIterator> iterator_ptr( new AMP::Mesh::MeshIterator(
+                AMP::shared_ptr<MeshIterator> iterator_ptr( new AMP::Mesh::MeshIterator(
                     getFaceIterator(meshlist[i],gcw,direction) ) );
                 iterators[i] = iterator_ptr;
             }
@@ -112,7 +112,7 @@ AMP::Mesh::MeshIterator  StructuredMeshHelper::getFaceIterator(
                 last[d] = 0;
             }
         }
-        boost::shared_ptr<std::vector<BoxMesh::MeshElementIndex> > face_list(
+        AMP::shared_ptr<std::vector<BoxMesh::MeshElementIndex> > face_list(
             new std::vector<BoxMesh::MeshElementIndex>() );
         face_list->reserve(4*Nx*Ny*Nz);
         if ( direction==0 ) {
@@ -187,7 +187,7 @@ AMP::Mesh::MeshIterator  StructuredMeshHelper::getFaceIterator(
         }
         // Sort the points in the direction first, then the coordinates
         Utilities::quicksort(index,face_list);
-        boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
+        AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
             new std::vector<AMP::Mesh::MeshElement>() );
         *elements = face_list;
         return AMP::Mesh::MultiVectorIterator( elements );

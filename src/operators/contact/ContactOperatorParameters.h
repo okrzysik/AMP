@@ -12,7 +12,7 @@ namespace AMP {
     class ContactOperatorParameters : public OperatorParameters {
       public :
 
-        ContactOperatorParameters (const boost::shared_ptr<AMP::Database> &db)
+        ContactOperatorParameters (const AMP::shared_ptr<AMP::Database> &db)
           : OperatorParameters(db)
         {
           AMP_INSIST(d_db->keyExists("MasterBoundaryID"), "key not found");
@@ -43,7 +43,7 @@ namespace AMP {
         int d_MasterBoundaryID;
         int d_SlaveBoundaryID;
 
-        boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> d_MasterMechanicsMaterialModel;
+        AMP::shared_ptr<AMP::Operator::MechanicsMaterialModel> d_MasterMechanicsMaterialModel;
  
       protected :
 

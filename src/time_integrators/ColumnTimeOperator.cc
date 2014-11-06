@@ -7,16 +7,16 @@
 namespace AMP{
 namespace TimeIntegrator{
 
-ColumnTimeOperator::ColumnTimeOperator(boost::shared_ptr<AMP::Operator::OperatorParameters > in_params):ColumnOperator(in_params)
+ColumnTimeOperator::ColumnTimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > in_params):ColumnOperator(in_params)
 {
   
-  boost::shared_ptr<TimeOperatorParameters> params = boost::dynamic_pointer_cast<TimeOperatorParameters>(in_params);
-  boost::shared_ptr<AMP::Database> column_db = params->d_db;
+  AMP::shared_ptr<TimeOperatorParameters> params = AMP::dynamic_pointer_cast<TimeOperatorParameters>(in_params);
+  AMP::shared_ptr<AMP::Database> column_db = params->d_db;
   d_Mesh = params->d_Mesh;  
-  d_pRhsOperator = boost::dynamic_pointer_cast<ColumnOperator>(params->d_pRhsOperator);
+  d_pRhsOperator = AMP::dynamic_pointer_cast<ColumnOperator>(params->d_pRhsOperator);
   AMP_INSIST(d_pRhsOperator.get()!=NULL, "Error: ColumnTimeOperator::ColumnTimeOperator() rhs operator must be a non-NULL column operator");
 
-  d_pMassOperator = boost::dynamic_pointer_cast<ColumnOperator>(params->d_pMassOperator);
+  d_pMassOperator = AMP::dynamic_pointer_cast<ColumnOperator>(params->d_pMassOperator);
   AMP_INSIST(d_pRhsOperator.get()!=NULL, "Error: ColumnTimeOperator::ColumnTimeOperator() mass operator must be a non-NULL column operator");
 
   d_bCreateLinearTimeOperators = column_db->getBoolWithDefault("CreateLinearTimeOperators", true);
@@ -30,7 +30,7 @@ ColumnTimeOperator::ColumnTimeOperator(boost::shared_ptr<AMP::Operator::Operator
       
       for( int i=0; i<numberOfOperators; i++)
     {
-      boost::shared_ptr<AMP::InputDatabase> timeOperator_db(new AMP::InputDatabase("TimeOperatorDatabase"));
+      AMP::shared_ptr<AMP::InputDatabase> timeOperator_db(new AMP::InputDatabase("TimeOperatorDatabase"));
       // we assume for now that either all operators in the column operator are linear or all are nonlinear
       timeOperator_db->putDouble("CurrentDt", column_db->getDoubleWithDefault("CurrentDt", 1.0e-08));
       timeOperator_db->putDouble("CurrentTime", column_db->getDoubleWithDefault("CurrentTime", 0.0));
@@ -38,7 +38,7 @@ ColumnTimeOperator::ColumnTimeOperator(boost::shared_ptr<AMP::Operator::Operator
       timeOperator_db->putBool("bLinearMassOperator", column_db->getBoolWithDefault("bLinearMassOperator", true));
       timeOperator_db->putBool("bLinearRhsOperator", column_db->getBoolWithDefault("bLinearRhsOperator", false));
       timeOperator_db->putDouble("ScalingFactor", column_db->getDoubleWithDefault("ScalingFactor", 1.0e6));
-      boost::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(new AMP::TimeIntegrator::TimeOperatorParameters(timeOperator_db));
+      AMP::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(new AMP::TimeIntegrator::TimeOperatorParameters(timeOperator_db));
       timeOperatorParameters->d_pRhsOperator = d_pRhsOperator->getOperator(i);
 
       // if there are algebraic components set the mass operator to NULL
@@ -51,7 +51,7 @@ ColumnTimeOperator::ColumnTimeOperator(boost::shared_ptr<AMP::Operator::Operator
           timeOperator_db->putBool("bAlgebraicComponent", true);
         }
 
-      boost::shared_ptr< AMP::TimeIntegrator::LinearTimeOperator > op(new AMP::TimeIntegrator::LinearTimeOperator(timeOperatorParameters));
+      AMP::shared_ptr< AMP::TimeIntegrator::LinearTimeOperator > op(new AMP::TimeIntegrator::LinearTimeOperator(timeOperatorParameters));
 
       d_Operators.push_back( op );
 
@@ -74,12 +74,12 @@ ColumnTimeOperator::~ColumnTimeOperator()
 }
 
 void
-ColumnTimeOperator::reset(const boost::shared_ptr<AMP::Operator::OperatorParameters>& in_params)
+ColumnTimeOperator::reset(const AMP::shared_ptr<AMP::Operator::OperatorParameters>& in_params)
 {
-  boost::shared_ptr<TimeOperatorParameters> params = boost::dynamic_pointer_cast<TimeOperatorParameters>(in_params);
-  boost::shared_ptr<AMP::Database> column_db = params->d_db;
-  boost::shared_ptr<AMP::Operator::ColumnOperatorParameters> pRhsParameters =  boost::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(params->d_pRhsOperatorParameters);
-  boost::shared_ptr<AMP::Operator::ColumnOperatorParameters> pMassParameters =  boost::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(params->d_pMassOperatorParameters);
+  AMP::shared_ptr<TimeOperatorParameters> params = AMP::dynamic_pointer_cast<TimeOperatorParameters>(in_params);
+  AMP::shared_ptr<AMP::Database> column_db = params->d_db;
+  AMP::shared_ptr<AMP::Operator::ColumnOperatorParameters> pRhsParameters =  AMP::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(params->d_pRhsOperatorParameters);
+  AMP::shared_ptr<AMP::Operator::ColumnOperatorParameters> pMassParameters =  AMP::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(params->d_pMassOperatorParameters);
   
   AMP_INSIST(params.get()!=NULL, "Error: NULL TimeOperatorParameters object");
   
@@ -89,7 +89,7 @@ ColumnTimeOperator::reset(const boost::shared_ptr<AMP::Operator::OperatorParamet
   
   for( int i=0; i<numberOfOperators; i++)
     {
-      boost::shared_ptr<AMP::InputDatabase> timeOperator_db(new AMP::InputDatabase("TimeOperatorDatabase"));
+      AMP::shared_ptr<AMP::InputDatabase> timeOperator_db(new AMP::InputDatabase("TimeOperatorDatabase"));
       // we assume for now that either all operators in the column operator are linear or all are nonlinear
       timeOperator_db->putDouble("CurrentDt", column_db->getDoubleWithDefault("CurrentDt", 1.0e-08));
       timeOperator_db->putDouble("CurrentTime", column_db->getDoubleWithDefault("CurrentTime", 0.0));
@@ -97,7 +97,7 @@ ColumnTimeOperator::reset(const boost::shared_ptr<AMP::Operator::OperatorParamet
       timeOperator_db->putBool("bLinearMassOperator", column_db->getBoolWithDefault("bLinearMassOperator", true));
       timeOperator_db->putBool("bLinearRhsOperator", column_db->getBoolWithDefault("bLinearRhsOperator", false));
       timeOperator_db->putDouble("ScalingFactor", column_db->getDoubleWithDefault("ScalingFactor", 1.0e6));
-      boost::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(new AMP::TimeIntegrator::TimeOperatorParameters(timeOperator_db));
+      AMP::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(new AMP::TimeIntegrator::TimeOperatorParameters(timeOperator_db));
       if(pRhsParameters.get()!=NULL)
     {
       timeOperatorParameters->d_pRhsOperatorParameters = (pRhsParameters->d_OperatorParameters)[i];
@@ -121,7 +121,7 @@ ColumnTimeOperator::reset(const boost::shared_ptr<AMP::Operator::OperatorParamet
 }
   
 void
-ColumnTimeOperator::getFromInput(const boost::shared_ptr<AMP::Database> &db)
+ColumnTimeOperator::getFromInput(const AMP::shared_ptr<AMP::Database> &db)
 {
   AMP_INSIST(db->keyExists("CurrentDt"), "key CurrentDt missing in input");
 
@@ -137,7 +137,7 @@ ColumnTimeOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr /* f */, 
 }
 
 void
-ColumnTimeOperator::append(boost::shared_ptr< Operator > /* op */)
+ColumnTimeOperator::append(AMP::shared_ptr< Operator > /* op */)
 {
   AMP::pout << "Error: ColumnTimeOperator::append(): this routine is disabled for ColumnTimeOperators" << std::endl;
 }

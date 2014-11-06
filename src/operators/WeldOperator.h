@@ -6,7 +6,7 @@
 
 #include "utils/InputDatabase.h"
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "operators/Operator.h"
 #include "vectors/Vector.h"
@@ -24,12 +24,12 @@ namespace AMP {
     {
 
       public :
-        WeldOperator (const boost::shared_ptr<OperatorParameters> & params) : 
+        WeldOperator (const AMP::shared_ptr<OperatorParameters> & params) : 
           Operator (params) { }
 
         virtual ~WeldOperator() { }
 
-        virtual void reset(const boost::shared_ptr<OperatorParameters>& params) {
+        virtual void reset(const AMP::shared_ptr<OperatorParameters>& params) {
           (void) params;
         }
 

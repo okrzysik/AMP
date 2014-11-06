@@ -10,7 +10,7 @@ namespace Operator {
   class DirichletMatrixCorrectionParameters : public LinearBoundaryOperatorParameters {
     public :
 
-      DirichletMatrixCorrectionParameters(const boost::shared_ptr<AMP::Database> &db)
+      DirichletMatrixCorrectionParameters(const AMP::shared_ptr<AMP::Database> &db)
         : LinearBoundaryOperatorParameters(db) {  }
 
       virtual ~DirichletMatrixCorrectionParameters() { }

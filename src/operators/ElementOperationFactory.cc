@@ -27,11 +27,11 @@ namespace AMP {
 namespace Operator {
 
 
-boost::shared_ptr<ElementOperation>
-ElementOperationFactory::createElementOperation(boost::shared_ptr<Database>  elementOperationDb )
+AMP::shared_ptr<ElementOperation>
+ElementOperationFactory::createElementOperation(AMP::shared_ptr<Database>  elementOperationDb )
 {
-    boost::shared_ptr<ElementOperation> retElementOp;
-    boost::shared_ptr<ElementOperationParameters> params;
+    AMP::shared_ptr<ElementOperation> retElementOp;
+    AMP::shared_ptr<ElementOperationParameters> params;
 
     AMP_INSIST(elementOperationDb.get()!=NULL, "ElementOperationFactory::createElementOperation:: NULL Database object input");
 

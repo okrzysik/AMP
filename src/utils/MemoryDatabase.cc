@@ -188,7 +188,7 @@ namespace AMP {
     return(keydata ? keydata->d_type == Database::AMP_DATABASE : false);
   }
 
-  boost::shared_ptr<Database> MemoryDatabase::putDatabase(const std::string& key)
+  AMP::shared_ptr<Database> MemoryDatabase::putDatabase(const std::string& key)
   {
     deleteKeyIfFound(key);
     KeyData keydata;
@@ -202,7 +202,7 @@ namespace AMP {
     return(keydata.d_database);
   }
 
-  boost::shared_ptr<Database> MemoryDatabase::getDatabase(const std::string& key)
+  AMP::shared_ptr<Database> MemoryDatabase::getDatabase(const std::string& key)
   {
     KeyData *keydata = findKeyDataOrExit(key);
     if (keydata->d_type != Database::AMP_DATABASE) {
@@ -1405,7 +1405,7 @@ namespace AMP {
 
     for (std::list<KeyData>::iterator j = d_keyvalues.begin(); j!=d_keyvalues.end(); j++) {
       if ((*j).d_type == Database::AMP_DATABASE) {
-        boost::shared_ptr<MemoryDatabase> db = (*j).d_database;
+        AMP::shared_ptr<MemoryDatabase> db = (*j).d_database;
         db->printDatabase(os, indent+3, toprint);
       }
     }

@@ -14,14 +14,14 @@ namespace AMP {
         d_iNumColumnBlocks = -5678;
       }
 
-    BlockOperator :: BlockOperator(const boost::shared_ptr<OperatorParameters>& params)
+    BlockOperator :: BlockOperator(const AMP::shared_ptr<OperatorParameters>& params)
       : Operator () {
         d_iNumRowBlocks = -1234;
         d_iNumColumnBlocks = -5678;
       }
 
-    void BlockOperator :: reset(const boost::shared_ptr<OperatorParameters>& params) {
-      boost::shared_ptr<BlockOperatorParameters> myParams = boost::dynamic_pointer_cast<BlockOperatorParameters>(params);
+    void BlockOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params) {
+      AMP::shared_ptr<BlockOperatorParameters> myParams = AMP::dynamic_pointer_cast<BlockOperatorParameters>(params);
       for(int i = 0; i < d_iNumRowBlocks; i++) {
         for(int j = 0; j < d_iNumColumnBlocks; j++) {
           d_blocks[i][j]->reset((myParams->d_blockParams)[i][j]);
@@ -30,7 +30,7 @@ namespace AMP {
     }
 
     AMP::LinearAlgebra::Variable::shared_ptr BlockOperator :: getOutputVariable() {
-      boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> var( new AMP::LinearAlgebra::MultiVariable("BlockVariable"));
+      AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> var( new AMP::LinearAlgebra::MultiVariable("BlockVariable"));
       for(int i = 0; i < d_iNumRowBlocks; i++) {
         var->add(d_blocks[i][0]->getOutputVariable());
       }
@@ -40,7 +40,7 @@ namespace AMP {
     }
 
     AMP::LinearAlgebra::Variable::shared_ptr BlockOperator :: getInputVariable() {
-      boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> var( new AMP::LinearAlgebra::MultiVariable("BlockVariable"));
+      AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> var( new AMP::LinearAlgebra::MultiVariable("BlockVariable"));
       for(int i = 0; i < d_iNumColumnBlocks; i++) {
         var->add(d_blocks[0][i]->getInputVariable());
       }
@@ -57,7 +57,7 @@ namespace AMP {
       }
     }
 
-    void BlockOperator :: setBlock(int row, int col, boost::shared_ptr<Operator> op) {
+    void BlockOperator :: setBlock(int row, int col, AMP::shared_ptr<Operator> op) {
       d_blocks[row][col] = op;
     }
 
@@ -72,9 +72,9 @@ namespace AMP {
     bool BlockOperator :: supportsMatrixFunctions() {
       for(int i = 0; i < d_iNumRowBlocks; i++) {
         for(int j = 0; j < d_iNumColumnBlocks; j++) {
-          boost::shared_ptr<BlockOperator> blockOp = boost::dynamic_pointer_cast<BlockOperator>(d_blocks[i][j]);
+          AMP::shared_ptr<BlockOperator> blockOp = AMP::dynamic_pointer_cast<BlockOperator>(d_blocks[i][j]);
           if(blockOp == NULL) {
-            boost::shared_ptr<LinearOperator> matOp = boost::dynamic_pointer_cast<LinearOperator>(d_blocks[i][j]);
+            AMP::shared_ptr<LinearOperator> matOp = AMP::dynamic_pointer_cast<LinearOperator>(d_blocks[i][j]);
             if(matOp == NULL) {
               return false;
             }
@@ -148,9 +148,9 @@ namespace AMP {
 
     int BlockOperator :: getNumRowsForBlock(int id) {
       int result = 0;
-      boost::shared_ptr<BlockOperator> blockOp = boost::dynamic_pointer_cast<BlockOperator>(d_blocks[id][0]);
+      AMP::shared_ptr<BlockOperator> blockOp = AMP::dynamic_pointer_cast<BlockOperator>(d_blocks[id][0]);
       if(blockOp == NULL) {
-        boost::shared_ptr<LinearOperator> matOp = boost::dynamic_pointer_cast<LinearOperator>(d_blocks[id][0]);
+        AMP::shared_ptr<LinearOperator> matOp = AMP::dynamic_pointer_cast<LinearOperator>(d_blocks[id][0]);
         if(matOp == NULL) {
           AMP_ERROR("This is not supported.");
         } else {
@@ -164,9 +164,9 @@ namespace AMP {
 
     int BlockOperator :: getNumColumnsForBlock(int id) {
       int result = 0;
-      boost::shared_ptr<BlockOperator> blockOp = boost::dynamic_pointer_cast<BlockOperator>(d_blocks[0][id]);
+      AMP::shared_ptr<BlockOperator> blockOp = AMP::dynamic_pointer_cast<BlockOperator>(d_blocks[0][id]);
       if(blockOp == NULL) {
-        boost::shared_ptr<LinearOperator> matOp = boost::dynamic_pointer_cast<LinearOperator>(d_blocks[0][id]);
+        AMP::shared_ptr<LinearOperator> matOp = AMP::dynamic_pointer_cast<LinearOperator>(d_blocks[0][id]);
         if(matOp == NULL) {
           AMP_ERROR("This is not supported.");
         } else {
@@ -220,9 +220,9 @@ namespace AMP {
 
     void BlockOperator :: getRowForBlock(int locRow, int blkRowId, int blkColId,
         std::vector<unsigned int> &locCols, std::vector<double> &values) {
-      boost::shared_ptr<BlockOperator> blockOp = boost::dynamic_pointer_cast<BlockOperator>(d_blocks[blkRowId][blkColId]);
+      AMP::shared_ptr<BlockOperator> blockOp = AMP::dynamic_pointer_cast<BlockOperator>(d_blocks[blkRowId][blkColId]);
       if(blockOp == NULL) {
-        boost::shared_ptr<LinearOperator> matOp = boost::dynamic_pointer_cast<LinearOperator>(d_blocks[blkRowId][blkColId]);
+        AMP::shared_ptr<LinearOperator> matOp = AMP::dynamic_pointer_cast<LinearOperator>(d_blocks[blkRowId][blkColId]);
         if(matOp == NULL) {
           AMP_ERROR("This is not supported.");
         } else {

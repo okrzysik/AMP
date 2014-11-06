@@ -2,7 +2,7 @@
 #ifndef included_AMP_ElementPhysicsModelParameters
 #define included_AMP_ElementPhysicsModelParameters
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 
@@ -24,7 +24,7 @@ namespace Operator {
       /** 
         Constructor.
         */
-      ElementPhysicsModelParameters(const boost::shared_ptr<AMP::Database> & db)
+      ElementPhysicsModelParameters(const AMP::shared_ptr<AMP::Database> & db)
         : d_db(db) {}
 
       /**
@@ -32,7 +32,7 @@ namespace Operator {
         */
       virtual ~ElementPhysicsModelParameters() { }
 
-      boost::shared_ptr<AMP::Database> d_db; /**< Database object which needs to be 
+      AMP::shared_ptr<AMP::Database> d_db; /**< Database object which needs to be 
                                                initialized specific to the material model.  */
 
     protected :

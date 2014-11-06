@@ -16,7 +16,7 @@ namespace Operator {
 
 
 //Constructor
-SubchannelTwoEqNonlinearOperator::SubchannelTwoEqNonlinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params)
+SubchannelTwoEqNonlinearOperator::SubchannelTwoEqNonlinearOperator(const AMP::shared_ptr<SubchannelOperatorParameters> & params)
     : Operator (params)
 {
     AMP_INSIST( params->d_db->keyExists("InputVariable"), "Key 'InputVariable' does not exist");
@@ -33,10 +33,10 @@ SubchannelTwoEqNonlinearOperator::SubchannelTwoEqNonlinearOperator(const boost::
 
 
 // reset
-void SubchannelTwoEqNonlinearOperator :: reset(const boost::shared_ptr<OperatorParameters>& params)
+void SubchannelTwoEqNonlinearOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params)
 {
-    boost::shared_ptr<SubchannelOperatorParameters> myparams =
-        boost::dynamic_pointer_cast<SubchannelOperatorParameters>(params);
+    AMP::shared_ptr<SubchannelOperatorParameters> myparams =
+        AMP::dynamic_pointer_cast<SubchannelOperatorParameters>(params);
     AMP_INSIST( ((myparams.get()) != NULL), "NULL parameters" );
     AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
     d_params = myparams;
@@ -188,7 +188,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
         double P_in  = P_scale*inputVec->getValueByGlobalID(dofs[1]);
 
         // evaluate enthalpy at inlet
-        std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
+        std::map<std::string, AMP::shared_ptr<std::vector<double> > > enthalpyArgMap;
         enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,d_Tin)));
         enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,P_in)));
         std::vector<double> enthalpyResult(1);
@@ -280,7 +280,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                 double p_avg   = (1.0/2.0)*(p_minus + p_plus);       // pressure evaluated at cell center
 
                 // evaluate density at upper face
-                std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
+                std::map<std::string, AMP::shared_ptr<std::vector<double> > > volumeArgMap_plus;
                 volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
                 volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,p_plus)));
                 std::vector<double> volumeResult_plus(1);
@@ -288,7 +288,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                 double rho_plus = 1.0/volumeResult_plus[0];
 
                 // evaluate density at lower face
-                std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_minus;
+                std::map<std::string, AMP::shared_ptr<std::vector<double> > > volumeArgMap_minus;
                 volumeArgMap_minus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_minus)));
                 volumeArgMap_minus.insert(std::make_pair("pressure",new std::vector<double>(1,p_minus)));
                 std::vector<double> volumeResult_minus(1);
@@ -300,7 +300,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                 double u_avg = (1.0/2.0)*(u_minus + u_plus); // velocity evaluated at cell center
 
                 // evaluate density at cell center
-                std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_avg;
+                std::map<std::string, AMP::shared_ptr<std::vector<double> > > volumeArgMap_avg;
                 volumeArgMap_avg.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
                 volumeArgMap_avg.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
                 std::vector<double> volumeResult_avg(1);
@@ -320,7 +320,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                     AMP_WARNING(ss.str());
 
                     // evaluate temperature at cell center
-                    std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
+                    std::map<std::string, AMP::shared_ptr<std::vector<double> > > temperatureArgMap;
                     temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
                     temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
                     std::vector<double> temperatureResult(1);
@@ -328,7 +328,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
                     double T_avg = temperatureResult[0];
 
                     // evaluate viscosity at cell center
-                    std::map<std::string, boost::shared_ptr<std::vector<double> > > viscosityArgMap;
+                    std::map<std::string, AMP::shared_ptr<std::vector<double> > > viscosityArgMap;
                     viscosityArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,T_avg)));
                     viscosityArgMap.insert(std::make_pair("density",new std::vector<double>(1,rho_avg)));
                     std::vector<double> viscosityResult(1);
@@ -423,14 +423,14 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
     PROFILE_STOP("apply");
 }
 
-boost::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator ::
-getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u)
+AMP::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator ::
+getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u)
 {
-    boost::shared_ptr<AMP::InputDatabase> tmp_db(new AMP::InputDatabase("Dummy"));
+    AMP::shared_ptr<AMP::InputDatabase> tmp_db(new AMP::InputDatabase("Dummy"));
 
     tmp_db->putString("name","SubchannelTwoEqLinearOperator");
 
-    boost::shared_ptr<SubchannelOperatorParameters> outParams(new SubchannelOperatorParameters(tmp_db));
+    AMP::shared_ptr<SubchannelOperatorParameters> outParams(new SubchannelOperatorParameters(tmp_db));
     outParams->d_db = d_params->d_db;
     outParams->d_frozenSolution = subsetInputVector( u );
     outParams->d_initialize = true;
@@ -445,7 +445,7 @@ getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u)
 
 // function used in reset to get double parameter or set default if missing
 double SubchannelTwoEqNonlinearOperator::getDoubleParameter(
-    boost::shared_ptr<SubchannelOperatorParameters> myparams, std::string paramString, double defaultValue )
+    AMP::shared_ptr<SubchannelOperatorParameters> myparams, std::string paramString, double defaultValue )
 {
     bool keyExists = (myparams->d_db)->keyExists(paramString);
     if (keyExists) {
@@ -458,7 +458,7 @@ double SubchannelTwoEqNonlinearOperator::getDoubleParameter(
 
 // function used in reset to get integer parameter or set default if missing
 int SubchannelTwoEqNonlinearOperator::getIntegerParameter(
-    boost::shared_ptr<SubchannelOperatorParameters> myparams, std::string paramString, int defaultValue )
+    AMP::shared_ptr<SubchannelOperatorParameters> myparams, std::string paramString, int defaultValue )
 {
     bool keyExists = (myparams->d_db)->keyExists(paramString);
     if (keyExists) {
@@ -471,7 +471,7 @@ int SubchannelTwoEqNonlinearOperator::getIntegerParameter(
 
 // function used in reset to get string parameter or set default if missing
 std::string SubchannelTwoEqNonlinearOperator::getStringParameter(
-    boost::shared_ptr<SubchannelOperatorParameters> myparams, std::string paramString, std::string defaultValue )
+    AMP::shared_ptr<SubchannelOperatorParameters> myparams, std::string paramString, std::string defaultValue )
 {
     bool keyExists = (myparams->d_db)->keyExists(paramString);
     if (keyExists) {

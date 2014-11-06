@@ -22,7 +22,7 @@ class MassMatrixCorrection : public BoundaryOperator
 public :
       
     //! Constructor
-    MassMatrixCorrection(const boost::shared_ptr<MassMatrixCorrectionParameters> & params) :
+    MassMatrixCorrection(const AMP::shared_ptr<MassMatrixCorrectionParameters> & params) :
         BoundaryOperator (params),
         d_bSetIdentityOnDiagonal(false)
     {
@@ -47,14 +47,14 @@ public :
         //Do Nothing
     }
 
-    void resetBoundaryIds(const boost::shared_ptr<MassMatrixCorrectionParameters> & );
+    void resetBoundaryIds(const AMP::shared_ptr<MassMatrixCorrectionParameters> & );
 
     /**
       This function modifies the entries of the matrix formed by the volume operator
       in order to impose Dirichlet boundary conditions. This function can also be used
       to change the Dirichlet boundary conditions, if required.
      */
-    void reset(const boost::shared_ptr<OperatorParameters>& );
+    void reset(const AMP::shared_ptr<OperatorParameters>& );
 
 
     protected :

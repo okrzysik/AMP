@@ -969,7 +969,7 @@ September 1998");
 
 WaterLibrary::WaterLibrary()
 {
-        d_propertyMap = new std::map<std::string, boost::shared_ptr<Property<double> > >();
+        d_propertyMap = new std::map<std::string, AMP::shared_ptr<Property<double> > >();
         INSERT_PROPERTY_IN_MAP(Temperature,    WaterLibrary_NS);
         INSERT_PROPERTY_IN_MAP(SaturatedLiquidEnthalpy, WaterLibrary_NS);
         INSERT_PROPERTY_IN_MAP(SaturatedVaporEnthalpy, WaterLibrary_NS);

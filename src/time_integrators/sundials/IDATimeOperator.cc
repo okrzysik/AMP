@@ -4,7 +4,7 @@
 namespace AMP{
 namespace TimeIntegrator{
     
-    IDATimeOperator::IDATimeOperator(boost::shared_ptr<AMP::Operator::OperatorParameters > in_params):TimeOperator(in_params)
+    IDATimeOperator::IDATimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > in_params):TimeOperator(in_params)
     {
         
       d_cloningHappened = false;
@@ -25,9 +25,9 @@ namespace TimeIntegrator{
 
     /*
     void
-    IDATimeOperator::reset(const boost::shared_ptr<OperatorParameters>& in_params)
+    IDATimeOperator::reset(const AMP::shared_ptr<OperatorParameters>& in_params)
     {
-        boost::shared_ptr<IDATimeOperatorParameters> params = boost::dynamic_pointer_cast<IDATimeOperatorParameters>(in_params);
+        AMP::shared_ptr<IDATimeOperatorParameters> params = AMP::dynamic_pointer_cast<IDATimeOperatorParameters>(in_params);
         
         getFromInput(params->d_db);
         
@@ -57,7 +57,7 @@ namespace TimeIntegrator{
         
         if(d_pAlgebraicVariable.get()!=NULL)          
           {
-            boost::shared_ptr<AMP::LinearAlgebra::Vector> algebraicComponent = d_pScratchVector->subsetVectorForVariable(d_pAlgebraicVariable);
+            AMP::shared_ptr<AMP::LinearAlgebra::Vector> algebraicComponent = d_pScratchVector->subsetVectorForVariable(d_pAlgebraicVariable);
             algebraicComponent->zero();
           }
         

@@ -16,7 +16,7 @@ namespace AMP {
 namespace Operator {
 
 MassDensityModel::MassDensityModel
-(const boost::shared_ptr<MassDensityModelParameters>& params) :
+(const AMP::shared_ptr<MassDensityModelParameters>& params) :
     ElementPhysicsModel(params)
 {
     AMP_INSIST((params->d_db->keyExists("Material")),
@@ -126,7 +126,7 @@ MassDensityModel::MassDensityModel
         if (d_ManufacturedVariable == "Temperature") d_ManufacturedUseTemp = true; else d_ManufacturedUseTemp = false;
         if (d_ManufacturedVariable == "Concentration") d_ManufacturedUseConc = true; else d_ManufacturedUseConc = false;
 
-        boost::shared_ptr<Database> mfg_db = params->d_db->getDatabase("ManufacturedSolution");
+        AMP::shared_ptr<Database> mfg_db = params->d_db->getDatabase("ManufacturedSolution");
         d_ManufacturedSolution.reset(new ManufacturedSolution(mfg_db));
     }
 
@@ -141,7 +141,7 @@ MassDensityModel::MassDensityModel
       for (size_t i=0; i<defaults.size(); ++i) { defaults[i] = ranges[i][0]*(1.0000001);}
       if (params->d_db->keyExists("Defaults")) {
         // check for correct names
-        boost::shared_ptr<Database> defaults_db = params->d_db->getDatabase("Defaults");
+        AMP::shared_ptr<Database> defaults_db = params->d_db->getDatabase("Defaults");
         std::vector<std::string> defaultkeys = defaults_db->getAllKeys();
         // if the defaults block is the right size, use it, else ignor it.
         if(defaultkeys.size() == property->get_number_arguments() ) {
@@ -169,15 +169,15 @@ void MassDensityModel::getDensityMechanics(std::vector<double> & result,
         const std::vector<double>& B)
 {
     AMP_ASSERT((T.size() == U.size()) && (U.size() == result.size()) && (B.size() == U.size()));
-    std::map<std::string, boost::shared_ptr<std::vector<double> > > inputMaterialParameters;
+    std::map<std::string, AMP::shared_ptr<std::vector<double> > > inputMaterialParameters;
 
     std::string temperatureString = "temperature"; // in the future get from input file
     std::string burnupString = "burnup"; // in the future get from input file
     std::string oxygenString = "concentration"; // in the future get from input file
 
-    boost::shared_ptr<std::vector<double> > tempVec(new std::vector<double>(T));
-    boost::shared_ptr<std::vector<double> > burnupVec(new std::vector<double>(B));
-    boost::shared_ptr<std::vector<double> > oxygenVec(new std::vector<double>(U));
+    AMP::shared_ptr<std::vector<double> > tempVec(new std::vector<double>(T));
+    AMP::shared_ptr<std::vector<double> > burnupVec(new std::vector<double>(B));
+    AMP::shared_ptr<std::vector<double> > oxygenVec(new std::vector<double>(U));
 
     inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec) );
     inputMaterialParameters.insert( std::make_pair( burnupString, burnupVec) );
@@ -195,10 +195,10 @@ void MassDensityModel::getDensityThermal(std::vector<double> & result,
     AMP_ASSERT((T.size() == U.size()) && (U.size() == result.size()) && (B.size() == U.size()));
     unsigned int n = result.size();
     std::vector<double> density(n), specificheat(n);
-    std::map<std::string, boost::shared_ptr<std::vector<double> > > args;
-    args.insert(std::make_pair("temperature", boost::shared_ptr<std::vector<double> >(new std::vector<double>(T))));
-    args.insert(std::make_pair("concentration", boost::shared_ptr<std::vector<double> >(new std::vector<double>(U))));
-    args.insert(std::make_pair("burnup", boost::shared_ptr<std::vector<double> >(new std::vector<double>(B))));
+    std::map<std::string, AMP::shared_ptr<std::vector<double> > > args;
+    args.insert(std::make_pair("temperature", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(T))));
+    args.insert(std::make_pair("concentration", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(U))));
+    args.insert(std::make_pair("burnup", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(B))));
     d_material->property("Density")->evalv(density, args);
     d_material->property("HeatCapacityPressure")->evalv(specificheat, args);
     for (unsigned int i = 0; i < n; i++)
@@ -267,10 +267,10 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
     	}
     }
 
-    std::map<std::string, boost::shared_ptr<std::vector<double> > > args;
-    args.insert(std::make_pair("temperature", boost::shared_ptr<std::vector<double> >(new std::vector<double>(T))));
-    args.insert(std::make_pair("concentration", boost::shared_ptr<std::vector<double> >(new std::vector<double>(U))));
-    args.insert(std::make_pair("burnup", boost::shared_ptr<std::vector<double> >(new std::vector<double>(B))));
+    std::map<std::string, AMP::shared_ptr<std::vector<double> > > args;
+    args.insert(std::make_pair("temperature", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(T))));
+    args.insert(std::make_pair("concentration", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(U))));
+    args.insert(std::make_pair("burnup", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(B))));
 
     if (sourceProp->isScalar()) {
         std::vector<double> coeff(neval), dCoeff(neval,0.);
@@ -294,11 +294,11 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
     		solnname.find("Cylindrical") < solnname.size();
 
     if (sourceProp->isTensor() and not isCylindrical) {
-    	boost::shared_ptr<Materials::TensorProperty<double> > sourceTensorProp =
-    			boost::dynamic_pointer_cast<Materials::TensorProperty<double> >(sourceProp);
+    	AMP::shared_ptr<Materials::TensorProperty<double> > sourceTensorProp =
+    			AMP::dynamic_pointer_cast<Materials::TensorProperty<double> >(sourceProp);
     	std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
-    	std::vector<std::vector<boost::shared_ptr<std::vector<double> > > > coeff(dimensions[0],
-    		std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1]));
+    	std::vector<std::vector<AMP::shared_ptr<std::vector<double> > > > coeff(dimensions[0],
+    		std::vector<AMP::shared_ptr<std::vector<double> > >(dimensions[1]));
 		for (size_t i=0; i<dimensions[0]; i++) for (size_t j=0; j<dimensions[1]; j++) {
 			std::vector<double> *vd = new std::vector<double>(neval);
 			 coeff[i][j].reset(vd);
@@ -324,16 +324,16 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
 
     } else if (sourceProp->isTensor() and isCylindrical) {
     	// check dimensions, set up temporary storage
-    	boost::shared_ptr<Materials::TensorProperty<double> > sourceTensorProp =
-    			boost::dynamic_pointer_cast<Materials::TensorProperty<double> >(sourceProp);
+    	AMP::shared_ptr<Materials::TensorProperty<double> > sourceTensorProp =
+    			AMP::dynamic_pointer_cast<Materials::TensorProperty<double> >(sourceProp);
     	std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
     	AMP_ASSERT(dimensions[0] == 3 and dimensions[1] == 3);
-    	std::vector<std::vector<boost::shared_ptr<std::vector<double> > > >
-    		coeff(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1]));
-    	std::vector<std::vector<boost::shared_ptr<std::vector<double> > > >
-    		coeffr(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1]));
-    	std::vector<std::vector<boost::shared_ptr<std::vector<double> > > >
-    		coeffz(dimensions[0], std::vector<boost::shared_ptr<std::vector<double> > >(dimensions[1]));
+    	std::vector<std::vector<AMP::shared_ptr<std::vector<double> > > >
+    		coeff(dimensions[0], std::vector<AMP::shared_ptr<std::vector<double> > >(dimensions[1]));
+    	std::vector<std::vector<AMP::shared_ptr<std::vector<double> > > >
+    		coeffr(dimensions[0], std::vector<AMP::shared_ptr<std::vector<double> > >(dimensions[1]));
+    	std::vector<std::vector<AMP::shared_ptr<std::vector<double> > > >
+    		coeffz(dimensions[0], std::vector<AMP::shared_ptr<std::vector<double> > >(dimensions[1]));
 
 		for (size_t i=0; i<3; i++) for (size_t j=0; j<3; j++) {
 			std::vector<double> *vd;
@@ -352,9 +352,9 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
     	AMP_ASSERT(std::find(argnames.begin(), argnames.end(), "zee") != argnames.end());
 
     	// get argument vectors
-        args.insert(std::make_pair("radius", boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
-        args.insert(std::make_pair("theta", boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
-        args.insert(std::make_pair("zee", boost::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
+        args.insert(std::make_pair("radius", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
+        args.insert(std::make_pair("theta", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
+        args.insert(std::make_pair("zee", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
         std::vector<double> &radius = (*args.find("radius")->second);
         std::vector<double> &theta = (*args.find("theta")->second);
         std::vector<double> &zee = (*args.find("zee")->second);

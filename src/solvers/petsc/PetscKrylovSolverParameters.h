@@ -1,7 +1,7 @@
 #ifndef included_AMP_PetscKrylovSolverParameters
 #define included_AMP_PetscKrylovSolverParameters
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/Database.h"
 #include "solvers/SolverStrategyParameters.h"
 #include "solvers/SolverStrategy.h"
@@ -45,12 +45,12 @@ namespace Solver {
   class PetscKrylovSolverParameters: public SolverStrategyParameters{
   public:
     PetscKrylovSolverParameters(){}
-    PetscKrylovSolverParameters(const boost::shared_ptr<AMP::Database> db);
+    PetscKrylovSolverParameters(const AMP::shared_ptr<AMP::Database> db);
     virtual ~PetscKrylovSolverParameters(){}
 
     AMP_MPI d_comm;
 
-    boost::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+    AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 
   protected:
   private:

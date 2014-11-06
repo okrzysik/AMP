@@ -4,7 +4,7 @@
 #include "vectors/Vector.h"
 #include "utils/InputDatabase.h"
 #include "utils/Writer.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "operators/Operator.h"
 #include "time_integrators/TimeIntegratorParameters.h"
 
@@ -28,7 +28,7 @@ class TimeIntegrator
 {
 public:
    //! Convience typedef
-   typedef boost::shared_ptr<AMP::TimeIntegrator::TimeIntegrator>  shared_ptr;
+   typedef AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegrator>  shared_ptr;
 
    /**
     * The constructor for TimeIntegrator initializes the 
@@ -40,7 +40,7 @@ public:
     * member function.
     *
     */
-  TimeIntegrator( boost::shared_ptr< TimeIntegratorParameters > parameters);
+  TimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters);
 
    /**
     * Empty destructor for TimeIntegrator
@@ -52,7 +52,7 @@ public:
     * @details  Initialize state of time integrator.  This includes 
     * creating solution vector and initializing solver components.
     */
-   virtual void initialize( boost::shared_ptr< TimeIntegratorParameters > parameters);
+   virtual void initialize( AMP::shared_ptr< TimeIntegratorParameters > parameters);
 
    /**
     * @brief  Resets the internal state of the time integrator.
@@ -60,7 +60,7 @@ public:
    * A parameter argument is passed to allow for general flexibility
    * in determining what needs to be reset.
    */
-   virtual void reset(boost::shared_ptr< TimeIntegratorParameters > parameters) = 0;
+   virtual void reset(AMP::shared_ptr< TimeIntegratorParameters > parameters) = 0;
 
    /*!
     * @brief Integrate through the specified time increment.
@@ -116,7 +116,7 @@ public:
    /**
     * Retrieve the current solution.
     */
-   virtual boost::shared_ptr<AMP::LinearAlgebra::Vector> getCurrentSolution(void){ return d_solution; } 
+   virtual AMP::shared_ptr<AMP::LinearAlgebra::Vector> getCurrentSolution(void){ return d_solution; } 
 
    /**
     * @brief  Return time increment for next solution advance. 
@@ -179,7 +179,7 @@ public:
     *  of vectors, but no vector may be owned by multiple solvers.
     * \param vec   The multivector to append
     */
-   virtual void appendSolutionVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> /* vec */ ) {}
+   virtual void appendSolutionVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> /* vec */ ) {}
 
    /**
     * \brief  Append the vectors of interest to the rhs vector
@@ -188,7 +188,7 @@ public:
     *  of vectors, but no vector may be owned by multiple solvers.
     * \param vec   The multivector to append
     */
-   virtual void appendRhsVector( boost::shared_ptr<AMP::LinearAlgebra::MultiVector> /* vec */ ) {}
+   virtual void appendRhsVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> /* vec */ ) {}
 
    /**
     * \brief  Registers a writer with the solver
@@ -196,7 +196,7 @@ public:
     *  may then register any vector components it "owns" with the writer.
     * \param writer   The writer to register
     */
-   virtual void registerWriter( boost::shared_ptr<AMP::Utilities::Writer> writer ) { d_writer=writer; }
+   virtual void registerWriter( AMP::shared_ptr<AMP::Utilities::Writer> writer ) { d_writer=writer; }
 
    /**
     * Print out all members of integrator instance to given output stream.
@@ -208,11 +208,11 @@ public:
     *
     * When assertion checking is active, the database pointer must be non-null.
     */
-   void putToDatabase(boost::shared_ptr<AMP::Database> db);
+   void putToDatabase(AMP::shared_ptr<AMP::Database> db);
 
-   void registerOperator(boost::shared_ptr< AMP::Operator::Operator > op){ d_operator = op; }
+   void registerOperator(AMP::shared_ptr< AMP::Operator::Operator > op){ d_operator = op; }
 
-   boost::shared_ptr< AMP::Operator::Operator > getOperator(void){ return d_operator; } 
+   AMP::shared_ptr< AMP::Operator::Operator > getOperator(void){ return d_operator; } 
    
 protected:
     /*
@@ -222,7 +222,7 @@ protected:
     *
     * When assertion checking is active, the database pointer must be non-null.
     */
-   void getFromInput(const boost::shared_ptr<AMP::Database> db);
+   void getFromInput(const AMP::shared_ptr<AMP::Database> db);
 
    /*
     * Read object state from restart database and initialize class members.
@@ -238,28 +238,28 @@ protected:
    /*
     * Solution vector advanced during the time integration process.
     */
-   boost::shared_ptr<AMP::LinearAlgebra::Vector> d_solution;
+   AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_solution;
 
    /*
     * Solution vector at previous time
     */
-   boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pPreviousTimeSolution;
+   AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pPreviousTimeSolution;
 
    /**
     * The operator is the right hand side operator for an explicit integrator when the time integration problem is : u_t = f(u)
     * but in the case of implicit time integrators the operator represents u_t-f(u) 
     */
-   boost::shared_ptr< AMP::Operator::Operator > d_operator;
+   AMP::shared_ptr< AMP::Operator::Operator > d_operator;
    
    /**
     * The operator is the left hand side mass operator (for FEM formulations)
     */
-   boost::shared_ptr< AMP::Operator::Operator > d_pMassOperator;
+   AMP::shared_ptr< AMP::Operator::Operator > d_pMassOperator;
    
    /*
     * Source-sink vector, g,  when the time integration problem is of the form u_t = f(u)+g
     */
-   boost::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
+   AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
 
    /*
     * Data members representing integrator times, time increments,
@@ -279,7 +279,7 @@ protected:
    int d_max_integrator_steps;
 
    // Writer for internal data
-   boost::shared_ptr<AMP::Utilities::Writer> d_writer;
+   AMP::shared_ptr<AMP::Utilities::Writer> d_writer;
 
    // declare the default constructor to be private
    TimeIntegrator()

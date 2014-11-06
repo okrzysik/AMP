@@ -90,9 +90,9 @@ ThyraVectorWrapper::~ThyraVectorWrapper( )
 * Get a shared object to this                                   *
 ****************************************************************/
 template<class T> static void nullDeleter( T* ) {};
-boost::shared_ptr<const ThyraVectorWrapper> ThyraVectorWrapper::shared_from_this() const
+AMP::shared_ptr<const ThyraVectorWrapper> ThyraVectorWrapper::shared_from_this() const
 {
-    return boost::shared_ptr<const ThyraVectorWrapper>( this, nullDeleter<const ThyraVectorWrapper> );
+    return AMP::shared_ptr<const ThyraVectorWrapper>( this, nullDeleter<const ThyraVectorWrapper> );
 }
 
 
@@ -116,13 +116,13 @@ size_t ThyraVectorWrapper::numColumns() const
 ****************************************************************/
 Teuchos::RCP<const Thyra::VectorSpaceBase<double> > ThyraVectorWrapper::range() const
 {
-    boost::shared_ptr<const ThyraVectorWrapper> this_ptr = shared_from_this();
+    AMP::shared_ptr<const ThyraVectorWrapper> this_ptr = shared_from_this();
     return Teuchos::RCP<const Thyra::VectorSpaceBase<double> >( 
         new ThyraVectorSpaceWrapper( this_ptr, true ) );
 }
 Teuchos::RCP<const Thyra::VectorSpaceBase<double> > ThyraVectorWrapper::domain() const
 {
-    boost::shared_ptr<const ThyraVectorWrapper> this_ptr = shared_from_this();
+    AMP::shared_ptr<const ThyraVectorWrapper> this_ptr = shared_from_this();
     return Teuchos::RCP<const Thyra::VectorSpaceBase<double> >( 
         new ThyraVectorSpaceWrapper( this_ptr, false ) );
 }

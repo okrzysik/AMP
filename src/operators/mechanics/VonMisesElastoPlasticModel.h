@@ -4,7 +4,7 @@
 
 #include "MechanicsMaterialModel.h"
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include <vector>
 
@@ -16,7 +16,7 @@ class VonMisesElastoPlasticModel : public MechanicsMaterialModel
 {
 public :
 
-    VonMisesElastoPlasticModel(const boost::shared_ptr<MechanicsMaterialModelParameters>& );
+    VonMisesElastoPlasticModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
 
     virtual ~VonMisesElastoPlasticModel() { }
 

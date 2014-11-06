@@ -2,7 +2,7 @@
 #define included_AMP_TrilinosThyraModelEvaluator
 
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "solvers/trilinos/thyra/TrilinosLinearOP.h"
 #include "solvers/trilinos/thyra/TrilinosThyraModelEvaluatorParameters.h"
 #include "discretization/DOF_Manager.h"
@@ -25,7 +25,7 @@ class TrilinosThyraModelEvaluator: public ::Thyra::StateFuncModelEvaluatorBase<d
 public:
     
     //! Default constructor
-    TrilinosThyraModelEvaluator( boost::shared_ptr<TrilinosThyraModelEvaluatorParameters> params );
+    TrilinosThyraModelEvaluator( AMP::shared_ptr<TrilinosThyraModelEvaluatorParameters> params );
 
     //! Destructor
     virtual ~TrilinosThyraModelEvaluator();
@@ -48,7 +48,7 @@ public:
 protected:
 
     // Return TrilinosLinearOP from Thyra::LinearOpBase<double>
-    static boost::shared_ptr<AMP::Solver::TrilinosLinearOP> view( Teuchos::RCP< Thyra::LinearOpBase<double> > op );
+    static AMP::shared_ptr<AMP::Solver::TrilinosLinearOP> view( Teuchos::RCP< Thyra::LinearOpBase<double> > op );
 
     // Functions derived from Thyra::StateFuncModelEvaluatorBase<double>
     virtual ::Thyra::ModelEvaluatorBase::OutArgs<double> createOutArgsImpl() const;

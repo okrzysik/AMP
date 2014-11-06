@@ -151,7 +151,7 @@ bool DOFManager::operator!=( const DOFManager &rhs ) const
 /****************************************************************
 * Subset the DOF manager                                        *
 ****************************************************************/
-boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP_MPI& comm )
+AMP::shared_ptr<DOFManager>  DOFManager::subset( const AMP_MPI& comm )
 {
     if ( comm.compare(d_comm)!=0 ) 
         return shared_from_this();
@@ -160,7 +160,7 @@ boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP_MPI& comm )
         local_dofs[i] += i;
     return subsetDOFManager::create( shared_from_this(), local_dofs, getIterator(), comm );
 }
-boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
+AMP::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
 {
     // Get a list of the elements in the mesh
     AMP::Mesh::MeshIterator iterator = getIterator();
@@ -180,7 +180,7 @@ boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::Mesh::shared
         ++iterator;
     }
     // Create the element iterator
-    boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
+    AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
         new std::vector<AMP::Mesh::MeshElement>(element_list.begin(),element_list.end()) );
     AMP::Mesh::MeshIterator  subsetIterator = AMP::Mesh::MultiVectorIterator( elements, 0 );
     // Get the DOFs
@@ -208,10 +208,10 @@ boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::Mesh::shared
         comm = d_comm;
     }
     if ( comm.isNull() )
-        return boost::shared_ptr<DOFManager>();
+        return AMP::shared_ptr<DOFManager>();
     return subsetDOFManager::create( shared_from_this(), dofs, subsetIterator, comm );
 }
-boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::MeshIterator &iterator, const AMP_MPI& comm )
+AMP::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::MeshIterator &iterator, const AMP_MPI& comm )
 {
     // Get the intesection of the current iterator with the given iterator
     AMP::Mesh::MeshIterator intersection = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Intersection, iterator, getIterator() );
@@ -238,7 +238,7 @@ boost::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::MeshIterator
     }
     // Create the subset DOF Manager    
     if ( comm.isNull() )
-        return boost::shared_ptr<DOFManager>();
+        return AMP::shared_ptr<DOFManager>();
     return subsetDOFManager::create( shared_from_this(), dofs, intersection, comm );
 }
 

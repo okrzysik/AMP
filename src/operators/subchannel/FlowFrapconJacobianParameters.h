@@ -10,7 +10,7 @@ namespace Operator {
   class FlowFrapconJacobianParameters : public OperatorParameters {
     public :
 
-      FlowFrapconJacobianParameters(const boost::shared_ptr<AMP::Database> &db)
+      FlowFrapconJacobianParameters(const AMP::shared_ptr<AMP::Database> &db)
         : OperatorParameters(db) {  }
 
       virtual ~FlowFrapconJacobianParameters() { }

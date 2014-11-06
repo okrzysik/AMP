@@ -9,7 +9,7 @@ namespace AMP {
 
     class MoveMeshOperator : public Operator {
       public :
-        MoveMeshOperator(const boost::shared_ptr<OperatorParameters>& params);
+        MoveMeshOperator(const AMP::shared_ptr<OperatorParameters>& params);
 
         virtual ~MoveMeshOperator() { }
 

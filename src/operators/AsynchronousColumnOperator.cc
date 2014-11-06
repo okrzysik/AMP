@@ -5,7 +5,7 @@ namespace AMP {
 namespace Operator {
 
 
-AsynchronousColumnOperator::AsynchronousColumnOperator ( const boost::shared_ptr <OperatorParameters> &params )
+AsynchronousColumnOperator::AsynchronousColumnOperator ( const AMP::shared_ptr <OperatorParameters> &params )
     : ColumnOperator ( params )
 {
 }
@@ -24,7 +24,7 @@ void AsynchronousColumnOperator::applyStart(AMP::LinearAlgebra::Vector::const_sh
       AMP::LinearAlgebra::Vector::shared_ptr r, const double a , const double b )
 {
     for ( size_t i = 0 ; i != getNumberOfOperators() ; i++ )
-        boost::dynamic_pointer_cast<AsynchronousOperator> ( getOperator ( i ) )->applyStart ( f , u , r , a , b );
+        AMP::dynamic_pointer_cast<AsynchronousOperator> ( getOperator ( i ) )->applyStart ( f , u , r , a , b );
 }
 
 
@@ -34,20 +34,20 @@ void AsynchronousColumnOperator::applyFinish(AMP::LinearAlgebra::Vector::const_s
       AMP::LinearAlgebra::Vector::shared_ptr r, const double a , const double b )
 {
     for ( size_t i = 0 ; i != getNumberOfOperators() ; i++ )
-        boost::dynamic_pointer_cast<AsynchronousOperator> ( getOperator ( i ) )->applyFinish ( f , u , r , a , b );
+        AMP::dynamic_pointer_cast<AsynchronousOperator> ( getOperator ( i ) )->applyFinish ( f , u , r , a , b );
 }
 
 
 
-void AsynchronousColumnOperator::append(boost::shared_ptr< Operator > op)
+void AsynchronousColumnOperator::append(AMP::shared_ptr< Operator > op)
 {
-    if ( boost::dynamic_pointer_cast<AsynchronousOperator> ( op ) )
+    if ( AMP::dynamic_pointer_cast<AsynchronousOperator> ( op ) )
     {
       ColumnOperator::append ( op );
     }
-    else if ( boost::dynamic_pointer_cast<AsynchronousColumnOperator> ( op ) )
+    else if ( AMP::dynamic_pointer_cast<AsynchronousColumnOperator> ( op ) )
     {
-      boost::shared_ptr<AsynchronousColumnOperator> aco = boost::dynamic_pointer_cast<AsynchronousColumnOperator> ( op );
+      AMP::shared_ptr<AsynchronousColumnOperator> aco = AMP::dynamic_pointer_cast<AsynchronousColumnOperator> ( op );
       for ( size_t i = 0 ; i != aco->getNumberOfOperators() ; i++ )
       {
         append ( aco->getOperator ( i ) );

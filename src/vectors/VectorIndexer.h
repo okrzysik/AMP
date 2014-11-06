@@ -1,7 +1,7 @@
 #ifndef included_AMP_VectorIndexer
 #define included_AMP_VectorIndexer
 
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include "utils/Castable.h"
 
 namespace AMP {
@@ -23,7 +23,7 @@ namespace LinearAlgebra {
   class VectorIndexer : public Castable
   {
     public:
-      typedef boost::shared_ptr<VectorIndexer>   shared_ptr;
+      typedef AMP::shared_ptr<VectorIndexer>   shared_ptr;
 
       /** \brief Destructor */
       virtual ~VectorIndexer ();
@@ -60,7 +60,7 @@ namespace LinearAlgebra {
         * \param[in]  v A vector
         * \return The number of local objects in the vector also in the subset.
         */
-      virtual size_t  getNumLocalElements ( boost::shared_ptr<Vector> v ) const = 0;
+      virtual size_t  getNumLocalElements ( AMP::shared_ptr<Vector> v ) const = 0;
   };
 
 }

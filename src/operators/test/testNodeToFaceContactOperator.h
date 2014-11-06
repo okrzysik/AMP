@@ -410,7 +410,7 @@ void computeStressTensor(AMP::Mesh::Mesh::shared_ptr mesh, AMP::LinearAlgebra::V
 void computeStressTensor(AMP::Mesh::Mesh::shared_ptr mesh, AMP::LinearAlgebra::Vector::shared_ptr displacementField, 
     AMP::LinearAlgebra::Vector::shared_ptr sigmaXX, AMP::LinearAlgebra::Vector::shared_ptr sigmaYY, AMP::LinearAlgebra::Vector::shared_ptr sigmaZZ, 
     AMP::LinearAlgebra::Vector::shared_ptr sigmaYZ, AMP::LinearAlgebra::Vector::shared_ptr sigmaXZ, AMP::LinearAlgebra::Vector::shared_ptr sigmaXY, 
-    AMP::LinearAlgebra::Vector::shared_ptr sigmaEff, boost::shared_ptr<AMP::Operator::MechanicsMaterialModel> mechanicsMaterialModel,
+    AMP::LinearAlgebra::Vector::shared_ptr sigmaEff, AMP::shared_ptr<AMP::Operator::MechanicsMaterialModel> mechanicsMaterialModel,
     double referenceTemperature = 273.0, double thermalExpansionCoefficient = 2.0e-6, 
     AMP::LinearAlgebra::Vector::shared_ptr temperatureField = AMP::LinearAlgebra::Vector::shared_ptr()) { 
 
@@ -425,8 +425,8 @@ void computeStressTensor(AMP::Mesh::Mesh::shared_ptr mesh, AMP::LinearAlgebra::V
   AMP::LinearAlgebra::Vector::shared_ptr subsetSigmaEff = sigmaEff->select(vectorSelector, (sigmaEff->getVariable())->getName());
   AMP::LinearAlgebra::Vector::shared_ptr subsetTemperatureField = temperatureField->select(vectorSelector, (temperatureField->getVariable())->getName());
 
-  double youngsModulus = boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(mechanicsMaterialModel)->getYoungsModulus();
-  double poissonsRatio = boost::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(mechanicsMaterialModel)->getPoissonsRatio();
+  double youngsModulus = AMP::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(mechanicsMaterialModel)->getYoungsModulus();
+  double poissonsRatio = AMP::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>(mechanicsMaterialModel)->getPoissonsRatio();
 
   computeStressTensor(mesh, subsetDisplacementField,
       subsetSigmaXX, subsetSigmaYY, subsetSigmaZZ, subsetSigmaYZ, subsetSigmaXZ, subsetSigmaXY,
@@ -481,7 +481,7 @@ void drawFacesOnBoundaryID(AMP::Mesh::Mesh::shared_ptr meshAdapter, int boundary
 }
 
 void myPCG(AMP::LinearAlgebra::Vector::shared_ptr rhs, AMP::LinearAlgebra::Vector::shared_ptr sol, 
-    AMP::Operator::Operator::shared_ptr op, boost::shared_ptr<AMP::Solver::SolverStrategy> pre,
+    AMP::Operator::Operator::shared_ptr op, AMP::shared_ptr<AMP::Solver::SolverStrategy> pre,
     size_t maxIters, double relTol, double absTol, bool verbose = false, std::ostream &os = std::cout) {
   AMP::LinearAlgebra::Vector::shared_ptr res = sol->cloneVector();
   AMP::LinearAlgebra::Vector::shared_ptr dir = sol->cloneVector();

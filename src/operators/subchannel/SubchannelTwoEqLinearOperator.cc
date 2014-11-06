@@ -18,7 +18,7 @@ namespace Operator {
 
 
 //Constructor
-SubchannelTwoEqLinearOperator::SubchannelTwoEqLinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params)
+SubchannelTwoEqLinearOperator::SubchannelTwoEqLinearOperator(const AMP::shared_ptr<SubchannelOperatorParameters> & params)
     : LinearOperator (params)
     , d_machinePrecision(1.0e-15)
 {
@@ -36,12 +36,12 @@ SubchannelTwoEqLinearOperator::SubchannelTwoEqLinearOperator(const boost::shared
 
 
 // reset
-void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorParameters>& params )
+void SubchannelTwoEqLinearOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params )
 {
     PROFILE_START("reset");
     d_initialized = true;
-    boost::shared_ptr<SubchannelOperatorParameters> myparams =
-        boost::dynamic_pointer_cast<SubchannelOperatorParameters>(params);
+    AMP::shared_ptr<SubchannelOperatorParameters> myparams =
+        AMP::dynamic_pointer_cast<SubchannelOperatorParameters>(params);
 
     AMP_INSIST( ((myparams.get()) != NULL), "NULL parameters" );
     AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
@@ -146,7 +146,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
     // check to ensure frozen vector isn't null
     d_frozenVec = myparams->d_frozenSolution;
     AMP_INSIST(d_frozenVec.get()!=NULL, "Null Frozen Vector inside Jacobian" );
-    boost::shared_ptr<AMP::Discretization::DOFManager> dofMap = myparams->d_frozenSolution->getDOFManager();
+    AMP::shared_ptr<AMP::Discretization::DOFManager> dofMap = myparams->d_frozenSolution->getDOFManager();
 
     // Create the matrix
     d_matrix = AMP::LinearAlgebra::createMatrix(d_frozenVec,d_frozenVec);
@@ -226,7 +226,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
                 double p_plus  = P_scale*d_frozenVec->getValueByGlobalID(dofs_plus[1]); // pressure evaluated at upper face
 
                 // evaluate specific volume at upper face
-                std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
+                std::map<std::string, AMP::shared_ptr<std::vector<double> > > volumeArgMap_plus;
                 volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
                 volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,p_plus)));
                 std::vector<double> volumeResult_plus(1);
@@ -234,7 +234,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
                 double v_plus = volumeResult_plus[0];
 
                 // evaluate specific volume at lower face
-                std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_minus;
+                std::map<std::string, AMP::shared_ptr<std::vector<double> > > volumeArgMap_minus;
                 volumeArgMap_minus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_minus)));
                 volumeArgMap_minus.insert(std::make_pair("pressure",new std::vector<double>(1,p_minus)));
                 std::vector<double> volumeResult_minus(1);
@@ -322,7 +322,7 @@ void SubchannelTwoEqLinearOperator :: reset(const boost::shared_ptr<OperatorPara
 }
 
 // function used in reset to get double parameter or set default if missing
-double SubchannelTwoEqLinearOperator::getDoubleParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+double SubchannelTwoEqLinearOperator::getDoubleParameter(	AMP::shared_ptr<SubchannelOperatorParameters> myparams,
 								std::string paramString,
                                                                 double defaultValue)
 {
@@ -336,7 +336,7 @@ double SubchannelTwoEqLinearOperator::getDoubleParameter(	boost::shared_ptr<Subc
 }
 
 // function used in reset to get integer parameter or set default if missing
-int SubchannelTwoEqLinearOperator::getIntegerParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+int SubchannelTwoEqLinearOperator::getIntegerParameter(	AMP::shared_ptr<SubchannelOperatorParameters> myparams,
 								std::string paramString,
                                                                 int defaultValue)
 {
@@ -350,7 +350,7 @@ int SubchannelTwoEqLinearOperator::getIntegerParameter(	boost::shared_ptr<Subcha
 }
 
 // function used in reset to get string parameter or set default if missing
-std::string SubchannelTwoEqLinearOperator::getStringParameter(	boost::shared_ptr<SubchannelOperatorParameters> myparams,
+std::string SubchannelTwoEqLinearOperator::getStringParameter(	AMP::shared_ptr<SubchannelOperatorParameters> myparams,
 									std::string paramString,
                                                                 	std::string defaultValue)
 {
@@ -380,7 +380,7 @@ double SubchannelTwoEqLinearOperator::dhdp(double T, double p){
   double pert = (1.0 + p)*b; // perturbation
 
   // calculate perturbed value
-  std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap_pert;
+  std::map<std::string, AMP::shared_ptr<std::vector<double> > > enthalpyArgMap_pert;
   enthalpyArgMap_pert.insert(std::make_pair("temperature",new std::vector<double>(1,T)));
   enthalpyArgMap_pert.insert(std::make_pair("pressure",   new std::vector<double>(1,p+pert)));
   std::vector<double> enthalpyResult_pert(1);
@@ -388,7 +388,7 @@ double SubchannelTwoEqLinearOperator::dhdp(double T, double p){
   double h_pert = enthalpyResult_pert[0];
 
   // calculate unperturbed value
-  std::map<std::string, boost::shared_ptr<std::vector<double> > > enthalpyArgMap;
+  std::map<std::string, AMP::shared_ptr<std::vector<double> > > enthalpyArgMap;
   enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,T)));
   enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,p)));
   std::vector<double> enthalpyResult(1);
@@ -406,7 +406,7 @@ double SubchannelTwoEqLinearOperator::dvdh(double h, double p){
   double pert = (1.0 + h)*b; // perturbation
 
   // calculate perturbed value
-  std::map<std::string, boost::shared_ptr<std::vector<double> > > specificVolumeArgMap_pert;
+  std::map<std::string, AMP::shared_ptr<std::vector<double> > > specificVolumeArgMap_pert;
   specificVolumeArgMap_pert.insert(std::make_pair("enthalpy",new std::vector<double>(1,h+pert)));
   specificVolumeArgMap_pert.insert(std::make_pair("pressure",new std::vector<double>(1,p)));
   std::vector<double> specificVolumeResult_pert(1);
@@ -414,7 +414,7 @@ double SubchannelTwoEqLinearOperator::dvdh(double h, double p){
   double v_pert = specificVolumeResult_pert[0];
 
   // calculate unperturbed value
-  std::map<std::string, boost::shared_ptr<std::vector<double> > > specificVolumeArgMap;
+  std::map<std::string, AMP::shared_ptr<std::vector<double> > > specificVolumeArgMap;
   specificVolumeArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h)));
   specificVolumeArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,p)));
   std::vector<double> specificVolumeResult(1);
@@ -432,7 +432,7 @@ double SubchannelTwoEqLinearOperator::dvdp(double h, double p){
   double pert = (1.0 + p)*b; // perturbation
 
   // calculate perturbed value
-  std::map<std::string, boost::shared_ptr<std::vector<double> > > specificVolumeArgMap_pert;
+  std::map<std::string, AMP::shared_ptr<std::vector<double> > > specificVolumeArgMap_pert;
   specificVolumeArgMap_pert.insert(std::make_pair("enthalpy",new std::vector<double>(1,h)));
   specificVolumeArgMap_pert.insert(std::make_pair("pressure",new std::vector<double>(1,p+pert)));
   std::vector<double> specificVolumeResult_pert(1);
@@ -440,7 +440,7 @@ double SubchannelTwoEqLinearOperator::dvdp(double h, double p){
   double v_pert = specificVolumeResult_pert[0];
 
   // calculate unperturbed value
-  std::map<std::string, boost::shared_ptr<std::vector<double> > > specificVolumeArgMap;
+  std::map<std::string, AMP::shared_ptr<std::vector<double> > > specificVolumeArgMap;
   specificVolumeArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h)));
   specificVolumeArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,p)));
   std::vector<double> specificVolumeResult(1);
@@ -467,7 +467,7 @@ double SubchannelTwoEqLinearOperator::friction(double h_minus, double p_minus, d
    double p_avg   = (1.0/2.0)*(p_minus + p_plus);       // pressure evaluated at cell center
 
    // evaluate specific volume at upper face
-   std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_plus;
+   std::map<std::string, AMP::shared_ptr<std::vector<double> > > volumeArgMap_plus;
    volumeArgMap_plus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_plus)));
    volumeArgMap_plus.insert(std::make_pair("pressure",new std::vector<double>(1,p_plus)));
    std::vector<double> volumeResult_plus(1);
@@ -475,7 +475,7 @@ double SubchannelTwoEqLinearOperator::friction(double h_minus, double p_minus, d
    double v_plus = volumeResult_plus[0];
 
    // evaluate specific volume at lower face
-   std::map<std::string, boost::shared_ptr<std::vector<double> > > volumeArgMap_minus;
+   std::map<std::string, AMP::shared_ptr<std::vector<double> > > volumeArgMap_minus;
    volumeArgMap_minus.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_minus)));
    volumeArgMap_minus.insert(std::make_pair("pressure",new std::vector<double>(1,p_minus)));
    std::vector<double> volumeResult_minus(1);
@@ -490,7 +490,7 @@ double SubchannelTwoEqLinearOperator::friction(double h_minus, double p_minus, d
    double u_avg = (1.0/2.0)*(u_minus + u_plus); // velocity evaluated at cell center
 
    // evaluate temperature at cell center
-   std::map<std::string, boost::shared_ptr<std::vector<double> > > temperatureArgMap;
+   std::map<std::string, AMP::shared_ptr<std::vector<double> > > temperatureArgMap;
    temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_avg)));
    temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,p_avg)));
    std::vector<double> temperatureResult(1);
@@ -498,7 +498,7 @@ double SubchannelTwoEqLinearOperator::friction(double h_minus, double p_minus, d
    double T_avg = temperatureResult[0];
 
    // evaluate viscosity at cell center
-   std::map<std::string, boost::shared_ptr<std::vector<double> > > viscosityArgMap;
+   std::map<std::string, AMP::shared_ptr<std::vector<double> > > viscosityArgMap;
    viscosityArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,T_avg)));
    viscosityArgMap.insert(std::make_pair("density",new std::vector<double>(1,rho_avg)));
    std::vector<double> viscosityResult(1);

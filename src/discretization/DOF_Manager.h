@@ -19,7 +19,7 @@ namespace Discretization {
  *    using the degrees of freedom (DOF) per object.  It is also responsible 
  *    for creating vectors.
  */
-class DOFManager: public boost::enable_shared_from_this<AMP::Discretization::DOFManager>
+class DOFManager: public AMP::enable_shared_from_this<AMP::Discretization::DOFManager>
 {
 public:
 
@@ -28,14 +28,14 @@ public:
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a DOF manager object.
      */
-    typedef boost::shared_ptr<AMP::Discretization::DOFManager>  shared_ptr;
+    typedef AMP::shared_ptr<AMP::Discretization::DOFManager>  shared_ptr;
 
     /**
      *\typedef const_shared_ptr
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a DOF manager object.
      */
-    typedef boost::shared_ptr<const AMP::Discretization::DOFManager>  const_shared_ptr;
+    typedef AMP::shared_ptr<const AMP::Discretization::DOFManager>  const_shared_ptr;
 
 
     /** \brief Basic constructor for DOFManager

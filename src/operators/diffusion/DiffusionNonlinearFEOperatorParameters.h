@@ -14,7 +14,7 @@ namespace Operator {
 class DiffusionNonlinearFEOperatorParameters: public FEOperatorParameters {
 public:
 
-    DiffusionNonlinearFEOperatorParameters(const boost::shared_ptr<
+    DiffusionNonlinearFEOperatorParameters(const AMP::shared_ptr<
             AMP::Database> &db) :
         FEOperatorParameters(db)
     {
@@ -23,7 +23,7 @@ public:
     virtual ~DiffusionNonlinearFEOperatorParameters() {
     }
 
-    boost::shared_ptr<DiffusionTransportModel> d_transportModel;
+    AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
 
     AMP::LinearAlgebra::Vector::shared_ptr d_FrozenTemperature;
 

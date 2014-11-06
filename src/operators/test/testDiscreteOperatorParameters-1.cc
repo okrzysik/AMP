@@ -7,7 +7,7 @@
 
 
 /* Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 /* AMP files */
 
@@ -23,7 +23,7 @@
 
 class TestParameters : public AMP::Operator::OperatorParameters {
   public:
-    TestParameters(const boost::shared_ptr<AMP::Database> &db) : AMP::Operator::OperatorParameters(db) {
+    TestParameters(const AMP::shared_ptr<AMP::Database> &db) : AMP::Operator::OperatorParameters(db) {
     }
 };
 
@@ -35,11 +35,11 @@ void runTest(AMP::UnitTest *ut) {
 
   AMP::PIO::logOnlyNodeZero(log_file);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
-  boost::shared_ptr<AMP::Database> test_db = input_db->getDatabase("Test");
+  AMP::shared_ptr<AMP::Database> test_db = input_db->getDatabase("Test");
 
   if( (test_db.get()) == NULL ) {
     ut->failure("Testing getDatabase");
@@ -53,7 +53,7 @@ void runTest(AMP::UnitTest *ut) {
     ut->failure("Testing keyExists");
   }
 
-  boost::shared_ptr<AMP::Operator::OperatorParameters> discreteOpParams (new AMP::Operator::OperatorParameters(test_db));
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> discreteOpParams (new AMP::Operator::OperatorParameters(test_db));
 
   if( (discreteOpParams.get()) == NULL ) {
     ut->failure("Testing OperatorParameters' Constructor");
@@ -73,7 +73,7 @@ void runTest(AMP::UnitTest *ut) {
     ut->failure("Testing OperatorParameters::d_db keyExists");
   }
 
-  boost::shared_ptr<TestParameters> testParams (new TestParameters(test_db));
+  AMP::shared_ptr<TestParameters> testParams (new TestParameters(test_db));
 
   if( (testParams.get()) == NULL ) {
     ut->failure("Testing TestParameters' Constructor");
@@ -93,7 +93,7 @@ void runTest(AMP::UnitTest *ut) {
     ut->failure("Testing TestParameters::d_db keyExists");
   }
 
-  boost::shared_ptr<AMP::Operator::OperatorParameters> testParamCopy(testParams);
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> testParamCopy(testParams);
 
   if( (testParamCopy.get()) == NULL ) {
     ut->failure("Testing Copy-1");
@@ -113,7 +113,7 @@ void runTest(AMP::UnitTest *ut) {
     ut->failure("Testing Copy-3");
   }
 
-  boost::shared_ptr<TestParameters> secondTestParam = boost::dynamic_pointer_cast<TestParameters, AMP::Operator::OperatorParameters>(testParamCopy);
+  AMP::shared_ptr<TestParameters> secondTestParam = AMP::dynamic_pointer_cast<TestParameters, AMP::Operator::OperatorParameters>(testParamCopy);
 
   if( (secondTestParam.get()) == NULL ) {
     ut->failure("Testing Dynamic Cast-1");

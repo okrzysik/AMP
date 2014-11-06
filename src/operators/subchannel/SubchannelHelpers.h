@@ -101,7 +101,7 @@ std::vector<double> getHeatFluxGenerationWithDiscretizationError( std::string sh
   * \param clad_temp    The clad temperature mapped onto the faces (only used for source="averageCladdingTemperature")
   */
 std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mesh::MeshElementID> face_ids,
-    double channelDiam, double reynolds, double prandtl, double fraction, boost::shared_ptr<SubchannelPhysicsModel> subchannelPhysicsModel, 
+    double channelDiam, double reynolds, double prandtl, double fraction, AMP::shared_ptr<SubchannelPhysicsModel> subchannelPhysicsModel, 
     AMP::LinearAlgebra::Vector::const_shared_ptr flow, AMP::LinearAlgebra::Vector::const_shared_ptr clad_temp );
 
 

@@ -11,7 +11,7 @@ namespace AMP {
     class TractionBoundaryOperator : public BoundaryOperator {
       public:
 
-        TractionBoundaryOperator(const boost::shared_ptr<TractionBoundaryOperatorParameters> & params);
+        TractionBoundaryOperator(const AMP::shared_ptr<TractionBoundaryOperatorParameters> & params);
 
         virtual ~TractionBoundaryOperator() { }
 

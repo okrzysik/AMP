@@ -12,7 +12,7 @@
 #include "utils/InputDatabase.h"
 
 /*Boost Files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include <vector>
 #include <cmath>
@@ -147,7 +147,7 @@ namespace AMP {
 
         AMP_ASSERT(parameters.get() != NULL);
         d_db = parameters->d_db;
-        SP_Parameters params = boost::dynamic_pointer_cast<NeutronicsRhsParameters,
+        SP_Parameters params = AMP::dynamic_pointer_cast<NeutronicsRhsParameters,
                       OperatorParameters         >(parameters);
         AMP_ASSERT(params.get() != NULL);
         AMP_ASSERT(((params->d_db).get())!=NULL);

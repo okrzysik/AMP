@@ -9,7 +9,7 @@
 namespace AMP {
 namespace Solver {
 
-NonlinearKrylovAccelerator::NonlinearKrylovAccelerator(boost::shared_ptr<NonlinearKrylovAcceleratorParameters> params)
+NonlinearKrylovAccelerator::NonlinearKrylovAccelerator(AMP::shared_ptr<NonlinearKrylovAcceleratorParameters> params)
 : SolverStrategy(params)
 {
     int j,n;
@@ -83,7 +83,7 @@ NonlinearKrylovAccelerator::~NonlinearKrylovAccelerator(void)
 
 
 void
-NonlinearKrylovAccelerator::getFromInput(const boost::shared_ptr<AMP::Database>& db)
+NonlinearKrylovAccelerator::getFromInput(const AMP::shared_ptr<AMP::Database>& db)
 {
     if (db->keyExists("max_vectors")) 
     {
@@ -137,7 +137,7 @@ NonlinearKrylovAccelerator::getFromInput(const boost::shared_ptr<AMP::Database>&
 
 
 void
-NonlinearKrylovAccelerator::setInitialGuess( boost::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess )
+NonlinearKrylovAccelerator::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess )
 {
     size_t n;
 
@@ -147,14 +147,14 @@ NonlinearKrylovAccelerator::setInitialGuess( boost::shared_ptr<AMP::LinearAlgebr
 
     if(!d_bSolverInitialized)
     {  
-        d_pCorrectionVectors = new boost::shared_ptr<AMP::LinearAlgebra::Vector>[n];
+        d_pCorrectionVectors = new AMP::shared_ptr<AMP::LinearAlgebra::Vector>[n];
       
         for (size_t j = 0; j < n; j++) 
         {
             d_pCorrectionVectors[j] = d_pvSolution->cloneVector();
         }
       
-        d_pFunctionDifferenceVectors = new boost::shared_ptr<AMP::LinearAlgebra::Vector>[n];
+        d_pFunctionDifferenceVectors = new AMP::shared_ptr<AMP::LinearAlgebra::Vector>[n];
       
         for (size_t j = 0; j < n; j++) 
         {
@@ -174,20 +174,20 @@ NonlinearKrylovAccelerator::setInitialGuess( boost::shared_ptr<AMP::LinearAlgebr
   
 
 void
-NonlinearKrylovAccelerator::initialize(boost::shared_ptr<SolverStrategyParameters> parameters)
+NonlinearKrylovAccelerator::initialize(AMP::shared_ptr<SolverStrategyParameters> parameters)
 {
-    boost::shared_ptr<NonlinearKrylovAcceleratorParameters> params = 
-        boost::dynamic_pointer_cast<NonlinearKrylovAcceleratorParameters>(parameters);
+    AMP::shared_ptr<NonlinearKrylovAcceleratorParameters> params = 
+        AMP::dynamic_pointer_cast<NonlinearKrylovAcceleratorParameters>(parameters);
     setInitialGuess(params->d_pInitialGuess);
 }
 
 
 void
-NonlinearKrylovAccelerator::correction(boost::shared_ptr<AMP::LinearAlgebra::Vector> &f)
+NonlinearKrylovAccelerator::correction(AMP::shared_ptr<AMP::LinearAlgebra::Vector> &f)
 {
     int i, j, k, new_loc;
     double s;
-    boost::shared_ptr<AMP::LinearAlgebra::Vector>  v, w;
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector>  v, w;
     double *hj, *c;
     /*
      *  UPDATE THE ACCELERATION SUBSPACE
@@ -371,8 +371,8 @@ NonlinearKrylovAccelerator::correction(boost::shared_ptr<AMP::LinearAlgebra::Vec
 
 
 void
-NonlinearKrylovAccelerator::solve(boost::shared_ptr<const AMP::LinearAlgebra::Vector> f, 
-                  boost::shared_ptr<AMP::LinearAlgebra::Vector> u)
+NonlinearKrylovAccelerator::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f, 
+                  AMP::shared_ptr<AMP::LinearAlgebra::Vector> u)
 {
     AMP_INSIST(d_pOperator!=NULL,"Operator cannot be NULL");
     AMP_INSIST(d_pPreconditioner.get()!=NULL, "Preconditioning operator cannot be NULL");
@@ -393,8 +393,8 @@ NonlinearKrylovAccelerator::solve(boost::shared_ptr<const AMP::LinearAlgebra::Ve
         AMP::pout << "NonlinearKrylovAccelerator::solve: iteration : " << d_iNonlinearIterationCount << ", residual: " << residual_norm << std::endl;
     }
 
-    boost::shared_ptr<AMP::Operator::OperatorParameters> pc_parameters = d_pOperator->getJacobianParameters(d_pvSolution);
-    boost::shared_ptr<AMP::Operator::Operator> pc_operator = d_pPreconditioner->getOperator();
+    AMP::shared_ptr<AMP::Operator::OperatorParameters> pc_parameters = d_pOperator->getJacobianParameters(d_pvSolution);
+    AMP::shared_ptr<AMP::Operator::Operator> pc_operator = d_pPreconditioner->getOperator();
 
     AMP_INSIST(pc_operator.get()!=NULL, "NonlinearKrylovAccelerator::solve: preconditioning operator cannot be NULL");
 
@@ -566,7 +566,7 @@ NonlinearKrylovAccelerator::setMaxFunctionEvaluations(int max_feval)
 
 
 void 
-NonlinearKrylovAccelerator::putToDatabase(boost::shared_ptr<AMP::Database>& db)
+NonlinearKrylovAccelerator::putToDatabase(AMP::shared_ptr<AMP::Database>& db)
 {
 
     AMP_INSIST(db.get()!=NULL,"database object cannot be NULL");

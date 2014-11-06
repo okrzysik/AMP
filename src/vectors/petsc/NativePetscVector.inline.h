@@ -52,13 +52,13 @@ inline bool        NativePetscVector::sameEngine ( VectorEngine &e ) const
 
 inline VectorEngine::shared_ptr  NativePetscVector::cloneEngine ( BufferPtr ) const
 {
-    return boost::dynamic_pointer_cast<VectorEngine> ( Vector::cloneVector ( "engine_clone" ) );
+    return AMP::dynamic_pointer_cast<VectorEngine> ( Vector::cloneVector ( "engine_clone" ) );
 }
 
 
 inline void        NativePetscVector::swapEngines ( VectorEngine::shared_ptr p )
 {
-    Vector::shared_ptr p2 =boost::dynamic_pointer_cast<Vector> ( p );
+    Vector::shared_ptr p2 =AMP::dynamic_pointer_cast<Vector> ( p );
     Vector::swapVectors ( p2 );
 }
 
@@ -85,7 +85,7 @@ inline void NativePetscVector::getValuesByLocalID ( int numVals , size_t *ndx , 
 inline Vector::shared_ptr  NativePetscVector::getManagedVectorCopy ( AMP_MPI comm )
 {
     Vector::shared_ptr  pRet = ManagedPetscVector::createFromPetscVec ( d_petscVec , comm );
-    ManagedPetscVector::copyFromPetscVec ( *boost::dynamic_pointer_cast<ManagedPetscVector>(pRet) , d_petscVec );
+    ManagedPetscVector::copyFromPetscVec ( *AMP::dynamic_pointer_cast<ManagedPetscVector>(pRet) , d_petscVec );
     return pRet;
 }
 
@@ -103,7 +103,7 @@ inline Vector::shared_ptr  NativePetscVector::getManagedVectorDuplicate ( AMP_MP
 }
 
 
-inline boost::shared_ptr<ParameterBase> NativePetscVector::getParameters ()
+inline AMP::shared_ptr<ParameterBase> NativePetscVector::getParameters ()
 {
     return d_pParameters;
 }

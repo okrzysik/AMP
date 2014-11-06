@@ -7,14 +7,14 @@
 namespace AMP{
 namespace TimeIntegrator{
 
-LinearTimeOperator::LinearTimeOperator(boost::shared_ptr<AMP::Operator::OperatorParameters > in_params):LinearOperator(in_params)
+LinearTimeOperator::LinearTimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > in_params):LinearOperator(in_params)
 {
   d_bModifyRhsOperatorMatrix=false;
   
-  boost::shared_ptr<TimeOperatorParameters> params = boost::dynamic_pointer_cast<TimeOperatorParameters>(in_params);
+  AMP::shared_ptr<TimeOperatorParameters> params = AMP::dynamic_pointer_cast<TimeOperatorParameters>(in_params);
 
-  d_pRhsOperator = boost::dynamic_pointer_cast<LinearOperator>(params->d_pRhsOperator);
-  d_pMassOperator = boost::dynamic_pointer_cast<LinearOperator>(params->d_pMassOperator);
+  d_pRhsOperator = AMP::dynamic_pointer_cast<LinearOperator>(params->d_pRhsOperator);
+  d_pMassOperator = AMP::dynamic_pointer_cast<LinearOperator>(params->d_pMassOperator);
 
 
   d_beta = 1.0;
@@ -27,7 +27,7 @@ LinearTimeOperator::~LinearTimeOperator()
 }
 
 void
-LinearTimeOperator::getFromInput(const boost::shared_ptr<AMP::Database> &db)
+LinearTimeOperator::getFromInput(const AMP::shared_ptr<AMP::Database> &db)
 {
     
   AMP_INSIST(db->keyExists("ScalingFactor"), "key ScalingFactor missing in input");
@@ -39,9 +39,9 @@ LinearTimeOperator::getFromInput(const boost::shared_ptr<AMP::Database> &db)
 }
   
 void
-LinearTimeOperator::reset(const boost::shared_ptr<AMP::Operator::OperatorParameters>& in_params)
+LinearTimeOperator::reset(const AMP::shared_ptr<AMP::Operator::OperatorParameters>& in_params)
 {
-  boost::shared_ptr<TimeOperatorParameters> params = boost::dynamic_pointer_cast<TimeOperatorParameters>(in_params);
+  AMP::shared_ptr<TimeOperatorParameters> params = AMP::dynamic_pointer_cast<TimeOperatorParameters>(in_params);
 
   getFromInput(params->d_db);
 
@@ -59,10 +59,10 @@ LinearTimeOperator::reset(const boost::shared_ptr<AMP::Operator::OperatorParamet
       d_pMassOperator->reset(params->d_pMassOperatorParameters);
     }
 
-  boost::shared_ptr<AMP::Operator::LinearOperator> pRhsOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pRhsOperator);
+  AMP::shared_ptr<AMP::Operator::LinearOperator> pRhsOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pRhsOperator);
   AMP_INSIST(pRhsOperator.get()!=NULL, "ERROR: RhsOperator is not of type LinearOperator");
   
-  boost::shared_ptr<AMP::LinearAlgebra::Matrix> pMatrix = pRhsOperator->getMatrix();
+  AMP::shared_ptr<AMP::LinearAlgebra::Matrix> pMatrix = pRhsOperator->getMatrix();
 
   if(d_bModifyRhsOperatorMatrix)
     {
@@ -88,10 +88,10 @@ LinearTimeOperator::reset(const boost::shared_ptr<AMP::Operator::OperatorParamet
 
   if(!d_bAlgebraicComponent)
     {
-      boost::shared_ptr<AMP::Operator::LinearOperator> pMassOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pMassOperator);
+      AMP::shared_ptr<AMP::Operator::LinearOperator> pMassOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pMassOperator);
       AMP_INSIST(pMassOperator.get()!=NULL, "ERROR: MassOperator is not of type LinearOperator");
       
-      boost::shared_ptr<AMP::LinearAlgebra::Matrix> pMassMatrix = pMassOperator->getMatrix();
+      AMP::shared_ptr<AMP::LinearAlgebra::Matrix> pMassMatrix = pMassOperator->getMatrix();
       
       AMP_INSIST(pMassMatrix.get()!=NULL, "ERROR: NULL matrix pointer");
       // update the matrix to incorporate the contribution from the time derivative
@@ -101,15 +101,15 @@ LinearTimeOperator::reset(const boost::shared_ptr<AMP::Operator::OperatorParamet
   d_matrix->makeConsistent();
 }
 
-boost::shared_ptr<AMP::Operator::OperatorParameters>
-LinearTimeOperator::getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& u)
+AMP::shared_ptr<AMP::Operator::OperatorParameters>
+LinearTimeOperator::getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u)
 {
-  boost::shared_ptr<AMP::InputDatabase> timeOperator_db(new AMP::InputDatabase("LinearTimeOperatorDatabase"));
+  AMP::shared_ptr<AMP::InputDatabase> timeOperator_db(new AMP::InputDatabase("LinearTimeOperatorDatabase"));
   timeOperator_db->putDouble("CurrentDt", d_dCurrentDt);
   timeOperator_db->putString("name", "LinearTimeOperator");
   timeOperator_db->putDouble("ScalingFactor", 1.0/d_dCurrentDt);
 
-  boost::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(new AMP::TimeIntegrator::TimeOperatorParameters(timeOperator_db));
+  AMP::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(new AMP::TimeIntegrator::TimeOperatorParameters(timeOperator_db));
   timeOperatorParameters->d_pRhsOperatorParameters = d_pRhsOperator->getJacobianParameters(u);
   timeOperatorParameters->d_pMassOperatorParameters = d_pMassOperator->getJacobianParameters(u);
   

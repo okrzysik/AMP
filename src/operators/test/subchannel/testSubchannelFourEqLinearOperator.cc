@@ -6,7 +6,7 @@
 #include <string>
 #include <algorithm>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -243,7 +243,7 @@ size_t AMP_to_MATLAB(AMP::Mesh::MeshElement face, size_t variable_id) {
 // function to create map of global IDs to elements and variables
 void createGlobalIDMaps(
    AMP::Discretization::DOFManager::shared_ptr dof_manager,
-   boost::shared_ptr<AMP::Mesh::Mesh>          mesh,
+   AMP::shared_ptr<AMP::Mesh::Mesh>          mesh,
    std::map<size_t,AMP::Mesh::MeshElement>     &elements_by_globalID,
    std::map<size_t,size_t>                     &variables_by_globalID
 )
@@ -283,7 +283,7 @@ void createGlobalIDMaps(
 
 // function to check that Jacobian matches known values
 bool JacobianIsCorrect(
-   boost::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
+   AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
    double                                        J_reference[num_dofs_MATLAB][num_dofs_MATLAB],
    AMP::Discretization::DOFManager::shared_ptr   dof_manager,
    AMP::Mesh::Mesh::shared_ptr                   mesh,
@@ -401,16 +401,16 @@ void Test(AMP::UnitTest *ut, const std::string& exeName)
   AMP::PIO::logOnlyNodeZero(log_file);
 
   // get input database from input file
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
   // create mesh
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  boost::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
-  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  AMP::shared_ptr<AMP::Database>  mesh_db = input_db->getDatabase("Mesh");
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
   meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
-  boost::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh(meshParams);
+  AMP::shared_ptr<AMP::Mesh::Mesh> subchannelMesh = AMP::Mesh::Mesh::buildMesh(meshParams);
   AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
   xyFaceMesh = subchannelMesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh , 0 ) );
 
@@ -448,14 +448,14 @@ void Test(AMP::UnitTest *ut, const std::string& exeName)
   AMP::LinearAlgebra::Vector::shared_ptr ResVec    = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, false );
 
   // create subchannel physics model
-  boost::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( new AMP::Operator::ElementPhysicsModelParameters(subchannelPhysics_db));
-  boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel>  subchannelPhysicsModel (new AMP::Operator::SubchannelPhysicsModel(params));
+  AMP::shared_ptr<AMP::Database> subchannelPhysics_db = input_db->getDatabase("SubchannelPhysicsModel");
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModelParameters> params( new AMP::Operator::ElementPhysicsModelParameters(subchannelPhysics_db));
+  AMP::shared_ptr<AMP::Operator::SubchannelPhysicsModel>  subchannelPhysicsModel (new AMP::Operator::SubchannelPhysicsModel(params));
 
   // get linear operator database
-  boost::shared_ptr<AMP::Database> subchannelOperator_db = input_db->getDatabase("SubchannelFourEqLinearOperator");
+  AMP::shared_ptr<AMP::Database> subchannelOperator_db = input_db->getDatabase("SubchannelFourEqLinearOperator");
   // set operator parameters
-  boost::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(
+  AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelOpParams(
     new AMP::Operator::SubchannelOperatorParameters( subchannelOperator_db ));
   subchannelOpParams->d_Mesh = subchannelMesh;
   subchannelOpParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
@@ -464,7 +464,7 @@ void Test(AMP::UnitTest *ut, const std::string& exeName)
   subchannelOpParams->clad_y = input_db->getDatabase("CladProperties")->getDoubleArray("y");
   subchannelOpParams->clad_d = input_db->getDatabase("CladProperties")->getDoubleArray("d");
   // create linear operator
-  boost::shared_ptr<AMP::Operator::SubchannelFourEqLinearOperator> subchannelOperator(
+  AMP::shared_ptr<AMP::Operator::SubchannelFourEqLinearOperator> subchannelOperator(
     new AMP::Operator::SubchannelFourEqLinearOperator(subchannelOpParams));
 
   // report successful creation
@@ -597,7 +597,7 @@ void Test(AMP::UnitTest *ut, const std::string& exeName)
   subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
 
   // get the AMP Jacobian matrix to be tested against the MATLAB Jacobian matrix
-  boost::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian = subchannelOperator->getMatrix();
+  AMP::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian = subchannelOperator->getMatrix();
 
   // get the MATLAB Jacobian matrix
   double knownJacobian[num_dofs_MATLAB][num_dofs_MATLAB] = {

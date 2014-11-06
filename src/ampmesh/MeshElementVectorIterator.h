@@ -2,7 +2,7 @@
 #define included_AMP_MultiVectorIterator
 
 #include <iterator>
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshIterator.h"
 
@@ -23,7 +23,7 @@ public:
     MultiVectorIterator();
 
     //! Default MultiVectorIterator constructor
-    MultiVectorIterator( boost::shared_ptr<std::vector<MeshElement> > elements, size_t pos=0 );
+    MultiVectorIterator( AMP::shared_ptr<std::vector<MeshElement> > elements, size_t pos=0 );
 
     /** MultiVectorIterator constructor
      *  Note that this version of the constructor will create a copy of the elements
@@ -90,7 +90,7 @@ protected:
     virtual MeshIterator* clone() const;
 
     // A pointer to a std::vector containing the desired mesh elements
-    boost::shared_ptr<std::vector<MeshElement> > d_elements;
+    AMP::shared_ptr<std::vector<MeshElement> > d_elements;
     // An integer containing the current position
     size_t d_pos;
 };

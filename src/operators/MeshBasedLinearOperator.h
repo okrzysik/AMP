@@ -10,7 +10,7 @@ namespace AMP {
 
     class MeshBasedLinearOperator : public LinearOperator {
       public :
-        MeshBasedLinearOperator(const boost::shared_ptr<MeshBasedOperatorParameters> & params)
+        MeshBasedLinearOperator(const AMP::shared_ptr<MeshBasedOperatorParameters> & params)
           : LinearOperator(params) {
             d_Mesh = params->d_Mesh;
           }

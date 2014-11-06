@@ -15,7 +15,7 @@ namespace Solver {
 /****************************************************************
 *  Constructors                                                 *
 ****************************************************************/
-AndersonStatusTest::AndersonStatusTest(boost::shared_ptr<AMP::Database> db)
+AndersonStatusTest::AndersonStatusTest(AMP::shared_ptr<AMP::Database> db)
 {
     if( db->keyExists("AndersonConvergenceVariables") )
     {

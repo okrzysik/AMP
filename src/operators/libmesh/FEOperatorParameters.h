@@ -20,7 +20,7 @@ namespace AMP {
         /**
           Constructor.
           */
-        FEOperatorParameters(const boost::shared_ptr<AMP::Database> &db)
+        FEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
           : OperatorParameters(db) {  }
 
         /**
@@ -28,7 +28,7 @@ namespace AMP {
           */
         virtual ~FEOperatorParameters() {}
 
-        boost::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to an element operation */
+        AMP::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to an element operation */
 
       protected :
 

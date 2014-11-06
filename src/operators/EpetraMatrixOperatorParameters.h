@@ -10,7 +10,7 @@ namespace Operator {
     public:
       Epetra_CrsMatrix    *d_Matrix;
 
-      EpetraMatrixOperatorParameters ( const boost::shared_ptr<Database> &db ) : OperatorParameters ( db ) {}
+      EpetraMatrixOperatorParameters ( const AMP::shared_ptr<Database> &db ) : OperatorParameters ( db ) {}
   };
 
 }

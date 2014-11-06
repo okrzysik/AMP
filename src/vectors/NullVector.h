@@ -36,7 +36,7 @@ namespace LinearAlgebra {
       virtual ~NullVector();
 
       virtual std::string type() const { return "Null Vector"; }
-      virtual boost::shared_ptr<ParameterBase> getParameters ();
+      virtual AMP::shared_ptr<ParameterBase> getParameters ();
 
       virtual shared_ptr cloneVector(const Variable::shared_ptr name) const;
       template <typename RETURN_TYPE>

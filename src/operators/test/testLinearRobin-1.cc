@@ -3,7 +3,7 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include "materials/Material.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
@@ -33,22 +33,22 @@
 
 void bcTests(AMP::UnitTest *ut,
              std::string msgPrefix,
-             boost::shared_ptr<AMP::Operator::Operator> &feOperator,
-             boost::shared_ptr<AMP::Operator::Operator> &bcOperator,
-         boost::shared_ptr<AMP::InputDatabase> bcDatabase,
+             AMP::shared_ptr<AMP::Operator::Operator> &feOperator,
+             AMP::shared_ptr<AMP::Operator::Operator> &bcOperator,
+         AMP::shared_ptr<AMP::InputDatabase> bcDatabase,
              AMP::LinearAlgebra::Vector::shared_ptr bcCorrectionVec)
-//             boost::shared_ptr<AMP::Operator::OperatorParameters> &bcParameters)
+//             AMP::shared_ptr<AMP::Operator::OperatorParameters> &bcParameters)
 {
 
   bool passed = true;
 
   try {
-      boost::shared_ptr<AMP::InputDatabase> tmp_db(new AMP::InputDatabase("Dummy"));
+      AMP::shared_ptr<AMP::InputDatabase> tmp_db(new AMP::InputDatabase("Dummy"));
       tmp_db->putBool("skip_params", false);
       tmp_db->putInteger("print_info_level", 3);
           tmp_db->putDouble("alpha",0.0);
 
-      boost::shared_ptr<AMP::Operator::RobinMatrixCorrectionParameters> dummyParameters (new AMP::Operator::RobinMatrixCorrectionParameters(tmp_db));
+      AMP::shared_ptr<AMP::Operator::RobinMatrixCorrectionParameters> dummyParameters (new AMP::Operator::RobinMatrixCorrectionParameters(tmp_db));
 
       bcOperator->reset(dummyParameters);
 
@@ -64,13 +64,13 @@ void bcTests(AMP::UnitTest *ut,
 
   passed = true;
   try {
-      boost::shared_ptr<AMP::Operator::RobinMatrixCorrectionParameters> bcParameters (new AMP::Operator::RobinMatrixCorrectionParameters(bcDatabase));
-      bcParameters->d_inputMatrix = (boost::dynamic_pointer_cast<AMP::Operator::LinearFEOperator>(feOperator) )->getMatrix();
+      AMP::shared_ptr<AMP::Operator::RobinMatrixCorrectionParameters> bcParameters (new AMP::Operator::RobinMatrixCorrectionParameters(bcDatabase));
+      bcParameters->d_inputMatrix = (AMP::dynamic_pointer_cast<AMP::Operator::LinearFEOperator>(feOperator) )->getMatrix();
       bcParameters->d_variable    = feOperator->getOutputVariable();
           bcOperator->reset(bcParameters);
 
           bcCorrectionVec->setToScalar(0.0);
-         (boost::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( bcOperator) )->addRHScorrection(bcCorrectionVec);
+         (AMP::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( bcOperator) )->addRHScorrection(bcCorrectionVec);
       AMP_INSIST( ((bcCorrectionVec.get()) != NULL), "NULL rhs correction vector" );
 
       ut->passes(msgPrefix+": Robin returns a rhs correction vector ");
@@ -104,7 +104,7 @@ void linearRobinTest(AMP::UnitTest *ut , std::string exeName)
   std::cout << "testing with input file " << input_file << std::endl;
   std::cout.flush();
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
@@ -113,12 +113,12 @@ void linearRobinTest(AMP::UnitTest *ut , std::string exeName)
   std::string mesh_file = input_db->getString("Mesh");
 
   // Create the mesh parameter object
-  boost::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
+  AMP::shared_ptr<AMP::MemoryDatabase> database(new AMP::MemoryDatabase("Mesh"));
   database->putInteger("dim",3);
   database->putString("MeshName","mesh");
   database->putString("MeshType","libMesh");
   database->putString("FileName",mesh_file);
-  boost::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> params(new AMP::Mesh::MeshParameters(database));
   params->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
 
   // Create the mesh
@@ -127,10 +127,10 @@ void linearRobinTest(AMP::UnitTest *ut , std::string exeName)
 /////////////////////////////////////////////////
 //   CREATE THE LINEAR DIFFUSION BVP OPERATOR  //
 /////////////////////////////////////////////////
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "DiffusionBVPOperator", input_db, elementModel));
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "DiffusionBVPOperator", input_db, elementModel));
 
-  boost::shared_ptr<AMP::InputDatabase> bcDatabase = boost::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase("RobinMatrixCorrection"));
+  AMP::shared_ptr<AMP::InputDatabase> bcDatabase = AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase("RobinMatrixCorrection"));
 
   AMP::Operator::Operator::shared_ptr  boundaryOp, volumeOp;
   boundaryOp = diffusionOperator->getBoundaryOperator();

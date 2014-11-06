@@ -81,7 +81,7 @@ namespace LinearAlgebra {
       virtual double dot(const VectorOperations &x) const;
 
 
-      virtual boost::shared_ptr<ParameterBase> getParameters ();
+      virtual AMP::shared_ptr<ParameterBase> getParameters ();
       using Vector::cloneVector;
       virtual Vector::shared_ptr cloneVector(const Variable::shared_ptr name) const;
       virtual size_t  numberOfDataBlocks () const;

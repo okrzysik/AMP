@@ -2,7 +2,7 @@
 #define included_AMP_VectorEngine
 
 
-#include <boost/shared_ptr.hpp>
+#include "utils/shared_ptr.h"
 #include <vector>
 #include "VectorOperations.h"
 #include "utils/AMP_MPI.h"
@@ -20,7 +20,7 @@ namespace LinearAlgebra {
   class VectorEngineParameters : public Castable
   {
     public:
-      typedef  boost::shared_ptr<VectorEngineParameters>    shared_ptr;
+      typedef  AMP::shared_ptr<VectorEngineParameters>    shared_ptr;
   };
 
   /** \class VectorEngine
@@ -43,13 +43,13 @@ namespace LinearAlgebra {
       typedef std::vector<double>                   Buffer;
 
       //! A shared pointer to the buffer
-      typedef boost::shared_ptr<Buffer>             BufferPtr;
+      typedef AMP::shared_ptr<Buffer>             BufferPtr;
 
       //! A shared pointer to an engine
-      typedef boost::shared_ptr<VectorEngine>       shared_ptr;
+      typedef AMP::shared_ptr<VectorEngine>       shared_ptr;
 
       //! A const shared pointer to an engine
-      typedef boost::shared_ptr<const VectorEngine> const_shared_ptr;
+      typedef AMP::shared_ptr<const VectorEngine> const_shared_ptr;
 
       /** \brief  Destructor
         */

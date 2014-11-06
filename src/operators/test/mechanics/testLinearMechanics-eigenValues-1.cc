@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -42,7 +42,7 @@ void myTest(AMP::UnitTest *ut)
   int npes = globalComm.getSize();
 
   if(npes == 1) {
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
     input_db->printClassData(AMP::plog);
 
@@ -56,7 +56,7 @@ void myTest(AMP::UnitTest *ut)
     AMP_INSIST(input_db->keyExists("DISTORT_ELEMENT"), "Key ''DISTORT_ELEMENT'' is missing!");
     bool distortElement = input_db->getBool("DISTORT_ELEMENT");
 
-    boost::shared_ptr< ::Mesh > mesh(new ::Mesh(3));
+    AMP::shared_ptr< ::Mesh > mesh(new ::Mesh(3));
     MeshTools::Generation::build_cube((*(mesh.get())), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, HEX8, false);
 
     if(distortElement) {
@@ -79,34 +79,34 @@ void myTest(AMP::UnitTest *ut)
         new AMP::Mesh::libMesh (mesh, "TestMesh") );
 
     AMP_INSIST(input_db->keyExists("Isotropic_Model"), "Key ''Isotropic_Model'' is missing!");
-    boost::shared_ptr<AMP::Database> matModel_db = input_db->getDatabase("Isotropic_Model");
-    boost::shared_ptr<AMP::Operator::MechanicsMaterialModelParameters> matModelParams(new
+    AMP::shared_ptr<AMP::Database> matModel_db = input_db->getDatabase("Isotropic_Model");
+    AMP::shared_ptr<AMP::Operator::MechanicsMaterialModelParameters> matModelParams(new
         AMP::Operator::MechanicsMaterialModelParameters( matModel_db ) );
-    boost::shared_ptr<AMP::Operator::IsotropicElasticModel> isotropicModel (
+    AMP::shared_ptr<AMP::Operator::IsotropicElasticModel> isotropicModel (
         new AMP::Operator::IsotropicElasticModel( matModelParams));
 
     AMP_INSIST(input_db->keyExists("Mechanics_Linear_Element"), "Key ''Mechanics_Linear_Element'' is missing!");
-    boost::shared_ptr<AMP::Database> elemOp_db = input_db->getDatabase("Mechanics_Linear_Element");
-    boost::shared_ptr<AMP::Operator::ElementOperationParameters> elemOpParams (new AMP::Operator::ElementOperationParameters( elemOp_db ));
-    boost::shared_ptr<AMP::Operator::MechanicsLinearElement> mechLinElem (
+    AMP::shared_ptr<AMP::Database> elemOp_db = input_db->getDatabase("Mechanics_Linear_Element");
+    AMP::shared_ptr<AMP::Operator::ElementOperationParameters> elemOpParams (new AMP::Operator::ElementOperationParameters( elemOp_db ));
+    AMP::shared_ptr<AMP::Operator::MechanicsLinearElement> mechLinElem (
         new AMP::Operator::MechanicsLinearElement( elemOpParams ));
 
     AMP::Discretization::DOFManager::shared_ptr dofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::Vertex, 1, 3, true); 
 
     AMP_INSIST(input_db->keyExists("Mechanics_Assembly"), "Key ''Mechanics_Assembly'' is missing!");
-    boost::shared_ptr<AMP::Database> mechAssembly_db = input_db->getDatabase("Mechanics_Assembly");
-    boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperatorParameters> mechOpParams(new
+    AMP::shared_ptr<AMP::Database> mechAssembly_db = input_db->getDatabase("Mechanics_Assembly");
+    AMP::shared_ptr<AMP::Operator::MechanicsLinearFEOperatorParameters> mechOpParams(new
         AMP::Operator::MechanicsLinearFEOperatorParameters( mechAssembly_db ));
     mechOpParams->d_materialModel = isotropicModel;
     mechOpParams->d_elemOp = mechLinElem;
     mechOpParams->d_Mesh = meshAdapter;
     mechOpParams->d_inDofMap = dofMap;
     mechOpParams->d_outDofMap = dofMap;
-    boost::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechOp (
+    AMP::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechOp (
         new AMP::Operator::MechanicsLinearFEOperator( mechOpParams ));
 
-    boost::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat = mechOp->getMatrix();
+    AMP::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat = mechOp->getMatrix();
 
     for(int i = 0; i < 24; ++i) {
       std::vector<unsigned int> matCols;
@@ -141,7 +141,7 @@ void myTest(AMP::UnitTest *ut)
 int main(int argc, char *argv[])
 {
   AMP::AMPManager::startup(argc, argv);
-  boost::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(AMP_COMM_WORLD));
+  AMP::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit(new AMP::Mesh::initializeLibMesh(AMP_COMM_WORLD));
 
   AMP::UnitTest ut;
   try {

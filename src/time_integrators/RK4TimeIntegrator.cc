@@ -20,7 +20,7 @@ namespace TimeIntegrator{
 *                                                                      *
 ************************************************************************
 */
-RK4TimeIntegrator::RK4TimeIntegrator( boost::shared_ptr<TimeIntegratorParameters> parameters ):TimeIntegrator(parameters)
+RK4TimeIntegrator::RK4TimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters ):TimeIntegrator(parameters)
 {
    initialize( parameters );
 }
@@ -44,7 +44,7 @@ RK4TimeIntegrator::~RK4TimeIntegrator()
 ************************************************************************
 */
 void
-RK4TimeIntegrator::initialize( boost::shared_ptr<TimeIntegratorParameters> parameters )
+RK4TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
    AMP_ASSERT(parameters.get() != (TimeIntegratorParameters*) NULL);
 
@@ -59,7 +59,7 @@ RK4TimeIntegrator::initialize( boost::shared_ptr<TimeIntegratorParameters> param
 }
 
 void
-RK4TimeIntegrator::reset( boost::shared_ptr<TimeIntegratorParameters> parameters )
+RK4TimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
    AMP_ASSERT(parameters.get() != (TimeIntegratorParameters*) NULL);
 
@@ -99,7 +99,7 @@ RK4TimeIntegrator::setupVectors( void )
 int 
 RK4TimeIntegrator::advanceSolution( const double dt, const bool )
 {
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> f;
+  AMP::shared_ptr<AMP::LinearAlgebra::Vector> f;
 
   // k1 = f(tn,un)
   d_operator->apply(f, d_solution, d_k1_vec, 1.0, 0.0);
@@ -165,7 +165,7 @@ RK4TimeIntegrator::updateSolution( void )
 ************************************************************************
 */
 void
-RK4TimeIntegrator::getFromInput( boost::shared_ptr<AMP::Database> input_db )
+RK4TimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 {
    if ( input_db->keyExists("initial_timestep") ) {
       d_initial_dt = input_db->getDouble("initial_timestep");

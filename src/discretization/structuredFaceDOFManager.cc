@@ -16,13 +16,13 @@ namespace Discretization {
 * Constructors                                                  *
 ****************************************************************/
 DOFManager::shared_ptr  structuredFaceDOFManager::create( 
-    boost::shared_ptr<AMP::Mesh::Mesh> mesh, int DOFsPerFace[3], int gcw )
+    AMP::shared_ptr<AMP::Mesh::Mesh> mesh, int DOFsPerFace[3], int gcw )
 {
     if ( mesh.get()==NULL )
         return DOFManager::shared_ptr();
     if ( mesh->getGeomType()!=AMP::Mesh::Volume || mesh->getDim()!=3 )
         AMP_ERROR("The mesh must be a volume/3d mesh for structuredFaceDOFManager");
-    boost::shared_ptr<structuredFaceDOFManager> manager( new structuredFaceDOFManager() );
+    AMP::shared_ptr<structuredFaceDOFManager> manager( new structuredFaceDOFManager() );
     manager->d_comm = mesh->getComm();
     manager->d_mesh = mesh;
     manager->d_gcw = gcw;

@@ -5,7 +5,7 @@
 namespace AMP {
 namespace Solver {
 
-MLoptions :: MLoptions(const boost::shared_ptr<AMP::Database> &db):
+MLoptions :: MLoptions(const AMP::shared_ptr<AMP::Database> &db):
     d_problemType(db->getStringWithDefault("problem_type","SA"))
 {
     addDefaults(d_problemType, db);
@@ -48,7 +48,7 @@ MLoptions :: MLoptions(const boost::shared_ptr<AMP::Database> &db):
 }
 
 
-void MLoptions :: addDefaults(const std::string & problemType, const boost::shared_ptr<AMP::Database> &db) 
+void MLoptions :: addDefaults(const std::string & problemType, const AMP::shared_ptr<AMP::Database> &db) 
 {
     if(problemType == "SA") {
         if(!(db->keyExists("max_levels"))) {

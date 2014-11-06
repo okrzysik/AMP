@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
@@ -44,13 +44,13 @@ void myTest(AMP::UnitTest *ut)
   AMP::PIO::logOnlyNodeZero(log_file);
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
 
   AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-  boost::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
-  boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
+  AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase("Mesh");
+  AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(mesh_db));
   meshParams->setComm(globalComm);
   AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh(meshParams);
 
@@ -63,36 +63,36 @@ void myTest(AMP::UnitTest *ut)
   AMP::LinearAlgebra::Vector::shared_ptr vec2;
 
 for(int dummy = 0; dummy < 2; ++dummy) {
-  boost::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
-  boost::shared_ptr<AMP::Operator::ColumnOperator> colOp(new AMP::Operator::ColumnOperator(emptyParams));
-  boost::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase("LinearSolver"); 
-  boost::shared_ptr<AMP::Database> preconditioner_db = linearSolver_db->getDatabase("Preconditioner");
-  boost::shared_ptr<AMP::Solver::ColumnSolverParameters> preconditionerParams(new AMP::Solver::ColumnSolverParameters(preconditioner_db));
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
+  AMP::shared_ptr<AMP::Operator::ColumnOperator> colOp(new AMP::Operator::ColumnOperator(emptyParams));
+  AMP::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase("LinearSolver"); 
+  AMP::shared_ptr<AMP::Database> preconditioner_db = linearSolver_db->getDatabase("Preconditioner");
+  AMP::shared_ptr<AMP::Solver::ColumnSolverParameters> preconditionerParams(new AMP::Solver::ColumnSolverParameters(preconditioner_db));
   preconditionerParams->d_pOperator = colOp;
-  boost::shared_ptr<AMP::Solver::ColumnSolver> colPre(new AMP::Solver::ColumnSolver(preconditionerParams));
+  AMP::shared_ptr<AMP::Solver::ColumnSolver> colPre(new AMP::Solver::ColumnSolver(preconditionerParams));
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> physicsModel;
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOp = 
-      boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> physicsModel;
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> bvpOp = 
+      AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
                                                                                                                    (dummy ? "DummyBVPOperator" : "BVPOperator"),
                                                                                                                    input_db,
                                                                                                                    physicsModel));
   colOp->append(bvpOp);
 
-  boost::shared_ptr<AMP::Database> solver_db = preconditioner_db->getDatabase("Solver"); 
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> solverParams(new AMP::Solver::PetscKrylovSolverParameters(solver_db));
+  AMP::shared_ptr<AMP::Database> solver_db = preconditioner_db->getDatabase("Solver"); 
+  AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> solverParams(new AMP::Solver::PetscKrylovSolverParameters(solver_db));
   solverParams->d_pOperator = bvpOp;
   solverParams->d_comm = globalComm;
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> solver(new AMP::Solver::PetscKrylovSolver(solverParams));
+  AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> solver(new AMP::Solver::PetscKrylovSolver(solverParams));
   colPre->append(solver);
 
-  boost::shared_ptr<AMP::Operator::CustomConstraintsEliminationOperator> dirOp;
+  AMP::shared_ptr<AMP::Operator::CustomConstraintsEliminationOperator> dirOp;
   if(dummy) {
-    boost::shared_ptr<AMP::InputDatabase> dummyOperator_db(new AMP::InputDatabase("DummyOperator"));
+    AMP::shared_ptr<AMP::InputDatabase> dummyOperator_db(new AMP::InputDatabase("DummyOperator"));
     dummyOperator_db->putString("InputVariable", "displacement");
     dummyOperator_db->putString("OutputVariable", "displacement");
-    boost::shared_ptr<AMP::Operator::OperatorParameters> dummyOperatorParams(new AMP::Operator::OperatorParameters(dummyOperator_db));
-    dirOp = boost::shared_ptr<AMP::Operator::CustomConstraintsEliminationOperator>(new AMP::Operator::CustomConstraintsEliminationOperator(dummyOperatorParams));
+    AMP::shared_ptr<AMP::Operator::OperatorParameters> dummyOperatorParams(new AMP::Operator::OperatorParameters(dummyOperator_db));
+    dirOp = AMP::shared_ptr<AMP::Operator::CustomConstraintsEliminationOperator>(new AMP::Operator::CustomConstraintsEliminationOperator(dummyOperatorParams));
     std::vector<size_t> slaveIndices;
     std::vector<double> slaveValues;
     int const boundaryID = 2;
@@ -116,30 +116,30 @@ for(int dummy = 0; dummy < 2; ++dummy) {
     dirOp->initialize(slaveIndices, slaveValues);
 //    colOp->append(dirOp);
 
-//    boost::shared_ptr<AMP::Database> dummySolver_db = preconditioner_db->getDatabase("ContactPreconditioner"); 
-    boost::shared_ptr<AMP::InputDatabase> dummySolver_db(new AMP::InputDatabase("DummySolver"));
+//    AMP::shared_ptr<AMP::Database> dummySolver_db = preconditioner_db->getDatabase("ContactPreconditioner"); 
+    AMP::shared_ptr<AMP::InputDatabase> dummySolver_db(new AMP::InputDatabase("DummySolver"));
     dummySolver_db->putInteger("print_info_level", 1);
     dummySolver_db->putInteger("max_iterations", 1);
     dummySolver_db->putDouble("max_error", 1.0e-16);
-    boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolverParameters> dummySolverParams(new AMP::Solver::ConstraintsEliminationSolverParameters(dummySolver_db));
+    AMP::shared_ptr<AMP::Solver::ConstraintsEliminationSolverParameters> dummySolverParams(new AMP::Solver::ConstraintsEliminationSolverParameters(dummySolver_db));
     dummySolverParams->d_pOperator = dirOp;
-    boost::shared_ptr<AMP::Solver::ConstraintsEliminationSolver> dirSolver(new AMP::Solver::ConstraintsEliminationSolver(dummySolverParams));
+    AMP::shared_ptr<AMP::Solver::ConstraintsEliminationSolver> dirSolver(new AMP::Solver::ConstraintsEliminationSolver(dummySolverParams));
     colPre->append(dirSolver);
   } // end if
 
-  boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> loadOp =
-      boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter, 
+  AMP::shared_ptr<AMP::Operator::DirichletVectorCorrection> loadOp =
+      AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter, 
                                                                                                                            "LoadOperator", 
                                                                                                                            input_db, 
                                                                                                                            physicsModel));
   AMP::LinearAlgebra::Variable::shared_ptr var = bvpOp->getOutputVariable();
   loadOp->setVariable(var);
 
-  boost::shared_ptr<AMP::Database> shell_db(new AMP::MemoryDatabase("MatrixShellOperator"));
+  AMP::shared_ptr<AMP::Database> shell_db(new AMP::MemoryDatabase("MatrixShellOperator"));
   shell_db->putString("name", "MatShellOperator");
   shell_db->putInteger("print_info_level", 1);
-  boost::shared_ptr<AMP::Operator::OperatorParameters> shellParams(new AMP::Operator::OperatorParameters(shell_db));
-  boost::shared_ptr<AMP::Operator::PetscMatrixShellOperator> shellOp(new AMP::Operator::PetscMatrixShellOperator(shellParams));
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> shellParams(new AMP::Operator::OperatorParameters(shell_db));
+  AMP::shared_ptr<AMP::Operator::PetscMatrixShellOperator> shellOp(new AMP::Operator::PetscMatrixShellOperator(shellParams));
   int const numLocalNodes = meshAdapter->numLocalElements(AMP::Mesh::Vertex);
   int const matLocalSize = dofsPerNode * numLocalNodes;
   AMP_ASSERT( matLocalSize == static_cast<int>(dofMap->numLocalDOF()) );
@@ -174,11 +174,11 @@ if(dummy) {
 //  double const initialResidualNorm = resVec->L2Norm();
 //  std::cout<<"initial residual norm = "<<std::setprecision(15)<<initialResidualNorm<<"\n";
 
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
+  AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams(new AMP::Solver::PetscKrylovSolverParameters(linearSolver_db));
   linearSolverParams->d_pOperator = shellOp;
   linearSolverParams->d_comm = globalComm;
   linearSolverParams->d_pPreconditioner = colPre;
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
+  AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new AMP::Solver::PetscKrylovSolver(linearSolverParams));
   linearSolver->setInitialGuess(solVec);
 
   linearSolver->solve(rhsVec, solVec);

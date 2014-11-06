@@ -2,7 +2,7 @@
 #define included_AMP_SourcePhysicsModel
 
 #include <cstring>
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include "operators/ElementPhysicsModel.h"
 #include "materials/Material.h"
@@ -33,7 +33,7 @@ public :
      * and also USE_ELEMENT_PHYSICS from the database. These specify if material library or the 
      * element physics model are used for calculating the source terms.
     */
-    SourcePhysicsModel (const boost::shared_ptr<SourcePhysicsModelParameters>& params );
+    SourcePhysicsModel (const AMP::shared_ptr<SourcePhysicsModelParameters>& params );
 
     /**
     * Destructor.
@@ -64,11 +64,11 @@ private :
 
     std::vector<double> d_defaults;
 
-    boost::shared_ptr<ElementPhysicsModel>  d_elementPhysicsModel; 
-    boost::shared_ptr<ElementPhysicsModelParameters>  d_elementPhysicsParams; 
+    AMP::shared_ptr<ElementPhysicsModel>  d_elementPhysicsModel; 
+    AMP::shared_ptr<ElementPhysicsModelParameters>  d_elementPhysicsParams; 
 
     // Cached variables that may or may not be used to improve perfomance
-    std::map<std::string, boost::shared_ptr<std::vector<double> > >  d_inputMaterialParameters;
+    std::map<std::string, AMP::shared_ptr<std::vector<double> > >  d_inputMaterialParameters;
 };
 
 

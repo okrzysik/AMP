@@ -22,7 +22,7 @@ public:
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    typedef boost::shared_ptr<MeshParameters>  shared_ptr;
+    typedef AMP::shared_ptr<MeshParameters>  shared_ptr;
 
     //! Empty constructor
     MeshParameters( );
@@ -32,7 +32,7 @@ public:
      * \details  Constructor to create the MeshParamaters from an AMP Database object.
      * \param db    Input database for constructing a mesh
      */
-    MeshParameters ( const boost::shared_ptr<AMP::Database>  db );
+    MeshParameters ( const AMP::shared_ptr<AMP::Database>  db );
 
     /**
      * \brief       Set the comm for the mesh
@@ -42,7 +42,7 @@ public:
     void setComm ( AMP::AMP_MPI comm );
 
     //!  Get the database for the mesh
-    boost::shared_ptr<AMP::Database> getDatabase ( );
+    AMP::shared_ptr<AMP::Database> getDatabase ( );
 
     //! Deconstructor
     virtual ~MeshParameters ();
@@ -50,7 +50,7 @@ public:
 protected:
 
     //! A pointer to an AMP database containing the mesh info
-    boost::shared_ptr<AMP::Database>  d_db;
+    AMP::shared_ptr<AMP::Database>  d_db;
 
     //! The desired communicator
     AMP::AMP_MPI comm;

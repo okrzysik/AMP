@@ -88,18 +88,18 @@ class  SimpleManagedVectorFactory
       return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "..." ));
     }
 
-    static boost::shared_ptr<T>  getVector()
+    static AMP::shared_ptr<T>  getVector()
     {
       const int num_local = 210;
       AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
-      boost::shared_ptr<AMP::LinearAlgebra::EpetraVectorEngineParameters>  epetraParams (
+      AMP::shared_ptr<AMP::LinearAlgebra::EpetraVectorEngineParameters>  epetraParams (
          new AMP::LinearAlgebra::EpetraVectorEngineParameters ( num_local , num_local*globalComm.getSize(), globalComm ) );
-      boost::shared_ptr<AMP::LinearAlgebra::ManagedVectorParameters>  managedParams( new AMP::LinearAlgebra::ManagedVectorParameters );
+      AMP::shared_ptr<AMP::LinearAlgebra::ManagedVectorParameters>  managedParams( new AMP::LinearAlgebra::ManagedVectorParameters );
       AMP::LinearAlgebra::VectorEngine::BufferPtr  buffer( new std::vector<double>(120) );
       managedParams->d_Engine = AMP::LinearAlgebra::VectorEngine::shared_ptr ( new AMP::LinearAlgebra::EpetraVectorEngine( epetraParams, buffer ) );
       managedParams->d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( 210, globalComm );
       managedParams->d_DOFManager = AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::DOFManager( 210, globalComm ) );
-      boost::shared_ptr<T>  retval ( new T ( managedParams ) );
+      AMP::shared_ptr<T>  retval ( new T ( managedParams ) );
       retval->setVariable ( AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "Test Vector" ) ) );
       return retval;
     }
@@ -125,7 +125,7 @@ class  PetscManagedVectorFactory
       AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
       VecCreate ( globalComm.getCommunicator(), &v );
       VecSetSizes ( v , 15 , PETSC_DECIDE );
-      boost::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams( 
+      AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams( 
         new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
       AMP::LinearAlgebra::NativePetscVector *newVec = new AMP::LinearAlgebra::NativePetscVector ( npvParams );
       VecSetFromOptions ( v );

@@ -7,7 +7,7 @@
 #include "operators/subchannel/SubchannelPhysicsModel.h"
 #include "operators/Operator.h"
 /*Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include <vector>
 
@@ -22,18 +22,18 @@ namespace Operator {
   class CoupledChannelToCladMapOperatorParameters : public OperatorParameters {
     public :
 
-      CoupledChannelToCladMapOperatorParameters(const boost::shared_ptr<AMP::Database>& db)
+      CoupledChannelToCladMapOperatorParameters(const AMP::shared_ptr<AMP::Database>& db)
         : OperatorParameters(db) { }
 
       virtual ~CoupledChannelToCladMapOperatorParameters() { }
 
-      boost::shared_ptr<AMP::Operator::Operator> d_thermalMapOperator ; 
-      boost::shared_ptr<AMP::Operator::Operator> d_densityMapOperator ; 
-      boost::shared_ptr<AMP::Operator::Operator> d_mapOperator ; 
-      boost::shared_ptr<AMP::LinearAlgebra::Variable> d_variable ; 
-      boost::shared_ptr<AMP::Mesh::Mesh> d_subchannelMesh ; 
-      boost::shared_ptr<AMP::LinearAlgebra::Vector> d_vector ; 
-      boost::shared_ptr<AMP::Operator::SubchannelPhysicsModel> d_subchannelPhysicsModel; 
+      AMP::shared_ptr<AMP::Operator::Operator> d_thermalMapOperator ; 
+      AMP::shared_ptr<AMP::Operator::Operator> d_densityMapOperator ; 
+      AMP::shared_ptr<AMP::Operator::Operator> d_mapOperator ; 
+      AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_variable ; 
+      AMP::shared_ptr<AMP::Mesh::Mesh> d_subchannelMesh ; 
+      AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_vector ; 
+      AMP::shared_ptr<AMP::Operator::SubchannelPhysicsModel> d_subchannelPhysicsModel; 
 
   };
 

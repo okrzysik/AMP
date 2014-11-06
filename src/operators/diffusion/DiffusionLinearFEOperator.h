@@ -10,7 +10,7 @@
 #include "ampmesh/MeshElement.h"
 
 /* Boost files */
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 #include <vector>
 
@@ -22,12 +22,12 @@ namespace Operator {
 class DiffusionLinearFEOperator: public LinearFEOperator {
 public:
 
-        DiffusionLinearFEOperator(const boost::shared_ptr<
+        DiffusionLinearFEOperator(const AMP::shared_ptr<
             DiffusionLinearFEOperatorParameters>& params);
 
         virtual ~DiffusionLinearFEOperator() { }
 
-        void preAssembly(const boost::shared_ptr<OperatorParameters>& params);
+        void preAssembly(const AMP::shared_ptr<OperatorParameters>& params);
 
         void postAssembly();
 
@@ -39,7 +39,7 @@ public:
 
         AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
-        boost::shared_ptr<DiffusionTransportModel> getTransportModel();
+        AMP::shared_ptr<DiffusionTransportModel> getTransportModel();
 
 protected:
 
@@ -57,13 +57,13 @@ protected:
 
         std::vector<std::vector<double> > d_elementStiffnessMatrix;
 
-        boost::shared_ptr<DiffusionLinearElement> d_diffLinElem;
+        AMP::shared_ptr<DiffusionLinearElement> d_diffLinElem;
 
-        boost::shared_ptr<DiffusionTransportModel> d_transportModel;
+        AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
 
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
 
-        boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
 };
 

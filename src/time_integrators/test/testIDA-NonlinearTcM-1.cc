@@ -3,7 +3,7 @@
 #include "utils/Utilities.h"
 #include <string>
 #include "materials/Material.h"
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 #include "utils/InputManager.h"
@@ -63,7 +63,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   std::string input_file = "input_" + exeName;
   std::string log_file = "output_" + exeName;
 
-  boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+  AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
   AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
   AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
   input_db->printClassData(AMP::plog);
@@ -79,11 +79,11 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   AMP::LinearAlgebra::Variable::shared_ptr thermalVariable ( new AMP::NodalScalarVariable ( "Temperature" ) );
   AMP::LinearAlgebra::Variable::shared_ptr mechanicsVariable ( new AMP::Nodal3VectorVariable ( "Mechanics" ) );
 
-  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputVariable(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
+  AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> inputVariable(new AMP::LinearAlgebra::MultiVariable("inputVariable"));
   inputVariable->add(thermalVariable);
   inputVariable->add(mechanicsVariable);  
   
-  boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> outputVariable(new AMP::LinearAlgebra::MultiVariable("outputVariable"));
+  AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> outputVariable(new AMP::LinearAlgebra::MultiVariable("outputVariable"));
   outputVariable->add(thermalVariable);  
   outputVariable->add(mechanicsVariable);
 
@@ -124,10 +124,10 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   //-------------------------------------
   //  create the neutronics source
   AMP_INSIST(input_db->keyExists("NeutronicsOperator"), "Key ''NeutronicsOperator'' is missing!");
-  boost::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("NeutronicsOperator");
-  boost::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
+  AMP::shared_ptr<AMP::Database>  neutronicsOp_db = input_db->getDatabase("NeutronicsOperator");
+  AMP::shared_ptr<AMP::Operator::NeutronicsRhsParameters> neutronicsParams(new AMP::Operator::NeutronicsRhsParameters( neutronicsOp_db ));
   neutronicsParams->d_MeshAdapter = pelletMeshAdapter;
-  boost::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
+  AMP::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator(new AMP::Operator::NeutronicsRhs( neutronicsParams ));
 
   AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
   AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVector = manager->createVector( SpecificPowerVar );
@@ -139,9 +139,9 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 
   AMP_INSIST( input_db->keyExists("VolumeIntegralOperator"), "key missing!" );
 
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
-  boost::shared_ptr<AMP::Database> sourceDatabase = input_db->getDatabase("VolumeIntegralOperator");
-  boost::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator = boost::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(pelletMeshAdapter, sourceDatabase, stransportModel));
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
+  AMP::shared_ptr<AMP::Database> sourceDatabase = input_db->getDatabase("VolumeIntegralOperator");
+  AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator> sourceOperator = AMP::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(AMP::Operator::OperatorBuilder::createOperator(pelletMeshAdapter, sourceDatabase, stransportModel));
 
   // convert the vector of specific power to power for a given basis.
   sourceOperator->apply(nullVector, SpecificPowerVector, thermalRhs, 1., 0.);
@@ -154,32 +154,32 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   
   AMP_INSIST( input_db->keyExists("pelletNonlinearThermalOperator"), "key missing!" );
   
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> pelletThermalTransportModel;
-  boost::shared_ptr<AMP::Database> pelletNonlinearThermalDatabase = input_db->getDatabase("pelletNonlinearThermalOperator");
-  boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> pelletNonlinearThermalOperator = boost::dynamic_pointer_cast<
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> pelletThermalTransportModel;
+  AMP::shared_ptr<AMP::Database> pelletNonlinearThermalDatabase = input_db->getDatabase("pelletNonlinearThermalOperator");
+  AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> pelletNonlinearThermalOperator = AMP::dynamic_pointer_cast<
   AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(pelletMeshAdapter, pelletNonlinearThermalDatabase, pelletThermalTransportModel));
   
   //-------------------------------------
   //   create linear pellet thermal operator
   //-------------------------------------
   
-  boost::shared_ptr<AMP::InputDatabase>  pelletLinearThermalDatabase= boost::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase("pelletLinearThermalOperator"));
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> pelletLinearThermalOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(pelletMeshAdapter, pelletLinearThermalDatabase, pelletThermalTransportModel));
+  AMP::shared_ptr<AMP::InputDatabase>  pelletLinearThermalDatabase= AMP::dynamic_pointer_cast<AMP::InputDatabase>( input_db->getDatabase("pelletLinearThermalOperator"));
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> pelletLinearThermalOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(pelletMeshAdapter, pelletLinearThermalDatabase, pelletThermalTransportModel));
   
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create nonlinear pellet mechanics operator
   AMP_INSIST( input_db->keyExists("pelletNonlinearMechanicsOperator"), "key missing!" );
   
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> pelletMechanicsMaterialModel;
-  boost::shared_ptr<AMP::Database> pelletNonlinearMechanicsDatabase = input_db->getDatabase("pelletNonlinearMechanicsOperator");
-  boost::shared_ptr<AMP::Operator::NonlinearBVPOperator> pelletNonlinearMechanicsOperator = boost::dynamic_pointer_cast<
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> pelletMechanicsMaterialModel;
+  AMP::shared_ptr<AMP::Database> pelletNonlinearMechanicsDatabase = input_db->getDatabase("pelletNonlinearMechanicsOperator");
+  AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> pelletNonlinearMechanicsOperator = AMP::dynamic_pointer_cast<
     AMP::Operator::NonlinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(pelletMeshAdapter, pelletNonlinearMechanicsDatabase, pelletMechanicsMaterialModel));
 
-  boost::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> pelletMechanicsVolumeOperator = boost::dynamic_pointer_cast<
+  AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> pelletMechanicsVolumeOperator = AMP::dynamic_pointer_cast<
     AMP::Operator::MechanicsNonlinearFEOperator>(pelletNonlinearMechanicsOperator->getVolumeOperator());
  
-  boost::shared_ptr<AMP::LinearAlgebra::Variable> pelletBurnupVar =pelletMechanicsVolumeOperator->getInputVariable(AMP::Operator::Mechanics::BURNUP);
-  boost::shared_ptr<AMP::LinearAlgebra::Vector> pelletBurnupVector = pelletMeshAdapter->createVector(pelletBurnupVar);
+  AMP::shared_ptr<AMP::LinearAlgebra::Variable> pelletBurnupVar =pelletMechanicsVolumeOperator->getInputVariable(AMP::Operator::Mechanics::BURNUP);
+  AMP::shared_ptr<AMP::LinearAlgebra::Vector> pelletBurnupVector = pelletMeshAdapter->createVector(pelletBurnupVar);
   pelletBurnupVector->setToScalar(0.0001);
   pelletMechanicsVolumeOperator->setVector(AMP::Operator::Mechanics::BURNUP, pelletBurnupVector);
 
@@ -190,39 +190,39 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   // create linear pellet mechanics operator
   AMP_INSIST( input_db->keyExists("pelletLinearMechanicsOperator"), "key missing!" );
-  boost::shared_ptr<AMP::Database> pelletLinearMechanicsDatabase = input_db->getDatabase("pelletLinearMechanicsOperator");
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> pelletLinearMechanicsOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+  AMP::shared_ptr<AMP::Database> pelletLinearMechanicsDatabase = input_db->getDatabase("pelletLinearMechanicsOperator");
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> pelletLinearMechanicsOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
       AMP::Operator::OperatorBuilder::createOperator(pelletMeshAdapter, pelletLinearMechanicsDatabase, pelletMechanicsMaterialModel));
 
   //-------------------------------------
   //Column of nonlinear coupled operators
-  boost::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
-  boost::shared_ptr<AMP::Operator::OperatorParameters> nonlinearParams (new AMP::Operator::OperatorParameters(tmp_db));
-  boost::shared_ptr<AMP::Operator::ColumnOperator> nonlinearCoupledOperator(new AMP::Operator::ColumnOperator(nonlinearParams));
+  AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> nonlinearParams (new AMP::Operator::OperatorParameters(tmp_db));
+  AMP::shared_ptr<AMP::Operator::ColumnOperator> nonlinearCoupledOperator(new AMP::Operator::ColumnOperator(nonlinearParams));
   nonlinearCoupledOperator->append(pelletNonlinearThermalOperator);
   nonlinearCoupledOperator->append(pelletNonlinearMechanicsOperator);
 
   //-------------------------------------
   //Column of linear operators
-  boost::shared_ptr<AMP::Operator::OperatorParameters> linearParams(new AMP::Operator::OperatorParameters(tmp_db));
-  boost::shared_ptr<AMP::Operator::ColumnOperator> linearCoupledOperator(new AMP::Operator::ColumnOperator(linearParams));
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> linearParams(new AMP::Operator::OperatorParameters(tmp_db));
+  AMP::shared_ptr<AMP::Operator::ColumnOperator> linearCoupledOperator(new AMP::Operator::ColumnOperator(linearParams));
   linearCoupledOperator->append(pelletLinearThermalOperator);
   linearCoupledOperator->append(pelletLinearMechanicsOperator);
 
   // ---------------------------------------------------------------------------------------
   // create mass linear BVP operators
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> pelletMassThermalModel;
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> pelletMassThermalOperator;
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> pelletMassMechanicsOperator;
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> pelletMassThermalModel;
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> pelletMassThermalOperator;
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> pelletMassMechanicsOperator;
   
-  boost::shared_ptr<AMP::InputDatabase> massThermalOp_db1 =  boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("pelletMassThermalOperator"));
-  pelletMassThermalOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(pelletMeshAdapter, massThermalOp_db1,pelletMassThermalModel));
+  AMP::shared_ptr<AMP::InputDatabase> massThermalOp_db1 =  AMP::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("pelletMassThermalOperator"));
+  pelletMassThermalOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(pelletMeshAdapter, massThermalOp_db1,pelletMassThermalModel));
   //  pelletMassMechanicsOperator.reset();
   
   // ---------------------------------------------------------------------------------------
   // create a column mass operator object for use in the nonlinear and linear problem definition
-  boost::shared_ptr<AMP::Operator::OperatorParameters> massParams;
-  boost::shared_ptr<AMP::Operator::ColumnOperator> columnMassOperator(new AMP::Operator::ColumnOperator(massParams));
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> massParams;
+  AMP::shared_ptr<AMP::Operator::ColumnOperator> columnMassOperator(new AMP::Operator::ColumnOperator(massParams));
   columnMassOperator->append(pelletMassThermalOperator);
   //  columnMassOperator->append(pelletMassMechanicsOperator);
   //--------------------------------------------------------------------
@@ -238,7 +238,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   //                                                       2)  form the rhs for the solve for the time derivative of temperature
   nonlinearCoupledOperator->apply(rhsVector, solutionVector, scratchVector, -1.0, 1.0);
   // unfortunately we have to apply a 'trick' here to zero out the Dirichlet boundaries
-  boost::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletBoundaryOperator = boost::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(pelletNonlinearThermalOperator->getBoundaryOperator());
+  AMP::shared_ptr<AMP::Operator::DirichletVectorCorrection> dirichletBoundaryOperator = AMP::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(pelletNonlinearThermalOperator->getBoundaryOperator());
   //  AMP_INSIST(dirichletBoundaryOperator.get()!=NULL);
   dirichletBoundaryOperator->apply(nullVector, nullVector, scratchVector, 1.0, 0.0);
   
@@ -247,34 +247,34 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   // solve for the time derivative for thermal at the initial time
 
   // create a mass linear BVP operator
-  boost::shared_ptr<AMP::Operator::ElementPhysicsModel> pelletMassICThermalModel;
-  boost::shared_ptr<AMP::Operator::LinearBVPOperator> pelletMassICThermalOperator;
-  boost::shared_ptr<AMP::InputDatabase> pelletMassICThermalOp_db =  boost::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("pelletMassICThermalOperator"));
-  pelletMassICThermalOperator = boost::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(pelletMeshAdapter, pelletMassICThermalOp_db,pelletMassICThermalModel));
+  AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> pelletMassICThermalModel;
+  AMP::shared_ptr<AMP::Operator::LinearBVPOperator> pelletMassICThermalOperator;
+  AMP::shared_ptr<AMP::InputDatabase> pelletMassICThermalOp_db =  AMP::dynamic_pointer_cast<AMP::InputDatabase>(input_db->getDatabase("pelletMassICThermalOperator"));
+  pelletMassICThermalOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(AMP::Operator::OperatorBuilder::createOperator(pelletMeshAdapter, pelletMassICThermalOp_db,pelletMassICThermalModel));
   
     // form the rhs for the solve
-  boost::shared_ptr<AMP::Database> icLinearSolver_db = input_db->getDatabase("ICLinearSolver"); 
+  AMP::shared_ptr<AMP::Database> icLinearSolver_db = input_db->getDatabase("ICLinearSolver"); 
   // ---- first initialize the preconditioner
-  boost::shared_ptr<AMP::Database> icpcSolver_db = icLinearSolver_db->getDatabase("Preconditioner"); 
-  boost::shared_ptr<AMP::Database> icPelletPreconditioner_db = icpcSolver_db->getDatabase("pelletPreconditioner"); 
-  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> icPelletPreconditionerParams(new AMP::Solver::SolverStrategyParameters(icPelletPreconditioner_db));
+  AMP::shared_ptr<AMP::Database> icpcSolver_db = icLinearSolver_db->getDatabase("Preconditioner"); 
+  AMP::shared_ptr<AMP::Database> icPelletPreconditioner_db = icpcSolver_db->getDatabase("pelletPreconditioner"); 
+  AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> icPelletPreconditionerParams(new AMP::Solver::SolverStrategyParameters(icPelletPreconditioner_db));
   icPelletPreconditionerParams->d_pOperator = pelletMassICThermalOperator;
-  boost::shared_ptr<AMP::Solver::TrilinosMLSolver> icPelletPreconditioner(new AMP::Solver::TrilinosMLSolver(icPelletPreconditionerParams));
+  AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> icPelletPreconditioner(new AMP::Solver::TrilinosMLSolver(icPelletPreconditionerParams));
   // initialize the linear solver
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> icLinearSolverParams(new
+  AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> icLinearSolverParams(new
       AMP::Solver::PetscKrylovSolverParameters(icLinearSolver_db));
   icLinearSolverParams->d_pOperator = pelletMassICThermalOperator;
   icLinearSolverParams->d_comm = globalComm;
   icLinearSolverParams->d_pPreconditioner = icPelletPreconditioner;
-  boost::shared_ptr<AMP::Solver::PetscKrylovSolver> icLinearSolver(new AMP::Solver::PetscKrylovSolver(icLinearSolverParams));
+  AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> icLinearSolver(new AMP::Solver::PetscKrylovSolver(icLinearSolverParams));
   icLinearSolver->setZeroInitialGuess(true);
   icLinearSolver->solve(thermalScratch, thermalPrime);
 
   //-------------------------------------
   // create a  time operator for use in the preconditioner
   AMP_INSIST(input_db->keyExists("IDATimeIntegrator"), "Key ''IDATimeIntegrator'' is missing!");
-  boost::shared_ptr<AMP::Database> ida_db = input_db->getDatabase("IDATimeIntegrator");
-  boost::shared_ptr<AMP::InputDatabase> timeOperator_db(new AMP::InputDatabase("TimeOperatorDatabase"));
+  AMP::shared_ptr<AMP::Database> ida_db = input_db->getDatabase("IDATimeIntegrator");
+  AMP::shared_ptr<AMP::InputDatabase> timeOperator_db(new AMP::InputDatabase("TimeOperatorDatabase"));
   timeOperator_db->putDouble("CurrentDt", 0.01);
   timeOperator_db->putString("name", "TimeOperator");
   timeOperator_db->putBool("bLinearMassOperator", true);
@@ -282,34 +282,34 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   timeOperator_db->putDouble("ScalingFactor", 1.0/0.01);
   timeOperator_db->putInteger("algebraicComponent", ida_db->getIntegerWithDefault("algebraicComponent", -1));
 
-  boost::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(new AMP::TimeIntegrator::TimeOperatorParameters(timeOperator_db));
+  AMP::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(new AMP::TimeIntegrator::TimeOperatorParameters(timeOperator_db));
   timeOperatorParameters->d_pRhsOperator = linearCoupledOperator;
   timeOperatorParameters->d_pMassOperator = columnMassOperator;
-  boost::shared_ptr<AMP::TimeIntegrator::TimeIntegrator::ColumnTimeOperator> columnLinearTimeOperator( new AMP::TimeIntegrator::TimeIntegrator::ColumnTimeOperator(timeOperatorParameters));
+  AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegrator::ColumnTimeOperator> columnLinearTimeOperator( new AMP::TimeIntegrator::TimeIntegrator::ColumnTimeOperator(timeOperatorParameters));
   //-------------------------------------------------------------------------//
   // initialize the column preconditioner which is a diagonal block preconditioner
   // get the ida database
-  boost::shared_ptr<AMP::Database> columnPreconditioner_db = ida_db->getDatabase("Preconditioner");
-  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
+  AMP::shared_ptr<AMP::Database> columnPreconditioner_db = ida_db->getDatabase("Preconditioner");
+  AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(new AMP::Solver::SolverStrategyParameters(columnPreconditioner_db));
   columnPreconditionerParams->d_pOperator = columnLinearTimeOperator;
-  boost::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
+  AMP::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner(new AMP::Solver::ColumnSolver(columnPreconditionerParams));
 
-  boost::shared_ptr<AMP::Database> pelletThermalPreconditioner_db = columnPreconditioner_db->getDatabase("pelletThermalPreconditioner"); 
-  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> pelletThermalPreconditionerParams(new AMP::Solver::SolverStrategyParameters(pelletThermalPreconditioner_db));
+  AMP::shared_ptr<AMP::Database> pelletThermalPreconditioner_db = columnPreconditioner_db->getDatabase("pelletThermalPreconditioner"); 
+  AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> pelletThermalPreconditionerParams(new AMP::Solver::SolverStrategyParameters(pelletThermalPreconditioner_db));
   pelletThermalPreconditionerParams->d_pOperator = columnLinearTimeOperator->getOperator(0);
-  boost::shared_ptr<AMP::Solver::TrilinosMLSolver> pelletLinearThermalPreconditioner(new AMP::Solver::TrilinosMLSolver(pelletThermalPreconditionerParams));
+  AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> pelletLinearThermalPreconditioner(new AMP::Solver::TrilinosMLSolver(pelletThermalPreconditionerParams));
 
-  boost::shared_ptr<AMP::Database> pelletMechanicsPreconditioner_db = columnPreconditioner_db->getDatabase("pelletMechanicsPreconditioner"); 
-  boost::shared_ptr<AMP::Solver::SolverStrategyParameters> pelletMechanicsPreconditionerParams(new AMP::Solver::SolverStrategyParameters(pelletMechanicsPreconditioner_db));
+  AMP::shared_ptr<AMP::Database> pelletMechanicsPreconditioner_db = columnPreconditioner_db->getDatabase("pelletMechanicsPreconditioner"); 
+  AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> pelletMechanicsPreconditionerParams(new AMP::Solver::SolverStrategyParameters(pelletMechanicsPreconditioner_db));
   pelletMechanicsPreconditionerParams->d_pOperator = columnLinearTimeOperator->getOperator(1);
-  boost::shared_ptr<AMP::Solver::TrilinosMLSolver> pelletLinearMechanicsPreconditioner(new AMP::Solver::TrilinosMLSolver(pelletMechanicsPreconditionerParams));
+  AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> pelletLinearMechanicsPreconditioner(new AMP::Solver::TrilinosMLSolver(pelletMechanicsPreconditionerParams));
 
   columnPreconditioner->append(pelletLinearThermalPreconditioner);
   columnPreconditioner->append(pelletLinearMechanicsPreconditioner);
 
   // ---------------------------------------------------------------------------------------
   // create the IDA time integrator
-  boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegratorParameters> time_Params( new AMP::TimeIntegrator::IDATimeIntegratorParameters(ida_db));
+  AMP::shared_ptr<AMP::TimeIntegrator::IDATimeIntegratorParameters> time_Params( new AMP::TimeIntegrator::IDATimeIntegratorParameters(ida_db));
   
   if( (time_Params.get()) == NULL ) {
     ut.failure("Testing IDATimeIntegratorParameters' Constructor");
@@ -329,7 +329,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   time_Params->d_pAlgebraicVariable = pelletNonlinearMechanicsOperator->getOutputVariable();
   
   cout << "Before IDATimeIntegrator" << endl;    
-  boost::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(new AMP::TimeIntegrator::IDATimeIntegrator(time_Params));
+  AMP::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(new AMP::TimeIntegrator::IDATimeIntegrator(time_Params));
   
   if(pIDATimeIntegrator.get() == NULL) {
     ut.failure("Testing IDATimeIntegrator's constructor");
@@ -337,7 +337,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
     ut.passes("Tested IDATimeIntegrator's constructor");
   }
 
-  boost::shared_ptr<AMP::Operator::Operator> pIDAOperator = pIDATimeIntegrator->getOperator();
+  AMP::shared_ptr<AMP::Operator::Operator> pIDAOperator = pIDATimeIntegrator->getOperator();
 
   pIDAOperator->apply(nullVector, solutionVector, scratchVector);
   AMP::pout << "Residual at initial time is " << scratchVector->L2Norm() << std::endl;
@@ -361,7 +361,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
     ut.failure("Tested IDATimeIntegrator's advanceSolution. FAIL!!");
       }
       
-      boost::shared_ptr<AMP::LinearAlgebra::Vector> currentSolution = pIDATimeIntegrator->getCurrentSolution();
+      AMP::shared_ptr<AMP::LinearAlgebra::Vector> currentSolution = pIDATimeIntegrator->getCurrentSolution();
       
       cout << "current_time = " << current_time << endl;
 

@@ -25,7 +25,7 @@ structuredMeshIterator::structuredMeshIterator()
     d_mesh = NULL;
 }
 structuredMeshIterator::structuredMeshIterator( 
-    boost::shared_ptr<std::vector<BoxMesh::MeshElementIndex> > elements, 
+    AMP::shared_ptr<std::vector<BoxMesh::MeshElementIndex> > elements, 
     const AMP::Mesh::BoxMesh *mesh, size_t pos )
 {
     typeID = structuredMeshIteratorTypeID;

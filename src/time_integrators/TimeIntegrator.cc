@@ -38,7 +38,7 @@ namespace TimeIntegrator{
 *************************************************************************
 */
 
-TimeIntegrator::TimeIntegrator( boost::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters)
+TimeIntegrator::TimeIntegrator( AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters)
 {
    AMP_INSIST(parameters.get()!=NULL, "Null parameter");
 
@@ -76,7 +76,7 @@ TimeIntegrator::~TimeIntegrator()
 */
 
 void 
-TimeIntegrator::initialize( boost::shared_ptr< TimeIntegratorParameters > parameters)
+TimeIntegrator::initialize( AMP::shared_ptr< TimeIntegratorParameters > parameters)
 {
    d_object_name          = parameters->d_object_name;
 
@@ -144,7 +144,7 @@ TimeIntegrator::getNextDt(const bool )
 */
 
 void 
-TimeIntegrator::getFromInput(const boost::shared_ptr<AMP::Database> db)
+TimeIntegrator::getFromInput(const AMP::shared_ptr<AMP::Database> db)
 {
    AMP_ASSERT(db.get()!=NULL);
 
@@ -226,7 +226,7 @@ TimeIntegrator::getFromInput(const boost::shared_ptr<AMP::Database> db)
 */
 
 void 
-TimeIntegrator::putToDatabase(boost::shared_ptr<AMP::Database> db)
+TimeIntegrator::putToDatabase(AMP::shared_ptr<AMP::Database> db)
 {
    AMP_ASSERT(!db.use_count());
 

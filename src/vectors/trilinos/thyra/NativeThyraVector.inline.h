@@ -23,13 +23,13 @@ inline bool NativeThyraVector::sameEngine ( VectorEngine &e ) const
 
 inline VectorEngine::shared_ptr  NativeThyraVector::cloneEngine ( BufferPtr ) const
 {
-    return boost::dynamic_pointer_cast<VectorEngine> ( Vector::cloneVector ( "engine_clone" ) );
+    return AMP::dynamic_pointer_cast<VectorEngine> ( Vector::cloneVector ( "engine_clone" ) );
 }
 
 
 inline void NativeThyraVector::swapEngines ( VectorEngine::shared_ptr p )
 {
-    Vector::shared_ptr p2 =boost::dynamic_pointer_cast<Vector> ( p );
+    Vector::shared_ptr p2 =AMP::dynamic_pointer_cast<Vector> ( p );
     Vector::swapVectors ( p2 );
 }
 
@@ -87,7 +87,7 @@ inline void NativeThyraVector::swapVectors(Vector &other)
 
 inline Teuchos::RCP<const Thyra::VectorBase<double> >  NativeThyraVector::getThyraVec( const VectorOperations &v )
 {
-    boost::shared_ptr<const ThyraVector> v2 = boost::dynamic_pointer_cast<const ThyraVector>( 
+    AMP::shared_ptr<const ThyraVector> v2 = AMP::dynamic_pointer_cast<const ThyraVector>( 
         ThyraVector::constView( v.castTo<const Vector>().shared_from_this() ) );
     AMP_ASSERT(v2!=NULL);
     return v2->getVec();
@@ -96,8 +96,8 @@ inline Teuchos::RCP<const Thyra::VectorBase<double> >  NativeThyraVector::getThy
 
 inline Teuchos::RCP<const Thyra::VectorBase<double> >  NativeThyraVector::getThyraVec( const Vector::const_shared_ptr &v )
 {
-    boost::shared_ptr<const ThyraVector> v2 = 
-        boost::dynamic_pointer_cast<const ThyraVector>( ThyraVector::constView( v ) );
+    AMP::shared_ptr<const ThyraVector> v2 = 
+        AMP::dynamic_pointer_cast<const ThyraVector>( ThyraVector::constView( v ) );
     AMP_ASSERT(v2!=NULL);
     return v2->getVec();
 }

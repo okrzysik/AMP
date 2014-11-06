@@ -3,9 +3,9 @@
 namespace AMP{
 namespace Operator{
 
-VectorCopyOperator::VectorCopyOperator(const boost::shared_ptr<VectorCopyOperatorParameters> &params):AMP::Operator::Operator(params)
+VectorCopyOperator::VectorCopyOperator(const AMP::shared_ptr<VectorCopyOperatorParameters> &params):AMP::Operator::Operator(params)
 {
-  boost::shared_ptr<AMP::Operator::VectorCopyOperatorParameters> copyParams = boost::dynamic_pointer_cast< AMP::Operator::VectorCopyOperatorParameters>(params);
+  AMP::shared_ptr<AMP::Operator::VectorCopyOperatorParameters> copyParams = AMP::dynamic_pointer_cast< AMP::Operator::VectorCopyOperatorParameters>(params);
   d_copyVariable = copyParams->d_copyVariable;
   d_copyVector = copyParams->d_copyVector;
   

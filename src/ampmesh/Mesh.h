@@ -7,6 +7,7 @@
 #include "ampmesh/MeshID.h"
 #include "ampmesh/MeshIterator.h"
 #include "utils/AMP_MPI.h"
+#include "utils/shared_ptr.h"
 
 #ifdef USE_AMP_VECTORS
     namespace AMP {
@@ -16,8 +17,6 @@
     }
 #endif
 
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 
 namespace AMP {
 namespace Mesh {
@@ -42,7 +41,7 @@ enum SetOP { Union, Intersection, Complement };
  *     NumberOfElements - Optional argument indicating the number of elements in the mesh (will override all other calulations)
  *     Weight - Optional argument indicating the relative weight of the mesh for the domain decomposition (relative to 1.0)
  */
-class Mesh: public boost::enable_shared_from_this<AMP::Mesh::Mesh>
+class Mesh: public AMP::enable_shared_from_this<AMP::Mesh::Mesh>
 {
 public:
 
@@ -51,7 +50,7 @@ public:
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    typedef boost::shared_ptr<AMP::Mesh::Mesh>  shared_ptr;
+    typedef AMP::shared_ptr<AMP::Mesh::Mesh>  shared_ptr;
 
 
     /**
@@ -98,7 +97,7 @@ public:
      *   the input database.  
      * \param params Parameters for constructing a mesh from an input database
      */
-    static boost::shared_ptr<AMP::Mesh::Mesh> buildMesh( const MeshParameters::shared_ptr &params );
+    static AMP::shared_ptr<AMP::Mesh::Mesh> buildMesh( const MeshParameters::shared_ptr &params );
 
 
     /**
@@ -141,7 +140,7 @@ public:
      *    matches the meshID of the mesh, and a null pointer otherwise.
      * \param meshID  MeshID of the desired mesh
      */
-    virtual boost::shared_ptr<Mesh>  Subset ( MeshID meshID ) const;
+    virtual AMP::shared_ptr<Mesh>  Subset ( MeshID meshID ) const;
 
 
     /**
@@ -155,7 +154,7 @@ public:
      *    It is strongly recommended to use the meshID when possible.
      * \param name  Name of the desired mesh
      */
-    virtual boost::shared_ptr<Mesh>  Subset ( std::string name ) const;
+    virtual AMP::shared_ptr<Mesh>  Subset ( std::string name ) const;
 
 
     /**
@@ -166,7 +165,7 @@ public:
      * \param isGlobal  Is the new subset mesh global over the entire mesh (true,default), 
      *                  or do we only want to keep the local mesh (false)
      */
-    virtual boost::shared_ptr<Mesh>  Subset ( const MeshIterator &iterator, bool isGlobal=true ) const;
+    virtual AMP::shared_ptr<Mesh>  Subset ( const MeshIterator &iterator, bool isGlobal=true ) const;
 
 
     /**
@@ -174,7 +173,7 @@ public:
      * \details      This function will subset a mesh given another mesh
      * \param mesh   Mesh used to subset
      */
-    virtual boost::shared_ptr<Mesh>  Subset ( Mesh &mesh ) const;
+    virtual AMP::shared_ptr<Mesh>  Subset ( Mesh &mesh ) const;
 
 
     /* Return the number of local element of the given type
@@ -382,7 +381,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N 
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh ( boost::shared_ptr<const AMP::LinearAlgebra::Vector> x );
+    virtual void displaceMesh ( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x );
 
 
     /**
@@ -392,10 +391,10 @@ public:
      * \param name   Name of the vector
      * \param gcw    Desired ghost cell width
      */
-    virtual boost::shared_ptr<AMP::LinearAlgebra::Vector>  getPositionVector( std::string name, const int gcw=0 ) const;
+    virtual AMP::shared_ptr<AMP::LinearAlgebra::Vector>  getPositionVector( std::string name, const int gcw=0 ) const;
 #endif
 
-    const boost::shared_ptr<AMP::Database> &DB() const { return d_db; }
+    const AMP::shared_ptr<AMP::Database> &DB() const { return d_db; }
 
 protected:
 
@@ -418,7 +417,7 @@ protected:
     AMP_MPI d_comm;
 
     //! A pointer to an AMP database containing the mesh info
-    boost::shared_ptr<AMP::Database>  d_db;
+    AMP::shared_ptr<AMP::Database>  d_db;
 
     //! A unique id for each mesh
     MeshID d_meshID;

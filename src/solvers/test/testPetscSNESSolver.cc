@@ -29,7 +29,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
     AMP::AMP_MPI solverComm = globalComm.dup();     // Create a unique solver comm to test proper cleanup
 
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
     input_db->printClassData(AMP::plog);
 
@@ -42,16 +42,16 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     AMP::LinearAlgebra::Vector::shared_ptr f = u->cloneVector();
 
     // Create the operator
-    boost::shared_ptr<AMP::Operator::IdentityOperator> op(new AMP::Operator::IdentityOperator());
+    AMP::shared_ptr<AMP::Operator::IdentityOperator> op(new AMP::Operator::IdentityOperator());
     op->setInputVariable(var);
     op->setOutputVariable(var);
 
     // Get the databases for the nonlinear and linear solvers
-    boost::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
-    //boost::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
+    AMP::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase("NonlinearSolver"); 
+    //AMP::shared_ptr<AMP::Database> linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver"); 
 
     // initialize the nonlinear solver parameters
-    boost::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new
+    AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new
        AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
     nonlinearSolverParams->d_comm = solverComm;
     nonlinearSolverParams->d_pInitialGuess = nullVec;
@@ -59,7 +59,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
 
     // Create the nonlinear solver
-    boost::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
+    AMP::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver(new AMP::Solver::PetscSNESSolver(nonlinearSolverParams));
     ut->passes("PetscSNESSolver created");
 
     // Call solve with a simple vector
@@ -76,8 +76,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
         ut->failure("Solve with simple vector failed");
     
     // Call solve with a multivector (there can be bugs when solve is called with a single vector and then a multivector)
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVector> mu = AMP::LinearAlgebra::MultiVector::create("multivector",solverComm);
-    boost::shared_ptr<AMP::LinearAlgebra::MultiVector> mf = AMP::LinearAlgebra::MultiVector::create("multivector",solverComm);
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> mu = AMP::LinearAlgebra::MultiVector::create("multivector",solverComm);
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> mf = AMP::LinearAlgebra::MultiVector::create("multivector",solverComm);
     mu->addVector(u);
     mf->addVector(f);
     mu->setRandomValues();

@@ -1,8 +1,7 @@
 #ifndef included_MultiDOF_Manager
 #define included_MultiDOF_Manager
 
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include "utils/shared_ptr.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "discretization/DOF_Manager.h"

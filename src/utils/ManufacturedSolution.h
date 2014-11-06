@@ -38,7 +38,7 @@ namespace AMP {
 class ManufacturedSolution {
 public:
 
-	ManufacturedSolution(boost::shared_ptr<Database> db);
+	ManufacturedSolution(AMP::shared_ptr<Database> db);
 
 	/**
 	 * Evaluate the manufactured solution at a point.

@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 
 /* AMP files */
 #include "MechanicsElement.h"
@@ -26,7 +26,7 @@ class MechanicsLinearUpdatedLagrangianElement : public MechanicsElement
 public :
 
     //! Constructor.
-    MechanicsLinearUpdatedLagrangianElement(const boost::shared_ptr<ElementOperationParameters>& params) :
+    MechanicsLinearUpdatedLagrangianElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
         MechanicsElement(params),
         d_elementStiffnessMatrix(NULL)
     { 

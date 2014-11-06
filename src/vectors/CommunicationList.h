@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 #include <set>
-#include "boost/shared_ptr.hpp"
+#include "utils/shared_ptr.h"
 #include "utils/AMP_MPI.h"
 #include "utils/ParameterBase.h"
 #include "VectorIndexer.h"
@@ -26,7 +26,7 @@ class CommunicationListParameters : public ParameterBase
 {
 public:
     //! Short hand name for the shared pointer for a communication list
-    typedef boost::shared_ptr<CommunicationListParameters>  shared_ptr;
+    typedef AMP::shared_ptr<CommunicationListParameters>  shared_ptr;
 
     //! The communicator over which the communication list is computed
     AMP_MPI                                                 d_comm;
@@ -59,7 +59,7 @@ class CommunicationList
 public:
 
     //! Short hand for shared point to CommunicationList
-    typedef  boost::shared_ptr<CommunicationList>      shared_ptr;
+    typedef  AMP::shared_ptr<CommunicationList>      shared_ptr;
 
     /**
      * \brief Construct a communication list

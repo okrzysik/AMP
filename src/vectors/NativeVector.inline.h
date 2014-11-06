@@ -10,7 +10,7 @@ namespace LinearAlgebra {
 
   inline
   NativeVector::NativeVector ( parameters_ptr params ) 
-        : Vector ( boost::dynamic_pointer_cast<VectorParameters> (params) )
+        : Vector ( AMP::dynamic_pointer_cast<VectorParameters> (params) )
   {
   }
 

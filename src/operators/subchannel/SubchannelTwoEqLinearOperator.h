@@ -20,12 +20,12 @@ class SubchannelTwoEqLinearOperator : public LinearOperator
 public:
 
     //! Constructor
-    SubchannelTwoEqLinearOperator(const boost::shared_ptr<SubchannelOperatorParameters> & params);
+    SubchannelTwoEqLinearOperator(const AMP::shared_ptr<SubchannelOperatorParameters> & params);
 
     //! Destructor
     virtual ~SubchannelTwoEqLinearOperator() { }
 
-    void reset(const boost::shared_ptr<OperatorParameters>& params);
+    void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         return d_inpVariable;
@@ -41,14 +41,14 @@ public:
     }
 
     //! Get the current operator parameters
-    boost::shared_ptr<SubchannelOperatorParameters> getParams() { return d_params; }
+    AMP::shared_ptr<SubchannelOperatorParameters> getParams() { return d_params; }
 
 protected:
 
-    boost::shared_ptr<SubchannelOperatorParameters> d_params;
+    AMP::shared_ptr<SubchannelOperatorParameters> d_params;
 
     // subchannel physics model
-    boost::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
+    AMP::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
     // frozen vector
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenVec;
@@ -58,17 +58,17 @@ private :
     bool d_initialized; 
 	  
     // Function used in reset to get double parameter or use default if missing
-    double getDoubleParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, double);
+    double getDoubleParameter(AMP::shared_ptr<SubchannelOperatorParameters>, std::string, double);
 
     // Function used in reset to get integer parameter or use default if missing
-    int getIntegerParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, int);
+    int getIntegerParameter(AMP::shared_ptr<SubchannelOperatorParameters>, std::string, int);
 
     // Function used in reset to get double parameter or use default if missing
-    std::string getStringParameter(boost::shared_ptr<SubchannelOperatorParameters>, std::string, std::string);
+    std::string getStringParameter(AMP::shared_ptr<SubchannelOperatorParameters>, std::string, std::string);
 
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
 
-    boost::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
     double d_Pout;      // exit pressure [Pa]
     double d_Tin;       // inlet temperature [K]

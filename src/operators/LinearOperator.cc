@@ -6,7 +6,7 @@ namespace AMP {
 namespace Operator {
 
 
-LinearOperator :: LinearOperator (const boost::shared_ptr<OperatorParameters> & params)
+LinearOperator :: LinearOperator (const AMP::shared_ptr<OperatorParameters> & params)
     : Operator (params) 
 {
     d_matrix.reset();
@@ -20,13 +20,13 @@ LinearOperator :: LinearOperator ()
 }
 
 
-boost::shared_ptr<AMP::LinearAlgebra::Matrix> LinearOperator :: getMatrix() 
+AMP::shared_ptr<AMP::LinearAlgebra::Matrix> LinearOperator :: getMatrix() 
 {
     return d_matrix;
 }
 
 
-void LinearOperator :: setMatrix(const boost::shared_ptr<AMP::LinearAlgebra::Matrix> & in_mat) 
+void LinearOperator :: setMatrix(const AMP::shared_ptr<AMP::LinearAlgebra::Matrix> & in_mat) 
 {
     d_matrix = in_mat;
 }

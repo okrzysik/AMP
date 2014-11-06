@@ -16,10 +16,10 @@ static double interp_linear(const std::vector<double>&, const std::vector<double
 /************************************************************************
 *  Default constructor                                                  *
 ************************************************************************/
-CladToSubchannelMap::CladToSubchannelMap ( const boost::shared_ptr<AMP::Operator::OperatorParameters> &p )
+CladToSubchannelMap::CladToSubchannelMap ( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : AsyncMapOperator ( p )
 {
-    boost::shared_ptr<CladToSubchannelMapParameters>  params = boost::dynamic_pointer_cast<CladToSubchannelMapParameters> ( p );
+    AMP::shared_ptr<CladToSubchannelMapParameters>  params = AMP::dynamic_pointer_cast<CladToSubchannelMapParameters> ( p );
     AMP_ASSERT( params );
 
     int DofsPerObj = params->d_db->getInteger ( "DOFsPerObject" );
@@ -178,7 +178,7 @@ AMP::Mesh::MeshIterator CladToSubchannelMap::getSubchannelIterator(AMP::Mesh::Me
         }
         ++iterator;
     }
-    boost::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( new std::vector<AMP::Mesh::MeshElement>() );
+    AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( new std::vector<AMP::Mesh::MeshElement>() );
     elements->reserve(xyFace.size());
     for (std::multimap<double,AMP::Mesh::MeshElement>::iterator it=xyFace.begin(); it!=xyFace.end(); ++it)
         elements->push_back( it->second );

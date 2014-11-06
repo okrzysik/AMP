@@ -24,11 +24,11 @@ namespace AMP {
     {
       public :
 
-        NavierStokesGalWFFEOperator(const boost::shared_ptr<NavierStokesGalWFFEOperatorParameters>& params);
+        NavierStokesGalWFFEOperator(const AMP::shared_ptr<NavierStokesGalWFFEOperatorParameters>& params);
 
         virtual ~NavierStokesGalWFFEOperator() { }
 
-        void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, boost::shared_ptr<AMP::LinearAlgebra::Vector>  r);
+        void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::shared_ptr<AMP::LinearAlgebra::Vector>  r);
 
         void postAssembly();
 
@@ -36,10 +36,10 @@ namespace AMP {
 
         void postElementOperation();
 
-        void reset(const boost::shared_ptr<OperatorParameters>& );
+        void reset(const AMP::shared_ptr<OperatorParameters>& );
 
-        boost::shared_ptr<OperatorParameters> 
-          getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
+        AMP::shared_ptr<OperatorParameters> 
+          getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
         void init();
 
@@ -77,9 +77,9 @@ namespace AMP {
 
         std::vector<double> d_elementOutputVector; 
 
-        boost::shared_ptr<NavierStokesGalWFElement> d_flowGalWFElem; 
+        AMP::shared_ptr<NavierStokesGalWFElement> d_flowGalWFElem; 
 
-        boost::shared_ptr<FlowTransportModel> d_transportModel; /**< Flow Transport model. */
+        AMP::shared_ptr<FlowTransportModel> d_transportModel; /**< Flow Transport model. */
 
         std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_inVec; /**< Input vector. */
 
@@ -95,15 +95,15 @@ namespace AMP {
 
         bool d_coupledFormulation;
 
-        boost::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
+        AMP::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
 
       private :
 
         bool d_isInitialized; /**< A flag that is true if init() has been called and false otherwsie. */
 
-        boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; /**< Input variables. */
+        AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; /**< Input variables. */
 
-        boost::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_outVariables; /**< Output variable. */
+        AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_outVariables; /**< Output variable. */
 
     };
 
