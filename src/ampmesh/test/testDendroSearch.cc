@@ -21,7 +21,7 @@
 #include <fstream>
 #include <iomanip>
 #include <numeric>
-#include <boost/lexical_cast.hpp>
+
 
 void draw_hex8_element_revisited(hex8_element_t * e_ptr, double const * point_of_view, std::ostream & os) {
   os<<"\\tikzset{facestyle/.style={opacity=0.4,line join=round}}\n";
@@ -438,7 +438,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   void (*randomPtsGenerators[])(int, size_t, std::vector<double>&) = { &genUniformPts };
   std::string prefixes[] = { "uniform" };
 
-  std::string suffix = boost::lexical_cast<std::string>(npes);
+  std::string suffix = AMP::Utilities::intToString(npes);
 
 
   for (size_t i = 0; i < n_i; ++i) {

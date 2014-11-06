@@ -396,7 +396,7 @@ boost::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianP
 
 
 void DiffusionNonlinearFEOperator::resetFrozen(
-        const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params)
+        const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters> params)
 {
     using namespace Diffusion;
     for (size_t var=0; var<Diffusion::NUMBER_VARIABLES; var++) {

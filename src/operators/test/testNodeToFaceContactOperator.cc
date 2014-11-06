@@ -38,9 +38,9 @@
 #include "utils/ReadTestMesh.h"
 
 #include <fstream>
-#include <boost/lexical_cast.hpp>
 #include "ampmesh/latex_visualization_tools.h"
 #include "ampmesh/euclidean_geometry_tools.h"
+
 
 void drawVerticesOnBoundaryID(AMP::Mesh::Mesh::shared_ptr meshAdapter, int boundaryID, std::ostream &os, double const * point_of_view, const std::string & option = "") {
   AMP::Mesh::MeshIterator boundaryIterator = meshAdapter->getBoundaryIDIterator(AMP::Mesh::Vertex, boundaryID);
@@ -149,7 +149,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 //  int npes = globalComm.getSize();
   int rank = globalComm.getRank();
   std::fstream fout;
-  std::string fileName = "debug_driver_" + boost::lexical_cast<std::string>(rank);
+  std::string fileName = "debug_driver_" + AMP::Utilities::intToString(rank);
   fout.open(fileName.c_str(), std::fstream::out);
 
   // Load the input file

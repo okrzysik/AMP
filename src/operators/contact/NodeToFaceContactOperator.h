@@ -4,12 +4,12 @@
 
 
 #include <fstream>
-#include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <operators/contact/ContactOperator.h>
 #include <matrices/Matrix.h>
 #include <vectors/Vector.h>
 #include <vectors/Variable.h>
+#include <utils/Utilities.h>
 
 namespace AMP {
   namespace Operator {
@@ -34,7 +34,7 @@ namespace AMP {
             d_ContactIsFrictionless(false)
         {
           size_t rank = d_GlobalComm.getRank();
-          std::string fileName = "debug_operator_" + boost::lexical_cast<std::string>(rank);
+          std::string fileName = "debug_operator_" + AMP::Utilities::intToString(rank);
           d_fout.open(fileName.c_str(), std::fstream::out);
         }
 

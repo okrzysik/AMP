@@ -42,11 +42,11 @@
 #include "utils/ReadTestMesh.h"
 
 #include <fstream>
-#include <boost/lexical_cast.hpp>
 #include "ampmesh/latex_visualization_tools.h"
 #include "ampmesh/euclidean_geometry_tools.h"
 
 #include "testNodeToFaceContactOperator.h"
+
 
 void selectNodes(AMP::Mesh::Mesh::shared_ptr mesh, std::vector<AMP::Mesh::MeshElementID> & nodesGlobalIDs) {
   AMP::Mesh::MeshIterator meshIterator = mesh->getBoundaryIDIterator(AMP::Mesh::Vertex, 3);
@@ -130,7 +130,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 //  int npes = globalComm.getSize();
   int rank = globalComm.getRank();
   std::fstream fout;
-  std::string fileName = "debug_driver_" + boost::lexical_cast<std::string>(rank);
+  std::string fileName = "debug_driver_" + AMP::Utilities::intToString(rank);
   fout.open(fileName.c_str(), std::fstream::out);
 
   // Load the input file

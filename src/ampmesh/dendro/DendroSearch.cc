@@ -4,10 +4,10 @@
 #include <numeric>
 #include <fstream>
 #include <iomanip>
-#include <boost/lexical_cast.hpp>
 #include <set>
 #include "externVars.h"
 #include "ampmesh/latex_visualization_tools.h"
+#include "utils/Utilities.h"
 
 namespace AMP {
 namespace Mesh {
@@ -629,7 +629,7 @@ void DendroSearch::search(AMP::AMP_MPI comm, const std::vector<double> & pts)
     int rank = comm.getRank();
     int npes = comm.getSize();
 
-//    std::string fileName = "debug_dendro_" + boost::lexical_cast<std::string>(rank);
+//    std::string fileName = "debug_dendro_" + AMP::Utilities::intToString(rank);
 //    std::fstream d_fout;
 //    d_fout.open(fileName.c_str(), std::fstream::out);
 //    d_fout<<"local elements="<<(d_meshAdapter.get() != NULL ? static_cast<int>(d_meshAdapter->numLocalElements(AMP::Mesh::Volume)) : -1)

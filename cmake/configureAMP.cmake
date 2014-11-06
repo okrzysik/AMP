@@ -1,6 +1,7 @@
 # Macro to set AMP package flags and definitions
 # Note: order matters, ordered from least to most dependencies
 MACRO ( SET_AMP_PACKAGE_FLAGS )
+    CONFIGURE_SHARED_PTR( "${AMP_INSTALL_DIR}/utils" AMP )
     # Set the AMP libraries and definitions
     SET( AMP_LIBS )
     SET( USE_AMP_UTILITIES        OFF )
