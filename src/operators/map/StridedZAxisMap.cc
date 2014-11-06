@@ -31,6 +31,16 @@ StridedZAxisMap::~StridedZAxisMap ()
 {
 }
 
+/************************************************************************
+*  Check if the map type is "StridedZAxis"                              *
+************************************************************************/
+bool StridedZAxisMap::validMapType ( const std::string &t )
+{
+    if ( t == "StridedZAxisMap" )
+        return true;
+    return false;
+}
+
 void StridedZAxisMap::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
         AMP::LinearAlgebra::Vector::const_shared_ptr u, 
         AMP::LinearAlgebra::Vector::shared_ptr r,

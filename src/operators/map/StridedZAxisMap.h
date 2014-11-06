@@ -31,6 +31,12 @@ public:
     //! Destructor
     virtual ~StridedZAxisMap ();
 
+    /** \brief  Returns true if MapType = "ScalarZAxis"
+     * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db
+     * \return  True iff s == "ScalarZAxis"
+     */
+    static bool validMapType ( const std::string &s );
+
     // Overload the apply 
     virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
              AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
