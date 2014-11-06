@@ -7,8 +7,11 @@
 #include "solvers/trilinos/MLoptions.h"
 #include "matrices/trilinos/EpetraMatrix.h"
 
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include "ml_MultiLevelPreconditioner.h"
 #include "ml_include.h"
+#pragma GCC diagnostic pop
 
 
 namespace AMP {

@@ -89,7 +89,7 @@ void helperSetFrozenVectorForMapsForPelletMechanics(AMP::Mesh::Mesh::shared_ptr 
 }
 
 void helperCreateAllOperatorsForPelletMechanics(AMP::Mesh::Mesh::shared_ptr manager,
-    AMP::AMP_MPI globalComm, AMP::shared_ptr<AMP::Database> global_input_db,
+    AMP::AMP_MPI, AMP::shared_ptr<AMP::Database> global_input_db,
     AMP::shared_ptr<AMP::Operator::CoupledOperator> & coupledOp,
     AMP::shared_ptr<AMP::Operator::ColumnOperator> & linearColumnOperator, 
     AMP::shared_ptr<AMP::Operator::PelletStackOperator> & pelletStackOp)
