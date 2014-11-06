@@ -1,0 +1,41 @@
+
+Mesh {
+    MeshName = "Mesh"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+
+    Mesh_1 {
+        dim = 3
+        MeshType = "AMP"
+        MeshName = "Foo"
+        Generator = "cube"
+        Size = 4, 4, 4
+        Range = 0.0, 1.0, 0.0, 1.0, 0.0, 1.0
+        x_offset = 0.0
+        y_offset = 0.0
+        z_offset = 0.0
+    }
+
+    Mesh_2 {
+        dim = 3
+        MeshType = "AMP"
+        MeshName = "Bar"
+        Generator = "cube"
+        Size = 5, 5, 5
+        Range = 0.0, 1.0, 0.0, 1.0, 0.0, 1.0
+        x_offset = 1.0
+        y_offset = 0.0
+        z_offset = 0.0
+    }
+}
+
+MapOperator {
+    VariableName        = "noname"
+    DOFsPerObject = 1 // this doesn't make sense
+    InputDOFsPerObject  = 5
+    InputStride         = 3
+    OutputDOFsPerObject = 1
+    OutputStride        = 0
+
+}
