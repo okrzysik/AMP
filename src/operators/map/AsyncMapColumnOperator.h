@@ -31,7 +31,7 @@ public:
     /** \brief  Call setVector on all vectors in the column
       * \param[in] p  The auxiliary or "frozen" vector to store results in
       */
-    void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr &p );
+    void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr p );
 
     //!  Returns the frozen vector
     virtual AMP::LinearAlgebra::Vector::shared_ptr getFrozenVector() { return d_OutputVector; }

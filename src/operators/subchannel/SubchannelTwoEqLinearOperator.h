@@ -36,7 +36,7 @@ public:
     }
 
     //! Sets frozen vector
-    void setFrozenVector(AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
+    void setFrozenVector(AMP::LinearAlgebra::Vector::shared_ptr frozenVec) {
         d_frozenVec = frozenVec;
     }
 

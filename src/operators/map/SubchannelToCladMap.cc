@@ -320,7 +320,7 @@ void SubchannelToCladMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_p
 /************************************************************************
 *  Set the vector                                                       *
 ************************************************************************/
-void  SubchannelToCladMap::setVector( AMP::LinearAlgebra::Vector::shared_ptr &result )
+void  SubchannelToCladMap::setVector( AMP::LinearAlgebra::Vector::shared_ptr result )
 {
     if ( result.get() != NULL )
         d_OutputVector = subsetOutputVector( result );

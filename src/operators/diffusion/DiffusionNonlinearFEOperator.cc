@@ -69,7 +69,7 @@ boost::shared_ptr<DiffusionTransportModel> DiffusionNonlinearFEOperator::getTran
 std::vector<AMP::LinearAlgebra::Vector::shared_ptr> DiffusionNonlinearFEOperator::getFrozen(){return d_Frozen;}
 
 
-void DiffusionNonlinearFEOperator::setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec)
+void DiffusionNonlinearFEOperator::setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr frozenVec)
 {
     AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
     //AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec = frozenVec->select(meshSelector, d_inpVariables->getVariable(id)->getName());

@@ -41,7 +41,7 @@ namespace Operator {
       virtual AMP::LinearAlgebra::Vector::const_shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec);
 
       //! Sets frozen solution vector
-      void setFrozenVector(AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
+      void setFrozenVector(AMP::LinearAlgebra::Vector::shared_ptr frozenVec) {
           d_frozenVec = frozenVec;
       }
       

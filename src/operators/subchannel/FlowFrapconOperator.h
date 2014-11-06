@@ -102,7 +102,7 @@ namespace Operator {
         zPoints = zloc;
       }
 
-      void setVector(AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
+      void setVector(AMP::LinearAlgebra::Vector::shared_ptr frozenVec) {
         d_cladVec = frozenVec;
       }
       

@@ -51,7 +51,7 @@ namespace Operator {
       virtual AMP::LinearAlgebra::Vector::shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec);
       virtual AMP::LinearAlgebra::Vector::const_shared_ptr subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec);
 
-      void setVector(AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
+      void setVector(AMP::LinearAlgebra::Vector::shared_ptr frozenVec) {
           d_cladTemperature = frozenVec;
       }
       

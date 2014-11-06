@@ -50,7 +50,7 @@ public:
     virtual void applyFinish(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
-    virtual void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr &p );
+    virtual void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr p );
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector ( );
 

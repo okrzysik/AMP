@@ -323,7 +323,7 @@ void Map3to1to3::unpackBuffer( const std::vector<comm_data>& buffer, std::map<do
 /********************************************************
 * Other functions                                       *
 ********************************************************/
-void  Map3to1to3::setVector ( AMP::LinearAlgebra::Vector::shared_ptr &result )
+void  Map3to1to3::setVector ( AMP::LinearAlgebra::Vector::shared_ptr result )
 {
     d_ResultVector = subsetInputVector( result );
     AMP_ASSERT ( d_ResultVector );

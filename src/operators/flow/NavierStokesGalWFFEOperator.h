@@ -43,7 +43,7 @@ namespace AMP {
 
         void init();
 
-        void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec);
+        void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr frozenVec);
 
         static AMP::LinearAlgebra::Variable::shared_ptr createInputVariable(const std::string & name, int varId = -1);
 

@@ -277,7 +277,7 @@ namespace AMP {
       } // end of j
      }
 
-        void  NavierStokesGalWFFEOperator :: setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
+        void  NavierStokesGalWFFEOperator :: setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr frozenVec) {
 
           AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(id);
 

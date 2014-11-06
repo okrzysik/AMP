@@ -88,7 +88,7 @@ bool NodeToNodeMap::validMapType ( const std::string &t )
 /********************************************************
 * Set the vector                                        *
 ********************************************************/
-void  NodeToNodeMap::setVector ( AMP::LinearAlgebra::Vector::shared_ptr &p )
+void  NodeToNodeMap::setVector ( AMP::LinearAlgebra::Vector::shared_ptr p )
 {
     d_OutputVector = subsetInputVector( p );
     AMP_INSIST ( d_OutputVector , "setVector received bogus stuff" );

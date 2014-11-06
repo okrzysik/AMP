@@ -26,7 +26,7 @@ public:
     /** \brief  Set a frozen vector for results of the apply operation.
      * \param[in]  p  The vector to set
      */
-    virtual void setVector ( AMP::LinearAlgebra::Vector::shared_ptr &p ) = 0;
+    virtual void setVector ( AMP::LinearAlgebra::Vector::shared_ptr p ) = 0;
 
     // Overload the apply operator to include makeConsistent
     virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,

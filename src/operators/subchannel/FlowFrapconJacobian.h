@@ -100,11 +100,11 @@ namespace Operator {
         return dCp ;
       }
 
-      void setVector(AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
+      void setVector(AMP::LinearAlgebra::Vector::shared_ptr frozenVec) {
         d_cladVec = frozenVec;
       }
 
-      void setFrozenVector(AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
+      void setFrozenVector(AMP::LinearAlgebra::Vector::shared_ptr frozenVec) {
         d_frozenVec = frozenVec;
       }
 

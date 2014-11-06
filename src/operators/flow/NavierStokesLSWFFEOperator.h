@@ -39,7 +39,7 @@ namespace AMP {
           getJacobianParameters(const boost::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
 /*        
-        void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
+        void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr frozenVec) {
           AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(id);
           d_inVec[id] = mySubsetVector(frozenVec, var);
           (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );

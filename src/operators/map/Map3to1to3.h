@@ -44,7 +44,7 @@ public:
      * \details  Set a frozen vector for results of the apply operation. 
      * \param result    The results vector
      */
-    virtual void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr &result );
+    virtual void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr result );
 
     /** \brief   Start a communicative apply operation. 
      * \details  Start a communicative apply operation. 

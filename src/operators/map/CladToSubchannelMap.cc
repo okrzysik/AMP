@@ -297,7 +297,7 @@ void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
 /************************************************************************
 *  Set the vector                                                       *
 ************************************************************************/
-void  CladToSubchannelMap::setVector( AMP::LinearAlgebra::Vector::shared_ptr &result )
+void  CladToSubchannelMap::setVector( AMP::LinearAlgebra::Vector::shared_ptr result )
 {
     if ( result.get() != NULL )
         d_OutputVector = subsetInputVector( result );

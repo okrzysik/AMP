@@ -46,7 +46,7 @@ public:
         return d_outVariable;
     }
 
-    void setVector(AMP::LinearAlgebra::Vector::shared_ptr &frozenVec) {
+    void setVector(AMP::LinearAlgebra::Vector::shared_ptr frozenVec) {
         d_cladTemperature = frozenVec;
     }
       

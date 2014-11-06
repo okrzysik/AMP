@@ -15,7 +15,7 @@ AsyncMapColumnOperator::AsyncMapColumnOperator ( const boost::shared_ptr<Operato
 }
 
 
-void  AsyncMapColumnOperator::setVector ( AMP::LinearAlgebra::Vector::shared_ptr &p )
+void  AsyncMapColumnOperator::setVector ( AMP::LinearAlgebra::Vector::shared_ptr p )
 {
     d_OutputVector = p;
     for (size_t i=0; i<d_Operators.size(); i++)

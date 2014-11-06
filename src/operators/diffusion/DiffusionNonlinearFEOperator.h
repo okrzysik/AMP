@@ -59,7 +59,7 @@ namespace AMP {
           @param [in] frozenVec Frozen vector
           @see DiffusionConstants.h
           */
-        void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr &frozenVec);
+        void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr frozenVec);
 
         /**
          * checks input to apply operator for satisfaction of range conditions
@@ -111,7 +111,7 @@ namespace AMP {
 
         std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_Frozen;
 
-        void resetFrozen(const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params);
+        void resetFrozen(const boost::shared_ptr<DiffusionNonlinearFEOperatorParameters> params);
     };
 
   }
