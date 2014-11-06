@@ -31,6 +31,16 @@ StridedZAxisMap::~StridedZAxisMap ()
 {
 }
 
+/************************************************************************
+*  Check if the map type is "StridedZAxis"                              *
+************************************************************************/
+bool StridedZAxisMap::validMapType ( const std::string &t )
+{
+    if ( t == "StridedZAxis" )
+        return true;
+    return false;
+}
+
 void StridedZAxisMap::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
         AMP::LinearAlgebra::Vector::const_shared_ptr u, 
         AMP::LinearAlgebra::Vector::shared_ptr r,
@@ -41,13 +51,17 @@ void StridedZAxisMap::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
     AMP::LinearAlgebra::Vector::const_shared_ptr  inpPhysics = u->constSubsetVectorForVariable(inpVar);
     AMP::LinearAlgebra::Vector::const_shared_ptr  inpStridedPhysics = inpPhysics->constSelect( AMP::LinearAlgebra::VS_Stride( d_inpStride, d_inpDofs) , inpVar->getName() );
 
-/*
-    AMP::LinearAlgebra::Variable::shared_ptr outVar = getOutputVariable();
-    AMP::LinearAlgebra::Vector::const_shared_ptr  outPhysics = r->subsetVectorForVariable(outVar);
-    AMP::LinearAlgebra::Vector::const_shared_ptr  outStridedPhysics = outPhysics->constSelect( AMP::LinearAlgebra::VS_Stride( d_outStride, d_outDofs) , outVar->getName() );
-    */
-
     AMP::Operator::AsyncMapOperator::apply(f, inpStridedPhysics,  r, a, b);
+
+}
+
+void  StridedZAxisMap::setVector ( AMP::LinearAlgebra::Vector::shared_ptr result )
+{
+    AMP::LinearAlgebra::Variable::shared_ptr outVar = getOutputVariable();
+    AMP::LinearAlgebra::Vector::shared_ptr  outPhysics = result->subsetVectorForVariable(outVar);
+    AMP::LinearAlgebra::Vector::shared_ptr  outStridedPhysics = outPhysics->select( AMP::LinearAlgebra::VS_Stride( d_outStride, d_outDofs) , outVar->getName() );
+ 
+    AMP::Operator::Map3to1to3::setVector(outStridedPhysics);
 }
 
 } // Operator namespace
