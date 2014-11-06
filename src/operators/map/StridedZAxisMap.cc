@@ -36,7 +36,7 @@ StridedZAxisMap::~StridedZAxisMap ()
 ************************************************************************/
 bool StridedZAxisMap::validMapType ( const std::string &t )
 {
-    if ( t == "StridedZAxisMap" )
+    if ( t == "StridedZAxis" )
         return true;
     return false;
 }
