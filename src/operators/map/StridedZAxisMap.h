@@ -36,6 +36,8 @@ public:
              AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
              const double a = -1.0, const double b = 1.0);    
 
+    virtual void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr p );
+
 protected:
     int d_inpDofs, d_inpStride, d_outDofs, d_outStride ;
 
