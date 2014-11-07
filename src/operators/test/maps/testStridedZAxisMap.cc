@@ -14,7 +14,7 @@
 
 #include <discretization/simpleDOF_Manager.h>
 
-#include <operators/StridedZAxisMap.h>
+#include <operators/map/StridedZAxisMap.h>
 
 #include <boost/function.hpp>
 
