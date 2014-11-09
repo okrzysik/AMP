@@ -93,9 +93,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
         AMP::Discretization::simpleDOFManager::create(mesh, AMP::Mesh::Vertex, ghostWidth, barDofsPerNode);
 
     // and two vectors
-    AMP::LinearAlgebra::Variable::shared_ptr variable(new AMP::LinearAlgebra::Variable("noname")); // TODO: has to match map operator
-    AMP::LinearAlgebra::Vector::shared_ptr fooVector = AMP::LinearAlgebra::createVector(fooDofManager, variable, split);
-    AMP::LinearAlgebra::Vector::shared_ptr barVector = AMP::LinearAlgebra::createVector(barDofManager, variable, split);
+    AMP::LinearAlgebra::Variable::shared_ptr variable1(new AMP::LinearAlgebra::Variable("fooname")); // TODO: has to match map operator
+    AMP::LinearAlgebra::Variable::shared_ptr variable2(new AMP::LinearAlgebra::Variable("barname")); // TODO: has to match map operator
+    AMP::LinearAlgebra::Vector::shared_ptr fooVector = AMP::LinearAlgebra::createVector(fooDofManager, variable1, split);
+    AMP::LinearAlgebra::Vector::shared_ptr barVector = AMP::LinearAlgebra::createVector(barDofManager, variable2, split);
     
     // fill them
     int const fooBoundaryID = 1;
@@ -116,7 +117,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
     AMP_INSIST( barDofsPerNode == 1, "We'll see about that..." );
     AMP::LinearAlgebra::Vector::shared_ptr errorVector = barVector->cloneVector();
-    errorVector->subtract(barVector, fooVector->constSelect(AMP::LinearAlgebra::VS_Stride(fooDof, fooDofsPerNode), variable->getName()));
+    errorVector->subtract(barVector, fooVector->constSelect(AMP::LinearAlgebra::VS_Stride(fooDof, fooDofsPerNode), variable1->getName()));
     AMP::pout<<"before="<<errorVector->L2Norm()<<"\n";
 
     // make map operator
@@ -134,16 +135,17 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> tmpVector;
     tmpVector.push_back(fooVector);
     tmpVector.push_back(barVector);
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> fooBarVector = AMP::LinearAlgebra::MultiVector::create(variable, globalComm, tmpVector);
-//    AMP::LinearAlgebra::MultiVector::shared_ptr fooBarVector = AMP::LinearAlgebra::MultiVector::create(variable, globalComm);
-//    fooBarVector->encapsulate(fooVector);
-//    fooBarVector->encapsulate(barVector);
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> fooBarVector;
+    fooBarVector = AMP::LinearAlgebra::MultiVector::create( "MultiSolutionVec", globalComm );
+    fooBarVector->addVector(fooVector);
+    fooBarVector->addVector(barVector);
+
     AMP::LinearAlgebra::Vector::shared_ptr otherVector = fooBarVector->cloneVector();
     mapOperator->setVector(otherVector);
     
     mapOperator->apply(dummyVector, fooBarVector, dummyVector);
 
-    errorVector->subtract(barVector, fooVector->constSelect(AMP::LinearAlgebra::VS_Stride(fooDof, fooDofsPerNode), variable->getName()));
+    errorVector->subtract(barVector, fooVector->constSelect(AMP::LinearAlgebra::VS_Stride(fooDof, fooDofsPerNode), variable1->getName()));
     AMP::pout<<"after="<<errorVector->L2Norm()<<"\n";
 
     double const tolerance = 1.0e-14 * barVector->L2Norm();

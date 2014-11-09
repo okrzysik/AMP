@@ -59,9 +59,16 @@ void  StridedZAxisMap::setVector ( AMP::LinearAlgebra::Vector::shared_ptr result
 {
     AMP::LinearAlgebra::Variable::shared_ptr outVar = getOutputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr  outPhysics = result->subsetVectorForVariable(outVar);
-    AMP::LinearAlgebra::Vector::shared_ptr  outStridedPhysics = outPhysics->select( AMP::LinearAlgebra::VS_Stride( d_outStride, d_outDofs) , outVar->getName() );
- 
-    AMP::Operator::Map3to1to3::setVector(outStridedPhysics);
+    AMP::pout<< "after subset with d_outStride : "<< d_outStride << " d_outDofs "<< d_outDofs << " with outVar "<< outVar->getName()<< std::endl; 
+    if(d_outDofs!=1 ){
+      AMP::LinearAlgebra::Vector::shared_ptr  outStridedPhysics = outPhysics->select( AMP::LinearAlgebra::VS_Stride( d_outStride, d_outDofs) , outVar->getName() );
+      AMP_ASSERT ( outStridedPhysics );
+      AMP::Operator::Map3to1to3::setVector(outStridedPhysics);
+    }else{
+      AMP::Operator::Map3to1to3::setVector(outPhysics);
+    }
+
+    AMP::pout<< "after stride " <<std::endl; 
 }
 
 } // Operator namespace

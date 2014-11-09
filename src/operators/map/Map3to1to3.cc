@@ -99,7 +99,7 @@ void  Map3to1to3::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr , AM
 
     // Subset the vector (we only need to deal with the locally owned portion)
     PROFILE_START("subset");
-    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI(AMP_COMM_SELF) );
     AMP::LinearAlgebra::Vector::const_shared_ptr  commVec = u->constSelect(commSelector, u->getVariable()->getName());
     AMP::LinearAlgebra::Vector::const_shared_ptr  vec = commVec->constSubsetVectorForVariable(var);
