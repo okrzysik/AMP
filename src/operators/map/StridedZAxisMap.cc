@@ -49,9 +49,14 @@ void StridedZAxisMap::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
 
     AMP::LinearAlgebra::Variable::shared_ptr inpVar = getInputVariable();
     AMP::LinearAlgebra::Vector::const_shared_ptr  inpPhysics = u->constSubsetVectorForVariable(inpVar);
-    AMP::LinearAlgebra::Vector::const_shared_ptr  inpStridedPhysics = inpPhysics->constSelect( AMP::LinearAlgebra::VS_Stride( d_inpStride, d_inpDofs) , inpVar->getName() );
-
-    AMP::Operator::AsyncMapOperator::apply(f, inpStridedPhysics,  r, a, b);
+    AMP::pout<< "after subset with d_inpStride : "<< d_inpStride << " d_inpDofs "<< d_inpDofs << " with inpVar "<< inpVar->getName()<< std::endl; 
+    if (d_inpDofs!=1) {
+      AMP::LinearAlgebra::Vector::const_shared_ptr inpStridedPhysics = inpPhysics->constSelect( AMP::LinearAlgebra::VS_Stride( d_inpStride, d_inpDofs) , inpVar->getName() );
+      AMP_ASSERT(inpStridedPhysics);
+      AMP::Operator::AsyncMapOperator::apply(f, inpStridedPhysics, r, a, b);
+    } else {
+      AMP::Operator::AsyncMapOperator::apply(f, inpPhysics, r, a, b);
+    }
 
 }
 

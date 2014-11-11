@@ -95,30 +95,31 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     // and two vectors
     AMP::LinearAlgebra::Variable::shared_ptr variable1(new AMP::LinearAlgebra::Variable("fooname")); // TODO: has to match map operator
     AMP::LinearAlgebra::Variable::shared_ptr variable2(new AMP::LinearAlgebra::Variable("barname")); // TODO: has to match map operator
-    AMP::LinearAlgebra::Vector::shared_ptr fooVector = AMP::LinearAlgebra::createVector(fooDofManager, variable1, split);
-    AMP::LinearAlgebra::Vector::shared_ptr barVector = AMP::LinearAlgebra::createVector(barDofManager, variable2, split);
+    AMP::LinearAlgebra::Vector::shared_ptr fooFooVector = AMP::LinearAlgebra::createVector(fooDofManager, variable1, split);
+    AMP::LinearAlgebra::Vector::shared_ptr barFooVector = fooFooVector->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr tmpFooVector = fooFooVector->cloneVector();
+
+    AMP::LinearAlgebra::Vector::shared_ptr barBarVector = AMP::LinearAlgebra::createVector(barDofManager, variable2, split);
+    AMP::LinearAlgebra::Vector::shared_ptr fooBarVector = barBarVector->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr tmpBarVector = barBarVector->cloneVector();
+
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> myVector = AMP::LinearAlgebra::MultiVector::create("MultiSolutionVec", globalComm);
+    myVector->addVector(fooFooVector);
+    myVector->addVector(barBarVector);
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> otherVector = AMP::LinearAlgebra::MultiVector::create("MultiSolutionVec", globalComm);
+    otherVector->addVector(tmpFooVector);
+    otherVector->addVector(tmpBarVector);
     
     // fill them
     int const fooBoundaryID = 1;
     int const barBoundaryID = 0;
     AMP::Mesh::MeshIterator fooMeshIterator = fooMesh->getBoundaryIDIterator(AMP::Mesh::Vertex, fooBoundaryID);
-    project(fooMeshIterator, fooVector, fooDof, fooDofsPerNode, fooFunctionOfSpace);
+    project(fooMeshIterator, fooFooVector, fooDof, fooDofsPerNode, fooFunctionOfSpace);
+    project(fooMeshIterator, barFooVector, fooDof, fooDofsPerNode, barFunctionOfSpace);
 
     AMP::Mesh::MeshIterator barMeshIterator = barMesh->getBoundaryIDIterator(AMP::Mesh::Vertex, barBoundaryID);
-    project(barMeshIterator, barVector, barDof, barDofsPerNode, barFunctionOfSpace);
-
-#ifdef USE_EXT_SILO
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
-    siloWriter->setDecomposition(1);
-    siloWriter->registerVector(fooVector, fooMesh, AMP::Mesh::Vertex, "foo");
-    siloWriter->registerVector(barVector, barMesh, AMP::Mesh::Vertex, "bar");
-    siloWriter->writeFile("tmp", 0);
-#endif
-
-    AMP_INSIST( barDofsPerNode == 1, "We'll see about that..." );
-    AMP::LinearAlgebra::Vector::shared_ptr errorVector = barVector->cloneVector();
-    errorVector->subtract(barVector, fooVector->constSelect(AMP::LinearAlgebra::VS_Stride(fooDof, fooDofsPerNode), variable1->getName()));
-    AMP::pout<<"before="<<errorVector->L2Norm()<<"\n";
+    project(barMeshIterator, barBarVector, barDof, barDofsPerNode, barFunctionOfSpace);
+    project(barMeshIterator, fooBarVector, barDof, barDofsPerNode, fooFunctionOfSpace);
 
     // make map operator
     AMP::shared_ptr<AMP::Database> mapOperatorDatabase = inputDatabase->getDatabase("MapOperator");
@@ -132,24 +133,39 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
     // apply it
     AMP::LinearAlgebra::Vector::shared_ptr dummyVector;
-    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> tmpVector;
-    tmpVector.push_back(fooVector);
-    tmpVector.push_back(barVector);
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> fooBarVector;
-    fooBarVector = AMP::LinearAlgebra::MultiVector::create( "MultiSolutionVec", globalComm );
-    fooBarVector->addVector(fooVector);
-    fooBarVector->addVector(barVector);
 
-    AMP::LinearAlgebra::Vector::shared_ptr otherVector = fooBarVector->cloneVector();
+    AMP::pout<<"before  "
+        <<"foo="<<barFooVector->L2Norm()<<"  "
+        <<"bar="<<fooBarVector->L2Norm()<<"\n";
+
+#ifdef USE_EXT_SILO
+    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("Silo");
+    siloWriter->setDecomposition(1);
+    siloWriter->registerVector(myVector, mesh, AMP::Mesh::Vertex, "my");
+    siloWriter->registerVector(otherVector, mesh, AMP::Mesh::Vertex, "other");
+    siloWriter->writeFile("tmp", 0);
+#endif
     mapOperator->setVector(otherVector);
     
-    mapOperator->apply(dummyVector, fooBarVector, dummyVector);
+    mapOperator->apply(dummyVector, myVector, dummyVector);
 
-    errorVector->subtract(barVector, fooVector->constSelect(AMP::LinearAlgebra::VS_Stride(fooDof, fooDofsPerNode), variable1->getName()));
-    AMP::pout<<"after="<<errorVector->L2Norm()<<"\n";
+#ifdef USE_EXT_SILO
+    siloWriter->writeFile("tmp", 1);
+#endif
 
-    double const tolerance = 1.0e-14 * barVector->L2Norm();
-    if (errorVector->L2Norm() < tolerance) {
+    double const tolerance = 1.0e-14 * otherVector->L2Norm();
+    tmpFooVector->subtract(barFooVector, tmpFooVector);
+    tmpBarVector->subtract(fooBarVector, tmpBarVector);
+    AMP::pout<<"after  "
+        <<"foo="<<tmpFooVector->L2Norm()<<"  "
+        <<"bar="<<tmpBarVector->L2Norm()<<"\n";
+    
+#ifdef USE_EXT_SILO
+    siloWriter->writeFile("tmp", 2);
+#endif
+    double const errNorm = otherVector->L2Norm();
+
+    if (errNorm < tolerance) {
         ut->passes(exeName);
     } else {
         ut->failure(exeName);
