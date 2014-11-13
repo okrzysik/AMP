@@ -8,7 +8,7 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/AMP_MPI.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "utils/Utilities.h"
 #include "utils/PIO.h"
 

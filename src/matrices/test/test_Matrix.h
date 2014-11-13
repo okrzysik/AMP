@@ -11,7 +11,7 @@
 #include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
 #include "matrices/MatrixBuilder.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 #include <stdio.h>
 #include <string>

@@ -1,5 +1,5 @@
 #include "solvers/trilinos/nox/TrilinosNOXSolver.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 #include "vectors/trilinos/thyra/ThyraVector.h"
 #include "vectors/trilinos/thyra/ThyraVectorWrapper.h"

@@ -5,10 +5,10 @@
 #    NAMESPACE - Namespace to contain the shared_ptr class (may be empty)
 INCLUDE( CheckCXXSourceCompiles )
 FUNCTION( CONFIGURE_SHARED_PTR INSTALL_DIR NAMESPACE )
-    # Determine if we want to use the timer utility
+    SET( CMAKE_REQUIRED_FLAGS ${CMAKE_CXX_FLAGS} )
     CHECK_CXX_SOURCE_COMPILES(
 	    "   #include <memory>
-            namespace ${NAMESPACE} { using using std::shared_ptr; }
+            namespace ${NAMESPACE} { using std::shared_ptr; }
 	        int main() {
 	            ${NAMESPACE}::shared_ptr<int> ptr;
 	            return 0;
@@ -33,7 +33,9 @@ FUNCTION( CONFIGURE_SHARED_PTR INSTALL_DIR NAMESPACE )
 	        }
 	    "
 	    TR1_MEMORY_TR1_SHARED_PTR )
-    SET( CMAKE_REQUIRED_INCLUDES "${BOOST_INCLUDE}" )
+    GET_DIRECTORY_PROPERTY( dirs INCLUDE_DIRECTORIES )
+    SET( CMAKE_REQUIRED_FLAGS "${CMAKE_CXX_FLAGS}" )
+    SET( CMAKE_REQUIRED_INCLUDES ${dirs} )
     CHECK_CXX_SOURCE_COMPILES(
 	    "   #include \"boost/shared_ptr.hpp\"
             namespace  ${NAMESPACE} { using boost::shared_ptr; }

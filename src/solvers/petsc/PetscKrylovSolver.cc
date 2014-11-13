@@ -3,7 +3,7 @@
 #include "operators/LinearOperator.h"
 #include "matrices/Matrix.h"
 #include "matrices/petsc/PetscMatrix.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 extern "C"{
 #include "assert.h"

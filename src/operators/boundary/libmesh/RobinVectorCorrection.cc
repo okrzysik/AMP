@@ -1,7 +1,7 @@
 #include "RobinVectorCorrection.h"
 #include "RobinMatrixCorrectionParameters.h"
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "utils/InputDatabase.h"
 
 /* Libmesh files */

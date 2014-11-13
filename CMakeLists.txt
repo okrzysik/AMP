@@ -39,11 +39,11 @@ ENDIF()
 
 
 # Call TPLsList to get the TPLs
-INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/TPLsList.cmake )
-
-
+INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/TPLsList.cmake" )
 MESSAGE("TPL Location : ${TPL_DIRECTORY}")
 MESSAGE("COMPILE_MODE : ${CMAKE_BUILD_TYPE} " )
+
+
 # Call PackageList to get the pacakages, configure the directories and compilers, etc
 INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/PackagesList.cmake )
 
@@ -76,6 +76,7 @@ IF ( NOT ONLY_BUILD_DOCS )
     CONFIGURE_NETCDF()
     CONFIGURE_BOOST()
     CONFIGURE_ZLIB()
+    CONFIGURE_TIMER( 1 "${AMP_INSTALL_DIR}/include" )
     CONFIGURE_SHARED_PTR( "${AMP_INSTALL_DIR}/include/utils" AMP )
 ENDIF()
 

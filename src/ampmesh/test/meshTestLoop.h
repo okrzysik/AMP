@@ -10,7 +10,7 @@
 #ifdef USE_AMP_MATRICES
     #include "meshMatrixTests.h"
 #endif
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 
 void MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )

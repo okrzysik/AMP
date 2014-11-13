@@ -4,7 +4,7 @@
 #include "operators/diffusion/DiffusionConstants.h"
 #include "operators/ElementOperationParameters.h"
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "utils/InputDatabase.h"
 #include "materials/Material.h"
 

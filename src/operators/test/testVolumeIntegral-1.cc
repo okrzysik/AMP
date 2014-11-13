@@ -13,7 +13,7 @@
 #include "vectors/Variable.h"
 
 #include "utils/Writer.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "vectors/Vector.h"
 #include "operators/libmesh/VolumeIntegralOperator.h"
 #include "operators/libmesh/SourceNonlinearElement.h"

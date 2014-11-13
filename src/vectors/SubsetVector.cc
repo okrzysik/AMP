@@ -6,7 +6,7 @@
 #include "vectors/VectorBuilder.h"
 #include "vectors/MultiVector.h"
 #include "discretization/subsetDOFManager.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 
 namespace AMP {

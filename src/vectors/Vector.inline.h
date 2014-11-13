@@ -1,4 +1,6 @@
 #include "utils/Counter.h"
+#include <algorithm>
+
 
 namespace AMP {
 namespace LinearAlgebra {

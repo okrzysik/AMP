@@ -4,7 +4,7 @@
 #include "vectors/trilinos/ManagedEpetraVector.h"
 #include <algorithm>
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 #include "utils/AMP_MPI.h"
 

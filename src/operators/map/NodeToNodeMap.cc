@@ -3,7 +3,7 @@
 #include "ampmesh/MeshElement.h"
 #include "vectors/Variable.h"
 #include "discretization/simpleDOF_Manager.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 #include <set>
 

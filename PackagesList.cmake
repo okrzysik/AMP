@@ -58,7 +58,8 @@ ENDIF()
 
 
 # Set the AMP source and include the macros
-INCLUDE (${AMP_SOURCE_DIR}/cmake/macros.cmake)
+INCLUDE("${AMP_SOURCE_DIR}/cmake/macros.cmake")
+INCLUDE("${AMP_SOURCE_DIR}/cmake/libraries.cmake")
 
 
 # Create the packages
@@ -156,7 +157,8 @@ ENDIF()
 
 
 # Some more configure options
-CONFIGURE_TIMERS()
+#CONFIGURE_TIMER( 1 "${AMP_INSTALL_DIR}/include" )
+#CONFIGURE_SHARED_PTR( "${AMP_INSTALL_DIR}/utils" AMP )
 CONFIGURE_LINE_COVERAGE()
 
 

@@ -2,7 +2,7 @@
 #include "ampmesh/StructuredMeshHelper.h"
 #include "discretization/DOF_Manager.h"
 #include "utils/PIO.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 
 namespace AMP {

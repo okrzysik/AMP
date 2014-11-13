@@ -1,7 +1,7 @@
 
 #include "NonlinearFEOperator.h"
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "libmesh/cell_hex8.h"
 #include "libmesh/node.h"
 

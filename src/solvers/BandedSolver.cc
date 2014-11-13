@@ -1,7 +1,7 @@
 #include "solvers/BandedSolver.h"
 #include "operators/LinearOperator.h"
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "utils/LapackWrappers.h"
 
 

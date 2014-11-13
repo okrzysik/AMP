@@ -1,7 +1,7 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/AMP_MPI.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "utils/MemoryDatabase.h"

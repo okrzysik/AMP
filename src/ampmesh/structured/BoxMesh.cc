@@ -13,7 +13,7 @@
     #include "discretization/DOF_Manager.h"
     #include "discretization/simpleDOF_Manager.h"
 #endif
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 #include <iostream>
 #include <algorithm>

@@ -1,6 +1,6 @@
 #include "ampmesh/SiloIO.h"
 #include "ampmesh/MultiMesh.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 namespace AMP { 
 namespace Mesh {

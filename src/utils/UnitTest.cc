@@ -15,6 +15,7 @@
 #else
     // Linux
     // usleep is defined in microseconds, create a Sleep command
+    #include <unistd.h>
     #define Sleep(x) { sched_yield(); usleep(x*1000); sched_yield(); }
 #endif
 

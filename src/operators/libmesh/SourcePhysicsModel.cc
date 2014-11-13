@@ -3,7 +3,7 @@
 
 #include "SourcePhysicsModel.h"
 #include "utils/shared_ptr.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "materials/Material.h"
 #include "operators/ElementPhysicsModel.h"
 #include "operators/ElementPhysicsModelParameters.h"

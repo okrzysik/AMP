@@ -11,7 +11,7 @@
 // Include AMP headers
 #include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "Utilities.h"
 
 // Include all other headers

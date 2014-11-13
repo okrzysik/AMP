@@ -1,6 +1,6 @@
 #include "operators/map/SubchannelToCladGPMap.h"
 #include "discretization/DOF_Manager.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 /* Libmesh files */
 #include "libmesh/fe_type.h"

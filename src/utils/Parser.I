@@ -20,7 +20,7 @@ Parser *Parser::getParser()
    return(s_default_parser);
 }
 
-inline boost::shared_ptr<Database> & Parser::getScope()
+inline AMP::shared_ptr<Database> & Parser::getScope()
 {
    return(d_scope_stack.front());
 }

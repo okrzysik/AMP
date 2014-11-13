@@ -1,7 +1,7 @@
 #include "operators/map/ScalarN2GZAxisMap.h"
 #include "discretization/DOF_Manager.h"
 #include "utils/PIO.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 

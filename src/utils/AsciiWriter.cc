@@ -1,5 +1,5 @@
 #include "utils/AsciiWriter.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 #ifdef USE_AMP_VECTORS
     #include "vectors/SimpleVector.h"

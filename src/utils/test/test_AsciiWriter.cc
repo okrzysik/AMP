@@ -9,7 +9,7 @@
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/PIO.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 #include "utils/Writer.h"
 

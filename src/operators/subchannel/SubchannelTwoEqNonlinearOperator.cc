@@ -6,7 +6,7 @@
 #include "ampmesh/StructuredMeshHelper.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 #include <string>
 

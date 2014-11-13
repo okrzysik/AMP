@@ -1,7 +1,7 @@
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "vectors/trilinos/EpetraVector.h"
 #include "vectors/DataChangeFirer.h"
 #include "matrices/Matrix.h"

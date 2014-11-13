@@ -2,7 +2,7 @@
 #include "operators/ColumnOperatorParameters.h"
 #include "utils/Utilities.h"
 #include "vectors/MultiVariable.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 namespace AMP {
   namespace Operator {

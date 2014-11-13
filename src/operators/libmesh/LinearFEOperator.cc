@@ -3,7 +3,7 @@
 #include "utils/Utilities.h"
 #include "matrices/MatrixBuilder.h"
 #include "vectors/VectorBuilder.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 #include "libmesh/cell_hex8.h"
 #include "libmesh/node.h"

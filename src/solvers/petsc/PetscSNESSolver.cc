@@ -1,7 +1,7 @@
 #include "PetscSNESSolver.h"
 
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 #include "vectors/Vector.h"
 #include "vectors/petsc/ManagedPetscVector.h"

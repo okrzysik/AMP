@@ -1,6 +1,6 @@
 #include "SourceNonlinearElement.h"
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 /* Libmesh files */
 #include "libmesh/enum_order.h"

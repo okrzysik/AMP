@@ -3,7 +3,7 @@
 
 #include "utils/AMP_MPI.h"
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
 #include "vectors/MultiVariable.h"

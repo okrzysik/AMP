@@ -1,7 +1,7 @@
 #include "CoupledOperator.h"
 #include "vectors/Vector.h"
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include <vector>
 
 namespace AMP {

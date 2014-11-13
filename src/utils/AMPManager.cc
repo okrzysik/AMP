@@ -3,7 +3,7 @@
 #include "ShutdownRegistry.h"
 #include "Utilities.h"
 #include "RNG.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "utils/AMP_MPI.h"
 
 #ifdef USE_EXT_PETSC

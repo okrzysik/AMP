@@ -1,7 +1,7 @@
 #include "operators/libmesh/VolumeIntegralOperator.h"
 #include "utils/Utilities.h"
 #include "utils/InputDatabase.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 #include "vectors/VectorBuilder.h"
 #include "matrices/MatrixBuilder.h"

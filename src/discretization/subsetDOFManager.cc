@@ -2,7 +2,7 @@
 
 #include "ampmesh/MultiIterator.h"
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 
 namespace AMP {

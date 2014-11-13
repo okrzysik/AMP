@@ -2,7 +2,7 @@
 
 #include "createLibmeshElements.h"
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 

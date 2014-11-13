@@ -5,7 +5,7 @@
 #include <math.h>
 
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/MultiDOF_Manager.h"
 

@@ -9,7 +9,7 @@
 #include "DiffusionTransportTensorModel.h"
 #include "utils/Database.h"
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 #include <cmath>
 #include <map>
 #include <algorithm>

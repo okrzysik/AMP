@@ -1,6 +1,6 @@
 #include "operators/Operator.h"
 #include "utils/Utilities.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 
 namespace AMP {

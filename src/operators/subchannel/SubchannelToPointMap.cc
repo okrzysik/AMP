@@ -2,7 +2,7 @@
 #include "utils/Utilities.h"
 #include "ampmesh/StructuredMeshHelper.h"
 #include "operators/subchannel/SubchannelConstants.h"
-#include "utils/ProfilerApp.h"
+#include "ProfilerApp.h"
 
 
 namespace AMP {
