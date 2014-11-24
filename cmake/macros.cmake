@@ -525,7 +525,11 @@ FUNCTION( ADD_AMP_PROVISIONAL_TEST EXEFILE )
         RETURN()
     ENDIF()
     # Check if test has already been added
-    GET_TARGET_PROPERTY(tmp ${EXEFILE} LOCATION)
+    SET( tmp )
+    IF ( TARGET ${EXEFILE} )
+        GET_TARGET_PROPERTY(tmp ${EXEFILE} LOCATION)
+        STRING(REGEX REPLACE "//" "/" tmp "${tmp}" )        
+    ENDIF()
     IF ( NOT tmp )
         # The target has not been added
         SET( CXXFILE ${EXEFILE}.cc )
