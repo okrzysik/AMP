@@ -152,7 +152,6 @@ MACRO( INSTALL_AMP_TARGET LIBNAME )
             PRE_BUILD 
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_FILE}" "${DST_FILE}"
         )
-        ADD_DEPENDENCIES( ${COPY_TARGET}  "${CMAKE_CURRENT_SOURCE_DIR}/${HFILE}" )
     ENDFOREACH()
     ADD_DEPENDENCIES( copy-AMP-include ${COPY_TARGET} )
     # Add the library and install the package
