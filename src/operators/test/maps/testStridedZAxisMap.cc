@@ -164,6 +164,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     siloWriter->writeFile("tmp", 2);
 #endif
     double const errNorm = otherVector->L2Norm();
+    AMP::pout<<"errNorm  " << errNorm << std::endl;
 
     if (errNorm < tolerance) {
         ut->passes(exeName);
