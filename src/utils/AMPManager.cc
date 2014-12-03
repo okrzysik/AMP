@@ -305,6 +305,8 @@ void AMPManager::shutdown()
         }
     #endif*/
     // Shutdown MPI
+    comm_world.barrier();
+    AMPManager::use_MPI_Abort = false;
     comm_world = AMP_MPI(AMP_COMM_NULL);    // Delete comm world
     #ifdef USE_EXT_MPI
         MPI_Errhandler_free( &mpierr );    // Delete the error handler

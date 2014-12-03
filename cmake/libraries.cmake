@@ -704,7 +704,7 @@ MACRO ( CONFIGURE_SYSTEM )
     ELSE()
         MESSAGE( FATAL_ERROR "OS not detected" )
     ENDIF()
-        MESSAGE("System libs: ${SYSTEM_LIBS}")
+    MESSAGE("System libs: ${SYSTEM_LIBS}")
 ENDMACRO ()
 
 
@@ -730,6 +730,8 @@ MACRO ( CONFIGURE_AMP )
     set(CMAKE_SHARED_LINKER_FLAGS)
     set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # remove -rdynamic
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
+    # Fix LDFLAGS if it is a CMake list
+    STRING(REPLACE ";" " " LDFLAGS "${LDFLAGS}")
     # Check the user configure flags
     CHECK_ENABLE_FLAG( USE_AMP_UTILS 1 )
     CHECK_ENABLE_FLAG( USE_AMP_MESH 1 )
