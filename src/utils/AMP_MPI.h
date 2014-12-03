@@ -57,13 +57,13 @@ public:
     AMP_MPI();
 
 
-    //!  Empty deconstructor
+    //!  Empty destructor
     ~AMP_MPI();
 
 
     /**
      * \brief Constructor from existing AMP_MPI object
-     * \details  This constructor creates a new AMP_MPI object from an exisiting AMP_MPI object.
+     * \details  This constructor creates a new AMP_MPI object from an existing AMP_MPI object.
      *   This does not create a new internal MPI_Comm, but uses the existing comm.
      * \param comm Existing AMP_MPI object
      */
@@ -71,13 +71,15 @@ public:
 
     /**
      * \brief Constructor from existing MPI communicator
-     * \details  This constructor creates a new AMP_MPI object from an exisiting MPI communicator.
-     *   This does not create a new internal MPI_Comm, but uses the existing comm.
-     *   Note that AMP_MPI will not free the MPI_Comm object, the user is responsible for free'ing the 
-     *   MPI_Comm when it is no longer used.
-     * \param comm Existing MPI communicator
+     * \details  This constructor creates a new AMP_MPI object from an existing MPI communicator.
+     *    This does not create a new internal MPI_Comm, but uses the existing comm.
+     *    Note that by default, AMP_MPI will not free the MPI_Comm object and the user is responsible 
+     *      for free'ing the MPI_Comm when it is no longer used.  This behavior is controlled by the 
+     *      optional manage argument.  
+     * \param comm      Existing MPI communicator
+     * \param manage    Do we want to manage the comm (free the MPI_Comm when this object leaves scope)
      */
-    AMP_MPI( MPI_Comm comm );
+    AMP_MPI( MPI_Comm comm, bool manage=false );
 
 
     /**
@@ -96,7 +98,7 @@ public:
     static std::string getNodeName( );
 
 
-    //! Function to return the number of processors availible
+    //! Function to return the number of processors available
     static int getNumberOfProcessors();
 
 
@@ -124,9 +126,9 @@ public:
      *                      This will try to give each process a unique set of processors while
      *                      ensuring that each process has at least N_min processes.
      * \param procs     An optional list of processors to use.  By default, setting this to an
-     *                  empty vector will use all availible processors on the given node.
-     * \param N_min     The minimum number of processors for any process (-1 indicates all availible processors).
-     * \param N_max     The maximum number of processors for any process (-1 indicates all availible processors).
+     *                  empty vector will use all available processors on the given node.
+     * \param N_min     The minimum number of processors for any process (-1 indicates all available processors).
+     * \param N_max     The maximum number of processors for any process (-1 indicates all available processors).
      *                      
      */
     static void balanceProcesses( 
@@ -139,15 +141,15 @@ public:
 
 
     /**
-     * \brief Split an existing AMP_MPI communicator
-     * \details  This creates a new AMP_MPI object by splitting an exisiting AMP_MPI object.
-     *   See MPI_Comm_split for information on how the underlying split willl occur.
+     * \brief Split an existing communicator
+     * \details  This creates a new AMP_MPI object by splitting an existing AMP_MPI object.
+     *   See MPI_Comm_split for information on how the underlying split will occur.
      *   Note: the underlying MPI_Comm object will be free'd automatically when it is no longer 
-     *   used by any AMP_MPI objects.
+     *   used by any MPI objects.
      * \param color  Control of subset assignment (nonnegative integer). 
      *               Processes with the same color are in the same new communicator .
      *               -1: processor will not be a member of any object (NULL object will be returned)
-     * \param key    Control of rank assigment (integer).
+     * \param key    Control of rank assignment (integer).
      *               Note that, for a fixed color, the keys need not be unique. The processes will be sorted 
      *               in ascending order according to this key, then all the processes in a given color will 
      *               have the relative rank order as they did in their parent group. (See MPI_Comm_split) 
@@ -156,13 +158,13 @@ public:
 
 
     /**
-     * \brief Split an existing AMP_MPI communicator
-     * \details  This creates a new AMP_MPI object by splitting an exisiting AMP_MPI object 
-     *   by the node.  This will result in a seperate MPI_Comm for each physical node.
+     * \brief Split an existing communicator by node
+     * \details  This creates a new AMP_MPI object by splitting an existing AMP_MPI object 
+     *   by the node.  This will result in a separate MPI_Comm for each physical node.
      *   Internally this will use MPI_Get_processor_name to identify the nodes.
      *   Note: the underlying MPI_Comm object will be free'd automatically when it is no longer 
-     *   used by any AMP_MPI objects.ed)
-     * \param key    Control of rank assigment (integer).
+     *   used by any MPI objects)
+     * \param key    Control of rank assignment (integer).
      *               Note that, for a fixed color, the keys need not be unique. The processes will be sorted 
      *               in ascending order according to this key, then all the processes in a given color will 
      *               have the relative rank order as they did in their parent group. (See MPI_Comm_split) 
@@ -172,10 +174,10 @@ public:
 
     /**
      * \brief Duplicate an existing AMP_MPI communicator
-     * \details  This creates a new AMP_MPI object by duplicating an exisiting AMP_MPI object.
+     * \details  This creates a new AMP_MPI object by duplicating an existing AMP_MPI object.
      *   The resulting communicator will exist over the same processes, but have a different context. 
      *   Note: the underlying MPI_Comm object will be free'd automatically when it is no longer 
-     *   used by any AMP_MPI objects.
+     *   used by any MPI objects.
      */
     AMP_MPI dup( ) const;
 
@@ -183,7 +185,7 @@ public:
     /**
      * \brief Create a communicator from the intersection of two communicators
      * \details  This creates a new AMP_MPI object by intersecting two existing communicators.
-     *   Any processors that do not contain the both communicators will recieve a NULL communicator.
+     *   Any processors that do not contain the both communicators will receive a NULL communicator.
      *   There are 3 possible cases:
      *      The communicators are disjoint (a null communicator will be returned on all processors).
      *      One communicator is a sub communicator of another.  This will require communication on 
@@ -212,7 +214,7 @@ public:
 
     /**
      * \brief Overload operator ==
-     * \details  Overload operator comm1 == comm2.  Two AMP_MPI objects are == if they share the same communicator.
+     * \details  Overload operator comm1 == comm2.  Two MPI objects are == if they share the same communicator.
      *   Note: this is a local operation.  
      */
     bool operator==(const AMP_MPI& ) const;
@@ -220,7 +222,7 @@ public:
 
     /**
      * \brief Overload operator !=
-     * \details  Overload operator comm1 != comm2.  Two AMP_MPI objects are != if they do not share the same communicator.
+     * \details  Overload operator comm1 != comm2.  Two MPI objects are != if they do not share the same communicator.
      *   Note: this is a local operation.  
      */
     bool operator!=(const AMP_MPI& ) const;
@@ -228,7 +230,7 @@ public:
 
     /**
      * \brief Overload operator <
-     * \details  Overload operator comm1 < comm2.  One AMP_MPI object is < another iff all the processors in the first
+     * \details  Overload operator comm1 < comm2.  One MPI object is < another iff all the processors in the first
      *   object are also in the second.  Additionally, the second object must contain at least one processor
      *   that is not in the first object.  This is a collective operation, based on the first communicator.
      *   As a result all processors on the first communicator will return the same value, while any processors that are 
@@ -240,7 +242,7 @@ public:
 
     /**
      * \brief Overload operator <=
-     * \details  Overload operator comm1 <= comm2.  One AMP_MPI object is <= another iff all the processors in the first
+     * \details  Overload operator comm1 <= comm2.  One MPI object is <= another iff all the processors in the first
      *   object are also in the second.  This is a collective operation, based on the first communicator.
      *   As a result all processors on the first communicator will return the same value, while any processors that are 
      *   not on the first communicator will return an unknown value.  Additionally, all processors on the first object MUST
@@ -251,7 +253,7 @@ public:
 
     /**
      * \brief Overload operator >
-     * \details  Overload operator comm1 > comm2.  One AMP_MPI object is > another iff all the processors in the second
+     * \details  Overload operator comm1 > comm2.  One MPI object is > another iff all the processors in the second
      *   object are also in the first.  Additionally, the first object must contain at least one processor
      *   that is not in the second object.  This is a collective operation, based on the first communicator.
      *   As a result all processors on the first communicator will return the same value, while any processors that are 
@@ -263,7 +265,7 @@ public:
 
     /**
      * \brief Overload operator >=
-     * \details  Overload operator comm1 >= comm2.  One AMP_MPI object is > another iff all the processors in the second
+     * \details  Overload operator comm1 >= comm2.  One MPI object is > another iff all the processors in the second
      *   object are also in the first.  Additionally, the first object must contain at least one processor
      *   that is not in the second object.  This is a collective operation, based on the first communicator.
      *   As a result all processors on the first communicator will return the same value, while any processors that are 
@@ -274,9 +276,9 @@ public:
 
 
     /**
-     * \brief Comare to another communicator
+     * \brief Compare to another communicator
      * \details  This compares the current communicator to another communicator.  
-     *   This refurns 1 if the two communicators are equal (they share the same MPI communicator),
+     *   This returns 1 if the two communicators are equal (they share the same MPI communicator),
      *   2 if the contexts and groups are the same, 3 if different contexts but identical groups, 
      *   4 if different contexts but similar groups, and 0 otherwise.
      *   Note: this is a local operation.  
@@ -333,7 +335,7 @@ public:
 
     /**
      * \brief   Boolean all reduce
-     * \details This function performs a booling all reduce across all processors.
+     * \details This function performs a boolean all reduce across all processors.
      *   It returns true iff all processor are true;
      * \param value  The input value for the all reduce
      */
@@ -342,7 +344,7 @@ public:
 
     /**
      * \brief   Boolean any reduce
-     * \details This function performs a booling any reduce across all processors.
+     * \details This function performs a boolean any reduce across all processors.
      *   It returns true if any processor is true;
      * \param value  The input value for the all reduce
      */
@@ -405,7 +407,7 @@ public:
      * the size of the supplied 'rank_of_min' array should be n.
      * \param x         The input/output array for the reduce
      * \param n         The number of values in the array (must match on all nodes)
-     * \param rank_of_min  Optional array indicating the rank of the processor conatining the minimum value
+     * \param rank_of_min  Optional array indicating the rank of the processor containing the minimum value
      */
     template <class type>
     void minReduce(type *x, const int n=1, int *rank_of_min=NULL) const;
@@ -423,7 +425,7 @@ public:
      * \param x         The input array for the reduce
      * \param y         The output array for the reduce
      * \param n         The number of values in the array (must match on all nodes)
-     * \param rank_of_min  Optional array indicating the rank of the processor conatining the minimum value
+     * \param rank_of_min  Optional array indicating the rank of the processor containing the minimum value
      */
     template <class type>
     void minReduce(const type *x, type *y, const int n=1, int *rank_of_min=NULL) const;
@@ -450,7 +452,7 @@ public:
      * the size of the supplied 'rank_of_min' array should be n.
      * \param x         The input/output array for the reduce
      * \param n         The number of values in the array (must match on all nodes)
-     * \param rank_of_max  Optional array indicating the rank of the processor conatining the minimum value
+     * \param rank_of_max  Optional array indicating the rank of the processor containing the minimum value
      */
     template <class type>
     void maxReduce(type *x, const int n=1, int *rank_of_max=NULL) const;
@@ -468,7 +470,7 @@ public:
      * \param x         The input array for the reduce
      * \param y         The output array for the reduce
      * \param n         The number of values in the array (must match on all nodes)
-     * \param rank_of_max  Optional array indicating the rank of the processor conatining the minimum value
+     * \param rank_of_max  Optional array indicating the rank of the processor containing the minimum value
      */
     template <class type>
     void maxReduce(const type *x, type *y, const int n=1, int *rank_of_max=NULL) const;
@@ -538,12 +540,12 @@ public:
 
 
     /*!
-     * @brief This function sends an MPI message with an array to another processer.
+     * @brief This function sends an MPI message with an array to another processor.
      *
      * If the receiving processor knows in advance the length 
      * of the array, use "send_length = false;"  otherwise, 
      * this processor will first send the length of the array, 
-     * then send the data.  This call must be paired  with a 
+     * then send the data.  This call must be paired with a 
      * matching call to AMP_MPI::recv.
      *
      * @param buf       Pointer to array buffer with length integers.
@@ -575,8 +577,8 @@ public:
 
     /*!
      * @brief This function sends an MPI message with an array 
-     *   to another processer using a non-blocking call.
-     *   The recieving processor must know the length of the array.
+     *   to another processor using a non-blocking call.
+     *   The receiving processor must know the length of the array.
      *   This call must be paired  with a matching call to AMP_MPI::Irecv.
      *
      * @param buf       Pointer to array buffer with length integers.
@@ -592,7 +594,7 @@ public:
     /*!
      * @brief This function sends an MPI message with an array of bytes
      *   (MPI_BYTES) to receiving_proc_number using a non-blocking call.
-     *   The recieving processor must know the number of bytes to recieve.
+     *   The receiving processor must know the number of bytes to receive.
      *   This call must be paired with a matching call to AMP_MPI::IrecvBytes.
      *
      * @param buf       Void pointer to an array of number_bytes bytes to send.
@@ -606,18 +608,18 @@ public:
 
    /*!
     * @brief This function receives an MPI message with a data
-    * array from another processer.
+    * array from another processor.
     *
     * If this processor knows in advance the length of the array,
     * use "get_length = false;" otherwise we will get the return size.
     * This call must be paired with a matching call to AMP_MPI::send.
     *
     * @param buf        Pointer to integer array buffer with capacity of length integers.
-    * @param length     If get_length==true: The number of elements to be recieved, otherwise
+    * @param length     If get_length==true: The number of elements to be received, otherwise
     *                   the maximum number of values that can be stored in buf.
-    *                   On output the number of recieved elements.
+    *                   On output the number of received elements.
     * @param send       Processor number of sender.
-    * @param get_length Optional boolean argument specifiying if we first 
+    * @param get_length Optional boolean argument specifying if we first 
     *                   need to check the message size to get the size of the array.
     *                   Default value is true.
     * @param tag        Optional integer argument specifying a tag which must be matched 
@@ -629,13 +631,13 @@ public:
 
     /*!
      * @brief This function receives an MPI message with an array of
-     * max size number_bytes (MPI_BYTES) from any processer.
+     * max size number_bytes (MPI_BYTES) from any processor.
      *
      * This call must be paired with a matching call to AMP_MPI::sendBytes.
      *
      * @param buf       Void pointer to a buffer of size number_bytes bytes.
-     * @param N_bytes   Integer number specifing size of buf in bytes.
-     * @param send      Integer number specifing size of buf in bytes.
+     * @param N_bytes   Integer number specifying size of buf in bytes.
+     * @param send      Integer number specifying size of buf in bytes.
      * @param tag       Optional integer argument specifying a tag which
      *   must be matched by the tag of the incoming message. Default
      *   tag is 0.
@@ -645,7 +647,7 @@ public:
 
    /*!
     * @brief This function receives an MPI message with a data
-    * array from another processer using a non-blocking call.
+    * array from another processor using a non-blocking call.
     *
     * @param buf        Pointer to integer array buffer with capacity of length integers.
     * @param length     Maximum number of values that can be stored in buf.
@@ -659,12 +661,12 @@ public:
 
     /*!
      * @brief This function receives an MPI message with an array of
-     * max size number_bytes (MPI_BYTES) from any processer.
+     * max size number_bytes (MPI_BYTES) from any processor.
      *
      * This call must be paired with a matching call to AMP_MPI::sendBytes.
      *
      * @param buf       Void pointer to a buffer of size number_bytes bytes.
-     * @param N_bytes   Integer number specifing size of buf in bytes.
+     * @param N_bytes   Integer number specifying size of buf in bytes.
      * @param send_proc Processor number of sender.
      * @param tag       Integer argument specifying a tag which must 
      *                  be matched by the tag of the incoming message. 
@@ -685,24 +687,24 @@ public:
 
     /*!
      * Each processor sends an array of data to all other processors.
-     * Each processor recieves the values from all processors and gathers them 
-     * to a single array.  If successful, the total number of recieved
+     * Each processor receives the values from all processors and gathers them 
+     * to a single array.  If successful, the total number of received
      * elements will be returned.  
      * @param send_data     Input array
      * @param send_cnt      The number of values to send
-     * @param recv_data     Output array of recieved values
-     * @param recv_cnt      The number of values to recieve from each processor (N).
+     * @param recv_data     Output array of received values
+     * @param recv_cnt      The number of values to receive from each processor (N).
      *                      If known, this should be provided as an input.  Otherwise
      *                      it is an optional output that will return the number of     
-     *                      recieved values from each processor.
+     *                      received values from each processor.
      * @param recv_disp     The displacement (relative to the start of the array)
-     *                      from which to store the data recieved from processor i.
+     *                      from which to store the data received from processor i.
      *                      If known, this should be provided as an input.  Otherwise
      *                      it is an optional output that will return the starting location
-     *                      (relative to the start of the array) for the recieved data from processor i.
-     * @param known_recv    Are the recieved counts and displacements known.  
-     *                      If the recieved sizes are known, then they must be provided, 
-     *                      and an extra communication step is not neccessary.  If the recieved
+     *                      (relative to the start of the array) for the received data from processor i.
+     * @param known_recv    Are the received counts and displacements known.  
+     *                      If the received sizes are known, then they must be provided, 
+     *                      and an extra communication step is not necessary.  If the received
      *                      sizes are not known, then an extra communication step will occur internally
      *                      and the sizes and displacements will be returned (if desired).  
      */
@@ -731,13 +733,13 @@ public:
     /*!
      * Each processor sends an array of n values to each processor.
      * Each processor sends an array of n values to each processor.  
-     * The jth block of data is sent from processor i to procesor j and placed 
-     * in the ith block on the recieveing processor.  In the variable
+     * The jth block of data is sent from processor i to processor j and placed 
+     * in the ith block on the receiving processor.  In the variable
      * description, N is the size of the communicator.  Note that this is a 
      * blocking global communication.    
      * @param n             The number of elements in each data block to send.
      * @param send_data     Input array (nxN)
-     * @param recv_data     Output array of recieved values (nxN)
+     * @param recv_data     Output array of received values (nxN)
      */
     template <class type>
     void allToAll(const int n, const type *send_data, type *recv_data ) const;
@@ -747,26 +749,26 @@ public:
      * Each processor sends an array of data to the different processors.
      * Each processor may send any size array to any processor.  In the variable
      * description, N is the size of the communicator.  Note that this is a 
-     * blocking global communication.  If successful, the total number of recieved
+     * blocking global communication.  If successful, the total number of received
      * elements will be returned.  
      * @param send_data     Input array
      * @param send_cnt      The number of values to send to each processor (N)
      * @param send_disp     The displacement (relative to the start of the array)
      *                      from which to send to processor i
-     * @param recv_data     Output array of recieved values
-     * @param recv_cnt      The number of values to recieve from each processor (N).
+     * @param recv_data     Output array of received values
+     * @param recv_cnt      The number of values to receive from each processor (N).
      *                      If known, this should be provided as an input.  Otherwise
      *                      it is an optional output that will return the number of     
-     *                      recieved values from each processor.
+     *                      received values from each processor.
      * @param recv_disp     The displacement (relative to the start of the array)
      *                      from which to send to processor i.
      *                      If known, this should be provided as an input.  Otherwise
      *                      it is an optional output that will return the starting location
-     *                      (relative to the start of the array) for the recieved data from processor i.
-     * @param known_recv    Are the recieved counts and displacements known.  
-     *                      If the recieved sizes are known, then they must be provided, 
-     *                      and an extra communication step is not neccessary.  If the recieved
-     *                      sizes are not know, then an extra communication step will occurn internally
+     *                      (relative to the start of the array) for the received data from processor i.
+     * @param known_recv    Are the received counts and displacements known.  
+     *                      If the received sizes are known, then they must be provided, 
+     *                      and an extra communication step is not necessary.  If the received
+     *                      sizes are not know, then an extra communication step will occur internally
      *                      and the sizes and displacements will be returned (if desired).  
      */
     template <class type>
@@ -819,7 +821,7 @@ public:
      * \brief   Nonblocking test for a message
      * \details This function performs a non-blocking test for a message.
      *    It will return the number of bytes in the message if a message with 
-     *    the specified source and tag (on the current communicator) is availible.
+     *    the specified source and tag (on the current communicator) is available.
      *    Otherwise it will return -1.
      * \param source      source rank (-1: any source)
      * \param tag         tag (-1: any tag)
@@ -831,7 +833,7 @@ public:
      * \brief   Blocking test for a message
      * \details This function performs a blocking test for a message.
      *    It will return the number of bytes in the message when a message with 
-     *    the specified source and tag (on the current communicator) is availible
+     *    the specified source and tag (on the current communicator) is available
      * \param source      source rank (-1: any source)
      * \param tag         tag (-1: any tag)
      */
@@ -843,8 +845,8 @@ public:
      * \details This function returns the elapsed time on the calling processor 
      *    since an arbitrary point in the past (seconds).  It is a wrapper to MPI_Wtime.  
      *    See "tick" for the timer resolution in seconds.
-     *    The time may or may not be syncronized across processors depending on the MPI 
-     *    implimentation.  Refer to MPI documentation for the desired platform for more information.
+     *    The time may or may not be synchronized across processors depending on the MPI 
+     *    implementation.  Refer to MPI documentation for the desired platform for more information.
      */
     static double time();
 
@@ -893,7 +895,7 @@ private:
     int* volatile d_count;
 
     // Add a variable for data alignment (necessary for some Intel builds)
-    double tmp_allignment;
+    double tmp_alignment;
 
     /* We want to keep track of how many MPI_Comm objects we have created over time.
      * Like the count, for thread safety this should be blocked, however the most likely error

@@ -112,7 +112,9 @@ private:
     static int argc;
     static char** argv;
     static AMPManagerProperties properties;
-    static MPI_Errhandler mpierr;
+    #ifdef USE_EXT_MPI
+        static boost::shared_ptr<MPI_Errhandler> mpierr;
+    #endif
 
     //! abort must be a friend to access use_MPI_Abort to change the abort behavior
     friend void AMP::Utilities::abort(const std::string &, const std::string &, const int);
@@ -122,6 +124,10 @@ private:
 
     //! Function to create the arguments to pass to petsc
     static std::vector<char*> getPetscArgs();
+
+    //! Functions to initialize/destroy the mpi error handler
+    static void setMPIErrorHandler();
+    static void clearMPIErrorHandler();
 
 };
 

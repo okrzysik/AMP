@@ -141,7 +141,6 @@ void term_func()
 *  Function to handle MPI errors                                            *
 ****************************************************************************/
 #ifdef USE_EXT_MPI
-MPI_Errhandler AMPManager::mpierr;
 static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
 {
     if ( *err==MPI_ERR_COMM && *comm==MPI_COMM_WORLD ) {
@@ -246,8 +245,8 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
             called_MPI_Init = true;
             MPI_time = time()-MPI_start_time;
         }
-        MPI_Comm_create_errhandler( MPI_error_handler_fun, &mpierr );
     #endif
+    setMPIErrorHandler();
     // Initialize AMP's MPI
     if ( properties.COMM_WORLD == AMP_COMM_WORLD ) 
         #ifdef USE_EXT_MPI
@@ -308,11 +307,7 @@ void AMPManager::shutdown()
     comm_world.barrier();
     AMPManager::use_MPI_Abort = false;
     comm_world = AMP_MPI(AMP_COMM_NULL);    // Delete comm world
-    #ifdef USE_EXT_MPI
-        MPI_Errhandler_free( &mpierr );    // Delete the error handler
-        MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );
-        MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );
-    #endif
+    clearMPIErrorHandler();
     if ( called_MPI_Init ) {
         double MPI_start_time = time();
         #ifdef USE_EXT_MPI
@@ -358,6 +353,35 @@ std::vector<char*> AMPManager::getPetscArgs()
     std::vector<char*> args;
     addArg( "-malloc no", args);
     return args;
+}
+
+
+/****************************************************************************
+* Functions to set/clear the MPI error handler                              *
+****************************************************************************/
+#ifdef USE_EXT_MPI
+    boost::shared_ptr<MPI_Errhandler> AMPManager::mpierr;
+#endif
+void AMPManager::setMPIErrorHandler( )
+{
+    #ifdef USE_EXT_MPI
+        if ( mpierr.get()==NULL ) {
+            mpierr = boost::shared_ptr<MPI_Errhandler>( new MPI_Errhandler );
+            MPI_Comm_create_errhandler( MPI_error_handler_fun, mpierr.get() );
+        }
+        MPI_Comm_set_errhandler( MPI_COMM_SELF, *mpierr );
+        MPI_Comm_set_errhandler( MPI_COMM_WORLD, *mpierr );
+    #endif
+}
+void AMPManager::clearMPIErrorHandler(  )
+{
+    #ifdef USE_EXT_MPI
+        if ( mpierr.get()!=NULL )
+            MPI_Errhandler_free( mpierr.get() );    // Delete the error handler
+        mpierr.reset();
+        MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );
+        MPI_Comm_set_errhandler( MPI_COMM_WORLD, MPI_ERRORS_ARE_FATAL );
+    #endif
 }
 
 

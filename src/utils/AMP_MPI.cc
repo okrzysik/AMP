@@ -25,6 +25,9 @@
 
 
 // Include OS specific headers
+#undef USE_WINDOWS
+#undef USE_LINUX
+#undef USE_MACsplitByNode
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     // We are using windows
     #define USE_WINDOWS
@@ -54,6 +57,9 @@
 #define MPI_INSIST   AMP_INSIST
 #define MPI_WARNING  AMP_WARNING
 #define MPI_ASSERT   AMP_ASSERT
+#define MPI_CLASS_COMM_NULL AMP_COMM_NULL
+#define MPI_CLASS_COMM_SELF AMP_COMM_SELF
+#define MPI_CLASS_COMM_WORLD AMP_COMM_WORLD
 
 
 // Global variable to track create new unique comms (dup and split)
@@ -353,7 +359,7 @@ MPI_CLASS::MPI_CLASS()
         communicator = MPI_COMM_NULL;
         d_maxTag = 0x7FFFFFFF;
     #else
-        communicator = AMP_COMM_NULL;
+        communicator = MPI_CLASS_COMM_NULL;
         d_maxTag = mpi_max_tag;
     #endif
     d_count = NULL;
@@ -362,7 +368,7 @@ MPI_CLASS::MPI_CLASS()
     d_isNull = true;
     d_currentTag = NULL;
     call_abort_in_serial_instead_of_exit = true;
-    tmp_allignment = -1;
+    tmp_alignment = -1;
 }
 
 
@@ -383,7 +389,7 @@ MPI_CLASS::~MPI_CLASS()
             int err = MPI_Comm_free(&communicator);
             if ( err != MPI_SUCCESS )
                 MPI_ERROR("Problem free'ing MPI_Comm object");
-            communicator = AMP_COMM_NULL;
+            communicator = MPI_CLASS_COMM_NULL;
             ++N_MPI_Comm_destroyed;
         #else
             MPI_ERROR("Internal Error (why do we have a count in serial)");
@@ -423,7 +429,7 @@ MPI_CLASS::MPI_CLASS( const MPI_CLASS& comm )
     d_count = comm.d_count;
     if ( d_count != NULL )
         increment_count(d_count);
-    tmp_allignment = -1;
+    tmp_alignment = -1;
 }
 
 
@@ -450,7 +456,7 @@ MPI_CLASS& MPI_CLASS::operator=(const MPI_CLASS& comm)
     this->d_count = comm.d_count;
     if ( this->d_count != NULL )
         increment_count(this->d_count);
-    this->tmp_allignment = -1;
+    this->tmp_alignment = -1;
     return *this;
 }
 
@@ -458,15 +464,17 @@ MPI_CLASS& MPI_CLASS::operator=(const MPI_CLASS& comm)
 /************************************************************************
 *  Constructor from existing MPI communicator                           *
 ************************************************************************/
-MPI_CLASS::MPI_CLASS( MPI_Comm comm ) 
+MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage ) 
 {
+    d_count = NULL;
+    tmp_alignment = -1;
     #ifdef USE_MPI
         // We are using MPI, use the MPI communicator to initialize the data
-        if ( comm==AMP_COMM_WORLD ) {
+        if ( comm==MPI_CLASS_COMM_WORLD ) {
             communicator = AMP::AMPManager::comm_world.communicator;
-        } else if ( comm==AMP_COMM_SELF ) {
+        } else if ( comm==MPI_CLASS_COMM_SELF ) {
             communicator = MPI_COMM_SELF;
-        } else if ( comm==AMP_COMM_NULL ) {
+        } else if ( comm==MPI_CLASS_COMM_NULL ) {
             communicator = MPI_COMM_NULL;
         } else {
             communicator = comm;
@@ -476,7 +484,8 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm )
             if ( MPI_SIZE_T==0x0 )
                 MPI_SIZE_T = getSizeTDataType();
             // Attach the error handler
-            MPI_Comm_set_errhandler( communicator, AMP::AMPManager::mpierr );
+            if ( AMPManager::mpierr.get() != NULL )
+                MPI_Comm_set_errhandler( communicator, *AMPManager::mpierr );
             // Get the communicator properties
             MPI_Comm_rank(communicator, &comm_rank);
             MPI_Comm_size(communicator, &comm_size);
@@ -496,13 +505,19 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm )
             d_maxTag = 0x7FFFFFFF;
         }
         d_isNull = communicator==MPI_COMM_NULL;
+        if ( manage && communicator!=MPI_COMM_NULL && communicator!=MPI_COMM_SELF && communicator!=MPI_COMM_WORLD ) {
+            // Create the count (Note: we do not need to worry about thread safety)
+            d_count = new int;
+            *(d_count) = 1;
+            ++N_MPI_Comm_created;
+        }
     #else
         // We are not using MPI, intialize based on the communicator
         communicator = comm;
         comm_rank = 0;
         comm_size = 1;
         d_maxTag = mpi_max_tag;
-        d_isNull = communicator==AMP_COMM_NULL;
+        d_isNull = communicator==MPI_CLASS_COMM_NULL;
         if ( d_isNull )
             comm_size = 0;
     #endif
@@ -514,9 +529,6 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm )
         d_currentTag[1] = 1;
     }
     call_abort_in_serial_instead_of_exit = true;
-    // We are creating a comm object from an MPI_Comm, the user is responsible for freeing the MPI_Comm object
-    d_count = NULL;
-    tmp_allignment = -1;
 }
 
 
@@ -535,7 +547,7 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
     int compare1, compare2;
     MPI_Group_compare ( group1, group12, &compare1 );
     MPI_Group_compare ( group2, group12, &compare2 );
-    MPI_CLASS new_comm(AMP_COMM_NULL);
+    MPI_CLASS new_comm(MPI_CLASS_COMM_NULL);
     int size;
     MPI_Group_size( group12, &size );
     if ( compare1!=MPI_UNEQUAL && size!=0 ) {
@@ -553,7 +565,7 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
         MPI_Allreduce(&size,&max_size,1,MPI_INT,MPI_MAX,comm1.communicator);
         if ( max_size==0 ) {
             // We are dealing with completely disjoint sets
-            new_comm = MPI_CLASS( AMP_COMM_NULL );
+            new_comm = MPI_CLASS( MPI_CLASS_COMM_NULL, false );
         } else {
             // Create the new comm
             // Note: OpenMPI crashes if the intersection group is EMPTY for any processors
@@ -564,10 +576,10 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
             MPI_Comm_create( comm1.communicator, group12, &new_MPI_comm );
             if ( size>0 ) {
                 // This is the valid case were we create a new intersection comm
-                new_comm = MPI_CLASS( new_MPI_comm );
+                new_comm = MPI_CLASS( new_MPI_comm, true );
             } else {
                 // We actually want a null comm for this communicator
-                new_comm = MPI_CLASS( AMP_COMM_NULL );
+                new_comm = MPI_CLASS( MPI_CLASS_COMM_NULL, false );
                 MPI_Comm_free(&new_MPI_comm);
             }
         }
@@ -584,7 +596,7 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
 MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 ) 
 {
     if ( comm1.isNull() || comm2.isNull() )
-        return MPI_CLASS(AMP_COMM_NULL);
+        return MPI_CLASS( MPI_CLASS_COMM_NULL, false );
     MPI_ASSERT(comm1.comm_size==1&&comm2.comm_size==1);
     return comm1;
 }
@@ -606,23 +618,15 @@ MPI_CLASS MPI_CLASS::split( int color, int key ) const
         }
     #else
         if ( color==-1 ) {
-            new_MPI_comm = AMP_COMM_NULL;
+            new_MPI_comm = MPI_CLASS_COMM_NULL;
         } else {
             new_MPI_comm = uniqueGlobalComm;
             uniqueGlobalComm++;
         }
     #endif
     // Create the new object
-    AMP_MPI new_comm(new_MPI_comm);
+    MPI_CLASS new_comm(new_MPI_comm,true);
     new_comm.call_abort_in_serial_instead_of_exit = call_abort_in_serial_instead_of_exit;
-    // Create the count (Note: we do not need to worry about thread safety)
-    #ifdef USE_MPI
-        if ( new_comm.communicator != MPI_COMM_NULL ) {
-            new_comm.d_count = new int;
-            *(new_comm.d_count) = 1;
-            ++N_MPI_Comm_created;
-        }
-    #endif
     return new_comm;
 }
 MPI_CLASS MPI_CLASS::splitByNode( int key ) const
@@ -657,10 +661,10 @@ MPI_CLASS MPI_CLASS::splitByNode( int key ) const
 /************************************************************************
 *  Duplicate an exisiting comm object                                   *
 ************************************************************************/
-AMP_MPI MPI_CLASS::dup( ) const 
+MPI_CLASS MPI_CLASS::dup( ) const 
 {
     if ( d_isNull )
-        return AMP_MPI(AMP_COMM_NULL);
+        return MPI_CLASS(MPI_CLASS_COMM_NULL);
     MPI_Comm  new_MPI_comm;
     #ifdef USE_MPI
         // USE MPI to duplicate the communicator
@@ -670,17 +674,9 @@ AMP_MPI MPI_CLASS::dup( ) const
         uniqueGlobalComm++;
     #endif
     // Create the new comm object
-    AMP_MPI new_comm(new_MPI_comm);
+    MPI_CLASS new_comm(new_MPI_comm,true);
     new_comm.d_isNull = d_isNull;
     new_comm.call_abort_in_serial_instead_of_exit = call_abort_in_serial_instead_of_exit;
-    // Create the count (Note: we do not need to worry about thread safety)
-    #ifdef USE_MPI
-        if ( new_comm.communicator != MPI_COMM_NULL ) {
-            new_comm.d_count = new int;
-            *(new_comm.d_count) = 1;
-            ++N_MPI_Comm_created;
-        }
-    #endif
     return new_comm;
 }
 
@@ -735,9 +731,9 @@ bool MPI_CLASS::operator<(const MPI_CLASS &comm) const
         if ( comm.communicator==MPI_COMM_NULL )
             flag = false;
     #else
-        if ( communicator==AMP_COMM_NULL )
+        if ( communicator==MPI_CLASS_COMM_NULL )
             return false;
-        if ( comm.communicator==AMP_COMM_NULL )
+        if ( comm.communicator==MPI_CLASS_COMM_NULL )
             flag = false;
     #endif
     // Check that the size of the other communicator is > the current communicator size
@@ -777,9 +773,9 @@ bool MPI_CLASS::operator<=(const MPI_CLASS &comm) const
         if ( comm.communicator==MPI_COMM_NULL )
             flag = false;
     #else
-        if ( communicator==AMP_COMM_NULL )
+        if ( communicator==MPI_CLASS_COMM_NULL )
             return false;
-        if ( comm.communicator==AMP_COMM_NULL )
+        if ( comm.communicator==MPI_CLASS_COMM_NULL )
             flag = false;
     #endif
     // Check that the size of the other communicator is > the current communicator size
@@ -818,9 +814,9 @@ bool MPI_CLASS::operator>(const MPI_CLASS &comm) const
         if ( comm.communicator==MPI_COMM_NULL )
             flag = false;
     #else
-        if ( communicator==AMP_COMM_NULL )
+        if ( communicator==MPI_CLASS_COMM_NULL )
             return false;
-        if ( comm.communicator==AMP_COMM_NULL )
+        if ( comm.communicator==MPI_CLASS_COMM_NULL )
             flag = false;
     #endif
     // Check that the size of the other communicator is > the current communicator size
@@ -859,9 +855,9 @@ bool MPI_CLASS::operator>=(const MPI_CLASS &comm) const
         if ( comm.communicator==MPI_COMM_NULL )
             flag = false;
     #else
-        if ( communicator==AMP_COMM_NULL )
+        if ( communicator==MPI_CLASS_COMM_NULL )
             return false;
-        if ( comm.communicator==AMP_COMM_NULL )
+        if ( comm.communicator==MPI_CLASS_COMM_NULL )
             flag = false;
     #endif
     // Check that the size of the other communicator is > the current communicator size
@@ -907,7 +903,7 @@ int MPI_CLASS::compare(const MPI_CLASS &comm) const
             return 0;
         MPI_ERROR("Unknown results from AMP_Comm_compare");
     #else
-        if ( comm.communicator==AMP_COMM_NULL || communicator==AMP_COMM_NULL )
+        if ( comm.communicator==MPI_CLASSCOMM_NULL || communicator==MPI_CLASS_COMM_NULL )
             return 0;
         else 
             return 3;
@@ -3325,7 +3321,7 @@ int MPI_CLASS::probe( int source, int tag) const
     }
 #else
     #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-        double MPI_CLASS::time() 
+        double MPI_CLASS::time()
         { 
             LARGE_INTEGER end, f;
             QueryPerformanceFrequency(&f);
