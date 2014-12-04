@@ -118,8 +118,8 @@ void VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh
         } else {
             AMP_ERROR("Not finished");
         }
-        globalMeshForMeshVectorFactory = AMP::Mesh::Mesh::shared_ptr();
-        globalDOFforMeshVectorFactory = AMP::shared_ptr<AMP::Discretization::DOFManager>();
+        globalMeshForMeshVectorFactory.reset();
+        globalDOFforMeshVectorFactory.reset();
 
     }
 }

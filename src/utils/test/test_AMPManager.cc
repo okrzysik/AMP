@@ -64,6 +64,8 @@ int main(int argc, char *argv[])
 
     // Shutdown
     AMP::AMPManager::shutdown();
+    if ( procMax > 0 )
+        MPI_Comm_free(&AMP_comm);
 
     // Test a reinitialization of AMP
     try {

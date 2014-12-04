@@ -49,38 +49,41 @@ public:
     //! Constructor
     UnitTest();
 
+    //! Destructor
+    ~UnitTest();
+
     //! Indicate a passed test
-    virtual void passes (const std::string &in) { pass_messages.push_back(in); }
+    virtual void passes( const std::string &in ) { pass_messages.push_back(in); }
 
     //! Indicate a failed test
-    virtual void failure (const std::string &in) { fail_messages.push_back(in); }
+    virtual void failure( const std::string &in ) { fail_messages.push_back(in); }
 
     //! Indicate an expected failed test
-    virtual void expected_failure (const std::string &in) { expected_fail_messages.push_back(in); }
+    virtual void expected_failure( const std::string &in ) { expected_fail_messages.push_back(in); }
 
     //! Return the number of passed tests locally
-    virtual unsigned int NumPassLocal () { return (unsigned int) pass_messages.size(); }
+    virtual size_t NumPassLocal() const { return pass_messages.size(); }
 
     //! Return the number of failed tests locally
-    virtual unsigned int NumFailLocal () { return (unsigned int) fail_messages.size(); }
+    virtual size_t NumFailLocal() const { return fail_messages.size(); }
 
     //! Return the number of expected failed tests locally
-    virtual unsigned int NumExpectedFailLocal () { return (unsigned int) expected_fail_messages.size(); }
+    virtual size_t NumExpectedFailLocal() const { return expected_fail_messages.size(); }
 
     //! Return the number of passed tests locally
-    virtual unsigned int NumPassGlobal () { return (unsigned int) comm.sumReduce((int)pass_messages.size()); }
+    virtual size_t NumPassGlobal() const;
 
     //! Return the number of failed tests locally
-    virtual unsigned int NumFailGlobal () { return (unsigned int) comm.sumReduce((int)fail_messages.size()); }
+    virtual size_t NumFailGlobal() const;
 
     //! Return the number of expected failed tests locally
-    virtual unsigned int NumExpectedFailGlobal () { return (unsigned int) comm.sumReduce((int)expected_fail_messages.size()); }
+    virtual size_t NumExpectedFailGlobal() const;
 
     //! Return the rank of the current processor
-    int rank () { return comm.getRank(); }
+    int rank() const;
 
     //! Return the number of processors
-    int size () { return comm.getSize(); }
+    int size() const;
 
     /*!
      * Print a report of the passed and failed tests.
@@ -93,7 +96,10 @@ public:
      *                     report the number of expected failed tests (if <=50) or the number passed otherwise.
      *                  2: Report all passed, failed, and expected failed tests.
      */
-     virtual void report(const int level=1);
+     virtual void report( const int level=1 ) const;
+
+    //! Clear the messages
+    void reset();
 
 protected:
     std::vector<std::string> pass_messages;
@@ -102,16 +108,16 @@ protected:
     AMP_MPI comm;
 
 private:
-    // Make the copy constructor private 
+    // Make the copy constructor private
     UnitTest(const UnitTest&) {}
 
     // Function to pack the messages into a single data stream and send to the given processor
     // Note: This function does not return until the message stream has been sent
-    void pack_message_stream(const std::vector<std::string>& messages, const int rank, const int tag);
+    void pack_message_stream( const std::vector<std::string>& messages, const int rank, const int tag ) const;
 
     // Function to unpack the messages from a single data stream
-    // Note: This function does not return until the message stream has been recieved
-    std::vector<std::string> unpack_message_stream(const int rank, const int tag);
+    // Note: This function does not return until the message stream has been received
+    std::vector<std::string> unpack_message_stream( const int rank, const int tag ) const;
 
 };
 

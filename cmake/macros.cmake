@@ -1,5 +1,8 @@
 INCLUDE(CheckCSourceCompiles)
-SET( TEST_FAIL_REGULAR_EXPRESSION "(FAILED)|(leaked context IDs detected)|(handles are still allocated)" )
+# Note: we cannot check for "handles are still allocated" due to PETSc.  See static variable
+#   Petsc_Reduction_keyval on line 234 of comb.c
+#SET( TEST_FAIL_REGULAR_EXPRESSION "(FAILED)|(leaked context IDs detected)|(handles are still allocated)" )
+SET( TEST_FAIL_REGULAR_EXPRESSION "(FAILED)|(leaked context IDs detected)" )
 
 
 MACRO(GLOBAL_SET VARNAME)

@@ -37,7 +37,7 @@ public:
      *  Function to check if libmesh can be initialized with the given comm.
      *  If this function returns true, then initializeLibMesh::initialize 
      *  can be safely called with the given comm.  Otherwise, initializeLibMesh::finalize
-     * must be called first. 
+     *  must be called first. 
      */
     static bool canBeInitialized( AMP_MPI comm );
 

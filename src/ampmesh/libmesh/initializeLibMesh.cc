@@ -24,6 +24,19 @@ AMP_MPI initializeLibMesh::d_comm=AMP_MPI(AMP_COMM_NULL);
 
 
 /************************************************************
+* Class to wrap libmesh MPI types to properly free datatype *
+************************************************************/
+/*template<class TYPE>
+class libMeshWrapperType: public libMesh::Parallel::StandardType<TYPE>
+{
+public:
+    libMeshWrapperType( ): libMesh::Parallel::StandardType<TYPE>() {}
+    ~libMeshWrapperType() { free(); }
+}
+AMP::shared_ptr<libMeshWrapperType<Hilbert::HilbertIndices> > type_hilbert;*/
+
+
+/************************************************************
 * Function to alter the command line arguments for libmesh  *
 ************************************************************/
 static int add_libmesh_cmdline ( const int argc , const char **argv, char ***argv_new )
@@ -86,6 +99,8 @@ initializeLibMesh::initializeLibMesh( AMP_MPI comm )
         for (int i=0; i<argc_libmesh; i++)
             delete [] argv_libmesh[i];
         delete [] argv_libmesh;
+        // Initialize libmesh MPI types so we can safely free them
+        //type_hilbert.reset( new libMeshWrapperType<Hilbert::HilbertIndices>() );
     }    
 }
 
@@ -103,6 +118,9 @@ initializeLibMesh::~initializeLibMesh( )
         // Shutdown libmesh
         if ( lminit==NULL )
             AMP_ERROR("Internal error");
+        // Free libmesh MPI types
+        //type_hilbert.reset();
+        // Delete libmesh
         delete (LibMeshInit*) lminit;
         lminit = NULL;
         d_comm = AMP_MPI(AMP_COMM_NULL);

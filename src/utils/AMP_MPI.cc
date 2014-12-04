@@ -384,6 +384,7 @@ MPI_CLASS::~MPI_CLASS()
     if ( count == 0 ) {
         // We are holding that last reference to the MPI_Comm object, we need to free it
         #ifdef USE_MPI
+            MPI_Comm_set_errhandler( communicator, MPI_ERRORS_ARE_FATAL );
             delete d_count;
             d_count = NULL;
             int err = MPI_Comm_free(&communicator);
