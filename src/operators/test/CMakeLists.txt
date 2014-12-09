@@ -277,3 +277,7 @@ IF( USE_EXT_LIBMESH )
     ADD_SUBDIRECTORY( mechanics )
 ENDIF()
 
+# Test DTK implementation.
+IF ( USE_EXT_DTK )
+    ADD_SUBDIRECTORY( maps/dtk )
+ENDIF()
