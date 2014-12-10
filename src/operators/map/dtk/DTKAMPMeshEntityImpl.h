@@ -25,8 +25,7 @@ public :
     /**
      * Constructor.
      */
-    AMPMeshEntityImpl( const AMP::Mesh::MeshElement& element,
-		       const unsigned long int element_id );
+    AMPMeshEntityImpl( const AMP::Mesh::MeshElement& element );
 
     //! Destructor
     ~AMPMeshEntityImpl() { }
@@ -84,7 +83,7 @@ public :
     Teuchos::RCP<AMPMeshEntityExtraData> d_extra_data;
 
     // Mesh element id.
-    unsigned long int d_id;
+    DataTransferKit::EntityId d_id;
 };
 
 

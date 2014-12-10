@@ -24,8 +24,7 @@ public :
     /**
      * Constructor.
      */
-    AMPMeshEntity( const AMP::Mesh::MeshElement& element,
-		   const unsigned long int element_id );
+    AMPMeshEntity( const AMP::Mesh::MeshElement& element );
 
     //! Destructor
     ~AMPMeshEntity() { }

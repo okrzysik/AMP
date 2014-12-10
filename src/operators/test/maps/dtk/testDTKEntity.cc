@@ -43,21 +43,27 @@ void myTest(AMP::UnitTest *ut)
 
     AMP::Mesh::MeshIterator mesh_iterator = mesh->getIterator( AMP::Mesh::Volume );
 
-    unsigned long int element_id = 0;
     for ( mesh_iterator = mesh_iterator.begin();
 	  mesh_iterator != mesh_iterator.end();
 	  ++mesh_iterator )
     {
-	// Increment the element id.
-	++element_id;
-
 	// Create a dtk entity.
 	DataTransferKit::Entity dtk_entity =
-	    AMP::Operator::AMPMeshEntity( *mesh_iterator, element_id );
+	    AMP::Operator::AMPMeshEntity( *mesh_iterator );
+
+	// Check the id.
+	unsigned int tmp = 0x00000000;
+	int owner_rank = mesh_iterator->globalID().owner_rank();
+	tmp += (0x007FFFFF&owner_rank) << 8;
+	AMP::Mesh::GeomType type = mesh_iterator->globalID().type();
+	tmp += ((unsigned char) type);
+	unsigned int local_id = mesh_iterator->globalID().local_id();
+	DataTransferKit::EntityId element_id = 
+	    (((AMP::Mesh::uint64)tmp)<<32) + ((AMP::Mesh::uint64)local_id);
+	AMP_ASSERT( dtk_entity.id() == element_id );
 
 	// Check the entity.
 	AMP_ASSERT( dtk_entity.entityType() == DataTransferKit::ENTITY_TYPE_VOLUME );
-	AMP_ASSERT( dtk_entity.id() == element_id );
 	AMP_ASSERT( (unsigned) dtk_entity.ownerRank() ==
 		    mesh_iterator->globalID().owner_rank() );
 	AMP_ASSERT( dtk_entity.physicalDimension() == 3 );
