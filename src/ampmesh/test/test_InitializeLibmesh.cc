@@ -12,7 +12,7 @@
 #include "ProfilerApp.h"
 
 #include "ampmesh/Mesh.h"
-#include "ampmesh/initializeLibMesh.h"
+#include "ampmesh/libmesh/initializeLibMesh.h"
 #include "utils/Writer.h"
 
 #ifdef USE_AMP_VECTORS
