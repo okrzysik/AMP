@@ -271,8 +271,8 @@ std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mes
        (*Tc)[i] = clad_temp->getValueByGlobalID(clad_dofs[0]);
     }
     std::map<std::string, AMP::shared_ptr<std::vector<double> > > temperatureArgMap;
-    temperatureArgMap.insert(std::make_pair("enthalpy",h));
-    temperatureArgMap.insert(std::make_pair("pressure",P));
+    temperatureArgMap.insert(std::make_pair(std::string("enthalpy"),h));
+    temperatureArgMap.insert(std::make_pair(std::string("pressure"),P));
     subchannelPhysicsModel->getProperty("Temperature", *Tf, temperatureArgMap);
     // Get the properties at cell centers
     size_t N = dz.size();
@@ -287,11 +287,11 @@ std::vector<double> getHeatFluxClad( std::vector<double> z, std::vector<AMP::Mes
         (*flowDens)[i] = 0.5*(1./specificVolume[i]+1./specificVolume[+1]);
     }
     std::map<std::string, AMP::shared_ptr<std::vector<double> > > convectiveHeatArgMap;
-    convectiveHeatArgMap.insert(std::make_pair("temperature",cladTemp));
-    convectiveHeatArgMap.insert(std::make_pair("density",flowDens));
-    convectiveHeatArgMap.insert(std::make_pair("diameter",new std::vector<double>(N,channelDiam)));
-    convectiveHeatArgMap.insert(std::make_pair("reynolds",new std::vector<double>(N,reynolds)));
-    convectiveHeatArgMap.insert(std::make_pair("prandtl",new std::vector<double>(N,prandtl)));
+    convectiveHeatArgMap.insert(std::make_pair(std::string("temperature"),cladTemp));
+    convectiveHeatArgMap.insert(std::make_pair(std::string("density"),flowDens));
+    convectiveHeatArgMap.insert(std::make_pair(std::string("diameter"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(N,channelDiam))));
+    convectiveHeatArgMap.insert(std::make_pair(std::string("reynolds"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(N,reynolds))));
+    convectiveHeatArgMap.insert(std::make_pair(std::string("prandtl"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(N,prandtl))));
     std::vector<double> heff(N); 
     subchannelPhysicsModel->getProperty("ConvectiveHeat", heff, convectiveHeatArgMap); 
     std::vector<double> flux(dz.size(),0.0);

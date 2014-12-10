@@ -2,11 +2,11 @@
 #ifndef included_AMP_DTK_AMPMeshEntityIterator
 #define included_AMP_DTK_AMPMeshEntityIterator
 
-#include "utils/shared_ptr.h"
-#include "matrices/Matrix.h"
-#include "operators/Operator.h"
-#include "operators/OperatorParameters.h"
-#include "vectors/Vector.h"
+#include <functional>
+
+#include "utils/AMP_MPI.h"
+
+#include "ampmesh/MeshIterator.h"
 
 #include <DTK_EntityIterator.hpp>
 #include "DTKAMPMeshEntity.h"
@@ -30,8 +30,9 @@ public :
     /**
      * Constructor.
      */
-    AMPMeshEntityIterator( const AMP::Mesh::MeshIterator& iterator,
-			   const std::function<bool(Entity)>& predicate );
+    AMPMeshEntityIterator( 
+	const AMP::Mesh::MeshIterator& iterator,
+	const std::function<bool(DataTransferKit::Entity)>& predicate );
 
     /*!
      * \brief Copy constructor.
@@ -75,21 +76,16 @@ public :
 
   private:
 
-    // Set the current entity.
-    void setCurrentEntity();
-
-  private:
-
     // AMP iterator.
-    AMP::Mesh::MeshIterator d_iterator;
+    AMP::Mesh::MeshIterator d_amp_iterator;
 
     // Current AMP entity.
-    AMPMeshEntity d_current_entity;
+    DataTransferKit::Entity d_current_entity;
 };
 
 
-}
-}
+} // end namespace Operator
+} // end namespace AMP
 
 #endif
 

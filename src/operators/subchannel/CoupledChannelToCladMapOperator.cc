@@ -56,8 +56,8 @@ void CoupledChannelToCladMapOperator :: apply( AMP::LinearAlgebra::Vector::const
             faceDOFManager->getDOFs( face->globalID(), dofs );
             scalarFaceDOFManager->getDOFs( face->globalID(), scalarDofs );
             std::map<std::string, AMP::shared_ptr<std::vector<double> > > temperatureArgMap;
-            temperatureArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_scale*uInternal->getValueByGlobalID(dofs[0]))));
-            temperatureArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P_scale*uInternal->getValueByGlobalID(dofs[1]))));
+            temperatureArgMap.insert(std::make_pair(std::string("enthalpy"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,h_scale*uInternal->getValueByGlobalID(dofs[0])))));
+            temperatureArgMap.insert(std::make_pair(std::string("pressure"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,P_scale*uInternal->getValueByGlobalID(dofs[1])))));
             std::vector<double> temperatureResult(1);
             std::vector<double> specificVolume(1);
             d_subchannelPhysicsModel->getProperty("Temperature", temperatureResult, temperatureArgMap); 

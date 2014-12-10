@@ -2,11 +2,9 @@
 #ifndef included_AMP_DTK_AMPMeshEntityImpl
 #define included_AMP_DTK_AMPMeshEntityImpl
 
-#include "utils/shared_ptr.h"
-#include "matrices/Matrix.h"
-#include "operators/Operator.h"
-#include "operators/OperatorParameters.h"
-#include "vectors/Vector.h"
+#include "utils/AMP_MPI.h"
+
+#include "ampmesh/MeshElement.h"
 
 #include <DTK_EntityImpl.hpp>
 #include "DTKAMPMeshEntityExtraData.h"

@@ -1188,8 +1188,8 @@ double SubchannelFourEqNonlinearOperator::Volume(double h, double p)
    // h: enthalpy
    // p: pressure
    std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
-   argMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h)));
-   argMap.insert(std::make_pair("pressure",new std::vector<double>(1,p)));
+   argMap.insert(std::make_pair(std::string("enthalpy"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,h))));
+   argMap.insert(std::make_pair(std::string("pressure"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,p))));
    std::vector<double> result(1);
    d_subchannelPhysicsModel->getProperty("SpecificVolume",result,argMap); 
    return result[0];
@@ -1201,8 +1201,8 @@ double SubchannelFourEqNonlinearOperator::Temperature(double h, double p)
    // h: enthalpy
    // p: pressure
    std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
-   argMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h)));
-   argMap.insert(std::make_pair("pressure",new std::vector<double>(1,p)));
+   argMap.insert(std::make_pair(std::string("enthalpy"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,h))));
+   argMap.insert(std::make_pair(std::string("pressure"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,p))));
    std::vector<double> result(1);
    d_subchannelPhysicsModel->getProperty("Temperature",result,argMap); 
    return result[0];
@@ -1214,8 +1214,8 @@ double SubchannelFourEqNonlinearOperator::ThermalConductivity(double T, double r
    // T: temperature
    // rho: density
    std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
-   argMap.insert(std::make_pair("temperature",new std::vector<double>(1,T)));
-   argMap.insert(std::make_pair("density",new std::vector<double>(1,rho)));
+   argMap.insert(std::make_pair(std::string("enthalpy"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,T))));
+   argMap.insert(std::make_pair(std::string("pressure"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,rho))));  
    std::vector<double> result(1);
    d_subchannelPhysicsModel->getProperty("ThermalConductivity",result,argMap); 
    return result[0];
@@ -1227,8 +1227,8 @@ double SubchannelFourEqNonlinearOperator::DynamicViscosity(double T, double rho)
    // T: temperature
    // rho: density
    std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
-   argMap.insert(std::make_pair("temperature",new std::vector<double>(1,T)));
-   argMap.insert(std::make_pair("density",new std::vector<double>(1,rho)));
+   argMap.insert(std::make_pair(std::string("enthalpy"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,T))));
+   argMap.insert(std::make_pair(std::string("pressure"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,rho))));
    std::vector<double> result(1);
    d_subchannelPhysicsModel->getProperty("DynamicViscosity",result,argMap); 
    return result[0];
@@ -1240,8 +1240,8 @@ double SubchannelFourEqNonlinearOperator::Enthalpy(double T, double p)
    // T: temperature
    // p: pressure
    std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
-   argMap.insert(std::make_pair("temperature",new std::vector<double>(1,T)));
-   argMap.insert(std::make_pair("pressure",new std::vector<double>(1,p)));
+   argMap.insert(std::make_pair(std::string("temperature"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,T))));
+   argMap.insert(std::make_pair(std::string("pressure"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,p))));
    std::vector<double> result(1);
    d_subchannelPhysicsModel->getProperty("Enthalpy",result,argMap); 
    return result[0];

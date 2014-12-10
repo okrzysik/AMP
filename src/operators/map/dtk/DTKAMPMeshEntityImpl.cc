@@ -19,15 +19,15 @@ AMPMeshEntityImpl::AMPMeshEntityImpl( const AMP::Mesh::MeshElement& element )
     // The next 32 bits are the local id
     unsigned int tmp = 0x00000000;
     
-    // Add the owner_rank
+    // Add the owner rank
     int owner_rank = element.globalID().owner_rank();
     tmp += (0x007FFFFF&owner_rank) << 8;
 
-    // Add the type_id
+    // Add the type id
     AMP::Mesh::GeomType type = element.globalID().type();
     tmp += ((unsigned char) type);
 
-    // Add the local_ID
+    // Add the local id
     unsigned int local_id = element.globalID().local_id();
     d_id = (((AMP::Mesh::uint64)tmp)<<32) + ((AMP::Mesh::uint64)local_id);
 }

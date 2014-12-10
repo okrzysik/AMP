@@ -62,8 +62,8 @@ void SubchannelToPointMap::apply(AMP::LinearAlgebra::Vector::const_shared_ptr, A
             faceDOFManager->getDOFs( it->globalID(), dofs );
             AMP_ASSERT(dofs.size()==2);
             std::map<std::string, AMP::shared_ptr<std::vector<double> > > subchannelArgMap;
-            subchannelArgMap.insert(std::make_pair("enthalpy",new std::vector<double>(1,h_scale*uInternal->getValueByGlobalID(dofs[0]))));
-            subchannelArgMap.insert(std::make_pair("pressure",new std::vector<double>(1,P_scale*uInternal->getValueByGlobalID(dofs[1]))));
+            subchannelArgMap.insert(std::make_pair(std::string("enthalpy"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,h_scale*uInternal->getValueByGlobalID(dofs[0])))));
+            subchannelArgMap.insert(std::make_pair(std::string("pressure"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,P_scale*uInternal->getValueByGlobalID(dofs[1])))));
             if ( d_outputVar->getName()=="Density" ) {
                 std::vector<double> specificVolume(1);
                 d_subchannelPhysicsModel->getProperty("SpecificVolume", specificVolume, subchannelArgMap);
