@@ -54,7 +54,6 @@ void myTest(AMP::UnitTest *ut)
 	variable(new AMP::LinearAlgebra::Variable("var"));
     AMP::LinearAlgebra::Vector::shared_ptr
 	ampVector = AMP::LinearAlgebra::createVector(dofManager, variable, split);
-
     std::vector<std::size_t> dofIndices;
     AMP::Mesh::MeshIterator meshIterator = mesh->getIterator(AMP::Mesh::Vertex, ghostWidth);
     for ( meshIterator = meshIterator.begin();
@@ -72,7 +71,6 @@ void myTest(AMP::UnitTest *ut)
     Teuchos::ArrayView<double> tpetra_data = tpetraVector->get1dViewNonConst()();
     int num_val = tpetra_data.size();
     AMP_ASSERT( tpetra_data.size() == global_ids.size() );
-    std::cout<<tpetra_data.size()<<"  "<<static_cast<int>(meshIterator.size())<<std::endl;
     AMP_ASSERT( tpetra_data.size() == static_cast<int>(meshIterator.size()) );
     for ( int n = 0; n < num_val; ++n )
       {
