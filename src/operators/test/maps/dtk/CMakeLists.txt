@@ -14,3 +14,6 @@ ADD_AMP_TEST_1_2_4( testDTKEntityLocalMap )
 
 COPY_TEST_DATA_FILE( input_testDTKNodalShapeFunction )
 ADD_AMP_TEST_1_2_4( testDTKNodalShapeFunction )
+
+COPY_TEST_DATA_FILE( input_testDTKAMPMeshManager )
+ADD_AMP_TEST_1_2_4( testDTKAMPMeshManager )
