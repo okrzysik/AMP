@@ -129,8 +129,8 @@ void testSubchannelHelpers( AMP::UnitTest* ut, std::string input_file ) {
         double flow_temp = 570;
         double pressure = 1.6e7;
         std::map<std::string, AMP::shared_ptr<std::vector<double> > > enthalpyArgMap;
-        enthalpyArgMap.insert(std::make_pair("temperature",new std::vector<double>(1,flow_temp)));
-        enthalpyArgMap.insert(std::make_pair("pressure",   new std::vector<double>(1,pressure)));
+        enthalpyArgMap.insert(std::make_pair("temperature",AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,flow_temp))));
+        enthalpyArgMap.insert(std::make_pair("pressure",   AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,pressure))));
         std::vector<double> enthalpyResult(1);
         subchannelPhysicsModel->getProperty("Enthalpy",enthalpyResult,enthalpyArgMap);
         AMP::LinearAlgebra::Vector::shared_ptr subchannelEnthalpy = flowVec->select( AMP::LinearAlgebra::VS_Stride(0,2), "H" );

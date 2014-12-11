@@ -201,7 +201,7 @@ MatTestResult testMaterial(string &name) {
 		for (size_t i = 0; i < nargs; i++) {
 			args.insert(
 					std::make_pair(argnames[i],
-							new vector<double> (justright[i])));
+							AMP::shared_ptr<vector<double> >(new vector<double> (justright[i]))));
 		}
 
 		// set up AMP::Vector arguments to evalv

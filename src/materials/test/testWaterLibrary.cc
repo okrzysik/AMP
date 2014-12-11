@@ -25,8 +25,8 @@ void checkConsistency(double h, double p, double T, bool &allCorrect, bool &allC
    PropertyPtr enthalpyProperty	   = mat->property("Enthalpy");   // enthalpy property
 
    std::map<std::string, AMP::shared_ptr<std::vector<double> > > tempMap;
-   tempMap.insert( std::make_pair( "enthalpy", new std::vector<double>(1,h) ) );
-   tempMap.insert( std::make_pair( "pressure", new std::vector<double>(1,p) ) );
+   tempMap.insert( std::make_pair( "enthalpy", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,h) ) ) );
+   tempMap.insert( std::make_pair( "pressure", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,p) ) ) );
    std::vector<double> tempOutput(1);
    temperatureProperty->evalv(tempOutput, tempMap);
    // check that answer is correct
@@ -36,8 +36,8 @@ void checkConsistency(double h, double p, double T, bool &allCorrect, bool &allC
    }
    // check that enthalpy function resturns original enthalpy
    std::map<std::string, AMP::shared_ptr<std::vector<double> > > hMap;
-   hMap.insert( std::make_pair( "temperature", new std::vector<double>(1,tempOutput[0]) ) );
-   hMap.insert( std::make_pair( "pressure",    new std::vector<double>(1,p) ) );
+   hMap.insert( std::make_pair( "temperature", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,tempOutput[0]) ) ) );
+   hMap.insert( std::make_pair( "pressure",    AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,p) ) ) );
    std::vector<double> hOutput(1);
    enthalpyProperty->evalv(hOutput, hMap);
    if (!AMP::Utilities::approx_equal(hOutput[0], h, 0.01)) allConsistent = false;
