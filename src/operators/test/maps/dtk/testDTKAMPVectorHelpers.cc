@@ -1,5 +1,4 @@
 
-#include <utils/AMPManager.h>
 #include <utils/UnitTest.h>
 #include <utils/Utilities.h>
 #include <utils/shared_ptr.h>
@@ -10,25 +9,18 @@
 #include <utils/AMPManager.h>
 #include <utils/PIO.h>
 
-#include "vectors/VectorBuilder.h"
+#include <vectors/VectorBuilder.h>
 
-#include "discretization/simpleDOF_Manager.h"
+#include <discretization/simpleDOF_Manager.h>
 
-#include "ampmesh/Mesh.h"
+#include <ampmesh/Mesh.h>
 
-#include "operators/map/dtk/DTKAMPMeshEntityIterator.h"
-#include "operators/map/dtk/DTKAMPMeshManager.h"
-
-#include <DTK_BasicEntityPredicates.hpp>
+#include <operators/map/dtk/DTKAMPVectorHelpers.h>
 
 #include <iostream>
 #include <string>
 #include <cstdlib>
 
-bool selectAll( DataTransferKit::Entity entity )
-{
-    return true;
-}
 
 void myTest(AMP::UnitTest *ut)
 {
@@ -53,7 +45,7 @@ void myTest(AMP::UnitTest *ut)
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh(meshParams);
 
     bool const split = true;
-    int const ghostWidth = 1;
+    int const ghostWidth = 0;
     int const dofsPerNode = 1;
     AMP::Discretization::DOFManager::shared_ptr	dofManager = 
 	AMP::Discretization::simpleDOFManager::create(
@@ -68,7 +60,7 @@ void myTest(AMP::UnitTest *ut)
     for ( meshIterator = meshIterator.begin();
           meshIterator != meshIterator.end();
           ++meshIterator ) {
-        dofManager->getDOFs(meshIterator.globalID(), dofIndices);
+        dofManager->getDOFs(meshIterator->globalID(), dofIndices);
         ampVector->setLocalValueByGlobalID(dofIndices[0], static_cast<double>(dofIndices[0]));
     }
 
@@ -76,11 +68,12 @@ void myTest(AMP::UnitTest *ut)
         tpetraVector = 
             AMP::Operator::DTKAMPVectorHelpers::pullTpetraVectorFromAMPVector( ampVector );
 
-    Teuchos::ArrayView<const std::size_t> global_ids = tpetraVector->getNodeElementList();
+    Teuchos::ArrayView<const std::size_t> global_ids = tpetraVector->getMap()->getNodeElementList();
     Teuchos::ArrayView<double> tpetra_data = tpetraVector->get1dViewNonConst()();
     int num_val = tpetra_data.size();
     AMP_ASSERT( tpetra_data.size() == global_ids.size() );
-    AMP_ASSERT( tpetra_data.size() == meshIterator.size() );
+    std::cout<<tpetra_data.size()<<"  "<<static_cast<int>(meshIterator.size())<<std::endl;
+    AMP_ASSERT( tpetra_data.size() == static_cast<int>(meshIterator.size()) );
     for ( int n = 0; n < num_val; ++n )
       {
 	AMP_ASSERT( tpetra_data[n] == static_cast<double>(global_ids[n]) );
@@ -88,11 +81,11 @@ void myTest(AMP::UnitTest *ut)
       }
 
     double value;
-    AMP::Operator::DTKAMPVectorHelpers::pushTpetraVectorToAMPVector( tpetraVector, ampVector );
+    AMP::Operator::DTKAMPVectorHelpers::pushTpetraVectorToAMPVector( *tpetraVector, ampVector );
     for ( meshIterator = meshIterator.begin();
           meshIterator != meshIterator.end();
           ++meshIterator ) {
-        dofManager->getDOFs(meshIterator.globalID(), dofIndices);
+        dofManager->getDOFs(meshIterator->globalID(), dofIndices);
         value = ampVector->getLocalValueByGlobalID(dofIndices[0]);
         AMP_ASSERT( static_cast<std::size_t>(value) == (2 * dofIndices[0]) );
     }

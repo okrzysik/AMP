@@ -32,15 +32,14 @@ public :
      * \brief Something
      */
     static Teuchos::RCP<Tpetra::Vector<double,int,std::size_t> >
-    pullTpetraVectorFromAMPVector( const AMP::shared_ptr<const AMP::LinearAlgebra::Vector>& ampStridedVector,
-                                        const int stride );
+    pullTpetraVectorFromAMPVector( const AMP::shared_ptr<const AMP::LinearAlgebra::Vector>& ampVector );
 
     /*!
      * \brief Something
      */
     static void
     pushTpetraVectorToAMPVector( const Tpetra::Vector<double,int,std::size_t>& tpetraVector,
-                                 const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& ampStridedVector );
+                                 const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& ampVector );
                                       
 
 };
