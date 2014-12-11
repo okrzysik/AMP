@@ -964,6 +964,10 @@ MACRO( SAVE_CMAKE_FLAGS )
         FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_NETCDF 1 ) \n" )
         FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_NETCDF ) \n" )
     ENDIF()
+    # Add DTK 
+    IF ( USE_EXT_DTK )
+        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_DTK 1 ) \n" )
+    ENDIF()
     # Add Trilinos
     IF ( USE_EXT_TRILINOS )
         FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add Trilinos\n" )
