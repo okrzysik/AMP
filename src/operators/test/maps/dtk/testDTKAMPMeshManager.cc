@@ -54,7 +54,7 @@ void myTest(AMP::UnitTest *ut)
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh(meshParams);
 
     bool const split = true;
-    int const ghostWidth = 0;
+    int const ghostWidth = 1;
     int const dofsPerNode = 1;
     AMP::Discretization::DOFManager::shared_ptr	dofManager = 
 	AMP::Discretization::simpleDOFManager::create(
@@ -74,7 +74,7 @@ void myTest(AMP::UnitTest *ut)
 	dtk_mesh_manager.functionSpace();
 
     // Test the entity set and entity selector by getting an iterator over the nodes.
-    AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::Vertex );
+    AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::Vertex, ghostWidth );
     DataTransferKit::EntityIterator dtk_node_iterator =
 	function_space->entitySet()->entityIterator(
 	    function_space->entitySelector()->entityType(),

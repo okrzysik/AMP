@@ -46,7 +46,8 @@ void myTest(AMP::UnitTest *ut)
     meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh(meshParams);
 
-    AMP::Mesh::MeshIterator mesh_iterator = mesh->getIterator( AMP::Mesh::Volume );
+    int gcw = 1;
+    AMP::Mesh::MeshIterator mesh_iterator = mesh->getIterator( AMP::Mesh::Volume, gcw );
 
     // Make an entity set.
     AMP::shared_ptr<DataTransferKit::EntitySet> dtk_entity_set( 

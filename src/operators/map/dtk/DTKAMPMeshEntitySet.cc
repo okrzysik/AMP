@@ -66,7 +66,8 @@ DataTransferKit::EntityIterator AMPMeshEntitySet::entityIterator(
     const std::function<bool(DataTransferKit::Entity)>& predicate ) const
 {
     AMP::Mesh::GeomType type_id = getGeomTypeFromEntityType( entity_type );
-    return AMPMeshEntityIterator( d_amp_mesh->getIterator(type_id), predicate );
+    int gcw = 1;
+    return AMPMeshEntityIterator( d_amp_mesh->getIterator(type_id,gcw), predicate );
 }
 
 //---------------------------------------------------------------------------//
