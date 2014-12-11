@@ -115,9 +115,9 @@ private:
 
     // Data members
     AMP::shared_ptr<AMP::Mesh::Mesh>  d_mesh;
-    bool                                d_isBaseMesh;
-    AMP::Mesh::MeshID                   d_meshID;
-    std::vector<AMP::Mesh::MeshID>      d_baseMeshIDs;  // Must be global list
+    bool                              d_isBaseMesh;
+    AMP::Mesh::MeshID                 d_meshID;
+    std::vector<AMP::Mesh::MeshID>    d_baseMeshIDs;  // Must be global list
     AMP::Mesh::GeomType d_type;
     AMP::Mesh::MeshIterator d_localIterator;
     AMP::Mesh::MeshIterator d_ghostIterator;

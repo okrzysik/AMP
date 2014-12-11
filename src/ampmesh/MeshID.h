@@ -40,7 +40,7 @@ public:
 	MeshID(uint64 id) {
         data = id;
     }
-	uint64 getData() {
+	uint64 getData() const {
         return data;
     }
     // Overload key operators

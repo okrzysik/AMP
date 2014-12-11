@@ -82,10 +82,14 @@ public:
 
     /** \brief   Get an entry over the mesh elements associated with the DOFs
      * \details  This will return an iterator over the mesh elements associated
-     *  with the DOFs.  Each element in the iterator will have 1 or more DOFs
-     *  that are associated with that element.  For example, a NodalVectorDOF
-     *  would have 3 DOFs stored at each node, and would return an iterator over
-     *  all the nodes. 
+     *     with the DOFs.  Each element in the iterator will have 1 or more DOFs
+     *     that are associated with that element.  For example, a nodal vector with
+     *     3 DOFs stored at each node would return an iterator over all the nodes
+     *     with no element repeated.  
+     *  Note that this iterator does not contain ghost elements because there would
+     *     be repeated elements between the different processors.  Calling this iterator
+     *     ensures that each owned element is called once regardless of the number of 
+     *     DOFs on that element and the number of processors that share a ghost copy.  
      */
     virtual AMP::Mesh::MeshIterator getIterator() const;
 
