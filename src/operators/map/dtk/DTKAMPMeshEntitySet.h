@@ -13,7 +13,7 @@ namespace Operator {
 
 
 /**
-  * AMP Mesh element implementation for DTK EntitySetExtraData interface.
+  * AMP Mesh element implementation for DTK EntitySet interface.
 */
 class AMPMeshEntitySet : public DataTransferKit::EntitySet
 {
