@@ -15,8 +15,7 @@
 
 #include <ampmesh/Mesh.h>
 
-#include <operators/map/dtk/DTKAMPVectorHelpers.h>
-#include <operators/map/dtk/DTKAMPMeshManager.h>
+#include <operators/map/dtk/DTKMapOperator.h>
 
 #include <DTK_ConsistentInterpolationOperator.hpp>
 #include <DTK_BasicEntityPredicates.hpp>
@@ -32,7 +31,7 @@ double testFunction1( const std::vector<double>& coords )
 
 void myTest(AMP::UnitTest *ut)
 {
-    std::string exeName("testDTKInterpolation");
+    std::string exeName("testDTKMapOperator");
     std::string log_file = "output_" + exeName;
     std::string msgPrefix;
     AMP::PIO::logOnlyNodeZero(log_file);
@@ -92,27 +91,19 @@ void myTest(AMP::UnitTest *ut)
     AMP::Discretization::DOFManager::shared_ptr targetDofManager = AMP::Discretization::simpleDOFManager::create(targetMesh, AMP::Mesh::Vertex, ghostWidth, dofsPerNode);
     AMP::LinearAlgebra::Vector::shared_ptr targetVector = AMP::LinearAlgebra::createVector(targetDofManager, variable, split);
 
-    // setup dtk objects.
-    AMP::pout<<"Setting up dtk"<<std::endl;
-    DataTransferKit::SelectAllPredicate select_all_pred;
-    AMP::Operator::DTKAMPMeshManager dtk_source_mesh( sourceMesh, sourceDofManager, DataTransferKit::ENTITY_TYPE_VOLUME, select_all_pred.getFunction() );
-    AMP::Operator::DTKAMPMeshManager dtk_target_mesh( targetMesh, targetDofManager, DataTransferKit::ENTITY_TYPE_NODE, select_all_pred.getFunction() );
-    Teuchos::RCP<Tpetra::Vector<double,int,std::size_t> > dtk_source_vector =
-        AMP::Operator::DTKAMPVectorHelpers::pullTpetraVectorFromAMPVector( sourceVector );
-    Teuchos::RCP<Tpetra::Vector<double,int,std::size_t> > dtk_target_vector =
-        AMP::Operator::DTKAMPVectorHelpers::pullTpetraVectorFromAMPVector( targetVector );
-    
     // create dtk map operator.
-    Teuchos::RCP<Teuchos::ParameterList> dtk_parameters = Teuchos::parameterList();
-    Teuchos::RCP<DataTransferKit::MapOperator<double> > dtk_operator = Teuchos::rcp( new DataTransferKit::ConsistentInterpolationOperator<double>() );
-    dtk_operator->setup( dtk_source_vector->getMap(), dtk_source_mesh.functionSpace(), 
-    	 dtk_target_vector->getMap(), dtk_target_mesh.functionSpace(),
-    	 dtk_parameters );
-    
+    AMP::shared_ptr<AMP::Database> null_db;
+    AMP::shared_ptr<AMP::Operator::DTKMapOperatorParameters> dtk_op_params( new AMP::Operator::DTKMapOperatorParameters(null_db) );
+    dtk_op_params->d_domain_mesh = sourceMesh;
+    dtk_op_params->d_range_mesh = targetMesh;
+    dtk_op_params->d_domain_dofs = sourceDofManager;
+    dtk_op_params->d_range_dofs = targetDofManager;
+    AMP::shared_ptr<AMP::Operator::Operator> dtk_operator( new AMP::Operator::DTKMapOperator(dtk_op_params) );
+
     // apply the map.
     AMP::pout<<"Apply dtk operator"<<std::endl;
-    dtk_operator->apply( *dtk_source_vector, *dtk_target_vector );
-    AMP::Operator::DTKAMPVectorHelpers::pushTpetraVectorToAMPVector( *dtk_target_vector, targetVector );
+    AMP::LinearAlgebra::Vector::shared_ptr null_vector;
+    dtk_operator->apply( null_vector, sourceVector, targetVector );
 
     // checking the answer
     AMP::pout<<"Check answer"<<std::endl;
