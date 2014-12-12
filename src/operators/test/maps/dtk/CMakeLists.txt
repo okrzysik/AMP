@@ -20,3 +20,6 @@ ADD_AMP_TEST_1_2_4( testDTKAMPMeshManager )
 
 COPY_TEST_DATA_FILE( input_testDTKAMPVectorHelpers )
 ADD_AMP_TEST_1_2_4( testDTKAMPVectorHelpers )
+
+COPY_TEST_DATA_FILE( input_testDTKInterpolation )
+ADD_AMP_TEST_1_2_4( testDTKInterpolation )
