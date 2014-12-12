@@ -1,0 +1,23 @@
+SourceMesh{
+ MeshName = "SourceMesh"
+   MeshType = "AMP"
+       dim = 3
+       x_offset = 0.0
+       y_offset = 0.0
+       z_offset = 0.0
+       Generator = "cube"
+       Size = 32, 2, 32
+       Range = 0.0, 0.01, 0.0, 0.01, 0.0, 0.01
+   }
+
+TargetMesh{
+ MeshName = "TargetMesh"
+   MeshType = "AMP"
+       dim = 3
+       x_offset = 0.0
+       y_offset = 0.0
+       z_offset = 0.0
+       Generator = "cube"
+       Size = 32, 2, 32
+       Range = 0.0, 0.01, 0.0, 0.01, 0.0, 0.01
+   }
