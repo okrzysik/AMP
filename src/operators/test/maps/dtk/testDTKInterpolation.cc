@@ -8,13 +8,10 @@
 #include <utils/AMP_MPI.h>
 #include <utils/AMPManager.h>
 #include <utils/PIO.h>
-
-#include <vectors/VectorBuilder.h>
-
-#include <discretization/simpleDOF_Manager.h>
-
+#include <utils/Writer.h>
 #include <ampmesh/Mesh.h>
-
+#include <discretization/simpleDOF_Manager.h>
+#include <vectors/VectorBuilder.h>
 #include <operators/map/dtk/DTKAMPVectorHelpers.h>
 #include <operators/map/dtk/DTKAMPMeshManager.h>
 
@@ -76,6 +73,14 @@ void myTest(AMP::UnitTest *ut)
         value = testFunction1(sourceMeshIterator->coord());
         sourceVector->setLocalValueByGlobalID(dofIndices[0], value);
     }
+#ifdef USE_EXT_SILO
+    {
+    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("silo");
+    siloWriter->setDecomposition(1);
+    siloWriter->registerVector(sourceVector, sourceMesh, AMP::Mesh::Vertex, "vector");
+    siloWriter->writeFile("source", 0);
+    }
+#endif
 
     // load the target mesh
     AMP::pout<<"Loading the target mesh"<<std::endl;
@@ -118,6 +123,12 @@ void myTest(AMP::UnitTest *ut)
     AMP::pout<<"Check answer"<<std::endl;
     AMP::pout<<"source vector l2 norm = "<<sourceVector->L2Norm()<<std::endl;
     AMP::pout<<"target vector l2 norm = "<<targetVector->L2Norm()<<std::endl;
+#ifdef USE_EXT_SILO
+    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter("silo");
+    siloWriter->setDecomposition(1);
+    siloWriter->registerVector(targetVector, targetMesh, AMP::Mesh::Vertex, "vector");
+    siloWriter->writeFile("target", 0);
+#endif
     double const atol = 1.0e-14;
     double const rtol = 1.0e-14;
     double const tol = atol + rtol * targetVector->L2Norm();
@@ -131,6 +142,10 @@ void myTest(AMP::UnitTest *ut)
         targetVector->addLocalValueByGlobalID(dofIndices[0], - value);
     }
     AMP::pout<<"error l2 norm = "<<targetVector->L2Norm()<<std::endl;
+#ifdef USE_EXT_SILO
+    siloWriter->writeFile("target", 1);
+#endif
+
     AMP_ASSERT( targetVector->L2Norm() < tol );
 
     ut->passes( exeName );
