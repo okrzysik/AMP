@@ -42,7 +42,7 @@ int main ( int argc , char **argv )
 {
 
     AMP::AMPManagerProperties startup_properties;
-    startup_properties.use_MPI_Abort = true;
+    startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup(argc,argv,startup_properties);
     AMP::UnitTest ut;
     PROFILE_ENABLE();

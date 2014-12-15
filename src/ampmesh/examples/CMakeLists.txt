@@ -1,4 +1,4 @@
-INCLUDE (${AMP_SOURCE_DIR}/cmake/macros.cmake)
+INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
 BEGIN_EXAMPLE_CONFIG( ampmesh )
 
 # Copy meshes and input files

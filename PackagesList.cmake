@@ -105,11 +105,11 @@ IF ( NOT TEST_MAX_PROCS )
 ENDIF()
 
 # Create custom targets for build-test, check, and distclean
-INCLUDE ( ${AMP_SOURCE_DIR}/cmake/macros.cmake )
-INCLUDE ( ${AMP_SOURCE_DIR}/cmake/libraries.cmake )
-ADD_CUSTOM_TARGET ( build-test )
-ADD_CUSTOM_TARGET ( build-examples )
-ADD_CUSTOM_TARGET ( check COMMAND  make test  )
+INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
+INCLUDE( "${AMP_SOURCE_DIR}/cmake/libraries.cmake" )
+ADD_CUSTOM_TARGET( build-test )
+ADD_CUSTOM_TARGET( build-examples )
+ADD_CUSTOM_TARGET( check COMMAND  make test  )
 ADD_DISTCLEAN()
 SET( EXCLUDE_TESTS_FROM_ALL 0 )
 

@@ -1,4 +1,4 @@
-INCLUDE (${AMP_SOURCE_DIR}/cmake/macros.cmake)
+INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
 
 ADD_AMP_TEST(testSubchannelHelpers)
 COPY_TEST_DATA_FILE ( input_testSubchannelUtilities)

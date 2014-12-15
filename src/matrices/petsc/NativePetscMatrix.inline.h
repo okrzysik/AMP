@@ -101,6 +101,8 @@ inline void  NativePetscMatrix::scale ( double alpha )
 
 inline void  NativePetscMatrix::axpy ( double alpha , const Matrix  &x )
 {
+    AMP_ASSERT(x.numGlobalRows()==this->numGlobalRows());
+    AMP_ASSERT(x.numGlobalColumns()==this->numGlobalColumns());
     MatAXPY ( d_Mat , alpha , x.castTo<NativePetscMatrix>().d_Mat , SAME_NONZERO_PATTERN );
 }
 

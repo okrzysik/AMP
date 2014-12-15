@@ -176,6 +176,8 @@ void  ManagedEpetraMatrix::zero ( )
 ********************************************************/
 void  ManagedEpetraMatrix::axpy ( double alpha, const Matrix &rhs )
 {
+    AMP_ASSERT(rhs.numGlobalRows()==this->numGlobalRows());
+    AMP_ASSERT(rhs.numGlobalColumns()==this->numGlobalColumns());
     int    *a, *b;
     double *values1;
     double *values2;

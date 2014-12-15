@@ -33,6 +33,8 @@ public:
         return std::string(tmp);
     }
 
+    static int type() { return TYPE; }
+
     static void initMesh() 
     {
         PROFILE_START("initMesh");

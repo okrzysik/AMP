@@ -3,6 +3,7 @@
 
 #include "utils/UnitTest.h"
 #include "discretization/DOF_Manager.h"
+#include "vectors/SimpleVector.h"
 
 #include "test_MatrixVectorFactory.h"
 #include "../../vectors/test/test_VectorLoops.h"
@@ -125,6 +126,8 @@ public:
     static  void run_test ( AMP::UnitTest *utils )
     {
         PROFILE_START("VerifyAXPYMatrix");
+
+        // Create vectors/matricies from the factory
         AMP::LinearAlgebra::Matrix::shared_ptr  matrix1 = FACTORY::getMatrix();
         AMP::LinearAlgebra::Matrix::shared_ptr  matrix2 = FACTORY::getMatrix();
         AMP::LinearAlgebra::Vector::shared_ptr  vector1lhs = matrix1->getRightVector();
@@ -132,17 +135,15 @@ public:
         AMP::LinearAlgebra::Vector::shared_ptr  vector1rhs = matrix1->getRightVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vector2rhs = matrix2->getRightVector();
         AMP::LinearAlgebra::Vector::shared_ptr  vectorresult = matrix2->getRightVector();
-
         fillWithPseudoLaplacian<FACTORY>( matrix1 );
         fillWithPseudoLaplacian<FACTORY>( matrix2 );
 
+        // Test axpy
         matrix2->axpy ( -2. , matrix1 );   // matrix2 = -matrix1
         vector1lhs->setRandomValues ();
         vector2lhs->copyVector ( vector1lhs );
-
         matrix1->mult ( vector1lhs , vector1rhs );
         matrix2->mult ( vector2lhs , vector2rhs );  // vector2rhs = - vector1rhs
-
         vectorresult->add ( vector1rhs , vector2rhs );
         if ( vectorresult->L1Norm() < 0.000001 )
             utils->passes ( "matrices are opposite" );
@@ -152,6 +153,18 @@ public:
             utils->passes ( "non-trivial vector" );
         else
             utils->passes ( "trivial vector" );
+
+        // Test that axpy failes with different sized matricies
+        AMP::LinearAlgebra::Vector::shared_ptr  smallVec = AMP::LinearAlgebra::SimpleVector::create(7,vector1lhs->getVariable());
+        AMP::LinearAlgebra::Matrix::shared_ptr  smallMat = AMP::LinearAlgebra::createMatrix(smallVec,smallVec,FACTORY::type());
+        try {
+            matrix2->axpy ( -2., smallMat );   // matrix2 = -matrix1
+            utils->failure("axpy did not crash with different sized matrices");
+        } catch (std::exception & err) {
+            utils->passes("axpy correctly fails with different sized matrices");
+        } catch (...) {
+            utils->failure("axpy fails with different sized matrices (unknown failure)");
+        }
         PROFILE_STOP("VerifyAXPYMatrix");
     }
 };
