@@ -107,13 +107,13 @@ void ManagedEpetraMatrix::multiply ( shared_ptr other_op, shared_ptr &result )
         AMP_ERROR( "Inner matrix dimensions must agree" );
     if ( !other_op->isA<ManagedEpetraMatrix>() )
         AMP_ERROR( "Incompatible matrix types" );
-
+    AMP_ASSERT ( other_op->numGlobalRows() == numGlobalColumns() );
     #ifdef USE_EXT_MPI
         MPI_Comm epetraComm = (dynamic_cast<const Epetra_MpiComm *> (&d_epetraMatrix->RowMap().Comm()))->Comm();
     #else
         MPI_Comm epetraComm = AMP_COMM_SELF;
     #endif
-    Vector::shared_ptr leftVec = this->getRightVector();
+    Vector::shared_ptr leftVec = this->getLeftVector();
     Vector::shared_ptr rightVec = other_op->getRightVector();
     AMP::shared_ptr<ManagedEpetraMatrixParameters> memp( new ManagedEpetraMatrixParameters( 
         leftVec->getDOFManager(), rightVec->getDOFManager(), AMP_MPI(epetraComm) ) );

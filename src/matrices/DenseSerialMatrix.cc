@@ -319,13 +319,13 @@ void DenseSerialMatrix::multiply( Matrix::shared_ptr other_op, Matrix::shared_pt
     size_t M = other_op->numGlobalColumns();
     // Create the matrix parameters
     AMP::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params( 
-        new AMP::LinearAlgebra::MatrixParameters( d_DOFManagerLeft, other_op->getRightDOFManager(), d_comm ) );
+        new AMP::LinearAlgebra::MatrixParameters( other_op->getRightDOFManager(), d_DOFManagerLeft, d_comm ) );
     params->d_VariableLeft = d_VariableLeft;
     params->d_VariableRight = d_VariableRight;
     // Create the matrix
     AMP::shared_ptr<AMP::LinearAlgebra::DenseSerialMatrix>  newMatrix( new AMP::LinearAlgebra::DenseSerialMatrix(params) );
     result = newMatrix;
-    memset(newMatrix->d_M,0,K*M*sizeof(double));
+    memset(newMatrix->d_M,0,N*M*sizeof(double));
     // Perform the muliplication
     if ( AMP::dynamic_pointer_cast<DenseSerialMatrix>(other_op)==NULL ) {
         // X is an unknown matrix type
