@@ -1,4 +1,4 @@
-INCLUDE (${AMP_SOURCE_DIR}/cmake/macros.cmake)
+INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
 ############################################################################
 #  Configure test library
 ############################################################################
@@ -57,13 +57,13 @@ COPY_TEST_DATA_FILE ( inputMultiPellet348 )
 COPY_TEST_DATA_FILE ( 17x17_denovo_thermal_1x )
 
 # Add tests
-ADD_AMP_TEST_1_2_4 ( test_InitializeLibmesh )
-ADD_AMP_TEST_1_2_4 ( test_Mesh )
+ADD_AMP_TEST_1_2_4( test_Mesh )
 IF ( USE_TRILINOS_STKMESH )
     ADD_AMP_TEST( test_LoadBalance 1 input_Mesh )
     ADD_AMP_TEST( test_LoadBalance 4 input_Mesh )
 ENDIF()
 IF ( USE_EXT_LIBMESH )
+    ADD_AMP_TEST_1_2_4( test_InitializeLibmesh )
     ADD_AMP_TEST( test_LoadBalance 1 input_Mesh )
     ADD_AMP_TEST( test_LoadBalance 4 input_Mesh )
 ENDIF()

@@ -54,7 +54,6 @@ COPY_MESH_FILE ( cylinder270.e )
 
 COPY_MESH_FILE ( multiElementMesh.e )
 COPY_TEST_DATA_FILE( input_testMultiBlockMatrix )
-ADD_AMP_PROVISIONAL_TEST ( testMultiBlockMatrix )
 
 # Copy some inputs
 COPY_TEST_DATA_FILE( input_DiffusionLinearElement-create-1                              diffusion/data )
@@ -108,6 +107,8 @@ COPY_TEST_DATA_FILE( input_linearMechanics+ThermalDiffusion+FickDiffusion-UO2MSR
 
 
 IF ( USE_EXT_LIBMESH )
+
+    ADD_AMP_PROVISIONAL_TEST ( testMultiBlockMatrix )
 
     ADD_AMP_TEST_1_2_4 ( testElementOperationFactory-1 )
     COPY_TEST_DATA_FILE( input_testElementOperationFactory-1 )

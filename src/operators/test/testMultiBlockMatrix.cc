@@ -21,7 +21,6 @@
 #include "discretization/simpleDOF_Manager.h"
 
 #include "operators/OperatorBuilder.h"
-#include "operators/diffusion/DiffusionLinearFEOperator.h"
 #include "operators/libmesh/MassLinearFEOperator.h"
 
 #include "operators/LinearBVPOperator.h"

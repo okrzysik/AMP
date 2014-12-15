@@ -15,7 +15,7 @@ SET( AMP_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" )
 INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros.cmake" )
 INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake" )
 IF ( TPL_DIRECTORY )
-    INCLUDE( ${TPL_DIRECTORY}/TPLs.cmake )
+    INCLUDE( "${TPL_DIRECTORY}/TPLs.cmake" )
 ENDIF()
 
 
@@ -46,7 +46,7 @@ MESSAGE("COMPILE_MODE : ${CMAKE_BUILD_TYPE} " )
 
 
 # Call PackageList to get the pacakages, configure the directories and compilers, etc
-INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/PackagesList.cmake )
+INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/PackagesList.cmake" )
 
 
 # Set testing paramaters
