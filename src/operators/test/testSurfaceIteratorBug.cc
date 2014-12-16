@@ -65,6 +65,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
 
   AMP::Mesh::MeshIterator bnd = mesh->getBoundaryIDIterator( AMP::Mesh::Face, surfaceId, 0 );
+  std::cout << "Number of surface elements: " << bnd.size() << std::endl;
   AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
   bool volume_passes = true;
