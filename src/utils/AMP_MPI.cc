@@ -151,6 +151,16 @@ int MPI_CLASS::profile_level=127;
 #endif
 
 
+// Check the mpi error code
+#ifdef USE_MPI
+inline void check_MPI( int error )
+{
+    if ( error != MPI_SUCCESS )
+        MPI_ERROR("Error calling MPI routine");
+}
+#endif
+
+
 /******************************************************************
 * Some helper functions to convert between signed/unsigned types  *
 ******************************************************************/
@@ -375,7 +385,11 @@ MPI_CLASS::MPI_CLASS()
 /************************************************************************
 *  Empty deconstructor                                                  *
 ************************************************************************/
-MPI_CLASS::~MPI_CLASS() 
+MPI_CLASS::~MPI_CLASS()
+{
+    reset();
+} 
+void MPI_CLASS::reset()
 {
     // Decrement the count if used
     int count = -1;
@@ -386,7 +400,6 @@ MPI_CLASS::~MPI_CLASS()
         #ifdef USE_MPI
             MPI_Comm_set_errhandler( communicator, MPI_ERRORS_ARE_FATAL );
             delete d_count;
-            d_count = NULL;
             int err = MPI_Comm_free(&communicator);
             if ( err != MPI_SUCCESS )
                 MPI_ERROR("Problem free'ing MPI_Comm object");
@@ -403,12 +416,15 @@ MPI_CLASS::~MPI_CLASS()
     } else {
         delete [] d_currentTag;
     }
+    d_count = NULL;
     comm_rank = 0;
     comm_size = 1;
     d_maxTag = 0;
     d_isNull = true;
+    d_currentTag = NULL;
     call_abort_in_serial_instead_of_exit = true;
 }
+
 
 
 /************************************************************************
@@ -442,7 +458,7 @@ MPI_CLASS& MPI_CLASS::operator=(const MPI_CLASS& comm)
     if (this == &comm) // protect against invalid self-assignment
         return *this;
     // Destroy the previous object
-    this->~MPI_CLASS();
+    this->reset();
     // Initialize the data members to the existing object
     this->communicator = comm.communicator;
     this->comm_rank = comm.comm_rank;
@@ -539,15 +555,20 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
 #ifdef USE_MPI
 MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 ) 
 {
-    MPI_Group group1=MPI_GROUP_EMPTY, group2=MPI_GROUP_EMPTY, group12=MPI_GROUP_EMPTY;
-    if ( !comm1.isNull() )
-        MPI_Comm_group ( comm1.communicator, &group1 );
-    if ( !comm2.isNull() )
-        MPI_Comm_group ( comm2.communicator, &group2 );
+    MPI_Group group1=MPI_GROUP_EMPTY, group2=MPI_GROUP_EMPTY;
+    if ( !comm1.isNull() ) {
+        MPI_Group_free( &group1 );
+        MPI_Comm_group( comm1.communicator, &group1 );
+    }
+    if ( !comm2.isNull() ) {
+        MPI_Group_free( &group2 );
+        MPI_Comm_group( comm2.communicator, &group2 );
+    }
+    MPI_Group group12;
     MPI_Group_intersection( group1, group2, &group12 );
     int compare1, compare2;
-    MPI_Group_compare ( group1, group12, &compare1 );
-    MPI_Group_compare ( group2, group12, &compare2 );
+    MPI_Group_compare( group1, group12, &compare1 );
+    MPI_Group_compare( group2, group12, &compare2 );
     MPI_CLASS new_comm(MPI_CLASS_COMM_NULL);
     int size;
     MPI_Group_size( group12, &size );
@@ -571,12 +592,14 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
             // Create the new comm
             // Note: OpenMPI crashes if the intersection group is EMPTY for any processors
             // We will set it to SELF for the EMPTY processors, then create a NULL comm later
-            if ( group12==MPI_GROUP_EMPTY )
+            if ( group12==MPI_GROUP_EMPTY ) {
+                MPI_Group_free( &group12 );
                 MPI_Comm_group( MPI_COMM_SELF, &group12 );
+            }
             MPI_Comm  new_MPI_comm;
             MPI_Comm_create( comm1.communicator, group12, &new_MPI_comm );
             if ( size>0 ) {
-                // This is the valid case were we create a new intersection comm
+                // This is the valid case where we create a new intersection comm
                 new_comm = MPI_CLASS( new_MPI_comm, true );
             } else {
                 // We actually want a null comm for this communicator
@@ -585,12 +608,9 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
             }
         }
     }
-    if ( group1!=MPI_GROUP_NULL && group1!=MPI_GROUP_EMPTY )
-        MPI_Group_free( &group1 );
-    if ( group2!=MPI_GROUP_NULL && group2!=MPI_GROUP_EMPTY )
-        MPI_Group_free( &group2 );
-    if ( group12!=MPI_GROUP_NULL && group12!=MPI_GROUP_EMPTY )
-        MPI_Group_free( &group12 );
+    MPI_Group_free( &group1 );
+    MPI_Group_free( &group2 );
+    MPI_Group_free( &group12 );
     return new_comm;
 }
 #else
@@ -609,20 +629,20 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
 ************************************************************************/
 MPI_CLASS MPI_CLASS::split( int color, int key ) const 
 {
-    MPI_Comm  new_MPI_comm;
+    if ( d_isNull ) {
+        return MPI_CLASS(AMP_COMM_NULL);
+    } else if ( comm_size==1 ) {
+        if ( color==-1 ) 
+            return MPI_CLASS(AMP_COMM_NULL);
+        return dup();
+    }
+    MPI_Comm  new_MPI_comm = AMP_COMM_NULL;
     #ifdef USE_MPI
         // USE MPI to split the communicator
         if ( color==-1 ) {
-            MPI_Comm_split(communicator,MPI_UNDEFINED,key,&new_MPI_comm);
+            check_MPI(MPI_Comm_split(communicator,MPI_UNDEFINED,key,&new_MPI_comm));
         } else {
-            MPI_Comm_split(communicator,color,key,&new_MPI_comm);
-        }
-    #else
-        if ( color==-1 ) {
-            new_MPI_comm = MPI_CLASS_COMM_NULL;
-        } else {
-            new_MPI_comm = uniqueGlobalComm;
-            uniqueGlobalComm++;
+            check_MPI(MPI_Comm_split(communicator,color,key,&new_MPI_comm));
         }
     #endif
     // Create the new object
@@ -726,17 +746,13 @@ bool MPI_CLASS::operator<(const MPI_CLASS &comm) const
     MPI_ASSERT( !this->d_isNull && !comm.d_isNull );
     bool flag = true;
     // First check if either communicator is NULL
-    #ifdef USE_MPI
-        if ( communicator==MPI_COMM_NULL )
-            return false;
-        if ( comm.communicator==MPI_COMM_NULL )
-            flag = false;
-    #else
-        if ( communicator==MPI_CLASS_COMM_NULL )
-            return false;
-        if ( comm.communicator==MPI_CLASS_COMM_NULL )
-            flag = false;
-    #endif
+    if ( this->d_isNull )
+        return false;
+    if ( comm.d_isNull )
+        flag = false;
+    // Use compare to check if the comms are equal
+    if ( compare(comm)!=0 )
+        return false;
     // Check that the size of the other communicator is > the current communicator size
     if ( comm_size >= comm.comm_size )
         flag = false;
@@ -744,11 +760,13 @@ bool MPI_CLASS::operator<(const MPI_CLASS &comm) const
     // this is < comm iff this group is a subgroup of comm's group
     #ifdef USE_MPI
         MPI_Group group1, group2, group12;
-        MPI_Comm_group ( communicator, &group1 );
-        MPI_Comm_group ( comm.communicator, &group2 );
-        MPI_Group_union ( group1, group2, &group12 );
+        if ( !d_isNull )
+            MPI_Comm_group( communicator, &group1 );
+        if ( !comm.d_isNull )
+            MPI_Comm_group( comm.communicator, &group2 );
+        MPI_Group_union( group1, group2, &group12 );
         int compare;
-        MPI_Group_compare ( group2, group12, &compare );
+        MPI_Group_compare( group2, group12, &compare );
         if ( compare==MPI_UNEQUAL )
             flag = false;
         MPI_Group_free( &group1 );
@@ -768,17 +786,21 @@ bool MPI_CLASS::operator<=(const MPI_CLASS &comm) const
     MPI_ASSERT( !this->d_isNull && !comm.d_isNull );
     bool flag = true;
     // First check if either communicator is NULL
+    if ( this->d_isNull )
+        return false;
+    if ( comm.d_isNull )
+        flag = false;
     #ifdef USE_MPI
-        if ( communicator==MPI_COMM_NULL )
-            return false;
-        if ( comm.communicator==MPI_COMM_NULL )
-            flag = false;
-    #else
-        if ( communicator==MPI_CLASS_COMM_NULL )
-            return false;
-        if ( comm.communicator==MPI_CLASS_COMM_NULL )
-            flag = false;
+        int world_size=0;
+        MPI_Comm_size(MPI_COMM_WORLD,&world_size);
+        if ( comm.getSize()==world_size )
+            return true;
+        if ( getSize()==1 && !comm.d_isNull )
+            return true;
     #endif
+    // Use compare to check if the comms are equal
+    if ( compare(comm)!=0 )
+        return true;
     // Check that the size of the other communicator is > the current communicator size
     // this is <= comm iff this group is a subgroup of comm's group
     if ( comm_size > comm.comm_size )
@@ -786,11 +808,13 @@ bool MPI_CLASS::operator<=(const MPI_CLASS &comm) const
     // Check the unnion of the communicator groups
     #ifdef USE_MPI
         MPI_Group group1, group2, group12;
-        MPI_Comm_group ( communicator, &group1 );
-        MPI_Comm_group ( comm.communicator, &group2 );
-        MPI_Group_union ( group1, group2, &group12 );
+        if ( !d_isNull )
+            MPI_Comm_group( communicator, &group1 );
+        if ( !comm.d_isNull )
+            MPI_Comm_group( comm.communicator, &group2 );
+        MPI_Group_union( group1, group2, &group12 );
         int compare;
-        MPI_Group_compare ( group2, group12, &compare );
+        MPI_Group_compare( group2, group12, &compare );
         if ( compare==MPI_UNEQUAL )
             flag = false;
         MPI_Group_free( &group1 );
@@ -809,17 +833,13 @@ bool MPI_CLASS::operator>(const MPI_CLASS &comm) const
 {
     bool flag = true;
     // First check if either communicator is NULL
-    #ifdef USE_MPI
-        if ( communicator==MPI_COMM_NULL )
-            return false;
-        if ( comm.communicator==MPI_COMM_NULL )
-            flag = false;
-    #else
-        if ( communicator==MPI_CLASS_COMM_NULL )
-            return false;
-        if ( comm.communicator==MPI_CLASS_COMM_NULL )
-            flag = false;
-    #endif
+    if ( this->d_isNull )
+        return false;
+    if ( comm.d_isNull )
+        flag = false;
+    // Use compare to check if the comms are equal
+    if ( compare(comm)!=0 )
+        return false;
     // Check that the size of the other communicator is > the current communicator size
     if ( comm_size <= comm.comm_size )
         flag = false;
@@ -827,11 +847,13 @@ bool MPI_CLASS::operator>(const MPI_CLASS &comm) const
     // this is > comm iff comm's group is a subgroup of this group
     #ifdef USE_MPI
         MPI_Group group1, group2, group12;
-        MPI_Comm_group ( communicator, &group1 );
-        MPI_Comm_group ( comm.communicator, &group2 );
-        MPI_Group_union ( group1, group2, &group12 );
+        if ( !d_isNull )
+            MPI_Comm_group( communicator, &group1 );
+        if ( !comm.d_isNull )
+            MPI_Comm_group( comm.communicator, &group2 );
+        MPI_Group_union( group1, group2, &group12 );
         int compare;
-        MPI_Group_compare ( group1, group12, &compare );
+        MPI_Group_compare( group1, group12, &compare );
         if ( compare==MPI_UNEQUAL )
             flag = false;
         MPI_Group_free( &group1 );
@@ -850,17 +872,21 @@ bool MPI_CLASS::operator>=(const MPI_CLASS &comm) const
 {
     bool flag = true;
     // First check if either communicator is NULL
+    if ( this->d_isNull )
+        return false;
+    if ( comm.d_isNull )
+        flag = false;
     #ifdef USE_MPI
-        if ( communicator==MPI_COMM_NULL )
-            return false;
-        if ( comm.communicator==MPI_COMM_NULL )
-            flag = false;
-    #else
-        if ( communicator==MPI_CLASS_COMM_NULL )
-            return false;
-        if ( comm.communicator==MPI_CLASS_COMM_NULL )
-            flag = false;
+        int world_size=0;
+        MPI_Comm_size(MPI_COMM_WORLD,&world_size);
+        if ( getSize()==world_size )
+            return true;
+        if ( comm.getSize()==1 && !comm.d_isNull )
+            return true;
     #endif
+    // Use compare to check if the comms are equal
+    if ( compare(comm)!=0 )
+        return true;
     // Check that the size of the other communicator is > the current communicator size
     if ( comm_size < comm.comm_size )
         flag = false;
@@ -868,11 +894,13 @@ bool MPI_CLASS::operator>=(const MPI_CLASS &comm) const
     // this is >= comm iff comm's group is a subgroup of this group
     #ifdef USE_MPI
         MPI_Group group1, group2, group12;
-        MPI_Comm_group ( communicator, &group1 );
-        MPI_Comm_group ( comm.communicator, &group2 );
-        MPI_Group_union ( group1, group2, &group12 );
+        if ( !d_isNull )
+            MPI_Comm_group( communicator, &group1 );
+        if ( !comm.d_isNull)
+            MPI_Comm_group( comm.communicator, &group2 );
+        MPI_Group_union( group1, group2, &group12 );
         int compare;
-        MPI_Group_compare ( group1, group12, &compare );
+        MPI_Group_compare( group1, group12, &compare );
         if ( compare==MPI_UNEQUAL )
             flag = false;
         MPI_Group_free( &group1 );
@@ -892,8 +920,10 @@ int MPI_CLASS::compare(const MPI_CLASS &comm) const
     if ( communicator==comm.communicator )
         return 1;
     #ifdef USE_MPI
+        if ( d_isNull || comm.d_isNull )
+            return 0;
         int result;
-        MPI_Comm_compare( communicator, comm.communicator, &result );
+        check_MPI(MPI_Comm_compare( communicator, comm.communicator, &result ));
         if ( result==MPI_IDENT )
             return 2;
         else if ( result==MPI_CONGRUENT )
@@ -904,7 +934,7 @@ int MPI_CLASS::compare(const MPI_CLASS &comm) const
             return 0;
         MPI_ERROR("Unknown results from AMP_Comm_compare");
     #else
-        if ( comm.communicator==MPI_CLASSCOMM_NULL || communicator==MPI_CLASS_COMM_NULL )
+        if ( comm.communicator==MPI_CLASS_COMM_NULL || communicator==MPI_CLASS_COMM_NULL )
             return 0;
         else 
             return 3;

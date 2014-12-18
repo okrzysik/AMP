@@ -91,6 +91,13 @@ public:
 
 
     /**
+     * \brief Reset the object
+     * \details  This resets the object to the empty state without an MPI_Comm
+     */
+    void reset();
+
+
+    /**
      * \brief Get the node name
      * \details  This function returns a unique name for each node.  
      *    It is a wrapper for MPI_Get_processor_name.
@@ -864,6 +871,13 @@ public:
      * \param level         New level of the timers
      */
     static void changeProfileLevel(int level) { profile_level = level; }
+
+
+    //! Return the total number of MPI_Comm objects that have been created
+    static size_t MPI_Comm_created() { return N_MPI_Comm_created; }
+
+    //! Return the total number of MPI_Comm objects that have been destroyed
+    static size_t MPI_Comm_destroyed() { return N_MPI_Comm_destroyed; }
 
 
 private:

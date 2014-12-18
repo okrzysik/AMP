@@ -333,6 +333,12 @@ void AMPManager::shutdown()
         if ( MPI_time!=0 )
             printf(" MPI shutdown time = %0.3f s\n",MPI_time);
     }
+    // Print any AMP_MPI leaks
+    if ( AMP_MPI::MPI_Comm_created()!=AMP_MPI::MPI_Comm_destroyed() ) {
+        printf("Rank %i detected AMP_MPI comm leak: %i %i\n",rank,
+            static_cast<int>(AMP_MPI::MPI_Comm_created()),
+            static_cast<int>(AMP_MPI::MPI_Comm_destroyed()));
+    }
     // Wait 50 milli-seconds for all processors to finish
     Sleep(50);
 }

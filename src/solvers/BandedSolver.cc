@@ -29,13 +29,13 @@ void BandedSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters )
     PROFILE_START("reset");
 
     // Reset the parameters
+    rightDOF.reset();
+    leftDOF.reset();
+    delete [] AB;
+    delete [] IPIV;
+    AB = NULL;
+    IPIV = NULL;
     if ( parameters != NULL ) {
-        rightDOF.reset();
-        leftDOF.reset();
-        delete [] AB;
-        delete [] IPIV;
-        AB = NULL;
-        IPIV = NULL;
         KL = parameters->d_db->getInteger("KL");
         KU = parameters->d_db->getInteger("KU");
     }

@@ -30,18 +30,18 @@ Mesh{
                 MeshDatabasePrefix = "Mesh_"
                 MeshArrayDatabasePrefix = "MeshArray_"
                 MeshArray_1 {
-                    N = 3
+                    N = 1
                     iterator = "%i"
-                    indicies = 1, 2, 3
+                    indicies = 1
                     MeshName = "pellet_%i"
                     MeshType = "AMP"
                     dim = 3
                     Generator = "cylinder"
-                    Size = 4, 10
-                    Range = 0.004025, 0, 1.27
+                    Size = 2, 3
+                    Range = 0.004025, 0, 3.81
                     x_offset = 0.0
                     y_offset = 0.0
-                    z_offset = 0.0, 1.27, 2.54
+                    z_offset = 0.0
                     Weight = 1.0
                 }
             }
@@ -56,7 +56,7 @@ Mesh{
                   MeshType = "AMP"
                   dim = 3
                   Generator = "tube"
-                  Size = 3, 20, 30
+                  Size = 2, 3, 3
                   Range = 0.004110, 0.004705, 0, 3.81
                   x_offset = 0.0
                   y_offset = 0.0
@@ -73,24 +73,14 @@ Mesh{
         MeshType = "AMP"
         dim = 3
         Generator = "cube"
-        Size = 1, 1, 20
+        Size = 1, 1, 10
         x_grid = 0.0, 0.0126
         y_grid = 0.0, 0.0126
-        //z_grid = 0.0, 0.381, 0.762, 1.143, 1.524, 1.905, 2.286, 2.667, 3.048, 3.429, 3.810
-        z_grid = 0.0, 0.1905, 0.3810, 0.5715, 0.7620, 0.9525, 1.1430, 1.3335, 1.5240, 1.7145, 1.9050, 2.0955, 2.2860, 2.4765, 2.6670, 2.8575, 3.0480, 3.2385, 3.4290, 3.6195, 3.8100
+        z_grid = 0.0, 0.381, 0.762, 1.143, 1.524, 1.905, 2.286, 2.667, 3.048, 3.429, 3.810
+        //z_grid = 0.0, 0.1905, 0.3810, 0.5715, 0.7620, 0.9525, 1.1430, 1.3335, 1.5240, 1.7145, 1.9050, 2.0955, 2.2860, 2.4765, 2.6670, 2.8575, 3.0480, 3.2385, 3.4290, 3.6195, 3.8100
     }
 }
 
-ThermalNodeToNodeMaps{
-  MapType = "NodeToNode"
-    N_maps = 2
-    Mesh1 = "pellet_1", "pellet_2"
-    Surface1 = 1
-    Mesh2 = "pellet_2", "pellet_3"
-    Surface2 = 2
-    DOFsPerObject = 1
-    VariableName = "Temperature"
-}
 
 ThermalScalarZAxisMaps{
   MapType = "ScalarZAxis"
@@ -682,7 +672,7 @@ SubchannelTwoEqNonlinearOperator{
     Fission_Heating_Coefficient = 0.0
     Channel_Angle = 0.0             // Channel angle
     Friction_Factor = 0.001         // Friction factor
-    Rod_Power = 66.81e3             // Rod power in W
+    Rod_Power = 0             // Rod power in W
     Heat_Source_Type = "averageCladdingTemperature"
     //Heat_Source_Type = "totalHeatGeneration"
     Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter
@@ -703,7 +693,7 @@ SubchannelTwoEqLinearOperator{
     Fission_Heating_Coefficient = 0.0
     Channel_Angle = 0.0             // Channel angle
     Friction_Factor = 0.001         // Friction factor
-    Rod_Power = 66.81e3             // Rod power in W
+    Rod_Power = 0             // Rod power in W
     Heat_Source_Type = "averageCladdingTemperature"
     //Heat_Source_Type = "totalHeatGeneration"
     Reynolds         = 95432.91 // Todreas, p.456, based on viscosity=8.69e-5; velocity=1 m/s; density=704; & Channel_Diameter

@@ -3,10 +3,11 @@
 #include "libmesh/cell_hex8.h"
 
 void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh, AMP::shared_ptr<AMP::Database> input_db,  
-    AMP::LinearAlgebra::Variable::shared_ptr temperatureVar, AMP::LinearAlgebra::Variable::shared_ptr displacementVar,
+    AMP::LinearAlgebra::Variable::shared_ptr, AMP::LinearAlgebra::Variable::shared_ptr displacementVar,
     const AMP::shared_ptr<AMP::LinearAlgebra::Vector> &currTemperatureVec,
     const AMP::shared_ptr<AMP::LinearAlgebra::Vector> &prevTemperatureVec,
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec) {
+    AMP::LinearAlgebra::Vector::shared_ptr rhsVec) 
+{
   currTemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
   prevTemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 

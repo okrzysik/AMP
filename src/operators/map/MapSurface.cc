@@ -46,7 +46,7 @@ MapSurface::MapSurface(const AMP::shared_ptr<OperatorParameters> & params):
 
 
 
-void MapSurface :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+void MapSurface :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr, 
     AMP::LinearAlgebra::Vector::const_shared_ptr u, 
     AMP::LinearAlgebra::Vector::shared_ptr, const double, const double )
 {

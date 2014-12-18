@@ -31,7 +31,7 @@ DiffusionTransportTensorModel::
 getTensorTransport(
     std::vector< std::vector< AMP::shared_ptr<std::vector<double> > > >& result,
     std::map<std::string, AMP::shared_ptr<std::vector<double> > >& args,
-    const std::vector<libMesh::Point>& Coordinates)
+    const std::vector<libMesh::Point>& )
 {
 	AMP::shared_ptr<std::vector<double> >scaledp;
 	double lower,upper;

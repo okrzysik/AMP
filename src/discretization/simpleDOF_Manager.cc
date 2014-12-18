@@ -182,11 +182,12 @@ AMP::shared_ptr<DOFManager>  simpleDOFManager::subset( const AMP::Mesh::Mesh::sh
     }
     AMP_MPI comm(AMP_COMM_NULL);
     if ( useMeshComm ) {
-        AMP_MPI comm = AMP_MPI::intersect( d_comm, mesh->getComm() );
+        comm = AMP_MPI::intersect( d_comm, mesh->getComm() );
     } else {
         comm = d_comm;
     }
     found_local = comm.allReduce( found_local );
+    comm.reset();
     if ( found_local ) 
         return shared_from_this();
     // We were not able to use an efficient subset, use the generic base function

@@ -163,7 +163,7 @@ namespace AMP {
       destroyCurrentLibMeshElement() ;
     }
 
-    void NavierStokesLSWFLinearFEOperator :: getDofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds) {
+    void NavierStokesLSWFLinearFEOperator :: getDofIndicesForCurrentElement(int, std::vector<std::vector<size_t> > & dofIds) {
       dofIds.resize(d_currNodes.size());
       for(unsigned int j = 0; j < d_currNodes.size(); j++) {
 //        d_dofMap[varId]->getDOFs(d_currNodes[j].globalID(), dofIds[j]);
