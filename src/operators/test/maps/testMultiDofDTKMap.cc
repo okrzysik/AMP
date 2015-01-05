@@ -55,12 +55,14 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
   AMP::LinearAlgebra::Vector::shared_ptr   potentialMapVec          = AMP::LinearAlgebra::createVector( phiDofMap , potentialVariable, true);
   AMP::LinearAlgebra::Vector::shared_ptr   potentialSolVec          = AMP::LinearAlgebra::createVector( phiDofMap , potentialVariable, true);
   AMP::LinearAlgebra::Vector::shared_ptr   potentialResVec          = AMP::LinearAlgebra::createVector( phiDofMap , potentialVariable, true);
+  AMP::LinearAlgebra::Vector::shared_ptr   potentialRhsVec          = AMP::LinearAlgebra::createVector( phiDofMap , potentialVariable, true);
 
   //Construct Variable
   boost::shared_ptr<AMP::LinearAlgebra::Variable> batteryVariables (new AMP::LinearAlgebra::Variable("Battery"));
   AMP::LinearAlgebra::Vector::shared_ptr BatterySolVec              = AMP::LinearAlgebra::createVector( eectDofMap    , batteryVariables , true);
   AMP::LinearAlgebra::Vector::shared_ptr BatteryResidualVec         = AMP::LinearAlgebra::createVector( eectDofMap    , batteryVariables , true);
   AMP::LinearAlgebra::Vector::shared_ptr BatteryMapVec              = AMP::LinearAlgebra::createVector( eectDofMap    , batteryVariables , true);
+  AMP::LinearAlgebra::Vector::shared_ptr BatteryRhsVec              = AMP::LinearAlgebra::createVector( eectDofMap    , batteryVariables , true);
 
   AMP::LinearAlgebra::Vector::shared_ptr ElectrodeSolVec            = BatterySolVec->select( AMP::LinearAlgebra::VS_Stride( 3, 5) , "V4" );
   AMP::LinearAlgebra::Vector::shared_ptr ElectrodeMapVec            = BatteryMapVec->select( AMP::LinearAlgebra::VS_Stride( 3, 5) , "V4" );
@@ -81,9 +83,14 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
   multiSolutionVec->addVector(potentialSolVec);
 
   boost::shared_ptr<AMP::LinearAlgebra::MultiVector> multiResVec;
-  multiResVec = AMP::LinearAlgebra::MultiVector::create( "MultiRHSVec", globalComm );
+  multiResVec = AMP::LinearAlgebra::MultiVector::create( "MultiResVec", globalComm );
   multiResVec->addVector(BatteryResidualVec);
   multiResVec->addVector(potentialResVec);
+
+  boost::shared_ptr<AMP::LinearAlgebra::MultiVector> multiRhsVec;
+  multiRhsVec = AMP::LinearAlgebra::MultiVector::create( "MultiRhsVec", globalComm );
+  multiRhsVec->addVector(BatteryRhsVec);
+  multiRhsVec->addVector(potentialRhsVec);
 
    // Make new vectors
   boost::shared_ptr<AMP::LinearAlgebra::MultiVector> multiSolutionMapVec;
@@ -91,6 +98,9 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
   multiSolutionMapVec->addVector(ElectrodeMapVec);
   multiSolutionMapVec->addVector(potentialMapVec);
 
+  AMP::Mesh::Mesh::shared_ptr  cellSandwichMesh = manager->Subset( "CellSandwich_2_1" );
+  AMP::Mesh::Mesh::shared_ptr  anodeCCMesh      = manager->Subset( "AnodeCC_1_1" );
+  AMP::Mesh::Mesh::shared_ptr  cathodeCCMesh    = manager->Subset( "CathodeCC_3_1" );
   ////=-------------------------------------------------------------
   // make map operator
   boost::shared_ptr<AMP::Database> mapOperatorDatabase = input_db->getDatabase("PotentialMaps");
@@ -252,6 +262,8 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
             ut->failure(" DTK Map Operator test ");
         }
   }//end for node
+
+  return 1;
 }
 
 int main(int argc, char *argv[])
