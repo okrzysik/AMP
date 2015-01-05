@@ -553,15 +553,22 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
 *  Intersect two communicators                                          *
 ************************************************************************/
 #ifdef USE_MPI
+static inline void MPI_Group_free2( MPI_Group *group ) 
+{
+    if ( *group != MPI_GROUP_EMPTY ) {
+        // MPICH is fine with free'ing an empty group, OpenMPI crashes
+        MPI_Group_free( group );
+    }
+}
 MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 ) 
 {
     MPI_Group group1=MPI_GROUP_EMPTY, group2=MPI_GROUP_EMPTY;
     if ( !comm1.isNull() ) {
-        MPI_Group_free( &group1 );
+        MPI_Group_free2( &group1 );
         MPI_Comm_group( comm1.communicator, &group1 );
     }
     if ( !comm2.isNull() ) {
-        MPI_Group_free( &group2 );
+        MPI_Group_free2( &group2 );
         MPI_Comm_group( comm2.communicator, &group2 );
     }
     MPI_Group group12;
@@ -593,7 +600,7 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
             // Note: OpenMPI crashes if the intersection group is EMPTY for any processors
             // We will set it to SELF for the EMPTY processors, then create a NULL comm later
             if ( group12==MPI_GROUP_EMPTY ) {
-                MPI_Group_free( &group12 );
+                MPI_Group_free2( &group12 );
                 MPI_Comm_group( MPI_COMM_SELF, &group12 );
             }
             MPI_Comm  new_MPI_comm;
@@ -608,9 +615,9 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
             }
         }
     }
-    MPI_Group_free( &group1 );
-    MPI_Group_free( &group2 );
-    MPI_Group_free( &group12 );
+    MPI_Group_free2( &group1 );
+    MPI_Group_free2( &group2 );
+    MPI_Group_free2( &group12 );
     return new_comm;
 }
 #else
