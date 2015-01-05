@@ -4,6 +4,7 @@
 #include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
+#include "utils/Writer.h"
 #include "utils/Utilities.h"
 #include "utils/PIO.h"
 #include "ampmesh/Mesh.h"
@@ -11,8 +12,11 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "operators/map/ScalarN2GZAxisMap.h"
 #include "operators/map/AsyncMapColumnOperator.h"
+#include "operators/ColumnOperator.h"
 #include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
+#include "vectors/MultiVector.h"
+#include "vectors/VectorSelector.h"
 
 #include "discretization/createLibmeshElements.h"
 
@@ -96,10 +100,10 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
   mapOperatorParameters1->d_BoundaryID1= 5;
   mapOperatorParameters1->d_BoundaryID2= 1;
   mapOperatorParameters1->d_MapComm = globalComm;
-  boost::shared_ptr<AMP::Operator::StridedZAxisMap> mapOperator1(new AMP::Operator::StridedZAxisMap(mapOperatorParameters1));
+//  boost::shared_ptr<AMP::Operator::StridedZAxisMap> mapOperator1(new AMP::Operator::StridedZAxisMap(mapOperatorParameters1));
 
-  mapOperator1->setVector ( multiSolutionMapVec );
-  mapOperator1->apply(multiRhsVec, multiSolutionVec, multiResVec);
+//  mapOperator1->setVector ( multiSolutionMapVec );
+//  mapOperator1->apply(multiRhsVec, multiSolutionVec, multiResVec);
 
   boost::shared_ptr<AMP::Operator::Map3to1to3Parameters> mapOperatorParameters2(new AMP::Operator::Map3to1to3Parameters(mapOperatorDatabase));
   mapOperatorParameters2->d_Mesh1= manager->Subset("CellSandwich_2_1");
@@ -107,16 +111,16 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
   mapOperatorParameters2->d_BoundaryID1= 3;
   mapOperatorParameters2->d_BoundaryID2= 2;
   mapOperatorParameters2->d_MapComm = globalComm;
-  boost::shared_ptr<AMP::Operator::StridedZAxisMap> mapOperator2(new AMP::Operator::StridedZAxisMap(mapOperatorParameters2));
+//  boost::shared_ptr<AMP::Operator::StridedZAxisMap> mapOperator2(new AMP::Operator::StridedZAxisMap(mapOperatorParameters2));
 
-  mapOperator2->setVector ( multiSolutionMapVec );
-  mapOperator2->apply(multiRhsVec, multiSolutionVec, multiResVec);
+//  mapOperator2->setVector ( multiSolutionMapVec );
+//  mapOperator2->apply(multiRhsVec, multiSolutionVec, multiResVec);
 
   boost::shared_ptr<AMP::Operator::ColumnOperator> potentialMapsColumn;
   boost::shared_ptr<AMP::Operator::ColumnOperatorParameters>  mapColParams ( new AMP::Operator::ColumnOperatorParameters ( input_db ) );
   potentialMapsColumn.reset( new AMP::Operator::ColumnOperator ( mapColParams ) );
-  potentialMapsColumn->append( mapOperator1 );
-  potentialMapsColumn->append( mapOperator2 );
+//  potentialMapsColumn->append( mapOperator1 );
+//  potentialMapsColumn->append( mapOperator2 );
 
   AMP::Mesh::MeshIterator node  = anodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
   AMP::Mesh::MeshIterator end_node = node.end();

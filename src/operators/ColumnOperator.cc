@@ -1,5 +1,4 @@
 #include "operators/ColumnOperator.h"
-#include "operators/ColumnOperatorParameters.h"
 #include "utils/Utilities.h"
 #include "vectors/MultiVariable.h"
 #include "ProfilerApp.h"

@@ -3,8 +3,7 @@
 #define included_AMP_ColumnOperator
 
 #include "operators/Operator.h"
-#include "operators/OperatorParameters.h"
-#include "vectors/Vector.h"
+#include "operators/ColumnOperatorParameters.h"
 
 #include <vector>
 
