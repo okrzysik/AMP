@@ -237,13 +237,18 @@ IF( CTEST_COVERAGE_COMMAND )
 ENDIF()
 
 
-# Submit the results to oblivion
+# Submit the results to CDash
 SET( CTEST_DROP_METHOD "http" )
-SET( CTEST_DROP_SITE "oblivion.engr.colostate.edu" )
 SET( CTEST_DROP_LOCATION "/CDash/submit.php?project=AMP" )
 SET( CTEST_DROP_SITE_CDASH TRUE )
 SET( DROP_SITE_CDASH TRUE )
+SET( CTEST_DROP_SITE "mberrill.myqnapcloud.com" )
 CTEST_SUBMIT()
+SET( CTEST_DROP_SITE "billmp1.ornl.gov" )
+CTEST_SUBMIT()
+SET( CTEST_DROP_SITE "qdi-imac.ornl.gov" )
+CTEST_SUBMIT()
+
 
 
 # Write a message to test for success in the ctest-builder
