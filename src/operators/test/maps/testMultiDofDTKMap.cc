@@ -133,7 +133,7 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
 //  potentialMapsColumn->append( mapOperator1 );
 //  potentialMapsColumn->append( mapOperator2 );
 
-  AMP::Mesh::MeshIterator node  = anodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
+  AMP::Mesh::MeshIterator node  = anodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
   AMP::Mesh::MeshIterator end_node = node.end();
   for( ; node != end_node ; ++node)
   {
@@ -146,7 +146,7 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
         potentialSolVec->setValueByGlobalID(bndGlobalIds[0], val);
   }//end for node
 
-  node  = cathodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 2, 0 );
+  node  = cathodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 3, 0 );
   end_node = node.end();
   for( ; node != end_node ; ++node)
   {
@@ -159,7 +159,7 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
         potentialSolVec->setValueByGlobalID(bndGlobalIds[0], val);
   }//end for node
 
-  node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 3, 0 );
+  node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
   end_node = node.end();
   for( ; node != end_node ; ++node)
   {
@@ -172,7 +172,7 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
         ElectrodeSolVec->setValueByGlobalID(bndGlobalIds[3], val);
   }//end for node
 
-  node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
+  node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 2, 0 );
   end_node = node.end();
   for( ; node != end_node ; ++node)
   {
@@ -188,7 +188,7 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
 
   potentialMapsColumn->apply(multiRhsVec, multiSolutionVec, multiResVec);
 
-  node  = anodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
+  node  = anodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
   end_node = node.end();
   for( ; node != end_node ; ++node)
   {
@@ -207,7 +207,7 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
         }
   }//end for node
 
-  node  = cathodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 2, 0 );
+  node  = cathodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 3, 0 );
   end_node = node.end();
   for( ; node != end_node ; ++node)
   {
@@ -226,7 +226,7 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
         }
   }//end for node
 
-  node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 3, 0 );
+  node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
   end_node = node.end();
   for( ; node != end_node ; ++node)
   {
@@ -245,7 +245,7 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
         }
   }//end for node
 
-  node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
+  node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 2, 0 );
   end_node = node.end();
   for( ; node != end_node ; ++node)
   {
