@@ -247,6 +247,7 @@ CTEST_SUBMIT()
 SET( CTEST_DROP_SITE "billmp1.ornl.gov" )
 CTEST_SUBMIT()
 SET( CTEST_DROP_SITE "qdi-imac.ornl.gov" )
+SET( CTEST_DROP_LOCATION "/~qdi/CDash/submit.php?project=AMP" )
 CTEST_SUBMIT()
 
 
