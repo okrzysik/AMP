@@ -43,4 +43,5 @@ COPY_TEST_DATA_FILE( input_testStridedZAxisMap )
 
 IF( USE_EXT_DTK )
     ADD_AMP_TEST_1_2_4( testMultiDofDTKMap )
+    COPY_TEST_DATA_FILE( input_testMultiDofDTKMap-1 )
 ENDIF()
