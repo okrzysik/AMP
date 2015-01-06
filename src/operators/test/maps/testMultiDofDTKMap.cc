@@ -101,6 +101,7 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
   AMP::Mesh::Mesh::shared_ptr  cellSandwichMesh = manager->Subset( "CellSandwich_2_1" );
   AMP::Mesh::Mesh::shared_ptr  anodeCCMesh      = manager->Subset( "AnodeCC_1_1" );
   AMP::Mesh::Mesh::shared_ptr  cathodeCCMesh    = manager->Subset( "CathodeCC_3_1" );
+  AMP::pout << " Subset Meshes successfull  " << std::endl;   
   ////=-------------------------------------------------------------
   // make map operator
   boost::shared_ptr<AMP::Database> mapOperatorDatabase = input_db->getDatabase("PotentialMaps");
@@ -275,7 +276,7 @@ int main(int argc, char *argv[])
 
     AMP::AMP_MPI globalComm = AMP::AMP_MPI(AMP_COMM_WORLD);
     //int  numNodes = globalComm.getSize();
-    runTest ( "input_testDTKMapOperator-1" , &ut );
+    runTest ( "input_testMultiDofDTKMap-1" , &ut );
 
     ut.report();
 
