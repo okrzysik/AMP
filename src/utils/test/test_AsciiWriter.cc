@@ -95,14 +95,23 @@ void test_AsciiWriter( AMP::UnitTest *ut )
 
     // Create and register a matrix
     #ifdef USE_AMP_MATRICES
-        AMP::LinearAlgebra::Matrix::shared_ptr mat1 = 
-            AMP::LinearAlgebra::createMatrix( vec1, vec1 );
-        AMP::LinearAlgebra::Matrix::shared_ptr mat2 = 
-            AMP::LinearAlgebra::createMatrix( vec2, vec2 );
-        writer->registerMatrix( mat1 );
-        writer->registerMatrix( mat2 );
-        mat1->setScalar(1.0);
-        mat2->setScalar(globalComm.getRank()+1);
+        bool test_matrix = true;
+        #if !defined(USE_EXT_PETSC) && !defined(USE_EXT_TRILINOS)
+            if ( AMP::AMP_MPI(AMP_COMM_WORLD).getSize() > 1 ) {
+                ut->expected_failure("No parallel matrix to test");
+                test_matrix = false;
+            }
+        #endif
+        if ( test_matrix ) {
+            AMP::LinearAlgebra::Matrix::shared_ptr mat1 = 
+                AMP::LinearAlgebra::createMatrix( vec1, vec1 );
+            AMP::LinearAlgebra::Matrix::shared_ptr mat2 = 
+                AMP::LinearAlgebra::createMatrix( vec2, vec2 );
+            writer->registerMatrix( mat1 );
+            writer->registerMatrix( mat2 );
+            mat1->setScalar(1.0);
+            mat2->setScalar(globalComm.getRank()+1);
+        }
     #endif
 
     // Write the output file

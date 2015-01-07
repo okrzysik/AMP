@@ -322,9 +322,14 @@ int main(int argc, char *argv[])
             for (size_t i=0; i<call_stack.size(); i++)
                 std::cout << "   " << call_stack[i];
         }
-        if ( call_stack.size()>=2 ) {
+        if ( !call_stack.empty() ) {
             ut.passes("non empty call stack");
-            if ( call_stack[1].find("get_call_stack()") != std::string::npos )
+            bool pass = false;
+            if ( call_stack.size() > 1 ) {
+                if ( call_stack[1].find("get_call_stack()") != std::string::npos )
+                    pass = true;
+            }
+            if ( pass )
                 ut.passes("call stack decoded function symbols");
             else
                 ut.expected_failure("call stack was unable to decode function symbols");

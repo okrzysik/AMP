@@ -5,13 +5,21 @@ IF ( ${CMAKE_MAJOR_VERSION} EQUAL 3 )
     CMAKE_POLICY(SET CMP0026 OLD)
 ENDIF()
 
+
 MESSAGE ("===============")
 MESSAGE ("Configuring AMP")
 MESSAGE ("===============")
 
 
 # Check if we used the TPL builder (required before PROJECT)
+SET( PROJ AMP )
 SET( AMP_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+SET( AMP_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}" )
+IF( PREFIX )
+    SET( AMP_INSTALL_DIR ${PREFIX} )
+ELSEIF( NOT ATOMIC_INSTALL_DIR )
+    SET( AMP_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}" )
+ENDIF()
 INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros.cmake" )
 INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake" )
 IF ( TPL_DIRECTORY )
@@ -51,12 +59,12 @@ INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/PackagesList.cmake" )
 
 # Set testing paramaters
 SET( DROP_METHOD "http" )
-SET( DROP_SITE "thyme.ornl.gov" )
+SET( DROP_SITE "" )
 SET( DROP_LOCATION "/CDash/submit.php?project=AMP" )
 SET( TRIGGER_SITE "" )
 SET( DROP_SITE_CDASH TRUE )
 ENABLE_TESTING()
-INCLUDE(CTest)
+INCLUDE( CTest )
 
 
 # Configure external libraries
