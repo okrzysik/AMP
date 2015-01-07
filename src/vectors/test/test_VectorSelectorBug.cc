@@ -1,7 +1,7 @@
 #include <utils/AMPManager.h>
 #include <utils/UnitTest.h>
 #include <utils/InputDatabase.h>
-#include <ampmesh/mesh.h>
+#include <ampmesh/Mesh.h>
 #include <discretization/simpleDOF_Manager.h>
 #include <vectors/VectorBuilder.h>
 #include <vectors/VectorSelector.h>
