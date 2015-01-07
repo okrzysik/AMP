@@ -73,17 +73,25 @@ void MeshMatrixTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mes
 {
     // Run the matrix tests
     #ifdef USE_AMP_MATRICES
-        PROFILE_START("MeshMatrixTestLoop");
-        //ut->failure("Matrices are not implimented yet");
-        VerifyGetMatrixTrivialTest<1,false>( ut, mesh );
-        VerifyGetMatrixTrivialTest<3,false>( ut, mesh );
-        VerifyGetMatrixTrivialTest<1,true>( ut, mesh );
-        VerifyGetMatrixTrivialTest<3,true>( ut, mesh );
-        GhostWriteTest<1,false>( ut, mesh );
-        GhostWriteTest<3,false>( ut, mesh );
-        GhostWriteTest<1,true>( ut, mesh );
-        GhostWriteTest<3,true>( ut, mesh );
-        PROFILE_STOP("MeshMatrixTestLoop");
+        bool run_tests = true;
+        #if !defined(USE_EXT_PETSC) && !defined(USE_EXT_TRILINOS)
+            if ( AMP::AMP_MPI(AMP_COMM_WORLD).getSize() > 1 ) {
+                ut->expected_failure("No parallel matrix to test");
+                run_tests = false;
+            }
+        #endif
+        if ( run_tests ) {
+            PROFILE_START("MeshMatrixTestLoop");
+            VerifyGetMatrixTrivialTest<1,false>( ut, mesh );
+            VerifyGetMatrixTrivialTest<3,false>( ut, mesh );
+            VerifyGetMatrixTrivialTest<1,true>( ut, mesh );
+            VerifyGetMatrixTrivialTest<3,true>( ut, mesh );
+            GhostWriteTest<1,false>( ut, mesh );
+            GhostWriteTest<3,false>( ut, mesh );
+            GhostWriteTest<1,true>( ut, mesh );
+            GhostWriteTest<3,true>( ut, mesh );
+            PROFILE_STOP("MeshMatrixTestLoop");
+        }
     #endif
 }
 

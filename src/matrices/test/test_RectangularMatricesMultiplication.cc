@@ -14,6 +14,12 @@
 
 void myTest(AMP::UnitTest *ut, std::string exeName) 
 {
+    #if !defined(USE_EXT_PETSC) && !defined(USE_EXT_TRILINOS)
+        if ( AMP::AMP_MPI(AMP_COMM_WORLD).getSize() > 1 ) {
+            ut->expected_failure("No parallel matrix to test");
+            return;
+        }
+    #endif
     std::string input_file = "input_" + exeName;
     std::string log_file = "output_" + exeName;
     AMP::PIO::logOnlyNodeZero(log_file);
