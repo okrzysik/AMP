@@ -87,7 +87,7 @@ FUNCTION( CONFIGURE_BLAS_AND_LAPACK )
         ENDIF()
         SET( BLAS_LAPACK_LIBS ${BLAS_LIBS} ${LAPACK_LIBS} PARENT_SCOPE)
         CONFIGURE_FILE( "${BlasLapackCMakeDir}/fortran_calls.h" "${BlasLapackInstallDir}/fortran_calls.h" COPYONLY )
-        FILE(APPEND ${BLAS_LAPACK_HEADER} "#include \"${BlasLapackInstallDir}/include/fortran_calls.h\"\n" )
+        FILE(APPEND ${BLAS_LAPACK_HEADER} "#include \"${BlasLapackInstallDir}/fortran_calls.h\"\n" )
     ENDIF()
     FILE(APPEND ${BLAS_LAPACK_HEADER} "#endif\n" )
     EXECUTE_PROCESS( COMMAND ${CMAKE_COMMAND} -E copy_if_different 
