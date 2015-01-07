@@ -226,8 +226,8 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
     ////////////////////////////////////////////////////////
     // TODO: DOES TO THE APPLY
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    map12->apply(nullVec, ElectrodeSolVec, ElectrodeMapVec);
-    map21->apply(nullVec, potentialSolVec, potentialMapVec);
+    map12->apply(nullVec, sourceVectorMap12, targetVectorMap12);
+    map21->apply(nullVec, sourceVectorMap21, targetVectorMap21);
     ////////////////////////////////////////////////////////
 
     siloWriter->writeFile( logFile , 2);
