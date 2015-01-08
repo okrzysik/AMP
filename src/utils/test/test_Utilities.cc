@@ -280,11 +280,15 @@ int main(int argc, char *argv[])
         if ( system_bytes >= 4e9 && globalComm.getRank()==0 ) {
             // Test getting the memory usage for 2-4 GB bytes
             // Note: we only run this test on machines with more than 4 GB of memory
-            n_bytes1 = AMP::Utilities::getMemoryUsage();
-            tmp = new double[0x10000001]; // Allocate 2^31+8 bytes
-            memset(tmp,0,0x10000000);
+            n_bytes1 = Utilities::getMemoryUsage();
+            uint64_t *tmp2 = new uint64_t[0x10000001]; // Allocate 2^31+8 bytes
+            memset(tmp2,0xAA,0x10000001*sizeof(uint64_t));
             n_bytes2 = AMP::Utilities::getMemoryUsage();
-            delete [] tmp;  tmp = NULL; NULL_USE(tmp);
+            for (int i=0; i<10; i++) {
+                if ( ( tmp2[rand()%0x1000000] & 0xFF ) != 0xAA )
+                    ut.failure("Internal error"); 
+            }
+            delete [] tmp2;  tmp2 = NULL;
             size_t n_bytes3 = AMP::Utilities::getMemoryUsage();
             if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1+0x81000000 && abs_diff(n_bytes1,n_bytes3)<50e3 ) {
                 ut.passes("getMemoryUsage correctly handles 2^31 - 2^32 bytes"); 
@@ -298,13 +302,17 @@ int main(int argc, char *argv[])
             // Note: we only run this test on machines with more than 8 GB of memory
             n_bytes1 = AMP::Utilities::getMemoryUsage();
             size_t size = 0x20000000;
-            tmp = new double[size]; // Allocate 2^32+8 bytes
+            tmp2 = new uint64_t[size]; // Allocate 2^31+8 bytes
             if ( tmp==NULL ) {
                 ut.expected_failure("Unable to allocate variable of size 4 GB");
             } else {
-                memset(tmp,0,0x10000000);
+                memset(tmp2, 0xAA, size * sizeof(uint64_t));
                 n_bytes2 = AMP::Utilities::getMemoryUsage();
-                delete [] tmp;  tmp = NULL; NULL_USE(tmp);
+                for (int i=0; i<10; i++) {
+                    if ( ( tmp2[rand()%size] & 0xFF ) != 0xAA )
+                        ut.failure("Internal error"); 
+                }
+                delete [] tmp2;  tmp2 = NULL; NULL_USE(tmp2);
                 n_bytes3 = AMP::Utilities::getMemoryUsage();
                 if ( n_bytes2 > 0x100000000 && n_bytes2 < n_bytes1+0x110000000 && abs_diff(n_bytes1,n_bytes3)<50e3 ) {
                     ut.passes("getMemoryUsage correctly handles memory > 2^32 bytes"); 
