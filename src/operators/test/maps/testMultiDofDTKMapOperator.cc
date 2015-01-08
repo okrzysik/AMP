@@ -9,6 +9,7 @@
 #include <ampmesh/Mesh.h>
 #include <discretization/simpleDOF_Manager.h>
 #include <operators/map/dtk/DTKMapOperator.h>
+#include <operators/map/dtk/MultiDofDTKMapOperator.h>
 #include <operators/ColumnOperator.h>
 #include <vectors/Variable.h>
 #include <vectors/VectorBuilder.h>
@@ -30,7 +31,6 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
     // Parse input file
     AMP::shared_ptr<AMP::InputDatabase> inputDatabase(new AMP::InputDatabase("input_db"));
     AMP::InputManager::getManager()->parseInputFile(inputFile, inputDatabase);
-    inputDatabase->printClassData(AMP::pout);
 
     // Read the mesh
     AMP::pout<<"--------------------\n";
@@ -81,7 +81,6 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
   siloWriter->registerVector(potentialSolVec, mesh, AMP::Mesh::Vertex, "potentialSolVec");
   siloWriter->registerVector(ElectrodeMapVec, mesh, AMP::Mesh::Vertex, "batteryMapVec"  );
   siloWriter->registerVector(ElectrodeSolVec, mesh, AMP::Mesh::Vertex, "batterySolVec"  );
-  siloWriter->writeFile(logFile , 0);
 
 //---------------------------------------------------
 
@@ -102,10 +101,11 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
   multiMapVec->addVector(BatteryMapVec);
   multiMapVec->addVector(potentialMapVec);
 
+    multiSolVec->setToScalar(-1.0);
+    multiMapVec->setToScalar(-2.0); // TODO: possible issue here...
 
 
   // Filling the vectors
-  //     potential on the electrodes
   AMP::Mesh::MeshIterator node  = anodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
   AMP::Mesh::MeshIterator end_node = node.end();
   for( ; node != end_node ; ++node)
@@ -134,7 +134,6 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
         potentialSolVec->setValueByGlobalID(bndGlobalIds[0], val);
   }//end for node
 
-  //     4th component on the sandwich
   node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
   end_node = node.end();
   for( ; node != end_node ; ++node)
@@ -163,74 +162,58 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
         BatterySolVec->setValueByGlobalID(bndGlobalIds[3], val);
   }//end for node
   multiSolVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
-
-  
-  siloWriter->writeFile( logFile , 1);
+    siloWriter->writeFile( logFile , 0);
 
     // create dtk map operator.
     AMP::pout<<"----------------------------\n";
     AMP::pout<<"     CREATE MAP OPERATOR    \n";
     AMP::pout<<"----------------------------\n";
-
-    ///////////////////////////////////////////////////////////////////
-    // TODO: MAKE AN OPERATOR THAT TAKE THIS AS PARAMETERS
-    AMP::Mesh::Mesh::shared_ptr mesh1 = cellSandwichMesh;
-    AMP::Mesh::Mesh::shared_ptr mesh2 = cathodeCCMesh   ;
-    AMP::LinearAlgebra::Vector::shared_ptr sourceVector = multiSolVec;
-    AMP::LinearAlgebra::Vector::shared_ptr targetVector = multiMapVec;
-    int const boundaryID1 = 2;
-    int const boundaryID2 = 3;
-    std::string const variable1 = batteryVariables ->getName();
-    std::size_t const strideOffset1 = 3;
-    std::size_t const strideLength1 = 5;
-    std::string const variable2 = potentialVariable->getName();
-    std::size_t const strideOffset2 = 0;
-    std::size_t const strideLength2 = 1;
-    ///////////////////////////////////////////////////////////////////
-
-
     AMP::shared_ptr<AMP::Database> nullDatabase;
-    // map 1 -> 2
-    AMP::LinearAlgebra::Vector::shared_ptr sourceVectorMap12 = sourceVector
-            ->select(AMP::LinearAlgebra::VS_ByVariableName(variable1)           , "var")
-            ->select(AMP::LinearAlgebra::VS_Stride(strideOffset1, strideLength1), "var");
-    AMP::LinearAlgebra::Vector::shared_ptr targetVectorMap12 = targetVector
-            ->select(AMP::LinearAlgebra::VS_ByVariableName(variable1)           , "var")
-            ->select(AMP::LinearAlgebra::VS_Stride(strideOffset1, strideLength1), "var");
-    AMP::shared_ptr<AMP::Operator::DTKMapOperatorParameters> map12Params(new AMP::Operator::DTKMapOperatorParameters(nullDatabase));
-    map12Params->d_domain_mesh = mesh1->Subset(mesh1->getBoundaryIDIterator(AMP::Mesh::Volume, boundaryID1));
-    map12Params->d_range_mesh  = mesh2->Subset(mesh2->getBoundaryIDIterator(AMP::Mesh::Volume, boundaryID2));
-    map12Params->d_domain_dofs = sourceVectorMap12->getDOFManager();
-    map12Params->d_range_dofs  = targetVectorMap12->getDOFManager();
-    AMP::shared_ptr<AMP::Operator::Operator> map12(new AMP::Operator::DTKMapOperator(map12Params));
+    // INTERFACE WITH ANODE
+    AMP::pout<<"interface anodeCC cellSandwich\n";
+    AMP::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters> anodeCCCellSandwichMapOperatorParams(new AMP::Operator::MultiDofDTKMapOperatorParameters(nullDatabase));
+    anodeCCCellSandwichMapOperatorParams->d_Mesh1 = anodeCCMesh;
+    anodeCCCellSandwichMapOperatorParams->d_BoundaryID1 = 5;
+    anodeCCCellSandwichMapOperatorParams->d_Variable1 = potentialVariable->getName();
+    anodeCCCellSandwichMapOperatorParams->d_StrideOffset1 = 0;
+    anodeCCCellSandwichMapOperatorParams->d_StrideLength1 = 1;
+    anodeCCCellSandwichMapOperatorParams->d_Mesh2 = cellSandwichMesh;
+    anodeCCCellSandwichMapOperatorParams->d_BoundaryID2 = 1;
+    anodeCCCellSandwichMapOperatorParams->d_Variable2 = batteryVariables ->getName();
+    anodeCCCellSandwichMapOperatorParams->d_StrideOffset2 = 3;
+    anodeCCCellSandwichMapOperatorParams->d_StrideLength2 = 5;
+    anodeCCCellSandwichMapOperatorParams->d_SourceVector = multiSolVec;
+    anodeCCCellSandwichMapOperatorParams->d_TargetVector = multiMapVec;
+    AMP::shared_ptr<AMP::Operator::Operator> anodeCCCellSandwichMapOperator(new AMP::Operator::MultiDofDTKMapOperator(anodeCCCellSandwichMapOperatorParams));
 
-    // map 2 -> 1
-    AMP::LinearAlgebra::Vector::shared_ptr sourceVectorMap21 = sourceVector
-            ->select(AMP::LinearAlgebra::VS_ByVariableName(variable2)           , "var")
-            ->select(AMP::LinearAlgebra::VS_Stride(strideOffset2, strideLength2), "var");
-    AMP::LinearAlgebra::Vector::shared_ptr targetVectorMap21 = targetVector
-            ->select(AMP::LinearAlgebra::VS_ByVariableName(variable2)           , "var")
-            ->select(AMP::LinearAlgebra::VS_Stride(strideOffset2, strideLength2), "var");
-    AMP::shared_ptr<AMP::Operator::DTKMapOperatorParameters> map21Params(new AMP::Operator::DTKMapOperatorParameters(nullDatabase));
-    map21Params->d_domain_mesh = mesh2->Subset(mesh2->getBoundaryIDIterator(AMP::Mesh::Volume, boundaryID2));
-    map21Params->d_range_mesh  = mesh1->Subset(mesh1->getBoundaryIDIterator(AMP::Mesh::Volume, boundaryID1));
-    map21Params->d_domain_dofs = sourceVectorMap21->getDOFManager();
-    map21Params->d_range_dofs  = targetVectorMap21->getDOFManager();
-    AMP::shared_ptr<AMP::Operator::Operator> map21(new AMP::Operator::DTKMapOperator(map21Params));
+    // INTERFACE WITH CATHODE
+    AMP::pout<<"interface cellSandwich cathodeCC\n";
+    AMP::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters> cellSandwichCathodeCCMapOperatorParams(new AMP::Operator::MultiDofDTKMapOperatorParameters(nullDatabase));
+    cellSandwichCathodeCCMapOperatorParams->d_Mesh1 = cellSandwichMesh;
+    cellSandwichCathodeCCMapOperatorParams->d_BoundaryID1 = 2;
+    cellSandwichCathodeCCMapOperatorParams->d_Variable1 = batteryVariables ->getName();
+    cellSandwichCathodeCCMapOperatorParams->d_StrideOffset1 = 3;
+    cellSandwichCathodeCCMapOperatorParams->d_StrideLength1 = 5;
+    cellSandwichCathodeCCMapOperatorParams->d_Mesh2 = cathodeCCMesh;
+    cellSandwichCathodeCCMapOperatorParams->d_BoundaryID2 = 3;
+    cellSandwichCathodeCCMapOperatorParams->d_Variable2 = potentialVariable->getName();
+    cellSandwichCathodeCCMapOperatorParams->d_StrideOffset2 = 0;
+    cellSandwichCathodeCCMapOperatorParams->d_StrideLength2 = 1;
+    cellSandwichCathodeCCMapOperatorParams->d_SourceVector = multiSolVec;
+    cellSandwichCathodeCCMapOperatorParams->d_TargetVector = multiMapVec;
+    AMP::shared_ptr<AMP::Operator::Operator> cellSandwichCathodeCCMapOperator(new AMP::Operator::MultiDofDTKMapOperator(cellSandwichCathodeCCMapOperatorParams));
 
     // apply the map.
     AMP::pout<<"----------------------\n";
     AMP::pout<<"     APPLY THE MAP    \n";
     AMP::pout<<"----------------------\n";
-
-    ////////////////////////////////////////////////////////
-    // TODO: DOES TO THE APPLY
-    AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    map12->apply(nullVec, sourceVectorMap12, targetVectorMap12);
-    map21->apply(nullVec, sourceVectorMap21, targetVectorMap21);
-    ////////////////////////////////////////////////////////
-
+    siloWriter->writeFile( logFile , 1);
+    AMP::pout<<"interface cellSandwich cathodeCC\n";
+    cellSandwichCathodeCCMapOperator->apply(multiRhsVec, multiSolVec, multiResVec);
     siloWriter->writeFile( logFile , 2);
+    AMP::pout<<"interface anodeCC cellSandwich\n";
+    anodeCCCellSandwichMapOperator->apply(multiRhsVec, multiSolVec, multiResVec); // this map doesn't seem to work properly
+    siloWriter->writeFile( logFile , 3);
 
 
     // check the answer
@@ -249,7 +232,7 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
     end_node = node.end();
     errorVec = ElectrodeMapVec->constSelect(AMP::LinearAlgebra::VS_MeshIterator(node.begin(), globalComm), "error");
     tolerance = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
-    whatAmIChecking = "interface between cellSandwich and cathodeCC map electrochemical";
+    whatAmIChecking = "interface between cellSandwich and cathodeCC - cathodeCC side";
     
     
   for( ; node != end_node ; ++node)
@@ -262,7 +245,7 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
         BatteryMapVec->addValueByGlobalID(bndGlobalIds[3], -val);
   }//end for node
     errorNorm = errorVec->L2Norm();
-    AMP::pout<<"anodeCC error = "<<errorNorm<<"\n"; 
+    AMP::pout<<whatAmIChecking<<" error = "<<errorNorm<<"\n"; 
     if (errorNorm > tolerance)
         ut->failure(whatAmIChecking);
 
@@ -271,7 +254,7 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
     end_node = node.end();
     errorVec = potentialMapVec->constSelect(AMP::LinearAlgebra::VS_MeshIterator(node.begin(), globalComm), "error");
     tolerance = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
-    whatAmIChecking = "interface between cellSandwich and cathodeCC map electrical";
+    whatAmIChecking = "interface between cellSandwich and cathodeCC - cellSandwich side";
 
   for( ; node != end_node ; ++node)
   {
@@ -283,49 +266,54 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
         potentialMapVec->addValueByGlobalID(bndGlobalIds[0], -val);
   }//end for node
     errorNorm = errorVec->L2Norm();
-    AMP::pout<<"sandwich anodeCC error = "<<errorNorm<<"\n"; 
+    AMP::pout<<whatAmIChecking<<" error = "<<errorNorm<<"\n"; 
     if (errorNorm > tolerance)
         ut->failure(whatAmIChecking);
 
-  node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
-  end_node = node.end();
+    // THIRD
+    node  = anodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
+    end_node = node.end();
+    errorVec = ElectrodeMapVec->constSelect(AMP::LinearAlgebra::VS_MeshIterator(node.begin(), globalComm), "error");
+    tolerance = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
+    whatAmIChecking = "interface between cellSandwich and anodeCC - anodeCC side";
+    
   for( ; node != end_node ; ++node)
   {
         std::vector<size_t> bndGlobalIds;
         eectDofMap->getDOFs( node->globalID() , bndGlobalIds );
         
         std::vector<double> pt = node->coord();
-        double val1 = __INIT_FN1__(pt[0], pt[1], pt[2]);
-        double val2 = BatteryMapVec->getValueByGlobalID(bndGlobalIds[3]);
-
-        if ( !AMP::Utilities::approx_equal(val1,val2) )
-        {
-            ut->passes(" DTK Map Operator CellSandwich test ");
-        } else {
-            ut->failure(" DTK Map Operator test ");
-        }
+        double val = __INIT_FN2__(pt[0], pt[1], pt[2]);
+        BatteryMapVec->addValueByGlobalID(bndGlobalIds[3], -val);
   }//end for node
+    errorNorm = errorVec->L2Norm();
+    AMP::pout<<whatAmIChecking<<" error = "<<errorNorm<<"\n"; 
+    if (errorNorm > tolerance)
+        ut->failure(whatAmIChecking);
 
-  node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 2, 0 );
-  end_node = node.end();
+    // FOURTH
+    node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
+    end_node = node.end();
+    errorVec = potentialMapVec->constSelect(AMP::LinearAlgebra::VS_MeshIterator(node.begin(), globalComm), "error");
+    tolerance = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
+    whatAmIChecking = "interface between cellSandwich and anodeCC - cellSandwich side";
+
   for( ; node != end_node ; ++node)
   {
         std::vector<size_t> bndGlobalIds;
-        eectDofMap->getDOFs( node->globalID() , bndGlobalIds );
+        phiDofMap->getDOFs( node->globalID() , bndGlobalIds );
         
         std::vector<double> pt = node->coord();
-        double val1 = __INIT_FN3__(pt[0], pt[1], pt[2]);
-        double val2 = BatteryMapVec->getValueByGlobalID(bndGlobalIds[3]);
-
-        if ( !AMP::Utilities::approx_equal(val1,val2) )
-        {
-            ut->passes(" DTK Map Operator CellSandwich test ");
-        } else {
-            ut->failure(" DTK Map Operator test ");
-        }
+        double val = __INIT_FN1__(pt[0], pt[1], pt[2]);
+        potentialMapVec->addValueByGlobalID(bndGlobalIds[0], -val);
   }//end for node
+    errorNorm = errorVec->L2Norm();
+    AMP::pout<<whatAmIChecking<<" error = "<<errorNorm<<"\n"; 
+    if (errorNorm > tolerance)
+        ut->failure(whatAmIChecking);
 
-  siloWriter->writeFile( logFile , 3);
+
+  siloWriter->writeFile( logFile , 4);
 
   return 1;
 }
@@ -335,6 +323,7 @@ int main(int argc, char *argv[])
     AMP::AMPManagerProperties startup_properties;
     startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup(argc,argv,startup_properties);
+
     AMP::UnitTest ut;
 
     runTest("testMultiDofDTKMap-1", &ut);
