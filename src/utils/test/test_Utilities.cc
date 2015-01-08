@@ -302,7 +302,7 @@ int main(int argc, char *argv[])
             // Note: we only run this test on machines with more than 8 GB of memory
             n_bytes1 = AMP::Utilities::getMemoryUsage();
             size_t size = 0x20000000;
-            tmp2 = new uint64_t[size]; // Allocate 2^31+8 bytes
+            uint64_t tmp2 = new uint64_t[size]; // Allocate 2^31+8 bytes
             if ( tmp==NULL ) {
                 ut.expected_failure("Unable to allocate variable of size 4 GB");
             } else {
