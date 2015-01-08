@@ -280,7 +280,7 @@ int main(int argc, char *argv[])
         if ( system_bytes >= 4e9 && globalComm.getRank()==0 ) {
             // Test getting the memory usage for 2-4 GB bytes
             // Note: we only run this test on machines with more than 4 GB of memory
-            n_bytes1 = Utilities::getMemoryUsage();
+            n_bytes1 = AMP::Utilities::getMemoryUsage();
             uint64_t *tmp2 = new uint64_t[0x10000001]; // Allocate 2^31+8 bytes
             memset(tmp2,0xAA,0x10000001*sizeof(uint64_t));
             n_bytes2 = AMP::Utilities::getMemoryUsage();
