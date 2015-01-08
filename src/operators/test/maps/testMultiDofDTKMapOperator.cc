@@ -326,7 +326,7 @@ int main(int argc, char *argv[])
 
     AMP::UnitTest ut;
 
-    runTest("testMultiDofDTKMap-1", &ut);
+    runTest("testMultiDofDTKMapOperator-1", &ut);
 
     ut.report();
 
