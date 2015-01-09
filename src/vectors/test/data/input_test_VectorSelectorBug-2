@@ -1,0 +1,12 @@
+Mesh{
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+    MeshName = "CellSandwich_2"
+    MeshType = "libMesh"
+    FileName = "cellSandwich.e"
+    dim = 3
+    NumberOfElements = 20000
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+}
