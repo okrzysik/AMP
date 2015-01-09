@@ -18,19 +18,18 @@ void myTest(AMP::UnitTest *ut)
     AMP::InputManager::getManager()->parseInputFile(inputFile, inputDatabase);
     
     // Read the mesh
-    AMP::pout<<"--------------------\n";
-    AMP::pout<<"    LOADING MESH    \n";
-    AMP::pout<<"--------------------\n";
     AMP::Database::shared_ptr meshDatabase = inputDatabase->getDatabase("Mesh");
     AMP::Mesh::MeshParameters::shared_ptr meshParams(new AMP::Mesh::MeshParameters(meshDatabase));
     meshParams->setComm(globalComm);
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh(meshParams);
     
-    int const boundaryID = 2;
+    int const boundaryID = inputDatabase->getInteger("BoundaryID");
     AMP::Mesh::Mesh::shared_ptr boundaryMesh = 
         mesh->Subset(mesh->getBoundaryIDIterator(AMP::Mesh::Volume, boundaryID));
     AMP::pout<<"mesh volumes = "<<mesh->numGlobalElements(AMP::Mesh::Volume)<<"\n";
     AMP::pout<<"boundary mesh volumes = "<<boundaryMesh->numGlobalElements(AMP::Mesh::Volume)<<"\n";
+    AMP::pout<<"mesh vertices = "<<mesh->numGlobalElements(AMP::Mesh::Vertex)<<"\n";
+    AMP::pout<<"boundary mesh vertices = "<<boundaryMesh->numGlobalElements(AMP::Mesh::Vertex)<<"\n";
     
     // make a simple vector 
     bool const split = true;
@@ -41,7 +40,6 @@ void myTest(AMP::UnitTest *ut)
     AMP::LinearAlgebra::Variable::shared_ptr variable(new AMP::LinearAlgebra::Variable("noname"));
     AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::createVector(dofManager, variable, split);
 
-    
     AMP::pout<<"mesh vector size "         <<vector->select(AMP::LinearAlgebra::VS_Mesh(mesh)        , "var")->getGlobalSize()<<"\n";
     AMP::pout<<"boundary mesh vector size "<<vector->select(AMP::LinearAlgebra::VS_Mesh(boundaryMesh), "var")->getGlobalSize()<<"\n";
 
