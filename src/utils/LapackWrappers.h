@@ -515,9 +515,11 @@ public:
 };
 
 
-}
+} // namespace AMP
+
+#include "utils/LapackWrappers.hpp"
+
 
 #endif
 
-#include "utils/LapackWrappers.hpp"
 

@@ -1,13 +1,17 @@
 #ifndef USE_LAPACK_WRAPPER_HPP
 #define USE_LAPACK_WRAPPER_HPP
+
 #include "blas_lapack.h"
+#include "utils/LapackWrappers.h"
 
 #include <stdexcept>
 
 
 // Define macro to handle name mangling
 #ifndef FORTRAN_WRAPPER
-    #if defined(_WIN32) || defined(__hpux) || defined(USE_MKL)
+    #if defined(USE_ACML)
+        #define FORTRAN_WRAPPER(x) x ## _
+    #elif defined(_WIN32) || defined(__hpux) || defined(USE_MKL)
         #define FORTRAN_WRAPPER(x) x
     #else
         #define FORTRAN_WRAPPER(x) x ## _

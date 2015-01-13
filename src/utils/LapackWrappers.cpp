@@ -1,34 +1,34 @@
-#include "LapackWrappers.h"
+#include "utils/LapackWrappers.h"
 #include <iostream>
 #include <cstdio>
+#include <limits>
 #include <string.h>
 #include <algorithm>
-#include <cmath> 
-#include "utils/LapackWrappers.h"
+#include <cmath>
 
 
 using namespace AMP;
 
 
 // Declare the individual tests
-static int test_dcopy( int N );
-static int test_dscal( int N );
-static int test_dnrm2( int N );
-static int test_dasum( int N );
-static int test_ddot(  int N );
-static int test_daxpy( int N );
-static int test_dgemv( int N );
-static int test_dgemm( int N );
-static int test_dgesv( int N );
-static int test_dgtsv( int N );
-static int test_dgbsv( int N );
-static int test_dgetrf( int N );
-static int test_dgttrf( int N );
-static int test_dgbtrf( int N );
-static int test_dgetrs( int N );
-static int test_dgttrs( int N );
-static int test_dgbtrs( int N );
-static int test_dgetri( int N );
+static bool test_dcopy( int N );
+static bool test_dscal( int N );
+static bool test_dnrm2( int N );
+static bool test_dasum( int N );
+static bool test_ddot(  int N );
+static bool test_daxpy( int N );
+static bool test_dgemv( int N );
+static bool test_dgemm( int N );
+static bool test_dgesv( int N );
+static bool test_dgtsv( int N );
+static bool test_dgbsv( int N );
+static bool test_dgetrf( int N );
+static bool test_dgttrf( int N );
+static bool test_dgbtrf( int N );
+static bool test_dgetrs( int N );
+static bool test_dgttrs( int N );
+static bool test_dgbtrs( int N );
+static bool test_dgetri( int N );
 
 
 // Define some sizes of the problems
@@ -43,41 +43,41 @@ int AMP::Lapack::run_test( const char* routine, int N )
     //std::transform(name.begin(),name.end(),name.begin(),::tolower);
     int N_errors = 0;
     if ( name == "dcopy" ) {
-        N_errors += test_dcopy( N );
+        N_errors += test_dcopy( N ) ? 1:0;
     } else if ( name == "dscal" ) {
-        N_errors += test_dscal( N );
+        N_errors += test_dscal(N) ? 1 : 0;
     } else if ( name == "dnrm2" ) {
-        N_errors += test_dnrm2( N );
+        N_errors += test_dnrm2(N) ? 1 : 0;
     } else if ( name == "daxpy" ) {
-        N_errors += test_daxpy( N );
+        N_errors += test_daxpy(N) ? 1 : 0;
     } else if ( name == "dgemv" ) {
-        N_errors += test_dgemv( N );
+        N_errors += test_dgemv(N) ? 1 : 0;
     } else if ( name == "dgemm" ) {
-        N_errors += test_dgemm( N );
+        N_errors += test_dgemm(N) ? 1 : 0;
     } else if ( name == "dasum" ) {
-        N_errors += test_dasum( N );
+        N_errors += test_dasum(N) ? 1 : 0;
     } else if ( name == "ddot" ) {
-        N_errors += test_ddot( N );
+        N_errors += test_ddot(N)  ? 1 : 0;
     } else if ( name == "dgesv" ) {
-        N_errors += test_dgesv( N );
+        N_errors += test_dgesv(N) ? 1 : 0;
     } else if ( name == "dgtsv" ) {
-        N_errors += test_dgtsv( N );
+        N_errors += test_dgtsv(N) ? 1 : 0;
     } else if ( name == "dgbsv" ) {
-        N_errors += test_dgbsv( N );
+        N_errors += test_dgbsv(N) ? 1 : 0;
     } else if ( name == "dgetrf" ) {
-        N_errors += test_dgetrf( N );
+        N_errors += test_dgetrf(N) ? 1 : 0;
     } else if ( name == "dgttrf" ) {
-        N_errors += test_dgttrf( N );
+        N_errors += test_dgttrf(N) ? 1 : 0;
     } else if ( name == "dgbtrf" ) {
-        N_errors += test_dgbtrf( N );
+        N_errors += test_dgbtrf(N) ? 1 : 0;
     } else if ( name == "dgetrs" ) {
-        N_errors += test_dgetrs( N );
+        N_errors += test_dgetrs(N) ? 1 : 0;
     } else if ( name == "dgttrs" ) {
-        N_errors += test_dgttrs( N );
+        N_errors += test_dgttrs(N) ? 1 : 0;
     } else if ( name == "dgbtrs" ) {
-        N_errors += test_dgbtrs( N );
+        N_errors += test_dgbtrs(N) ? 1 : 0;
     } else if ( name == "dgetri" ) {
-        N_errors += test_dgetri( N );
+        N_errors += test_dgetri(N) ? 1 : 0;
     } else { 
         std::cerr << "Unknown test\n";
         return -1;
@@ -114,7 +114,7 @@ int AMP::Lapack::run_all_test( )
     if ( test_dgbtrs(N)!=0 ) { printf("test_dgbtrs failed\n"); N_errors++; }
     // Inverse using factorization
     if ( test_dgetri(N)!=0 ) { printf("test_dgetri failed\n"); N_errors++; }
-    return N_errors;
+    return N_errors>0;
 }
 
 
@@ -128,18 +128,38 @@ static inline void random( int N, double *data )
 
 
 // Check if two vectors are approximately equal
-static inline bool approx_equal( int N, const double *x1, const double *x2, const double tol=1e-12 )
+static inline bool approx_equal( int N, const double *x1, const double *x2, const double tol = 1e-12 )
 {
     bool pass = true;
-    for (int i=0; i<N; i++) 
-        pass = pass && fabs(x1[i]-x2[i]) <= tol*0.5*fabs(x1[i]+x2[i]);
+    for (int i=0; i<N; i++)
+        pass = pass && fabs(x1[i] - x2[i]) <= tol*0.5*fabs(x1[i] + x2[i]);
     return pass;
+}
+
+
+// Return the L2 norm
+static inline double L2Norm( int N, const double *x )
+{
+    double norm = 0.0;
+    for (int i=0; i<N; i++)
+        norm += x[i]*x[i];
+    return sqrt(norm);
+}
+
+
+// Return the L2 error
+static inline double L2Error( int N, const double *x1, const double *x2 )
+{
+    double norm = 0.0;
+    for (int i=0; i<N; i++)
+        norm += (x1[i]-x2[i])*(x1[i]-x2[i]);
+    return sqrt(norm);
 }
 
 
 
 // Test dcopy
-static int test_dcopy( int N )
+static bool test_dcopy( int N )
 {
     const int K = TEST_SIZE_VEC;
     double *x1 = new double[K];
@@ -154,11 +174,11 @@ static int test_dcopy( int N )
     }
     delete [] x1;
     delete [] x2;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test dcopy
-static int test_dscal( int N )
+static bool test_dscal( int N )
 {
     const int K = TEST_SIZE_VEC;
     double *x0 = new double[K];
@@ -178,11 +198,11 @@ static int test_dscal( int N )
     delete [] x0;
     delete [] x1;
     delete [] x2;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test dnrm2
-static int test_dnrm2( int N )
+static bool test_dnrm2( int N )
 {
     const int K = TEST_SIZE_VEC;
     double *x = new double[K];
@@ -198,30 +218,36 @@ static int test_dnrm2( int N )
             N_errors++;
     }
     delete [] x;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test dasum
-static int test_dasum( int N )
+static bool test_dasum( int N )
 {
     const int K = TEST_SIZE_VEC;
+    // Maximum roundoff error that is acceptible is determined by the
+    //    error from adding a series of numbers from (0,1).
+    //    The expected error is much less than the maximum error.
+    const double max_error = K*K/2*std::numeric_limits<double>::epsilon();
+    // Create a random set of numbers and the sum (simple method)
     double *x = new double[K];
     random(K,x);
     double ans1 = 0;
     for (int j=0; j<K; j++)
         ans1 += fabs(x[j]);
+    // Check dasum
     int N_errors = 0;
     for (int i=0; i<N; i++) {
         double ans2 = Lapack::dasum(K,x,1);
-        if ( fabs(ans1-ans2)>K*1e-15 )
+        if ( fabs(ans1-ans2)>max_error )
             N_errors++;
     }
     delete [] x;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test ddot
-static int test_ddot( int N )
+static bool test_ddot( int N )
 {
     const int K = TEST_SIZE_VEC;
     double *x1 = new double[K];
@@ -239,11 +265,11 @@ static int test_ddot( int N )
     }
     delete [] x1;
     delete [] x2;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test daxpy
-static int test_daxpy( int N )
+static bool test_daxpy( int N )
 {
     const int K = TEST_SIZE_VEC;
     double *x = new double[K];
@@ -266,11 +292,11 @@ static int test_daxpy( int N )
     delete [] y0;
     delete [] y1;
     delete [] y2;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test dgemv
-static int test_dgemv( int N )
+static bool test_dgemv( int N )
 {
     const int K = 500;
     double *A = new double[K*K];
@@ -300,11 +326,11 @@ static int test_dgemv( int N )
     delete [] y;
     delete [] y1;
     delete [] y2;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test dgemm
-static int test_dgemm( int N )
+static bool test_dgemm( int N )
 {
     const int K = TEST_SIZE_MAT;
     double *A = new double[K*K];
@@ -336,11 +362,11 @@ static int test_dgemm( int N )
     delete [] C;
     delete [] C1;
     delete [] C2;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test dgesv
-static int test_dgesv( int N )
+static bool test_dgesv( int N )
 {
     // Test solving a diagonal matrix
     const int K = TEST_SIZE_MAT;
@@ -370,11 +396,11 @@ static int test_dgesv( int N )
     delete [] x2;
     delete [] b;
     delete [] IPIV;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test dgtsv
-static int test_dgtsv( int N )
+static bool test_dgtsv( int N )
 {
     // Test solving a tri-diagonal matrix by comparing to dgtsv
     const int K = TEST_SIZE_tri;
@@ -411,7 +437,9 @@ static int test_dgtsv( int N )
         memcpy(DU2,DU,(K-1)*sizeof(double));
         Lapack::dgtsv(K,1,DL2,D2,DU2,x2,K,error);
         N_errors += error==0 ? 0:1;
-        if ( !approx_equal(K,x1,x2,K*1e-14) )
+        double err = L2Error(N,x1,x2);
+        double norm = L2Norm(N,x1);
+        if ( err > 1e-14*norm )
             N_errors++;
     }
     delete [] A;
@@ -425,10 +453,10 @@ static int test_dgtsv( int N )
     delete [] x2;
     delete [] b;
     delete [] IPIV;
-    return N_errors;
+    return N_errors>0;
 }
 // Test dgtsv
-static int test_dgbsv( int N )
+static bool test_dgbsv( int N )
 {
     // Test solving a banded-diagonal matrix by comparing to dgtsv
     //    N = 6, KL = 2, KU = 1:
@@ -477,11 +505,11 @@ static int test_dgbsv( int N )
     delete [] x2;
     delete [] b;
     delete [] IPIV;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test dgetrf
-static int test_dgetrf( int N )
+static bool test_dgetrf( int N )
 {
     // Check dgetrf by performing a factorization and solve and comparing to dgesv
     const int K = TEST_SIZE_MAT;
@@ -513,11 +541,11 @@ static int test_dgetrf( int N )
     delete [] x2;
     delete [] b;
     delete [] IPIV;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test dgttrf
-static int test_dgttrf( int N )
+static bool test_dgttrf( int N )
 {
     // Check dgttrf by performing a factorization and solve and comparing to dgtsv
     const int K = TEST_SIZE_tri;
@@ -565,11 +593,11 @@ static int test_dgttrf( int N )
     delete [] x2;
     delete [] b;
     delete [] IPIV;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test dgbtrf
-static int test_dgbtrf( int N )
+static bool test_dgbtrf( int N )
 {
     // Check dgbtrf by performing a factorization and solve and comparing to dgbsv
     const int K = TEST_SIZE_tri;
@@ -604,11 +632,11 @@ static int test_dgbtrf( int N )
     delete [] x2;
     delete [] b;
     delete [] IPIV;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test dgetrs
-static int test_dgetrs( int N )
+static bool test_dgetrs( int N )
 {
     // Check dgetrs by performing a factorization and solve and comparing to dgesv
     const int K = TEST_SIZE_MAT;
@@ -640,11 +668,11 @@ static int test_dgetrs( int N )
     delete [] x2;
     delete [] b;
     delete [] IPIV;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test dgttrs
-static int test_dgttrs( int N )
+static bool test_dgttrs( int N )
 {
     // Check dgttrs by performing a factorization and solve and comparing to dgtsv
     const int K = TEST_SIZE_tri;
@@ -694,11 +722,11 @@ static int test_dgttrs( int N )
     delete [] x2;
     delete [] b;
     delete [] IPIV;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test dgbtrs
-static int test_dgbtrs( int N )
+static bool test_dgbtrs( int N )
 {
     // Check dgbtrs by performing a factorization and solve and comparing to dgbsv
     const int K = TEST_SIZE_tri;
@@ -733,11 +761,11 @@ static int test_dgbtrs( int N )
     delete [] x2;
     delete [] b;
     delete [] IPIV;
-    return N_errors;
+    return N_errors>0;
 }
 
 // Test dgetri
-static int test_dgetri( int N )
+static bool test_dgetri( int N )
 {
     // Check dgetri by performing a factorization, calculating the inverse,
     //   multiplying the rhs, and comparing to dgesv
@@ -777,7 +805,7 @@ static int test_dgetri( int N )
     delete [] b;
     delete [] IPIV;
     delete [] WORK;
-    return N_errors;
+    return N_errors>0;
 }
 
 
