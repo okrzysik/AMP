@@ -175,10 +175,13 @@ AMP::shared_ptr<DOFManager>  simpleDOFManager::subset( const AMP::Mesh::Mesh::sh
     } 
     // Check if the desired mesh is a multimesh that contains the current mesh
     if ( AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>(mesh) != NULL ) {
-        std::vector<AMP::Mesh::MeshID> ids = mesh->getLocalMeshIDs();
+        AMP::shared_ptr<const AMP::Mesh::MultiMesh> multimesh = 
+            AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>(mesh);
+        std::vector<AMP::Mesh::Mesh::const_shared_ptr> list = multimesh->getMeshes();
+        AMP::shared_ptr<DOFManager> subset_DOFs;
         bool found_local = false;
-        for (size_t i=0; i<ids.size(); i++) {
-            if ( ids[i] == d_meshID )
+        for (size_t i=0; i<list.size(); i++) {
+            if ( d_meshID == list[i]->meshID() )
                 found_local = true;
         }
         AMP_MPI comm(AMP_COMM_NULL);

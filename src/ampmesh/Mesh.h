@@ -52,6 +52,13 @@ public:
      */
     typedef AMP::shared_ptr<AMP::Mesh::Mesh>  shared_ptr;
 
+    /**
+     *\typedef const_shared_ptr
+     *\brief  Name for the const shared pointer.
+     *\details  Use this typedef for a reference counted pointer to a mesh manager object.
+     */
+    typedef AMP::shared_ptr<const AMP::Mesh::Mesh>  const_shared_ptr;
+
 
     /**
      * \brief Read in mesh files, partition domain, and prepare environment for simulation
@@ -299,7 +306,7 @@ public:
     virtual unsigned char getDim() const { return PhysicalDim; } 
 
 
-    //! Get the largest geometric type in the mesh
+    //! Get the communicator for the mesh
     virtual AMP_MPI getComm() const { return d_comm; }
 
 

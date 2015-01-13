@@ -38,25 +38,38 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
     AMP::Discretization::DOFManager::shared_ptr subsetDOF = DOF->subset( iterator, mesh->getComm() );
     testGetDOFIterator(  ut, mesh->getIterator(AMP::Mesh::Vertex,1), subsetDOF );
     if ( *DOF == *subsetDOF )
-        ut->passes("Subset DOF on full mesh iterator");
+        ut->passes("Subset DOF on full mesh iterator: "+GENERATOR::name());
     else
-        ut->failure("Subset DOF on full mesh iterator");
+        ut->failure("Subset DOF on full mesh iterator: "+GENERATOR::name());
     iterator = mesh->getSurfaceIterator( AMP::Mesh::Vertex, 1 );
     subsetDOF = DOF->subset( iterator, mesh->getComm() );
     testGetDOFIterator(  ut, mesh->getSurfaceIterator(AMP::Mesh::Vertex,1), subsetDOF );
     iterator = mesh->getSurfaceIterator( AMP::Mesh::Vertex, 0 );
     if ( subsetDOF->numGlobalDOF()<DOF->numGlobalDOF() && subsetDOF->numLocalDOF()==iterator.size() )
-        ut->passes("Subset DOF on surface mesh iterator");
+        ut->passes("Subset DOF on surface mesh iterator: "+GENERATOR::name());
     else
-        ut->failure("Subset DOF on surface mesh iterator");
+        ut->failure("Subset DOF on surface mesh iterator: "+GENERATOR::name());
 
     // Subset using VectorSelector
     #ifdef USE_AMP_VECTORS
         AMP::Mesh::Mesh::shared_ptr submesh = mesh->Subset( mesh->getSurfaceIterator(AMP::Mesh::Face,1) );
-        AMP::LinearAlgebra::MeshIteratorVariable meshSubsetVariable( "surfaceSubset", submesh->getIterator(AMP::Mesh::Vertex,1), submesh->getComm() );
+        AMP::LinearAlgebra::MeshIteratorVariable meshSubsetVariable( 
+            "surfaceSubset", submesh->getIterator(AMP::Mesh::Vertex,1), submesh->getComm() );
         subsetDOF = meshSubsetVariable.getSubsetDOF( DOF );
         testGetDOFIterator(  ut, submesh->getIterator(AMP::Mesh::Vertex,1), subsetDOF );
     #endif
+
+    // Test subsetting for a subset mesh
+    if ( mesh->getGeomType() == AMP::Mesh::Volume ) {
+        AMP::Mesh::Mesh::shared_ptr surface_mesh = mesh->Subset( mesh->getSurfaceIterator(AMP::Mesh::Face,1) );
+        subsetDOF = DOF->subset( surface_mesh );
+        size_t N1 = surface_mesh->numGlobalElements(AMP::Mesh::Vertex);
+        size_t N2 = subsetDOF->numGlobalDOF();
+        if ( N1==N2 )
+            ut->passes("Subset DOF on surface mesh: "+GENERATOR::name());
+        else
+            ut->failure("Subset DOF on surface mesh: "+GENERATOR::name());
+    }
 }
 
 
@@ -91,19 +104,19 @@ void testSimpleDOFManager( AMP::UnitTest *ut )
 
     // Check some simple properties
     if ( DOF1->numLocalDOF() > 0 )
-        ut->passes("Non-empty DOFs");
+        ut->passes("Non-empty DOFs: "+GENERATOR::name());
     else
-        ut->failure("Non-empty DOFs");
+        ut->failure("Non-empty DOFs: "+GENERATOR::name());
     if ( DOF1->endDOF()-DOF1->beginDOF() == DOF1->numLocalDOF() )
-        ut->passes("Non-empty DOFs");
+        ut->passes("Non-empty DOFs: "+GENERATOR::name());
     else
-        ut->failure("Non-empty DOFs");
+        ut->failure("Non-empty DOFs: "+GENERATOR::name());
     if ( DOF2->numLocalDOF()==DOF1->numLocalDOF() && DOF3->numLocalDOF()==3*DOF1->numLocalDOF() && DOF4->numLocalDOF()==DOF1->numLocalDOF() &&
             DOF2->beginDOF()==DOF1->beginDOF() && DOF3->beginDOF()==3*DOF1->beginDOF() && DOF4->beginDOF()==DOF1->beginDOF() && 
             DOF2->endDOF()==DOF1->endDOF() && DOF3->endDOF()==3*DOF1->endDOF() && DOF4->endDOF()==DOF1->endDOF() )
-        ut->passes("DOFs agree");
+        ut->passes("DOFs agree: "+GENERATOR::name());
     else
-        ut->failure("DOFs agree");
+        ut->failure("DOFs agree: "+GENERATOR::name());
 
     // Check that the iterator size matches the mesh
     AMP::Mesh::MeshIterator meshIterator = mesh->getIterator(AMP::Mesh::Vertex,0);
@@ -112,29 +125,30 @@ void testSimpleDOFManager( AMP::UnitTest *ut )
     AMP::Mesh::MeshIterator DOF3Iterator = DOF3->getIterator();
     AMP::Mesh::MeshIterator DOF4Iterator = DOF4->getIterator();
     if ( DOF1Iterator.size() == meshIterator.size() )
-        ut->passes("DOF1 has the correct size for the iterator");
+        ut->passes("DOF1 has the correct size for the iterator: "+GENERATOR::name());
     else
-        ut->failure("DOF1 has the correct size for the iterator");
+        ut->failure("DOF1 has the correct size for the iterator: "+GENERATOR::name());
     if ( DOF2Iterator.size() == meshIterator.size() )
-        ut->passes("DOF2 has the correct size for the iterator");
+        ut->passes("DOF2 has the correct size for the iterator: "+GENERATOR::name());
     else
-        ut->failure("DOF2 has the correct size for the iterator");
+        ut->failure("DOF2 has the correct size for the iterator: "+GENERATOR::name());
     if ( DOF3Iterator.size() == meshIterator.size() )
-        ut->passes("DOF3 has the correct size for the iterator");
+        ut->passes("DOF3 has the correct size for the iterator: "+GENERATOR::name());
     else
-        ut->failure("DOF3 has the correct size for the iterator");
+        ut->failure("DOF3 has the correct size for the iterator: "+GENERATOR::name());
     if ( DOF4Iterator.size() == meshIterator.size() )
-        ut->passes("DOF4 has the correct size for the iterator");
+        ut->passes("DOF4 has the correct size for the iterator: "+GENERATOR::name());
     else
-        ut->failure("DOF4 has the correct size for the iterator");
+        ut->failure("DOF4 has the correct size for the iterator: "+GENERATOR::name());
 
     // Check the iterator based constructor
-    DOF1 =  AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1, false );
-    DOF2 =  AMP::Discretization::simpleDOFManager::create( mesh, mesh->getIterator(AMP::Mesh::Vertex,1), mesh->getIterator(AMP::Mesh::Vertex,0), 1 );
+    DOF1 = AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1, false );
+    DOF2 = AMP::Discretization::simpleDOFManager::create( 
+        mesh, mesh->getIterator(AMP::Mesh::Vertex,1), mesh->getIterator(AMP::Mesh::Vertex,0), 1 );
     if ( DOF1->numGlobalDOF() == DOF2->numGlobalDOF())
-        ut->passes("iterator-based constructor created");
+        ut->passes("iterator-based constructor created: "+GENERATOR::name());
     else
-        ut->failure("iterator-based constructor created");
+        ut->failure("iterator-based constructor created: "+GENERATOR::name());
 
     // Check that we can get the DOFs
     testGetDOFIterator(  ut, mesh->getIterator(AMP::Mesh::Vertex,0), DOF1 );
@@ -159,10 +173,10 @@ void testMultiDOFManager( AMP::UnitTest *ut )
     if ( AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>(mesh).get() != NULL ) {
         AMP::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF = AMP::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>(DOFs);
         if ( multiDOF.get() != NULL ) {
-            ut->passes("Created multiDOFManager from simpleDOFManager");
+            ut->passes("Created multiDOFManager from simpleDOFManager: "+GENERATOR::name());
             testMultiDOFMap( ut, multiDOF );
         } else {
-            ut->failure("Created multiDOFManager from simpleDOFManager");
+            ut->failure("Created multiDOFManager from simpleDOFManager: "+GENERATOR::name());
         }
     }
 
@@ -175,7 +189,7 @@ void testMultiDOFManager( AMP::UnitTest *ut )
     #ifdef USE_AMP_VECTORS
         testMultiDOFVector( ut, DOFs );
     #else
-        ut->expected_failure("Can't test multivector without vectors");
+        ut->expected_failure("Can't test multivector without vectors: "+GENERATOR::name());
     #endif
 
     // Create a multiDOFManager with repeated mesh elements and make sure the iterator only iterates once through each element
@@ -184,9 +198,9 @@ void testMultiDOFManager( AMP::UnitTest *ut )
     AMP::Mesh::MeshIterator iterator1 = DOFs->getIterator();
     AMP::Mesh::MeshIterator iterator2 = DOF2->getIterator();
     if ( iterator1.size()==iterator2.size() )
-        ut->passes("multiDOFManager iterates once through each element");
+        ut->passes("multiDOFManager iterates once through each element: "+GENERATOR::name());
     else
-        ut->failure("multiDOFManager iterates once through each element");
+        ut->failure("multiDOFManager iterates once through each element: "+GENERATOR::name());
 
     // Run basic tests that should be valid for all DOFManagers
     testBasics( DOF2, ut );
@@ -234,9 +248,9 @@ void testStructureDOFManager( AMP::UnitTest *ut )
             }
         }
         if ( pass )
-            ut->passes("getRowDOFs found all faces that share a volume");
+            ut->passes("getRowDOFs found all faces that share a volume: "+GENERATOR::name());
         else
-            ut->failure("getRowDOFs found all faces that share a volume");
+            ut->failure("getRowDOFs found all faces that share a volume: "+GENERATOR::name());
     }
 }
 

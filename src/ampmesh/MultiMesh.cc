@@ -411,9 +411,16 @@ size_t MultiMesh::numGhostElements( const GeomType type, int gcw ) const
         N += d_meshes[i]->numGhostElements(type,gcw);
     return N;
 }
-std::vector<Mesh::shared_ptr> MultiMesh::getMeshes() const
+std::vector<Mesh::shared_ptr> MultiMesh::getMeshes()
 {
     return d_meshes;
+}
+std::vector<Mesh::const_shared_ptr> MultiMesh::getMeshes() const
+{
+    std::vector<Mesh::const_shared_ptr> list(d_meshes.size());
+    for (size_t i=0; i<d_meshes.size(); i++)
+        list[i] = d_meshes[i];
+    return list;
 }
 
 

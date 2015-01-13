@@ -260,7 +260,13 @@ public:
     /**
      *  Get the meshes composing the multimesh
      */
-    virtual std::vector<Mesh::shared_ptr> getMeshes() const;
+    virtual std::vector<AMP::Mesh::Mesh::shared_ptr> getMeshes();
+
+
+    /**
+     *  Get the meshes composing the multimesh
+     */
+    virtual std::vector<AMP::Mesh::Mesh::const_shared_ptr> getMeshes() const;
 
 
 #ifdef USE_AMP_VECTORS
