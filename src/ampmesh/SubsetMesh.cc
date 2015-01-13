@@ -415,6 +415,29 @@ MeshIterator SubsetMesh::getBlockIDIterator ( const GeomType, const int, const i
 
 
 /********************************************************
+* Check if the element is a member of the mesh          *
+********************************************************/
+bool SubsetMesh::isMember( const MeshElementID &id ) const
+{
+    if ( !d_parent_mesh->isMember(id) )
+        return false;
+    int type = static_cast<int>(id.type());
+    if ( type >= static_cast<int>(d_elements.size()) )
+        return false;
+    for (size_t gcw=0; gcw<d_elements[type].size(); gcw++) {
+        if ( d_elements[type][gcw] == NULL )
+            continue;
+        const std::vector<MeshElement>& elements = *(d_elements[type][gcw].get());
+        for (size_t i=0; i<elements.size(); i++) {
+            if ( elements[i]==id )
+                return true;
+        }
+    }
+    return false;
+}
+
+
+/********************************************************
 * Function to return the element given an ID            *
 ********************************************************/
 MeshElement SubsetMesh::getElement( const MeshElementID &elem_id ) const

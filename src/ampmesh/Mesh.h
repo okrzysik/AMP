@@ -262,6 +262,14 @@ public:
  
 
     /**
+     * \brief    Check if an element is in the mesh
+     * \details  This function queries the mesh to determine if the given element is a member of the mesh
+     * \param id    Mesh element id we are querying.
+     */
+    virtual bool isMember ( const MeshElementID &id ) const; 
+
+
+    /**
      * \brief    Return a mesh element given it's id.
      * \details  This function queries the mesh to get an element given the mesh id.
      *    This function is only required to return an element if the id is local.

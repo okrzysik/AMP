@@ -563,6 +563,19 @@ std::vector<MeshID> MultiMesh::getLocalBaseMeshIDs() const
 
 
 /********************************************************
+* Check if the element is a member of the mesh          *
+********************************************************/
+bool MultiMesh::isMember( const MeshElementID &id ) const
+{
+    for (size_t i=0; i<d_meshes.size(); i++) {
+        if ( d_meshes[i]->isMember(id) )
+            return true;
+    }
+    return false;
+}
+
+
+/********************************************************
 * Function to return the element given an ID            *
 ********************************************************/
 MeshElement MultiMesh::getElement( const MeshElementID &elem_id ) const

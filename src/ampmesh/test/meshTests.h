@@ -337,25 +337,28 @@ void MeshIteratorSetOPTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> 
     AMP::Mesh::MeshIterator A = mesh->getIterator(AMP::Mesh::Vertex,1);
     AMP::Mesh::MeshIterator B = mesh->getIterator(AMP::Mesh::Vertex,0);
     AMP::Mesh::MeshIterator C = AMP::Mesh::MeshIterator();
-    AMP::Mesh::MeshIterator R1, R2;
+    AMP::Mesh::MeshIterator R1, R2, R3;
     // Check Union
     R1 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, A, B);
     R2 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, B, C);
-    if ( R1.size()==A.size() && R2.size()==B.size() )
+    R3 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, B.end(), C.end() );
+    if ( R1.size()==A.size() && R2.size()==B.size() && R2==R3 )
         ut->passes("Union iterator create");
     else
         ut->failure("Union iterator create");
     // Check Intersection
     R1 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Intersection, A, B);
     R2 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Intersection, B, C);
-    if ( R1.size()==B.size() && R2.size()==0 )
+    R3 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Intersection, B.end(), C.end() );
+    if ( R1.size()==B.size() && R2.size()==0 && R2==R3 )
         ut->passes("Intersection iterator create");
     else
         ut->failure("Intersection iterator create");
     // Check Complement
     R1 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Complement, A, B);
     R2 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Complement, B, C);
-    if ( R1.size()==mesh->numGhostElements(AMP::Mesh::Vertex,1) && R2.size()==B.size() )
+    R3 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Complement, B.end(), C.end() );
+    if ( R1.size()==mesh->numGhostElements(AMP::Mesh::Vertex,1) && R2.size()==B.size() && R2==R3 )
         ut->passes("Complement iterator create");
     else
         ut->failure("Complement iterator create");

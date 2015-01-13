@@ -162,26 +162,21 @@ AMP::shared_ptr<DOFManager>  DOFManager::subset( const AMP_MPI& comm )
 }
 AMP::shared_ptr<DOFManager>  DOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
 {
+    if ( mesh.get()==NULL )
+        return AMP::shared_ptr<DOFManager>();
     // Get a list of the elements in the mesh
     AMP::Mesh::MeshIterator iterator = getIterator();
-    std::vector<AMP::Mesh::MeshID> meshIDs;
-    if ( mesh.get() != NULL )
-        meshIDs = mesh->getLocalBaseMeshIDs();
-    std::set<AMP::Mesh::MeshElement> element_list;
-    for (size_t i=0; i<iterator.size(); i++) {
-        AMP::Mesh::MeshElement elem = *iterator;
-        AMP::Mesh::MeshID meshID = elem.globalID().meshID();
-        for (size_t j=0; j<meshIDs.size(); j++) {
-            if ( meshID == meshIDs[j] ) {
-                element_list.insert(elem);
-                break;
-            }
-        }
-        ++iterator;
+    size_t N = iterator.size();
+    std::vector<AMP::Mesh::MeshElement> element_list;
+    element_list.reserve(N);
+    for (size_t i=0; i<N; i++, ++iterator) {
+        const AMP::Mesh::MeshElement elem = *iterator;
+        if ( mesh->isMember( elem.globalID() ) )
+            element_list.push_back(elem);
     }
     // Create the element iterator
     AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement> > elements( 
-        new std::vector<AMP::Mesh::MeshElement>(element_list.begin(),element_list.end()) );
+        new std::vector<AMP::Mesh::MeshElement>(element_list) );
     AMP::Mesh::MeshIterator  subsetIterator = AMP::Mesh::MultiVectorIterator( elements, 0 );
     // Get the DOFs
     std::vector<AMP::Mesh::MeshElementID> id_list(elements->size());

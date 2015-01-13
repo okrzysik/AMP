@@ -351,6 +351,15 @@ AMP::LinearAlgebra::Vector::shared_ptr  Mesh::getPositionVector( std::string nam
 
 
 /********************************************************
+* Check if the element is a member of the mesh          *
+********************************************************/
+bool Mesh::isMember( const MeshElementID &id ) const
+{
+    return id.meshID()==d_meshID;
+}
+
+
+/********************************************************
 * Functions that aren't implimented for the base class  *
 ********************************************************/
 AMP::shared_ptr<Mesh> Mesh::Subset( Mesh & ) const
@@ -437,9 +446,9 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         std::vector<MeshElementID> union_ids(union_set.begin(),union_set.end());
         // Create the iterator
         if ( union_ids.size()==A.size() ) {
-            return MeshIterator(A);
+            return MeshIterator(A.begin());
         } else if ( union_ids.size()==B.size() ) {
-            return MeshIterator(B);
+            return MeshIterator(B.begin());
         } else {
             AMP::shared_ptr<std::vector<MeshElement> > elements( new std::vector<MeshElement>(union_ids.size()) );
             curA = A.begin();
@@ -493,9 +502,9 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
             AMP_ASSERT(intersection[i]!=intersection[i-1]);
         // Create the iterator
         if ( intersection.size()==A.size() ) {
-            return MeshIterator(A);
+            return MeshIterator(A.begin());
         } else if ( intersection.size()==B.size() ) {
-            return MeshIterator(B);
+            return MeshIterator(B.begin());
         } else {
             AMP::shared_ptr<std::vector<MeshElement> > elements( new std::vector<MeshElement>(intersection.size()) );
             curB = B.begin();
@@ -528,7 +537,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
             return MeshIterator();
         // Create the iterator
         if ( compliment.size()==A.size() ) {
-            return MeshIterator(A);
+            return MeshIterator(A.begin());
         } else {
             AMP::shared_ptr<std::vector<MeshElement> > elements( new std::vector<MeshElement>(compliment.size()) );
             curA = A.begin();

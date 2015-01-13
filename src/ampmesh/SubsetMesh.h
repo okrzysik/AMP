@@ -125,6 +125,14 @@ public:
      * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator getBlockIDIterator ( const GeomType type, const int id, const int gcw=0 ) const;
+ 
+
+    /**
+     * \brief    Check if an element is in the mesh
+     * \details  This function queries the mesh to determine if the given element is a member of the mesh
+     * \param id    Mesh element id we are querying.
+     */
+    virtual bool isMember ( const MeshElementID &id ) const; 
 
 
     /**
@@ -224,11 +232,11 @@ protected:
     // Parent mesh for the subset
     AMP::shared_ptr<const Mesh>  d_parent_mesh;
 
-    // Pointers to store the elements in the subset meshes
+    // Pointers to store the elements in the subset meshes [type][gcw][elem]
     std::vector<size_t> N_global;
     std::vector<std::vector<AMP::shared_ptr<std::vector<MeshElement> > > >  d_elements;
 
-    // Pointers to store the elements on the surface
+    // Pointers to store the elements on the surface [type][gcw][elem]
     std::vector<std::vector<AMP::shared_ptr<std::vector<MeshElement> > > >  d_surface;
 
     // Data to store the id sets
