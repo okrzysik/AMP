@@ -81,6 +81,7 @@ void calculateGrad(AMP::UnitTest *ut)
       }
     }
   }
+  ut->passes("Ran to completion");
 }
 
 int main(int argc, char *argv[])

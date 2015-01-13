@@ -54,26 +54,26 @@ void LinearTimeOperatorTest(AMP::UnitTest *ut )
     int nodalGhostWidth = 1;
     bool split = true;
 
-    AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
+    AMP::Discretization::DOFManager::shared_ptr nodalDofMap = 
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, 
+            AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
+    //----------------------------------------------------------------------------------------
     // create a linear BVP operator
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
 
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-                                                                                               AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-																	      "LinearOperator",
-																	      input_db,
-																	      elementModel));
+    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> linearOperator = 
+        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator( 
+        meshAdapter, "LinearOperator", input_db, elementModel ) );
 
     // ---------------------------------------------------------------------------------------
     // create a mass linear BVP operator
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
-    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> massOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-                                                                                               AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
-																	      "MassLinearOperator",
-																	      input_db,
-																	      massElementModel));
+    AMP::shared_ptr<AMP::Operator::LinearBVPOperator> massOperator = 
+        AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+        meshAdapter, "MassLinearOperator", input_db, massElementModel ) );
 
     // ---------------------------------------------------------------------------------------
     AMP::LinearAlgebra::Matrix::shared_ptr fullMat = linearOperator->getMatrix();
@@ -97,7 +97,7 @@ void LinearTimeOperatorTest(AMP::UnitTest *ut )
     sinMatWriter.registerMatrix(sinMat);
     sinMatWriter.writeFile("SinMat",0 );
 
-
+    ut->passes("Ran to completion");
 }
 
 

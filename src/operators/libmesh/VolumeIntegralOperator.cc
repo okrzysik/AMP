@@ -194,7 +194,7 @@ void VolumeIntegralOperator::postAssembly()
 }
 
 
-void VolumeIntegralOperator :: init(const AMP::shared_ptr<VolumeIntegralOperatorParameters>& params) 
+void VolumeIntegralOperator :: init( const AMP::shared_ptr<VolumeIntegralOperatorParameters>& ) 
 {
     AMP::Mesh::MeshIterator  el     = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
     d_srcNonlinElem->setElementFlags(d_isInputType);
@@ -206,14 +206,14 @@ void VolumeIntegralOperator :: init(const AMP::shared_ptr<VolumeIntegralOperator
 }
 
 
-void VolumeIntegralOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params)
+void VolumeIntegralOperator :: reset( const AMP::shared_ptr<OperatorParameters>& )
 {
     d_outVec.reset();
 }
 
 
 AMP::shared_ptr<OperatorParameters> VolumeIntegralOperator::getJacobianParameters(
-    const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u) 
+    const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u ) 
 {
     (void) u;
     AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase("Dummy"));

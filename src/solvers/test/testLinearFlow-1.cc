@@ -127,85 +127,85 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
         AMP::LinearAlgebra::createVector( DOF_H08_scalar, pressureVar ) );
     zeroMat->zero();
 
-
-
 	AMP::shared_ptr<AMP::Database> dummy_db;
-        AMP::shared_ptr<AMP::Operator::EpetraMatrixOperatorParameters> dummyParams1(new AMP::Operator::EpetraMatrixOperatorParameters( dummy_db ));
-        dummyParams1->d_Matrix = &(AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(BtMat)->getEpetra_CrsMatrix());
-        AMP::shared_ptr<AMP::Operator::EpetraMatrixOperator> bTOperator ( new AMP::Operator::EpetraMatrixOperator (dummyParams1) );
-        bTOperator->setVariables(ConsMassOperator->getOutputVariable(), ConsMassOperator->getInputVariable());
+    AMP::shared_ptr<AMP::Operator::EpetraMatrixOperatorParameters> dummyParams1(new AMP::Operator::EpetraMatrixOperatorParameters( dummy_db ));
+    dummyParams1->d_Matrix = &(AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(BtMat)->getEpetra_CrsMatrix());
+    AMP::shared_ptr<AMP::Operator::EpetraMatrixOperator> bTOperator ( new AMP::Operator::EpetraMatrixOperator (dummyParams1) );
+    bTOperator->setVariables(ConsMassOperator->getOutputVariable(), ConsMassOperator->getInputVariable());
 
-        AMP::shared_ptr<AMP::Operator::EpetraMatrixOperatorParameters> dummyParams2(new AMP::Operator::EpetraMatrixOperatorParameters( dummy_db ));
-        dummyParams2->d_Matrix = &(AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(zeroMat)->getEpetra_CrsMatrix());
-         AMP::shared_ptr<AMP::Operator::EpetraMatrixOperator> zeroOperator ( new AMP::Operator::EpetraMatrixOperator (dummyParams2) );
-        zeroOperator->setVariables(ConsMassOperator->getOutputVariable(), ConsMassOperator->getOutputVariable());
+    AMP::shared_ptr<AMP::Operator::EpetraMatrixOperatorParameters> dummyParams2(new AMP::Operator::EpetraMatrixOperatorParameters( dummy_db ));
+    dummyParams2->d_Matrix = &(AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(zeroMat)->getEpetra_CrsMatrix());
+     AMP::shared_ptr<AMP::Operator::EpetraMatrixOperator> zeroOperator ( new AMP::Operator::EpetraMatrixOperator (dummyParams2) );
+    zeroOperator->setVariables(ConsMassOperator->getOutputVariable(), ConsMassOperator->getOutputVariable());
 
-        AMP_INSIST(input_db->keyExists("LinearSolver"),   "Key ''LinearSolver'' is missing!");
-        AMP::shared_ptr<AMP::Database>  mlSolver_db  = input_db->getDatabase("LinearSolver"); 
-       
-        AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> convdiffSolverParams(new AMP::Solver::SolverStrategyParameters(mlSolver_db));
-        convdiffSolverParams->d_pOperator = ConsMomentumOperator;
-        AMP::shared_ptr<AMP::Solver::TrilinosMLSolver>  convdiffSolver(new AMP::Solver::TrilinosMLSolver(convdiffSolverParams));
-        convdiffSolver->setZeroInitialGuess(false);
+    AMP_INSIST(input_db->keyExists("LinearSolver"),   "Key ''LinearSolver'' is missing!");
+    AMP::shared_ptr<AMP::Database>  mlSolver_db  = input_db->getDatabase("LinearSolver"); 
 
-        AMP::LinearAlgebra::Vector::shared_ptr diagonalVec = FMat->extractDiagonal();
-        AMP::LinearAlgebra::Vector::shared_ptr diagonalInvVec = diagonalVec->cloneVector();
-        diagonalInvVec->reciprocal(diagonalVec);
+    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> convdiffSolverParams(new AMP::Solver::SolverStrategyParameters(mlSolver_db));
+    convdiffSolverParams->d_pOperator = ConsMomentumOperator;
+    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver>  convdiffSolver(new AMP::Solver::TrilinosMLSolver(convdiffSolverParams));
+    convdiffSolver->setZeroInitialGuess(false);
 
-        AMP::LinearAlgebra::Matrix::shared_ptr DMat = FMat->cloneMatrix() ;
-        DMat->zero();
-        DMat->setDiagonal(diagonalVec);
+    AMP::LinearAlgebra::Vector::shared_ptr diagonalVec = FMat->extractDiagonal();
+    AMP::LinearAlgebra::Vector::shared_ptr diagonalInvVec = diagonalVec->cloneVector();
+    diagonalInvVec->reciprocal(diagonalVec);
 
-        AMP::LinearAlgebra::Matrix::shared_ptr DInvMat = FMat->cloneMatrix() ;
-        DInvMat->zero();
-        DInvMat->setDiagonal(diagonalInvVec);
+    AMP::LinearAlgebra::Matrix::shared_ptr DMat = FMat->cloneMatrix() ;
+    DMat->zero();
+    DMat->setDiagonal(diagonalVec);
 
-        AMP::LinearAlgebra::Matrix::shared_ptr schurMat = zeroMat->cloneMatrix() ;
+    AMP::LinearAlgebra::Matrix::shared_ptr DInvMat = FMat->cloneMatrix() ;
+    DInvMat->zero();
+    DInvMat->setDiagonal(diagonalInvVec);
 
-        AMP::LinearAlgebra::Matrix::shared_ptr DInvBtMat = AMP::LinearAlgebra::Matrix::matMultiply(DInvMat, BtMat);
+    AMP::LinearAlgebra::Matrix::shared_ptr schurMat = zeroMat->cloneMatrix() ;
 
-        schurMat = AMP::LinearAlgebra::Matrix::matMultiply(BtMat, DInvBtMat);
+    AMP::LinearAlgebra::Matrix::shared_ptr DInvBtMat = AMP::LinearAlgebra::Matrix::matMultiply(DInvMat, BtMat);
 
-        AMP::shared_ptr<AMP::Operator::EpetraMatrixOperatorParameters> dummyParams3(new AMP::Operator::EpetraMatrixOperatorParameters( dummy_db ));
-        dummyParams3->d_Matrix = &(AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(schurMat)->getEpetra_CrsMatrix());
-        AMP::shared_ptr<AMP::Operator::EpetraMatrixOperator> schurMatOperator ( new AMP::Operator::EpetraMatrixOperator (dummyParams3) );
-        schurMatOperator->setVariables(ConsMassOperator->getOutputVariable(), ConsMassOperator->getOutputVariable());
+    schurMat = AMP::LinearAlgebra::Matrix::matMultiply(BtMat, DInvBtMat);
 
-        AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> schurMatSolverParams(new AMP::Solver::SolverStrategyParameters(mlSolver_db));
-        schurMatSolverParams->d_pOperator = schurMatOperator;
-        AMP::shared_ptr<AMP::Solver::TrilinosMLSolver>  schurMatSolver(new AMP::Solver::TrilinosMLSolver(schurMatSolverParams));
-        schurMatSolver->setZeroInitialGuess(false);
+    AMP::shared_ptr<AMP::Operator::EpetraMatrixOperatorParameters> dummyParams3(new AMP::Operator::EpetraMatrixOperatorParameters( dummy_db ));
+    dummyParams3->d_Matrix = &(AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(schurMat)->getEpetra_CrsMatrix());
+    AMP::shared_ptr<AMP::Operator::EpetraMatrixOperator> schurMatOperator ( new AMP::Operator::EpetraMatrixOperator (dummyParams3) );
+    schurMatOperator->setVariables(ConsMassOperator->getOutputVariable(), ConsMassOperator->getOutputVariable());
 
-        AMP::LinearAlgebra::Vector::shared_ptr velocityRhsVec = globalRhsVec->subsetVectorForVariable(velocityVar); 
-        AMP::LinearAlgebra::Vector::shared_ptr pressureRhsVec = globalRhsVec->subsetVectorForVariable(pressureVar);
+    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> schurMatSolverParams(new AMP::Solver::SolverStrategyParameters(mlSolver_db));
+    schurMatSolverParams->d_pOperator = schurMatOperator;
+    AMP::shared_ptr<AMP::Solver::TrilinosMLSolver>  schurMatSolver(new AMP::Solver::TrilinosMLSolver(schurMatSolverParams));
+    schurMatSolver->setZeroInitialGuess(false);
 
-        AMP::LinearAlgebra::Vector::shared_ptr velocitySolVec = globalSolVec->subsetVectorForVariable(velocityVar); 
-        AMP::LinearAlgebra::Vector::shared_ptr pressureSolVec = globalSolVec->subsetVectorForVariable(pressureVar);
-       
-        AMP::LinearAlgebra::Vector::shared_ptr pressureUpdateVec = pressureSolVec->cloneVector();
-        AMP::LinearAlgebra::Vector::shared_ptr velocityUpdateVec = velocitySolVec->cloneVector();
-        
-//        AMP::LinearAlgebra::Vector::shared_ptr pressurePrimeVec = pressureSolVec->cloneVector();
-        AMP::LinearAlgebra::Vector::shared_ptr velocityPrimeVec = velocitySolVec->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr velocityRhsVec = globalRhsVec->subsetVectorForVariable(velocityVar); 
+    AMP::LinearAlgebra::Vector::shared_ptr pressureRhsVec = globalRhsVec->subsetVectorForVariable(pressureVar);
 
-        //SIMPLE(Semi Implicit Method for Pressure Linked Equations) ALGORITHM
+    AMP::LinearAlgebra::Vector::shared_ptr velocitySolVec = globalSolVec->subsetVectorForVariable(velocityVar); 
+    AMP::LinearAlgebra::Vector::shared_ptr pressureSolVec = globalSolVec->subsetVectorForVariable(pressureVar);
 
-        // STEP 1 :
-        BtMat->mult( pressureSolVec , velocityRhsVec );
-        convdiffSolver->solve( velocityRhsVec , velocityPrimeVec );
+    AMP::LinearAlgebra::Vector::shared_ptr pressureUpdateVec = pressureSolVec->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr velocityUpdateVec = velocitySolVec->cloneVector();
 
-        // STEP 2 :
-        BMat->mult( velocityPrimeVec , pressureRhsVec );
-        schurMatSolver->solve( pressureRhsVec, pressureUpdateVec );
+    //        AMP::LinearAlgebra::Vector::shared_ptr pressurePrimeVec = pressureSolVec->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr velocityPrimeVec = velocitySolVec->cloneVector();
 
-        // STEP 3 :
-        DInvBtMat->mult(pressureUpdateVec, velocityUpdateVec); 
-        velocitySolVec->subtract( velocityPrimeVec, velocityUpdateVec);
+    //SIMPLE(Semi Implicit Method for Pressure Linked Equations) ALGORITHM
 
-        // STEP 4 :
-        pressureSolVec->add(velocityPrimeVec, pressureUpdateVec );
+    // STEP 1 :
+    BtMat->mult( pressureSolVec , velocityRhsVec );
+    convdiffSolver->solve( velocityRhsVec , velocityPrimeVec );
 
+    // STEP 2 :
+    BMat->mult( velocityPrimeVec , pressureRhsVec );
+    schurMatSolver->solve( pressureRhsVec, pressureUpdateVec );
+
+    // STEP 3 :
+    DInvBtMat->mult(pressureUpdateVec, velocityUpdateVec); 
+    velocitySolVec->subtract( velocityPrimeVec, velocityUpdateVec);
+
+    // STEP 4 :
+    pressureSolVec->add(velocityPrimeVec, pressureUpdateVec );
+
+    ut->passes("Ran to completion");
 }
+
 
 int main(int argc, char *argv[])
 {

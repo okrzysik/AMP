@@ -303,7 +303,7 @@ createThermalMaps( AMP::shared_ptr<AMP::InputDatabase> input_db,
 }
 
 void
-registerMapswithThermalOperator( AMP::shared_ptr<AMP::InputDatabase> input_db , 
+registerMapswithThermalOperator( AMP::shared_ptr<AMP::InputDatabase>, 
 		     AMP::shared_ptr<AMP::Operator::ColumnOperator> &nonlinearThermalColumnOperator,
                      AMP::LinearAlgebra::Vector::shared_ptr &thermalMapVec )
 {
@@ -491,6 +491,7 @@ void myTest(AMP::UnitTest *ut, AMP::shared_ptr<AMP::InputDatabase> input_db ,
   siloWriter->writeFile( silo_file , 1 );
 #endif
 
+  ut->passes("Ran to completion");
 }
 
 void multiMeshLoop(AMP::UnitTest *ut, std::string exeName)

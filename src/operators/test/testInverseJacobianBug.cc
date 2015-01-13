@@ -37,7 +37,7 @@
 #include "libmesh/auto_ptr.h"
 #include "libmesh/string_to_enum.h"
 
-void myTest(AMP::UnitTest *ut, std::string exeName) {
+void myTest( AMP::UnitTest *ut, std::string exeName ) {
   std::string log_file = "output_" + exeName;
 
   AMP::PIO::logOnlyNodeZero(log_file);
@@ -168,6 +168,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   fprintf(fp, " dT/dx = %.15f, dTdy = %.15f, dTdz = %.15f \n", dTdx , dTdy , dTdz );
   fprintf(fp, " lib_dT/dx = %.15f, lib_dTdy = %.15f, lib_dTdz = %.15f \n", lib_dTdx , lib_dTdy , lib_dTdz );
   fclose(fp);
+  ut->passes("Ran to completion");
 }
 
 int main(int argc, char *argv[])

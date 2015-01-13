@@ -217,7 +217,7 @@ size_t AMP_to_MATLAB(AMP::Mesh::MeshElement face, size_t variable_id) {
    else                        i = getMATLABGapIndex(face);
 
    // compute index
-   size_t index;
+   size_t index = 0;
    switch (variable_id) {
       case 0: {
          index = i*numAxialFaces + j;

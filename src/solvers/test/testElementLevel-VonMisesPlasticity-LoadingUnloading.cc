@@ -250,13 +250,16 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
       double coord[3], stress1[6], strain1[6];
       for(int ijk = 0; ijk < 8; ijk++) {
         for(int klm = 0; klm < 3; klm++) {
-          fscanf(fin,"%lf",&coord[klm]);
+          int ret = fscanf(fin,"%lf",&coord[klm]);
+          NULL_USE(ret);
         }
         for(int klm = 0; klm < 6; klm++) {
-          fscanf(fin,"%lf",&stress1[klm]);
+          int ret = fscanf(fin,"%lf",&stress1[klm]);
+          NULL_USE(ret);
         }
         for(int klm = 0; klm < 6; klm++) {
-          fscanf(fin,"%lf",&strain1[klm]);
+          int ret = fscanf(fin,"%lf",&strain1[klm]);
+          NULL_USE(ret);
         }
         if(ijk == 7) {
           double prev_stress = 1.0, prev_strain = 1.0, slope = 1.0;
