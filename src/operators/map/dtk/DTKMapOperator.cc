@@ -51,15 +51,14 @@ DTKMapOperator::DTKMapOperator( const AMP::shared_ptr<OperatorParameters>& param
 
     // Create a DTK map operator.
     d_dtk_operator = AMP::shared_ptr<DataTransferKit::MapOperator<double> >( 
-	new DataTransferKit::ConsistentInterpolationOperator<double>() );
+	new DataTransferKit::ConsistentInterpolationOperator<double>(domain_map, range_map) );
     
     // Setup the map operator. For now we use the default parameters for the
     // map operator. This needs to be refactored to gather the needed
     // parameters from the AMP parameters.
     Teuchos::RCP<Teuchos::ParameterList> dtk_parameters = Teuchos::parameterList();
-    d_dtk_operator->setup( domain_map,
+    d_dtk_operator->setup(
 			   dtk_domain_mesh.functionSpace(),
-			   range_map,
 			   dtk_range_mesh.functionSpace(),
 			   dtk_parameters );
 }
