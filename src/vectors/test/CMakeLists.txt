@@ -42,8 +42,6 @@ ADD_AMP_TEST_1_2_4 ( test_VectorClone )
 ADD_AMP_TEST_1_2_4 ( test_VectorCloneView )
 ADD_AMP_TEST_1_2_4 ( test_VectorView )
 ADD_AMP_TEST_1_2_4 ( test_VectorSelector )
-ADD_AMP_TEST_1_2_4 ( test_VectorSelectorBug-3 )
-COPY_TEST_DATA_FILE ( input_test_VectorSelectorBug-3 )
 ADD_AMP_TEST_1_2_4 ( testMultiVector )
 
 COPY_TEST_DATA_FILE ( input_testMultiVector )
