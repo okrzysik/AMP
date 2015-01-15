@@ -82,7 +82,10 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
 		for (std::vector<std::string>::iterator key = defaultkeys.begin(); key != defaultkeys.end(); ++key){
 			std::stringstream insist_string;
 			insist_string << "Default argument ''" << *key << "'' was not found as a property argument";
-			AMP_INSIST(defaults_found.find(*key)->second, insist_string);
+            std::map<std::string,bool>::const_iterator it = defaults_found.find(*key);
+            bool found = false;
+            if ( it!=defaults_found.end() ) { found = it->second; }
+			AMP_INSIST(found,insist_string);
 		}
 	
 		// load and check defaults:
