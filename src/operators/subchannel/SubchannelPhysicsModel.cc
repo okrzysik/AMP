@@ -80,8 +80,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
 		}
 		// generate error if a Defaults key was not found in any property arguments
 		for (std::vector<std::string>::iterator key = defaultkeys.begin(); key != defaultkeys.end(); ++key){
-			std::stringstream insist_string;
-			insist_string << "Default argument ''" << *key << "'' was not found as a property argument";
+			std::string insist_string = "Default argument '" + (*key) + "' was not found as a property argument";
             std::map<std::string,bool>::const_iterator it = defaults_found.find(*key);
             bool found = false;
             if ( it!=defaults_found.end() ) { found = it->second; }
