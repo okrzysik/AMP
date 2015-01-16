@@ -55,8 +55,6 @@ COPY_TEST_DATA_FILE ( input_testSubchannelSolution-2 )
 
 # R.S.: This needs to be fixed!
 COPY_MESH_FILE ( simple_pellet_1x.e )
-COPY_MESH_FILE ( butterfly_pellet_1x.e )
-COPY_MESH_FILE ( tallFuel.e )
 COPY_MESH_FILE ( pellet_lo_res.e )
 COPY_MESH_FILE ( TC1-PELL-COARSE.e )
 
@@ -385,8 +383,6 @@ IF( USE_EXT_PETSC )
     ADD_AMP_TEST ( testLinearThermalExpansion )
 
     COPY_TEST_DATA_FILE ( input_testLinearThermalExpansion )
-
-    COPY_MESH_FILE ( tiedContact_pellet.e )
 
     COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearMechanics-Cylinder-1 )
     COPY_TEST_DATA_FILE ( input_testPetscSNESSolver-NonlinearMechanics-PlateWithHole-1 )
