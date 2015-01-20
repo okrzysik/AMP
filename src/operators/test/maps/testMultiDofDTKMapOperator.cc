@@ -106,8 +106,12 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
 
 
   // Filling the vectors
-  AMP::Mesh::MeshIterator node  = anodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
-  AMP::Mesh::MeshIterator end_node = node.end();
+  AMP::Mesh::MeshIterator node    ;
+  AMP::Mesh::MeshIterator end_node;
+if (anodeCCMesh)
+{
+  node  = anodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
+  end_node = node.end();
   for( ; node != end_node ; ++node)
   {
         std::vector<size_t> bndGlobalIds;
@@ -119,7 +123,10 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
 
         potentialSolVec->setValueByGlobalID(bndGlobalIds[0], val);
   }//end for node
+}
 
+if (cathodeCCMesh)
+{
   node  = cathodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 3, 0 );
   end_node = node.end();
   for( ; node != end_node ; ++node)
@@ -133,7 +140,10 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
 
         potentialSolVec->setValueByGlobalID(bndGlobalIds[0], val);
   }//end for node
+}
 
+if (cellSandwichMesh)
+{
   node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
   end_node = node.end();
   for( ; node != end_node ; ++node)
@@ -161,6 +171,7 @@ int runTest(std::string exeName, AMP::UnitTest *ut)
 
         BatterySolVec->setValueByGlobalID(bndGlobalIds[3], val);
   }//end for node
+}
   multiSolVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     siloWriter->writeFile( logFile , 0);
 
