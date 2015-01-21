@@ -10,6 +10,21 @@
 using namespace AMP;
 
 
+// Choose the OS 
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    // Using windows
+    #define WINDOWS
+    #include <stdlib.h>
+    #include <windows.h>
+    #include <process.h>
+#else
+    // Using some other operating system (probably linux)
+    #define LINUX
+    #include <pthread.h>
+    #include <unistd.h>
+#endif
+
+
 // Declare the individual tests
 static bool test_dcopy( int N );
 static bool test_dscal( int N );
@@ -807,5 +822,47 @@ static bool test_dgetri( int N )
     delete [] WORK;
     return N_errors>0;
 }
+
+
+/******************************************************************
+* Some inline functions to acquire/release a mutex                *
+******************************************************************/
+#ifdef WINDOWS
+    HANDLE LapackWrappers_lock_queue = CreateMutex(NULL, FALSE, NULL);
+#elif defined(LINUX)
+    pthread_mutex_t LapackWrappers_lock_queue;
+    int LapackWrappers_lock_queue_error = pthread_mutex_init(&LapackWrappers_lock_queue,NULL);
+#else
+    #error Not programmed
+#endif
+#ifdef WINDOWS
+    void AMP::Lapack::get_lock( ) {
+        WaitForSingleObject( LapackWrappers_lock_queue, INFINITE );
+    }
+#elif defined(LINUX)
+    void AMP::Lapack::get_lock( ) {
+        int error = pthread_mutex_lock(&LapackWrappers_lock_queue);
+        if ( error == -1 )
+            printf("Error locking mutex");
+    }
+#else
+    #error Not programmed
+#endif
+#ifdef WINDOWS
+    void AMP::Lapack::release_lock( ) {
+        bool success = ReleaseMutex(LapackWrappers_lock_queue)!=0;
+        if ( !success )
+            printf("Error unlocking mutex");
+    }
+#elif defined(LINUX)
+    void AMP::Lapack::release_lock( ) {
+        int error = pthread_mutex_unlock(&LapackWrappers_lock_queue);
+        if ( error == -1 )
+            printf("Error unlocking mutex");
+    }
+#else
+    #error Not programmed
+#endif
+
 
 

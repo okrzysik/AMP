@@ -216,6 +216,10 @@ inline void Lapack::dgbtrf( int M, int N, int KL, int KU, double *AB, int LDAB, 
         for (int i=0; i<N; i++) { IPIV[i] = static_cast<int>(IPIVp[i]); }
         delete [] IPIVp;
         INFO = static_cast<int>(INFOp);
+    #elif defined(USE_ACML)
+        get_lock();
+        FORTRAN_WRAPPER(::dgbtrf)(&M,&N,&KL,&KU,AB,&LDAB,IPIV,&INFO);
+        release_lock();
     #else
         FORTRAN_WRAPPER(::dgbtrf)(&M,&N,&KL,&KU,AB,&LDAB,IPIV,&INFO);
     #endif

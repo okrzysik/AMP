@@ -512,6 +512,21 @@ public:
      */
     static int run_all_test( );
 
+
+protected:
+
+    /*!
+     * \brief   Get the lock
+     * \details  This will get an atomic lock to ensure thread safety (needed for some routines)
+     */
+    static void get_lock();
+
+    /*!
+     * \brief   Release the lock
+     * \details  This will release the atomic lock to ensure thread safety (needed for some routines)
+     */
+    static void release_lock();
+
 };
 
 
