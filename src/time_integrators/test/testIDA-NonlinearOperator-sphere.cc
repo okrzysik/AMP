@@ -18,7 +18,6 @@
 #include "operators/NeutronicsRhs.h"
 #include "operators/NonlinearBVPOperator.h"
 /* libMesh files */
-#include "libmesh_config.h"
 #include "libmesh.h"
 #include "mesh.h"
 #include "mesh_generation.h"
