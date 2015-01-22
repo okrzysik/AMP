@@ -91,15 +91,18 @@ int MPI_CLASS::profile_level=127;
     static MPI_Datatype MPI_SIZE_T = 0x0;
     static MPI_Datatype getSizeTDataType( )
     {
-        int size_int, size_long, size_longlong;
+        int size_int, size_long, size_longlong, size_longlong2;
         MPI_Type_size( MPI_UNSIGNED, &size_int );
         MPI_Type_size( MPI_UNSIGNED_LONG, &size_long );
-        MPI_Type_size( MPI_LONG_LONG, &size_longlong );
+        MPI_Type_size( MPI_UNSIGNED_LONG_LONG, &size_longlong );
+        MPI_Type_size( MPI_LONG_LONG_INT, &size_longlong2 );
         if ( sizeof(size_t) == size_int ) {
             return MPI_UNSIGNED;
         } else if ( sizeof(size_t) == size_long ) {
             return MPI_UNSIGNED_LONG;
         } else if ( sizeof(size_t) == size_longlong ) {
+            return MPI_UNSIGNED_LONG_LONG;
+        } else if ( sizeof(size_t) == size_longlong2 ) {
             MPI_WARNING("Using signed long long datatype for size_t in MPI");
             return MPI_LONG_LONG_INT;   // Note: this is not unsigned
         } else {
@@ -1161,6 +1164,7 @@ void MPI_CLASS::call_sumReduce<unsigned long>(unsigned long *x, const int n) con
     template <>
     void MPI_CLASS::call_sumReduce<size_t>(const size_t *send, size_t *recv, const int n) const 
     {
+        MPI_ASSERT(MPI_SIZE_T!=0);
         PROFILE_START("sumReduce1<size_t>",profile_level);
         MPI_Allreduce( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_SUM, communicator);
         PROFILE_STOP("sumReduce1<size_t>",profile_level);
@@ -1168,6 +1172,7 @@ void MPI_CLASS::call_sumReduce<unsigned long>(unsigned long *x, const int n) con
     template <>
     void MPI_CLASS::call_sumReduce<size_t>(size_t *x, const int n) const 
     {
+        MPI_ASSERT(MPI_SIZE_T!=0);
         PROFILE_START("sumReduce2<size_t>",profile_level);
         size_t *send = x;
         size_t *recv = new size_t[n];
@@ -2939,6 +2944,7 @@ void MPI_CLASS::call_sumScan<unsigned long>(const unsigned long *send, unsigned 
 template <>
 void MPI_CLASS::call_sumScan<size_t>(const size_t *send, size_t *recv, int n) const 
 {
+    MPI_ASSERT(MPI_SIZE_T!=0);
     PROFILE_START("sumScan<size_t>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_SUM, communicator);
     PROFILE_STOP("sumScan<size_t>",profile_level);
@@ -3037,6 +3043,7 @@ void MPI_CLASS::call_minScan<long int>(const long int *send, long int *recv, int
 template <>
 void MPI_CLASS::call_minScan<size_t>(const size_t *send, size_t *recv, int n) const 
 {
+    MPI_ASSERT(MPI_SIZE_T!=0);
     PROFILE_START("minScan<size_t>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_MIN, communicator);
     PROFILE_STOP("minScan<size_t>",profile_level);
@@ -3119,6 +3126,7 @@ void MPI_CLASS::call_maxScan<unsigned long int>(const unsigned long int *send, u
 template <>
 void MPI_CLASS::call_maxScan<size_t>(const size_t *send, size_t *recv, int n) const 
 {
+    MPI_ASSERT(MPI_SIZE_T!=0);
     PROFILE_START("maxScan<size_t>",profile_level);
     MPI_Scan( (void*) send, (void*) recv, n, MPI_SIZE_T, MPI_MAX, communicator);
     PROFILE_STOP("maxScan<size_t>",profile_level);
