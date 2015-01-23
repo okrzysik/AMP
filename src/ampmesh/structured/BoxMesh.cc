@@ -1215,11 +1215,10 @@ void BoxMesh::createLogicalMesh( AMP::shared_ptr<AMP::Database> db,
                 isPeriodic[d] = per[d];
         }
     } else if ( generator.compare("circle")==0 ) {
-        AMP_INSIST(PhysicalDim==2,"cylinder generator requires a 2d mesh");
+        AMP_INSIST(PhysicalDim==2,"circle generator requires a 2d mesh");
         AMP_INSIST(size.size()==1,"Size of field 'Size' must be of size 1");
         meshSize[0] = 2*size[0];
         meshSize[1] = 2*size[0];
-        meshSize[2] = 0;
     } else if ( generator.compare("cylinder")==0 ) {
         AMP_INSIST(PhysicalDim==3,"cylinder generator requires a 3d mesh");
         AMP_INSIST(size.size()==2,"Size of field 'Size' must be of size 2");
