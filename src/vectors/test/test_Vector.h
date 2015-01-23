@@ -37,6 +37,8 @@ public:
         AMP::LinearAlgebra::Vector::shared_ptr vec = T::getVector();
         return vec->cloneVector();
     }
+    
+    static std::string name() { return "CloneFactory<"+T::name()+">"; }
 };
 
 
@@ -52,6 +54,8 @@ public:
     static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
         return AMP::LinearAlgebra::NullVector::create( "null" );
     }
+
+    static std::string name() { return "NullVectorFactory"; }
 };
 
 
@@ -73,6 +77,8 @@ public:
             vec = AMP::LinearAlgebra::SimpleVector::create ( I, getVariable() );
         return vec;
     }
+
+    static std::string name() { return "SimpleVectorFactory"; }
 };
 
 
@@ -103,6 +109,8 @@ class  SimpleManagedVectorFactory
       retval->setVariable ( AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "Test Vector" ) ) );
       return retval;
     }
+
+    static std::string name() { return "SimpleManagedVectorFactory"; }
 };
 #endif
 
@@ -137,6 +145,8 @@ class  PetscManagedVectorFactory
       retval->setVariable ( AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "Test Vector" ) ) );
       return retval;
     }
+
+    static std::string name() { return "PetscManagedVectorFactory"; }
 };
 #endif
 
@@ -155,6 +165,8 @@ class  ViewFactory
     {
       return vector::view ( FACTORY2::getVector() );
     }
+
+    static std::string name() { return "ViewFactory"; }
 };
 
 
@@ -184,6 +196,8 @@ class  MultiVectorFactory
         retVal->castTo<AMP::LinearAlgebra::MultiVector>().addVector ( FACTORY2::getVector() );
       return retVal;
     }
+
+    static std::string name() { return "MultiVectorFactory"; }
 };
 
 

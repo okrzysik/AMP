@@ -61,9 +61,9 @@ void CopyVectorConsistency( AMP::UnitTest *utils )
         vec1->getValuesByGlobalID ( numGhosts , ndx , t1 );
         vec2->getValuesByGlobalID ( numGhosts , ndx , t2 );
         if ( std::equal ( t1 , t1 + numGhosts , t2 ) )
-            utils->passes ( "Ghosts are the same" );
+            utils->passes("Ghosts are the same (1) - "+VECTOR_FACTORY::name());
         else
-            utils->failure ( "Ghosts are different" );
+            utils->failure("Ghosts are different (1) - "+VECTOR_FACTORY::name());
     }
 
     vec1->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
@@ -72,9 +72,9 @@ void CopyVectorConsistency( AMP::UnitTest *utils )
         vec1->getValuesByGlobalID ( numGhosts , ndx , t1 );
         vec3->getValuesByGlobalID ( numGhosts , ndx , t2 );
         if ( std::equal ( t1 , t1 + numGhosts , t2 ) )
-            utils->passes ( "Ghosts are the same" );
+            utils->passes( "Ghosts are the same (2) - "+VECTOR_FACTORY::name());
         else
-            utils->failure ( "Ghosts are different" );
+            utils->failure( "Ghosts are different (2) - "+VECTOR_FACTORY::name());
         delete [] t1;
         delete [] t2;
         delete [] ndx;

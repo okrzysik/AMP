@@ -45,6 +45,7 @@ public:
         return globalDOFforMeshVectorFactory;
     }
 
+    static std::string name() { return "MeshVectorFactory"; }
 };
 
 
