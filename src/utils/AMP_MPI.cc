@@ -167,11 +167,6 @@ inline void check_MPI( int error )
 /******************************************************************
 * Some helper functions to convert between signed/unsigned types  *
 ******************************************************************/
-static inline unsigned char signed_to_unsigned(char x) 
-{
-    const unsigned char offset = static_cast<unsigned char>(-std::numeric_limits<char>::min());
-    return ( x>=0 ) ? static_cast<unsigned char>(x)+offset : offset-static_cast<unsigned char>(-x);
-}
 static inline unsigned int signed_to_unsigned(int x) 
 {
     const unsigned int offset = static_cast<unsigned int>(-std::numeric_limits<int>::min());
@@ -186,11 +181,6 @@ static inline unsigned long long int signed_to_unsigned(long long int x)
 {
     const unsigned long long int offset = static_cast<unsigned long long int>(-std::numeric_limits<long long int>::min());
     return ( x>=0 ) ? static_cast<unsigned long long int>(x)+offset : offset-static_cast<unsigned long long int>(-x);
-}
-static inline char unsigned_to_signed(unsigned char x) 
-{
-    const unsigned char offset = static_cast<unsigned char>(-std::numeric_limits<char>::min());
-    return ( x>=offset ) ? static_cast<unsigned char>(x-offset) : -static_cast<unsigned char>(offset-x);
 }
 static inline int unsigned_to_signed(unsigned int x) 
 {
@@ -769,7 +759,7 @@ bool MPI_CLASS::operator<(const MPI_CLASS &comm) const
     // Check the union of the communicator groups
     // this is < comm iff this group is a subgroup of comm's group
     #ifdef USE_MPI
-        MPI_Group group1, group2, group12;
+        MPI_Group group1=MPI_GROUP_EMPTY, group2=MPI_GROUP_EMPTY, group12=MPI_GROUP_EMPTY;
         if ( !d_isNull )
             MPI_Comm_group( communicator, &group1 );
         if ( !comm.d_isNull )
@@ -818,10 +808,8 @@ bool MPI_CLASS::operator<=(const MPI_CLASS &comm) const
     // Check the unnion of the communicator groups
     #ifdef USE_MPI
         MPI_Group group1, group2, group12;
-        if ( !d_isNull )
-            MPI_Comm_group( communicator, &group1 );
-        if ( !comm.d_isNull )
-            MPI_Comm_group( comm.communicator, &group2 );
+        MPI_Comm_group( communicator, &group1 );
+        MPI_Comm_group( comm.communicator, &group2 );
         MPI_Group_union( group1, group2, &group12 );
         int compare;
         MPI_Group_compare( group2, group12, &compare );
@@ -856,7 +844,7 @@ bool MPI_CLASS::operator>(const MPI_CLASS &comm) const
     // Check the unnion of the communicator groups
     // this is > comm iff comm's group is a subgroup of this group
     #ifdef USE_MPI
-        MPI_Group group1, group2, group12;
+        MPI_Group group1=MPI_GROUP_EMPTY, group2=MPI_GROUP_EMPTY, group12=MPI_GROUP_EMPTY;
         if ( !d_isNull )
             MPI_Comm_group( communicator, &group1 );
         if ( !comm.d_isNull )
@@ -903,7 +891,7 @@ bool MPI_CLASS::operator>=(const MPI_CLASS &comm) const
     // Check the unnion of the communicator groups
     // this is >= comm iff comm's group is a subgroup of this group
     #ifdef USE_MPI
-        MPI_Group group1, group2, group12;
+        MPI_Group group1=MPI_GROUP_EMPTY, group2=MPI_GROUP_EMPTY, group12=MPI_GROUP_EMPTY;
         if ( !d_isNull )
             MPI_Comm_group( communicator, &group1 );
         if ( !comm.d_isNull)
@@ -2146,7 +2134,7 @@ template <>
 void MPI_CLASS::call_bcast<unsigned char>(unsigned char *x, const int n, const int root) const 
 {
     PROFILE_START("bcast<char>",profile_level);
-    MPI_Bcast( x, n, MPI_CHAR, root, communicator);
+    MPI_Bcast( x, n, MPI_UNSIGNED_CHAR, root, communicator);
     PROFILE_STOP("bcast<char>",profile_level);
 }
 template <>
@@ -2161,7 +2149,7 @@ template <>
 void MPI_CLASS::call_bcast<unsigned int>(unsigned int *x, const int n, const int root) const 
 {
     PROFILE_START("bcast<int>",profile_level);
-    MPI_Bcast( x, n, MPI_INT, root, communicator);
+    MPI_Bcast( x, n, MPI_UNSIGNED, root, communicator);
     PROFILE_STOP("bcast<int>",profile_level);
 }
 template <>
