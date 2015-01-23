@@ -4,19 +4,6 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-inline 
-void SimpleVector::copyVector( Vector::const_shared_ptr src_vec )
-{
-    if ( getLocalSize() != src_vec->getLocalSize() )
-        AMP_ERROR( "Mismatched vectors" );
-    ConstVectorDataIterator it = src_vec->begin();
-    for (size_t i=0; i<getLocalSize(); i++) {
-        d_Data[i] = *it;
-        ++it;
-    }
-}
-
-
 inline
 AMP::shared_ptr<ParameterBase> SimpleVector::getParameters ()
 {

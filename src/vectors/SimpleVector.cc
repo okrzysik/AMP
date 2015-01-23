@@ -118,6 +118,24 @@ double SimpleVector::dot(const VectorOperations &rhs ) const
 
 
 /****************************************************************
+* Copy vector                                                   *
+****************************************************************/
+void SimpleVector::copyVector( Vector::const_shared_ptr src_vec )
+{
+    if ( getLocalSize() != src_vec->getLocalSize() )
+        AMP_ERROR( "Mismatched vectors" );
+    ConstVectorDataIterator it = src_vec->begin();
+    for (size_t i=0; i<getLocalSize(); i++) {
+        d_Data[i] = *it;
+        ++it;
+    }
+    copyGhostValues( src_vec );
+    // Copy the consistency state from the rhs
+    *d_UpdateState = *(src_vec->getUpdateStatusPtr());
+}
+
+
+/****************************************************************
 * Copy raw data                                                 *
 ****************************************************************/
 void SimpleVector::putRawData ( const double *in )
