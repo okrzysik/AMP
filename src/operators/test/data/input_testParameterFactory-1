@@ -1,14 +1,26 @@
-Mesh = "brick.e"
+// This is the a simple mesh that replicates the brick.e mesh
+Mesh{
+    MeshName = "cube"               // Name of the mesh
+    MeshType = "AMP"                // Mesh type
+    dim = 3                         // Dimension of the mesh
+    Generator = "cube"              // Generator to use (AMP specific meshes)
+    Size = 8, 8, 17                 // # of elements in x, y, z (cube specific)
+    Range = -5, 5, -5, 5, -10, 10   // x_min, x_max, y_min, y_max, z_min, z_max (cube specific)
+    x_offset = 0.0                  // Offset in x-direction (optional)
+    y_offset = 0.0                  // Offset in y-direction (optional)
+    z_offset = 0.0                  // Offset in z-direction (optional)
+}
 
 
+// Input parameters
 Parameter {
-  name="DirichletMatrixCorrection"
-  print_info_level = 1
-  skip_params = FALSE
-  number_of_ids = 1
-  id_0 = 2
-  number_of_dofs_0 = 3
-  dof_0_0 = 0
-  dof_0_1 = 1
-  dof_0_2 = 2
+    name="DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
 }
