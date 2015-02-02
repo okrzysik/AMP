@@ -129,6 +129,12 @@ IF ( BUILD_SERIAL )
 ELSE()
     SET( CTEST_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM} -i -j ${N_PROCS} build-test" )
 ENDIF()
+SET( CTEST_CUSTOM_WARNING_EXCEPTION 
+    "has no symbols"
+    "the table of contents is empty"
+    "warning: -jN forced in submake: disabling jobserver mode" 
+    "warning: jobserver unavailable" 
+)
 
 
 # Set timeouts: 10 minutes for debug, 5 for opt, and 30 minutes for valgrind/weekly

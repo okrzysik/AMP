@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "utils/LapackWrappers.h"
 #include <iostream>
 #include <cstdio>
@@ -444,6 +445,7 @@ static bool test_dgtsv( int N )
     int error = 0;
     memcpy(x1,b,K*sizeof(double));
     Lapack::dgesv(K,1,A,K,IPIV,x1,K,error);
+    double max_error = 0;
     int N_errors = 0;
     for (int i=0; i<N; i++) {
         memcpy(x2,b,K*sizeof(double));
@@ -454,8 +456,12 @@ static bool test_dgtsv( int N )
         N_errors += error==0 ? 0:1;
         double err = L2Error(N,x1,x2);
         double norm = L2Norm(N,x1);
-        if ( err > 1e-14*norm )
-            N_errors++;
+        max_error = std::max(max_error,err/norm);
+    }
+    const double tol = 1e-12;
+    if ( max_error > tol ) {
+        printf("test_dgtsv error (%e) exceeded tolerance (%e)\n",max_error,tol);
+        N_errors++;
     }
     delete [] A;
     delete [] D;
@@ -510,7 +516,9 @@ static bool test_dgbsv( int N )
         memcpy(AB2,AB,K*K2*sizeof(double));
         Lapack::dgbsv(K,KL,KU,1,AB2,K2,IPIV,x2,K,error);
         N_errors += error==0 ? 0:1;
-        if ( !approx_equal(K,x1,x2,4*K*1e-14) )
+        double norm = L2Norm(K,x1);
+        double err = L2Error(K,x1,x2);
+        if ( err > 1e-13*norm )
             N_errors++;
     }
     delete [] A;
@@ -548,7 +556,9 @@ static bool test_dgetrf( int N )
     }
     memcpy(x2,b,K*sizeof(double));
     Lapack::dgetrs('N',K,1,A2,K,IPIV,x2,K,error);
-    if ( !approx_equal(K,x1,x2,K*1e-14) )
+    double norm = L2Norm(K,x1);
+    double err = L2Error(K,x1,x2);
+    if ( err > 1e-14*norm )
         N_errors++;
     delete [] A;
     delete [] A2;
@@ -595,7 +605,9 @@ static bool test_dgttrf( int N )
     }
     memcpy(x2,b,K*sizeof(double));
     Lapack::dgttrs('N',K,1,DL2,D2,DU2,DU3,IPIV,x2,K,error);
-    if ( !approx_equal(K,x1,x2,K*1e-14) )
+    double norm = L2Norm(K,x1);
+    double err = L2Error(K,x1,x2);
+    if ( err > 1e-14*norm )
         N_errors++;
     delete [] D;
     delete [] D2;
@@ -639,7 +651,9 @@ static bool test_dgbtrf( int N )
     }
     memcpy(x2,b,K*sizeof(double));
     Lapack::dgbtrs('N',K,KL,KU,1,AB2,K2,IPIV,x2,K,error);
-    if ( !approx_equal(K,x1,x2,K*1e-14) )
+    double norm = L2Norm(K,x1);
+    double err = L2Error(K,x1,x2);
+    if ( err > 1e-14*norm )
         N_errors++;
     delete [] AB;
     delete [] AB2;
@@ -674,7 +688,9 @@ static bool test_dgetrs( int N )
         memcpy(x2,b,K*sizeof(double));
         Lapack::dgetrs('N',K,1,A2,K,IPIV,x2,K,error);
         N_errors += error==0 ? 0:1;
-        if ( !approx_equal(K,x1,x2,K*1e-14) )
+        double norm = L2Norm(K,x1);
+        double err = L2Error(K,x1,x2);
+        if ( err > 1e-14*norm )
             N_errors++;
     }
     delete [] A;
@@ -723,7 +739,9 @@ static bool test_dgttrs( int N )
         memcpy(x2,b,K*sizeof(double));
         Lapack::dgttrs('N',K,1,DL2,D2,DU2,DU4,IPIV,x2,K,error);
         N_errors += error==0 ? 0:1;
-        if ( !approx_equal(K,x1,x2,K*1e-14) )
+        double norm = L2Norm(K,x1);
+        double err = L2Error(K,x1,x2);
+        if ( err > 1e-14*norm )
             N_errors++;
     }
     delete [] D;
@@ -767,7 +785,9 @@ static bool test_dgbtrs( int N )
         memcpy(x2,b,K*sizeof(double));
         Lapack::dgbtrs('N',K,KL,KU,1,AB2,K2,IPIV,x2,K,error);
         N_errors += error==0 ? 0:1;
-        if ( !approx_equal(K,x1,x2,K*1e-14) )
+        double norm = L2Norm(K,x1);
+        double err = L2Error(K,x1,x2);
+        if ( err > 1e-14*norm )
             N_errors++;
     }
     delete [] AB;
@@ -810,7 +830,9 @@ static bool test_dgetri( int N )
         memset(x2,0xB6,K*sizeof(double));
         Lapack::dgemv('N',K,K,1,A2,K,b,1,0,x2,1);
         // Check the result
-        if ( !approx_equal(K,x1,x2,K*1e-12) )
+        double norm = L2Norm(K,x1);
+        double err = L2Error(K,x1,x2);
+        if ( err > 1e-13*norm )
             N_errors++;
     }
     delete [] A;

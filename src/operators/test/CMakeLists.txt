@@ -37,22 +37,19 @@ INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
 #     COPY_MESH_FILE ( mesh_file )
 #
 
-COPY_MESH_FILE ( cube8.with.boundary.labels.e )
+COPY_MESH_FILE( cube8.with.boundary.labels.e )
 
-COPY_MESH_FILE ( TC1-PELL-COARSE.e )
+COPY_MESH_FILE( TC1-PELL-COARSE.e )
 
 COPY_TEST_DATA_FILE( input_testNonlinear_MatproDensificationMaterialModel-1 )
 
-ADD_AMP_TEST_1_2_4 (testParameterFactory-1 )
-COPY_TEST_DATA_FILE( input_testParameterFactory-1 )
+ADD_AMP_TEST_1_2_4( testOperatorParameterUnitTest )
 
-ADD_AMP_TEST_1_2_4 ( testOperatorParameterUnitTest )
+COPY_MESH_FILE( pellet_1x.e )
+COPY_MESH_FILE( cube4096.e )
+COPY_MESH_FILE( cylinder270.e )
 
-COPY_MESH_FILE ( pellet_1x.e )
-COPY_MESH_FILE ( cube4096.e )
-COPY_MESH_FILE ( cylinder270.e )
-
-COPY_MESH_FILE ( multiElementMesh.e )
+COPY_MESH_FILE( multiElementMesh.e )
 COPY_TEST_DATA_FILE( input_testMultiBlockMatrix )
 
 # Copy some inputs
@@ -107,6 +104,9 @@ COPY_TEST_DATA_FILE( input_linearMechanics+ThermalDiffusion+FickDiffusion-UO2MSR
 
 
 IF ( USE_EXT_LIBMESH )
+
+    ADD_AMP_TEST_1_2_4 (testParameterFactory-1 )
+    COPY_TEST_DATA_FILE( input_testParameterFactory-1 )
 
     ADD_AMP_PROVISIONAL_TEST ( testMultiBlockMatrix )
 
