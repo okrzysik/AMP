@@ -458,7 +458,7 @@ static bool test_dgtsv( int N )
         double norm = L2Norm(N,x1);
         max_error = std::max(max_error,err/norm);
     }
-    const double tol = 1e-12;
+    const double tol = 2e-12;
     if ( max_error > tol ) {
         printf("test_dgtsv error (%e) exceeded tolerance (%e)\n",max_error,tol);
         N_errors++;
