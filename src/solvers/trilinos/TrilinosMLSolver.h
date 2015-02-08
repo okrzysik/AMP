@@ -189,10 +189,6 @@ class TrilinosMLSolver: public SolverStrategy {
     bool d_bCreationPhase; /**< set to true if the PC is not ready and false otherwise. */
     bool d_bRobustMode;
 
-    double d_dRelativeTolerance;
-    double d_dAbsoluteTolerance;
-    double d_dDivergenceTolerance;
-
     AMP::shared_ptr<MLoptions> d_mlOptions; 
 
     AMP::shared_ptr<ML_Epetra::MultiLevelPreconditioner> d_mlSolver;

@@ -95,7 +95,7 @@ public:
     * Write the specified number of characters into the output stream (called
     * from streambuf).
     */
-   virtual std::streamsize xsputn (const std::string &text, std::streamsize n);
+   virtual std::streamsize xsputn (const char *text, std::streamsize n);
 #endif
 
    /**

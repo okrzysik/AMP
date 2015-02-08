@@ -36,8 +36,8 @@ static bool check_prefix(std::string prefix, std::string str) {
 // Misc function declerations
 static void copyKey(AMP::Database::shared_ptr,std::vector<AMP::Database::shared_ptr>,
     const std::string&,bool,const std::string&,const std::vector<std::string>&);
-static void replaceText(AMP::shared_ptr<AMP::Database>&,const std::string&,const std::string&);
 static void replaceSubString( std::string&, const std::string&, const std::string& );
+//static void replaceText(AMP::shared_ptr<AMP::Database>&,const std::string&,const std::string&);
 
 
 /********************************************************
@@ -920,7 +920,7 @@ static void replaceSubString( std::string& string, const std::string& search, co
         string.replace( pos, search.size(), replace );
     }
 }
-static void replaceText( AMP::shared_ptr<AMP::Database>& database, const std::string& search, const std::string& replace )
+/*static void replaceText( AMP::shared_ptr<AMP::Database>& database, const std::string& search, const std::string& replace )
 {
     std::vector<std::string> key = database->getAllKeys();
     for (size_t i=0; i<key.size(); i++) {
@@ -954,7 +954,7 @@ static void replaceText( AMP::shared_ptr<AMP::Database>& database, const std::st
                 AMP_ERROR("Unknown key type");
         }
     }
-}
+}*/
 
 
 /********************************************************

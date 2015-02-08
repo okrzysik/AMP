@@ -33,7 +33,6 @@ NeumannVectorCorrection::NeumannVectorCorrection(const AMP::shared_ptr<NeumannVe
     std::string qruleOrderName = (params->d_db)->getStringWithDefault("QRULE_ORDER", "DEFAULT");
 
     // Create the libmesh qruleOrder, qruleType, and FEType
-    const unsigned int dim = 2;
     libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>(feTypeOrderName);
     libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>(feFamilyName);
     d_type.reset( new libMesh::FEType(feTypeOrder, feFamily) );
