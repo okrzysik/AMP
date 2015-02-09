@@ -134,6 +134,7 @@ SET( CTEST_CUSTOM_WARNING_EXCEPTION
     "the table of contents is empty"
     "warning: -jN forced in submake: disabling jobserver mode" 
     "warning: jobserver unavailable" 
+    "This object file does not define any previously undefined public symbols"
 )
 
 
