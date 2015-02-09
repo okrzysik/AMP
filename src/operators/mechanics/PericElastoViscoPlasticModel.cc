@@ -13,47 +13,47 @@ namespace Operator {
 PericElastoViscoPlasticModel :: PericElastoViscoPlasticModel (const AMP::shared_ptr<MechanicsMaterialModelParameters> & params)
   : MechanicsMaterialModel(params)
 {
-    AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
-    AMP_INSIST( (((params->d_db).get()) != NULL), "NULL database" );
+    AMP_INSIST( params.get()!=NULL, "NULL parameter" );
+    AMP_INSIST( params->d_db.get()!=NULL, "NULL database" );
     if(d_useMaterialsLibrary == false)
     {
-        AMP_INSIST( (params->d_db)->keyExists("Youngs_Modulus"), "Missing key: Youngs_Modulus" );
-        AMP_INSIST( (params->d_db)->keyExists("Poissons_Ratio"), "Missing key: Poissons_Ratio" );
+        AMP_INSIST( params->d_db->keyExists("Youngs_Modulus"), "Missing key: Youngs_Modulus" );
+        AMP_INSIST( params->d_db->keyExists("Poissons_Ratio"), "Missing key: Poissons_Ratio" );
     }
-    AMP_INSIST( (params->d_db)->keyExists("Linear_Strain_Hardening"), "Missing key: Linear_Strain_Hardening" );
-    AMP_INSIST( (params->d_db)->keyExists("Viscosity"), "Missing key: Viscosity" );
-    AMP_INSIST( (params->d_db)->keyExists("Strain_Exponent"), "Missing key: Strain_Exponent" );
+    AMP_INSIST( params->d_db->keyExists("Linear_Strain_Hardening"), "Missing key: Linear_Strain_Hardening" );
+    AMP_INSIST( params->d_db->keyExists("Viscosity"), "Missing key: Viscosity" );
+    AMP_INSIST( params->d_db->keyExists("Strain_Exponent"), "Missing key: Strain_Exponent" );
 
     if(d_useMaterialsLibrary == false)
     {
-        default_E = (params->d_db)->getDouble("Youngs_Modulus");
-        default_Nu = (params->d_db)->getDouble("Poissons_Ratio");
+        default_E = params->d_db->getDouble("Youngs_Modulus");
+        default_Nu = params->d_db->getDouble("Poissons_Ratio");
     }
 
-    d_H = (params->d_db)->getDouble("Linear_Strain_Hardening");
+    d_H = params->d_db->getDouble("Linear_Strain_Hardening");
 
-    d_Viscosity = (params->d_db)->getDouble("Viscosity");
+    d_Viscosity = params->d_db->getDouble("Viscosity");
 
-    d_Epsilon = (params->d_db)->getDouble("Strain_Exponent");
+    d_Epsilon = params->d_db->getDouble("Strain_Exponent");
 
     if(d_useMaterialsLibrary == false)
     {
-        AMP_INSIST( (params->d_db)->keyExists("Elastic_Yield_Stress"), "Missing key: Elastic_Yield_Stress" );
-        d_Sig0 = (params->d_db)->getDouble("Elastic_Yield_Stress");
+        AMP_INSIST( params->d_db->keyExists("Elastic_Yield_Stress"), "Missing key: Elastic_Yield_Stress" );
+        d_Sig0 = params->d_db->getDouble("Elastic_Yield_Stress");
     }
 
     if(d_useMaterialsLibrary == true)
     {
-        d_Sig0 = (params->d_db)->getDoubleWithDefault("Elastic_Yield_Stress", 1000000.0);
+        d_Sig0 = params->d_db->getDoubleWithDefault("Elastic_Yield_Stress", 1000000.0);
     }
 
     mat_name = 0;
 
-    default_TEMPERATURE = (params->d_db)->getDoubleWithDefault("Default_Temperature",310.0);
+    default_TEMPERATURE = params->d_db->getDoubleWithDefault("Default_Temperature",310.0);
 
-    default_BURNUP = (params->d_db)->getDoubleWithDefault("Default_Burnup",0.0);
+    default_BURNUP = params->d_db->getDoubleWithDefault("Default_Burnup",0.0);
 
-    default_OXYGEN_CONCENTRATION = (params->d_db)->getDoubleWithDefault("Default_Oxygen_Concentration",0.0);
+    default_OXYGEN_CONCENTRATION = params->d_db->getDoubleWithDefault("Default_Oxygen_Concentration",0.0);
 
     for(size_t i=0; i<6; i++) {
         for(size_t j=0; j<6; j++) d_constitutiveMatrix[i][j] = 0.;
@@ -397,7 +397,7 @@ void PericElastoViscoPlasticModel :: constructConstitutiveMatrix()
     //std::cout << "el_or_pl = " << el_or_pl << std::endl;
     // If the stress is within the elastic range.
     // Only the elastic tangent is computed.  
-    if((el_or_pl == 0)) {              
+    if (el_or_pl == 0 ) {              
         term1 = 2.0 * (1.0 + Nu);
         term2 = 3.0 * (1.0 - (2.0 * Nu));
         AMP_INSIST(term1 > tol, "Divide by zero in PericElastoViscoPlasticModel. Line 225");
@@ -872,7 +872,7 @@ void PericElastoViscoPlasticModel :: radialReturn(const double* stra_np1, double
     d_lam = -E1 / dE1_dlam;
     lam = lam + d_lam;
     for(int i = 0; i < 100; i++) {
-        if((fabs(d_lam / lam) < tol) || (fabs(d_lam) < (tol * 1.0e-6))) {
+        if( (fabs(d_lam/lam) < tol) || (fabs(d_lam) < (tol*1.0e-6)) ) {
             break;
         }
         ephbp_np1 = ephbp_n + lam;

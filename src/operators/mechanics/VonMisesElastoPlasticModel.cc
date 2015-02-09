@@ -14,42 +14,42 @@ namespace Operator {
 VonMisesElastoPlasticModel :: VonMisesElastoPlasticModel (const AMP::shared_ptr<MechanicsMaterialModelParameters> & params) :
     MechanicsMaterialModel(params)
 {
-    AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
-    AMP_INSIST( (((params->d_db).get()) != NULL), "NULL database" );
+    AMP_INSIST( params.get()!= NULL, "NULL parameter" );
+    AMP_INSIST( params->d_db.get()!= NULL, "NULL database" );
     if(d_useMaterialsLibrary == false)
     {
-        AMP_INSIST( (params->d_db)->keyExists("Youngs_Modulus"), "Missing key: Youngs_Modulus" );
-        AMP_INSIST( (params->d_db)->keyExists("Poissons_Ratio"), "Missing key: Poissons_Ratio" );
+        AMP_INSIST( params->d_db->keyExists("Youngs_Modulus"), "Missing key: Youngs_Modulus" );
+        AMP_INSIST( params->d_db->keyExists("Poissons_Ratio"), "Missing key: Poissons_Ratio" );
     }
-    AMP_INSIST( (params->d_db)->keyExists("Linear_Strain_Hardening"), "Missing key: Linear_Strain_Hardening" );
+    AMP_INSIST( params->d_db->keyExists("Linear_Strain_Hardening"), "Missing key: Linear_Strain_Hardening" );
 
     if(d_useMaterialsLibrary == false)
     {
-        default_E = (params->d_db)->getDouble("Youngs_Modulus");
-        default_Nu = (params->d_db)->getDouble("Poissons_Ratio");
+        default_E = params->d_db->getDouble("Youngs_Modulus");
+        default_Nu = params->d_db->getDouble("Poissons_Ratio");
     }
 
-    d_H = (params->d_db)->getDouble("Linear_Strain_Hardening");
+    d_H = params->d_db->getDouble("Linear_Strain_Hardening");
 
     if(d_useMaterialsLibrary == false)
     {
-        AMP_INSIST( (params->d_db)->keyExists("Elastic_Yield_Stress"), "Missing key: Elastic_Yield_Stress" );
+        AMP_INSIST( params->d_db->keyExists("Elastic_Yield_Stress"), "Missing key: Elastic_Yield_Stress" );
 
-        d_Sig0 = (params->d_db)->getDouble("Elastic_Yield_Stress");
+        d_Sig0 = params->d_db->getDouble("Elastic_Yield_Stress");
     }
 
     if(d_useMaterialsLibrary == true)
     {
-        d_Sig0 = (params->d_db)->getDoubleWithDefault("Elastic_Yield_Stress", 1000000.0);
+        d_Sig0 = params->d_db->getDoubleWithDefault("Elastic_Yield_Stress", 1000000.0);
     }
 
     mat_name = 0;
 
-    default_TEMPERATURE = (params->d_db)->getDoubleWithDefault("Default_Temperature",310.0);
+    default_TEMPERATURE = params->d_db->getDoubleWithDefault("Default_Temperature",310.0);
 
-    default_BURNUP = (params->d_db)->getDoubleWithDefault("Default_Burnup",0.0);
+    default_BURNUP = params->d_db->getDoubleWithDefault("Default_Burnup",0.0);
 
-    default_OXYGEN_CONCENTRATION = (params->d_db)->getDoubleWithDefault("Default_Oxygen_Concentration",0.0);
+    default_OXYGEN_CONCENTRATION = params->d_db->getDoubleWithDefault("Default_Oxygen_Concentration",0.0);
 
     for(size_t i=0; i<6; i++) {
         for(size_t j=0; j<6; j++) d_constitutiveMatrix[i][j] = 0.;
@@ -385,7 +385,7 @@ void VonMisesElastoPlasticModel :: constructConstitutiveMatrix()
     //std::cout << "el_or_pl = " << el_or_pl << std::endl;
     // If the stress is within the elastic range.
     // Only the elastic tangent is computed.  
-    if((el_or_pl == 0)) {              
+    if (el_or_pl == 0) { 
         term1 = 2.0 * (1.0 + Nu);
         term2 = 3.0 * (1.0 - (2.0 * Nu));
         AMP_INSIST(term1 > tol, "Divide by zero in VonMisesElastoPlasticModel. Line 225");

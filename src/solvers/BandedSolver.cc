@@ -11,7 +11,7 @@ namespace Solver {
 
 BandedSolver::BandedSolver( AMP::shared_ptr<SolverStrategyParameters> parameters ):
     SolverStrategy(parameters),
-    AB(NULL), IPIV(NULL), KL(0), KU(0)
+    N(0), M(0), KL(0), KU(0), AB(NULL), IPIV(NULL)
 {
     reset( parameters );
 }
@@ -62,7 +62,6 @@ void BandedSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters )
     // Copy the matrix to a banded diagonal form
     memset(AB,0,K*N2*sizeof(double));
     size_t row_begin = leftDOF->beginDOF();
-    size_t row_end   = leftDOF->endDOF();
     size_t col_begin = rightDOF->beginDOF();
     size_t col_end   = rightDOF->endDOF();
     std::vector<unsigned int> cols;

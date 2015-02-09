@@ -110,39 +110,23 @@ namespace Operator {
 
       double getHeatCapacity(double T_b)
       {
-        double cp;
-
-        if(T_b < 544){
-
+        double cp = 0.0;
+        if (T_b < 544) {
           cp = 2.4e5;
-
-        }else if (544 <= T_b && T_b < 588){
-
+        } else if (544 <= T_b && T_b < 588) {
           cp = 2.4e5 * (1.0  + 2.9e-3 * (1.8*T_b - 1031.0));
-
-        }else if (T_b >= 588){
-
+        } else {
           cp = 2.4e5 * (1.0  + 2.9e-3 * (1.8*T_b - 979.4));
-
         }
-
         return cp;
       }
 
       double getHeatCapacityGradient(double T_b)
       {
         double dcp = 0.0;
-
-        if (544 <= T_b && T_b < 588){
-
+        if (T_b >= 544){
           dcp = 2.4e5 * ( 2.9e-3 * 1.8*T_b );
-
-        }else if (T_b >= 588){
-
-          dcp = 2.4e5 * ( 2.9e-3 * 1.8*T_b );
-
         }
-
         return dcp;
       }
 

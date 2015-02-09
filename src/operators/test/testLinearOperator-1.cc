@@ -104,8 +104,9 @@ void myTest(AMP::UnitTest *ut)
         }
 
         // now run apply tests with multi-vectors
-        AMP::LinearAlgebra::Variable::shared_ptr auxInpVar(new AMP::LinearAlgebra::Variable("testLinearOperator-1-auxInpVar"+i));
-        AMP::LinearAlgebra::Variable::shared_ptr auxOutVar(new AMP::LinearAlgebra::Variable("testLinearOperator-1-auxOutVar"+i));
+        const std::string postfix = AMP::Utilities::intToString(i);
+        AMP::LinearAlgebra::Variable::shared_ptr auxInpVar(new AMP::LinearAlgebra::Variable("testLinearOperator-1-auxInpVar"+postfix));
+        AMP::LinearAlgebra::Variable::shared_ptr auxOutVar(new AMP::LinearAlgebra::Variable("testLinearOperator-1-auxOutVar"+postfix));
 
         AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> myMultiInpVar( new
             AMP::LinearAlgebra::MultiVariable("MultiInputVariable"));
