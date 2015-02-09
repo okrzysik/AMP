@@ -1045,7 +1045,8 @@ void testCommDup(AMP::UnitTest *ut) {
     comms.reserve(N_comm_try);
     try {
         for (size_t i=0; i<N_comm_try; i++) {
-            comms.push_back( globalComm.dup() );
+            AMP::AMP_MPI tmp_comm = globalComm.dup();
+            comms.push_back( tmp_comm );
             AMP_ASSERT(globalComm.getCommunicator()!=comms[i].getCommunicator());
             AMP_ASSERT(comms.back().sumReduce<int>(1)==globalComm.getSize());  // We need to communicate as part of the test
         }

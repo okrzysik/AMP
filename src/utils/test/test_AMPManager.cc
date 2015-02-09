@@ -55,11 +55,19 @@ int main(int argc, char *argv[])
             AMP_ERROR("error");
         // Test the abort
         try {
-            AMP_ERROR("Catch this");
+            AMP_ERROR("Catch this 1");
+            std::cout << "Failed to catch AMP_ERROR\n";
             return -1;
         } catch (...) {
             // This is correct
         }
+        try {
+            AMP::AMPManager::terminate_AMP("Catch this 2");
+            std::cout << "Failed to catch terminate_AMP\n";
+            return -1;
+        } catch (...) {
+            // This is correct
+        }   
     }
 
     // Shutdown
@@ -85,6 +93,7 @@ int main(int argc, char *argv[])
     #endif
 
     // Finished successfully
+    std::cout << "Finished\n";
     return 0;
 }   
 
