@@ -180,7 +180,8 @@ namespace AMP {
       }
     }
 
-    void ThermalStrainMaterialModel :: nonlinearJacobianGaussPointOperation_UL(const std::vector<std::vector<double> >& strain, double R_n[3][3], double R_np1[3][3])
+    void ThermalStrainMaterialModel :: nonlinearJacobianGaussPointOperation_UL(
+        const std::vector<std::vector<double> >& strain, double[3][3], double[3][3])
     {
       if(d_useMaterialsLibrary == true) {
         computeEvalv(strain);
@@ -265,7 +266,7 @@ namespace AMP {
       }
     }
 
-    void ThermalStrainMaterialModel :: getConstitutiveMatrixUpdatedLagrangian(double constitutiveMatrix[6][6], double R_np1[3][3])
+    void ThermalStrainMaterialModel :: getConstitutiveMatrixUpdatedLagrangian(double constitutiveMatrix[6][6], double[3][3])
     {
       //Consistent Tangent 
       double pass_E = d_E[d_gaussPtCnt];

@@ -15,8 +15,7 @@ namespace AMP {
 
 
 #define YY_NEVER_INTERACTIVE 1
-#define YY_NO_UNPUT 1
-
+#define YY_NO_INPUT 1
 
 
 /* end standard C headers. */
@@ -540,15 +539,6 @@ int yy_flex_debug = 0;
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
 
-
-//
-// File:    $URL: file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/inputdb/Scanner.l $
-// Package:    AMP toolbox
-// Copyright:    (c) 1997-2008 Lawrence Livermore National Security, LLC
-
-
-// Description:    Lex scanner description for the AMP input database
-//
 
 // Ignore Intel warnings about unreachable statements
 #ifdef __INTEL_COMPILER

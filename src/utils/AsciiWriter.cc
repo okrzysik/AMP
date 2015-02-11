@@ -49,7 +49,7 @@ std::string AsciiWriter::getExtension()
 /************************************************************
 * Function to read a silo file                              *
 ************************************************************/
-void AsciiWriter::readFile( const std::string &fname )
+void AsciiWriter::readFile( const std::string & )
 { 
     AMP_ERROR("readFile is not implimented yet");
 }
@@ -153,7 +153,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
 * Function to register a mesh                               *
 ************************************************************/
 #ifdef USE_AMP_MESH
-void AsciiWriter::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::string path )
+void AsciiWriter::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, std::string )
 { 
     AMP_ERROR("registerMesh is not implimented yet");
 }
@@ -164,8 +164,8 @@ void AsciiWriter::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std
 * Function to register a vector                             *
 ************************************************************/
 #if defined(USE_AMP_MESH) && defined(USE_AMP_VECTORS)
-void AsciiWriter::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec, 
-    AMP::Mesh::Mesh::shared_ptr mesh, AMP::Mesh::GeomType type, const std::string &name_in )
+void AsciiWriter::registerVector( AMP::LinearAlgebra::Vector::shared_ptr, 
+    AMP::Mesh::Mesh::shared_ptr, AMP::Mesh::GeomType, const std::string& )
 { 
     AMP_ERROR("Mesh support is not implimented yet");
 }

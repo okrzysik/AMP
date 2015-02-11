@@ -54,7 +54,7 @@ public:
     virtual ~MultiMesh ();
 
     //! Function to copy the mesh (allows use to proply copy the derived class)
-    Mesh copy() const;
+    AMP::shared_ptr<Mesh> copy() const;
 
     /**
      * \brief   Estimate the number of elements in the mesh 
@@ -222,7 +222,7 @@ public:
      *   size of the physical dimension.
      * \param x  Displacement vector
      */
-    virtual void displaceMesh( std::vector<double> x );
+    virtual void displaceMesh( const std::vector<double>& x );
 
 
     //! Is the current mesh a base mesh
@@ -267,7 +267,6 @@ public:
      *  Get the meshes composing the multimesh
      */
     virtual std::vector<AMP::Mesh::Mesh::const_shared_ptr> getMeshes() const;
-
 
 #ifdef USE_AMP_VECTORS
     /**

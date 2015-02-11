@@ -26,7 +26,7 @@ AMP::shared_ptr<AMP::LinearAlgebra::Matrix> LinearOperator :: getMatrix()
 }
 
 
-void LinearOperator :: setMatrix(const AMP::shared_ptr<AMP::LinearAlgebra::Matrix> & in_mat) 
+void LinearOperator :: setMatrix( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> in_mat) 
 {
     d_matrix = in_mat;
 }

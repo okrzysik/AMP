@@ -163,7 +163,6 @@ AMP::Mesh::MeshIterator  StructuredMeshHelper::getFaceIterator(
                     is_valid = false;
             }
             if ( is_valid ) {
-                int i = 0;
                 Utilities::triplet<int,int,int> tmp(0,0,0);
                 if ( direction==0 && center.size()==3 ) {
                     tmp.first  = Utilities::findfirst(z,center[2]-1e-12);
@@ -196,7 +195,7 @@ AMP::Mesh::MeshIterator  StructuredMeshHelper::getFaceIterator(
 }
 
 
-AMP::Mesh::MeshIterator  StructuredMeshHelper::getGapFaceIterator(AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth)
+AMP::Mesh::MeshIterator  StructuredMeshHelper::getGapFaceIterator(AMP::Mesh::Mesh::shared_ptr, int)
 {
     AMP_ERROR("Not finished");
     return AMP::Mesh::MeshIterator();

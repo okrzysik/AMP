@@ -71,19 +71,6 @@ public:
 
 
     /**
-     * \brief Construct a new mesh from an existing mesh
-     * \details  This constructor will construct a new mesh from an existing mesh.
-     * This is designed as a path to create a new mesh object of one type from
-     * an existing mesh of a different type.  It also allows creating a new single mesh
-     * from a subset or superset of other meshes.  Note that instantion of this routine 
-     * may not be able to create it's mesh from any arbitrary mesh, and may throw an 
-     * error.
-     * \param old_mesh  Existing mesh that we will use to construct the new mesh
-     */
-    Mesh ( const Mesh::shared_ptr &old_mesh );
-
-
-    /**
      * \brief Construct a new mesh from an existing mesh.
      * \details  This constructor will construct a new mesh from an existing mesh
      * using an iterator over the existing mesh.
@@ -131,12 +118,8 @@ public:
     virtual ~Mesh ();
 
 
-    //! Assignment operator
-    virtual Mesh operator=(const Mesh&);
-
-
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
-    virtual Mesh copy() const;
+    virtual AMP::shared_ptr<Mesh> copy() const=0;
 
 
     /**
@@ -384,7 +367,7 @@ public:
      *   size of the physical dimension.
      * \param x  Displacement vector
      */
-    virtual void displaceMesh( std::vector<double> x );
+    virtual void displaceMesh( const std::vector<double>& x )=0;
 
 
 #ifdef USE_AMP_VECTORS
@@ -396,7 +379,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N 
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh ( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x );
+    virtual void displaceMesh ( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x )=0;
 
 
     /**
@@ -450,6 +433,8 @@ protected:
      */
     void setMeshID();
 
+    // Private copy constructor
+    Mesh ( const Mesh::shared_ptr &old_mesh );
 
 };
 

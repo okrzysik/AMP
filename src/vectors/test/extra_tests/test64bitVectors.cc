@@ -65,6 +65,7 @@ void  simpleDOFManagerVectorTest ( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_pt
     end_time = AMP::AMP_MPI::time();
     if ( mesh->getComm().getRank()==0 )
         std::cout << "Time for L2 norm: " << end_time-start_time << std::endl;
+    ut->passes("Test ran to completion");
 }
 
 

@@ -34,9 +34,9 @@ public :
     virtual ~NullOperator() { }
 
     //! Empty apply call
-    virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
-        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
-        const double a = -1.0, const double b = 1.0) {}
+    virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr, 
+        AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::shared_ptr,
+        const double a = -1.0, const double b = 1.0) { NULL_USE(a); NULL_USE(b); }
 
 protected :
 

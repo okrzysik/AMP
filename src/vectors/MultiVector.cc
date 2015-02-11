@@ -180,7 +180,7 @@ void MultiVector::addVector ( std::vector<Vector::shared_ptr> v )
          d_CommList = AMP::LinearAlgebra::CommunicationList::shared_ptr( new AMP::LinearAlgebra::CommunicationList(params) );
     }
 }
-void  MultiVector::eraseVector ( Vector::shared_ptr  v )
+void  MultiVector::eraseVector ( Vector::shared_ptr )
 {
     AMP_ERROR("Needs to be fixed");
 }
@@ -952,7 +952,7 @@ void  MultiVector::partitionGlobalValues ( const int num, const size_t *indices,
         out_indices[i] = std::vector<size_t>(count,neg_one);
         out_vals[i] = std::vector<double>(count,0.0);
         if ( remap != NULL ) 
-            remap->operator[](i) = std::vector<int>(count,neg_one);
+            remap->operator[](i) = std::vector<int>(count,-1);
         count = 0; 
         for (size_t j=0; j<subDOFs.size(); j++) {
             if ( subDOFs[j] != neg_one ) {

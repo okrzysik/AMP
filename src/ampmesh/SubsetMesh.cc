@@ -304,6 +304,16 @@ SubsetMesh::~SubsetMesh()
 
 
 /********************************************************
+* Copy the mesh                                         *
+********************************************************/
+AMP::shared_ptr<Mesh> SubsetMesh::copy() const
+{
+    AMP_ERROR("Copy is not currently supported with SubsetMesh");
+    return AMP::shared_ptr<Mesh>();
+}
+
+
+/********************************************************
 * Function to return the meshID composing the mesh      *
 ********************************************************/
 std::vector<MeshID> SubsetMesh::getAllMeshIDs() const
@@ -476,12 +486,12 @@ size_t SubsetMesh::numGhostElements( const GeomType type, int gcw ) const
         AMP_ERROR("Maximum ghost width exceeded");
     return d_elements[type][gcw]->size();
 }
-void SubsetMesh::displaceMesh( std::vector<double> x )
+void SubsetMesh::displaceMesh( const std::vector<double>& )
 {
     AMP_ERROR("displaceMesh by a constant value does not work for subset mesh");
 }
 #ifdef USE_AMP_VECTORS
-void SubsetMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
+void SubsetMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
     AMP_ERROR("displaceMesh is not implimented for subset mesh");
 }

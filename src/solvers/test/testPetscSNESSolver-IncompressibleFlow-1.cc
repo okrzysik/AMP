@@ -186,7 +186,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     double finalRhsNorm  = rhsVec->L2Norm();
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
-    std::cout << "Final Solution Norm: " << solVec->L2Norm()  << std::endl;
+    std::cout << "Final Solution Norm: " << finalSolutionNorm << std::endl;
     std::cout << "Final Rhs Norm: "      << finalRhsNorm      << std::endl;
 
     if( fabs(finalResidualNorm) > 1e-9 )

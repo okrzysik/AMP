@@ -66,7 +66,8 @@ MultiIterator::MultiIterator( std::vector<AMP::shared_ptr<MeshIterator> > iterat
             ++cur_iterator;
     }
 }
-MultiIterator::MultiIterator(const MultiIterator& rhs)
+MultiIterator::MultiIterator(const MultiIterator& rhs):
+    MeshIterator()   // Note: we never want to call the base copy constructor
 {
     typeID = MultiIteratorTypeID;
     iterator = NULL;

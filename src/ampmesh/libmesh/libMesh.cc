@@ -143,9 +143,9 @@ libMesh::~libMesh()
 /********************************************************
 * Function to copy the mesh                             *
 ********************************************************/
-Mesh libMesh::copy() const
+AMP::shared_ptr<Mesh> libMesh::copy() const
 {
-    return libMesh(*this);
+    return AMP::shared_ptr<Mesh>( new libMesh(*this) );
 }
 
 
@@ -764,7 +764,7 @@ MeshElement libMesh::getElement ( const MeshElementID &elem_id ) const
 /********************************************************
 * Displace a mesh                                       *
 ********************************************************/
-void libMesh::displaceMesh( std::vector<double> x_in )
+void libMesh::displaceMesh( const std::vector<double>& x_in )
 {
     // Check x
     AMP_INSIST((short int)x_in.size()==PhysicalDim,"Displacement vector size should match PhysicalDim");

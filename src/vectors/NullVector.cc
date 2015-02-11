@@ -42,7 +42,7 @@ Vector::shared_ptr NullVector::cloneVector(const Variable::shared_ptr name) cons
 }
 
 
-void NullVector::copyVector( Vector::const_shared_ptr rhs )
+void NullVector::copyVector( Vector::const_shared_ptr )
 {
 }
 
@@ -209,7 +209,7 @@ double NullVector::dot(const VectorOperations &) const
 void NullVector::putRawData ( const double * ) 
 {
 }
-void NullVector::copyOutRawData ( double *out ) const
+void NullVector::copyOutRawData ( double * ) const
 {
 }
 

@@ -222,7 +222,7 @@ void  DenseSerialMatrix::getValuesByGlobalID ( int  num_rows , int num_cols , in
 {
     for (int i=0; i<num_rows; i++)
         for (int j=0; j<num_cols; j++)
-            values[i*num_cols+j] = d_M[i+j*d_rows];
+            values[i*num_cols+j] = d_M[rows[i]+cols[j]*d_rows];
 }
 
 

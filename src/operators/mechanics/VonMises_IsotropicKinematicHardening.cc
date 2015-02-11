@@ -120,7 +120,7 @@ namespace Operator {
     Total_Gauss_Point = 0;
   }
 
-  void VonMises_IsotropicKinematicHardening :: nonlinearInitGaussPointOperation(double tempAtGaussPoint)
+  void VonMises_IsotropicKinematicHardening :: nonlinearInitGaussPointOperation(double)
   {
     if(d_useMaterialsLibrary == false) {
       d_E.push_back(default_E);

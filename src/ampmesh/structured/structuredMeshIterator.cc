@@ -34,7 +34,8 @@ structuredMeshIterator::structuredMeshIterator(
     d_mesh = mesh;
     d_elements = elements;
 }
-structuredMeshIterator::structuredMeshIterator(const structuredMeshIterator& rhs)
+structuredMeshIterator::structuredMeshIterator(const structuredMeshIterator& rhs):
+    MeshIterator()
 {
     typeID = structuredMeshIteratorTypeID;
     iterator = NULL;

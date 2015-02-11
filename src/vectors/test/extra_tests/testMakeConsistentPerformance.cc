@@ -13,7 +13,7 @@
 #include "vectors/VectorBuilder.h"
 
 
-void  runTest ( AMP::UnitTest *ut )
+void  runTest( AMP::UnitTest *ut )
 {
 
     // Get the Mesh database and create the mesh parameters
@@ -61,6 +61,7 @@ void  runTest ( AMP::UnitTest *ut )
     std::cout << std::endl << "There are " << N_ghosts << " global ghost values" << std::endl;
     std::cout << std::endl << "There are " << N_ghosts2 << " global ghost values in the iterator" << std::endl;
 
+    ut->passes("Test ran to completion");
 }
 
 

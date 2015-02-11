@@ -96,7 +96,7 @@ void PericElastoViscoPlasticModel :: preNonlinearInit(bool resetReusesRadialRetu
     Total_Gauss_Point = 0;
 }
 
-void PericElastoViscoPlasticModel :: nonlinearInitGaussPointOperation(double tempAtGaussPoint)
+void PericElastoViscoPlasticModel :: nonlinearInitGaussPointOperation(double)
 {
     if(d_useMaterialsLibrary == false) {
         d_E.push_back(default_E);
@@ -290,7 +290,7 @@ void PericElastoViscoPlasticModel :: getInternalStress(const std::vector<std::ve
 }
 
 
-void PericElastoViscoPlasticModel :: getEffectiveStress(double*& sigma_e)
+void PericElastoViscoPlasticModel :: getEffectiveStress(double*&)
 {
     AMP_ERROR("Redesign this function so we do not assign a pointer to a temporary variable");
     /*double stress[6], eff_stress;
@@ -563,7 +563,7 @@ double PericElastoViscoPlasticModel :: calculate_E1(const double lambda, const d
 }
 
 double PericElastoViscoPlasticModel :: calculate_dE1_dlambda(const double lambda,
-    const double G, const double q_np1_trial, const double yield_stress_np1)
+    const double G, const double q_np1_trial, const double )
 {
     double dE1_dlambda, term1, term2, term3, term4, term5;
     term1 = q_np1_trial - (3.0 * G * lambda);

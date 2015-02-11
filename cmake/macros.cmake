@@ -252,17 +252,8 @@ ENDMACRO()
 MACRO( SET_WARNINGS )
   IF ( USING_GCC )
     # Add gcc specific compiler options
-    #    -Wno-reorder:  warning: "" will be initialized after "" when initialized here
-    SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} -Wall ") 
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ")
-    # Disable warnings that I think are irrelavent (may need to be revisited)
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wno-reorder " )
-    # Disable warnings that occur frequently, but should be fixed eventually
-    SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -Wno-unused-variable" )
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wno-unused-variable -Wno-unknown-pragmas" )
-    # Add gcc specific flags
-    SET(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS}" )
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}" )
+    SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} -Wall -Wextra") 
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
   ELSEIF ( USING_MICROSOFT )
     # Add Microsoft specifc compiler options
     SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} /D _SCL_SECURE_NO_WARNINGS /D _CRT_SECURE_NO_WARNINGS /D _ITERATOR_DEBUG_LEVEL=0" )
@@ -324,10 +315,14 @@ MACRO( SET_WARNINGS )
     # Add default compiler options
     SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS}")
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}")
-  ELSEIF ( USING_DEFAULT )
+  ELSEIF ( USING_CLANG )
     # Add default compiler options
     SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -Wall")
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wall")
+  ELSEIF ( USING_DEFAULT )
+    # Add default compiler options
+    SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS}")
+    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}")
   ENDIF()
 ENDMACRO ()
 
@@ -851,7 +846,10 @@ ENDMACRO()
 
 # Save the necessary cmake variables to a file for applications to load
 # Note: we need to save the external libraries in the same order as AMP for consistency
-MACRO( SAVE_CMAKE_FLAGS )
+FUNCTION( SAVE_CMAKE_FLAGS )
+    # Don't force downstream apps from using certain warnings
+    STRING(REGEX REPLACE " -Wextra " " " CMAKE_C_FLAGS_2   "${CMAKE_C_FLAGS}"   )
+    STRING(REGEX REPLACE " -Wextra " " " CMAKE_CXX_FLAGS_2 "${CMAKE_CXX_FLAGS}" )
     # Write the header (comments)
     FILE(WRITE  ${AMP_INSTALL_DIR}/amp.cmake "# This is a automatically generate file to include AMP within another application\n\n" )
     # Write the compilers and compile flags
@@ -860,8 +858,8 @@ MACRO( SAVE_CMAKE_FLAGS )
     FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_CXX_COMPILER ${CMAKE_CXX_COMPILER})\n" )
     FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER})\n" )
     FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_FORTRAN ${USE_FORTRAN})\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_C_FLAGS \"${CMAKE_C_FLAGS}\")\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS}\")\n" )
+    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_C_FLAGS \"${CMAKE_C_FLAGS2}\")\n" )
+    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS2}\")\n" )
     FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_Fortran_FLAGS \"${CMAKE_Fortran_FLAGS}\")\n" )
     FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(LDFLAGS \"${LDFLAGS}\")\n" )
     FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(COMPILE_MODE ${COMPILE_MODE})\n" )
@@ -1097,7 +1095,7 @@ MACRO( SAVE_CMAKE_FLAGS )
     FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${SYSTEM_LIBS} )\n" )
     FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( TEST_MAX_PROCS ${TEST_MAX_PROCS} )\n" )
     FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "\n" )
-ENDMACRO ()
+ENDFUNCTION()
 
 
 # Add an external subdirectory

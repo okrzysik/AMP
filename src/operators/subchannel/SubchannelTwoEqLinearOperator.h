@@ -97,8 +97,6 @@ private :
     std::string d_source; // heat source type
     std::string d_heatShape; // heat shape used if heat source type is "totalHeatGeneration"
 
-    unsigned int d_solutionSize; // size of solution vector
-
 //    static const double d_machinePrecision = 1.0e-15; // machine precision; used in perturbation for derivatives
     const double d_machinePrecision; // static const double is not allowed in iso c++11
                                      // either remove static or use std::numeric_limits<T> 

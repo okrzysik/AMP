@@ -31,7 +31,7 @@ void IdentityOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params
     }
 }
 
-void IdentityOperator :: setMatrix(const AMP::shared_ptr<AMP::LinearAlgebra::Matrix> & in_mat) 
+void IdentityOperator :: setMatrix( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> ) 
 {
     AMP_ERROR("setMatrix is invalid for the Identity operator");
 }

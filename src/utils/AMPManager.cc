@@ -108,7 +108,7 @@ void AMPManager::terminate_AMP(std::string message)
 /****************************************************************************
 *  Function to terminate AMP if an unhandled exception is caught            *
 ****************************************************************************/
-void term_func_abort(int err) 
+void term_func_abort(int) 
 {
     AMPManager::terminate_AMP("");
 }
@@ -165,11 +165,11 @@ static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
 ****************************************************************************/
 #ifdef USE_EXT_PETSC
 #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
-PetscErrorCode petsc_err_handler( int line, const char* func, const char* file, 
-    const char* dir, PetscErrorCode code, int p, const char* buf, void* ctx)
+PetscErrorCode petsc_err_handler( int line, const char*, const char* file, 
+    const char* dir, PetscErrorCode, int, const char* buf, void*)
 #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
-PetscErrorCode petsc_err_handler( MPI_Comm comm, int line, const char *func, 
-    const char* dir, const char* file, PetscErrorCode code, PetscErrorType p, const char* buf, void* ctx )
+PetscErrorCode petsc_err_handler( MPI_Comm, int line, const char*, 
+    const char* dir, const char* file, PetscErrorCode, PetscErrorType, const char* buf, void* )
 #else
 #error Not programmed for this version of petsc
 #endif

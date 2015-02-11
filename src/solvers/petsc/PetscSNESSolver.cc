@@ -403,9 +403,9 @@ bool PetscSNESSolver::isVectorValid ( AMP::shared_ptr<AMP::Operator::Operator>  
 *  Linesearch precheck                                          *
 ****************************************************************/
 #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
-PetscErrorCode PetscSNESSolver::lineSearchPreCheck(SNES snes, Vec x, Vec y, void *checkctx, PetscTruth *changed_y)
+PetscErrorCode PetscSNESSolver::lineSearchPreCheck(SNES, Vec x, Vec y, void *checkctx, PetscTruth *changed_y)
 #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
-PetscErrorCode PetscSNESSolver::lineSearchPreCheck(SNES snes, Vec x, Vec y, void *checkctx, PetscBool *changed_y)
+PetscErrorCode PetscSNESSolver::lineSearchPreCheck(SNES, Vec x, Vec y, void *checkctx, PetscBool *changed_y)
 #else
     #error Not programmed for this version yet
 #endif

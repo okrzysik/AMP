@@ -21,7 +21,7 @@ namespace AMP {
         void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
             AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
 
-        void reset(const AMP::shared_ptr<OperatorParameters>& params) {  }
+        void reset(const AMP::shared_ptr<OperatorParameters>&) {  }
 
         void setMasterVariable(const AMP::LinearAlgebra::Variable::shared_ptr & var) {
           d_masterVariable = var;

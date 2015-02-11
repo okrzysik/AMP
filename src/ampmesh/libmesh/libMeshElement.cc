@@ -82,7 +82,8 @@ libMeshElement::libMeshElement(int dim, GeomType type, AMP::shared_ptr< ::Elem >
     }
     d_globalID = MeshElementID(is_local,type,local_id,owner_rank,meshID);
 }
-libMeshElement::libMeshElement(const libMeshElement& rhs)
+libMeshElement::libMeshElement(const libMeshElement& rhs):
+    MeshElement()   // Note: we never want to call the base copy constructor
 {
     typeID = libMeshElementTypeID;
     element = NULL;

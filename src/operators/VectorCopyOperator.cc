@@ -15,11 +15,11 @@ VectorCopyOperator::VectorCopyOperator(const AMP::shared_ptr<VectorCopyOperatorP
 }
 
 void
-VectorCopyOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+VectorCopyOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr,
 			  AMP::LinearAlgebra::Vector::const_shared_ptr u,
-			  AMP::LinearAlgebra::Vector::shared_ptr r,
-			  const double a,
-			  const double b)
+			  AMP::LinearAlgebra::Vector::shared_ptr,
+			  const double,
+			  const double )
 {
   AMP::LinearAlgebra::Vector::const_shared_ptr vecToCopy = subsetOutputVector ( u ) ;
   d_copyVector->copyVector(vecToCopy);

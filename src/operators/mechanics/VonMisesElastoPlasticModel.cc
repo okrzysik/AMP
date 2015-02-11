@@ -92,7 +92,7 @@ void VonMisesElastoPlasticModel :: preNonlinearInit(bool resetReusesRadialReturn
 }
 
 
-void VonMisesElastoPlasticModel :: nonlinearInitGaussPointOperation(double tempAtGaussPoint)
+void VonMisesElastoPlasticModel :: nonlinearInitGaussPointOperation(double)
 {
     if(d_useMaterialsLibrary == false) {
         d_E.push_back(default_E);
@@ -281,7 +281,7 @@ void VonMisesElastoPlasticModel :: getInternalStress_UL(const std::vector<std::v
 }
 
 
-void VonMisesElastoPlasticModel :: getEffectiveStress(double*& sigma_e)
+void VonMisesElastoPlasticModel :: getEffectiveStress(double*&)
 {
     AMP_ERROR("Redesign this function so we do not assign a pointer to a temporary variable");
     /*
