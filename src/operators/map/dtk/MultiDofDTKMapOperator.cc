@@ -38,8 +38,8 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
             ->select(AMP::LinearAlgebra::VS_Stride(strideOffset1, strideLength1), "var");
     d_TargetVectorMap12 = targetVector
             ->select(AMP::LinearAlgebra::VS_Mesh(boundaryMesh2)                 , "var")
-            ->select(AMP::LinearAlgebra::VS_ByVariableName(variable1)           , "var")
-            ->select(AMP::LinearAlgebra::VS_Stride(strideOffset1, strideLength1), "var");
+            ->select(AMP::LinearAlgebra::VS_ByVariableName(variable2)           , "var")
+            ->select(AMP::LinearAlgebra::VS_Stride(strideOffset2, strideLength2), "var");
     AMP::shared_ptr<AMP::Operator::DTKMapOperatorParameters> map12Params(new AMP::Operator::DTKMapOperatorParameters(nullDatabase));
     map12Params->d_domain_mesh = boundaryMesh1;
     map12Params->d_range_mesh  = boundaryMesh2;
@@ -54,8 +54,8 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
             ->select(AMP::LinearAlgebra::VS_Stride(strideOffset2, strideLength2), "var");
     d_TargetVectorMap21 = targetVector
             ->select(AMP::LinearAlgebra::VS_Mesh(boundaryMesh1)                 , "var")
-            ->select(AMP::LinearAlgebra::VS_ByVariableName(variable2)           , "var")
-            ->select(AMP::LinearAlgebra::VS_Stride(strideOffset2, strideLength2), "var");
+            ->select(AMP::LinearAlgebra::VS_ByVariableName(variable1)           , "var")
+            ->select(AMP::LinearAlgebra::VS_Stride(strideOffset1, strideLength1), "var");
     AMP::shared_ptr<AMP::Operator::DTKMapOperatorParameters> map21Params(new AMP::Operator::DTKMapOperatorParameters(nullDatabase));
     map21Params->d_domain_mesh = boundaryMesh2;
     map21Params->d_range_mesh  = boundaryMesh1;
