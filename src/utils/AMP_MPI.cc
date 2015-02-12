@@ -299,6 +299,7 @@ void MPI_CLASS::setProcessAffinity( std::vector<int> procs )
             MPI_ERROR("Error setting process affinity");
     #elif defined(USE_MAC)
         // MAC does not support getting or setting the affinity
+        NULL_USE(procs);
     #elif defined(USE_WINDOWS)
         DWORD mask = 0;
         for (size_t i=0; i<procs.size(); i++)
