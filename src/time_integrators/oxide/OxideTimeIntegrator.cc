@@ -133,7 +133,7 @@ void OxideTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> 
 /************************************************************************
 * Reset the time integrator                                             *
 ************************************************************************/
-void OxideTimeIntegrator::reset(AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void OxideTimeIntegrator::reset(AMP::shared_ptr<TimeIntegratorParameters> )
 {
     AMP_ERROR("reset is not programmed for OxideTimeIntegrator");
 }
@@ -142,7 +142,7 @@ void OxideTimeIntegrator::reset(AMP::shared_ptr<TimeIntegratorParameters> parame
 /************************************************************************
 * Reset the time integrator                                             *
 ************************************************************************/
-int OxideTimeIntegrator::advanceSolution( const double dt, const bool first_step )
+int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
 {
     PROFILE_START("advanceSolution");
     d_current_time += dt;
@@ -238,7 +238,7 @@ void OxideTimeIntegrator::updateSolution( void )
 /************************************************************************
 * Return time increment for next solution advance.                      *
 ************************************************************************/
-double OxideTimeIntegrator::getNextDt(const bool good_solution)
+double OxideTimeIntegrator::getNextDt(const bool)
 {
     return 1e10;
 }

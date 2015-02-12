@@ -142,6 +142,10 @@ public:
     BoxMesh ( const MeshParameters::shared_ptr &params );
 
 
+    //! Virtual function to copy the mesh (allows use to proply copy the derived class)
+    virtual AMP::shared_ptr<Mesh> copy() const;
+
+
     /**
      * \brief   Estimate the number of elements in the mesh 
      * \details  This function will estimate the number of elements in the mesh. 
@@ -281,7 +285,7 @@ public:
      *   size of the physical dimension.
      * \param x  Displacement vector
      */
-    virtual void displaceMesh( std::vector<double> x );
+    virtual void displaceMesh( const std::vector<double>& x );
 
 
 #ifdef USE_AMP_VECTORS

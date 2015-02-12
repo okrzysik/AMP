@@ -14,7 +14,7 @@ namespace AMP {
         d_iNumColumnBlocks = -5678;
       }
 
-    BlockOperator :: BlockOperator(const AMP::shared_ptr<OperatorParameters>& params)
+    BlockOperator :: BlockOperator(const AMP::shared_ptr<OperatorParameters>&)
       : Operator () {
         d_iNumRowBlocks = -1234;
         d_iNumColumnBlocks = -5678;

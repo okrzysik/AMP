@@ -44,7 +44,7 @@ template <> void AMP_MPI::call_sumReduce< std::complex<double> >(std::complex<do
 #endif
 // Default instantiations of call_sumReduce(type*, const int)
 template <class type>
-void AMP_MPI::call_sumReduce(type *x, const int n) const {
+void AMP_MPI::call_sumReduce( type*, const int ) const {
     char message[200];
     sprintf(message,"Default instantion of sumReduce in parallel is not supported (%s)",typeid(type).name());
     AMP_ERROR(message);
@@ -123,7 +123,7 @@ template <> void AMP_MPI::call_minReduce<double>(double*, const int, int*) const
 #endif
 // Default instantiations of call_minReduce(type*, const int, int*)
 template <class type>
-void AMP_MPI::call_minReduce(type *x, const int n, int *rank_of_min) const {
+void AMP_MPI::call_minReduce( type*, const int, int* ) const {
     char message[200];
     sprintf(message,"Default instantion of minReduce in parallel is not supported (%s)",typeid(type).name());
     AMP_ERROR(message);
@@ -203,7 +203,7 @@ template <> void AMP_MPI::call_maxReduce<double>(double*, const int, int*) const
 #endif
 // Default instantiations of call_maxReduce(type*, const int, int*)
 template <class type>
-void AMP_MPI::call_maxReduce(type *x, const int n, int *rank_of_max) const {
+void AMP_MPI::call_maxReduce( type*, const int, int* ) const {
     char message[200];
     sprintf(message,"Default instantion of maxReduce in parallel is not supported (%s)",typeid(type).name());
     AMP_ERROR(message);
@@ -616,7 +616,7 @@ template <> void AMP_MPI::call_sumScan< std::complex<double> >(const std::comple
 #endif
 // Default instantiations of call_sumScan(const type*, type*, int)
 template <class type>
-void AMP_MPI::call_sumScan(const type *x, type *y, int n) const {
+void AMP_MPI::call_sumScan( const type*, type*, int ) const {
     char message[200];
     sprintf(message,"Default instantion of sumScan in parallel is not supported (%s)",typeid(type).name());
     AMP_ERROR(message);
@@ -649,7 +649,7 @@ template <> void AMP_MPI::call_minScan<double>(const double*, double*, int) cons
 #endif
 // Default instantiations of call_minScan(const type*, type*, int)
 template <class type>
-void AMP_MPI::call_minScan(const type *x, type *y, int n) const {
+void AMP_MPI::call_minScan( const type*, type*, int ) const {
     char message[200];
     sprintf(message,"Default instantion of minScan in parallel is not supported (%s)",typeid(type).name());
     AMP_ERROR(message);
@@ -682,7 +682,7 @@ template <> void AMP_MPI::call_maxScan<double>(const double*, double*, int) cons
 #endif
 // Default instantiations of call_maxScan(const type*, type*, int)
 template <class type>
-void AMP_MPI::call_maxScan(const type *x, type *y, int n) const {
+void AMP_MPI::call_maxScan( const type*, type*, int ) const {
     char message[200];
     sprintf(message,"Default instantion of maxReduce in parallel is not supported (%s)",typeid(type).name());
     AMP_ERROR(message);

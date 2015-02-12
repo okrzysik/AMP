@@ -169,7 +169,7 @@ void NodeToNodeMap::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr,
 ********************************************************/
 void NodeToNodeMap::applyFinish ( AMP::LinearAlgebra::Vector::const_shared_ptr,
                                   AMP::LinearAlgebra::Vector::const_shared_ptr,
-                                  AMP::LinearAlgebra::Vector::shared_ptr r,
+                                  AMP::LinearAlgebra::Vector::shared_ptr,
                               const double ,
                               const double )
 {

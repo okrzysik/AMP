@@ -83,7 +83,7 @@ void SolverStrategy::resetOperator(const AMP::shared_ptr<AMP::Operator::Operator
         d_pOperator->reset(params);
     }
 }
-void SolverStrategy::reset(AMP::shared_ptr<SolverStrategyParameters> parameters)
+void SolverStrategy::reset(AMP::shared_ptr<SolverStrategyParameters>)
 {
 }
 
@@ -100,7 +100,7 @@ void SolverStrategy::setConvergenceTolerance(
     d_iMaxIterations = max_iterations;
     d_dMaxError      = max_error;
 }
-void SolverStrategy::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess )
+void SolverStrategy::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> )
 {
 }
 
@@ -108,14 +108,14 @@ void SolverStrategy::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector
 /****************************************************************
 * Empty functions                                               *
 ****************************************************************/
-void SolverStrategy::appendSolutionVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> vec )
+void SolverStrategy::appendSolutionVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> )
 {
 }
-void SolverStrategy::appendRhsVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> vec ) 
+void SolverStrategy::appendRhsVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> ) 
 {
 }
-void SolverStrategy::formRhs( double t,   AMP::LinearAlgebra::Vector::shared_ptr f,
-                                    AMP::LinearAlgebra::Vector::const_shared_ptr u) 
+void SolverStrategy::formRhs( double, AMP::LinearAlgebra::Vector::shared_ptr,
+                              AMP::LinearAlgebra::Vector::const_shared_ptr ) 
 {
 }
 

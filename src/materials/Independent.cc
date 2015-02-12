@@ -289,69 +289,69 @@ namespace Independent_NS {
 
 //  =================== Functions =====================================================
 
-	inline double ThermalConductivityProp::eval( std::vector<double>& args ){
+	inline double ThermalConductivityProp::eval( std::vector<double>& ){
 		  return get_parameters()[0];
 	}
 
-	inline double FickCoefficientProp::eval( std::vector<double>& args ){
+	inline double FickCoefficientProp::eval( std::vector<double>& ){
 		  return get_parameters()[0];
 	}
 
-	inline double SoretCoefficientProp::eval( std::vector<double>& args ){
+	inline double SoretCoefficientProp::eval( std::vector<double>& ){
 		  return get_parameters()[0];
 	}
 
-	inline double DTThermalConductivityProp::eval( std::vector<double>& args ){
+	inline double DTThermalConductivityProp::eval( std::vector<double>& ){
 		  return 0.;
 	}
 
-	inline double DxThermalConductivityProp::eval( std::vector<double>& args ){
+	inline double DxThermalConductivityProp::eval( std::vector<double>& ){
 		  return 0.;
 	}
 
-	inline double DTFickCoefficientProp::eval( std::vector<double>& args ){
+	inline double DTFickCoefficientProp::eval( std::vector<double>& ){
 		  return 0.;
 	}
 
-	inline double DxFickCoefficientProp::eval( std::vector<double>& args ){
+	inline double DxFickCoefficientProp::eval( std::vector<double>& ){
 		  return 0.;
 	}
 
-	inline double DTSoretCoefficientProp::eval( std::vector<double>& args ){
+	inline double DTSoretCoefficientProp::eval( std::vector<double>& ){
 		  return 0.;
 	}
 
-	inline double DxSoretCoefficientProp::eval( std::vector<double>& args ){
+	inline double DxSoretCoefficientProp::eval( std::vector<double>& ){
 		  return 0.;
 	}
 
-	inline double DensityProp::eval( std::vector<double>& args ){
+	inline double DensityProp::eval( std::vector<double>& ){
 		  return get_parameters()[0];
 	}
 
-	inline double ThermalExpansionProp::eval( std::vector<double>& args ){
+	inline double ThermalExpansionProp::eval( std::vector<double>& ){
 		  return get_parameters()[0];
 	}
 
-	inline double HeatCapacityPressureProp::eval( std::vector<double>& args ){
+	inline double HeatCapacityPressureProp::eval( std::vector<double>& ){
 		  return get_parameters()[0];
 	}
 
-	inline double YoungsModulusProp::eval( std::vector<double>& args ){
+	inline double YoungsModulusProp::eval( std::vector<double>& ){
 		  return get_parameters()[0];
 	}
 
-	inline double PoissonRatioProp::eval( std::vector<double>& args ){
+	inline double PoissonRatioProp::eval( std::vector<double>& ){
 		  return get_parameters()[0];
 	}
 
-	std::vector<double> VectorFickCoefficientProp::evalVector( std::vector<double>& args ){
+	std::vector<double> VectorFickCoefficientProp::evalVector( std::vector<double>& ){
 		  std::vector<double> result(d_dimension);
 		  for (size_t i=0; i<d_dimension; i++) result[i] = d_params[i];
 		  return result;
 	}
 
-	std::vector<std::vector<double> > TensorFickCoefficientProp::evalTensor( std::vector<double>& args ){
+	std::vector<std::vector<double> > TensorFickCoefficientProp::evalTensor( std::vector<double>& ){
 		  std::vector<std::vector<double> > result(d_dimensions[0], std::vector<double>(d_dimensions[1]));
 		  for (size_t i=0; i<d_dimensions[0]; i++)
 			  for (size_t j=0; j<d_dimensions[1]; j++)

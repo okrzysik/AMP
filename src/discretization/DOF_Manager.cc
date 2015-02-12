@@ -33,7 +33,7 @@ DOFManager::~DOFManager( )
 /****************************************************************
 * Get the DOFs for the element                                  *
 ****************************************************************/
-void DOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const
+void DOFManager::getDOFs( const AMP::Mesh::MeshElementID&, std::vector<size_t>& ) const
 {
     AMP_ERROR("getDOFs is not implimented for the base class");
 }
@@ -111,7 +111,7 @@ std::vector<size_t> DOFManager::getRemoteDOFs( ) const
 /****************************************************************
 * Return the global number of D.O.F.s                           *
 ****************************************************************/
-std::vector<size_t> DOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
+std::vector<size_t> DOFManager::getRowDOFs( const AMP::Mesh::MeshElement& ) const
 {
     AMP_ERROR("getRowDOFs is not implimented for the base class");
     return std::vector<size_t>();

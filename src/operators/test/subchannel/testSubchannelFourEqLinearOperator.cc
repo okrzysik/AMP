@@ -137,11 +137,10 @@ size_t getMATLABAxialIndex(AMP::Mesh::MeshElement face, bool is_axial_face_quant
    return j;
 }
 
+
 // function used to get all lateral gaps
-std::map<std::vector<double>,AMP::Mesh::MeshElement> getLateralFaces(
-   AMP::Mesh::Mesh::shared_ptr mesh,
-   bool getExterior
-)
+std::map<std::vector<double>,AMP::Mesh::MeshElement> getLateralFaces( 
+    AMP::Mesh::Mesh::shared_ptr mesh, bool )
 {
    // map of lateral gaps to their centroids
    std::map<std::vector<double>,AMP::Mesh::MeshElement> lateralFaceMap;

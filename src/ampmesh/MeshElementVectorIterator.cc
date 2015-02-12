@@ -33,7 +33,8 @@ MultiVectorIterator::MultiVectorIterator( const std::vector<MeshElement>& elemen
     d_elements.reset( new std::vector<MeshElement>( elements ) );
     d_pos = pos;
 }
-MultiVectorIterator::MultiVectorIterator(const MultiVectorIterator& rhs)
+MultiVectorIterator::MultiVectorIterator(const MultiVectorIterator& rhs):
+    MeshIterator()   // Note: we never want to call the base copy constructor
 {
     typeID = MultiVectorIteratorTypeID;
     iterator = NULL;

@@ -112,9 +112,6 @@ private:
     std::vector<bool> d_own_mesh1;
     std::vector<bool> d_own_mesh2;
 
-    //!  True if the map hasn't been "applied" yet
-    bool d_FirstApply;
-
     //!  The tag used for communication
     int d_commTag;
 

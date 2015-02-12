@@ -708,6 +708,15 @@ BoxMesh::~BoxMesh()
 
 
 /****************************************************************
+* Copy constructor                                              *
+****************************************************************/
+AMP::shared_ptr<Mesh> BoxMesh::copy() const
+{
+    return AMP::shared_ptr<Mesh>( new BoxMesh(*this) );
+}
+
+
+/****************************************************************
 * Estimate the mesh size                                        *
 ****************************************************************/
 size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
@@ -913,7 +922,7 @@ MeshIterator BoxMesh::getBlockIDIterator ( const GeomType type, const int id, co
 /****************************************************************
 * Functions to displace the mesh                                *
 ****************************************************************/
-void BoxMesh::displaceMesh( std::vector<double> x )
+void BoxMesh::displaceMesh( const std::vector<double>& x )
 {
     AMP_ASSERT(x.size()==PhysicalDim);
     for (int i=0; i<PhysicalDim; i++) {

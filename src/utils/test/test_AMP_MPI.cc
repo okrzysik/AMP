@@ -59,7 +59,7 @@ struct mytype{
 template <class type>
 int testReduce(AMP::AMP_MPI comm, AMP::UnitTest *ut, int flag);
 template <>
-int testReduce<std::complex<double> >(AMP::AMP_MPI comm, AMP::UnitTest *ut, int flag) {
+int testReduce<std::complex<double> >(AMP::AMP_MPI comm, AMP::UnitTest *ut, int ) {
     PROFILE_START("testReduce<complex double>");
     char message[128];
     std::complex<double> rank = comm.getRank()+1;

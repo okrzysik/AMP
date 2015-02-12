@@ -65,7 +65,7 @@ public:
     virtual ~libMesh ();
 
     //! Function to copy the mesh (allows use to proply copy the derived class)
-    Mesh copy() const;
+    virtual AMP::shared_ptr<Mesh> copy() const;
 
 
     /**
@@ -179,7 +179,7 @@ public:
      *   size of the physical dimension.
      * \param x  Displacement vector
      */
-    virtual void displaceMesh( std::vector<double> x );
+    virtual void displaceMesh( const std::vector<double>& x );
 
 
     //! Return the underlying libMesh object

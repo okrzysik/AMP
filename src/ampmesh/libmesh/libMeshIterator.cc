@@ -86,7 +86,8 @@ libMeshIterator::libMeshIterator(int type, const AMP::Mesh::libMesh *mesh, int g
         }
     }
 }
-libMeshIterator::libMeshIterator(const libMeshIterator& rhs)
+libMeshIterator::libMeshIterator(const libMeshIterator& rhs):
+    MeshIterator()   // Note: we never want to call the base copy constructor
 {
     typeID = libMeshIteratorTypeID;
     iterator = NULL;

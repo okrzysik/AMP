@@ -53,14 +53,14 @@ public :
      * Copies the shared pointer for the matrix representation of this linear operator.
      *  @param [in] in_mat The matrix representation of this linear operator.
      */
-    virtual void setMatrix(const AMP::shared_ptr<AMP::LinearAlgebra::Matrix> & in_mat);
+    virtual void setMatrix( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> in_mat );
 
 protected :
 
     //! Empty constructor
     LinearOperator( );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix; /**< The matrix shared pointer. */
+    AMP::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix; // The matrix shared pointer
 
 private :
 

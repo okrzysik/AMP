@@ -52,7 +52,7 @@ static void createSiloDirectory( DBfile *FileHandle, std::string path );
 /************************************************************
 * Function to read a silo file                              *
 ************************************************************/
-void SiloIO::readFile( const std::string &fname )
+void SiloIO::readFile( const std::string& )
 { 
     AMP_ERROR("readFile is not implimented yet");
 }
@@ -65,7 +65,7 @@ void SiloIO::readFile( const std::string &fname )
 * it cannot reopen it (or at least doing this on the        *
 * processor that created the file creates problems).        *
 ************************************************************/
-void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
+void SiloIO::writeFile( const std::string& fname_in, size_t iteration_count )
 { 
     PROFILE_START("writeFile");
     // Create the file name
@@ -291,13 +291,13 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
     // Add the variable name to the list of variables
     d_varNames.insert(name);
 }
-void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
+void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr )
 { 
     AMP_ERROR("SiloIO currently requires a mesh to register a vector with");
 }
 #endif
 #ifdef USE_AMP_MATRICES
-void SiloIO::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat )
+void SiloIO::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr )
 {
     AMP_ERROR("SiloIO does not yet support matrices");
 }

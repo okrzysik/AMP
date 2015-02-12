@@ -140,26 +140,23 @@ public:
 
 	// disable scalar evaluator
 	virtual Number
-	eval(std::vector<Number>& args)
-	{AMP_INSIST(false, "cannot use scalar evaluator from tensor property"); return 0;}
+	eval(std::vector<Number>&)
+	{AMP_ERROR("cannot use scalar evaluator from tensor property"); return 0;}
 
 	// disable scalar evaluator
 	virtual void
-	evalv(std::vector<Number>& r,
-		const std::map<std::string, AMP::shared_ptr<std::vector<Number> > >& args)
-	{AMP_INSIST(false, "cannot use scalar evaluator from tensor property");}
+	evalv(std::vector<Number>&,const std::map<std::string,AMP::shared_ptr<std::vector<Number> > >&)
+	{AMP_ERROR("cannot use scalar evaluator from tensor property");}
 
 	// disable scalar evaluator
 	virtual void
-	evalv(AMP::shared_ptr<AMP::LinearAlgebra::Vector>& r,
-		const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector> >& args)
-	{AMP_INSIST(false, "cannot use scalar evaluator from tensor property");}
+	evalv(AMP::shared_ptr<AMP::LinearAlgebra::Vector>&,const std::map<std::string,AMP::shared_ptr<AMP::LinearAlgebra::Vector> >&)
+	{AMP_ERROR("cannot use scalar evaluator from tensor property");}
 
 	// disable scalar evaluator
 	virtual void
-	evalv(AMP::shared_ptr<AMP::LinearAlgebra::Vector>& r,
-		const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector>& args)
-	{AMP_INSIST(false, "cannot use scalar evaluator from tensor property");}
+	evalv(AMP::shared_ptr<AMP::LinearAlgebra::Vector>&,const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector>&)
+	{AMP_ERROR("cannot use scalar evaluator from tensor property");}
 };
 
 template<>

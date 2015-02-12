@@ -257,7 +257,7 @@ Journal of Nuclear Materials 394 (2009) 182--189");
 		return youngs;
 	}
 
-	inline double PoissonRatioProp::eval( std::vector<double>& args ){
+	inline double PoissonRatioProp::eval( std::vector<double>& ){
 		return PRatio;
 	}
 

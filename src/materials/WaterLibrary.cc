@@ -931,7 +931,6 @@ September 1998");
         r = hmax;
         fl = Residual(hmin,T,P);
         fr = Residual(hmax,T,P);
-        double ftol = 1e-14;
 
         AMP_ASSERT( fl*fr < 0.0 ); // Must have initial bounding box
         unsigned int iter = 0;

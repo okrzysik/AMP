@@ -49,10 +49,6 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
     setMeshID();
     d_name = "NULL";
 }
-Mesh::Mesh( const Mesh::shared_ptr & )
-{
-    AMP_ERROR("Copy constructor is not Implimented Yet");
-}
 
 
 /********************************************************
@@ -60,19 +56,6 @@ Mesh::Mesh( const Mesh::shared_ptr & )
 ********************************************************/
 Mesh::~Mesh()
 {
-}
-
-
-/********************************************************
-* Assignment operator                                   *
-********************************************************/
-Mesh Mesh::operator=(const Mesh& rhs)
-{
-    return rhs.copy();
-}
-Mesh Mesh::copy() const
-{
-    return Mesh(*this);
 }
 
 
@@ -412,16 +395,6 @@ size_t Mesh::numGhostElements( const GeomType, int ) const
     AMP_ERROR("numGhostElements is not implimented for the base class");
     return 0;
 }
-void Mesh::displaceMesh( std::vector<double> )
-{
-    AMP_ERROR("displaceMesh is not implimented for the base class");
-}
-#ifdef USE_AMP_VECTORS
-void Mesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr )
-{
-    AMP_ERROR("displaceMesh is not implimented for the base class");
-}
-#endif
 
 
 /********************************************************

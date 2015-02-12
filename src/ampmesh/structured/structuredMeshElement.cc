@@ -60,7 +60,8 @@ structuredMeshElement::structuredMeshElement(  BoxMesh::MeshElementIndex index, 
     bool is_local = (int)owner_rank == d_mesh->d_comm.getRank();
     d_globalID = MeshElementID(is_local,(GeomType)index.type,local_id,owner_rank,d_mesh->d_meshID);
 }
-structuredMeshElement::structuredMeshElement(const structuredMeshElement& rhs)
+structuredMeshElement::structuredMeshElement(const structuredMeshElement& rhs):
+    MeshElement()   // Note: we never want to call the base copy constructor
 {
     typeID = structuredMeshElementTypeID;
     element = NULL;
@@ -642,7 +643,7 @@ double structuredMeshElement::coord(int i) const
 /****************************************************************
 * Misc functions                                                *
 ****************************************************************/
-bool structuredMeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
+bool structuredMeshElement::containsPoint( const std::vector<double>&, double ) const
 {
     AMP_ERROR("Not finsihed");
     return false;

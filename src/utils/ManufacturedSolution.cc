@@ -601,6 +601,7 @@ void ManufacturedSolution::cubic_cyl_rod_dirichletz2(
 
 void ManufacturedSolution::cubic_cyl_rod_rz_none(valarray<double> &result, const double r, const double th, const double z, ManufacturedSolution* mfs)
 {
+    NULL_USE(th);
     const valarray<double> a=mfs->geta();
 
     #ifdef CHECKSIZES

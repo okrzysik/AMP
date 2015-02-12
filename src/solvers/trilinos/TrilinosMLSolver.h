@@ -9,8 +9,11 @@
 
 #pragma GCC diagnostic push 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wextra"
 #include "ml_MultiLevelPreconditioner.h"
 #include "ml_include.h"
+#pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
 
 

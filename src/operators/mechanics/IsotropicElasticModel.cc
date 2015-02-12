@@ -147,7 +147,8 @@ void IsotropicElasticModel :: nonlinearJacobianGaussPointOperation(const std::ve
 }
 
 
-void IsotropicElasticModel :: nonlinearJacobianGaussPointOperation_UL(const std::vector<std::vector<double> >& strain, double R_n[3][3], double R_np1[3][3])
+void IsotropicElasticModel :: nonlinearJacobianGaussPointOperation_UL(
+    const std::vector<std::vector<double> >& strain, double[3][3], double[3][3])
 {
     if(d_useMaterialsLibrary == true) {
         computeEvalv(strain);
@@ -178,7 +179,7 @@ void IsotropicElasticModel :: getConstitutiveMatrix(double*& constitutiveMatrix)
 }
 
 
-void IsotropicElasticModel :: getConstitutiveMatrixUpdatedLagrangian(double constitutiveMatrix[6][6], double R_np1[3][3])
+void IsotropicElasticModel :: getConstitutiveMatrixUpdatedLagrangian(double constitutiveMatrix[6][6], double[3][3])
 {
     //if(d_useMaterialsLibrary == false) {
     //  constitutiveMatrix = &(d_constitutiveMatrix_UL[0][0]);

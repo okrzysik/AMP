@@ -54,6 +54,10 @@ public:
     virtual AMP::shared_ptr<Mesh>  Subset ( std::string name ) const;
 
 
+    //! Function to copy the mesh (allows use to proply copy the derived class)
+    AMP::shared_ptr<Mesh> copy() const;
+
+
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */
@@ -209,7 +213,7 @@ public:
      *   size of the physical dimension.
      * \param x  Displacement vector
      */
-    virtual void displaceMesh( std::vector<double> x );
+    virtual void displaceMesh( const std::vector<double>& x );
 
 
 #ifdef USE_AMP_VECTORS

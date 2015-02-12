@@ -134,7 +134,7 @@ void SubchannelToCladMap::fillSubchannelGrid(AMP::Mesh::Mesh::shared_ptr mesh)
 *  Return the list of local MeshElements in each subchannel             *
 ************************************************************************/
 std::vector<std::vector<AMP::Mesh::MeshElementID> >  SubchannelToCladMap::getElementsInSubchannel(
-    const std::vector<double>& x, const std::vector<double>& y, AMP::Mesh::MeshIterator iterator )
+    const std::vector<double>&, const std::vector<double>&, AMP::Mesh::MeshIterator iterator )
 {
     std::vector<std::vector<AMP::Mesh::MeshElementID> > list(N_subchannels);
     AMP::Mesh::MeshIterator it = iterator.begin();
@@ -299,7 +299,7 @@ void SubchannelToCladMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
 /************************************************************************
 *  Fill the return vector for the given subchannel                      *
 ************************************************************************/    
-void SubchannelToCladMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_ptr vec, double range[4], 
+void SubchannelToCladMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_ptr vec, double[4], 
     AMP::Mesh::Mesh::shared_ptr mesh, const std::vector<AMP::Mesh::MeshElementID>& ids, 
     const std::vector<double>& z, const std::vector<double>& f )
 {

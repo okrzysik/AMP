@@ -9,7 +9,7 @@ using namespace AMP;
 
 
 // The main function
-int main(int argc, char *argv[]) 
+int main(int,char**) 
 {
     int N_errors = 0;
     

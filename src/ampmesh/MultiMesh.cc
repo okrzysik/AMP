@@ -226,9 +226,9 @@ MultiMesh::~MultiMesh()
 /********************************************************
 * Function to copy the mesh                             *
 ********************************************************/
-Mesh MultiMesh::copy() const
+AMP::shared_ptr<Mesh> MultiMesh::copy() const
 {
-    return MultiMesh(*this);
+    return AMP::shared_ptr<Mesh>( new MultiMesh(*this) );
 }
 
 
@@ -738,7 +738,7 @@ AMP::shared_ptr<Mesh>  MultiMesh::Subset( std::string name ) const
 /********************************************************
 * Displace a mesh                                       *
 ********************************************************/
-void MultiMesh::displaceMesh( std::vector<double> x_in )
+void MultiMesh::displaceMesh( const std::vector<double>& x_in )
 {
     // Check x
     AMP_INSIST((short int)x_in.size()==PhysicalDim,"Displacement vector size should match PhysicalDim");

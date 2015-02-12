@@ -247,20 +247,16 @@ EpetraVectorEngine::EpetraVectorEngine ( VectorEngineParameters::shared_ptr  ali
     getEpetra_Vector().SumIntoGlobalValues ( num , const_cast<double *> (vals) , &indices2[0] );
   }
 
-  void EpetraVectorEngine::getValuesByLocalID(int num, size_t *indices , double *vals) const
+  void EpetraVectorEngine::getValuesByLocalID( int, size_t*, double* ) const
   {
     INCREMENT_COUNT("Virtual");
     AMP_ERROR( "This shouldn't be called" );
-    //for ( int i = 0 ; i != num ; i++ )
-    //  vals[i] = getEpetra_Vector()[indices[i]];
   }
 
-  void EpetraVectorEngine::getLocalValuesByGlobalID(int num, size_t *indices , double *vals) const
+  void EpetraVectorEngine::getLocalValuesByGlobalID( int, size_t*, double* ) const
   {
     INCREMENT_COUNT("Virtual");
     AMP_ERROR( "This shouldn't be called" );
-    //for ( int i = 0 ; i != num ; i++ )
-    //  vals[i] = getEpetra_Vector()[indices[i]];
   }
   double EpetraVectorEngine::L1Norm(void) const
   {
