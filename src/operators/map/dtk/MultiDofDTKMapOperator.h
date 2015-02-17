@@ -20,7 +20,7 @@ class MultiDofDTKMapOperatorParameters : public OperatorParameters
 	: OperatorParameters(db)
     { /* ... */ }
 
-    AMP::LinearAlgebra::Vector::shared_ptr d_SourceVector;
+    AMP::LinearAlgebra::Vector::const_shared_ptr d_SourceVector;
     AMP::LinearAlgebra::Vector::shared_ptr d_TargetVector;
 
     AMP::Mesh::Mesh::shared_ptr d_Mesh1;
@@ -51,11 +51,12 @@ public :
 
   private:
 
+    AMP::shared_ptr<MultiDofDTKMapOperatorParameters> d_multiDofDTKMapOpParams;
     AMP::shared_ptr<AMP::Operator::DTKMapOperator> d_Map12;
     AMP::shared_ptr<AMP::Operator::DTKMapOperator> d_Map21;
-    AMP::LinearAlgebra::Vector::shared_ptr d_SourceVectorMap12;
+    AMP::LinearAlgebra::Vector::const_shared_ptr d_SourceVectorMap12;
     AMP::LinearAlgebra::Vector::shared_ptr d_TargetVectorMap12;
-    AMP::LinearAlgebra::Vector::shared_ptr d_SourceVectorMap21;
+    AMP::LinearAlgebra::Vector::const_shared_ptr d_SourceVectorMap21;
     AMP::LinearAlgebra::Vector::shared_ptr d_TargetVectorMap21;
 };
 

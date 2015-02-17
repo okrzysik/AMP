@@ -241,7 +241,7 @@ if (cellSandwichMesh)
     // FIRST
     node  = cathodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 3, 0 );
     end_node = node.end();
-    errorVec = ElectrodeMapVec->constSelect(AMP::LinearAlgebra::VS_MeshIterator(node.begin(), globalComm), "error");
+    errorVec = potentialMapVec->constSelect(AMP::LinearAlgebra::VS_MeshIterator(node.begin(), globalComm), "error");
     tolerance = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
     whatAmIChecking = "interface between cellSandwich and cathodeCC - cathodeCC side";
     
@@ -249,11 +249,11 @@ if (cellSandwichMesh)
   for( ; node != end_node ; ++node)
   {
         std::vector<size_t> bndGlobalIds;
-        eectDofMap->getDOFs( node->globalID() , bndGlobalIds );
+        phiDofMap->getDOFs( node->globalID() , bndGlobalIds );
         
         std::vector<double> pt = node->coord();
         double val = __INIT_FN2__(pt[0], pt[1], pt[2]);
-        BatteryMapVec->addValueByGlobalID(bndGlobalIds[3], -val);
+        potentialMapVec->addValueByGlobalID(bndGlobalIds[0], -val);
   }//end for node
     errorNorm = errorVec->L2Norm();
     AMP::pout<<whatAmIChecking<<" error = "<<errorNorm<<"\n"; 
@@ -263,18 +263,18 @@ if (cellSandwichMesh)
     // SECOND
     node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 2, 0 );
     end_node = node.end();
-    errorVec = potentialMapVec->constSelect(AMP::LinearAlgebra::VS_MeshIterator(node.begin(), globalComm), "error");
+    errorVec = ElectrodeMapVec->constSelect(AMP::LinearAlgebra::VS_MeshIterator(node.begin(), globalComm), "error");
     tolerance = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
     whatAmIChecking = "interface between cellSandwich and cathodeCC - cellSandwich side";
 
   for( ; node != end_node ; ++node)
   {
         std::vector<size_t> bndGlobalIds;
-        phiDofMap->getDOFs( node->globalID() , bndGlobalIds );
+        eectDofMap->getDOFs( node->globalID() , bndGlobalIds );
         
         std::vector<double> pt = node->coord();
         double val = __INIT_FN3__(pt[0], pt[1], pt[2]);
-        potentialMapVec->addValueByGlobalID(bndGlobalIds[0], -val);
+        BatteryMapVec->addValueByGlobalID(bndGlobalIds[3], -val);
   }//end for node
     errorNorm = errorVec->L2Norm();
     AMP::pout<<whatAmIChecking<<" error = "<<errorNorm<<"\n"; 
@@ -284,18 +284,18 @@ if (cellSandwichMesh)
     // THIRD
     node  = anodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
     end_node = node.end();
-    errorVec = ElectrodeMapVec->constSelect(AMP::LinearAlgebra::VS_MeshIterator(node.begin(), globalComm), "error");
+    errorVec = potentialMapVec->constSelect(AMP::LinearAlgebra::VS_MeshIterator(node.begin(), globalComm), "error");
     tolerance = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
     whatAmIChecking = "interface between cellSandwich and anodeCC - anodeCC side";
     
   for( ; node != end_node ; ++node)
   {
         std::vector<size_t> bndGlobalIds;
-        eectDofMap->getDOFs( node->globalID() , bndGlobalIds );
+        phiDofMap->getDOFs( node->globalID() , bndGlobalIds );
         
         std::vector<double> pt = node->coord();
         double val = __INIT_FN2__(pt[0], pt[1], pt[2]);
-        BatteryMapVec->addValueByGlobalID(bndGlobalIds[3], -val);
+        potentialMapVec->addValueByGlobalID(bndGlobalIds[0], -val);
   }//end for node
     errorNorm = errorVec->L2Norm();
     AMP::pout<<whatAmIChecking<<" error = "<<errorNorm<<"\n"; 
@@ -305,18 +305,18 @@ if (cellSandwichMesh)
     // FOURTH
     node  = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
     end_node = node.end();
-    errorVec = potentialMapVec->constSelect(AMP::LinearAlgebra::VS_MeshIterator(node.begin(), globalComm), "error");
+    errorVec = ElectrodeMapVec->constSelect(AMP::LinearAlgebra::VS_MeshIterator(node.begin(), globalComm), "error");
     tolerance = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
     whatAmIChecking = "interface between cellSandwich and anodeCC - cellSandwich side";
 
   for( ; node != end_node ; ++node)
   {
         std::vector<size_t> bndGlobalIds;
-        phiDofMap->getDOFs( node->globalID() , bndGlobalIds );
+        eectDofMap->getDOFs( node->globalID() , bndGlobalIds );
         
         std::vector<double> pt = node->coord();
         double val = __INIT_FN1__(pt[0], pt[1], pt[2]);
-        potentialMapVec->addValueByGlobalID(bndGlobalIds[0], -val);
+        BatteryMapVec->addValueByGlobalID(bndGlobalIds[3], -val);
   }//end for node
     errorNorm = errorVec->L2Norm();
     AMP::pout<<whatAmIChecking<<" error = "<<errorNorm<<"\n"; 
