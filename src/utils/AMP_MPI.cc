@@ -631,13 +631,13 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
 MPI_CLASS MPI_CLASS::split( int color, int key ) const 
 {
     if ( d_isNull ) {
-        return MPI_CLASS(AMP_COMM_NULL);
+        return MPI_CLASS(MPI_CLASS_COMM_NULL);
     } else if ( comm_size==1 ) {
         if ( color==-1 ) 
-            return MPI_CLASS(AMP_COMM_NULL);
+            return MPI_CLASS(MPI_CLASS_COMM_NULL);
         return dup();
     }
-    MPI_Comm  new_MPI_comm = AMP_COMM_NULL;
+    MPI_Comm  new_MPI_comm = MPI_CLASS_COMM_NULL;
     #ifdef USE_MPI
         // USE MPI to split the communicator
         if ( color==-1 ) {
