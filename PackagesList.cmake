@@ -60,6 +60,7 @@ ENDIF()
 
 
 # Set the AMP source and include the macros
+SET( PROJ AMP )
 INCLUDE("${AMP_SOURCE_DIR}/cmake/macros.cmake")
 INCLUDE("${AMP_SOURCE_DIR}/cmake/libraries.cmake")
 
@@ -93,31 +94,32 @@ IF ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}" )
 ENDIF()
 
 
-# Get the mercurial revision
-EXECUTE_PROCESS(COMMAND hg id -i "${CMAKE_CURRENT_LIST_DIR}" OUTPUT_VARIABLE AMP_VERSION)
-STRING(REGEX REPLACE "(\r?\n)+$" "" AMP_VERSION "${AMP_VERSION}")
-FILE(WRITE  ${AMP_INSTALL_DIR}/include/AMP_Version.h "#define AMP_VERSION \"${AMP_VERSION}\"\n" )
-MESSAGE("AMP Version = ${AMP_VERSION}")
-
-
 # Initialize the libaries (flags will be overwritten when the libraries are configured)
 CHECK_ENABLE_FLAG( USE_EXT_MPI 1 )
 IF ( NOT TEST_MAX_PROCS )
     SET( TEST_MAX_PROCS 8 )
 ENDIF()
 
+
 # Create custom targets for build-test, check, and distclean
+SET( EXCLUDE_TESTS_FROM_ALL 0 )
+SET( PROJ AMP )
 INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
 INCLUDE( "${AMP_SOURCE_DIR}/cmake/libraries.cmake" )
 ADD_CUSTOM_TARGET( build-test )
 ADD_CUSTOM_TARGET( build-examples )
 ADD_CUSTOM_TARGET( check COMMAND  make test  )
-ADD_DISTCLEAN()
-SET( EXCLUDE_TESTS_FROM_ALL 0 )
+ADD_DISTCLEAN( src ampdir AMP )
+MACRO( ADD_AMP_TEST_1_2_4 EXENAME ${ARGN} )
+    ADD_AMP_TEST ( ${EXENAME} ${ARGN} )
+    ADD_AMP_TEST_PARALLEL ( ${EXENAME} 2 ${ARGN} )
+    ADD_AMP_TEST_PARALLEL ( ${EXENAME} 4 ${ARGN} )
+ENDMACRO()
 
-# Add custom targets to copy data files needed for tests
-ADD_CUSTOM_TARGET ( copy-AMP-Data ALL )
-ADD_CUSTOM_TARGET ( copy-AMP-include ALL )
+
+# Get the mercurial revision
+WRITE_REPO_VERSION( "${AMP_INSTALL_DIR}/include/AMP_Version.h" )
+
 
 # Check if we want to enable fortran
 ENABLE_LANGUAGE(C)

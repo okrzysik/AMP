@@ -1,12 +1,43 @@
 INCLUDE(CheckCSourceCompiles)
-# Note: we cannot check for "handles are still allocated" due to PETSc.  See static variable
-#   Petsc_Reduction_keyval on line 234 of comb.c
-#SET( TEST_FAIL_REGULAR_EXPRESSION "(FAILED)|(leaked context IDs detected)|(handles are still allocated)" )
-SET( TEST_FAIL_REGULAR_EXPRESSION "(FAILED)" )
+IF ( NOT TEST_FAIL_REGULAR_EXPRESSION )
+    # Note: we cannot check for "handles are still allocated" due to PETSc.  See static variable
+    #   Petsc_Reduction_keyval on line 234 of comb.c
+    #SET( TEST_FAIL_REGULAR_EXPRESSION "(FAILED)|(leaked context IDs detected)|(handles are still allocated)" )
+    SET( TEST_FAIL_REGULAR_EXPRESSION "(FAILED)" )
+ENDIF()
 
 
+# Check that the PROJ and ${PROJ}_INSTALL_DIR variables are set 
+# These variables are used to generate the ADD_PROJ_TEST macros
+IF ( NOT PROJ )
+    MESSAGE(FATAL_ERROR "PROJ must be set before including macros.cmake")
+ENDIF()
+IF ( NOT ${PROJ}_INSTALL_DIR )
+    MESSAGE(FATAL_ERROR "${PROJ}_INSTALL_DIR must be set before including macros.cmake")
+ENDIF()
+
+
+# Add some default targets if they do not exist
+IF ( NOT TARGET copy-${PROJ}-Data )
+    ADD_CUSTOM_TARGET( copy-${PROJ}-Data ALL )
+ENDIF()
+IF ( NOT TARGET copy-${PROJ}-include )
+    ADD_CUSTOM_TARGET ( copy-${PROJ}-include ALL )
+ENDIF()
+
+
+# Macro to set a global variable
 MACRO(GLOBAL_SET VARNAME)
   SET(${VARNAME} ${ARGN} CACHE INTERNAL "")
+ENDMACRO()
+
+
+# Macro to print all variables
+MACRO( PRINT_ALL_VARIABLES )
+    GET_CMAKE_PROPERTY(_variableNames VARIABLES)
+    FOREACH(_variableName ${_variableNames})
+        message(STATUS "${_variableName}=${${_variableName}}")
+    ENDFOREACH()
 ENDMACRO()
 
 
@@ -19,44 +50,52 @@ ENDMACRO(ASSERT)
 
 
 # Macro to convert a m4 file
-# This command converts a file of the format "global_path/file.fm4"
-# and convertes it to file.f90.  It also requires the path.  
-MACRO (CONVERT_M4_FORTRAN IN LOCAL_PATH OUT_PATH )
+# This command converts a file of the format "global_path/file.m4"
+# and convertes it to file.F.  It also requires the path.  
+MACRO( CONVERT_M4_FORTRAN IN LOCAL_PATH OUT_PATH )
     STRING(REGEX REPLACE ${LOCAL_PATH} "" OUT ${IN} )
     STRING(REGEX REPLACE "/" "" OUT ${OUT} )
-    STRING(REGEX REPLACE ".fm4" ".f90" OUT ${CMAKE_CURRENT_BINARY_DIR}/${OUT_PATH}/${OUT} )
-    CONFIGURE_FILE( ${IN} ${IN} COPYONLY )
-    add_custom_command(
-        OUTPUT ${OUT}
-        COMMAND m4 --prefix-builtins -I${LOCAL_PATH} ${M4_OPTIONS} ${IN} > ${OUT}
-        DEPENDS ${IN}
-    )
-    set_source_files_properties(${OUT} PROPERTIES GENERATED true)
-    SET( SOURCES ${SOURCES} "${OUT}" )
-ENDMACRO ()
-
-
-# Add a package to the test dependency list
-MACRO (ADD_PACKAGE_TO_TEST_DEP_LIST PACKAGE)
-    IF ( TEST_DEP_LIST )
-        SET( TEST_DEP_LIST ${PACKAGE} ${TEST_DEP_LIST} )
-    ELSE()
-        SET( TEST_DEP_LIST ${PACKAGE} )
+    STRING(REGEX REPLACE "(.fm4)|(.m4)" ".F" OUT "${CMAKE_CURRENT_BINARY_DIR}/${OUT_PATH}/${OUT}" )
+    IF ( NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${OUT_PATH}" )
+        FILE(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${OUT_PATH}" )    
     ENDIF()
-ENDMACRO ()
+    CONFIGURE_FILE ( ${IN} ${IN} COPYONLY )
+    IF ("${CMAKE_GENERATOR}" STREQUAL "Xcode")
+        STRING(REGEX REPLACE ".F" ".o" OUT2 "${OUT}" )
+        STRING(REGEX REPLACE ";" " " COMPILE_CMD "${CMAKE_Fortran_COMPILER} -c ${OUT} ${CMAKE_Fortran_FLAGS} -o ${OUT2}")
+        STRING(REGEX REPLACE "\\\\" "" COMPILE_CMD "${COMPILE_CMD}")
+        MESSAGE("COMPILE_CMD =${COMPILE_CMD}")
+        SET( COMPILE_CMD ${COMPILE_CMD} )
+        add_custom_command(
+            OUTPUT ${OUT2}
+            COMMAND m4 -I${LOCAL_PATH} -I${SAMRAI_FORTDIR} ${M4DIRS} ${IN} > ${OUT}
+            COMMAND ${COMPILE_CMD}
+            DEPENDS ${IN}
+            )
+        set_source_files_properties(${OUT2} PROPERTIES GENERATED true)
+        SET( SOURCES ${SOURCES} "${OUT2}" )
+     ELSE()
+        add_custom_command(
+            OUTPUT ${OUT}
+            COMMAND m4 -I${LOCAL_PATH} -I${SAMRAI_FORTDIR} ${M4DIRS} ${M4_OPTIONS} ${IN} > ${OUT}
+            DEPENDS ${IN}
+            )
+         set_source_files_properties(${OUT} PROPERTIES GENERATED true)
+         SET( SOURCES ${SOURCES} "${OUT}" )
+     ENDIF()
+ENDMACRO()
 
 
-# Add a package to the AMP library
-MACRO( ADD_AMP_LIBRARY PACKAGE )
-    ADD_PACKAGE_TO_TEST_DEP_LIST( ${PACKAGE} )
-    #INCLUDE_DIRECTORIES( ${AMP_INSTALL_DIR}/include/${PACKAGE} )
+# Add a package to the project's library
+MACRO( ADD_${PROJ}_LIBRARY PACKAGE )
     ADD_SUBDIRECTORY( ${PACKAGE} )
 ENDMACRO()
 
 
-# Add an executable
-MACRO( ADD_AMP_EXECUTABLE PACKAGE )
-    ADD_SUBDIRECTORY( ${PACKAGE} )
+# Add a project executable
+MACRO( ADD_${PROJ}_EXECUTABLE EXEFILE )
+    ADD_PROJ_PROVISIONAL_TEST( ${EXEFILE} )
+    INSTALL( TARGETS ${EXEFILE} DESTINATION ${${PROJ}_INSTALL_DIR}/bin )
 ENDMACRO()
 
 
@@ -77,6 +116,9 @@ MACRO (FIND_FILES)
     # Find the C/C++ headers
     SET( T_HEADERS "" )
     FILE( GLOB T_HEADERS "*.h" "*.hh" "*.hpp" "*.I" )
+    # Find the CUDA sources
+    SET( T_CUDASOURCES "" )
+    FILE( GLOB T_CUDASOURCES "*.cu" )
     # Find the C sources
     SET( T_CSOURCES "" )
     FILE( GLOB T_CSOURCES "*.c" )
@@ -85,16 +127,17 @@ MACRO (FIND_FILES)
     FILE( GLOB T_CXXSOURCES "*.cc" "*.cpp" "*.cxx" "*.C" )
     # Find the Fortran sources
     SET( T_FSOURCES "" )
-    FILE( GLOB T_FSOURCES "*.f" "*.f90" )
+    FILE( GLOB T_FSOURCES "*.f" "*.f90" "*.F" "*.F90" )
     # Find the m4 fortran source (and convert)
     SET( T_M4FSOURCES "" )
-    FILE( GLOB T_M4FSOURCES "*.fm4" )
+    FILE( GLOB T_M4FSOURCES "*.m4" "*.fm4" )
     FOREACH( m4file ${T_M4FSOURCES} )
         CONVERT_M4_FORTRAN( ${m4file} ${CMAKE_CURRENT_SOURCE_DIR} "" )
-    ENDFOREACH ()
+    ENDFOREACH()
     # Add all found files to the current lists
     SET( HEADERS ${HEADERS} ${T_HEADERS} )
     SET( CXXSOURCES ${CXXSOURCES} ${T_CXXSOURCES} )
+    SET( CUDASOURCES ${CUDASOURCES} ${T_CUDASOURCES} )
     SET( CSOURCES ${CSOURCES} ${T_CSOURCES} )
     SET( FSOURCES ${FSOURCES} ${T_FSOURCES} )
     SET( M4FSOURCES ${M4FSOURCES} ${T_M4FSOURCES} )
@@ -107,24 +150,28 @@ MACRO (FIND_FILES_PATH IN_PATH)
     # Find the C/C++ headers
     SET( T_HEADERS "" )
     FILE( GLOB T_HEADERS "${IN_PATH}/*.h" "${IN_PATH}/*.hh" "${IN_PATH}/*.hpp" "${IN_PATH}/*.I" )
+    # Find the CUDA sources
+    SET( T_CUDASOURCES "" )
+    FILE( GLOB T_CUDASOURCES "${IN_PATH}/*.cu" )
     # Find the C sources
     SET( T_CSOURCES "" )
     FILE( GLOB T_CSOURCES "${IN_PATH}/*.c" )
     # Find the C++ sources
     SET( T_CXXSOURCES "" )
-    FILE( GLOB T_CXXSOURCES "${IN_PATH}/*.cc" "${IN_PATH}/*.cpp" "${IN_PATH}/*.cxx" )
+    FILE( GLOB T_CXXSOURCES "${IN_PATH}/*.cc" "${IN_PATH}/*.cpp" "${IN_PATH}/*.cxx" "${IN_PATH}/*.C" )
     # Find the Fortran sources
     SET( T_FSOURCES "" )
     FILE( GLOB T_FSOURCES "${IN_PATH}/*.f" "${IN_PATH}/*.f90" )
     # Find the m4 fortran source (and convert)
     SET( T_M4FSOURCES "" )
-    FILE( GLOB T_M4FSOURCES "${IN_PATH}/*.fm4" )
-    FOREACH (m4file ${T_M4FSOURCES})
-        CONVERT_M4_FORTRAN( ${m4file} ${CMAKE_CURRENT_SOURCE_DIR}/${IN_PATH} "" )
+    FILE( GLOB T_M4FSOURCES "${IN_PATH}/*.m4" "${IN_PATH}/*.fm4" )
+    FOREACH( m4file ${T_M4FSOURCES} )
+        CONVERT_M4_FORTRAN( ${m4file} ${CMAKE_CURRENT_SOURCE_DIR}/${IN_PATH} ${IN_PATH} )
     ENDFOREACH ()
     # Add all found files to the current lists
     SET( HEADERS ${HEADERS} ${T_HEADERS} )
     SET( CXXSOURCES ${CXXSOURCES} ${T_CXXSOURCES} )
+    SET( CUDASOURCES ${CUDASOURCES} ${T_CUDASOURCES} )
     SET( CSOURCES ${CSOURCES} ${T_CSOURCES} )
     SET( FSOURCES ${FSOURCES} ${T_FSOURCES} )
     SET( SOURCES ${SOURCES} ${T_CXXSOURCES} ${T_CSOURCES} ${T_FSOURCES} )
@@ -138,33 +185,45 @@ ENDMACRO()
 
 
 # Install a package
-MACRO( INSTALL_AMP_TARGET LIBNAME )
+MACRO( INSTALL_${PROJ}_TARGET PACKAGE )
     # Find all files in the current directory
     FIND_FILES()
     # Copy the header files to the include path
     FILE( GLOB HFILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${HEADERS} )
-    STRING(REGEX REPLACE "${AMP_SOURCE_DIR}/" "" COPY_TARGET "copy-AMP-${CMAKE_CURRENT_SOURCE_DIR}-include" )
+    STRING(REGEX REPLACE "${${PROJ}_SOURCE_DIR}/" "" COPY_TARGET "copy-${PROJ}-${CMAKE_CURRENT_SOURCE_DIR}-include" )
     STRING(REGEX REPLACE "/" "-" COPY_TARGET ${COPY_TARGET} )
-    IF(NOT TARGET ${COPY_TARGET})
-        ADD_CUSTOM_TARGET ( ${COPY_TARGET} ALL )
-        ADD_DEPENDENCIES ( copy-AMP-Data ${COPY_TARGET} )
+    IF( NOT TARGET ${COPY_TARGET} )
+        ADD_CUSTOM_TARGET( ${COPY_TARGET} ALL )
+        ADD_DEPENDENCIES( copy-${PROJ}-include ${COPY_TARGET} )
     ENDIF()
     FOREACH( HFILE ${HFILES} )
         SET( SRC_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${HFILE}" )
-        SET( DST_FILE "${AMP_INSTALL_DIR}/include/${CURPACKAGE}/${HFILE}" )
+        SET( DST_FILE "${${PROJ}_INSTALL_DIR}/include/${CURPACKAGE}/${HFILE}" )
         ADD_CUSTOM_COMMAND(TARGET ${COPY_TARGET} 
             PRE_BUILD 
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_FILE}" "${DST_FILE}"
+            DEPENDS "${SRC_FILE}"
         )
     ENDFOREACH()
-    ADD_DEPENDENCIES( copy-AMP-include ${COPY_TARGET} )
     # Add the library and install the package
-    IF ( NOT ONLY_BUILD_DOCS )
-        ADD_LIBRARY( ${LIBNAME} ${SOURCES} )
-        ADD_DEPENDENCIES ( ${LIBNAME} copy-AMP-include )
-        INSTALL( TARGETS ${LIBNAME} DESTINATION ${AMP_INSTALL_DIR}/lib )
+    IF ( NOT ONLY_BUILD_DOCS AND ( SOURCES OR CUDASOURCES ) )
+        IF( USE_CUDA )
+            CUDA_COMPILE( CUBINS ${CUDASOURCES} )
+        ENDIF()
+        ADD_LIBRARY( ${PACKAGE} ${LIB_TYPE} ${SOURCES} ${CUBINS} )
+        IF ( TARGET write_repo_version )
+            ADD_DEPENDENCIES( ${PACKAGE} write_repo_version )
+        ENDIF()
+        ADD_DEPENDENCIES ( ${PACKAGE} copy-${PROJ}-include )
+        INSTALL( TARGETS ${PACKAGE} DESTINATION ${${PROJ}_INSTALL_DIR}/lib )
+    ELSE()
+        ADD_CUSTOM_TARGET( ${PACKAGE} ALL )
     ENDIF()
-    INSTALL( FILES ${HEADERS} DESTINATION ${AMP_INSTALL_DIR}/include/${LIBNAME} )
+    INSTALL( FILES ${HEADERS} DESTINATION "${${PROJ}_INSTALL_DIR}/include/${PACKAGE}" )
+    # Clear the sources
+    SET( HEADERS "" )
+    SET( CSOURCES "" )
+    SET( CXXSOURCES "" )
 ENDMACRO()
 
 
@@ -181,8 +240,8 @@ MACRO( VERIFY_PATH PATH_NAME )
     IF ("${PATH_NAME}" STREQUAL "")
         MESSAGE ( FATAL_ERROR "Path is not set: ${PATH_NAME}" )
     ENDIF()
-    IF ( NOT EXISTS ${PATH_NAME} )
-        MESSAGE ( FATAL_ERROR "Path does not exist: ${PATH_NAME}" )
+    IF ( NOT EXISTS "${PATH_NAME}" )
+        MESSAGE( FATAL_ERROR "Path does not exist: ${PATH_NAME}" )
     ENDIF()
 ENDMACRO()
 
@@ -198,45 +257,54 @@ MACRO( SET_STATIC_FLAGS )
     set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # remove -rdynamic
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
     # Add the static flag if necessary
-    SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")    # Add static flag
-    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")  # Add static flag
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static") # Add static flag
+    SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} -static ") 
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static ")
+    SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")                # Add static flag
+    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")              # Add static flag
 ENDMACRO()
+
 
 # Macro to identify the compiler
 MACRO( SET_COMPILER )
     # SET the C/C++ compiler
-    IF( CMAKE_COMPILE_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
-        SET( USING_GCC TRUE )
-        MESSAGE("Using gcc")
-    ELSEIF( MSVC OR MSVC_IDE OR MSVC60 OR MSVC70 OR MSVC71 OR MSVC80 OR CMAKE_COMPILER_2005 OR MSVC90 OR MSVC10 )
-        IF( NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
-            MESSAGE( FATAL_ERROR "Using microsoft compilers on non-windows system?" )
+    IF ( CMAKE_C_COMPILER_WORKS OR CMAKE_C_COMPILER_WORKS )
+        IF( CMAKE_COMPILE_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
+            SET( USING_GCC TRUE )
+            MESSAGE("Using gcc")
+        ELSEIF( MSVC OR MSVC_IDE OR MSVC60 OR MSVC70 OR MSVC71 OR MSVC80 OR CMAKE_COMPILER_2005 OR MSVC90 OR MSVC10 )
+            IF( NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+                MESSAGE( FATAL_ERROR "Using microsoft compilers on non-windows system?" )
+            ENDIF()
+            SET( USING_MICROSOFT TRUE )
+            MESSAGE("Using Microsoft")
+        ELSEIF( (${CMAKE_C_COMPILER_ID} MATCHES "Intel") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel") ) 
+            SET(USING_ICC TRUE)
+            MESSAGE("Using icc")
+        ELSEIF( ${CMAKE_C_COMPILER_ID} MATCHES "PGI")
+            SET(USING_PGCC TRUE)
+            MESSAGE("Using pgCC")
+        ELSEIF( (${CMAKE_C_COMPILER_ID} MATCHES "CRAY") OR (${CMAKE_C_COMPILER_ID} MATCHES "Cray") )
+            SET(USING_CRAY TRUE)
+            MESSAGE("Using Cray")
+        ELSEIF( (${CMAKE_C_COMPILER_ID} MATCHES "CLANG") OR (${CMAKE_C_COMPILER_ID} MATCHES "Clang") )
+            SET(USING_CLANG TRUE)
+            MESSAGE("Using Clang")
+        ELSE()
+            SET(USING_DEFAULT TRUE)
+            MESSAGE("${CMAKE_C_COMPILER_ID}")
+            MESSAGE("Unknown C/C++ compiler, default flags will be used")
         ENDIF()
-        SET( USING_MICROSOFT TRUE )
-        MESSAGE("Using Microsoft")
-    ELSEIF( (${CMAKE_C_COMPILER_ID} MATCHES "Intel") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel") ) 
-        SET(USING_ICC TRUE)
-        MESSAGE("Using icc")
-    ELSEIF( ${CMAKE_C_COMPILER_ID} MATCHES "PGI")
-        SET(USING_PGCC TRUE)
-        MESSAGE("Using pgCC")
-    ELSEIF( (${CMAKE_C_COMPILER_ID} MATCHES "CRAY") OR (${CMAKE_C_COMPILER_ID} MATCHES "Cray") )
-        SET(USING_CRAY TRUE)
-        MESSAGE("Using Cray")
-    ELSE()
-        SET(USING_DEFAULT TRUE)
-        MESSAGE("${CMAKE_C_COMPILER_ID}")
-        MESSAGE("Unknown C/C++ compiler, default flags will be used")
     ENDIF()
     # SET the Fortran++ compiler
-    IF( USE_FORTRAN )
+    IF ( CMAKE_Fortran_COMPILER_WORKS )
         IF( CMAKE_COMPILE_IS_GFORTRAN OR (${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU") )
             SET( USING_GFORTRAN TRUE )
             MESSAGE("Using gfortran")
-        ELSEIF( (${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel") ) 
+        ELSEIF ( (${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel") ) 
             SET(USING_IFORT TRUE)
             MESSAGE("Using ifort")
-        ELSEIF( ${CMAKE_Fortran_COMPILER_ID} MATCHES "PGI")
+        ELSEIF ( ${CMAKE_Fortran_COMPILER_ID} MATCHES "PGI")
             SET(USING_PGF90 TRUE)
             MESSAGE("Using pgf90")
         ELSE()
@@ -274,10 +342,9 @@ MACRO( SET_WARNINGS )
     #    522: function "xxx" redeclared "inline" after being called
     #         We should fix this, but there are a lot of these
     #    593: variable "xxx" was set but never used
-    #         This occurs commonly for error flags and internal variables that are helpful for debugging
     #    654: overloaded virtual function "" is only partially overridden in class " "
     #    869: parameter "xxx" was never referenced
-    #         I believe this is bad practice and should be fixed but it generates a lot of warnings
+    #         I believe this is bad practice and should be fixed, but it may require a broader discussion (it is built into the design of Operator)
     #    981: operands are evaluated in unspecified order
     #         This can occur when an implicit conversion take place in a function call 
     #   1011: missing return statement at end of non-void function
@@ -286,7 +353,6 @@ MACRO( SET_WARNINGS )
     #         This can happen if we don't include a header file (and maybe if there is an internal function?)
     #         Unfortunatelly many of these come from trilinos
     #   1419: external declaration in primary source file
-    #         This occurs in a lot of the input processor, and needs to be revisited
     #   1572: floating-point equality and inequality comparisons are unreliable
     #         LibMesh warnings
     #   1599: declaration hides parameter 
@@ -329,9 +395,9 @@ ENDMACRO ()
 
 # Macro to add user compile flags
 MACRO( ADD_USER_FLAGS )
-    SET(CMAKE_C_FLAGS   " ${CMAKE_C_FLAGS} ${CFLAGS}" )
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} ${CXXFLAGS}" )
-    SET(CMAKE_Fortran_FLAGS " ${CMAKE_Fortran_FLAGS} ${FFLAGS}" )
+    SET(CMAKE_C_FLAGS   " ${CMAKE_C_FLAGS} ${CFLAGS} ${CFLAGS_EXTRA}" )
+    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} ${CXXFLAGS} ${CXXFLAGS_EXTRA}" )
+    SET(CMAKE_Fortran_FLAGS " ${CMAKE_Fortran_FLAGS} ${FFLAGS} ${FFLAGS_EXTRA}" )
 ENDMACRO()
 
 
@@ -341,9 +407,9 @@ MACRO( SET_COMPILER_FLAGS )
     SET_COMPILER()
     # Set the default flags for each build type
     IF ( USING_MICROSOFT )
-        SET(CMAKE_C_FLAGS_DEBUG       "-D_DEBUG /DEBUG /Od /EHsc /MDd /Zi" )
+        SET(CMAKE_C_FLAGS_DEBUG       "-D_DEBUG /DEBUG /Od /EHsc /MDd /Zi /Z7" )
         SET(CMAKE_C_FLAGS_RELEASE     "/O2 /EHsc /MD"                      )
-        SET(CMAKE_CXX_FLAGS_DEBUG     "-D_DEBUG /DEBUG /Od /EHsc /MDd /Zi" )
+        SET(CMAKE_CXX_FLAGS_DEBUG     "-D_DEBUG /DEBUG /Od /EHsc /MDd /Zi /Z7" )
         SET(CMAKE_CXX_FLAGS_RELEASE   "/O2 /EHsc /MD"                      )
         SET(CMAKE_Fortran_FLAGS_DEBUG ""                                   )
         SET(CMAKE_Fortran_FLAGS_RELEASE ""                                 )
@@ -383,37 +449,58 @@ ENDMACRO()
 
 
 # Macro to copy data file at build time
-MACRO(COPY_DATA_FILE SRC_FILE DST_FILE)
-    STRING(REGEX REPLACE "${AMP_SOURCE_DIR}/" "" COPY_TARGET "copy-AMP-${CMAKE_CURRENT_SOURCE_DIR}" )
+MACRO( COPY_DATA_FILE SRC_FILE DST_FILE )
+    STRING(REGEX REPLACE "${${PROJ}_SOURCE_DIR}/" "" COPY_TARGET "copy-${PROJ}-${CMAKE_CURRENT_SOURCE_DIR}" )
     STRING(REGEX REPLACE "/" "-" COPY_TARGET ${COPY_TARGET} )
-    if(NOT TARGET ${COPY_TARGET})
-        ADD_CUSTOM_TARGET ( ${COPY_TARGET} ALL )
-        ADD_DEPENDENCIES ( copy-AMP-Data ${COPY_TARGET} )
+    IF ( NOT TARGET ${COPY_TARGET} )
+        ADD_CUSTOM_TARGET( ${COPY_TARGET} ALL )
+        ADD_DEPENDENCIES( copy-${PROJ}-Data ${COPY_TARGET} )
     ENDIF()
-    ADD_CUSTOM_COMMAND(TARGET ${COPY_TARGET} 
+    ADD_CUSTOM_COMMAND( TARGET ${COPY_TARGET} 
         PRE_BUILD 
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_FILE}" "${DST_FILE}"
+        DEPENDS "${SRC_FILE}"
     )
 ENDMACRO()
 
 
-# Macro to copy a data file
-MACRO( COPY_TEST_DATA_FILE FILENAME ${ARGN} )
-    SET( FILE_TO_COPY  ${CMAKE_CURRENT_SOURCE_DIR}/data/${FILENAME} )
-    FOREACH( tmp ${ARGN})
-        SET( FILE_TO_COPY  ${CMAKE_CURRENT_SOURCE_DIR}/${tmp}/${FILENAME} )
+# Macro to copy a data or input file
+MACRO ( COPY_TEST_DATA_FILE FILENAME ${ARGN} )
+    SET( FILE_TO_COPY "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}" )
+    IF ( NOT EXISTS "${FILE_TO_COPY}" )
+        SET( FILE_TO_COPY "${CMAKE_CURRENT_SOURCE_DIR}/data/${FILENAME}" )
+    ENDIF()
+    IF ( NOT EXISTS "${FILE_TO_COPY}" )
+        SET( FILE_TO_COPY "${CMAKE_CURRENT_SOURCE_DIR}/inputs/${FILENAME}" )
+    ENDIF()
+    FOREACH( tmp ${ARGN} )
+        IF ( NOT EXISTS "${FILE_TO_COPY}" )
+            SET( FILE_TO_COPY "${CMAKE_CURRENT_SOURCE_DIR}/${tmp}/${FILENAME}" )
+        ENDIF()
     ENDFOREACH()
-    SET( DESTINATION_NAME ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME} )
-    IF ( EXISTS ${FILE_TO_COPY} )
+    SET( DESTINATION_NAME "${CMAKE_CURRENT_BINARY_DIR}/${FILENAME}" )
+    IF ( EXISTS "${FILE_TO_COPY}" )
         COPY_DATA_FILE( ${FILE_TO_COPY} ${DESTINATION_NAME} )
     ELSE()
-        MESSAGE ( WARNING "Cannot find file: " ${FILE_TO_COPY} )
+        MESSAGE( WARNING "Cannot find file: " ${FILE_TO_COPY} )
     ENDIF()
 ENDMACRO ()
 
 
 # Macro to copy a data file
-MACRO( COPY_EXAMPLE_DATA_FILE FILENAME )
+MACRO ( RENAME_TEST_DATA_FILE SRC DST )
+    SET( FILE_TO_COPY  ${CMAKE_CURRENT_SOURCE_DIR}/data/${SRC} )
+    SET( DESTINATION_NAME ${CMAKE_CURRENT_BINARY_DIR}/${DST} )
+    IF ( EXISTS ${FILE_TO_COPY} )
+        COPY_DATA_FILE( ${FILE_TO_COPY} ${DESTINATION_NAME} )
+    ELSE()
+        MESSAGE( WARNING "Cannot find file: ${FILE_TO_COPY}" )
+    ENDIF()
+ENDMACRO ()
+
+
+# Macro to copy a data file
+FUNCTION( COPY_EXAMPLE_DATA_FILE FILENAME )
     SET( FILE_TO_COPY  ${CMAKE_CURRENT_SOURCE_DIR}/data/${FILENAME} )
     SET( DESTINATION1 ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME} )
     SET( DESTINATION2 ${EXAMPLE_INSTALL_DIR}/${FILENAME} )
@@ -423,7 +510,7 @@ MACRO( COPY_EXAMPLE_DATA_FILE FILENAME )
     ELSE()
         MESSAGE( WARNING "Cannot find file: " ${FILE_TO_COPY} )
     ENDIF()
-ENDMACRO()
+ENDFUNCTION()
 
 
 # Macro to copy a mesh file
@@ -461,22 +548,25 @@ ENDMACRO()
 
 
 # Macro to add the dependencies and libraries to an executable
-MACRO( ADD_AMP_EXE_DEP EXE )
+MACRO( ADD_PROJ_EXE_DEP EXE )
     # Add the package dependencies
-    IF ( AMP_TEST_LIB_EXISTS )
-        ADD_DEPENDENCIES( ${EXE} ${PACKAGE_TEST_LIB} )
-        TARGET_LINK_LIBRARIES( ${EXE} ${PACKAGE_TEST_LIB} )
+    IF( ${PROJ}_TEST_LIB_EXISTS )
+        ADD_DEPENDENCIES ( ${EXE} ${PACKAGE_TEST_LIB} )
+        TARGET_LINK_LIBRARIES ( ${EXE} ${PACKAGE_TEST_LIB} )
     ENDIF()
     # Add the executable to the dependencies of check and build-test
     ADD_DEPENDENCIES( check ${EXE} )
     ADD_DEPENDENCIES( build-test ${EXE} )
     # Add the file copy targets to the dependency list
-    ADD_DEPENDENCIES( ${EXE} copy-AMP-Data )
-    # Add the libraries
-    TARGET_LINK_LIBRARIES( ${EXE} ${AMP_LIBS} ${AMP_LIBS} )
+    IF ( TARGET copy-${PROJ}-Data )
+        ADD_DEPENDENCIES( ${EXE} copy-${PROJ}-Data )
+    ENDIF()
+    # Add the project libraries
+    TARGET_LINK_LIBRARIES( ${EXE} ${${PROJ}_LIBS} ${${PROJ}_LIBS} )
     TARGET_LINK_LIBRARIES( ${EXE} ${${PROJECT_NAME}_LIBRARIES} )
     # Add external libraries
     SET_TARGET_PROPERTIES( ${EXE} PROPERTIES LINK_FLAGS "${LDFLAGS}" )
+    SET_TARGET_PROPERTIES( ${EXE} PROPERTIES LINK_FLAGS "${LDFLAGS_EXTRA}" )
     TARGET_LINK_LIBRARIES( ${EXE} ${NEK_LIBS} ${MOAB_LIBS} ${DENDRO_LIBS} ${NETCDF_LIBS} )
     TARGET_LINK_LIBRARIES( ${EXE} ${LIBMESH_LIBS} ${TRILINOS_LIBS} ${PETSC_LIBS} ${HYPRE_LIBS} )
     TARGET_LINK_LIBRARIES( ${EXE} ${SILO_LIBS} ${HDF5_LIBS} ${TIMER_LIBS} ${X11_LIBS} )
@@ -485,16 +575,8 @@ MACRO( ADD_AMP_EXE_DEP EXE )
     ENDIF()
     TARGET_LINK_LIBRARIES( ${EXE} ${MPI_LINK_FLAGS} ${MPI_LIBRARIES} )
     TARGET_LINK_LIBRARIES( ${EXE} ${LAPACK_LIBS} ${BLAS_LIBS} ${BLAS_LAPACK_LIBS} ${ZLIB_LIBS} )
-    TARGET_LINK_LIBRARIES( ${EXE} ${COVERAGE_LIBS} ${LDLIBS} )
-    TARGET_LINK_LIBRARIES( ${EXE} ${SYSTEM_LIBS} )
-ENDMACRO()
-
-
-# Add a executable
-MACRO( INSTALL_AMP_EXE EXE )
-    SET( SOURCES ${EXE}.cc )
-    ADD_EXECUTABLE( ${EXE} ${SOURCES} )
-    ADD_AMP_EXE_DEP( ${EXE} )
+    TARGET_LINK_LIBRARIES( ${EXE} ${COVERAGE_LIBS} ${LDLIBS_EXTRA} )
+    TARGET_LINK_LIBRARIES( ${EXE} ${SYSTEM_LIBS} ${SYSTEM_LDFLAGS} )
 ENDMACRO()
 
 
@@ -503,7 +585,7 @@ MACRO( ADD_FILES_TO_TEST_LIB FILENAMES )
     IF ( TEST_DEP_LIST )
         TARGET_LINK_LIBRARIES( ${PACKAGE_TEST_LIB} ${TEST_DEP_LIST} )
     ENDIF()
-    SET( AMP_TEST_LIB_EXISTS ${PACKAGE_TEST_LIB} )
+    SET( ${PROJ}_TEST_LIB_EXISTS ${PACKAGE_TEST_LIB} )
 ENDMACRO()
 
 
@@ -520,7 +602,7 @@ ENDFUNCTION()
 
 
 # Add a provisional test
-FUNCTION( ADD_AMP_PROVISIONAL_TEST EXEFILE )
+FUNCTION( ADD_PROJ_PROVISIONAL_TEST EXEFILE )
     # Check if we actually want to add the test
     KEEP_TEST( RESULT )
     IF ( NOT RESULT )
@@ -534,14 +616,15 @@ FUNCTION( ADD_AMP_PROVISIONAL_TEST EXEFILE )
     ENDIF()
     IF ( NOT tmp )
         # The target has not been added
-        SET( CXXFILE ${EXEFILE}.cc )
+        SET( CXXFILE ${EXEFILE} )
         SET( TESTS_SO_FAR ${TESTS_SO_FAR} ${EXEFILE} )
+        # Check if we want to add the test to all
         IF ( NOT EXCLUDE_TESTS_FROM_ALL )
             ADD_EXECUTABLE( ${EXEFILE} ${CXXFILE} )
         ELSE()
             ADD_EXECUTABLE( ${EXEFILE} EXCLUDE_FROM_ALL ${CXXFILE} )
         ENDIF()
-        ADD_AMP_EXE_DEP( ${EXEFILE} )
+        ADD_PROJ_EXE_DEP( ${EXEFILE} )
     ELSEIF( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE}" )
         # The correct target has already been added
     ELSEIF( ${tmp} STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE}.exe" )
@@ -559,6 +642,9 @@ FUNCTION( ADD_AMP_PROVISIONAL_TEST EXEFILE )
         MESSAGE( FATAL_ERROR "Trying to add 2 different tests with the same name" )
     ENDIF()
 ENDFUNCTION()
+FUNCTION( ADD_${PROJ}_PROVISIONAL_TEST EXEFILE )
+    ADD_PROJ_PROVISIONAL_TEST( ${EXEFILE} )
+ENDFUNCTION()
 
 
 # Macro to create the test name
@@ -575,15 +661,27 @@ MACRO( CREATE_TEST_NAME TEST ${ARGN} )
 ENDMACRO()
 
 
+# Function to add the resource locks to an executable
+FUNCTION( ADD_RESOURCE_LOCK TESTNAME EXEFILE ${ARGN} )
+    IF ( NOT ARGN )
+        SET_TESTS_PROPERTIES( ${TESTNAME} PROPERTIES RESOURCE_LOCK ${EXEFILE} )
+    ELSE()
+        FOREACH( tmp ${ARGN} )
+            SET_TESTS_PROPERTIES( ${TESTNAME} PROPERTIES RESOURCE_LOCK ${tmp} )
+        ENDFOREACH()
+    ENDIF()
+ENDFUNCTION()
+
+
 # Add a executable as a test
-FUNCTION( ADD_AMP_TEST EXEFILE ${ARGN} )
+FUNCTION( ADD_${PROJ}_TEST EXEFILE ${ARGN} )
     # Check if we actually want to add the test
     KEEP_TEST( RESULT )
     IF ( NOT RESULT )
         RETURN()
     ENDIF()
     # Add the provisional test
-    ADD_AMP_PROVISIONAL_TEST ( ${EXEFILE} )
+    ADD_PROJ_PROVISIONAL_TEST ( ${EXEFILE} )
     CREATE_TEST_NAME( ${EXEFILE} ${ARGN} )
     GET_TARGET_PROPERTY(EXE ${EXEFILE} LOCATION)
     STRING(REGEX REPLACE "\\$\\(Configuration\\)" "${CONFIGURATION}" EXE "${EXE}" )
@@ -593,59 +691,68 @@ FUNCTION( ADD_AMP_TEST EXEFILE ${ARGN} )
         ADD_TEST( ${TESTNAME} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
     ENDIF()
     SET_TESTS_PROPERTIES( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION "${TEST_FAIL_REGULAR_EXPRESSION}" PROCESSORS 1 )
-    SET_TESTS_PROPERTIES( ${TESTNAME} PROPERTIES RESOURCE_LOCK ${EXEFILE} )
+    ADD_RESOURCE_LOCK( ${TESTNAME} ${EXEFILE} ${ARGN} )
 ENDFUNCTION()
 
 
 # Add a executable as a weekly test
-FUNCTION( ADD_AMP_WEEKLY_TEST EXEFILE PROCS ${ARGN} )
+FUNCTION( ADD_${PROJ}_WEEKLY_TEST EXEFILE PROCS ${ARGN} )
     # Check if we actually want to add the test
     KEEP_TEST( RESULT )
     IF ( NOT RESULT )
         RETURN()
     ENDIF()
     # Add the provisional test
-    ADD_AMP_PROVISIONAL_TEST ( ${EXEFILE} )
+    ADD_PROJ_PROVISIONAL_TEST ( ${EXEFILE} )
     GET_TARGET_PROPERTY(EXE ${EXEFILE} LOCATION)
     STRING(REGEX REPLACE "\\$\\(Configuration\\)" "${CONFIGURATION}" EXE "${EXE}" )
     IF( ${PROCS} STREQUAL "1" )
         CREATE_TEST_NAME( "${EXEFILE}_WEEKLY" ${ARGN} )
-        IF( USE_EXT_MPI_FOR_SERIAL_TESTS )
+    ELSEIF( USE_EXT_MPI AND NOT (${PROCS} GREATER ${TEST_MAX_PROCS}) )
+        CREATE_TEST_NAME( "${EXEFILE}_${PROCS}procs_WEEKLY" ${ARGN} )
+    ENDIF()
+    IF ( ${PROCS} GREATER ${TEST_MAX_PROCS} )
+        MESSAGE("Disabling test ${TESTNAME} (exceeds maximum number of processors ${TEST_MAX_PROCS})")
+    ELSEIF( ${PROCS} STREQUAL "1" )
+        CREATE_TEST_NAME( "${EXEFILE}_WEEKLY" ${ARGN} )
+        IF ( USE_MPI_FOR_SERIAL_TESTS )
             ADD_TEST( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} 1 ${EXE} ${ARGN} )
         ELSE()
             ADD_TEST( ${TESTNAME} ${CMAKE_CURRENT_BINARY_DIR}/${EXEFILE} ${ARGN} )
         ENDIF()
+        SET_TESTS_PROPERTIES( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION "${TEST_FAIL_REGULAR_EXPRESSION}" PROCESSORS 1 )
+        ADD_RESOURCE_LOCK( ${TESTNAME} ${EXEFILE} ${ARGN} )
     ELSEIF( USE_EXT_MPI AND NOT (${PROCS} GREATER ${TEST_MAX_PROCS}) )
         CREATE_TEST_NAME( "${EXEFILE}_${PROCS}procs_WEEKLY" ${ARGN} )
         ADD_TEST( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${EXE} ${ARGN} )
+        SET_TESTS_PROPERTIES( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION "${TEST_FAIL_REGULAR_EXPRESSION}" PROCESSORS ${PROCS} )
+        ADD_RESOURCE_LOCK( ${TESTNAME} ${EXEFILE} ${ARGN} )
     ENDIF()
-    SET_TESTS_PROPERTIES( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION "${TEST_FAIL_REGULAR_EXPRESSION}" PROCESSORS ${PROCS} )
-    SET_TESTS_PROPERTIES( ${TESTNAME} PROPERTIES RESOURCE_LOCK ${EXEFILE} )
 ENDFUNCTION()
 
 
 # Add a executable as a parallel test
-FUNCTION( ADD_AMP_TEST_PARALLEL EXEFILE PROCS ${ARGN} )
+FUNCTION( ADD_${PROJ}_TEST_PARALLEL EXEFILE PROCS ${ARGN} )
     # Check if we actually want to add the test
     KEEP_TEST( RESULT )
     IF ( NOT RESULT )
         RETURN()
     ENDIF()
     # Add the provisional test
-    ADD_AMP_PROVISIONAL_TEST( ${EXEFILE} )
+    ADD_PROJ_PROVISIONAL_TEST( ${EXEFILE} )
     GET_TARGET_PROPERTY(EXE ${EXEFILE} LOCATION)
     STRING(REGEX REPLACE "\\$\\(Configuration\\)" "${CONFIGURATION}" EXE "${EXE}" )
     IF ( USE_EXT_MPI AND NOT (${PROCS} GREATER ${TEST_MAX_PROCS}) )
         CREATE_TEST_NAME( "${EXEFILE}_${PROCS}procs" ${ARGN} )
         ADD_TEST( ${TESTNAME} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ${EXE} ${ARGN} )
         SET_TESTS_PROPERTIES( ${TESTNAME} PROPERTIES FAIL_REGULAR_EXPRESSION "${TEST_FAIL_REGULAR_EXPRESSION}" PROCESSORS ${PROCS} )
-        SET_TESTS_PROPERTIES( ${TESTNAME} PROPERTIES RESOURCE_LOCK ${EXEFILE} )
+        ADD_RESOURCE_LOCK( ${TESTNAME} ${EXEFILE} ${ARGN} )
     ENDIF()
 ENDFUNCTION()
 
 
 # Add a executable as an example
-FUNCTION( ADD_AMP_EXAMPLE EXEFILE PROCS ${ARGN} )
+FUNCTION( ADD_${PROJ}_EXAMPLE EXEFILE PROCS ${ARGN} )
     # Add the file to the example doxygen file
     SET( VALUE 0 )
     FOREACH(_variableName ${EXAMPLE_LIST})
@@ -662,7 +769,7 @@ FUNCTION( ADD_AMP_EXAMPLE EXEFILE PROCS ${ARGN} )
         RETURN()
     ENDIF()
     # Add the provisional test
-    ADD_AMP_PROVISIONAL_TEST( ${EXEFILE} )
+    ADD_PROJ_PROVISIONAL_TEST( ${EXEFILE} )
     GET_TARGET_PROPERTY(EXE ${EXEFILE} LOCATION)
     STRING(REGEX REPLACE "\\$\\(Configuration\\)" "${CONFIGURATION}" EXE "${EXE}" )
     ADD_DEPENDENCIES( build-examples ${EXEFILE} )
@@ -695,17 +802,9 @@ MACRO( BEGIN_EXAMPLE_CONFIG PACKAGE )
 ENDMACRO()
 
 # Install the examples
-MACRO( INSTALL_AMP_EXAMPLE PACKAGE )
+MACRO( INSTALL_${PROJ}_EXAMPLE PACKAGE )
     FILE(APPEND ${EXAMPLE_INSTALL_DIR}/examples.h "*/\n" )
     SET( EXAMPLE_INSTALL_DIR "" )
-ENDMACRO()
-
-
-# Add a test with 1, 2, and 4 processors
-MACRO( ADD_AMP_TEST_1_2_4 EXENAME ${ARGN} )
-    ADD_AMP_TEST ( ${EXENAME} ${ARGN} )
-    ADD_AMP_TEST_PARALLEL ( ${EXENAME} 2 ${ARGN} )
-    ADD_AMP_TEST_PARALLEL ( ${EXENAME} 4 ${ARGN} )
 ENDMACRO()
 
 
@@ -746,14 +845,6 @@ MACRO (CHECK_C_COMPILER_FLAG _FLAG _RESULT)
 ENDMACRO(CHECK_C_COMPILER_FLAG)
 
 
-# Macro to print all variables
-MACRO( PRINT_ALL_VARIABLES )
-    GET_CMAKE_PROPERTY(_variableNames VARIABLES)
-    FOREACH(_variableName ${_variableNames})
-        message(STATUS "${_variableName}=${${_variableName}}")
-    ENDFOREACH()
-ENDMACRO()
-
 
 # Macro to change the classification of a package
 MACRO( SET_PACKAGE_CLASSIFICATION  PACKAGE_LIST  PACKAGE_NAME  CLASS )
@@ -787,9 +878,19 @@ MACRO( PACKAGE_DISABLE_ON_PLATFORMS  PACKAGE_LIST  PACKAGE_NAME )
 ENDMACRO()
 
 
+# Append a list to a file
+FUNCTION( APPEND_LIST FILENAME VARS PREFIX POSTFIX )
+    FOREACH( tmp ${VARS} )
+        FILE( APPEND "${FILENAME}" "${PREFIX}" )
+        FILE( APPEND "${FILENAME}" "${tmp}" )
+        FILE( APPEND "${FILENAME}" "${POSTFIX}" )
+    ENDFOREACH ()
+ENDFUNCTION()
+
+
 # add custom target distclean
 # cleans and removes cmake generated files etc.
-MACRO( ADD_DISTCLEAN )
+MACRO( ADD_DISTCLEAN ${ARGN} )
     SET(DISTCLEANED
         cmake.depends
         cmake.check_depends
@@ -802,13 +903,24 @@ MACRO( ADD_DISTCLEAN )
         Doxyfile
         Makefile
         core core.*
-        src
-        ampdir
-        AMP
         DartConfiguration.tcl
-        Testing
         install_manifest.txt
-        nek
+        Testing
+        include
+        doc
+        docs
+        latex_docs
+        lib
+        Makefile.config
+        install_manifest.txt
+        test
+        matlab
+        mex
+        tmp
+        #tmp#
+        bin
+        cmake
+        ${ARGN}
     )
     ADD_CUSTOM_TARGET (distclean @echo cleaning for source distribution)
     IF (UNIX)
@@ -825,15 +937,13 @@ MACRO( ADD_DISTCLEAN )
             *.vcxproj*
             ipch
             x64
+            Debug
         )
-        FILE(WRITE  ${CMAKE_CURRENT_BINARY_DIR}/distclean.bat "del /s /q /f " )
-        FOREACH (fileToDelete ${DISTCLEANED})
-            FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/distclean.bat "${fileToDelete} " )
-        ENDFOREACH ()
-        FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/distclean.bat "\n" )
-        FOREACH (fileToDelete ${DISTCLEANED})
-            FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/distclean.bat "for /d %%x in (${fileToDelete}) do rd /s /q \"%%x\"\n" )
-        ENDFOREACH ()
+        SET( DISTCLEAN_FILE "${CMAKE_CURRENT_BINARY_DIR}/distclean.bat" )
+        FILE( WRITE  "${DISTCLEAN_FILE}" "del /s /q /f " )
+        APPEND_LIST( "${DISTCLEAN_FILE}" "${DISTCLEANED}" " " " " )
+        FILE( APPEND "${DISTCLEAN_FILE}" "\n" )
+        APPEND_LIST( "${DISTCLEAN_FILE}" "${DISTCLEANED}" "for /d %%x in ("   ") do rd /s /q \"%%x\"\n" )
         ADD_CUSTOM_COMMAND(
             DEPENDS clean
             COMMENT "distribution clean"
@@ -844,258 +954,6 @@ MACRO( ADD_DISTCLEAN )
 ENDMACRO()
 
 
-# Save the necessary cmake variables to a file for applications to load
-# Note: we need to save the external libraries in the same order as AMP for consistency
-FUNCTION( SAVE_CMAKE_FLAGS )
-    # Don't force downstream apps from using certain warnings
-    STRING(REGEX REPLACE "-Wextra" "" CMAKE_C_FLAGS_2   "${CMAKE_C_FLAGS}"   )
-    STRING(REGEX REPLACE "-Wextra" "" CMAKE_CXX_FLAGS_2 "${CMAKE_CXX_FLAGS}" )
-    # Write the header (comments)
-    FILE(WRITE  ${AMP_INSTALL_DIR}/amp.cmake "# This is a automatically generate file to include AMP within another application\n\n" )
-    # Write the compilers and compile flags
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Set the compilers and compile flags\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_C_COMPILER ${CMAKE_C_COMPILER})\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_CXX_COMPILER ${CMAKE_CXX_COMPILER})\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER})\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_FORTRAN ${USE_FORTRAN})\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_C_FLAGS \"${CMAKE_C_FLAGS_2}\")\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS_2}\")\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_Fortran_FLAGS \"${CMAKE_Fortran_FLAGS}\")\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(LDFLAGS \"${LDFLAGS}\")\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(COMPILE_MODE ${COMPILE_MODE})\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(DISABLE_GXX_DEBUG ${DISABLE_GXX_DEBUG})\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS \"${CMAKE_EXE_LINK_DYNAMIC_C_FLAGS}\")\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS \"${CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS}\")\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_SHARED_LIBRARY_C_FLAGS \"${CMAKE_SHARED_LIBRARY_C_FLAGS}\")\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_SHARED_LIBRARY_CXX_FLAGS \"${CMAKE_SHARED_LIBRARY_CXX_FLAGS}\")\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_SHARED_LINKER_FLAGS \"${CMAKE_SHARED_LINKER_FLAGS}\")\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS \"${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS}\")\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS \"${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS}\")\n" )
-    # Write the AMP_DATA and AMP_SOURCE paths
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Set the AMP data and source directories\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(AMP_DATA ${AMP_DATA})\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(AMP_SOURCE ${AMP_SOURCE_DIR})\n" )
-    # Create the AMP libraries and include paths
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Set the AMP libraries\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(AMP_LIBS ${AMP_LIBS})\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${AMP_TRUNK}/external/boost/include )\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${AMP_INSTALL_DIR}/include )\n" )
-    IF ( USE_AMP_UTILS )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_AMP_UTILS ${USE_AMP_UTILS}) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_AMP_UTILS ) \n" )
-    ENDIF()
-    IF ( USE_AMP_MESH )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_AMP_MESH ${USE_AMP_MESH}) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_AMP_MESH ) \n" )
-    ENDIF()
-    IF ( USE_AMP_DISCRETIZATION )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_AMP_DISCRETIZATION ${USE_AMP_DISCRETIZATION}) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_AMP_DISCRETIZATION ) \n" )
-    ENDIF()
-    IF ( USE_AMP_VECTORS )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_AMP_VECTORS ${USE_AMP_VECTORS}) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_AMP_VECTORS ) \n" )
-    ENDIF()
-    IF ( USE_AMP_MATRICES )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_AMP_MATRICES ${USE_AMP_MATRICES}) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_AMP_MATRICES ) \n" )
-    ENDIF()
-    IF ( USE_AMP_MATERIALS )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_AMP_MATERIALS ${USE_AMP_MATERIALS}) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_AMP_MATERIALS ) \n" )
-    ENDIF()
-    IF ( USE_AMP_OPERATORS )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_AMP_OPERATORS ${USE_AMP_OPERATORS}) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_AMP_OPERATORS ) \n" )
-    ENDIF()
-    IF ( USE_AMP_SOLVERS )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_AMP_SOLVERS ${USE_AMP_SOLVERS}) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_AMP_SOLVERS ) \n" )
-    ENDIF()
-    IF ( USE_AMP_TIME_INTEGRATORS )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_AMP_TIME_INTEGRATORS ${USE_AMP_TIME_INTEGRATORS}) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_AMP_TIME_INTEGRATORS ) \n" )
-    ENDIF()
-    # Create the external libraries and include paths in the order they are linked in AMP
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS )\n" )
-    # Add boost
-    IF ( USE_EXT_BOOST )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add boost\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${BOOST_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_BOOST 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_BOOST ) \n" )
-    ENDIF()
-    # Add Libmesh
-    IF ( USE_EXT_LIBMESH )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add Libmesh\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${LIBMESH_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${LIBMESH_LIBS} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -DLIBMESH_ENABLE_PARMESH )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_LIBMESH 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_LIBMESH ) \n" )
-    ENDIF()
-    # Add NEK
-    IF ( USE_EXT_NEK )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add NEK\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${NEK_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${NEK_LIBS} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_NEK 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_NEK ) \n" )
-    ENDIF()
-    # Add MOAB
-    IF ( USE_EXT_MOAB )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add MOAB\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${MOAB_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${MOAB_LIBS} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_MOAB 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_MOAB ) \n" )
-    ENDIF()
-    # Add DENDRO
-    IF ( USE_EXT_DENDRO )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add DENDRO\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${DENDRO_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${DENDRO_LIBS} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_DENDRO 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_DENDRO ) \n" )
-    ENDIF()
-    # Add Netcdf
-    IF ( USE_NETCDF )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add Netcdf\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${NETCDF_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${NETCDF_LIBS} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_NETCDF 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_NETCDF ) \n" )
-    ENDIF()
-    # Add DTK 
-    IF ( USE_EXT_DTK )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_DTK 1 ) \n" )
-    ENDIF()
-    # Add Trilinos
-    IF ( USE_EXT_TRILINOS )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add Trilinos\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${TRILINOS_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${TRILINOS_LIBS} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_TRILINOS 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_TRILINOS_UTILS   ${USE_TRILINOS_UTILS}   ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_TRILINOS_TEUCHOS ${USE_TRILINOS_TEUCHOS} ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_TRILINOS_VECTORS ${USE_TRILINOS_VECTORS} ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_TRILINOS_SOLVERS ${USE_TRILINOS_SOLVERS} ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_TRILINOS_THYRA   ${USE_TRILINOS_THYRA}   ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_TRILINOS_NOX     ${USE_TRILINOS_NOX}     ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_TRILINOS_STKMESH ${USE_TRILINOS_STKMESH} ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_TRILINOS_STRATIMIKOS ${USE_TRILINOS_STRATIMIKOS} ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_TRILINOS ) \n" )
-        IF ( USE_TRILINOS_THYRA )
-            FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_TRILINOS_THYRA ) \n" )
-        ENDIF()
-        IF ( USE_TRILINOS_NOX )
-            FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_TRILINOS_NOX ) \n" )
-        ENDIF()
-        IF ( USE_TRILINOS_STKMESH )
-            FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_TRILINOS_STKMESH ) \n" )
-        ENDIF()
-    ENDIF()
-    # Add PETsc
-    IF ( USE_EXT_PETSC )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add PETsc\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${PETSC_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${PETSC_LIBS} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_PETSC 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_PETSC ) \n" )
-    ENDIF()
-    # Add Sundials
-    IF ( USE_EXT_SUNDIALS )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add Sundials\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${SUNDIALS_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${SUNDIALS_LIBS} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_SUNDIALS 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_SUNDIALS ) \n" )
-    ENDIF()
-    # Add Silo
-    IF ( USE_EXT_SILO )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add silo\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${SILO_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${SILO_LIBS} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_SILO 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_SILO ) \n" )
-    ENDIF()
-    # Add Hypre
-    IF ( USE_EXT_HYPRE )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add hypre\n" )
-        # FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${HYPRE_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${HYPRE_LIBS} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_HYPRE 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_HYPRE ) \n" )
-    ENDIF()
-    # Add X11
-    IF ( USE_EXT_X11 )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add X11\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${X11_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${X11_LIBS} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_X11 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_X11 ) \n" )
-    ENDIF()
-    # Add HDF5
-    IF ( USE_EXT_HDF5 )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add HDF5\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${HDF5_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${HDF5_LIBS} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_HDF5 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_HDF5 ) \n" )
-    ENDIF()
-    # Add TIMER
-    IF ( USE_TIMER OR USE_EXT_TIMER )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add Timer\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${TIMER_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${TIMER_LIBS} )\n" )
-    ENDIF()
-    # Add MPI
-    IF ( USE_EXT_MPI )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add MPI\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${MPI_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS}  ${MPI_LINK_FLAGS} ${MPI_LIBRARIES} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_MPI 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_MPI ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(MPIEXEC ${MPIEXEC} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(MPIEXEC_NUMPROC_FLAG ${MPIEXEC_NUMPROC_FLAG} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_EXT_MPI_FOR_SERIAL_TESTS ${USE_EXT_MPI_FOR_SERIAL_TESTS} )\n" )
-    ELSE()
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(USE_EXT_MPI_FOR_SERIAL_TESTS 0 )\n" )
-    ENDIF()
-    # Add ZLIB
-    IF ( USE_EXT_ZLIB )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add ZLIB\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${ZLIB_INCLUDE} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${ZLIB_LIBS} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_ZLIB 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_ZLIB ) \n" )
-    ENDIF()
-    # Add LAPACK and BLAS
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add LAPACK/BLAS\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS}  ${LAPACK_LIBS} ${BLAS_LIBS} ${BLAS_LAPACK_LIBS} )\n" )
-    # Add LDLIBS
-    IF ( LDLIBS )
-    	FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS}  ${LDLIBS} )\n" )
-    ENDIF()
-    # Add coverage
-    IF ( ENABLE_GCOV )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add coverage flags\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${COVERAGE_LIBS} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( ENABLE_GCOV 1 ) \n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -fprofile-arcs -ftest-coverage ) \n" )
-    ENDIF()
-    # Add doxygen
-    IF ( USE_EXT_DOXYGEN )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add doxygen flags\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_DOXYGEN ${USE_EXT_DOXYGEN} )\n" )
-        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( DOXYGEN_MACROS \"${DOXYGEN_MACROS}\" )\n" )
-    ENDIF()
-    # Add misc flags
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add misc flags\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( EXTERNAL_LIBS $" "{EXTERNAL_LIBS} ${SYSTEM_LIBS} )\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( TEST_MAX_PROCS ${TEST_MAX_PROCS} )\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "\n" )
-ENDFUNCTION()
 
 
 # Add an external subdirectory
@@ -1104,9 +962,20 @@ MACRO( ADD_EXTERNAL_PACKAGE_SUBDIRECTORY SUBDIR_NAME SUBDIR_PATH )
     FIND_FILES_PATH ( ${SUBDIR_PATH} )
     FILE( GLOB HFILES RELATIVE ${SUBDIR_PATH} ${SUBDIR_PATH}/*.h ${SUBDIR_PATH}/*.hh ${SUBDIR_PATH}/*.I )
     FOREACH (HFILE ${HFILES})
-        CONFIGURE_FILE( ${SUBDIR_PATH}/${HFILE} ${AMP_INSTALL_DIR}/include/${CURPACKAGE}/${HFILE} COPYONLY )
+        CONFIGURE_FILE( ${SUBDIR_PATH}/${HFILE} ${${PROJ}_INSTALL_DIR}/include/${CURPACKAGE}/${HFILE} COPYONLY )
     ENDFOREACH ()
     ADD_SUBDIRECTORY ( ${SUBDIR_PATH} ${CMAKE_CURRENT_BINARY_DIR}/${SUBDIR_NAME} )
-ENDMACRO ()
+ENDMACRO()
+
+
+# Print the current repo version and create target to write to a file
+SET( WriteRepoVersionCmakeFile "${CMAKE_CURRENT_LIST_DIR}/WriteRepoVersion.cmake" )
+FUNCTION( WRITE_REPO_VERSION FILENAME )
+    SET( CMD ${CMAKE_COMMAND} -Dfilename="${FILENAME}" -Dsrc_dir="${${PROJ}_SOURCE_DIR}" 
+             -Dtmp_file="${CMAKE_CURRENT_BINARY_DIR}/tmp/version.h" -DPROJ=${PROJ} 
+             -P "${WriteRepoVersionCmakeFile}" )
+    EXECUTE_PROCESS( COMMAND ${CMD} )
+    ADD_CUSTOM_TARGET( write_repo_version  COMMENT "Write repo version"  COMMAND ${CMD} )
+ENDFUNCTION()
 
 

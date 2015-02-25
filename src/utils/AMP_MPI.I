@@ -144,7 +144,7 @@ template <> void AMP_MPI::call_minReduce<double>(const double*, double*, const i
 #endif
 // Default instantiations of call_minReduce(const type*, type*, const int, int*)
 template <class type>
-void AMP_MPI::call_minReduce(const type *x, type *y, const int n, int *rank_of_min) const {
+void AMP_MPI::call_minReduce( const type*, type*, const int, int* ) const {
     char message[200];
     sprintf(message,"Default instantion of minReduce in parallel is not supported (%s)",typeid(type).name());
     AMP_ERROR(message);
@@ -224,7 +224,7 @@ template <> void AMP_MPI::call_maxReduce<double>(const double*, double*, const i
 #endif
 // Default instantiations of call_maxReduce(const type*, type*, const int, int*)
 template <class type>
-void AMP_MPI::call_maxReduce(const type *x, type *y, const int n, int *rank_of_max) const {
+void AMP_MPI::call_maxReduce( const type*, type*, const int, int* ) const {
     char message[200];
     sprintf(message,"Default instantion of maxReduce in parallel is not supported (%s)",typeid(type).name());
     AMP_ERROR(message);

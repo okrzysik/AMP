@@ -137,6 +137,7 @@ ENDIF()
 
 # Save the configuration info for applications 
 IF ( NOT ONLY_BUILD_DOCS )
+    INCLUDE( ${AMP_SOURCE_DIR}/cmake/save_variables.cmake )
     SAVE_CMAKE_FLAGS()
 ENDIF()
 
