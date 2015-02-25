@@ -103,14 +103,13 @@ void RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
     unsigned int numIds = d_boundaryIds.size();
     std::vector<size_t> gpDofs;
     std::vector<size_t> dofs;
-    std::vector<std::vector<size_t> > dofIndices;
+    //std::vector<std::vector<size_t> > dofIndices;
     std::vector<size_t> dofsElementVec;
     PROFILE_START("integration loop");
     for (unsigned int nid = 0; nid < numIds; nid++)
     {
-        unsigned int numDofIds = d_dofIds[nid].size();
-
-        for(unsigned int k = 0; k < numDofIds; k++)
+        //unsigned int numDofIds = d_dofIds[nid].size();
+        //for(unsigned int k = 0; k < numDofIds; k++)
         {
 
           AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
@@ -124,18 +123,19 @@ void RobinVectorCorrection::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
             d_currNodes = bnd1->getElements(AMP::Mesh::Vertex);
             unsigned int numNodesInCurrElem = d_currNodes.size();
 
-            dofIndices.resize(numNodesInCurrElem);
+            //dofIndices.resize(numNodesInCurrElem);
             // Get the dofs for the vectors
             std::vector<AMP::Mesh::MeshElementID> ids(d_currNodes.size());
             for (size_t i=0; i<d_currNodes.size(); i++)
               ids[i] = d_currNodes[i].globalID();
+            dofManager->getDOFs( ids, dofs );
 
-            for(unsigned int i = 0; i < numNodesInCurrElem ; i++) 
-              dofManager->getDOFs(d_currNodes[i].globalID(), dofIndices[i]);
+            //for(unsigned int i = 0; i < numNodesInCurrElem ; i++) 
+            //  dofManager->getDOFs(d_currNodes[i].globalID(), dofIndices[i]);
 
-            dofs.resize(numNodesInCurrElem);
-            for (size_t n = 0; n < dofIndices.size() ; n++)
-              dofs[n] = dofIndices[n][d_dofIds[nid][k]];
+            //dofs.resize(numNodesInCurrElem);
+            //for (size_t n = 0; n < dofIndices.size() ; n++)
+            //  dofs[n] = dofIndices[n][d_dofIds[nid][k]];
 
             AMP_ASSERT(dofs.size()==numNodesInCurrElem);
 

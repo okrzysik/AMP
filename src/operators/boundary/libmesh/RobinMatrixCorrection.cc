@@ -138,9 +138,7 @@ void RobinMatrixCorrection :: reset(const AMP::shared_ptr<OperatorParameters>& p
     std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> elementInputVec = myparams->d_elementInputVec;
 
     std::vector<size_t> gpDofs, dofsElementVec;
-    std::vector<std::vector<size_t> > dofIndices;
-    std::vector<size_t> dofs;
-
+    std::vector<size_t> dofIndices;
     AMP::Discretization::DOFManager::shared_ptr gpDOFManager; 
     if(d_isFluxGaussPtVector && myparams->d_variableFlux.get()!=NULL ){
       gpDOFManager = (myparams->d_variableFlux)->getDOFManager();
@@ -148,9 +146,8 @@ void RobinMatrixCorrection :: reset(const AMP::shared_ptr<OperatorParameters>& p
 
     for(unsigned int nid = 0; nid < numIds; nid++)
     {
-      unsigned int numDofIds = d_dofIds[nid].size();
-
-      for(unsigned int k = 0; k < numDofIds; k++)
+//      unsigned int numDofIds = d_dofIds[nid].size();
+//      for(unsigned int k = 0; k < numDofIds; k++)
       {
         AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
         AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
@@ -178,12 +175,12 @@ void RobinMatrixCorrection :: reset(const AMP::shared_ptr<OperatorParameters>& p
           const libMesh::Elem* currElemPtr = libmeshElements.getElement( bnd1->globalID() );
 
           // Get the DOF indicies for the matrix
-          for(unsigned int i = 0; i < currNodes.size(); i++) 
-            d_dofManager->getDOFs(globalIDs, dofIndices[i]);
+          //for(unsigned int i = 0; i < currNodes.size(); i++) 
+          d_dofManager->getDOFs(globalIDs, dofIndices);
 
-          dofs.resize(currNodes.size());
-          for (size_t n = 0; n < dofIndices.size() ; n++)
-            dofs[n] = dofIndices[n][d_dofIds[nid][k]];
+          //dofs.resize(currNodes.size());
+          //for (size_t n = 0; n < dofIndices.size() ; n++)
+          //  dofs[n] = dofIndices[n][d_dofIds[nid][k]];
 
           if(d_isFluxGaussPtVector && myparams->d_variableFlux.get()!=NULL ){
             gpDOFManager->getDOFs (bnd1->globalID(), gpDofs);
@@ -234,7 +231,7 @@ void RobinMatrixCorrection :: reset(const AMP::shared_ptr<OperatorParameters>& p
               for (unsigned int i=0; i < currNodes.size(); i++)
               {
                 temp =  beta[qp] * ( JxW[qp]*phi[j][qp]*phi[i][qp] ) ;
-                inputMatrix->addValueByGlobalID ( dofs[j], dofs[i], temp );
+                inputMatrix->addValueByGlobalID ( dofIndices[j], dofIndices[i], temp );
               }//end for i
             }//end for j
           }//end for qp

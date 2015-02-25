@@ -38,7 +38,7 @@ COPY_MESH_FILE(halden_1_pellet_9mil.e)
 COPY_MESH_FILE(halden_1_clad.e)
 
 # Test strided z axis map
-ADD_AMP_TEST_1_2_4( testStridedZAxisMap )
+ADD_AMP_PROVISIONAL_TEST ( testStridedZAxisMap )
 COPY_TEST_DATA_FILE( input_testStridedZAxisMap )
 
 IF( USE_EXT_DTK )
