@@ -299,7 +299,8 @@ inline void Lapack::dgetri( int N, double *A, int LDA, const int *IPIV, double *
     #endif
 }
 
-}
+
+} // namespace
 
 #endif
 

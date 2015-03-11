@@ -1,14 +1,12 @@
 #define NOMINMAX
 #include "utils/LapackWrappers.h"
+#include "utils/Utilities.h"
 #include <iostream>
 #include <cstdio>
 #include <limits>
 #include <string.h>
 #include <algorithm>
 #include <cmath>
-
-
-using namespace AMP;
 
 
 // Choose the OS 
@@ -24,6 +22,15 @@ using namespace AMP;
     #include <pthread.h>
     #include <unistd.h>
 #endif
+
+
+// Define some sizes of the problems
+#define TEST_SIZE_VEC  10000    // Vector tests
+#define TEST_SIZE_MAT  100      // Matrix tests
+#define TEST_SIZE_tri  500      // Tridiagonal/banded tests
+
+
+namespace AMP {
 
 
 // Declare the individual tests
@@ -47,13 +54,8 @@ static bool test_dgbtrs( int N );
 static bool test_dgetri( int N );
 
 
-// Define some sizes of the problems
-#define TEST_SIZE_VEC  10000    // Vector tests
-#define TEST_SIZE_MAT  100      // Matrix tests
-#define TEST_SIZE_tri  500      // Tridiagonal/banded tests
-
 // Run a given test
-int AMP::Lapack::run_test( const char* routine, int N )
+int Lapack::run_test( const char* routine, int N )
 {
     std::string name(routine);
     //std::transform(name.begin(),name.end(),name.begin(),::tolower);
@@ -103,7 +105,7 @@ int AMP::Lapack::run_test( const char* routine, int N )
 
 
 // Run all the tests
-int AMP::Lapack::run_all_test( )
+int Lapack::run_all_test( )
 {
     int N_errors = 0;
     int N = 2;  // We want two iterations to enure the test works for N>1
@@ -293,22 +295,26 @@ static bool test_daxpy( int N )
     double *y1 = new double[K];
     double *y2 = new double[K];
     random(K,x);
-    random(K,y1);
+    random(K,y0);
     const double pi = 3.141592653589793;
     for (int j=0; j<K; j++)
         y1[j] = y0[j] + pi*x[j];
-    int N_errors = 0;
+    double error = 0;
     for (int i=0; i<N; i++) {
         memcpy(y2,y0,K*sizeof(double));
         Lapack::daxpy(K,pi,x,1,y2,1);
-        if ( !approx_equal(K,y1,y2,1e-14) )
-            N_errors++;
+        double err = L2Error(K,y1,y2);
+        error = std::max(error,err);
     }
+    bool fail = error > 1e-15;
+    if ( fail )
+        printf("test_daxpy error = %e\n",error);
+    NULL_USE(y1);
     delete [] x;
     delete [] y0;
     delete [] y1;
     delete [] y2;
-    return N_errors>0;
+    return fail;
 }
 
 // Test dgemv
@@ -850,19 +856,19 @@ static bool test_dgetri( int N )
 * Some inline functions to acquire/release a mutex                *
 ******************************************************************/
 #ifdef WINDOWS
-    HANDLE LapackWrappers_lock_queue = CreateMutex(NULL, FALSE, NULL);
+    static HANDLE LapackWrappers_lock_queue = CreateMutex(NULL, FALSE, NULL);
 #elif defined(LINUX)
-    pthread_mutex_t LapackWrappers_lock_queue;
-    int LapackWrappers_lock_queue_error = pthread_mutex_init(&LapackWrappers_lock_queue,NULL);
+    static pthread_mutex_t LapackWrappers_lock_queue;
+    static int LapackWrappers_lock_queue_error = pthread_mutex_init(&LapackWrappers_lock_queue,NULL);
 #else
     #error Not programmed
 #endif
 #ifdef WINDOWS
-    void AMP::Lapack::get_lock( ) {
+    void Lapack::get_lock( ) {
         WaitForSingleObject( LapackWrappers_lock_queue, INFINITE );
     }
 #elif defined(LINUX)
-    void AMP::Lapack::get_lock( ) {
+    void Lapack::get_lock( ) {
         int error = pthread_mutex_lock(&LapackWrappers_lock_queue);
         if ( error == -1 )
             printf("Error locking mutex");
@@ -871,13 +877,13 @@ static bool test_dgetri( int N )
     #error Not programmed
 #endif
 #ifdef WINDOWS
-    void AMP::Lapack::release_lock( ) {
+    void Lapack::release_lock( ) {
         bool success = ReleaseMutex(LapackWrappers_lock_queue)!=0;
         if ( !success )
             printf("Error unlocking mutex");
     }
 #elif defined(LINUX)
-    void AMP::Lapack::release_lock( ) {
+    void Lapack::release_lock( ) {
         int error = pthread_mutex_unlock(&LapackWrappers_lock_queue);
         if ( error == -1 )
             printf("Error unlocking mutex");
@@ -887,4 +893,5 @@ static bool test_dgetri( int N )
 #endif
 
 
+} // namespace
 
