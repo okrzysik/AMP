@@ -7,6 +7,8 @@ INCLUDE( "${AMP_SOURCE_DIR}/cmake/Find_TIMER.cmake"     )
 INCLUDE( "${AMP_SOURCE_DIR}/cmake/configureAMP.cmake"   )
 INCLUDE( "${AMP_SOURCE_DIR}/cmake/SharedPtr.cmake"      )
 INCLUDE( CheckIncludeFile )
+INCLUDE(CheckCCompilerFlag)
+INCLUDE(CheckCXXCompilerFlag)
 
 
 FUNCTION( CONFIGURE_LINE_COVERAGE )

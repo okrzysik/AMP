@@ -64,7 +64,7 @@ MACRO( CONVERT_M4_FORTRAN IN LOCAL_PATH OUT_PATH )
         STRING(REGEX REPLACE ".F" ".o" OUT2 "${OUT}" )
         STRING(REGEX REPLACE ";" " " COMPILE_CMD "${CMAKE_Fortran_COMPILER} -c ${OUT} ${CMAKE_Fortran_FLAGS} -o ${OUT2}")
         STRING(REGEX REPLACE "\\\\" "" COMPILE_CMD "${COMPILE_CMD}")
-        MESSAGE("COMPILE_CMD =${COMPILE_CMD}")
+        MESSAGE("COMPILE_CMD = ${COMPILE_CMD}")
         SET( COMPILE_CMD ${COMPILE_CMD} )
         add_custom_command(
             OUTPUT ${OUT2}
@@ -115,7 +115,7 @@ ENDMACRO ()
 MACRO (FIND_FILES)
     # Find the C/C++ headers
     SET( T_HEADERS "" )
-    FILE( GLOB T_HEADERS "*.h" "*.hh" "*.hpp" "*.I" )
+    FILE( GLOB T_HEADERS "*.h" "*.H" "*.hh" "*.hpp" "*.I" )
     # Find the CUDA sources
     SET( T_CUDASOURCES "" )
     FILE( GLOB T_CUDASOURCES "*.cu" )
@@ -146,10 +146,10 @@ ENDMACRO()
 
 
 # Find the source files
-MACRO (FIND_FILES_PATH IN_PATH)
+MACRO( FIND_FILES_PATH IN_PATH )
     # Find the C/C++ headers
     SET( T_HEADERS "" )
-    FILE( GLOB T_HEADERS "${IN_PATH}/*.h" "${IN_PATH}/*.hh" "${IN_PATH}/*.hpp" "${IN_PATH}/*.I" )
+    FILE( GLOB T_HEADERS "${IN_PATH}/*.h" "${IN_PATH}/*.H" "${IN_PATH}/*.hh" "${IN_PATH}/*.hpp" "${IN_PATH}/*.I" )
     # Find the CUDA sources
     SET( T_CUDASOURCES "" )
     FILE( GLOB T_CUDASOURCES "${IN_PATH}/*.cu" )
@@ -161,7 +161,7 @@ MACRO (FIND_FILES_PATH IN_PATH)
     FILE( GLOB T_CXXSOURCES "${IN_PATH}/*.cc" "${IN_PATH}/*.cpp" "${IN_PATH}/*.cxx" "${IN_PATH}/*.C" )
     # Find the Fortran sources
     SET( T_FSOURCES "" )
-    FILE( GLOB T_FSOURCES "${IN_PATH}/*.f" "${IN_PATH}/*.f90" )
+    FILE( GLOB T_FSOURCES "${IN_PATH}/*.f" "${IN_PATH}/*.f90" "${IN_PATH}/*.F" "${IN_PATH}/*.F90" )
     # Find the m4 fortran source (and convert)
     SET( T_M4FSOURCES "" )
     FILE( GLOB T_M4FSOURCES "${IN_PATH}/*.m4" "${IN_PATH}/*.fm4" )
@@ -271,24 +271,30 @@ MACRO( SET_COMPILER )
     IF ( CMAKE_C_COMPILER_WORKS OR CMAKE_C_COMPILER_WORKS )
         IF( CMAKE_COMPILE_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
             SET( USING_GCC TRUE )
+            ADD_DEFINITIONS( "-D USING_GCC" )
             MESSAGE("Using gcc")
         ELSEIF( MSVC OR MSVC_IDE OR MSVC60 OR MSVC70 OR MSVC71 OR MSVC80 OR CMAKE_COMPILER_2005 OR MSVC90 OR MSVC10 )
             IF( NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
                 MESSAGE( FATAL_ERROR "Using microsoft compilers on non-windows system?" )
             ENDIF()
-            SET( USING_MICROSOFT TRUE )
+            SET( USING_MSVC TRUE )
+            ADD_DEFINITIONS( "-D USING_MSVC" )
             MESSAGE("Using Microsoft")
         ELSEIF( (${CMAKE_C_COMPILER_ID} MATCHES "Intel") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel") ) 
             SET(USING_ICC TRUE)
+            ADD_DEFINITIONS( "-D USING_ICC" )
             MESSAGE("Using icc")
         ELSEIF( ${CMAKE_C_COMPILER_ID} MATCHES "PGI")
             SET(USING_PGCC TRUE)
+            ADD_DEFINITIONS( "-D USING_PGCC" )
             MESSAGE("Using pgCC")
         ELSEIF( (${CMAKE_C_COMPILER_ID} MATCHES "CRAY") OR (${CMAKE_C_COMPILER_ID} MATCHES "Cray") )
             SET(USING_CRAY TRUE)
+            ADD_DEFINITIONS( "-D USING_CRAY" )
             MESSAGE("Using Cray")
         ELSEIF( (${CMAKE_C_COMPILER_ID} MATCHES "CLANG") OR (${CMAKE_C_COMPILER_ID} MATCHES "Clang") )
             SET(USING_CLANG TRUE)
+            ADD_DEFINITIONS( "-D USING_CLANG" )
             MESSAGE("Using Clang")
         ELSE()
             SET(USING_DEFAULT TRUE)
@@ -363,24 +369,14 @@ MACRO( SET_WARNINGS )
     #   6843: A dummy argument with an explicit INTENT(OUT) declaration is not given an explicit value.
     SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -Wall" )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wall" )
-    # Disable warnings that I think are irrelavent (may need to be revisited)
-    SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -wd383 -wd593 -wd981" )
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -wd383 -wd593 -wd981" )
-    # Disable warnings that occur due to other packages (it would be nice to disable them for certain header files only)
-    SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -wd111 -wd304 -wd304 -wd444 -wd1418 -wd1572 -wd1599 -wd2259" )
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -wd111 -wd304 -wd304 -wd444 -wd1418 -wd1572 -wd1599 -wd2259" )
-    SET(CMAKE_Fortran_FLAGS " ${CMAKE_Fortran_FLAGS} -diag-disable 6843" )
-    # Disable warnings that occur frequently, but should be fixed eventually
-    SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -wd522 -wd869 -wd1419" )
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -wd522 -wd869 -wd1419" )
   ELSEIF ( USING_CRAY )
     # Add default compiler options
     SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS}")
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}")
   ELSEIF ( USING_PGCC )
     # Add default compiler options
-    SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS}")
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}")
+    SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -lpthread")
+    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -lpthread")
   ELSEIF ( USING_CLANG )
     # Add default compiler options
     SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -Wall")
@@ -406,7 +402,7 @@ MACRO( SET_COMPILER_FLAGS )
     # Initilaize the compiler
     SET_COMPILER()
     # Set the default flags for each build type
-    IF ( USING_MICROSOFT )
+    IF ( USING_MSVC )
         SET(CMAKE_C_FLAGS_DEBUG       "-D_DEBUG /DEBUG /Od /EHsc /MDd /Zi /Z7" )
         SET(CMAKE_C_FLAGS_RELEASE     "/O2 /EHsc /MD"                      )
         SET(CMAKE_CXX_FLAGS_DEBUG     "-D_DEBUG /DEBUG /Od /EHsc /MDd /Zi /Z7" )
@@ -824,25 +820,6 @@ MACRO( CHECK_ENABLE_FLAG FLAG DEFAULT )
 ENDMACRO()
 
 
-# Macro to check if a compiler flag is valid
-MACRO (CHECK_C_COMPILER_FLAG _FLAG _RESULT)
-    SET(SAFE_CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
-    SET(CMAKE_REQUIRED_DEFINITIONS "${_FLAG}")
-    CHECK_C_SOURCE_COMPILES("int main() { return 0;}" ${_RESULT}
-        # Some compilers do not fail with a bad flag
-        FAIL_REGEX "error: bad value (.*) for .* switch"       # GNU
-        FAIL_REGEX "argument unused during compilation"        # clang
-        FAIL_REGEX "is valid for .* but not for C"             # GNU
-        FAIL_REGEX "unrecognized .*option"                     # GNU
-        FAIL_REGEX "ignoring unknown option"                   # MSVC
-        FAIL_REGEX "[Uu]nknown option"                         # HP
-        FAIL_REGEX "[Ww]arning: [Oo]ption"                     # SunPro
-        FAIL_REGEX "command option .* is not recognized"       # XL
-        FAIL_REGEX "WARNING: unknown flag:"                    # Open64
-        FAIL_REGEX " #10159: "                                 # ICC
-    )
-    SET(CMAKE_REQUIRED_DEFINITIONS "${SAFE_CMAKE_REQUIRED_DEFINITIONS}")
-ENDMACRO(CHECK_C_COMPILER_FLAG)
 
 
 
