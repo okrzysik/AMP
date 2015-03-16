@@ -513,7 +513,7 @@ public:
     static int run_all_test( );
 
 
-protected:
+private:
 
     /*!
      * \brief   Get the lock
@@ -530,7 +530,7 @@ protected:
 };
 
 
-} // namespace AMP
+} // namespace
 
 #include "utils/LapackWrappers.hpp"
 

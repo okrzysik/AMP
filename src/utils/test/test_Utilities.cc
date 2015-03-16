@@ -251,6 +251,7 @@ int main(int argc, char *argv[])
         size_t n_bytes1 = AMP::Utilities::getMemoryUsage();
         double time1 = AMP::AMP_MPI::time() - t0;
         double *tmp = new double[0x100000];
+        memset(tmp,0xAA,0x100000*sizeof(uint64_t));
         NULL_USE(tmp);
         t0 = AMP::AMP_MPI::time();
         size_t n_bytes2 = AMP::Utilities::getMemoryUsage();
@@ -267,14 +268,24 @@ int main(int argc, char *argv[])
             ut.failure("getMemoryUsage returns 0");
         } else {
             ut.passes("getMemoryUsage returns non-zero");
-            if ( n_bytes2>n_bytes1 )
+            if ( n_bytes2>n_bytes1 ) {
                 ut.passes("getMemoryUsage increases size");
-            else
-                ut.failure("getMemoryUsage increases size");
-            if ( n_bytes1==n_bytes3 )
+            } else {
+                #if defined(USE_MAC)
+                    ut.expected_failure("getMemoryUsage does not increase size");
+                #else
+                    ut.failure("getMemoryUsage increases size");
+                #endif
+            }
+            if ( n_bytes1==n_bytes3 ) {
                 ut.passes("getMemoryUsage decreases size properly");
-            else
-                ut.expected_failure("getMemoryUsage does not decrease size properly");
+            } else {
+                #if defined(USE_MAC) || defined(USE_WINDOWS)
+                    ut.expected_failure("getMemoryUsage does not decrease size properly");
+                #else
+                    ut.failure("getMemoryUsage does not decrease size properly");
+                #endif
+            }
         }
 
         // Run large memory test of getMemoryUsage

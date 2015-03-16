@@ -52,11 +52,10 @@
 
 
 // Convience defines
-#define MPI_CLASS    AMP_MPI
 #define MPI_ERROR    AMP_ERROR
+#define MPI_ASSERT   AMP_ASSERT
 #define MPI_INSIST   AMP_INSIST
 #define MPI_WARNING  AMP_WARNING
-#define MPI_ASSERT   AMP_ASSERT
 #define MPI_CLASS_COMM_NULL AMP_COMM_NULL
 #define MPI_CLASS_COMM_SELF AMP_COMM_SELF
 #define MPI_CLASS_COMM_WORLD AMP_COMM_WORLD
@@ -3138,6 +3137,38 @@ void MPI_CLASS::call_maxScan<double>(const double *send, double *recv, int n) co
     PROFILE_STOP("maxScan<double>",profile_level);
 }
 #endif
+
+
+/************************************************************************
+*  Communicate ranks for communication                                  *
+************************************************************************/
+std::vector<int> MPI_CLASS::commRanks( const std::vector<int>& ranks ) const
+{
+#ifdef USE_MPI
+    // Get a byte array with the ranks to communicate
+    char *data1 = new char[comm_size];
+    char *data2 = new char[comm_size];
+    memset(data1,0,comm_size);
+    memset(data2,0,comm_size);
+    for (size_t i=0; i<ranks.size(); i++)
+        data1[ranks[i]] = 1;
+    MPI_Alltoall(data1,1,MPI_CHAR,data2,1,MPI_CHAR,communicator);
+    int N = 0;
+    for (int i=0; i<comm_size; i++)
+        N += data2[i];
+    std::vector<int> ranks_out;
+    ranks_out.reserve(N);
+    for (int i=0; i<comm_size; i++) {
+        if ( data2[i] )
+            ranks_out.push_back(i);
+    }
+    delete [] data1;
+    delete [] data2;
+    return ranks_out;
+#else
+    return ranks;
+#endif    
+}
 
 
 /************************************************************************

@@ -37,6 +37,8 @@ SET( MPI_LINK_FLAGS     $ENV{MPI_LINK_FLAGS}    )
 SET( MPI_LIBRARIES      $ENV{MPI_LIBRARIES}     )
 SET( BUILD_SERIAL       $ENV{BUILD_SERIAL}      )
 SET( DISABLE_FORTRAN    $ENV{DISABLE_FORTRAN}   )
+SET( SKIP_TESTS         $ENV{SKIP_TESTS}        )
+SET( BUILDNAME_POSTFIX "$ENV{BUILDNAME_POSTFIX}" )
 
 
 # Get the source directory based on the current directory
@@ -80,6 +82,9 @@ ELSEIF( ${CTEST_SCRIPT_ARG} STREQUAL "valgrind" )
 ELSE()
     MESSAGE(FATAL_ERROR "Invalid build (${CTEST_SCRIPT_ARG}): ctest -S /path/to/script,build (debug/opt/valgrind")
 ENDIF()
+IF ( BUILDNAME_POSTFIX )
+    SET( CTEST_BUILD_NAME "${CTEST_BUILD_NAME}-${BUILDNAME_POSTFIX}" )
+ENDIF()
 IF ( NOT COVERAGE_COMMAND )
     SET( ENABLE_GCOV "false" )
 ENDIF()
@@ -99,10 +104,10 @@ IF( NOT DEFINED N_PROCS )
     ENDIF()
     # Mac:
     IF(APPLE)
-        find_program(cmd_sys_pro "system_profiler")
+        find_program(cmd_sys_pro "sysctl")
         if(cmd_sys_pro)
-            execute_process(COMMAND ${cmd_sys_pro} OUTPUT_VARIABLE info)
-            STRING(REGEX REPLACE "^.*Total Number of Cores: ([0-9]+).*$" "\\1" N_PROCS "${info}")
+            execute_process(COMMAND ${cmd_sys_pro} hw.physicalcpu OUTPUT_VARIABLE info)
+            STRING(REGEX REPLACE "^.*hw.physicalcpu: ([0-9]+).*$" "\\1" N_PROCS "${info}")
         ENDIF()
     ENDIF()
     # Windows:
@@ -110,6 +115,10 @@ IF( NOT DEFINED N_PROCS )
         SET(N_PROCS "$ENV{NUMBER_OF_PROCESSORS}")
     ENDIF()
 ENDIF()
+
+
+# Use fewer processes to build to reduce memory usage
+MATH(EXPR N_PROCS_BUILD "(3*(${N_PROCS}+1))/4" )
 
 
 # Set basic variables
@@ -127,7 +136,7 @@ SET( CTEST_COMMAND "\"${CTEST_EXECUTABLE_NAME}\" -D ${CTEST_DASHBOARD}" )
 IF ( BUILD_SERIAL )
     SET( CTEST_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM} -i build-test" )
 ELSE()
-    SET( CTEST_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM} -i -j ${N_PROCS} build-test" )
+    SET( CTEST_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM} -i -j ${N_PROCS_BUILD} build-test" )
 ENDIF()
 SET( CTEST_CUSTOM_WARNING_EXCEPTION 
     "has no symbols"
@@ -177,7 +186,7 @@ IF ( NOT TPL_DIRECTORY )
         SET( CTEST_OPTIONS "${CTEST_OPTIONS};-DCMAKE_C_COMPILER=${CC};-DCMAKE_CXX_COMPILER=mpicxx;-DCMAKE_Fortran_COMPILER=${FORTRAN}" )
     ENDIF()
     SET( CTEST_OPTIONS "${CTEST_OPTIONS};-DCMAKE_C_FLAGS='${CFLAGS}';-DCMAKE_CXX_FLAGS='${CXXFLAGS}';-DCMAKE_Fortran_FLAGS='${FFLAGS}'" )
-    SET( CTEST_OPTIONS "${CTEST_OPTIONS};-DLDLIBS:STRING=\"${LDLIBS}\";-DLDFLAGS:STRING=\"${LDFLAGS}\"" )
+    SET( CTEST_OPTIONS "${CTEST_OPTIONS};-DLDLIBS:STRING='${LDLIBS}';-DLDFLAGS:STRING='${LDFLAGS}'" )
     IF ( USE_ACML ) 
         SET( CTEST_OPTIONS "${CTEST_OPTIONS};-DUSE_ACML:BOOL=true;-DACML_DIRECTORY='${ACML_DIRECTORY}'" )
     ELSEIF ( USE_MKL ) 
@@ -232,10 +241,13 @@ CTEST_CONFIGURE(
 # Run the configure, build and tests
 CTEST_BUILD()
 EXECUTE_PROCESS( COMMAND ${CMAKE_MAKE_PROGRAM} install )
-IF ( USE_VALGRIND )
+IF ( SKIP_TESTS )
+    # Do not run tests
+    SET( CTEST_COVERAGE_COMMAND )
+ELSEIF ( USE_VALGRIND )
     CTEST_MEMCHECK( EXCLUDE procs   PARALLEL_LEVEL ${N_PROCS} )
 ELSEIF ( RUN_WEEKLY )
-    CTEST_MEMCHECK( INCLUDE WEEKLY  PARALLEL_LEVEL ${N_PROCS} )
+    CTEST_TEST( INCLUDE WEEKLY  PARALLEL_LEVEL ${N_PROCS} )
 ELSE()
     CTEST_TEST( EXCLUDE WEEKLY  PARALLEL_LEVEL ${N_PROCS} )
 ENDIF()

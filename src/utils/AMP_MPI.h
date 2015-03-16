@@ -85,7 +85,7 @@ public:
     /**
      * \brief Assignment operator
      * \details  This operator overloads the assignment to correctly copy an AMP_MPI object
-     * \param comm Existing AMP_MPI object
+     * \param comm Existing MPI object
      */
     AMP_MPI& operator=(const AMP::AMP_MPI& comm);
 
@@ -334,7 +334,7 @@ public:
     /**
      * Set boolean flag indicating whether exit or abort is called when running
      * with one processor.  Calling this function influences the behavior of
-     * calls to AMP_MPI::abort().  By default, the flag is true meaning that
+     * calls to abort().  By default, the flag is true meaning that
      * abort() will be called.  Passing false means exit(-1) will be called. 
      */
     void setCallAbortInSerialInsteadOfExit(bool flag=true); 
@@ -553,7 +553,7 @@ public:
      * of the array, use "send_length = false;"  otherwise, 
      * this processor will first send the length of the array, 
      * then send the data.  This call must be paired with a 
-     * matching call to AMP_MPI::recv.
+     * matching call to recv.
      *
      * @param buf       Pointer to array buffer with length integers.
      * @param length    Number of integers in buf that we want to send.
@@ -570,7 +570,7 @@ public:
      * @brief This function sends an MPI message with an array of bytes
      * (MPI_BYTES) to receiving_proc_number.
      *
-     * This call must be paired with a matching call to AMP_MPI::recvBytes.
+     * This call must be paired with a matching call to recvBytes.
      *
      * @param buf       Void pointer to an array of number_bytes bytes to send.
      * @param N_bytes   Integer number of bytes to send.
@@ -586,7 +586,7 @@ public:
      * @brief This function sends an MPI message with an array 
      *   to another processor using a non-blocking call.
      *   The receiving processor must know the length of the array.
-     *   This call must be paired  with a matching call to AMP_MPI::Irecv.
+     *   This call must be paired  with a matching call to Irecv.
      *
      * @param buf       Pointer to array buffer with length integers.
      * @param length    Number of integers in buf that we want to send.
@@ -602,7 +602,7 @@ public:
      * @brief This function sends an MPI message with an array of bytes
      *   (MPI_BYTES) to receiving_proc_number using a non-blocking call.
      *   The receiving processor must know the number of bytes to receive.
-     *   This call must be paired with a matching call to AMP_MPI::IrecvBytes.
+     *   This call must be paired with a matching call to IrecvBytes.
      *
      * @param buf       Void pointer to an array of number_bytes bytes to send.
      * @param N_bytes   Integer number of bytes to send.
@@ -619,7 +619,7 @@ public:
     *
     * If this processor knows in advance the length of the array,
     * use "get_length = false;" otherwise we will get the return size.
-    * This call must be paired with a matching call to AMP_MPI::send.
+    * This call must be paired with a matching call to send.
     *
     * @param buf        Pointer to integer array buffer with capacity of length integers.
     * @param length     If get_length==true: The number of elements to be received, otherwise
@@ -640,7 +640,7 @@ public:
      * @brief This function receives an MPI message with an array of
      * max size number_bytes (MPI_BYTES) from any processor.
      *
-     * This call must be paired with a matching call to AMP_MPI::sendBytes.
+     * This call must be paired with a matching call to sendBytes.
      *
      * @param buf       Void pointer to a buffer of size number_bytes bytes.
      * @param N_bytes   Integer number specifying size of buf in bytes.
@@ -670,7 +670,7 @@ public:
      * @brief This function receives an MPI message with an array of
      * max size number_bytes (MPI_BYTES) from any processor.
      *
-     * This call must be paired with a matching call to AMP_MPI::sendBytes.
+     * This call must be paired with a matching call to sendBytes.
      *
      * @param buf       Void pointer to a buffer of size number_bytes bytes.
      * @param N_bytes   Integer number specifying size of buf in bytes.
@@ -781,6 +781,19 @@ public:
     template <class type>
     int allToAll(const type *send_data, const int send_cnt[], const int send_disp[], 
                   type *recv_data, int *recv_cnt=NULL, int* recv_disp=NULL, bool known_recv=false) const;
+
+
+    /*!
+     * \brief   Send a list of proccesor ids to communicate
+     * \details This function communicates a list of proccesors to communicate.  
+     *    Given a list of ranks that we want to send/receieve data to/from, this routine
+     *    will communicate that set to the other ranks returning the list of processors
+     *    that want to communication with the current rank.
+     *    Note: this routine will involved global communication
+     * \param ranks         List of ranks that the current rank wants to communicate with
+     * \return              List of ranks that want to communicate with the current processor
+     */
+    std::vector<int> commRanks( const std::vector<int>& ranks ) const;
 
 
     /*!
@@ -900,7 +913,7 @@ private:
     int d_maxTag;
     int* volatile d_currentTag;
 
-    /* How many AMP_MPI objects share the same underlying MPI communicator.
+    /* How many objects share the same underlying MPI communicator.
      * When the count goes to 0, the MPI comm will be free'd (assuming it was created
      * by an AMP_MPI object).  This may not be perfect, but is likely to be good enough.
      * Note that for thread safety, any access to this variable should be blocked for thread safety.
@@ -938,11 +951,13 @@ private:
 };
 
 
+} // namespace
+
+
 // Include the default instantiations
 // \cond HIDDEN_SYMBOLS
-#include "AMP_MPI.I"
+#include "utils/AMP_MPI.I"
 // \endcond
 
-}
 
 #endif
