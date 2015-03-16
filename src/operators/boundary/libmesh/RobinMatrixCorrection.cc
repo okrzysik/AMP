@@ -34,8 +34,6 @@ RobinMatrixCorrection :: RobinMatrixCorrection(const AMP::shared_ptr<RobinMatrix
   
   d_variable = params->d_variable;
   
-  d_dofManager = params->d_DofMap;
-
   d_NeumannParams.reset(new AMP::Operator::NeumannVectorCorrectionParameters( params->d_db ));
   d_NeumannParams->d_variable = params->d_variable;
   d_NeumannParams->d_Mesh = params->d_Mesh;
@@ -127,6 +125,9 @@ void RobinMatrixCorrection :: reset(const AMP::shared_ptr<OperatorParameters>& p
     AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myparams->d_inputMatrix;
     AMP_INSIST( ((inputMatrix.get()) != NULL), "NULL matrix" );
 
+    AMP::LinearAlgebra::Vector::shared_ptr inVec = inputMatrix->getRightVector();
+    d_dofManager = inVec->getDOFManager();
+
 /*
     std::vector<std::string> variableNames;
     if(d_robinPhysicsModel.get() != NULL)
@@ -138,7 +139,9 @@ void RobinMatrixCorrection :: reset(const AMP::shared_ptr<OperatorParameters>& p
     std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> elementInputVec = myparams->d_elementInputVec;
 
     std::vector<size_t> gpDofs, dofsElementVec;
-    std::vector<size_t> dofIndices;
+    std::vector<std::vector<size_t> > dofIndices;
+    std::vector<size_t> dofs;
+
     AMP::Discretization::DOFManager::shared_ptr gpDOFManager; 
     if(d_isFluxGaussPtVector && myparams->d_variableFlux.get()!=NULL ){
       gpDOFManager = (myparams->d_variableFlux)->getDOFManager();
@@ -146,8 +149,9 @@ void RobinMatrixCorrection :: reset(const AMP::shared_ptr<OperatorParameters>& p
 
     for(unsigned int nid = 0; nid < numIds; nid++)
     {
-//      unsigned int numDofIds = d_dofIds[nid].size();
-//      for(unsigned int k = 0; k < numDofIds; k++)
+      unsigned int numDofIds = d_dofIds[nid].size();
+
+      for(unsigned int k = 0; k < numDofIds; k++)
       {
         AMP::Mesh::MeshIterator bnd1     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
         AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
@@ -175,12 +179,12 @@ void RobinMatrixCorrection :: reset(const AMP::shared_ptr<OperatorParameters>& p
           const libMesh::Elem* currElemPtr = libmeshElements.getElement( bnd1->globalID() );
 
           // Get the DOF indicies for the matrix
-          //for(unsigned int i = 0; i < currNodes.size(); i++) 
-          d_dofManager->getDOFs(globalIDs, dofIndices);
+          for(unsigned int i = 0; i < currNodes.size(); i++) 
+            d_dofManager->getDOFs(currNodes[i].globalID(), dofIndices[i]);
 
-          //dofs.resize(currNodes.size());
-          //for (size_t n = 0; n < dofIndices.size() ; n++)
-          //  dofs[n] = dofIndices[n][d_dofIds[nid][k]];
+          dofs.resize(currNodes.size());
+          for (size_t n = 0; n < dofIndices.size() ; n++)
+            dofs[n] = dofIndices[n][d_dofIds[nid][k]];
 
           if(d_isFluxGaussPtVector && myparams->d_variableFlux.get()!=NULL ){
             gpDOFManager->getDOFs (bnd1->globalID(), gpDofs);
@@ -231,7 +235,7 @@ void RobinMatrixCorrection :: reset(const AMP::shared_ptr<OperatorParameters>& p
               for (unsigned int i=0; i < currNodes.size(); i++)
               {
                 temp =  beta[qp] * ( JxW[qp]*phi[j][qp]*phi[i][qp] ) ;
-                inputMatrix->addValueByGlobalID ( dofIndices[j], dofIndices[i], temp );
+                inputMatrix->addValueByGlobalID ( dofs[j], dofs[i], temp );
               }//end for i
             }//end for j
           }//end for qp
