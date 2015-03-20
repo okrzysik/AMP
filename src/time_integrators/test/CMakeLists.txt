@@ -1,15 +1,5 @@
 INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
 ############################################################################
-#  Configure test library
-############################################################################
-#
-#  This sets up a library to be compiled with each test
-#  SET ( PACKAGE_TEST_LIB "solver_test" )
-#
-#  To add source files to the test library
-#     ADD_FILES_TO_TEST_LIB ( source_name )
-
-############################################################################
 #  Configure tests
 ############################################################################
 #
@@ -31,7 +21,7 @@ INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
 #     ADD_AMP_WEEKLY_TEST ( exe_name num_cores args )
 #
 #  To add an input file from the data/ directory
-#     COPY_TEST_DATA_FILE ( input_file )
+#     COPY_TEST_FILE( input_file )
 #
 #  To add a mesh from either the data/ directory or the trunk/meshes/ directory
 #     COPY_MESH_FILE ( mesh_file )
@@ -41,8 +31,8 @@ ADD_AMP_TEST_1_2_4 ( testTimeIntegratorParameters )
 ADD_AMP_PROVISIONAL_TEST ( testBackwardEulerTimeIntegrator )
 ADD_AMP_TEST_1_2_4 ( testOxideTimeIntegrator )
 
-COPY_TEST_DATA_FILE ( input_testBackwardEulerTimeIntegrator )
-COPY_TEST_DATA_FILE ( input_testOxideTimeIntegrator-1 )
+COPY_TEST_FILE( input_testBackwardEulerTimeIntegrator )
+COPY_TEST_FILE( input_testOxideTimeIntegrator-1 )
 
 COPY_MESH_FILE ( unitCubeDirichlet.e )
 COPY_MESH_FILE ( simple_linear_thermomech.e )
@@ -58,15 +48,15 @@ IF ( USE_EXT_SUNDIALS )
     ADD_AMP_PROVISIONAL_TEST ( testIDA-NonlinearColumnOperator-1 2 )
     ADD_AMP_PROVISIONAL_TEST ( testIDA-NonlinearColumnOperator-1 4 )
     ADD_AMP_PROVISIONAL_TEST ( testIDA-NonlinearThermalOxygenDiffusion-1 )
-    COPY_TEST_DATA_FILE ( input_testIDA-LinearBVPOperator-1 )
-    COPY_TEST_DATA_FILE ( input_testIDA-NonlinearBVPOperator-1 )
-    COPY_TEST_DATA_FILE ( input_testIDA-NonlinearColumnOperator-1 )
-    COPY_TEST_DATA_FILE ( input_testIDA-TO-Preprocessor )
-    COPY_TEST_DATA_FILE ( input_testIDA-NonlinearOperator-short )
-    COPY_TEST_DATA_FILE ( input_testIDA-NonlinearOperator-long )
-    COPY_TEST_DATA_FILE ( input_testIDA-NonlinearThermalOxygenDiffusion-1 )
-    COPY_TEST_DATA_FILE ( inputIDATimeIntegrator )
-    COPY_TEST_DATA_FILE ( input-LinearIDA-1 )
-    COPY_TEST_DATA_FILE ( input-NonlinearIDA-1 )
+    COPY_TEST_FILE( input_testIDA-LinearBVPOperator-1 )
+    COPY_TEST_FILE( input_testIDA-NonlinearBVPOperator-1 )
+    COPY_TEST_FILE( input_testIDA-NonlinearColumnOperator-1 )
+    COPY_TEST_FILE( input_testIDA-TO-Preprocessor )
+    COPY_TEST_FILE( input_testIDA-NonlinearOperator-short )
+    COPY_TEST_FILE( input_testIDA-NonlinearOperator-long )
+    COPY_TEST_FILE( input_testIDA-NonlinearThermalOxygenDiffusion-1 )
+    COPY_TEST_FILE( inputIDATimeIntegrator )
+    COPY_TEST_FILE( input-LinearIDA-1 )
+    COPY_TEST_FILE( input-NonlinearIDA-1 )
 ENDIF()
 

@@ -1,14 +1,5 @@
 INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
 ############################################################################
-#  Configure dependencies for the tests
-############################################################################
-#
-#  The TEST_DEP_LIST variable contains the list of AMP packages that these
-#  tests depend on
-
-SET ( TEST_DEP_LIST ${TEST_DEP_LIST} matrices vectors )
-
-############################################################################
 #  Configure tests
 ############################################################################
 #
@@ -30,7 +21,7 @@ SET ( TEST_DEP_LIST ${TEST_DEP_LIST} matrices vectors )
 #     ADD_AMP_WEEKLY_TEST ( exe_name num_cores )
 #
 #  To add an input file from the data/ directory
-#     COPY_TEST_DATA_FILE ( input_file )
+#     COPY_TEST_FILE( input_file )
 #
 #  To add a mesh from either the data/ directory or the trunk/meshes/ directory
 #     COPY_MESH_FILE ( mesh_file )

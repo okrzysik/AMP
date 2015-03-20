@@ -8,7 +8,7 @@ IF ( USE_AMP_MESH )
     # Add a provisional test for testing the performance of makeConsistent
     ADD_AMP_PROVISIONAL_TEST ( testMakeConsistentPerformance )
     # Add a test for testing 64-bit vectors.  WARNING: this test uses a LOT of memory
-    COPY_TEST_DATA_FILE ( input-test64bitVectors )
+    COPY_TEST_FILE( input-test64bitVectors )
     ADD_AMP_PROVISIONAL_TEST ( test64bitVectors )
 ENDIF()
 

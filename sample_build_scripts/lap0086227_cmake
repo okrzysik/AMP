@@ -35,7 +35,7 @@ rm -rf CMake*
       -D USE_EXT_X11=1                                          \
          -D X11_DIRECTORY:PATH=/usr/                            \
       -D USE_EXT_MPI=1                                          \
-         -D USE_EXT_MPI_FOR_SERIAL_TESTS=0                      \
+         -D USE_MPI_FOR_SERIAL_TESTS=0                          \
          -D MPIEXEC_NUMPROC_FLAG:STRING="-np"                   \
          -D MPI_DIRECTORY=/usr                                  \
       -Wdev                                                     \
