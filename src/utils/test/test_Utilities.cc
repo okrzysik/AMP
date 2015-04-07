@@ -15,6 +15,19 @@
 #include "utils/Utilities.h"
 
 
+// Detect the OS and include system dependent headers
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
+    // Note: windows has not been testeds
+    #define USE_WINDOWS
+#elif defined(__APPLE__)
+    #define USE_MAC
+#elif defined(__linux) || defined(__unix) || defined(__posix)
+    #define USE_LINUX
+#else
+    #error Unknown OS
+#endif
+
+
 // Subract two size_t numbers, returning the absolute value
 size_t abs_diff(size_t a, size_t b) {
     return (a>=b) ? a-b:b-a;
