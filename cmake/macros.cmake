@@ -1,4 +1,7 @@
+INCLUDE(CheckCCompilerFlag)
 INCLUDE(CheckCSourceCompiles)
+INCLUDE(CheckCXXCompilerFlag)
+INCLUDE(CheckCXXSourceCompiles)
 IF ( NOT TEST_FAIL_REGULAR_EXPRESSION )
     # Note: we cannot check for "handles are still allocated" due to PETSc.  See static variable
     #   Petsc_Reduction_keyval on line 234 of comb.c
@@ -276,7 +279,7 @@ ENDMACRO()
 
 
 # Macro to identify the compiler
-MACRO( SET_COMPILER )
+MACRO( IDENTIFY_COMPILER )
     # SET the C/C++ compiler
     IF ( CMAKE_C_COMPILER_WORKS OR CMAKE_C_COMPILER_WORKS )
         IF( CMAKE_COMPILE_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
@@ -346,39 +349,6 @@ MACRO( SET_WARNINGS )
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _SCL_SECURE_NO_WARNINGS /D _CRT_SECURE_NO_WARNINGS /D _ITERATOR_DEBUG_LEVEL=0" )
   ELSEIF ( USING_ICC )
     # Add Intel specifc compiler options
-    #    111: statement is unreachable
-    #         This occurs in LibMesh
-    #    177: variable "" was declared but never referenced
-    #    181: argument is incompatible with corresponding format string conversion
-    #    304: access control not specified ("public" by default)
-    #         This occurs in LibMesh
-    #    383: value copied to temporary, reference to temporary used
-    #         This is an irrelavent error
-    #    444: destructor for base class "" is not virtual
-    #         This can create memory leaks (and should be fixed)
-    #         Unfortunatelly many of these come from LibMesh
-    #    522: function "xxx" redeclared "inline" after being called
-    #         We should fix this, but there are a lot of these
-    #    593: variable "xxx" was set but never used
-    #    654: overloaded virtual function "" is only partially overridden in class " "
-    #    869: parameter "xxx" was never referenced
-    #         I believe this is bad practice and should be fixed, but it may require a broader discussion (it is built into the design of Operator)
-    #    981: operands are evaluated in unspecified order
-    #         This can occur when an implicit conversion take place in a function call 
-    #   1011: missing return statement at end of non-void function
-    #         This is bad practice
-    #   1418: external function definition with no prior declaration
-    #         This can happen if we don't include a header file (and maybe if there is an internal function?)
-    #         Unfortunatelly many of these come from trilinos
-    #   1419: external declaration in primary source file
-    #   1572: floating-point equality and inequality comparisons are unreliable
-    #         LibMesh warnings
-    #   1599: declaration hides parameter 
-    #         LibMesh warnings
-    #   2259: non-pointer conversion from "int" to "unsigned char" may lose significant bits
-    #         This is bad practice, use an explict coversion instead
-    #         Unfortunatelly many of these come from LibMesh
-    #   6843: A dummy argument with an explicit INTENT(OUT) declaration is not given an explicit value.
     SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -Wall" )
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wall" )
   ELSEIF ( USING_CRAY )
@@ -388,7 +358,9 @@ MACRO( SET_WARNINGS )
   ELSEIF ( USING_PGCC )
     # Add default compiler options
     SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -lpthread")
-    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -lpthread")
+    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -lpthread -Minform=inform -Mlist --display_error_number")
+    # Suppress unreachable code warning, it causes non-useful warnings with some tests/templates
+    SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} --diag_suppress 111,128,185")
   ELSEIF ( USING_CLANG )
     # Add default compiler options
     SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS} -Wall")
@@ -398,7 +370,7 @@ MACRO( SET_WARNINGS )
     SET(CMAKE_C_FLAGS     " ${CMAKE_C_FLAGS}")
     SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}")
   ENDIF()
-ENDMACRO ()
+ENDMACRO()
 
 
 # Macro to add user compile flags
@@ -409,10 +381,62 @@ MACRO( ADD_USER_FLAGS )
 ENDMACRO()
 
 
-# Macro to set the flags for debug mode
+# Macro to add user c++ std 
+MACRO( ADD_CXX_STD )
+    IF ( NOT CXX_STD )
+        MESSAGE( FATAL_ERROR "The desired c++ standard must be specified: CXX_STD=(98,11,14,NONE)")
+    ENDIF()
+    IF ( ${CXX_STD} STREQUAL "NONE" )
+        # Do nothing
+        return()
+    ELSEIF ( (NOT ${CXX_STD} STREQUAL "98") AND (NOT ${CXX_STD} STREQUAL "11") AND (NOT ${CXX_STD} STREQUAL "14") )
+        MESSAGE( FATAL_ERROR "Unknown c++ standard (98,11,14,NONE)" )
+    ENDIF()
+    # Add the flags
+    SET( CMAKE_CXX_STANDARD ${CXX_STD} )
+    MESSAGE( "C++ standard: ${CXX_STD}" )
+    IF ( USING_GCC )
+        # GNU: -std=
+        IF ( ${CXX_STD} STREQUAL "98" )
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98")
+        ELSEIF ( ${CXX_STD} STREQUAL "11" )
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+        ELSEIF ( ${CXX_STD} STREQUAL "14" )
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
+        ENDIF()
+    ELSEIF ( USING_MSVC )
+        # Microsoft: Does not support this level of control
+    ELSEIF ( USING_ICC )
+        # ICC: -std=
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++${CXX_STD}")
+    ELSEIF ( USING_CRAY )
+        # Cray: Does not seem to support controlling the std?
+    ELSEIF ( USING_PGCC )
+        # PGI: -std=
+        IF ( ${CXX_STD} STREQUAL "98" )
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --c++0x")
+        ELSEIF ( ${CXX_STD} STREQUAL "11" )
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --c++11")
+        ELSEIF ( ${CXX_STD} STREQUAL "14" )
+            MESSAGE( FATAL_ERROR "C++14 features are not availible yet for PGI" )
+        ENDIF()
+    ELSEIF ( USING_CLANG )
+        # Clang: -std=
+        IF ( ( ${CXX_STD} STREQUAL "98") OR ( ${CXX_STD} STREQUAL "98" ) )
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++${CXX_STD}")
+        ELSEIF ( ${CXX_STD} STREQUAL "14" )
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
+        ENDIF()
+    ELSEIF ( USING_DEFAULT )
+        # Default: do nothing
+    ENDIF()
+ENDMACRO()
+
+
+# Macro to set the compile/link flags
 MACRO( SET_COMPILER_FLAGS )
     # Initilaize the compiler
-    SET_COMPILER()
+    IDENTIFY_COMPILER()
     # Set the default flags for each build type
     IF ( USING_MSVC )
         SET(CMAKE_C_FLAGS_DEBUG       "-D_DEBUG /DEBUG /Od /EHsc /MDd /Zi /Z7" )
@@ -428,10 +452,6 @@ MACRO( SET_COMPILER_FLAGS )
         SET(CMAKE_CXX_FLAGS_RELEASE   "-O2"             )
         SET(CMAKE_Fortran_FLAGS_DEBUG "-g -O0"          )
         SET(CMAKE_Fortran_FLAGS_RELEASE "-O2"           )
-    ENDIF()
-    IF ( NOT DISABLE_GXX_DEBUG )
-        SET(CMAKE_C_FLAGS_DEBUG   " ${CMAKE_C_FLAGS_DEBUG}   -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC" )
-        SET(CMAKE_CXX_FLAGS_DEBUG " ${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC" )
     ENDIF()
     # Set the compiler flags to use
     IF ( ${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
@@ -449,10 +469,35 @@ MACRO( SET_COMPILER_FLAGS )
     ELSE()
         MESSAGE(FATAL_ERROR "Unknown value for CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
     ENDIF()
+    # Set the behavior of GLIBCXX flags
+    CHECK_ENABLE_FLAG( ENABLE_GXX_DEBUG 0 )
+    IF ( ENABLE_GXX_DEBUG ) 
+        # Enable GLIBCXX_DEBUG flags
+        SET( CMAKE_C_FLAGS_DEBUG   " ${CMAKE_C_FLAGS_DEBUG}   -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC" )
+        SET( CMAKE_CXX_FLAGS_DEBUG " ${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC" )
+        SET( DISABLE_GXX_DEBUG OFF )
+    ELSEIF ( DISABLE_GXX_DEBUG ) 
+        # Disable GLIBCXX_DEBUG flags
+        SET( DISABLE_GXX_DEBUG OFF )
+    ELSE()
+        # Default
+        SET( DISABLE_GXX_DEBUG ON )
+    ENDIF()
     # Add the user flags
     ADD_USER_FLAGS()
+    # Add the c++ standard flags
+    ADD_CXX_STD()
     # Set the warnings to use
     SET_WARNINGS()
+    # Test the compile flags
+    CHECK_C_COMPILER_FLAG( "${CMAKE_C_FLAGS}" CHECK_C_FLAGS )
+    CHECK_CXX_COMPILER_FLAG( "${CMAKE_CXX_FLAGS}" CHECK_CXX_FLAGS )
+    IF ( NOT ${CHECK_C_FLAGS} )
+        MESSAGE(FATAL_ERROR "Invalid C flags detected")
+    ENDIF()
+    IF ( NOT ${CHECK_CXX_FLAGS} )
+        MESSAGE(FATAL_ERROR "Invalid CXX flags detected")
+    ENDIF()
 ENDMACRO()
 
 
@@ -769,7 +814,7 @@ FUNCTION( ADD_${PROJ}_TEST_PARALLEL EXEFILE PROCS ${ARGN} )
     GET_TARGET_PROPERTY(EXE ${EXEFILE} LOCATION)
     STRING(REGEX REPLACE "\\$\\(Configuration\\)" "${CONFIGURATION}" EXE "${EXE}" )
     CREATE_TEST_NAME( "${EXEFILE}_${PROCS}procs" ${ARGN} )
-    IF ( NOT USE_MPI AND NOT USE_EXT_MPI )
+    IF ( NOT ( USE_MPI OR USE_EXT_MPI ) )
         MESSAGE("Disabling test ${TESTNAME} (configured without MPI)")
     ELSEIF ( ${PROCS} GREATER ${TEST_MAX_PROCS} )
         MESSAGE("Disabling test ${TESTNAME} (exceeds maximum number of processors ${TEST_MAX_PROCS})")
@@ -899,10 +944,12 @@ ENDMACRO()
 
 # Add a matlab mex file
 FUNCTION( ADD_MATLAB_MEX MEXFILE )
+    # Set the MEX compiler and default link flags
     IF ( USING_MSVC )
         #SET(MEX_FLAGS ${MEX_FLAGS} "LINKFLAGS=\"/NODEFAULTLIB:MSVSRT.lib\"" )
         SET( MEX "\"${MATLAB_DIRECTORY}/sys/perl/win32/bin/perl.exe\" \"${MATLAB_DIRECTORY}/bin/mex.pl\"" )
-        SET( MEX_LDFLAGS ${MEX_LDFLAGS} -L${CMAKE_CURRENT_BINARY_DIR}/.. -L${CMAKE_CURRENT_BINARY_DIR}/../Debug -L${CMAKE_CURRENT_BINARY_DIR} )
+        SET( MEX_LDFLAGS ${MEX_LDFLAGS} -L${CMAKE_CURRENT_BINARY_DIR}/.. 
+            -L${CMAKE_CURRENT_BINARY_DIR}/../Debug -L${CMAKE_CURRENT_BINARY_DIR} )
         FOREACH( rpath ${CMAKE_INSTALL_RPATH} )
             #SET( MEX_LDFLAGS ${MEX_LDFLAGS} "-Wl,-rpath,${rpath},--no-undefined" )
         ENDFOREACH()
@@ -914,10 +961,7 @@ FUNCTION( ADD_MATLAB_MEX MEXFILE )
     ENDIF()
     SET( MEX_LDFLAGS ${MEX_LDFLAGS} -L${CMAKE_CURRENT_BINARY_DIR}/.. ${SYSTEM_LDFLAGS} )
     SET( MEX_LIBS    ${MEX_LIBS}    ${SYSTEM_LIBS}    )
-    IF ( ENABLE_GCOV )
-        SET ( COVERAGE_MATLAB_LIBS ${COVERAGE_LIBS} )
-        SET ( COMPFLAGS "CXXFLAGS='$$CXXFLAGS ${COVERAGE_FLAGS}'" )
-    ENDIF ()
+    # Create the mex comamnd
     STRING(REGEX REPLACE "[.]cpp" "" TARGET ${MEXFILE})
     STRING(REGEX REPLACE "[.]c"   "" TARGET ${TARGET})
     FILE(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/temp/${TARGET}" )
@@ -932,9 +976,14 @@ FUNCTION( ADD_MATLAB_MEX MEXFILE )
         APPEND_LIST( "${MEX_BAT_FILE}" "${COVERAGE_MATLAB_LIBS}" "\"" "\" " )
         SET( MEX_COMMAND "${MEX_BAT_FILE}" )
     ELSE()
+        STRING(REPLACE " " ";" MEX_CFLAGS "$$CFLAGS ${CMAKE_C_FLAGS}")
+        STRING(REPLACE " " ";" MEX_CXXFLAGS "$$CXXFLAGS ${CMAKE_CXX_FLAGS}")
         SET( MEX_COMMAND ${MEX} ${CMAKE_CURRENT_SOURCE_DIR}/${MEXFILE} 
-            ${MEX_FLAGS} ${COMPFLAGS} ${MEX_INCLUDE} 
-            LDFLAGS="${MEX_LDFLAGS}" ${MEX_LIBS} ${COVERAGE_MATLAB_LIBS} 
+            ${MEX_FLAGS} ${MEX_INCLUDE} 
+            CFLAGS="${MEX_CFLAGS}" 
+            CXXFLAGS="${MEX_CXXFLAGS}" 
+            LDFLAGS="${MEX_LDFLAGS}" 
+            ${MEX_LIBS} ${COVERAGE_MATLAB_LIBS} 
         )
     ENDIF()
     ADD_CUSTOM_COMMAND( 

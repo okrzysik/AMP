@@ -112,6 +112,25 @@
 }
 
 
+#### Suppress ACML errors
+{
+   acmlcpuid
+   Memcheck:Cond
+   ...
+   fun:acmlcpuid_once
+   fun:acmlcpuid2
+   ...
+}
+{
+   acmlcpuid2
+   Memcheck:Value8
+   ...
+   fun:acmlcpuid_once
+   fun:acmlcpuid2
+   ...
+}
+
+
 #### Supress Mac errors
 {
    Mac/dyld_start/dyldbootstrap5start
@@ -234,6 +253,20 @@
    ...
    fun:map_images_nolock
    fun:map_images
+   ...
+}
+
+
+# Supress linux errors 
+{
+   expand_dynamic_string_token
+   Memcheck:Cond
+   fun:index
+   fun:expand_dynamic_string_token
+   ...
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
    ...
 }
 

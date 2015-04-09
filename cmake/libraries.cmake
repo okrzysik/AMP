@@ -703,7 +703,7 @@ ENDMACRO ()
 
 # Macro to configure system-specific libraries and flags
 MACRO ( CONFIGURE_SYSTEM )
-    SET_COMPILER()
+    IDENTIFY_COMPILER()
     # Remove extra library links
     CHECK_ENABLE_FLAG( USE_STATIC 0 )
     IF ( USE_STATIC )
