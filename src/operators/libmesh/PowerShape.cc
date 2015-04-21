@@ -159,7 +159,7 @@ namespace AMP {
             d_Xmoments.resize(d_numXmoments, 0.);
             db->getDoubleArray("Xmoments", &d_Xmoments[0], d_numXmoments);
             for (unsigned int i=0 ; i < d_numXmoments ; i++ ){
-              AMP_ASSERT (abs( d_Xmoments[i] ) <= 1.0  );
+              AMP_ASSERT (fabs( d_Xmoments[i] ) <= 1.0  );
             }
           }
 
@@ -171,7 +171,7 @@ namespace AMP {
             d_Ymoments.resize(d_numYmoments, 0.);
             db->getDoubleArray("Ymoments", &d_Ymoments[0], d_numYmoments);
             for (unsigned int i=0 ; i < d_numYmoments ; i++ ){
-              AMP_ASSERT (abs( d_Ymoments[i] ) <= 1.0  );
+              AMP_ASSERT (fabs( d_Ymoments[i] ) <= 1.0  );
             }
           }
 
@@ -183,7 +183,7 @@ namespace AMP {
             d_Zmoments.resize(d_numZmoments, 0.);
             db->getDoubleArray("Zmoments", &d_Zmoments[0], d_numZmoments);
             for (unsigned int i=0 ; i < d_numZmoments ; i++ ){
-              AMP_ASSERT (abs( d_Zmoments[i] ) <= 1.0  );
+              AMP_ASSERT (fabs( d_Zmoments[i] ) <= 1.0  );
             }
           }
 
@@ -207,7 +207,7 @@ namespace AMP {
             d_Zmoments.resize(d_numZmoments, 0.);
             db->getDoubleArray("Zmoments", &d_Zmoments[0], d_numZmoments);
             for (unsigned int i=0 ; i < d_numZmoments ; i++ ){
-              AMP_ASSERT (abs( d_Zmoments[i] ) <= 1.0  );
+              AMP_ASSERT (fabs( d_Zmoments[i] ) <= 1.0  );
             }
           }
         } else {
@@ -224,7 +224,7 @@ namespace AMP {
           d_Zmoments.resize(d_numZmoments, 0.);
           db->getDoubleArray("Zmoments", &d_Zmoments[0], d_numZmoments);
           for (unsigned int i=0 ; i < d_numZmoments ; i++ ){
-            AMP_ASSERT (abs( d_Zmoments[i] ) <= 1.0  );
+            AMP_ASSERT (fabs( d_Zmoments[i] ) <= 1.0  );
           }
         }
 
@@ -239,7 +239,7 @@ namespace AMP {
 
           // Read the angular constant from input database.
           d_angularConstant = db->getDoubleWithDefault("angularConstant", 0.0);
-          AMP_ASSERT (abs(d_angularConstant) <= 1.0);
+          AMP_ASSERT (fabs(d_angularConstant) <= 1.0);
 
         } else if (d_type == "zernikeRadial") {
 
@@ -264,14 +264,14 @@ namespace AMP {
               d_Moments.resize(d_numMoments, 0.);
               db->getDoubleArray("Moments", &d_Moments[0], d_numMoments);
               for (unsigned int i=0 ; i < d_numMoments ; i++ ){
-                AMP_ASSERT (abs( d_Moments[i] ) <= 1.0  );
+                AMP_ASSERT (fabs( d_Moments[i] ) <= 1.0  );
               }
             }
           }
 
           // Read the angular constant from input database.
           d_angularConstant = db->getDoubleWithDefault("angularConstant", 0.0);
-          AMP_ASSERT (abs(d_angularConstant) <= 1.0);
+          AMP_ASSERT (fabs(d_angularConstant) <= 1.0);
 
         } else if (d_type == "zernike") {
 
@@ -289,7 +289,7 @@ namespace AMP {
             d_Moments.resize(d_numMNmoments, 0.);
             db->getDoubleArray("Moments", &d_Moments[0], d_numMNmoments);
             for (unsigned int i=0 ; i < d_numMNmoments ; i++ ){
-              AMP_ASSERT (abs( d_Moments[i] ) <= 1.0  );
+              AMP_ASSERT (fabs( d_Moments[i] ) <= 1.0  );
             }
           }
         } else if (d_type == "diffusion") {
