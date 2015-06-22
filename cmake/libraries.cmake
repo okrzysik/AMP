@@ -2,6 +2,7 @@ INCLUDE( "${AMP_SOURCE_DIR}/cmake/Find_BLAS_LAPACK.cmake" )
 INCLUDE( "${AMP_SOURCE_DIR}/cmake/FindPetsc.cmake"      )
 INCLUDE( "${AMP_SOURCE_DIR}/cmake/FindTrilinos.cmake"   )
 INCLUDE( "${AMP_SOURCE_DIR}/cmake/FindLibmesh.cmake"    )
+INCLUDE( "${AMP_SOURCE_DIR}/cmake/FindHypre.cmake"      )
 INCLUDE( "${AMP_SOURCE_DIR}/cmake/FindSundials.cmake"   )
 INCLUDE( "${AMP_SOURCE_DIR}/cmake/Find_TIMER.cmake"     )
 INCLUDE( "${AMP_SOURCE_DIR}/cmake/configureAMP.cmake"   )
@@ -604,7 +605,7 @@ MACRO ( CONFIGURE_SUNDIALS_LIBRARIES )
         IF ( SUNDIALS_DIRECTORY )
             SUNDIALS_SET_INCLUDES( ${SUNDIALS_DIRECTORY} )
             SUNDIALS_SET_LIBRARIES( ${SUNDIALS_DIRECTORY} )
-            INCLUDE_DIRECTORIES ( ${SUNDIALS_INCLUDE} )
+            INCLUDE_DIRECTORIES( ${SUNDIALS_INCLUDE} )
         ELSE()
             MESSAGE( FATAL_ERROR "Default search for sundials is not supported.  Use -D SUNDIALS_DIRECTORY=" )
         ENDIF()
@@ -621,54 +622,15 @@ MACRO ( CONFIGURE_HYPRE_LIBRARIES )
     IF ( USE_EXT_HYPRE )
         # Check if we specified the hypre directory
         IF ( HYPRE_DIRECTORY )
-            VERIFY_PATH ( ${HYPRE_DIRECTORY} )
-            SET ( HYPRE_LIB_DIRECTORY ${HYPRE_DIRECTORY}/lib )
-            FIND_LIBRARY ( HYPRE_LIB         NAMES HYPRE                PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_DM_LIB      NAMES HYPRE_DistributedMatrix  PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_DMPS_LIB    NAMES HYPRE_DistributedMatrixPilutSolver  PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            # FIND_LIBRARY ( HYPRE_EUCLID_LIB  NAMES HYPRE_Euclid  PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_IJMV_LIB    NAMES HYPRE_IJ_mv          PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_KRYLOV_LIB  NAMES HYPRE_krylov         PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            # FIND_LIBRARY ( HYPRE_LSI_LIB     NAMES HYPRE_LSI  PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_MATMAT_LIB  NAMES HYPRE_MatrixMatrix   PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_MULTIV_LIB  NAMES HYPRE_multivector    PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_PARAS_LIB   NAMES HYPRE_ParaSails      PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_PBMV_LIB    NAMES HYPRE_parcsr_block_mv  PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_PLS_LIB     NAMES HYPRE_parcsr_ls      PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_PMV_LIB     NAMES HYPRE_parcsr_mv      PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_SEQMV_LIB   NAMES HYPRE_seq_mv         PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_SSLS_LIB    NAMES HYPRE_sstruct_ls     PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_SSMV_LIB    NAMES HYPRE_sstruct_mv     PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_SLS_LIB     NAMES HYPRE_struct_ls      PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_SMV_LIB     NAMES HYPRE_struct_mv      PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( HYPRE_UTIL_LIB    NAMES HYPRE_utilities      PATHS ${HYPRE_LIB_DIRECTORY}  NO_DEFAULT_PATH )
+            HYPRE_SET_INCLUDES( ${HYPRE_DIRECTORY} )
+            HYPRE_SET_LIBRARIES( ${HYPRE_DIRECTORY} )
+            INCLUDE_DIRECTORIES( ${HYPRE_INCLUDE} )
         ELSE()
             MESSAGE( FATAL_ERROR "Default search for hypre is not yet supported.  Use -D HYPRE_DIRECTORY=" )
         ENDIF()
-        # Add the libraries in the appropriate order
-        SET ( HYPRE_LIBS
-            ${HYPRE_DM_LIB}
-            ${HYPRE_DMPS_LIB}
-            # ${HYPRE_EUCLID_LIB}
-            ${HYPRE_IJMV_LIB}
-            ${HYPRE_KRYLOV_LIB}
-            # ${HYPRE_LSI_LIB}
-            ${HYPRE_MATMAT_LIB}
-            ${HYPRE_MULTIV_LIB}
-            ${HYPRE_PARAS_LIB}
-            ${HYPRE_PBMV_LIB}
-            ${HYPRE_PLS_LIB}
-            ${HYPRE_PMV_LIB}
-            ${HYPRE_SEQMV_LIB}
-            ${HYPRE_SSLS_LIB}
-            ${HYPRE_SSMV_LIB}
-            ${HYPRE_SLS_LIB}
-            ${HYPRE_SMV_LIB}
-            ${HYPRE_UTIL_LIB}
-            ${HYPRE_LIB}
-        )
         ADD_DEFINITIONS ( "-D USE_EXT_HYPRE" )  
         MESSAGE( "Using hypre" )
+        MESSAGE( "   ${HYPRE_LIBS}" )
     ENDIF()
 ENDMACRO ()
 
