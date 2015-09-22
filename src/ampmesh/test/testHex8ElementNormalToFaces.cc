@@ -36,7 +36,7 @@ void test_normal(hex8_element_t *volume_element, unsigned int n_random_candidate
   } // end for i
 }
 
-inline bool soft_equal_to(double x, double y) { return abs(x-y) < 1.0e-15; }
+inline bool soft_equal_to(double x, double y) { return fabs(x-y) < 1.0e-15; }
 
 void test_recovering_local_coordinates_on_face_from_basis_functions_values(unsigned int n_random_candidate_points = 1000) {
   double x[2], x_prime[2], phi[4];

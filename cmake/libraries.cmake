@@ -694,7 +694,7 @@ MACRO ( CONFIGURE_SYSTEM )
         MESSAGE("System libs: ${SYSTEM_LIBS}")
     ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
         # Linux specific system libraries
-        SET( SYSTEM_LIBS "-ldl" )
+        SET( SYSTEM_LIBS "-ldl -lpthread" )
         CONFIGURE_ZLIB()
         IF ( NOT USE_STATIC )
             SET( SYSTEM_LIBS "${SYSTEM_LIBS} -rdynamic" )   # Needed for backtrace to print function names
@@ -704,7 +704,7 @@ MACRO ( CONFIGURE_SYSTEM )
 	ENDIF()
     ELSEIF( ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" )
         # Max specific system libraries
-        SET( SYSTEM_LIBS "-ldl" )
+        SET( SYSTEM_LIBS "-ldl -lpthread" )
         CONFIGURE_ZLIB()
         IF ( USING_GCC )
             SET( SYSTEM_LIBS "${SYSTEM_LIBS} -lgfortran" )

@@ -800,7 +800,7 @@ September 1998");
 
         double kbar = b0 + b1*(rho/rhostar) + b2*exp(B1*pow(rho/rhostar+B2,2));
 
-        double dT = abs(T/Tstar - 1.0) + C4;
+        double dT = fabs(T/Tstar - 1.0) + C4;
         double Q = 2.0 + C5*pow(dT,-0.6);
         double R = Q + 1.0;
         double S;

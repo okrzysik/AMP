@@ -164,7 +164,7 @@ RK23TimeIntegrator::checkNewSolution(void) const
 
   // we flag the solution as being acceptable if the l2 norm of the error
   // is less than the required tolerance or we are at the minimum time step
-  if((l2NormOfEstimatedError < d_atol) ||(abs(d_current_dt-d_min_dt)<1.0e-10))
+  if((l2NormOfEstimatedError < d_atol) ||(fabs(d_current_dt-d_min_dt)<1.0e-10))
     {
       retcode = true;
     }
