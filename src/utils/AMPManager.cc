@@ -11,10 +11,79 @@
     #include "petscsys.h"
     #include "petscerror.h"
 #endif
+#ifdef USE_TIMER
+    #include "MemoryApp.h"
+#endif
 
-//#ifdef USE_EXT_LIBMESH
-//    #include "ampmesh/libmesh/initializeLibMesh.h"
-//#endif
+
+#ifdef USE_EXT_LIBMESH
+    //#include "ampmesh/libmesh/initializeLibMesh.h"
+    /*#include "libmesh/enum_elem_quality.h"
+    #include "libmesh/enum_elem_type.h"
+    #include "libmesh/enum_eigen_solver_type.h"
+    #include "libmesh/enum_fe_family.h"
+    #include "libmesh/enum_inf_map_type.h"
+    #include "libmesh/enum_io_package.h"
+    #include "libmesh/enum_norm_type.h"
+    #include "libmesh/enum_order.h"
+    #include "libmesh/enum_parallel_type.h"
+    #include "libmesh/enum_point_locator_type.h"
+    #include "libmesh/enum_preconditioner_type.h"
+    #include "libmesh/enum_quadrature_type.h"
+    #include "libmesh/enum_solver_package.h"
+    #include "libmesh/enum_solver_type.h"
+    #include "libmesh/enum_subset_solve_mode.h"
+    #include "libmesh/enum_xdr_mode.h"
+    #include "libmesh/elem.h"
+    #define define_libmesh_enum_map( TYPE, NAME )           \
+        extern std::map<TYPE,std::string> enum_to_##NAME;   \
+        extern std::map<std::string,TYPE> NAME##_to_enum;
+    #define clear_libmesh_enum_map( TYPE, NAME )            \
+        libMesh::enum_to_##NAME.clear();           \
+        libMesh::NAME##_to_enum.clear();
+    #include <map>
+    #include <string>
+    namespace libMesh {
+        namespace {
+            define_libmesh_enum_map(::ElemType,elem_type)
+            define_libmesh_enum_map(::Order,order)
+            define_libmesh_enum_map(::FEFamily,fefamily)
+            define_libmesh_enum_map(::InfMapType,inf_map_type)
+            define_libmesh_enum_map(::QuadratureType,quadrature_type)
+            define_libmesh_enum_map(::PreconditionerType,preconditioner_type)
+            define_libmesh_enum_map(::Elem::RefinementState,refinementstate_type)
+            define_libmesh_enum_map(::EigenSolverType,eigensolvertype)
+            define_libmesh_enum_map(::SolverType,solvertype)
+            define_libmesh_enum_map(::ElemQuality,elemquality)
+            define_libmesh_enum_map(::IOPackage,iopackage)
+            define_libmesh_enum_map(::FEMNormType,norm_type)
+            define_libmesh_enum_map(::ParallelType,parallel_type)
+            define_libmesh_enum_map(::PointLocatorType,point_locator_type)
+            define_libmesh_enum_map(::SolverPackage,solverpackage_type)
+            define_libmesh_enum_map(::SubsetSolveMode,subset_solve_mode)
+            define_libmesh_enum_map(::XdrMODE,xdr_mode)
+        }
+    }
+    void clear_libmesh_enums() {
+        clear_libmesh_enum_map(::ElemType,elem_type)
+        clear_libmesh_enum_map(::Order,order)
+        clear_libmesh_enum_map(::FEFamily,fefamily)
+        clear_libmesh_enum_map(::InfMapType,inf_map_type)
+        clear_libmesh_enum_map(::QuadratureType,quadrature_type)
+        clear_libmesh_enum_map(::PreconditionerType,preconditioner_type)
+        clear_libmesh_enum_map(::Elem::RefinementState,refinementstate_type)
+        clear_libmesh_enum_map(::EigenSolverType,eigensolvertype)
+        clear_libmesh_enum_map(::SolverType,solvertype)
+        clear_libmesh_enum_map(::ElemQuality,elemquality)
+        clear_libmesh_enum_map(::IOPackage,iopackage)
+        clear_libmesh_enum_map(::FEMNormType,norm_type)
+        clear_libmesh_enum_map(::ParallelType,parallel_type)
+        clear_libmesh_enum_map(::PointLocatorType,point_locator_type)
+        clear_libmesh_enum_map(::SolverPackage,solverpackage_type)
+        clear_libmesh_enum_map(::SubsetSolveMode,subset_solve_mode)
+        clear_libmesh_enum_map(::XdrMODE,xdr_mode)
+    }*/
+#endif
 
 #include <new>
 #include <string.h>
@@ -278,10 +347,10 @@ void AMPManager::startup(int argc_in, char *argv_in[], const AMPManagerPropertie
 
 
 /****************************************************************************
-*                                                                            *
+*                                                                           *
 * Shutdown the AMP package.  This routine currently only deallocates        *
-* statically allocated memory and finalizes the output streams.                *
-*                                                                            *
+* statically allocated memory and finalizes the output streams.             *
+*                                                                           *
 ****************************************************************************/
 void AMPManager::shutdown()
 {    
@@ -298,11 +367,13 @@ void AMPManager::shutdown()
     // Shutdown the parallel IO
     PIO::finalize();
     // Shutdown LibMesh
-    /*#ifdef USE_EXT_LIBMESH
-        if ( AMP::Mesh::initializeLibMesh::isInitialized() ) {
-            AMP_ERROR("Libmesh should be finalized before shutting down");
-        }
-    #endif*/
+    #ifdef USE_EXT_LIBMESH
+        //if ( AMP::Mesh::initializeLibMesh::isInitialized() ) {
+        //    AMP_ERROR("Libmesh should be finalized before shutting down");
+        //}
+        // delete std::map objects from libmesh string_to_enum.C
+        //clear_libmesh_enums();
+    #endif
     // Shutdown MPI
     comm_world.barrier();
     AMPManager::use_MPI_Abort = false;
@@ -339,6 +410,14 @@ void AMPManager::shutdown()
             static_cast<int>(AMP_MPI::MPI_Comm_created()),
             static_cast<int>(AMP_MPI::MPI_Comm_destroyed()));
     }
+    // Shutdown the profiler
+    PROFILE_DISABLE();
+    // Print memory leaks on rank 0
+    #ifdef USE_TIMER
+        MemoryApp::MemoryStats memory = MemoryApp::getMemoryStats();
+        if ( rank==0 && memory.N_new>memory.N_delete )
+            MemoryApp::print(std::cout);
+    #endif
     // Wait 50 milli-seconds for all processors to finish
     Sleep(50);
 }

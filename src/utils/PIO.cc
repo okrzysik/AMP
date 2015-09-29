@@ -99,6 +99,9 @@ void PIO::finalize()
    std::cout.flush();
    std::cerr.flush();
    shutdownFilestream();
+   pout_buffer.reset();
+   perr_buffer.reset();
+   plog_buffer.reset();
 }
 
 /*

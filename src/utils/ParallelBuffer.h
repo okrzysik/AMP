@@ -45,6 +45,11 @@ public:
    virtual ~ParallelBuffer();
 
    /**
+    * Destroy the internal buffer
+    */
+   void reset();
+
+   /**
     * Set whether the output stream will be active.  If the parallel buffer
     * stream is disabled, then no data is forwarded to the output streams.
     * The internal data buffer is deallocated and pointers are reset 

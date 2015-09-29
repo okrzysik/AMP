@@ -809,6 +809,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     siloWriter->writeFile( exeName, 0 );
 #endif
     ut->passes("test runs to completion");*/
+    globalComm.barrier();
     PROFILE_STOP("Main");
     PROFILE_SAVE("exeName");
 }
@@ -817,18 +818,20 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
 int main(int argc, char *argv[])
 {
   AMP::AMPManager::startup(argc, argv);
-  AMP::UnitTest ut;
-  PROFILE_ENABLE(0);
+  int num_failed = 0;
+  {
+    AMP::UnitTest ut;
+    PROFILE_ENABLE(0);
 
-  std::string exeName = "testSubchannelSolve-1";
-  if(argc == 2) exeName = argv[1];
+    std::string exeName = "testSubchannelSolve-1";
+    if(argc == 2) exeName = argv[1];
 
-  SubchannelSolve(&ut,exeName);
+    SubchannelSolve(&ut,exeName);
 
-  ut.report();
-  PROFILE_SAVE(exeName);
-
-  int num_failed = ut.NumFailGlobal();
+    ut.report();
+    PROFILE_SAVE(exeName);
+    num_failed = ut.NumFailGlobal();
+  }
   AMP::AMPManager::shutdown();
   return num_failed;
 }   
