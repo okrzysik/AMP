@@ -128,8 +128,8 @@ ENDIF()
 
 # Install the documentation
 IF ( USE_EXT_DOXYGEN )
+    SET(DOXYFILE_LATEX "NO")
     INCLUDE( ${AMP_SOURCE_DIR}/cmake/UseDoxygen.cmake )
-    SET(DOXYFILE_LATEX "YES")
     ADD_DEPENDENCIES( doxygen latex_docs )
     ADD_DEPENDENCIES( doc latex_docs doxygen )
 ENDIF()
