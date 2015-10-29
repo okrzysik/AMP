@@ -6,6 +6,7 @@
 #include "vectors/trilinos/EpetraVectorEngine.h"
 
 #include "matrices/petsc/ManagedPetscMatrix.h"
+#include "matrices/trilinos/ManagedEpetraMatrix.h"
 
 
 
@@ -104,6 +105,8 @@ PetscErrorCode _AMP_Scale (Mat x , PetscScalar alpha )
 
 namespace AMP {
 namespace LinearAlgebra {
+
+typedef ManagedEpetraMatrixParameters  ManagedPetscMatrixParameters;
 
 
 void  ManagedPetscMatrix::initPetscMat ()

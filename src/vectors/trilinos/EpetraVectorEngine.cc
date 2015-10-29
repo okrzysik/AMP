@@ -23,28 +23,18 @@ static inline double* getBufferPtr( VectorEngine::BufferPtr buf ) {
 /********************************************************
 * EpetraVectorEngineParameters constructors             *
 ********************************************************/
-EpetraVectorEngineParameters::EpetraVectorEngineParameters ( size_t local_size , size_t global_size , AMP_MPI c ):
-    VectorEngineParameters(),
-    d_begin(0),
-    d_end(0),
-    d_global(0),
-    d_comm( c.getCommunicator() )
+EpetraVectorEngineParameters::EpetraVectorEngineParameters( size_t local_size, size_t global_size, AMP_MPI comm ):
+    VectorEngineParameters(local_size,global_size,comm)
 {
-    d_global = global_size;
-    d_comm.sumScan( &local_size, &d_end, 1 );
-    d_begin = d_end - local_size;
 }
-EpetraVectorEngineParameters::EpetraVectorEngineParameters ( size_t local_size , size_t global_size , AMP::shared_ptr<Epetra_Map> emap , AMP_MPI ecomm ):
-    VectorEngineParameters(),
-    d_begin(0),
-    d_end(0),
-    d_global(0),
-    d_emap( emap ),
-    d_comm( ecomm )
+EpetraVectorEngineParameters::EpetraVectorEngineParameters( 
+    size_t local_size, size_t global_size, AMP::shared_ptr<Epetra_Map> emap, AMP_MPI ecomm ):
+    VectorEngineParameters(local_size,global_size,ecomm),
+    d_emap( emap )
 {
-    d_global = global_size;
-    d_comm.sumScan( &local_size, &d_end, 1 );
-    d_begin = d_end - local_size;
+}
+EpetraVectorEngineParameters::~EpetraVectorEngineParameters( )
+{
 }
 
 

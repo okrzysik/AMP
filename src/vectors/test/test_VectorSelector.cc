@@ -15,7 +15,7 @@
 using namespace AMP::unit_test;
 
 
-#ifdef USE_EXT_PETSC
+#if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
     typedef AMP::unit_test::SimplePetscNativeFactory<AMP::LinearAlgebra::NativePetscVector>         SNPVFactory;
 #endif
 #ifdef USE_EXT_TRILINOS
@@ -41,7 +41,7 @@ int main ( int argc , char **argv )
     // Run the vector selector tests on different vectors
     test_vector_selector_loop<SimpleVectorFactory<15,false> >( &ut );
     test_vector_selector_loop<SimpleVectorFactory<45,true> >( &ut );
-    #ifdef USE_EXT_PETSC
+    #if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
         test_vector_selector_loop<SNPVFactory>( &ut );
     #endif
     #ifdef USE_EXT_TRILINOS

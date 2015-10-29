@@ -25,77 +25,78 @@
 
 
 // Define some sizes of the problems
-#define TEST_SIZE_VEC  10000    // Vector tests
-#define TEST_SIZE_MAT  100      // Matrix tests
-#define TEST_SIZE_tri  500      // Tridiagonal/banded tests
+#define TEST_SIZE_VEC   10000       // Vector tests O(N)
+#define TEST_SIZE_MATVEC  500       // Matrix-vector tests O(N^2)
+#define TEST_SIZE_MAT     100       // Matrix-matrix / Dense solves tests O(N^3)
+#define TEST_SIZE_TRI    1000       // Tridiagonal/banded tests
 
 
 namespace AMP {
 
 
 // Declare the individual tests
-static bool test_dcopy( int N );
-static bool test_dscal( int N );
-static bool test_dnrm2( int N );
-static bool test_dasum( int N );
-static bool test_ddot(  int N );
-static bool test_daxpy( int N );
-static bool test_dgemv( int N );
-static bool test_dgemm( int N );
-static bool test_dgesv( int N );
-static bool test_dgtsv( int N );
-static bool test_dgbsv( int N );
-static bool test_dgetrf( int N );
-static bool test_dgttrf( int N );
-static bool test_dgbtrf( int N );
-static bool test_dgetrs( int N );
-static bool test_dgttrs( int N );
-static bool test_dgbtrs( int N );
-static bool test_dgetri( int N );
+static bool test_dcopy( int N, double& error );
+static bool test_dscal( int N, double& error );
+static bool test_dnrm2( int N, double& error );
+static bool test_dasum( int N, double& error );
+static bool test_ddot(  int N, double& error );
+static bool test_daxpy( int N, double& error );
+static bool test_dgemv( int N, double& error );
+static bool test_dgemm( int N, double& error );
+static bool test_dgesv( int N, double& error );
+static bool test_dgtsv( int N, double& error );
+static bool test_dgbsv( int N, double& error );
+static bool test_dgetrf( int N, double& error );
+static bool test_dgttrf( int N, double& error );
+static bool test_dgbtrf( int N, double& error );
+static bool test_dgetrs( int N, double& error );
+static bool test_dgttrs( int N, double& error );
+static bool test_dgbtrs( int N, double& error );
+static bool test_dgetri( int N, double& error );
 
 
 // Run a given test
-int Lapack::run_test( const char* routine, int N )
+int Lapack::run_test( const char* routine, int N, double& error )
 {
     std::string name(routine);
     //std::transform(name.begin(),name.end(),name.begin(),::tolower);
     int N_errors = 0;
     if ( name == "dcopy" ) {
-        N_errors += test_dcopy( N ) ? 1:0;
+        N_errors += test_dcopy(N,error) ? 1:0;
     } else if ( name == "dscal" ) {
-        N_errors += test_dscal(N) ? 1 : 0;
+        N_errors += test_dscal(N,error) ? 1:0;
     } else if ( name == "dnrm2" ) {
-        N_errors += test_dnrm2(N) ? 1 : 0;
+        N_errors += test_dnrm2(N,error) ? 1:0;
     } else if ( name == "daxpy" ) {
-        N_errors += test_daxpy(N) ? 1 : 0;
+        N_errors += test_daxpy(N,error) ? 1:0;
     } else if ( name == "dgemv" ) {
-        N_errors += test_dgemv(N) ? 1 : 0;
+        N_errors += test_dgemv(N,error) ? 1:0;
     } else if ( name == "dgemm" ) {
-        N_errors += test_dgemm(N) ? 1 : 0;
+        N_errors += test_dgemm(N,error) ? 1:0;
     } else if ( name == "dasum" ) {
-        N_errors += test_dasum(N) ? 1 : 0;
+        N_errors += test_dasum(N,error) ? 1:0;
     } else if ( name == "ddot" ) {
-        N_errors += test_ddot(N)  ? 1 : 0;
+        N_errors += test_ddot(N,error)  ? 1:0;
     } else if ( name == "dgesv" ) {
-        N_errors += test_dgesv(N) ? 1 : 0;
+        N_errors += test_dgesv(N,error) ? 1:0;
     } else if ( name == "dgtsv" ) {
-        N_errors += test_dgtsv(N) ? 1 : 0;
+        N_errors += test_dgtsv(N,error) ? 1:0;
     } else if ( name == "dgbsv" ) {
-        N_errors += test_dgbsv(N) ? 1 : 0;
+        N_errors += test_dgbsv(N,error) ? 1:0;
     } else if ( name == "dgetrf" ) {
-        N_errors += test_dgetrf(N) ? 1 : 0;
+        N_errors += test_dgetrf(N,error) ? 1:0;
     } else if ( name == "dgttrf" ) {
-        N_errors += test_dgttrf(N) ? 1 : 0;
+        N_errors += test_dgttrf(N,error) ? 1:0;
     } else if ( name == "dgbtrf" ) {
-        N_errors += test_dgbtrf(N) ? 1 : 0;
+        N_errors += test_dgbtrf(N,error) ? 1:0;
     } else if ( name == "dgetrs" ) {
-        N_errors += test_dgetrs(N) ? 1 : 0;
+        N_errors += test_dgetrs(N,error) ? 1:0;
     } else if ( name == "dgttrs" ) {
-        N_errors += test_dgttrs(N) ? 1 : 0;
+        N_errors += test_dgttrs(N,error) ? 1:0;
     } else if ( name == "dgbtrs" ) {
-        N_errors += test_dgbtrs(N) ? 1 : 0;
+        N_errors += test_dgbtrs(N,error) ? 1:0;
     } else if ( name == "dgetri" ) {
-        N_errors += test_dgetri(N) ? 1 : 0;
+        N_errors += test_dgetri(N,error) ? 1:0;
     } else { 
         std::cerr << "Unknown test\n";
         return -1;
@@ -109,29 +110,30 @@ int Lapack::run_all_test( )
 {
     int N_errors = 0;
     int N = 2;  // We want two iterations to enure the test works for N>1
+    double error;
     // Basic blas operations
-    if ( test_dcopy(N)!=0 ) { printf("test_dcopy failed\n"); N_errors++; }
-    if ( test_dnrm2(N)!=0 ) { printf("test_dnrm2 failed\n"); N_errors++; }
-    if ( test_daxpy(N)!=0 ) { printf("test_daxpy failed\n"); N_errors++; }
-    if ( test_dasum(N)!=0 ) { printf("test_dasum failed\n"); N_errors++; }
-    if ( test_ddot(N)!=0  ) { printf("test_ddot failed\n");  N_errors++; }
+    if ( test_dcopy(N,error)!=0 ) { printf("test_dcopy failed\n"); N_errors++; }
+    if ( test_dnrm2(N,error)!=0 ) { printf("test_dnrm2 failed\n"); N_errors++; }
+    if ( test_daxpy(N,error)!=0 ) { printf("test_daxpy failed\n"); N_errors++; }
+    if ( test_dasum(N,error)!=0 ) { printf("test_dasum failed\n"); N_errors++; }
+    if ( test_ddot(N,error)!=0  ) { printf("test_ddot failed\n");  N_errors++; }
     // Matrix blas operations
-    if ( test_dgemv(N)!=0 ) { printf("test_dgemv failed\n"); N_errors++; }
-    if ( test_dgemm(N)!=0 ) { printf("test_dgemm failed\n"); N_errors++; }
+    if ( test_dgemv(N,error)!=0 ) { printf("test_dgemv failed\n"); N_errors++; }
+    if ( test_dgemm(N,error)!=0 ) { printf("test_dgemm failed\n"); N_errors++; }
     // Linear solves
-    if ( test_dgesv(N)!=0 ) { printf("test_dgesv failed\n"); N_errors++; }
-    if ( test_dgtsv(N)!=0 ) { printf("test_dgtsv failed\n"); N_errors++; }
-    if ( test_dgbsv(N)!=0 ) { printf("test_dgbsv failed\n"); N_errors++; }
+    if ( test_dgesv(N,error)!=0 ) { printf("test_dgesv failed\n"); N_errors++; }
+    if ( test_dgtsv(N,error)!=0 ) { printf("test_dgtsv failed\n"); N_errors++; }
+    if ( test_dgbsv(N,error)!=0 ) { printf("test_dgbsv failed\n"); N_errors++; }
     // Linear factorizations
-    if ( test_dgetrf(N)!=0 ) { printf("test_dgetrf failed\n"); N_errors++; }
-    if ( test_dgttrf(N)!=0 ) { printf("test_dgttrf failed\n"); N_errors++; }
-    if ( test_dgbtrf(N)!=0 ) { printf("test_dgbtrf failed\n"); N_errors++; }
+    if ( test_dgetrf(N,error)!=0 ) { printf("test_dgetrf failed\n"); N_errors++; }
+    if ( test_dgttrf(N,error)!=0 ) { printf("test_dgttrf failed\n"); N_errors++; }
+    if ( test_dgbtrf(N,error)!=0 ) { printf("test_dgbtrf failed\n"); N_errors++; }
     // Solve using factorization
-    if ( test_dgetrs(N)!=0 ) { printf("test_dgetrs failed\n"); N_errors++; }
-    if ( test_dgttrs(N)!=0 ) { printf("test_dgttrs failed\n"); N_errors++; }
-    if ( test_dgbtrs(N)!=0 ) { printf("test_dgbtrs failed\n"); N_errors++; }
+    if ( test_dgetrs(N,error)!=0 ) { printf("test_dgetrs failed\n"); N_errors++; }
+    if ( test_dgttrs(N,error)!=0 ) { printf("test_dgttrs failed\n"); N_errors++; }
+    if ( test_dgbtrs(N,error)!=0 ) { printf("test_dgbtrs failed\n"); N_errors++; }
     // Inverse using factorization
-    if ( test_dgetri(N)!=0 ) { printf("test_dgetri failed\n"); N_errors++; }
+    if ( test_dgetri(N,error)!=0 ) { printf("test_dgetri failed\n"); N_errors++; }
     return N_errors>0;
 }
 
@@ -177,13 +179,14 @@ static inline double L2Error( int N, const double *x1, const double *x2 )
 
 
 // Test dcopy
-static bool test_dcopy( int N )
+static bool test_dcopy( int N, double& error )
 {
     const int K = TEST_SIZE_VEC;
     double *x1 = new double[K];
     double *x2 = new double[K];
     random(K,x1);
     int N_errors = 0;
+    error = 0;
     for (int i=0; i<N; i++) {
         memset(x2,0xB6,K*sizeof(double));
         Lapack::dcopy(K,x1,1,x2,1);
@@ -196,7 +199,7 @@ static bool test_dcopy( int N )
 }
 
 // Test dcopy
-static bool test_dscal( int N )
+static bool test_dscal( int N, double& error )
 {
     const int K = TEST_SIZE_VEC;
     double *x0 = new double[K];
@@ -207,6 +210,7 @@ static bool test_dscal( int N )
     for (int j=0; j<K; j++)
         x1[j] = pi*x0[j];
     int N_errors = 0;
+    error = 0;
     for (int i=0; i<N; i++) {
         memcpy(x2,x1,K*sizeof(double));
         Lapack::dscal(K,pi,x0,1);
@@ -220,7 +224,7 @@ static bool test_dscal( int N )
 }
 
 // Test dnrm2
-static bool test_dnrm2( int N )
+static bool test_dnrm2( int N, double& error )
 {
     const int K = TEST_SIZE_VEC;
     double *x = new double[K];
@@ -230,6 +234,7 @@ static bool test_dnrm2( int N )
         ans1 += x[j]*x[j];
     ans1 = sqrt(ans1);
     int N_errors = 0;
+    error = 0;
     for (int i=0; i<N; i++) {
         double ans2 = Lapack::dnrm2(K,x,1);
         if ( fabs(ans1-ans2)>K*1e-15 )
@@ -240,7 +245,7 @@ static bool test_dnrm2( int N )
 }
 
 // Test dasum
-static bool test_dasum( int N )
+static bool test_dasum( int N, double& error )
 {
     const int K = TEST_SIZE_VEC;
     // Maximum roundoff error that is acceptible is determined by the
@@ -255,8 +260,10 @@ static bool test_dasum( int N )
         ans1 += fabs(x[j]);
     // Check dasum
     int N_errors = 0;
+    error = 0;
     for (int i=0; i<N; i++) {
         double ans2 = Lapack::dasum(K,x,1);
+        error = std::max(error,fabs(ans1-ans2)/K);
         if ( fabs(ans1-ans2)>max_error )
             N_errors++;
     }
@@ -265,7 +272,7 @@ static bool test_dasum( int N )
 }
 
 // Test ddot
-static bool test_ddot( int N )
+static bool test_ddot( int N, double& error )
 {
     const int K = TEST_SIZE_VEC;
     double *x1 = new double[K];
@@ -276,8 +283,10 @@ static bool test_ddot( int N )
     for (int j=0; j<K; j++)
         ans1 += x1[j]*x2[j];
     int N_errors = 0;
+    error = 0;
     for (int i=0; i<N; i++) {
         double ans2 = Lapack::ddot(K,x1,1,x2,1);
+        error = std::max(error,fabs(ans1-ans2)/K);
         if ( fabs(ans1-ans2)>2*K*1e-15 )
             N_errors++;
     }
@@ -287,7 +296,7 @@ static bool test_ddot( int N )
 }
 
 // Test daxpy
-static bool test_daxpy( int N )
+static bool test_daxpy( int N, double& error )
 {
     const int K = TEST_SIZE_VEC;
     double *x = new double[K];
@@ -299,7 +308,7 @@ static bool test_daxpy( int N )
     const double pi = 3.141592653589793;
     for (int j=0; j<K; j++)
         y1[j] = y0[j] + pi*x[j];
-    double error = 0;
+    error = 0;
     for (int i=0; i<N; i++) {
         memcpy(y2,y0,K*sizeof(double));
         Lapack::daxpy(K,pi,x,1,y2,1);
@@ -307,8 +316,6 @@ static bool test_daxpy( int N )
         error = std::max(error,err);
     }
     bool fail = error > 1e-15;
-    if ( fail )
-        printf("test_daxpy error = %e\n",error);
     NULL_USE(y1);
     delete [] x;
     delete [] y0;
@@ -318,9 +325,9 @@ static bool test_daxpy( int N )
 }
 
 // Test dgemv
-static bool test_dgemv( int N )
+static bool test_dgemv( int N, double& error )
 {
-    const int K = 500;
+    const int K = TEST_SIZE_MATVEC;
     double *A = new double[K*K];
     double *x = new double[K];
     double *y = new double[K];
@@ -331,15 +338,18 @@ static bool test_dgemv( int N )
     random(K,y);
     const double alpha = 3.141592653589793;
     const double beta  = 1.414213562373095;
-    int N_errors = 0;
     for (int j=0; j<K; j++) {
         y1[j] = beta*y[j];
         for (int k=0; k<K; k++)
             y1[j] += alpha*A[j+k*K]*x[k];
     }
+    int N_errors = 0;
+    error = 0;
+    double norm = L2Norm(K,y1);
     for (int i=0; i<N; i++) {
         memcpy(y2,y,K*sizeof(double));
         Lapack::dgemv('N',K,K,alpha,A,K,x,1,beta,y2,1);
+        error = std::max(error,L2Error(K,y1,y2)/norm);
         if ( !approx_equal(K,y1,y2,K*1e-14) )
             N_errors++;
     }
@@ -352,7 +362,7 @@ static bool test_dgemv( int N )
 }
 
 // Test dgemm
-static bool test_dgemm( int N )
+static bool test_dgemm( int N, double& error )
 {
     const int K = TEST_SIZE_MAT;
     double *A = new double[K*K];
@@ -365,7 +375,6 @@ static bool test_dgemm( int N )
     random(K*K,C);
     const double alpha = 3.141592653589793;
     const double beta  = 1.414213562373095;
-    int N_errors = 0;
     for (int i=0; i<K; i++) {
         for (int j=0; j<K; j++) {
             C1[i+j*K] = beta*C[i+j*K];
@@ -373,9 +382,13 @@ static bool test_dgemm( int N )
                 C1[i+j*K] += alpha*A[i+k*K]*B[k+j*K];
         }
     }
+    int N_errors = 0;
+    error = 0;
+    double norm = L2Norm(K*K,C1);
     for (int i=0; i<N; i++) {
         memcpy(C2,C,K*K*sizeof(double));
         Lapack::dgemm('N','N',K,K,K,alpha,A,K,B,K,beta,C2,K);
+        error = std::max(error,L2Error(K*K,C1,C2)/norm);
         if ( !approx_equal(K*K,C1,C2,K*1e-14) )
             N_errors++;
     }
@@ -388,7 +401,7 @@ static bool test_dgemm( int N )
 }
 
 // Test dgesv
-static bool test_dgesv( int N )
+static bool test_dgesv( int N, double& error )
 {
     // Test solving a diagonal matrix
     const int K = TEST_SIZE_MAT;
@@ -405,11 +418,14 @@ static bool test_dgesv( int N )
         x1[k] = b[k]/(x2[k]+1e-16);
     }
     int N_errors = 0;
+    error = 0;
+    double norm = L2Norm(K,x1);
     for (int i=0; i<N; i++) {
         memcpy(x2,b,K*sizeof(double));
-        int error = 0;
-        Lapack::dgesv(K,1,A,K,IPIV,x2,K,error);
-        N_errors += error==0 ? 0:1;
+        int err = 0;
+        Lapack::dgesv(K,1,A,K,IPIV,x2,K,err);
+        N_errors += err==0 ? 0:1;
+        error = std::max(error,L2Error(K,x1,x2)/norm);
         if ( !approx_equal(K,x1,x2,K*1e-14) )
             N_errors++;
     }
@@ -422,10 +438,10 @@ static bool test_dgesv( int N )
 }
 
 // Test dgtsv
-static bool test_dgtsv( int N )
+static bool test_dgtsv( int N, double& error )
 {
     // Test solving a tri-diagonal matrix by comparing to dgtsv
-    const int K = TEST_SIZE_tri;
+    const int K = TEST_SIZE_TRI;
     double *A  = new double[K*K];
     double *D  = new double[K];
     double *D2 = new double[K];
@@ -448,9 +464,9 @@ static bool test_dgtsv( int N )
         A[(k-1)+k*K] = DU[k-1];
         A[k+(k-1)*K] = DL[k-1];
     }
-    int error = 0;
     memcpy(x1,b,K*sizeof(double));
-    Lapack::dgesv(K,1,A,K,IPIV,x1,K,error);
+    int err=0;
+    Lapack::dgesv(K,1,A,K,IPIV,x1,K,err);
     double max_error = 0;
     int N_errors = 0;
     for (int i=0; i<N; i++) {
@@ -458,14 +474,14 @@ static bool test_dgtsv( int N )
         memcpy(D2,D,K*sizeof(double));
         memcpy(DL2,DL,(K-1)*sizeof(double));
         memcpy(DU2,DU,(K-1)*sizeof(double));
-        Lapack::dgtsv(K,1,DL2,D2,DU2,x2,K,error);
-        N_errors += error==0 ? 0:1;
-        double err = L2Error(N,x1,x2);
+        Lapack::dgtsv(K,1,DL2,D2,DU2,x2,K,err);
+        N_errors += err==0 ? 0:1;
+        double err2 = L2Error(N,x1,x2);
         double norm = L2Norm(N,x1);
-        max_error = std::max(max_error,err/norm);
+        error = std::max(error,err2/norm);
     }
     const double tol = 2e-12;
-    if ( max_error > tol ) {
+    if ( error > tol ) {
         printf("test_dgtsv error (%e) exceeded tolerance (%e)\n",max_error,tol);
         N_errors++;
     }
@@ -483,7 +499,7 @@ static bool test_dgtsv( int N )
     return N_errors>0;
 }
 // Test dgtsv
-static bool test_dgbsv( int N )
+static bool test_dgbsv( int N, double& error )
 {
     // Test solving a banded-diagonal matrix by comparing to dgtsv
     //    N = 6, KL = 2, KU = 1:
@@ -493,7 +509,7 @@ static bool test_dgbsv( int N )
     //       a11  a22  a33  a44  a55  a66
     //       a21  a32  a43  a54  a65   *
     //       a31  a42  a53  a64   *    *
-    const int K = TEST_SIZE_tri;
+    const int K = TEST_SIZE_TRI;
     const int KL = 2;
     const int KU = 2;
     const int K2 = 2*KL+KU+1;
@@ -513,19 +529,20 @@ static bool test_dgbsv( int N )
             A[k+k2+k*K] = AB[k2+2*KL+k*K2];
         }
     }
-    int error = 0;
     memcpy(x1,b,K*sizeof(double));
-    Lapack::dgesv(K,1,A,K,IPIV,x1,K,error);
+    int err = 0;
+    Lapack::dgesv(K,1,A,K,IPIV,x1,K,err);
     int N_errors = 0;
     for (int i=0; i<N; i++) {
         memcpy(x2,b,K*sizeof(double));
         memcpy(AB2,AB,K*K2*sizeof(double));
-        Lapack::dgbsv(K,KL,KU,1,AB2,K2,IPIV,x2,K,error);
-        N_errors += error==0 ? 0:1;
+        Lapack::dgbsv(K,KL,KU,1,AB2,K2,IPIV,x2,K,err);
+        N_errors += err==0 ? 0:1;
         double norm = L2Norm(K,x1);
-        double err = L2Error(K,x1,x2);
-        if ( err > 1e-13*norm )
+        double err2 = L2Error(K,x1,x2);
+        if ( err2 > 1e-13*norm )
             N_errors++;
+        error = std::max(error,err2/norm);
     }
     delete [] A;
     delete [] AB;
@@ -538,7 +555,7 @@ static bool test_dgbsv( int N )
 }
 
 // Test dgetrf
-static bool test_dgetrf( int N )
+static bool test_dgetrf( int N, double& error )
 {
     // Check dgetrf by performing a factorization and solve and comparing to dgesv
     const int K = TEST_SIZE_MAT;
@@ -550,22 +567,23 @@ static bool test_dgetrf( int N )
     int *IPIV = new int[K];
     random(K*K,A);
     random(K,b);
-    int error = 0;
     memcpy(A2,A,K*K*sizeof(double));
     memcpy(x1,b,K*sizeof(double));
-    Lapack::dgesv(K,1,A2,K,IPIV,x1,K,error);
+    int err = 0;
+    Lapack::dgesv(K,1,A2,K,IPIV,x1,K,err);
     int N_errors = 0;
     for (int i=0; i<N; i++) {
         memcpy(A2,A,K*K*sizeof(double));
-        Lapack::dgetrf(K,K,A2,K,IPIV,error);
-        N_errors += error==0 ? 0:1;
+        Lapack::dgetrf(K,K,A2,K,IPIV,err);
+        N_errors += err==0 ? 0:1;
     }
     memcpy(x2,b,K*sizeof(double));
-    Lapack::dgetrs('N',K,1,A2,K,IPIV,x2,K,error);
+    Lapack::dgetrs('N',K,1,A2,K,IPIV,x2,K,err);
     double norm = L2Norm(K,x1);
-    double err = L2Error(K,x1,x2);
-    if ( err > 1e-14*norm )
+    double err2 = L2Error(K,x1,x2);
+    if ( err2 > 1e-14*norm )
         N_errors++;
+    error = err2/norm;
     delete [] A;
     delete [] A2;
     delete [] x1;
@@ -576,10 +594,10 @@ static bool test_dgetrf( int N )
 }
 
 // Test dgttrf
-static bool test_dgttrf( int N )
+static bool test_dgttrf( int N, double& error )
 {
     // Check dgttrf by performing a factorization and solve and comparing to dgtsv
-    const int K = TEST_SIZE_tri;
+    const int K = TEST_SIZE_TRI;
     double *D  = new double[K];
     double *D2 = new double[K];
     double *DL = new double[K-1];
@@ -595,26 +613,27 @@ static bool test_dgttrf( int N )
     random(K-1,DL);
     random(K-1,DU);
     random(K,b);
-    int error = 0;
     memcpy(x1,b,K*sizeof(double));
     memcpy(D2,D,K*sizeof(double));
     memcpy(DL2,DL,(K-1)*sizeof(double));
     memcpy(DU2,DU,(K-1)*sizeof(double));
-    Lapack::dgtsv(K,1,DL2,D2,DU2,x1,K,error);
+    int err = 0;
+    Lapack::dgtsv(K,1,DL2,D2,DU2,x1,K,err);
     int N_errors = 0;
     for (int i=0; i<N; i++) {
         memcpy(D2,D,K*sizeof(double));
         memcpy(DL2,DL,(K-1)*sizeof(double));
         memcpy(DU2,DU,(K-1)*sizeof(double));
-        Lapack::dgttrf(K,DL2,D2,DU2,DU3,IPIV,error);
-        N_errors += error==0 ? 0:1;
+        Lapack::dgttrf(K,DL2,D2,DU2,DU3,IPIV,err);
+        N_errors += err==0 ? 0:1;
     }
     memcpy(x2,b,K*sizeof(double));
-    Lapack::dgttrs('N',K,1,DL2,D2,DU2,DU3,IPIV,x2,K,error);
+    Lapack::dgttrs('N',K,1,DL2,D2,DU2,DU3,IPIV,x2,K,err);
     double norm = L2Norm(K,x1);
-    double err = L2Error(K,x1,x2);
-    if ( err > 1e-14*norm )
+    double err2 = L2Error(K,x1,x2);
+    if ( err2 > 1e-14*norm )
         N_errors++;
+    error = err2/norm;
     delete [] D;
     delete [] D2;
     delete [] DL;
@@ -630,10 +649,10 @@ static bool test_dgttrf( int N )
 }
 
 // Test dgbtrf
-static bool test_dgbtrf( int N )
+static bool test_dgbtrf( int N, double& error )
 {
     // Check dgbtrf by performing a factorization and solve and comparing to dgbsv
-    const int K = TEST_SIZE_tri;
+    const int K = TEST_SIZE_TRI;
     const int KL = 2;
     const int KU = 2;
     const int K2 = 2*KL+KU+1;
@@ -645,22 +664,23 @@ static bool test_dgbtrf( int N )
     int *IPIV  = new int[K];
     random(K*K2,AB);
     random(K,b);
-    int error = 0;
+    int err = 0;
     memcpy(x1,b,K*sizeof(double));
     memcpy(AB2,AB,K*K2*sizeof(double));
-    Lapack::dgbsv(K,KL,KU,1,AB2,K2,IPIV,x1,K,error);
+    Lapack::dgbsv(K,KL,KU,1,AB2,K2,IPIV,x1,K,err);
     int N_errors = 0;
     for (int i=0; i<N; i++) {
         memcpy(AB2,AB,K*K2*sizeof(double));
-        Lapack::dgbtrf(K,K,KL,KU,AB2,K2,IPIV,error);
-        N_errors += error==0 ? 0:1;
+        Lapack::dgbtrf(K,K,KL,KU,AB2,K2,IPIV,err);
+        N_errors += err==0 ? 0:1;
     }
     memcpy(x2,b,K*sizeof(double));
-    Lapack::dgbtrs('N',K,KL,KU,1,AB2,K2,IPIV,x2,K,error);
+    Lapack::dgbtrs('N',K,KL,KU,1,AB2,K2,IPIV,x2,K,err);
     double norm = L2Norm(K,x1);
-    double err = L2Error(K,x1,x2);
-    if ( err > 1e-14*norm )
+    double err2 = L2Error(K,x1,x2);
+    if ( err2 > 1e-14*norm )
         N_errors++;
+    error = err2/norm;
     delete [] AB;
     delete [] AB2;
     delete [] x1;
@@ -671,7 +691,7 @@ static bool test_dgbtrf( int N )
 }
 
 // Test dgetrs
-static bool test_dgetrs( int N )
+static bool test_dgetrs( int N, double& error )
 {
     // Check dgetrs by performing a factorization and solve and comparing to dgesv
     const int K = TEST_SIZE_MAT;
@@ -683,21 +703,22 @@ static bool test_dgetrs( int N )
     int *IPIV = new int[K];
     random(K*K,A);
     random(K,b);
-    int error = 0;
+    int err = 0;
     memcpy(A2,A,K*K*sizeof(double));
     memcpy(x1,b,K*sizeof(double));
-    Lapack::dgesv(K,1,A2,K,IPIV,x1,K,error);
+    Lapack::dgesv(K,1,A2,K,IPIV,x1,K,err);
     int N_errors = 0;
-    Lapack::dgetrf(K,K,A,K,IPIV,error);
+    Lapack::dgetrf(K,K,A,K,IPIV,err);
     for (int i=0; i<N; i++) {
         memcpy(A2,A,K*K*sizeof(double));
         memcpy(x2,b,K*sizeof(double));
-        Lapack::dgetrs('N',K,1,A2,K,IPIV,x2,K,error);
-        N_errors += error==0 ? 0:1;
+        Lapack::dgetrs('N',K,1,A2,K,IPIV,x2,K,err);
+        N_errors += err==0 ? 0:1;
         double norm = L2Norm(K,x1);
-        double err = L2Error(K,x1,x2);
+        double err2 = L2Error(K,x1,x2);
         if ( err > 1e-14*norm )
             N_errors++;
+        error = std::max(error,err2/norm);
     }
     delete [] A;
     delete [] A2;
@@ -709,10 +730,10 @@ static bool test_dgetrs( int N )
 }
 
 // Test dgttrs
-static bool test_dgttrs( int N )
+static bool test_dgttrs( int N, double& error )
 {
     // Check dgttrs by performing a factorization and solve and comparing to dgtsv
-    const int K = TEST_SIZE_tri;
+    const int K = TEST_SIZE_TRI;
     double *D  = new double[K];
     double *D2 = new double[K];
     double *DL = new double[K-1];
@@ -729,13 +750,13 @@ static bool test_dgttrs( int N )
     random(K-1,DL);
     random(K-1,DU);
     random(K,b);
-    int error = 0;
+    int err = 0;
     memcpy(x1,b,K*sizeof(double));
     memcpy(D2,D,K*sizeof(double));
     memcpy(DL2,DL,(K-1)*sizeof(double));
     memcpy(DU2,DU,(K-1)*sizeof(double));
-    Lapack::dgtsv(K,1,DL2,D2,DU2,x1,K,error);
-    Lapack::dgttrf(K,DL,D,DU,DU3,IPIV,error);
+    Lapack::dgtsv(K,1,DL2,D2,DU2,x1,K,err);
+    Lapack::dgttrf(K,DL,D,DU,DU3,IPIV,err);
     int N_errors = 0;
     for (int i=0; i<N; i++) {
         memcpy(D2,D,K*sizeof(double));
@@ -743,12 +764,13 @@ static bool test_dgttrs( int N )
         memcpy(DU2,DU,(K-1)*sizeof(double));
         memcpy(DU4,DU3,(K-2)*sizeof(double));
         memcpy(x2,b,K*sizeof(double));
-        Lapack::dgttrs('N',K,1,DL2,D2,DU2,DU4,IPIV,x2,K,error);
-        N_errors += error==0 ? 0:1;
+        Lapack::dgttrs('N',K,1,DL2,D2,DU2,DU4,IPIV,x2,K,err);
+        N_errors += err==0 ? 0:1;
         double norm = L2Norm(K,x1);
-        double err = L2Error(K,x1,x2);
-        if ( err > 1e-14*norm )
+        double err2 = L2Error(K,x1,x2);
+        if ( err2 > 1e-14*norm )
             N_errors++;
+        error = std::max(error,err2/norm);
     }
     delete [] D;
     delete [] D2;
@@ -757,6 +779,7 @@ static bool test_dgttrs( int N )
     delete [] DU;
     delete [] DU2;
     delete [] DU3;
+    delete [] DU4;
     delete [] x1;
     delete [] x2;
     delete [] b;
@@ -765,10 +788,10 @@ static bool test_dgttrs( int N )
 }
 
 // Test dgbtrs
-static bool test_dgbtrs( int N )
+static bool test_dgbtrs( int N, double& error )
 {
     // Check dgbtrs by performing a factorization and solve and comparing to dgbsv
-    const int K = TEST_SIZE_tri;
+    const int K = TEST_SIZE_TRI;
     const int KL = 2;
     const int KU = 2;
     const int K2 = 2*KL+KU+1;
@@ -780,21 +803,22 @@ static bool test_dgbtrs( int N )
     int *IPIV  = new int[K];
     random(K*K2,AB);
     random(K,b);
-    int error = 0;
+    int err = 0;
     memcpy(x1,b,K*sizeof(double));
     memcpy(AB2,AB,K*K2*sizeof(double));
-    Lapack::dgbsv(K,KL,KU,1,AB2,K2,IPIV,x1,K,error);
-    Lapack::dgbtrf(K,K,KL,KU,AB,K2,IPIV,error);
+    Lapack::dgbsv(K,KL,KU,1,AB2,K2,IPIV,x1,K,err);
+    Lapack::dgbtrf(K,K,KL,KU,AB,K2,IPIV,err);
     int N_errors = 0;
     for (int i=0; i<N; i++) {
         memcpy(AB2,AB,K*K2*sizeof(double));
         memcpy(x2,b,K*sizeof(double));
-        Lapack::dgbtrs('N',K,KL,KU,1,AB2,K2,IPIV,x2,K,error);
-        N_errors += error==0 ? 0:1;
+        Lapack::dgbtrs('N',K,KL,KU,1,AB2,K2,IPIV,x2,K,err);
+        N_errors += err==0 ? 0:1;
         double norm = L2Norm(K,x1);
-        double err = L2Error(K,x1,x2);
-        if ( err > 1e-14*norm )
+        double err2 = L2Error(K,x1,x2);
+        if ( err2 > 1e-14*norm )
             N_errors++;
+        error = std::max(error,err2/norm);
     }
     delete [] AB;
     delete [] AB2;
@@ -806,7 +830,7 @@ static bool test_dgbtrs( int N )
 }
 
 // Test dgetri
-static bool test_dgetri( int N )
+static bool test_dgetri( int N, double& error )
 {
     // Check dgetri by performing a factorization, calculating the inverse,
     //   multiplying the rhs, and comparing to dgesv
@@ -821,25 +845,26 @@ static bool test_dgetri( int N )
     double *WORK = new double[LWORK];
     random(K*K,A);
     random(K,b);
-    int error = 0;
+    int err = 0;
     memcpy(A2,A,K*K*sizeof(double));
     memcpy(x1,b,K*sizeof(double));
-    Lapack::dgesv(K,1,A2,K,IPIV,x1,K,error);
+    Lapack::dgesv(K,1,A2,K,IPIV,x1,K,err);
     int N_errors = 0;
-    Lapack::dgetrf(K,K,A,K,IPIV,error);
+    Lapack::dgetrf(K,K,A,K,IPIV,err);
     for (int i=0; i<N; i++) {
         // Compute the inverse
         memcpy(A2,A,K*K*sizeof(double));
-        Lapack::dgetri(K,A2,K,IPIV,WORK,LWORK,error);
-        N_errors += error==0 ? 0:1;
+        Lapack::dgetri(K,A2,K,IPIV,WORK,LWORK,err);
+        N_errors += err==0 ? 0:1;
         // Perform the mat-vec
         memset(x2,0xB6,K*sizeof(double));
         Lapack::dgemv('N',K,K,1,A2,K,b,1,0,x2,1);
         // Check the result
         double norm = L2Norm(K,x1);
-        double err = L2Error(K,x1,x2);
-        if ( err > 1e-13*norm )
+        double err2 = L2Error(K,x1,x2);
+        if ( err2 > 1e-13*norm )
             N_errors++;
+        error = std::max(error,err2/norm);
     }
     delete [] A;
     delete [] A2;
@@ -849,6 +874,24 @@ static bool test_dgetri( int N )
     delete [] IPIV;
     delete [] WORK;
     return N_errors>0;
+}
+
+
+/******************************************************************
+* Print all of the machine parameters by dlamch                   *
+******************************************************************/
+void Lapack::print_machine_parameters( )
+{
+    printf("eps   = %13.6e    relative machine precision\n",dlamch('E'));
+    printf("sfmin = %13.6e    safe minimum\n",dlamch('S'));
+    printf("base  = %13.6e    base of the machine\n",dlamch('B'));
+    printf("prec  = %13.6e    eps*base\n",dlamch('P'));
+    printf("t     = %13.6e    number of digits in the mantissa\n",dlamch('N'));
+    printf("rnd   = %13.6e    1.0 when rounding occurs in addition, 0.0 otherwise\n",dlamch('R'));
+    printf("emin  = %13.6e    minimum exponent before underflow\n",dlamch('M'));
+    printf("rmin  = %13.6e    underflow threshold - base**(emin-1)\n",dlamch('U'));
+    printf("emax  = %13.6e    largest exponent before overflow\n",dlamch('L'));
+    printf("rmax  = %13.6e    overflow threshold - (base**emax)*(1-eps)\n",dlamch('O'));
 }
 
 

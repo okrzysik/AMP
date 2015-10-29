@@ -27,6 +27,17 @@ public:
     static inline void dcopy( int N, const double *x, int INCX, double *y, int INCY );
 
     /*!
+     * \brief   dswap
+     * \details  dswap swaps two vectors
+     * @param[in]     N     The number of values to copy
+     * @param[in,out] x     The first vector
+     * @param[in]  INCX     The spacing between points in x
+     * @param[in,out] y     The second vector
+     * @param[in]  INCY     The spacing between points in x
+     */
+    static inline void dswap( int N, double *x, int INCX, double *y, int INCY );
+
+    /*!
      * \brief   dscal 
      * \details  dscal scales a vector by a constant.  x = a*x
      * @param[in]  N        The number of values to copy
@@ -44,6 +55,16 @@ public:
      * @param[in]  INCX     The spacing between points in x
      */
     static inline double dnrm2( int N, const double *x, int INCX );
+
+    /*!
+     * \brief   idamax
+     * \details  idamax finds the index of element having maximum absolute value.
+     *    Note: the returned index is 0 (C++) based.
+     * @param[in]  N        The number of values to copy
+     * @param[in]  x        The input vector
+     * @param[in]  INCX     The spacing between points in x
+     */
+    static inline int idamax( int N, const double *x, int INCX );
 
     /*!
      * \brief   daxpy 
@@ -164,6 +185,25 @@ public:
     static inline double ddot( int N, const double *x, int INCX, const double *y, int INCY );
 
     /*!
+     * \brief   dger 
+     * \details  dger performs the rank 1 operation
+     *     A := alpha*x*y' + A,
+     *  where alpha is a scalar, x is an m element vector, y is an n element
+     *  vector and A is an m by n matrix.
+     * @param[in]  M        The number of rows of the matrix A
+     * @param[in]  N        The number of columns of the matrix A
+     * @param[in]  alpha    The scalar alpha
+     * @param[in]  x        The source vector x
+     * @param[in]  INCX     The spacing between points in x
+     * @param[in]  y        The source vector y
+     * @param[in]  INCY     The spacing between points in y
+     * @param[in,out]  A    On entry, the N-by-N coefficient matrix A.
+     *                      On exit, the updated matrix.
+     * @param[in]  LDA      The leading dimension of the array A.  LDA >= max(1,M).
+     */
+    static inline void dger( int N, int M, double alpha, const double *x, int INCX, const double *y, int INCY, double *A, int LDA );
+
+    /*!
      * \brief   dgesv 
      * \details  dgesv computes the solution to a real system of linear equations
      *       A * X = B,
@@ -274,7 +314,7 @@ public:
      *                      upper triangular band matrix with KL+KU superdiagonals in
      *                      rows 1 to KL+KU+1, and the multipliers used during the
      *                      factorization are stored in rows KL+KU+2 to 2*KL+KU+1.
-     * @param[out]LDAB      The leading dimension of the array AB.  LDAB >= 2*KL+KU+1.
+     * @param[out] LDAB     The leading dimension of the array AB.  LDAB >= 2*KL+KU+1.
      * @param[out] IPIV     The pivot indices that define the permutation matrix P;
      *                      row i of the matrix was interchanged with row IPIV(i).
      * @param[in,out] B     On entry, the N-by-NRHS matrix of right hand side matrix B.
@@ -496,14 +536,80 @@ public:
     static inline void dgetri( int N, double *A, int LDA, const int *IPIV, double *WORK, int LWORK, int &INFO );
 
     /*!
+     * \brief   dtrsm 
+     * \details  dtrsm solves one of the matrix equations
+     *     op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
+     *  where alpha is a scalar, X and B are m by n matrices, A is a unit, or
+     *  non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
+     *     op( A ) = A   or   op( A ) = A'.
+     *  The matrix X is overwritten on B.
+     * @param[in] SIDE      Specifies whether op( A ) appears on the left or right of X as follows:
+     *                      'L' or 'l'   op( A )*X = alpha*B
+     *                      'R' or 'r'   X*op( A ) = alpha*B
+     * @param[in] UPLO      Specifies whether the matrix A is an upper or lower triangular matrix as follows:
+     *                      'U' or 'u'   A is an upper triangular matrix
+     *                      'L' or 'l'   A is a lower triangular matrix
+     * @param[in] TRANS     The operation to be performed as follows:
+     *                      'N' or 'n'   y := alpha*A*x + beta*y
+     *                      'T' or 't'   y := alpha*A'*x + beta*y
+     *                      'C' or 'c'   y := alpha*A'*x + beta*y
+     * @param[in] DIAG      Is A unit triangular as follows
+     *                      'U' or 'u'   A is assumed to be unit triangular
+     *                      'N' or 'n'   A is not assumed to be unit triangular
+     * @param[in] M         Specifies the number of rows of B. M must be at least zero.
+     * @param[in] N         Specifies the number of columns of B.  N must be at least zero.
+     * @param[in] ALPHA     Specifies the scalar alpha.  When alpha is zero then A is not 
+     *                      referenced and B need not be set before entry.
+     * @param[in] A         Input array of DIMENSION ( LDA, k ), where k is m when SIDE = 'L' or 'l'
+     *                      and is n when SIDE = 'R' or 'r'.
+     *                      When UPLO = 'U' or 'u', the leading k by k upper triangular part
+     *                          of the array A must contain the upper triangular matrix and the 
+     *                          strictly lower triangular part of A is not referenced.
+     *                      When UPLO = 'L' or 'l', the leading k by k lower triangular part
+     *                          of the array A must contain the lower triangular matrix and the 
+     *                          strictly upper triangular part of A is not referenced.
+     *                      Note that when DIAG = 'U' or 'u', the diagonal elements of
+     *                          A are not referenced either, but are assumed to be unity.
+     * @param[in] LDA       The first dimension of A as declared in the calling (sub) program.
+     *                      When SIDE = 'L' or 'l' then LDA must be at least max(1,m),
+     *                      when SIDE = 'R' or 'r' then LDA must be at least max(1,n).
+     * @param[in,out] B     On entry, the leading m by n part of the array B must contain the right-hand
+     *                      side matrix B, and on exit is overwritten by the solution matrix X.
+     * @param[in] LDB       The first dimension of B as declared in the calling (sub) program.
+     *                      LDB must be at least max(1,m).
+     */
+    static inline void dtrsm( char SIDE, char UPLO, char TRANS, char DIAG,
+        int M, int N, double ALPHA, const double *A, int LDA, double *B, int LDB );
+
+    /*!
+     * \brief   dlamch
+     * \details  dlamch determines double precision machine parameters.
+     *
+     * @param[in] cmach     Specifies the value to be returned by DLAMCH:
+     *                      'E' or 'e':   eps   = relative machine precision
+     *                      'S' or 's :   sfmin = safe minimum, such that 1/sfmin does not overflow
+     *                      'B' or 'b':   base  = base of the machine
+     *                      'P' or 'p':   prec  = eps*base
+     *                      'N' or 'n':   t     = number of (base) digits in the mantissa
+     *                      'R' or 'r':   rnd   = 1.0 when rounding occurs in addition, 0.0 otherwise
+     *                      'M' or 'm':   emin  = minimum exponent before (gradual) underflow
+     *                      'U' or 'u':   rmin  = underflow threshold - base**(emin-1)
+     *                      'L' or 'l':   emax  = largest exponent before overflow
+     *                      'O' or 'o':   rmax  = overflow threshold  - (base**emax)*(1-eps)
+     * @return              Return the requested value
+     */
+    static inline double dlamch( char cmach );
+
+    /*!
      * \brief   Run a test for a given LAPACK/BLAS routine 
      * \details  This will run a simple test for a given LAPACK/BLAS routine.
      *      While this only runs some simple tests, it should detect basic errors.
      * @param[in] routine   The routine to test
      * @param[in] N         The number of times to repeat the test (useful for thread-safety testing)
+     * @param[out] error    The largest error detected
      * @return              The number of failures detected
      */
-    static int run_test( const char* routine, int N );
+    static int run_test( const char* routine, int N, double& error );
 
     /*!
      * \brief   Run the basic test suite 
@@ -511,6 +617,10 @@ public:
      * @return              The number of failures detected
      */
     static int run_all_test( );
+
+
+    //! Print all of the machine parameters by dlamch
+    static void print_machine_parameters( );
 
 
 private:

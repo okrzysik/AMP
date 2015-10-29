@@ -2,31 +2,6 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-inline AMP_MPI  EpetraVectorEngineParameters::getEpetraComm () 
-{ 
-    return d_comm; 
-}
-
-inline size_t  EpetraVectorEngineParameters::getLocalSize () 
-{ 
-    return d_end-d_begin; 
-}
-
-inline size_t  EpetraVectorEngineParameters::getGlobalSize () 
-{ 
-    return d_global; 
-}
-
-inline size_t  EpetraVectorEngineParameters::beginDOF () 
-{ 
-    return d_begin; 
-}
-
-inline size_t  EpetraVectorEngineParameters::endDOF () 
-{ 
-    return d_end; 
-}
-
   inline
   EpetraVectorEngine::~EpetraVectorEngine () 
   { 
@@ -48,7 +23,7 @@ inline size_t  EpetraVectorEngineParameters::endDOF ()
   inline
   AMP_MPI  EpetraVectorEngine::getComm () const 
   { 
-    return getEngineParameters()->castTo<EpetraVectorEngineParameters>().getEpetraComm(); 
+    return getEngineParameters()->getComm(); 
   }
 
   inline

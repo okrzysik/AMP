@@ -15,7 +15,7 @@
 #endif
 
 
-#ifdef USE_EXT_PETSC
+#if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
     typedef AMP::unit_test::SimplePetscNativeFactory<AMP::LinearAlgebra::NativePetscVector>         SNPVFactory;
 #endif
 #ifdef USE_EXT_TRILINOS
@@ -50,7 +50,7 @@ int main ( int argc , char **argv )
     AMP::pout << std::endl;
     globalComm.barrier();
 
-    #ifdef USE_EXT_PETSC
+    #if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
         AMP::pout << "Testing NativePetscVector" << std::endl;
         testManagedVector<SNPVFactory>( &ut );
         AMP::pout << std::endl;

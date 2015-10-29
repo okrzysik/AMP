@@ -13,17 +13,13 @@ extern "C"{
 namespace AMP {
 namespace LinearAlgebra {
 
-  /** \brief Parameters to create a ManagedPetscMatrix
-    */
-  typedef ManagedEpetraMatrixParameters  ManagedPetscMatrixParameters;
-
   /** \class ManagedPetscMatrix
     * \brief  A PETSc matrix that allows PETSc to call back into AMP
     * \details  Rather than hold onto a PETSc construct Mat pointer,
     * this class creates a new one and replaces methods in the Mat
     * structure with AMP methods.
     */
-  class ManagedPetscMatrix : public PetscMatrix , public ManagedEpetraMatrix 
+  class ManagedPetscMatrix : public PetscMatrix, public ManagedEpetraMatrix 
   {
     protected:
       /** \brief Unused constructor

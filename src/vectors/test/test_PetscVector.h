@@ -110,6 +110,8 @@ public:
     }
 };
 
+
+#ifdef USE_EXT_TRILINOS
 template <typename T>
 class  SimplePetscNativeFactory : public SimplePetscVectorFactory<SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedPetscVector> >
 {
@@ -126,7 +128,7 @@ class  SimplePetscNativeFactory : public SimplePetscVectorFactory<SimpleManagedV
       return getNativeVector();
     }
 };
-
+#endif
 
 
 }

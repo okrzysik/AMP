@@ -10,7 +10,9 @@ extern "C" {
 #endif
 
 // Misc
-extern void FORTRAN_WRAPPER(dfill)( int*, double*, double* );
+extern void   FORTRAN_WRAPPER( dfill)( int*, double*, double* );
+extern int    FORTRAN_WRAPPER(idamax)( int* N, double* X, int* INCX );
+extern double FORTRAN_WRAPPER(dlamch)( char* cmach );
 
 // Level 1 BLAS Routines
 extern void   FORTRAN_WRAPPER(dswap)( int* N,                double* x, int* INCX, double* y, int* INCY );   //  x <-> y

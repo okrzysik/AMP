@@ -2,7 +2,8 @@
 #define included_AMP_ManagedSundialsVector
 
 #include "vectors/sundials/SundialsVector.h"
-#include "vectors/trilinos/ManagedEpetraVector.h"
+#include "vectors/VectorEngine.h"
+#include "vectors/ManagedVector.h"
 #include "vectors/CyclicSharedPtr.h"
 #include "vectors/ExternalVectorDeleter.h"
 

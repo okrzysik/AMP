@@ -35,6 +35,19 @@ inline void Lapack::dcopy( int N, const double *DX, int INCX, double *DY, int IN
         FORTRAN_WRAPPER(::dcopy)(&N,(double*)DX,&INCX,DY,&INCY);
     #endif
 }
+// Define the member functions
+#undef dswap
+inline void Lapack::dswap( int N, double *DX, int INCX, double *DY, int INCY ) 
+{
+    #ifdef USE_ATLAS
+        cblas_dswap(N,DX,INCX,DY,INCY);
+    #elif defined(USE_MATLAB_LAPACK)
+        ptrdiff_t Nl=N, INCXl=INCX, INCYl=INCY;
+        FORTRAN_WRAPPER(::dswap)(&Nl,DX,&INCXl,DY,&INCYl);
+    #else
+        FORTRAN_WRAPPER(::dswap)(&N,DX,&INCX,DY,&INCY);
+    #endif
+}
 #undef dscal
 inline void Lapack::dscal( int N, double DA, double *DX, int INCX ) 
 {
@@ -57,6 +70,18 @@ inline double Lapack::dnrm2( int N, const double *DX, int INCX )
         return FORTRAN_WRAPPER(::dnrm2)(&Np,(double*)DX,&INCXp);
     #else
         return FORTRAN_WRAPPER(::dnrm2)(&N,(double*)DX,&INCX);
+    #endif
+}
+#undef idamax
+inline int Lapack::idamax( int N, const double *DX, int INCX )
+{
+    #ifdef USE_ATLAS
+        return cblas_idamax(N,DX,INCX)-1;
+    #elif defined(USE_MATLAB_LAPACK)
+        ptrdiff_t Np=N, INCXp=INCX;
+        return FORTRAN_WRAPPER(::idamax)(&Np,(double*)DX,&INCXp)-1;
+    #else
+        return FORTRAN_WRAPPER(::idamax)(&N,(double*)DX,&INCX)-1;
     #endif
 }
 #undef daxpy
@@ -125,6 +150,18 @@ inline double Lapack::ddot( int N, const double *DX, int INCX, const double *DY,
         return FORTRAN_WRAPPER(::ddot)(&Np,(double*)DX,&INCXp,(double*)DY,&INCYp);
     #else
         return FORTRAN_WRAPPER(::ddot)(&N,(double*)DX,&INCX,(double*)DY,&INCY);
+    #endif
+}
+#undef dger
+inline void Lapack::dger( int N, int M, double alpha, const double *x, int INCX, const double *y, int INCY, double *A, int LDA )
+{
+    #ifdef USE_ATLAS
+        cblas_dger(N,M,alpha,x,INCX,y,INCY,A,LDA);
+    #elif defined(USE_MATLAB_LAPACK)
+        ptrdiff_t Np=N, INCXp=INCX, INCYp=INCY;
+        FORTRAN_WRAPPER(::dger)(&N,&M,&alpha,(double*)x,&INCX,(double*)y,&INCY,A,&LDA);
+    #else
+        FORTRAN_WRAPPER(::dger)(&N,&M,&alpha,(double*)x,&INCX,(double*)y,&INCY,A,&LDA);
     #endif
 }
 #undef dgesv
@@ -296,6 +333,32 @@ inline void Lapack::dgetri( int N, double *A, int LDA, const int *IPIV, double *
         delete [] IPIVp;
     #else
         FORTRAN_WRAPPER(::dgetri)(&N,A,&LDA,(int*)IPIV,WORK,&LWORK,&INFO);
+    #endif
+}
+#undef dtrsm
+inline void Lapack::dtrsm( char SIDE, char UPLO, char TRANS, char DIAG,
+        int M, int N, double ALPHA, const double *A, int LDA, double *B, int LDB )
+{
+    #ifdef USE_ATLAS
+        throw std::logic_error("dtrsm not implimented for ATLAS");
+    #elif defined(USE_ACML)
+        char SIDE2[2]={SIDE,0}, UPLO2[2]={UPLO,0}, TRANS2[2]={TRANS,0}, DIAG2[2]={DIAG,0};
+        ::dtrsm_(SIDE2,UPLO2,TRANS2,DIAG2,&M,&N,&ALPHA,(double*)A,&LDA,B,&LDB,1,1,1,1);
+    #elif defined(USE_MATLAB_LAPACK)
+        FORTRAN_WRAPPER(::dtrsm)(&SIDE,&UPLO,&TRANS,&DIAG,&M,&N,&ALPHA,(double*)A,&LDA,B,&LDB);
+    #else
+        FORTRAN_WRAPPER(::dtrsm)(&SIDE,&UPLO,&TRANS,&DIAG,&M,&N,&ALPHA,(double*)A,&LDA,B,&LDB);
+    #endif
+}
+#undef dgetri
+inline double Lapack::dlamch( char cmach )
+{
+    #ifdef USE_ATLAS
+        return clapack_dlamch(cmach);
+    #elif defined(USE_ACML)
+        return ::dlamch(cmach);
+    #else
+        return FORTRAN_WRAPPER(::dlamch)(&cmach);
     #endif
 }
 
