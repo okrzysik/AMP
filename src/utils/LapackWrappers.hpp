@@ -158,8 +158,8 @@ inline void Lapack::dger( int N, int M, double alpha, const double *x, int INCX,
     #ifdef USE_ATLAS
         cblas_dger(N,M,alpha,x,INCX,y,INCY,A,LDA);
     #elif defined(USE_MATLAB_LAPACK)
-        ptrdiff_t Np=N, INCXp=INCX, INCYp=INCY;
-        FORTRAN_WRAPPER(::dger)(&N,&M,&alpha,(double*)x,&INCX,(double*)y,&INCY,A,&LDA);
+        ptrdiff_t Np=N, Mp=M, INCXp=INCX, INCYp=INCY, LDAp=LDA;
+        FORTRAN_WRAPPER(::dger)(&Np,&Mp,&alpha,(double*)x,&INCXp,(double*)y,&INCYp,A,&LDAp);
     #else
         FORTRAN_WRAPPER(::dger)(&N,&M,&alpha,(double*)x,&INCX,(double*)y,&INCY,A,&LDA);
     #endif
@@ -345,12 +345,13 @@ inline void Lapack::dtrsm( char SIDE, char UPLO, char TRANS, char DIAG,
         char SIDE2[2]={SIDE,0}, UPLO2[2]={UPLO,0}, TRANS2[2]={TRANS,0}, DIAG2[2]={DIAG,0};
         ::dtrsm_(SIDE2,UPLO2,TRANS2,DIAG2,&M,&N,&ALPHA,(double*)A,&LDA,B,&LDB,1,1,1,1);
     #elif defined(USE_MATLAB_LAPACK)
-        FORTRAN_WRAPPER(::dtrsm)(&SIDE,&UPLO,&TRANS,&DIAG,&M,&N,&ALPHA,(double*)A,&LDA,B,&LDB);
+        ptrdiff_t Mp=M, Np=N, LDAp=LDA, LDBp=LDB;
+        FORTRAN_WRAPPER(::dtrsm)(&SIDE,&UPLO,&TRANS,&DIAG,&Mp,&Np,&ALPHA,(double*)A,&LDAp,B,&LDBp);
     #else
         FORTRAN_WRAPPER(::dtrsm)(&SIDE,&UPLO,&TRANS,&DIAG,&M,&N,&ALPHA,(double*)A,&LDA,B,&LDB);
     #endif
 }
-#undef dgetri
+#undef dlamch
 inline double Lapack::dlamch( char cmach )
 {
     #ifdef USE_ATLAS

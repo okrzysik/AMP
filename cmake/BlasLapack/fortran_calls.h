@@ -46,6 +46,7 @@ extern void FORTRAN_WRAPPER(dgetrs)( char* TRANS, int* N, int* NRHS, double* A, 
 extern void FORTRAN_WRAPPER(dgttrs)( char* TRANS, int* N, int* NRHS, double* DL, double* D, double* DU, double* DU2, int* IPIV, double* B, int* LDB, int* INFO ); //  Solve Ax=b using the LU factorization computed by dgttrf for a tridiagonal system
 extern void FORTRAN_WRAPPER(dgbtrs)( char* TRANS, int* N, int *KL, int *KU, int* NRHS, double* AB, int* LDAB, int* IPIV, double* B, int* LDB, int* INFO );        //  Solve Ax=b using the LU factorization computed by dgbtrf for a band matrix
 extern void FORTRAN_WRAPPER(dgetri)( int* N, double* A, int* LDA, int* IPIV, double* WORK, int* LWORK, int* INFO );                                               //  Compute the inverse matrix using the LU factorization computed by dgetrf 
+extern void FORTRAN_WRAPPER(dtrsm)( char* SIDE, char* UPLO, char* TRANSA, char* DIAG, int* M, int* N, double* alpha, double* A, int* LDA, double* B, int* LDB );  //  Solve one of the matrix equations op(A)*X=alpha*B or X*op(A)=alpha*B
 
 };
 
