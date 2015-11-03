@@ -126,6 +126,20 @@ IF ( NOT ONLY_BUILD_DOCS )
 ENDIF()
 
 
+# Add the cppcheck tests
+SET( CPPCHECK_INCLUDE "-I${TIMER_INCLUDE}" )
+SET( CPPCHECK_OPTIONS -q --enable=all --force --suppress=missingIncludeSystem 
+    "--suppressions-list=${CMAKE_CURRENT_SOURCE_DIR}/cppcheckSuppressionFile" )
+IF ( CXX_STD STREQUAL 98 )
+    SET( CPPCHECK_OPTIONS ${CPPCHECK_OPTIONS} --std=c99 --std=c++03 --std=posix )
+ELSEIF ( CXX_STD STREQUAL 11 )
+    SET( CPPCHECK_OPTIONS ${CPPCHECK_OPTIONS} --std=c11 --std=c++11 --std=posix )
+ELSEIF ( CXX_STD STREQUAL 14 )
+    SET( CPPCHECK_OPTIONS ${CPPCHECK_OPTIONS} --std=c11 --std=c++11 --std=posix )
+ENDIF()
+INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cppcheck.cmake" )
+
+
 # Install the documentation
 IF ( USE_EXT_DOXYGEN )
     SET(DOXYFILE_LATEX "NO")
@@ -137,8 +151,12 @@ ENDIF()
 
 # Save the configuration info for applications 
 IF ( NOT ONLY_BUILD_DOCS )
-    INCLUDE( ${AMP_SOURCE_DIR}/cmake/save_variables.cmake )
-    SAVE_CMAKE_FLAGS()
+    INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/save_variables.cmake )
+    COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros.cmake" "${${PROJ}_INSTALL_DIR}/cmake/macros.cmake" )
+    COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cppcheck.cmake" "${${PROJ}_INSTALL_DIR}/cmake/cppcheck.cmake" )
+    COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SharedPtr.cmake" "${${PROJ}_INSTALL_DIR}/cmake/SharedPtr.cmake" )
+    COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/WriteRepoVersion.cmake" "${${PROJ}_INSTALL_DIR}/cmake/WriteRepoVersion.cmake" )
+    SAVE_CMAKE_FLAGS( "${${PROJ}_INSTALL_DIR}/amp.cmake" )
 ENDIF()
 
 

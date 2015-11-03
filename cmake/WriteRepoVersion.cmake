@@ -1,5 +1,5 @@
 # Check the inputs
-SET( PROJ     ${PROJF}    )
+SET( PROJ     ${PROJ}     )
 SET( src_dir  ${src_dir}  )
 SET( tmp_file ${tmp_file} )
 SET( filename ${filename} )
