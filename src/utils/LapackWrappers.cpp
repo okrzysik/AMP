@@ -112,28 +112,28 @@ int Lapack::run_all_test( )
     int N = 2;  // We want two iterations to enure the test works for N>1
     double error;
     // Basic blas operations
-    if ( test_dcopy(N,error)!=0 ) { printf("test_dcopy failed\n"); N_errors++; }
-    if ( test_dnrm2(N,error)!=0 ) { printf("test_dnrm2 failed\n"); N_errors++; }
-    if ( test_daxpy(N,error)!=0 ) { printf("test_daxpy failed\n"); N_errors++; }
-    if ( test_dasum(N,error)!=0 ) { printf("test_dasum failed\n"); N_errors++; }
-    if ( test_ddot(N,error)!=0  ) { printf("test_ddot failed\n");  N_errors++; }
+    if ( test_dcopy(N,error) ) { printf("test_dcopy failed (%e)\n",error); N_errors++; }
+    if ( test_dnrm2(N,error) ) { printf("test_dnrm2 failed (%e)\n",error); N_errors++; }
+    if ( test_daxpy(N,error) ) { printf("test_daxpy failed (%e)\n",error); N_errors++; }
+    if ( test_dasum(N,error) ) { printf("test_dasum failed (%e)\n",error); N_errors++; }
+    if ( test_ddot(N,error)  ) { printf("test_ddot failed (%e)\n",error);  N_errors++; }
     // Matrix blas operations
-    if ( test_dgemv(N,error)!=0 ) { printf("test_dgemv failed\n"); N_errors++; }
-    if ( test_dgemm(N,error)!=0 ) { printf("test_dgemm failed\n"); N_errors++; }
+    if ( test_dgemv(N,error) ) { printf("test_dgemv failed (%e)\n",error); N_errors++; }
+    if ( test_dgemm(N,error) ) { printf("test_dgemm failed (%e)\n",error); N_errors++; }
     // Linear solves
-    if ( test_dgesv(N,error)!=0 ) { printf("test_dgesv failed\n"); N_errors++; }
-    if ( test_dgtsv(N,error)!=0 ) { printf("test_dgtsv failed\n"); N_errors++; }
-    if ( test_dgbsv(N,error)!=0 ) { printf("test_dgbsv failed\n"); N_errors++; }
+    if ( test_dgesv(N,error) ) { printf("test_dgesv failed (%e)\n",error); N_errors++; }
+    if ( test_dgtsv(N,error) ) { printf("test_dgtsv failed (%e)\n",error); N_errors++; }
+    if ( test_dgbsv(N,error) ) { printf("test_dgbsv failed (%e)\n",error); N_errors++; }
     // Linear factorizations
-    if ( test_dgetrf(N,error)!=0 ) { printf("test_dgetrf failed\n"); N_errors++; }
-    if ( test_dgttrf(N,error)!=0 ) { printf("test_dgttrf failed\n"); N_errors++; }
-    if ( test_dgbtrf(N,error)!=0 ) { printf("test_dgbtrf failed\n"); N_errors++; }
+    if ( test_dgetrf(N,error) ) { printf("test_dgetrf failed (%e)\n",error); N_errors++; }
+    if ( test_dgttrf(N,error) ) { printf("test_dgttrf failed (%e)\n",error); N_errors++; }
+    if ( test_dgbtrf(N,error) ) { printf("test_dgbtrf failed (%e)\n",error); N_errors++; }
     // Solve using factorization
-    if ( test_dgetrs(N,error)!=0 ) { printf("test_dgetrs failed\n"); N_errors++; }
-    if ( test_dgttrs(N,error)!=0 ) { printf("test_dgttrs failed\n"); N_errors++; }
-    if ( test_dgbtrs(N,error)!=0 ) { printf("test_dgbtrs failed\n"); N_errors++; }
+    if ( test_dgetrs(N,error) ) { printf("test_dgetrs failed (%e)\n",error); N_errors++; }
+    if ( test_dgttrs(N,error) ) { printf("test_dgttrs failed (%e)\n",error); N_errors++; }
+    if ( test_dgbtrs(N,error) ) { printf("test_dgbtrs failed (%e)\n",error); N_errors++; }
     // Inverse using factorization
-    if ( test_dgetri(N,error)!=0 ) { printf("test_dgetri failed\n"); N_errors++; }
+    if ( test_dgetri(N,error) ) { printf("test_dgetri failed (%e)\n",error); N_errors++; }
     return N_errors>0;
 }
 
@@ -540,7 +540,7 @@ static bool test_dgbsv( int N, double& error )
         N_errors += err==0 ? 0:1;
         double norm = L2Norm(K,x1);
         double err2 = L2Error(K,x1,x2);
-        if ( err2 > 1e-13*norm )
+        if ( err2 > 1e-12*norm )
             N_errors++;
         error = std::max(error,err2/norm);
     }
