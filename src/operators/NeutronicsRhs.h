@@ -66,19 +66,13 @@ namespace Operator {
 
       /**
         The function that computes the residual.
-       * @param f: rhs vector for A(u)=f, this may be a null pointer if f=0. 
        * @param u: multivector of the state.
        * @param r: specific power in Watts per gram 
-       * @param a: constnt multiplier for return vector
-       * @param b: unused option for this operator
        The result of apply is
-       * r = b*f+a*A(u)
+       * r = A(u)
        */
-      void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f, 
-                  AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-                  AMP::LinearAlgebra::Vector::shared_ptr r,
-                  const  double      a = 1.0,
-                  const  double      b = 0.0);
+      void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+                  AMP::LinearAlgebra::Vector::shared_ptr f) override;
 
       /**
         A function to reinitialize this object.

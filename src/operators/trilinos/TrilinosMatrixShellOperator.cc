@@ -19,13 +19,19 @@ void TrilinosMatrixShellOperator :: setGetRow(void (*func)(void* object, int row
 }
 
 
-void TrilinosMatrixShellOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
-    AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
-    const double a, const double b) 
+void TrilinosMatrixShellOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+					   AMP::LinearAlgebra::Vector::shared_ptr f ) 
 {
-    d_operator->apply(f, u, r, a, b);
+    d_operator->apply(u, f);
 }
 
+void
+TrilinosMatrixShellOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+				       AMP::LinearAlgebra::Vector::const_shared_ptr u,
+				       AMP::LinearAlgebra::Vector::shared_ptr r )
+{
+  d_operator->residual(f,u,r);
+}
 
 void TrilinosMatrixShellOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params) 
 {
@@ -76,7 +82,7 @@ int TrilinosMatrixShellOperator :: matVec(ML_Operator *data, int in_length, doub
     inVec->putRawData(in);
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    (op->d_operator)->apply(nullVec, inVec, outVec, 1.0, 0.0);
+    (op->d_operator)->apply( inVec, outVec );
 
     outVec->copyOutRawData(out);
 
@@ -125,7 +131,7 @@ void TrilinosMatrixShellOperator :: getColumn(int column, std::vector<unsigned i
     inVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    d_operator->apply(nullVec, inVec, outVec, 1.0, 0.0);
+    d_operator->apply( inVec, outVec );
 
     size_t outLength = outVec->getLocalSize();
     double* outPtr = new double[outLength];

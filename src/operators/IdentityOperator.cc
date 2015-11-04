@@ -37,9 +37,8 @@ void IdentityOperator :: setMatrix( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> 
 }
 
 
-void IdentityOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
-    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-    AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b)
+void IdentityOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr u,
+			       AMP::LinearAlgebra::Vector::shared_ptr r )
 {
     AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
     AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
@@ -52,16 +51,6 @@ void IdentityOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
 
     rInternal->copyVector(uInternal);
 
-    if(f.get() == NULL) {
-        rInternal->scale(a);
-    } else {
-        AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetOutputVector(f);
-        if(fInternal.get() == NULL) {
-            rInternal->scale(a);
-        } else {
-            rInternal->axpby(b, a, fInternal);
-        }
-    }
     rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 }
 

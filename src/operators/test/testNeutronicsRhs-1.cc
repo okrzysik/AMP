@@ -81,7 +81,7 @@ void sourceTest(AMP::UnitTest *ut , std::string exeName)
     //AMP::Operator::NeutronicsRhs::SP_HexGaussPointVariable outVar(new AMP::Operator::NeutronicsRhs::HexGaussPointVariable("outpower") );
     AMP::LinearAlgebra::Variable::shared_ptr outVar = ntxRhs->getOutputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr   outVec = AMP::LinearAlgebra::createVector( dof_map, outVar, split );
-    ntxRhs->apply(nullVec, nullVec, outVec, 1., 0. );
+    ntxRhs->apply( nullVec, outVec );
   }
 
   // Construct with OperatorBuilder

@@ -139,8 +139,8 @@ void SubchannelTwoEqNonlinearOperator :: reset(const AMP::shared_ptr<OperatorPar
 
 
 // apply
-void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-    AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b)
+void SubchannelTwoEqNonlinearOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+						AMP::LinearAlgebra::Vector::shared_ptr r)
 {
     PROFILE_START("apply");
 
@@ -410,16 +410,7 @@ void SubchannelTwoEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const
         }
         PROFILE_STOP("apply-subchannel");
     }//end of isub
-    if(f.get() == NULL) {
-        outputVec->scale(a);
-    } else {
-        AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetInputVector( f );
-        if(fInternal.get() == NULL) {
-            outputVec->scale(a);
-        } else {
-            outputVec->axpby(b, a, fInternal);
-        }
-    }
+
     PROFILE_STOP("apply");
 }
 

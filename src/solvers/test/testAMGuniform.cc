@@ -73,7 +73,7 @@ void myTest(AMP::UnitTest *ut ) {
   AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
 
   solVec->setRandomValues();
-  bvpOperator->apply(nullVec, solVec, rhsVec, 1.0, 0.0);
+  bvpOperator->apply(solVec, rhsVec);
   solVec->zero();
 
   AMP::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase("LinearSolver"); 

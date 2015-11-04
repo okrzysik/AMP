@@ -406,9 +406,8 @@ int SubchannelFourEqNonlinearOperator::getSubchannelIndex( double x, double y )
 }
 
 // apply
-void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr, 
-    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-    AMP::LinearAlgebra::Vector::shared_ptr r, const double, const double )
+void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr u,
+						AMP::LinearAlgebra::Vector::shared_ptr r)
 {
     PROFILE_START("apply");
 

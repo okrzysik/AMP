@@ -51,6 +51,30 @@ void Operator :: reset(const AMP::shared_ptr<OperatorParameters>& params)
 }
 
 
+void Operator :: residual(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+			  AMP::LinearAlgebra::Vector::const_shared_ptr u,
+			  AMP::LinearAlgebra::Vector::shared_ptr r)
+{
+    AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
+    AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
+
+    apply(u, r);
+
+    AMP::LinearAlgebra::Vector::shared_ptr rInternal = subsetOutputVector(r);
+    AMP_INSIST( (rInternal.get() != NULL), "rInternal is NULL" );
+
+    // the rhs can be NULL
+    if(f.get() != NULL)  {
+      AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetOutputVector(f);
+      rInternal->subtract( fInternal, rInternal );
+    }
+    else {
+      rInternal->scale( -1.0 );
+    }
+
+    rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+}
+
 void Operator :: getFromInput(const AMP::shared_ptr<AMP::Database>& db)
 {
     AMP_INSIST( ((db.get()) != NULL), "NULL database" );

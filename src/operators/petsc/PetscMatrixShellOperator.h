@@ -55,8 +55,8 @@ public:
 
     void setOperator(AMP::shared_ptr<Operator> op);       
 
-    void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-        AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		AMP::LinearAlgebra::Vector::shared_ptr f) override;
 
     void reset(const AMP::shared_ptr<OperatorParameters>& params);
 

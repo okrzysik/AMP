@@ -32,9 +32,8 @@ CoupledChannelToCladMapOperator::CoupledChannelToCladMapOperator(const AMP::shar
 }
 
 
-void CoupledChannelToCladMapOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr ,
-    AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr ,
-    const double a, const double b)
+void CoupledChannelToCladMapOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+					       AMP::LinearAlgebra::Vector::shared_ptr )
 {
 
     // Compute the subchannel temperature and density
@@ -74,8 +73,8 @@ void CoupledChannelToCladMapOperator :: apply( AMP::LinearAlgebra::Vector::const
 
     // Map the temperature and density back to the clad
     AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
-    d_thermalMapOperator->apply(nullVec, d_subchannelTemperature, nullVec, a, b);
-    d_densityMapOperator->apply(nullVec, d_subchannelDensity, nullVec, a, b);
+    d_thermalMapOperator->apply( d_subchannelTemperature, nullVec );
+    d_densityMapOperator->apply( d_subchannelDensity, nullVec );
 
 }
 

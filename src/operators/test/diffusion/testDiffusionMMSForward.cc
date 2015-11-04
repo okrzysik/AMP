@@ -124,10 +124,11 @@ void forwardTest1(AMP::UnitTest *ut, std::string exeName)
   }
 
   // Evaluate manufactured solution as an FE source
-  sourceOp->apply(rhsVec, solVec, sourceVec, 1., 0.);
+  sourceOp->apply(solVec, sourceVec);
 
   // Evaluate action of diffusion operator
-  diffOp->apply(sourceVec, solVec, resVec, 1., -1.);
+  diffOp->residual(sourceVec, solVec, resVec);
+  resVec->scale(-1.0);
 
   // Output Mathematica form (requires serial execution)
   for (int i=0; i<globalComm.getSize(); i++) {

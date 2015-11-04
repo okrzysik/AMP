@@ -46,7 +46,7 @@ public:
     virtual ~ScalarZAxisMap ();
 
 protected:
-    // Implimented buildMap routine
+    // Implemented buildMap routine
     virtual std::multimap<double,double>  buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr, 
         const AMP::Mesh::Mesh::shared_ptr, const AMP::Mesh::MeshIterator& );
 

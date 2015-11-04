@@ -77,9 +77,8 @@ NodeToGaussPointOperator::NodeToGaussPointOperator (const AMP::shared_ptr<Operat
 
 
 // Apply operator
-void NodeToGaussPointOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr,
-        AMP::LinearAlgebra::Vector::const_shared_ptr u,
-        AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double ) 
+void NodeToGaussPointOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+				      AMP::LinearAlgebra::Vector::shared_ptr r ) 
 { 
     PROFILE_START("apply");
 

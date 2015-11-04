@@ -24,7 +24,7 @@ namespace AMP {
             myU->zero();
           }
           AMP::LinearAlgebra::Vector::shared_ptr r = myU->cloneVector();
-          d_onePointOp->apply(f, u, r, -1.0, 1.0);
+          d_onePointOp->residual(f, u, r);
           double inverseConstant = 1.0/(d_onePointOp->getConstant());
           myU->axpy(inverseConstant, r, myU);
           //If you want to use an external solver library like Petsc or Trilinos here 

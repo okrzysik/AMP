@@ -16,14 +16,14 @@ namespace Operator {
         */
       AsynchronousColumnOperator ( const AMP::shared_ptr < OperatorParameters > & );
 
-      virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-          AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
-
-      virtual void applyFinish(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-             AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
-
-      virtual void applyStart(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-             AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+      virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+			  AMP::LinearAlgebra::Vector::shared_ptr f) override;
+      
+      virtual void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+				AMP::LinearAlgebra::Vector::shared_ptr f);
+      
+      virtual void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+			       AMP::LinearAlgebra::Vector::shared_ptr f);
 
       virtual void append(AMP::shared_ptr< Operator > op);
   };

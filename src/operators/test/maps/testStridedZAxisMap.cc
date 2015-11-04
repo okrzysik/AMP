@@ -147,7 +147,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 #endif
     mapOperator->setVector(otherVector);
     
-    mapOperator->apply(dummyVector, myVector, dummyVector);
+    mapOperator->apply( myVector, dummyVector);
 
 #ifdef USE_EXT_SILO
     siloWriter->writeFile("tmp", 1);

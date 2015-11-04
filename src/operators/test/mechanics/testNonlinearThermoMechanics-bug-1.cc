@@ -154,7 +154,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   referenceTemperatureVec->setToScalar(300.0);
   mechanicsVolumeOperator->setReferenceTemperature(referenceTemperatureVec);
 
-  nonlinearMechanicsOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
+  nonlinearMechanicsOperator->apply(solVec, resVec);
 
   ut->passes(exeName);
 

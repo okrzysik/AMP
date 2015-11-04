@@ -90,8 +90,8 @@ void Map3to1to3::addTo1DMap ( std::multimap<double,double> &map,
 /********************************************************
 * Function to start the communication                   *
 ********************************************************/
-void  Map3to1to3::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr , AMP::LinearAlgebra::Vector::const_shared_ptr u ,
-                     AMP::LinearAlgebra::Vector::shared_ptr, const double, const double )
+void  Map3to1to3::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr u ,
+			       AMP::LinearAlgebra::Vector::shared_ptr )
 {
     const double tol = 1e-8;
     PROFILE_START("applyStart");
@@ -203,8 +203,8 @@ void  Map3to1to3::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr , AM
 * Function to finish the communication and perform the  *
 * interpolation                                         *
 ********************************************************/
-void  Map3to1to3::applyFinish ( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr,
-                      AMP::LinearAlgebra::Vector::shared_ptr, const double , const double )
+void  Map3to1to3::applyFinish ( AMP::LinearAlgebra::Vector::const_shared_ptr,
+                      AMP::LinearAlgebra::Vector::shared_ptr )
 {
     PROFILE_START("applyFinish");
 

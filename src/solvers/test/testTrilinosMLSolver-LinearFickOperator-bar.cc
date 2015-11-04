@@ -141,7 +141,7 @@ void linearFickTest(AMP::UnitTest *ut )
   mlSolver->solve(RightHandSideVec, SolutionVec);
 
   // Compute the residual
-  diffusionOperator->apply(RightHandSideVec, SolutionVec, ResidualVec);
+  diffusionOperator->residual(RightHandSideVec, SolutionVec, ResidualVec);
 
   // Check the L2 norm of the final residual.
   double finalResidualNorm = ResidualVec->L2Norm();

@@ -15,9 +15,9 @@ namespace AMP {
 
         virtual ~TractionBoundaryOperator() { }
 
-        void apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr,
-            AMP::LinearAlgebra::Vector::shared_ptr r, const double, const double);
-
+        void apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
+		    AMP::LinearAlgebra::Vector::shared_ptr f) override;
+	
         void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs);
 
       protected :

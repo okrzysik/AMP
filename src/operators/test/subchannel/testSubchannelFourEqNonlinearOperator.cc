@@ -292,7 +292,7 @@ void Test(AMP::UnitTest *ut, std::string exeName)
      }
   }
   // apply the operator
-  subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
+  subchannelOperator->apply(SolVec, ResVec);
 
   // initialize success boolean for known residual comparison test
   bool passed_known_test = true;

@@ -141,7 +141,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     
     // Apply the map
     globalComm.barrier();
-    map->apply( dummy, T_subchannel, dummy );
+    map->apply( T_subchannel, dummy );
 
     // Check the results
     if (pin_mesh.get()!=NULL ) {
@@ -177,7 +177,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     
     // Apply the map
     globalComm.barrier();
-    map->apply( dummy, T_subchannel, dummy );
+    map->apply( T_subchannel, dummy );
 
     // Check the results
     if (clad_mesh.get()!=NULL ) {

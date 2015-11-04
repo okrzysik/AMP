@@ -52,8 +52,8 @@ void FlowFrapconOperator :: reset(const AMP::shared_ptr<OperatorParameters>& par
 
 
 // This is an in-place apply
-void FlowFrapconOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-    AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b)
+void FlowFrapconOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+				   AMP::LinearAlgebra::Vector::shared_ptr r )
 {
 
       // AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);
@@ -129,17 +129,6 @@ void FlowFrapconOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
         outputVec->setValueByLocalID(i, R_b);
 
       }//end for i
-
-      if(f.get() == NULL) {
-        outputVec->scale(a);
-      } else {
-        AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetInputVector( f );
-        if(fInternal.get() == NULL) {
-          outputVec->scale(a);
-        } else {
-          outputVec->axpby(b, a, fInternal);
-        }
-      }
 
 }
 

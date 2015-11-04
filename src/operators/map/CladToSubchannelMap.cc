@@ -189,9 +189,8 @@ AMP::Mesh::MeshIterator CladToSubchannelMap::getSubchannelIterator(AMP::Mesh::Me
 /************************************************************************
 *  Start the communication                                              *
 ************************************************************************/
-void CladToSubchannelMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr,
-    AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr,
-    const double, const double)
+void CladToSubchannelMap::applyStart(  AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+				       AMP::LinearAlgebra::Vector::shared_ptr )
 {
     // Check if we have any data to send
     if ( d_mesh1.get() == NULL )
@@ -237,9 +236,8 @@ void CladToSubchannelMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
 /************************************************************************
 *  Finish the communication                                             *
 ************************************************************************/
-void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
-    AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::shared_ptr,
-    const double, const double)
+void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr, 
+				       AMP::LinearAlgebra::Vector::shared_ptr )
 {
     if ( d_mesh2.get() == NULL ) {
         // We don't have an output vector to fill, wait for communication to finish and return

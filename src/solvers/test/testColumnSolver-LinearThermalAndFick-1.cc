@@ -139,10 +139,10 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   solVec->setRandomValues();
 
   //Initial guess for thermal must satisfy the thermal Dirichlet boundary conditions
-  dirichletThermalInVecOp->apply(nullVec, nullVec, solVec, 1.0, 0.0);
+  dirichletThermalInVecOp->apply(nullVec, solVec);
 
   //Initial guess for Fick must satisfy the Fick Dirichlet boundary conditions
-  dirichletFickInVecOp->apply(nullVec, nullVec, solVec, 1.0, 0.0);
+  dirichletFickInVecOp->apply(nullVec, solVec);
 
   rhsVec->setToScalar(0.0);
 
@@ -171,7 +171,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   columnSolver->solve(rhsVec, solVec);
 
-  linearThermalFickOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  linearThermalFickOperator->residual(rhsVec, solVec, resVec);
 
   double finalResidualNorm  = resVec->L2Norm();
 

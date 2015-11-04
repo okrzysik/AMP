@@ -229,10 +229,11 @@ void NeumannVectorCorrection :: addRHScorrection(AMP::LinearAlgebra::Vector::sha
 }
 
 
-void NeumannVectorCorrection :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r, const double a , const double b )
+void NeumannVectorCorrection :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+				      AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    (void) f; (void) u; (void) r; (void) a; (void) b; 
-    //Do Nothing
+  (void) u; (void) r;
+  //Do Nothing
 }
 
 AMP::shared_ptr<OperatorParameters> NeumannVectorCorrection :: getJacobianParameters(

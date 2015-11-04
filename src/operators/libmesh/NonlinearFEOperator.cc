@@ -23,9 +23,8 @@ NonlinearFEOperator :: ~NonlinearFEOperator() {
 }
 
 
-void NonlinearFEOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
-    AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
-    const double a,  const double b)
+void NonlinearFEOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+				   AMP::LinearAlgebra::Vector::shared_ptr r )
 {
     PROFILE_START("apply");
 
@@ -33,8 +32,6 @@ void NonlinearFEOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector(r);
     AMP_INSIST( (rInternal != NULL), "NULL Residual/Output Vector" );
 
-    if ( f.get()!=NULL)
-        AMP_ASSERT(f->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
     if ( u.get()!=NULL)
         AMP_ASSERT(u->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
 
@@ -53,16 +50,6 @@ void NonlinearFEOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f
     d_currElemIdx = static_cast<unsigned int>(-1);
     this->postAssembly();
 
-    if(f == NULL) {
-        rInternal->scale(a);
-    } else {
-        AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = this->subsetOutputVector(f);
-        if(fInternal == NULL) {
-            rInternal->scale(a);
-        } else {
-            rInternal->axpby(b, a, fInternal);
-        }
-    }
     rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
     if(d_iDebugPrintInfoLevel>2)

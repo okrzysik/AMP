@@ -97,7 +97,7 @@ void BackwardEulerTimeIntegrator(AMP::UnitTest *ut )
     // create the following shared pointers for ease of use
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-    neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
+    neutronicsOperator->apply(nullVec, SpecificPowerVec);
   
     //  Integrate Nuclear Rhs over Density * Volume //
     AMP_INSIST( input_db->keyExists("VolumeIntegralOperator"), "key missing!" );
@@ -114,7 +114,7 @@ void BackwardEulerTimeIntegrator(AMP::UnitTest *ut )
     powerInWattsVec->zero();
   
     // convert the vector of specific power to power for a given basis.
-    sourceOperator->apply(nullVec, SpecificPowerVec, powerInWattsVec, 1., 0.);
+    sourceOperator->apply(SpecificPowerVec, powerInWattsVec);
   
     AMP::LinearAlgebra::Variable::shared_ptr outputVar = diffusionOperator->getOutputVariable();
   

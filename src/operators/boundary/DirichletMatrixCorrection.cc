@@ -227,7 +227,7 @@ void DirichletMatrixCorrection :: initRhsCorrectionAdd(AMP::LinearAlgebra::Vecto
             d_dispVals->zero();
 
             AMP::LinearAlgebra::Vector::shared_ptr emptyVec;
-            d_rhsCorrectionSet->apply(emptyVec, emptyVec, d_dispVals, 1.0, 0.0);
+            d_rhsCorrectionSet->apply(emptyVec, d_dispVals);
 
             if(d_rhsCorrectionAdd.get() == NULL) {
                 d_rhsCorrectionAdd = d_dispVals->cloneVector();
@@ -258,7 +258,7 @@ void DirichletMatrixCorrection :: setRHScorrection(AMP::LinearAlgebra::Vector::s
 {
     if(!d_skipRHSsetCorrection) {
         AMP::LinearAlgebra::Vector::shared_ptr emptyVec;
-        d_rhsCorrectionSet->apply(emptyVec, emptyVec, rhs, 1.0, 0.0);
+        d_rhsCorrectionSet->apply( emptyVec, rhs);
     }
 }
 

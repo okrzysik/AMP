@@ -229,7 +229,7 @@ void Test(AMP::UnitTest *ut, std::string exeName)
       subchannelOperator->setFrozenVector(FrozenVec);
       subchannelOpParams->d_initialize = true;
       subchannelOperator->reset(subchannelOpParams);
-      subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
+      subchannelOperator->apply(SolVec, ResVec);
     
       // get the matrix
       AMP::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian = subchannelOperator->getMatrix();

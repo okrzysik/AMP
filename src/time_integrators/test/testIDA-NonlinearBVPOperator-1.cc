@@ -118,7 +118,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     // create the following shared pointers for ease of use
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     
-    neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
+    neutronicsOperator->apply( nullVec, SpecificPowerVec);
     
     //  Integrate Nuclear Rhs over Density * Volume //
     
@@ -136,7 +136,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     powerInWattsVec->zero();
     
     // convert the vector of specific power to power for a given basis.
-    sourceOperator->apply(nullVec, SpecificPowerVec, powerInWattsVec, 1., 0.);
+    sourceOperator->apply(SpecificPowerVec, powerInWattsVec);
     
     // ---------------------------------------------------------------------------------------
     // create vectors for initial conditions (IC) and time derivative at IC
@@ -204,13 +204,13 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
 
     AMP::LinearAlgebra::Vector::shared_ptr  residualVec = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
     
-    linearOperator->apply(nullVec, initialCondition, residualVec, 1., 0 );
+    linearOperator->apply(initialCondition, residualVec);
     std::cout << "Residual Norm of linearTimeOp apply : "<< residualVec->L2Norm()  << std::endl;
     
-    massOperator->apply(nullVec, initialCondition, residualVec, 1., 0 );
+    massOperator->apply( initialCondition, residualVec );
     std::cout << "Residual Norm of linearTimeOp apply : "<< residualVec->L2Norm()  << std::endl;
     
-    linearTimeOperator->apply(nullVec, initialCondition, residualVec, 1., 0 );
+    linearTimeOperator->apply( initialCondition, residualVec );
     std::cout << "Residual Norm of linearTimeOp apply : "<< residualVec->L2Norm()  << std::endl;
 
     // ---------------------------------------------------------------------------------------

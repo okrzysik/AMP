@@ -85,7 +85,7 @@ void linearThermalTest(AMP::UnitTest *ut )
   AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
   AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = meshAdapter->createVector( SpecificPowerVar );
 
-  neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
+  neutronicsOperator->apply( nullVec, SpecificPowerVec);
 
   /////////////////////////////////////////////////////
   //  Integrate Nuclear Source over Desnity * Volume //
@@ -105,7 +105,7 @@ void linearThermalTest(AMP::UnitTest *ut )
   AMP::LinearAlgebra::Vector::shared_ptr   PowerInWattsVec = meshAdapter->createVector( PowerInWattsVar );
 
   // convert the vector of specific power to power for a given basis.
-  sourceOperator->apply(nullVec, SpecificPowerVec, PowerInWattsVec, 1., 0.);
+  sourceOperator->apply(SpecificPowerVec, PowerInWattsVec);
 
   ////////////////////////////////////
   //   CREATE THE THERMAL OPERATOR  //
@@ -162,7 +162,7 @@ void linearThermalTest(AMP::UnitTest *ut )
   mlSolver->solve(RightHandSideVec, TemperatureInKelvinVec);
 
   // Compute the residual
-  diffusionOperator->apply(RightHandSideVec, TemperatureInKelvinVec, ResidualVec);
+  diffusionOperator->residual(RightHandSideVec, TemperatureInKelvinVec, ResidualVec);
 
   // Check the L2 norm of the final residual.
   double finalResidualNorm = ResidualVec->L2Norm();

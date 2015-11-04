@@ -37,9 +37,8 @@ public :
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_variable; }
 
-    virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr, 
-        AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::shared_ptr,
-        const double, const double)
+    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr, 
+			AMP::LinearAlgebra::Vector::shared_ptr ) override
     {
         //Do Nothing
     }

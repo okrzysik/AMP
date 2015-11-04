@@ -49,11 +49,22 @@ public :
       This base class can not give a meaningful definition of apply. See the derived classes for
       how they define apply. Each operator is free to define apply in a way that is appropriate
       for that operator.
+      \param u: shared pointer to const input vector u
+      \param f: shared pointer to output vector storing result of applying this operator
       */
-    virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
-        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
-        const double a = -1.0, const double b = 1.0) = 0;
+    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+			AMP::LinearAlgebra::Vector::shared_ptr f) = 0;
 
+    /**
+     * Default base class implementation of the residual: f-L(u)
+     * \param f: shared pointer to const vector rhs
+     * \param u: shared pointer to const vector u
+     * \param r: shared pointer to vector residual
+     */
+    virtual void residual(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+			  AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+			  AMP::LinearAlgebra::Vector::shared_ptr r);
+    
     /**
      * This function returns a OperatorParameters object
      * constructed by the operator which contains parameters from

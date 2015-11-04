@@ -104,7 +104,7 @@ ExplicitEuler::advanceSolution( const double dt, const bool first_step )
   if (stepsRemaining() && (d_current_time < d_final_time)) 
     {
       // f_vec = f(tn,un)
-      d_operator->apply(f, d_solution, d_f_vec, 1.0, 0.0);
+      d_operator->apply( d_solution, d_f_vec );
       // u* = un+dt*f
       d_new_solution->axpy(d_current_dt, *d_f_vec, *d_solution);
     }

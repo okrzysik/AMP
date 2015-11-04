@@ -207,7 +207,7 @@ void inverseTest1(AMP::UnitTest *ut, const std::string& exeName)
       dirichletOp->setDirichletValues(bndVec);
 
       // Evaluate manufactured solution as an FE source
-      sourceOp->apply(srcVec, inpVec, rhsVec, 1., 0.);
+      sourceOp->apply(inpVec, rhsVec);
 
       // Reset solution vector to initial value and print out norm
       solVec->setToScalar(0.1);
@@ -235,7 +235,7 @@ void inverseTest1(AMP::UnitTest *ut, const std::string& exeName)
       linearSolver->setPreconditioner(preconditioner);
 
       // Get initial residual
-      nlinBVPOp->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+      nlinBVPOp->residual(rhsVec, solVec, resVec);
       double initialResidualNorm  = resVec->L2Norm();
       AMP::pout<<"Initial Residual Norm: "<<initialResidualNorm<<std::endl;
 
@@ -244,7 +244,7 @@ void inverseTest1(AMP::UnitTest *ut, const std::string& exeName)
       nonlinearSolver->solve(rhsVec, solVec);
 
       // Get final residual
-      nlinBVPOp->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+      nlinBVPOp->residual(rhsVec, solVec, resVec);
       double finalResidualNorm  = resVec->L2Norm();
       std::cout<<"Final Residual Norm: "<<finalResidualNorm<<std::endl;
 

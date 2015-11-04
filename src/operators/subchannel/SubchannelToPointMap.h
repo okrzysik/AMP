@@ -30,15 +30,12 @@ public :
     /**
      * \brief Perform the map
      * \details  This performs the map of the output propertiy (Density or Temperature) to the given points.
-     * \param f     Unused input
      * \param u     Vector containing the subchannel solution (may be a multivector containing other variables)
-     * \param r     Vector to fill the densities.  The local size must match the number of points set
+     * \param f     Vector to fill the densities.  The local size must match the number of points set
      *              by the call to setPoints.
-     * \param a     Unused
-     * \param b     Unused
      */
-    void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-        AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+    void apply(AMP::LinearAlgebra::Vector::const_shared_ptr u,
+        AMP::LinearAlgebra::Vector::shared_ptr f) override;
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         return AMP::LinearAlgebra::Variable::shared_ptr(new AMP::LinearAlgebra::Variable("Flow"));

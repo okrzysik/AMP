@@ -16,11 +16,10 @@ namespace AMP {
     }
 
     void
-      NonlinearBVPOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr f, 
-          AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r, double a, double b)
+      NonlinearBVPOperator :: apply(  AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+				      AMP::LinearAlgebra::Vector::shared_ptr r)
       {
         PROFILE_START("apply");
-        AMP::shared_ptr<AMP::LinearAlgebra::Vector> nullRhs;
 
         AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
 
@@ -34,7 +33,7 @@ namespace AMP {
             << u->L2Norm() << std::endl;
         }
 
-        d_volumeOperator->apply(nullRhs, u, r, 1.0, 0.0);
+        d_volumeOperator->apply( u, r);
 
         if(d_iDebugPrintInfoLevel>3)
         {
@@ -48,29 +47,12 @@ namespace AMP {
             << rInternal->L2Norm() << std::endl;
         }
 
-        d_boundaryOperator->apply(nullRhs, u, r, 1.0, 0.0);
+        d_boundaryOperator->apply( u, r);
 
         if(d_iDebugPrintInfoLevel>3)
         {
           AMP::pout << "L2 Norm of r in NonlinearBVPOperator boundaryOperator::apply is : "
             << r->L2Norm() << std::endl;
-        }
-
-        if(d_iDebugPrintInfoLevel>3)
-        {
-          AMP::pout << "L2 Norm of rInternal in NonlinearBVPOperator boundaryOperator::apply is : "
-            << rInternal->L2Norm() << std::endl;
-        }
-
-        if(f.get() == NULL) {
-          rInternal->scale(a);
-        } else {
-          AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = this->subsetOutputVector(f);
-          if(fInternal.get() == NULL) {
-            rInternal->scale(a);
-          } else {
-            rInternal->axpby(b, a, fInternal);
-          }
         }
 
         if(d_iDebugPrintInfoLevel>2)

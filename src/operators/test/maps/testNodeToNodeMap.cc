@@ -127,7 +127,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     globalComm.barrier();
     std::cout << v1->maxNorm() << "  " << v2->maxNorm() << std::endl;
     double start_time = AMP::AMP_MPI::time();
-    n2nmaps->apply ( dummy , v1 , v2 );
+    n2nmaps->apply ( v1 , v2 );
     globalComm.barrier();
     double end_time = AMP::AMP_MPI::time();
 

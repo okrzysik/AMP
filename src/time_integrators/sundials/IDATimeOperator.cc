@@ -35,10 +35,8 @@ namespace TimeIntegrator{
     */
 
     void
-    IDATimeOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
-                           AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                           AMP::LinearAlgebra::Vector::shared_ptr r,
-                           const double a, const double b)
+    IDATimeOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                           AMP::LinearAlgebra::Vector::shared_ptr r)
     {
         if (d_cloningHappened==0)
         {
@@ -47,7 +45,7 @@ namespace TimeIntegrator{
           d_cloningHappened = 1;
         }
     
-        d_pMassOperator->apply(f, d_pIDATimeDerivative, d_pScratchVector, 1.0, 0.0);
+        d_pMassOperator->apply(d_pIDATimeDerivative, d_pScratchVector );
 
         if(d_iDebugPrintInfoLevel>4)
           {
@@ -61,7 +59,8 @@ namespace TimeIntegrator{
             algebraicComponent->zero();
           }
         
-        d_pRhsOperator->apply(d_pScratchVector, u, r, 1.0, 1.0);
+        d_pRhsOperator->apply( u, r );
+	r->axpby(1.0, 1.0, d_pScratchVector);
 
         bool dpSourceTermNull = (d_pSourceTerm.get()==NULL);
     
@@ -74,14 +73,6 @@ namespace TimeIntegrator{
         if(!dpSourceTermNull)
           {
             r->axpby(-1.0, 1.0, d_pSourceTerm);
-          }
-        if(f.get()!=NULL)
-          {
-            r->axpby(b, a, f);
-          }
-        else
-          {
-            r->scale(a);
           }
 
         if(d_iDebugPrintInfoLevel>6)

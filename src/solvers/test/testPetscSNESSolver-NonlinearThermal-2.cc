@@ -134,7 +134,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
 
-    neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
+    neutronicsOperator->apply(nullVec, SpecificPowerVec);
 
     /////////////////////////////////////////////////////
     //  Integrate Nuclear Rhs over Desnity * Volume //
@@ -155,7 +155,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     PowerInWattsVec->zero();
 
     // convert the vector of specific power to power for a given basis.
-    sourceOperator->apply(nullVec, SpecificPowerVec, PowerInWattsVec, 1., 0.);
+    sourceOperator->apply(SpecificPowerVec, PowerInWattsVec);
 
     rhsVec->copyVector(PowerInWattsVec);
 
@@ -220,7 +220,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     // register the preconditioner with the Jacobian free Krylov solver
     AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
     linearSolver->setPreconditioner(linearThermalPreconditioner);
-    nonlinearThermalOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+    nonlinearThermalOperator->residual(rhsVec, solVec, resVec);
 
     double initialResidualNorm  = resVec->L2Norm();
     AMP::pout<<"Initial Residual Norm: "<< initialResidualNorm <<std::endl;
@@ -242,7 +242,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     AMP::pout<<" Solution L1 Norm: "<< std::setprecision(10) <<(solVec->L1Norm()) <<std::endl;
     AMP::pout<<" Solution L2 Norm: "<< std::setprecision(10) <<(solVec->L2Norm()) <<std::endl;
 
-    nonlinearThermalOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+    nonlinearThermalOperator->residual(rhsVec, solVec, resVec);
 
     double finalResidualNorm  = resVec->L2Norm();
     double finalSolutionNorm  = solVec->L2Norm();

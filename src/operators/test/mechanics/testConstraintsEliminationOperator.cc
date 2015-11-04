@@ -157,12 +157,13 @@ for(int dummy = 0; dummy < 2; ++dummy) {
 
   solVec->zero();
   rhsVec->zero();
-  loadOp->apply(nullVec, nullVec, rhsVec, 1.0, 0.0);
+  loadOp->apply( nullVec, rhsVec);
   bvpOp->modifyRHSvector(rhsVec);
 if(dummy) {
   dirVec->zero();
   dirOp->addShiftToSlave(dirVec);
-  colOp->apply(nullVec, dirVec, corVec, -1.0, 0.0);
+  colOp->apply(dirVec, corVec);
+  corVec->scale(-1.0);
   colOp->append(dirOp);
   rhsVec->add(rhsVec, corVec);
   dirOp->addSlaveToMaster(rhsVec);

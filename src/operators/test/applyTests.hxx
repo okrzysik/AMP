@@ -54,7 +54,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
       rhsVec->setRandomValues();
       resVec->setRandomValues();
       adjust(solVec, shift, scale, nshift);
-      testOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+      testOperator->residual(rhsVec, solVec, resVec);
     }//end for j
   } catch (std::exception) {
     passed = false;
@@ -74,7 +74,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
       solVec->setRandomValues();
       resVec->setRandomValues();
       adjust(solVec, shift, scale, nshift);
-      testOperator->apply(fVec, solVec, resVec, 1.0, -1.0);
+      testOperator->residual(fVec, solVec, resVec);
     }//end for j
   } catch (std::exception) {
     passed = false;
@@ -95,7 +95,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
       AMP::LinearAlgebra::Vector::shared_ptr uVec;
       rhsVec->setRandomValues();
       resVec->setRandomValues();
-      testOperator->apply(rhsVec, uVec, resVec, 1.0, -1.0);
+      testOperator->residual(rhsVec, uVec, resVec);
     }//end for j
   } catch (std::exception) {
     passed = true;
@@ -115,7 +115,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
       solVec->setRandomValues();
       rhsVec->setRandomValues();
       adjust(solVec, shift, scale, nshift);
-      testOperator->apply(rhsVec, solVec, rVec, 1.0, -1.0);
+      testOperator->residual(rhsVec, solVec, rVec);
     }//end for j
   } catch (std::exception) {
     passed = true;
@@ -134,7 +134,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
       AMP::LinearAlgebra::Vector::shared_ptr fVec;
       AMP::LinearAlgebra::Vector::shared_ptr uVec;
       resVec->setRandomValues();
-      testOperator->apply(fVec, uVec, resVec, 1.0, -1.0);
+      testOperator->residual(fVec, uVec, resVec);
     }//end for j
   } catch (std::exception) {
     passed = true;
@@ -153,7 +153,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
       AMP::LinearAlgebra::Vector::shared_ptr uVec;
       AMP::LinearAlgebra::Vector::shared_ptr rVec;
       rhsVec->setRandomValues();
-      testOperator->apply(rhsVec, uVec, rVec, 1.0, -1.0);
+      testOperator->residual(rhsVec, uVec, rVec);
     }//end for j
   } catch (std::exception) {
     passed = true;
@@ -173,7 +173,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
       AMP::LinearAlgebra::Vector::shared_ptr fVec;
       solVec->setRandomValues();
       adjust(solVec, shift, scale, nshift);
-      testOperator->apply(fVec, solVec, rVec, 1.0, -1.0);
+      testOperator->residual(fVec, solVec, rVec);
     }//end for j
   } catch (std::exception) {
     passed = true;
@@ -192,7 +192,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
       AMP::LinearAlgebra::Vector::shared_ptr rVec;
       AMP::LinearAlgebra::Vector::shared_ptr fVec;
       AMP::LinearAlgebra::Vector::shared_ptr uVec;
-      testOperator->apply(fVec, uVec, rVec, 1.0, -1.0);
+      testOperator->residual(fVec, uVec, rVec);
     }//end for j
   } catch (std::exception) {
     passed = true;
@@ -203,6 +203,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
     ut->failure(msgPrefix + " : apply with f, u, r NULL, a=1, b=-1.0");
   }
 
+#if 0
   // ninth test for apply - random values in all three input vectors, a=0, b=1
   AMP::pout<<"ApplyTest #9"<<std::endl; 
   rhsVec->setRandomValues();
@@ -232,6 +233,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
   } else {
     ut->failure(msgPrefix + " : apply with random values in the vectors f,u,r, a=0.0, b=-1.0 (test scaling of f)");
   }
+#endif
 
   // eleventh test for apply - f, u, r, random values, u random -negative values
   //RS:  It is not clear why this test is valid. For example, Displacements
@@ -256,7 +258,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
         solVec->scale(-1.0);
         rhsVec->setRandomValues();
         resVec->setRandomValues();
-        testOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+        testOperator->residual(rhsVec, solVec, resVec);
       }//end for j
     } catch (...) {
       ut->expected_failure(msgPrefix + " : apply with random negative values in u, random positive f,r, a=1, b=-1.0");

@@ -64,24 +64,20 @@ void Map3Dto1D :: reset(const AMP::shared_ptr<OperatorParameters>& params)
 } 
 
 
-void Map3Dto1D :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr, 
-    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-    AMP::LinearAlgebra::Vector::shared_ptr r, const double , const double )
+void Map3Dto1D :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+			 AMP::LinearAlgebra::Vector::shared_ptr f )
 {
-  AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
-  double a = 1.0,  b=0.0;
 
   if(d_useGaussVec) {
-    apply_Gauss(nullVec, u, r, a, b);
+    apply_Gauss( u, f);
   } else {
-    apply_Nodal(nullVec, u, r, a, b);
+    apply_Nodal( u, f);
   }
 
 }
 
-void Map3Dto1D :: apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr, 
-    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-    AMP::LinearAlgebra::Vector::shared_ptr, const double, const double )
+void Map3Dto1D :: apply_Gauss(  AMP::LinearAlgebra::Vector::const_shared_ptr u,
+				AMP::LinearAlgebra::Vector::shared_ptr )
 {
     const unsigned int numPoints = outputVec->getLocalSize();
     std::vector<double> mapValues(numPoints,0);
@@ -206,9 +202,8 @@ void Map3Dto1D :: apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr,
 }
 
 
-void Map3Dto1D :: apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr, 
-    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-    AMP::LinearAlgebra::Vector::shared_ptr, const double, const double )
+void Map3Dto1D :: apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+			       AMP::LinearAlgebra::Vector::shared_ptr )
 { 
 
     const unsigned int numPoints = outputVec->getLocalSize();

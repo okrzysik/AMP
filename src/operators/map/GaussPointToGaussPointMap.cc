@@ -32,22 +32,22 @@ GaussPointToGaussPointMap::GaussPointToGaussPointMap(const AMP::shared_ptr<AMP::
 
 
 // Apply start
-void GaussPointToGaussPointMap::applyStart(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-            AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b ) 
+void GaussPointToGaussPointMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+					    AMP::LinearAlgebra::Vector::shared_ptr f) 
 {
     AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = u;
     if(d_useFrozenInputVec) {
         uInternal = d_frozenInputVec;
     }
-    AMP::Operator::NodeToNodeMap::applyStart(f, uInternal, r, a, b);
+    AMP::Operator::NodeToNodeMap::applyStart( uInternal, f);
 }
 
 
 // Apply finish
-void GaussPointToGaussPointMap::applyFinish(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-    AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b ) 
+void GaussPointToGaussPointMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+					     AMP::LinearAlgebra::Vector::shared_ptr f ) 
 {
-    AMP::Operator::NodeToNodeMap::applyFinish(f, u, r, a, b);
+    AMP::Operator::NodeToNodeMap::applyFinish( u, f);
     correctLocalOrdering();
 }
 
@@ -173,7 +173,7 @@ void GaussPointToGaussPointMap :: createIdxMap(AMP::shared_ptr<AMP::Operator::Op
       n2nMap->setVector(outVec);
 
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-      n2nMap->apply(nullVec, inVec, nullVec, 1, 0);
+      n2nMap->apply( inVec, nullVec );
 
       d_idxMap.clear();
       for(size_t i = 0; i < d_recvList.size(); ++i) {

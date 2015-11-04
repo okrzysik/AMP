@@ -42,22 +42,17 @@ public:
     /**
       For this operator the apply function would map the solution by injunction from 
       Simple Vector in u to NodalScalar Vector in r. 
-      @param [in]  f auxillary vector. 
       @param [in]  u input vector. 
       @param [out] r output vector. 
-      @param [in]  a first constant used in the expression: r = a*A(u) + b*f. The default value is -1.
-      @param [in]  b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
       */
-    void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+    void apply(AMP::LinearAlgebra::Vector::const_shared_ptr u,
+	       AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
-    void apply_Gauss(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-        AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+    void apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		      AMP::LinearAlgebra::Vector::shared_ptr f);
 
-    void apply_Nodal(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-        AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
-
-
+    void apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		      AMP::LinearAlgebra::Vector::shared_ptr f);
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         return d_inpVariable;

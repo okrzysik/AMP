@@ -202,7 +202,7 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName,
   diffSolVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
   // Compute finite element operator
-  diffOp->apply(diffRhsVec, diffSolVec, diffResVec, 1.,0.);
+  diffOp->apply( diffSolVec, diffResVec);
 
   // Check that interior values are zero.
   double totalBnd = 0.;

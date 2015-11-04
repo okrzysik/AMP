@@ -343,11 +343,8 @@ namespace AMP {
      * power by keeping the total power the same over the problem domain.   *  
      *************************************************************************
      */
-    void PowerShape :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr, 
-        AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-        AMP::LinearAlgebra::Vector::shared_ptr r,
-        const double       ,
-        const double        ) {
+    void PowerShape :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+			     AMP::LinearAlgebra::Vector::shared_ptr r ) {
 
       AMP_INSIST( ((u.get()) != NULL), "NULL Power Vector" );
       AMP_INSIST( ((r.get()) != NULL), "NULL PowerWithShape Vector" );
@@ -635,8 +632,8 @@ namespace AMP {
           AMP::LinearAlgebra::Vector::shared_ptr  unodalPower = nodalVector->cloneVector();
           AMP::LinearAlgebra::Vector::shared_ptr  rnodalPower = nodalVector->cloneVector();
 
-          volumeIntegralOperator->apply(nullVec, u, unodalPower, 1, 0.);
-          volumeIntegralOperator->apply(nullVec, r, rnodalPower, 1, 0.);
+          volumeIntegralOperator->apply( u, unodalPower);
+          volumeIntegralOperator->apply( r, rnodalPower );
 
           const double denominator = rnodalPower->L1Norm();
           AMP_INSIST(!AMP::Utilities::approx_equal(denominator,0.), "The denominator is zero - not good." ); 

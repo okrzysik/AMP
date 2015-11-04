@@ -94,20 +94,20 @@ namespace AMP {
       }//end for bnd
     }
 
-    void PelletStackOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
-        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
-        const double, const double ) {
+    void PelletStackOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+				       AMP::LinearAlgebra::Vector::shared_ptr f ) 
+    {
       if(d_onlyZcorrection) {
-        applyOnlyZcorrection(r);
+        applyOnlyZcorrection(f);
       } else {
         if(!d_frozenVectorSet) {
           d_frozenVectorForMaps = d_n2nMaps->getFrozenVector();
           d_frozenVectorSet = true;
         }
         if(d_useSerial) {
-          applySerial(f, u, r);
+          applySerial(u, f);
         } else {
-          applyXYZcorrection(f, u, r);
+          applyXYZcorrection( u, f);
         }
       }
     }
@@ -130,13 +130,18 @@ namespace AMP {
       }//end for i
     }
 
-    void PelletStackOperator :: applyXYZcorrection(AMP::LinearAlgebra::Vector::const_shared_ptr f,
-        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr  &r) {
+    void PelletStackOperator :: applyXYZcorrection( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+						    AMP::LinearAlgebra::Vector::shared_ptr  &r) {
       AMP_ASSERT(d_frozenVectorSet);
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-      r->copyVector(f);
+
+      // commenting out next line of code instead. Possibly introducing
+      // bug involving uninitialized values
+      // Currently not filling r with zeros as r may contain valid values
+      // BP, Nov 3, 2015
+      //      r->copyVector(f);
       d_frozenVectorForMaps->zero();
-      d_n2nMaps->apply(nullVec, u, nullVec, 1.0, 0.0);
+      d_n2nMaps->apply( u, nullVec );
       AMP::LinearAlgebra::Vector::shared_ptr subU = d_frozenVectorForMaps->subsetVectorForVariable(d_var);
       AMP::LinearAlgebra::Vector::shared_ptr subR = r->subsetVectorForVariable(d_var);
       AMP::Discretization::DOFManager::shared_ptr dof_map = subR->getDOFManager();
@@ -165,8 +170,8 @@ namespace AMP {
       }//end for i
     }
 
-    void PelletStackOperator :: applySerial(AMP::LinearAlgebra::Vector::const_shared_ptr f,
-        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr &r) {
+    void PelletStackOperator :: applySerial( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+					     AMP::LinearAlgebra::Vector::shared_ptr &r) {
       AMP_ASSERT(d_frozenVectorSet);
       AMP_ASSERT(d_currentPellet > 0);
       AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -178,7 +183,7 @@ namespace AMP {
           AMP::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = AMP::dynamic_pointer_cast<
             AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
           if(currMap->getMesh(2) == d_meshes[currPellIdx]) {
-            currMap->applyStart(nullVec, u, nullVec, 1.0, 0.0);
+            currMap->applyStart( u, nullVec );
             break;
           }
         }//end for m
@@ -188,7 +193,7 @@ namespace AMP {
           AMP::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = AMP::dynamic_pointer_cast<
             AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
           if(currMap->getMesh(1) == d_meshes[prevPellIdx]) {
-            currMap->applyStart(nullVec, u, nullVec, 1.0, 0.0);
+            currMap->applyStart( u, nullVec );
             break;
           }
         }//end for m
@@ -198,7 +203,7 @@ namespace AMP {
           AMP::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = AMP::dynamic_pointer_cast<
             AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
           if((currMap->getMesh(2)) == d_meshes[currPellIdx]) {
-            currMap->applyFinish(nullVec, u, nullVec, 1.0, 0.0);
+            currMap->applyFinish( u, nullVec );
             break;
           }
         }//end for m
@@ -208,17 +213,22 @@ namespace AMP {
           AMP::shared_ptr<AMP::Operator::NodeToNodeMap> currMap = AMP::dynamic_pointer_cast<
             AMP::Operator::NodeToNodeMap>(d_n2nMaps->getOperator(m));
           if((currMap->getMesh(1)) == d_meshes[prevPellIdx]) {
-            currMap->applyFinish(nullVec, u, nullVec, 1.0, 0.0);
+            currMap->applyFinish( u, nullVec );
             break;
           }
         }//end for m
       }
-      AMP::LinearAlgebra::Vector::const_shared_ptr subF = f->constSubsetVectorForVariable(d_var);
+
+      //      AMP::LinearAlgebra::Vector::const_shared_ptr subF = f->constSubsetVectorForVariable(d_var);
       AMP::LinearAlgebra::Vector::shared_ptr subR = r->subsetVectorForVariable(d_var);
       AMP::LinearAlgebra::Vector::shared_ptr subU = d_frozenVectorForMaps->subsetVectorForVariable(d_var);
       AMP::Discretization::DOFManager::shared_ptr dof_map = subR->getDOFManager();
       if(currPellIdx != -1) {
-        subR->copyVector(subF);
+	// commenting out next line of code instead. Possibly introducing
+	// bug involving uninitialized values
+	// Currently not filling r with zeros as r may contain valid values
+	// BP, Nov 3, 2015
+	//        subR->copyVector(subF);
         AMP::Mesh::MeshIterator bnd = d_meshes[currPellIdx]->getBoundaryIDIterator(AMP::Mesh::Vertex, d_slaveId, 0);
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
         for( ; bnd != end_bnd; ++bnd) {

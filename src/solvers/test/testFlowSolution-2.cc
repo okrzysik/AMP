@@ -444,9 +444,9 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     //---------------------------------------------------------------------------------------------------------------------//
     if ( neutronicsOperator.get() != NULL ) {
         neutronicsOperator->setTimeStep(0);
-        neutronicsOperator->apply(nullVec, nullVec, specificPowerGpVec, 1., 0.);
+        neutronicsOperator->apply(nullVec, specificPowerGpVec);
         thermalRhsVec1->zero();
-        specificPowerGpVecToPowerDensityNodalVecOperatator->apply(nullVec, specificPowerGpVec, thermalRhsVec1, 1., 0.);
+        specificPowerGpVecToPowerDensityNodalVecOperatator->apply(specificPowerGpVec, thermalRhsVec1);
     }
 
     //We need to reset the linear operator before the solve since TrilinosML does
@@ -456,7 +456,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     //getJacobianParams and so it need not be called. So, any of the following
     //apply calls will work:
     coupledLinearOperator->reset(columnNonlinearOperator->getJacobianParameters(globalSolMultiVector));
-    columnNonlinearOperator->apply(nullVec, globalSolMultiVector, globalResMultiVector, 1.0, 0.0);
+    columnNonlinearOperator->apply(globalSolMultiVector, globalResMultiVector);
     AMP::pout<<"Initial Global Residual Norm: "<<std::setprecision(12)<<globalResMultiVector->L2Norm()<<std::endl;
     AMP::pout<<"Initial Temperature Residual Norm: "<<std::setprecision(12)<<globalResVec->L2Norm()<<std::endl;
     if ( flowResVec.get() != NULL )
@@ -537,7 +537,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     for ( int tstep = 0; tstep < 1; tstep++ ) {
         if ( neutronicsOperator.get()!=NULL ) {
             neutronicsOperator->setTimeStep(tstep);
-            neutronicsOperator->apply(nullVec, nullVec, specificPowerGpVec, 1., 0.);
+            neutronicsOperator->apply(nullVec, specificPowerGpVec);
         }
         
         if ( robinBoundaryOp1.get() != NULL )
@@ -550,7 +550,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
         if ( meshAdapter1.get()!=NULL ) {
             thermalRhsVec1->zero();
             // specificPowerGpVec is in Watts/kilogram
-            specificPowerGpVecToPowerDensityNodalVecOperatator->apply(nullVec, specificPowerGpVec, thermalRhsVec1, 1., 0.);
+            specificPowerGpVecToPowerDensityNodalVecOperatator->apply(specificPowerGpVec, thermalRhsVec1);
         }
         if ( thermalNonlinearOperator1.get()!=NULL ) {
             thermalNonlinearOperator1->modifyRHSvector(thermalRhsVec1);
@@ -576,7 +576,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
             AMP::pout<<"Initial Guess  Norm2 for Step " << tstep << " is: "<<thermalSolVec2->L2Norm()<<std::endl;
         }
         globalResMultiVector->zero();
-        columnNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
+        columnNonlinearOperator->residual(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector);
         AMP::pout<<"Initial Global Residual Norm for Step " << tstep << " is: "<<globalResMultiVector->L2Norm()<<std::endl;
         AMP::pout<<"Initial Temperature Residual Norm for Step " << tstep << " is: "<<globalResVec->L2Norm()<<std::endl;
         if ( flowResVec.get() != NULL )
@@ -584,7 +584,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
 
         nonlinearSolver->solve(globalRhsMultiVectorView, globalSolMultiVectorView);
 
-        columnNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
+        columnNonlinearOperator->residual(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector);
         AMP::pout<<"Final   Residual Norm for Step " << tstep << " is: "<<globalResMultiVector->L2Norm()<<std::endl;
         #ifdef USE_EXT_SILO
             siloWriter->writeFile( silo_name , tstep );
@@ -600,7 +600,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
         if ( meshAdapter2.get()!=NULL ) {
             std::cout<<"Intermediate Flow Solution " <<std::endl;
             mapCladTo1DFlow1->setVector(flowSol1DVec); 
-	        mapCladTo1DFlow1->apply(nullVec, thermalMapToCladVec , nullVec, 1, 0);
+	        mapCladTo1DFlow1->apply(thermalMapToCladVec , nullVec);
             size_t flowVecSize = map1DFlowTo3DFlow1->getNumZlocations();
             std::vector<double> expectedSolution(flowVecSize, 0);
             expectedSolution = (input_db->getDatabase("regression"))->getDoubleArray("expectedSolution");

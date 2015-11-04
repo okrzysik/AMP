@@ -385,7 +385,7 @@ NonlinearKrylovAccelerator::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vect
     d_pvSolution = u;
 
     // compute residual
-    d_pOperator->apply(f, d_pvSolution, d_pvResidual);
+    d_pOperator->residual(f, d_pvSolution, d_pvResidual);
     residual_norm = d_pvResidual->L2Norm();
 
     if (d_bPrintResiduals)
@@ -418,7 +418,7 @@ NonlinearKrylovAccelerator::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vect
         if(d_iDebugPrintInfoLevel>3)
         {
             // compute residual
-            d_pOperator->apply(f, d_pvSolution, d_pvResidual);
+            d_pOperator->residual(f, d_pvSolution, d_pvResidual);
             residual_norm = d_pvResidual->L2Norm();
             std::cout << "NonlinearKrylovAccelerator::solve: L2 norm of preconditioner residual " << residual_norm << std::endl;
         }
@@ -437,7 +437,7 @@ NonlinearKrylovAccelerator::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vect
         d_pvSolution->axpy(1.0, *d_pvCorrection, *d_pvSolution);
 
         // compute the residual
-        d_pOperator->apply(f, d_pvSolution, d_pvResidual);
+        d_pOperator->residual(f, d_pvSolution, d_pvResidual);
 
         if(d_iDebugPrintInfoLevel>3)
         {

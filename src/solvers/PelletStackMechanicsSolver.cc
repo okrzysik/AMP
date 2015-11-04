@@ -67,7 +67,7 @@ void PelletStackMechanicsSolver :: solveSerial(AMP::shared_ptr<const AMP::Linear
             AMP::Operator::PelletStackOperatorParameters(emptyDb));
         pelletStackOpParams->d_currentPellet = pellId;
         d_pelletStackOp->reset(pelletStackOpParams);
-        d_pelletStackOp->apply(f, u, d_fbuffer2);
+        d_pelletStackOp->residual(f, u, d_fbuffer2);
         locPellIdx = d_pelletStackOp->getLocalIndexForPellet(pellId);
         if(locPellIdx != -1) {
             AMP::shared_ptr<AMP::Solver::SolverStrategy> currSolver = d_columnSolver->getSolver(locPellIdx);
@@ -87,12 +87,12 @@ void PelletStackMechanicsSolver :: solveScan(AMP::shared_ptr<const AMP::LinearAl
     d_columnSolver->solve(f, u);
     if(d_pelletStackOp->onlyZcorrection()) {
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-        d_pelletStackOp->apply(nullVec, nullVec, u);
+        d_pelletStackOp->apply( nullVec, u);
     } else {
         if(d_fbuffer2 == NULL) {
             d_fbuffer2 = f->cloneVector();
         }
-      d_pelletStackOp->apply(f, u, d_fbuffer2);
+      d_pelletStackOp->residual(f, u, d_fbuffer2);
       d_columnSolver->solve(d_fbuffer2, u);
     }
 }

@@ -68,7 +68,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   mechRhsVec->zero();
   mechResVec->zero();
 
-  dirichletVecOp->apply(nullVec, nullVec, mechRhsVec, 1.0, 0.0);
+  dirichletVecOp->apply( nullVec, mechRhsVec);
 
   for(int type = 1; type < 4; type++) {
     if(type == 0) {
@@ -83,7 +83,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
       mechSolVec->zero();
 
-      bvpOperator->apply(nullVec, mechSolVec, matOutVec, 1.0, 0.0);
+      bvpOperator->apply(mechSolVec, matOutVec);
 
       mechResVec->subtract(mechRhsVec, matOutVec);
 
@@ -93,7 +93,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
         double resNorm = mechResVec->L2Norm();
         std::cout<<"Iter = "<<iter<<" ResNorm2 = "<<std::setprecision(15)<<resNorm<<std::endl;
 
-        bvpOperator->apply(nullVec, pVec, matOutVec, 1.0, 0.0);
+        bvpOperator->apply(pVec, matOutVec);
 
         double matOutNorm = matOutVec->L2Norm();
         std::cout<<"CG-Iter = "<<iter<<" MatOutNorm2 = "<<std::setprecision(15)<<matOutNorm<<std::endl;

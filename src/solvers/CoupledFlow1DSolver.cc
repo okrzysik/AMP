@@ -97,9 +97,9 @@ CoupledFlow1DSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
     (AMP::dynamic_pointer_cast<AMP::Operator::Map3Dto1D> (d_flowInternal3to1))->setVector(d_flowInput);
     (AMP::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_flowInternal1to3))->setVector(d_Sol );
 
-    d_flowInternal3to1->apply(nullVec, d_Rhs, nullVec, -1, 1);
+    d_flowInternal3to1->apply( d_Rhs, nullVec);
     d_flow1DSolver->solve(d_flowInput, d_flowOutput);
-    d_flowInternal1to3->apply(nullVec, d_flowOutput , nullVec, -1, 1);
+    d_flowInternal1to3->apply( d_flowOutput , nullVec);
 }
 
 }

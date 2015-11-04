@@ -88,7 +88,7 @@ void test_with_shape(AMP::UnitTest *ut )
       // Set the initial value for all nodes of SpecificPowerVec to zero.
       SpecificPowerShapeVec->setToScalar(0.0);
       AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
-      try   { shape->apply(nullVec, SpecificPowerMagnitudeVec, SpecificPowerShapeVec, 1., 0.); }
+      try   { shape->apply(SpecificPowerMagnitudeVec, SpecificPowerShapeVec); }
       catch ( std::exception const & a ) {  
         std::cout << a.what() << std::endl;  
         ut->failure("error");
@@ -142,7 +142,7 @@ void test_with_shape(AMP::UnitTest *ut )
       // Set the initial value for all nodes of SpecificPowerVec to zero.
       SpecificPowerShapeVec->setToScalar(0.0);
       AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
-      try   { shape->apply(nullVec, SpecificPowerMagnitudeVec, SpecificPowerShapeVec, 1., 0.); }
+      try   { shape->apply( SpecificPowerMagnitudeVec, SpecificPowerShapeVec); }
       catch ( std::exception const & a ) {  
         std::cout << a.what() << std::endl;  
         ut->failure("PowerShape error");

@@ -22,11 +22,10 @@ namespace AMP {
       return d_OutputVariable;
     }
 
-    void ConstraintsEliminationOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr, 
-        AMP::LinearAlgebra::Vector::const_shared_ptr,
-        AMP::LinearAlgebra::Vector::shared_ptr r, const double, const double ) {
-      addSlaveToMaster(r);
-      setSlaveToZero(r);
+    void ConstraintsEliminationOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
+						AMP::LinearAlgebra::Vector::shared_ptr f ) {
+      addSlaveToMaster(f);
+      setSlaveToZero(f);
     }
 
     void ConstraintsEliminationOperator::setSlaveToZero(AMP::LinearAlgebra::Vector::shared_ptr u) {

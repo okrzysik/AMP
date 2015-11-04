@@ -223,7 +223,7 @@ void TrilinosMLSolver :: solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
 
     if(computeResidual) {
         r = f->cloneVector();  
-        d_pOperator->apply(f, u, r);
+        d_pOperator->residual(f, u, r);
         initialResNorm = r->L2Norm();
 
         if(d_iDebugPrintInfoLevel > 1) {
@@ -277,7 +277,7 @@ void TrilinosMLSolver :: solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
     }
 
     if(computeResidual) {
-        d_pOperator->apply(f, u, r);
+        d_pOperator->residual(f, u, r);
         finalResNorm = r->L2Norm();
 
         if(d_iDebugPrintInfoLevel > 1) {

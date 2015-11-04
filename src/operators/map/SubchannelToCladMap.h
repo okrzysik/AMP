@@ -50,16 +50,14 @@ public:
     /** \brief   Start a communicative apply operation. 
      * \details  Start a communicative apply operation. 
      */
-    virtual void applyStart(AMP::LinearAlgebra::Vector::const_shared_ptr f,
-        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
-        const double a = -1.0, const double b = 1.0);
+    virtual void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+			     AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     /** \brief   Finish a communicative apply operation. 
      * \details  Finish a communicative apply operation. 
      */
-    virtual void applyFinish(AMP::LinearAlgebra::Vector::const_shared_ptr f,
-        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
-        const double a = -1.0, const double b = 1.0);
+    virtual void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+			      AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
 protected:
 
