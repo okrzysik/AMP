@@ -1,0 +1,58 @@
+// Suppress unmatched suppressions
+unmatchedSuppression
+
+// Suppress missing include message (we are not checking dependencies)
+missingInclude
+
+// Suppress unusedFunction messages (functions may be used by subsequent packages)
+unusedFunction
+
+// Supress redundantAssignment/Copy, they can be better practice in many instances
+redundantAssignment
+redundantCopy
+
+// Suppress operator test == warnings in tests
+duplicateExpression:*/utils/test/test_AMP_MPI.cc
+duplicateExpression:*/ampmesh/test/meshTests.h
+
+// Suppress specific instances of "Upon exception there is memory leak"
+exceptNew:*/vectors/petsc/PetscVector.cc
+exceptNew:*/vectors/trilinos/thyra/ThyraVector.cc
+exceptNew:*/vectors/trilinos/thyra/ThyraVectorWrapper.cc
+exceptNew:*/matrices/trilinos/ManagedEpetraMatrix.cc
+
+// Suppress huge input warnings
+invalidscanf
+
+// Supress specific errors for AMPManager
+variableScope:*/utils/AMPManager.cc
+memleak:*/utils/test/test_AMPManager.cc
+
+// Supress warnings for Scanner.cc, Database.cc, MemoryDatabase.cc, Parser.cc, and Grammar.cc
+toomanyconfigs:*/utils/Scanner.cc
+unusedStructMember:*/utils/Scanner.cc
+ConfigurationNotChecked:*/utils/Scanner.cc
+passedByValue:*/utils/Database.cc
+passedByValue:*/utils/Database.h
+stlSize:*/utils/Database.cc
+postfixOperator:*/utils/MemoryDatabase.cc
+unusedPrivateFunction:*/utils/MemoryDatabase.h
+uninitMemberVar:*/utils/Parser.cc
+postfixOperator:*/utils/Parser.cc
+toomanyconfigs:*/utils/Grammar.cc
+ConfigurationNotChecked:*/utils/Grammar.cc
+uselessAssignmentPtrArg:*/utils/Grammar.cc
+syntaxError:*/utils/ParallelBuffer.cc
+
+// Suppress warnings for ampmesh
+toomanyconfigs:*/ampmesh/test/test_Mesh.cc
+
+// Supress material warnings
+nullPointer:*/materials/Property.h
+
+// Supress common test warnings (example: x==x)
+duplicateExpression:*/test/test*
+uselessCallsCompare:*/test/test*
+variableScope:*/test/test*
+
+

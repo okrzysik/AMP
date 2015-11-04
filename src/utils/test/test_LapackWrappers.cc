@@ -17,9 +17,12 @@ int main( int, char*[] )
     Lapack::print_machine_parameters( );
 
     // Run the basic tests
+    printf("\nRunning basic tests\n");
     N_errors += Lapack::run_all_test();
+    if ( N_errors==0 ) { printf("  passed\n"); }
 
     // Get the times for the tests
+    printf("\nGetting test times\n");
     const char* tests[] = { "dcopy", "dscal", "dnrm2", "dasum", "ddot", 
         "daxpy", "dgemv", "dgemm", "dgesv", "dgtsv", "dgbsv", 
         "dgetrf", "dgttrf","dgbtrf", "dgetrs", "dgttrs", "dgbtrs", 
