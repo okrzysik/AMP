@@ -67,7 +67,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     solVec->setRandomValues();
     rhsVec->setRandomValues();
     resVec->setRandomValues();
-    testNonlinOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+    testNonlinOperator->residual(rhsVec, solVec, resVec);
+    resVec->scale(-1.0);
   }//end for j
 
   ut->passes(exeName + " : apply");

@@ -63,10 +63,8 @@ TimeOperator::reset(const AMP::shared_ptr<AMP::Operator::OperatorParameters>& in
 }
 
 void
-TimeOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
-                 AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                 AMP::LinearAlgebra::Vector::shared_ptr r,
-                 const double a, const double b)
+TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		     AMP::LinearAlgebra::Vector::shared_ptr r )
 {
 
   // this routine evaluates a*[ ( M(u))/dt+fRhs(u) ] +b*f
@@ -77,28 +75,18 @@ TimeOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
   AMP_INSIST(d_pMassOperator.get()!=NULL, "ERROR: AMP::TimeIntegrator::TimeIntegrator::TimeOperator::apply, the mass operator is NULL!");
   AMP_INSIST(d_pRhsOperator.get()!=NULL, "ERROR: AMP::TimeIntegrator::TimeIntegrator::TimeOperator::apply, the rhs operator is NULL!");
 
-  if ( f.get()!=NULL)
-    AMP_ASSERT(f->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
   if ( u.get()!=NULL)
     AMP_ASSERT(u->getUpdateStatus()==AMP::LinearAlgebra::Vector::UNCHANGED);
 
   d_pScratchVector = r->cloneVector();
   d_pScratchVector->zero(); 
 
-  d_pMassOperator->apply(fTmp, u, r, 1.0/d_dCurrentDt, 0.0);
+  d_pMassOperator->apply( u, r);
+  r->scale(1.0/d_dCurrentDt);
   
-  d_pRhsOperator->apply(fTmp, u, d_pScratchVector, 1.0, 0.0);
+  d_pRhsOperator->apply(u, d_pScratchVector);
 
   r->add(*r, *d_pScratchVector);
-
-  if(f.get()==NULL)
-    {
-      r->scale(a);
-    }
-  else
-    {
-      r->axpby(b, a, *f);
-    }
 
   r->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 }

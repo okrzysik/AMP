@@ -159,7 +159,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   linearSolver->setPreconditioner(linearFickPreconditioner);
 
-  nonlinearFickOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  nonlinearFickOperator->residual(rhsVec, solVec, resVec);
   double initialResidualNorm  = resVec->L2Norm();
 
   AMP::pout<<"Initial Residual Norm: "<<initialResidualNorm<<std::endl;
@@ -168,7 +168,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   nonlinearSolver->solve(rhsVec, solVec);
 
-  nonlinearFickOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  nonlinearFickOperator->residual(rhsVec, solVec, resVec);
 
   double finalResidualNorm  = resVec->L2Norm();
 

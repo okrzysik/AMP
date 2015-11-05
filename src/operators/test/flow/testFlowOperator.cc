@@ -44,7 +44,7 @@ void applyTest(AMP::UnitTest *ut, std::string msgPrefix,
       rhsVec->setRandomValues();
       resVec->setRandomValues();
       adjust(solVec, workVec);
-      testOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+      testOperator->residual(rhsVec, solVec, resVec);
     }//end for j
     ut->passes(msgPrefix + " : apply with random f, u, r, a=1, b=-1.0");
   } catch (std::exception) {
@@ -58,7 +58,7 @@ void applyTest(AMP::UnitTest *ut, std::string msgPrefix,
       solVec->setRandomValues();
       resVec->setRandomValues();
       adjust(solVec, workVec);
-      testOperator->apply(fVec, solVec, resVec, 1.0, -1.0);
+      testOperator->residual(fVec, solVec, resVec);
     }//end for j
     ut->passes(msgPrefix + " : apply with f NULL, random u, r, a=1, b=-1.0");
   } catch (std::exception) {
@@ -73,7 +73,7 @@ void applyTest(AMP::UnitTest *ut, std::string msgPrefix,
       AMP::LinearAlgebra::Vector::shared_ptr uVec;
       rhsVec->setRandomValues();
       resVec->setRandomValues();
-      testOperator->apply(rhsVec, uVec, resVec, 1.0, -1.0);
+      testOperator->residual(rhsVec, uVec, resVec);
     }//end for j
     ut->failure(msgPrefix + " : apply with u NULL, random values in the vectors f,r, a=1, b=-1.0");
   } catch (std::exception) {
@@ -87,7 +87,7 @@ void applyTest(AMP::UnitTest *ut, std::string msgPrefix,
       solVec->setRandomValues();
       rhsVec->setRandomValues();
       adjust(solVec, workVec);
-      testOperator->apply(rhsVec, solVec, rVec, 1.0, -1.0);
+      testOperator->residual(rhsVec, solVec, rVec);
     }//end for j
     ut->failure(msgPrefix + " : apply with r NULL, random values in the vectors f,u, a=1, b=-1.0");
   } catch (std::exception) {
@@ -100,7 +100,7 @@ void applyTest(AMP::UnitTest *ut, std::string msgPrefix,
       AMP::LinearAlgebra::Vector::shared_ptr fVec;
       AMP::LinearAlgebra::Vector::shared_ptr uVec;
       resVec->setRandomValues();
-      testOperator->apply(fVec, uVec, resVec, 1.0, -1.0);
+      testOperator->residual(fVec, uVec, resVec);
     }//end for j
     ut->failure(msgPrefix + " : apply with f NULL, u NULL random values in the vector r, a=1, b=-1.0");
   } catch (std::exception) {
@@ -113,7 +113,7 @@ void applyTest(AMP::UnitTest *ut, std::string msgPrefix,
       AMP::LinearAlgebra::Vector::shared_ptr uVec;
       AMP::LinearAlgebra::Vector::shared_ptr rVec;
       rhsVec->setRandomValues();
-      testOperator->apply(rhsVec, uVec, rVec, 1.0, -1.0);
+      testOperator->residual(rhsVec, uVec, rVec);
     }//end for j
     ut->failure(msgPrefix + " : apply with u NULL, r NULL, random values in the vector f, a=1, b=-1.0");
   } catch (std::exception) {
@@ -127,7 +127,7 @@ void applyTest(AMP::UnitTest *ut, std::string msgPrefix,
       AMP::LinearAlgebra::Vector::shared_ptr fVec;
       solVec->setRandomValues();
       adjust(solVec, workVec);
-      testOperator->apply(fVec, solVec, rVec, 1.0, -1.0);
+      testOperator->residual(fVec, solVec, rVec);
     }//end for j
     ut->failure(msgPrefix + " : apply with f, r NULL, random values in the vector u, a=1, b=-1.0");
   } catch (std::exception) {
@@ -140,13 +140,14 @@ void applyTest(AMP::UnitTest *ut, std::string msgPrefix,
       AMP::LinearAlgebra::Vector::shared_ptr rVec;
       AMP::LinearAlgebra::Vector::shared_ptr fVec;
       AMP::LinearAlgebra::Vector::shared_ptr uVec;
-      testOperator->apply(fVec, uVec, rVec, 1.0, -1.0);
+      testOperator->residual(fVec, uVec, rVec);
     }//end for j
     ut->failure(msgPrefix + " : apply with f, u, r NULL, a=1, b=-1.0");
   } catch (std::exception) {
     ut->passes(msgPrefix + " : apply with f, u, r NULL, a=1, b=-1.0");
   }
 
+#if 0
   // ninth test for apply - random values in all three input vectors, a=0, b=1
   rhsVec->setRandomValues();
   resVec->setRandomValues();
@@ -172,6 +173,7 @@ void applyTest(AMP::UnitTest *ut, std::string msgPrefix,
   } else {
     ut->failure(msgPrefix + " : apply with random values in the vectors f,u,r, a=0.0, b=-1.0 (test scaling of f)");
   }
+#endif
 
 }
 

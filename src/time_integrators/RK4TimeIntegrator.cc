@@ -102,19 +102,19 @@ RK4TimeIntegrator::advanceSolution( const double dt, const bool )
   AMP::shared_ptr<AMP::LinearAlgebra::Vector> f;
 
   // k1 = f(tn,un)
-  d_operator->apply(f, d_solution, d_k1_vec, 1.0, 0.0);
+  d_operator->apply( d_solution, d_k1_vec);
   // u* = un+k1*dt/2
   d_new_solution->axpy(dt/2.0, *d_k1_vec, *d_solution);
   // k2 = f(t+dt/2, u*)
-  d_operator->apply(f, d_new_solution, d_k2_vec, 1.0, 0.0);
+  d_operator->apply( d_new_solution, d_k2_vec);
   // u* = un+k2*dt/2
   d_new_solution->axpy(dt/2.0, *d_k2_vec, *d_solution);
   // k3 = f(t+dt/2, u*)
-  d_operator->apply(f, d_new_solution, d_k3_vec, 1.0, 0.0);
+  d_operator->apply( d_new_solution, d_k3_vec );
   // u* = un+k3*dt
   d_new_solution->axpy(dt, *d_k3_vec, *d_solution);
   // k4 = f(t+dt, u*)
-  d_operator->apply(f, d_new_solution, d_k4_vec, 1.0, 0.0);
+  d_operator->apply( d_new_solution, d_k4_vec );
   // u_new = un+ dt*(k1+2*k2+2*k3+k4)/6
   d_k1_vec->add(*d_k1_vec, *d_k4_vec);
   d_k2_vec->add(*d_k2_vec, *d_k3_vec);

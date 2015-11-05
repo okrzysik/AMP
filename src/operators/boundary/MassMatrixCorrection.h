@@ -41,8 +41,8 @@ public :
         d_variable = var;
     }
 
-    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr,
-        AMP::LinearAlgebra::Vector::shared_ptr, const double, const double)
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
+        AMP::LinearAlgebra::Vector::shared_ptr ) override
     {
         //Do Nothing
     }

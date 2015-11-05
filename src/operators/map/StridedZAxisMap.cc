@@ -41,10 +41,8 @@ bool StridedZAxisMap::validMapType ( const std::string &t )
     return false;
 }
 
-void StridedZAxisMap::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
-        AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-        AMP::LinearAlgebra::Vector::shared_ptr r,
-        const double a, const double b)
+  void StridedZAxisMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+			       AMP::LinearAlgebra::Vector::shared_ptr r )
 {
 
     AMP::LinearAlgebra::Variable::shared_ptr inpVar = getInputVariable();
@@ -53,9 +51,9 @@ void StridedZAxisMap::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
     if (d_inpDofs!=1) {
       AMP::LinearAlgebra::Vector::const_shared_ptr inpStridedPhysics = inpPhysics->constSelect( AMP::LinearAlgebra::VS_Stride( d_inpStride, d_inpDofs) , inpVar->getName() );
       AMP_ASSERT(inpStridedPhysics);
-      AMP::Operator::AsyncMapOperator::apply(f, inpStridedPhysics, r, a, b);
+      AMP::Operator::AsyncMapOperator::apply( inpStridedPhysics, r);
     } else {
-      AMP::Operator::AsyncMapOperator::apply(f, inpPhysics, r, a, b);
+      AMP::Operator::AsyncMapOperator::apply( inpPhysics, r );
     }
 
 }

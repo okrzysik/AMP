@@ -131,7 +131,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
   AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = meshAdapter1->createVector( SpecificPowerVar );
 
-  neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
+  neutronicsOperator->apply( nullVec, SpecificPowerVec);
 
   //----------------------------------------------------------
   //  Integrate Nuclear Rhs over Desnity * Volume //
@@ -149,7 +149,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   PowerInWattsVec->zero();
 
   // convert the vector of specific power to power for a given basis.
-  sourceOperator->apply(nullVec, SpecificPowerVec, PowerInWattsVec, 1., 0.);
+  sourceOperator->apply(SpecificPowerVec, PowerInWattsVec);
 
 //--------------------------------------
 
@@ -181,7 +181,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   // register the preconditioner with the Jacobian free Krylov solver
   AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver1 = nonlinearSolver1->getKrylovSolver();
   linearSolver1->setPreconditioner(linearThermalPreconditioner1);
-  nonlinearThermalOperator1->apply(RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1, 1.0, -1.0);
+  nonlinearThermalOperator1->residual(RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1);
 
 //---------------------------------------------
 //     CREATE THE CONTACT GAP OPERATOR 
@@ -248,7 +248,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   // register the preconditioner with the Jacobian free Krylov solver
   AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver2 = nonlinearSolver2->getKrylovSolver();
   linearSolver2->setPreconditioner(linearThermalPreconditioner2);
-  nonlinearThermalOperator2->apply(RightHandSideVec2, TemperatureInKelvinVec2, ResidualVec2, 1.0, -1.0);
+  nonlinearThermalOperator2->residual(RightHandSideVec2, TemperatureInKelvinVec2, ResidualVec2);
 
 //-------------------------------------
 
@@ -352,8 +352,8 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
           RightHandSideVec1->copyVector(PowerInWattsVec);
           std::cout << "PowerInWattsVec norm  inside loop = " << RightHandSideVec1->L2Norm() <<"\n";
 
-          map2ToLowDim->apply(nullVec,TemperatureInKelvinVec2,gapVecPellet ,1.0, 0.0);
-          map2ToHighDim->apply(nullVec,gapVecPellet , scratchTempVec1,1.0, 0.0);
+          map2ToLowDim->apply(TemperatureInKelvinVec2,gapVecPellet);
+          map2ToHighDim->apply(gapVecPellet , scratchTempVec1);
 
           scratchTempVec1->scale(heff);
           variableFluxVec1->copyVector(scratchTempVec1);
@@ -366,13 +366,13 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
           nonlinearThermalOperator1->modifyRHSvector(RightHandSideVec1);
           nonlinearThermalOperator1->modifyInitialSolutionVector(TemperatureInKelvinVec1);
 	  nonlinearSolver1->solve(RightHandSideVec1, TemperatureInKelvinVec1);
-          nonlinearThermalOperator1->apply(RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1);
+          nonlinearThermalOperator1->residual(RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1);
 
           std::cout<<"Norm of TemperatureInKelvinVec1: "<< TemperatureInKelvinVec1->L2Norm() <<endl;
 
           //------------------------------------------------------------
-          map1ToLowDim->apply(nullVec,TemperatureInKelvinVec1,gapVecClad ,1.0, 0.0);
-          map1ToHighDim->apply(nullVec,gapVecClad , scratchTempVec2,1.0, 0.0);
+          map1ToLowDim->apply(TemperatureInKelvinVec1,gapVecClad);
+          map1ToHighDim->apply(gapVecClad , scratchTempVec2);
 
           scratchTempVec2->scale(heff);
           variableFluxVec2->copyVector(scratchTempVec2);
@@ -384,7 +384,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 
           nonlinearThermalOperator2->modifyRHSvector(RightHandSideVec2);
           nonlinearThermalOperator2->modifyInitialSolutionVector(TemperatureInKelvinVec2);
-          nonlinearThermalOperator2->apply(RightHandSideVec2, TemperatureInKelvinVec2, ResidualVec2);
+          nonlinearThermalOperator2->residual(RightHandSideVec2, TemperatureInKelvinVec2, ResidualVec2);
 	  nonlinearSolver2->solve(RightHandSideVec2, TemperatureInKelvinVec2);
 
           std::cout<<"Residual Norm on Pellet after "<<cnt<<" iteration is : " << ResidualVec1->L2Norm() << std::endl;

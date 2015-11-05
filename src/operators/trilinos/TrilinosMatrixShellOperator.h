@@ -22,9 +22,18 @@ public:
 
     void setNodalDofMap(AMP::shared_ptr<AMP::Discretization::DOFManager> dofMap);
 
-    void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-        AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
-
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		AMP::LinearAlgebra::Vector::shared_ptr f) override;
+    /**
+     * Column specific implementation of the residual: f-L(u)
+     * \param f: shared pointer to const vector rhs
+     * \param u: shared pointer to const vector u
+     * \param r: shared pointer to vector residual
+     */
+    virtual void residual(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+			  AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+			  AMP::LinearAlgebra::Vector::shared_ptr r) override;
+    
     void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();

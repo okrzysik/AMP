@@ -121,7 +121,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   std::cout << "initial guess norm = " << initialGuessNorm <<"\n";
 
   //Initial guess for thermal must satisfy the thermal Dirichlet boundary conditions
-  dirichletThermalInVecOp->apply(nullVec, nullVec, solVec, 1.0, 0.0);
+  dirichletThermalInVecOp->apply( nullVec, solVec);
 
   initialGuessNorm  = solVec->L2Norm();
   std::cout << "initial guess norm  after apply = " << initialGuessNorm <<"\n";
@@ -133,7 +133,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   rhsVec->setToScalar(0.5);
 
-  thermalBoundaryOperator->apply(nullVec, nullVec, rhsVec, 1.0, 0.0);
+  thermalBoundaryOperator->apply( nullVec, rhsVec);
 
   double rhsNorm  = rhsVec->L2Norm();
   std::cout << "rhs norm  after apply = " << rhsNorm <<"\n";
@@ -163,7 +163,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   AMP::shared_ptr<AMP::Solver::NonlinearKrylovAccelerator> nonlinearSolver(new AMP::Solver::NonlinearKrylovAccelerator(nonlinearSolverParams));
 
 
-  nonlinearThermalOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  nonlinearThermalOperator->residual(rhsVec, solVec, resVec);
   double initialResidualNorm  = resVec->L2Norm();
 
   AMP::pout<<"Initial Residual Norm: "<<initialResidualNorm<<std::endl;
@@ -172,7 +172,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   nonlinearSolver->solve(rhsVec, solVec);
 
-  nonlinearThermalOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  nonlinearThermalOperator->residual(rhsVec, solVec, resVec);
 
   double finalResidualNorm  = resVec->L2Norm();
 

@@ -101,13 +101,13 @@ AMP::shared_ptr<AMP::Solver::PetscSNESSolver>
   AMP::LinearAlgebra::Vector::shared_ptr mechNlScaledRhsVec = meshAdapter->createVector( residualVariable );
 
   //Initial guess for NL solver must satisfy the displacement boundary conditions
-  dirichletDispInVecOp->apply(nullVec, nullVec, mechNlSolVec, 1.0, 0.0);
+  dirichletDispInVecOp->apply(nullVec, mechNlSolVec);
 
-  nonlinBvpOperator->apply(nullVec, mechNlSolVec, mechNlResVec, 1.0, 0.0);
+  nonlinBvpOperator->apply(mechNlSolVec, mechNlResVec);
   linBvpOperator->reset(nonlinBvpOperator->getJacobianParameters(mechNlSolVec));
 
   mechNlRhsVec->setToScalar(0.0);
-  dirichletLoadVecOp->apply(nullVec, nullVec, mechNlRhsVec, 1.0, 0.0);
+  dirichletLoadVecOp->apply(nullVec, mechNlRhsVec);
 
   double initSolNorm = mechNlSolVec->L2Norm();
 
@@ -217,7 +217,7 @@ AMP::shared_ptr<AMP::Solver::PetscSNESSolver>
   AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
   AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = meshAdapter->createVector( SpecificPowerVar );
 
-  neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
+  neutronicsOperator->apply(nullVec, SpecificPowerVec);
 
 /////////////////////////////////////////////////////
 //  Integrate Nuclear Rhs over Desnity * Volume //
@@ -235,7 +235,7 @@ AMP::shared_ptr<AMP::Solver::PetscSNESSolver>
   PowerInWattsVec->zero();
 
   // convert the vector of specific power to power for a given basis.
-  sourceOperator->apply(nullVec, SpecificPowerVec, PowerInWattsVec, 1., 0.);
+  sourceOperator->apply(SpecificPowerVec, PowerInWattsVec);
 
   rhsVec->copyVector(PowerInWattsVec);
 
@@ -273,7 +273,7 @@ AMP::shared_ptr<AMP::Solver::PetscSNESSolver>
 
   linearSolver->setPreconditioner(linearThermalPreconditioner);
 
-  nonlinearThermalOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  nonlinearThermalOperator->residual(rhsVec, solVec, resVec);
   double initialResidualNorm  = resVec->L2Norm();
 
   AMP::pout<<"Initial Residual Norm: "<<initialResidualNorm<<std::endl;

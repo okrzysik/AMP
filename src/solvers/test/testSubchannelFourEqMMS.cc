@@ -259,7 +259,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     // put manufactured RHS into resVec
     nonlinearOperator->reset(nonlinearOpParams);
     linearOperator->reset(nonlinearOperator->getJacobianParameters(solVec));
-    linearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+    linearOperator->residual(rhsVec, solVec, resVec);
    
     // create nonlinear solver parameters
     AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams(new AMP::Solver::PetscSNESSolverParameters(nonlinearSolver_db));
@@ -295,7 +295,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     std::cout<< *rhsVec <<std::endl;
     std::cout<<" ... was the source "<<std::endl;
 */
-    nonlinearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+    nonlinearOperator->residual(rhsVec, solVec, resVec);
 /*
     std::cout<<" the initial residual is... "<<rhsVec->getGlobalSize() <<std::endl;
     std::cout<< *resVec <<std::endl;
@@ -310,7 +310,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     std::cout<< *solVec <<std::endl;
     std::cout<<" ... was the solution "<<std::endl;
 */
-    nonlinearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+    nonlinearOperator->residual(rhsVec, solVec, resVec);
 /*
     std::cout<<" the residual is... "<<rhsVec->getGlobalSize() <<std::endl;
     std::cout<< *resVec <<std::endl;

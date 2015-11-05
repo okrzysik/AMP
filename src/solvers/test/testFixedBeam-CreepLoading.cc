@@ -129,7 +129,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   //RHS
   rhsVec->zero();
-  dirichletLoadVecOp->apply(nullVec, nullVec, rhsVec, 1.0, 0.0);
+  dirichletLoadVecOp->apply(nullVec, rhsVec);
   nonlinearMechanicsBVPoperator->modifyRHSvector(rhsVec);
 
   // Create the silo writer and register the data
@@ -195,13 +195,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     double finalTemperature = 500.0;
     tempVec->setToScalar(finalTemperature);
 
-    nonlinearMechanicsBVPoperator->apply(scaledRhsVec, solVec, resVec, 1.0, -1.0);
+    nonlinearMechanicsBVPoperator->residual(scaledRhsVec, solVec, resVec);
     double initialResidualNorm  = resVec->L2Norm();
     AMP::pout<<"Initial Residual Norm for loading step "<<(step+1)<<" is "<<initialResidualNorm<<std::endl;
 
     nonlinearSolver->solve(scaledRhsVec, solVec);
 
-    nonlinearMechanicsBVPoperator->apply(scaledRhsVec, solVec, resVec, 1.0, -1.0);
+    nonlinearMechanicsBVPoperator->residual(scaledRhsVec, solVec, resVec);
     double finalResidualNorm  = resVec->L2Norm();
     AMP::pout<<"Final Residual Norm for loading step "<<(step+1)<<" is "<<finalResidualNorm<<std::endl;
 

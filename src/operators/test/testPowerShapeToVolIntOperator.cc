@@ -96,7 +96,7 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
   AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector( nodalDofMap, outputVariable, split );
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
   
-    try   { shape->apply(nullVec, shapeInpVec, shapeOutVec, 1., 0.); }
+    try   { shape->apply( shapeInpVec, shapeOutVec); }
     catch ( std::exception const & a ) {  
         std::cout << a.what() << std::endl;  
         ut->failure("error");
@@ -105,7 +105,7 @@ void test_with_shape(AMP::UnitTest *ut, std::string exeName )
     AMP::pout << "shapeOutVec->max/min" << " : " <<  shapeOutVec->min() << " : " <<  shapeOutVec->max() <<  std::endl; 
     ut->passes("PowerShape didn't crash the system");
     
-    try   { volumeOp->apply(nullVec, shapeOutVec, resVec, 1., 0.); }
+    try   { volumeOp->apply(shapeOutVec, resVec); }
     catch ( std::exception const & a ) {  
         std::cout << a.what() << std::endl;  
         ut->failure("error");

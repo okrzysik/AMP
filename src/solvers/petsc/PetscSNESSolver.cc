@@ -214,7 +214,8 @@ PetscErrorCode PetscSNESSolver::apply(SNES ,Vec x,Vec r,void *ctx)
 
     AMP::shared_ptr<AMP::Operator::Operator> op(((PetscSNESSolver *)ctx)->getOperator());
 
-    op->apply(sp_f, sp_x, sp_r, 1.0, -1.0);
+    op->residual(sp_f, sp_x, sp_r);
+    sp_r->scale(-1.0);
 
     AMP_ASSERT( (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
         (sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );

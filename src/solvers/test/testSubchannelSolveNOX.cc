@@ -590,7 +590,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
             cladPower->zero(); 
         }
         specificPowerGpVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
-        volumeIntegralColumnOperator->apply(nullVec, specificPowerGpVec, globalThermalRhsVec , 1., 0.);
+        volumeIntegralColumnOperator->apply(specificPowerGpVec, globalThermalRhsVec);
     }
 
     if ( subchannelMesh.get()!=NULL ) {
@@ -620,10 +620,10 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
             subchannelNonlinearOperator->getJacobianParameters(flowSolVec) );
         subchannelLinearParams->d_initialize = false;
         subchannelLinearOperator->reset(subchannelLinearParams);
-        subchannelLinearOperator->apply( flowRhsVec, flowSolVec, flowResVec, 1.0, -1.0);
+        subchannelLinearOperator->residual( flowRhsVec, flowSolVec, flowResVec);
     }
 
-    nonlinearCoupledOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
+    nonlinearCoupledOperator->residual(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector);
    
     size_t totalOp;
     if(subchannelMesh != NULL ){
@@ -645,7 +645,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     PROFILE_START("Solve");
     AMP::pout << "Rhs norm: " << std::setprecision(13)<< globalRhsMultiVector->L2Norm()<< std::endl;
     AMP::pout << "Initial solution norm: " << std::setprecision(13)<< globalSolMultiVector->L2Norm()<< std::endl;
-    nonlinearCoupledOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector);
+    nonlinearCoupledOperator->residual(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector);
     double tempResNorm = 0.0;
     double flowResNorm = 0.0;
     if ( pinMesh!=NULL )
@@ -658,7 +658,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::pout << "Initial temp residual norm: " << std::setprecision(13)<< tempResNorm << std::endl;
     AMP::pout << "Initial flow residual norm: " << std::setprecision(13)<< flowResNorm << std::endl;
     nonlinearSolver->solve(globalRhsMultiVector, globalSolMultiVector);
-    nonlinearCoupledOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector);
+    nonlinearCoupledOperator->residual(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector);
     AMP::pout << "Final residual norm: " << std::setprecision(13)<< globalResMultiVector->L2Norm()<< std::endl;
     PROFILE_STOP("Solve");
 
@@ -737,8 +737,8 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         subchannelToPointMapParams->x.size(), subchannelDensityToPointMap.getOutputVariable() );
     AMP::LinearAlgebra::Vector::shared_ptr temperatureMapVec = AMP::LinearAlgebra::SimpleVector::create(
         subchannelToPointMapParams->x.size(), subchannelTemperatureToPointMap.getOutputVariable() );
-    subchannelDensityToPointMap.apply( nullVec, flowSolVec, densityMapVec );
-    subchannelTemperatureToPointMap.apply( nullVec, flowSolVec, temperatureMapVec );
+    subchannelDensityToPointMap.residual( nullVec, flowSolVec, densityMapVec );
+    subchannelTemperatureToPointMap.residual( nullVec, flowSolVec, temperatureMapVec );
     if(subchannelMesh != NULL ){
         AMP::Mesh::MeshIterator face  = xyFaceMesh->getIterator(AMP::Mesh::Face, 0);
         std::vector<size_t> dofs;

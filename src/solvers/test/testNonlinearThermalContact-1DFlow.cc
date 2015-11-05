@@ -163,7 +163,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
   AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap1, SpecificPowerVar );
 
-  neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
+  neutronicsOperator->apply( nullVec, SpecificPowerVec);
 
   //----------------------------------------------------------
   //  Integrate Nuclear Rhs over Desnity * Volume //
@@ -183,7 +183,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   PowerInWattsVec->zero();
 
   // convert the vector of specific power to power for a given basis.
-  sourceOperator->apply(nullVec, SpecificPowerVec, PowerInWattsVec, 1., 0.);
+  sourceOperator->apply( SpecificPowerVec, PowerInWattsVec);
 
 //--------------------------------------
 
@@ -215,7 +215,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   // register the preconditioner with the Jacobian free Krylov solver
   AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver1 = nonlinearSolver1->getKrylovSolver();
   linearSolver1->setPreconditioner(linearThermalPreconditioner1);
-  nonlinearThermalOperator1->apply(RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1, 1.0, -1.0);
+  nonlinearThermalOperator1->residual(RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1);
 
 //---------------------------------------------
 //     CREATE THE CONTACT GAP OPERATOR 
@@ -445,8 +445,8 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 
           //------------------------------------------------------------
 
-          map2ToLowDim->apply(nullVec,TemperatureInKelvinVec2,gapVecPellet ,1.0, 0.0);
-          map2ToHighDim->apply(nullVec,gapVecPellet , scratchTempVec1,1.0, 0.0);
+          map2ToLowDim->apply(TemperatureInKelvinVec2,gapVecPellet);
+          map2ToHighDim->apply(gapVecPellet , scratchTempVec1);
 
           scratchTempVec1->scale(heff);
           variableFluxVec1->copyVector(scratchTempVec1); 
@@ -459,16 +459,16 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
           nonlinearThermalOperator1->modifyRHSvector(RightHandSideVec1);
           nonlinearThermalOperator1->modifyInitialSolutionVector(TemperatureInKelvinVec1);
 	  nonlinearSolver1->solve(RightHandSideVec1, TemperatureInKelvinVec1);
-          nonlinearThermalOperator1->apply(RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1);
+          nonlinearThermalOperator1->residual(RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1);
 
           std::cout<<"Norm of TemperatureInKelvinVec1: "<< TemperatureInKelvinVec1->L2Norm() << std::endl;
 
           //------------------------------------------------------------
 
-          mapCladToFlow->apply(nullVec,TemperatureInKelvinVec2,solVec,1.0,-1.0);
+          mapCladToFlow->residual(nullVec,TemperatureInKelvinVec2,solVec);
           while ( 1 )
           {
-            flowOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+            flowOperator->residual(rhsVec, solVec, resVec);
             if ( abs(resVec->L2Norm()-vecLag->L2Norm()) < .000005*vecLag->L2Norm() )
               break;
             else
@@ -482,7 +482,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
             vecLag->copyVector(resVec);
           }
 
-          mapFlowToClad->apply(nullVec, resVec, robinRHSVec,1.0,-1.0);
+          mapFlowToClad->residual(nullVec, resVec, robinRHSVec);
 
           robinRHSVec->scale(hclad);
           correctionParameters3->d_variableFlux = robinRHSVec; 
@@ -490,11 +490,11 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 
           
           //-----------------------------------------------
-          map1ToLowDim->apply(nullVec,TemperatureInKelvinVec1,gapVecClad ,1.0, 0.0);
+          map1ToLowDim->apply(TemperatureInKelvinVec1,gapVecClad);
     
           std::cout<<"Norm of solVec after map1toLowDim: "<< gapVecClad->L2Norm() << std::endl;
 
-          map1ToHighDim->apply(nullVec,gapVecClad , scratchTempVec2,1.0, 0.0);
+          map1ToHighDim->apply(gapVecClad , scratchTempVec2);
 
           std::cout<<"Norm of scratch2: "<< scratchTempVec2->L2Norm() << std::endl;
 
@@ -507,7 +507,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
           std::cout<<"Variable flux2 norm inside loop : "<< variableFluxVec2->L2Norm() << std::endl;
 
           linearThermalOperator2->modifyRHSvector(RightHandSideVec2);
-          linearThermalOperator2->apply(RightHandSideVec2, TemperatureInKelvinVec2, ResidualVec2);
+          linearThermalOperator2->residual(RightHandSideVec2, TemperatureInKelvinVec2, ResidualVec2);
           mlSolver2->solve(RightHandSideVec2, TemperatureInKelvinVec2);
 
           //------------------------------------------------------------

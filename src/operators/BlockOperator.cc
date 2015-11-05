@@ -88,8 +88,8 @@ namespace AMP {
       return true;
     }
 
-    void BlockOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-        AMP::LinearAlgebra::Vector::shared_ptr r, const double a, const double b) {
+    void BlockOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+        AMP::LinearAlgebra::Vector::shared_ptr r ) {
 
       AMP::LinearAlgebra::Variable::shared_ptr tmpOutVar = getOutputVariable();
 
@@ -100,20 +100,9 @@ namespace AMP {
       for(int j = 0; j < d_iNumColumnBlocks; j++) {
         for(int i = 0; i < d_iNumRowBlocks; i++) {
           AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-          d_blocks[i][j]->apply(nullVec, u, rCopy, 1.0, 0.0);
+          d_blocks[i][j]->apply(u, rCopy );
         }
         rInternal->add(rInternal , rCopy);
-      }
-
-      if(f.get() == NULL) {
-        rInternal->scale(a);
-      } else {
-        AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = f->constSubsetVectorForVariable( tmpOutVar );
-        if(fInternal.get() == NULL) {
-          rInternal->scale(a);
-        } else {
-          rInternal->axpby(b, a, fInternal);
-        }
       }
 
     }

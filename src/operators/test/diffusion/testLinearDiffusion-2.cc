@@ -148,7 +148,7 @@ void linearTest(AMP::UnitTest *ut, std::string exeName,
   }
 
   // Compute finite element operator
-  diffOp->apply(diffRhsVec, diffSolVec, diffResVec, 1.,0.);
+  diffOp->apply( diffSolVec, diffResVec);
 
   // write values in mathematica form
   int nranks = globalComm.getSize();

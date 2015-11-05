@@ -65,9 +65,8 @@ namespace Operator {
       {
         d_paramsize = paramSz;
       }
-      virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
-          AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
-          const double a = -1.0, const double b = 1.0);
+      virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+			  AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
       virtual AMP::shared_ptr<OperatorParameters>
         getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u)

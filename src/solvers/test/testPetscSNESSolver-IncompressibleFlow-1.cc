@@ -164,7 +164,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver = nonlinearSolver->getKrylovSolver();
     linearSolver->setPreconditioner(linearFlowPreconditioner);
 
-    nonlinearFlowOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+    nonlinearFlowOperator->residual(rhsVec, solVec, resVec);
     double initialResidualNorm  = resVec->L2Norm();
 
     AMP::pout<<"Initial Residual Norm: "<<initialResidualNorm<<std::endl;
@@ -179,7 +179,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     solVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     resVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-    nonlinearFlowOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+    nonlinearFlowOperator->residual(rhsVec, solVec, resVec);
 
     double finalResidualNorm  = resVec->L2Norm();
     double finalSolutionNorm  = solVec->L2Norm();

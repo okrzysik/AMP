@@ -143,7 +143,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
   AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = meshAdapter1->createVector( SpecificPowerVar );
 
-  neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
+  neutronicsOperator->apply( nullVec, SpecificPowerVec);
 
   //----------------------------------------------------------
   //  Integrate Nuclear Rhs over Desnity * Volume //
@@ -161,7 +161,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   PowerInWattsVec->zero();
 
   // convert the vector of specific power to power for a given basis.
-  sourceOperator->apply(nullVec, SpecificPowerVec, PowerInWattsVec, 1., 0.);
+  sourceOperator->apply(SpecificPowerVec, PowerInWattsVec);
 
   //copy the power to pellet RHS vector
   RightHandSideVec1->copyVector(PowerInWattsVec);
@@ -355,7 +355,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   nonlinearThermalOperator2->modifyInitialSolutionVector(TemperatureInKelvinVec2);
   //-------------------------------------
 
-  nonlinearCoupledOperator->apply(RightHandSideVec, TemperatureInKelvin, ResidualVec, 1.0, -1.0);
+  nonlinearCoupledOperator->residual(RightHandSideVec, TemperatureInKelvin, ResidualVec);
 
   double initialResidualNorm  = ResidualVec->L2Norm();
 
@@ -373,7 +373,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 
   if(finalResidualNorm < 1.e-5 ){testPassed = true;}
 
-  nonlinearCoupledOperator->apply(RightHandSideVec, TemperatureInKelvin, ResidualVec, 1.0, -1.0);
+  nonlinearCoupledOperator->residual(RightHandSideVec, TemperatureInKelvin, ResidualVec);
 
 #ifdef USE_EXT_SILO
   manager->writeFile<AMP::SiloIO> ( exeName , 0 );

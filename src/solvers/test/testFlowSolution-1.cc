@@ -151,9 +151,9 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   AMP::LinearAlgebra::Vector::shared_ptr mv_view_tmpVec = AMP::LinearAlgebra::MultiVector::view( tmpVec , globalComm );
   //AMP::LinearAlgebra::Vector::shared_ptr mv_view_cladVec = AMP::LinearAlgebra::MultiVector::view( cladVec , globalComm );
   
-  flowOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  flowOperator->residual(rhsVec, solVec, resVec);
   flowJacobian->reset(flowOperator->getJacobianParameters(mv_view_solVec));
-  flowJacobian->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  flowJacobian->residual(rhsVec, solVec, resVec);
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   
   AMP::shared_ptr<AMP::Solver::PetscSNESSolverParameters> jacobianSolverParams(new AMP::Solver::PetscSNESSolverParameters(jacobianSolver_db));
@@ -189,7 +189,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   linearSolver->setPreconditioner(JacobianSolver);
   //------------------------------------------------------------------------------
 
-  flowOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  flowOperator->residual(rhsVec, solVec, resVec);
   double initialResidualNorm  = resVec->L2Norm();
 
   AMP::pout<<"Initial Residual Norm: "<<initialResidualNorm<<std::endl;
@@ -198,7 +198,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
   nonlinearSolver->solve(mv_view_rhsVec, mv_view_solVec);
 
-  flowOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  flowOperator->residual(rhsVec, solVec, resVec);
 
   double finalResidualNorm  = resVec->L2Norm();
 

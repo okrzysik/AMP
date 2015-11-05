@@ -141,7 +141,7 @@ void helperBuildPointLoadRHSForPelletMechanics(AMP::shared_ptr<AMP::Database> gl
           AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
             "PointLoad", global_input_db, dummyModel));
     loadOp->setVariable(currOp->getOutputVariable());
-    loadOp->apply(nullVec, nullVec, rhsVec, 1.0, 0.0);
+    loadOp->apply( nullVec, rhsVec );
   }//end for id
 }
 

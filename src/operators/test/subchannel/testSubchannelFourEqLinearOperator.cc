@@ -593,7 +593,7 @@ void Test(AMP::UnitTest *ut, const std::string& exeName)
   subchannelOperator->setFrozenVector(FrozenVec);
   subchannelOpParams->d_initialize = true;
   subchannelOperator->reset(subchannelOpParams);
-  subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
+  subchannelOperator->apply(SolVec, ResVec);
 
   // get the AMP Jacobian matrix to be tested against the MATLAB Jacobian matrix
   AMP::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian = subchannelOperator->getMatrix();

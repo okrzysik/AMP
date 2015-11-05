@@ -58,13 +58,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   AMP::pout<<"Solution Norm: "<<(solVec->L2Norm())<<std::endl;
 
-  testNonlinOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
+  testNonlinOperator->apply(solVec, resVec);
 
   double resNorm1 = resVec->L2Norm();
 
   AMP::pout<<"resNorm1 = "<<resNorm1<<std::endl;
 
-  testNonlinOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
+  testNonlinOperator->apply( solVec, resVec );
 
   double resNorm2 = resVec->L2Norm();
 

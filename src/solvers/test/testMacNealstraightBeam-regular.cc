@@ -97,7 +97,7 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
   mechRhsVec->setToScalar(0.0);
   mechResVec->setToScalar(0.0);
 
-  dirichletVecOp->apply(nullVec, nullVec, mechRhsVec, 1.0, 0.0);
+  dirichletVecOp->apply( nullVec, mechRhsVec);
 
   double rhsNorm = mechRhsVec->L2Norm();
 
@@ -107,7 +107,7 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
 
   AMP::pout<<"Initial Solution Norm: "<<initSolNorm<<std::endl;
 
-  bvpOperator->apply(mechRhsVec, mechSolVec, mechResVec, 1.0, -1.0);
+  bvpOperator->residual(mechRhsVec, mechSolVec, mechResVec);
 
   double initResidualNorm = mechResVec->L2Norm();
 
@@ -151,7 +151,7 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName,
   AMP::pout<<"Maximum V displacement: "<<finalMaxV<<std::endl;
   AMP::pout<<"Maximum W displacement: "<<finalMaxW<<std::endl;
 
-  bvpOperator->apply(mechRhsVec, mechSolVec, mechResVec, 1.0, -1.0);
+  bvpOperator->residual(mechRhsVec, mechSolVec, mechResVec);
 
   double finalResidualNorm = mechResVec->L2Norm();
 

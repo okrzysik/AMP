@@ -121,12 +121,12 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   mechNlSolVec->setToScalar(0.0);
   mechPressureVec->setToScalar(0.0);
 
-  nonlinBvpOperator->apply(nullVec, mechNlSolVec, mechNlResVec, 1.0, 0.0);
+  nonlinBvpOperator->apply( mechNlSolVec, mechNlResVec);
   linBvpOperator->reset(nonlinBvpOperator->getJacobianParameters(mechNlSolVec));
 
   //Point forces
   mechNlRhsVec->setToScalar(0.0);
-  dirichletLoadVecOp->apply(nullVec, nullVec, mechNlRhsVec, 1.0, 0.0);
+  dirichletLoadVecOp->apply(nullVec, mechNlRhsVec);
 
   //Applying the pressure load
   pressureLoadVecOp->addRHScorrection(mechPressureVec);
@@ -164,14 +164,14 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     mechNlScaledRhsVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
     AMP::pout << "L2 Norm of RHS at loading step " << (step+1) << " is " << mechNlScaledRhsVec->L2Norm() << std::endl;
 
-    nonlinBvpOperator->apply(mechNlScaledRhsVec, mechNlSolVec, mechNlResVec, 1.0, -1.0);
+    nonlinBvpOperator->residual(mechNlScaledRhsVec, mechNlSolVec, mechNlResVec);
     double initialResidualNorm  = mechNlResVec->L2Norm();
     AMP::pout<<"Initial Residual Norm for loading step "<<(step+1)<<" is "<<initialResidualNorm<<std::endl;
 
     AMP::pout<<"Starting Nonlinear Solve..."<<std::endl;
     nonlinearSolver->solve(mechNlScaledRhsVec, mechNlSolVec);
 
-    nonlinBvpOperator->apply(mechNlScaledRhsVec, mechNlSolVec, mechNlResVec, 1.0, -1.0);
+    nonlinBvpOperator->residual(mechNlScaledRhsVec, mechNlSolVec, mechNlResVec);
     double finalResidualNorm  = mechNlResVec->L2Norm();
     AMP::pout<<"Final Residual Norm for loading step "<<(step+1)<<" is "<<finalResidualNorm<<std::endl;
 

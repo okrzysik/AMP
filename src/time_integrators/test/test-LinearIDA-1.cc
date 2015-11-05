@@ -163,7 +163,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = meshAdapter->createVector( SpecificPowerVar );
     
-    neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
+    neutronicsOperator->apply(nullVec, SpecificPowerVec);
     
     
     /////////////////////////////////////////////////////
@@ -185,7 +185,7 @@ void IDATimeIntegratorTest(AMP::UnitTest *ut )
     PowerInWattsVec->zero();
     
     // convert the vector of specific power to power for a given basis.
-    sourceOperator->apply(nullVec, SpecificPowerVec, PowerInWattsVec, 1., 0.);
+    sourceOperator->apply(SpecificPowerVec, PowerInWattsVec);
     
     double t1;
     t1 = SpecificPowerVec->L2Norm();

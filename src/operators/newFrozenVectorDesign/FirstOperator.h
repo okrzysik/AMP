@@ -14,17 +14,11 @@ namespace AMP {
           d_var.reset(new AMP::LinearAlgebra::Variable(params->d_db->getString("Variable")));
         }
 
-        void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0) {
+        void apply(AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		   AMP::LinearAlgebra::Vector::shared_ptr r) override {
           AMP::LinearAlgebra::Vector::const_shared_ptr in = u->constSubsetVectorForVariable(d_var);
           AMP::LinearAlgebra::Vector::shared_ptr out = r->subsetVectorForVariable(d_var);
-          out->scale((d_constant*a), in);
-          if(f != NULL) {
-            AMP::LinearAlgebra::Vector::const_shared_ptr rhs = f->constSubsetVectorForVariable(d_var);
-            if(rhs != NULL) {
-              out->axpy(b, rhs, out);
-            }
-          }
+          out->scale(d_constant, in);
         }
 
         AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {

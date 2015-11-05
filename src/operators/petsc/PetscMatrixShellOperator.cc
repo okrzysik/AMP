@@ -25,11 +25,10 @@ void PetscMatrixShellOperator :: setMatLocalColumnSize(int val) {
     d_iMatLocalColumnSize = val;
 }
 
-void PetscMatrixShellOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
-    AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
-    const double a, const double b) 
+void PetscMatrixShellOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+					AMP::LinearAlgebra::Vector::shared_ptr f ) 
 {
-    d_operator->apply(f, u, r, a, b);
+  d_operator->apply(u, f);
 }
 
 void PetscMatrixShellOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params) 
@@ -66,8 +65,7 @@ PetscErrorCode PetscMatrixShellOperator :: mult(Mat mat, Vec in, Vec out)
     AMP::LinearAlgebra::Vector::shared_ptr outVec( reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>(out->data) , 
         AMP::LinearAlgebra::ExternalVectorDeleter() );
 
-    AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    (op->d_operator)->apply(nullVec, inVec, outVec, 1.0, 0.0);
+    (op->d_operator)->apply( inVec, outVec);
 
     return(0);
 }

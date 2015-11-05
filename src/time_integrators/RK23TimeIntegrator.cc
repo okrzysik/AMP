@@ -102,12 +102,10 @@ RK23TimeIntegrator::setupVectors( void )
 int 
 RK23TimeIntegrator::advanceSolution( const double dt, const bool first_step )
 {
-  AMP::shared_ptr<AMP::LinearAlgebra::Vector> f;
-  
   if(first_step)
     {
       // k1 = f(tn,un)
-      d_operator->apply(f, d_solution, d_k1_vec, 1.0, 0.0);
+      d_operator->apply( d_solution, d_k1_vec );
     }
   else
     {
@@ -118,11 +116,11 @@ RK23TimeIntegrator::advanceSolution( const double dt, const bool first_step )
   // u* = un+k1*dt/2
   d_new_solution->axpy(d_current_dt/2.0, *d_k1_vec, *d_solution);
   // k2 = f(t+dt/2, u*)
-  d_operator->apply(f, d_new_solution, d_k2_vec, 1.0, 0.0);
+  d_operator->apply(d_new_solution, d_k2_vec );
   // u* = un+0.75*k2*dt
   d_new_solution->axpy(0.75*d_current_dt, *d_k2_vec, *d_solution);
   // k3 = f(t+0.75dt, u*)
-  d_operator->apply(f, d_new_solution, d_k3_vec, 1.0, 0.0);
+  d_operator->apply( d_new_solution, d_k3_vec );
 
   // first we calculate the 3rd order solution in d_new_solution
   // u* = un+k1*2dt/9
@@ -133,7 +131,7 @@ RK23TimeIntegrator::advanceSolution( const double dt, const bool first_step )
   d_new_solution->axpy(4.0*d_current_dt/9.0, *d_k3_vec, *d_new_solution);
 
   // k4 = f(t+dt, u*)
-  d_operator->apply(f, d_new_solution, d_k4_vec, 1.0, 0.0);
+  d_operator->apply(d_new_solution, d_k4_vec);
 
   // now we calculate the 2nd order solution in d_z_vec for adapting the timestep
   // z = un+ dt*(7k1/24+k2/4+k3/3+k4/8)

@@ -45,14 +45,11 @@ namespace Operator {
 
       /**
         For this operator we have an in-place apply.
-        @param [in]  f auxillary/rhs vector. 
         @param [in]  u input vector. 
         @param [out] r residual/output vector. 
-        @param [in]  a first constant used in the expression: r = a*A(u) + b*f. The default value is -1.
-        @param [in]  b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
         */
-      void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-          AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+      void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		  AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
       /**
         This function reads the entries of the database for the flow operator

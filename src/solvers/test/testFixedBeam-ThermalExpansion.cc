@@ -135,7 +135,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
 
   //RHS
   rhsVec->zero();
-  dirichletLoadVecOp->apply(nullVec, nullVec, rhsVec, 1.0, 0.0);
+  dirichletLoadVecOp->apply(nullVec, rhsVec);
   nonlinearMechanicsBVPoperator->modifyRHSvector(rhsVec);
 
   // Create the silo writer and register the data
@@ -156,7 +156,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   //We need to reset the linear operator before the solve since TrilinosML does
   //the factorization of the matrix during construction and so the matrix must
   //be correct before constructing the TrilinosML object.
-  nonlinearMechanicsBVPoperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
+  nonlinearMechanicsBVPoperator->residual(nullVec, solVec, resVec);
   linearMechanicsBVPoperator->reset(nonlinearMechanicsBVPoperator->getJacobianParameters(solVec));
 
   double epsilon = 1.0e-13*(((linearMechanicsBVPoperator->getMatrix())->extractDiagonal())->L1Norm());
@@ -208,13 +208,13 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     double finalTemperature = 301.0 + (((double)(step + 1)) * 200.0);
     tempVec->setToScalar(finalTemperature);
 
-    nonlinearMechanicsBVPoperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+    nonlinearMechanicsBVPoperator->residual(rhsVec, solVec, resVec);
     double initialResidualNorm  = resVec->L2Norm();
     AMP::pout<<"Initial Residual Norm for loading step "<<(step+1)<<" is "<<initialResidualNorm<<std::endl;
 
     nonlinearSolver->solve(rhsVec, solVec);
 
-    nonlinearMechanicsBVPoperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+    nonlinearMechanicsBVPoperator->residual(rhsVec, solVec, resVec);
     double finalResidualNorm  = resVec->L2Norm();
     AMP::pout<<"Final Residual Norm for loading step "<<(step+1)<<" is "<<finalResidualNorm<<std::endl;
 

@@ -379,7 +379,7 @@ int IDATimeIntegrator::IDAResTrial(realtype /* tt */, N_Vector yy, N_Vector yp,
     double currentTime = ((IDATimeIntegrator *)user_data)->getCurrentTime();
     ((IDATimeIntegrator*)user_data)->getIDATimeOperator()->registerCurrentTime(currentTime);
 
-    ((IDATimeIntegrator*)user_data)->getIDATimeOperator()->apply(f, amp_yy, d_residual_Sundials, 1.0, 0.0);
+    ((IDATimeIntegrator*)user_data)->getIDATimeOperator()->apply( amp_yy, d_residual_Sundials );
 
     (static_cast<AMP::LinearAlgebra::ManagedSundialsVector*>(rr->content))->copyVector( d_residual_Sundials );
     

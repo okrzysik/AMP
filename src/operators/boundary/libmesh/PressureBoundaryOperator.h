@@ -13,10 +13,11 @@ namespace AMP {
 
         virtual ~PressureBoundaryOperator() { }
 
-        void apply(AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr,
-            AMP::LinearAlgebra::Vector::shared_ptr r, const double, const double) {
+        void apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
+		    AMP::LinearAlgebra::Vector::shared_ptr r ) override {
           AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-          d_tractionOp->apply(nullVec, nullVec, r, -1.0, 1.0);
+          d_tractionOp->apply( nullVec, r);
+	  r->scale(-1.0);
         }
 
         void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) {

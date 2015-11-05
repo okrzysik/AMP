@@ -137,7 +137,7 @@ void Test(AMP::UnitTest *ut, std::string exeName)
     SolVec->setValueByGlobalID(dofs[0], h_scale*385.2e3);
     SolVec->setValueByGlobalID(dofs[1], P_scale*16.3e6);
 
-    subchannelOperator->apply(RhsVec, SolVec, ResVec, 1.0, 0.0);
+    subchannelOperator->apply( SolVec, ResVec);
     bool passedKnownTest = true;
     double known[20] = {
 -565469.235701075,

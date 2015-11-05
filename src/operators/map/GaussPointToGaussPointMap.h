@@ -14,11 +14,11 @@ public:
 
     GaussPointToGaussPointMap(const AMP::shared_ptr<AMP::Operator::OperatorParameters> & params);
 
-    virtual void applyStart(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+    virtual void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+			     AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    virtual void applyFinish(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+    virtual void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+			      AMP::LinearAlgebra::Vector::shared_ptr f) override;
 
     static bool  validMapType ( const std::string &t );
 

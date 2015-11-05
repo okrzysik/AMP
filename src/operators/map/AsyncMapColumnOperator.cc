@@ -44,17 +44,15 @@ void  AsyncMapColumnOperator::append ( AMP::shared_ptr < Operator > op )
 }
 
 
-void AsyncMapColumnOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
-        AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-        AMP::LinearAlgebra::Vector::shared_ptr r,
-        const double a, const double b)
-{
+  void AsyncMapColumnOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+				      AMP::LinearAlgebra::Vector::shared_ptr f )
+  {
     PROFILE_START("apply");
-    this->applyStart  ( f , u , r , a , b );
-    this->applyFinish ( f , u , r , a , b );
+    this->applyStart  ( u, f);
+    this->applyFinish ( u, f );
     if ( requiresMakeConsistentSet() ) {
-        AMP_ASSERT(d_OutputVector.get()!=NULL);
-        d_OutputVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+      AMP_ASSERT(d_OutputVector.get()!=NULL);
+      d_OutputVector->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     }
     PROFILE_STOP("apply");
 }

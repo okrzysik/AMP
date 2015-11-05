@@ -32,15 +32,12 @@ public :
 
     /**
       The apply function for this operator, A, performs the following operation:
-      r = b*f+a*A(u), if f is not NULL and r = a*A(u), if f is NULL.
-      @param [in] f auxillary/rhs vector. 
+      f = A(u)
       @param [in] u input vector. 
-      @param [out] r residual/output vector. 
-      @param [in] a first constant used in the expression: r = a*A(u) + b*f. The default value is -1.
-      @param [in] b second constant used in the expression: r = a*A(u) + b*f. The default value is 1.
+      @param [out] f residual/output vector. 
       */
-    virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-        AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+			AMP::LinearAlgebra::Vector::shared_ptr f) override;
 
 protected :
 

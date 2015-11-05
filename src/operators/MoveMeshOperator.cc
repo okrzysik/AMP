@@ -18,9 +18,8 @@ namespace AMP {
       return d_var;
     }
 
-    void MoveMeshOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr, 
-        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr,
-        const double, const double )  {
+    void MoveMeshOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+				    AMP::LinearAlgebra::Vector::shared_ptr )  {
       AMP::LinearAlgebra::Vector::const_shared_ptr dispVec = u->constSubsetVectorForVariable(d_var);
 
       if(d_prevDisp == NULL) {

@@ -106,11 +106,8 @@ AMP::LinearAlgebra::Vector::shared_ptr NodeToNodeMap::getVector ( )
 /********************************************************
 * Start the communication                               *
 ********************************************************/
-void NodeToNodeMap::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr,
-                                 AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                                 AMP::LinearAlgebra::Vector::shared_ptr,
-                              const double ,
-                              const double )
+void NodeToNodeMap::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                 AMP::LinearAlgebra::Vector::shared_ptr )
 {
     PROFILE_START("applyStart");
 
@@ -168,10 +165,7 @@ void NodeToNodeMap::applyStart ( AMP::LinearAlgebra::Vector::const_shared_ptr,
 * Finish the communication and fill the vector          *
 ********************************************************/
 void NodeToNodeMap::applyFinish ( AMP::LinearAlgebra::Vector::const_shared_ptr,
-                                  AMP::LinearAlgebra::Vector::const_shared_ptr,
-                                  AMP::LinearAlgebra::Vector::shared_ptr,
-                              const double ,
-                              const double )
+                                  AMP::LinearAlgebra::Vector::shared_ptr )
 {
     PROFILE_START("applyFinish");
 

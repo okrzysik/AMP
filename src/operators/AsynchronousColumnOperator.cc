@@ -11,30 +11,30 @@ AsynchronousColumnOperator::AsynchronousColumnOperator ( const AMP::shared_ptr <
 }
 
 
-void AsynchronousColumnOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-      AMP::LinearAlgebra::Vector::shared_ptr r, const double a , const double b )
+void AsynchronousColumnOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+					AMP::LinearAlgebra::Vector::shared_ptr f )
 {
-    applyStart( f, u, r, a, b );
-    applyFinish( f, u, r, a, b );
+    applyStart( u, f);
+    applyFinish( u, f );
 }
 
 
 // Initiate all applies in the column
-void AsynchronousColumnOperator::applyStart(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-      AMP::LinearAlgebra::Vector::shared_ptr r, const double a , const double b )
+void AsynchronousColumnOperator::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+					     AMP::LinearAlgebra::Vector::shared_ptr f )
 {
     for ( size_t i = 0 ; i != getNumberOfOperators() ; i++ )
-        AMP::dynamic_pointer_cast<AsynchronousOperator> ( getOperator ( i ) )->applyStart ( f , u , r , a , b );
+      AMP::dynamic_pointer_cast<AsynchronousOperator> ( getOperator ( i ) )->applyStart ( u, f );
 }
 
 
 
 // Finish all applies in the column
-void AsynchronousColumnOperator::applyFinish(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-      AMP::LinearAlgebra::Vector::shared_ptr r, const double a , const double b )
-{
+  void AsynchronousColumnOperator::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+						AMP::LinearAlgebra::Vector::shared_ptr f )
+  {
     for ( size_t i = 0 ; i != getNumberOfOperators() ; i++ )
-        AMP::dynamic_pointer_cast<AsynchronousOperator> ( getOperator ( i ) )->applyFinish ( f , u , r , a , b );
+        AMP::dynamic_pointer_cast<AsynchronousOperator> ( getOperator ( i ) )->applyFinish ( u, f );
 }
 
 

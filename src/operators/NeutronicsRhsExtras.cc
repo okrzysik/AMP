@@ -183,15 +183,9 @@ namespace AMP {
      *************************************************************************
      */
     void 
-      NeutronicsRhsExtras :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr f, 
-          AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-          AMP::LinearAlgebra::Vector::shared_ptr r,
-          const  double      a,
-          const  double      b) {
-        (void) f; (void) u;
-        // NeutronicsRhsExtras is made to provide a power, so a and b are not optional.
-        AMP_ASSERT(AMP::Utilities::approx_equal(a,1.));
-        AMP_ASSERT(AMP::Utilities::approx_equal(b,0.));
+      NeutronicsRhsExtras :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+				   AMP::LinearAlgebra::Vector::shared_ptr r) {
+        (void) u;
 
         AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable(d_outputVariable);
 

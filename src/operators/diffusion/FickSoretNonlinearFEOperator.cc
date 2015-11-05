@@ -95,18 +95,16 @@ namespace Operator {
       }
     }
 
-    void FickSoretNonlinearFEOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
-        AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
-        const double a, const double b)
+    void FickSoretNonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+					      AMP::LinearAlgebra::Vector::shared_ptr r )
     {
       // apply Soret operator and store in r
       if (d_AddSoretTerm) {
-        AMP::LinearAlgebra::Vector::shared_ptr fNull;
-        d_SoretOperator->apply(fNull, u, r, a, 1.0);
+        d_SoretOperator->apply(u, r);
       }
 
       // apply Fick operator and store in r.
-      d_FickOperator->apply(f, u, r, a, b);
+      d_FickOperator->apply(u, r);
     }
 
 

@@ -96,7 +96,7 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName)
 
     AMP::pout<<"Initial Solution Norm: "<<initSolNorm<<std::endl;
 
-    bvpOperator->apply(mechRhsVec, mechSolVec, mechResVec, 1.0, -1.0);
+    bvpOperator->residual(mechRhsVec, mechSolVec, mechResVec);
 
     double initResidualNorm = mechResVec->L2Norm();
 
@@ -124,7 +124,7 @@ void linearElasticTest(AMP::UnitTest *ut, std::string exeName)
     (AMP::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(bvpOperator->
                                                                            getVolumeOperator()))->printStressAndStrain(mechSolVec, fname);
 
-    bvpOperator->apply(mechRhsVec, mechSolVec, mechResVec, 1.0, -1.0);
+    bvpOperator->residual(mechRhsVec, mechSolVec, mechResVec);
 
     double finalResidualNorm = mechResVec->L2Norm();
 

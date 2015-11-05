@@ -155,7 +155,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   //apply calls will work:
   //oxygenVolumeOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
   //nonlinearOxygenOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
-  nonlinearThermalOxygenOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
+  nonlinearThermalOxygenOperator->apply(solVec, resVec);
   linearThermalOxygenOperator->reset(nonlinearThermalOxygenOperator->getJacobianParameters(solVec));
   //----------------------------------------------------------------------------------------------------------------------------------------------/
 
@@ -201,7 +201,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   linearSolver->setPreconditioner(columnPreconditioner);
 
-  nonlinearThermalOxygenOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  nonlinearThermalOxygenOperator->residual(rhsVec, solVec, resVec);
   double initialResidualNorm  = resVec->L2Norm();
 
   AMP::pout<<"Initial Residual Norm: "<<initialResidualNorm<<std::endl;
@@ -210,7 +210,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   nonlinearSolver->solve(rhsVec, solVec);
 
-  nonlinearThermalOxygenOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  nonlinearThermalOxygenOperator->residual(rhsVec, solVec, resVec);
 
   double finalResidualNorm  = resVec->L2Norm();
 

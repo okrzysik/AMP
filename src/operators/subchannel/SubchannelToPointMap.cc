@@ -42,8 +42,8 @@ SubchannelToPointMap::SubchannelToPointMap(const AMP::shared_ptr<SubchannelToPoi
 
 
 // Perform the map
-void SubchannelToPointMap::apply(AMP::LinearAlgebra::Vector::const_shared_ptr, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-    AMP::LinearAlgebra::Vector::shared_ptr r, const double, const double )
+void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+    AMP::LinearAlgebra::Vector::shared_ptr r )
 {
     PROFILE_START("apply");
     // Get the list of all subchannel face densities

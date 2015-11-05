@@ -56,9 +56,8 @@ CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(const AMP::shared_ptr<Ope
       d_Operators.push_back(myparams->d_Map1to3);
 }
 
-void CoupledFlowFrapconOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
-      AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
-      const double a, const double b)
+void CoupledFlowFrapconOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+					 AMP::LinearAlgebra::Vector::shared_ptr r )
 {
         AMP::LinearAlgebra::Vector::shared_ptr   nullVec;
 
@@ -68,11 +67,11 @@ void CoupledFlowFrapconOperator :: apply( AMP::LinearAlgebra::Vector::const_shar
         //(AMP::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_Operators[3]))->setVector(uInternal);  // Is this necessary
         (AMP::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_Operators[4]))->setVector(rInternal);
 
-        d_Operators[0]->apply(nullVec, u, nullVec, a, b);
-        d_Operators[1]->apply(nullVec, u, nullVec, a, b);
-        d_Operators[2]->apply(nullVec, d_flowInput, d_flowOutput, a, b);
+        d_Operators[0]->apply( u, nullVec);
+        d_Operators[1]->apply( u, nullVec);
+        d_Operators[2]->apply( d_flowInput, d_flowOutput);
         //d_Operators[3]->apply(nullVec, d_flowInput, nullVec, a, b);  // Is this necessary
-        d_Operators[4]->apply(nullVec, d_flowOutput, nullVec, a, b);
+        d_Operators[4]->apply( d_flowOutput, nullVec );
 }
 
 

@@ -129,7 +129,7 @@ void  runTest ( const std::string &fname , AMP::UnitTest *ut )
     
     // Apply the map
     globalComm.barrier();
-    map->apply( dummy, T1, T2 );
+    map->apply( T1, T2 );
 
     // Check the results
     /*if ( subchannel_face.get()!=NULL ) {

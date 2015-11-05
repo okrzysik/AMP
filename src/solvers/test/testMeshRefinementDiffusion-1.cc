@@ -417,7 +417,7 @@ void myTest(AMP::UnitTest *ut, AMP::shared_ptr<AMP::InputDatabase> input_db ,
   AMP::LinearAlgebra::Vector::shared_ptr integratedRHSVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, rhsVar, true );
   integratedRHSVec->zero();
 
-  volumeIntegralColumnOperator->apply(nullVec, manufacturedRHS, integratedRHSVec, 1.,0);  
+  volumeIntegralColumnOperator->apply(manufacturedRHS, integratedRHSVec);  
 
   integratedRHSVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
@@ -443,7 +443,7 @@ void myTest(AMP::UnitTest *ut, AMP::shared_ptr<AMP::InputDatabase> input_db ,
 
   nonlinearThermalCoupledOperator->apply(integratedRHSVec, TemperatureVec, ResidualVec, 1.0, -1.0);
   */
-  nonlinearThermalColumnOperator->apply(integratedRHSVec, TemperatureVec, ResidualVec, 1.0, -1.0);
+  nonlinearThermalColumnOperator->residual(integratedRHSVec, TemperatureVec, ResidualVec);
   ResidualVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
   double initialResidualNorm  = ResidualVec->L2Norm();
 
@@ -460,7 +460,7 @@ void myTest(AMP::UnitTest *ut, AMP::shared_ptr<AMP::InputDatabase> input_db ,
   nonlinearThermalSolver->solve(integratedRHSVec , TemperatureVec );
 
 //  nonlinearThermalCoupledOperator->apply(integratedRHSVec, TemperatureVec, ResidualVec, 1.0, -1.0);
-  nonlinearThermalColumnOperator->apply(integratedRHSVec, TemperatureVec, ResidualVec, 1.0, -1.0);
+  nonlinearThermalColumnOperator->residual(integratedRHSVec, TemperatureVec, ResidualVec);
   solutionError->subtract(TemperatureVec, manufacturedSolution);
 
   std::cout << "Max of ||U-Uh|| : "<< solutionError->max() << " Min of ||U-Uh|| : "<< solutionError->min()<< std::endl;

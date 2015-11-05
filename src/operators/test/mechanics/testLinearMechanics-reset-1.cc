@@ -102,7 +102,7 @@ void myTest(AMP::UnitTest *ut)
       mechSolVec->setRandomValues();
       mechRhsVec->setRandomValues();
       mechResVec->setRandomValues();
-      mechOp->apply(mechRhsVec, mechSolVec, mechResVec, 1.0, -1.0);
+      mechOp->residual(mechRhsVec, mechSolVec, mechResVec);
     }//end for i
 
     mechOp->reset(mechOpParams);

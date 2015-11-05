@@ -194,7 +194,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
         nonlinearOperator->getJacobianParameters(solVec) );
     subchannelLinearParams->d_initialize = false;
     linearOperator->reset(subchannelLinearParams);
-    linearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+    linearOperator->residual(rhsVec, solVec, resVec);
    
     // create nonlinear solver parameters
     AMP::shared_ptr<AMP::Solver::TrilinosNOXSolverParameters> nonlinearSolverParams(new AMP::Solver::TrilinosNOXSolverParameters(nonlinearSolver_db));
@@ -217,7 +217,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
     // solve
     nonlinearSolver->solve(rhsVec, solVec);
-    nonlinearOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+    nonlinearOperator->residual(rhsVec, solVec, resVec);
 
     // Compute the flow temperature
     int tempDOFsPerFace[3]={0,0,1};

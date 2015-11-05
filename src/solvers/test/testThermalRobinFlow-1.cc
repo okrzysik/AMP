@@ -121,7 +121,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar = neutronicsOperator->getOutputVariable();
   AMP::LinearAlgebra::Vector::shared_ptr   SpecificPowerVec = meshAdapter->createVector( SpecificPowerVar );
 
-  neutronicsOperator->apply(nullVec, nullVec, SpecificPowerVec, 1., 0.);
+  neutronicsOperator->apply(nullVec, SpecificPowerVec);
 
   //----------------------------------------------------------
   //  Integrate Nuclear Rhs over Desnity * Volume //
@@ -143,7 +143,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   PowerInWattsVec->zero();
 
   // convert the vector of specific power to power for a given basis.
-  sourceOperator->apply(nullVec, SpecificPowerVec, PowerInWattsVec, 1., 0.);
+  sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
 
   //--------------------------------------
   AMP_INSIST(input_db->keyExists("NonlinearSolver"),   "Key ''NonlinearSolver'' is missing!");
@@ -342,12 +342,12 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   thermalNonlinearOperator->modifyRHSvector(globalRhsVec);
   thermalNonlinearOperator->modifyInitialSolutionVector(globalSolVec);
 
-  columnNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
+  columnNonlinearOperator->residual(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector);
   AMP::pout<<"Initial Residual Norm for Step is: "<<globalResMultiVector->L2Norm()<<std::endl;
 
   nonlinearSolver->solve(globalRhsMultiVectorView, globalSolMultiVectorView);
 
-  columnNonlinearOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
+  columnNonlinearOperator->residual(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector);
   AMP::pout<<"Final   Residual Norm for Step is: "<<globalResMultiVector->L2Norm()<<std::endl;
 
   std::cout<<"Intermediate Flow Solution " <<std::endl;

@@ -202,7 +202,7 @@ void linearRobinTest(AMP::UnitTest *ut, std::string exeName )
     SourceVec->zero();
 
     // convert the vector of specific power to power for a given basis.
-    sourceOperator->apply(nullVec, RightHandSideVec, SourceVec, 1., 0.);
+    sourceOperator->apply( RightHandSideVec, SourceVec);
 
     //------------------------------------------
     //   Add the boundary conditions corrections //
@@ -246,7 +246,7 @@ void linearRobinTest(AMP::UnitTest *ut, std::string exeName )
     mlSolver->solve(SourceVec, TemperatureInKelvinVec);
 
     // Compute the residual
-    diffusionOperator->apply(SourceVec, TemperatureInKelvinVec, ResidualVec);
+    diffusionOperator->residual(SourceVec, TemperatureInKelvinVec, ResidualVec);
 
     // Check the L2 norm of the final residual.
     double finalResidualNorm = ResidualVec->L2Norm();

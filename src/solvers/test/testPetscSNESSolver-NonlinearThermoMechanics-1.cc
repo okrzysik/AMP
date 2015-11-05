@@ -166,9 +166,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   temperatureVec->addScalar(temperatureVec, referenceTemperature);
 
   //Initial guess for mechanics must satisfy the displacement boundary conditions
-  dirichletDispInVecOp->apply(nullVec, nullVec, solVec, 1.0, 0.0);
+  dirichletDispInVecOp->apply(nullVec, solVec);
   //Initial guess for thermal must satisfy the thermal Dirichlet boundary conditions
-  dirichletThermalInVecOp->apply(nullVec, nullVec, solVec, 1.0, 0.0);
+  dirichletThermalInVecOp->apply(nullVec, solVec);
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//
 
@@ -180,7 +180,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   //apply calls will work:
   //mechanicsVolumeOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
   //nonlinearMechanicsOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
-  nonlinearThermoMechanicsOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
+  nonlinearThermoMechanicsOperator->apply(solVec, resVec);
   linearThermoMechanicsOperator->reset(nonlinearThermoMechanicsOperator->getJacobianParameters(solVec));
   //----------------------------------------------------------------------------------------------------------------------------------------------/
 
@@ -230,7 +230,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   linearSolver->setPreconditioner(columnPreconditioner);
 
-  nonlinearThermoMechanicsOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  nonlinearThermoMechanicsOperator->residual(rhsVec, solVec, resVec);
   double initialResidualNorm  = resVec->L2Norm();
 
   AMP::pout<<"Initial Residual Norm: "<<initialResidualNorm<<std::endl;
@@ -239,7 +239,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   nonlinearSolver->solve(rhsVec, solVec);
 
-  nonlinearThermoMechanicsOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  nonlinearThermoMechanicsOperator->residual(rhsVec, solVec, resVec);
 
   double finalResidualNorm  = resVec->L2Norm();
 

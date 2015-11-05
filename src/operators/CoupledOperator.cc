@@ -19,35 +19,54 @@ CoupledOperator::CoupledOperator(const AMP::shared_ptr<OperatorParameters>& para
 }
 
 
-void CoupledOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
-		   AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		   AMP::LinearAlgebra::Vector::shared_ptr r,
-		   const double a,
-		   const double b)
+void CoupledOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+			     AMP::LinearAlgebra::Vector::shared_ptr r )
 {
     PROFILE_START("apply");
     // Fill the gauss-point vector if necessary
     if(d_Operators[0]) {
-      AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-        d_Operators[0]->apply(nullVec,u,d_frozenGaussPointVector,1,0);
+      d_Operators[0]->apply(u,d_frozenGaussPointVector);
     }
     // Call copy vector
     if(d_Operators[1]) {
       if(d_Operators[0]) {
-        d_Operators[1]->apply(f,d_frozenGaussPointVector,r,a,b);
+        d_Operators[1]->apply(d_frozenGaussPointVector,r);
       } else {
-        d_Operators[1]->apply(f,u,r,a,b);
+        d_Operators[1]->apply(u,r);
       }
     }
     // Call the map
     if(d_Operators[2]) {
-        d_Operators[2]->apply(f,u,r,a,b);
+        d_Operators[2]->apply(u,r);
     }
     // Call the operator
-    d_Operators[3]->apply(f,u,r,a,b);
+    d_Operators[3]->apply(u,r);
     PROFILE_STOP("apply");
 }
+    
+void
+CoupledOperator :: residual( AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+			     AMP::LinearAlgebra::Vector::const_shared_ptr u,
+			     AMP::LinearAlgebra::Vector::shared_ptr r )
+{
+  this->apply(u,r);
 
+  AMP::LinearAlgebra::Vector::shared_ptr rInternal = subsetOutputVector(r);
+  AMP_INSIST( (rInternal.get() != NULL), "rInternal is NULL" );
+  
+  // the rhs can be NULL
+  if(f.get() != NULL)  {
+    AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetOutputVector(f);
+    rInternal->subtract( fInternal, rInternal );
+  }
+  else {
+    rInternal->scale( -1.0 );
+  }
+  
+  rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+
+}
+  
 
 }
 }

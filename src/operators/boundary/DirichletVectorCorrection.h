@@ -54,10 +54,10 @@ namespace AMP {
 
         /**
           Sets Dirichlet values into the appropriate locations of the output vector (r). This does not affect
-          the remaining values in that vector. f, u and b are not used.
+          the remaining values in that vector. u is not used.
           */
-        void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f, AMP::LinearAlgebra::Vector::const_shared_ptr u,
-            AMP::LinearAlgebra::Vector::shared_ptr r, const double a = -1.0, const double b = 1.0);
+        void apply(AMP::LinearAlgebra::Vector::const_shared_ptr u,
+		   AMP::LinearAlgebra::Vector::shared_ptr r) override;
 
         void applyZeroValues(AMP::LinearAlgebra::Vector::shared_ptr r);
 

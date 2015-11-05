@@ -98,7 +98,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::createVector(NodalVectorDOF,dispVar);
 
     rhsVec->zero();
-    loadOperator->apply(nullVec, nullVec, rhsVec, 1.0, 0.0);
+    loadOperator->apply(nullVec, rhsVec);
 
     solVec->zero();
     resVec->zero();

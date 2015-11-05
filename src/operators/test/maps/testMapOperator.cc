@@ -122,8 +122,8 @@ void testMap(AMP::UnitTest *ut, std::string exeName )
 
         map1ToLowDim->setVector(gapVecClad);
         map1ToHighDim->setVector(mapSolutionSlave);
-        map1ToLowDim->apply(nullVec,mapSolutionMaster,gapVecClad ,1.0, 0.0);
-        map1ToHighDim->apply(nullVec,gapVecClad , mapSolutionSlave ,1.0, 0.0);
+        map1ToLowDim->apply(mapSolutionMaster,gapVecClad);
+        map1ToHighDim->apply(gapVecClad , mapSolutionSlave);
         std::cout << "Master Map Solution " << std::endl;
         for(size_t i=0; i<gapVecCladSize; i++) {
             std::cout << " @i : " << i << " is " << gapVecClad->getValueByLocalID(i);
@@ -134,8 +134,8 @@ void testMap(AMP::UnitTest *ut, std::string exeName )
 
         map2ToLowDim->setVector(gapVecPellet);
         map2ToHighDim->setVector(mapSolutionMaster);
-        map2ToLowDim->apply(nullVec,mapSolutionSlave,gapVecPellet ,1.0, 0.0);
-        map2ToHighDim->apply(nullVec,gapVecPellet , mapSolutionMaster,1.0, 0.0);
+        map2ToLowDim->apply(mapSolutionSlave,gapVecPellet);
+        map2ToHighDim->apply(gapVecPellet, mapSolutionMaster);
 
         std::cout << "Slave Map Solution " << std::endl;
         for(size_t i=0; i<gapVecPelletSize; i++) {

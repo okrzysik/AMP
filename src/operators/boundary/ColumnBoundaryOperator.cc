@@ -5,11 +5,10 @@
 namespace AMP {
 namespace Operator {
 
-  void ColumnBoundaryOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
-      AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
-      const double a, const double b) {
+  void ColumnBoundaryOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+					AMP::LinearAlgebra::Vector::shared_ptr r) {
     for(unsigned int i = 0; i < d_Operators.size(); i++) {
-      d_Operators[i]->apply(f, u, r, a, b);
+      d_Operators[i]->apply(u, r);
     }
   }
 

@@ -91,9 +91,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
   double solNorm = solVec->L2Norm();
   AMP::pout<<"sol-Norm-2 = "<<solNorm<<std::endl;
 
-  nonlinOperator->apply(nullVec, solVec, resVecNonlin, 1.0, 0.0);
+  nonlinOperator->apply(solVec, resVecNonlin);
   linOperator->reset(nonlinOperator->getJacobianParameters(solVec));
-  linOperator->apply(nullVec, solVec, resVecLin, 1.0, 0.0);
+  linOperator->apply( solVec, resVecLin);
   resDiffVec->subtract(resVecNonlin, resVecLin);
 
   double epsilon = 1.0e-13*(((linOperator->getMatrix())->extractDiagonal())->L1Norm());
@@ -125,11 +125,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
   solNorm = solVec->L2Norm();
   AMP::pout<<"sol-Norm-2 = "<<solNorm<<std::endl;
 
-  nonlinOperator->apply(nullVec, solVec, resVecNonlin, 1.0, 0.0);
+  nonlinOperator->apply( solVec, resVecNonlin);
   if(callLinReset) {
     linOperator->reset(nonlinOperator->getJacobianParameters(solVec));
   }
-  linOperator->apply(nullVec, solVec, resVecLin, 1.0, 0.0);
+  linOperator->apply(solVec, resVecLin );
   resDiffVec->subtract(resVecNonlin, resVecLin);
 
   nonLinNorm = resVecNonlin->L2Norm();
@@ -155,11 +155,11 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
   solNorm = solVec->L2Norm();
   AMP::pout<<"sol-Norm-2 = "<<solNorm<<std::endl;
 
-  nonlinOperator->apply(nullVec, solVec, resVecNonlin, 1.0, 0.0);
+  nonlinOperator->apply( solVec, resVecNonlin);
   if(callLinReset) {
     linOperator->reset(nonlinOperator->getJacobianParameters(solVec));
   }
-  linOperator->apply(nullVec, solVec, resVecLin, 1.0, 0.0);
+  linOperator->apply(solVec, resVecLin);
 
   nonLinNorm = resVecNonlin->L2Norm();
   linNorm = resVecLin->L2Norm();

@@ -4,9 +4,8 @@ namespace AMP {
 namespace Operator {
 
 
-void RowOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
-	AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r,
-	const double a, const double b)
+void RowOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+			 AMP::LinearAlgebra::Vector::shared_ptr r )
 {
   
      AMP::LinearAlgebra::Vector::shared_ptr fNull;
@@ -22,7 +21,8 @@ void RowOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
      {
        rInternal[i] = rOriginal->cloneVector(); 
        rInternal[i]->zero();
-       d_Operators[i]->apply(fNull, u, rInternal[i], scalea[i], 0);
+       d_Operators[i]->apply(u, rInternal[i]);
+       rInternal[i]->scale(scalea[i]);
      }
 
      for(unsigned int i = 0; i < d_Operators.size(); i++)
@@ -30,15 +30,6 @@ void RowOperator::apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
        rOriginal->add(rOriginal, (rInternal[i]) );
      }
      
-     if(f.get()==NULL)
-     {
-       rOriginal->scale(a);
-     }
-     else
-     {
-       r->axpby(b, a, *f);
-     }
-
 }
 
 }

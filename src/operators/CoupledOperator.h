@@ -13,18 +13,26 @@ namespace Operator {
 
 /**
    A class for representing a coupled operator combining a NodeToGaussPointOperator,
-   a CopyOperatorm, a MapOperator, and a d_BVPOperator.
+   a CopyOperator, a MapOperator, and a d_BVPOperator.
   */
 class CoupledOperator : public ColumnOperator
 {
 public :
     CoupledOperator(const AMP::shared_ptr<OperatorParameters>& params);
 
-    virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr f,
-           AMP::LinearAlgebra::Vector::const_shared_ptr u,
-           AMP::LinearAlgebra::Vector::shared_ptr r,
-           const double a = -1.0,
-           const double b = 1.0);
+    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+			AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+
+
+    /**
+     * Default base class implementation of the residual: f-L(u)
+     * \param f: shared pointer to const vector rhs
+     * \param u: shared pointer to const vector u
+     * \param r: shared pointer to vector residual
+     */
+    virtual void residual(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+			  AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+			  AMP::LinearAlgebra::Vector::shared_ptr r) override;
 
     AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u)
     {

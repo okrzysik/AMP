@@ -175,15 +175,15 @@ void myTest(AMP::UnitTest *ut)
     AMP::LinearAlgebra::Vector::shared_ptr mechNlResVec = mechNlSolVec->cloneVector();
 
     mechNlRhsVec->setToScalar(0.0);
-    dirichletLoadVecOp->apply(nullVec, nullVec, mechNlRhsVec, 1.0, 0.0);
+    dirichletLoadVecOp->apply( nullVec, mechNlRhsVec);
 
     for(int i = 0; i < 3; i++) {
       //Initial guess for NL solver must satisfy the displacement boundary
       //conditions
       mechNlSolVec->setRandomValues();
-      dirichletDispInVecOp->apply(nullVec, nullVec, mechNlSolVec, 1.0, 0.0);
+      dirichletDispInVecOp->apply( nullVec, mechNlSolVec);
       mechNlSolVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
-      nonlinBvpOperator->apply(mechNlRhsVec, mechNlSolVec, mechNlResVec, 1.0, -1.0);
+      nonlinBvpOperator->residual(mechNlRhsVec, mechNlSolVec, mechNlResVec);
     }//end for i
 
     mechNonlinOp->reset(mechNonlinOpParams);

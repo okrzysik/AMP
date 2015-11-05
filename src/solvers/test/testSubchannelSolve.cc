@@ -604,7 +604,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
             cladPower->zero(); 
         }
         specificPowerGpVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
-        volumeIntegralColumnOperator->apply(nullVec, specificPowerGpVec, globalThermalRhsVec , 1., 0.);
+        volumeIntegralColumnOperator->apply(specificPowerGpVec, globalThermalRhsVec);
     }
 
     if ( subchannelMesh.get()!=NULL ) {
@@ -634,10 +634,11 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
             subchannelNonlinearOperator->getJacobianParameters(flowSolVec) );
         subchannelLinearParams->d_initialize = false;
         subchannelLinearOperator->reset(subchannelLinearParams);
-        subchannelLinearOperator->apply( flowRhsVec, flowSolVec, flowResVec, 1.0, -1.0);
+        subchannelLinearOperator->residual( flowRhsVec, flowSolVec, flowResVec);
     }
 
-    nonlinearCoupledOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector, 1.0, -1.0);
+    std::cout << "Reached here " << std::endl;
+    nonlinearCoupledOperator->residual(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector);
    
     size_t totalOp;
     if(subchannelMesh != NULL ){
@@ -659,7 +660,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     PROFILE_START("Solve");
     AMP::pout << "Rhs norm: " << std::setprecision(13)<< globalRhsMultiVector->L2Norm()<< std::endl;
     AMP::pout << "Initial solution norm: " << std::setprecision(13)<< globalSolMultiVector->L2Norm()<< std::endl;
-    nonlinearCoupledOperator->apply(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector);
+    nonlinearCoupledOperator->residual(globalRhsMultiVector, globalSolMultiVector, globalResMultiVector);
 /*    double tempResNorm = 0.0;
     double flowResNorm = 0.0;
     if ( pinMesh!=NULL )

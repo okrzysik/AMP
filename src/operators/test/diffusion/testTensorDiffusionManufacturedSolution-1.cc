@@ -176,10 +176,11 @@ void bvpTest1(AMP::UnitTest *ut, std::string exeName, std::string meshName)
   solVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
   // Evaluate manufactured solution as an FE source
-  sourceOp->apply(rhsVec, solVec, sourceVec, 1., 0.);
+  sourceOp->apply(solVec, sourceVec);
 
   // Evaluate action of diffusion operator
-  nlinBVPOp->apply(sourceVec, solVec, resVec, 1., -1.);
+  nlinBVPOp->residual(sourceVec, solVec, resVec);
+  resVec->scale(-1.0);
 
   // Output Mathematica form (requires serial execution)
   for (int i=0; i<globalComm.getSize(); i++) {

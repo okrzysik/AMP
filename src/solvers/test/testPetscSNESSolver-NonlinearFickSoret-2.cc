@@ -206,7 +206,7 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
 
   linearSolver->setPreconditioner(linearFickPreconditioner);
 
-  nlinBVPOp->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  nlinBVPOp->residual(rhsVec, solVec, resVec);
   double initialResidualNorm  = resVec->L2Norm();
 
   AMP::pout<<"Initial Residual Norm: "<<initialResidualNorm<<std::endl;
@@ -215,7 +215,7 @@ void fickSoretTest(AMP::UnitTest *ut, std::string exeName, std::vector<double> &
 
   nonlinearSolver->solve(rhsVec, solVec);
 
-  nlinBVPOp->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+  nlinBVPOp->residual(rhsVec, solVec, resVec);
 
   double finalResidualNorm  = resVec->L2Norm();
 
