@@ -724,7 +724,24 @@ MACRO ( CONFIGURE_AMP )
     INCLUDE_DIRECTORIES ( ${AMP_INSTALL_DIR}/include )
     # Set the data directory for AMP (needed to find the meshes)
     IF ( AMP_DATA )
-        VERIFY_PATH ( ${AMP_DATA} )
+        IF ( "${AMP_DATA}" STREQUAL "" )
+            MESSAGE( FATAL_ERROR "AMP_DATA is not set" )
+        ELSEIF ( IS_DIRECTORY "${AMP_DATA}" )
+            # AMP_DATA is a directory
+        ELSEIF ( EXISTS "${AMP_DATA}" )
+            # AMP_DATA is a file, try to unpack it
+            EXECUTE_PROCESS(
+                COMMAND ${CMAKE_COMMAND} -E tar xzf "${AMP_DATA}"
+                WORKING_DIRECTORY "${AMP_INSTALL_DIR}"
+            )
+            IF ( EXISTS "${AMP_INSTALL_DIR}/AMP-Data" )
+                SET( AMP_DATA "${AMP_INSTALL_DIR}/AMP-Data" )
+            ELSE()
+                MESSAGE(FATAL_ERROR "Error unpacking tar file ${AMP_DATA}")
+            ENDIF()
+        ELSE()
+            MESSAGE( FATAL_ERROR "Path does not exist: ${PATH_NAME}" )
+        ENDIF()
     ELSEIF ( NOT ONLY_BUILD_DOCS )
         MESSAGE( FATAL_ERROR "AMP_DATA must be set" )
     ENDIF()
