@@ -1,7 +1,8 @@
-
 #include "utils/Utilities.h"
 #include "MultiVariable.h"
 #include <map>
+#include <algorithm>
+
 
 namespace AMP {
 namespace LinearAlgebra {

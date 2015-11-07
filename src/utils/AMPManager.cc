@@ -125,6 +125,7 @@ AMPManagerProperties AMPManager::properties=AMPManagerProperties();
 #else
     #define USE_LINUX
     #include <sys/time.h>
+    #include <unistd.h>
     // usleep is defined in microseconds, create a Sleep command
     #define Sleep(x) usleep(x*1000)
     double time() { 
@@ -445,13 +446,13 @@ std::vector<char*> AMPManager::getPetscArgs()
 * Functions to set/clear the MPI error handler                              *
 ****************************************************************************/
 #ifdef USE_EXT_MPI
-    boost::shared_ptr<MPI_Errhandler> AMPManager::mpierr;
+    AMP::shared_ptr<MPI_Errhandler> AMPManager::mpierr;
 #endif
 void AMPManager::setMPIErrorHandler( )
 {
     #ifdef USE_EXT_MPI
         if ( mpierr.get()==NULL ) {
-            mpierr = boost::shared_ptr<MPI_Errhandler>( new MPI_Errhandler );
+            mpierr = AMP::shared_ptr<MPI_Errhandler>( new MPI_Errhandler );
             MPI_Comm_create_errhandler( MPI_error_handler_fun, mpierr.get() );
         }
         MPI_Comm_set_errhandler( MPI_COMM_SELF, *mpierr );

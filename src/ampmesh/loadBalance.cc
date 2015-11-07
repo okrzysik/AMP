@@ -26,6 +26,7 @@ LoadBalance::LoadBalance( )
     d_decomp = 0;
     d_min = 0;
     d_max = 0;
+    d_max_ranks = 0;
     cache_valid = false;
 }
 LoadBalance::LoadBalance( AMP::shared_ptr<MeshParameters> params, const std::vector<int> &ranks, size_t N_elements )

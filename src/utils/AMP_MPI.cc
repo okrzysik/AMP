@@ -40,12 +40,14 @@
     #include <sys/time.h>
     #include <sched.h>
     #include <pthread.h>
+    #include <unistd.h>
 #elif defined(__linux) || defined(__unix) || defined(__posix)
     // We are using linux
     #define USE_LINUX
     #include <sys/time.h>
     #include <sched.h>
     #include <pthread.h>
+    #include <unistd.h>
 #else
     #error Unknown OS
 #endif

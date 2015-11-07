@@ -17,6 +17,8 @@
 
 #include <iostream>
 #include <algorithm>
+#include <string.h>
+
 
 namespace AMP {
 namespace Mesh {

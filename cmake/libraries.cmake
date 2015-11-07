@@ -115,7 +115,7 @@ ENDMACRO()
 # Macro to find and configure boost (we only need the headers)
 MACRO ( CONFIGURE_BOOST )
     # Determine if we want to use boost
-    CHECK_ENABLE_FLAG( USE_EXT_BOOST 1 )
+    CHECK_ENABLE_FLAG( USE_EXT_BOOST 0 )
     IF ( USE_EXT_BOOST )
         # Check if we specified the boost directory
         IF ( BOOST_DIRECTORY )
@@ -131,7 +131,7 @@ MACRO ( CONFIGURE_BOOST )
         ADD_DEFINITIONS ( "-D USE_EXT_BOOST" )
         MESSAGE( "Using boost" )
     ELSE()
-        MESSAGE( FATAL_ERROR "boost headers are necessary for AMP" )
+        MESSAGE( WARNING "boost headers are necessary for AMP" )
     ENDIF()
 ENDMACRO()
 
