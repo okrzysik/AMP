@@ -68,6 +68,7 @@ void CGSolver::getFromInput(const AMP::shared_ptr<AMP::Database> &db)
 
 /****************************************************************
 *  Solve                                                        *
+* TODO: store convergence history, iterations, convergence reason
 ****************************************************************/
 void
 CGSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
@@ -81,7 +82,13 @@ CGSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
   AMP_ASSERT( (u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
 	      (u->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
 
+  // compute the norm of the rhs in order to compute
+  // the termination criterion
   const double f_norm = f->L2Norm();
+  
+  // enhance with convergence reason, number of iterations etc
+  if(f_norm == 0.0 ) return;
+
   const double terminate_tol = d_dRelativeTolerance*f_norm;
   
   if(d_iDebugPrintInfoLevel>1) {
@@ -102,15 +109,18 @@ CGSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
   AMP::LinearAlgebra::Vector::shared_ptr r = f->cloneVector();
   
   // compute the initial residual
-  // NOTE: a check for a zero initial guess would also make sense here to avoid an operator apply
-  d_pOperator->residual(f, u, r);
-
+  if( d_bUseZeroInitialGuess ) {
+    r->copyVector(b);
+  } else {
+    d_pOperator->residual(f, u, r);
+  }
   // compute the current residual norm
   double current_res = r->L2Norm();
 
   // exit if the residual is already low enough
   if(current_res < terminate_tol ) {
     // provide a convergence reason
+    // provide history (iterations, conv history etc)
     return;
   }
 
@@ -144,6 +154,7 @@ CGSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
 
     // sanity check, the curvature should be positive
     if(alpha <= 0.0 ) {
+      // set diverged reason
       AMP_ERROR("Negative curvature encountered in CG!!");
     }
     
@@ -152,6 +163,14 @@ CGSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
     u->axpy(alpha, p, u);
     r->axpy(-alpha, w, r);
 
+    // compute the current residual norm
+    current_res = r->L2Norm();
+    // check if converged
+    if(current_res < terminate_tol ) {
+      // set a convergence reason
+      break;
+    }
+
     // apply the preconditioner if it exists
     if(d_bUsesPreconditioner) {
       d_pPreconditioner->solve(r, z);
@@ -159,16 +178,8 @@ CGSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
       z->copyVector(r);
     }
   
-    // compute the current residual norm
-    current_res = r->L2Norm();
     rho[0] = rho[1];
     rho[1] = r->dot(z);
-
-    // check if converged
-    if(current_res < terminate_tol ) {
-      // set a convergence reason
-      break;
-    }
 
     beta = rho[1]/rho[0];      
     p->axpy(beta, p, z);    
