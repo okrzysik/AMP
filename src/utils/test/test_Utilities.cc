@@ -8,6 +8,7 @@
 #include <time.h>
 #include <string.h>
 #include <stdint.h>
+#include <algorithm>
 
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"

@@ -304,8 +304,8 @@ September 1998");
         P = P * PaToPsi;
         H = H * JKgToBtuLbm;
 
-        double P_crit = 3208.2; // critical pressure [psi]
-        double H_crit = 906; // specific enthalpy at critical pressure [Btu/lbm]
+        const double P_crit = 3208.2; // critical pressure [psi]
+        const double H_crit = 906; // specific enthalpy at critical pressure [Btu/lbm]
 
         if (P < 0.1) AMP_ERROR("Liquid water temperature called with pressure below 0.1 psi.");
         if (H <= 0) AMP_ERROR("Liquid water temperature called with enthalpy below 0 Btu/lbm.");
@@ -404,7 +404,7 @@ September 1998");
         P = P * PaToPsi;
         double Pmin = HfSatPminVal * PaToPsi;    // [Pa] to [psi]
 
-        double P_crit = 3208.2; // critical pressure [psi]
+        const double P_crit = 3208.2; // critical pressure [psi]
 
         // extract parameters from parameter array
         std::valarray<double> Param = get_parameters();
@@ -457,7 +457,7 @@ September 1998");
         P = P * PaToPsi;
         double Pmin = HgSatPminVal * PaToPsi;
 
-        double P_crit = 3208.2; // critical pressure [psi]
+        const double P_crit = 3208.2; // critical pressure [psi]
 
         // extract parameters from parameter array
         std::valarray<double> Param = get_parameters();
@@ -517,8 +517,8 @@ September 1998");
         P = P * PaToPsi;
         H = H * JKgToBtuLbm;
 
-        double P_crit = 3208.2; // critical pressure [psi]
-        double H_crit = 906; // specific enthalpy at critical pressure [Btu/lbm]
+        const double P_crit = 3208.2; // critical pressure [psi]
+        const double H_crit = 906; // specific enthalpy at critical pressure [Btu/lbm]
 
         if (P < 0.1) AMP_ERROR("Liquid water specific volume called with pressure less than 0.1 psi.");
         if (H <= 0) AMP_ERROR("Liquid water specific volume called with enthalpy at or below 0 Btu/lbm.");

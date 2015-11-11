@@ -5,6 +5,9 @@
 #include <ampmesh/latex_visualization_tools.h>
 #include <ampmesh/euclidean_geometry_tools.h>
 
+#include <cassert>
+
+
 class soft_equal_to {
 public:
   soft_equal_to(double const tol = 1.0e-15) : tolerance(tol) { };

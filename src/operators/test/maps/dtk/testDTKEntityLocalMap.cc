@@ -33,7 +33,7 @@ void myTest(AMP::UnitTest *ut)
     AMP::PIO::logOnlyNodeZero(log_file);
 
     AMP::pout<<"Loading the  mesh"<<std::endl;
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
     std::string input_file = "input_" + exeName;
@@ -41,9 +41,9 @@ void myTest(AMP::UnitTest *ut)
     input_db->printClassData(AMP::plog);
 
     AMP_INSIST(input_db->keyExists("Mesh"), "Key ''Mesh'' is missing!");
-    boost::shared_ptr<AMP::Database> meshDatabase = input_db->getDatabase("Mesh");
+    AMP::shared_ptr<AMP::Database> meshDatabase = input_db->getDatabase("Mesh");
 
-    boost::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(meshDatabase));
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> meshParams(new AMP::Mesh::MeshParameters(meshDatabase));
     meshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh(meshParams);
 

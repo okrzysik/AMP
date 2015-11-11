@@ -115,7 +115,7 @@ ENDMACRO()
 # Macro to find and configure boost (we only need the headers)
 MACRO ( CONFIGURE_BOOST )
     # Determine if we want to use boost
-    CHECK_ENABLE_FLAG( USE_EXT_BOOST 1 )
+    CHECK_ENABLE_FLAG( USE_EXT_BOOST 0 )
     IF ( USE_EXT_BOOST )
         # Check if we specified the boost directory
         IF ( BOOST_DIRECTORY )
@@ -131,7 +131,7 @@ MACRO ( CONFIGURE_BOOST )
         ADD_DEFINITIONS ( "-D USE_EXT_BOOST" )
         MESSAGE( "Using boost" )
     ELSE()
-        MESSAGE( FATAL_ERROR "boost headers are necessary for AMP" )
+        MESSAGE( WARNING "boost headers are necessary for AMP" )
     ENDIF()
 ENDMACRO()
 
@@ -724,7 +724,24 @@ MACRO ( CONFIGURE_AMP )
     INCLUDE_DIRECTORIES ( ${AMP_INSTALL_DIR}/include )
     # Set the data directory for AMP (needed to find the meshes)
     IF ( AMP_DATA )
-        VERIFY_PATH ( ${AMP_DATA} )
+        IF ( "${AMP_DATA}" STREQUAL "" )
+            MESSAGE( FATAL_ERROR "AMP_DATA is not set" )
+        ELSEIF ( IS_DIRECTORY "${AMP_DATA}" )
+            # AMP_DATA is a directory
+        ELSEIF ( EXISTS "${AMP_DATA}" )
+            # AMP_DATA is a file, try to unpack it
+            EXECUTE_PROCESS(
+                COMMAND ${CMAKE_COMMAND} -E tar xzf "${AMP_DATA}"
+                WORKING_DIRECTORY "${AMP_INSTALL_DIR}"
+            )
+            IF ( EXISTS "${AMP_INSTALL_DIR}/AMP-Data" )
+                SET( AMP_DATA "${AMP_INSTALL_DIR}/AMP-Data" )
+            ELSE()
+                MESSAGE(FATAL_ERROR "Error unpacking tar file ${AMP_DATA}")
+            ENDIF()
+        ELSE()
+            MESSAGE( FATAL_ERROR "Path does not exist: ${PATH_NAME}" )
+        ENDIF()
     ELSEIF ( NOT ONLY_BUILD_DOCS )
         MESSAGE( FATAL_ERROR "AMP_DATA must be set" )
     ENDIF()

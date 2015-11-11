@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 #include "utils/shared_ptr.h"
-#include <boost/mpl/list.hpp>
 
 #include "utils/Utilities.h"
 #include "utils/Factory.h"
@@ -37,8 +36,6 @@ public:
 	{
 		delete d_propertyMap;
 	}
-
-	typedef boost::mpl::list<> factory_constructor_typeList;
 
 	/// specific shared pointer for this class
 	typedef AMP::shared_ptr<Material> shared_ptr;

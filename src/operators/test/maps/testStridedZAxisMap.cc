@@ -16,7 +16,8 @@
 
 #include <operators/map/StridedZAxisMap.h>
 
-#include <boost/function.hpp>
+#include <functional>
+
 
 double fooFunctionOfSpace(std::vector<double> const & xyz) 
 { 
@@ -35,7 +36,7 @@ void project
     , AMP::LinearAlgebra::Vector::shared_ptr               vector
     , size_t const                                         dof
     , size_t const                                         dofsPerNode
-    , boost::function<double(std::vector<double> const &)> functionOfSpace
+    , std::function<double(std::vector<double> const &)> functionOfSpace
     )
 {
     AMP_INSIST( dof < dofsPerNode, "WRONG!" );

@@ -33,15 +33,15 @@ void myTest(AMP::UnitTest *ut)
 
     // load the source mesh
     AMP::pout<<"Loading the source mesh"<<std::endl;
-    boost::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
+    AMP::shared_ptr<AMP::InputDatabase> input_db(new AMP::InputDatabase("input_db"));
     AMP::AMP_MPI globalComm(AMP_COMM_WORLD);
 
     std::string input_file = "input_" + exeName;
     AMP::InputManager::getManager()->parseInputFile(input_file, input_db);
     input_db->printClassData(AMP::plog);
 
-    boost::shared_ptr<AMP::Database> sourceMeshDatabase = input_db->getDatabase("SourceMesh");
-    boost::shared_ptr<AMP::Mesh::MeshParameters> sourceMeshParams(new AMP::Mesh::MeshParameters(sourceMeshDatabase));
+    AMP::shared_ptr<AMP::Database> sourceMeshDatabase = input_db->getDatabase("SourceMesh");
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> sourceMeshParams(new AMP::Mesh::MeshParameters(sourceMeshDatabase));
     sourceMeshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
     AMP::Mesh::Mesh::shared_ptr sourceMesh = AMP::Mesh::Mesh::buildMesh(sourceMeshParams);
     std::size_t const numVerticesOnSourceMesh = sourceMesh->numGlobalElements(AMP::Mesh::Vertex);
@@ -81,8 +81,8 @@ void myTest(AMP::UnitTest *ut)
 
     // load the target mesh
     AMP::pout<<"Loading the target mesh"<<std::endl;
-    boost::shared_ptr<AMP::Database> targetMeshDatabase = input_db->getDatabase("TargetMesh");
-    boost::shared_ptr<AMP::Mesh::MeshParameters> targetMeshParams(new AMP::Mesh::MeshParameters(targetMeshDatabase));
+    AMP::shared_ptr<AMP::Database> targetMeshDatabase = input_db->getDatabase("TargetMesh");
+    AMP::shared_ptr<AMP::Mesh::MeshParameters> targetMeshParams(new AMP::Mesh::MeshParameters(targetMeshDatabase));
     targetMeshParams->setComm(AMP::AMP_MPI(AMP_COMM_WORLD));
     AMP::Mesh::Mesh::shared_ptr targetMesh = AMP::Mesh::Mesh::buildMesh(targetMeshParams);
     std::size_t const numVerticesOnTargetMesh = targetMesh->numGlobalElements(AMP::Mesh::Vertex);

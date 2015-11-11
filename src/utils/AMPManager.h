@@ -113,7 +113,7 @@ private:
     static char** argv;
     static AMPManagerProperties properties;
     #ifdef USE_EXT_MPI
-        static boost::shared_ptr<MPI_Errhandler> mpierr;
+        static AMP::shared_ptr<MPI_Errhandler> mpierr;
     #endif
 
     //! abort must be a friend to access use_MPI_Abort to change the abort behavior
