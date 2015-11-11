@@ -71,33 +71,115 @@ void CGSolver::getFromInput(const AMP::shared_ptr<AMP::Database> &db)
 ****************************************************************/
 void
 CGSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
-                  AMP::shared_ptr<AMP::LinearAlgebra::Vector>  u)
+		AMP::shared_ptr<AMP::LinearAlgebra::Vector>  u)
 {
-    PROFILE_START("solve");
+  PROFILE_START("solve");
+  
+  // Check input vector states
+  AMP_ASSERT( (f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+	      (f->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+  AMP_ASSERT( (u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
+	      (u->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
 
-    // Check input vector states
-    AMP_ASSERT( (f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
-		(f->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
-    AMP_ASSERT( (u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED) ||
-		(u->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED) );
+  const double f_norm = f->L2Norm();
+  const double terminate_tol = d_dRelativeTolerance*f_norm;
+  
+  if(d_iDebugPrintInfoLevel>1) {
+    std::cout << "CGSolver::solve: initial L2Norm of solution vector: " << u->L2Norm() << std::endl;
+    std::cout << "CGSolver::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
+  }
+
+  if(d_pOperator.get()!=NULL) {
+    registerOperator(d_pOperator);
+  }
+     
+  // z will store r when a preconditioner is not present
+  // and will store the result of a preconditioner solve
+  // when a preconditioner is present
+  AMP::shared_ptr<AMP::LinearAlgebra::Vector>  z;
+  
+  // residual vector
+  AMP::LinearAlgebra::Vector::shared_ptr r = f->cloneVector();
+  
+  // compute the initial residual
+  // NOTE: a check for a zero initial guess would also make sense here to avoid an operator apply
+  d_pOperator->residual(f, u, r);
+
+  // compute the current residual norm
+  double current_res = r->L2Norm();
+
+  // exit if the residual is already low enough
+  if(current_res < terminate_tol ) {
+    // provide a convergence reason
+    return;
+  }
+
+  z = u->cloneVector();    
+
+  // apply the preconditioner if it exists
+  if(d_bUsesPreconditioner) {
+    d_pPreconditioner->solve(r, z);
+  } else {
+    z->copyVector(r);
+  }
+  
+  std::vector<double > rho(2, 0.0);
+  rho[1] = z->dot(r);
+  rho[0] = rho[1];
+
+  double beta = 1.0;
+
+  AMP::shared_ptr<AMP::LinearAlgebra::Vector>  p  = z->cloneVector();
+  p->copyVector(z);
+
+  AMP::shared_ptr<AMP::LinearAlgebra::Vector>  w;
+
+  for( auto iter = 0; iter < d_iMaxIterations; ++iter ) {
     
-    if(d_iDebugPrintInfoLevel>1) {
-      std::cout << "CGSolver::solve: initial L2Norm of solution vector: " << u->L2Norm() << std::endl;
-      std::cout << "CGSolver::solve: initial L2Norm of rhs vector: " << f->L2Norm() << std::endl;
-    }
+    // w = Ap
+    d_pOperator->apply(p, w);
+    
+    // alpha = p'Ap
+    double alpha = w->dot(p);
 
+    // sanity check, the curvature should be positive
+    if(alpha <= 0.0 ) {
+      AMP_ERROR("Negative curvature encountered in CG!!");
+    }
+    
+    alpha = rho[1]/alpha;
+
+    u->axpy(alpha, p, u);
+    r->axpy(-alpha, w, r);
+
+    // apply the preconditioner if it exists
     if(d_bUsesPreconditioner) {
+      d_pPreconditioner->solve(r, z);
     } else {
+      z->copyVector(r);
     }
-    if(d_pOperator.get()!=NULL) {
-       registerOperator(d_pOperator);
+  
+    // compute the current residual norm
+    current_res = r->L2Norm();
+    rho[0] = rho[1];
+    rho[1] = r->dot(z);
+
+    // check if converged
+    if(current_res < terminate_tol ) {
+      // set a convergence reason
+      break;
     }
 
-    if(d_iDebugPrintInfoLevel>2) {
-        std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
-    }
+    beta = rho[1]/rho[0];      
+    p->axpy(beta, p, z);    
 
-    PROFILE_STOP("solve");
+  }
+
+  if(d_iDebugPrintInfoLevel>2) {
+    std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
+  }
+  
+  PROFILE_STOP("solve");
 }
 
 /****************************************************************
