@@ -1,8 +1,5 @@
 #include "solvers/CGSolver.h"
-#include "vectors/petsc/ManagedPetscVector.h"
 #include "operators/LinearOperator.h"
-#include "matrices/Matrix.h"
-#include "matrices/petsc/PetscMatrix.h"
 #include "ProfilerApp.h"
 
 extern "C"{
@@ -18,6 +15,7 @@ namespace Solver {
 CGSolver::CGSolver()
 {
 }
+
 CGSolver::CGSolver(AMP::shared_ptr<CGSolverParameters> parameters):SolverStrategy(parameters)
 {
     assert(parameters.get()!=NULL);
@@ -110,7 +108,7 @@ CGSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
   
   // compute the initial residual
   if( d_bUseZeroInitialGuess ) {
-    r->copyVector(b);
+    r->copyVector(f);
   } else {
     d_pOperator->residual(f, u, r);
   }
@@ -198,7 +196,6 @@ CGSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
 ****************************************************************/
 void CGSolver::registerOperator(const AMP::shared_ptr<AMP::Operator::Operator> op)
 {
-  // in this case we make the assumption we can access a PetscMat for now
   assert(op.get()!=NULL);
 
   d_pOperator = op;
