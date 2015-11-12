@@ -1,5 +1,5 @@
-#ifndef included_AMP_CGSolverParameters
-#define included_AMP_CGSolverParameters
+#ifndef included_AMP_KrylovSolverParameters
+#define included_AMP_KrylovSolverParameters
 
 #include "utils/shared_ptr.h"
 #include "utils/Database.h"
@@ -10,15 +10,15 @@ namespace AMP {
 namespace Solver {
 
   /**
-   * Class CGSolverParameters provides a uniform mechanism to pass
+   * Class KrylovSolverParameters provides a uniform mechanism to pass
    * initialization parameters to the CGSolver solver. It contains
    * shared pointers to a database object and a preconditioner. All member variables are public.
    */
-  class CGSolverParameters: public SolverStrategyParameters{
+  class KrylovSolverParameters: public SolverStrategyParameters{
   public:
-    CGSolverParameters(){}
-    CGSolverParameters(const AMP::shared_ptr<AMP::Database> db);
-    virtual ~CGSolverParameters(){}
+    KrylovSolverParameters(){}
+    KrylovSolverParameters(const AMP::shared_ptr<AMP::Database> db);
+    virtual ~KrylovSolverParameters(){}
 
     AMP_MPI d_comm;
 

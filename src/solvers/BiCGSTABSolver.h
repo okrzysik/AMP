@@ -1,5 +1,5 @@
-#ifndef included_AMP_CGSolver
-#define included_AMP_CGSolver
+#ifndef included_AMP_BiCGSTABSolver
+#define included_AMP_BiCGSTABSolver
 
 #include "utils/AMP_MPI.h"
 #include "solvers/SolverStrategy.h"
@@ -9,15 +9,21 @@ namespace AMP {
 namespace Solver {
 
 /**
- * The CGSolver class implements the Conjugate Gradient method
+ * The BiCGSTABSolver class implements the BiCGSTAB method for non-symmetric linear systems
+ * introduced by H. van der Vorst
+ * Van der Vorst, H. A. (1992). 
+ * "Bi-CGSTAB: A Fast and Smoothly Converging Variant of Bi-CG for the Solution of Nonsymmetric Linear Systems".
+ * SIAM J. Sci. and Stat. Comput. 13 (2): 631–644. 
+ * doi:10.1137/0913035.
+ * If a preconditioner is provided right preconditioning is done
  */
 
-class CGSolver: public SolverStrategy{
+class BiCGSTABSolver: public SolverStrategy{
 public:
     /**
      * default constructor
      */
-    CGSolver();
+    BiCGSTABSolver();
 
     /**
      * main constructor
@@ -30,13 +36,17 @@ public:
      2. type: bool, name : uses_preconditioner, default value false
         acceptable values (false, true),
         side effect: if false sets string pc_type to "none"
+		 
+     3. type: string, name : pc_side, default value "RIGHT",
+	 acceptable values ("RIGHT", "LEFT", "SYMMETRIC" )
+         active only when uses_preconditioner set to true
      */
-    CGSolver(AMP::shared_ptr<KrylovSolverParameters> parameters);
+    BiCGSTABSolver(AMP::shared_ptr<KrylovSolverParameters> parameters);
 
     /**
      * Default destructor
      */
-    virtual ~CGSolver();
+    virtual ~BiCGSTABSolver();
 
     /**
      * Solve the system \f$Au = 0\f$.
@@ -47,7 +57,7 @@ public:
 	       AMP::shared_ptr<AMP::LinearAlgebra::Vector>  u);
 
     /**
-     * Initialize the CGSolver. Should not be necessary for the user to call in general.
+     * Initialize the BiCGSTABSolver. Should not be necessary for the user to call in general.
      * @param parameters
      */
     void initialize(AMP::shared_ptr<SolverStrategyParameters> const parameters);
@@ -85,9 +95,9 @@ private:
     
     AMP_MPI d_comm;
 
-    double d_dRelativeTolerance;
-    double d_dAbsoluteTolerance;
-    double d_dDivergenceTolerance;
+    double d_dRelativeTolerance; //! relative tolerance to converge to
+
+    int d_restarts; //! number of times the solver is restarted
 
     bool d_bUsesPreconditioner;
 

@@ -8,7 +8,7 @@ namespace Solver {
 
 ColumnSolver::ColumnSolver(AMP::shared_ptr<SolverStrategyParameters> parameters):SolverStrategy(parameters)
 {
-    assert(parameters.get()!=NULL);
+    AMP_ASSERT(parameters.get()!=NULL);
     const AMP::shared_ptr<AMP::Database> &db = parameters->d_db;
     d_IterationType = db->getStringWithDefault("IterationType", "GaussSeidel");
     d_resetColumnOperator = db->getBoolWithDefault("ResetColumnOperator", false);

@@ -81,9 +81,9 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
     }
     
     // Some basic checks
-    assert(bndGlobalIds.size() == 4);
+    AMP_ASSERT(bndGlobalIds.size() == 4);
     //assert((bnd->getElem()).default_order() == feTypeOrder);
-    assert(bnd->elementType()==AMP::Mesh::Face);
+    AMP_ASSERT(bnd->elementType()==AMP::Mesh::Face);
 
     // Create the libmesh element
     // Note: This must be done inside the loop because libmesh's reinit function doesn't seem to work properly
@@ -121,8 +121,8 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
        std::vector<double> vals(bndGlobalIds.size(), 0.0);
        for(unsigned int i = 0; i < bndGlobalIds.size(); i++) {
          for(unsigned int qp = 0; qp < qrule->n_points(); qp++) {
-           assert(djxw[qp] >= 0.0);
-           assert(phi[i][qp] >= 0.0);
+           AMP_ASSERT(djxw[qp] >= 0.0);
+           AMP_ASSERT(phi[i][qp] >= 0.0);
            vals[i] += (djxw[qp]*phi[i][qp]*100.0);
          }//end qp
        }//end i

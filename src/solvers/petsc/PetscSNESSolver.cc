@@ -305,7 +305,7 @@ void PetscSNESSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f
             AMP::shared_ptr<AMP::Operator::LinearOperator> linearOp = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>(d_pKrylovSolver->getOperator());
             if(linearOp.get()!=NULL) {
                 AMP::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(linearOp->getMatrix());
-                assert(pMatrix.get()!=NULL);
+                AMP_ASSERT(pMatrix.get()!=NULL);
                 d_Jacobian = pMatrix->getMat();
             } else {
                 AMP_INSIST(linearOp.get()!=NULL, "ERROR: The LinearOperator pointer in the PetscKrylovSolver is NULL");

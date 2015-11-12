@@ -16,7 +16,7 @@ CGSolver::CGSolver()
 {
 }
 
-CGSolver::CGSolver(AMP::shared_ptr<CGSolverParameters> parameters):SolverStrategy(parameters)
+CGSolver::CGSolver(AMP::shared_ptr<KrylovSolverParameters> parameters):SolverStrategy(parameters)
 {
     assert(parameters.get()!=NULL);
 
@@ -38,7 +38,7 @@ CGSolver::~CGSolver()
 void
 CGSolver::initialize(AMP::shared_ptr<SolverStrategyParameters> const params)
 {
-    AMP::shared_ptr<CGSolverParameters> parameters = AMP::dynamic_pointer_cast<CGSolverParameters>(params);
+    AMP::shared_ptr<KrylovSolverParameters> parameters = AMP::dynamic_pointer_cast<KrylovSolverParameters>(params);
     AMP_ASSERT(parameters.get()!=NULL);
     d_comm = parameters->d_comm;
     AMP_ASSERT(!d_comm.isNull());

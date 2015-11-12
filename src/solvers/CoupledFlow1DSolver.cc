@@ -13,7 +13,7 @@ namespace Solver {
 
 CoupledFlow1DSolver::CoupledFlow1DSolver(AMP::shared_ptr<SolverStrategyParameters> parameters):SolverStrategy(parameters)
 {
-  assert(parameters.get()!=NULL);
+  AMP_ASSERT(parameters.get()!=NULL);
 
     AMP::shared_ptr<CoupledFlow1DSolverParameters> params =
         AMP::dynamic_pointer_cast<CoupledFlow1DSolverParameters>(parameters);

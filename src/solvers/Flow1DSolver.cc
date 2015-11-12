@@ -9,7 +9,7 @@ namespace Solver {
 Flow1DSolver::Flow1DSolver(AMP::shared_ptr<SolverStrategyParameters> parameters):SolverStrategy(parameters)
 {
   
-  assert(parameters.get()!=NULL);
+  AMP_ASSERT(parameters.get()!=NULL);
   
   initialize(parameters);
 
@@ -35,7 +35,7 @@ Flow1DSolver::initialize(AMP::shared_ptr<SolverStrategyParameters> const paramet
     {
       AMP::shared_ptr<AMP::Operator::FlowFrapconJacobian> Operator = AMP::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>(d_pOperator);
 
-      assert(Operator.get() != NULL);
+      AMP_ASSERT(Operator.get() != NULL);
 
       d_inpVariable = Operator->d_inpVariable;
       d_outVariable = Operator->d_outVariable;
