@@ -30,7 +30,7 @@ public:
      @param [in] parameters The parameters object
      contains a database objects containing the following fields:
      
-     1. type: double, name : relative_tolerance, default value of $1.0e-9$, relative tolerance for CG solver
+     1. type: double, name : relative_tolerance, default value of $1.0e-9$, relative tolerance for GMRES solver
 	acceptable values (non-negative real values) 
                	
      2. type: bool, name : uses_preconditioner, default value false
