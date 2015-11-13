@@ -354,8 +354,9 @@ namespace Operator {
 
   void cubicRoots(double a, double b, double c, double d,
       double & r1, double & r2, double & r3) {
-    double delta = (18.0*a*b*c*d) - (4.0*b*b*b*d) + (b*b*c*c) - (4.0*a*c*c*c) - (27.0*a*a*d*d);
-    assert(delta >= 0.0);
+    // next two lines seem to be unused, leads to compiler warning
+    //    double delta = (18.0*a*b*c*d) - (4.0*b*b*b*d) + (b*b*c*c) - (4.0*a*c*c*c) - (27.0*a*a*d*d);
+    //    assert(delta >= 0.0);
 
     firstCubicRoot(a, b, c, d, r1);
 

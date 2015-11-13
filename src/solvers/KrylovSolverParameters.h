@@ -11,8 +11,9 @@ namespace Solver {
 
   /**
    * Class KrylovSolverParameters provides a uniform mechanism to pass
-   * initialization parameters to the CGSolver solver. It contains
-   * shared pointers to a database object and a preconditioner. All member variables are public.
+   * initialization parameters to Krylov solvers. It contains
+   * shared pointers to a database object and a preconditioner (which could be NULL). 
+   * All member variables are public.
    */
   class KrylovSolverParameters: public SolverStrategyParameters{
   public:

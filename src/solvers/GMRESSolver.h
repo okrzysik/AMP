@@ -38,7 +38,7 @@ public:
         side effect: if false sets string pc_type to "none"
 		 
      3. type: string, name : pc_side, default value "RIGHT",
-	 acceptable values ("RIGHT", "LEFT", "SYMMETRIC" )
+	 acceptable values ("RIGHT", "LEFT" )
          active only when uses_preconditioner set to true
      */
     GMRESSolver(AMP::shared_ptr<KrylovSolverParameters> parameters);
@@ -50,12 +50,12 @@ public:
 
     /**
      * Solve the system \f$Au = 0\f$.
-     * @param [in] f : shared pointer to right hand side vector
+     * @param [in] f : const shared pointer to right hand side vector
      * @param [out] u : shared pointer to approximate computed solution 
      */
-    void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
-	       AMP::shared_ptr<AMP::LinearAlgebra::Vector>  u);
-
+    void solve(AMP::LinearAlgebra::Vector::const_shared_ptr f,
+	       AMP::LinearAlgebra::Vector::shared_ptr u );
+    
     /**
      * Initialize the GMRESSolver. Should not be necessary for the user to call in general.
      * @param parameters
@@ -97,12 +97,28 @@ private:
 
     double d_dRelativeTolerance; //! relative tolerance to converge to
 
-    int d_restarts; //! number of times the solver is restarted
+    bool d_bRestart; //! whether to restart
+    
+    int d_iMaxKrylovDimension; //! maximum dimension of the Krylov subspace before a restart or termination happens
 
+    int d_restarts; //! logs number of times the solver is restarted
+    
+    //! string, determines orthogonalization method in Arnoldi
+    //! options are "CGS", "MGS", "HR", where
+    //! "CGS" : classical Gram-Schmidt ( fast but potentially unstable )
+    //! "MGS" : modified Gram-Schmidt  ( stable )
+    //! "HR" : Householder reflections (use when highly ill conditioned)
+    std::string d_sOrthoganalizationMethod;
+
+    //! boolean, for whether a preconditioner present or not
     bool d_bUsesPreconditioner;
 
+    //! shared pointer to preconditioner if it exists
     AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 
+    //! stores the orthonormal basis for the Krylov space
+    //! we do not preallocate by default
+    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_vBasis;
 };
 
 

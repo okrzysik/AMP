@@ -46,9 +46,9 @@ GMRESSolver::initialize(AMP::shared_ptr<SolverStrategyParameters> const params)
     d_comm = parameters->d_comm;
     AMP_ASSERT(!d_comm.isNull());
 
-    d_pPreconditioner = parameters->d_pPreconditioner;
-
     getFromInput(parameters->d_db);
+
+    d_pPreconditioner = parameters->d_pPreconditioner;
 
     if(d_pOperator.get()!=NULL) {
       registerOperator(d_pOperator);
@@ -59,10 +59,16 @@ GMRESSolver::initialize(AMP::shared_ptr<SolverStrategyParameters> const params)
 void GMRESSolver::getFromInput(const AMP::shared_ptr<AMP::Database> &db)
 {
 
-  d_dRelativeTolerance = db->getDoubleWithDefault("relative_tolerance", 1.0e-9);
   d_iMaxIterations       = db->getDoubleWithDefault("max_iterations", 1000);
+  d_iMaxKrylovDimension       = db->getDoubleWithDefault("max_dimension", 1000);
+
+  d_dRelativeTolerance = db->getDoubleWithDefault("relative_tolerance", 1.0e-9);
+
+  d_sOrthoganalizationMethod = db->getStringWithDefault("ortho_method", "CGS");
 
   d_bUsesPreconditioner = db->getBoolWithDefault("uses_preconditioner", false);
+  d_bRestart = db->getBoolWithDefault("gmres_restart", false);
+
 }
 
 /****************************************************************
