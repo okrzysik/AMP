@@ -387,6 +387,7 @@ September 1998");
                         T = T + ct3[i][j]*pow(P,(double)i)*pow(H,(double)j);
             }
         }
+        NULL_USE(H_crit);
 
         // convert result to SI units
         T = 5./9.*(T - 32.) + 273.15; // [F] to [K]
@@ -757,6 +758,7 @@ September 1998");
                 }
             }
         }
+        NULL_USE(H_crit);
 
         // convert result to SI units
         V = V*6.24279605761446e-2; // [ft3/lbm] to [m3/kg]
@@ -926,7 +928,7 @@ September 1998");
     {
         // enthalpy values at left (l), right (r), and middle (m) as well as
         //  residual evaluated at these points
-        double l, r, m, fl, fr, fm;
+        double l, r, fl, fr;
         l = hmin;
         r = hmax;
         fl = Residual(hmin,T,P);
@@ -937,8 +939,8 @@ September 1998");
         while( (r-l)>Mfp_atol && (r-l)/r>Mfp_rtol )
         {
             iter++;
-            m = r - (fr*(r-l) / (fr-fl) );
-            fm = Residual(m,T,P);
+            double m = r - (fr*(r-l) / (fr-fl) );
+            double fm = Residual(m,T,P);
             // If fm and fl have opposite sides, the root must lie in the left
             //  "half" the new range is [l,m]
             if( fm * fl < 0.0 )

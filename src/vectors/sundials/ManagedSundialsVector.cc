@@ -129,7 +129,6 @@ N_Vector ManagedSundialsVector::cloneVector_AMP(N_Vector n_vector)
     ManagedSundialsVector *newSundialsVector = srcAMPVector->rawClone();
 
     newSundialsVector->setVariable(srcAMPVector->getVariable());
-newSundialsVector->createCyclicSharedPtr();
     return(newSundialsVector->getNVector());
 }
 
@@ -143,7 +142,6 @@ void ManagedSundialsVector::freeVectorComponents_AMP(N_Vector v)
 {
     
     ManagedSundialsVector* ptr = static_cast<ManagedSundialsVector*>(v->content);
-ptr->destroyCycle();
     delete ptr;
 }
 

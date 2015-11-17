@@ -20,6 +20,7 @@
 
 #include "utils/RNG.h"
 #include "utils/Castable.h"
+#include "utils/enable_shared_from_this.h"
 #include "CommunicationList.h"
 
 #include "Variable.h"

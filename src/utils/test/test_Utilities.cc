@@ -14,6 +14,8 @@
 #include "utils/AMP_MPI.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
+#include "utils/shared_ptr.h"
+#include "utils/enable_shared_from_this.h"
 
 
 // Detect the OS and include system dependent headers
@@ -175,7 +177,61 @@ void test_interp( AMP::UnitTest *ut )
 }
 
 
-//  This test will start and shutdown AMP
+// Test enable_shared_from_this
+class dummy : public AMP::enable_shared_from_this<dummy>
+{
+  public:
+    AMP::shared_ptr<dummy> getPtr() {
+        return shared_from_this();
+    }
+};
+void test_shared_from_this( AMP::UnitTest *ut )
+{
+    bool pass = true;
+    try {
+        AMP::shared_ptr<dummy> p1(new dummy);
+        AMP::shared_ptr<dummy> p2 = p1.get()->getPtr();
+        int count = p2.use_count();
+        if ( count!=2 )
+            pass = false;
+    } catch (...) {
+        pass = false;
+    }
+    if ( pass )
+        ut->passes("shared_from_this 1");
+    else
+        ut->failure("shared_from_this 1");
+    pass = true;
+    try {
+        dummy *p1 = new dummy;
+        std::shared_ptr<dummy> p2 = p1->getPtr();
+        pass = pass && p2.use_count()==1;
+        std::shared_ptr<dummy> p3(p1);   // Take ownership
+        pass = pass && p2.use_count()==1 && p3.use_count()==1;
+        p2.reset();
+        pass = pass && p2.use_count()==0 && p3.use_count()==1;
+        std::shared_ptr<dummy> p4 = p3->getPtr();
+        pass = pass && p3.use_count()==2 && p4.use_count()==2;
+        std::shared_ptr<dummy> p5(p3.get(),[](void*){});
+        pass = pass && p3.use_count()==2 && p5.use_count()==1;
+        p5.reset();
+        pass = pass && p3.use_count()==2 && p5.use_count()==0;
+        std::shared_ptr<dummy> p6 = p3->getPtr();
+        pass = pass && p3.use_count()==3 && p6.use_count()==3;
+    } catch (...) {
+        pass = false;
+    }
+    if ( pass )
+        ut->passes("shared_from_this 2");
+    else
+        ut->failure("shared_from_this 2");
+}
+
+
+
+/****************************************************************
+* Run some basic utility tests                                  *
+****************************************************************/
 int main(int argc, char *argv[])
 {
 
@@ -195,6 +251,9 @@ int main(int argc, char *argv[])
 
         // Print the banner
         AMP::Utilities::printBanner();
+
+        // Test enable_shared_from_this
+        test_shared_from_this( &ut );
 
         // Try converting an int to a string
         if ( AMP::Utilities::intToString(37,0)=="37" && AMP::Utilities::intToString(37,3)=="037" )

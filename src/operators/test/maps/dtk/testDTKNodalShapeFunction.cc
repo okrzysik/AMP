@@ -115,8 +115,6 @@ void myTest(AMP::UnitTest *ut)
     DataTransferKit::EntityIterator dtk_elem_iterator =
 	AMP::Operator::AMPMeshEntityIterator( elem_iterator, selectAll );
 
-    double epsilon = 1.0e-12;
-
     Teuchos::Array<std::size_t> dof_ids;
     Teuchos::Array<double> values;
     Teuchos::Array<Teuchos::Array<double> > gradients;

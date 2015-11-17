@@ -4,6 +4,7 @@
 #include "utils/Utilities.h"
 #include <utils/Castable.h>
 #include "utils/shared_ptr.h"
+#include "utils/enable_shared_from_this.h"
 
 namespace AMP {
 namespace LinearAlgebra {

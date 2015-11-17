@@ -54,5 +54,13 @@ nullPointer:*/materials/Property.h
 duplicateExpression:*/test/test*
 uselessCallsCompare:*/test/test*
 variableScope:*/test/test*
+variableScope:*/test/diffusion/test*
+variableScope:*/test/maps/dtk/test*
+unreadVariable:*/test/test*
+unusedVariable:*/test/maps/dtk/test*
+
+// Supress warnings for usleep
+obsoleteFunctionsusleep
+
 
 

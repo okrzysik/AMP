@@ -217,7 +217,7 @@ for(unsigned int i = 0; i < npes; ++i) {
         std::vector<AMP::Mesh::MeshElementID>::iterator activeSetIterator = d_ActiveSet.begin();
         for (size_t i = 0; i < nActiveSlaveVerticesBeforeUpdate; ++i) {
           double nDotT = compute_scalar_product(&(d_SlaveVerticesNormalVectorBeforeUpdate[3*i]), &(d_SlaveVerticesSurfaceTractionBeforeUpdate[3*i]));
-          std::vector<double> slaveVertexCoordinates = d_Mesh->getElement(*activeSetIterator).coord();
+          //std::vector<double> slaveVertexCoordinates = d_Mesh->getElement(*activeSetIterator).coord();
           if (nDotT > 1.0e-10) { 
             ++nActiveSlaveVerticesDeactivated;
             d_InactiveSet.push_back(*activeSetIterator);

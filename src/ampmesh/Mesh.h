@@ -8,6 +8,7 @@
 #include "ampmesh/MeshIterator.h"
 #include "utils/AMP_MPI.h"
 #include "utils/shared_ptr.h"
+#include "utils/enable_shared_from_this.h"
 
 #ifdef USE_AMP_VECTORS
     namespace AMP {

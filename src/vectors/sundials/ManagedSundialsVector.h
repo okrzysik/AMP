@@ -4,7 +4,6 @@
 #include "vectors/sundials/SundialsVector.h"
 #include "vectors/VectorEngine.h"
 #include "vectors/ManagedVector.h"
-#include "vectors/CyclicSharedPtr.h"
 #include "vectors/ExternalVectorDeleter.h"
 
 
@@ -27,9 +26,7 @@ namespace LinearAlgebra {
  */
 typedef ManagedVectorParameters ManagedSundialsVectorParameters;
 
-class ManagedSundialsVector: public ManagedVector ,
-                           public SundialsVector ,
-                           public CyclicSharedPtr <Vector,ExternalVectorDeleter>
+class ManagedSundialsVector: public ManagedVector, public SundialsVector
 {
 
 public:

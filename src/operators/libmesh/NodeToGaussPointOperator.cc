@@ -22,19 +22,20 @@ namespace Operator {
 
 
 // Constructor
-NodeToGaussPointOperator::NodeToGaussPointOperator (const AMP::shared_ptr<OperatorParameters> & params) : Operator (params)
+NodeToGaussPointOperator::NodeToGaussPointOperator( const AMP::shared_ptr<OperatorParameters> & params ):
+    Operator(params)
 {
     PROFILE_START("NodeToGaussPointOperator");
     d_NodalVariable.reset(new AMP::LinearAlgebra::Variable(params->d_db->getString("InputVariable")));
     d_GaussPtVariable.reset(new AMP::LinearAlgebra::Variable(params->d_db->getString("OutputVariable")));
     d_UseSurfaceElements = (params->d_db)->getBoolWithDefault("UseSurfaceElements", true);
     // Get the iterator for the mesh
-    int dim = 0;
+    d_dim = 0;
     if(d_UseSurfaceElements) {
-        dim = 2;
+        d_dim = 2;
         d_iterator = d_Mesh->getIterator(AMP::Mesh::Face, 0);
     } else {
-        dim = 3;
+        d_dim = 3;
         d_iterator = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
     }
     // Initialize some libmesh variables
@@ -43,8 +44,8 @@ NodeToGaussPointOperator::NodeToGaussPointOperator (const AMP::shared_ptr<Operat
     libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>("LAGRANGE");
     libMeshEnums::QuadratureType qtype = libMesh::Utility::string_to_enum<QuadratureType>("QGAUSS");
     libMesh::AutoPtr<libMesh::FEType> feType( new libMesh::FEType(feTypeOrder, feFamily) );
-    libMesh::AutoPtr<libMesh::QBase> qrule = libMesh::QBase::build(qtype,dim,qruleOrder);
-    libMesh::AutoPtr<libMesh::FEBase> febase = libMesh::FEBase::build(dim,*feType);
+    libMesh::AutoPtr<libMesh::QBase> qrule = libMesh::QBase::build(qtype,d_dim,qruleOrder);
+    libMesh::AutoPtr<libMesh::FEBase> febase = libMesh::FEBase::build(d_dim,*feType);
     febase->attach_quadrature_rule(qrule.get());
     // Cache data for all elements (improves performance)
     d_nodes.resize(d_iterator.size());

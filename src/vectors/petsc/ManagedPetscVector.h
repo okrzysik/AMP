@@ -3,7 +3,6 @@
 
 #include "vectors/ManagedVector.h"
 #include "vectors/petsc/PetscVector.h"
-#include "vectors/CyclicSharedPtr.h"
 #include "vectors/ExternalVectorDeleter.h"
 
 
@@ -17,30 +16,29 @@ extern "C"{
 namespace AMP {
 namespace LinearAlgebra {
 
-  /** \typedef ManagedPetscVectorParameters
-    * \brief   Requirements for constructing a ManagedPetscVector
-    */
-  typedef ManagedVectorParameters ManagedPetscVectorParameters;
 
-  /** \class ManagedPetscVector
-    * \brief A class that provides a PETSc vector interfaced to a ManagedVector.
-    * \details  This class provides a PETSc Vec specially configured to call 
-    * through ManagedVector.
-    *
-    * In general, the end user will not have to use this class.  This class is 
-    * returned by PetscVector::view() and PetscVector::constView(); 
-    *
-    * \see PetscVector
-    */
+/** \typedef ManagedPetscVectorParameters
+* \brief   Requirements for constructing a ManagedPetscVector
+*/
+typedef ManagedVectorParameters ManagedPetscVectorParameters;
 
-  class ManagedPetscVector: public ManagedVector , 
-                            public PetscVector , 
-                            public CyclicSharedPtr<Vector,ExternalVectorDeleter>
-  {
-    private:
+
+/** \class ManagedPetscVector
+ * \brief A class that provides a PETSc vector interfaced to a ManagedVector.
+ * \details  This class provides a PETSc Vec specially configured to call 
+ * through ManagedVector.
+ *
+ * In general, the end user will not have to use this class.  This class is 
+ * returned by PetscVector::view() and PetscVector::constView(); 
+ *
+ * \see PetscVector
+ */
+class ManagedPetscVector: public ManagedVector, public PetscVector
+{
+private:
       bool     d_bMadeWithPetscDuplicate;
 
-    protected:
+protected:
       /** \brief  Convenience typedef fpr a ManagedVector
         */
       typedef  ManagedVector   ParentVector;
@@ -51,7 +49,7 @@ namespace LinearAlgebra {
       void initPetsc();
 
 
-    public:
+public:
 
 
       /** \brief Construct a new ManagedPetscVector given a set of parameters
@@ -101,7 +99,7 @@ namespace LinearAlgebra {
       
 
       // These are adequately documented in a base class.
-    public:
+public:
       virtual void  swapVectors ( Vector &other );
       using Vector::cloneVector;
       virtual Vector::shared_ptr  cloneVector ( const Variable::shared_ptr p ) const;
@@ -111,10 +109,11 @@ namespace LinearAlgebra {
  
       virtual bool petscHoldsView() const;
 
-    protected:
+protected:
       virtual ManagedVector *getNewRawPtr () const;
 
-  };
+};
+
 
 }
 }

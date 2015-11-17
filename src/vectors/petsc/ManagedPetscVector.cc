@@ -504,7 +504,6 @@ PetscErrorCode _AMP_duplicate(Vec in,Vec *out)
 
   AMP::LinearAlgebra::ManagedPetscVector *p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
   AMP::LinearAlgebra::ManagedPetscVector *dup = p->petscDuplicate();
-  dup->createCyclicSharedPtr();
   AMP_ASSERT( _Verify_Memory( p, dup ) );
   *out = dup->getVec();
   return 0;
@@ -565,9 +564,7 @@ PetscErrorCode _AMP_resetarray(Vec ) { return 0; }
 PetscErrorCode _AMP_destroy(Vec v)
 {
   AMP::LinearAlgebra::ManagedPetscVector *p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( v->data );
-  if( p->constructedWithPetscDuplicate() )
-  {
-    p->destroyCycle();
+  if( p->constructedWithPetscDuplicate() ) {
     delete p;
   }
   return 0;

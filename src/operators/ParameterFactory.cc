@@ -29,6 +29,7 @@ ParameterFactory::createParameter(AMP::shared_ptr<AMP::Database>  input_db, AMP:
     AMP_INSIST(input_db->keyExists("name"),  "ParameterFactory::createParameter:: key 'name' must be a part of database ");
 
     name = input_db->getString("name");
+    NULL_USE(name);
   
     #ifdef USE_EXT_LIBMESH
         resetParameters(DirichletMatrixCorrection);

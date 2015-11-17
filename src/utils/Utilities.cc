@@ -359,7 +359,6 @@ std::vector<std::string>  Utilities::getCallStack()
         void *trace[100];
         memset(trace,0,100*sizeof(void*));
         Dl_info dlinfo;
-        int status;
         const char *symname;
         char *demangled=NULL;
         int trace_size = backtrace(trace,100);
@@ -369,6 +368,7 @@ std::vector<std::string>  Utilities::getCallStack()
                 continue;
             symname = dlinfo.dli_sname;
             #if defined(USE_ABI)
+                int status=0;
                 demangled = abi::__cxa_demangle(symname, NULL, 0, &status);
                 if(status == 0 && demangled)
                     symname = demangled;

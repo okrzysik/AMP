@@ -467,7 +467,6 @@ static bool test_dgtsv( int N, double& error )
     memcpy(x1,b,K*sizeof(double));
     int err=0;
     Lapack::dgesv(K,1,A,K,IPIV,x1,K,err);
-    double max_error = 0;
     int N_errors = 0;
     for (int i=0; i<N; i++) {
         memcpy(x2,b,K*sizeof(double));
@@ -482,7 +481,7 @@ static bool test_dgtsv( int N, double& error )
     }
     const double tol = 2e-12;
     if ( error > tol ) {
-        printf("test_dgtsv error (%e) exceeded tolerance (%e)\n",max_error,tol);
+        printf("test_dgtsv error (%e) exceeded tolerance (%e)\n",error,tol);
         N_errors++;
     }
     delete [] A;

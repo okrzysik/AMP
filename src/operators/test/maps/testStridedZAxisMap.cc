@@ -45,14 +45,13 @@ void project
     AMP::Mesh::MeshIterator const meshIterator_end   = meshIterator.end();
     std::vector<size_t> dofIndices;
     std::vector<double> coord;
-    double value;
     for (AMP::Mesh::MeshIterator iterator = meshIterator_begin; 
         iterator != meshIterator_end;
         ++iterator) {
         dofManager->getDOFs(iterator->globalID(), dofIndices);
         AMP_ASSERT( dofIndices.size() == dofsPerNode );
         coord = iterator->coord();
-        value = functionOfSpace(coord);
+        double value = functionOfSpace(coord);
         vector->setValueByGlobalID(dofIndices[dof], value);
     } // end for iterator
 }
