@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <limits>
 #include <climits>
+#include <algorithm>
 
 
 // Include OS specific headers

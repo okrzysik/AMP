@@ -12,6 +12,8 @@
 #include <string>
 #include <cstring>
 #include <cmath>
+#include <algorithm>
+
 #include "Utilities.h"
 
 #ifndef NULL

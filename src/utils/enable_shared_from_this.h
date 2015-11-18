@@ -38,7 +38,8 @@ public:
             T* tmp = dynamic_cast<T*>(this);
             AMP_ASSERT(tmp!=NULL);
             try {
-                ptr = tmp->base_enable_shared_from_this<T>::shared_from_this();
+                base_enable_shared_from_this<T> *tmp2 = this;
+                ptr = tmp2->shared_from_this();
             } catch (...) {
                 ptr = AMP::shared_ptr<T>(tmp,[](void*){});
             }
@@ -54,9 +55,11 @@ public:
             const T* tmp = dynamic_cast<const T*>(this);
             AMP_ASSERT(tmp!=NULL);
             try {
-                ptr = tmp->base_enable_shared_from_this<T>::shared_from_this();
+                const base_enable_shared_from_this<T> *tmp2 = this;
+                ptr = tmp2->shared_from_this();
             } catch (...) {
-                ptr = AMP::shared_ptr<const T>(tmp,[](const void*){});
+                // Note: Clang on MAC has issues with the const version of this line, hence the const_cast
+                ptr = AMP::shared_ptr<T>(const_cast<T*>(tmp),[](void*){});
             }
             weak_ptr_ = const_pointer_cast<T>(ptr);
         } else {
