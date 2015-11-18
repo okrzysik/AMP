@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <math.h>
@@ -20,10 +21,12 @@
 #include <string.h>
 #include <signal.h>
 
+
 // Detect the OS and include system dependent headers
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
     // Note: windows has not been testeds
     #define USE_WINDOWS
+    #define NOMINMAX
     #include <windows.h>
     #include <process.h>
     #include <stdio.h>   
@@ -44,6 +47,7 @@
     #include <stdint.h>
     #include <sys/types.h>
     #include <sys/sysctl.h>
+    #include <unistd.h>
 #elif defined(__linux) || defined(__unix) || defined(__posix)
     #define USE_LINUX
     #define USE_NM

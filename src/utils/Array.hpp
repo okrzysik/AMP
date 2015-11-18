@@ -6,6 +6,7 @@
 #include <limits>
 #include <cstring>
 
+namespace AMP {
 
 /********************************************************
 *  Constructors                                         *
@@ -72,7 +73,7 @@ void Array<TYPE>::allocate( const std::vector<size_t>& N )
         d_ptr.reset(new (std::nothrow) TYPE[d_length], [](TYPE *p) { delete []p;});
     d_data = d_ptr.get();
     if ( d_length>0 && d_data==NULL )
-        ATOMIC_ERROR("Failed to allocate array");
+        AMP_ERROR("Failed to allocate array");
 }
 template<class TYPE>
 Array<TYPE>::Array( const Array& rhs ):
@@ -236,7 +237,7 @@ void Array<TYPE>::resize( const std::vector<size_t>& N )
 template<class TYPE>
 void Array<TYPE>::resizeDim( int dim, size_t N, const TYPE& value )
 {
-    ATOMIC_ASSERT(dim<d_ndim);
+    AMP_ASSERT(dim<d_ndim);
     std::vector<size_t> N2 = size();
     size_t N0 = N2[dim];
     N2[dim] = N;
@@ -257,7 +258,7 @@ void Array<TYPE>::resizeDim( int dim, size_t N, const TYPE& value )
 
 
 /********************************************************
-*  Rehape the array                                     *
+*  Reshape the array                                     *
 ********************************************************/
 template<class TYPE>
 void Array<TYPE>::reshape( const std::vector<size_t>& N )
@@ -266,7 +267,7 @@ void Array<TYPE>::reshape( const std::vector<size_t>& N )
     for (size_t i=0; i<N.size(); i++)
         new_length *= N[i];
     if ( new_length!=d_length )
-        ATOMIC_ERROR("reshape is not allowed to change the array size");
+        AMP_ERROR("reshape is not allowed to change the array size");
     d_ndim = N.size();
     for (size_t i=0; i<ARRAY_NDIM_MAX; i++)
         d_N[i] = 1;
@@ -291,7 +292,7 @@ inline void ArrayGetSubsetIndex( const std::vector<size_t>& index,
     for (size_t d=0; d<index.size()/2; d++)
         test = test && index[2*d+0]<d_N[d] && index[2*d+1]<d_N[d];
     if ( !test )
-        ATOMIC_ERROR("indicies for subset are invalid");
+        AMP_ERROR("indicies for subset are invalid");
     for (size_t d=index.size()/2; d<5; d++) {
         first[d] = index[2*d+0];
         last[d]  = index[2*d+1];
@@ -644,9 +645,9 @@ Array<TYPE> Array<TYPE>::sum( int dir ) const
 template<class TYPE>
 Array<TYPE>& Array<TYPE>::operator+=( const Array<TYPE>& rhs)
 {
-    ATOMIC_ASSERT(d_ndim==rhs.d_ndim);
+    AMP_ASSERT(d_ndim==rhs.d_ndim);
     for (int d=0; d<d_ndim; d++)
-        ATOMIC_ASSERT(d_N[d]==rhs.d_N[d]);
+        AMP_ASSERT(d_N[d]==rhs.d_N[d]);
     for (size_t i=0; i<d_length; i++)
         d_data[i] += rhs.d_data[i];
     return *this;
@@ -654,9 +655,9 @@ Array<TYPE>& Array<TYPE>::operator+=( const Array<TYPE>& rhs)
 template<class TYPE>
 Array<TYPE>& Array<TYPE>::operator-=( const Array<TYPE>& rhs)
 {
-    ATOMIC_ASSERT(d_ndim==rhs.d_ndim);
+    AMP_ASSERT(d_ndim==rhs.d_ndim);
     for (int d=0; d<d_ndim; d++)
-        ATOMIC_ASSERT(d_N[d]==rhs.d_N[d]);
+        AMP_ASSERT(d_N[d]==rhs.d_N[d]);
     for (size_t i=0; i<d_length; i++)
         d_data[i] -= rhs.d_data[i];
     return *this;
@@ -678,6 +679,7 @@ std::vector<size_t> Array<TYPE>::find( const TYPE& value, std::function<bool(con
     return result;
 }
 
+}
 
 #endif
 

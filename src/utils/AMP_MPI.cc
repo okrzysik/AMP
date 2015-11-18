@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <limits>
 #include <climits>
+#include <algorithm>
 
 
 // Include OS specific headers
@@ -31,6 +32,7 @@
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     // We are using windows
     #define USE_WINDOWS
+    #define NOMINMAX
     #include <windows.h>
     #include <process.h>
     #define sched_yield() Sleep(0)
@@ -186,17 +188,17 @@ static inline unsigned long long int signed_to_unsigned(long long int x)
 static inline int unsigned_to_signed(unsigned int x) 
 {
     const unsigned int offset = static_cast<unsigned int>(-std::numeric_limits<int>::min());
-    return ( x>=offset ) ? static_cast<unsigned int>(x-offset) : -static_cast<unsigned int>(offset-x);
+    return ( x>=offset ) ? static_cast<int>(x-offset) : -static_cast<int>(offset-x);
 }
 static inline long int unsigned_to_signed(unsigned long int x) 
 {
     const unsigned long int offset = static_cast<unsigned long int>(-std::numeric_limits<long int>::min());
-    return ( x>=offset ) ? static_cast<unsigned long int>(x-offset) : -static_cast<unsigned long int>(offset-x);
+    return ( x>=offset ) ? static_cast<long int>(x-offset) : -static_cast<long int>(offset-x);
 }
 static inline long long int unsigned_to_signed(unsigned long long int x) 
 {
     const unsigned long long int offset = static_cast<unsigned long long int>(-std::numeric_limits<long long int>::min());
-    return ( x>=offset ) ? static_cast<unsigned long long int>(x-offset) : -static_cast<unsigned long long int>(offset-x);
+    return ( x>=offset ) ? static_cast<long long int>(x-offset) : -static_cast<long long int>(offset-x);
 }
 
 
@@ -1539,7 +1541,7 @@ void MPI_CLASS::call_minReduce<unsigned long long int>(const unsigned long long 
         printf("minReduce<long long int> will use double\n");
         double *tmp = new double[n];
         for (int i=0; i<n; i++)
-            tmp[i] = send[i];
+            tmp[i] = static_cast<double>(send[i]);
         call_minReduce<double>( tmp, n, comm_rank_of_min );
         for (int i=0; i<n; i++)
             recv[i] = static_cast<long long int>(tmp[i]);
@@ -1566,7 +1568,7 @@ void MPI_CLASS::call_minReduce<long long int>(const long long int *x, long long 
         printf("minReduce<long long int> will use double\n");
         double *tmp = new double[n];
         for (int i=0; i<n; i++)
-            tmp[i] = x[i];
+            tmp[i] = static_cast<double>(x[i]);
         call_minReduce<double>( tmp, n, comm_rank_of_min );
         for (int i=0; i<n; i++)
             y[i] = static_cast<long long int>(tmp[i]);
@@ -1976,7 +1978,7 @@ void MPI_CLASS::call_maxReduce<unsigned long long int>(const unsigned long long 
         printf("maxReduce<long long int> will use double\n");
         double *tmp = new double[n];
         for (int i=0; i<n; i++)
-            tmp[i] = send[i];
+            tmp[i] = static_cast<double>(send[i]);
         call_maxReduce<double>( tmp, n, comm_rank_of_max );
         for (int i=0; i<n; i++)
             recv[i] = static_cast<long long int>(tmp[i]);
@@ -2003,7 +2005,7 @@ void MPI_CLASS::call_maxReduce<long long int>(const long long int *x, long long 
         printf("maxReduce<long long int> will use double\n");
         double *tmp = new double[n];
         for (int i=0; i<n; i++)
-            tmp[i] = x[i];
+            tmp[i] = static_cast<double>(x[i]);
         call_maxReduce<double>( tmp, n, comm_rank_of_max );
         for (int i=0; i<n; i++)
             y[i] = static_cast<long long int>(tmp[i]);

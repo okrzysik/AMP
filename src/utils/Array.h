@@ -5,8 +5,9 @@
 #include <memory>
 #include <functional>
 #include "shared_ptr.h"
-#include "utilities/Utilities.h"
+#include "utils/Utilities.h"
 
+namespace AMP {
 
 #define ARRAY_NDIM_MAX 5        // Maximum number of dimensions supported
 
@@ -15,7 +16,7 @@
 #if defined(DEBUG) || defined(_DEBUG)
     #define CHECK_ARRAY_INDEX(i1,i2,i3) \
         if ( GET_ARRAY_INDEX(i1,i2,i3)<0 || GET_ARRAY_INDEX(i1,i2,i3)>=d_length ) \
-            ATOMIC_ERROR("Index exceeds array bounds");
+            AMP_ERROR("Index exceeds array bounds");
 #else
     #define CHECK_ARRAY_INDEX(i1,i2,i3) 
 #endif
@@ -29,7 +30,8 @@
 
 
 /*!
- * Class Array is a simple array class
+ * Class Array is a simple array class contributed by Mark Berrill from his
+ * collection of utilities
  */
 template<class TYPE>
 class Array
@@ -432,6 +434,7 @@ private:
     void allocate( const std::vector<size_t>& N );
 };
 
+}
 
 #include "Array.hpp"
 

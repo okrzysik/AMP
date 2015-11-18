@@ -2,6 +2,7 @@
 #define included_AMP_GMRESSolver
 
 #include "utils/AMP_MPI.h"
+#include "utils/Array.h"
 #include "solvers/SolverStrategy.h"
 #include "solvers/KrylovSolverParameters.h"
 
@@ -88,7 +89,12 @@ public:
     void resetOperator(const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters);
   
 protected:
-  
+
+    //! orthogonalize the vector against the existing vectors in the basis
+    // stored internally. Store the coefficients of the Arnoldi
+    // iteration internally in a upper Hessenberg matrix
+    void orthogonalize( AMP::shared_ptr<AMP::LinearAlgebra::Vector> v );
+
     void getFromInput(const AMP::shared_ptr<AMP::Database>& db);
   
 private:
@@ -108,10 +114,12 @@ private:
     //! "CGS" : classical Gram-Schmidt ( fast but potentially unstable )
     //! "MGS" : modified Gram-Schmidt  ( stable )
     //! "HR" : Householder reflections (use when highly ill conditioned)
-    std::string d_sOrthoganalizationMethod;
+    std::string d_sOrthogonalizationMethod;
 
     //! boolean, for whether a preconditioner present or not
     bool d_bUsesPreconditioner;
+
+    AMP::Array<double> d_dHessenberg;
 
     //! shared pointer to preconditioner if it exists
     AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;

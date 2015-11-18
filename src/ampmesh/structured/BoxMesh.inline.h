@@ -4,6 +4,8 @@
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/structuredMeshElement.h"
 
+#include <algorithm>
+
 
 namespace AMP {
 namespace Mesh {
