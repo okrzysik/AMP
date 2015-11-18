@@ -185,8 +185,8 @@ void Array<TYPE>::resize( const std::vector<size_t>& N )
     #if ARRAY_NDIM_MAX > 5
         #error Function programmed for more than 5 dimensions
     #endif
-    std::array<size_t,5> N1 = {1,1,1,1,1};
-    std::array<size_t,5> N2 = {1,1,1,1,1};
+    std::array<size_t,5> N1{{1,1,1,1,1}};
+    std::array<size_t,5> N2{{1,1,1,1,1}};
     for (int d=0; d<d_ndim; d++)
         N1[d] = d_N[d];
     for (size_t d=0; d<N.size(); d++)
