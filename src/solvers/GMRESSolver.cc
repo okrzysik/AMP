@@ -127,6 +127,39 @@ GMRESSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
     return;
   }
 
+  double v_norm = res_norm;
+
+  res->scale(1.0/v_norm);
+
+  // push the residual as the first basis vector
+  d_vBasis.push_back(res);
+
+  for(int k=0; (k < d_iMaxIterations) && (v_norm < terminate_tol); ++k) {
+    
+    // clone off of the rhs
+    AMP::LinearAlgebra::Vector::shared_ptr v = f->cloneVector();
+
+    d_pOperator->apply(d_vBasis[k], v);
+
+    for(int j=0; j<=k; ++j) {
+      // the values h_jk will move into an array
+      double h_jk = v->dot(d_vBasis[j]);
+      v->axpy(-h_jk, d_vBasis[j], v);
+    }
+    
+    // h_{k+1, k}
+    v_norm = v->L2Norm();
+    
+    // replace the conditional by a soft equality
+    // check for happy breakdown
+    if(v_norm!=0.0) {
+      v->scale(1.0/v_norm);
+    }    
+
+    d_vBasis.push_back(v);
+
+  }
+
   if(d_iDebugPrintInfoLevel>2) {
     std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
   }

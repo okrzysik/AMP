@@ -38,6 +38,7 @@ ADD_AMP_TEST_1_2_4( test_Database-1 )
 ADD_AMP_TEST_1_2_4( test_AsciiWriter )
 ADD_AMP_TEST_1_2_4( testManufacturedSolution )
 ADD_AMP_TEST( test_LinearRegression )
+ADD_AMP_TEST( testArray )
 
 COPY_TEST_FILE( input_InputManager-1 )
 COPY_TEST_FILE( input_Database-1 )
