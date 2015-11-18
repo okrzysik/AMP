@@ -48,8 +48,13 @@ GMRESSolver::initialize(AMP::shared_ptr<SolverStrategyParameters> const params)
 
     getFromInput(parameters->d_db);
 
-    d_dHessenberg.resize(d_iMaxKrylovDimension, d_iMaxKrylovDimension);
+    d_dHessenberg.resize(d_iMaxKrylovDimension+1, d_iMaxKrylovDimension+1);
     d_dHessenberg.fill(0.0);
+
+    d_dcos.resize(d_iMaxKrylovDimension+1, 0.0);
+    d_dsin.resize(d_iMaxKrylovDimension+1, 0.0);
+    d_dw.resize(d_iMaxKrylovDimension+1, 0.0);
+    d_dy.resize(d_iMaxKrylovDimension, 0.0);
 
     d_pPreconditioner = parameters->d_pPreconditioner;
 
@@ -63,13 +68,13 @@ void GMRESSolver::getFromInput(const AMP::shared_ptr<AMP::Database> &db)
 {
   // the max iterations could be larger than the max Krylov dimension
   // in the case of restarted GMRES so we allow specification separately
-  d_iMaxKrylovDimension       = db->getDoubleWithDefault("max_dimension", 1000);
+  d_iMaxKrylovDimension  = db->getDoubleWithDefault("max_dimension", 100);
   d_iMaxIterations       = db->getDoubleWithDefault("max_iterations", d_iMaxKrylovDimension);
 
   d_dRelativeTolerance = db->getDoubleWithDefault("relative_tolerance", 1.0e-9);
 
-  d_sOrthogonalizationMethod = db->getStringWithDefault("ortho_method", "CGS");
-
+  d_sOrthogonalizationMethod = db->getStringWithDefault("ortho_method", "MGS");
+  
   d_bUsesPreconditioner = db->getBoolWithDefault("uses_preconditioner", false);
   d_bRestart = db->getBoolWithDefault("gmres_restart", false);
 
@@ -122,41 +127,88 @@ GMRESSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
   }
 
   // compute the current residual norm
-  double res_norm = res->L2Norm();
+  const double beta = res->L2Norm();
 
   // exit if the residual is already low enough
-  if(res_norm < terminate_tol ) {
+  if(beta < terminate_tol ) {
     // provide a convergence reason
     // provide history (iterations, conv history etc)
     return;
   }
 
-  double v_norm = res_norm;
-
-  res->scale(1.0/v_norm);
+  // normalize the first basis vector
+  res->scale(1.0/beta);
 
   // push the residual as the first basis vector
   d_vBasis.push_back(res);
 
+  // 'w*e_1' is the rhs for the least squares minimization problem
+  d_dw[0] = beta;
+
+  auto v_norm = beta;
+
   for(int k=0; (k < d_iMaxIterations) && (v_norm < terminate_tol); ++k) {
     
-    // clone off of the rhs
+    // clone off of the rhs to create a new basis vector
     AMP::LinearAlgebra::Vector::shared_ptr v = f->cloneVector();
 
+    // construct the Krylov vector
     d_pOperator->apply(d_vBasis[k], v);
 
+    // orthogonalize to previous vectors and 
+    // add new column to Hessenberg matrix
     orthogonalize( v );
-
-    auto v_norm = d_dHessenberg(k+1,k);
+    
+    v_norm = d_dHessenberg(k+1,k);
     // replace the conditional by a soft equality
     // check for happy breakdown
     if(v_norm!=0.0) {
       v->scale(1.0/v_norm);
     }    
 
+    // update basis with new orthonormal vector
     d_vBasis.push_back(v);
 
+    // apply all previous Givens rotations to 
+    // the k-th column of the Hessenberg matrix
+    for(int i=0; i<k; ++i) {
+      applyGivensRotation( i, k );
+    }
+
+    if(v_norm != 0.0 ) {
+      // compute and store the Givens rotation that zeroes out 
+      // the subdiagonal for the current column
+      computeGivensRotation( k );
+      // zero out the subdiagonal
+      applyGivensRotation( k, k );
+
+      // explicitly apply the newly computed
+      // Givens rotations to the rhs vector
+      auto x = d_dw[k];
+      auto y = d_dw[k];
+      auto c = d_dcos[k];
+      auto s = d_dsin[k];      
+      d_dw[k]   = c*x-s*y;      
+      d_dw[k+1] = s*x+c*y;            
+    }
+    
+    // check on whether the comparison should be to terminate_tol
+    if(std::fabs(d_dw[k+1]) < terminate_tol ) {
+      d_nr = k; // set the dimension of the upper triangular system to solve
+      break;
+    }
   }
+
+  // compute y, the solution to the least squares minimization problem
+  backwardSolve();
+
+  // update the current approximation with the correction
+  for(int i=0; i<=d_nr; ++i) {
+    u->axpy(d_dy[i], d_vBasis[i], u);
+  }
+
+  // compute a final residual ??
+  d_pOperator->residual(f, u, res);
 
   if(d_iDebugPrintInfoLevel>2) {
     std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
@@ -191,6 +243,83 @@ GMRESSolver::orthogonalize( AMP::shared_ptr<AMP::LinearAlgebra::Vector> v )
   // h_{k+1, k}
   auto v_norm = v->L2Norm();
   d_dHessenberg(k,k-1) = v_norm; // adjusting for zero starting index
+}
+
+void
+GMRESSolver::applyGivensRotation( const int i,
+				  const int k )
+{
+  // updates column k of the Hessenberg matrix by applying the i-th Givens rotations
+  
+  auto x = d_dHessenberg(i, k);
+  auto y = d_dHessenberg(i+1, k);
+  auto c = d_dcos[i];
+  auto s = d_dsin[i];
+
+  d_dHessenberg(i, k)   = c*x-s*y;      
+  d_dHessenberg(i+1, k) = s*x+c*y;      
+
+}
+
+void
+GMRESSolver::computeGivensRotation( const int k )
+{
+  // computes the Givens rotation required to zero out
+  // the subdiagonal on column k of the Hessenberg matrix
+  
+  // The implementation here follows Algorithm 1 in 
+  // "On Computing Givens rotations reliably and efficiently"
+  // by D. Bindel, J. Demmel, W. Kahan, O. Marques
+  // UT-CS-00-449, October 2000.
+
+  auto f = d_dHessenberg(k,k);
+  auto g = d_dHessenberg(k+1,k);
+
+  auto c = f;
+  auto s = c;
+  auto r = c;
+
+  if( g == 0.0 ) {
+
+    c = 1.0;
+    s = 0.0;
+
+  } else if ( f == 0.0 ) {
+
+    c =  0.0;
+    s = (g<0.0)?-1.0:1.0;
+
+  } else {
+
+    r = std::sqrt(f*f+g*g);
+    c = std::fabs(f)/r;
+    s = std::copysign( g/r, f );
+
+  }
+
+  d_dcos[k] = c;
+  d_dsin[k] = s;
+
+}
+
+void
+GMRESSolver::backwardSolve( void )
+{
+  // lower corner
+  d_dy[d_nr] = d_dw[d_nr]/d_dHessenberg(d_nr, d_nr);
+
+  // backwards solve
+  for( int k=d_nr-1; k>=0; --k ){ 
+
+    d_dy[k] = d_dw[k];
+
+    for( int i=k+1; i<= d_nr; ++i ){
+      d_dy[k] -= d_dHessenberg(k, i)*d_dy[i];
+    }
+
+    d_dy[k] =  d_dy[k]/d_dHessenberg(k, k);
+
+  }
 }
 
 /****************************************************************
