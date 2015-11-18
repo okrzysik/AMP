@@ -130,8 +130,6 @@ MACRO ( CONFIGURE_BOOST )
         INCLUDE_DIRECTORIES ( ${BOOST_INCLUDE} )
         ADD_DEFINITIONS ( "-D USE_EXT_BOOST" )
         MESSAGE( "Using boost" )
-    ELSE()
-        MESSAGE( WARNING "boost headers are necessary for AMP" )
     ENDIF()
 ENDMACRO()
 

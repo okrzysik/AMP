@@ -8,6 +8,7 @@
 #include <numeric>
 #include <algorithm>
 #include <cmath>
+#include <functional>
 
 
 hex8_element_t::hex8_element_t(double const *p) : memory_allocated_for_newton(false) {
