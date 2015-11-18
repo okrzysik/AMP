@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <memory>
+#include <array>
 #include <functional>
 #include "shared_ptr.h"
 #include "utils/Utilities.h"
