@@ -44,6 +44,7 @@
     #include <stdint.h>
     #include <sys/types.h>
     #include <sys/sysctl.h>
+    #include <unistd.h>
 #elif defined(__linux) || defined(__unix) || defined(__posix)
     #define USE_LINUX
     #define USE_NM
