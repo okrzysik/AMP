@@ -48,6 +48,9 @@ GMRESSolver::initialize(AMP::shared_ptr<SolverStrategyParameters> const params)
 
     getFromInput(parameters->d_db);
 
+    d_dHessenberg.resize(d_iMaxKrylovDimension, d_iMaxKrylovDimension);
+    d_dHessenberg.fill(0.0);
+
     d_pPreconditioner = parameters->d_pPreconditioner;
 
     if(d_pOperator.get()!=NULL) {
@@ -58,9 +61,10 @@ GMRESSolver::initialize(AMP::shared_ptr<SolverStrategyParameters> const params)
 // Function to get values from input
 void GMRESSolver::getFromInput(const AMP::shared_ptr<AMP::Database> &db)
 {
-
-  d_iMaxIterations       = db->getDoubleWithDefault("max_iterations", 1000);
+  // the max iterations could be larger than the max Krylov dimension
+  // in the case of restarted GMRES so we allow specification separately
   d_iMaxKrylovDimension       = db->getDoubleWithDefault("max_dimension", 1000);
+  d_iMaxIterations       = db->getDoubleWithDefault("max_iterations", d_iMaxKrylovDimension);
 
   d_dRelativeTolerance = db->getDoubleWithDefault("relative_tolerance", 1.0e-9);
 
@@ -141,15 +145,19 @@ GMRESSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
 
     d_pOperator->apply(d_vBasis[k], v);
 
+    orthogonalize( v );
+
     for(int j=0; j<=k; ++j) {
       // the values h_jk will move into an array
-      double h_jk = v->dot(d_vBasis[j]);
+      const double h_jk = v->dot(d_vBasis[j]);
       v->axpy(-h_jk, d_vBasis[j], v);
+      d_dHessenberg(j,k) = h_jk;
     }
     
     // h_{k+1, k}
     v_norm = v->L2Norm();
-    
+    d_dHessenberg(k+1,k) = v_norm;
+
     // replace the conditional by a soft equality
     // check for happy breakdown
     if(v_norm!=0.0) {
@@ -165,6 +173,11 @@ GMRESSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
   }
   
   PROFILE_STOP("solve");
+}
+
+void
+GMRESSolver::orthogonalize( AMP::shared_ptr<AMP::LinearAlgebra::Vector>  )
+{
 }
 
 /****************************************************************
