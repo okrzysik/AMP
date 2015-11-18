@@ -1223,7 +1223,7 @@ void BoxMesh::createLogicalMesh( AMP::shared_ptr<AMP::Database> db,
             std::vector<unsigned char> per = db->getBoolArray("Periodic");
             AMP_INSIST(per.size()==(size_t)GeomDim,"Periodic must match dim");
             for (size_t d=0; d<per.size(); d++)
-                isPeriodic[d] = per[d];
+                isPeriodic[d] = per[d]!=0;
         }
     } else if ( generator.compare("circle")==0 ) {
         AMP_INSIST(PhysicalDim==2,"circle generator requires a 2d mesh");
@@ -1239,7 +1239,7 @@ void BoxMesh::createLogicalMesh( AMP::shared_ptr<AMP::Database> db,
         if ( db->keyExists("Periodic") ) {
             std::vector<unsigned char> per = db->getBoolArray("Periodic");
             AMP_INSIST(per.size()==1,"Periodic must be 1x1 for cylinder");
-            isPeriodic[2] = per[0];
+            isPeriodic[2] = per[0]!=0;
         }
     } else if ( generator.compare("tube")==0 ) {
         AMP_INSIST(PhysicalDim==3,"tube generator requires a 3d mesh");
@@ -1250,7 +1250,7 @@ void BoxMesh::createLogicalMesh( AMP::shared_ptr<AMP::Database> db,
         if ( db->keyExists("Periodic") ) {
             std::vector<unsigned char> per = db->getBoolArray("Periodic");
             AMP_INSIST(per.size()==1,"Periodic must be 1x1 for tube");
-            isPeriodic[2] = per[0];
+            isPeriodic[2] = per[0]!=0;
         }
     } else if ( generator.compare("shell")==0 ) {
         AMP_INSIST(PhysicalDim==3,"shell generator requires a 3d mesh");

@@ -6,6 +6,7 @@
 #include "utils/Utilities.h"
 #include <vector>
 #include <set>
+#include <algorithm>
 
 
 namespace AMP {

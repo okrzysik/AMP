@@ -402,13 +402,13 @@ inline void MPI_CLASS::allGather<std::string>(const std::string x_in, std::strin
 {
     // Get the bytes recvied per processor
     std::vector<int> recv_cnt(comm_size,0);
-    allGather<int>(x_in.size()+1,&recv_cnt[0]);
+    allGather<int>((int)x_in.size()+1,&recv_cnt[0]);
     std::vector<int> recv_disp(comm_size,0);
     for (int i=1; i<comm_size; i++)
         recv_disp[i] = recv_disp[i-1]+recv_cnt[i-1];
     // Call the vector form of allGather for the char arrays
     char *recv_data = new char[recv_disp[comm_size-1]+recv_cnt[comm_size-1]];
-    allGather<char>(x_in.c_str(),x_in.size()+1, recv_data, &recv_cnt[0], &recv_disp[0], true );
+    allGather<char>(x_in.c_str(),(int)x_in.size()+1, recv_data, &recv_cnt[0], &recv_disp[0], true );
     for (int i=0; i<comm_size; i++)
         x_out[i] = std::string(&recv_data[recv_disp[i]]);
     delete [] recv_data;
