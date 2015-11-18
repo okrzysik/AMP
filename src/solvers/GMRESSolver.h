@@ -114,7 +114,7 @@ private:
     //! "CGS" : classical Gram-Schmidt ( fast but potentially unstable )
     //! "MGS" : modified Gram-Schmidt  ( stable )
     //! "HR" : Householder reflections (use when highly ill conditioned)
-    std::string d_sOrthoganalizationMethod;
+    std::string d_sOrthogonalizationMethod;
 
     //! boolean, for whether a preconditioner present or not
     bool d_bUsesPreconditioner;

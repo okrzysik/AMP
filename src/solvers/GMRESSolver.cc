@@ -68,7 +68,7 @@ void GMRESSolver::getFromInput(const AMP::shared_ptr<AMP::Database> &db)
 
   d_dRelativeTolerance = db->getDoubleWithDefault("relative_tolerance", 1.0e-9);
 
-  d_sOrthoganalizationMethod = db->getStringWithDefault("ortho_method", "CGS");
+  d_sOrthogonalizationMethod = db->getStringWithDefault("ortho_method", "CGS");
 
   d_bUsesPreconditioner = db->getBoolWithDefault("uses_preconditioner", false);
   d_bRestart = db->getBoolWithDefault("gmres_restart", false);
@@ -147,17 +147,7 @@ GMRESSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
 
     orthogonalize( v );
 
-    for(int j=0; j<=k; ++j) {
-      // the values h_jk will move into an array
-      const double h_jk = v->dot(d_vBasis[j]);
-      v->axpy(-h_jk, d_vBasis[j], v);
-      d_dHessenberg(j,k) = h_jk;
-    }
-    
-    // h_{k+1, k}
-    v_norm = v->L2Norm();
-    d_dHessenberg(k+1,k) = v_norm;
-
+    auto v_norm = d_dHessenberg(k+1,k);
     // replace the conditional by a soft equality
     // check for happy breakdown
     if(v_norm!=0.0) {
@@ -176,8 +166,31 @@ GMRESSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
 }
 
 void
-GMRESSolver::orthogonalize( AMP::shared_ptr<AMP::LinearAlgebra::Vector>  )
+GMRESSolver::orthogonalize( AMP::shared_ptr<AMP::LinearAlgebra::Vector> v )
 {
+  const int k = d_vBasis.size();
+
+  if(d_sOrthogonalizationMethod=="CGS") {
+    
+    AMP_ERROR("Classical Gram-Schmidt not implemented as yet");
+
+  } else if(d_sOrthogonalizationMethod=="MGS") {
+
+    for(int j=0; j<k; ++j) {
+      
+      const double h_jk = v->dot(d_vBasis[j]);
+      v->axpy(-h_jk, d_vBasis[j], v);
+      d_dHessenberg(j,k) = h_jk;
+    }
+  } else {
+
+    AMP_ERROR("Unknown orthogonalization method in GMRES");
+
+  }
+
+  // h_{k+1, k}
+  auto v_norm = v->L2Norm();
+  d_dHessenberg(k,k-1) = v_norm; // adjusting for zero starting index
 }
 
 /****************************************************************
