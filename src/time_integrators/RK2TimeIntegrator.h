@@ -80,8 +80,6 @@ private:
 
    int d_number_regrid_states;
 
-   double d_initial_dt;
-
    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_new_solution;
    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_k1_vec;
    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_k2_vec;
