@@ -271,6 +271,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   double fuelOuterRadiusTemperature = cladInnerRadiusTemperature + linearHeatGenerationRate / (2.0 * M_PI) / (gapAverageRadius * gapHeatTranferCoefficient);
   double fuelCenterLineTemperature = fuelOuterRadiusTemperature;
   newton_solver_t<double> solver;
+
   solver.set(&my_f, &my_ijmf);
   my_p.r = 0.0;
   my_p.q_prime = linearHeatGenerationRate;

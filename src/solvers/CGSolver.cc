@@ -135,14 +135,14 @@ CGSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
   rho[1] = z->dot(r);
   rho[0] = rho[1];
 
-  double beta = 1.0;
-
   AMP::shared_ptr<AMP::LinearAlgebra::Vector>  p  = z->cloneVector();
   p->copyVector(z);
 
   AMP::shared_ptr<AMP::LinearAlgebra::Vector>  w;
 
   for( auto iter = 0; iter < d_iMaxIterations; ++iter ) {
+
+    double beta = 1.0;
     
     // w = Ap
     d_pOperator->apply(p, w);
