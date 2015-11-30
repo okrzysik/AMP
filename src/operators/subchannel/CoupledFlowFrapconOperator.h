@@ -18,12 +18,6 @@ namespace Operator {
     public :
       CoupledFlowFrapconOperator(const AMP::shared_ptr<OperatorParameters>& params);
 
-      AMP::shared_ptr<OperatorParameters>
-        getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u)
-        {
-          return (d_Operators[2]->getJacobianParameters(u));
-        }
-
       void reset(const AMP::shared_ptr<OperatorParameters>& params){
         d_Operators[2]->reset(params);
       }
@@ -45,9 +39,19 @@ namespace Operator {
         d_Operators.push_back(op);
       }
 
+      AMP::shared_ptr<OperatorParameters>
+        getParameters(const std::string type,
+                     AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                     AMP::shared_ptr<OperatorParameters> params = NULL) override
+        {
+           return (d_Operators[2]->getParameters(type, u, params));
+        }
+
       virtual ~CoupledFlowFrapconOperator() { }
 
     protected :
+
+
 
     private :
 

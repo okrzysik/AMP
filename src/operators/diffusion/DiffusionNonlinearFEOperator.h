@@ -25,9 +25,6 @@ namespace AMP {
 
         void reset(const AMP::shared_ptr<OperatorParameters>&);
 
-        AMP::shared_ptr<OperatorParameters>
-          getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>&);
-
         void setInputVariableName(const std::string & name, int varId = -1);
 
         void setOutputVariableName(const std::string & name, int varId = -1);
@@ -67,6 +64,9 @@ namespace AMP {
         bool isValidInput(AMP::LinearAlgebra::Vector::shared_ptr &u);
 
       protected:
+
+        AMP::shared_ptr<OperatorParameters>
+          getJacobianParameters(AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
 
         void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::LinearAlgebra::Vector::shared_ptr r);
 

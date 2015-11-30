@@ -29,7 +29,9 @@ namespace AMP {
       }
 
     AMP::shared_ptr<OperatorParameters>
-      ColumnOperator :: getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u)
+    ColumnOperator :: getParameters(const std::string type,
+                                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                    AMP::shared_ptr<OperatorParameters> params)
       {
         AMP::shared_ptr<AMP::Database> db;
         AMP::shared_ptr<ColumnOperatorParameters> opParameters(new ColumnOperatorParameters(db));
@@ -38,7 +40,7 @@ namespace AMP {
 
         for(unsigned int i = 0; i < d_Operators.size(); i++)
         {
-          (opParameters->d_OperatorParameters)[i] = (d_Operators[i]->getJacobianParameters(u));
+           (opParameters->d_OperatorParameters)[i] = (d_Operators[i]->getParameters(type,u, params));
         }
         return opParameters;
       }

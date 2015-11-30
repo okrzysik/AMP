@@ -121,7 +121,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   //the factorization of the matrix during construction and so the matrix must
   //be correct before constructing the TrilinosML object.
   nonlinearMechanicsBVPoperator->apply( solVec, resVec );
-  linearMechanicsBVPoperator->reset(nonlinearMechanicsBVPoperator->getJacobianParameters(solVec));
+  linearMechanicsBVPoperator->reset(nonlinearMechanicsBVPoperator->getParameters("Jacobian", solVec));
 
   AMP::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat = linearMechanicsBVPoperator->getMatrix();
 

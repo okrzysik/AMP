@@ -213,15 +213,14 @@ void VolumeIntegralOperator :: reset( const AMP::shared_ptr<OperatorParameters>&
 
 
 AMP::shared_ptr<OperatorParameters> VolumeIntegralOperator::getJacobianParameters(
-    const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u ) 
+    AMP::LinearAlgebra::Vector::const_shared_ptr u ) 
 {
-    (void) u;
     AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase("Dummy"));
     tmp_db->putString("name", "VolumeIntegralOperator");
     AMP::shared_ptr<VolumeIntegralOperatorParameters> outParams( new VolumeIntegralOperatorParameters(tmp_db));
 
     outParams->d_sourcePhysicsModel= d_sourcePhysicsModel;
-    outParams->d_pVector = u;
+    outParams->d_pVector = std::const_pointer_cast<AMP::LinearAlgebra::Vector>(u);
     return outParams;
 }
 

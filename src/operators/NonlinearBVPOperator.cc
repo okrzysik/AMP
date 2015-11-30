@@ -76,16 +76,18 @@ namespace AMP {
       PROFILE_STOP("reset");
     }
 
-    AMP::shared_ptr<OperatorParameters> NonlinearBVPOperator :: getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u)
+    AMP::shared_ptr<OperatorParameters> NonlinearBVPOperator :: getParameters(const std::string type,
+                                                                              AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                                                              AMP::shared_ptr<OperatorParameters> params)
     {
-      PROFILE_START("getJacobianParameters");
+      PROFILE_START("getParameters");
       AMP::shared_ptr<AMP::Database> db;
       AMP::shared_ptr<BVPOperatorParameters> outParams(new BVPOperatorParameters(db));
 
-      outParams->d_volumeOperatorParams = d_volumeOperator->getJacobianParameters(u);
-      outParams->d_boundaryOperatorParams = d_boundaryOperator->getJacobianParameters(u);
+      outParams->d_volumeOperatorParams = d_volumeOperator->getParameters(type, u, params);
+      outParams->d_boundaryOperatorParams = d_boundaryOperator->getParameters(type, u, params);
 
-      PROFILE_STOP("getJacobianParameters");
+      PROFILE_STOP("getParameters");
       return outParams;
     }
 

@@ -136,12 +136,6 @@ namespace Operator {
         return cp;
       }
 
-      /**
-        This function returns a parameter object that can be used to reset the corresponding
-        FlowFrapconOperator operator.
-        */
-      AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
-
 
       short int d_boundaryId;
 
@@ -172,6 +166,14 @@ namespace Operator {
       AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Simple Input Variable */
 
       AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Simple Output Variable */
+
+    protected:
+
+      /**
+        This function returns a parameter object that can be used to reset the corresponding
+        FlowFrapconOperator operator.
+        */
+      AMP::shared_ptr<OperatorParameters> getJacobianParameters(AMP::LinearAlgebra::Vector::const_shared_ptr u) override;
 
     private :
 

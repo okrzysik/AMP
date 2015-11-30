@@ -378,7 +378,7 @@ PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat* A, Mat*, MatStruc
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> pSolution(pVecShell, AMP::LinearAlgebra::ExternalVectorDeleter());
 
     AMP::shared_ptr<AMP::Operator::Operator> op = pSNESSolver->getOperator();
-    AMP::shared_ptr<AMP::Operator::OperatorParameters> op_parameters = op->getJacobianParameters(pSolution);
+    AMP::shared_ptr<AMP::Operator::OperatorParameters> op_parameters = op->getParameters("Jacobian", pSolution);
     AMP::shared_ptr<PetscKrylovSolver> pKrylovSolver = pSNESSolver->getKrylovSolver();
     pKrylovSolver->resetOperator(op_parameters);
 

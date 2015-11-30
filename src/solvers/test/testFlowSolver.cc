@@ -159,7 +159,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   flowJacobian->setVector(cladVec);
  
   flowOperator->residual(rhsVec, solVec, resVec);
-  flowJacobian->reset(flowOperator->getJacobianParameters(mv_view_solVec));
+  flowJacobian->reset(flowOperator->getParameters("Jacobian", mv_view_solVec));
   flowJacobian->residual(rhsVec, solVec, resVec);
  
   //----------------------------------------------------------------------------------------------------------------------------------------------//

@@ -138,7 +138,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   double rhsNorm  = rhsVec->L2Norm();
   std::cout << "rhs norm  after apply = " << rhsNorm <<"\n";
 
-  linearThermalOperator->reset(nonlinearThermalOperator->getJacobianParameters(solVec));
+  linearThermalOperator->reset(nonlinearThermalOperator->getParameters("Jacobian", solVec));
   
   //----------------------------------------------------------------------------------------------------------------------------------------------/
 

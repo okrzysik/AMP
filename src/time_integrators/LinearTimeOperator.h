@@ -54,8 +54,6 @@ class LinearTimeOperator: public AMP::Operator::LinearOperator
   // added by JL
   void setScalingFactor(double scalingFactor) {d_dScalingFactor = scalingFactor;}
 
-  AMP::shared_ptr<AMP::Operator::OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u); 
-
   // added by JL //correction by RS
   AMP::LinearAlgebra::Variable::shared_ptr getInputVariable(){ return d_pRhsOperator->getInputVariable(); }
 
@@ -65,7 +63,13 @@ class LinearTimeOperator: public AMP::Operator::LinearOperator
   AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable(){return d_pRhsOperator->getOutputVariable(); }
   //JL
   void registerCurrentTime( double currentTime ) {d_current_time = currentTime;}
+
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> getParameters(const std::string type,
+                                                                   AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                                                   AMP::shared_ptr<AMP::Operator::OperatorParameters> params = NULL ) override; 
+
  protected:
+
   LinearTimeOperator();
 
   void getFromInput(const AMP::shared_ptr<AMP::Database> &db);

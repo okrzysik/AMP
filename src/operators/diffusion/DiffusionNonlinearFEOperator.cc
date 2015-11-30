@@ -328,11 +328,12 @@ void DiffusionNonlinearFEOperator::reset(
 
 
 AMP::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianParameters(
-        const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u)
+        AMP::LinearAlgebra::Vector::const_shared_ptr u_in )
 {
+    AMP::LinearAlgebra::Vector::shared_ptr u  = std::const_pointer_cast<AMP::LinearAlgebra::Vector>(u_in);
     AMP::shared_ptr<AMP::InputDatabase> tmp_db(new AMP::InputDatabase("Dummy"));
     AMP::LinearAlgebra::VS_Mesh meshSelector(d_Mesh);
-    AMP::LinearAlgebra::Vector::shared_ptr u_meshVec = u->select(meshSelector, "u_mesh");
+    auto u_meshVec = u->select(meshSelector, "u_mesh");
 
     // set up a database for the linear operator params
     tmp_db->putString("name", "DiffusionLinearFEOperator");

@@ -104,7 +104,7 @@ AMP::shared_ptr<AMP::Solver::PetscSNESSolver>
   dirichletDispInVecOp->apply(nullVec, mechNlSolVec);
 
   nonlinBvpOperator->apply(mechNlSolVec, mechNlResVec);
-  linBvpOperator->reset(nonlinBvpOperator->getJacobianParameters(mechNlSolVec));
+  linBvpOperator->reset(nonlinBvpOperator->getParameters("Jacobian", mechNlSolVec));
 
   mechNlRhsVec->setToScalar(0.0);
   dirichletLoadVecOp->apply(nullVec, mechNlRhsVec);

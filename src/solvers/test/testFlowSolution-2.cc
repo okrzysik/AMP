@@ -455,7 +455,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     //The thermal operator does not expect an apply to be called before calling
     //getJacobianParams and so it need not be called. So, any of the following
     //apply calls will work:
-    coupledLinearOperator->reset(columnNonlinearOperator->getJacobianParameters(globalSolMultiVector));
+    coupledLinearOperator->reset(columnNonlinearOperator->getParameters("Jacobian", globalSolMultiVector));
     columnNonlinearOperator->apply(globalSolMultiVector, globalResMultiVector);
     AMP::pout<<"Initial Global Residual Norm: "<<std::setprecision(12)<<globalResMultiVector->L2Norm()<<std::endl;
     AMP::pout<<"Initial Temperature Residual Norm: "<<std::setprecision(12)<<globalResVec->L2Norm()<<std::endl;

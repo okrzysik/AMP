@@ -73,7 +73,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
 
   ut->passes(exeName + " : apply");
 
-  AMP::shared_ptr<AMP::Operator::OperatorParameters> resetParams = testNonlinOperator->getJacobianParameters(solVec);
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> resetParams = testNonlinOperator->getParameters("Jacobian", solVec);
 
   ut->passes(exeName + " : getJac");
 

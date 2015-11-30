@@ -35,24 +35,26 @@ namespace AMP {
         virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
 			    AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
-	/**
-	 * Column specific implementation of the residual: f-L(u)
-	 * \param f: shared pointer to const vector rhs
-	 * \param u: shared pointer to const vector u
-	 * \param r: shared pointer to vector residual
-	 */
-	virtual void residual(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
-			      AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-			      AMP::LinearAlgebra::Vector::shared_ptr r) override;
+        /**
+         * Column specific implementation of the residual: f-L(u)
+         * \param f: shared pointer to const vector rhs
+         * \param u: shared pointer to const vector u
+         * \param r: shared pointer to vector residual
+         */
+        virtual void residual(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
+                              AMP::LinearAlgebra::Vector::const_shared_ptr u, 
+                              AMP::LinearAlgebra::Vector::shared_ptr r) override;
     
+        virtual void reset(const AMP::shared_ptr<OperatorParameters>& params);
+
         /**
           A function for computing the information necessary to construct the jacobian.
           @param u The solution vector that is used to construct the jacobian
           @return The parameters required to construct the jacobian.
           */
-        virtual AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u);
-
-        virtual void reset(const AMP::shared_ptr<OperatorParameters>& params);
+        virtual AMP::shared_ptr<OperatorParameters> getParameters(const std::string type, 
+                                                                  AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                                                  AMP::shared_ptr<OperatorParameters> params = NULL) override;
 
         /**
          * \param op
@@ -76,6 +78,7 @@ namespace AMP {
         size_t getNumberOfOperators(void){return d_Operators.size(); }
 
       protected :
+
 
         std::vector< AMP::shared_ptr< Operator > > d_Operators;
 

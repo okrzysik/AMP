@@ -395,7 +395,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   //-------------------------------------
 /*
   nonlinearThermalOxygenOperator1->apply(nullVec, TemperatureOxygenSolution, ResidualVec, 1.0, 0.0);
-  linearThermalOxygenOperator1->reset(nonlinearThermalOxygenOperator1->getJacobianParameters(TemperatureOxygenSolution));
+  linearThermalOxygenOperator1->reset(nonlinearThermalOxygenOperator1->getParameters("Jacobian", TemperatureOxygenSolution));
 */
   //-------------------------------------
 

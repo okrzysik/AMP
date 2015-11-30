@@ -145,15 +145,6 @@ class TimeOperator: public AMP::Operator::Operator
   void setDt(double dt) {d_dCurrentDt = dt; }
 
   /**
-   * implements the getJacobianParameters interface required by operators. This routine returns
-   * a shared pointer to a TimeOperatorParameters object, internally containing shares pointerst to
-   * two OperatorParameter objects, one for the mass operator (if not a FD or FVM discretization)
-   * and one for the rhs operator.
-   @param [in] u : shared pointer to a Vector at which the Jacobian is to be evaluated.
-   */
-  AMP::shared_ptr<AMP::Operator::OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u); 
-
-  /**
    * returns a Variable object corresponding to the output variable for the TimeOperator. Currently
    * this is the output variable associated with the rhs operator.
    */
@@ -162,7 +153,19 @@ class TimeOperator: public AMP::Operator::Operator
   virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
 		      AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
+  /**
+   * implements the getJacobianParameters interface required by operators. This routine returns
+   * a shared pointer to a TimeOperatorParameters object, internally containing shares pointerst to
+   * two OperatorParameter objects, one for the mass operator (if not a FD or FVM discretization)
+   * and one for the rhs operator.
+   @param [in] u : shared pointer to a Vector at which the Jacobian is to be evaluated.
+   */
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> getParameters(const std::string type,
+                                                                   AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                                                   AMP::shared_ptr<AMP::Operator::OperatorParameters> params=NULL) override; 
+
  protected:
+
   TimeOperator();
 
   void getFromInput(const AMP::shared_ptr<AMP::Database> &db);

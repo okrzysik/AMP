@@ -130,7 +130,7 @@ void myTest(AMP::UnitTest *ut)
         // test getJacobianParameters
         msgPrefix=exeName + " : " + innerInput_file;
         AMP::shared_ptr<AMP::LinearAlgebra::Vector> nullGuess;
-        AMP::shared_ptr<AMP::Operator::OperatorParameters> jacobianParameters = testOperator->getJacobianParameters(nullGuess);
+        AMP::shared_ptr<AMP::Operator::OperatorParameters> jacobianParameters = testOperator->getParameters("Jacobian", nullGuess);
 
         if(jacobianParameters.get() == NULL) {
             ut->passes(msgPrefix + "getJacobianParameters (should return NULL for now)");

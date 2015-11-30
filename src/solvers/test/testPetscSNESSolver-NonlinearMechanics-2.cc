@@ -136,7 +136,7 @@ void myTest(AMP::UnitTest *ut)
   mechNlSolVec->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 
   nonlinBvpOperator->apply(mechNlSolVec, mechNlResVec);
-  linBvpOperator->reset(nonlinBvpOperator->getJacobianParameters(mechNlSolVec));
+  linBvpOperator->reset(nonlinBvpOperator->getParameters("Jacobian", mechNlSolVec));
 
   mechNlRhsVec->setToScalar(0.0);
   dirichletLoadVecOp->apply(nullVec, mechNlRhsVec);

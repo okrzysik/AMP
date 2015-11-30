@@ -102,7 +102,9 @@ LinearTimeOperator::reset(const AMP::shared_ptr<AMP::Operator::OperatorParameter
 }
 
 AMP::shared_ptr<AMP::Operator::OperatorParameters>
-LinearTimeOperator::getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u)
+LinearTimeOperator::getParameters(  const std::string type,
+                                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                    AMP::shared_ptr<AMP::Operator::OperatorParameters> params ) 
 {
   AMP::shared_ptr<AMP::InputDatabase> timeOperator_db(new AMP::InputDatabase("LinearTimeOperatorDatabase"));
   timeOperator_db->putDouble("CurrentDt", d_dCurrentDt);
@@ -110,8 +112,8 @@ LinearTimeOperator::getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgeb
   timeOperator_db->putDouble("ScalingFactor", 1.0/d_dCurrentDt);
 
   AMP::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(new AMP::TimeIntegrator::TimeOperatorParameters(timeOperator_db));
-  timeOperatorParameters->d_pRhsOperatorParameters = d_pRhsOperator->getJacobianParameters(u);
-  timeOperatorParameters->d_pMassOperatorParameters = d_pMassOperator->getJacobianParameters(u);
+  timeOperatorParameters->d_pRhsOperatorParameters = d_pRhsOperator->getParameters(type, u, params);
+  timeOperatorParameters->d_pMassOperatorParameters = d_pMassOperator->getParameters(type, u, params);
   
   return timeOperatorParameters ;
 }

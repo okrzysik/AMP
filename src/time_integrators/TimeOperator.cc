@@ -92,7 +92,9 @@ TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 }
 
 AMP::shared_ptr<AMP::Operator::OperatorParameters>
-TimeOperator::getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u)
+TimeOperator::getParameters(const std::string type,
+                            AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                            AMP::shared_ptr<AMP::Operator::OperatorParameters> params)
 {
   AMP::shared_ptr<AMP::InputDatabase> timeOperator_db(new AMP::InputDatabase("TimeOperatorDatabase"));
   timeOperator_db->putDouble("CurrentDt", d_dCurrentDt);
@@ -112,7 +114,7 @@ TimeOperator::getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Ve
     }
   else
     {
-      timeOperatorParameters->d_pRhsOperatorParameters = d_pRhsOperator->getJacobianParameters(u);
+       timeOperatorParameters->d_pRhsOperatorParameters = d_pRhsOperator->getParameters(type, u, params);
     }
 
   if(!d_bAlgebraicComponent)
@@ -124,7 +126,7 @@ TimeOperator::getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Ve
     }
       else
     {  
-      timeOperatorParameters->d_pMassOperatorParameters = d_pMassOperator->getJacobianParameters(u);
+       timeOperatorParameters->d_pMassOperatorParameters = d_pMassOperator->getParameters(type, u, params);
     }
     }
   

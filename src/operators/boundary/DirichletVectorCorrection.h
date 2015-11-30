@@ -70,12 +70,6 @@ namespace AMP {
           */
         void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
-        /**
-          This function returns a parameter object that can be used to reset the corresponding
-          DirichletMatrixCorrection operator.
-          */
-        AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
-
         void setRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) {
           this->applyZeroValues(rhs);
         }
@@ -101,6 +95,12 @@ namespace AMP {
 
         AMP::LinearAlgebra::Vector::const_shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
             AMP::LinearAlgebra::Variable::shared_ptr var);
+
+        /**
+          This function returns a parameter object that can be used to reset the corresponding
+          DirichletMatrixCorrection operator.
+          */
+        AMP::shared_ptr<OperatorParameters> getJacobianParameters(AMP::LinearAlgebra::Vector::const_shared_ptr ) override;
 
         std::vector<short int> d_boundaryIds;
 

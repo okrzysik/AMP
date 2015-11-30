@@ -191,7 +191,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
     nonlinearOperator->reset(subchannelOpParams);
     AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelLinearParams = 
         AMP::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>( 
-        nonlinearOperator->getJacobianParameters(solVec) );
+        nonlinearOperator->getParameters("Jacobian", solVec) );
     subchannelLinearParams->d_initialize = false;
     linearOperator->reset(subchannelLinearParams);
     linearOperator->residual(rhsVec, solVec, resVec);

@@ -513,7 +513,7 @@ void thermalContactApplyTest(AMP::UnitTest *ut, std::string exeName )
   ut.passes(msgPrefix);
 
   // test getJacobian
-  AMP::shared_ptr<AMP::Operator::OperatorParameters> resetParams = nonlinearCoupledOperator->getJacobianParameters(TemperatureInKelvin);
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> resetParams = nonlinearCoupledOperator->getParameters("Jacobian", TemperatureInKelvin);
   ut.passes(exeName + " : getJacobianParameters");
 
   // test reset

@@ -152,7 +152,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   //AMP::LinearAlgebra::Vector::shared_ptr mv_view_cladVec = AMP::LinearAlgebra::MultiVector::view( cladVec , globalComm );
   
   flowOperator->residual(rhsVec, solVec, resVec);
-  flowJacobian->reset(flowOperator->getJacobianParameters(mv_view_solVec));
+  flowJacobian->reset(flowOperator->getParameters("Jacobian", mv_view_solVec));
   flowJacobian->residual(rhsVec, solVec, resVec);
   //----------------------------------------------------------------------------------------------------------------------------------------------//
   

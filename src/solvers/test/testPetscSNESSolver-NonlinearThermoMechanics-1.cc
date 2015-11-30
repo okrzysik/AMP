@@ -181,7 +181,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   //mechanicsVolumeOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
   //nonlinearMechanicsOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
   nonlinearThermoMechanicsOperator->apply(solVec, resVec);
-  linearThermoMechanicsOperator->reset(nonlinearThermoMechanicsOperator->getJacobianParameters(solVec));
+  linearThermoMechanicsOperator->reset(nonlinearThermoMechanicsOperator->getParameters("Jacobian", solVec));
   //----------------------------------------------------------------------------------------------------------------------------------------------/
 
   rhsVec->setToScalar(0.0);
