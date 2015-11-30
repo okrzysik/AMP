@@ -19,7 +19,7 @@
  * more complex than a simple C null statement to avoid a warning.
  */
 #ifdef __INSURE__
-    #define NULL_STATEMENT do{if(0) int nullstatement=0 }}while(0)
+    #define NULL_STATEMENT do{ if(0) int nullstatement=0 } while(0)
 #else
     #define NULL_STATEMENT
 #endif
