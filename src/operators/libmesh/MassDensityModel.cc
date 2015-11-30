@@ -26,12 +26,12 @@ MassDensityModel::MassDensityModel
     d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(matname);
 
     if (params->d_db->keyExists("Property")) {
-    	d_PropertyName = params->d_db->getString("Property");
-    	if (params->d_db->keyExists("Parameters")) {
-    		d_Parameters = params->d_db->getDoubleArray("Parameters");
-    	}
+        d_PropertyName = params->d_db->getString("Property");
+        if (params->d_db->keyExists("Parameters")) {
+            d_Parameters = params->d_db->getDoubleArray("Parameters");
+        }
     } else {
-    	d_PropertyName = "unspecified";
+        d_PropertyName = "unspecified";
     }
 
     AMP_INSIST((params->d_db->keyExists("Equation")),
@@ -243,28 +243,28 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
     bool needD = false;
 
     if (d_PropertyName == "unspecified") {
-		if (d_ManufacturedEquation == ThermalSrc) {
-			sourceProp = d_material->property("ThermalConductivity");
-			if (d_ManufacturedUseConc) {dSourceProp = d_material->property("DxThermalConductivity"); needD=true;}
-			if (d_ManufacturedUseTemp) {dSourceProp = d_material->property("DTThermalConductivity"); needD=true;}
-		} else if (d_ManufacturedEquation == FickSrc) {
-			sourceProp = d_material->property("FickCoefficient");
-			if (d_ManufacturedUseConc) {dSourceProp = d_material->property("DxFickCoefficient"); needD=true;}
-			if (d_ManufacturedUseTemp) {dSourceProp = d_material->property("DTFickCoefficient"); needD=true;}
-		} else if (d_ManufacturedEquation == SoretSrc) {
-			sourceProp = d_material->property("ThermalDiffusionCoefficient");
-			if (d_ManufacturedUseConc) {dSourceProp = d_material->property("DxThermalDiffusionCoefficient"); needD=true;}
-			if (d_ManufacturedUseTemp) {dSourceProp = d_material->property("DTThermalDiffusionCoefficient"); needD=true;}
-		} else if (d_ManufacturedEquation == FickSoretSrc) {
-			AMP_INSIST(false, "cannot do Fick-Soret yet");
-		}
+        if (d_ManufacturedEquation == ThermalSrc) {
+            sourceProp = d_material->property("ThermalConductivity");
+            if (d_ManufacturedUseConc) {dSourceProp = d_material->property("DxThermalConductivity"); needD=true;}
+            if (d_ManufacturedUseTemp) {dSourceProp = d_material->property("DTThermalConductivity"); needD=true;}
+        } else if (d_ManufacturedEquation == FickSrc) {
+            sourceProp = d_material->property("FickCoefficient");
+            if (d_ManufacturedUseConc) {dSourceProp = d_material->property("DxFickCoefficient"); needD=true;}
+            if (d_ManufacturedUseTemp) {dSourceProp = d_material->property("DTFickCoefficient"); needD=true;}
+        } else if (d_ManufacturedEquation == SoretSrc) {
+            sourceProp = d_material->property("ThermalDiffusionCoefficient");
+            if (d_ManufacturedUseConc) {dSourceProp = d_material->property("DxThermalDiffusionCoefficient"); needD=true;}
+            if (d_ManufacturedUseTemp) {dSourceProp = d_material->property("DTThermalDiffusionCoefficient"); needD=true;}
+        } else if (d_ManufacturedEquation == FickSoretSrc) {
+            AMP_INSIST(false, "cannot do Fick-Soret yet");
+        }
     } else {
-    	sourceProp = d_material->property(d_PropertyName);
-    	if (d_Parameters.size()>0 and sourceProp->variable_number_parameters()) {
-    		sourceProp->set_parameters_and_number(&d_Parameters[0], d_Parameters.size());
-    	} else if (d_Parameters.size()>0) {
-    		sourceProp->set_parameters(&d_Parameters[0], d_Parameters.size());
-    	}
+        sourceProp = d_material->property(d_PropertyName);
+        if (d_Parameters.size()>0 and sourceProp->variable_number_parameters()) {
+            sourceProp->set_parameters_and_number(&d_Parameters[0], d_Parameters.size());
+        } else if (d_Parameters.size()>0) {
+            sourceProp->set_parameters(&d_Parameters[0], d_Parameters.size());
+        }
     }
 
     std::map<std::string, AMP::shared_ptr<std::vector<double> > > args;
@@ -274,84 +274,84 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
 
     if (sourceProp->isScalar()) {
         std::vector<double> coeff(neval), dCoeff(neval,0.);
-		sourceProp->evalv(coeff, args);
-		if (needD) {
-			dSourceProp->evalv(dCoeff, args);
-		}
+        sourceProp->evalv(coeff, args);
+        if (needD) {
+            dSourceProp->evalv(dCoeff, args);
+        }
 
-		for (size_t i = 0; i < neval; i++)
-		{
-			d_ManufacturedSolution->evaluate(soln, xyz[i](0), xyz[i](1), xyz[i](2));
+        for (size_t i = 0; i < neval; i++)
+        {
+            d_ManufacturedSolution->evaluate(soln, xyz[i](0), xyz[i](1), xyz[i](2));
 
-			result[i] = coeff[i]*(soln[4]+soln[7]+soln[9]) +
-						dCoeff[i]*(soln[1]*soln[1]+soln[2]*soln[2]+soln[3]*soln[3]);
-		}
+            result[i] = coeff[i]*(soln[4]+soln[7]+soln[9]) +
+                        dCoeff[i]*(soln[1]*soln[1]+soln[2]*soln[2]+soln[3]*soln[3]);
+        }
     }
 
     std::string propname = sourceProp->get_name();
     std::string solnname = d_ManufacturedSolution->get_name();
     bool isCylindrical = propname.find("CylindricallySymmetric") < propname.size() and
-    		solnname.find("Cylindrical") < solnname.size();
+            solnname.find("Cylindrical") < solnname.size();
 
     if (sourceProp->isTensor() and not isCylindrical) {
-    	AMP::shared_ptr<Materials::TensorProperty<double> > sourceTensorProp =
-    			AMP::dynamic_pointer_cast<Materials::TensorProperty<double> >(sourceProp);
-    	std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
-    	std::vector<std::vector<AMP::shared_ptr<std::vector<double> > > > coeff(dimensions[0],
-    		std::vector<AMP::shared_ptr<std::vector<double> > >(dimensions[1]));
-		for (size_t i=0; i<dimensions[0]; i++) for (size_t j=0; j<dimensions[1]; j++) {
-			std::vector<double> *vd = new std::vector<double>(neval);
-			 coeff[i][j].reset(vd);
-		}
-		sourceTensorProp->evalv(coeff, args);
+        AMP::shared_ptr<Materials::TensorProperty<double> > sourceTensorProp =
+                AMP::dynamic_pointer_cast<Materials::TensorProperty<double> >(sourceProp);
+        std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
+        std::vector<std::vector<AMP::shared_ptr<std::vector<double> > > > coeff(dimensions[0],
+            std::vector<AMP::shared_ptr<std::vector<double> > >(dimensions[1]));
+        for (size_t i=0; i<dimensions[0]; i++) for (size_t j=0; j<dimensions[1]; j++) {
+            std::vector<double> *vd = new std::vector<double>(neval);
+             coeff[i][j].reset(vd);
+        }
+        sourceTensorProp->evalv(coeff, args);
 
-		// 4 + xx xy xz yy yz zz =
-		//      4  5  6  7  8  9 =
-		// xx xy xz
-		// yx yy yz
-		// zx zy zz
-		size_t xlate[3][3]={{4, 5, 6}, {5, 7, 8}, {6, 8, 9}};
+        // 4 + xx xy xz yy yz zz =
+        //      4  5  6  7  8  9 =
+        // xx xy xz
+        // yx yy yz
+        // zx zy zz
+        size_t xlate[3][3]={{4, 5, 6}, {5, 7, 8}, {6, 8, 9}};
 
-		for (size_t k = 0; k < neval; k++)
-		{
-			d_ManufacturedSolution->evaluate(soln, xyz[k](0), xyz[k](1), xyz[k](2));
+        for (size_t k = 0; k < neval; k++)
+        {
+            d_ManufacturedSolution->evaluate(soln, xyz[k](0), xyz[k](1), xyz[k](2));
 
-			result[k] = 0.;
-			for (size_t i=0; i<dimensions[0]; i++) for (size_t j=0; j<dimensions[1]; j++) {
-				result[k] +=  (*coeff[i][j])[k] * soln[xlate[i][j]];
-			}
-		}
+            result[k] = 0.;
+            for (size_t i=0; i<dimensions[0]; i++) for (size_t j=0; j<dimensions[1]; j++) {
+                result[k] +=  (*coeff[i][j])[k] * soln[xlate[i][j]];
+            }
+        }
 
     } else if (sourceProp->isTensor() and isCylindrical) {
-    	// check dimensions, set up temporary storage
-    	AMP::shared_ptr<Materials::TensorProperty<double> > sourceTensorProp =
-    			AMP::dynamic_pointer_cast<Materials::TensorProperty<double> >(sourceProp);
-    	std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
-    	AMP_ASSERT(dimensions[0] == 3 and dimensions[1] == 3);
-    	std::vector<std::vector<AMP::shared_ptr<std::vector<double> > > >
-    		coeff(dimensions[0], std::vector<AMP::shared_ptr<std::vector<double> > >(dimensions[1]));
-    	std::vector<std::vector<AMP::shared_ptr<std::vector<double> > > >
-    		coeffr(dimensions[0], std::vector<AMP::shared_ptr<std::vector<double> > >(dimensions[1]));
-    	std::vector<std::vector<AMP::shared_ptr<std::vector<double> > > >
-    		coeffz(dimensions[0], std::vector<AMP::shared_ptr<std::vector<double> > >(dimensions[1]));
+        // check dimensions, set up temporary storage
+        AMP::shared_ptr<Materials::TensorProperty<double> > sourceTensorProp =
+                AMP::dynamic_pointer_cast<Materials::TensorProperty<double> >(sourceProp);
+        std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
+        AMP_ASSERT(dimensions[0] == 3 and dimensions[1] == 3);
+        std::vector<std::vector<AMP::shared_ptr<std::vector<double> > > >
+            coeff(dimensions[0], std::vector<AMP::shared_ptr<std::vector<double> > >(dimensions[1]));
+        std::vector<std::vector<AMP::shared_ptr<std::vector<double> > > >
+            coeffr(dimensions[0], std::vector<AMP::shared_ptr<std::vector<double> > >(dimensions[1]));
+        std::vector<std::vector<AMP::shared_ptr<std::vector<double> > > >
+            coeffz(dimensions[0], std::vector<AMP::shared_ptr<std::vector<double> > >(dimensions[1]));
 
-		for (size_t i=0; i<3; i++) for (size_t j=0; j<3; j++) {
-			std::vector<double> *vd;
-			vd = new std::vector<double>(neval);
-			coeff[i][j].reset(vd);
-				vd = new std::vector<double>(neval);
-			coeffr[i][j].reset(vd);
-				vd = new std::vector<double>(neval);
-			coeffz[i][j].reset(vd);
-		}
+        for (size_t i=0; i<3; i++) for (size_t j=0; j<3; j++) {
+            std::vector<double> *vd;
+            vd = new std::vector<double>(neval);
+            coeff[i][j].reset(vd);
+                vd = new std::vector<double>(neval);
+            coeffr[i][j].reset(vd);
+                vd = new std::vector<double>(neval);
+            coeffz[i][j].reset(vd);
+        }
 
-    	// check that material property has expected argument names
-    	std::vector<std::string> argnames = sourceTensorProp->get_arguments();
-    	AMP_ASSERT(std::find(argnames.begin(), argnames.end(), "radius") != argnames.end());
-    	AMP_ASSERT(std::find(argnames.begin(), argnames.end(), "theta") != argnames.end());
-    	AMP_ASSERT(std::find(argnames.begin(), argnames.end(), "zee") != argnames.end());
+        // check that material property has expected argument names
+        std::vector<std::string> argnames = sourceTensorProp->get_arguments();
+        AMP_ASSERT(std::find(argnames.begin(), argnames.end(), "radius") != argnames.end());
+        AMP_ASSERT(std::find(argnames.begin(), argnames.end(), "theta") != argnames.end());
+        AMP_ASSERT(std::find(argnames.begin(), argnames.end(), "zee") != argnames.end());
 
-    	// get argument vectors
+        // get argument vectors
         args.insert(std::make_pair("radius", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
         args.insert(std::make_pair("theta", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
         args.insert(std::make_pair("zee", AMP::shared_ptr<std::vector<double> >(new std::vector<double>(neval))));
@@ -360,43 +360,45 @@ void MassDensityModel::getDensityManufactured(std::vector<double> & result,
         std::vector<double> &zee = (*args.find("zee")->second);
 
         // fill in cylindrical coordinates
-		double Pi=3.1415926535898;
-		for (size_t k = 0; k < neval; k++)
-		{
-			double x=xyz[k](0), y=xyz[k](1), z=xyz[k](2);
-			double r=sqrt(x*x+y*y), th=acos(x/r); if (y<0) th = 2*Pi-th;
-			radius[k] = r;
-			theta[k]  = th;
-			zee[k]    = z;
-		}
+        double Pi=3.1415926535898;
+        for (size_t k = 0; k < neval; k++)
+        {
+            double x=xyz[k](0), y=xyz[k](1), z=xyz[k](2);
+            double r=sqrt(x*x+y*y), th=acos(x/r); if (y<0) th = 2*Pi-th;
+            radius[k] = r;
+            theta[k]  = th;
+            zee[k]    = z;
+        }
 
-		// evaluate various derivatives of diffusion coefficient tensor
-		sourceTensorProp->setAuxiliaryData("derivative", 0);
-		sourceTensorProp->evalv(coeff, args);
+        // evaluate various derivatives of diffusion coefficient tensor
+        sourceTensorProp->setAuxiliaryData("derivative", 0);
+        sourceTensorProp->evalv(coeff, args);
 
-		sourceTensorProp->setAuxiliaryData("derivative", 1);
-		sourceTensorProp->evalv(coeffr, args);
+        sourceTensorProp->setAuxiliaryData("derivative", 1);
+        sourceTensorProp->evalv(coeffr, args);
 
-		sourceTensorProp->setAuxiliaryData("derivative", 2);
-		sourceTensorProp->evalv(coeffz, args);
+        sourceTensorProp->setAuxiliaryData("derivative", 2);
+        sourceTensorProp->evalv(coeffz, args);
 
-		// compute div (K . grad u) = div K . grad u + K : grad grad u
-		for (size_t k = 0; k < neval; k++)
-		{
-			double x=xyz[k](0), y=xyz[k](1), z=xyz[k](2);
-			double r=sqrt(x*x+y*y), th=acos(x/r); if (y<0) th = 2*Pi-th;
-			if (r==0.) r = std::numeric_limits<double>::min();
-			// soln is the set of all derivatives wrto r, th, and z of order <= 2
-			d_ManufacturedSolution->evaluate(soln, r, th, z);
+        // compute div (K . grad u) = div K . grad u + K : grad grad u
+        for (size_t k = 0; k < neval; k++)
+        {
+            double x=xyz[k](0), y=xyz[k](1), z=xyz[k](2);
+            double r=sqrt(x*x+y*y);
+            if (r==0.) { r = std::numeric_limits<double>::min(); }
+            double th=acos(x/r);
+            if (y<0) { th = 2*Pi-th; }
+            // soln is the set of all derivatives wrto r, th, and z of order <= 2
+            d_ManufacturedSolution->evaluate(soln, r, th, z);
 
-			std::vector<double> Kr(2), Kz(2);
-			Kr[0] = (*coeff[0][0])[k] + (*coeff[1][1])[k];
-			Kz[0] = (*coeff[2][2])[k];
-			Kr[1] = (*coeffr[0][0])[k] + (*coeffr[1][1])[k];
-			Kz[1] = (*coeffz[2][2])[k];
+            std::vector<double> Kr(2), Kz(2);
+            Kr[0] = (*coeff[0][0])[k] + (*coeff[1][1])[k];
+            Kz[0] = (*coeff[2][2])[k];
+            Kr[1] = (*coeffr[0][0])[k] + (*coeffr[1][1])[k];
+            Kz[1] = (*coeffz[2][2])[k];
 
-			result[k] = Kz[1]*soln[3] + Kz[0]*soln[9] + Kr[0]*soln[1]/r + Kr[1]*soln[1] + Kr[0]*soln[4];
-		}
+            result[k] = Kz[1]*soln[3] + Kz[0]*soln[9] + Kr[0]*soln[1]/r + Kr[1]*soln[1] + Kr[0]*soln[4];
+        }
     }
 
 }

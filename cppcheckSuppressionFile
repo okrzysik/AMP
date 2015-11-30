@@ -14,6 +14,7 @@ redundantCopy
 // Suppress operator test == warnings in tests
 duplicateExpression:*/utils/test/test_AMP_MPI.cc
 duplicateExpression:*/ampmesh/test/meshTests.h
+duplicateExpression:*/discretization/test/DOFManager_tests.h
 
 // Suppress specific instances of "Upon exception there is memory leak"
 exceptNew:*/vectors/petsc/PetscVector.cc
@@ -23,6 +24,7 @@ exceptNew:*/matrices/trilinos/ManagedEpetraMatrix.cc
 
 // Suppress huge input warnings
 invalidscanf
+invalidscanf_libc
 
 // Supress specific errors for AMPManager
 variableScope:*/utils/AMPManager.cc
@@ -43,6 +45,8 @@ toomanyconfigs:*/utils/Grammar.cc
 ConfigurationNotChecked:*/utils/Grammar.cc
 uselessAssignmentPtrArg:*/utils/Grammar.cc
 syntaxError:*/utils/ParallelBuffer.cc
+duplicateExpression:*/utils/Grammar.cc
+
 
 // Suppress warnings for ampmesh
 toomanyconfigs:*/ampmesh/test/test_Mesh.cc

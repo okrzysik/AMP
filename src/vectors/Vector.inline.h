@@ -306,7 +306,7 @@ inline double Vector::getValueByLocalID ( size_t ndx ) const
   inline
   void Vector::abs ( const_shared_ptr x )
   {
-    abs ( *x );
+    this->abs ( *x );
   }
 
   inline
