@@ -70,7 +70,11 @@ namespace Operator {
         */
       void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs); 
 
-      AMP::shared_ptr<OperatorParameters> getParameters() {
+      /** 
+       * get a pointer to the cached parameters that were used to create this
+       * operator
+       */
+      AMP::shared_ptr<OperatorParameters> getOperatorParameters() {
         return d_params;
       }
 

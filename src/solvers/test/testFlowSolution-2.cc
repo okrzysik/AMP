@@ -374,15 +374,15 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> correctionParameters3;
     if ( thermalNonlinearOperator1.get() != NULL ) {
         robinBoundaryOp1 = AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( thermalNonlinearOperator1->getBoundaryOperator()  );
-        correctionParameters1 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp1->getParameters());
+        correctionParameters1 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp1->getOperatorParameters());
         robinBoundaryOp1->setVariableFlux( thermalMapCladToPelletVec );
         robinBoundaryOp1->reset(correctionParameters1);
     }
     if ( thermalNonlinearOperator2.get() != NULL ) {
         robinBoundaryOp2 = AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( (AMP::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator> ( thermalNonlinearOperator2->getBoundaryOperator() ) )->getBoundaryOperator(0) );
         robinBoundaryOp3 = AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( (AMP::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator> ( thermalNonlinearOperator2->getBoundaryOperator() ) )->getBoundaryOperator(1) );
-        correctionParameters2 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp2->getParameters());
-        correctionParameters3 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp3->getParameters());
+        correctionParameters2 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp2->getOperatorParameters());
+        correctionParameters3 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp3->getOperatorParameters());
         robinBoundaryOp2->setVariableFlux( thermalMapToCladVec );
         robinBoundaryOp3->setVariableFlux( thermalMapToCladVec );
         robinBoundaryOp2->reset(correctionParameters2);

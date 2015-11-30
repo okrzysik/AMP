@@ -311,7 +311,7 @@ registerMapswithThermalOperator( AMP::shared_ptr<AMP::InputDatabase>,
   AMP::shared_ptr<AMP::Operator::ColumnBoundaryOperator>  curBCcol = AMP::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator> ( curBVPop->getBoundaryOperator () );
   AMP::shared_ptr<AMP::Operator::RobinVectorCorrection>  gapBC = AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( 0 ) );
   gapBC->setVariableFlux ( thermalMapVec );
-  gapBC->reset ( gapBC->getParameters());
+  gapBC->reset ( gapBC->getOperatorParameters());
 }
 
 ///////////////////////////////////////////////

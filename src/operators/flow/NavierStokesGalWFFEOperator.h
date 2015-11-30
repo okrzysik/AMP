@@ -39,7 +39,7 @@ namespace AMP {
         void reset(const AMP::shared_ptr<OperatorParameters>& );
 
         AMP::shared_ptr<OperatorParameters> 
-          getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
+          getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u_in  ) override;
 
         void init();
 
