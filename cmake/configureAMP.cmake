@@ -26,9 +26,6 @@ MACRO ( SET_AMP_PACKAGE_FLAGS )
         SET( USE_AMP_MESH ON )
         ADD_DEFINITIONS ( -D USE_AMP_MESH )  
         SET( AMP_LIBS ampmesh ${AMP_LIBS} )
-        # the next line is present because of linking problems
-        # on linux when a package depends on AMP
-        SET( AMP_LIBS discretization ${AMP_LIBS} )
     ENDIF()
     IF ( ${PROJECT_NAME}_ENABLE_AMP_VECTORS )
         SET( USE_AMP_VECTORS ON )

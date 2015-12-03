@@ -31,7 +31,7 @@ FUNCTION( SAVE_CMAKE_FLAGS )
     FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(AMP_SOURCE ${AMP_SOURCE_DIR})\n" )
     # Create the AMP libraries and include paths
     FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Set the AMP libraries\n" )
-    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(AMP_LIBS ${AMP_LIBS})\n" )
+    FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET(AMP_LIBS ${AMP_LIBS} ${AMP_LIBS})\n" )
     FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${AMP_TRUNK}/external/boost/include )\n" )
     FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${AMP_INSTALL_DIR}/include )\n" )
     IF ( USE_AMP_UTILS )
