@@ -13,7 +13,7 @@ namespace Operator {
   }
 
   AMP::shared_ptr<OperatorParameters> ColumnBoundaryOperator :: 
-  getParameters(const std::string type,
+  getParameters(const std::string &type,
                 AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::shared_ptr<OperatorParameters> params) {
 

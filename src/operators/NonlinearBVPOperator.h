@@ -84,7 +84,7 @@ namespace AMP {
          * \param x
          *        This function takes as input a current vector x at which the Jacobian or tangent matrix needs to be constructed
          */
-        AMP::shared_ptr<OperatorParameters> getParameters(const std::string type,
+        AMP::shared_ptr<OperatorParameters> getParameters(const std::string &type,
                                                           AMP::LinearAlgebra::Vector::const_shared_ptr x,
                                                           AMP::shared_ptr<OperatorParameters> params = NULL ) override;
       protected :

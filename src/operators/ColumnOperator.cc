@@ -29,7 +29,7 @@ namespace AMP {
       }
 
     AMP::shared_ptr<OperatorParameters>
-    ColumnOperator :: getParameters(const std::string type,
+    ColumnOperator :: getParameters(const std::string &type,
                                     AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                     AMP::shared_ptr<OperatorParameters> params)
       {

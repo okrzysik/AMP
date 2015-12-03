@@ -102,7 +102,7 @@ LinearTimeOperator::reset(const AMP::shared_ptr<AMP::Operator::OperatorParameter
 }
 
 AMP::shared_ptr<AMP::Operator::OperatorParameters>
-LinearTimeOperator::getParameters(  const std::string type,
+LinearTimeOperator::getParameters(  const std::string &type,
                                     AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                     AMP::shared_ptr<AMP::Operator::OperatorParameters> params ) 
 {

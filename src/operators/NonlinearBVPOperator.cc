@@ -76,7 +76,7 @@ namespace AMP {
       PROFILE_STOP("reset");
     }
 
-    AMP::shared_ptr<OperatorParameters> NonlinearBVPOperator :: getParameters(const std::string type,
+    AMP::shared_ptr<OperatorParameters> NonlinearBVPOperator :: getParameters(const std::string &type,
                                                                               AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                                                               AMP::shared_ptr<OperatorParameters> params)
     {

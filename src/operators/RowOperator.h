@@ -80,7 +80,7 @@ namespace Operator {
     protected :
 
       virtual AMP::shared_ptr<OperatorParameters>
-        getParameters(const std::string type,
+        getParameters(const std::string &type,
                       AMP::LinearAlgebra::Vector::const_shared_ptr u,
                       AMP::shared_ptr<OperatorParameters> params = NULL ) override
         {

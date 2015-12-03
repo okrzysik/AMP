@@ -64,7 +64,7 @@ class LinearTimeOperator: public AMP::Operator::LinearOperator
   //JL
   void registerCurrentTime( double currentTime ) {d_current_time = currentTime;}
 
-  AMP::shared_ptr<AMP::Operator::OperatorParameters> getParameters(const std::string type,
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> getParameters(const std::string &type,
                                                                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                                                    AMP::shared_ptr<AMP::Operator::OperatorParameters> params = NULL ) override; 
 

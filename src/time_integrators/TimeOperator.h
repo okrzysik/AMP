@@ -160,7 +160,7 @@ class TimeOperator: public AMP::Operator::Operator
    * and one for the rhs operator.
    @param [in] u : shared pointer to a Vector at which the Jacobian is to be evaluated.
    */
-  AMP::shared_ptr<AMP::Operator::OperatorParameters> getParameters(const std::string type,
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> getParameters(const std::string &type,
                                                                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                                                    AMP::shared_ptr<AMP::Operator::OperatorParameters> params=NULL) override; 
 

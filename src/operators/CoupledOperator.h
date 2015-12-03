@@ -70,7 +70,7 @@ public :
         d_frozenGaussPointVector = u;
     }
 
-    AMP::shared_ptr<OperatorParameters> getParameters(const std::string type,
+    AMP::shared_ptr<OperatorParameters> getParameters(const std::string &type,
                      AMP::LinearAlgebra::Vector::const_shared_ptr u,
                      AMP::shared_ptr<OperatorParameters> params = NULL ) override
     {
