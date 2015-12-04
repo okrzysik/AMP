@@ -7,7 +7,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
   /** \brief A core-local vector
-    * \details This is a Vector that implements the Vector interface for a std::vector<T>.
+    * \details This is a Vector that implements the Vector interface for a std::vector<double>.
     */
   template <typename T>
   class SimpleVector : public Vector
