@@ -73,14 +73,14 @@ Vector::shared_ptr  SimpleVector<T>::create ( Variable::shared_ptr var,
 template <typename T>
 double SimpleVector<T>::min(void) const
 {
-    double local_min = static_cast<double> (*std::min_element ( d_Data.begin() , d_Data.end() ) );
+    auto local_min = static_cast<double> (*std::min_element ( d_Data.begin() , d_Data.end() ) );
     return d_comm.minReduce(local_min);
 }
 
 template <typename T>
 double SimpleVector<T>::max(void) const
 {
-    double local_max =static_cast<double> (*std::max_element ( d_Data.begin() , d_Data.end() ));
+    auto local_max =static_cast<double> (*std::max_element ( d_Data.begin() , d_Data.end() ));
     return d_comm.maxReduce(local_max);
 }
 
@@ -88,8 +88,10 @@ template <typename T>
 double SimpleVector<T>::L1Norm(void) const
 {
     double ans = 0.0;
-    for ( const_iterator cur = begin() ; cur != end() ; ++cur )
-        ans += static_cast<double> (fabs (*cur));
+
+    for ( const T &val:d_Data )
+        ans += static_cast<double> (fabs (val));
+
     ans = d_comm.sumReduce(ans);
     return ans;
 }
@@ -98,8 +100,8 @@ template <typename T>
 double SimpleVector<T>::L2Norm(void) const
 {
     double ans = 0.0;
-    for ( const_iterator cur = begin() ; cur != end() ; ++cur )
-        ans += static_cast<double> ((*cur) * (*cur));
+    for ( const auto &val:d_Data )
+        ans += static_cast<double> (val * val);
     ans = d_comm.sumReduce(ans);
     return sqrt ( ans );
 }
@@ -108,8 +110,8 @@ template <typename T>
 double SimpleVector<T>::maxNorm(void) const
 {
     double ans = 0.0;
-    for ( const_iterator cur = begin() ; cur != end() ; ++cur )
-        ans = static_cast<double> (std::max ( ans , fabs (*cur) ));
+    for ( const auto &val:d_Data )
+        ans = static_cast<double> (std::max ( ans , fabs (val) ));
     ans = d_comm.maxReduce(ans);
     return ans;
 }
@@ -160,13 +162,17 @@ void SimpleVector<T>::copyVector( Vector::const_shared_ptr src_vec )
 template <typename T>
 void SimpleVector<T>::putRawData ( const double *in )
 {
-    std::copy( in, in + d_Data.size(), d_Data.begin() );
+    for (size_t i=0; i<d_Data.size(); ++i) {
+        d_Data[i] = static_cast<T>(in[i]);
+    }
 }
 
 template <typename T>
 void SimpleVector<T>::copyOutRawData ( double *out ) const
 {
-    std::copy( d_Data.begin(), d_Data.end(), out );
+    for (size_t i=0; i<d_Data.size(); ++i) {
+        out[i] = static_cast<double>(d_Data[i]);
+    }
 }
 
 
@@ -176,17 +182,17 @@ void SimpleVector<T>::copyOutRawData ( double *out ) const
 template <typename T>
 void SimpleVector<T>::setToScalar(double alpha)
 {
-    T alpha_T = static_cast<T>(alpha);
+    auto alpha_T = static_cast<T>(alpha);
 
-    for ( iterator cur = begin() ; cur != end() ; ++cur )
-        (*cur) = alpha_T;
+    for ( auto &val: d_Data )
+        val = alpha_T;
     this->makeConsistent(CONSISTENT_SET);
 }
 
 template <typename T>
 void SimpleVector<T>::scale(double alpha, const VectorOperations &x)
 {
-    T alpha_T = static_cast<T>(alpha);
+    auto alpha_T = static_cast<T>(alpha);
 
     iterator cur = begin();
     const_iterator curx = x.castTo<Vector>().begin();
@@ -201,11 +207,11 @@ void SimpleVector<T>::scale(double alpha, const VectorOperations &x)
 template <typename T>
 void SimpleVector<T>::scale(double alpha)
 {
-    T alpha_T = static_cast<T>(alpha);
+    auto alpha_T = static_cast<T>(alpha);
 
-    for ( iterator cur = begin() ; cur != end() ; ++cur )
+    for ( auto &val:d_Data )
     {
-        (*cur) *= alpha_T;
+        val *= alpha_T;
     }
 }
 
@@ -291,8 +297,8 @@ void SimpleVector<T>::linearSum(double alpha, const VectorOperations &x,
     curx = x.castTo<Vector>().begin();
     cury = y.castTo<Vector>().begin();
     cur = begin();
-    T alpha_T  = static_cast<T>(alpha);
-    T beta_T  = static_cast<T>(beta);
+    auto alpha_T  = static_cast<T>(alpha);
+    auto beta_T  = static_cast<T>(beta);
     while ( cur != end() )
     {
         (*cur) = alpha_T * static_cast<T>(*curx) + beta_T * static_cast<T>(*cury);
@@ -305,7 +311,7 @@ void SimpleVector<T>::axpy(double alpha, const VectorOperations &x, const Vector
 {
     const_iterator curx , cury;
     iterator cur;
-    T alpha_T  = static_cast<T>(alpha);
+    auto alpha_T  = static_cast<T>(alpha);
     curx = x.castTo<Vector>().begin();
     cury = y.castTo<Vector>().begin();
     cur = begin();
@@ -321,8 +327,8 @@ void SimpleVector<T>::axpby(double alpha, double beta, const VectorOperations &x
 {
     const_iterator curx;
     iterator cur;
-    T alpha_T  = static_cast<T>(alpha);
-    T beta_T  = static_cast<T>(beta);
+    auto alpha_T  = static_cast<T>(alpha);
+    auto beta_T  = static_cast<T>(beta);
     curx = x.castTo<Vector>().begin();
     cur = begin();
     while ( cur != end() )
