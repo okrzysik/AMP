@@ -350,12 +350,12 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 
   //dz = 0.0127/flowVecSize ;
 
-  AMP::LinearAlgebra::Vector::shared_ptr solVec  = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , inputVariable  );
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec  = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec  = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , outputVariable );
-  //AMP::LinearAlgebra::Vector::shared_ptr workVec = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , inputVariable  );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec  = AMP::LinearAlgebra::SimpleVector<double>::create( flowVecSize , inputVariable  );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec  = AMP::LinearAlgebra::SimpleVector<double>::create( flowVecSize , outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec  = AMP::LinearAlgebra::SimpleVector<double>::create( flowVecSize , outputVariable );
+  //AMP::LinearAlgebra::Vector::shared_ptr workVec = AMP::LinearAlgebra::SimpleVector<double>::create( flowVecSize , inputVariable  );
 
-  AMP::LinearAlgebra::Vector::shared_ptr vecLag  = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr vecLag  = AMP::LinearAlgebra::SimpleVector<double>::create( flowVecSize , outputVariable );
 
   resVec->setToScalar(350);
 //-------------------------------------
@@ -403,10 +403,10 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 //-------------------------------------
 
   size_t gapVecCladSize = map1ToHighDim->getNumZlocations(); 
-  AMP::LinearAlgebra::Vector::shared_ptr gapVecClad = AMP::LinearAlgebra::SimpleVector::create( gapVecCladSize, gapVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr gapVecClad = AMP::LinearAlgebra::SimpleVector<double>::create( gapVecCladSize, gapVariable );
 
   size_t gapVecPelletSize = map2ToHighDim->getNumZlocations(); 
-  AMP::LinearAlgebra::Vector::shared_ptr gapVecPellet = AMP::LinearAlgebra::SimpleVector::create( gapVecPelletSize, gapVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr gapVecPellet = AMP::LinearAlgebra::SimpleVector<double>::create( gapVecPelletSize, gapVariable );
 
   int cnt=0;
   AMP::LinearAlgebra::Vector::shared_ptr vecLag1 = AMP::LinearAlgebra::createVector( nodalDofMap1, outputVariable1 );

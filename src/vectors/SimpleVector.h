@@ -7,12 +7,13 @@ namespace AMP {
 namespace LinearAlgebra {
 
   /** \brief A core-local vector
-    * \details This is a Vector that implements the Vector interface for a std::vector<double>.
+    * \details This is a Vector that implements the Vector interface for a std::vector<T>.
     */
+  template <typename T>
   class SimpleVector : public Vector
   {
     private:
-      std::vector<double>  d_Data;
+      std::vector<T>  d_Data;
       size_t d_startIndex;
       size_t d_globalSize;
       AMP_MPI d_comm;
@@ -112,18 +113,25 @@ namespace LinearAlgebra {
       virtual void *getRawDataBlockAsVoid ( size_t i );
       virtual const void *getRawDataBlockAsVoid ( size_t i ) const;
 
-      double &operator[] ( size_t i );
-      double  operator[] ( size_t i ) const ;
+      T &operator[] ( size_t i );
+      T operator[] ( size_t i ) const ;
 
       /** \brief Resize this vector
         * \param[in] i The new size
         */
       void    resize ( size_t i );
+      
+      //! return a non-const reference to the internal data container
+      std::vector<T> &getData( void ) { return d_Data; }
+
+      //! return a const reference to the internal data container
+      const std::vector<T> &getData( void ) const { return d_Data; }
   };
 
 }
 }
 
 #include "SimpleVector.inline.h"
+#include "SimpleVector.hpp"
 
 #endif

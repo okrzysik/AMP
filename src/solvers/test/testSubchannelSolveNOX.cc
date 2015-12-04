@@ -733,9 +733,9 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::Operator::SubchannelToPointMap subchannelDensityToPointMap(subchannelToPointMapParams);
     subchannelToPointMapParams->d_outputVar.reset( new AMP::LinearAlgebra::Variable("Temperature") );
     AMP::Operator::SubchannelToPointMap subchannelTemperatureToPointMap(subchannelToPointMapParams);
-    AMP::LinearAlgebra::Vector::shared_ptr densityMapVec = AMP::LinearAlgebra::SimpleVector::create(
+    AMP::LinearAlgebra::Vector::shared_ptr densityMapVec = AMP::LinearAlgebra::SimpleVector<double>::create(
         subchannelToPointMapParams->x.size(), subchannelDensityToPointMap.getOutputVariable() );
-    AMP::LinearAlgebra::Vector::shared_ptr temperatureMapVec = AMP::LinearAlgebra::SimpleVector::create(
+    AMP::LinearAlgebra::Vector::shared_ptr temperatureMapVec = AMP::LinearAlgebra::SimpleVector<double>::create(
         subchannelToPointMapParams->x.size(), subchannelTemperatureToPointMap.getOutputVariable() );
     subchannelDensityToPointMap.residual( nullVec, flowSolVec, densityMapVec );
     subchannelTemperatureToPointMap.residual( nullVec, flowSolVec, temperatureMapVec );

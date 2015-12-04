@@ -222,7 +222,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
     AMP::LinearAlgebra::Vector::shared_ptr dst_vec;
     if ( rank==0 ) {
         AMP::LinearAlgebra::Variable::shared_ptr var(new AMP::LinearAlgebra::Variable(name));
-        dst_vec = AMP::LinearAlgebra::SimpleVector::create( global_size, var, AMP_MPI(AMP_COMM_SELF) );
+        dst_vec = AMP::LinearAlgebra::SimpleVector<double>::create( global_size, var, AMP_MPI(AMP_COMM_SELF) );
         AMP_ASSERT(dst_vec->numberOfDataBlocks()==1);
         double *ptr = dst_vec->getRawDataBlock<double>(0);
         size_t i = 0;

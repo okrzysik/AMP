@@ -85,9 +85,9 @@ void test_AsciiWriter( AMP::UnitTest *ut )
             AMP::LinearAlgebra::Vector::shared_ptr vec2 = createVector<3,2,1>( var2, selfComm   );
         #else
             AMP::LinearAlgebra::Vector::shared_ptr vec1 = 
-                AMP::LinearAlgebra::SimpleVector::create( 20, var1, globalComm );
+                AMP::LinearAlgebra::SimpleVector<double>::create( 20, var1, globalComm );
             AMP::LinearAlgebra::Vector::shared_ptr vec2 = 
-                AMP::LinearAlgebra::SimpleVector::create( 50, var2, selfComm );
+                AMP::LinearAlgebra::SimpleVector<double>::create( 50, var2, selfComm );
         #endif
         writer->registerVector( vec1 );
         writer->registerVector( vec2 );

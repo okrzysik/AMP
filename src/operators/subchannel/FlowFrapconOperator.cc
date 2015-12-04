@@ -76,7 +76,7 @@ void FlowFrapconOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
       AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector( r );
 
       // AMP::LinearAlgebra::Variable::shared_ptr localVar ( new AMP::LinearAlgebra::Variable(d_cladVec->getVariable()->getName() ) ); 
-      // d_localCladVec = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, localVar ); 
+      // d_localCladVec = AMP::LinearAlgebra::SimpleVector<double>::create( d_numpoints, localVar ); 
       // 
       // AMP::shared_ptr<AMP::InputDatabase> map3to1_db (new AMP::InputDatabase("Dummy"));
       // map3to1_db->putInteger("BoundaryId",4);

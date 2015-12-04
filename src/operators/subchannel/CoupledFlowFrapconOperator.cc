@@ -22,8 +22,8 @@ CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(const AMP::shared_ptr<Ope
       d_numpoints = (AMP::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (myparams->d_Map1to3) )->getNumZlocations();
       d_zPoints.resize(d_numpoints);
 
-      d_flowInput = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, d_SimpleVariable ); 
-      d_flowOutput = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, d_SimpleVariable ); 
+      d_flowInput = AMP::LinearAlgebra::SimpleVector<double>::create( d_numpoints, d_SimpleVariable ); 
+      d_flowOutput = AMP::LinearAlgebra::SimpleVector<double>::create( d_numpoints, d_SimpleVariable ); 
 
       AMP::shared_ptr<AMP::InputDatabase> tmp_db1 (new AMP::InputDatabase("Dummy"));
       tmp_db1->putInteger("BoundaryId",4);

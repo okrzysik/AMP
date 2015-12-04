@@ -307,8 +307,8 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
         map3DFlowToClad->setVector(thermalMapToCladVec);
         //------------------------------------------
 
-        cladVec = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , mapCladTo1DFlow1->getOutputVariable() );
-        flowSol1DVec = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , mapCladTo1DFlow1->getOutputVariable() );
+        cladVec = AMP::LinearAlgebra::SimpleVector<double>::create( flowVecSize , mapCladTo1DFlow1->getOutputVariable() );
+        flowSol1DVec = AMP::LinearAlgebra::SimpleVector<double>::create( flowVecSize , mapCladTo1DFlow1->getOutputVariable() );
 
         mapCladTo1DFlow1->setVector(cladVec); 
         mapCladTo1DFlow2->setVector(cladVec); 

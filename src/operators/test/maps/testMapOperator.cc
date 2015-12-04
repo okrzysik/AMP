@@ -94,10 +94,10 @@ void testMap(AMP::UnitTest *ut, std::string exeName )
     map2ToLowDim->setZLocations( map2ToHighDim->getZLocations());
     //-------------------------------------
     size_t gapVecCladSize = map1ToHighDim->getNumZlocations(); 
-    AMP::LinearAlgebra::Vector::shared_ptr gapVecClad = AMP::LinearAlgebra::SimpleVector::create( gapVecCladSize, gapVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr gapVecClad = AMP::LinearAlgebra::SimpleVector<double>::create( gapVecCladSize, gapVariable );
 
     size_t gapVecPelletSize = map2ToHighDim->getNumZlocations(); 
-    AMP::LinearAlgebra::Vector::shared_ptr gapVecPellet = AMP::LinearAlgebra::SimpleVector::create( gapVecPelletSize, gapVariable );
+    AMP::LinearAlgebra::Vector::shared_ptr gapVecPellet = AMP::LinearAlgebra::SimpleVector<double>::create( gapVecPelletSize, gapVariable );
 
     // Set the boundary for the source vector
     unsigned int d_boundaryId = map3dto1d_db1->getInteger("BoundaryId");  

@@ -3,134 +3,135 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-
+template <typename T>
 inline
-AMP::shared_ptr<ParameterBase> SimpleVector::getParameters ()
+AMP::shared_ptr<ParameterBase> SimpleVector<T>::getParameters ()
 {
     AMP_ERROR( "Not implemented" );
     return AMP::shared_ptr<ParameterBase> ();
 }
 
 
+template <typename T>
 inline
-Vector::shared_ptr SimpleVector::cloneVector(const Variable::shared_ptr name) const
+Vector::shared_ptr SimpleVector<T>::cloneVector(const Variable::shared_ptr name) const
 {
     return create ( name, d_DOFManager, getCommunicationList() );
 }
 
-
+template <typename T>
 inline
-size_t  SimpleVector::numberOfDataBlocks () const
+size_t  SimpleVector<T>::numberOfDataBlocks () const
 {
     return 1;
 }
 
-
+template <typename T>
 inline
-size_t  SimpleVector::sizeOfDataBlock ( size_t i ) const
+size_t  SimpleVector<T>::sizeOfDataBlock ( size_t i ) const
 {
     if ( i > 0 )
         return 0;
     return d_Data.size();
 }
 
-
+template <typename T>
 inline
-void SimpleVector::swapVectors(Vector &rhs)
+void SimpleVector<T>::swapVectors(Vector &rhs)
 {
     d_Data.swap ( rhs.castTo<SimpleVector>().d_Data );
 }
 
-
+template <typename T>
 inline
-void SimpleVector::aliasVector(Vector &)
+void SimpleVector<T>::aliasVector(Vector &)
 {
     AMP_ERROR( "Not implemented" );
 }
 
-
+template <typename T>
 inline
-void SimpleVector::setValuesByLocalID ( int num , size_t *indices , const double *vals )
+void SimpleVector<T>::setValuesByLocalID ( int num , size_t *indices , const double *vals )
 {
     INCREMENT_COUNT("Virtual");
     for ( int i = 0 ; i != num ; i++ )
-        d_Data[indices[i]] = vals[i];
+        d_Data[indices[i]] = static_cast<T>(vals[i]);
     if ( *d_UpdateState == UNCHANGED )
         *d_UpdateState = LOCAL_CHANGED;
 }
 
-
+template <typename T>
 inline
-void SimpleVector::setLocalValuesByGlobalID ( int num, size_t *indices, const double *vals )
+void SimpleVector<T>::setLocalValuesByGlobalID ( int num, size_t *indices, const double *vals )
 {
     INCREMENT_COUNT("Virtual");
     for ( int i = 0 ; i != num ; i++ ) {
         AMP_ASSERT( indices[i]>=d_startIndex && indices[i]<d_startIndex+d_Data.size() );
-        d_Data[indices[i]-d_startIndex] = vals[i];
+        d_Data[indices[i]-d_startIndex] = static_cast<T>(vals[i]);
     }
     if ( *d_UpdateState == UNCHANGED )
         *d_UpdateState = LOCAL_CHANGED;
 }
 
-
+template <typename T>
 inline
-void SimpleVector::addValuesByLocalID ( int num, size_t *indices, const double *vals )
+void SimpleVector<T>::addValuesByLocalID ( int num, size_t *indices, const double *vals )
 {
     INCREMENT_COUNT("Virtual");
     for ( int i = 0 ; i != num ; i++ )
-        d_Data[indices[i]] += vals[i];
+        d_Data[indices[i]] += static_cast<T>(vals[i]);
     if ( *d_UpdateState == UNCHANGED )
         *d_UpdateState = LOCAL_CHANGED;
 }
 
-
+template <typename T>
 inline
-void SimpleVector::addLocalValuesByGlobalID ( int num, size_t *indices, const double *vals )
+void SimpleVector<T>::addLocalValuesByGlobalID ( int num, size_t *indices, const double *vals )
 {
     INCREMENT_COUNT("Virtual");
     for ( int i = 0 ; i != num ; i++ ) {
         AMP_ASSERT( indices[i]>=d_startIndex && indices[i]<d_startIndex+d_Data.size() );
-        d_Data[indices[i]-d_startIndex] += vals[i];
+        d_Data[indices[i]-d_startIndex] += static_cast<T>(vals[i]);
     }
     if ( *d_UpdateState == UNCHANGED )
         *d_UpdateState = LOCAL_CHANGED;
 }
 
-
+template <typename T>
 inline
-void SimpleVector::getLocalValuesByGlobalID ( int num, size_t *indices, double *vals ) const
+void SimpleVector<T>::getLocalValuesByGlobalID ( int num, size_t *indices, double *vals ) const
 {
     INCREMENT_COUNT("Virtual");
     for ( int i = 0 ; i != num ; i++ ) {
         AMP_ASSERT( indices[i]>=d_startIndex && indices[i]<d_startIndex+d_Data.size() );
-        vals[i] = d_Data[indices[i]-d_startIndex];
+        vals[i] = static_cast<double>(d_Data[indices[i]-d_startIndex]);
     }
 }
 
-
+template <typename T>
 inline
-void SimpleVector::assemble()
+void SimpleVector<T>::assemble()
 {
     AMP_ERROR( "Not implemented" );
 }
 
-
+template <typename T>
 inline
-size_t SimpleVector::getLocalSize() const
+size_t SimpleVector<T>::getLocalSize() const
 {
     return d_Data.size();
 }
 
-
+template <typename T>
 inline
-size_t SimpleVector::getGlobalSize() const
+size_t SimpleVector<T>::getGlobalSize() const
 {
     return d_globalSize;
 }
 
-
+template <typename T>
 inline
-void *SimpleVector::getRawDataBlockAsVoid ( size_t i )
+void *SimpleVector<T>::getRawDataBlockAsVoid ( size_t i )
 {
     if ( i != 0 )
     {
@@ -139,9 +140,9 @@ void *SimpleVector::getRawDataBlockAsVoid ( size_t i )
     return &(d_Data[0]);
 }
 
-
+template <typename T>
 inline
-const void *SimpleVector::getRawDataBlockAsVoid ( size_t i ) const
+const void *SimpleVector<T>::getRawDataBlockAsVoid ( size_t i ) const
 {
     if ( i != 0 )
     {
@@ -150,25 +151,25 @@ const void *SimpleVector::getRawDataBlockAsVoid ( size_t i ) const
     return &(d_Data[0]);
 }
 
-
+template <typename T>
 inline
-double &SimpleVector::operator[] ( size_t i )
+T &SimpleVector<T>::operator[] ( size_t i )
 {
     AMP_ASSERT ( i < d_Data.size() );
     return d_Data[i];
 }
 
-
+template <typename T>
 inline
-double  SimpleVector::operator[] ( size_t i ) const 
+T SimpleVector<T>::operator[] ( size_t i ) const 
 {
     AMP_ASSERT ( i < d_Data.size() );
     return d_Data[i];
 }
 
-
+template <typename T>
 inline
-void SimpleVector::resize ( size_t i )
+void SimpleVector<T>::resize ( size_t i )
 {
     d_Data.resize ( i );
 }

@@ -226,12 +226,12 @@ void flowTest(AMP::UnitTest *ut )
   AMP::LinearAlgebra::Variable::shared_ptr   inputVariable  =  flowOperator->getInputVariable() ;
   AMP::LinearAlgebra::Variable::shared_ptr   outputVariable =  flowOperator->getOutputVariable() ;
 
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::SimpleVector::create( 10, inputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr cladVec = AMP::LinearAlgebra::SimpleVector::create( 10, inputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, inputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr cladVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, inputVariable );
 
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::SimpleVector::create( 10, outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::SimpleVector::create( 10, outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr workVec =  AMP::LinearAlgebra::SimpleVector::create( 10, inputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr workVec =  AMP::LinearAlgebra::SimpleVector<double>::create( 10, inputVariable );
 
   cladVec->setToScalar(300);
   flowOperator->setVector(cladVec);

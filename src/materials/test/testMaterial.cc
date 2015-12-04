@@ -185,9 +185,9 @@ MatTestResult testMaterial(string &name) {
 			toosmallVar[i] .reset(new AMP::LinearAlgebra::Variable("toosmall"+istr.str()));
 			justrightVar[i].reset(new AMP::LinearAlgebra::Variable("justright"+istr.str()));
 			toobigVar[i]   .reset(new AMP::LinearAlgebra::Variable("toobig"+istr.str()));
-			toosmallVec[i]  = AMP::LinearAlgebra::SimpleVector::create(npoints, toosmallVar[i]);
-			justrightVec[i] = AMP::LinearAlgebra::SimpleVector::create(npoints, justrightVar[i]);
-			toobigVec[i]    = AMP::LinearAlgebra::SimpleVector::create(npoints, toobigVar[i]);
+			toosmallVec[i]  = AMP::LinearAlgebra::SimpleVector<double>::create(npoints, toosmallVar[i]);
+			justrightVec[i] = AMP::LinearAlgebra::SimpleVector<double>::create(npoints, justrightVar[i]);
+			toobigVec[i]    = AMP::LinearAlgebra::SimpleVector<double>::create(npoints, toobigVar[i]);
 			for (size_t j=0; j<npoints; j++) {
 				toosmallVec[i] ->setValueByLocalID(j,toosmall[i][j]);
 				justrightVec[i]->setValueByLocalID(j,justright[i][j]);
@@ -206,9 +206,9 @@ MatTestResult testMaterial(string &name) {
 
 		// set up AMP::Vector arguments to evalv
 		AMP::LinearAlgebra::Variable::shared_ptr valueVar(new AMP::LinearAlgebra::Variable("value"));
-		AMP::LinearAlgebra::Vector::shared_ptr valueVec = AMP::LinearAlgebra::SimpleVector::create(npoints, valueVar);
+		AMP::LinearAlgebra::Vector::shared_ptr valueVec = AMP::LinearAlgebra::SimpleVector<double>::create(npoints, valueVar);
 		AMP::LinearAlgebra::Variable::shared_ptr nominalVar(new AMP::LinearAlgebra::Variable("nominal"));
-		AMP::LinearAlgebra::Vector::shared_ptr nominalVec = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalVar);
+		AMP::LinearAlgebra::Vector::shared_ptr nominalVec = AMP::LinearAlgebra::SimpleVector<double>::create(npoints, nominalVar);
 		map<string, AMP::LinearAlgebra::Vector::shared_ptr > argsVec;
 		for (size_t i = 0; i < nargs; i++) {
 			argsVec.insert(std::make_pair(argnames[i], justrightVec[i]));
@@ -232,7 +232,7 @@ MatTestResult testMaterial(string &name) {
 			count ++;
 		}
 		AMP::LinearAlgebra::Variable::shared_ptr nominalMultiVar(new AMP::LinearAlgebra::Variable("nominalMulti"));
-		AMP::LinearAlgebra::Vector::shared_ptr nominalMultiVec = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalMultiVar);
+		AMP::LinearAlgebra::Vector::shared_ptr nominalMultiVec = AMP::LinearAlgebra::SimpleVector<double>::create(npoints, nominalMultiVar);
 
 		// test material range functions
 		vector<double> range(2);
@@ -707,11 +707,11 @@ MatTestResult testMaterial(string &name) {
 				std::stringstream istr;
 				istr << i;
 				ampEvalVar[i].reset(new AMP::LinearAlgebra::Variable("ampEval"+istr.str()));
-				ampEval[i] = AMP::LinearAlgebra::SimpleVector::create(npoints, ampEvalVar[i]);
+				ampEval[i] = AMP::LinearAlgebra::SimpleVector<double>::create(npoints, ampEvalVar[i]);
 				nominalAmpEvalVar[i].reset(new AMP::LinearAlgebra::Variable("nominalAmpEval"+istr.str()));
-				nominalAmpEval[i] = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalAmpEvalVar[i]);
+				nominalAmpEval[i] = AMP::LinearAlgebra::SimpleVector<double>::create(npoints, nominalAmpEvalVar[i]);
 				nominalMultiEvalVar[i].reset(new AMP::LinearAlgebra::Variable("nominalMultiEval"+istr.str()));
-				nominalMultiEval[i] = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalMultiEvalVar[i]);
+				nominalMultiEval[i] = AMP::LinearAlgebra::SimpleVector<double>::create(npoints, nominalMultiEvalVar[i]);
 			}
 
 			// all in range, AMP::Vector
@@ -1048,11 +1048,11 @@ MatTestResult testMaterial(string &name) {
 				std::stringstream istr;
 				istr << i;
 				ampEvalVar[i][j].reset(new AMP::LinearAlgebra::Variable("ampEval"+istr.str()));
-				ampEval[i][j] = AMP::LinearAlgebra::SimpleVector::create(npoints, ampEvalVar[i][j]);
+				ampEval[i][j] = AMP::LinearAlgebra::SimpleVector<double>::create(npoints, ampEvalVar[i][j]);
 				nominalAmpEvalVar[i][j].reset(new AMP::LinearAlgebra::Variable("nominalAmpEval"+istr.str()));
-				nominalAmpEval[i][j] = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalAmpEvalVar[i][j]);
+				nominalAmpEval[i][j] = AMP::LinearAlgebra::SimpleVector<double>::create(npoints, nominalAmpEvalVar[i][j]);
 				nominalMultiEvalVar[i][j].reset(new AMP::LinearAlgebra::Variable("nominalMultiEval"+istr.str()));
-				nominalMultiEval[i][j] = AMP::LinearAlgebra::SimpleVector::create(npoints, nominalMultiEvalVar[i][j]);
+				nominalMultiEval[i][j] = AMP::LinearAlgebra::SimpleVector<double>::create(npoints, nominalMultiEvalVar[i][j]);
 			}
 
 			// all in range, AMP::Vector
