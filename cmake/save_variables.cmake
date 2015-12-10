@@ -149,6 +149,13 @@ FUNCTION( SAVE_CMAKE_FLAGS )
             FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_TRILINOS_STKMESH ) \n" )
         ENDIF()
     ENDIF()
+    # Add Eigen
+    IF ( USE_EXT_EIGEN )
+        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add Eigen\n" )
+        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "INCLUDE_DIRECTORIES( ${EIGEN3_INCLUDE_DIR} )\n" )
+        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "SET( USE_EXT_EIGEN 1 ) \n" )
+        FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "ADD_DEFINITIONS( -D USE_EXT_EIGEN ) \n" )
+    ENDIF()
     # Add PETsc
     IF ( USE_EXT_PETSC )
         FILE(APPEND ${AMP_INSTALL_DIR}/amp.cmake "# Add PETsc\n" )

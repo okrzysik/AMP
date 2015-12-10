@@ -682,6 +682,16 @@ MACRO ( CONFIGURE_EIGEN_LIBRARIES )
     ENDIF()
 ENDMACRO ()
 
+# Macro to find and configure the Eigen package
+MACRO ( CONFIGURE_ARMADILLO_LIBRARIES )
+    # Determine if we want to use Eigen
+    CHECK_ENABLE_FLAG( USE_EXT_ARMADILLO 0 )
+    IF ( USE_EXT_ARMADILLO )
+        FIND_PACKAGE(Armadillo REQUIRED)
+        ADD_DEFINITIONS ( "-D USE_EXT_ARMADILLO" )  
+    ENDIF()
+ENDMACRO ()
+
 
 # Macro to configure system-specific libraries and flags
 MACRO ( CONFIGURE_SYSTEM )
