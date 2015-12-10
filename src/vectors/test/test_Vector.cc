@@ -50,6 +50,12 @@ int main ( int argc , char **argv )
     AMP::pout << std::endl;
     globalComm.barrier();
 
+    AMP::pout << "Testing ArrayVector" << std::endl;
+    testBasicVector<ArrayVectorFactory<15,false> >( &ut );
+    testBasicVector<ArrayVectorFactory<45,true> >( &ut );
+    AMP::pout << std::endl;
+    globalComm.barrier();
+
     #if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
         AMP::pout << "Testing NativePetscVector" << std::endl;
         testManagedVector<SNPVFactory>( &ut );

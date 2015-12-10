@@ -12,7 +12,7 @@ namespace LinearAlgebra {
   template <typename T>
   class SimpleVector : public Vector
   {
-    private:
+    protected:
       std::vector<T>  d_Data;
       size_t d_startIndex;
       size_t d_globalSize;
