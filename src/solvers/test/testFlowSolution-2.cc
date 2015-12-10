@@ -307,8 +307,8 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
         map3DFlowToClad->setVector(thermalMapToCladVec);
         //------------------------------------------
 
-        cladVec = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , mapCladTo1DFlow1->getOutputVariable() );
-        flowSol1DVec = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , mapCladTo1DFlow1->getOutputVariable() );
+        cladVec = AMP::LinearAlgebra::SimpleVector<double>::create( flowVecSize , mapCladTo1DFlow1->getOutputVariable() );
+        flowSol1DVec = AMP::LinearAlgebra::SimpleVector<double>::create( flowVecSize , mapCladTo1DFlow1->getOutputVariable() );
 
         mapCladTo1DFlow1->setVector(cladVec); 
         mapCladTo1DFlow2->setVector(cladVec); 
@@ -374,15 +374,15 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> correctionParameters3;
     if ( thermalNonlinearOperator1.get() != NULL ) {
         robinBoundaryOp1 = AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( thermalNonlinearOperator1->getBoundaryOperator()  );
-        correctionParameters1 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp1->getParameters());
+        correctionParameters1 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp1->getOperatorParameters());
         robinBoundaryOp1->setVariableFlux( thermalMapCladToPelletVec );
         robinBoundaryOp1->reset(correctionParameters1);
     }
     if ( thermalNonlinearOperator2.get() != NULL ) {
         robinBoundaryOp2 = AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( (AMP::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator> ( thermalNonlinearOperator2->getBoundaryOperator() ) )->getBoundaryOperator(0) );
         robinBoundaryOp3 = AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( (AMP::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator> ( thermalNonlinearOperator2->getBoundaryOperator() ) )->getBoundaryOperator(1) );
-        correctionParameters2 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp2->getParameters());
-        correctionParameters3 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp3->getParameters());
+        correctionParameters2 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp2->getOperatorParameters());
+        correctionParameters3 = AMP::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrectionParameters>(robinBoundaryOp3->getOperatorParameters());
         robinBoundaryOp2->setVariableFlux( thermalMapToCladVec );
         robinBoundaryOp3->setVariableFlux( thermalMapToCladVec );
         robinBoundaryOp2->reset(correctionParameters2);
@@ -455,7 +455,7 @@ void PelletCladQuasiStaticThermalFlow(AMP::UnitTest *ut, std::string exeName )
     //The thermal operator does not expect an apply to be called before calling
     //getJacobianParams and so it need not be called. So, any of the following
     //apply calls will work:
-    coupledLinearOperator->reset(columnNonlinearOperator->getJacobianParameters(globalSolMultiVector));
+    coupledLinearOperator->reset(columnNonlinearOperator->getParameters("Jacobian", globalSolMultiVector));
     columnNonlinearOperator->apply(globalSolMultiVector, globalResMultiVector);
     AMP::pout<<"Initial Global Residual Norm: "<<std::setprecision(12)<<globalResMultiVector->L2Norm()<<std::endl;
     AMP::pout<<"Initial Temperature Residual Norm: "<<std::setprecision(12)<<globalResVec->L2Norm()<<std::endl;

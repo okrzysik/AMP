@@ -59,12 +59,6 @@ namespace AMP {
         void reset(const AMP::shared_ptr<OperatorParameters>& );
 
         /**
-          This is used to compute the information required to reset the corresponding Linear (Jacobian) operator
-          */
-        AMP::shared_ptr<OperatorParameters> 
-          getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
-
-        /**
           This function is used to set the reference temperature when using temperature dependent material models.
           @param [in] refTemp Reference temperature
           */
@@ -102,6 +96,12 @@ namespace AMP {
         AMP::shared_ptr<MechanicsMaterialModel> getMaterialModel() { return d_materialModel; }
 
       protected :
+
+        /**
+          This is used to compute the information required to reset the corresponding Linear (Jacobian) operator
+          */
+        AMP::shared_ptr<OperatorParameters> 
+          getJacobianParameters(AMP::LinearAlgebra::Vector::const_shared_ptr ) override;
 
         /**
           This performs a dummy loop over the elements and gauss points so that the mechanics material model classes can 

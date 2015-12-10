@@ -176,7 +176,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   //---------------------------------------------------------------------------------------------/
 
   nonlinearThermalOperator->modifyInitialSolutionVector(solVec);
-  linearThermalOperator->reset(nonlinearThermalOperator->getJacobianParameters(solVec));
+  linearThermalOperator->reset(nonlinearThermalOperator->getParameters("Jacobian", solVec));
 
   AMP::pout<<"Finished reseting the jacobian."<<std::endl;
 

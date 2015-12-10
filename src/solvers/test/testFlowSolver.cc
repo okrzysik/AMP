@@ -72,12 +72,12 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   AMP::LinearAlgebra::Variable::shared_ptr   inputVariable  =  flowOperator->getInputVariable() ;
   AMP::LinearAlgebra::Variable::shared_ptr   outputVariable =  flowOperator->getOutputVariable() ;
 
-  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::SimpleVector::create( 10, outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr cladVec = AMP::LinearAlgebra::SimpleVector::create( 10, inputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr cladVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, inputVariable );
 
-  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::SimpleVector::create( 10, outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::SimpleVector::create( 10, outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr tmpVec = AMP::LinearAlgebra::SimpleVector::create( 10, inputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr resVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr tmpVec = AMP::LinearAlgebra::SimpleVector<double>::create( 10, inputVariable );
 
   AMP::shared_ptr<AMP::Operator::FlowFrapconJacobian> flowJacobian = AMP::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>(AMP::Operator::OperatorBuilder::createOperator(meshAdapter,
 																						      "FlowFrapconJacobian",
@@ -159,7 +159,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
   flowJacobian->setVector(cladVec);
  
   flowOperator->residual(rhsVec, solVec, resVec);
-  flowJacobian->reset(flowOperator->getJacobianParameters(mv_view_solVec));
+  flowJacobian->reset(flowOperator->getParameters("Jacobian", mv_view_solVec));
   flowJacobian->residual(rhsVec, solVec, resVec);
  
   //----------------------------------------------------------------------------------------------------------------------------------------------//

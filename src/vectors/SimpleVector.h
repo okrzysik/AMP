@@ -10,10 +10,11 @@ namespace LinearAlgebra {
 /** \brief A core-local vector
 * \details This is a Vector that implements the Vector interface for a std::vector<double>.
 */
+template <typename T>
 class SimpleVector : public Vector
 {
-private:
-    std::vector<double>  d_Data;
+protected:
+    std::vector<T>  d_Data;
     size_t d_startIndex;
     size_t d_globalSize;
     AMP_MPI d_comm;
@@ -55,6 +56,7 @@ public:
     virtual ~SimpleVector() override {}
 
     virtual std::string type() const override { return "Simple Vector"; }
+    virtual uint64_t getDataID() const override { return reinterpret_cast<uint64_t>(d_Data.data()); }
     virtual void setToScalar(double alpha) override;
     virtual void scale(double alpha, const VectorOperations &x) override;
     virtual void scale(double alpha) override;
@@ -75,10 +77,9 @@ public:
     virtual double maxNorm(void) const override;
 
     using Vector::dot;
-    virtual double dot(const VectorOperations &x) const;
+    virtual double dot(const VectorOperations &x) const override;
 
-
-    virtual AMP::shared_ptr<ParameterBase> getParameters() override;
+    virtual AMP::shared_ptr<ParameterBase> getParameters ();
     using Vector::cloneVector;
     virtual Vector::shared_ptr cloneVector(const Variable::shared_ptr name) const override;
     virtual size_t  numberOfDataBlocks() const override;
@@ -109,17 +110,16 @@ public:
     virtual void *getRawDataBlockAsVoid( size_t i ) override;
     virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
 
-    double &operator[]( size_t i );
-    double  operator[]( size_t i ) const ;
+    T &operator[] ( size_t i );
+    T operator[] ( size_t i ) const ;
 
     /** \brief Resize this vector
       * \param[in] i The new size
       */
     void  resize( size_t i );
 
-    // Return the id of the data
-    virtual uint64_t getDataID() const override { return d_Data.empty() ? 0:reinterpret_cast<uint64_t>(&d_Data[0]); }
-
+    //! return a const reference to the internal data container
+    const std::vector<T> &getData( void ) const { return d_Data; }
 };
 
 
@@ -127,5 +127,6 @@ public:
 }
 
 #include "SimpleVector.inline.h"
+#include "SimpleVector.hpp"
 
 #endif

@@ -234,7 +234,7 @@ public:
      */
     virtual void copyVector( Vector::const_shared_ptr rhs );
 
-    /** \brief  Swap the data in this Bector for another
+    /** \brief  Swap the data in this Vector for another
       * \param[in]  other  Vector to swap data with
       * \details Effectively, this is
       * \code

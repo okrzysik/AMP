@@ -4,6 +4,7 @@
 #include <vectors/Variable.h>
 #include "vectors/NullVector.h"
 #include "vectors/SimpleVector.h"
+#include "vectors/ArrayVector.h"
 #include "vectors/ManagedVector.h"
 #include "test_VectorTests.h"
 #include "utils/AMP_MPI.h"
@@ -63,7 +64,7 @@ template <int I, bool GLOBAL>
 class  SimpleVectorFactory
 {
 public:
-    typedef AMP::LinearAlgebra::SimpleVector                  vector;
+    typedef AMP::LinearAlgebra::SimpleVector<double>                  vector;
 
     static AMP::LinearAlgebra::Variable::shared_ptr  getVariable() {
         return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "simple" ) );
@@ -72,13 +73,37 @@ public:
     static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
         AMP::LinearAlgebra::Vector::shared_ptr  vec;
         if ( GLOBAL )
-            vec = AMP::LinearAlgebra::SimpleVector::create ( I, getVariable(), AMP_MPI(AMP_COMM_WORLD) );
+            vec = AMP::LinearAlgebra::SimpleVector<double>::create ( I, getVariable(), AMP_MPI(AMP_COMM_WORLD) );
         else
-            vec = AMP::LinearAlgebra::SimpleVector::create ( I, getVariable() );
+            vec = AMP::LinearAlgebra::SimpleVector<double>::create ( I, getVariable() );
         return vec;
     }
 
     static std::string name() { return "SimpleVectorFactory"; }
+};
+
+
+
+template <int I, bool GLOBAL>
+class  ArrayVectorFactory
+{
+public:
+    typedef AMP::LinearAlgebra::ArrayVector<double>                  vector;
+
+    static AMP::LinearAlgebra::Variable::shared_ptr  getVariable() {
+        return AMP::LinearAlgebra::Variable::shared_ptr ( new AMP::LinearAlgebra::Variable ( "array" ) );
+    }
+
+    static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
+        AMP::LinearAlgebra::Vector::shared_ptr  vec;
+        if ( GLOBAL )
+            vec = AMP::LinearAlgebra::ArrayVector<double>::create ( I, getVariable(), AMP_MPI(AMP_COMM_WORLD) );
+        else
+            vec = AMP::LinearAlgebra::ArrayVector<double>::create ( I, getVariable() );
+        return vec;
+    }
+
+    static std::string name() { return "ArrayVectorFactory"; }
 };
 
 

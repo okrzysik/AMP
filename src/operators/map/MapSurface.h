@@ -49,20 +49,7 @@ public :
         mapTarget->setVector(outVec);
     }
 
-    /*
-    AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& )
-    {
-        AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
-
-        AMP::shared_ptr<MapOperatorParameters> outParams(new MapOperatorParameters(tmp_db));
-
-        outParams->d_BoundaryId = (mapMasterParams->d_db)->getInteger("BoundaryId");
-
-        return outParams;
-
-    } */
-
-protected :
+ protected :
 
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> gap1DVec; 
     AMP::shared_ptr<AMP::LinearAlgebra::Variable> gapVariable;

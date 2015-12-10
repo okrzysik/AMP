@@ -193,15 +193,15 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
 
   size_t flowVecSize = mapToHighDim->getNumZlocations(); 
 
-  AMP::LinearAlgebra::Vector::shared_ptr flowSolVec  = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , inputVariable  );
-  AMP::LinearAlgebra::Vector::shared_ptr flowRhsVec  = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , outputVariable );
-  AMP::LinearAlgebra::Vector::shared_ptr flowResVec  = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr flowSolVec  = AMP::LinearAlgebra::SimpleVector<double>::create( flowVecSize , inputVariable  );
+  AMP::LinearAlgebra::Vector::shared_ptr flowRhsVec  = AMP::LinearAlgebra::SimpleVector<double>::create( flowVecSize , outputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr flowResVec  = AMP::LinearAlgebra::SimpleVector<double>::create( flowVecSize , outputVariable );
 
   AMP::LinearAlgebra::Vector::shared_ptr flowSolViewVec = AMP::LinearAlgebra::MultiVector::view( flowSolVec , globalComm );
   AMP::LinearAlgebra::Vector::shared_ptr flowRhsViewVec = AMP::LinearAlgebra::MultiVector::view( flowRhsVec , globalComm );
   AMP::LinearAlgebra::Vector::shared_ptr flowResViewVec = AMP::LinearAlgebra::MultiVector::view( flowResVec , globalComm );
 
-  AMP::LinearAlgebra::Vector::shared_ptr cladVec = AMP::LinearAlgebra::SimpleVector::create( flowVecSize , inputVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr cladVec = AMP::LinearAlgebra::SimpleVector<double>::create( flowVecSize , inputVariable );
 
   flowOperator->setVector(cladVec);
   flowJacobian->setVector(cladVec);

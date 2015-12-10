@@ -31,8 +31,7 @@ namespace AMP {
 
 
 /*!
- * Class Array is a simple array class contributed by Mark Berrill from his
- * collection of utilities
+ * Class Array is a multi-dimensional array class written by Mark Berrill
  */
 template<class TYPE>
 class Array
@@ -389,10 +388,10 @@ public:
     inline std::shared_ptr<const TYPE> getPtr( ) const { return d_ptr; }
 
     //! Return the pointer to the raw data
-    HOST_DEVICE inline TYPE* get( ) { return d_data; }
+    HOST_DEVICE inline TYPE* data( ) { return d_data; }
 
     //! Return the pointer to the raw data
-    HOST_DEVICE inline const TYPE* get( ) const { return d_data; }
+    HOST_DEVICE inline const TYPE* data( ) const { return d_data; }
 
 
     //! Return true if NaNs are present

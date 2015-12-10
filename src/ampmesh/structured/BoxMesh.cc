@@ -939,6 +939,7 @@ void BoxMesh::displaceMesh( const std::vector<double>& x )
 #ifdef USE_AMP_VECTORS
 void BoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
+    #ifdef USE_AMP_DISCRETIZATION
     // Create the position vector with the necessary ghost nodes
     AMP::Discretization::DOFManager::shared_ptr DOFs = 
     AMP::Discretization::simpleDOFManager::create( 
@@ -988,6 +989,9 @@ void BoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
         d_box[2*i+0] = d_comm.minReduce( d_box_local[2*i+0] );
         d_box[2*i+1] = d_comm.maxReduce( d_box_local[2*i+1] );
     } 
+    #else
+        AMP_ERROR("displaceMesh requires DISCRETIZATION");
+    #endif
 }
 #endif
 

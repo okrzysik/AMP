@@ -162,7 +162,7 @@ namespace AMP {
     }
 
     AMP::shared_ptr<OperatorParameters> DirichletVectorCorrection :: 
-      getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& ) {
+      getJacobianParameters(AMP::LinearAlgebra::Vector::const_shared_ptr ) {
         AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
         tmp_db->putBool("skip_params", true);
 

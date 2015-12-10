@@ -40,7 +40,9 @@ namespace Operator {
         @param u The solution vector that is used to construct the jacobian
         @return The parameters required to construct the jacobian.
         */
-      virtual AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u);
+      AMP::shared_ptr<OperatorParameters> getParameters(const std::string &type,
+                                                        AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                                        AMP::shared_ptr<OperatorParameters> params = NULL) override;
 
       virtual void reset(const AMP::shared_ptr<OperatorParameters>& params);
 

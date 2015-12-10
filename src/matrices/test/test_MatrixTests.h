@@ -155,7 +155,7 @@ public:
             utils->passes ( "trivial vector" );
 
         // Test that axpy failes with different sized matricies
-        AMP::LinearAlgebra::Vector::shared_ptr  smallVec = AMP::LinearAlgebra::SimpleVector::create(7,vector1lhs->getVariable());
+        AMP::LinearAlgebra::Vector::shared_ptr  smallVec = AMP::LinearAlgebra::SimpleVector<double>::create(7,vector1lhs->getVariable());
         AMP::LinearAlgebra::Matrix::shared_ptr  smallMat = AMP::LinearAlgebra::createMatrix(smallVec,smallVec,FACTORY::type());
         try {
             matrix2->axpy ( -2., smallMat );   // matrix2 = -matrix1

@@ -258,7 +258,7 @@ void flowTest(AMP::UnitTest *ut, std::string exeName )
  
     // put manufactured RHS into resVec
     nonlinearOperator->reset(nonlinearOpParams);
-    linearOperator->reset(nonlinearOperator->getJacobianParameters(solVec));
+    linearOperator->reset(nonlinearOperator->getParameters("Jacobian", solVec));
     linearOperator->residual(rhsVec, solVec, resVec);
    
     // create nonlinear solver parameters

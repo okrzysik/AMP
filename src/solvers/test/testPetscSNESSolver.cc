@@ -38,7 +38,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
     
     // Create the solution and function variables
     AMP::LinearAlgebra::Variable::shared_ptr var(new AMP::LinearAlgebra::Variable("x"));
-    AMP::LinearAlgebra::Vector::shared_ptr u = AMP::LinearAlgebra::SimpleVector::create(10,var,solverComm);
+    AMP::LinearAlgebra::Vector::shared_ptr u = AMP::LinearAlgebra::SimpleVector<double>::create(10,var,solverComm);
     AMP::LinearAlgebra::Vector::shared_ptr f = u->cloneVector();
 
     // Create the operator

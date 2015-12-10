@@ -291,7 +291,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
                 subchannelNonlinearOperator->setVector(subchannelFuelTemp); 
                 AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelLinearParams = 
                     AMP::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>( 
-                    subchannelNonlinearOperator->getJacobianParameters(subchannelFlow) );
+                    subchannelNonlinearOperator->getParameters("Jacobian", subchannelFlow) );
                 subchannelLinearParams->d_initialize = false;
                 subchannelLinearOperator->reset(subchannelLinearParams);
                 // pass creation test
@@ -617,7 +617,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         // FIRST APPLY CALL
         AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelLinearParams = 
             AMP::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>( 
-            subchannelNonlinearOperator->getJacobianParameters(flowSolVec) );
+            subchannelNonlinearOperator->getParameters("Jacobian", flowSolVec) );
         subchannelLinearParams->d_initialize = false;
         subchannelLinearOperator->reset(subchannelLinearParams);
         subchannelLinearOperator->residual( flowRhsVec, flowSolVec, flowResVec);
@@ -733,9 +733,9 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::Operator::SubchannelToPointMap subchannelDensityToPointMap(subchannelToPointMapParams);
     subchannelToPointMapParams->d_outputVar.reset( new AMP::LinearAlgebra::Variable("Temperature") );
     AMP::Operator::SubchannelToPointMap subchannelTemperatureToPointMap(subchannelToPointMapParams);
-    AMP::LinearAlgebra::Vector::shared_ptr densityMapVec = AMP::LinearAlgebra::SimpleVector::create(
+    AMP::LinearAlgebra::Vector::shared_ptr densityMapVec = AMP::LinearAlgebra::SimpleVector<double>::create(
         subchannelToPointMapParams->x.size(), subchannelDensityToPointMap.getOutputVariable() );
-    AMP::LinearAlgebra::Vector::shared_ptr temperatureMapVec = AMP::LinearAlgebra::SimpleVector::create(
+    AMP::LinearAlgebra::Vector::shared_ptr temperatureMapVec = AMP::LinearAlgebra::SimpleVector<double>::create(
         subchannelToPointMapParams->x.size(), subchannelTemperatureToPointMap.getOutputVariable() );
     subchannelDensityToPointMap.residual( nullVec, flowSolVec, densityMapVec );
     subchannelTemperatureToPointMap.residual( nullVec, flowSolVec, temperatureMapVec );

@@ -393,7 +393,7 @@ NonlinearKrylovAccelerator::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vect
         AMP::pout << "NonlinearKrylovAccelerator::solve: iteration : " << d_iNonlinearIterationCount << ", residual: " << residual_norm << std::endl;
     }
 
-    AMP::shared_ptr<AMP::Operator::OperatorParameters> pc_parameters = d_pOperator->getJacobianParameters(d_pvSolution);
+    AMP::shared_ptr<AMP::Operator::OperatorParameters> pc_parameters = d_pOperator->getParameters("Jacobian", d_pvSolution);
     AMP::shared_ptr<AMP::Operator::Operator> pc_operator = d_pPreconditioner->getOperator();
 
     AMP_INSIST(pc_operator.get()!=NULL, "NonlinearKrylovAccelerator::solve: preconditioning operator cannot be NULL");
@@ -408,7 +408,7 @@ NonlinearKrylovAccelerator::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vect
     {
         if(!d_bFreezePc)
         {
-            pc_parameters = d_pOperator->getJacobianParameters(d_pvSolution);
+           pc_parameters = d_pOperator->getParameters("Jacobian", d_pvSolution);
             d_pPreconditioner->resetOperator(pc_parameters);
         }
 

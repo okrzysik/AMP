@@ -237,7 +237,7 @@ void NeumannVectorCorrection :: apply(AMP::LinearAlgebra::Vector::const_shared_p
 }
 
 AMP::shared_ptr<OperatorParameters> NeumannVectorCorrection :: getJacobianParameters(
-    const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& ) 
+    AMP::LinearAlgebra::Vector::const_shared_ptr ) 
 {
     AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
 

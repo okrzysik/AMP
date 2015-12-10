@@ -38,7 +38,7 @@ MapSurface::MapSurface(const AMP::shared_ptr<OperatorParameters> & params):
 
     std::string gapVar = mapMaster_db->getString("OutputVariable"); 
     gapVariable.reset(new AMP::LinearAlgebra::Variable(gapVar));
-    gap1DVec = AMP::LinearAlgebra::SimpleVector::create( mapTarget->getNumZlocations(), gapVariable );
+    gap1DVec = AMP::LinearAlgebra::SimpleVector<double>::create( mapTarget->getNumZlocations(), gapVariable );
 
     mapMaster->setVector(gap1DVec);
 

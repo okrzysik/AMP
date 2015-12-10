@@ -35,8 +35,6 @@ namespace AMP {
 
         void reset(const AMP::shared_ptr<OperatorParameters>& );
 
-        AMP::shared_ptr<OperatorParameters> 
-          getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
 
 /*        
         void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr frozenVec) {
@@ -54,6 +52,9 @@ namespace AMP {
         }
 
       protected :
+
+        AMP::shared_ptr<OperatorParameters> 
+          getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
 
         AMP::LinearAlgebra::Vector::shared_ptr mySubsetVector(AMP::LinearAlgebra::Vector::shared_ptr vec, 
             AMP::LinearAlgebra::Variable::shared_ptr var);

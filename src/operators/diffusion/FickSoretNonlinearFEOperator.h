@@ -38,9 +38,11 @@ namespace Operator {
 			AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     virtual AMP::shared_ptr<OperatorParameters>
-      getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u)
+      getParameters(const std::string &type,
+                     AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                     AMP::shared_ptr<OperatorParameters> params = NULL ) override
     {
-        return d_FickOperator->getJacobianParameters(u);
+       return d_FickOperator->getParameters(type, u, params); 
     }
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
@@ -62,6 +64,8 @@ namespace Operator {
 
     DiffusionNonlinearFEOperator::shared_ptr getFickOperator(){return d_FickOperator;}
     DiffusionNonlinearFEOperator::shared_ptr getSoretOperator(){return d_SoretOperator;}
+
+  protected:
 
   private:
 

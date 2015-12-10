@@ -66,8 +66,8 @@ int main(int argc, char *argv[]) {
   AMP::LinearAlgebra::Variable::shared_ptr firstVar = firstOp->getOutputVariable();
   AMP::LinearAlgebra::Variable::shared_ptr secondVar = secondOp->getOutputVariable();
 
-  AMP::LinearAlgebra::Vector::shared_ptr firstVec = AMP::LinearAlgebra::SimpleVector::create(1, firstVar);
-  AMP::LinearAlgebra::Vector::shared_ptr secondVec = AMP::LinearAlgebra::SimpleVector::create(1, secondVar);
+  AMP::LinearAlgebra::Vector::shared_ptr firstVec = AMP::LinearAlgebra::SimpleVector<double>::create(1, firstVar);
+  AMP::LinearAlgebra::Vector::shared_ptr secondVec = AMP::LinearAlgebra::SimpleVector<double>::create(1, secondVar);
 
   AMP::LinearAlgebra::CommunicationList::shared_ptr commList = 
     AMP::LinearAlgebra::CommunicationList::createEmpty(1, AMP_COMM_SELF);
@@ -89,11 +89,11 @@ int main(int argc, char *argv[]) {
 
   std::cout<<"Completed Solve."<<std::endl;
 
-  AMP::shared_ptr<AMP::LinearAlgebra::SimpleVector> firstSol = 
-    AMP::dynamic_pointer_cast<AMP::LinearAlgebra::SimpleVector>(solVec->subsetVectorForVariable(firstVar));
+  auto firstSol = 
+    AMP::dynamic_pointer_cast<AMP::LinearAlgebra::SimpleVector<double> >(solVec->subsetVectorForVariable(firstVar));
 
-  AMP::shared_ptr<AMP::LinearAlgebra::SimpleVector> secondSol = 
-    AMP::dynamic_pointer_cast<AMP::LinearAlgebra::SimpleVector>(solVec->subsetVectorForVariable(secondVar));
+  auto secondSol = 
+    AMP::dynamic_pointer_cast<AMP::LinearAlgebra::SimpleVector<double> >(solVec->subsetVectorForVariable(secondVar));
 
   std::cout<<"First Solution = "<<((*firstSol)[0])<<std::endl;
   std::cout<<"Second Solution = "<<((*secondSol)[0])<<std::endl;

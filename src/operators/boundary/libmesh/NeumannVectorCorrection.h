@@ -70,13 +70,11 @@ namespace Operator {
         */
       void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs); 
 
-      /**
-        This function returns a parameter object that can be used to reset the corresponding
-        NeumannVectorCorrection operator.
-        */
-      AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
-
-      AMP::shared_ptr<OperatorParameters> getParameters() {
+      /** 
+       * get a pointer to the cached parameters that were used to create this
+       * operator
+       */
+      AMP::shared_ptr<OperatorParameters> getOperatorParameters() {
         return d_params;
       }
 
@@ -95,6 +93,12 @@ namespace Operator {
       AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_variable; }
 
     protected :
+
+      /**
+        This function returns a parameter object that can be used to reset the corresponding
+        NeumannVectorCorrection operator.
+        */
+      AMP::shared_ptr<OperatorParameters> getJacobianParameters(AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
 
       Discretization::createLibmeshElements d_libmeshElements;
 

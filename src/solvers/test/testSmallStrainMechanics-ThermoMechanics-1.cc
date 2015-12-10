@@ -156,7 +156,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName) {
   AMP::pout<<"About to call the first apply."<<std::endl;
   nonlinearMechanicsBVPoperator->apply( solVec, resVec);
   AMP::pout<<"About to call the first reset."<<std::endl;
-  linearMechanicsBVPoperator->reset(nonlinearMechanicsBVPoperator->getJacobianParameters(solVec));
+  linearMechanicsBVPoperator->reset(nonlinearMechanicsBVPoperator->getParameters("Jacobian", solVec));
 
   double epsilon = 1.0e-13*(((linearMechanicsBVPoperator->getMatrix())->extractDiagonal())->L1Norm());
 

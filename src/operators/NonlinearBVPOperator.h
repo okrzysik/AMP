@@ -55,16 +55,6 @@ namespace AMP {
          */
         void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
-        /**
-         * Returns a shared pointer to a OperatorParameters object that can be used to construct
-         * or update an Operator which corresponds to some approximation to the Jacobian or tangent matrix
-         * of the NonlinearBVPOperator
-         * 
-         * \param x
-         *        This function takes as input a current vector x at which the Jacobian or tangent matrix needs to be constructed
-         */
-        AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& x);
-
         AMP::shared_ptr< Operator > getVolumeOperator(){ return d_volumeOperator; }
 
         AMP::shared_ptr< BoundaryOperator > getBoundaryOperator(){ return d_boundaryOperator; }
@@ -85,6 +75,18 @@ namespace AMP {
 
         bool isValidInput(AMP::LinearAlgebra::Vector::shared_ptr &sol){ return d_volumeOperator->isValidInput(sol); }
 
+
+        /**
+         * Returns a shared pointer to a OperatorParameters object that can be used to construct
+         * or update an Operator which corresponds to some approximation to the Jacobian or tangent matrix
+         * of the NonlinearBVPOperator
+         * 
+         * \param x
+         *        This function takes as input a current vector x at which the Jacobian or tangent matrix needs to be constructed
+         */
+        AMP::shared_ptr<OperatorParameters> getParameters(const std::string &type,
+                                                          AMP::LinearAlgebra::Vector::const_shared_ptr x,
+                                                          AMP::shared_ptr<OperatorParameters> params = NULL ) override;
       protected :
 
         /**

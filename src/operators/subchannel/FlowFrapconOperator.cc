@@ -76,7 +76,7 @@ void FlowFrapconOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
       AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector( r );
 
       // AMP::LinearAlgebra::Variable::shared_ptr localVar ( new AMP::LinearAlgebra::Variable(d_cladVec->getVariable()->getName() ) ); 
-      // d_localCladVec = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, localVar ); 
+      // d_localCladVec = AMP::LinearAlgebra::SimpleVector<double>::create( d_numpoints, localVar ); 
       // 
       // AMP::shared_ptr<AMP::InputDatabase> map3to1_db (new AMP::InputDatabase("Dummy"));
       // map3to1_db->putInteger("BoundaryId",4);
@@ -134,7 +134,7 @@ void FlowFrapconOperator :: apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
 
 
 AMP::shared_ptr<OperatorParameters> FlowFrapconOperator :: 
-    getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u) 
+    getJacobianParameters(AMP::LinearAlgebra::Vector::const_shared_ptr u_in) 
 {
         AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
 
@@ -149,6 +149,7 @@ AMP::shared_ptr<OperatorParameters> FlowFrapconOperator ::
         tmp_db->putDouble("Prandtl",d_Pr);
 
         AMP::shared_ptr<FlowFrapconJacobianParameters> outParams(new FlowFrapconJacobianParameters(tmp_db));
+        auto u = std::const_pointer_cast<AMP::LinearAlgebra::Vector>(u_in);
         outParams->d_frozenSolution = subsetInputVector(u); 
         return outParams;
 }

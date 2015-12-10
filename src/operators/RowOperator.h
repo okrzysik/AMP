@@ -68,41 +68,6 @@ namespace Operator {
       virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
 			  AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-      virtual AMP::shared_ptr<OperatorParameters>
-        getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u)
-        {
-          AMP::shared_ptr<AMP::Database> db;
-
-          AMP::shared_ptr<ColumnOperatorParameters> opParameters(new ColumnOperatorParameters(db));
-          
-          AMP::shared_ptr<OperatorParameters> rtParameters(new OperatorParameters(db));
-
-          if(getAllJacobian)
-          {
-            (opParameters->d_OperatorParameters).resize(d_Operators.size());
-
-            for(unsigned int i = 0; i < d_Operators.size(); i++)
-            {
-              (opParameters->d_OperatorParameters)[i] = (d_Operators[i]->getJacobianParameters(u));
-            }
-
-            rtParameters = AMP::dynamic_pointer_cast<OperatorParameters>(opParameters);
-
-          }else{
-            (opParameters->d_OperatorParameters).resize(d_paramsize);
-
-            for(int i = 0; i < d_paramsize; i++)
-            {
-              (opParameters->d_OperatorParameters)[i] = (d_Operators[i]->getJacobianParameters(u));
-            }
-
-            rtParameters = AMP::dynamic_pointer_cast<OperatorParameters>(opParameters);
-            //rtParameters = (d_Operators[0]->getJacobianParameters(u));
-
-          }
-          return rtParameters;
-        }
-
       virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
         d_OutputVariable = d_Operators[0]->getOutputVariable();
         return d_OutputVariable;
@@ -113,6 +78,46 @@ namespace Operator {
       int getNumberOfOperators(void){return d_Operators.size(); }
 
     protected :
+
+      virtual AMP::shared_ptr<OperatorParameters>
+        getParameters(const std::string &type,
+                      AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                      AMP::shared_ptr<OperatorParameters> params = NULL ) override
+        {
+          AMP::shared_ptr<AMP::Database> db;
+
+          AMP::shared_ptr<ColumnOperatorParameters> opParameters(new ColumnOperatorParameters(db));
+          
+          AMP::shared_ptr<OperatorParameters> rtParameters(new OperatorParameters(db));
+
+          if(type=="Jacobian") {
+             if(getAllJacobian) {
+                (opParameters->d_OperatorParameters).resize(d_Operators.size());
+                
+                for(unsigned int i = 0; i < d_Operators.size(); i++) {
+                   (opParameters->d_OperatorParameters)[i] = (d_Operators[i]->getParameters(type, u, params));
+                }
+
+                rtParameters = AMP::dynamic_pointer_cast<OperatorParameters>(opParameters);
+                
+             } else {
+                (opParameters->d_OperatorParameters).resize(d_paramsize);
+
+                for(int i = 0; i < d_paramsize; i++) {
+                   (opParameters->d_OperatorParameters)[i] = (d_Operators[i]->getParameters(type, u, params));
+                }
+                
+                rtParameters = AMP::dynamic_pointer_cast<OperatorParameters>(opParameters);
+                //rtParameters = (d_Operators[0]->getJacobianParameters(u));
+                
+             }
+          } else {
+             AMP_ERROR("Unknown type requested");
+          }
+
+          return rtParameters;
+        }
+
 
       std::vector< AMP::shared_ptr< Operator > > d_Operators;
 

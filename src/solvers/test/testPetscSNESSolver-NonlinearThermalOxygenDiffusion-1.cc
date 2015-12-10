@@ -156,7 +156,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   //oxygenVolumeOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
   //nonlinearOxygenOperator->apply(nullVec, solVec, resVec, 1.0, 0.0);
   nonlinearThermalOxygenOperator->apply(solVec, resVec);
-  linearThermalOxygenOperator->reset(nonlinearThermalOxygenOperator->getJacobianParameters(solVec));
+  linearThermalOxygenOperator->reset(nonlinearThermalOxygenOperator->getParameters("Jacobian", solVec));
   //----------------------------------------------------------------------------------------------------------------------------------------------/
 
   //----------------------------------------------------------------------------------------------------------------------------------------------//

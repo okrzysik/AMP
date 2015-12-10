@@ -13,14 +13,17 @@ namespace Operator {
   }
 
   AMP::shared_ptr<OperatorParameters> ColumnBoundaryOperator :: 
-    getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u) {
+  getParameters(const std::string &type,
+                AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                AMP::shared_ptr<OperatorParameters> params) {
+
       AMP::shared_ptr<AMP::Database> db;
       AMP::shared_ptr<ColumnBoundaryOperatorParameters> opParameters(new ColumnBoundaryOperatorParameters(db));
 
       (opParameters->d_OperatorParameters).resize(d_Operators.size());
 
       for(unsigned int i = 0; i < d_Operators.size(); i++) {
-        (opParameters->d_OperatorParameters)[i] = (d_Operators[i]->getJacobianParameters(u));
+         (opParameters->d_OperatorParameters)[i] = (d_Operators[i]->getParameters(type,u,params));
       }
 
       return opParameters;

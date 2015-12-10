@@ -75,17 +75,6 @@ public :
         //Implemented in derived classes. 
       }
 
-      /*
-         AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& )
-         {
-         AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
-         tmp_db->putInteger("BoundaryId", d_boundaryId );
-         AMP::shared_ptr<MapOperatorParameters> outParams(new MapOperatorParameters(tmp_db));
-
-         return outParams;
-         }
-         */
-
     protected :
 
       unsigned int d_boundaryId;

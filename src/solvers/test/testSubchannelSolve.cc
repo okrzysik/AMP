@@ -300,7 +300,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
                 subchannelNonlinearOperator->setVector(subchannelFuelTemp); 
                 AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelLinearParams = 
                     AMP::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>( 
-                    subchannelNonlinearOperator->getJacobianParameters(subchannelFlow) );
+                    subchannelNonlinearOperator->getParameters("Jacobian", subchannelFlow) );
                 subchannelLinearParams->d_initialize = false;
                 subchannelLinearOperator->reset(subchannelLinearParams);
                 // pass creation test
@@ -391,7 +391,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
                         AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( curBCentry ) );
                     AMP_ASSERT(thermalMapVec!=NULL);
                     gapBC->setVariableFlux ( thermalMapVec );
-                    gapBC->reset ( gapBC->getParameters() );
+                    gapBC->reset ( gapBC->getOperatorParameters() );
                 } else if ( ( opNames[curBCentry]=="BottomP2PNonlinearRobinVectorCorrection"  ) || 
                             ( opNames[curBCentry]=="MiddleP2PNonlinearRobinBoundaryCondition" ) || 
                             ( opNames[curBCentry]=="TopP2PNonlinearRobinBoundaryCondition"    ) ) {
@@ -399,7 +399,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
                         AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection> ( curBCcol->getBoundaryOperator ( curBCentry ) );
                     AMP_ASSERT(thermalMapVec!=NULL);
                     p2pBC->setVariableFlux ( thermalMapVec );
-                    p2pBC->reset ( p2pBC->getParameters() );
+                    p2pBC->reset ( p2pBC->getOperatorParameters() );
                 } else if ( opNames[curBCentry] == "C2WBoundaryVectorCorrection" ) {
                     AMP::shared_ptr<AMP::Database>  thisDb = global_input_db->getDatabase( opNames[curBCentry] );
                     bool isCoupled = thisDb->getBoolWithDefault( "IsCoupledBoundary_0", false);
@@ -410,14 +410,14 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
                         c2wBC->setVariableFlux ( thermalMapVec );
                         c2wBC->setFrozenVector( density_map_vec );
                         c2wBC->setFrozenVector( ChannelDiameterVec );
-                        c2wBC->reset ( c2wBC->getParameters() );
+                        c2wBC->reset ( c2wBC->getOperatorParameters() );
                     }
                 } else if ( opNames[curBCentry] == "C2PRobinVectorCorrection" ) {
                     AMP::shared_ptr<AMP::Operator::RobinVectorCorrection>  gapBC = 
                         AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>( curBCcol->getBoundaryOperator ( curBCentry ) );
                     AMP_ASSERT(thermalMapVec!=NULL);
                     gapBC->setVariableFlux ( thermalMapVec );
-                    gapBC->reset ( gapBC->getParameters() );
+                    gapBC->reset ( gapBC->getOperatorParameters() );
                 } else {
                     AMP_ERROR("Unknown boundary operator");
                 }
@@ -631,7 +631,7 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
         // FIRST APPLY CALL
         AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelLinearParams = 
             AMP::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>( 
-            subchannelNonlinearOperator->getJacobianParameters(flowSolVec) );
+            subchannelNonlinearOperator->getParameters("Jacobian", flowSolVec) );
         subchannelLinearParams->d_initialize = false;
         subchannelLinearOperator->reset(subchannelLinearParams);
         subchannelLinearOperator->residual( flowRhsVec, flowSolVec, flowResVec);
@@ -750,9 +750,9 @@ void SubchannelSolve(AMP::UnitTest *ut, std::string exeName )
     AMP::Operator::SubchannelToPointMap subchannelDensityToPointMap(subchannelToPointMapParams);
     subchannelToPointMapParams->d_outputVar.reset( new AMP::LinearAlgebra::Variable("Temperature") );
     AMP::Operator::SubchannelToPointMap subchannelTemperatureToPointMap(subchannelToPointMapParams);
-    AMP::LinearAlgebra::Vector::shared_ptr densityMapVec = AMP::LinearAlgebra::SimpleVector::create(
+    AMP::LinearAlgebra::Vector::shared_ptr densityMapVec = AMP::LinearAlgebra::SimpleVector<double>::create(
         subchannelToPointMapParams->x.size(), subchannelDensityToPointMap.getOutputVariable() );
-    AMP::LinearAlgebra::Vector::shared_ptr temperatureMapVec = AMP::LinearAlgebra::SimpleVector::create(
+    AMP::LinearAlgebra::Vector::shared_ptr temperatureMapVec = AMP::LinearAlgebra::SimpleVector<double>::create(
         subchannelToPointMapParams->x.size(), subchannelTemperatureToPointMap.getOutputVariable() );
     subchannelDensityToPointMap.apply( nullVec, flowSolVec, densityMapVec );
     subchannelTemperatureToPointMap.apply( nullVec, flowSolVec, temperatureMapVec );

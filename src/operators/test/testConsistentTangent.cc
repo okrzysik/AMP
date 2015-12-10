@@ -92,7 +92,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
   AMP::pout<<"sol-Norm-2 = "<<solNorm<<std::endl;
 
   nonlinOperator->apply(solVec, resVecNonlin);
-  linOperator->reset(nonlinOperator->getJacobianParameters(solVec));
+  linOperator->reset(nonlinOperator->getParameters("Jacobian", solVec));
   linOperator->apply( solVec, resVecLin);
   resDiffVec->subtract(resVecNonlin, resVecLin);
 
@@ -127,7 +127,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
 
   nonlinOperator->apply( solVec, resVecNonlin);
   if(callLinReset) {
-    linOperator->reset(nonlinOperator->getJacobianParameters(solVec));
+    linOperator->reset(nonlinOperator->getParameters("Jacobian", solVec));
   }
   linOperator->apply(solVec, resVecLin );
   resDiffVec->subtract(resVecNonlin, resVecLin);
@@ -157,7 +157,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName, int callLinReset) {
 
   nonlinOperator->apply( solVec, resVecNonlin);
   if(callLinReset) {
-    linOperator->reset(nonlinOperator->getJacobianParameters(solVec));
+    linOperator->reset(nonlinOperator->getParameters("Jacobian", solVec));
   }
   linOperator->apply(solVec, resVecLin);
 

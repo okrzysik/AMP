@@ -191,7 +191,7 @@ void thermalOxygenDiffusionTest(AMP::UnitTest *ut, std::string exeName)
 
   ut->passes(msgPrefix);
 
-  AMP::shared_ptr<AMP::Operator::OperatorParameters> resetParams = nonlinearThermalOxygenOperator->getJacobianParameters(solVec);
+  AMP::shared_ptr<AMP::Operator::OperatorParameters> resetParams = nonlinearThermalOxygenOperator->getParameters("Jacobian", solVec);
 
   ut->passes(exeName + " : getJacobianParameters");
 

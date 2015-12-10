@@ -84,7 +84,7 @@ void IDATimeIntegrator::initialize( AMP::shared_ptr< TimeIntegratorParameters> p
     if(d_createLinearOperatorInternally) {
         if(d_bLinearRhsOperator && d_bLinearMassOperator) {
             AMP::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> linearTimeOperatorParams = 
-                AMP::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperatorParameters>(idaTimeOp->getJacobianParameters(d_solution));
+               AMP::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperatorParameters>(idaTimeOp->getParameters("Jacobian", d_solution));
             AMP::shared_ptr<AMP::Database> timeOperator_db = linearTimeOperatorParams->d_db;
             timeOperator_db->putDouble("CurrentDt", d_current_dt);
             timeOperator_db->putDouble("CurrentTime", d_current_time);
@@ -422,7 +422,7 @@ int IDATimeIntegrator::IDAPrecSetup(realtype tt, N_Vector yy, N_Vector /* yp */,
         AMP::LinearAlgebra::Vector * pyy = static_cast<AMP::LinearAlgebra::ManagedSundialsVector*>(yy->content);
         AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_yy (pyy, d);
         AMP::shared_ptr<AMP::Operator::OperatorParameters> jacParams = 
-         ((IDATimeIntegrator*)user_data)->getIDATimeOperator()->getJacobianParameters(amp_yy);
+           ((IDATimeIntegrator*)user_data)->getIDATimeOperator()->getParameters("Jacobian", amp_yy);
         AMP::shared_ptr<AMP::Database> &db = jacParams->d_db;
         db->putDouble("ScalingFactor", cj);
         db->putDouble("CurrentTime", tt);

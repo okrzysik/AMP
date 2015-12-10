@@ -327,10 +327,10 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
 //-------------------------------------
 
   size_t gapVecCladSize = map1ToHighDim->getNumZlocations(); 
-  AMP::LinearAlgebra::Vector::shared_ptr gapVecClad = AMP::LinearAlgebra::SimpleVector::create( gapVecCladSize, gapVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr gapVecClad = AMP::LinearAlgebra::SimpleVector<double>::create( gapVecCladSize, gapVariable );
 
   size_t gapVecPelletSize = map2ToHighDim->getNumZlocations(); 
-  AMP::LinearAlgebra::Vector::shared_ptr gapVecPellet = AMP::LinearAlgebra::SimpleVector::create( gapVecPelletSize, gapVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr gapVecPellet = AMP::LinearAlgebra::SimpleVector<double>::create( gapVecPelletSize, gapVariable );
 
   int cnt=0;
   AMP::LinearAlgebra::Vector::shared_ptr vecLag1           = meshAdapter1->createVector( outputVariable1 );

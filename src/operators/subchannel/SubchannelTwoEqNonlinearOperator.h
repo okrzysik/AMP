@@ -47,9 +47,6 @@ public:
         d_cladTemperature = frozenVec;
     }
       
-    //! Gets parameters from nonlinear operator for use in linear operator
-    AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
-
     //! Get the element physics model
     AMP::shared_ptr<SubchannelPhysicsModel> getSubchannelPhysicsModel() { return d_subchannelPhysicsModel; }
 
@@ -63,6 +60,9 @@ public:
     AMP::shared_ptr<SubchannelOperatorParameters> getParams() { return d_params; }
 
 protected:
+
+    //! Gets parameters from nonlinear operator for use in linear operator
+    AMP::shared_ptr<OperatorParameters> getJacobianParameters(AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
 
     AMP::shared_ptr<SubchannelOperatorParameters> d_params;
 

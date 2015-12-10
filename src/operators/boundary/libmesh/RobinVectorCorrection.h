@@ -63,13 +63,13 @@ namespace Operator {
         */
       void reset(const AMP::shared_ptr<OperatorParameters>& params);
 
+    protected :
+
       /**
         This function returns a parameter object that can be used to reset the corresponding
         RobinMatrixCorrection operator.
         */
-      AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
-
-    protected :
+      AMP::shared_ptr<OperatorParameters> getJacobianParameters(AMP::LinearAlgebra::Vector::const_shared_ptr ) override;
 
       // input variable for the unkown rhs
       AMP::LinearAlgebra::Variable::shared_ptr d_srcVariable;

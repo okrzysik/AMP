@@ -45,9 +45,6 @@ namespace Operator {
           d_frozenVec = frozenVec;
       }
       
-      //! Gets parameters from nonlinear operator for use in linear operator
-      AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& );
-
       //! Get the element physics model
       AMP::shared_ptr<SubchannelPhysicsModel> getSubchannelPhysicsModel() { return d_subchannelPhysicsModel; }
     
@@ -78,6 +75,9 @@ namespace Operator {
       int getSubchannelIndex( double x, double y ); // function to give unique index for each subchannel
 
     protected:
+
+      //! Gets parameters from nonlinear operator for use in linear operator
+      AMP::shared_ptr<OperatorParameters> getJacobianParameters(AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
 
       AMP::shared_ptr<SubchannelOperatorParameters> d_params;
 

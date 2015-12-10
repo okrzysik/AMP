@@ -141,7 +141,7 @@ AMP::LinearAlgebra::Vector::shared_ptr  createVector(
             comm.barrier();
             return vector;
         #else
-            AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::SimpleVector::create( variable, DOFs, comm_list );
+            AMP::LinearAlgebra::Vector::shared_ptr vector = AMP::LinearAlgebra::SimpleVector<double>::create( variable, DOFs, comm_list );
             return vector;
         #endif
     } 

@@ -220,7 +220,7 @@ void nonlinearTest(AMP::UnitTest *ut, std::string exeName)
           diffSolVec->setRandomValues();
           adjust(diffSolVec, shift, scale);
           AMP::shared_ptr<AMP::Operator::OperatorParameters> jacParams =
-                  diffOp->getJacobianParameters(diffSolVec);
+                  diffOp->getParameters("Jacobian", diffSolVec);
           linOp->reset(AMP::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperatorParameters>(jacParams));
           ut->passes(exeName+": getJacobianParameters");
           std::cout.flush();

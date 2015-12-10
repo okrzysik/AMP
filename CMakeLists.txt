@@ -54,7 +54,7 @@ MESSAGE("TPL Location : ${TPL_DIRECTORY}")
 MESSAGE("COMPILE_MODE : ${CMAKE_BUILD_TYPE} " )
 
 
-# Call PackageList to get the pacakages, configure the directories and compilers, etc
+# Call PackageList to get the packages, configure the directories and compilers, etc
 INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/PackagesList.cmake" )
 
 
@@ -71,6 +71,8 @@ INCLUDE( CTest )
 # Configure external libraries
 IF ( NOT ONLY_BUILD_DOCS )
     CONFIGURE_MPI()     # MPI must be before other libraries
+    CONFIGURE_EIGEN_LIBRARIES()
+    CONFIGURE_ARMADILLO_LIBRARIES()
     CONFIGURE_TRILINOS_LIBRARIES()
     CONFIGURE_SUNDIALS_LIBRARIES()
     CONFIGURE_PETSC_LIBRARIES()

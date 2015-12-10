@@ -242,7 +242,7 @@ void thermalContactTest(AMP::UnitTest *ut, std::string exeName )
   //  AMP_INSIST(dirichletBoundaryOperator.get()!=NULL);
   dirichletBoundaryOperator->apply(nullVector, nullVector, scratchVector, 1.0, 0.0);
   
-  pelletLinearMechanicsOperator->reset(pelletNonlinearMechanicsOperator->getJacobianParameters(mechanicsSolution));
+  pelletLinearMechanicsOperator->reset(pelletNonlinearMechanicsOperator->getParameters("Jacobian", mechanicsSolution));
   //-------------------------------------------------------------------------------------------
   // solve for the time derivative for thermal at the initial time
 

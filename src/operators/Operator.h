@@ -68,16 +68,33 @@ public :
     /**
      * This function returns a OperatorParameters object
      * constructed by the operator which contains parameters from
-     * which the Jacobian or portions of the Jacobian required by
-     * solvers and preconditioners can be constructed. Returning
-     * a parameter object instead of the Jacobian itself is meant 
-     * to give users more flexibility.
+     * which new operators can be created. Returning
+     * a parameter object instead of an Operator itself is meant 
+     * to give users more flexibility. Examples of how this functionality
+     * might be used would be the construction of Jacobian, frozen Jacobian,
+     * preconditioner approximations to the Jacobian, adjoint operators etc
+     * \param type: std:string specifying type of return operator parameters
+     * being requested. Currently the valid option is Jacobian
+     * \param u: const pointer to current solution vector 
+     * \param params: pointer to additional parameters that might be required
+     * to construct the return parameters
      */
     virtual AMP::shared_ptr<OperatorParameters> 
-      getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& ) {
-         //Implemented in derived class.
-         AMP::shared_ptr<OperatorParameters> emptyPointer;
-         return emptyPointer;
+       getParameters(const std::string &type,
+                     AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                     AMP::shared_ptr<OperatorParameters> params = NULL ) {
+
+       NULL_USE(params);
+
+       AMP::shared_ptr<OperatorParameters> rPointer;
+
+       if(type=="Jacobian") {
+          rPointer = getJacobianParameters(u);
+       } else {
+          AMP_ERROR("Unknown OperatorParameters type specified");
+          // should be implemented in derived class
+       }
+       return rPointer;
       }
 
     /**
@@ -120,6 +137,21 @@ public :
 protected :
 
     void getFromInput(const AMP::shared_ptr<AMP::Database>& db);
+
+    /**
+     * This function returns a OperatorParameters object
+     * constructed by the operator which contains parameters from
+     * which new Jacobian operators can be created. Returning
+     * a parameter object instead of an Operator itself is meant 
+     * to give users more flexibility.
+     */
+    virtual AMP::shared_ptr<OperatorParameters> 
+       getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u ) {
+       NULL_USE(u);
+         //Implemented in derived class.
+         AMP::shared_ptr<OperatorParameters> emptyPointer;
+         return emptyPointer;
+      }
 
     int d_iDebugPrintInfoLevel;
 

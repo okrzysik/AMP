@@ -189,7 +189,7 @@ void thermoMechanicsTest(AMP::UnitTest *ut, std::string exeName)
   ut->passes(msgPrefix);
 
   AMP::shared_ptr<AMP::Operator::OperatorParameters> resetParams = 
-    nonlinearThermoMechanicsOperator->getJacobianParameters(solVec);
+    nonlinearThermoMechanicsOperator->getParameters("Jacobian", solVec);
 
   ut->passes(exeName + " : getJacobianParameters");
 

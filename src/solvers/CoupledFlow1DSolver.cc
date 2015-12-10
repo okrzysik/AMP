@@ -48,8 +48,8 @@ CoupledFlow1DSolver::CoupledFlow1DSolver(AMP::shared_ptr<SolverStrategyParameter
 	int d_numpoints = (AMP::dynamic_pointer_cast<AMP::Operator::Map1Dto3D> (d_flowInternal1to3) )->getNumZlocations();
         d_SimpleVariable.reset(new AMP::LinearAlgebra::Variable(flowInpVar));
 
-	d_flowInput = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, d_SimpleVariable ); 
-	d_flowOutput = AMP::LinearAlgebra::SimpleVector::create( d_numpoints, d_SimpleVariable ); 
+	d_flowInput = AMP::LinearAlgebra::SimpleVector<double>::create( d_numpoints, d_SimpleVariable ); 
+	d_flowOutput = AMP::LinearAlgebra::SimpleVector<double>::create( d_numpoints, d_SimpleVariable ); 
 }
 
 CoupledFlow1DSolver::~CoupledFlow1DSolver()

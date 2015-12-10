@@ -44,12 +44,6 @@ public :
       */
     void reset(const AMP::shared_ptr<OperatorParameters>&);
 
-    /**
-      This is used to compute the information required to reset the corresponding Linear (Jacobian) operator
-      */
-    AMP::shared_ptr<OperatorParameters>
-      getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>&);
-
     void setAuxVariable(const AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable>& var) {
       d_auxVariables = var;
     }
@@ -76,6 +70,13 @@ public :
      */
 
 protected :
+
+    /**
+      This is used to compute the information required to reset the corresponding Linear (Jacobian) operator
+      */
+    AMP::shared_ptr<OperatorParameters>
+      getJacobianParameters(AMP::LinearAlgebra::Vector::const_shared_ptr u) override;
+
 
     /**
       This function is called at the beginning of the FE assembly

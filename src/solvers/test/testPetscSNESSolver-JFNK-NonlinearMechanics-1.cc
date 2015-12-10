@@ -96,7 +96,7 @@ void myTest(AMP::UnitTest *ut, std::string exeName)
   nonlinBvpOperator->modifyInitialSolutionVector(mechNlSolVec); 
 
   nonlinBvpOperator->apply(mechNlSolVec, mechNlResVec);
-  linBvpOperator->reset(nonlinBvpOperator->getJacobianParameters(mechNlSolVec));
+  linBvpOperator->reset(nonlinBvpOperator->getParameters("Jacobian", mechNlSolVec));
 
   //Point forces
   mechNlRhsVec->setToScalar(0.0);

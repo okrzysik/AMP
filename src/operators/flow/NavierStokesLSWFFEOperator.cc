@@ -188,7 +188,9 @@ namespace AMP {
     }
 
     AMP::shared_ptr<OperatorParameters> NavierStokesLSWFFEOperator ::
-      getJacobianParameters(const AMP::shared_ptr<AMP::LinearAlgebra::Vector>& u) {
+      getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u_in ) {
+
+        auto u = std::const_pointer_cast<AMP::LinearAlgebra::Vector>(u_in);
 
         // set up a database for the linear operator params
         AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));

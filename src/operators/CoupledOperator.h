@@ -34,10 +34,6 @@ public :
 			  AMP::LinearAlgebra::Vector::const_shared_ptr u, 
 			  AMP::LinearAlgebra::Vector::shared_ptr r) override;
 
-    AMP::shared_ptr<OperatorParameters> getJacobianParameters(const AMP::LinearAlgebra::Vector::shared_ptr & u)
-    {
-        return (d_Operators[3]->getJacobianParameters(u));
-    }
 
     AMP::shared_ptr<AMP::Operator::Operator> getMapOperator() {
         return d_Operators[2];
@@ -74,9 +70,17 @@ public :
         d_frozenGaussPointVector = u;
     }
 
+    AMP::shared_ptr<OperatorParameters> getParameters(const std::string &type,
+                     AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                     AMP::shared_ptr<OperatorParameters> params = NULL ) override
+    {
+       return (d_Operators[3]->getParameters(type, u, params));
+    }
+
     virtual ~CoupledOperator() { }
 
 protected:
+
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenGaussPointVector;
 
 };
