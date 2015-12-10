@@ -267,7 +267,7 @@ public:
     /** \brief Return a parameters description of this vector
       * \return Parameters
       */
-    AMP::shared_ptr<ParameterBase> getParameters();
+    virtual AMP::shared_ptr<ParameterBase> getParameters();
 
     /** \brief  Selects a portion of this vector and creates a view.
       * \param[in]  criterion  The method for deciding inclusion in the view

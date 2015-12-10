@@ -5,15 +5,6 @@ namespace LinearAlgebra {
 
 template <typename T>
 inline
-AMP::shared_ptr<ParameterBase> SimpleVector<T>::getParameters ()
-{
-    AMP_ERROR( "Not implemented" );
-    return AMP::shared_ptr<ParameterBase> ();
-}
-
-
-template <typename T>
-inline
 Vector::shared_ptr SimpleVector<T>::cloneVector(const Variable::shared_ptr name) const
 {
     return create ( name, d_DOFManager, getCommunicationList() );
