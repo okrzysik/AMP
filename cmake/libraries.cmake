@@ -662,6 +662,20 @@ MACRO ( CONFIGURE_PETSC_LIBRARIES )
     ENDIF()
 ENDMACRO ()
 
+# Macro to find and configure the Eigen package
+MACRO ( CONFIGURE_EIGEN_LIBRARIES )
+    # Determine if we want to use Eigen
+    CHECK_ENABLE_FLAG( USE_EXT_EIGEN 0 )
+    IF ( USE_EXT_EIGEN )
+        IF ( EIGEN3_INCLUDE_DIR )
+        INCLUDE_DIRECTORIES ( ${EIGEN3_INCLUDE_DIR} )
+        MESSAGE( "Using Eigen" )
+        ELSE()
+            MESSAGE( FATAL_ERROR "Default search for eigen is not yet supported.  Use -D EIGEN3_INCLUDE_DIR" )
+        ENDIF()
+    ENDIF()
+ENDMACRO ()
+
 
 # Macro to configure system-specific libraries and flags
 MACRO ( CONFIGURE_SYSTEM )
