@@ -99,7 +99,7 @@ int main( int argc, char *argv[] )
         AMP::Array<double> M_view;
         double t1 = AMP::Utilities::time();
         for (size_t i=0; i<100000; i++) {
-            M_view.viewRaw( {M1.size(0),M1.size(1)}, M1.get() );
+            M_view.viewRaw( {M1.size(0),M1.size(1)}, M1.data() );
             NULL_USE(M_view);
         }
         double t2 = AMP::Utilities::time();
