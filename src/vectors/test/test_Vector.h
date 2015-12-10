@@ -84,7 +84,7 @@ public:
 
 
 
-template <int I, bool GLOBAL>
+template <int D, int I, bool GLOBAL>
 class  ArrayVectorFactory
 {
 public:
@@ -97,9 +97,9 @@ public:
     static AMP::LinearAlgebra::Vector::shared_ptr getVector() {
         AMP::LinearAlgebra::Vector::shared_ptr  vec;
         if ( GLOBAL )
-            vec = AMP::LinearAlgebra::ArrayVector<double>::create ( I, getVariable(), AMP_MPI(AMP_COMM_WORLD) );
+            vec = AMP::LinearAlgebra::ArrayVector<double>::create ( std::vector<size_t>(D,I), getVariable(), AMP_MPI(AMP_COMM_WORLD) );
         else
-            vec = AMP::LinearAlgebra::ArrayVector<double>::create ( I, getVariable() );
+            vec = AMP::LinearAlgebra::ArrayVector<double>::create ( std::vector<size_t>(D,I), getVariable() );
         return vec;
     }
 

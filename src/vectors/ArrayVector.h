@@ -27,7 +27,7 @@ namespace LinearAlgebra {
         * \param    localSize  The number of elements in the vector on this processor
         * \param    var The variable associated with the new vector
         */
-      static Vector::shared_ptr  create ( size_t localSize, Variable::shared_ptr var );
+      static Vector::shared_ptr  create ( const std::vector<size_t>& localSize, Variable::shared_ptr var );
 
       /** \brief    Create a ArrayVector
         * \details  This is the factory method for the ArrayVector.  It returns the shared pointer
@@ -36,7 +36,7 @@ namespace LinearAlgebra {
         * \param    var The variable associated with the new vector
         * \param    comm The variable associated with the new vector
         */
-      static Vector::shared_ptr  create ( size_t localSize, Variable::shared_ptr var, AMP_MPI comm );
+      static Vector::shared_ptr  create (const std::vector<size_t>& localSize, Variable::shared_ptr var, AMP_MPI comm );
 
       /** \brief    Create a ArrayVector
         * \details  This is the factory method for the ArrayVector.  It returns the shared pointer

@@ -51,8 +51,8 @@ int main ( int argc , char **argv )
     globalComm.barrier();
 
     AMP::pout << "Testing ArrayVector" << std::endl;
-    testBasicVector<ArrayVectorFactory<15,false> >( &ut );
-    testBasicVector<ArrayVectorFactory<45,true> >( &ut );
+    testBasicVector<ArrayVectorFactory<4,15,false> >( &ut );
+    testBasicVector<ArrayVectorFactory<4,45,true> >( &ut );
     AMP::pout << std::endl;
     globalComm.barrier();
 
