@@ -87,6 +87,7 @@ void testBasicVector( AMP::UnitTest *ut )
     VectorIteratorLengthTest<FACTORY>( ut );
     Bug_728<FACTORY>( ut );
 //    VectorIteratorTests<FACTORY>( ut );
+    TestMultivectorDuplicate<FACTORY>( ut );
 }
 
 

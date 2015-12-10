@@ -20,11 +20,11 @@ class ManagedVectorParameters : public VectorParameters
 {
 protected:
     //!  Copy constructor is protected to prevent unintended copies
-    ManagedVectorParameters ( const ManagedVectorParameters & );
+    ManagedVectorParameters( const ManagedVectorParameters & );
 
 public:
     //! Constructor
-    ManagedVectorParameters ();
+    ManagedVectorParameters();
 
     //! The VectorEngine to use with the managed vector
     VectorEngine::shared_ptr    d_Engine;
@@ -52,15 +52,15 @@ public:
     /** \brief Construct a ManagedVector from a set of parameters
       * \param[in] params  The description of the ManagedVector
       */
-    ManagedVector ( VectorParameters::shared_ptr params );
+    ManagedVector( VectorParameters::shared_ptr params );
 
     /** \brief Construct a view of an AMP vector
       * \param[in] alias  Vector to view
       */
-    ManagedVector ( const Vector::shared_ptr alias );
+    ManagedVector( const Vector::shared_ptr alias );
 
     //! Destructor
-    virtual ~ManagedVector ();
+    virtual ~ManagedVector();
 
     /** \brief  If a vector has multiple views to multiple external packages
       * associated with it, this will return the barest version of the vector
@@ -77,77 +77,78 @@ public:
     */
     VectorEngine::shared_ptr  getVectorEngine();
     VectorEngine::const_shared_ptr  getVectorEngine() const;
-    std::string type () const;
-    virtual Vector::const_iterator begin() const;
-    virtual Vector::const_iterator end() const;
-    virtual Vector::iterator begin();
-    virtual Vector::iterator end();
+    std::string type() const;
+    virtual Vector::const_iterator begin() const override;
+    virtual Vector::const_iterator end() const override;
+    virtual Vector::iterator begin() override;
+    virtual Vector::iterator end() override;
 
-    virtual Vector::shared_ptr  subsetVectorForVariable ( const Variable::shared_ptr &name );
-    virtual Vector::const_shared_ptr  constSubsetVectorForVariable ( const Variable::shared_ptr &name ) const;
-    virtual size_t  numberOfDataBlocks () const;
-    virtual size_t  sizeOfDataBlock ( size_t i ) const;
-    virtual void copyVector( Vector::const_shared_ptr src_vec  );
-    virtual void swapVectors ( Vector &other );
-    virtual void aliasVector ( Vector &other );
+    virtual Vector::shared_ptr  subsetVectorForVariable( const Variable::shared_ptr &name ) override;
+    virtual Vector::const_shared_ptr  constSubsetVectorForVariable( const Variable::shared_ptr &name ) const override;
+    virtual size_t  numberOfDataBlocks() const override;
+    virtual size_t  sizeOfDataBlock( size_t i ) const override;
+    virtual void copyVector( Vector::const_shared_ptr src_vec  ) override;
+    virtual void swapVectors( Vector &other ) override;
+    virtual void aliasVector( Vector &other ) override;
 
-    virtual bool isAnAliasOf ( Vector &rhs );
-    virtual bool isAnAliasOf ( Vector::shared_ptr rhs );
+    virtual bool isAnAliasOf( Vector &rhs );
+    virtual bool isAnAliasOf( Vector::shared_ptr rhs );
     using Vector::cloneVector;
-    virtual AMP::shared_ptr<Vector>  cloneVector ( const Variable::shared_ptr name ) const;
-    virtual AMP::shared_ptr<ParameterBase>  getParameters () ;
+    virtual AMP::shared_ptr<Vector>  cloneVector( const Variable::shared_ptr name ) const override;
+    virtual AMP::shared_ptr<ParameterBase>  getParameters() override;
 
-    virtual AMP::shared_ptr<ManagedVectorParameters>  getManagedVectorParameters () ;
+    virtual AMP::shared_ptr<ManagedVectorParameters>  getManagedVectorParameters();
 
-    virtual size_t getLocalSize() const;
-    virtual size_t getGlobalSize() const;
+    virtual size_t getLocalSize() const override;
+    virtual size_t getGlobalSize() const override;
 
-    virtual void getValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
-    virtual void getLocalValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
-    virtual void getGhostValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
-    virtual void setValuesByGlobalID(int i, size_t * , const double *val);
-    virtual void setLocalValuesByGlobalID(int i, size_t * , const double *val);
-    virtual void setGhostValuesByGlobalID(int i, size_t * , const double *val);
+    virtual void getValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
+    virtual void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
+    virtual void getGhostValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
+    virtual void setValuesByGlobalID(int i, size_t *, const double *val) override;
+    virtual void setLocalValuesByGlobalID(int i, size_t *, const double *val) override;
+    virtual void setGhostValuesByGlobalID(int i, size_t *, const double *val) override;
 
-    virtual void setToScalar(double alpha);
-    virtual void scale(double alpha, const VectorOperations &x);
-    virtual void scale(double alpha);
-    virtual void add(const VectorOperations &x, const VectorOperations &y);
-    virtual void subtract(const VectorOperations &x, const VectorOperations &y);
-    virtual void multiply(const VectorOperations &x, const VectorOperations &y);
-    virtual void divide(const VectorOperations &x, const VectorOperations &y);
-    virtual void reciprocal(const VectorOperations &x);
+    virtual void setToScalar(double alpha) override;
+    virtual void scale(double alpha, const VectorOperations &x) override;
+    virtual void scale(double alpha) override;
+    virtual void add(const VectorOperations &x, const VectorOperations &y) override;
+    virtual void subtract(const VectorOperations &x, const VectorOperations &y) override;
+    virtual void multiply(const VectorOperations &x, const VectorOperations &y) override;
+    virtual void divide(const VectorOperations &x, const VectorOperations &y) override;
+    virtual void reciprocal(const VectorOperations &x) override;
     virtual void linearSum(double alpha, const VectorOperations &x,
-      double beta, const VectorOperations &y);
-    virtual void axpy(double alpha, const VectorOperations &x, const VectorOperations &y);
-    virtual void axpby(double alpha, double beta, const VectorOperations &x);
-    virtual void abs(const VectorOperations &x);
-    virtual double min(void) const;
-    virtual double max(void) const;
-    virtual void setRandomValues(void);
-    virtual void setValuesByLocalID(int i, size_t * , const double *val);
-    virtual void addValuesByLocalID(int i, size_t * , const double *val);
-    virtual void addLocalValuesByGlobalID(int i, size_t * , const double *val);
-    virtual void putRawData ( const double *in );
-    virtual void copyOutRawData ( double *in ) const;
+      double beta, const VectorOperations &y) override;
+    virtual void axpy(double alpha, const VectorOperations &x, const VectorOperations &y) override;
+    virtual void axpby(double alpha, double beta, const VectorOperations &x) override;
+    virtual void abs(const VectorOperations &x) override;
+    virtual double min(void) const override;
+    virtual double max(void) const override;
+    virtual void setRandomValues(void) override;
+    virtual void setValuesByLocalID(int i, size_t *, const double *val) override;
+    virtual void addValuesByLocalID(int i, size_t *, const double *val) override;
+    virtual void addLocalValuesByGlobalID(int i, size_t *, const double *val) override;
+    virtual void putRawData( const double *in ) override;
+    virtual void copyOutRawData( double *in ) const override;
     double L1Norm(void) const;
     double L2Norm(void) const;
     double maxNorm(void) const;
     using Vector::dot;
     double dot(const VectorOperations &x) const;
-    virtual UpdateState  getUpdateStatus() const;
-    virtual void  setUpdateStatus( UpdateState state );
+    virtual UpdateState  getUpdateStatus() const override;
+    virtual void  setUpdateStatus( UpdateState state ) override;
+    virtual uint64_t getDataID() const override { return reinterpret_cast<uint64_t>(getRawDataBlockAsVoid(0)); }
 
 protected:
 
-    virtual Vector::shared_ptr selectInto ( const VectorSelector & );
-    virtual Vector::const_shared_ptr selectInto ( const VectorSelector & ) const;
+    virtual Vector::shared_ptr selectInto( const VectorSelector & );
+    virtual Vector::const_shared_ptr selectInto( const VectorSelector & ) const;
 
 
     /**\brief  A method that is called whenever data changes.  This fires
          triggers that may have been registered with DataChangeFirer
          */
-    virtual void dataChanged ();
+    virtual void dataChanged();
 
     /**\brief  The buffer used to store data
      */
@@ -161,15 +162,15 @@ protected:
 
     /**\brief  Function that returns a pointer to a managed vector
      */
-    virtual ManagedVector *getNewRawPtr () const = 0;
-    virtual void *getRawDataBlockAsVoid ( size_t i );
-    virtual const void *getRawDataBlockAsVoid ( size_t i ) const;
+    virtual ManagedVector *getNewRawPtr() const = 0;
+    virtual void *getRawDataBlockAsVoid( size_t i );
+    virtual const void *getRawDataBlockAsVoid( size_t i ) const;
 
-    virtual void addCommunicationListToParameters ( CommunicationList::shared_ptr comm );
+    virtual void addCommunicationListToParameters( CommunicationList::shared_ptr comm );
 
 private:
 
-    ManagedVector ();
+    ManagedVector();
 
 };
 

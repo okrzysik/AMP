@@ -73,11 +73,6 @@ void NullVector::scale(double )
 }
 
 
-void NullVector::addScalar(const VectorOperations &, double ) 
-{
-}
-
-
 void NullVector::add(const VectorOperations &, const VectorOperations &) 
 {
 }

@@ -47,7 +47,7 @@ public:
       * \param[in] v            The vector to wrap
       * \param[in] deleteable   Do we want ~NativePetscVector() to call VecDestroy() on v
       */
-    NativePetscVectorParameters ( Vec v, bool deleteable );
+    NativePetscVectorParameters( Vec v, bool deleteable );
 };
 
 
@@ -63,115 +63,116 @@ public:
   * \see PetscVector
   * \see ManagedPetscVector
   */
-class NativePetscVector : public NativeVector , 
-                          public PetscVector , 
+class NativePetscVector : public NativeVector, 
+                          public PetscVector, 
                           public VectorEngine
 {
 public:
-      /** \brief Conveninece typedef
-        */
-      typedef  NativeVector::parameters_ptr           parameters_ptr;
+    //! Conveninece typedef
+    typedef  NativeVector::parameters_ptr           parameters_ptr;
 
-      /** \brief Conveninece typedef
-        */
-      typedef  NativeVectorParameters                 parameters;
+    //! Conveninece typedef
+    typedef  NativeVectorParameters                 parameters;
 
 
-      /** \brief Construct a wrapper for a PETSc Vec from a set of parameters
-        * \param[in] params The parameters describing the Vec
-        */
-      NativePetscVector ( VectorParameters::shared_ptr params );
-      /** \brief Destructor
-        */
-      virtual ~NativePetscVector ();
+    /** \brief Construct a wrapper for a PETSc Vec from a set of parameters
+      * \param[in] params The parameters describing the Vec
+      */
+    NativePetscVector( VectorParameters::shared_ptr params );
 
-      virtual std::string type() const { return "Native PETSc Vector"; }
+    //! Destructor
+    virtual ~NativePetscVector();
 
-      virtual Vector::shared_ptr  getManagedVectorCopy ( AMP_MPI comm );
- 
-      virtual Vector::shared_ptr  getManagedVectorDuplicate ( AMP_MPI  comm );
+    virtual std::string type() const override { return "Native PETSc Vector"; }
 
-      using Vector::cloneVector;
-      virtual Vector::shared_ptr cloneVector(const Variable::shared_ptr ) const;
-      virtual void copyVector( Vector::const_shared_ptr vec );
+    virtual Vector::shared_ptr  getManagedVectorCopy( AMP_MPI comm ) override;
 
-      virtual void swapVectors(Vector &other);
-      virtual void aliasVector(Vector & );
+    virtual Vector::shared_ptr  getManagedVectorDuplicate( AMP_MPI  comm ) override;
 
-      virtual   size_t      numberOfDataBlocks () const;
-      virtual   size_t      sizeOfDataBlock ( size_t i ) const;
+    using Vector::cloneVector;
+    virtual Vector::shared_ptr cloneVector(const Variable::shared_ptr ) const override;
+    virtual void copyVector( Vector::const_shared_ptr vec ) override;
+
+    virtual void swapVectors(Vector &other) override;
+    virtual void aliasVector(Vector & ) override;
+
+    virtual   size_t      numberOfDataBlocks() const override;
+    virtual   size_t      sizeOfDataBlock( size_t i ) const override;
 
 
-      virtual void setToScalar(double alpha);
-      virtual void scale(double alpha, const VectorOperations &x);
-      virtual void scale(double alpha);
-      virtual void add(const VectorOperations &x, const VectorOperations &y);
-      virtual void subtract(const VectorOperations &x, const VectorOperations &y);
-      virtual void multiply( const VectorOperations &x, const VectorOperations &y);
-      virtual void divide( const VectorOperations &x, const VectorOperations &y);
-      virtual void reciprocal(const VectorOperations &x);
-      virtual void linearSum(double alpha, const VectorOperations &x,
-              double beta, const VectorOperations &y);
-      virtual void axpy(double alpha, const VectorOperations &x, const VectorOperations &y);
-      virtual void axpby(double alpha, double beta, const VectorOperations &x);
-      virtual void abs(const VectorOperations &x);
-      virtual double min(void) const;
-      virtual double max(void) const;
-      virtual void setRandomValues(void);
+    virtual void setToScalar(double alpha) override;
+    virtual void scale(double alpha, const VectorOperations &x) override;
+    virtual void scale(double alpha) override;
+    virtual void add(const VectorOperations &x, const VectorOperations &y) override;
+    virtual void subtract(const VectorOperations &x, const VectorOperations &y) override;
+    virtual void multiply( const VectorOperations &x, const VectorOperations &y) override;
+    virtual void divide( const VectorOperations &x, const VectorOperations &y) override;
+    virtual void reciprocal(const VectorOperations &x) override;
+    virtual void linearSum(double alpha, const VectorOperations &x,
+          double beta, const VectorOperations &y) override;
+    virtual void axpy(double alpha, const VectorOperations &x, const VectorOperations &y) override;
+    virtual void axpby(double alpha, double beta, const VectorOperations &x) override;
+    virtual void abs(const VectorOperations &x) override;
+    virtual double min(void) const override;
+    virtual double max(void) const override;
+    virtual void setRandomValues(void) override;
 
-      virtual double L1Norm(void) const;
-      virtual double L2Norm(void) const;
-      virtual double maxNorm(void) const;
-      using Vector::dot;
-      virtual double dot(const VectorOperations &x) const;
-    
-      virtual double localL1Norm(void) const;
-      virtual double localL2Norm(void) const;
-      virtual double localMaxNorm(void) const;
+    virtual double L1Norm(void) const override;
+    virtual double L2Norm(void) const override;
+    virtual double maxNorm(void) const override;
+    using Vector::dot;
+    virtual double dot(const VectorOperations &x) const override;
 
-      virtual void setValuesByLocalID(int , size_t * , const double *);
-      virtual void setLocalValuesByGlobalID(int , size_t * , const double *);
-      virtual void addValuesByLocalID(int , size_t * , const double *);
-      virtual void addLocalValuesByGlobalID(int , size_t * , const double *);
+    virtual double localL1Norm(void) const override;
+    virtual double localL2Norm(void) const override;
+    virtual double localMaxNorm(void) const override;
 
-      virtual void getLocalValuesByGlobalID ( int numVals , size_t *ndx , double *vals ) const;
-      virtual void getValuesByLocalID ( int numVals , size_t *ndx , double *vals ) const;
+    virtual void setValuesByLocalID(int, size_t *, const double *) override;
+    virtual void setLocalValuesByGlobalID(int, size_t *, const double *) override;
+    virtual void addValuesByLocalID(int, size_t *, const double *) override;
+    virtual void addLocalValuesByGlobalID(int, size_t *, const double *) override;
 
-      virtual void assemble();
+    virtual void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
+    virtual void getValuesByLocalID( int numVals, size_t *ndx, double *vals ) const override;
 
-      virtual size_t getLocalSize() const;
-      virtual size_t getGlobalSize() const;
+    virtual void assemble() override;
 
-      virtual void putRawData ( const double * );
+    virtual size_t getLocalSize() const override;
+    virtual size_t getGlobalSize() const override;
 
-      virtual   BufferPtr   getNewBuffer ();
-      virtual   bool        sameEngine ( VectorEngine & ) const;
-      virtual   VectorEngine::shared_ptr  cloneEngine ( BufferPtr p ) const;
+    virtual void putRawData( const double * ) override;
 
-      virtual   void        swapEngines ( VectorEngine::shared_ptr );
+    virtual   BufferPtr   getNewBuffer() override;
+    virtual   bool        sameEngine( VectorEngine & ) const override;
+    virtual   VectorEngine::shared_ptr  cloneEngine( BufferPtr p ) const override;
 
-      virtual   void       *getDataBlock ( size_t i );
-      virtual   const void *getDataBlock ( size_t i ) const;
+    virtual   void        swapEngines( VectorEngine::shared_ptr ) override;
 
-      virtual   AMP_MPI   getComm() const;
+    virtual   void       *getDataBlock( size_t i ) override;
+    virtual   const void *getDataBlock( size_t i ) const override;
 
-      virtual void copyOutRawData ( double *out ) const;
+    virtual   AMP_MPI   getComm() const override;
 
-      virtual AMP::shared_ptr<ParameterBase> getParameters ();
+    virtual void copyOutRawData( double *out ) const override;
 
-      // We can always delete a NativePetscVector
-      virtual bool petscHoldsView() const { return false; }
+    virtual AMP::shared_ptr<ParameterBase> getParameters() override;
+
+    // We can always delete a NativePetscVector
+    virtual bool petscHoldsView() const override { return false; }
+
+    // Return the id of the data
+    virtual uint64_t getDataID() const override { return reinterpret_cast<uint64_t>(getRawDataBlockAsVoid(0)); }
 
 protected:
 
-      void *getRawDataBlockAsVoid ( size_t i );
-      const void *getRawDataBlockAsVoid ( size_t i ) const;
+    void *getRawDataBlockAsVoid( size_t i );
+    const void *getRawDataBlockAsVoid( size_t i ) const;
 
-      void  resetArray ();
-      void  resetArray () const;
+    void  resetArray();
+    void  resetArray() const;
 
-      // Function to perform  this = alpha x + beta y + gamma this
-      virtual void axpbypcz(double alpha, const VectorOperations &x, double beta, const VectorOperations &y, double gamma);
+    // Function to perform  this = alpha x + beta y + gamma this
+    virtual void axpbypcz(double alpha, const VectorOperations &x, double beta, const VectorOperations &y, double gamma);
 
 private:
       parameters_ptr   d_pParameters;

@@ -6,120 +6,122 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  /** \brief A core-local vector
-    * \details This is a Vector that implements the Vector interface for a std::vector<double>.
-    */
-  class SimpleVector : public Vector
-  {
-    private:
-      std::vector<double>  d_Data;
-      size_t d_startIndex;
-      size_t d_globalSize;
-      AMP_MPI d_comm;
 
-      SimpleVector ();
-      SimpleVector ( const SimpleVector & );
+/** \brief A core-local vector
+* \details This is a Vector that implements the Vector interface for a std::vector<double>.
+*/
+class SimpleVector : public Vector
+{
+private:
+    std::vector<double>  d_Data;
+    size_t d_startIndex;
+    size_t d_globalSize;
+    AMP_MPI d_comm;
 
-    public:
-      /** \brief    Create a SimpleVector
-        * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
-        * to be used in the code
-        * \param    localSize  The number of elements in the vector on this processor
-        * \param    var The variable associated with the new vector
-        */
-      static Vector::shared_ptr  create ( size_t localSize, Variable::shared_ptr var );
+    SimpleVector();
+    SimpleVector( const SimpleVector & );
 
-      /** \brief    Create a SimpleVector
-        * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
-        * to be used in the code
-        * \param    localSize  The number of elements in the vector on this processor
-        * \param    var The variable associated with the new vector
-        * \param    comm The variable associated with the new vector
-        */
-      static Vector::shared_ptr  create ( size_t localSize, Variable::shared_ptr var, AMP_MPI comm );
+public:
+    /** \brief    Create a SimpleVector
+      * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
+      * to be used in the code
+      * \param    localSize  The number of elements in the vector on this processor
+      * \param    var The variable associated with the new vector
+      */
+    static Vector::shared_ptr  create( size_t localSize, Variable::shared_ptr var );
 
-      /** \brief    Create a SimpleVector
-        * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
-        * to be used in the code that spans a comm and contains ghost values.
-        * \param    var The variable associated with the new vector
-        * \param    DOFs The DOFManager
-        * \param    commlist The communication list
-        */
-      static Vector::shared_ptr  create (  Variable::shared_ptr var,
-        AMP::Discretization::DOFManager::shared_ptr DOFs, 
-        AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
+    /** \brief    Create a SimpleVector
+      * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
+      * to be used in the code
+      * \param    localSize  The number of elements in the vector on this processor
+      * \param    var The variable associated with the new vector
+      * \param    comm The variable associated with the new vector
+      */
+    static Vector::shared_ptr  create( size_t localSize, Variable::shared_ptr var, AMP_MPI comm );
 
-      /** \brief  Destructor
-        */
-      virtual ~SimpleVector () {}
+    /** \brief    Create a SimpleVector
+      * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
+      * to be used in the code that spans a comm and contains ghost values.
+      * \param    var The variable associated with the new vector
+      * \param    DOFs The DOFManager
+      * \param    commlist The communication list
+      */
+    static Vector::shared_ptr  create(  Variable::shared_ptr var,
+      AMP::Discretization::DOFManager::shared_ptr DOFs, 
+      AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
 
-      virtual std::string type() const { return "Simple Vector"; }
-      virtual void setToScalar(double alpha);
-      virtual void scale(double alpha, const VectorOperations &x);
-      virtual void scale(double alpha); 
-      virtual void add(const VectorOperations &x, const VectorOperations &y);
-      virtual void subtract(const VectorOperations &x, const VectorOperations &y);
-      virtual void multiply( const VectorOperations &x, const VectorOperations &y);
-      virtual void divide( const VectorOperations &x, const VectorOperations &y);
-      virtual void reciprocal(const VectorOperations &x);
-      virtual void linearSum(double alpha, const VectorOperations &x,
-              double beta, const VectorOperations &y);
-      virtual void axpy(double alpha, const VectorOperations &x, const VectorOperations &y);
-      virtual void axpby(double alpha, double beta, const VectorOperations &x);
-      virtual void abs(const VectorOperations &x);
+    /** \brief  Destructor
+      */
+    virtual ~SimpleVector() override {}
 
-      virtual double min(void) const;
+    virtual std::string type() const override { return "Simple Vector"; }
+    virtual void setToScalar(double alpha) override;
+    virtual void scale(double alpha, const VectorOperations &x) override;
+    virtual void scale(double alpha) override;
+    virtual void add(const VectorOperations &x, const VectorOperations &y) override;
+    virtual void subtract(const VectorOperations &x, const VectorOperations &y) override;
+    virtual void multiply( const VectorOperations &x, const VectorOperations &y) override;
+    virtual void divide( const VectorOperations &x, const VectorOperations &y) override;
+    virtual void reciprocal(const VectorOperations &x) override;
+    virtual void linearSum(double alpha, const VectorOperations &x,
+          double beta, const VectorOperations &y) override;
+    virtual void axpy(double alpha, const VectorOperations &x, const VectorOperations &y) override;
+    virtual void axpby(double alpha, double beta, const VectorOperations &x) override;
+    virtual void abs(const VectorOperations &x) override;
+    virtual double min(void) const override;
+    virtual double max(void) const override;
+    virtual double L1Norm(void) const override;
+    virtual double L2Norm(void) const override;
+    virtual double maxNorm(void) const override;
 
-      virtual double max(void) const;
-
-      virtual double L1Norm(void) const;
-
-      virtual double L2Norm(void) const;
-      virtual double maxNorm(void) const;
-
-      using Vector::dot;
-      virtual double dot(const VectorOperations &x) const;
+    using Vector::dot;
+    virtual double dot(const VectorOperations &x) const;
 
 
-      virtual AMP::shared_ptr<ParameterBase> getParameters ();
-      using Vector::cloneVector;
-      virtual Vector::shared_ptr cloneVector(const Variable::shared_ptr name) const;
-      virtual size_t  numberOfDataBlocks () const;
-      virtual size_t  sizeOfDataBlock ( size_t i = 0 ) const;
-      using Vector::copyVector;
-      virtual void copyVector( Vector::const_shared_ptr src_vec );
-      virtual void swapVectors(Vector &other);
-      virtual void aliasVector(Vector &other);
-      virtual void setValuesByLocalID ( int num , size_t *indices , const double *vals );
+    virtual AMP::shared_ptr<ParameterBase> getParameters() override;
+    using Vector::cloneVector;
+    virtual Vector::shared_ptr cloneVector(const Variable::shared_ptr name) const override;
+    virtual size_t  numberOfDataBlocks() const override;
+    virtual size_t  sizeOfDataBlock( size_t i = 0 ) const override;
+    using Vector::copyVector;
+    virtual void copyVector( Vector::const_shared_ptr src_vec ) override;
+    virtual void swapVectors(Vector &other) override;
+    virtual void aliasVector(Vector &other) override;
+    virtual void setValuesByLocalID( int num , size_t *indices , const double *vals ) override;
 
-      /** \brief Not implemented
-        */
-      virtual void setLocalValuesByGlobalID ( int num , size_t *indices , const double *vals );
-      virtual void addValuesByLocalID ( int num , size_t *indices , const double *vals );
+    /** \brief Not implemented
+      */
+    virtual void setLocalValuesByGlobalID( int num , size_t *indices , const double *vals ) override;
+    virtual void addValuesByLocalID( int num , size_t *indices , const double *vals ) override;
 
-      /** \brief Not implemented
-        */
-      virtual void addLocalValuesByGlobalID ( int num , size_t *indices , const double *vals );
+    /** \brief Not implemented
+      */
+    virtual void addLocalValuesByGlobalID( int num , size_t *indices , const double *vals ) override;
 
-      /** \brief Not implemented
-        */
-      virtual void getLocalValuesByGlobalID ( int num , size_t *indices , double *vals ) const;
-      virtual void assemble();
-      virtual void putRawData ( const double *in );
-      virtual void copyOutRawData ( double *out ) const;
-      virtual size_t getLocalSize() const;
-      virtual size_t getGlobalSize() const;
-      virtual void *getRawDataBlockAsVoid ( size_t i );
-      virtual const void *getRawDataBlockAsVoid ( size_t i ) const;
+    /** \brief Not implemented
+      */
+    virtual void getLocalValuesByGlobalID( int num , size_t *indices , double *vals ) const override;
+    virtual void assemble() override;
+    virtual void putRawData( const double *in ) override;
+    virtual void copyOutRawData( double *out ) const override;
+    virtual size_t getLocalSize() const override;
+    virtual size_t getGlobalSize() const override;
+    virtual void *getRawDataBlockAsVoid( size_t i ) override;
+    virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
 
-      double &operator[] ( size_t i );
-      double  operator[] ( size_t i ) const ;
+    double &operator[]( size_t i );
+    double  operator[]( size_t i ) const ;
 
-      /** \brief Resize this vector
-        * \param[in] i The new size
-        */
-      void    resize ( size_t i );
-  };
+    /** \brief Resize this vector
+      * \param[in] i The new size
+      */
+    void  resize( size_t i );
+
+    // Return the id of the data
+    virtual uint64_t getDataID() const override { return d_Data.empty() ? 0:reinterpret_cast<uint64_t>(&d_Data[0]); }
+
+};
+
 
 }
 }
