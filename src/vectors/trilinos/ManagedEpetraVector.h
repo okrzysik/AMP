@@ -26,36 +26,35 @@ namespace LinearAlgebra {
     */
       
 
-  class ManagedEpetraVector : public ManagedVector , public EpetraVector
-  {
-    public:
+class ManagedEpetraVector : public ManagedVector , public EpetraVector
+{
+public:
 
-      /** \brief Create a ManagedEpetraVector from a set of parameters
-        * \param[in] params  A VectorParameters class used to construct this vector
-        */
-      ManagedEpetraVector ( VectorParameters::shared_ptr  params );
+    /** \brief Create a ManagedEpetraVector from a set of parameters
+      * \param[in] params  A VectorParameters class used to construct this vector
+      */
+    ManagedEpetraVector( VectorParameters::shared_ptr  params );
 
-      /** \brief Create a view of a vector
-        * \param[in] alias  Vector to view
-        */
-      ManagedEpetraVector ( Vector::shared_ptr  alias );
+    /** \brief Create a view of a vector
+      * \param[in] alias  Vector to view
+      */
+    ManagedEpetraVector( Vector::shared_ptr  alias );
 
 
-      // These methods are adequately documented in a base class
-      virtual std::string type() const;
+    // These methods are adequately documented in a base class
+    virtual std::string type() const;
 
-      using Vector::cloneVector;
-      virtual Vector::shared_ptr  cloneVector ( const Variable::shared_ptr var ) const;
-      virtual void copyVector( Vector::const_shared_ptr vec );
+    using Vector::cloneVector;
+    virtual Vector::shared_ptr  cloneVector( const Variable::shared_ptr var ) const;
+    virtual void copyVector( Vector::const_shared_ptr vec );
 
-            Epetra_Vector &getEpetra_Vector ();
-      const Epetra_Vector &getEpetra_Vector () const;
-      virtual void assemble();
+    Epetra_Vector &getEpetra_Vector();
+    const Epetra_Vector &getEpetra_Vector() const;
+    virtual void assemble();
 
-    protected:
-      virtual ManagedVector   * getNewRawPtr () const;
-
-  };
+protected:
+    virtual ManagedVector* getNewRawPtr() const;
+};
 
 }
 }

@@ -53,7 +53,7 @@ AMP::shared_ptr<const MultiVector>  MultiVector::const_create( const std::string
         vecs2[i] = AMP::const_pointer_cast<Vector>(vecs[i]);
     return MultiVector::create( variable, comm, vecs2 );
 }
-AMP::shared_ptr<MultiVector>  MultiVector::encapsulate ( Vector::shared_ptr &vec, AMP_MPI comm )
+AMP::shared_ptr<MultiVector>  MultiVector::encapsulate( Vector::shared_ptr &vec, AMP_MPI comm )
 {
     if ( vec->isA<MultiVector>() ) {
         if ( !comm.isNull() )
@@ -67,7 +67,7 @@ AMP::shared_ptr<MultiVector>  MultiVector::encapsulate ( Vector::shared_ptr &vec
         vec->castTo<DataChangeFirer>().registerListener ( &(retval->castTo<DataChangeListener>()) );
     return retval;
 }
-AMP::shared_ptr<MultiVector>  MultiVector::view ( Vector::shared_ptr &vec, AMP_MPI comm )
+AMP::shared_ptr<MultiVector>  MultiVector::view( Vector::shared_ptr &vec, AMP_MPI comm )
 {
     AMP::shared_ptr<MultiVector>  retval;
     // Check to see if this is a multivector
@@ -92,7 +92,7 @@ AMP::shared_ptr<MultiVector>  MultiVector::view ( Vector::shared_ptr &vec, AMP_M
     }
     return retval;
 }
-AMP::shared_ptr<const MultiVector>  MultiVector::view ( Vector::const_shared_ptr &vec, AMP_MPI comm )
+AMP::shared_ptr<const MultiVector>  MultiVector::view( Vector::const_shared_ptr &vec, AMP_MPI comm )
 {
     AMP::shared_ptr<const MultiVector>  retval;
     // Check to see if this is a multivector
@@ -122,43 +122,15 @@ AMP::shared_ptr<const MultiVector>  MultiVector::view ( Vector::const_shared_ptr
 /****************************************************************
 * Functions to add/remove vectors                               *
 ****************************************************************/
-void MultiVector::addVector ( Vector::shared_ptr  v )
+void MultiVector::addVector( Vector::shared_ptr v )
 {
-    this->addVector ( std::vector<Vector::shared_ptr>(1,v) );
+    this->addVector( std::vector<Vector::shared_ptr>(1,v) );
 }
-void MultiVector::addVector ( std::vector<Vector::shared_ptr> v )
+void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
 {
     // Add the vectors
-    for (size_t i=0; i<v.size(); i++) {
-        if ( v[i].get() != NULL ) {
-            AMP::shared_ptr<MultiVector> vec;
-            if ( v[i]->isA<MultiVector>() ) {
-                vec = AMP::dynamic_pointer_cast<MultiVector>( v[i] );
-            } else if ( v[i]->isA<ManagedVector>() ) {
-                if ( v[i]->castTo<ManagedVector>().getVectorEngine()->isA<MultiVector>() ) {
-                    vec = AMP::dynamic_pointer_cast<MultiVector> ( v[i]->castTo<ManagedVector>().getVectorEngine() );
-                }
-            }
-            if ( vec.get() != NULL ) {
-                for (size_t i = 0 ; i != vec->castTo<MultiVector>().getNumberOfSubvectors() ; i++ ) {
-                    Vector::shared_ptr  curvec = vec->castTo<MultiVector>().getVector ( i );
-                    d_vVectors.push_back ( curvec );
-                    if ( curvec->isA<DataChangeFirer>() ) {
-                        curvec->castTo<DataChangeFirer>().registerListener ( this );
-                    }
-                }
-            } else {
-                d_vVectors.push_back ( v[i] );
-                if ( v[i]->isA<DataChangeFirer>() ) {
-                    v[i]->castTo<DataChangeFirer>().registerListener ( this );
-                }
-            }
-            // Append the variable if we have a multivariable
-            AMP::shared_ptr<MultiVariable> multiVar = AMP::dynamic_pointer_cast<MultiVariable>(d_pVariable);
-            if ( multiVar!=NULL )
-                multiVar->add( v[i]->getVariable() );
-        }
-    }
+    for (size_t i=0; i<v.size(); i++)
+        addVectorHelper(v[i]);
     // Create a new multiDOFManager for the multivector
     std::vector<AMP::Discretization::DOFManager::shared_ptr> managers(d_vVectors.size());
     for (size_t i=0; i<d_vVectors.size(); i++) {
@@ -180,7 +152,63 @@ void MultiVector::addVector ( std::vector<Vector::shared_ptr> v )
          d_CommList = AMP::LinearAlgebra::CommunicationList::shared_ptr( new AMP::LinearAlgebra::CommunicationList(params) );
     }
 }
-void  MultiVector::eraseVector ( Vector::shared_ptr )
+void MultiVector::addVectorHelper( Vector::shared_ptr vec )
+{
+    if ( vec.get() == NULL )
+        return;
+    auto id = vec->getDataID();
+    if ( id == 0 ) {
+        // We are dealing with a multivector, emptry vecotr, or something special
+        if ( vec->getGlobalSize()==0 )
+            return;
+        AMP::shared_ptr<MultiVector> multivec;
+        if ( vec->isA<MultiVector>() ) {
+            multivec = AMP::dynamic_pointer_cast<MultiVector>( vec );
+        } else if ( vec->isA<ManagedVector>() ) {
+            if ( vec->castTo<ManagedVector>().getVectorEngine()->isA<MultiVector>() ) {
+                multivec = AMP::dynamic_pointer_cast<MultiVector>( vec->castTo<ManagedVector>().getVectorEngine() );
+            }
+        }
+        if ( multivec.get() != NULL ) {
+            for (size_t i=0; i!=multivec->getNumberOfSubvectors(); i++ )
+                addVectorHelper(multivec->getVector(i));
+        } else {
+            AMP_ERROR("Not finished");
+            d_vVectors.push_back( vec );
+            if ( vec->isA<DataChangeFirer>() ) {
+                vec->castTo<DataChangeFirer>().registerListener( this );
+            }
+        }
+    } else {
+        // We are dealing with a single vector, check if it is already added in some form
+        int index = -1;
+        for (size_t j=0; j<d_vVectors.size(); j++) {
+             if ( id==d_vVectors[j]->getDataID() )
+                index = static_cast<int>(j);
+        }
+        if ( index==-1 ) {
+            // Add the vector
+            d_vVectors.push_back( vec );
+            if ( vec->isA<DataChangeFirer>() ) {
+                vec->castTo<DataChangeFirer>().registerListener( this );
+            }
+        } else {
+            // the vector exists, which vector (or both) do we keep?
+            auto dof1 = vec->getDOFManager();
+            auto dof2 = d_vVectors[index]->getDOFManager();
+            if ( dof1==dof2 ) {
+                // We are dealing with the same vector, no need to do anything
+            } else {
+                AMP_ERROR("Not finished");
+            }
+        }
+    }
+    // Append the variable if we have a multivariable
+    AMP::shared_ptr<MultiVariable> multiVar = AMP::dynamic_pointer_cast<MultiVariable>(d_pVariable);
+    if ( multiVar!=NULL )
+        multiVar->add( vec->getVariable() );
+}
+void MultiVector::eraseVector ( Vector::shared_ptr )
 {
     AMP_ERROR("Needs to be fixed");
 }

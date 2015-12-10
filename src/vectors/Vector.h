@@ -87,7 +87,7 @@ public:
     /**\brief Flag to choose algorithm for makeConsistent
       *\see makeConsistent
       */
-    enum ScatterType { CONSISTENT_ADD , CONSISTENT_SET };
+    enum ScatterType { CONSISTENT_ADD, CONSISTENT_SET };
 
     /** \typedef shared_ptr
       * \brief Shorthand for shared pointer to Vector
@@ -240,7 +240,7 @@ public:
       * \code
       Vector *a;
       Vector *b;
-      std::swap ( a , b );
+      std::swap ( a, b );
         \endcode
       * without a and b exchanging pointers.
      */
@@ -252,7 +252,7 @@ public:
       * \code
       Vector *a;
       Vector *b;
-      std::swap ( a , b );
+      std::swap ( a, b );
         \endcode
       * without a and b exchanging pointers.
      */
@@ -280,10 +280,10 @@ public:
       // .. set up all the data storage in data
 
       // Get a view on the data tagged displacement
-      Vector::shared_ptr  displacement = data->select ( VS_ByVariableName ( "displacement" ) , "displacement view" );
+      Vector::shared_ptr  displacement = data->select ( VS_ByVariableName ( "displacement" ), "displacement view" );
       \endcode
       */
-    virtual shared_ptr   select ( const VectorSelector &criterion , const std::string &variable_name );
+    virtual shared_ptr   select ( const VectorSelector &criterion, const std::string &variable_name );
 
     /** \brief  Selects a portion of this vector and creates a view.
       * \param[in]  criterion  The method for deciding inclusion in the view
@@ -296,10 +296,10 @@ public:
       // .. set up all the data storage in data
 
       // Get a view on the data tagged displacement
-      Vector::shared_ptr  displacement = data->select ( VS_ByVariableName ( "displacement" ) , "displacement view" );
+      Vector::shared_ptr  displacement = data->select ( VS_ByVariableName ( "displacement" ), "displacement view" );
       \endcode
       */
-    virtual const_shared_ptr   constSelect ( const VectorSelector &criterion , const std::string &variable_name ) const;
+    virtual const_shared_ptr   constSelect ( const VectorSelector &criterion, const std::string &variable_name ) const;
 
     /**  \brief  Make <i>this</i> be an alias of another vector
       *  \param[in]  other  Vector to be aliased
@@ -390,7 +390,7 @@ public:
      * \param[in]  x  a vector
      * For Vectors, \f$\mathit{this}_i = \alpha x_i\f$.
      */
-    void scale ( double alpha , Vector::const_shared_ptr x );
+    void scale ( double alpha, Vector::const_shared_ptr x );
 
     /**
       * \brief set vector to \f$x + \alpha \bar{1}\f$.
@@ -398,7 +398,7 @@ public:
       * \param[in] alpha a scalar
       * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
       */
-    void addScalar ( Vector::const_shared_ptr x , double alpha );
+    void addScalar ( Vector::const_shared_ptr x, double alpha );
 
     /**
      * \brief  Adds two vectors.
@@ -406,7 +406,7 @@ public:
      * \param[in]  y  a vector
      * For Vectors, \f$\mathit{this}_i = x_i + y_i\f$.
      */
-    void add ( Vector::const_shared_ptr x , Vector::const_shared_ptr y );
+    void add ( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
 
     /**
       * \brief Subtracts one vector from another.
@@ -414,7 +414,7 @@ public:
       * \param[in] y  a vector
       * For Vectors, \f$\mathit{this}_i = x_i - y_i\f$
      */
-    void subtract ( Vector::const_shared_ptr x , Vector::const_shared_ptr y );
+    void subtract ( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
 
     /**
       * \brief Component-wise multiply one vector with another.
@@ -422,7 +422,7 @@ public:
       * \param[in] y  a vector
       * For Vectors, \f$\mathit{this}_i = x_i  y_i\f$
      */
-    void multiply ( Vector::const_shared_ptr x , Vector::const_shared_ptr y );
+    void multiply ( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
 
     /**
       * \brief Component-wise divide one vector by another.
@@ -430,7 +430,7 @@ public:
       * \param[in] y  a vector
       * For Vectors, \f$\mathit{this}_i = x_i / y_i\f$
      */
-    void divide ( Vector::const_shared_ptr x , Vector::const_shared_ptr y );
+    void divide ( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
 
     /**
       * \brief Set this to the component-wise reciprocal of a vector.  \f$\mathit{this}_i = 1/x_i\f$.
@@ -446,7 +446,7 @@ public:
      * \brief Set a vector to be a linear combination of two vectors.
      *  \f$\mathit{this}_i = \alpha x_i + \beta y_i\f$.
      */
-    void linearSum ( double alpha , Vector::const_shared_ptr x , double beta , Vector::const_shared_ptr y );
+    void linearSum ( double alpha, Vector::const_shared_ptr x, double beta, Vector::const_shared_ptr y );
 
     /**
       * \param[in] alpha a scalar
@@ -456,7 +456,7 @@ public:
       *    Note: after this call, the data may not be in a consistent state,
       *    and may require calling makeConsistent(SET) if consistency is required.
      */
-    void axpy ( double alpha , Vector::const_shared_ptr x , Vector::const_shared_ptr y );
+    void axpy ( double alpha, Vector::const_shared_ptr x, Vector::const_shared_ptr y );
     /**
       * \param[in] alpha a scalar
       * \param[in] beta a scalar
@@ -466,7 +466,7 @@ public:
       *    Note: after this call, the data may not be in a consistent state,
       *    and may require calling makeConsistent(SET) if consistency is required.
       */
-    void axpby( double alpha , double beta , Vector::const_shared_ptr x );
+    void axpby( double alpha, double beta, Vector::const_shared_ptr x );
 
     /**
       * \param[in] x a vector
@@ -563,16 +563,16 @@ public:
       * \param[in] tol Tolerance of comparison
       * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
       */
-    bool  equals ( Vector::const_shared_ptr rhs , double  tol = 0.000001 ) const;
+    bool  equals ( Vector::const_shared_ptr rhs, double  tol = 0.000001 ) const;
 
     /**
-      * \fn equals (Vector & const rhs , double tol )
+      * \fn equals (Vector & const rhs, double tol )
       * \brief  Determine if two vectors are equal using an absolute tolerance
       * \param[in] rhs Vector to compare to
       * \param[in] tol Tolerance of comparison
       * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
       */
-    virtual bool  equals ( Vector const & rhs , double  tol = 0.000001 ) const;
+    virtual bool  equals ( Vector const & rhs, double  tol = 0.000001 ) const;
     //@}
 
 
@@ -666,12 +666,12 @@ public:
       * from 0.
       * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
       */
-    virtual void setValuesByLocalID ( int num , size_t *indices , const double *vals ) = 0;
+    virtual void setValuesByLocalID ( int num, size_t *indices, const double *vals ) = 0;
     /**
       * \brief Set a single value in the vector by local ID
       * \param[in] i  offset of value to set
       * \param[in] val the value to place in the vector
-      * \details An alias for setValuesByLocalID ( 1 , &num , &val );
+      * \details An alias for setValuesByLocalID ( 1, &num, &val );
       */
     void setValueByLocalID(size_t i, const double val);
 
@@ -683,13 +683,13 @@ public:
       *
       * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
       */
-    virtual void setLocalValuesByGlobalID ( int num , size_t *indices , const double *vals ) = 0;
+    virtual void setLocalValuesByGlobalID ( int num, size_t *indices, const double *vals ) = 0;
 
     /**
       * \brief Set a single owned value using global identifier
       * \param[in] i  offset of value to set
       * \param[in] val the value to place in the vector
-      * \details An alias for setLocalValuesByGlobalID ( 1 , &i , &val );
+      * \details An alias for setLocalValuesByGlobalID ( 1, &i, &val );
       */
     void setLocalValueByGlobalID(size_t i, const double val);
 
@@ -701,13 +701,13 @@ public:
       *
       * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
       */
-    virtual void setGhostValuesByGlobalID ( int num , size_t *indices , const double *vals );
+    virtual void setGhostValuesByGlobalID ( int num, size_t *indices, const double *vals );
 
     /**
       * \brief Set a ghost owned value using global identifier
       * \param[in] i  offset of value to set
       * \param[in] val the value to place in the vector
-      * \details An alias for setLocalValuesByGlobalID ( 1 , &i , &val );
+      * \details An alias for setLocalValuesByGlobalID ( 1, &i, &val );
       */
     void setGhostValueByGlobalID(size_t i, const double val);
 
@@ -720,13 +720,13 @@ public:
       * this function must sort the data by buffer before setting
       * values.
       */
-    virtual void setValuesByGlobalID ( int num , size_t *indices , const double *vals );
+    virtual void setValuesByGlobalID ( int num, size_t *indices, const double *vals );
 
     /**
       * \brief Set an owned or shared value using global identifier
       * \param[in] i  offset of value to set
       * \param[in] val the value to place in the vector
-      * \details  An alias for setValuesByGlobalID ( 1 , &i , &val )
+      * \details  An alias for setValuesByGlobalID ( 1, &i, &val )
       */
     void setValueByGlobalID(size_t i, const double val);
 
@@ -740,12 +740,12 @@ public:
       * from 0.
       * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} + \mathit{vals}_i \f$
       */
-    virtual void addValuesByLocalID ( int num , size_t *indices , const double *vals ) = 0;
+    virtual void addValuesByLocalID ( int num, size_t *indices, const double *vals ) = 0;
     /**
       * \brief Add a single value in the vector by local ID
       * \param[in] i  offset of value to set
       * \param[in] val the value to place in the vector
-      * \details An alias for addValuesByLocalID ( 1 , &num , &val );
+      * \details An alias for addValuesByLocalID ( 1, &num, &val );
       */
     void addValueByLocalID(size_t i, const double val);
 
@@ -757,12 +757,12 @@ public:
       *
       * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} + \mathit{vals}_i \f$
       */
-    virtual void addLocalValuesByGlobalID ( int num , size_t *indices , const double *vals ) = 0;
+    virtual void addLocalValuesByGlobalID ( int num, size_t *indices, const double *vals ) = 0;
     /**
       * \brief Add a single owned value using global identifier
       * \param[in] i  offset of value to set
       * \param[in] val the value to place in the vector
-      * \details An alias for addLocalValuesByGlobalID ( 1 , &i , &val );
+      * \details An alias for addLocalValuesByGlobalID ( 1, &i, &val );
       */
     void addLocalValueByGlobalID(size_t i, const double val);
 
@@ -775,13 +775,13 @@ public:
       * this function must sort the data by buffer before setting
       * values.
       */
-    virtual void addValuesByGlobalID ( int num , size_t *indices , const double *vals );
+    virtual void addValuesByGlobalID ( int num, size_t *indices, const double *vals );
 
     /**
       * \brief Add an owned or shared value using global identifier
       * \param[in] i  offset of value to set
       * \param[in] val the value to place in the vector
-      * \details  An alias for setValuesByGlobalID ( 1 , &i , &val )
+      * \details  An alias for setValuesByGlobalID ( 1, &i, &val )
       */
     void addValueByGlobalID(size_t i, const double val);
 
@@ -793,7 +793,7 @@ public:
       * \details This will get the ghosted updates this processor has made.  All indices are
       * from global 0.
       */
-    virtual void getGhostAddValuesByGlobalID ( int num , size_t *indices , double *vals ) const;
+    virtual void getGhostAddValuesByGlobalID ( int num, size_t *indices, double *vals ) const;
 
     /**
       * \brief get values in the vector by their local offset
@@ -803,7 +803,7 @@ public:
       * \details This will get the owned values for this core.  All indices are
       * from 0.
       */
-    virtual void getValuesByGlobalID ( int num , size_t *indices , double *vals ) const;
+    virtual void getValuesByGlobalID ( int num, size_t *indices, double *vals ) const;
 
     /**
       * \brief Return a value from the vector.
@@ -820,7 +820,7 @@ public:
       * \param[out] vals the values to place in the vector
       * \details This will get any value owned by this core.
       */
-    virtual void getLocalValuesByGlobalID ( int num , size_t *indices , double *vals ) const = 0;
+    virtual void getLocalValuesByGlobalID ( int num, size_t *indices, double *vals ) const = 0;
 
     /**
       * \brief Return a local value from the vector.
@@ -837,7 +837,7 @@ public:
       * \param[out] vals the values to place in the vector
       * \details This will get any value owned by this core.
       */
-    virtual void getGhostValuesByGlobalID ( int num , size_t *indices , double *vals ) const;
+    virtual void getGhostValuesByGlobalID ( int num, size_t *indices, double *vals ) const;
 
     /**
       * \brief Return a ghost value from the vector.
@@ -855,7 +855,7 @@ public:
       * \param[out] vals the values to place in the vector
       * \details This will get any value used by this core.
       */
-    virtual void getValuesByLocalID ( int num , size_t *indices , double *vals ) const;
+    virtual void getValuesByLocalID ( int num, size_t *indices, double *vals ) const;
 
     /**
       * \brief Return a local value from the vector.
@@ -1004,12 +1004,12 @@ public:
       * \param[in] GIDoffset  A number to add to the global ID when writing information
       * \param[in] LIDoffset  A number to add to the local ID when writing information
       */
-    virtual void  dumpOwnedData ( std::ostream &out , size_t GIDoffset=0 , size_t LIDoffset = 0 ) const;
+    virtual void  dumpOwnedData ( std::ostream &out, size_t GIDoffset=0, size_t LIDoffset = 0 ) const;
     /** \brief Write data owned by other processors to an std::ostream
       * \param[in] out  The output stream to write to.
       * \param[in] offset  A number to add to the global ID when writing information
       */
-    virtual void  dumpGhostedData ( std::ostream &out , size_t offset=0 ) const;
+    virtual void  dumpGhostedData ( std::ostream &out, size_t offset=0 ) const;
 
     /** \brief Set the default RNG of this vector
       * \param[in] rng  The generator to set
@@ -1071,6 +1071,15 @@ public:
       */
     void setUpdateStatusPtr ( AMP::shared_ptr<UpdateState> rhs );
 
+
+    /**\brief  A unique id for the underlying data allocation
+      *\details This is a unique id that is associated with the data
+      *   data allocation.  Views of a vector should preserve the id of
+      *   the original vector.  Vectors that are not allocated, or contain
+      *   multiple vectors (such as Multivector) should return 0.
+      *   Note: this id is not consistent across multiple processors.
+      */
+    virtual uint64_t getDataID() const=0;
 
 protected:
 
@@ -1171,9 +1180,9 @@ private:
 
 
 //! Stream operator
-std::ostream &operator << ( std::ostream &out , const Vector::shared_ptr );
+std::ostream &operator << ( std::ostream &out, const Vector::shared_ptr );
 //! Stream operator
-std::ostream &operator << ( std::ostream &out , const Vector & );
+std::ostream &operator << ( std::ostream &out, const Vector & );
 
 
 }
