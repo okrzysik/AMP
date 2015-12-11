@@ -30,7 +30,7 @@ int main( int argc, char *argv[] )
 
     // Limit the scope of variables
     {
-        // Create several matricies
+        // Create several matrices
         AMP::Array<double> M1, M2(10,5);
         M1.resize(10,7);
         for (size_t i=0; i<M2.size(0); i++) {
@@ -74,7 +74,7 @@ int main( int argc, char *argv[] )
         } catch (...) {
             ut.passes("Caught failed allocation");
         }
-        // Test math opertors
+        // Test math operators
         if ( M1.min()==0 )
             ut.passes("min");
         else
@@ -83,10 +83,37 @@ int main( int argc, char *argv[] )
             ut.passes("max");
         else
             ut.failure("max");
+        if ( M1.sum()==1225 )
+            ut.passes("sum");
+        else
+            ut.failure("sum");
+        if ( M1.mean()==24.5 )
+            ut.passes("mean");
+        else
+            ut.failure("mean");
         if ( !M1.NaNs() )
             ut.passes("NaNs");
         else
             ut.failure("NaNs");
+        // Test math operators with index subsets
+        std::vector<size_t> idx{0,4,0,2};
+        if ( M1.min(idx)==0 )
+            ut.passes("min on subset");
+        else
+            ut.failure("min on subset");
+        if ( M1.max(idx)==24 )
+            ut.passes("max on subset");
+        else
+            ut.failure("max on subset");
+        if ( M1.sum(idx)==180 )
+            ut.passes("sum on subset");
+        else {
+            ut.failure("sum on subset");
+        }
+        if ( M1.mean(idx)==12 )
+            ut.passes("mean on subset");
+        else
+            ut.failure("mean on subset");
         // Test find
         std::vector<size_t> index = M1.find( 7, [](double a, double b){return a==b;} );
         if ( index.size()!=1 )
