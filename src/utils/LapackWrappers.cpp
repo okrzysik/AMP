@@ -1019,4 +1019,10 @@ void Lapack<T>::print_machine_parameters( )
 
 } // namespace
 
+
+// Explicit instantiations
+template class AMP::Lapack<double>;
+template class AMP::Lapack<float>;
+
+
 #endif
