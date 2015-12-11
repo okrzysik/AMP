@@ -8,6 +8,10 @@
 
 namespace AMP {
 
+
+#define GET_ARRAY_INDEX2(N,i1,i2,i3,i4,i5)  i1+N[0]*(i2+N[1]*(i3+N[2]*(i4+N[3]*i5)))
+
+
 /********************************************************
 *  Constructors                                         *
 ********************************************************/
@@ -208,8 +212,8 @@ void Array<TYPE>::resize( const std::vector<size_t>& N )
                     for (size_t i3=0; i3<std::min(N1[2],N2[2]); i3++) {
                         for (size_t i2=0; i2<std::min(N1[1],N2[1]); i2++) {
                             for (size_t i1=0; i1<std::min(N1[0],N2[0]); i1++) {
-                                size_t index1 = i1 + i2*N1[0] + i3*N1[0]*N1[1];
-                                size_t index2 = i1 + i2*N2[0] + i3*N2[0]*N2[1];
+                                size_t index1 = GET_ARRAY_INDEX2(N1,i1,i2,i3,i4,i5);
+                                size_t index2 = GET_ARRAY_INDEX2(N2,i1,i2,i3,i4,i5);
                                 data2[index2] = std::move(data1[index1]);
                             }
                         }
@@ -223,8 +227,8 @@ void Array<TYPE>::resize( const std::vector<size_t>& N )
                     for (size_t i3=0; i3<std::min(N1[2],N2[2]); i3++) {
                         for (size_t i2=0; i2<std::min(N1[1],N2[1]); i2++) {
                             for (size_t i1=0; i1<std::min(N1[0],N2[0]); i1++) {
-                                size_t index1 = i1 + i2*N1[0] + i3*N1[0]*N1[1];
-                                size_t index2 = i1 + i2*N2[0] + i3*N2[0]*N2[1];
+                                size_t index1 = GET_ARRAY_INDEX2(N1,i1,i2,i3,i4,i5);
+                                size_t index2 = GET_ARRAY_INDEX2(N2,i1,i2,i3,i4,i5);
                                 data2[index2] = data1[index1];
                             }
                         }
@@ -279,55 +283,74 @@ void Array<TYPE>::reshape( const std::vector<size_t>& N )
 /********************************************************
 *  Subset the array                                     *
 ********************************************************/
-inline void ArrayGetSubsetIndex( const std::vector<size_t>& index, 
-    int d_ndim, const size_t *d_N,
-    std::array<size_t,5>& first, std::array<size_t,5>& last, 
-    std::array<size_t,5>& N1, std::array<size_t,5>& N2 )
+// Helper function to check subset indices
+template<class TYPE>
+inline void Array<TYPE>::checkSubsetIndex( const std::vector<size_t>& index ) const
 {
-    // Compute the index range
-    #if ARRAY_NDIM_MAX > 5
-        #error Function programmed for more than 5 dimensions
-    #endif
     bool test = index.size()%2==0 && (int)index.size()/2<=d_ndim;
     for (size_t d=0; d<index.size()/2; d++)
         test = test && index[2*d+0]<d_N[d] && index[2*d+1]<d_N[d];
     if ( !test )
         AMP_ERROR("indicies for subset are invalid");
-    for (size_t d=index.size()/2; d<5; d++) {
+}
+// Helper function to return dimensions as a std::array for hard coded loops
+template<class TYPE>
+inline std::array<size_t,5> Array<TYPE>::getDimArray( ) const
+{
+    #if ARRAY_NDIM_MAX > 5
+        #error Function programmed for more than 5 dimensions
+    #endif
+    std::array<size_t,5> N{{1,1,1,1,1}};
+    for (int d=0; d<d_ndim; d++)
+        N[d] = d_N[d];
+    return N;
+}
+// Helper function to return dimensions for the subset array
+template<class TYPE>
+inline void Array<TYPE>::getSubsetArrays( const std::vector<size_t>& index, 
+    std::array<size_t,5>& first, std::array<size_t,5>& last, std::array<size_t,5>& N )
+{
+    // Compute the index range
+    #if ARRAY_NDIM_MAX > 5
+        #error Function programmed for more than 5 dimensions
+    #endif
+    size_t ndim = index.size()/2;
+    for (size_t d=0; d<ndim; d++) {
         first[d] = index[2*d+0];
         last[d]  = index[2*d+1];
+        N[d] = last[d]-first[d]+1;
     }
-    for (size_t d=index.size()/2; d<5; d++) {
+    for (size_t d=ndim; d<5; d++) {
         first[d] = 0;
-        last[d] = 1;
-        N1[d] = 1;
-        N2[d] = 1;
+        last[d] = 0;
+        N[d] = 1;
     }
 }
 template<class TYPE>
 Array<TYPE> Array<TYPE>::subset( const std::vector<size_t>& index ) const
 {
     // Get the subset indicies
-    std::array<size_t,5> first, last, N1, N2;
-    ArrayGetSubsetIndex(index,d_ndim,d_N,first,last,N1,N2);
+    checkSubsetIndex(index);
+    std::array<size_t,5> first, last, N1;
+    getSubsetArrays(index,first,last,N1);
+    std::array<size_t,5> N2 = getDimArray();
     // Create the new array
     std::vector<size_t> dim(ARRAY_NDIM_MAX);
     for (int d=0; d<ARRAY_NDIM_MAX; d++)
         dim[d] = last[d]-first[d]+1;
     Array<TYPE> subset(dim);
     // Fill the new array
+    #if ARRAY_NDIM_MAX > 5
+        #error Function programmed for more than 5 dimensions
+    #endif
     for (size_t i4=first[4]; i4<=last[4]; i4++) {
         for (size_t i3=first[3]; i3<=last[3]; i3++) {
             for (size_t i2=first[2]; i2<=last[2]; i2++) {
                 for (size_t i1=first[1]; i1<=last[1]; i1++) {
-                    for (size_t i0=first[0]; i0<=last[1]; i0++) {
-                        size_t k1 = (i0-first[0]) + 
-                            (i1-first[0])*N1[0] +
-                            (i2-first[1])*N1[0]*N1[1] +
-                            (i3-first[2])*N1[0]*N1[1]*N1[2] +
-                            (i4-first[3])*N1[0]*N1[1]*N1[2]*N1[3];
-                        size_t k2 = i0 + i1*N2[0] + i2*N2[0]*N2[1] + 
-                            i3*N2[0]*N2[1]*N2[2] + i4*N2[0]*N2[1]*N2[2]*N2[3];
+                    for (size_t i0=first[0]; i0<=last[0]; i0++) {
+                        size_t k1 = GET_ARRAY_INDEX2( N1, i0-first[0],
+                            i1-first[1], i2-first[2], i3-first[3], i4-first[4] );
+                        size_t k2 = GET_ARRAY_INDEX2(N2,i0,i1,i2,i3,i4);
                         subset.d_data[k1] = d_data[k2];
                     }
                 }
@@ -340,21 +363,22 @@ template<class TYPE>
 void Array<TYPE>::copyFromSubset( const std::vector<size_t>& index, const Array<TYPE>& subset )
 {
     // Get the subset indicies
-    std::array<size_t,5> first, last, N1, N2;
-    ArrayGetSubsetIndex(index,d_ndim,d_N,first,last,N1,N2);
+    checkSubsetIndex(index);
+    std::array<size_t,5> first, last, N1;
+    getSubsetArrays(index,first,last,N1);
+    std::array<size_t,5> N2 = getDimArray();
     // Copy the sub-array
+    #if ARRAY_NDIM_MAX > 5
+        #error Function programmed for more than 5 dimensions
+    #endif
     for (size_t i4=first[4]; i4<=last[4]; i4++) {
         for (size_t i3=first[3]; i3<=last[3]; i3++) {
             for (size_t i2=first[2]; i2<=last[2]; i2++) {
                 for (size_t i1=first[1]; i1<=last[1]; i1++) {
-                    for (size_t i0=first[0]; i0<=last[1]; i0++) {
-                        size_t k1 = (i0-first[0]) + 
-                            (i1-first[0])*N1[0] +
-                            (i2-first[1])*N1[0]*N1[1] +
-                            (i3-first[2])*N1[0]*N1[1]*N1[2] +
-                            (i4-first[3])*N1[0]*N1[1]*N1[2]*N1[3];
-                        size_t k2 = i0 + i1*N2[0] + i2*N2[0]*N2[1] + 
-                            i3*N2[0]*N2[1]*N2[2] + i4*N2[0]*N2[1]*N2[2]*N2[3];
+                    for (size_t i0=first[0]; i0<=last[0]; i0++) {
+                        size_t k1 = GET_ARRAY_INDEX2( N1, i0-first[0],
+                            i1-first[1], i2-first[2], i3-first[3], i4-first[4] );
+                        size_t k2 = GET_ARRAY_INDEX2(N2,i0,i1,i2,i3,i4);
                         d_data[k2] = subset.d_data[k1];
                     }
                 }
@@ -480,7 +504,6 @@ void Array<TYPE>::viewRaw( const std::initializer_list<size_t>& N, TYPE *data )
     d_ptr.reset( );
     d_data = data;
 }
-
 template<class TYPE>
 void Array<TYPE>::viewRaw( const std::vector<size_t>& N, TYPE *data )
 {

@@ -31,15 +31,15 @@ int main( int argc, char *argv[] )
     // Limit the scope of variables
     {
         // Create several matricies
-        AMP::Array<double> M1, M2(10,3);
-        M1.resize(10,5);
-        for (int i=0; i<10; i++) {
-            for (int j=0; j<3; j++) {
+        AMP::Array<double> M1, M2(10,5);
+        M1.resize(10,7);
+        for (size_t i=0; i<M2.size(0); i++) {
+            for (size_t j=0; j<M2.size(1); j++) {
                 M1(i,j) = i+10*j;
                 M2(i,j) = i+10*j;
             }
         }
-        M1.resize(10,3);
+        M1.resize(10,5);
         AMP::Array<double> M3(M1);
         AMP::Array<double> M4 = M2;
         AMP::Array<double> M5 = M1;
@@ -79,7 +79,7 @@ int main( int argc, char *argv[] )
             ut.passes("min");
         else
             ut.failure("min");
-        if ( M1.max()==29 )
+        if ( M1.max()==49 )
             ut.passes("max");
         else
             ut.failure("max");
@@ -95,6 +95,33 @@ int main( int argc, char *argv[] )
             ut.passes("find");
         else
             ut.failure("find");
+        // Test subset
+        M3 = M1.subset({0,9,0,4});
+        if ( M3 == M1 )
+            ut.passes("full subset");
+        else
+            ut.failure("full subset");
+        M3 = M1.subset({3,7,1,3});
+        pass = true;
+        for (size_t i=0; i<M3.size(0); i++) {
+            for (size_t j=0; j<M3.size(1); j++)
+                pass = pass && M3(i,j)==(i+3)+10*(j+1);
+        }
+        if ( pass )
+            ut.passes("partial subset");
+        else
+            ut.failure("partial subset");
+        M3.scale(2);
+        M2.copyFromSubset({3,7,1,3},M3);
+        pass = true;
+        for (size_t i=0; i<M3.size(0); i++) {
+            for (size_t j=0; j<M3.size(1); j++)
+                pass = pass && M3(i,j)==M2(i+3,j+1);
+        }
+        if ( pass )
+            ut.passes("copyFromSubset");
+        else
+            ut.failure("copyFromSubset");
         // Test the time required to create a view
         AMP::Array<double> M_view;
         double t1 = AMP::Utilities::time();

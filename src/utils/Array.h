@@ -443,6 +443,12 @@ private:
     TYPE *d_data;                           // Raw pointer to data in array
     std::shared_ptr<TYPE> d_ptr;            // Shared pointer to data in array
     void allocate( const std::vector<size_t>& N );
+
+private:
+    inline void checkSubsetIndex( const std::vector<size_t>& index ) const;
+    inline std::array<size_t,5> getDimArray() const;
+    static inline void getSubsetArrays( const std::vector<size_t>& index, 
+        std::array<size_t,5>& first, std::array<size_t,5>& last, std::array<size_t,5>& N );
 };
 
 }
