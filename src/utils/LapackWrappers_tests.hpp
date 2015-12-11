@@ -350,7 +350,7 @@ static bool test_dot( int N, T& error )
     for (int i=0; i<N; i++) {
         T ans2 = Lapack<T>::dot(K,x1,1,x2,1);
         error = std::max(error,std::abs(ans1-ans2)/K);
-        if ( std::abs(ans1-ans2)>5*K*std::numeric_limits<T>::epsilon() )
+        if ( std::abs(ans1-ans2)>10*K*std::numeric_limits<T>::epsilon() )
             N_errors++;
     }
     delete [] x1;
