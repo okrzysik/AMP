@@ -91,7 +91,7 @@ void BandedSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters )
     
     // Factor the matrix
     int error = 0;
-    Lapack::dgbtrf( M, N, KL, KU, AB, K, IPIV, error );
+    Lapack<double>::gbtrf( M, N, KL, KU, AB, K, IPIV, error );
     if ( error != 0 ) {
         char msg[100];
         sprintf(msg,"Error factoring matrix (%i)",error);
@@ -124,7 +124,7 @@ void BandedSolver::solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // Solve the 
     int error = 0;
-    Lapack::dgbtrs( 'N', N, KL, KU, 1, AB, 2*KL+KU+1, IPIV, B, N, error );
+    Lapack<double>::gbtrs( 'N', N, KL, KU, 1, AB, 2*KL+KU+1, IPIV, B, N, error );
     d_iNumberIterations = 1;
     if ( error != 0 ) {
         char msg[100];
