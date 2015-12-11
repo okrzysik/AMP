@@ -751,6 +751,20 @@ Array<TYPE>& Array<TYPE>::operator-=( const Array<TYPE>& rhs)
         d_data[i] -= rhs.d_data[i];
     return *this;
 }
+template<class TYPE>
+Array<TYPE>& Array<TYPE>::operator+=( const TYPE& rhs)
+{
+    for (size_t i=0; i<d_length; i++)
+        d_data[i] += rhs;
+    return *this;
+}
+template<class TYPE>
+Array<TYPE>& Array<TYPE>::operator-=( const TYPE& rhs)
+{
+    for (size_t i=0; i<d_length; i++)
+        d_data[i] -= rhs;
+    return *this;
+}
 
 
 /********************************************************

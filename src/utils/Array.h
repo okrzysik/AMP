@@ -436,6 +436,12 @@ public:
     //! Subtract another array
     Array& operator-=( const Array& rhs);
 
+    //! Add a scalar
+    Array& operator+=( const TYPE& rhs);
+
+    //! Subtract a scalar
+    Array& operator-=( const TYPE& rhs);
+
 private:
     int d_ndim;                             // Number of dimensions in array
     size_t d_N[ARRAY_NDIM_MAX];             // Size of each dimension
