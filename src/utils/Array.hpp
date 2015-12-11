@@ -654,6 +654,60 @@ Array<TYPE> Array<TYPE>::sum( int dir ) const
     }
     return ans;
 }
+#if 0
+template<class TYPE>
+TYPE Array<TYPE>::min( const std::vector<size_t>& index ) const
+{
+    // Get the subset indicies
+    std::array<size_t,5> first, last, N1, N2;
+    ArrayGetSubsetIndex(index,d_ndim,d_N,first,last,N1,N2);
+    // Create the new array
+    std::vector<size_t> dim(ARRAY_NDIM_MAX);
+    for (int d=0; d<ARRAY_NDIM_MAX; d++)
+        dim[d] = last[d]-first[d]+1;
+    Array<TYPE> subset(dim);
+    // Fill the new array
+    for (size_t i4=first[4]; i4<=last[4]; i4++) {
+        for (size_t i3=first[3]; i3<=last[3]; i3++) {
+            for (size_t i2=first[2]; i2<=last[2]; i2++) {
+                for (size_t i1=first[1]; i1<=last[1]; i1++) {
+                    for (size_t i0=first[0]; i0<=last[1]; i0++) {
+                        size_t k1 = (i0-first[0]) + 
+                            (i1-first[0])*N1[0] +
+                            (i2-first[1])*N1[0]*N1[1] +
+                            (i3-first[2])*N1[0]*N1[1]*N1[2] +
+                            (i4-first[3])*N1[0]*N1[1]*N1[2]*N1[3];
+                        size_t k2 = i0 + i1*N2[0] + i2*N2[0]*N2[1] + 
+                            i3*N2[0]*N2[1]*N2[2] + i4*N2[0]*N2[1]*N2[2]*N2[3];
+                        subset.d_data[k1] = d_data[k2];
+                    }
+                }
+            }
+        }
+    }
+ 
+    TYPE x = std::numeric_limits<TYPE>::max();
+    for (size_t i=0; i<d_length; i++)
+        x = std::min(x,d_data[i]);
+    return x;
+}
+template<class TYPE>
+TYPE Array<TYPE>::max( const std::vector<size_t>& index ) const
+{
+    TYPE x = std::numeric_limits<TYPE>::min();
+    for (size_t i=0; i<d_length; i++)
+        x = std::max(x,d_data[i]);
+    return x;
+}
+template<class TYPE>
+TYPE Array<TYPE>::sum( const std::vector<size_t>& index ) const
+{
+    TYPE x = 0;
+    for (size_t i=0; i<d_length; i++)
+        x += d_data[i];
+    return x;
+}
+#endif
 template<class TYPE>
 Array<TYPE>& Array<TYPE>::operator+=( const Array<TYPE>& rhs)
 {

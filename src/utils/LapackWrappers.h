@@ -12,6 +12,7 @@ namespace AMP {
     \details  This class is a wrapper class to provide a common interface to 
       BLAS and LAPACK routines.
 */
+template <typename T>
 class Lapack {
 public:
 
@@ -24,7 +25,7 @@ public:
      * @param[in]  y        The destination vector
      * @param[out] INCY     The spacing between points in y
      */
-    static inline void dcopy( int N, const double *x, int INCX, double *y, int INCY );
+    static inline void copy( int N, const T *x, int INCX, T *y, int INCY );
 
     /*!
      * \brief   dswap
@@ -35,7 +36,7 @@ public:
      * @param[in,out] y     The second vector
      * @param[in]  INCY     The spacing between points in x
      */
-    static inline void dswap( int N, double *x, int INCX, double *y, int INCY );
+    static inline void swap( int N, T *x, int INCX, T *y, int INCY );
 
     /*!
      * \brief   dscal 
@@ -45,7 +46,7 @@ public:
      * @param[in,out] x     The vector
      * @param[in]  INCX     The spacing between points in x
      */
-    static inline void dscal( int N, double a, double *x, int INCX );
+    static inline void scal( int N, T a, T *x, int INCX );
 
     /*!
      * \brief   dnrm2 
@@ -54,7 +55,7 @@ public:
      * @param[in]  x        The input vector
      * @param[in]  INCX     The spacing between points in x
      */
-    static inline double dnrm2( int N, const double *x, int INCX );
+    static inline T nrm2( int N, const T *x, int INCX );
 
     /*!
      * \brief   idamax
@@ -64,7 +65,7 @@ public:
      * @param[in]  x        The input vector
      * @param[in]  INCX     The spacing between points in x
      */
-    static inline int idamax( int N, const double *x, int INCX );
+    static inline int iamax( int N, const T *x, int INCX );
 
     /*!
      * \brief   daxpy 
@@ -76,7 +77,7 @@ public:
      * @param[in,out] y     The destination vector
      * @param[in] INCY      The spacing between points in x
      */
-    static inline void daxpy( int N, double a, const double *x, int INCX, double *y, int INCY );
+    static inline void axpy( int N, T a, const T *x, int INCX, T *y, int INCY );
 
     /*!
      * \brief   dgemv 
@@ -100,8 +101,8 @@ public:
      * @param[in,out] y     The destination vector
      * @param[in] INCY      The spacing between points in x
      */
-    static inline void dgemv( char TRANS, int M, int N, double alpha, 
-        const double *A, int LDA, const double *x, int INCX, double beta, double *y, int INCY );
+    static inline void gemv( char TRANS, int M, int N, T alpha, 
+        const T *A, int LDA, const T *x, int INCX, T beta, T *y, int INCY );
 
     /*!
      * \brief   dgemm 
@@ -161,8 +162,8 @@ public:
      *                      declared in  the  calling  (sub)  program.   LDC
      *                      must  be  at  least max( 1, m ).  Unchanged on exit.
      */
-    static inline void dgemm( char TRANSA, char TRANSB, int M, int N, int K, double alpha, 
-        const double *A, int LDA, const double *B, int LDB, double beta, double *C, int LDC );
+    static inline void gemm( char TRANSA, char TRANSB, int M, int N, int K, T alpha, 
+        const T *A, int LDA, const T *B, int LDB, T beta, T *C, int LDC );
 
     /*!
      * \brief   dasum 
@@ -171,7 +172,7 @@ public:
      * @param[in]  x        The source vector
      * @param[in]  INCX     The spacing between points in x
      */
-    static inline double dasum( int N, const double *x, int INCX );
+    static inline T asum( int N, const T *x, int INCX );
 
     /*!
      * \brief   ddot 
@@ -182,7 +183,7 @@ public:
      * @param[in]  y        The source vector y
      * @param[in]  INCY     The spacing between points in y
      */
-    static inline double ddot( int N, const double *x, int INCX, const double *y, int INCY );
+    static inline T dot( int N, const T *x, int INCX, const T *y, int INCY );
 
     /*!
      * \brief   dger 
@@ -201,7 +202,7 @@ public:
      *                      On exit, the updated matrix.
      * @param[in]  LDA      The leading dimension of the array A.  LDA >= max(1,M).
      */
-    static inline void dger( int N, int M, double alpha, const double *x, int INCX, const double *y, int INCY, double *A, int LDA );
+    static inline void ger( int N, int M, T alpha, const T *x, int INCX, const T *y, int INCY, T *A, int LDA );
 
     /*!
      * \brief   dgesv 
@@ -234,7 +235,7 @@ public:
      *                            has been completed, but the factor U is exactly
      *                            singular, so the solution could not be computed.
      */
-    static inline void dgesv( int N, int NRHS, double *A, int LDA, int *IPIV, double *B, int LDB, int &INFO );
+    static inline void gesv( int N, int NRHS, T *A, int LDA, int *IPIV, T *B, int LDB, int &INFO );
 
     /*!
      * \brief   dgtsv 
@@ -266,7 +267,7 @@ public:
      *                            has been completed, but the factor U is exactly
      *                            singular, so the solution could not be computed.
      */
-    static inline void dgtsv( int N, int NRHS, double *DL, double *D, double *DU, double *B, int LDB, int &INFO );
+    static inline void gtsv( int N, int NRHS, T *DL, T *D, T *DU, T *B, int LDB, int &INFO );
 
     /*!
      * \brief   dgbsv 
@@ -327,7 +328,7 @@ public:
      *                            has been completed, but the factor U is exactly
      *                            singular, so the solution could not be computed.
      */
-    static inline void dgbsv( int N, int KL, int KU, int NRHS, double *AB, int LDAB, int *IPIV, double *B, int LDB, int &INFO );
+    static inline void gbsv( int N, int KL, int KU, int NRHS, T *AB, int LDAB, int *IPIV, T *B, int LDB, int &INFO );
 
 
     /*!
@@ -354,7 +355,7 @@ public:
      *                            has been completed, but the factor U is exactly
      *                            singular, so the solution could not be computed.
      */
-    static inline void dgetrf( int M, int N, double *A, int LDA, int *IPIV, int &INFO );
+    static inline void getrf( int M, int N, T *A, int LDA, int *IPIV, int &INFO );
 
     /*!
      * \brief   dgttrf 
@@ -388,7 +389,7 @@ public:
      *                            has been completed, but the factor U is exactly
      *                            singular, so the solution could not be computed.
      */
-    static inline void dgttrf( int N, double *DL, double *D, double *DU, double *DU2, int *IPIV, int &INFO );
+    static inline void gttrf( int N, T *DL, T *D, T *DU, T *DU2, int *IPIV, int &INFO );
 
     /*!
      * \brief   dgbtrf 
@@ -417,7 +418,7 @@ public:
      *                            singular, and division by zero will occur if
      *                            it is used to solve a system of equations.
      */
-    static inline void dgbtrf( int M, int N, int KL, int KU, double *AB, int LDAB, int *IPIV, int &INFO );
+    static inline void gbtrf( int M, int N, int KL, int KU, T *AB, int LDAB, int *IPIV, int &INFO );
 
     /*!
      * \brief   dgetrs 
@@ -441,7 +442,7 @@ public:
      *                      = 0:  successful exit
      *                      < 0:  if INFO = -i, the i-th argument had an illegal value
      */
-    static inline void dgetrs( char TRANS, int N, int NRHS, const double *A, int LDA, const int *IPIV, double *B, int LDB, int &INFO );
+    static inline void getrs( char TRANS, int N, int NRHS, const T *A, int LDA, const int *IPIV, T *B, int LDB, int &INFO );
 
     /*!
      * \brief   dgttrs 
@@ -471,8 +472,8 @@ public:
      *                      = 0:  successful exit
      *                      < 0:  if INFO = -i, the i-th argument had an illegal value
      */
-    static inline void dgttrs( char TRANS, int N, int NRHS, const double *DL, const double *D,
-        const double *DU, const double *DU2, const int *IPIV, double *B, int LDB, int &INFO );
+    static inline void gttrs( char TRANS, int N, int NRHS, const T *DL, const T *D,
+        const T *DU, const T *DU2, const int *IPIV, T *B, int LDB, int &INFO );
 
     /*!
      * \brief   dgbtrs 
@@ -505,8 +506,8 @@ public:
      *                      = 0:  successful exit
      *                      < 0:  if INFO = -i, the i-th argument had an illegal value
      */
-    static inline void dgbtrs( char TRANS, int N, int KL, int KU, int NRHS, const double *AB, 
-        int LDAB, const int *IPIV, double *B, int LDB, int &INFO );
+    static inline void gbtrs( char TRANS, int N, int KL, int KU, int NRHS, const T *AB, 
+        int LDAB, const int *IPIV, T *B, int LDB, int &INFO );
 
     /*!
      * \brief   dgetri 
@@ -533,7 +534,7 @@ public:
      *                      < 0:  if INFO = -i, the i-th argument had an illegal value
      *                      > 0:  if INFO = i, U(i,i) is exactly zero; the matrix is
      */
-    static inline void dgetri( int N, double *A, int LDA, const int *IPIV, double *WORK, int LWORK, int &INFO );
+    static inline void getri( int N, T *A, int LDA, const int *IPIV, T *WORK, int LWORK, int &INFO );
 
     /*!
      * \brief   dtrsm 
@@ -578,12 +579,12 @@ public:
      * @param[in] LDB       The first dimension of B as declared in the calling (sub) program.
      *                      LDB must be at least max(1,m).
      */
-    static inline void dtrsm( char SIDE, char UPLO, char TRANS, char DIAG,
-        int M, int N, double ALPHA, const double *A, int LDA, double *B, int LDB );
+    static inline void trsm( char SIDE, char UPLO, char TRANS, char DIAG,
+        int M, int N, T ALPHA, const T *A, int LDA, T *B, int LDB );
 
     /*!
      * \brief   dlamch
-     * \details  dlamch determines double precision machine parameters.
+     * \details  dlamch determines T precision machine parameters.
      *
      * @param[in] cmach     Specifies the value to be returned by DLAMCH:
      *                      'E' or 'e':   eps   = relative machine precision
@@ -598,7 +599,7 @@ public:
      *                      'O' or 'o':   rmax  = overflow threshold  - (base**emax)*(1-eps)
      * @return              Return the requested value
      */
-    static inline double dlamch( char cmach );
+    static inline T lamch( char cmach );
 
     /*!
      * \brief   Run a test for a given LAPACK/BLAS routine 
@@ -609,7 +610,7 @@ public:
      * @param[out] error    The largest error detected
      * @return              The number of failures detected
      */
-    static int run_test( const char* routine, int N, double& error );
+    static int run_test( const char* routine, int N, T& error );
 
     /*!
      * \brief   Run the basic test suite 
@@ -642,8 +643,9 @@ private:
 
 } // namespace
 
-#include "utils/LapackWrappers.hpp"
-
+#include "utils/LapackWrappers_tests.hpp"
+#include "utils/LapackWrappers.double.hpp"
+#include "utils/LapackWrappers.float.hpp"
 
 #endif
 
