@@ -298,6 +298,7 @@ static bool test_nrm2( int N, T& error )
     error = 0;
     for (int i=0; i<N; i++) {
         T ans2 = Lapack<T>::nrm2(K,x,1);
+        error = std::max(error,std::abs(ans1-ans2));
         if ( std::abs(ans1-ans2)>K*std::numeric_limits<T>::epsilon() )
             N_errors++;
     }
