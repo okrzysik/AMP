@@ -3,6 +3,10 @@
 namespace AMP {
 namespace LinearAlgebra {
 
+    // this will generate an error. This is already taken care of
+    // by calling the getRawDataBlockAsVoid function. The latter 
+    // can be virtual
+#if 0
      /// \cond
 
   template <typename RETURN_TYPE>
@@ -19,6 +23,7 @@ namespace LinearAlgebra {
 
 
       /// \endcond
+#endif
 
 }
 }

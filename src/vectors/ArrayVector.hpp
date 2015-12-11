@@ -19,15 +19,19 @@ ArrayVector<T>::ArrayVector ():
 template <typename T>
 Vector::shared_ptr  ArrayVector<T>::create (const std::vector<size_t> &localSize , Variable::shared_ptr var )
 {
-    size_t N = 1;
-    for(auto s: localSize) N*=s;
-
     AMP::shared_ptr<ArrayVector<T> > retVal( new ArrayVector<T> );
     retVal->setVariable ( var );
+
+    // allocate space for the vector
+    size_t N = 1;
+    for(auto s: localSize) N*=s;
     retVal->resize ( N );
+    // extract pointers to the internal vector and array
     auto internalArray = retVal->getArray();
     auto internalVec = retVal->getData();
-    //    internalArray.viewRaw(localSize, (T*)&internalVec[0]);
+    // set the data pointer for the array to point to the std:vector data
+    internalArray.viewRaw(localSize, internalVec.data());
+
     AMP_MPI comm(AMP_COMM_SELF);
     AMP::Discretization::DOFManager::shared_ptr DOFs( new AMP::Discretization::DOFManager( N, comm ) );
     retVal->d_DOFManager = DOFs;
@@ -40,12 +44,18 @@ Vector::shared_ptr  ArrayVector<T>::create (const std::vector<size_t> &localSize
 template <typename T>
 Vector::shared_ptr  ArrayVector<T>::create ( const std::vector<size_t>& localSize, Variable::shared_ptr var, AMP_MPI comm )
 {
-    size_t N = 1;
-    for(auto s: localSize) N*=s;
-
     AMP::shared_ptr<ArrayVector<T> > retVal( new ArrayVector<T> );
     retVal->setVariable ( var );
+
+    size_t N = 1;
+    for(auto s: localSize) N*=s;
     retVal->resize ( N );
+    // extract pointers to the internal vector and array
+    auto internalArray = retVal->getArray();
+    auto internalVec = retVal->getData();
+    // set the data pointer for the array to point to the std:vector data
+    internalArray.viewRaw(localSize, internalVec.data());
+
     AMP::Discretization::DOFManager::shared_ptr DOFs( new AMP::Discretization::DOFManager( N, comm ) );
     retVal->d_DOFManager = DOFs;
     retVal->setCommunicationList( AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
@@ -77,8 +87,7 @@ template <typename T>
 void ArrayVector<T>::copyVector( Vector::const_shared_ptr src_vec )
 {
     SimpleVector<T>::copyVector(src_vec);
-    // add code for array here
-}
+ }
 
 template <typename T>
 inline
@@ -90,7 +99,22 @@ Vector::shared_ptr ArrayVector<T>::cloneVector(const Variable::shared_ptr name) 
 template <typename T>
 void ArrayVector<T>::swapVectors(Vector &rhs)
 {
-    this->getData().swap ( rhs.castTo<ArrayVector<T> >().getData() );
+    // get information on array dimensions
+    auto internalArray = this->getArray();    
+    auto internalVec = this->getData();
+    auto mySize = internalArray.size();
+
+    auto otherArray = rhs.castTo<ArrayVector<T> >().getArray();
+    auto otherVec = rhs.castTo<ArrayVector<T> >().getData();
+    auto otherSize = otherArray.size();
+    // for now assume arrays are same size (do we need/want to?)
+    AMP_ASSERT(mySize==otherSize);
+
+    // swap data vectors
+    internalVec.swap ( otherVec );
+    // reset views
+    internalArray.viewRaw(otherSize, internalVec.data());
+    otherArray.viewRaw(mySize, internalVec.data());
 }
 
 template <typename T>

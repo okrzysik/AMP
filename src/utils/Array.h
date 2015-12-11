@@ -192,6 +192,17 @@ public:
      */
     void viewRaw( const std::initializer_list<size_t>& N, TYPE* data );
 
+    /*!
+     * Make this object a view of the raw data (expert use only).
+     * Use view2( N, std::shared_ptr(data,[](TYPE*){}) ) instead.
+     *   Note: this interface is not recommended as it does not protect from
+     *   the src data being deleted while still being used by the Array.
+     *   Additionally for maximum performance it does not set the internal shared_ptr
+     *   so functions like getPtr and resize will not work correctly.
+     * @param N             Number of elements in each dimension
+     * @param data          Pointer to the data
+     */
+    void viewRaw( const std::vector<size_t>& N, TYPE* data );
 
     /*!
      * Convert an array of one type to another.  This may or may not allocate new memory.

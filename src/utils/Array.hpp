@@ -481,6 +481,18 @@ void Array<TYPE>::viewRaw( const std::initializer_list<size_t>& N, TYPE *data )
     d_data = data;
 }
 
+template<class TYPE>
+void Array<TYPE>::viewRaw( const std::vector<size_t>& N, TYPE *data )
+{
+    d_ndim = static_cast<int>(N.size());
+    for (size_t i=0; i<ARRAY_NDIM_MAX; i++) { d_N[i] = 1; }
+    d_length = d_ndim==0 ? 0:1;
+    size_t i = 0;
+    for (auto it=N.begin(); it!=N.end(); ++it, ++i) { d_N[i]=*it; d_length*=*it; }
+    d_ptr.reset( );
+    d_data = data;
+}
+
 
 /********************************************************
 *  Convert array types                                  *

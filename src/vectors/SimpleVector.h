@@ -79,7 +79,6 @@ public:
     using Vector::dot;
     virtual double dot(const VectorOperations &x) const override;
 
-    virtual AMP::shared_ptr<ParameterBase> getParameters ();
     using Vector::cloneVector;
     virtual Vector::shared_ptr cloneVector(const Variable::shared_ptr name) const override;
     virtual size_t  numberOfDataBlocks() const override;

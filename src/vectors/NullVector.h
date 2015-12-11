@@ -39,11 +39,14 @@ public:
     virtual AMP::shared_ptr<ParameterBase> getParameters() override;
 
     virtual shared_ptr cloneVector(const Variable::shared_ptr name) const override;
+
+#if 0
     template <typename RETURN_TYPE>
     RETURN_TYPE *  getRawDataBlock() override;
 
     template <typename RETURN_TYPE>
     const RETURN_TYPE *  getRawDataBlock() const;
+#endif
 
     virtual void copyVector( Vector::const_shared_ptr rhs ) override;
     virtual void swapVectors(Vector &) override;

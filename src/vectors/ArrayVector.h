@@ -61,9 +61,6 @@ namespace LinearAlgebra {
       virtual void copyVector( Vector::const_shared_ptr src_vec ) override;
       virtual void swapVectors(Vector &other) override;
       virtual void aliasVector(Vector &other) override;
-
-      T &operator[] ( size_t i );
-      T operator[] ( size_t i ) const ;
       
       //! return a non-const reference to the internal data container
       Array<T> &getArray( void ) { return d_array; }

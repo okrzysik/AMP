@@ -239,7 +239,7 @@ size_t NullVector::sizeOfDataBlock ( size_t ) const
 }
 
 
-void*NullVector::getRawDataBlockAsVoid ( size_t ) 
+void *NullVector::getRawDataBlockAsVoid ( size_t ) 
 { 
     return 0; 
 }
