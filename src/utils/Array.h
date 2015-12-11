@@ -417,6 +417,9 @@ public:
     //! Return the sum of all elements
     inline TYPE sum( ) const;
 
+    //! Return the mean of all elements
+    inline TYPE mean( ) const;
+
     //! Return the min of all elements in a given direction
     Array<TYPE> min( int dir ) const;
 
@@ -425,6 +428,18 @@ public:
 
     //! Return the sum of all elements in a given direction
     Array<TYPE> sum( int dir ) const;
+
+    //! Return the smallest value
+    inline TYPE min( const std::vector<size_t>& index ) const;
+
+    //! Return the largest value
+    inline TYPE max( const std::vector<size_t>& index ) const;
+
+    //! Return the sum of all elements
+    inline TYPE sum( const std::vector<size_t>& index ) const;
+
+    //! Return the mean of all elements
+    inline TYPE mean( const std::vector<size_t>& index ) const;
 
     //! Find all elements that match the operator
     std::vector<size_t> find( const TYPE& value, 
