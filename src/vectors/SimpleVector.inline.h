@@ -128,7 +128,7 @@ void *SimpleVector<T>::getRawDataBlockAsVoid ( size_t i )
     {
       return 0;
     }
-    return &(d_Data[0]);
+    return d_Data.data();
 }
 
 template <typename T>
@@ -139,7 +139,7 @@ const void *SimpleVector<T>::getRawDataBlockAsVoid ( size_t i ) const
     {
       return 0;
     }
-    return &(d_Data[0]);
+    return d_Data.data();
 }
 
 template <typename T>
