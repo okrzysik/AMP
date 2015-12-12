@@ -17,8 +17,8 @@ class Lapack {
 public:
 
     /*!
-     * \brief   dcopy 
-     * \details  dcopy copies a vector x, to a vector y
+     * \brief   copy 
+     * \details  copy copies a vector x, to a vector y
      * @param[in]  N        The number of values to copy
      * @param[in]  x        The source vector
      * @param[in]  INCX     The spacing between points in x
@@ -28,8 +28,8 @@ public:
     static inline void copy( int N, const T *x, int INCX, T *y, int INCY );
 
     /*!
-     * \brief   dswap
-     * \details  dswap swaps two vectors
+     * \brief   swap
+     * \details  swap swaps two vectors
      * @param[in]     N     The number of values to copy
      * @param[in,out] x     The first vector
      * @param[in]  INCX     The spacing between points in x
@@ -39,8 +39,8 @@ public:
     static inline void swap( int N, T *x, int INCX, T *y, int INCY );
 
     /*!
-     * \brief   dscal 
-     * \details  dscal scales a vector by a constant.  x = a*x
+     * \brief   scal 
+     * \details  scal scales a vector by a constant.  x = a*x
      * @param[in]  N        The number of values to copy
      * @param[in]  a        The scale factor
      * @param[in,out] x     The vector
@@ -49,8 +49,8 @@ public:
     static inline void scal( int N, T a, T *x, int INCX );
 
     /*!
-     * \brief   dnrm2 
-     * \details  dnrm2 returns the euclidean norm of a vector via the function
+     * \brief   nrm2 
+     * \details  nrm2 returns the euclidean norm of a vector via the function
      * @param[in]  N        The number of values to copy
      * @param[in]  x        The input vector
      * @param[in]  INCX     The spacing between points in x
@@ -58,8 +58,8 @@ public:
     static inline T nrm2( int N, const T *x, int INCX );
 
     /*!
-     * \brief   idamax
-     * \details  idamax finds the index of element having maximum absolute value.
+     * \brief   iamax
+     * \details  iamax finds the index of element having maximum absolute value.
      *    Note: the returned index is 0 (C++) based.
      * @param[in]  N        The number of values to copy
      * @param[in]  x        The input vector
@@ -68,8 +68,8 @@ public:
     static inline int iamax( int N, const T *x, int INCX );
 
     /*!
-     * \brief   daxpy 
-     * \details  daxpy scales a vector by a constant plus a vector.  y = a*x + y
+     * \brief   axpy 
+     * \details  axpy scales a vector by a constant plus a vector.  y = a*x + y
      * @param[in] N         The number of values to copy
      * @param[in] a         The scale factor
      * @param[in] x         The source vector
@@ -80,8 +80,8 @@ public:
     static inline void axpy( int N, T a, const T *x, int INCX, T *y, int INCY );
 
     /*!
-     * \brief   dgemv 
-     * \details  dgemv performs one of the matrix-vector operations
+     * \brief   gemv 
+     * \details  gemv performs one of the matrix-vector operations
      *      y := alpha*A*x + beta*y, or y := alpha*A'*x + beta*y,
      *   where alpha and beta are scalars, x and y are vectors and A
      *   is an m by n matrix.
@@ -166,8 +166,8 @@ public:
         const T *A, int LDA, const T *B, int LDB, T beta, T *C, int LDC );
 
     /*!
-     * \brief   dasum 
-     * \details  dasum sums a vector
+     * \brief   asum 
+     * \details  asum sums a vector
      * @param[in]  N        The number of values to copy
      * @param[in]  x        The source vector
      * @param[in]  INCX     The spacing between points in x
@@ -175,8 +175,8 @@ public:
     static inline T asum( int N, const T *x, int INCX );
 
     /*!
-     * \brief   ddot 
-     * \details  ddot computes the dot product between two vectors
+     * \brief   dot 
+     * \details  dot computes the dot product between two vectors
      * @param[in]  N        The number of values to copy
      * @param[in]  x        The source vector x
      * @param[in]  INCX     The spacing between points in x
@@ -186,8 +186,8 @@ public:
     static inline T dot( int N, const T *x, int INCX, const T *y, int INCY );
 
     /*!
-     * \brief   dger 
-     * \details  dger performs the rank 1 operation
+     * \brief   ger 
+     * \details  ger performs the rank 1 operation
      *     A := alpha*x*y' + A,
      *  where alpha is a scalar, x is an m element vector, y is an n element
      *  vector and A is an m by n matrix.
@@ -205,8 +205,8 @@ public:
     static inline void ger( int N, int M, T alpha, const T *x, int INCX, const T *y, int INCY, T *A, int LDA );
 
     /*!
-     * \brief   dgesv 
-     * \details  dgesv computes the solution to a real system of linear equations
+     * \brief   gesv 
+     * \details  gesv computes the solution to a real system of linear equations
      *       A * X = B,
      *    where A is an N-by-N matrix and X and B are N-by-NRHS matrices.
      *    The LU decomposition with partial pivoting and row interchanges is
@@ -238,8 +238,8 @@ public:
     static inline void gesv( int N, int NRHS, T *A, int LDA, int *IPIV, T *B, int LDB, int &INFO );
 
     /*!
-     * \brief   dgtsv 
-     * \details  dgtsv computes the solution to a real system of linear equations
+     * \brief   gtsv 
+     * \details  gtsv computes the solution to a real system of linear equations
      *       A * X = B,
      *    where A is an n by n tridiagonal matrix, by Gaussian elimination with
      *    partial pivoting.  Note that the equation  A**T*X = B  may be solved by interchanging the
@@ -270,8 +270,8 @@ public:
     static inline void gtsv( int N, int NRHS, T *DL, T *D, T *DU, T *B, int LDB, int &INFO );
 
     /*!
-     * \brief   dgbsv 
-     * \details  dgbsv computes the solution to a real system of linear equations
+     * \brief   gbsv 
+     * \details  gbsv computes the solution to a real system of linear equations
      *       A * X = B, 
      *    where A is a band matrix of order N with KL subdiagonals
      *    and KU superdiagonals, and X and B are N-by-NRHS matrices.
@@ -332,8 +332,8 @@ public:
 
 
     /*!
-     * \brief   dgetrf 
-     * \details  dgetrf computes an LU factorization of a real matrix A
+     * \brief   getrf 
+     * \details  getrf computes an LU factorization of a real matrix A
      *    using elimination with partial pivoting and row interchanges.
      *    The factorization has the form:
      *       A = L * U
@@ -358,8 +358,8 @@ public:
     static inline void getrf( int M, int N, T *A, int LDA, int *IPIV, int &INFO );
 
     /*!
-     * \brief   dgttrf 
-     * \details  dgttrf computes an LU factorization of a real tridiagonal
+     * \brief   gttrf 
+     * \details  gttrf computes an LU factorization of a real tridiagonal
      *    matrix A using elimination with partial pivoting and row interchanges.
      *    The factorization has the form
      *       A = L * U
@@ -392,8 +392,8 @@ public:
     static inline void gttrf( int N, T *DL, T *D, T *DU, T *DU2, int *IPIV, int &INFO );
 
     /*!
-     * \brief   dgbtrf 
-     * \details  dgbtrf computes an LU factorization of a real m-by-n band
+     * \brief   gbtrf 
+     * \details  gbtrf computes an LU factorization of a real m-by-n band
      *    matrix A using partial pivoting with row interchanges.
      * @param[in]  M        The number of rows of the matrix A.  M >= 0.
      * @param[in]  N        The number of columns of the matrix A.  N >= 0.
@@ -421,8 +421,8 @@ public:
     static inline void gbtrf( int M, int N, int KL, int KU, T *AB, int LDAB, int *IPIV, int &INFO );
 
     /*!
-     * \brief   dgetrs 
-     * \details  dgetrs solves a system of linear equations
+     * \brief   getrs 
+     * \details  getrs solves a system of linear equations
      *       A*X = B  or  A'*X = B
      *    with a general N-by-N matrix A using the LU factorization computed by DGETRF.
      * @param[in] TRANS     Specifies the form of the system of equations:
@@ -445,8 +445,8 @@ public:
     static inline void getrs( char TRANS, int N, int NRHS, const T *A, int LDA, const int *IPIV, T *B, int LDB, int &INFO );
 
     /*!
-     * \brief   dgttrs 
-     * \details  dgttrs solves one of the systems of equations
+     * \brief   gttrs 
+     * \details  gttrs solves one of the systems of equations
      *       A*X = B  or  A'*X = B, with a tridiagonal matrix A using
      *    the LU factorization computed by DGTTRF.
      * @param[in] TRANS     Specifies the form of the system of equations:
@@ -476,8 +476,8 @@ public:
         const T *DU, const T *DU2, const int *IPIV, T *B, int LDB, int &INFO );
 
     /*!
-     * \brief   dgbtrs 
-     * \details  dgbtrs solves a system of linear equations
+     * \brief   gbtrs 
+     * \details  gbtrs solves a system of linear equations
      *       A * X = B  or  A' * X = B with a general band matrix A
      *    using the LU factorization computed by DGBTRF.
      * @param[in] TRANS     Specifies the form of the system of equations:
@@ -510,8 +510,8 @@ public:
         int LDAB, const int *IPIV, T *B, int LDB, int &INFO );
 
     /*!
-     * \brief   dgetri 
-     * \details  dgetri computes the inverse of a matrix using the LU factorization
+     * \brief   getri 
+     * \details  getri computes the inverse of a matrix using the LU factorization
      *    computed by DGETRF.
      * @param[in]  N        The order of the matrix A.  N >= 0.
      * @param[in,out] A     On entry, the factors L and U from the factorization
@@ -537,8 +537,8 @@ public:
     static inline void getri( int N, T *A, int LDA, const int *IPIV, T *WORK, int LWORK, int &INFO );
 
     /*!
-     * \brief   dtrsm 
-     * \details  dtrsm solves one of the matrix equations
+     * \brief   trsm 
+     * \details  trsm solves one of the matrix equations
      *     op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
      *  where alpha is a scalar, X and B are m by n matrices, A is a unit, or
      *  non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
@@ -583,8 +583,8 @@ public:
         int M, int N, T ALPHA, const T *A, int LDA, T *B, int LDB );
 
     /*!
-     * \brief   dlamch
-     * \details  dlamch determines T precision machine parameters.
+     * \brief   lamch
+     * \details  lamch determines T precision machine parameters.
      *
      * @param[in] cmach     Specifies the value to be returned by DLAMCH:
      *                      'E' or 'e':   eps   = relative machine precision
