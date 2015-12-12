@@ -643,7 +643,6 @@ private:
 
 } // namespace
 
-#include "utils/LapackWrappers_tests.hpp"
 #include "utils/LapackWrappers.double.hpp"
 #include "utils/LapackWrappers.float.hpp"
 
