@@ -201,8 +201,7 @@ MACRO( CONFIGURE_VECLIB )
           PATHS ${VECLIB_DIRECTORY}
                 /System/Library/${__veclib_include_suffix}
                 /System/Library/Frameworks/Accelerate.framework/Versions/Current/${__veclib_include_suffix}
-                /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/System/Library/Frameworks/Accelerate.framework/Versions/Current/Frameworks/vecLib.framework/Headers/
-                /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/Accelerate.framework/Versions/Current/Frameworks/vecLib.framework/Headers/)
+                /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.*.sdk/System/Library/Frameworks/Accelerate.framework/Versions/Current/Frameworks/vecLib.framework/Headers )
     INCLUDE(FindPackageHandleStandardArgs)
     find_package_handle_standard_args(vecLib DEFAULT_MSG vecLib_INCLUDE_DIR)
     IF ( VECLIB_FOUND )
@@ -218,7 +217,7 @@ MACRO( CONFIGURE_VECLIB )
     FILE(APPEND ${BLAS_LAPACK_HEADER} "#include \"${vecLib_INCLUDE_DIR}/clapack.h\"\n" )
     SET( VECLIB_LIBS ${vecLib_LINKER_LIBS} )
     MESSAGE( "Using vecLib" )
-    MESSAGE( "   ${VEC_LIBS}" )
+    MESSAGE( "   ${VECLIB_LIBS}" )
 ENDMACRO()
 
 
