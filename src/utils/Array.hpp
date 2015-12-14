@@ -9,7 +9,7 @@
 namespace AMP {
 
 
-#define GET_ARRAY_INDEX2(N,i1,i2,i3,i4,i5)  i1+N[0]*(i2+N[1]*(i3+N[2]*(i4+N[3]*i5)))
+#define GET_ARRAY_INDEX5D(N,i1,i2,i3,i4,i5)  i1+N[0]*(i2+N[1]*(i3+N[2]*(i4+N[3]*i5)))
 
 
 /********************************************************
@@ -212,8 +212,8 @@ void Array<TYPE>::resize( const std::vector<size_t>& N )
                     for (size_t i3=0; i3<std::min(N1[2],N2[2]); i3++) {
                         for (size_t i2=0; i2<std::min(N1[1],N2[1]); i2++) {
                             for (size_t i1=0; i1<std::min(N1[0],N2[0]); i1++) {
-                                size_t index1 = GET_ARRAY_INDEX2(N1,i1,i2,i3,i4,i5);
-                                size_t index2 = GET_ARRAY_INDEX2(N2,i1,i2,i3,i4,i5);
+                                size_t index1 = GET_ARRAY_INDEX5D(N1,i1,i2,i3,i4,i5);
+                                size_t index2 = GET_ARRAY_INDEX5D(N2,i1,i2,i3,i4,i5);
                                 data2[index2] = std::move(data1[index1]);
                             }
                         }
@@ -227,8 +227,8 @@ void Array<TYPE>::resize( const std::vector<size_t>& N )
                     for (size_t i3=0; i3<std::min(N1[2],N2[2]); i3++) {
                         for (size_t i2=0; i2<std::min(N1[1],N2[1]); i2++) {
                             for (size_t i1=0; i1<std::min(N1[0],N2[0]); i1++) {
-                                size_t index1 = GET_ARRAY_INDEX2(N1,i1,i2,i3,i4,i5);
-                                size_t index2 = GET_ARRAY_INDEX2(N2,i1,i2,i3,i4,i5);
+                                size_t index1 = GET_ARRAY_INDEX5D(N1,i1,i2,i3,i4,i5);
+                                size_t index2 = GET_ARRAY_INDEX5D(N2,i1,i2,i3,i4,i5);
                                 data2[index2] = data1[index1];
                             }
                         }
@@ -348,9 +348,9 @@ Array<TYPE> Array<TYPE>::subset( const std::vector<size_t>& index ) const
             for (size_t i2=first[2]; i2<=last[2]; i2++) {
                 for (size_t i1=first[1]; i1<=last[1]; i1++) {
                     for (size_t i0=first[0]; i0<=last[0]; i0++) {
-                        size_t k1 = GET_ARRAY_INDEX2( N1, i0-first[0],
+                        size_t k1 = GET_ARRAY_INDEX5D( N1, i0-first[0],
                             i1-first[1], i2-first[2], i3-first[3], i4-first[4] );
-                        size_t k2 = GET_ARRAY_INDEX2(N2,i0,i1,i2,i3,i4);
+                        size_t k2 = GET_ARRAY_INDEX5D(N2,i0,i1,i2,i3,i4);
                         subset.d_data[k1] = d_data[k2];
                     }
                 }
@@ -376,9 +376,9 @@ void Array<TYPE>::copyFromSubset( const std::vector<size_t>& index, const Array<
             for (size_t i2=first[2]; i2<=last[2]; i2++) {
                 for (size_t i1=first[1]; i1<=last[1]; i1++) {
                     for (size_t i0=first[0]; i0<=last[0]; i0++) {
-                        size_t k1 = GET_ARRAY_INDEX2( N1, i0-first[0],
+                        size_t k1 = GET_ARRAY_INDEX5D( N1, i0-first[0],
                             i1-first[1], i2-first[2], i3-first[3], i4-first[4] );
-                        size_t k2 = GET_ARRAY_INDEX2(N2,i0,i1,i2,i3,i4);
+                        size_t k2 = GET_ARRAY_INDEX5D(N2,i0,i1,i2,i3,i4);
                         d_data[k2] = subset.d_data[k1];
                     }
                 }
@@ -704,7 +704,7 @@ TYPE Array<TYPE>::min( const std::vector<size_t>& index ) const
             for (size_t i2=first[2]; i2<=last[2]; i2++) {
                 for (size_t i1=first[1]; i1<=last[1]; i1++) {
                     for (size_t i0=first[0]; i0<=last[0]; i0++) {
-                        size_t k1 = GET_ARRAY_INDEX2(N2,i0,i1,i2,i3,i4);
+                        size_t k1 = GET_ARRAY_INDEX5D(N2,i0,i1,i2,i3,i4);
                         x = std::min(x,d_data[k1]);
                     }
                 }
@@ -734,7 +734,7 @@ TYPE Array<TYPE>::max( const std::vector<size_t>& index ) const
             for (size_t i2=first[2]; i2<=last[2]; i2++) {
                 for (size_t i1=first[1]; i1<=last[1]; i1++) {
                     for (size_t i0=first[0]; i0<=last[0]; i0++) {
-                        size_t k1 = GET_ARRAY_INDEX2(N2,i0,i1,i2,i3,i4);
+                        size_t k1 = GET_ARRAY_INDEX5D(N2,i0,i1,i2,i3,i4);
                         x = std::max(x,d_data[k1]);
                     }
                 }
@@ -762,7 +762,7 @@ TYPE Array<TYPE>::sum( const std::vector<size_t>& index ) const
             for (size_t i2=first[2]; i2<=last[2]; i2++) {
                 for (size_t i1=first[1]; i1<=last[1]; i1++) {
                     for (size_t i0=first[0]; i0<=last[0]; i0++) {
-                        size_t k1 = GET_ARRAY_INDEX2(N2,i0,i1,i2,i3,i4);
+                        size_t k1 = GET_ARRAY_INDEX5D(N2,i0,i1,i2,i3,i4);
                         x += d_data[k1];
                     }
                 }

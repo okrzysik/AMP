@@ -105,8 +105,8 @@ public:
         const T *A, int LDA, const T *x, int INCX, T beta, T *y, int INCY );
 
     /*!
-     * \brief   dgemm 
-     * \details  dgemm performs one of the matrix-matrix operations
+     * \brief   gemm 
+     * \details  gemm performs one of the matrix-matrix operations
      *       C := alpha*op( A )*op( B ) + beta*C,
      *    where  op( X ) is one of
      *       op( X ) = X   or   op( X ) = X',
