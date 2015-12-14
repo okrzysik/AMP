@@ -22,6 +22,15 @@ namespace AMP {
     #define CHECK_ARRAY_INDEX(i1,i2,i3) 
 #endif
 
+#define GET_ARRAY_INDEX4D(i1,i2,i3,i4) i1+d_N[0]*(i2+d_N[1]*(i3+d_N[2]*i4))
+#if defined(DEBUG) || defined(_DEBUG)
+#define CHECK_ARRAY_INDEX4D(i1,i2,i3,i4)                                  \
+  if ( GET_ARRAY_INDEX4D(i1,i2,i3,i4)<0 || GET_ARRAY_INDEX4D(i1,i2,i3,i4)>=d_length ) \
+            AMP_ERROR("Index exceeds array bounds");
+#else
+#define CHECK_ARRAY_INDEX4D(i1,i2,i3,i4) 
+#endif
+
 #if defined(__CUDA_ARCH__)
     #include <cuda.h>
     #define HOST_DEVICE __host__ __device__
@@ -384,11 +393,28 @@ public:
      */
     HOST_DEVICE inline const TYPE& operator()( size_t i, size_t j, size_t k ) const { CHECK_ARRAY_INDEX(i,j,k) return d_data[GET_ARRAY_INDEX(i,j,k)]; }
 
+    /*!
+     * Access the desired element
+     * @param i             The row index
+     * @param j             The column index
+     * @param k             The third index
+     * @param l             The fourth index
+     */
+    HOST_DEVICE inline TYPE& operator()( size_t i, size_t j, size_t k, size_t l ) { CHECK_ARRAY_INDEX4D(i,j,k,l) return d_data[GET_ARRAY_INDEX4D(i,j,k,l)]; }
 
-    //! Check if two matricies are equal
+    /*!
+     * Access the desired element
+     * @param i             The row index
+     * @param j             The column index
+     * @param k             The third index
+     * @param l             The fourth index
+     */
+    HOST_DEVICE inline const TYPE& operator()( size_t i, size_t j, size_t k, size_t l ) const { CHECK_ARRAY_INDEX4D(i,j,k,l) return d_data[GET_ARRAY_INDEX4D(i,j,k,l)]; }
+
+    //! Check if two matrices are equal
     bool operator==( const Array& rhs ) const;
 
-    //! Check if two matricies are not equal
+    //! Check if two matrices are not equal
     inline bool operator!=( const Array& rhs ) const { return !this->operator==(rhs); }
 
 
