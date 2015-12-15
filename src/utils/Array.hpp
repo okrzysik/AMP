@@ -360,7 +360,7 @@ Array<TYPE> Array<TYPE>::subset( const std::vector<size_t>& index ) const
     return subset;
 }
 template<class TYPE>
-void Array<TYPE>::copyFromSubset( const std::vector<size_t>& index, const Array<TYPE>& subset )
+void Array<TYPE>::copySubset( const std::vector<size_t>& index, const Array<TYPE>& subset )
 {
     // Get the subset indices
     checkSubsetIndex(index);
