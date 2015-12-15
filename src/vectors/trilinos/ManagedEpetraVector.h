@@ -33,12 +33,12 @@ public:
     /** \brief Create a ManagedEpetraVector from a set of parameters
       * \param[in] params  A VectorParameters class used to construct this vector
       */
-    ManagedEpetraVector( VectorParameters::shared_ptr  params );
+    explicit ManagedEpetraVector( VectorParameters::shared_ptr  params );
 
     /** \brief Create a view of a vector
       * \param[in] alias  Vector to view
       */
-    ManagedEpetraVector( Vector::shared_ptr  alias );
+    explicit ManagedEpetraVector( Vector::shared_ptr  alias );
 
 
     // These methods are adequately documented in a base class

@@ -56,7 +56,7 @@ protected:
 
 private:
 
-    ManagedSundialsVector(const ManagedSundialsVector&);
+    explicit ManagedSundialsVector(const ManagedSundialsVector&);
     void operator=(const ManagedSundialsVector&);
 
     static N_Vector_Ops createNVectorOps();

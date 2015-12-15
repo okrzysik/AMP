@@ -52,12 +52,12 @@ public:
     /** \brief Construct a ManagedVector from a set of parameters
       * \param[in] params  The description of the ManagedVector
       */
-    ManagedVector( VectorParameters::shared_ptr params );
+    explicit ManagedVector( VectorParameters::shared_ptr params );
 
     /** \brief Construct a view of an AMP vector
       * \param[in] alias  Vector to view
       */
-    ManagedVector( const Vector::shared_ptr alias );
+    explicit ManagedVector( const Vector::shared_ptr alias );
 
     //! Destructor
     virtual ~ManagedVector();

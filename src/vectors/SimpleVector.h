@@ -20,7 +20,7 @@ protected:
     AMP_MPI d_comm;
 
     SimpleVector();
-    SimpleVector( const SimpleVector & );
+    explicit SimpleVector( const SimpleVector & );
 
 public:
     /** \brief    Create a SimpleVector

@@ -250,7 +250,7 @@ protected:
     /** Constructor:  create a MultiVector with a particular variable
       * \param[in]  name  The vector to create the MultiVector from
       */
-    MultiVector( const std::string& name );
+    explicit MultiVector( const std::string& name );
 
     virtual void dataChanged() override;
 

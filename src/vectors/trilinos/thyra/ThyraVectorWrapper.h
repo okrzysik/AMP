@@ -27,7 +27,7 @@ class ThyraVectorWrapper : public Thyra::VectorBase<double>
 public:
 
     // Default constructor
-    ThyraVectorWrapper( const std::vector<AMP::LinearAlgebra::Vector::shared_ptr>& vecs );
+    explicit ThyraVectorWrapper( const std::vector<AMP::LinearAlgebra::Vector::shared_ptr>& vecs );
 
     //! Destructor
     virtual ~ThyraVectorWrapper();
@@ -64,7 +64,7 @@ public:
 protected:
 
     // Protected constructor for view of subset of columns
-    ThyraVectorWrapper( const std::vector<AMP::LinearAlgebra::Vector::shared_ptr>& vecs, const std::vector<size_t>& cols, size_t N_cols );
+    explicit ThyraVectorWrapper( const std::vector<AMP::LinearAlgebra::Vector::shared_ptr>& vecs, const std::vector<size_t>& cols, size_t N_cols );
     void initialize( const std::vector<AMP::LinearAlgebra::Vector::shared_ptr>& vecs, const std::vector<size_t>& cols, size_t N_cols );
 
     // Functions derived from Thyra::LinearOpBase

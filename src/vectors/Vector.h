@@ -135,7 +135,7 @@ public:
       * \param[in] parameters  A pointer to a parameters class
       * \see VectorParameters
      */
-    Vector( VectorParameters::shared_ptr  parameters);
+    explicit Vector( VectorParameters::shared_ptr  parameters);
 
     /** \brief Destructor
      */
@@ -1166,7 +1166,7 @@ protected:
 private:
 
     // The following are not implemented
-    Vector(const Vector&);
+    explicit Vector(const Vector&);
     void operator=(const Vector&);
 
     // output stream for vector data

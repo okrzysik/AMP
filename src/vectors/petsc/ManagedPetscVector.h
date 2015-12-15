@@ -55,7 +55,7 @@ public:
       /** \brief Construct a new ManagedPetscVector given a set of parameters
         * \param[in] params  The parameters describing the new vector
         */
-      ManagedPetscVector( VectorParameters::shared_ptr params );
+      explicit ManagedPetscVector( VectorParameters::shared_ptr params );
 
       /** \brief Construct a view of another vector
         * \param[in] alias The vector to view

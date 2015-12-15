@@ -78,7 +78,7 @@ public:
     /** \brief Construct a wrapper for a PETSc Vec from a set of parameters
       * \param[in] params The parameters describing the Vec
       */
-    NativePetscVector( VectorParameters::shared_ptr params );
+    explicit NativePetscVector( VectorParameters::shared_ptr params );
 
     //! Destructor
     virtual ~NativePetscVector();

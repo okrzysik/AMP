@@ -36,12 +36,12 @@ public:
     /** \brief Create a ManagedThyraVector from a set of parameters
       * \param[in] params  A VectorParameters class used to construct this vector
       */
-    ManagedThyraVector( VectorParameters::shared_ptr  params );
+    explicit ManagedThyraVector( VectorParameters::shared_ptr  params );
 
     /** \brief Create a view of a vector
       * \param[in] alias  Vector to view
       */
-    ManagedThyraVector( Vector::shared_ptr  alias );
+    explicit ManagedThyraVector( Vector::shared_ptr  alias );
 
     //! Destructor
     virtual ~ManagedThyraVector();

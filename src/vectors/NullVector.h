@@ -16,7 +16,7 @@ namespace LinearAlgebra {
 class NullVector  : public Vector
 {
 private:
-    NullVector( Variable::shared_ptr );
+    explicit NullVector( Variable::shared_ptr );
 
 public:
     /**
