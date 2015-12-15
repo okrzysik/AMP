@@ -16,7 +16,7 @@ class MassLinearElement : public MassElement
 {
 public :
         
-    MassLinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
+    explicit MassLinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
         MassElement(params), 
         d_elementMassMatrix(NULL), 
         d_equation(MassDensityModel::UnknownMassEquation)

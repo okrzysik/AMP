@@ -20,7 +20,7 @@ namespace AMP {
       public :
 
         /** Constructor */
-        MechanicsModel(const AMP::shared_ptr<MechanicsModelParameters>& params)
+        explicit MechanicsModel(const AMP::shared_ptr<MechanicsModelParameters>& params)
           : ElementPhysicsModel(params) { 
             bool useMaterialsLibrary = (params->d_db)->getBoolWithDefault("USE_MATERIALS_LIBRARY", false);
             if(useMaterialsLibrary == true) {

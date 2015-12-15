@@ -17,7 +17,7 @@ class NavierStokesGalWFLinearElement : public FlowElement
 {
 public :
 
-    NavierStokesGalWFLinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
+    explicit NavierStokesGalWFLinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
         FlowElement(params),
         d_elementStiffnessMatrix(NULL)
     {

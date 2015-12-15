@@ -126,7 +126,7 @@ namespace TimeIntegrator{
        
       */
       
-      IDATimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters );
+      explicit IDATimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters );
       
       /**
        * Destructor.

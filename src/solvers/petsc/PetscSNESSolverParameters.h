@@ -46,7 +46,7 @@ namespace Solver {
   class PetscSNESSolverParameters: public SolverStrategyParameters{
   public:
     PetscSNESSolverParameters(){}
-    PetscSNESSolverParameters(const AMP::shared_ptr<AMP::Database> &db);
+    explicit PetscSNESSolverParameters(const AMP::shared_ptr<AMP::Database> &db);
     virtual ~PetscSNESSolverParameters(){}
 
     AMP_MPI d_comm;

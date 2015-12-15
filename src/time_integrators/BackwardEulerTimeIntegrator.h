@@ -21,7 +21,7 @@ public:
    /**
     * Constructor that accepts parameter list.
     */
-   BackwardEulerTimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters );
+   explicit BackwardEulerTimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters );
 
    /**
     * Destructor.

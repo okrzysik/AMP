@@ -23,10 +23,10 @@ class TrilinosLinearOP: public Thyra::LinearOpBase<double>
 public:
     
     //! Constructor that wraps and AMP::Operator
-    TrilinosLinearOP( AMP::Operator::Operator::shared_ptr );
+    explicit TrilinosLinearOP( AMP::Operator::Operator::shared_ptr );
 
     //! Constructor that wraps and AMP::Solver
-    TrilinosLinearOP( AMP::Solver::SolverStrategy::shared_ptr );
+    explicit TrilinosLinearOP( AMP::Solver::SolverStrategy::shared_ptr );
 
     //! Destructor
     virtual ~TrilinosLinearOP();

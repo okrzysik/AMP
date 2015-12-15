@@ -18,7 +18,7 @@ namespace Operator {
       /**
         Constructor.
         */
-      ElementPhysicsModel(const AMP::shared_ptr<ElementPhysicsModelParameters>& params)  {
+      explicit ElementPhysicsModel(const AMP::shared_ptr<ElementPhysicsModelParameters>& params)  {
         d_iDebugPrintInfoLevel = (params->d_db)->getIntegerWithDefault("print_info_level", 0);
       }
 

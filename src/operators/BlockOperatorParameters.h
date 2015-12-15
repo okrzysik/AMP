@@ -12,7 +12,7 @@ namespace AMP {
     class BlockOperatorParameters : public OperatorParameters {
       public :
 
-        BlockOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
+        explicit BlockOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
           : OperatorParameters(db) { }
 
         virtual ~BlockOperatorParameters() { }

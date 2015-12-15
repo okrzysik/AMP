@@ -28,7 +28,7 @@ namespace Operator {
         Constructor creates a simpleVariables for Input and Output. The reset is called to 
         read the flow parameters.
         */
-      FlowFrapconJacobian(const AMP::shared_ptr<FlowFrapconJacobianParameters> & params);
+      explicit FlowFrapconJacobian(const AMP::shared_ptr<FlowFrapconJacobianParameters> & params);
 
       /**
         Destructor

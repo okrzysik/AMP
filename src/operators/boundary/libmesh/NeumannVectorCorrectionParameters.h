@@ -12,7 +12,7 @@ namespace Operator {
   class NeumannVectorCorrectionParameters : public OperatorParameters {
     public :
 
-      NeumannVectorCorrectionParameters(const AMP::shared_ptr<AMP::Database> &db)
+      explicit NeumannVectorCorrectionParameters(const AMP::shared_ptr<AMP::Database> &db)
         : OperatorParameters(db) {  }
 
       virtual ~NeumannVectorCorrectionParameters() { }

@@ -35,7 +35,7 @@ public:
     * Construct and initialize a parameter list according to input
     * data.  See Application for a list of required and optional keywords.
     */
-   NonlinearKrylovAcceleratorParameters( const AMP::shared_ptr<AMP::Database> &database );
+   explicit NonlinearKrylovAcceleratorParameters( const AMP::shared_ptr<AMP::Database> &database );
 
    /**
     * Destructor.

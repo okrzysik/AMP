@@ -36,7 +36,7 @@ public:
    //! Convience typedef
    typedef AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters>  shared_ptr;
 
-   TimeIntegratorParameters(const AMP::shared_ptr<AMP::Database> db);
+   explicit TimeIntegratorParameters(const AMP::shared_ptr<AMP::Database> db);
 
    virtual ~TimeIntegratorParameters();
    /**
@@ -82,7 +82,7 @@ protected:
 private:
    // not implemented
    TimeIntegratorParameters(){}
-   TimeIntegratorParameters(const TimeIntegratorParameters&);
+   explicit TimeIntegratorParameters(const TimeIntegratorParameters&);
    void operator=(const TimeIntegratorParameters&);
 };
 

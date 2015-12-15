@@ -15,7 +15,7 @@ namespace Operator {
   {
     public :
 
-      VonMises_IsotropicKinematicHardening(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
+      explicit VonMises_IsotropicKinematicHardening(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
 
       virtual ~VonMises_IsotropicKinematicHardening() { }
 

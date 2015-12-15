@@ -26,7 +26,7 @@ namespace AMP {
         /**
           Constructor
           */
-        DirichletVectorCorrection(const AMP::shared_ptr<DirichletVectorCorrectionParameters> & params)
+        explicit DirichletVectorCorrection(const AMP::shared_ptr<DirichletVectorCorrectionParameters> & params)
           : BoundaryOperator (params)
         {
           d_variable = params->d_variable;

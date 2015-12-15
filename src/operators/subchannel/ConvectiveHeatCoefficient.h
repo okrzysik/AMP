@@ -16,7 +16,7 @@ class ConvectiveHeatCoefficient  : public RobinPhysicsModel
  {
     public :
       
-      ConvectiveHeatCoefficient(const AMP::shared_ptr<RobinPhysicsModelParameters>& params);
+      explicit ConvectiveHeatCoefficient(const AMP::shared_ptr<RobinPhysicsModelParameters>& params);
 
       virtual ~ConvectiveHeatCoefficient() {}
 

@@ -45,7 +45,7 @@ public:
     /** \brief Constructor
       * \param[in] p  The description of the matrix
       */
-    ManagedEpetraMatrix( AMP::shared_ptr<ManagedEpetraMatrixParameters> p );
+    explicit ManagedEpetraMatrix( AMP::shared_ptr<ManagedEpetraMatrixParameters> p );
 
     /** \brief Constructor from Epetra_CrsMatrix
       * \param[in]  m  Matrix to wrap

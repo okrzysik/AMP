@@ -13,7 +13,7 @@ namespace Operator {
   class NavierStokesLSWFFEOperatorParameters : public FEOperatorParameters {
     public :
 
-      NavierStokesLSWFFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
+      explicit NavierStokesLSWFFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
         : FEOperatorParameters(db) { }
 
       virtual ~NavierStokesLSWFFEOperatorParameters() { }

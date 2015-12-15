@@ -32,7 +32,7 @@ public:
       /** \brief Constructor
         * \param[in] params  Description of the matrix
         */
-      Matrix( MatrixParameters::shared_ptr  params );
+      explicit Matrix( MatrixParameters::shared_ptr  params );
 
       /** \brief Destructor
         */

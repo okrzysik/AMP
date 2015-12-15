@@ -13,7 +13,7 @@ typedef SolverStrategyParameters Flow1DSolverParameters;
 class Flow1DSolver: public SolverStrategy {
 public:
 
-      Flow1DSolver(AMP::shared_ptr<Flow1DSolverParameters> parameters);
+      explicit Flow1DSolver(AMP::shared_ptr<Flow1DSolverParameters> parameters);
       
      virtual ~Flow1DSolver();
 

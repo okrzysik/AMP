@@ -24,7 +24,7 @@ namespace AMP {
     {
       public :
 
-        NavierStokesGalWFFEOperator(const AMP::shared_ptr<NavierStokesGalWFFEOperatorParameters>& params);
+        explicit NavierStokesGalWFFEOperator(const AMP::shared_ptr<NavierStokesGalWFFEOperatorParameters>& params);
 
         virtual ~NavierStokesGalWFFEOperator() { }
 

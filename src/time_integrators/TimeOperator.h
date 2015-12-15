@@ -90,7 +90,7 @@ class TimeOperator: public AMP::Operator::Operator
       optional field: no
 
   */
-  TimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > params);
+  explicit TimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > params);
 
   /**
    * virtual destructor

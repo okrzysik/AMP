@@ -40,7 +40,7 @@ public:
     * member function.
     *
     */
-  TimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters);
+  explicit TimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters);
 
    /**
     * Empty destructor for TimeIntegrator
@@ -300,7 +300,7 @@ protected:
 private:
 
    // The following are not implemented:
-   TimeIntegrator(const TimeIntegrator&);
+   explicit TimeIntegrator(const TimeIntegrator&);
    void operator=(const TimeIntegrator&);
 
 };

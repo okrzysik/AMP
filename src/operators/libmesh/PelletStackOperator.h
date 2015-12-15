@@ -10,7 +10,7 @@ namespace AMP {
     class PelletStackOperator : public Operator 
     {
       public :
-        PelletStackOperator(const AMP::shared_ptr<PelletStackOperatorParameters> & params);
+        explicit PelletStackOperator(const AMP::shared_ptr<PelletStackOperatorParameters> & params);
 
         virtual ~PelletStackOperator() { }
 

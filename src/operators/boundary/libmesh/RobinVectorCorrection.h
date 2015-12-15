@@ -42,7 +42,7 @@ namespace Operator {
         conditions. Since it is derived from NeumannVectorCorrection, its constructor
         will be called to read the required parameters.
         */
-      RobinVectorCorrection(const AMP::shared_ptr<NeumannVectorCorrectionParameters> & params)
+      explicit RobinVectorCorrection(const AMP::shared_ptr<NeumannVectorCorrectionParameters> & params)
         : NeumannVectorCorrection (params)
       {
           reset(params);

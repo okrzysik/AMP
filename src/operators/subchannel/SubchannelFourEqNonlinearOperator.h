@@ -19,7 +19,7 @@ namespace Operator {
     public :
 
       //! Constructor
-      SubchannelFourEqNonlinearOperator(const AMP::shared_ptr<SubchannelOperatorParameters> & params);
+      explicit SubchannelFourEqNonlinearOperator(const AMP::shared_ptr<SubchannelOperatorParameters> & params);
 
       //! Destructor
       virtual ~SubchannelFourEqNonlinearOperator() { }

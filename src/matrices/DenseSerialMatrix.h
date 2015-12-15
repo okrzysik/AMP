@@ -23,7 +23,7 @@ public:
     /** \brief Constructor
       * \param[in] params  Description of the matrix
       */
-    DenseSerialMatrix( MatrixParameters::shared_ptr  params );
+    explicit DenseSerialMatrix( MatrixParameters::shared_ptr  params );
 
     /** \brief Destructor
       */
@@ -219,7 +219,7 @@ protected:
     DenseSerialMatrix();
 
     //! Protected copy constructor
-    DenseSerialMatrix( const DenseSerialMatrix & );
+    explicit DenseSerialMatrix( const DenseSerialMatrix & );
 
     /** \brief  Multiply two matrices and store in a third
      * \param[in]  other_op  The other matrix to multiply

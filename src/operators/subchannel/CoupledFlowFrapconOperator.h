@@ -16,7 +16,7 @@ namespace Operator {
   class CoupledFlowFrapconOperator : public ColumnOperator
   {
     public :
-      CoupledFlowFrapconOperator(const AMP::shared_ptr<OperatorParameters>& params);
+      explicit CoupledFlowFrapconOperator(const AMP::shared_ptr<OperatorParameters>& params);
 
       void reset(const AMP::shared_ptr<OperatorParameters>& params){
         d_Operators[2]->reset(params);

@@ -115,7 +115,7 @@ class TrilinosMLSolver: public SolverStrategy {
 
       26. name: null_space_add_default_vectors, type: bool, (optional), default value: true
       */
-      TrilinosMLSolver(AMP::shared_ptr<TrilinosMLSolverParameters> parameters);
+      explicit TrilinosMLSolver(AMP::shared_ptr<TrilinosMLSolverParameters> parameters);
 
     /**
      * Default destructor

@@ -16,7 +16,7 @@ class VonMisesElastoPlasticModel : public MechanicsMaterialModel
 {
 public :
 
-    VonMisesElastoPlasticModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
+    explicit VonMisesElastoPlasticModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
 
     virtual ~VonMisesElastoPlasticModel() { }
 

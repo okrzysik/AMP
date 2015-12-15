@@ -20,7 +20,7 @@ namespace AMP {
         /**
           Constructor.
           */
-        FEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
+        explicit FEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
           : OperatorParameters(db) {  }
 
         /**

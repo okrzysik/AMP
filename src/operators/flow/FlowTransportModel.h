@@ -19,7 +19,7 @@ namespace Operator {
   {
     public :
 
-      FlowTransportModel(const AMP::shared_ptr<FlowTransportModelParameters>& params)
+      explicit FlowTransportModel(const AMP::shared_ptr<FlowTransportModelParameters>& params)
         : ElementPhysicsModel(params) { 
           d_useMaterialsLibrary = (params->d_db)->getBoolWithDefault("USE_MATERIALS_LIBRARY",false);
 

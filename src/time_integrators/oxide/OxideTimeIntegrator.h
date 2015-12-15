@@ -28,7 +28,7 @@ public:
      * member function.
      *
      */
-   OxideTimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters);
+   explicit OxideTimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters);
 
     //! Empty destructor for TimeIntegrator
     virtual ~OxideTimeIntegrator();

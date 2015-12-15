@@ -12,7 +12,7 @@ namespace Operator {
 class GaussPointToGaussPointMap : public NodeToNodeMap {
 public:
 
-    GaussPointToGaussPointMap(const AMP::shared_ptr<AMP::Operator::OperatorParameters> & params);
+    explicit GaussPointToGaussPointMap(const AMP::shared_ptr<AMP::Operator::OperatorParameters> & params);
 
     virtual void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 			     AMP::LinearAlgebra::Vector::shared_ptr f ) override;

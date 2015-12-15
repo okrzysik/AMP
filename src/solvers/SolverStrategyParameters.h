@@ -43,7 +43,7 @@ public:
     * Construct and initialize a parameter list according to input
     * data.  Guess what the required and optional keywords are.
     */
-   SolverStrategyParameters(const AMP::shared_ptr<AMP::Database> &db);
+   explicit SolverStrategyParameters(const AMP::shared_ptr<AMP::Database> &db);
 
    /**
     * Destructor.

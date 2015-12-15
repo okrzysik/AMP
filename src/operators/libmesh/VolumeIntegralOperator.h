@@ -32,7 +32,7 @@ public :
       temporarily not used in any formulation.
       3) OutputVariable - Name of the output variable
       */
-    VolumeIntegralOperator(const AMP::shared_ptr<VolumeIntegralOperatorParameters> & params);
+    explicit VolumeIntegralOperator(const AMP::shared_ptr<VolumeIntegralOperatorParameters> & params);
 
     /**
       Destructor.

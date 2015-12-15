@@ -10,7 +10,7 @@ namespace Operator {
   class DirichletVectorCorrectionParameters : public OperatorParameters {
     public :
 
-      DirichletVectorCorrectionParameters(const AMP::shared_ptr<AMP::Database> &db)
+      explicit DirichletVectorCorrectionParameters(const AMP::shared_ptr<AMP::Database> &db)
         : OperatorParameters(db) {  }
 
       virtual ~DirichletVectorCorrectionParameters() { }

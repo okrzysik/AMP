@@ -25,7 +25,7 @@ namespace AMP {
          * Construct and initialize a parameter list according to input
          * data.  Guess what the required and optional keywords are.
          */
-        OperatorParameters(const AMP::shared_ptr<AMP::Database> & db)
+        explicit OperatorParameters(const AMP::shared_ptr<AMP::Database> & db)
           : d_db(db) {  }
 
         /**

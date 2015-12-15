@@ -20,7 +20,7 @@ class SubchannelTwoEqNonlinearOperator : public Operator
 public:
 
     //! Constructor
-    SubchannelTwoEqNonlinearOperator(const AMP::shared_ptr<SubchannelOperatorParameters> & params);
+    explicit SubchannelTwoEqNonlinearOperator(const AMP::shared_ptr<SubchannelOperatorParameters> & params);
 
     //! Destructor
     virtual ~SubchannelTwoEqNonlinearOperator() { }

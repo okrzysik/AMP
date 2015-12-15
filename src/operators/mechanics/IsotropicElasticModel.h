@@ -13,7 +13,7 @@ class IsotropicElasticModel : public MechanicsMaterialModel
 {
 public :
 
-    IsotropicElasticModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
+    explicit IsotropicElasticModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
 
     virtual ~IsotropicElasticModel() { }
 

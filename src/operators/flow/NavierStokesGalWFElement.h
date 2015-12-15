@@ -19,7 +19,7 @@ class NavierStokesGalWFElement : public FlowElement
 public :
 
     //!  Constructor.
-    NavierStokesGalWFElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
+    explicit NavierStokesGalWFElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
         FlowElement(params),
         d_elementOutputVector(NULL)
     { 

@@ -19,7 +19,7 @@ typedef ElementPhysicsModelParameters DiffusionCylindricalTransportModelParamete
 class DiffusionCylindricalTransportModel  : public DiffusionTransportTensorModel
 {
 public:
-	DiffusionCylindricalTransportModel(const AMP::shared_ptr<DiffusionTransportTensorModelParameters> params);
+	explicit DiffusionCylindricalTransportModel(const AMP::shared_ptr<DiffusionTransportTensorModelParameters> params);
 
     /**
      * \brief transport model returning a vector of tensors for cylindrical symmetry

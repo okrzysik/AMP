@@ -28,7 +28,7 @@ public :
     NullOperator(void) {}
 
     //! Constructor
-    NullOperator(const AMP::shared_ptr<OperatorParameters> & params): Operator(params) {}
+    explicit NullOperator(const AMP::shared_ptr<OperatorParameters> & params): Operator(params) {}
 
     //! Destructor
     virtual ~NullOperator() { }

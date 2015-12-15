@@ -25,7 +25,7 @@ class MapSurface : public MapOperator
 {
 public :
 
-    MapSurface(const AMP::shared_ptr<OperatorParameters> & params);
+    explicit MapSurface(const AMP::shared_ptr<OperatorParameters> & params);
     virtual ~MapSurface() { }
 
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,

@@ -31,7 +31,7 @@ public:
         acceptable values (false, true),
         side effect: if false sets string pc_type to "none"
      */
-    CGSolver(AMP::shared_ptr<KrylovSolverParameters> parameters);
+    explicit CGSolver(AMP::shared_ptr<KrylovSolverParameters> parameters);
 
     /**
      * Default destructor

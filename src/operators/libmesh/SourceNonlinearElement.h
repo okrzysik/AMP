@@ -37,7 +37,7 @@ public :
       4) QRULE_ORDER (DEFAULT by default) - Order of the numerical integration scheme.
       5) INTEGRATEVOLUME (TRUE by default)- Bool to choose to Integrate (Contradiction to the class ???).
      */
-    SourceNonlinearElement(const AMP::shared_ptr<ElementOperationParameters>& params);
+    explicit SourceNonlinearElement(const AMP::shared_ptr<ElementOperationParameters>& params);
 
     //! Destructor.
     virtual ~SourceNonlinearElement() { }

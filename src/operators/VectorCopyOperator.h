@@ -17,7 +17,7 @@ namespace Operator {
 class VectorCopyOperator : public Operator {
 public:
 
-  VectorCopyOperator(const AMP::shared_ptr<VectorCopyOperatorParameters> &params);
+  explicit VectorCopyOperator(const AMP::shared_ptr<VectorCopyOperatorParameters> &params);
 
   virtual ~VectorCopyOperator(){}
   

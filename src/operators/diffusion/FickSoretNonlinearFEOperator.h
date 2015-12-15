@@ -21,7 +21,7 @@ namespace Operator {
 
     typedef AMP::shared_ptr <FickSoretNonlinearFEOperator>  shared_ptr;
 
-    FickSoretNonlinearFEOperator(const AMP::shared_ptr<OperatorParameters> & params);
+    explicit FickSoretNonlinearFEOperator(const AMP::shared_ptr<OperatorParameters> & params);
 
     virtual ~FickSoretNonlinearFEOperator(){ }
 

@@ -11,7 +11,7 @@ namespace Operator {
   class FlowFrapconOperatorParameters : public OperatorParameters {
     public :
 
-      FlowFrapconOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
+      explicit FlowFrapconOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
         : OperatorParameters(db) {  }
 
       virtual ~FlowFrapconOperatorParameters() { }

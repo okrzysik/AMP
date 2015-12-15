@@ -45,7 +45,7 @@ namespace Solver {
   class PetscKrylovSolverParameters: public SolverStrategyParameters{
   public:
     PetscKrylovSolverParameters(){}
-    PetscKrylovSolverParameters(const AMP::shared_ptr<AMP::Database> db);
+    explicit PetscKrylovSolverParameters(const AMP::shared_ptr<AMP::Database> db);
     virtual ~PetscKrylovSolverParameters(){}
 
     AMP_MPI d_comm;

@@ -15,7 +15,7 @@ namespace Operator {
   {
     public :
 
-      ThermalVonMisesMatModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
+      explicit ThermalVonMisesMatModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
 
       virtual ~ThermalVonMisesMatModel() { }
 

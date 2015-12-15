@@ -21,7 +21,7 @@ namespace Operator {
       /** 
         Constructor.
         */
-      ElementOperation(const AMP::shared_ptr<ElementOperationParameters>& ) {  }
+      explicit ElementOperation(const AMP::shared_ptr<ElementOperationParameters>& ) {  }
 
       /**
         Destructor.

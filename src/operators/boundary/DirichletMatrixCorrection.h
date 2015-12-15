@@ -23,7 +23,7 @@ class DirichletMatrixCorrection : public BoundaryOperator
 public :
 
     //! Constructor
-    DirichletMatrixCorrection(const AMP::shared_ptr<DirichletMatrixCorrectionParameters> & params);
+    explicit DirichletMatrixCorrection(const AMP::shared_ptr<DirichletMatrixCorrectionParameters> & params);
 
     //! Destructor
     virtual ~DirichletMatrixCorrection() { }

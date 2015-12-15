@@ -24,7 +24,7 @@ namespace Operator {
       /** 
         Constructor.
         */
-      ElementPhysicsModelParameters(const AMP::shared_ptr<AMP::Database> & db)
+      explicit ElementPhysicsModelParameters(const AMP::shared_ptr<AMP::Database> & db)
         : d_db(db) {}
 
       /**

@@ -23,7 +23,7 @@ class LinearFEOperator : public LinearOperator
 public :
 
     //! Constructor. This copies the share pointer to the element operation from the input parameter object.
-    LinearFEOperator(const AMP::shared_ptr<LinearFEOperatorParameters>& params);
+    explicit LinearFEOperator(const AMP::shared_ptr<LinearFEOperatorParameters>& params);
 
     //! Destructor
     virtual ~LinearFEOperator() { }

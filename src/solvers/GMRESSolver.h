@@ -42,7 +42,7 @@ public:
 	 acceptable values ("RIGHT", "LEFT" )
          active only when uses_preconditioner set to true
      */
-    GMRESSolver(AMP::shared_ptr<KrylovSolverParameters> parameters);
+    explicit GMRESSolver(AMP::shared_ptr<KrylovSolverParameters> parameters);
 
     /**
      * Default destructor

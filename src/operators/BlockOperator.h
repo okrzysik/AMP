@@ -15,7 +15,7 @@ namespace AMP {
 
         BlockOperator();
 
-        BlockOperator(const AMP::shared_ptr<OperatorParameters>& params);
+        explicit BlockOperator(const AMP::shared_ptr<OperatorParameters>& params);
 
         virtual ~BlockOperator() { }
 

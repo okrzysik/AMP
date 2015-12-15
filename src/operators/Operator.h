@@ -33,7 +33,7 @@ public :
     Operator(void);
 
     //! Constructor
-    Operator(const AMP::shared_ptr<OperatorParameters> & params);
+    explicit Operator(const AMP::shared_ptr<OperatorParameters> & params);
 
     //! Destructor
     virtual ~Operator() { }

@@ -18,7 +18,7 @@ class NavierStokesLSWFElement : public FlowElement
 public :
 
     //! Constructor.
-    NavierStokesLSWFElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
+    explicit NavierStokesLSWFElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
         FlowElement(params),
         d_elementOutputVector(NULL)
     { 

@@ -70,7 +70,7 @@ public:
      12. name: operatorComponentToEnableBoundsCheck, type: integer, default value: none 
      acceptable values ()
     */
-     TrilinosNOXSolver(AMP::shared_ptr< TrilinosNOXSolverParameters> parameters);
+     explicit TrilinosNOXSolver(AMP::shared_ptr< TrilinosNOXSolverParameters> parameters);
 
      /**
       * Default destructor.

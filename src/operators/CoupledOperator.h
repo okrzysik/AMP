@@ -18,7 +18,7 @@ namespace Operator {
 class CoupledOperator : public ColumnOperator
 {
 public :
-    CoupledOperator(const AMP::shared_ptr<OperatorParameters>& params);
+    explicit CoupledOperator(const AMP::shared_ptr<OperatorParameters>& params);
 
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 			AMP::LinearAlgebra::Vector::shared_ptr f ) override;

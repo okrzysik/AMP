@@ -11,7 +11,7 @@ namespace AMP {
 
     class MLoptions {
       public: 
-        MLoptions(const AMP::shared_ptr<AMP::Database> &db); 
+        explicit MLoptions(const AMP::shared_ptr<AMP::Database> &db); 
 
         ~MLoptions() { }
 

@@ -46,7 +46,7 @@ namespace AMP {
           will be ignored if the corresponding variable is not active.
           5) OutputVariable (No default value) - Name of the output variable
           */
-        MechanicsNonlinearFEOperator(const AMP::shared_ptr<MechanicsNonlinearFEOperatorParameters>& params);
+        explicit MechanicsNonlinearFEOperator(const AMP::shared_ptr<MechanicsNonlinearFEOperatorParameters>& params);
 
         /**
           Destructor.

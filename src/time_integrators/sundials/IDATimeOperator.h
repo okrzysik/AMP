@@ -39,7 +39,7 @@ namespace TimeIntegrator{
      * Main constructor.
      @param [in] params: shared pointer to TimeOperatorParameters object.
      */
-    IDATimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > params);
+    explicit IDATimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > params);
 
     /**
      * virtual destructor

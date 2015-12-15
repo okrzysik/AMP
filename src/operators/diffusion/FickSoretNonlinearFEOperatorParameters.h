@@ -21,7 +21,7 @@ namespace Operator {
     class FickSoretNonlinearFEOperatorParameters: public OperatorParameters
     {
     public:
-        FickSoretNonlinearFEOperatorParameters(AMP::shared_ptr<Database> &db):
+        explicit FickSoretNonlinearFEOperatorParameters(AMP::shared_ptr<Database> &db):
             OperatorParameters(db){}
 	  
         DiffusionNonlinearFEOperator::shared_ptr d_FickOperator;

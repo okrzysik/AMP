@@ -13,7 +13,7 @@ typedef ElementPhysicsModelParameters DiffusionTransportTensorModelParameters;
 class DiffusionTransportTensorModel  : public DiffusionTransportModel
 {
 public:
-    DiffusionTransportTensorModel(const AMP::shared_ptr<DiffusionTransportTensorModelParameters> params);
+    explicit DiffusionTransportTensorModel(const AMP::shared_ptr<DiffusionTransportTensorModelParameters> params);
 
     /**
      * \brief transport model returning a vector of tensors

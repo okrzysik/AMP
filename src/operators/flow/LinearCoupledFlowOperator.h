@@ -12,7 +12,7 @@ namespace Operator {
   class LinearCoupledFlowOperator : public Operator
   {
     public :
-      LinearCoupledFlowOperator(const AMP::shared_ptr<OperatorParameters>& params)
+      explicit LinearCoupledFlowOperator(const AMP::shared_ptr<OperatorParameters>& params)
         : Operator(params){ (void) params;
         }
 

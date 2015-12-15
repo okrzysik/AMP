@@ -23,7 +23,7 @@ namespace Operator {
       /**
         Constructor.
         */
-      ElementOperationParameters(const AMP::shared_ptr<AMP::Database> & db)
+      explicit ElementOperationParameters(const AMP::shared_ptr<AMP::Database> & db)
         : d_db(db) { }
 
       /**

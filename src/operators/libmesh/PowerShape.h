@@ -121,7 +121,7 @@ class PowerShape : public  Operator {
       /*
        * A class for representing the neutronics source operator.
       */
-      PowerShape(SP_Parameters parameters);
+      explicit PowerShape(SP_Parameters parameters);
 
       /**
        * Empty destructor for PowerShape

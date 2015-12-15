@@ -19,7 +19,7 @@ namespace AMP {
 
         typedef AMP::shared_ptr<DiffusionNonlinearFEOperator> shared_ptr;
 
-        DiffusionNonlinearFEOperator(const AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters>& params);
+        explicit DiffusionNonlinearFEOperator(const AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters>& params);
 
         virtual ~DiffusionNonlinearFEOperator() {}
 

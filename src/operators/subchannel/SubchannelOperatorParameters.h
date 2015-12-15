@@ -15,7 +15,7 @@ class SubchannelOperatorParameters : public OperatorParameters {
 public :
 
     //! Constructor
-    SubchannelOperatorParameters(const AMP::shared_ptr<AMP::Database> &db): 
+    explicit SubchannelOperatorParameters(const AMP::shared_ptr<AMP::Database> &db): 
         OperatorParameters(db), d_initialize(false) {  }
 
     //! Destructor

@@ -44,7 +44,7 @@ public:
      *                          4. type: bool, name: zero_initial_guess, default value: false, 
      *                             acceptable values (TRUE, FALSE)
      */
-    SolverStrategy(AMP::shared_ptr<SolverStrategyParameters> parameters);
+    explicit SolverStrategy(AMP::shared_ptr<SolverStrategyParameters> parameters);
 
     /**
      * Default destructor. Currently does not do anything.

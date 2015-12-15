@@ -24,7 +24,7 @@ namespace Operator {
       
       typedef AMP::shared_ptr<AMP::Database>  SP_Database;
 
-      NeutronicsRhsExtrasParameters(const SP_Database &db)
+      explicit NeutronicsRhsExtrasParameters(const SP_Database &db)
     : OperatorParameters(db){ d_numExtras=0; } 
 
 //      AMP::shared_ptr<AMP::MeshUtils> d_MeshUtils; 

@@ -21,7 +21,7 @@ namespace Operator {
   class CoupledOperatorParameters : public ColumnOperatorParameters {
     public :
 
-      CoupledOperatorParameters(const AMP::shared_ptr<AMP::Database>& db)
+      explicit CoupledOperatorParameters(const AMP::shared_ptr<AMP::Database>& db)
         : ColumnOperatorParameters(db) { }
 
       virtual ~CoupledOperatorParameters() { }

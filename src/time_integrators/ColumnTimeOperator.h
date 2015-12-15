@@ -75,7 +75,7 @@ class  ColumnTimeOperator: public AMP::Operator::ColumnOperator
      
     */
 
-    ColumnTimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > params);
+    explicit ColumnTimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > params);
 
     /**
      * virtual destructor

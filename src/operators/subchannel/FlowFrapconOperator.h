@@ -26,7 +26,7 @@ namespace Operator {
         Constructor creates a simpleVariables for Input and Output. The reset is called to 
         read the flow parameters.
         */
-      FlowFrapconOperator(const AMP::shared_ptr<FlowFrapconOperatorParameters> & params)
+      explicit FlowFrapconOperator(const AMP::shared_ptr<FlowFrapconOperatorParameters> & params)
         : Operator (params)
       {
         std::string inpVar = params->d_db->getString("InputVariable");

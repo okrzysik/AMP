@@ -42,7 +42,7 @@ namespace Operator {
        Constructor. This function reads all the parameters required for surface elements.
        This also constructs new NeumannVectorCorrection parameters and calls it reset.
     */
-    RobinMatrixCorrection(const AMP::shared_ptr<RobinMatrixCorrectionParameters> & params);
+    explicit RobinMatrixCorrection(const AMP::shared_ptr<RobinMatrixCorrectionParameters> & params);
     
     /**
        Set the variable for the vector that will used with this operator.

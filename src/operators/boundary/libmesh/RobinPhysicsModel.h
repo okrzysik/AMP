@@ -20,7 +20,7 @@ class RobinPhysicsModel  : public ElementPhysicsModel
  {
     public :
       
-      RobinPhysicsModel(const AMP::shared_ptr<RobinPhysicsModelParameters>& params)
+      explicit RobinPhysicsModel(const AMP::shared_ptr<RobinPhysicsModelParameters>& params)
         : ElementPhysicsModel(params), d_numActiveVariables(0)
       {
           reset(params);

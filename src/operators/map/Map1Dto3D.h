@@ -28,7 +28,7 @@ class Map1Dto3D : public MapOperator
 public:
 
     //! Default Constructor
-    Map1Dto3D(const AMP::shared_ptr<OperatorParameters>& params);
+    explicit Map1Dto3D(const AMP::shared_ptr<OperatorParameters>& params);
 
     //! De-constructor
     virtual ~Map1Dto3D() { }

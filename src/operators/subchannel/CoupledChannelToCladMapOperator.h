@@ -14,7 +14,7 @@ namespace Operator {
   class CoupledChannelToCladMapOperator : public Operator
   {
     public :
-      CoupledChannelToCladMapOperator(const AMP::shared_ptr<CoupledChannelToCladMapOperatorParameters>& params);
+      explicit CoupledChannelToCladMapOperator(const AMP::shared_ptr<CoupledChannelToCladMapOperatorParameters>& params);
 
       virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
         return d_flowVariable;

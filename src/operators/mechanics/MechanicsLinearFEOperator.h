@@ -39,7 +39,7 @@ namespace AMP {
           3) InputVariable (No default value) - Name of the input variable
           4) OutputVariable (No default value) - Name of the output variable
           */
-        MechanicsLinearFEOperator(const AMP::shared_ptr<MechanicsLinearFEOperatorParameters>& params);
+        explicit MechanicsLinearFEOperator(const AMP::shared_ptr<MechanicsLinearFEOperatorParameters>& params);
 
         /**
           Destructor

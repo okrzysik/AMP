@@ -15,7 +15,7 @@ class PericElastoViscoPlasticModel : public MechanicsMaterialModel
 {
 public :
 
-    PericElastoViscoPlasticModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
+    explicit PericElastoViscoPlasticModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
 
     virtual ~PericElastoViscoPlasticModel() { }
 

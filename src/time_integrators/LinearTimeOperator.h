@@ -31,7 +31,7 @@ class LinearTimeOperator: public AMP::Operator::LinearOperator
 {
  public:
 
-  LinearTimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > params);
+  explicit LinearTimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > params);
   virtual ~LinearTimeOperator();
      
   /**

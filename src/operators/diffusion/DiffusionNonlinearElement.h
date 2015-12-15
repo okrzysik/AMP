@@ -16,7 +16,7 @@ namespace Operator {
 class DiffusionNonlinearElement: public DiffusionElement {
 public:
 
-    DiffusionNonlinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
+    explicit DiffusionNonlinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
         DiffusionElement(params),
         d_elementOutputVector(NULL),
         d_transportOutputVector(NULL),

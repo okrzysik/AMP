@@ -18,7 +18,7 @@ namespace Solver {
   class KrylovSolverParameters: public SolverStrategyParameters{
   public:
     KrylovSolverParameters(){}
-    KrylovSolverParameters(const AMP::shared_ptr<AMP::Database> db);
+    explicit KrylovSolverParameters(const AMP::shared_ptr<AMP::Database> db);
     virtual ~KrylovSolverParameters(){}
 
     AMP_MPI d_comm;

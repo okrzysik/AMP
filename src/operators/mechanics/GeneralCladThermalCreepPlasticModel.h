@@ -67,7 +67,7 @@ namespace Operator {
         (15) Creep_Delta_Time {d_Delta_Time} [1.0 days (d) by default] - This is used in the calculation of the 
         creep strain inside the clad. 
         */
-      GeneralCladThermalCreepPlasticModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
+      explicit GeneralCladThermalCreepPlasticModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
 
       /**
         Destructor.

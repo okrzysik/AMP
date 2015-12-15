@@ -22,7 +22,7 @@ namespace Operator {
   class CoupledChannelToCladMapOperatorParameters : public OperatorParameters {
     public :
 
-      CoupledChannelToCladMapOperatorParameters(const AMP::shared_ptr<AMP::Database>& db)
+      explicit CoupledChannelToCladMapOperatorParameters(const AMP::shared_ptr<AMP::Database>& db)
         : OperatorParameters(db) { }
 
       virtual ~CoupledChannelToCladMapOperatorParameters() { }

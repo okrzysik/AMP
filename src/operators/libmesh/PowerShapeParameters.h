@@ -21,7 +21,7 @@ namespace Operator {
   class PowerShapeParameters : public OperatorParameters {
     public :
       
-      PowerShapeParameters(const AMP::shared_ptr<AMP::Database> &db)
+      explicit PowerShapeParameters(const AMP::shared_ptr<AMP::Database> &db)
     : OperatorParameters(db){} 
 
   };

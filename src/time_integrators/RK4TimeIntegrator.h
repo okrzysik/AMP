@@ -21,7 +21,7 @@ public:
    /**
     * Constructor that accepts parameter list.
     */
-   RK4TimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters );
+   explicit RK4TimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters );
 
    /**
     * Destructor.

@@ -25,7 +25,7 @@ class TrilinosThyraModelEvaluator: public ::Thyra::StateFuncModelEvaluatorBase<d
 public:
     
     //! Default constructor
-    TrilinosThyraModelEvaluator( AMP::shared_ptr<TrilinosThyraModelEvaluatorParameters> params );
+    explicit TrilinosThyraModelEvaluator( AMP::shared_ptr<TrilinosThyraModelEvaluatorParameters> params );
 
     //! Destructor
     virtual ~TrilinosThyraModelEvaluator();

@@ -35,7 +35,7 @@ public:
      *\details  This is the default constructor that should be used
      *\param comm  Communicator to use for the monitor
      */
-    PetscMonitor( AMP::AMP_MPI comm );
+    explicit PetscMonitor( AMP::AMP_MPI comm );
 
     //!  Empty deconstructor
     ~PetscMonitor();

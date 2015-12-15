@@ -38,7 +38,7 @@ namespace TimeIntegrator{
 class ImplicitTimeIntegratorParameters: public TimeIntegratorParameters
 {
 public:
-  ImplicitTimeIntegratorParameters( AMP::shared_ptr<AMP::Database> db);
+  explicit ImplicitTimeIntegratorParameters( AMP::shared_ptr<AMP::Database> db);
   
   virtual ~ImplicitTimeIntegratorParameters();
   
@@ -53,7 +53,7 @@ public:
  private:
   // not implemented
   ImplicitTimeIntegratorParameters();
-  ImplicitTimeIntegratorParameters(const ImplicitTimeIntegratorParameters&);
+  explicit ImplicitTimeIntegratorParameters(const ImplicitTimeIntegratorParameters&);
   void operator=(const ImplicitTimeIntegratorParameters&);
 };
 

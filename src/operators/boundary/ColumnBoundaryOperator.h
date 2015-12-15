@@ -24,7 +24,7 @@ namespace Operator {
   {
 
     public :
-      ColumnBoundaryOperator(const AMP::shared_ptr<OperatorParameters>& params)
+      explicit ColumnBoundaryOperator(const AMP::shared_ptr<OperatorParameters>& params)
         : BoundaryOperator (params) { }
 
       virtual ~ColumnBoundaryOperator() { }

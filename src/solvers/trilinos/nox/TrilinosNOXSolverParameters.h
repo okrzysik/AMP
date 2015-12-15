@@ -20,7 +20,7 @@ namespace Solver {
 class TrilinosNOXSolverParameters: public SolverStrategyParameters{
 public:
     TrilinosNOXSolverParameters(){}
-    TrilinosNOXSolverParameters(const AMP::shared_ptr<AMP::Database> &db):SolverStrategyParameters(db) {}
+    explicit TrilinosNOXSolverParameters(const AMP::shared_ptr<AMP::Database> &db):SolverStrategyParameters(db) {}
     virtual ~TrilinosNOXSolverParameters(){}
 
     AMP_MPI d_comm;

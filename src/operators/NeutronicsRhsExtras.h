@@ -47,7 +47,7 @@ namespace Operator {
       
     public:
 
-      NeutronicsRhsExtras(SP_Parameters parameters);
+      explicit NeutronicsRhsExtras(SP_Parameters parameters);
 
       /**
        * Empty destructor for NeutronicsRhsExtras

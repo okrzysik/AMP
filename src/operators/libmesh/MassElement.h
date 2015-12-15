@@ -22,7 +22,7 @@ namespace Operator {
     {
         public :
         
-        MassElement(const AMP::shared_ptr<ElementOperationParameters>& params);
+        explicit MassElement(const AMP::shared_ptr<ElementOperationParameters>& params);
         
         virtual ~MassElement() {  }
         

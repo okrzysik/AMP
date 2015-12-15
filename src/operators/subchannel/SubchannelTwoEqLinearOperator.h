@@ -20,7 +20,7 @@ class SubchannelTwoEqLinearOperator : public LinearOperator
 public:
 
     //! Constructor
-    SubchannelTwoEqLinearOperator(const AMP::shared_ptr<SubchannelOperatorParameters> & params);
+    explicit SubchannelTwoEqLinearOperator(const AMP::shared_ptr<SubchannelOperatorParameters> & params);
 
     //! Destructor
     virtual ~SubchannelTwoEqLinearOperator() { }

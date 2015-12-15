@@ -38,7 +38,7 @@ namespace LinearAlgebra {
       /** \brief Construct a ManagedPetscMatrix from a set of parameters
         * \param[in]  params  The description of the Matrix
         */
-      ManagedPetscMatrix( MatrixParameters::shared_ptr params );
+      explicit ManagedPetscMatrix( MatrixParameters::shared_ptr params );
 
       /** \brief Destructor
         */

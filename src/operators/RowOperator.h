@@ -19,7 +19,7 @@ namespace Operator {
 
       typedef AMP::shared_ptr <RowOperator>  shared_ptr;
 
-      RowOperator(const AMP::shared_ptr<OperatorParameters> & params)
+      explicit RowOperator(const AMP::shared_ptr<OperatorParameters> & params)
         : Operator () { 
           (void) params; 
           getAllJacobian = false;

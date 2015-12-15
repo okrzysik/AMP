@@ -32,7 +32,7 @@ namespace Solver {
        class SolverStrategy. The IterationType must currently either be "GaussSeidel"
        or "SymmetricGaussSeidel"
        */
-      ColumnSolver(AMP::shared_ptr<SolverStrategyParameters> parameters);
+      explicit ColumnSolver(AMP::shared_ptr<SolverStrategyParameters> parameters);
 
       /**
        * destructor, currently does nothing

@@ -21,7 +21,7 @@ namespace AMP {
       public :
         // the parameter object for the column operator is intentionally meant not to do
         // anything ColumnOperator specific. Please keep that way
-        ColumnOperator(const AMP::shared_ptr<OperatorParameters>& params)
+        explicit ColumnOperator(const AMP::shared_ptr<OperatorParameters>& params)
           : Operator () { (void) params; }
 
         /** Default empty constructor */

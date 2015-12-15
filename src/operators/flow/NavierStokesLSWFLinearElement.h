@@ -18,7 +18,7 @@ class NavierStokesLSWFLinearElement : public FlowElement
 {
 public :
 
-    NavierStokesLSWFLinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
+    explicit NavierStokesLSWFLinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
         FlowElement(params),
         d_elementStiffnessMatrix(NULL)
     {

@@ -28,7 +28,7 @@ public :
     enum MaterialUpdateType {RESET, JACOBIAN};
 
     //! Constructor.
-    MechanicsNonlinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
+    explicit MechanicsNonlinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
         MechanicsElement(params),
         d_elementOutputVector(NULL)
     { 

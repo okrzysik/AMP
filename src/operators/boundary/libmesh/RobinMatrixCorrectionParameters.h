@@ -12,7 +12,7 @@ namespace Operator {
   class RobinMatrixCorrectionParameters : public LinearBoundaryOperatorParameters {
     public :
 
-      RobinMatrixCorrectionParameters(const AMP::shared_ptr<AMP::Database> &db)
+      explicit RobinMatrixCorrectionParameters(const AMP::shared_ptr<AMP::Database> &db)
         : LinearBoundaryOperatorParameters(db) {  }
 
       virtual ~RobinMatrixCorrectionParameters() { }

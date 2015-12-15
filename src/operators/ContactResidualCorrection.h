@@ -13,7 +13,7 @@ namespace AMP {
 
     class ContactResidualCorrection : public Operator {
       public:
-        ContactResidualCorrection(const AMP::shared_ptr<ContactResidualCorrectionParameters> & params)
+        explicit ContactResidualCorrection(const AMP::shared_ptr<ContactResidualCorrectionParameters> & params)
           : Operator (params) {  }
 
         virtual ~ContactResidualCorrection() { }

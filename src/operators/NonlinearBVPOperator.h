@@ -32,7 +32,7 @@ namespace AMP {
          4. name: useSameLocalModelForVolumeAndBoundaryOperators, type: bool, (optional), default value: FALSE, when set to
          to TRUE the same local model is used for both the volume and boundary operators
          */
-        NonlinearBVPOperator(const AMP::shared_ptr<BVPOperatorParameters>& parameters);
+        explicit NonlinearBVPOperator(const AMP::shared_ptr<BVPOperatorParameters>& parameters);
 
         /**
          * virtual destructor which does nothing

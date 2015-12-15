@@ -21,7 +21,7 @@ namespace Operator {
   class CoupledFlowFrapconOperatorParameters : public ColumnOperatorParameters {
     public :
 
-      CoupledFlowFrapconOperatorParameters(const AMP::shared_ptr<AMP::Database>& db)
+      explicit CoupledFlowFrapconOperatorParameters(const AMP::shared_ptr<AMP::Database>& db)
         : ColumnOperatorParameters(db) { }
 
       virtual ~CoupledFlowFrapconOperatorParameters() { }

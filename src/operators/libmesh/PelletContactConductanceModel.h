@@ -17,7 +17,7 @@ class PelletContactConductanceModel  : public RobinPhysicsModel
  {
     public :
       
-      PelletContactConductanceModel(const AMP::shared_ptr<RobinPhysicsModelParameters>& params);
+      explicit PelletContactConductanceModel(const AMP::shared_ptr<RobinPhysicsModelParameters>& params);
 
       virtual ~PelletContactConductanceModel() {}
 

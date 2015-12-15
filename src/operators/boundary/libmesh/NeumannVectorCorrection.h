@@ -37,7 +37,7 @@ namespace Operator {
     public :
 
       //! Constructor. This function reads all the parameters required for surface elements.
-      NeumannVectorCorrection(const AMP::shared_ptr<NeumannVectorCorrectionParameters> & params);
+      explicit NeumannVectorCorrection(const AMP::shared_ptr<NeumannVectorCorrectionParameters> & params);
 
       /**
         Set the variable for the vector that will used with this operator.

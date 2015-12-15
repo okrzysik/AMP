@@ -34,7 +34,7 @@ namespace AMP {
          from the database object contained in the parameter object, params. This key specifies 
          whether or not the AMP::materials interface is used in this model.
          */
-        MechanicsMaterialModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& params)
+        explicit MechanicsMaterialModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& params)
           : ElementPhysicsModel(params) { 
             d_useMaterialsLibrary = (params->d_db)->getBoolWithDefault("USE_MATERIALS_LIBRARY",false);
 

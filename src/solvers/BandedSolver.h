@@ -27,7 +27,7 @@ public:
      *                          1. type: integer, name: KU (required)
      *                             acceptable values (non-negative integer values)
      */
-    BandedSolver( AMP::shared_ptr<SolverStrategyParameters> parameters );
+    explicit BandedSolver( AMP::shared_ptr<SolverStrategyParameters> parameters );
 
     /**
      * Default destructor. Currently does not do anything.

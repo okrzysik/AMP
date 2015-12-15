@@ -81,7 +81,7 @@ public:
     * member function.
     *
     */
-  ImplicitTimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters);
+  explicit ImplicitTimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters);
 
    /**
     * Empty destructor for ImplicitTimeIntegrator
@@ -217,7 +217,7 @@ private:
                                 const double old_dt) = 0;
 
    // The following are not implemented:
-   ImplicitTimeIntegrator(const ImplicitTimeIntegrator&);
+   explicit ImplicitTimeIntegrator(const ImplicitTimeIntegrator&);
    void operator=(const ImplicitTimeIntegrator&);
 
 };

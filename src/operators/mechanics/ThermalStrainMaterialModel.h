@@ -15,7 +15,7 @@ namespace Operator {
   {
     public :
 
-      ThermalStrainMaterialModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
+      explicit ThermalStrainMaterialModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
 
       virtual ~ThermalStrainMaterialModel() { }
 

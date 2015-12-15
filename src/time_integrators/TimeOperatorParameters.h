@@ -15,7 +15,7 @@ class TimeOperatorParameters: public AMP::Operator::OperatorParameters
     * Construct and initialize a parameter list according to input
     * data.  Guess what the required and optional keywords are.
     */
-  TimeOperatorParameters(const AMP::shared_ptr<AMP::Database> &db);
+  explicit TimeOperatorParameters(const AMP::shared_ptr<AMP::Database> &db);
   /**
    * Destructor.
    */

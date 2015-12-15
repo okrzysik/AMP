@@ -30,7 +30,7 @@ public:
         ThermalSrc, FickSrc, SoretSrc, FickSoretSrc, UnknownManufacturedEquation
     };
 
-    MassDensityModel(const AMP::shared_ptr<MassDensityModelParameters>& params);
+    explicit MassDensityModel(const AMP::shared_ptr<MassDensityModelParameters>& params);
 
     virtual ~MassDensityModel()
     {

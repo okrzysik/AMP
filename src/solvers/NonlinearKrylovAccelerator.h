@@ -45,7 +45,7 @@ class NonlinearKrylovAccelerator
      acceptable values TRUE, FALSE)
    
    */
-  NonlinearKrylovAccelerator(AMP::shared_ptr<NonlinearKrylovAcceleratorParameters> params);
+  explicit NonlinearKrylovAccelerator(AMP::shared_ptr<NonlinearKrylovAcceleratorParameters> params);
   
   /**
    * Default destructor

@@ -41,7 +41,7 @@ public:
 	 acceptable values ("RIGHT", "LEFT", "SYMMETRIC" )
          active only when uses_preconditioner set to true
      */
-    BiCGSTABSolver(AMP::shared_ptr<KrylovSolverParameters> parameters);
+    explicit BiCGSTABSolver(AMP::shared_ptr<KrylovSolverParameters> parameters);
 
     /**
      * Default destructor

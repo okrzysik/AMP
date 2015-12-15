@@ -23,7 +23,7 @@ public:
       * \param[in] right    The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
       * \param[in] comm     Communicator for the matrix
       */
-    ManagedEpetraMatrixParameters( AMP::Discretization::DOFManager::shared_ptr left, AMP::Discretization::DOFManager::shared_ptr right, AMP_MPI comm );
+    explicit ManagedEpetraMatrixParameters( AMP::Discretization::DOFManager::shared_ptr left, AMP::Discretization::DOFManager::shared_ptr right, AMP_MPI comm );
 
 
     //! Deconstructor

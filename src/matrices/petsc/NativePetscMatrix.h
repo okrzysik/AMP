@@ -28,7 +28,7 @@ public:
       * \param[in] m  The Mat to wrap
       * \param[in] dele  Let this class deallocate the Mat
       */
-    NativePetscMatrix(Mat m , bool dele = false );
+    explicit NativePetscMatrix(Mat m , bool dele = false );
 
 
     /** \brief Destructor

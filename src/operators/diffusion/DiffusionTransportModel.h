@@ -23,7 +23,7 @@ typedef ElementPhysicsModelParameters DiffusionTransportModelParameters;
 class DiffusionTransportModel  : public ElementPhysicsModel
 {
   public :
-    DiffusionTransportModel(const AMP::shared_ptr<DiffusionTransportModelParameters>& params);
+    explicit DiffusionTransportModel(const AMP::shared_ptr<DiffusionTransportModelParameters>& params);
 
     virtual ~DiffusionTransportModel() {}
 

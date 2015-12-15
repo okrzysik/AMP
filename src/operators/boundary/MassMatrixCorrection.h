@@ -22,7 +22,7 @@ class MassMatrixCorrection : public BoundaryOperator
 public :
       
     //! Constructor
-    MassMatrixCorrection(const AMP::shared_ptr<MassMatrixCorrectionParameters> & params) :
+    explicit MassMatrixCorrection(const AMP::shared_ptr<MassMatrixCorrectionParameters> & params) :
         BoundaryOperator (params),
         d_bSetIdentityOnDiagonal(false)
     {

@@ -16,7 +16,7 @@ namespace AMP {
       public :
 
         /** Constructor */
-        MechanicsModelParameters(const AMP::shared_ptr<AMP::Database> & db)
+        explicit MechanicsModelParameters(const AMP::shared_ptr<AMP::Database> & db)
           : ElementPhysicsModelParameters(db) { }
 
         /** Destructor */

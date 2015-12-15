@@ -97,7 +97,7 @@ public:
      12. name: operatorComponentToEnableBoundsCheck, type: integer, default value: none 
      acceptable values ()
     */
-     PetscSNESSolver(AMP::shared_ptr< PetscSNESSolverParameters> parameters);
+     explicit PetscSNESSolver(AMP::shared_ptr< PetscSNESSolverParameters> parameters);
 
      /**
       * Default destructor.

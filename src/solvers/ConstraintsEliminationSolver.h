@@ -11,7 +11,7 @@ namespace AMP {
 
     class ConstraintsEliminationSolver : public SolverStrategy {
       public:
-        ConstraintsEliminationSolver(AMP::shared_ptr<ConstraintsEliminationSolverParameters> params);
+        explicit ConstraintsEliminationSolver(AMP::shared_ptr<ConstraintsEliminationSolverParameters> params);
         void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f, AMP::shared_ptr<AMP::LinearAlgebra::Vector> u);
     };
 

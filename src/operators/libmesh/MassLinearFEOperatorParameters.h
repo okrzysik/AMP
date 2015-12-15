@@ -11,7 +11,7 @@ namespace Operator {
     class MassLinearFEOperatorParameters : public LinearFEOperatorParameters {
         public :
         
-        MassLinearFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
+        explicit MassLinearFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
         : LinearFEOperatorParameters(db) {  }
         
         virtual ~MassLinearFEOperatorParameters() {}

@@ -24,7 +24,7 @@ namespace Operator {
     public :
 
 
-      FlowElement(const AMP::shared_ptr<ElementOperationParameters>& params);
+      explicit FlowElement(const AMP::shared_ptr<ElementOperationParameters>& params);
 
       virtual ~FlowElement() {  }
 

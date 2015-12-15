@@ -20,7 +20,7 @@ namespace AMP {
     {
       public :
 
-        MassLinearFEOperator(const AMP::shared_ptr<MassLinearFEOperatorParameters>& params);
+        explicit MassLinearFEOperator(const AMP::shared_ptr<MassLinearFEOperatorParameters>& params);
 
         virtual ~MassLinearFEOperator() { }
 

@@ -42,7 +42,7 @@ namespace Operator {
         4) QRULE_TYPE (QGAUSS by default) - Type of numerical integration scheme used.
         5) QRULE_ORDER (DEFAULT by default) - Order of the numerical integration scheme.
         */
-      MechanicsElement(const AMP::shared_ptr<ElementOperationParameters>& params);
+      explicit MechanicsElement(const AMP::shared_ptr<ElementOperationParameters>& params);
 
       /**
         Destructor.

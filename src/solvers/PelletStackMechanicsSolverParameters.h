@@ -10,7 +10,7 @@ namespace AMP {
     class PelletStackMechanicsSolverParameters : public SolverStrategyParameters {
       public:
         PelletStackMechanicsSolverParameters(){}
-        PelletStackMechanicsSolverParameters(const AMP::shared_ptr<AMP::Database> db) : SolverStrategyParameters(db) { }
+        explicit PelletStackMechanicsSolverParameters(const AMP::shared_ptr<AMP::Database> db) : SolverStrategyParameters(db) { }
         virtual ~PelletStackMechanicsSolverParameters(){}
 
         AMP::shared_ptr<AMP::Solver::ColumnSolver> d_columnSolver;

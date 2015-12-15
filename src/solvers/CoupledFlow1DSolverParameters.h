@@ -13,7 +13,7 @@ namespace Solver {
   class CoupledFlow1DSolverParameters: public SolverStrategyParameters{
   public:
     CoupledFlow1DSolverParameters(){}
-    CoupledFlow1DSolverParameters(const AMP::shared_ptr<AMP::Database> &db): 
+    explicit CoupledFlow1DSolverParameters(const AMP::shared_ptr<AMP::Database> &db): 
       SolverStrategyParameters(db){ }
     virtual ~CoupledFlow1DSolverParameters(){}
 

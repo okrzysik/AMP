@@ -31,7 +31,7 @@ namespace Operator {
 	 4. name: useSameLocalModelForVolumeAndBoundaryOperators, type: bool, (optional), default value: FALSE, when set to
 	    to TRUE the same local model is used for both the volume and boundary operators
         */
-      LinearBVPOperator(const AMP::shared_ptr<BVPOperatorParameters>& parameters);
+      explicit LinearBVPOperator(const AMP::shared_ptr<BVPOperatorParameters>& parameters);
 
       /**
        * virtual destructor which does nothing

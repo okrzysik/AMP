@@ -21,7 +21,7 @@ public:
    /**
     * Constructor that accepts parameter list.
     */
-   ExplicitEuler(  AMP::shared_ptr<TimeIntegratorParameters> parameters );
+   explicit ExplicitEuler(  AMP::shared_ptr<TimeIntegratorParameters> parameters );
 
    /**
     * Destructor.

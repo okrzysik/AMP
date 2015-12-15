@@ -13,7 +13,7 @@ namespace Operator {
   class NavierStokesLinearFEOperatorParameters : public LinearFEOperatorParameters {
     public :
 
-      NavierStokesLinearFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
+      explicit NavierStokesLinearFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
         : LinearFEOperatorParameters(db) { }
 
       virtual ~NavierStokesLinearFEOperatorParameters() { }

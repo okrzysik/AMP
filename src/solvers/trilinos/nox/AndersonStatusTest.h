@@ -32,7 +32,7 @@ public:
      acceptable values (>0.0)
 
     */
-     AndersonStatusTest(AMP::shared_ptr<AMP::Database> db);
+     explicit AndersonStatusTest(AMP::shared_ptr<AMP::Database> db);
 
      /**
       * Default destructor.

@@ -28,7 +28,7 @@ typedef AMP::shared_ptr<Property<double> > PropertyPtr;
 class Material
 {
 public:
-	Material(): d_propertyMap(NULL)
+    Material(): d_propertyMap(NULL)
 	{
 	}
 

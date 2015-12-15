@@ -49,7 +49,7 @@ namespace TimeIntegrator{
     class IDATimeIntegratorParameters: public TimeIntegratorParameters
         {
         public:
-            IDATimeIntegratorParameters(const AMP::shared_ptr<AMP::Database> db);
+            explicit IDATimeIntegratorParameters(const AMP::shared_ptr<AMP::Database> db);
             
             virtual ~IDATimeIntegratorParameters();
             
@@ -76,8 +76,8 @@ namespace TimeIntegrator{
             // not implemented
             //IDATimeIntegratorParameters(){} 
             
-            IDATimeIntegratorParameters(); // Just following ImplicitTimeIntegratorParameters();
-            IDATimeIntegratorParameters(const IDATimeIntegratorParameters&);
+            explicit IDATimeIntegratorParameters(); // Just following ImplicitTimeIntegratorParameters();
+            explicit IDATimeIntegratorParameters(const IDATimeIntegratorParameters&);
             void operator=(const IDATimeIntegratorParameters&);
         };
 

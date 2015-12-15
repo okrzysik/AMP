@@ -17,7 +17,7 @@ namespace AMP {
     {
       public :
 
-        NavierStokesLSWFLinearFEOperator(const AMP::shared_ptr<NavierStokesLinearFEOperatorParameters>& params);
+        explicit NavierStokesLSWFLinearFEOperator(const AMP::shared_ptr<NavierStokesLinearFEOperatorParameters>& params);
 
         virtual ~NavierStokesLSWFLinearFEOperator() { }
 

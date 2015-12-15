@@ -13,7 +13,7 @@ namespace Operator {
 class VolumeIntegralOperatorParameters : public FEOperatorParameters {
 public :
 
-    VolumeIntegralOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
+    explicit VolumeIntegralOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
       : FEOperatorParameters(db) {  }
 
     virtual ~VolumeIntegralOperatorParameters() { }
