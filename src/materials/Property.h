@@ -60,9 +60,11 @@ public:
 		d_defaults(nargs), d_ranges(nargs, std::vector<Number>(2)),
 		d_variableNumberParameters(false)
 	{
-		for (size_t i = 0; i < d_n_arguments; i++)
-			d_arguments[i] = args[i];
-		for (size_t i = 0; i < d_n_arguments; i++)
+        if(args!=nullptr) {
+            for (size_t i = 0; i < d_n_arguments; i++)
+                d_arguments[i] = args[i];
+        }
+        for (size_t i = 0; i < d_n_arguments; i++)
 		{
 			d_argToIndexMap.insert(
 					std::pair<std::string, size_t>(d_arguments[i], i));

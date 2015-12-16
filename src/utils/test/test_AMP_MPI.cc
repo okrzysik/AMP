@@ -37,11 +37,11 @@ struct mytype{
         a = -1;
         b = -1.0;
     }
-    explicit mytype( int i ) {
+    mytype( int i ) {
         a = i;
         b = -1.0;
     }
-    explicit mytype( int i, double d ) {
+    mytype( int i, double d ) {
         a = i;
         b = d;
     }
