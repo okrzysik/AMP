@@ -10,27 +10,25 @@
 namespace AMP {
 namespace Operator {
 
-  class NavierStokesLinearFEOperatorParameters : public LinearFEOperatorParameters {
-    public :
+class NavierStokesLinearFEOperatorParameters : public LinearFEOperatorParameters {
+public:
+    explicit NavierStokesLinearFEOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : LinearFEOperatorParameters( db )
+    {
+    }
 
-      explicit NavierStokesLinearFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
-        : LinearFEOperatorParameters(db) { }
+    virtual ~NavierStokesLinearFEOperatorParameters() {}
 
-      virtual ~NavierStokesLinearFEOperatorParameters() { }
+    //      AMP::LinearAlgebra::Vector::shared_ptr
+    //      d_frozenVec[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
+    AMP::LinearAlgebra::Vector::shared_ptr d_frozenVec;
 
-//      AMP::LinearAlgebra::Vector::shared_ptr d_frozenVec[NavierStokes::TOTAL_NUMBER_OF_VARIABLES]; 
-      AMP::LinearAlgebra::Vector::shared_ptr d_frozenVec; 
-                                              
-      AMP::shared_ptr<FlowTransportModel> d_transportModel;
+    AMP::shared_ptr<FlowTransportModel> d_transportModel;
 
-    protected :
-
-    private :
-
-  };
-
+protected:
+private:
+};
 }
 }
 
 #endif
-

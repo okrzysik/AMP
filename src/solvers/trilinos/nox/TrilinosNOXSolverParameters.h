@@ -1,11 +1,11 @@
 #ifndef included_AMP_TrilinosNOXSolverParameters
 #define included_AMP_TrilinosNOXSolverParameters
 
-#include "utils/shared_ptr.h"
-#include "utils/Database.h"
-#include "utils/AMP_MPI.h"
 #include "solvers/SolverStrategyParameters.h"
 #include "solvers/trilinos/nox/PrePostOperator.h"
+#include "utils/AMP_MPI.h"
+#include "utils/Database.h"
+#include "utils/shared_ptr.h"
 
 
 namespace AMP {
@@ -17,24 +17,24 @@ namespace Solver {
  * shared pointers to a PertscKrylovSolver object and a vector
  * for initial guesses. All member variables are public.
  */
-class TrilinosNOXSolverParameters: public SolverStrategyParameters{
+class TrilinosNOXSolverParameters : public SolverStrategyParameters {
 public:
-    TrilinosNOXSolverParameters(){}
-    explicit TrilinosNOXSolverParameters(const AMP::shared_ptr<AMP::Database> &db):SolverStrategyParameters(db) {}
-    virtual ~TrilinosNOXSolverParameters(){}
+    TrilinosNOXSolverParameters() {}
+    explicit TrilinosNOXSolverParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : SolverStrategyParameters( db )
+    {
+    }
+    virtual ~TrilinosNOXSolverParameters() {}
 
     AMP_MPI d_comm;
-    AMP::LinearAlgebra::Vector::shared_ptr      d_pInitialGuess;
-    AMP::Operator::Operator::shared_ptr         d_pLinearOperator;
-    AMP::Solver::SolverStrategy::shared_ptr     d_preconditioner;
-    AMP::Solver::PrePostOperator::shared_ptr    d_prePostOperator;
+    AMP::LinearAlgebra::Vector::shared_ptr d_pInitialGuess;
+    AMP::Operator::Operator::shared_ptr d_pLinearOperator;
+    AMP::Solver::SolverStrategy::shared_ptr d_preconditioner;
+    AMP::Solver::PrePostOperator::shared_ptr d_prePostOperator;
 
 protected:
 private:
-    
 };
-
-
 }
 }
 

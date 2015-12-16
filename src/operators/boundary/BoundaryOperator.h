@@ -8,32 +8,33 @@ namespace Operator {
 
 
 //  An abstract base class for representing a linear operator.
-class BoundaryOperator : public Operator 
-{
+class BoundaryOperator : public Operator {
 
-public :
+public:
+    explicit BoundaryOperator( const AMP::shared_ptr<OperatorParameters> &params )
+        : Operator( params )
+    {
+    }
 
-    explicit BoundaryOperator (const AMP::shared_ptr<OperatorParameters> & params)
-        : Operator (params) { }
+    virtual ~BoundaryOperator() {}
 
-    virtual ~BoundaryOperator() { }
-
-    virtual void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr ) {
+    virtual void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr )
+    {
         // Do nothing
     }
 
-    virtual void setRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr ) {
+    virtual void setRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr )
+    {
         // Do nothing
     }
 
-    virtual void modifyInitialSolutionVector(AMP::LinearAlgebra::Vector::shared_ptr ) {
+    virtual void modifyInitialSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr )
+    {
         // Do nothing
     }
 
-protected :
-
-private :
-
+protected:
+private:
 };
 
 
@@ -41,5 +42,3 @@ private :
 } // Namespace AMP
 
 #endif
-
-

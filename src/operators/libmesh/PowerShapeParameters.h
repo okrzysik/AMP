@@ -13,23 +13,19 @@
 namespace AMP {
 namespace Operator {
 
-  /**
-    A class for encapsulating the parameters that are required for constructing the 
-    PowerShape operator. 
-    @see PowerShape
-    */
-  class PowerShapeParameters : public OperatorParameters {
-    public :
-      
-      explicit PowerShapeParameters(const AMP::shared_ptr<AMP::Database> &db)
-    : OperatorParameters(db){} 
-
-  };
-
+/**
+  A class for encapsulating the parameters that are required for constructing the
+  PowerShape operator.
+  @see PowerShape
+  */
+class PowerShapeParameters : public OperatorParameters {
+public:
+    explicit PowerShapeParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : OperatorParameters( db )
+    {
+    }
+};
 }
 }
 
 #endif
-
-
-

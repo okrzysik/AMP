@@ -7,21 +7,19 @@
 namespace AMP {
 namespace Operator {
 
-  class DirichletVectorCorrectionParameters : public OperatorParameters {
-    public :
+class DirichletVectorCorrectionParameters : public OperatorParameters {
+public:
+    explicit DirichletVectorCorrectionParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : OperatorParameters( db )
+    {
+    }
 
-      explicit DirichletVectorCorrectionParameters(const AMP::shared_ptr<AMP::Database> &db)
-        : OperatorParameters(db) {  }
+    virtual ~DirichletVectorCorrectionParameters() {}
 
-      virtual ~DirichletVectorCorrectionParameters() { }
-
-      //This must be a simple variable not a dual or multivariable
-      AMP::LinearAlgebra::Variable::shared_ptr d_variable;
-
-  };
-
+    // This must be a simple variable not a dual or multivariable
+    AMP::LinearAlgebra::Variable::shared_ptr d_variable;
+};
 }
 }
 
 #endif
-

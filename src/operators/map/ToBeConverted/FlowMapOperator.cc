@@ -6,7 +6,8 @@ namespace Operator {
 /*
 
 // applyStart
-void FlowMapOperator::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , const AMP::LinearAlgebra::Vector::shared_ptr &u ,
+void FlowMapOperator::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr & , const
+AMP::LinearAlgebra::Vector::shared_ptr &u ,
         AMP::LinearAlgebra::Vector::shared_ptr & , const double , const double )
 {
     d_1DMultiMap.clear();
@@ -48,7 +49,8 @@ void FlowMapOperator::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr 
     {
       if ( d_SendToProc[i] > 0 )
       {
-        *curReq = d_MapComm.Isend( getBufferToAvoidDebugVectorCrashing(d_SendBuf), d_SendBuf.size(), i, d_SendTag );
+        *curReq = d_MapComm.Isend( getBufferToAvoidDebugVectorCrashing(d_SendBuf), d_SendBuf.size(),
+i, d_SendTag );
         curReq++;
       }
     }
@@ -56,7 +58,8 @@ void FlowMapOperator::applyStart ( const AMP::LinearAlgebra::Vector::shared_ptr 
 
 
 // applyFinish
-void  FlowMapOperator::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &f , const AMP::LinearAlgebra::Vector::shared_ptr &u ,
+void  FlowMapOperator::applyFinish ( const AMP::LinearAlgebra::Vector::shared_ptr &f , const
+AMP::LinearAlgebra::Vector::shared_ptr &u ,
                       AMP::LinearAlgebra::Vector::shared_ptr &r , const double a , const double b )
 {
     d_1DMultiMap.clear();
@@ -70,7 +73,8 @@ void  FlowMapOperator::applyFinish ( const AMP::LinearAlgebra::Vector::shared_pt
         int inSize = d_MapComm.probe(i,d_RecvTag)/sizeof(double);
         std::vector<double> recvBuf ( inSize );
         int length = recvBuf.size();
-        d_MapComm.recv( getBufferToAvoidDebugVectorCrashing( recvBuf ), length, i, false, d_RecvTag );
+        d_MapComm.recv( getBufferToAvoidDebugVectorCrashing( recvBuf ), length, i, false, d_RecvTag
+);
         int k = inSize/2;
         for ( int j = 0 ; j != inSize/4 ; j++ )
         {
@@ -99,7 +103,8 @@ void  FlowMapOperator::applyFinish ( const AMP::LinearAlgebra::Vector::shared_pt
      //       Cp   = getHeatCapacity(T_b_i);
         he_z = T_b_i->first - T_b_im1->first;
 
-        R_b = T_b_i->second - T_b_im1->second - ((4*Heff*( T_c_i->second - T_b_i->second))/(Cp*d_G*d_De))*he_z;
+        R_b = T_b_i->second - T_b_im1->second - ((4*Heff*( T_c_i->second -
+T_b_i->second))/(Cp*d_G*d_De))*he_z;
       addTo1DMap ( T_b_i->first , R_b );
 
       T_b_i++;
@@ -116,7 +121,8 @@ void  FlowMapOperator::applyFinish ( const AMP::LinearAlgebra::Vector::shared_pt
     if(f.get() == NULL) {
         outputVec->scale(a);
     } else {
-        AMP::LinearAlgebra::Vector::shared_ptr fInternal = f->subsetVectorForVariable( d_MapVariable );
+        AMP::LinearAlgebra::Vector::shared_ptr fInternal = f->subsetVectorForVariable( d_MapVariable
+);
         if(fInternal.get() == NULL) {
             outputVec->scale(a);
         } else {
@@ -188,7 +194,8 @@ void FlowMapOperator::buildMap ( const AMP::LinearAlgebra::Vector::shared_ptr p 
 
 
 // buildMap
-void FlowMapOperator::buildMap ( const AMP::LinearAlgebra::Vector::shared_ptr p , std::multimap<double,double> &m )
+void FlowMapOperator::buildMap ( const AMP::LinearAlgebra::Vector::shared_ptr p ,
+std::multimap<double,double> &m )
 {
     AMP::Mesh::DOFMap::shared_ptr d = d_MeshAdapter->getDOFMap ( getInputVariable() );
     BNIterator cur = d_BeginNode;
@@ -245,4 +252,3 @@ void FlowMapOperator::smear ( double tolerance , std::multimap<double,double> &m
 */
 } // Operators
 } // AMP
-

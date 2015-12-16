@@ -1,5 +1,6 @@
 //
-// File:	$URL: file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/inputdb/InputManager.C $
+// File:	$URL:
+// file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/inputdb/InputManager.C $
 // Package:	AMP toolbox
 // Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
 // Revision:	$LastChangedRevision: 1917 $
@@ -8,168 +9,156 @@
 //
 
 #include "InputManager.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include "utils/AMP_MPI.h"
-#include "Parser.h"
-#include "PIO.h"
 #include "AMPManager.h"
+#include "PIO.h"
+#include "Parser.h"
 #include "ShutdownRegistry.h"
 #include "Utilities.h"
+#include "utils/AMP_MPI.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifndef NULL
-#define NULL (0)
+#define NULL ( 0 )
 #endif
 
 namespace AMP {
 
-  InputManager *InputManager::s_manager_instance = NULL;
-  bool InputManager::s_registered_callback = false;
-  AMP::shared_ptr<Database> InputManager::s_input_db = AMP::shared_ptr<Database>();
+InputManager *InputManager::s_manager_instance     = NULL;
+bool InputManager::s_registered_callback           = false;
+AMP::shared_ptr<Database> InputManager::s_input_db = AMP::shared_ptr<Database>();
 
-  /*
-  *************************************************************************
-   *									*
-   * Basic singleton classes to create, set, and destroy the manager	*
-   * instance.								*
-   *									*
-  *************************************************************************
-  */
+/*
+*************************************************************************
+ *									*
+ * Basic singleton classes to create, set, and destroy the manager	*
+ * instance.								*
+ *									*
+*************************************************************************
+*/
 
-  InputManager *InputManager::getManager()
-  {
-    if (!s_manager_instance) {
-      s_manager_instance = new InputManager;
+InputManager *InputManager::getManager()
+{
+    if ( !s_manager_instance ) {
+        s_manager_instance = new InputManager;
     }
-    if (!s_registered_callback) {
-      ShutdownRegistry::registerShutdownRoutine(freeManager,
-          ShutdownRegistry::priorityInputManager);
-      s_registered_callback = true;
+    if ( !s_registered_callback ) {
+        ShutdownRegistry::registerShutdownRoutine( freeManager,
+                                                   ShutdownRegistry::priorityInputManager );
+        s_registered_callback = true;
     }
-    return(s_manager_instance);
-  }
+    return ( s_manager_instance );
+}
 
-  void InputManager::setManager(InputManager *manager)
-  {
-    if (s_manager_instance) {
-      delete s_manager_instance;
+void InputManager::setManager( InputManager *manager )
+{
+    if ( s_manager_instance ) {
+        delete s_manager_instance;
     }
-    if (!s_registered_callback) {
-      ShutdownRegistry::registerShutdownRoutine(freeManager,
-          ShutdownRegistry::priorityInputManager);
+    if ( !s_registered_callback ) {
+        ShutdownRegistry::registerShutdownRoutine( freeManager,
+                                                   ShutdownRegistry::priorityInputManager );
 
-      s_registered_callback = true;
+        s_registered_callback = true;
     }
     s_manager_instance = manager;
-  }
+}
 
-  void InputManager::freeManager()
-  {
-    if (s_manager_instance) delete s_manager_instance;
-    s_manager_instance = ((InputManager *) NULL);
+void InputManager::freeManager()
+{
+    if ( s_manager_instance ) delete s_manager_instance;
+    s_manager_instance = ( (InputManager *) NULL );
 
     s_input_db.reset();
-  }
+}
 
-  /*
-  *************************************************************************
-   *									*
-   * The constructor and destructor are protected and call only be called	*
-   * by the singleton class or its subclasses.				*
-   *									*
-  *************************************************************************
-  */
+/*
+*************************************************************************
+ *									*
+ * The constructor and destructor are protected and call only be called	*
+ * by the singleton class or its subclasses.				*
+ *									*
+*************************************************************************
+*/
 
-  InputManager::InputManager()
-  {
-     comm = AMP_MPI(AMP_COMM_WORLD);
-  }
+InputManager::InputManager() { comm = AMP_MPI( AMP_COMM_WORLD ); }
 
-  InputManager::~InputManager()
-  {
-  }
+InputManager::~InputManager() {}
 
-  /*
-  *************************************************************************
-   *									*
-   * Return whether or not the manager contains an valid input database.   *
-   *									*
-  *************************************************************************
-  */
+/*
+*************************************************************************
+ *									*
+ * Return whether or not the manager contains an valid input database.   *
+ *									*
+*************************************************************************
+*/
 
-  bool InputManager::inputDatabaseExists()
-  {
-    return(!(s_input_db.get()==NULL));
-  }
+bool InputManager::inputDatabaseExists() { return ( !( s_input_db.get() == NULL ) ); }
 
-  /*
-  *************************************************************************
-   *									*
-   * Parse the specified input file and return the new database.		*
-   *									*
-  *************************************************************************
-  */
+/*
+*************************************************************************
+ *									*
+ * Parse the specified input file and return the new database.		*
+ *									*
+*************************************************************************
+*/
 
-  AMP::shared_ptr<InputDatabase>
-    InputManager::parseInputFile(const std::string& filename)
-    {
-      AMP::shared_ptr<InputDatabase> db (new InputDatabase("main"));
-      this->parseInputFile(filename, db);
-      return(db);
+AMP::shared_ptr<InputDatabase> InputManager::parseInputFile( const std::string &filename )
+{
+    AMP::shared_ptr<InputDatabase> db( new InputDatabase( "main" ) );
+    this->parseInputFile( filename, db );
+    return ( db );
+}
+
+
+/*
+*************************************************************************
+ *									*
+ * Accessor method for InputManger's root input database.                *
+ *									*
+*************************************************************************
+*/
+AMP::shared_ptr<Database> InputManager::getInputDatabase() { return ( s_input_db ); }
+
+/*
+*************************************************************************
+ *									*
+ * Parse the specified input file into the given database.		*
+ *									*
+*************************************************************************
+*/
+
+void InputManager::parseInputFile( const std::string &filename, AMP::shared_ptr<InputDatabase> db )
+{
+    FILE *fstream = NULL;
+    if ( comm.getRank() == 0 ) {
+        fstream = fopen( filename.c_str(), "r" );
     }
-
-
-  /*
-  *************************************************************************
-   *									*
-   * Accessor method for InputManger's root input database.                *
-   *									*
-  *************************************************************************
-  */
-  AMP::shared_ptr<Database> InputManager::getInputDatabase() 
-  {
-    return(s_input_db);
-  }
-
-  /*
-  *************************************************************************
-   *									*
-   * Parse the specified input file into the given database.		*
-   *									*
-  *************************************************************************
-  */
-
-  void InputManager::parseInputFile(
-      const std::string& filename, AMP::shared_ptr<InputDatabase> db)
-  {
-    FILE* fstream = NULL;
-    if (comm.getRank() == 0) {
-      fstream = fopen(filename.c_str(), "r");
-    }
-    int worked = (fstream ? 1 : 0);
-    worked = comm.bcast(worked, 0);
-    if (!worked) {
-      AMP_ERROR("InputManager:: Could not open input file``" <<
-          filename.c_str() << "''\n");
+    int worked = ( fstream ? 1 : 0 );
+    worked     = comm.bcast( worked, 0 );
+    if ( !worked ) {
+        AMP_ERROR( "InputManager:: Could not open input file``" << filename.c_str() << "''\n" );
     }
 
     /*
      * Parse input file.
      */
-    Parser *parser = new Parser();
-    const int errors = parser->parse(filename, fstream, db);
+    Parser *parser     = new Parser();
+    const int errors   = parser->parse( filename, fstream, db );
     const int warnings = parser->getNumberWarnings();
 
-    if (errors > 0) {
-      AMP_WARNING("InputManager: Errors = " << errors
-          << ", Warnings = " << warnings
-          << "\n when parsing input file = " << filename << std::endl);
-      db->printClassData(plog);
-      AMP_ERROR("InputManager exiting..." << std::endl);
+    if ( errors > 0 ) {
+        AMP_WARNING( "InputManager: Errors = " << errors << ", Warnings = " << warnings
+                                               << "\n when parsing input file = "
+                                               << filename
+                                               << std::endl );
+        db->printClassData( plog );
+        AMP_ERROR( "InputManager exiting..." << std::endl );
     }
-    if (warnings > 0) {
-      AMP_WARNING("InputManager: Warnings  = " << warnings
-          << "\n when parsing input file = " << filename << std::endl);
+    if ( warnings > 0 ) {
+        AMP_WARNING( "InputManager: Warnings  = " << warnings << "\n when parsing input file = "
+                                                  << filename
+                                                  << std::endl );
     }
 
     /*
@@ -178,9 +167,6 @@ namespace AMP {
     s_input_db = db;
 
     delete parser;
-    if (fstream) fclose(fstream);
-  }
-
+    if ( fstream ) fclose( fstream );
 }
-
-
+}

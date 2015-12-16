@@ -4,25 +4,21 @@
 #include "ampmesh/MeshParameters.h"
 
 
-namespace AMP { 
+namespace AMP {
 namespace Mesh {
-
 
 
 /**
  * \class Mesh
  * \brief A class used to pass the parameters for creating a mesh
  */
-class MultiMeshParameters: public MeshParameters
-{
+class MultiMeshParameters : public MeshParameters {
 public:
-
     // Constructors
-    MultiMeshParameters( ): MeshParameters() {}
-    MultiMeshParameters(const AMP::shared_ptr<AMP::Database> db): MeshParameters(db) {}
+    MultiMeshParameters() : MeshParameters() {}
+    MultiMeshParameters( const AMP::shared_ptr<AMP::Database> db ) : MeshParameters( db ) {}
 
 protected:
-
     //! A vector containing the mesh parameters for the sum meshes
     std::vector<MeshParameters::shared_ptr> params;
 
@@ -32,7 +28,6 @@ protected:
     //! See AMP::Mesh::Mesh for Mesh class
     friend class Mesh;
     friend class MultiMesh;
-
 };
 
 
@@ -40,4 +35,3 @@ protected:
 } // AMP namespace
 
 #endif
-

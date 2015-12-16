@@ -1,12 +1,12 @@
 #ifndef included_AMP_STKMeshElement
 #define included_AMP_STKMeshElement
 
-#include <vector>
-#include "utils/shared_ptr.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "ampmesh/STKmesh/STKMesh.h"
 #include "ampmesh/STKmesh/STKMeshIterator.h"
+#include "utils/shared_ptr.h"
+#include <vector>
 
 namespace AMP {
 namespace Mesh {
@@ -19,27 +19,25 @@ namespace Mesh {
  * A mesh element can be thought of as the smallest unit of a mesh.  It is of a type
  * of GeomType.  This class is derived to store a STKMesh element.
  */
-class STKMeshElement: public MeshElement
-{
+class STKMeshElement : public MeshElement {
 public:
-
     //! Empty constructor for a MeshElement
-    STKMeshElement ( );
+    STKMeshElement();
 
     //! Copy constructor
-    STKMeshElement(const STKMeshElement&);
+    STKMeshElement( const STKMeshElement & );
 
     //! Assignment operator
-    STKMeshElement& operator=(const STKMeshElement&);
+    STKMeshElement &operator=( const STKMeshElement & );
 
     //! De-constructor for a MeshElement
-    virtual ~STKMeshElement ( );
+    virtual ~STKMeshElement();
 
     //! Return the elements composing the current element
-    virtual std::vector<MeshElement> getElements(const GeomType type) const;
+    virtual std::vector<MeshElement> getElements( const GeomType type ) const;
 
     //! Return the elements neighboring the current element
-    virtual std::vector< MeshElement::shared_ptr > getNeighbors() const;
+    virtual std::vector<MeshElement::shared_ptr> getNeighbors() const;
 
     //! Return the volume of the current element (does not apply to verticies)
     virtual double volume() const;
@@ -63,7 +61,7 @@ public:
      * \param pos   The coordinates of the point to check.
      * \param TOL   The tolerance to use for the computation.
      */
-    virtual bool containsPoint( const std::vector<double> &pos, double TOL=1e-12 ) const;
+    virtual bool containsPoint( const std::vector<double> &pos, double TOL = 1e-12 ) const;
 
     //! Check if the element is on the surface
     virtual bool isOnSurface() const;
@@ -73,18 +71,17 @@ public:
      * \details   Check if the current element is on the boundary specified by the given id
      * \param id  The boundary id to check
      */
-    virtual bool isOnBoundary(int id) const;
+    virtual bool isOnBoundary( int id ) const;
 
     /**
      * \brief     Check if the current element is in the given block
      * \details   Check if the current element is in the block specified by the given id
      * \param id  The block id to check
      */
-    virtual bool isInBlock(int id) const;
+    virtual bool isInBlock( int id ) const;
 
 
 protected:
-
     /** Default constructors
      * \param dim       Spatial dimension
      * \param element   Underlying STKmesh element
@@ -93,23 +90,31 @@ protected:
      * \param meshID    ID of the current mesh
      *        type      Element type
      */
-    STKMeshElement(int dim, stk::mesh::Entity* element, unsigned int rank, MeshID meshID, const STKMesh* mesh );
-    STKMeshElement(int dim, AMP::shared_ptr<stk::mesh::Entity> element, unsigned int rank, MeshID meshID, const STKMesh* mesh );
+    STKMeshElement( int dim,
+                    stk::mesh::Entity *element,
+                    unsigned int rank,
+                    MeshID meshID,
+                    const STKMesh *mesh );
+    STKMeshElement( int dim,
+                    AMP::shared_ptr<stk::mesh::Entity>
+                        element,
+                    unsigned int rank,
+                    MeshID meshID,
+                    const STKMesh *mesh );
 
     //! Clone the iterator
-    virtual MeshElement* clone() const;
+    virtual MeshElement *clone() const;
 
     // Internal data
-    int d_dim;                  // The dimension of the mesh
-    unsigned int d_rank;        // The rank of the current processor
-    stk::mesh::Entity* ptr_element;          // The underlying STKmesh element properties (raw pointer)
-    const STKMesh* d_mesh;      // The pointer to the current mesh
-    MeshID d_meshID;            // The ID of the current mesh
-    bool d_delete_elem;         // Do we need to delete the STKMesh element
+    int d_dim;                      // The dimension of the mesh
+    unsigned int d_rank;            // The rank of the current processor
+    stk::mesh::Entity *ptr_element; // The underlying STKmesh element properties (raw pointer)
+    const STKMesh *d_mesh;          // The pointer to the current mesh
+    MeshID d_meshID;                // The ID of the current mesh
+    bool d_delete_elem;             // Do we need to delete the STKMesh element
 
     friend class AMP::Mesh::STKMesh;
     friend class AMP::Mesh::STKMeshIterator;
-
 };
 }
 }

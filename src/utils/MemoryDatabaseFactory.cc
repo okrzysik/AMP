@@ -11,15 +11,14 @@
 #include "MemoryDatabase.h"
 
 namespace AMP {
-  
+
 
 /**
  * Build a new MemoryDatabase object.
  */
- AMP::shared_ptr<Database> MemoryDatabaseFactory::allocate(const std::string& name) {
-  AMP::shared_ptr<MemoryDatabase> database(new MemoryDatabase(name));
-   return database;
+AMP::shared_ptr<Database> MemoryDatabaseFactory::allocate( const std::string &name )
+{
+    AMP::shared_ptr<MemoryDatabase> database( new MemoryDatabase( name ) );
+    return database;
 }
-
-
 }

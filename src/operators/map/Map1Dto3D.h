@@ -2,14 +2,14 @@
 #define included_AMP_Map1Dto3D
 
 
-#include "utils/shared_ptr.h"
+#include "discretization/createLibmeshElements.h"
 #include "operators/Operator.h"
 #include "operators/OperatorParameters.h"
 #include "operators/map/MapOperator.h"
 #include "operators/map/MapOperatorParameters.h"
-#include "discretization/createLibmeshElements.h"
-#include "vectors/Vector.h"
+#include "utils/shared_ptr.h"
 #include "vectors/Variable.h"
+#include "vectors/Vector.h"
 
 #include <string>
 
@@ -18,50 +18,44 @@ namespace Operator {
 
 
 /**
-  Class Map1Dto3D is used to map the 1D solution from simple vector 
-  onto the 2D Surface by injunction as the 1D location are constructed 
+  Class Map1Dto3D is used to map the 1D solution from simple vector
+  onto the 2D Surface by injunction as the 1D location are constructed
   by the nodal points on the 2D surface. The 2D surface has to be on the
-  d_MapAdapater from the MapOperator class. 
+  d_MapAdapater from the MapOperator class.
  */
-class Map1Dto3D : public MapOperator
-{
+class Map1Dto3D : public MapOperator {
 public:
-
     //! Default Constructor
-    explicit Map1Dto3D(const AMP::shared_ptr<OperatorParameters>& params);
+    explicit Map1Dto3D( const AMP::shared_ptr<OperatorParameters> &params );
 
     //! De-constructor
-    virtual ~Map1Dto3D() { }
+    virtual ~Map1Dto3D() {}
 
     /**
       This function reads the entries of the database for the operator
       and can also be used to change the parameters if required.
      */
-    void reset(const AMP::shared_ptr<OperatorParameters>& );
+    void reset( const AMP::shared_ptr<OperatorParameters> & );
 
     /**
-      For this operator the apply function would map the solution by injunction from 
-      Simple Vector in u to NodalScalar Vector in r. 
-      @param [in]  u input vector. 
-      @param [out] r output vector. 
+      For this operator the apply function would map the solution by injunction from
+      Simple Vector in u to NodalScalar Vector in r.
+      @param [in]  u input vector.
+      @param [out] r output vector.
       */
-    void apply(AMP::LinearAlgebra::Vector::const_shared_ptr u,
-	       AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
     void apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		      AMP::LinearAlgebra::Vector::shared_ptr f);
+                      AMP::LinearAlgebra::Vector::shared_ptr f );
 
     void apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		      AMP::LinearAlgebra::Vector::shared_ptr f);
+                      AMP::LinearAlgebra::Vector::shared_ptr f );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
-        return d_inpVariable;
-    }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_inpVariable; }
 
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
-        return d_outVariable;
-    }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outVariable; }
 
 
     //!  This function is used to compute 1D locations from the output vector.
@@ -70,7 +64,7 @@ public:
 
 
     //!  This function returns the number of 1D locations.
-    size_t  getNumZlocations() { return d_zLocations.size(); }
+    size_t getNumZlocations() { return d_zLocations.size(); }
 
 
     //!  This function returns the 1D locations stl vector.
@@ -85,29 +79,23 @@ public:
     void setZLocations( const std::vector<double> &z );
 
 
-    void setVector (AMP::LinearAlgebra::Vector::shared_ptr vec);
+    void setVector( AMP::LinearAlgebra::Vector::shared_ptr vec );
 
 
 protected:
-
     AMP::LinearAlgebra::Vector::shared_ptr outputVec;
 
     AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; 
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
     std::vector<double> d_zLocations; /**< std vector to store 1D z locations. */
 
     bool d_useGaussVec;
 
-private :
-
+private:
     Discretization::createLibmeshElements libmeshElements;
-
-
 };
-
-
 }
 }
 

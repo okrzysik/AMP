@@ -29,44 +29,44 @@ namespace AMP {
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-   /* Put the tokens into the symbol table, so that GDB and other debuggers
-      know about them.  */
-   enum yytokentype {
-     T_AND = 258,
-     T_ASSIGN = 259,
-     T_CHAR = 260,
-     T_CLOSE_CURLY = 261,
-     T_CLOSE_PAREN = 262,
-     T_CLOSE_SQBKT = 263,
-     T_COMMA = 264,
-     T_DIV = 265,
-     T_DOUBLE = 266,
-     T_ELSE = 267,
-     T_EXP = 268,
-     T_EQUALS = 269,
-     T_GREATER_EQUALS = 270,
-     T_GREATER = 271,
-     T_LESS_EQUALS = 272,
-     T_LESS = 273,
-     T_FALSE = 274,
-     T_INTEGER = 275,
-     T_KEYWORD = 276,
-     T_MINUS = 277,
-     T_MULT = 278,
-     T_NOT = 279,
-     T_NOT_EQUALS = 280,
-     T_OR = 281,
-     T_OPEN_CURLY = 282,
-     T_OPEN_PAREN = 283,
-     T_OPEN_SQBKT = 284,
-     T_PLUS = 285,
-     T_QUESTION = 286,
-     T_SEMI = 287,
-     T_STRING = 288,
-     T_TRUE = 289,
-     T_NEGATION = 290
-   };
+#define YYTOKENTYPE
+/* Put the tokens into the symbol table, so that GDB and other debuggers
+   know about them.  */
+enum yytokentype {
+    T_AND            = 258,
+    T_ASSIGN         = 259,
+    T_CHAR           = 260,
+    T_CLOSE_CURLY    = 261,
+    T_CLOSE_PAREN    = 262,
+    T_CLOSE_SQBKT    = 263,
+    T_COMMA          = 264,
+    T_DIV            = 265,
+    T_DOUBLE         = 266,
+    T_ELSE           = 267,
+    T_EXP            = 268,
+    T_EQUALS         = 269,
+    T_GREATER_EQUALS = 270,
+    T_GREATER        = 271,
+    T_LESS_EQUALS    = 272,
+    T_LESS           = 273,
+    T_FALSE          = 274,
+    T_INTEGER        = 275,
+    T_KEYWORD        = 276,
+    T_MINUS          = 277,
+    T_MULT           = 278,
+    T_NOT            = 279,
+    T_NOT_EQUALS     = 280,
+    T_OR             = 281,
+    T_OPEN_CURLY     = 282,
+    T_OPEN_PAREN     = 283,
+    T_OPEN_SQBKT     = 284,
+    T_PLUS           = 285,
+    T_QUESTION       = 286,
+    T_SEMI           = 287,
+    T_STRING         = 288,
+    T_TRUE           = 289,
+    T_NEGATION       = 290
+};
 #endif
 #define T_AND 258
 #define T_ASSIGN 259
@@ -103,28 +103,22 @@ namespace AMP {
 #define T_NEGATION 290
 
 
-
-
-#if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
+#if !defined( YYSTYPE ) && !defined( YYSTYPE_IS_DECLARED )
 struct KeyData;
 typedef union YYSTYPE {
-  char          u_char;
-  double        u_double;
-  int           u_integer;
-  KeyData* u_keydata;
-  std::string*       u_keyword;
-  std::string*       u_string;
+    char u_char;
+    double u_double;
+    int u_integer;
+    KeyData *u_keydata;
+    std::string *u_keyword;
+    std::string *u_string;
 } YYSTYPE;
 /* Line 1274 of yacc.c.  */
 
-# define yystype YYSTYPE /* obsolescent; will be withdrawn */
-# define YYSTYPE_IS_DECLARED 1
-# define YYSTYPE_IS_TRIVIAL 1
+#define yystype YYSTYPE /* obsolescent; will be withdrawn */
+#define YYSTYPE_IS_DECLARED 1
+#define YYSTYPE_IS_TRIVIAL 1
 #endif
 
 extern YYSTYPE AMP_yylval;
-
-
 }
-
-

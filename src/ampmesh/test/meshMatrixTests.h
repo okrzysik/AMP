@@ -3,138 +3,152 @@
 
 #include "ampmesh/Mesh.h"
 #include "matrices/Matrix.h"
-#include "vectors/VectorBuilder.h"
 #include "matrices/MatrixBuilder.h"
+#include "vectors/VectorBuilder.h"
 
 #include "meshTests.h"
 
 
 template <int DOF_PER_NODE, bool SPLIT>
-void VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
+void VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Create the DOF_Manager
-    AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
-    AMP::Discretization::DOFManager::shared_ptr DOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,DOF_PER_NODE);
+    AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
+        new AMP::Discretization::DOFManagerParameters( mesh ) );
+    AMP::Discretization::DOFManager::shared_ptr DOFs =
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, DOF_PER_NODE );
 
-    // Create a nodal variable 
-    AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::LinearAlgebra::Variable("test vector") );
+    // Create a nodal variable
+    AMP::LinearAlgebra::Variable::shared_ptr variable(
+        new AMP::LinearAlgebra::Variable( "test vector" ) );
 
     // Create the matrix and vectors
-    AMP::LinearAlgebra::Vector::shared_ptr vector1 = AMP::LinearAlgebra::createVector ( DOFs, variable, SPLIT );
-    AMP::LinearAlgebra::Vector::shared_ptr vector2 = AMP::LinearAlgebra::createVector ( DOFs, variable, SPLIT );
-    AMP::LinearAlgebra::Matrix::shared_ptr matrixa = AMP::LinearAlgebra::createMatrix ( vector1, vector2 );
+    AMP::LinearAlgebra::Vector::shared_ptr vector1 =
+        AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
+    AMP::LinearAlgebra::Vector::shared_ptr vector2 =
+        AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
+    AMP::LinearAlgebra::Matrix::shared_ptr matrixa =
+        AMP::LinearAlgebra::createMatrix( vector1, vector2 );
 
     // Currently there is a bug with multivectors
     bool isMultiVector = vector1->isA<AMP::LinearAlgebra::MultiVector>();
     if ( isMultiVector ) {
-        utils->expected_failure("VerifyGetMatrixTrivialTest with split=true"); 
+        utils->expected_failure( "VerifyGetMatrixTrivialTest with split=true" );
         return;
     }
 
     // Run some tests
-    vector1->setRandomValues ();
-    matrixa->makeConsistent ();
-    matrixa->mult ( vector1 , vector2 );
+    vector1->setRandomValues();
+    matrixa->makeConsistent();
+    matrixa->mult( vector1, vector2 );
     if ( vector2->L1Norm() < 0.00000001 )
-        utils->passes ( "obtained 0 matrix from mesh" );
+        utils->passes( "obtained 0 matrix from mesh" );
     else
-        utils->failure ( "did not obtain 0 matrix from mesh" );
+        utils->failure( "did not obtain 0 matrix from mesh" );
 
-    // Need to get another matrix to store data due to Epetra insert/replace idiom.  Matrixa is fixed with no entires.
-    AMP::LinearAlgebra::Matrix::shared_ptr matrixb = AMP::LinearAlgebra::createMatrix ( vector1, vector2 );
+    // Need to get another matrix to store data due to Epetra insert/replace idiom.  Matrixa is
+    // fixed with no entires.
+    AMP::LinearAlgebra::Matrix::shared_ptr matrixb =
+        AMP::LinearAlgebra::createMatrix( vector1, vector2 );
 
-    vector2->setToScalar ( 1. );
-    matrixb->makeConsistent ();
-    matrixb->setDiagonal ( vector2 );
-    matrixb->mult ( vector1 , vector2 );
-    vector1->subtract ( vector1 , vector2 );
+    vector2->setToScalar( 1. );
+    matrixb->makeConsistent();
+    matrixb->setDiagonal( vector2 );
+    matrixb->mult( vector1, vector2 );
+    vector1->subtract( vector1, vector2 );
 
     if ( vector1->L1Norm() < 0.0000001 )
-        utils->passes ( "created identity matrix from mesh" );
+        utils->passes( "created identity matrix from mesh" );
     else
-        utils->failure ( "created identity matrix from mesh" );
+        utils->failure( "created identity matrix from mesh" );
 }
 
 
 template <int DOF_PER_NODE, bool SPLIT>
-void GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh ) 
+void GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Create the DOF_Manager
-    AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams( new AMP::Discretization::DOFManagerParameters(mesh) );
-    AMP::Discretization::DOFManager::shared_ptr DOFs = AMP::Discretization::simpleDOFManager::create(mesh,AMP::Mesh::Vertex,1,DOF_PER_NODE);
+    AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
+        new AMP::Discretization::DOFManagerParameters( mesh ) );
+    AMP::Discretization::DOFManager::shared_ptr DOFs =
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, DOF_PER_NODE );
 
-    // Create a nodal variable 
-    AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::LinearAlgebra::Variable("test vector") );
+    // Create a nodal variable
+    AMP::LinearAlgebra::Variable::shared_ptr variable(
+        new AMP::LinearAlgebra::Variable( "test vector" ) );
 
     // Create the matrix and vectors
-    AMP::LinearAlgebra::Vector::shared_ptr vector1 = AMP::LinearAlgebra::createVector ( DOFs, variable, SPLIT );
-    AMP::LinearAlgebra::Vector::shared_ptr vector2 = AMP::LinearAlgebra::createVector ( DOFs, variable, SPLIT );
-    AMP::LinearAlgebra::Matrix::shared_ptr matrix = AMP::LinearAlgebra::createMatrix ( vector1, vector2 );
+    AMP::LinearAlgebra::Vector::shared_ptr vector1 =
+        AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
+    AMP::LinearAlgebra::Vector::shared_ptr vector2 =
+        AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
+    AMP::LinearAlgebra::Matrix::shared_ptr matrix =
+        AMP::LinearAlgebra::createMatrix( vector1, vector2 );
 
     // For each mesh, get a mapping of it's processor id's to the comm of the mesh
-    std::map<AMP::Mesh::MeshID,std::vector<int> > proc_map = createRankMap( mesh );
-    NULL_USE(proc_map);
+    std::map<AMP::Mesh::MeshID, std::vector<int>> proc_map = createRankMap( mesh );
+    NULL_USE( proc_map );
 
     // For each processor, make sure it can write to all entries
     AMP::AMP_MPI comm = mesh->getComm();
-    for (int p=0; p<comm.getSize(); p++) {
-        matrix->setScalar(-1.0);
+    for ( int p = 0; p < comm.getSize(); p++ ) {
+        matrix->setScalar( -1.0 );
         matrix->makeConsistent();
         // Processor p should fill the values
-        if ( p==comm.getRank() ) {
+        if ( p == comm.getRank() ) {
             try {
                 double proc = mesh->getComm().getRank();
                 bool passes = true;
                 // Loop through the owned nodes
-                AMP::Mesh::MeshIterator iterator = mesh->getIterator(AMP::Mesh::Vertex,0);
-                for(size_t i=0; i<iterator.size(); i++) {
+                AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Vertex, 0 );
+                for ( size_t i = 0; i < iterator.size(); i++ ) {
                     // Get the DOFs for the node and it's neighbors
                     std::vector<size_t> localDOFs;
                     DOFs->getDOFs( iterator->globalID(), localDOFs );
                     std::vector<size_t> neighborDOFs, dofs;
-                    std::vector<AMP::Mesh::MeshElement::shared_ptr> elements = iterator->getNeighbors();
-                    for (size_t i=0; i<elements.size(); i++) {
+                    std::vector<AMP::Mesh::MeshElement::shared_ptr> elements =
+                        iterator->getNeighbors();
+                    for ( size_t i = 0; i < elements.size(); i++ ) {
                         DOFs->getDOFs( elements[i]->globalID(), dofs );
-                        for (size_t j=0; j<dofs.size(); j++) {
-                            neighborDOFs.push_back(dofs[j]);
+                        for ( size_t j = 0; j < dofs.size(); j++ ) {
+                            neighborDOFs.push_back( dofs[j] );
                         }
                     }
                     // For each local DOF, set all matrix elements involving the current DOF
-                    for (size_t j=0; j<localDOFs.size(); j++) {
-                        for (size_t i=0; i<localDOFs.size(); i++) {
+                    for ( size_t j = 0; j < localDOFs.size(); j++ ) {
+                        for ( size_t i = 0; i < localDOFs.size(); i++ ) {
                             matrix->setValueByGlobalID( localDOFs[i], localDOFs[j], proc );
                             matrix->setValueByGlobalID( localDOFs[j], localDOFs[i], proc );
                         }
-                        for (size_t i=0; i<neighborDOFs.size(); i++) {
+                        for ( size_t i = 0; i < neighborDOFs.size(); i++ ) {
                             matrix->setValueByGlobalID( localDOFs[j], neighborDOFs[i], proc );
                             matrix->setValueByGlobalID( neighborDOFs[i], localDOFs[j], proc );
                         }
                         std::vector<unsigned int> cols;
                         std::vector<double> values;
                         matrix->getRowByGlobalID( localDOFs[j], cols, values );
-                        for (size_t i1=0; i1<cols.size(); i1++) {
-                            for (size_t i2=0; i2<localDOFs.size(); i2++) {
-                                if ( cols[i1]==localDOFs[i2] ) {
-                                    if ( values[i1] != proc )
-                                        passes = false;
+                        for ( size_t i1 = 0; i1 < cols.size(); i1++ ) {
+                            for ( size_t i2 = 0; i2 < localDOFs.size(); i2++ ) {
+                                if ( cols[i1] == localDOFs[i2] ) {
+                                    if ( values[i1] != proc ) passes = false;
                                 }
                             }
-                            for (size_t i2=0; i2<neighborDOFs.size(); i2++) {
-                                if ( cols[i1]==neighborDOFs[i2] ) {
-                                    if ( values[i1] != proc )
-                                        passes = false;
+                            for ( size_t i2 = 0; i2 < neighborDOFs.size(); i2++ ) {
+                                if ( cols[i1] == neighborDOFs[i2] ) {
+                                    if ( values[i1] != proc ) passes = false;
                                 }
                             }
                         }
                     }
                     ++iterator;
                 }
-                if ( passes ) 
-                    utils->passes ( "Able to write to ghost entries in matrix" );
+                if ( passes )
+                    utils->passes( "Able to write to ghost entries in matrix" );
                 else
-                    utils->failure ( "Able to write to ghost entries in matrix" );
-            } catch (...) {
-                utils->failure ( "Able to write to ghost entries in matrix (exception)" );
+                    utils->failure( "Able to write to ghost entries in matrix" );
+            }
+            catch ( ... ) {
+                utils->failure( "Able to write to ghost entries in matrix (exception)" );
             }
         }
 
@@ -190,15 +204,14 @@ void GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
             ++iterator;
         }
         char msg[100];
-        sprintf(msg,"Matrix entries set by processor %i read correctly on processor %i",p,comm.getRank());
+        sprintf(msg,"Matrix entries set by processor %i read correctly on processor
+        %i",p,comm.getRank());
         if ( passes )
             utils->passes( msg );
         else
             utils->failure( msg );*/
     }
-
 }
 
 
 #endif
-

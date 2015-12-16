@@ -8,20 +8,18 @@
 namespace AMP {
 namespace Operator {
 
-  class FlowFrapconOperatorParameters : public OperatorParameters {
-    public :
+class FlowFrapconOperatorParameters : public OperatorParameters {
+public:
+    explicit FlowFrapconOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : OperatorParameters( db )
+    {
+    }
 
-      explicit FlowFrapconOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
-        : OperatorParameters(db) {  }
+    virtual ~FlowFrapconOperatorParameters() {}
 
-      virtual ~FlowFrapconOperatorParameters() { }
-
-      AMP::LinearAlgebra::Variable::shared_ptr d_variable;
-
-  };
-
+    AMP::LinearAlgebra::Variable::shared_ptr d_variable;
+};
 }
 }
 
 #endif
-

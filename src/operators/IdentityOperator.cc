@@ -6,55 +6,49 @@ namespace AMP {
 namespace Operator {
 
 
-IdentityOperator :: IdentityOperator () :
-    LinearOperator () 
+IdentityOperator::IdentityOperator() : LinearOperator() {}
+
+IdentityOperator::IdentityOperator( const AMP::shared_ptr<OperatorParameters> &params )
+    : LinearOperator( params )
 {
+    reset( params );
 }
 
-IdentityOperator :: IdentityOperator (const AMP::shared_ptr<OperatorParameters> & params) :
-    LinearOperator (params) 
-{
-    reset(params);
-}
-
-void IdentityOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params)
+void IdentityOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
 {
     if ( params->d_db.get() != NULL ) {
-        if ( params->d_db->keyExists("InputVariable") ) {
-            std::string inpVar = params->d_db->getString("InputVariable");
-            d_inVar.reset(new AMP::LinearAlgebra::Variable(inpVar));
+        if ( params->d_db->keyExists( "InputVariable" ) ) {
+            std::string inpVar = params->d_db->getString( "InputVariable" );
+            d_inVar.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
         }
-        if ( params->d_db->keyExists("OutputVariable") ) {
-            std::string outVar = params->d_db->getString("OutputVariable");
-            d_outVar.reset(new AMP::LinearAlgebra::Variable(outVar));
+        if ( params->d_db->keyExists( "OutputVariable" ) ) {
+            std::string outVar = params->d_db->getString( "OutputVariable" );
+            d_outVar.reset( new AMP::LinearAlgebra::Variable( outVar ) );
         }
     }
 }
 
-void IdentityOperator :: setMatrix( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> ) 
+void IdentityOperator::setMatrix( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> )
 {
-    AMP_ERROR("setMatrix is invalid for the Identity operator");
+    AMP_ERROR( "setMatrix is invalid for the Identity operator" );
 }
 
 
-void IdentityOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr u,
-			       AMP::LinearAlgebra::Vector::shared_ptr r )
+void IdentityOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                              AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
-    AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
+    AMP_INSIST( ( ( u.get() ) != NULL ), "NULL Solution Vector" );
+    AMP_INSIST( ( ( r.get() ) != NULL ), "NULL Residual Vector" );
 
-    AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = subsetInputVector(u);
-    AMP::LinearAlgebra::Vector::shared_ptr rInternal = subsetOutputVector(r);
+    AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = subsetInputVector( u );
+    AMP::LinearAlgebra::Vector::shared_ptr rInternal       = subsetOutputVector( r );
 
-    AMP_INSIST( (uInternal.get() != NULL), "uInternal is NULL" );
-    AMP_INSIST( (rInternal.get() != NULL), "rInternal is NULL" );
+    AMP_INSIST( ( uInternal.get() != NULL ), "uInternal is NULL" );
+    AMP_INSIST( ( rInternal.get() != NULL ), "rInternal is NULL" );
 
-    rInternal->copyVector(uInternal);
+    rInternal->copyVector( uInternal );
 
-    rInternal->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
-}
-
-
+    rInternal->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 }
 }
-
+}

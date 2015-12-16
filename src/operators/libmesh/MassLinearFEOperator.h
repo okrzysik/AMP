@@ -4,8 +4,8 @@
 
 /* AMP files */
 #include "operators/libmesh/LinearFEOperator.h"
-#include "operators/libmesh/MassLinearFEOperatorParameters.h"
 #include "operators/libmesh/MassLinearElement.h"
+#include "operators/libmesh/MassLinearFEOperatorParameters.h"
 #include "utils/Utilities.h"
 
 /* Boost files */
@@ -14,67 +14,60 @@
 #include <vector>
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class MassLinearFEOperator : public LinearFEOperator 
-    {
-      public :
+class MassLinearFEOperator : public LinearFEOperator {
+public:
+    explicit MassLinearFEOperator( const AMP::shared_ptr<MassLinearFEOperatorParameters> &params );
 
-        explicit MassLinearFEOperator(const AMP::shared_ptr<MassLinearFEOperatorParameters>& params);
+    virtual ~MassLinearFEOperator() {}
 
-        virtual ~MassLinearFEOperator() { }
+    void preAssembly( const AMP::shared_ptr<AMP::Operator::OperatorParameters> & );
 
-        void preAssembly(const AMP::shared_ptr<AMP::Operator::OperatorParameters>&);
+    void postAssembly();
 
-        void postAssembly();
+    void preElementOperation( const AMP::Mesh::MeshElement & );
 
-        void preElementOperation(const AMP::Mesh::MeshElement &);
+    void postElementOperation();
 
-        void postElementOperation();
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
-        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() ;
+    AMP::shared_ptr<MassDensityModel> getDensityModel() { return d_densityModel; };
 
-        AMP::shared_ptr<MassDensityModel> getDensityModel() { return d_densityModel; };
+protected:
+    bool d_useConstantTemperature;
 
-      protected :
+    bool d_useConstantConcentration;
 
-        bool d_useConstantTemperature;
+    bool d_useConstantBurnup;
 
-        bool d_useConstantConcentration;
+    double d_constantTemperatureValue;
 
-        bool d_useConstantBurnup;
+    double d_constantConcentrationValue;
 
-        double d_constantTemperatureValue;
+    double d_constantBurnupValue;
 
-        double d_constantConcentrationValue;
+    AMP::LinearAlgebra::Vector::shared_ptr d_temperature;
 
-        double d_constantBurnupValue;
+    AMP::LinearAlgebra::Vector::shared_ptr d_concentration;
 
-        AMP::LinearAlgebra::Vector::shared_ptr d_temperature;
+    AMP::LinearAlgebra::Vector::shared_ptr d_burnup;
 
-        AMP::LinearAlgebra::Vector::shared_ptr d_concentration;
+    std::vector<std::vector<double>> d_elementMassMatrix;
 
-        AMP::LinearAlgebra::Vector::shared_ptr d_burnup;
+    AMP::shared_ptr<MassLinearElement> d_massLinElem;
 
-        std::vector<std::vector<double> > d_elementMassMatrix;
+    AMP::shared_ptr<MassDensityModel> d_densityModel;
 
-        AMP::shared_ptr<MassLinearElement> d_massLinElem;
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
 
-        AMP::shared_ptr<MassDensityModel> d_densityModel;
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
-        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
-
-        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
-
-      private :
-
-    };
-
-  }
+private:
+};
+}
 }
 
 #endif
-
-

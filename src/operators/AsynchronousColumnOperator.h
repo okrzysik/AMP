@@ -6,28 +6,26 @@
 namespace AMP {
 namespace Operator {
 
-  /** \brief  A column operator of asynchronous operators.  The apply method will start the list
-      of operators then finalize the list of operators
+/** \brief  A column operator of asynchronous operators.  The apply method will start the list
+    of operators then finalize the list of operators
+    */
+class AsynchronousColumnOperator : public ColumnOperator {
+public:
+    /** Constructor
       */
-  class AsynchronousColumnOperator : public ColumnOperator
-  {
-    public:
-      /** Constructor
-        */
-      explicit AsynchronousColumnOperator ( const AMP::shared_ptr < OperatorParameters > & );
+    explicit AsynchronousColumnOperator( const AMP::shared_ptr<OperatorParameters> & );
 
-      virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-			  AMP::LinearAlgebra::Vector::shared_ptr f) override;
-      
-      virtual void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-				AMP::LinearAlgebra::Vector::shared_ptr f);
-      
-      virtual void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-			       AMP::LinearAlgebra::Vector::shared_ptr f);
+    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-      virtual void append(AMP::shared_ptr< Operator > op);
-  };
+    virtual void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                              AMP::LinearAlgebra::Vector::shared_ptr f );
 
+    virtual void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                             AMP::LinearAlgebra::Vector::shared_ptr f );
+
+    virtual void append( AMP::shared_ptr<Operator> op );
+};
 }
 }
 

@@ -14,21 +14,19 @@
 #include "DatabaseFactory.h"
 
 namespace AMP {
-   
+
 
 /**
  * @brief MemoryDatabase factory.
  *
  * Builds a new MemoryDatabase.
  */
-class MemoryDatabaseFactory : public DatabaseFactory
-{	
-   /**
-    * Build a new Database object.
-    */
-   virtual AMP::shared_ptr<Database> allocate(const std::string& name);
+class MemoryDatabaseFactory : public DatabaseFactory {
+    /**
+     * Build a new Database object.
+     */
+    virtual AMP::shared_ptr<Database> allocate( const std::string &name );
 };
-
 }
 
 #endif

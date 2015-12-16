@@ -3,22 +3,21 @@
 
 /* AMP files */
 #include "ampmesh/Mesh.h"
-#include "utils/Database.h"
 #include "operators/OperatorParameters.h"
+#include "utils/Database.h"
 
 namespace AMP {
 namespace Operator {
 
-class ParameterFactory{
+class ParameterFactory {
 
- public:
-  ParameterFactory(){}
-  ~ParameterFactory(){}
+public:
+    ParameterFactory() {}
+    ~ParameterFactory() {}
 
-  static AMP::shared_ptr<OperatorParameters>  createParameter(AMP::shared_ptr<AMP::Database>  input_db, AMP::Mesh::Mesh::shared_ptr  mesh);
-
+    static AMP::shared_ptr<OperatorParameters>
+    createParameter( AMP::shared_ptr<AMP::Database> input_db, AMP::Mesh::Mesh::shared_ptr mesh );
 };
-  
 }
 }
 

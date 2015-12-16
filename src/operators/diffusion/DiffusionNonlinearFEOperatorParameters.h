@@ -3,25 +3,23 @@
 
 #include <vector>
 
-#include "vectors/Vector.h"
-#include "operators/diffusion/DiffusionTransportModel.h"
 #include "operators/diffusion/DiffusionConstants.h"
+#include "operators/diffusion/DiffusionTransportModel.h"
+#include "operators/libmesh/FEOperatorParameters.h"
+#include "vectors/Vector.h"
 
 
 namespace AMP {
 namespace Operator {
 
-class DiffusionNonlinearFEOperatorParameters: public FEOperatorParameters {
+class DiffusionNonlinearFEOperatorParameters : public FEOperatorParameters {
 public:
-
-    explicit DiffusionNonlinearFEOperatorParameters(const AMP::shared_ptr<
-            AMP::Database> &db) :
-        FEOperatorParameters(db)
+    explicit DiffusionNonlinearFEOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : FEOperatorParameters( db )
     {
     }
 
-    virtual ~DiffusionNonlinearFEOperatorParameters() {
-    }
+    virtual ~DiffusionNonlinearFEOperatorParameters() {}
 
     AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
 
@@ -30,14 +28,11 @@ public:
     AMP::LinearAlgebra::Vector::shared_ptr d_FrozenConcentration;
 
     AMP::LinearAlgebra::Vector::shared_ptr d_FrozenBurnup;
+
 protected:
-
 private:
-
 };
-
 }
 }
 
 #endif
-

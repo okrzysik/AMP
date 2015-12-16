@@ -9,42 +9,37 @@
 namespace AMP {
 namespace Operator {
 
-  /** 
-    An abstract base class for representing the element level computation
-    performed within a finite element operator. Concrete implementations
-    must implement the apply() function.
-    */
-  class ElementOperation 
-  {
-    public :
+/**
+  An abstract base class for representing the element level computation
+  performed within a finite element operator. Concrete implementations
+  must implement the apply() function.
+  */
+class ElementOperation {
+public:
+    /**
+      Constructor.
+      */
+    explicit ElementOperation( const AMP::shared_ptr<ElementOperationParameters> & ) {}
 
-      /** 
-        Constructor.
-        */
-      explicit ElementOperation(const AMP::shared_ptr<ElementOperationParameters>& ) {  }
+    /**
+      Destructor.
+      */
+    virtual ~ElementOperation() {}
 
-      /**
-        Destructor.
-        */
-      virtual ~ElementOperation() { }
+    /**
+      This is where the element level computation in a FE operator is performed. Each derived
+      class must provide an implementation that is appropriate for use within its respective FE
+      operator.
+      */
+    virtual void apply()
+    {
+        // Implemented in derived classes.
+    }
 
-      /**
-        This is where the element level computation in a FE operator is performed. Each derived 
-        class must provide an implementation that is appropriate for use within its respective FE operator.
-        */
-      virtual void apply() 
-      {
-        //Implemented in derived classes. 
-      }
-
-    protected :
-
-    private :
-
-  };
-
+protected:
+private:
+};
 }
 }
 
 #endif
-

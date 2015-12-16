@@ -5,47 +5,48 @@
 #include "operators/newFrozenVectorDesign/OnePointOperator.h"
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class SecondOperator : public OnePointOperator {
-      public :
-        SecondOperator(const AMP::shared_ptr<OperatorParameters> & params) : OnePointOperator(params) {
-          d_constant = 3.0;
-          d_primaryVar.reset(new AMP::LinearAlgebra::Variable(params->d_db->getString("PrimaryVariable")));
-          d_secondaryVar.reset(new AMP::LinearAlgebra::Variable(params->d_db->getString("SecondaryVariable")));
-        }
+class SecondOperator : public OnePointOperator {
+public:
+    SecondOperator( const AMP::shared_ptr<OperatorParameters> &params ) : OnePointOperator( params )
+    {
+        d_constant = 3.0;
+        d_primaryVar.reset(
+            new AMP::LinearAlgebra::Variable( params->d_db->getString( "PrimaryVariable" ) ) );
+        d_secondaryVar.reset(
+            new AMP::LinearAlgebra::Variable( params->d_db->getString( "SecondaryVariable" ) ) );
+    }
 
-        void apply(AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		   AMP::LinearAlgebra::Vector::shared_ptr r) override {
-          AMP::LinearAlgebra::Vector::const_shared_ptr inP = u->constSubsetVectorForVariable(d_primaryVar);
-          AMP::LinearAlgebra::Vector::const_shared_ptr inS = u->constSubsetVectorForVariable(d_secondaryVar);
-          AMP::LinearAlgebra::Vector::shared_ptr out = r->subsetVectorForVariable(d_primaryVar);
-          out->linearSum(d_constant, inP, 1.0, inS);
-        }
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                AMP::LinearAlgebra::Vector::shared_ptr r ) override
+    {
+        AMP::LinearAlgebra::Vector::const_shared_ptr inP =
+            u->constSubsetVectorForVariable( d_primaryVar );
+        AMP::LinearAlgebra::Vector::const_shared_ptr inS =
+            u->constSubsetVectorForVariable( d_secondaryVar );
+        AMP::LinearAlgebra::Vector::shared_ptr out = r->subsetVectorForVariable( d_primaryVar );
+        out->linearSum( d_constant, inP, 1.0, inS );
+    }
 
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
-          AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(new AMP::LinearAlgebra::MultiVariable("MultiVariable"));
-          retVariable->add(d_primaryVar);
-          retVariable->add(d_secondaryVar);
-          return retVariable;
-        }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable()
+    {
+        AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
+            new AMP::LinearAlgebra::MultiVariable( "MultiVariable" ) );
+        retVariable->add( d_primaryVar );
+        retVariable->add( d_secondaryVar );
+        return retVariable;
+    }
 
-        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
-          return d_primaryVar;
-        }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_primaryVar; }
 
-      protected :
-        AMP::LinearAlgebra::Variable::shared_ptr d_primaryVar;
-        AMP::LinearAlgebra::Variable::shared_ptr d_secondaryVar;
+protected:
+    AMP::LinearAlgebra::Variable::shared_ptr d_primaryVar;
+    AMP::LinearAlgebra::Variable::shared_ptr d_secondaryVar;
 
-      private :
-    };
-
-
-  }
+private:
+};
+}
 }
 
 #endif
-
-
-

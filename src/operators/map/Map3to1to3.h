@@ -1,12 +1,12 @@
-#ifndef  included_AMP_Map3to1to3
-#define  included_AMP_Map3to1to3
+#ifndef included_AMP_Map3to1to3
+#define included_AMP_Map3to1to3
 
 #include <map>
 #include <vector>
 
+#include "ampmesh/MeshIterator.h"
 #include "operators/map/AsyncMapOperator.h"
 #include "operators/map/AsyncMapOperatorParameters.h"
-#include "ampmesh/MeshIterator.h"
 
 
 namespace AMP {
@@ -23,57 +23,56 @@ namespace Operator {
  * \brief  A class used to reduce a 3D problem to 1D, transfer the solution, and map back to 3D
  * \details  For problems with a great deal of symmetry, it is possible
  *   to move data from one mesh to another by generating a 1D appoximation
- *   using one mesh and interpolating the results on another.  This class 
- *   is a base class to manage the data transfer from 3D to 1D back to 3D.  
+ *   using one mesh and interpolating the results on another.  This class
+ *   is a base class to manage the data transfer from 3D to 1D back to 3D.
  *   An inherited map must impliment buildMap and buildReturn to manage how
  *   the data is mapped between 3D and 1D.
  */
-class Map3to1to3 : public AsyncMapOperator
-{
+class Map3to1to3 : public AsyncMapOperator {
 public:
-
     /** \brief   Standard constructor
      * \param[in] params  Input parameters
      */
-    explicit Map3to1to3( const AMP::shared_ptr<OperatorParameters> & params );
+    explicit Map3to1to3( const AMP::shared_ptr<OperatorParameters> &params );
 
     //!  Destructor
-    virtual ~Map3to1to3 ();
+    virtual ~Map3to1to3();
 
-    /** \brief   Set a frozen vector for results of the apply operation. 
-     * \details  Set a frozen vector for results of the apply operation. 
+    /** \brief   Set a frozen vector for results of the apply operation.
+     * \details  Set a frozen vector for results of the apply operation.
      * \param result    The results vector
      */
-    virtual void  setVector ( AMP::LinearAlgebra::Vector::shared_ptr result );
+    virtual void setVector( AMP::LinearAlgebra::Vector::shared_ptr result );
 
-    /** \brief   Start a communicative apply operation. 
-     * \details  Start a communicative apply operation. 
+    /** \brief   Start a communicative apply operation.
+     * \details  Start a communicative apply operation.
      */
-    virtual void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-			     AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    virtual void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                             AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    /** \brief   Finish a communicative apply operation. 
-     * \details  Finish a communicative apply operation. 
+    /** \brief   Finish a communicative apply operation.
+     * \details  Finish a communicative apply operation.
      */
-    virtual void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-			      AMP::LinearAlgebra::Vector::shared_ptr f) override;
+    virtual void applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                              AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
 
 protected:
+    /** \brief  Add an ordered pair to the set of interpolant values
+     * \param map           The map to add the point to
+     * \param [in] z        The ordinate
+     * \param [in] val      The abscissa
+     */
+    void addTo1DMap( std::multimap<double, double> &map, double z, double val );
 
     /** \brief  Add an ordered pair to the set of interpolant values
      * \param map           The map to add the point to
      * \param [in] z        The ordinate
      * \param [in] val      The abscissa
      */
-    void addTo1DMap( std::multimap<double,double> &map, double z , double val );
-
-    /** \brief  Add an ordered pair to the set of interpolant values
-     * \param map           The map to add the point to
-     * \param [in] z        The ordinate
-     * \param [in] val      The abscissa
-     */
-    void addTo1DMap( std::multimap<double,double> &map, const std::vector<double>& z, const std::vector<double>& val );
+    void addTo1DMap( std::multimap<double, double> &map,
+                     const std::vector<double> &z,
+                     const std::vector<double> &val );
 
     /** \brief   A virtual method to construct the map from a vector
      * \details  This function constructs the map from a given vector.
@@ -82,8 +81,10 @@ protected:
      * \param [in] mesh The meshused to construct the map
      * \param [in] it   The iterator over the boundary used for the map
      */
-    virtual std::multimap<double,double>  buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec, 
-        const AMP::Mesh::Mesh::shared_ptr mesh, const AMP::Mesh::MeshIterator &it );
+    virtual std::multimap<double, double>
+    buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
+              const AMP::Mesh::Mesh::shared_ptr mesh,
+              const AMP::Mesh::MeshIterator &it );
 
     /** \brief  A virtual method to construct a vector from a map
      * \details  This function constructs a vector from the map.
@@ -93,14 +94,16 @@ protected:
      * \param [in] it   The iterator over the boundary used for the map
      * \param [in] map  The map containing all of the points
      */
-    virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec, const AMP::Mesh::Mesh::shared_ptr mesh, 
-        const AMP::Mesh::MeshIterator &it, const std::map<double,double> &map );
+    virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec,
+                              const AMP::Mesh::Mesh::shared_ptr mesh,
+                              const AMP::Mesh::MeshIterator &it,
+                              const std::map<double, double> &map );
 
     //!  Iterators over the nodes on the boundary
-    AMP::Mesh::MeshIterator  d_srcIterator1;
-    AMP::Mesh::MeshIterator  d_srcIterator2;
-    AMP::Mesh::MeshIterator  d_dstIterator1;
-    AMP::Mesh::MeshIterator  d_dstIterator2;
+    AMP::Mesh::MeshIterator d_srcIterator1;
+    AMP::Mesh::MeshIterator d_srcIterator2;
+    AMP::Mesh::MeshIterator d_dstIterator1;
+    AMP::Mesh::MeshIterator d_dstIterator2;
 
 private:
     //!  The place to put the mapped values
@@ -118,9 +121,10 @@ private:
         int N;
         double z;
         double sum;
-        comm_data() {
-            N = 0;
-            z = 0.0;
+        comm_data()
+        {
+            N   = 0;
+            z   = 0.0;
             sum = 0.0;
         }
     };
@@ -130,9 +134,8 @@ private:
     std::vector<comm_data> d_SendBuf2;
 
     // Function to unpack the recv buffer
-    static void unpackBuffer( const std::vector<comm_data>&, std::map<double,std::pair<int,double> >& );
-
-
+    static void unpackBuffer( const std::vector<comm_data> &,
+                              std::map<double, std::pair<int, double>> & );
 };
 
 

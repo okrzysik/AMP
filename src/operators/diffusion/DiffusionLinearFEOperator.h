@@ -3,11 +3,11 @@
 #define included_AMP_DiffusionLinearFEOperator
 
 /* AMP files */
-#include "operators/libmesh/LinearFEOperator.h"
-#include "operators/diffusion/DiffusionLinearFEOperatorParameters.h"
-#include "operators/diffusion/DiffusionLinearElement.h"
-#include "utils/Utilities.h"
 #include "ampmesh/MeshElement.h"
+#include "operators/diffusion/DiffusionLinearElement.h"
+#include "operators/diffusion/DiffusionLinearFEOperatorParameters.h"
+#include "operators/libmesh/LinearFEOperator.h"
+#include "utils/Utilities.h"
 
 /* Boost files */
 #include "utils/shared_ptr.h"
@@ -19,57 +19,51 @@ namespace AMP {
 namespace Operator {
 
 
-class DiffusionLinearFEOperator: public LinearFEOperator {
+class DiffusionLinearFEOperator : public LinearFEOperator {
 public:
+    explicit DiffusionLinearFEOperator(
+        const AMP::shared_ptr<DiffusionLinearFEOperatorParameters> &params );
 
-        explicit DiffusionLinearFEOperator(const AMP::shared_ptr<
-            DiffusionLinearFEOperatorParameters>& params);
+    virtual ~DiffusionLinearFEOperator() {}
 
-        virtual ~DiffusionLinearFEOperator() { }
+    void preAssembly( const AMP::shared_ptr<OperatorParameters> &params );
 
-        void preAssembly(const AMP::shared_ptr<OperatorParameters>& params);
+    void postAssembly();
 
-        void postAssembly();
+    void preElementOperation( const AMP::Mesh::MeshElement & );
 
-        void preElementOperation(const AMP::Mesh::MeshElement &);
+    void postElementOperation();
 
-        void postElementOperation();
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
-        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
-
-        AMP::shared_ptr<DiffusionTransportModel> getTransportModel();
+    AMP::shared_ptr<DiffusionTransportModel> getTransportModel();
 
 protected:
+    bool d_useConstantTemperature;
 
-        bool d_useConstantTemperature;
+    bool d_useConstantConcentration;
 
-        bool d_useConstantConcentration;
+    bool d_useConstantBurnup;
 
-        bool d_useConstantBurnup;
+    AMP::LinearAlgebra::Vector::shared_ptr d_temperature;
 
-        AMP::LinearAlgebra::Vector::shared_ptr d_temperature;
+    AMP::LinearAlgebra::Vector::shared_ptr d_concentration;
 
-        AMP::LinearAlgebra::Vector::shared_ptr d_concentration;
+    AMP::LinearAlgebra::Vector::shared_ptr d_burnup;
 
-        AMP::LinearAlgebra::Vector::shared_ptr d_burnup;
+    std::vector<std::vector<double>> d_elementStiffnessMatrix;
 
-        std::vector<std::vector<double> > d_elementStiffnessMatrix;
+    AMP::shared_ptr<DiffusionLinearElement> d_diffLinElem;
 
-        AMP::shared_ptr<DiffusionLinearElement> d_diffLinElem;
+    AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
 
-        AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
 
-        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
-
-        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
-
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 };
-
-
 }
 }
 
 #endif
-

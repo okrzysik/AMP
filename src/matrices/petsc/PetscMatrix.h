@@ -2,8 +2,7 @@
 #ifndef included_AMP_PetscMatrix
 #define included_AMP_PetscMatrix
 
-extern "C"
-{
+extern "C" {
 
 #ifdef MPICH_SKIP_MPICXX
 #define _FIX_FOR_PETSC_MPICH_CXX
@@ -14,13 +13,11 @@ extern "C"
 #define _FIX_FOR_PETSC_OMPI_CXX
 #undef OMPI_SKIP_MPICXX
 #endif
-
 }
 
 #include "petscmat.h"
 
-extern "C"
-{
+extern "C" {
 
 #ifdef _FIX_FOR_PETSC_MPICH_CXX
 #ifndef MPICH_SKIP_MPICXX
@@ -33,7 +30,6 @@ extern "C"
 #define OMPI_SKIP_MPICXX
 #endif
 #endif
-
 }
 
 #include "matrices/Matrix.h"
@@ -41,80 +37,75 @@ extern "C"
 namespace AMP {
 namespace LinearAlgebra {
 
-  /** \brief  Parameters to create a PetscMatrix
-    */
-  typedef MatrixParameters  PetscMatrixParameters;
+/** \brief  Parameters to create a PetscMatrix
+  */
+typedef MatrixParameters PetscMatrixParameters;
 
-  /** \class  PetscMatrix
-    * \brief  A matrix that can provide a PETSc Mat
-    * \details  A PetscMatrix presents a Mat data structure.
-    * Given an AMP::LinearAlgebra::Matrix, this class can create a Mat view
-    * without copying the data.  As such, this class serves three
-    * purposes:
-    *  -# Provides a Mat for derived classes to use, fill, manage, etc.
-    *  -# Provides an interface for accessing this Mat independent of base or derived classes
-    *  -# Provides a static method for creating a Mat view of an AMP vector.
-    *
-    * This allows the Castable class to be used to verify correctness of code.  For instance,
-    * given a Matrix shared poitner, it is possible to get the Epetra_CrsMatrix safely thusly
-    \code
-      Matrix::shared_ptr  matrix;
-      Mat &mat = matrix->castTo<PetscMatrix>().getMat();
-    \endcode
-    */
-  class PetscMatrix : virtual public Matrix
-  {
-    protected:
-      /** \brief Unused default constrcutor
-        */
-      PetscMatrix();
+/** \class  PetscMatrix
+  * \brief  A matrix that can provide a PETSc Mat
+  * \details  A PetscMatrix presents a Mat data structure.
+  * Given an AMP::LinearAlgebra::Matrix, this class can create a Mat view
+  * without copying the data.  As such, this class serves three
+  * purposes:
+  *  -# Provides a Mat for derived classes to use, fill, manage, etc.
+  *  -# Provides an interface for accessing this Mat independent of base or derived classes
+  *  -# Provides a static method for creating a Mat view of an AMP vector.
+  *
+  * This allows the Castable class to be used to verify correctness of code.  For instance,
+  * given a Matrix shared poitner, it is possible to get the Epetra_CrsMatrix safely thusly
+  \code
+    Matrix::shared_ptr  matrix;
+    Mat &mat = matrix->castTo<PetscMatrix>().getMat();
+  \endcode
+  */
+class PetscMatrix : virtual public Matrix {
+protected:
+    /** \brief Unused default constrcutor
+      */
+    PetscMatrix();
 
-      /** \brief Unused copy constructor
-        */
-      PetscMatrix ( const PetscMatrix &rhs );
+    /** \brief Unused copy constructor
+      */
+    PetscMatrix( const PetscMatrix &rhs );
 
-      /** \brief Indicates if d_Mat was created internally
-        */
-      bool  d_MatCreatedInternally;
+    /** \brief Indicates if d_Mat was created internally
+      */
+    bool d_MatCreatedInternally;
 
-      /** \brief  The Mat used by inherited classes
-        */
-      Mat   d_Mat;
+    /** \brief  The Mat used by inherited classes
+      */
+    Mat d_Mat;
 
-    public:
-      /** \brief Create a PetscMatrix from a set of parameters
-        * \param[in] params  Description of the PetscMatrix
-        */
-      explicit PetscMatrix( MatrixParameters::shared_ptr params );
+public:
+    /** \brief Create a PetscMatrix from a set of parameters
+      * \param[in] params  Description of the PetscMatrix
+      */
+    explicit PetscMatrix( MatrixParameters::shared_ptr params );
 
-      /** \brief  Destructor
-        */
-      virtual ~PetscMatrix();
+    /** \brief  Destructor
+      */
+    virtual ~PetscMatrix();
 
-      /** \brief  Get the underlying PETSc Mat
-        * \return a PETSc Mat view of this matrix
-        */
-      virtual Mat &getMat();
+    /** \brief  Get the underlying PETSc Mat
+      * \return a PETSc Mat view of this matrix
+      */
+    virtual Mat &getMat();
 
-      /** \brief  Get the underlying PETSc Mat
-        * \return a PETSc Mat view of this matrix
-        */
-      virtual Mat  getMat() const;
+    /** \brief  Get the underlying PETSc Mat
+      * \return a PETSc Mat view of this matrix
+      */
+    virtual Mat getMat() const;
 
-      /** \brief  Create a view of an AMP::LinearAlgebra::Matrix that has
-        * a PETSc Mat view
-        * \return An AMP::LinearAlgebra::Matrix guaranteed to be a derived
-        * class of PetscMatrix.
-        */
-      static shared_ptr  createView ( shared_ptr m );
-  };
-
+    /** \brief  Create a view of an AMP::LinearAlgebra::Matrix that has
+      * a PETSc Mat view
+      * \return An AMP::LinearAlgebra::Matrix guaranteed to be a derived
+      * class of PetscMatrix.
+      */
+    static shared_ptr createView( shared_ptr m );
+};
 }
 }
 
 #include "PetscMatrix.inline.h"
 
 #endif
-
-
-

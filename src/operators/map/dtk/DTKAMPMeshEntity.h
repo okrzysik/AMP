@@ -15,23 +15,17 @@ namespace Operator {
 /**
   * AMP Mesh element implementation for DTK Entity interface.
 */
-class AMPMeshEntity : public DataTransferKit::Entity
-{
-public :
-
+class AMPMeshEntity : public DataTransferKit::Entity {
+public:
     /**
      * Constructor.
      */
-    explicit AMPMeshEntity( const AMP::Mesh::MeshElement& element );
+    explicit AMPMeshEntity( const AMP::Mesh::MeshElement &element );
 
     //! Destructor
-    ~AMPMeshEntity() { }
+    ~AMPMeshEntity() {}
 };
-
-
 }
 }
 
 #endif
-
-

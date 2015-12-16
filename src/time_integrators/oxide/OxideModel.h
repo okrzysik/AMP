@@ -5,19 +5,17 @@
 #include <string>
 
 
-namespace AMP{
-namespace TimeIntegrator{
+namespace AMP {
+namespace TimeIntegrator {
 
 
 /*!
   @brief This class provides routines for oxide calculations at a point
  */
-class OxideModel
-{
+class OxideModel {
 public:
-
     /*!
-     * @brief Function to return the equiblibrium concentration at the phase 
+     * @brief Function to return the equiblibrium concentration at the phase
      *  boundaries in zirconium.
      *
      * @param T     Temperature to use for the equiblibrium (K)
@@ -62,15 +60,22 @@ public:
      * @param[out] x1   Final boundary position (cm) (N+1)
      * @param[out] v1   Final boundary velocity (cm/s) (N+1)
      */
-    static int integrateOxide( double dT, int N, const int *N2, const double *x0, const double *Cb, 
-        double **C0, const double *D, double **C1, double *x1, double *v1 );
+    static int integrateOxide( double dT,
+                               int N,
+                               const int *N2,
+                               const double *x0,
+                               const double *Cb,
+                               double **C0,
+                               const double *D,
+                               double **C1,
+                               double *x1,
+                               double *v1 );
 
 
 private:
-
     /*!
      * @brief This function computes the velocity of the bounary layers.
-     * @param[in] N     Number of layers 
+     * @param[in] N     Number of layers
      * @param[in] x     Boundary position (N+1)
      * @param[in] Cb    Concentration at boundaries (2*N)
      * @param[in] Nl    Number of zones in each layer (N)
@@ -78,8 +83,13 @@ private:
      * @param[in] D     Diffusion coefficient of each layer (N)
      * @param[out] v    Velocity of each boundary interface (N+1)
      */
-    static void computeVelocity( const int N, const double *x, const double *Cb, 
-        const int *Nl, double const* const* C, const double *D, double *v );
+    static void computeVelocity( const int N,
+                                 const double *x,
+                                 const double *Cb,
+                                 const int *Nl,
+                                 double const *const *C,
+                                 const double *D,
+                                 double *v );
 
 
     /* This function computes the maximum timestep based on diffusion
@@ -89,12 +99,12 @@ private:
      * @param[in] C     Concentration of each layer (N)
      * @param[in] D     Diffusion coefficient
      */
-    static double computeDiffustionTimestep( const int N, const double x[2], 
-        const double Cb[2], const double *C, const double D );
+    static double computeDiffustionTimestep(
+        const int N, const double x[2], const double Cb[2], const double *C, const double D );
 
 
     /* This function performs a linear solve to get the future oxygen concentration
-     * given the current oxygen concentration, the current and future boundary 
+     * given the current oxygen concentration, the current and future boundary
      * velocities, and the current boundary positions.
      * @param[in] N     Number of zones
      * @param[in] dt    Timestep
@@ -106,14 +116,16 @@ private:
      * @param[out] C1   Final concentration (N)
      * @param[out] x1   Final boundary position
      */
-    static void solveLinearDiffusionLayer( const int N, const double dt, const double x0[2], 
-        const double v[2], const double Cb[2], const double *C0,  const double D,
-        double *C1, double *x1 );
-
-
+    static void solveLinearDiffusionLayer( const int N,
+                                           const double dt,
+                                           const double x0[2],
+                                           const double v[2],
+                                           const double Cb[2],
+                                           const double *C0,
+                                           const double D,
+                                           double *C1,
+                                           double *x1 );
 };
-
-
 }
 }
 

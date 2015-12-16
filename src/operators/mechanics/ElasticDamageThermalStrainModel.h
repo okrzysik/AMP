@@ -11,161 +11,140 @@
 namespace AMP {
 namespace Operator {
 
-  class ElasticDamageThermalStrainModel : public MechanicsMaterialModel 
-  {
-    public :
+class ElasticDamageThermalStrainModel : public MechanicsMaterialModel {
+public:
+    explicit ElasticDamageThermalStrainModel(
+        const AMP::shared_ptr<MechanicsMaterialModelParameters> & );
 
-      explicit ElasticDamageThermalStrainModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& );
+    virtual ~ElasticDamageThermalStrainModel() {}
 
-      virtual ~ElasticDamageThermalStrainModel() { }
+    void getConstitutiveMatrix( double *& );
 
-      void getConstitutiveMatrix(double*& ); 
+    void getExternalStress( double *& );
 
-      void getExternalStress(double*& );
+    void getInternalStress( const std::vector<std::vector<double>> &, double *& );
 
-      void getInternalStress(const std::vector<std::vector<double> >& , double*& );
+    void preLinearAssembly() { d_gaussPtCnt = 0; }
 
-      void preLinearAssembly() {
-        d_gaussPtCnt = 0;
-      }
+    void postLinearGaussPointOperation() { d_gaussPtCnt++; }
 
-      void postLinearGaussPointOperation() {
-        d_gaussPtCnt++;
-      }
+    void preNonlinearInit( bool, bool );
 
-      void preNonlinearInit(bool, bool);
+    void nonlinearInitGaussPointOperation( double );
 
-      void nonlinearInitGaussPointOperation(double); 
+    void preNonlinearAssembly() { d_gaussPtCnt = 0; }
 
-      void preNonlinearAssembly() {
-        d_gaussPtCnt = 0;
-      }
+    void postNonlinearAssemblyGaussPointOperation() { d_gaussPtCnt++; }
 
-      void postNonlinearAssemblyGaussPointOperation() {
-        d_gaussPtCnt++;
-      }
+    void preNonlinearReset() { d_gaussPtCnt = 0; }
 
-      void preNonlinearReset() {
-        d_gaussPtCnt = 0;
-      }
+    void postNonlinearResetGaussPointOperation() { d_gaussPtCnt++; }
 
-      void postNonlinearResetGaussPointOperation() {
-        d_gaussPtCnt++;
-      }
+    void nonlinearResetGaussPointOperation( const std::vector<std::vector<double>> & );
 
-      void nonlinearResetGaussPointOperation(const std::vector<std::vector<double> >&); 
+    void globalReset();
 
-      void globalReset();
+    void postNonlinearReset();
 
-      void postNonlinearReset();
+    void preNonlinearJacobian() { d_gaussPtCnt = 0; }
 
-      void preNonlinearJacobian() {
-        d_gaussPtCnt = 0;
-      }
+    void postNonlinearJacobianGaussPointOperation() { d_gaussPtCnt++; }
 
-      void postNonlinearJacobianGaussPointOperation() {
-        d_gaussPtCnt++;
-      }
+    void nonlinearJacobianGaussPointOperation( const std::vector<std::vector<double>> & );
 
-      void nonlinearJacobianGaussPointOperation(const std::vector<std::vector<double> >&);
+    std::vector<double> d_EquilibriumDamage;
 
-      std::vector<double> d_EquilibriumDamage;
+    std::vector<double> d_tmp1Damage;
 
-      std::vector<double> d_tmp1Damage;
+    std::vector<double> d_tmp2Damage;
 
-      std::vector<double> d_tmp2Damage;
+protected:
+    void Thermal_Strain_Gauss_Point( const double *stra_np1,
+                                     const double Temp,
+                                     double *stre_np1,
+                                     const std::vector<std::vector<double>> &strain );
 
-    protected :
+    void computeEvalv( const std::vector<std::vector<double>> &strain );
 
-      void Thermal_Strain_Gauss_Point(const double* stra_np1, const double Temp, double* stre_np1, 
-          const std::vector<std::vector<double> >& strain);
+    void constructConstitutiveMatrix( const double, const double );
 
-      void computeEvalv(const std::vector<std::vector<double> >& strain);
+    double default_TEMPERATURE;
 
-      void constructConstitutiveMatrix(const double, const double);
+    double default_BURNUP;
 
-      double default_TEMPERATURE;
+    double default_OXYGEN_CONCENTRATION;
 
-      double default_BURNUP;
+    // Thermal expansion coefficient.
+    std::vector<double> d_alpha;
 
-      double default_OXYGEN_CONCENTRATION;
+    std::vector<double> d_E;
 
-      // Thermal expansion coefficient.
-      std::vector<double> d_alpha;
+    std::vector<double> d_Nu;
 
-      std::vector<double> d_E;
+    double default_E;
 
-      std::vector<double> d_Nu;
+    double default_Nu;
 
-      double default_E;
+    double default_alpha;
 
-      double default_Nu;
+    double d_DamageThreshold;
 
-      double default_alpha;
+    double d_CriticalDamageThreshold;
 
-      double d_DamageThreshold;
+    unsigned int d_gaussPtCnt;
 
-      double d_CriticalDamageThreshold;
+    double d_constitutiveMatrix[6][6];
 
-      unsigned int d_gaussPtCnt;
+    double d_initialConstitutiveMatrix[6][6];
 
-      double d_constitutiveMatrix[6][6];
+    std::vector<double> d_EquilibriumStress;
 
-      double d_initialConstitutiveMatrix[6][6];
+    std::vector<double> d_EquilibriumStrain;
 
-      std::vector<double> d_EquilibriumStress;
+    std::vector<double> d_EquilibriumTemperature;
 
-      std::vector<double> d_EquilibriumStrain;
+    std::vector<double> d_tmp1Stress;
 
-      std::vector<double> d_EquilibriumTemperature;
+    std::vector<double> d_tmp1Strain;
 
-      std::vector<double> d_tmp1Stress;
+    std::vector<double> d_tmp1Temperature;
 
-      std::vector<double> d_tmp1Strain;
+    std::vector<double> d_tmp2Stress;
 
-      std::vector<double> d_tmp1Temperature;
+    std::vector<double> d_EquilibriumTau;
 
-      std::vector<double> d_tmp2Stress;
+    std::vector<double> d_tmp1Tau;
 
-      std::vector<double> d_EquilibriumTau;
+    std::vector<double> d_tmp2Tau;
 
-      std::vector<double> d_tmp1Tau;
+    std::vector<double> d_EquilibriumDamageThreshold;
 
-      std::vector<double> d_tmp2Tau;
+    std::vector<double> d_tmp1DamageThreshold;
 
-      std::vector<double> d_EquilibriumDamageThreshold;
+    std::vector<double> d_tmp2DamageThreshold;
 
-      std::vector<double> d_tmp1DamageThreshold;
+    std::vector<double> d_tmp1ThermalStrain_Axial;
 
-      std::vector<double> d_tmp2DamageThreshold;
+    std::vector<double> d_tmp1ThermalStrain_Radial;
 
-      std::vector<double> d_tmp1ThermalStrain_Axial;
+    std::vector<double> d_EquilibriumThermalStrain_Axial;
 
-      std::vector<double> d_tmp1ThermalStrain_Radial;
+    std::vector<double> d_EquilibriumThermalStrain_Radial;
 
-      std::vector<double> d_EquilibriumThermalStrain_Axial;
+    std::vector<double> d_InitialDamageVec;
 
-      std::vector<double> d_EquilibriumThermalStrain_Radial;
+    std::vector<double> d_CriticalDamageVec;
 
-      std::vector<double> d_InitialDamageVec;
+    bool d_resetReusesRadialReturn;
 
-      std::vector<double> d_CriticalDamageVec;
+    bool d_jacobianReusesRadialReturn;
 
-      bool d_resetReusesRadialReturn;
+    // If Source then TRUE, if Material_Model then FALSE
+    bool d_Is_Source;
 
-      bool d_jacobianReusesRadialReturn;
-
-      // If Source then TRUE, if Material_Model then FALSE
-      bool d_Is_Source;
-
-    private :
-
-  };
-
+private:
+};
 }
 }
 
 #endif
-
-
-

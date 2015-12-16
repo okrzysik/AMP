@@ -1,5 +1,6 @@
 //
-// File:    $URL: file:///usr/casc/samrai/repository/SAMRAI/tags/v-2-4-4/source/toolbox/base/ParallelBuffer.C $
+// File:    $URL:
+// file:///usr/casc/samrai/repository/SAMRAI/tags/v-2-4-4/source/toolbox/base/ParallelBuffer.C $
 // Package:    SAMRAI toolbox
 // Copyright:    (c) 1997-2008 Lawrence Livermore National Security, LLC
 // Revision:    $LastChangedRevision: 1954 $
@@ -9,10 +10,10 @@
 
 #include "ParallelBuffer.h"
 
-#include <string>
-#include <cstring>
-#include <cmath>
 #include <algorithm>
+#include <cmath>
+#include <cstring>
+#include <string>
 
 #include "Utilities.h"
 
@@ -20,7 +21,7 @@
 #define NULL 0
 #endif
 
-#define DEFAULT_BUFFER_SIZE (128)
+#define DEFAULT_BUFFER_SIZE ( 128 )
 
 
 namespace AMP {
@@ -32,15 +33,14 @@ namespace AMP {
 * initialization to set up I/O streams and the prefix string.           *
 *                                                                       *
 ************************************************************************/
-ParallelBuffer::ParallelBuffer():
-    d_prefix()
+ParallelBuffer::ParallelBuffer() : d_prefix()
 {
-   d_active        = true;
-   d_ostream1      = NULL;
-   d_ostream2      = NULL;
-   d_buffer        = NULL;
-   d_buffer_size   = 0;
-   d_buffer_ptr    = 0;
+    d_active      = true;
+    d_ostream1    = NULL;
+    d_ostream2    = NULL;
+    d_buffer      = NULL;
+    d_buffer_size = 0;
+    d_buffer_ptr  = 0;
 }
 
 /************************************************************************
@@ -49,17 +49,14 @@ ParallelBuffer::ParallelBuffer():
 * the output streams.                                                   *
 *                                                                       *
 ************************************************************************/
-ParallelBuffer::~ParallelBuffer()
-{
-    reset();
-}
+ParallelBuffer::~ParallelBuffer() { reset(); }
 void ParallelBuffer::reset()
 {
-    delete [] d_buffer;
-    d_buffer = NULL;
-    d_buffer_size   = 0;
-    d_buffer_ptr    = 0;
-    d_prefix = std::string();
+    delete[] d_buffer;
+    d_buffer      = NULL;
+    d_buffer_size = 0;
+    d_buffer_ptr  = 0;
+    d_prefix      = std::string();
 }
 
 /************************************************************************
@@ -70,17 +67,17 @@ void ParallelBuffer::reset()
 *************************************************************************
 */
 
-void ParallelBuffer::setActive(bool active)
+void ParallelBuffer::setActive( bool active )
 {
-   if (!active && d_buffer) {
-      delete [] d_buffer;
-      d_buffer = NULL;
-      d_buffer_size = 0;
-      d_buffer_ptr = 0;
-   }
-   d_active = active;
+    if ( !active && d_buffer ) {
+        delete[] d_buffer;
+        d_buffer      = NULL;
+        d_buffer_size = 0;
+        d_buffer_ptr  = 0;
+    }
+    d_active = active;
 }
-     
+
 /************************************************************************
 *                                                                       *
 * Set the prefix that begins every new output line.                     *
@@ -88,10 +85,7 @@ void ParallelBuffer::setActive(bool active)
 *************************************************************************
 */
 
-void ParallelBuffer::setPrefixString(const std::string &text)
-{
-   d_prefix = text;
-}
+void ParallelBuffer::setPrefixString( const std::string &text ) { d_prefix = text; }
 
 /************************************************************************
 *                                                                       *
@@ -100,10 +94,7 @@ void ParallelBuffer::setPrefixString(const std::string &text)
 *************************************************************************
 */
 
-void ParallelBuffer::setOutputStream1(std::ostream *stream)
-{
-   d_ostream1 = stream;
-}
+void ParallelBuffer::setOutputStream1( std::ostream *stream ) { d_ostream1 = stream; }
 
 /************************************************************************
 *                                                                       *
@@ -112,10 +103,7 @@ void ParallelBuffer::setOutputStream1(std::ostream *stream)
 *************************************************************************
 */
 
-void ParallelBuffer::setOutputStream2(std::ostream *stream)
-{
-   d_ostream2 = stream;
-}
+void ParallelBuffer::setOutputStream2( std::ostream *stream ) { d_ostream2 = stream; }
 
 /************************************************************************
 *                                                                       *
@@ -125,9 +113,9 @@ void ParallelBuffer::setOutputStream2(std::ostream *stream)
 *************************************************************************
 */
 
-void ParallelBuffer::outputString(const std::string &text)
+void ParallelBuffer::outputString( const std::string &text )
 {
-   outputString(text, text.length());
+    outputString( text, text.length() );
 }
 
 /************************************************************************
@@ -139,56 +127,55 @@ void ParallelBuffer::outputString(const std::string &text)
 *************************************************************************
 */
 
-void ParallelBuffer::outputString(const std::string &text, const int length)
+void ParallelBuffer::outputString( const std::string &text, const int length )
 {
-   if ((length > 0) && d_active) {
+    if ( ( length > 0 ) && d_active ) {
 
-      /*
-       * If we need to allocate the internal buffer, then do so
-       */
+        /*
+         * If we need to allocate the internal buffer, then do so
+         */
 
-      if (!d_buffer) {
-         d_buffer      = new char[DEFAULT_BUFFER_SIZE];
-         d_buffer_size = DEFAULT_BUFFER_SIZE;
-         d_buffer_ptr  = 0;
-      }
+        if ( !d_buffer ) {
+            d_buffer      = new char[DEFAULT_BUFFER_SIZE];
+            d_buffer_size = DEFAULT_BUFFER_SIZE;
+            d_buffer_ptr  = 0;
+        }
 
-      /*
-       * If the buffer pointer is zero, then prepend the prefix if not empty
-       */
+        /*
+         * If the buffer pointer is zero, then prepend the prefix if not empty
+         */
 
-      if ((d_buffer_ptr == 0) && !d_prefix.empty()) {
-         copyToBuffer(d_prefix, d_prefix.length());
-      }
+        if ( ( d_buffer_ptr == 0 ) && !d_prefix.empty() ) {
+            copyToBuffer( d_prefix, d_prefix.length() );
+        }
 
-      /*
-       * Search for an end-of-line in the string 
-       */
+        /*
+         * Search for an end-of-line in the string
+         */
 
-      int eol_ptr = 0;
-      for ( ; (eol_ptr < length) && (text[eol_ptr] != '\n'); eol_ptr++) 
-     NULL_STATEMENT;
+        int eol_ptr = 0;
+        for ( ; ( eol_ptr < length ) && ( text[eol_ptr] != '\n' ); eol_ptr++ ) NULL_STATEMENT;
 
-      /*
-       * If no end-of-line found, copy the entire text string but no output
-       */
+        /*
+         * If no end-of-line found, copy the entire text string but no output
+         */
 
-      if (eol_ptr == length) {
-         copyToBuffer(text, length);
+        if ( eol_ptr == length ) {
+            copyToBuffer( text, length );
 
-      /*
-       * If we found end-of-line, copy and output; recurse if more chars
-       */
-
-      } else {
-         const int ncopy = eol_ptr+1;
-         copyToBuffer(text, ncopy);
-         outputBuffer();
-         if (ncopy < length) {
-            outputString(text.substr(ncopy), length-ncopy);
-         }
-      }
-   }
+            /*
+             * If we found end-of-line, copy and output; recurse if more chars
+             */
+        }
+        else {
+            const int ncopy = eol_ptr + 1;
+            copyToBuffer( text, ncopy );
+            outputBuffer();
+            if ( ncopy < length ) {
+                outputString( text.substr( ncopy ), length - ncopy );
+            }
+        }
+    }
 }
 
 /************************************************************************
@@ -200,33 +187,33 @@ void ParallelBuffer::outputString(const std::string &text, const int length)
 *************************************************************************
 */
 
-void ParallelBuffer::copyToBuffer(const std::string &text, const int length)
+void ParallelBuffer::copyToBuffer( const std::string &text, const int length )
 {
-   /*
-    * First check whether we need to increase the size of the buffer
-    */
+    /*
+     * First check whether we need to increase the size of the buffer
+     */
 
-   if (d_buffer_ptr+length > d_buffer_size) {
-     const int new_size = std::max(d_buffer_ptr+length, 2*d_buffer_size);
-      char *new_buffer = new char[new_size];
+    if ( d_buffer_ptr + length > d_buffer_size ) {
+        const int new_size = std::max( d_buffer_ptr + length, 2 * d_buffer_size );
+        char *new_buffer   = new char[new_size];
 
-      if (d_buffer_ptr > 0) {
-         (void) strncpy(new_buffer, d_buffer, d_buffer_ptr);
-      }
-      delete [] d_buffer;
+        if ( d_buffer_ptr > 0 ) {
+            (void) strncpy( new_buffer, d_buffer, d_buffer_ptr );
+        }
+        delete[] d_buffer;
 
-      d_buffer      = new_buffer;
-      d_buffer_size = new_size;
-   }
+        d_buffer      = new_buffer;
+        d_buffer_size = new_size;
+    }
 
-   /*
-    * Copy data from the input into the internal buffer and increment pointer
-    */
+    /*
+     * Copy data from the input into the internal buffer and increment pointer
+     */
 
-   AMP_ASSERT(d_buffer_ptr+length <= d_buffer_size);
+    AMP_ASSERT( d_buffer_ptr + length <= d_buffer_size );
 
-   strncpy(d_buffer+d_buffer_ptr, text.c_str(), length);
-   d_buffer_ptr += length;
+    strncpy( d_buffer + d_buffer_ptr, text.c_str(), length );
+    d_buffer_ptr += length;
 }
 
 /************************************************************************
@@ -239,17 +226,17 @@ void ParallelBuffer::copyToBuffer(const std::string &text, const int length)
 
 void ParallelBuffer::outputBuffer()
 {
-   if (d_buffer_ptr > 0) {
-      if (d_ostream1) {
-         d_ostream1->write(d_buffer, d_buffer_ptr);
-         d_ostream1->flush();
-      }
-      if (d_ostream2) {
-         d_ostream2->write(d_buffer, d_buffer_ptr);
-         d_ostream2->flush();
-      }
-      d_buffer_ptr = 0;
-   }
+    if ( d_buffer_ptr > 0 ) {
+        if ( d_ostream1 ) {
+            d_ostream1->write( d_buffer, d_buffer_ptr );
+            d_ostream1->flush();
+        }
+        if ( d_ostream2 ) {
+            d_ostream2->write( d_buffer, d_buffer_ptr );
+            d_ostream2->flush();
+        }
+        d_buffer_ptr = 0;
+    }
 }
 
 /************************************************************************
@@ -262,9 +249,9 @@ void ParallelBuffer::outputBuffer()
 
 int ParallelBuffer::sync()
 {
-   const int n = pptr() - pbase();
-   if (n > 0) outputString(pbase(), n);
-   return(0);
+    const int n = pptr() - pbase();
+    if ( n > 0 ) outputString( pbase(), n );
+    return ( 0 );
 }
 
 /************************************************************************
@@ -279,12 +266,12 @@ int ParallelBuffer::sync()
 *************************************************************************
 */
 
-#if !defined(__INTEL_COMPILER) && (defined(__GNUG__))
-std::streamsize ParallelBuffer::xsputn(const char *text, std::streamsize n)
+#if !defined( __INTEL_COMPILER ) && ( defined( __GNUG__ ) )
+std::streamsize ParallelBuffer::xsputn( const char *text, std::streamsize n )
 {
-   sync();
-   if (n > 0) outputString(text, n);
-   return(n);
+    sync();
+    if ( n > 0 ) outputString( text, n );
+    return ( n );
 }
 #endif
 
@@ -295,29 +282,24 @@ std::streamsize ParallelBuffer::xsputn(const char *text, std::streamsize n)
 *                                                                       *
 ************************************************************************/
 
-int ParallelBuffer::overflow(int ch)
+int ParallelBuffer::overflow( int ch )
 {
-   const int n = pptr() - pbase();
-   if (n && sync()) {
-      return(EOF);
-   }
-   if (ch != EOF) {
-      char character[2];
-      character[0] = (char)ch;
-      character[1] = 0;
-      outputString(character, 1);
-   }
-   pbump(-n);
-   return(0);
+    const int n = pptr() - pbase();
+    if ( n && sync() ) {
+        return ( EOF );
+    }
+    if ( ch != EOF ) {
+        char character[2];
+        character[0] = (char) ch;
+        character[1] = 0;
+        outputString( character, 1 );
+    }
+    pbump( -n );
+    return ( 0 );
 }
 
 #ifdef _MSC_VER
 // Should never read from here
-int ParallelBuffer::underflow() 
-{
-   return EOF;
-}
+int ParallelBuffer::underflow() { return EOF; }
 #endif
-
 }
-

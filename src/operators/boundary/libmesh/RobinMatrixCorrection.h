@@ -10,15 +10,15 @@
 #include "discretization/createLibmeshElements.h"
 
 /* Libmesh files */
-#include "libmesh/fe_type.h"
-#include "libmesh/fe_base.h"
 #include "libmesh/elem.h"
+#include "libmesh/fe_base.h"
+#include "libmesh/fe_type.h"
 #include "libmesh/quadrature.h"
 
-#include "libmesh/enum_order.h"
-#include "libmesh/enum_fe_family.h"
-#include "libmesh/enum_quadrature_type.h"
 #include "libmesh/auto_ptr.h"
+#include "libmesh/enum_fe_family.h"
+#include "libmesh/enum_order.h"
+#include "libmesh/enum_quadrature_type.h"
 #include "libmesh/string_to_enum.h"
 
 #include <string>
@@ -26,90 +26,86 @@
 namespace AMP {
 namespace Operator {
 
-  /**
-    A class to impose Robin Boundary conditions for a linear operator. Robin Condition
-    is also known as mixed condition of Dirichlet and Neumann Flux conditions. This can 
-    be written as \f$\alpha k*\frac{\partial u}{\partial n} + \beta h*u = \gamma*c \f$.
-    Imposing this condition would involve:
-    1) Imposing a Neumann Flux condition on the RHS Vector
-    2) Make appropriate matrix corrections on the boundary nodes.
-    */
-  class RobinMatrixCorrection : public BoundaryOperator
-  {
-    public :
-
+/**
+  A class to impose Robin Boundary conditions for a linear operator. Robin Condition
+  is also known as mixed condition of Dirichlet and Neumann Flux conditions. This can
+  be written as \f$\alpha k*\frac{\partial u}{\partial n} + \beta h*u = \gamma*c \f$.
+  Imposing this condition would involve:
+  1) Imposing a Neumann Flux condition on the RHS Vector
+  2) Make appropriate matrix corrections on the boundary nodes.
+  */
+class RobinMatrixCorrection : public BoundaryOperator {
+public:
     /**
        Constructor. This function reads all the parameters required for surface elements.
        This also constructs new NeumannVectorCorrection parameters and calls it reset.
     */
-    explicit RobinMatrixCorrection(const AMP::shared_ptr<RobinMatrixCorrectionParameters> & params);
-    
+    explicit RobinMatrixCorrection(
+        const AMP::shared_ptr<RobinMatrixCorrectionParameters> &params );
+
     /**
        Set the variable for the vector that will used with this operator.
     */
-    void setVariable(const AMP::LinearAlgebra::Variable::shared_ptr & var) {
-      d_variable = var;
-    }
-    
+    void setVariable( const AMP::LinearAlgebra::Variable::shared_ptr &var ) { d_variable = var; }
+
     /**
        Destructor
     */
-    virtual ~RobinMatrixCorrection() { }
-    
+    virtual ~RobinMatrixCorrection() {}
+
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
-           AMP::LinearAlgebra::Vector::shared_ptr ) override
+                AMP::LinearAlgebra::Vector::shared_ptr ) override
     {
-      //Do Nothing
+        // Do Nothing
     }
-    
+
     /**
        This function reads parameters related to boundary Ids. Since this class allow
        for variable flux values, the parameters stores a vector of values. This vector
-       is passed to the NeumannVectorCorrection. This function also does a matrix 
+       is passed to the NeumannVectorCorrection. This function also does a matrix
        correction on the boundary.
     */
-    void reset(const AMP::shared_ptr<OperatorParameters>& params);
-    
+    void reset( const AMP::shared_ptr<OperatorParameters> &params );
+
     /**
-       Adds a Neumann Correction Vector to the RHS vector. 
+       Adds a Neumann Correction Vector to the RHS vector.
     */
-    void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs)
+    void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs )
     {
-      d_NeumannCorrection->addRHScorrection(rhs);
+        d_NeumannCorrection->addRHScorrection( rhs );
     }
-    
-    
-  protected :
-    
+
+
+protected:
     Discretization::createLibmeshElements libmeshElements;
 
     std::vector<short int> d_boundaryIds;
-    
-    std::vector<std::vector<unsigned int> >d_dofIds;
-    
-    std::vector<std::vector<double> > d_robinValues;
-    
+
+    std::vector<std::vector<unsigned int>> d_dofIds;
+
+    std::vector<std::vector<double>> d_robinValues;
+
     AMP::LinearAlgebra::Variable::shared_ptr d_variable;
-    
-    double d_hef;  //Convective Coefficient
-    
-    double d_alpha;  // pre-factor solid flux
-    
+
+    double d_hef; // Convective Coefficient
+
+    double d_alpha; // pre-factor solid flux
+
     double d_beta;
-    
+
     double d_gamma;
-    
+
     const std::vector<Real> *d_JxW;
-    
-    const std::vector<std::vector<Real> > *d_phi;
-    
-    AMP::shared_ptr < ::FEType > d_feType;
-    
-    AMP::shared_ptr < ::FEBase > d_fe;
-    
-    AMP::shared_ptr < ::QBase > d_qrule;
-    
-    std::string         d_qruleOrderName; 
+
+    const std::vector<std::vector<Real>> *d_phi;
+
+    AMP::shared_ptr<::FEType> d_feType;
+
+    AMP::shared_ptr<::FEBase> d_fe;
+
+    AMP::shared_ptr<::QBase> d_qrule;
+
+    std::string d_qruleOrderName;
 
     libMeshEnums::Order d_feTypeOrder;
     libMeshEnums::FEFamily d_feFamily;
@@ -117,20 +113,16 @@ namespace Operator {
     libMeshEnums::Order d_qruleOrder;
 
     AMP::LinearAlgebra::Vector::shared_ptr d_Frozen;
-    
+
     AMP::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 
-    AMP::Discretization::DOFManager::shared_ptr d_dofManager; 
+    AMP::Discretization::DOFManager::shared_ptr d_dofManager;
 
-  private :
-
-    AMP::shared_ptr<NeumannVectorCorrection> d_NeumannCorrection; 
-    AMP::shared_ptr<NeumannVectorCorrectionParameters> d_NeumannParams; 
-
-  };
-
+private:
+    AMP::shared_ptr<NeumannVectorCorrection> d_NeumannCorrection;
+    AMP::shared_ptr<NeumannVectorCorrectionParameters> d_NeumannParams;
+};
 }
 }
 
 #endif
-

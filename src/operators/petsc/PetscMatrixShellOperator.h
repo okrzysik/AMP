@@ -30,7 +30,6 @@ extern "C" {
 #define OMPI_SKIP_MPICXX
 #endif
 #endif
-
 }
 
 
@@ -40,43 +39,37 @@ namespace Operator {
 
 class PetscMatrixShellOperator : public LinearOperator {
 public:
+    PetscMatrixShellOperator( const AMP::shared_ptr<OperatorParameters> &params );
 
-    PetscMatrixShellOperator(const AMP::shared_ptr<OperatorParameters>& params);
+    virtual ~PetscMatrixShellOperator() {}
 
-    virtual ~PetscMatrixShellOperator() { }
+    static PetscErrorCode mult( Mat, Vec, Vec );
 
-    static PetscErrorCode mult(Mat, Vec, Vec);
+    void setMatLocalRowSize( int val );
 
-    void setMatLocalRowSize(int val); 
+    void setMatLocalColumnSize( int val );
 
-    void setMatLocalColumnSize(int val);  
+    void setComm( AMP_MPI comm );
 
-    void setComm(AMP_MPI comm);
-
-    void setOperator(AMP::shared_ptr<Operator> op);       
+    void setOperator( AMP::shared_ptr<Operator> op );
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		AMP::LinearAlgebra::Vector::shared_ptr f) override;
+                AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    void reset(const AMP::shared_ptr<OperatorParameters>& params);
+    void reset( const AMP::shared_ptr<OperatorParameters> &params );
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
 private:
-
     AMP::shared_ptr<Operator> d_operator;
     int d_iMatLocalRowSize;
     int d_iMatLocalColumnSize;
     Mat d_mat;
     AMP_MPI d_comm;
 };
-
-
 }
 }
 
 #endif
-
-

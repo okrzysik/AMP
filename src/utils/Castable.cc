@@ -1,10 +1,6 @@
 #include "Castable.h"
 
-namespace AMP
-{
+namespace AMP {
 
-  Castable::~Castable () 
-  {
-  }
-
+Castable::~Castable() {}
 }

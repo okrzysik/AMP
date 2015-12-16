@@ -11,39 +11,33 @@
 namespace AMP {
 namespace Operator {
 
-  /**
-    An abstract base class that encapsulates the parameters used to
-    initialize the ElementPhysicsModel (Constitutive/Material model)
-    used within a FEOperator. 
-    @see ElementPhysicsModel
-    */
-  class ElementPhysicsModelParameters : public ParameterBase
-  {
-    public :
+/**
+  An abstract base class that encapsulates the parameters used to
+  initialize the ElementPhysicsModel (Constitutive/Material model)
+  used within a FEOperator.
+  @see ElementPhysicsModel
+  */
+class ElementPhysicsModelParameters : public ParameterBase {
+public:
+    /**
+      Constructor.
+      */
+    explicit ElementPhysicsModelParameters( const AMP::shared_ptr<AMP::Database> &db ) : d_db( db )
+    {
+    }
 
-      /** 
-        Constructor.
-        */
-      explicit ElementPhysicsModelParameters(const AMP::shared_ptr<AMP::Database> & db)
-        : d_db(db) {}
+    /**
+      Destructor.
+      */
+    virtual ~ElementPhysicsModelParameters() {}
 
-      /**
-        Destructor.
-        */
-      virtual ~ElementPhysicsModelParameters() { }
+    AMP::shared_ptr<AMP::Database> d_db; /**< Database object which needs to be
+                                             initialized specific to the material model.  */
 
-      AMP::shared_ptr<AMP::Database> d_db; /**< Database object which needs to be 
-                                               initialized specific to the material model.  */
-
-    protected :
-
-    private :
-
-  };
-
+protected:
+private:
+};
 }
 }
 
 #endif
-
-

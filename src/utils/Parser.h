@@ -1,5 +1,7 @@
 //
-// File:	$URL: file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/inputdb/Parser.h $
+// File:	$URL:
+// file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/inputdb/Parser.h
+// $
 // Package:	AMP toolbox
 // Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
 // Revision:	$LastChangedRevision: 2132 $
@@ -16,8 +18,8 @@
 #include <stdio.h>
 #endif
 #include "Database.h"
-#include <list>
 #include "utils/shared_ptr.h"
+#include <list>
 #ifndef included_String
 #include <string>
 #define included_String
@@ -26,7 +28,7 @@
 #include "utils/AMP_MPI.h"
 
 namespace AMP {
-   
+
 
 /**
  * Class Parser parses the user input file and places the resulting
@@ -50,172 +52,165 @@ namespace AMP {
  * output files from flex and bison.
  */
 
-class Parser
-{
+class Parser {
 public:
-      typedef AMP::shared_ptr<Parser> shared_ptr;
+    typedef AMP::shared_ptr<Parser> shared_ptr;
 
-   /**
-    * The parser constructor simply creates an uninitialized parser object.
-    * Member function parse() must be called before any other member function
-    * to initialize the object and parse the input data.  Function parse()
-    * may be called multiple times to parse multiple input files, but all
-    * state values (such as the number of errors or warnings) are reset at
-    * the beginning of each new parse pass.
-    */
-   Parser();
+    /**
+     * The parser constructor simply creates an uninitialized parser object.
+     * Member function parse() must be called before any other member function
+     * to initialize the object and parse the input data.  Function parse()
+     * may be called multiple times to parse multiple input files, but all
+     * state values (such as the number of errors or warnings) are reset at
+     * the beginning of each new parse pass.
+     */
+    Parser();
 
-   /**
-    * Destroy the parser object and deallocate parser data.
-    */
-   ~Parser();
+    /**
+     * Destroy the parser object and deallocate parser data.
+     */
+    ~Parser();
 
-   /**
-    * Parse the input file from the specified file stream.  The number of
-    * syntax errors is returned.  A successful parse will return zero errors.
-    * The parse() function takes the initial filename (for informational
-    * purposes) and the filestream from which to read the parse data.
-    * All (key,value) pairs are placed in the specified database.  If
-    * running in parallel, the fstream must be valid on node zero, but
-    * is ignored on other nodes and may be set to NULL.  Multiple input
-    * files may be parsed by calling parse() for each file, but all variables
-    * are reset at the beginning of each parse.
-    */
-   int parse(
-      const std::string& filename,
-      FILE* fstream, AMP::shared_ptr<Database> database);
+    /**
+     * Parse the input file from the specified file stream.  The number of
+     * syntax errors is returned.  A successful parse will return zero errors.
+     * The parse() function takes the initial filename (for informational
+     * purposes) and the filestream from which to read the parse data.
+     * All (key,value) pairs are placed in the specified database.  If
+     * running in parallel, the fstream must be valid on node zero, but
+     * is ignored on other nodes and may be set to NULL.  Multiple input
+     * files may be parsed by calling parse() for each file, but all variables
+     * are reset at the beginning of each parse.
+     */
+    int parse( const std::string &filename, FILE *fstream, AMP::shared_ptr<Database> database );
 
-   /**
-    * Return the total number of errors resulting from the parse.
-    */
-   int getNumberErrors() const;
+    /**
+     * Return the total number of errors resulting from the parse.
+     */
+    int getNumberErrors() const;
 
-   /**
-    * Return the total number of warnings resulting from the parse.
-    */
-   int getNumberWarnings() const;
+    /**
+     * Return the total number of warnings resulting from the parse.
+     */
+    int getNumberWarnings() const;
 
-   /**
-    * Return the parser object.  This mechanism is useful for communicating
-    * with the yacc/lex routines during the input file parse.  The default
-    * parser will be NULL outside of the parse call.
-    */
-   static Parser *getParser();
+    /**
+     * Return the parser object.  This mechanism is useful for communicating
+     * with the yacc/lex routines during the input file parse.  The default
+     * parser will be NULL outside of the parse call.
+     */
+    static Parser *getParser();
 
-   /**
-    * Return the current database scope.  The current scope is modified
-    * through the enterScope() and leaveScope() member functions.
-    */
-    AMP::shared_ptr<Database> & getScope();
+    /**
+     * Return the current database scope.  The current scope is modified
+     * through the enterScope() and leaveScope() member functions.
+     */
+    AMP::shared_ptr<Database> &getScope();
 
-   /**
-    * Create a new database scope with the specified name.  This new scope
-    * will be the default scope until leaveScope() is called.
-    */
-   void enterScope(const std::string& name);
+    /**
+     * Create a new database scope with the specified name.  This new scope
+     * will be the default scope until leaveScope() is called.
+     */
+    void enterScope( const std::string &name );
 
-   /**
-    * Leave the current database scope and return to the previous scope.
-    * It is an error to leave the outermost scope.
-    */
-   void leaveScope();
+    /**
+     * Leave the current database scope and return to the previous scope.
+     * It is an error to leave the outermost scope.
+     */
+    void leaveScope();
 
-   /**
-    * Lookup the scope that contains the specified key.  If the scope does
-    * not exist, then return a NULL pointer to the database.
-    */
-    AMP::shared_ptr<Database> getDatabaseWithKey(const std::string& name);
+    /**
+     * Lookup the scope that contains the specified key.  If the scope does
+     * not exist, then return a NULL pointer to the database.
+     */
+    AMP::shared_ptr<Database> getDatabaseWithKey( const std::string &name );
 
-   /**
-    * Save the current context and switch to the specified input file.
-    * This routine returns true if the file exists and the switch was
-    * successful and false otherwise.
-    */
-   bool pushIncludeFile(const std::string& filename);
+    /**
+     * Save the current context and switch to the specified input file.
+     * This routine returns true if the file exists and the switch was
+     * successful and false otherwise.
+     */
+    bool pushIncludeFile( const std::string &filename );
 
-   /**
-    * Pop the include file context off of the stack and return to the
-    * previous include file.
-    */
-   void popIncludeFile();
+    /**
+     * Pop the include file context off of the stack and return to the
+     * previous include file.
+     */
+    void popIncludeFile();
 
-   /**
-    * Report a parsing error with the specified error message.  This routine
-    * will only be called from the parser or the scanner.  Errors are printed
-    * to pout, since it is assumed that all nodes are parsing the same input
-    * file.
-    */
-   void error(const std::string& message);
+    /**
+     * Report a parsing error with the specified error message.  This routine
+     * will only be called from the parser or the scanner.  Errors are printed
+     * to pout, since it is assumed that all nodes are parsing the same input
+     * file.
+     */
+    void error( const std::string &message );
 
-   /**
-    * Report a parsing warning with the specified warning message.  This
-    * routine will only be called from the parser or the scanner.  Errors
-    * are printed to pout, since it is assumed that all nodes are parsing
-    * the same input file.
-    */
-   void warning(const std::string& message);
+    /**
+     * Report a parsing warning with the specified warning message.  This
+     * routine will only be called from the parser or the scanner.  Errors
+     * are printed to pout, since it is assumed that all nodes are parsing
+     * the same input file.
+     */
+    void warning( const std::string &message );
 
-   /**
-    * Set the input line which is currently being parsed.
-    */
-   void setLine(const std::string& line);
+    /**
+     * Set the input line which is currently being parsed.
+     */
+    void setLine( const std::string &line );
 
-   /**
-    * Advance the line number by the specified number of lines.  If no
-    * argument is given, then the line number is advanced by one line.
-    */
-   void advanceLine(const int nline = 1);
+    /**
+     * Advance the line number by the specified number of lines.  If no
+     * argument is given, then the line number is advanced by one line.
+     */
+    void advanceLine( const int nline = 1 );
 
-   /**
-    * Advance the position of the cursor on the line using the values
-    * in the specified character string.  Tab characters in the string
-    * are assumed to advance the cursor to eight character tab stops.
-    * The cursor position is automatically reset to one whenever the
-    * line number is changed.
-    */
-   void advanceCursor(const std::string& token);
+    /**
+     * Advance the position of the cursor on the line using the values
+     * in the specified character string.  Tab characters in the string
+     * are assumed to advance the cursor to eight character tab stops.
+     * The cursor position is automatically reset to one whenever the
+     * line number is changed.
+     */
+    void advanceCursor( const std::string &token );
 
-   /**
-    * Define the input reading routine used by flex.  Under MPI, node zero
-    * reads the input and broadcasts the character data to all processors.
-    */
-   int yyinput(char *buffer, const int max_size);
+    /**
+     * Define the input reading routine used by flex.  Under MPI, node zero
+     * reads the input and broadcasts the character data to all processors.
+     */
+    int yyinput( char *buffer, const int max_size );
 
 private:
-   Parser(const Parser&);	// not implemented
-   void operator=(const Parser&);	// not implemented
+    Parser( const Parser & );         // not implemented
+    void operator=( const Parser & ); // not implemented
 
-   struct ParseData {
-      std::string d_filename;	// filename for description
-      FILE* d_fstream;		// input stream to parse
-      std::string d_linebuffer;      // line being parsed
-      int d_linenumber;		// line number in input stream
-      int d_cursor;		// cursor position in line
-      int d_nextcursor;		// next cursor position in line
-   };
+    struct ParseData {
+        std::string d_filename;   // filename for description
+        FILE *d_fstream;          // input stream to parse
+        std::string d_linebuffer; // line being parsed
+        int d_linenumber;         // line number in input stream
+        int d_cursor;             // cursor position in line
+        int d_nextcursor;         // next cursor position in line
+    };
 
-   int d_errors;		// total number of parse errors
-   int d_warnings;		// total number of warnings
+    int d_errors;   // total number of parse errors
+    int d_warnings; // total number of warnings
 
-   std::list< Parser::ParseData > d_parse_stack;
+    std::list<Parser::ParseData> d_parse_stack;
 
-   std::list< AMP::shared_ptr<Database> > d_scope_stack;
+    std::list<AMP::shared_ptr<Database>> d_scope_stack;
 
-   static Parser* s_default_parser;
-   
-   static bool s_static_tables_initialized;
+    static Parser *s_default_parser;
 
-   std::string d_pathname;           // path to filename for including
+    static bool s_static_tables_initialized;
 
-   AMP_MPI comm;
+    std::string d_pathname; // path to filename for including
+
+    AMP_MPI comm;
 };
-
-
 }
 
 #ifndef DEBUG_NO_INLINE
 #include "Parser.I"
 #endif
 #endif
-
-

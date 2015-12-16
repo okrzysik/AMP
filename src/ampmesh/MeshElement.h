@@ -1,9 +1,9 @@
 #ifndef included_AMP_MeshElement
 #define included_AMP_MeshElement
 
-#include <vector>
-#include "utils/shared_ptr.h"
 #include "ampmesh/MeshID.h"
+#include "utils/shared_ptr.h"
+#include <vector>
 
 
 namespace AMP {
@@ -17,31 +17,30 @@ namespace Mesh {
  * A mesh element can be thought of as the smallest unit of a mesh.  It is of a type
  * of GeomType.  It contains the composing pieces of the element
  */
-class MeshElement
-{
+class MeshElement {
 public:
     /**
      *\typedef shared_ptr
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    typedef AMP::shared_ptr<MeshElement>  shared_ptr;
+    typedef AMP::shared_ptr<MeshElement> shared_ptr;
 
 
     //! Empty constructor for a MeshElement
-    MeshElement ( );
+    MeshElement();
 
 
     //! Copy constructor
-    MeshElement(const MeshElement&);
+    MeshElement( const MeshElement & );
 
 
     //! Assignment operator
-    MeshElement& operator=(const MeshElement&);
+    MeshElement &operator=( const MeshElement & );
 
 
     //! De-constructor for a MeshElement
-    virtual ~MeshElement ( );
+    virtual ~MeshElement();
 
 
     //! Return the element type
@@ -53,7 +52,7 @@ public:
 
 
     //! Return the elements composing the current element
-    virtual std::vector<MeshElement> getElements(const GeomType type) const;
+    virtual std::vector<MeshElement> getElements( const GeomType type ) const;
 
 
     /**
@@ -62,8 +61,8 @@ public:
      *  If the side is on the surface, then it's neighbor is null.
      *  For Verticies, a list of all verticies that share an element is returned.
      *  This list is in unsorted order.
-     */  
-    virtual std::vector< MeshElement::shared_ptr >  getNeighbors() const;
+     */
+    virtual std::vector<MeshElement::shared_ptr> getNeighbors() const;
 
 
     //! Return the volume of the current element (does not apply to verticies)
@@ -76,7 +75,7 @@ public:
 
     /**
      * \brief     Return the coordinate of the vertex
-     * \details   This function returns the coordinates of the vertex 
+     * \details   This function returns the coordinates of the vertex
      *   in the given direction (only applies to verticies).
      * \param i     The direction requested.  Equivalent to coord()[i]
      */
@@ -94,13 +93,13 @@ public:
 
     /**
      * \brief     Return true if the element contains the point
-     * \details   This function checks if the given point is inside or 
+     * \details   This function checks if the given point is inside or
      *   within TOL of the given element.  If the current element is a vertex,
      *   this function checks if the point is with TOL of the vertex.
      * \param pos   The coordinates of the point to check.
      * \param TOL   The tolerance to use for the computation.
      */
-    virtual bool containsPoint( const std::vector<double> &pos, double TOL=1e-12 ) const;
+    virtual bool containsPoint( const std::vector<double> &pos, double TOL = 1e-12 ) const;
 
 
     //! Check if the element is on the surface
@@ -111,7 +110,7 @@ public:
      * \details   Check if the current element is on the boundary specified by the given id
      * \param id  The boundary id to check
      */
-    virtual bool isOnBoundary(int id) const;
+    virtual bool isOnBoundary( int id ) const;
 
 
     /**
@@ -119,33 +118,34 @@ public:
      * \details   Check if the current element is in the block specified by the given id
      * \param id  The block id to check
      */
-    virtual bool isInBlock(int id) const;
+    virtual bool isInBlock( int id ) const;
 
 
     // Overload operators
-    inline bool operator== (const MeshElement& rhs ) const { return d_globalID == rhs.d_globalID; }
-    inline bool operator!= (const MeshElement& rhs ) const { return d_globalID != rhs.d_globalID; }
-    inline bool operator<  (const MeshElement& rhs ) const { return d_globalID <  rhs.d_globalID; }
-    inline bool operator>  (const MeshElement& rhs ) const { return d_globalID >  rhs.d_globalID; }
-    inline bool operator<= (const MeshElement& rhs ) const { return d_globalID <= rhs.d_globalID; }
-    inline bool operator>= (const MeshElement& rhs ) const { return d_globalID >= rhs.d_globalID; }
-    inline bool operator== (const MeshElementID& rhs ) const { return d_globalID == rhs; }
-    inline bool operator!= (const MeshElementID& rhs ) const { return d_globalID != rhs; }
-    inline bool operator<  (const MeshElementID& rhs ) const { return d_globalID <  rhs; }
-    inline bool operator>  (const MeshElementID& rhs ) const { return d_globalID >  rhs; }
-    inline bool operator<= (const MeshElementID& rhs ) const { return d_globalID <= rhs; }
-    inline bool operator>= (const MeshElementID& rhs ) const { return d_globalID >= rhs; }
+    inline bool operator==( const MeshElement &rhs ) const { return d_globalID == rhs.d_globalID; }
+    inline bool operator!=( const MeshElement &rhs ) const { return d_globalID != rhs.d_globalID; }
+    inline bool operator<( const MeshElement &rhs ) const { return d_globalID < rhs.d_globalID; }
+    inline bool operator>( const MeshElement &rhs ) const { return d_globalID > rhs.d_globalID; }
+    inline bool operator<=( const MeshElement &rhs ) const { return d_globalID <= rhs.d_globalID; }
+    inline bool operator>=( const MeshElement &rhs ) const { return d_globalID >= rhs.d_globalID; }
+    inline bool operator==( const MeshElementID &rhs ) const { return d_globalID == rhs; }
+    inline bool operator!=( const MeshElementID &rhs ) const { return d_globalID != rhs; }
+    inline bool operator<( const MeshElementID &rhs ) const { return d_globalID < rhs; }
+    inline bool operator>( const MeshElementID &rhs ) const { return d_globalID > rhs; }
+    inline bool operator<=( const MeshElementID &rhs ) const { return d_globalID <= rhs; }
+    inline bool operator>=( const MeshElementID &rhs ) const { return d_globalID >= rhs; }
 
 
-    //! Function to get a pointer to the raw mesh element (libMeshElement, structuredMeshElement, etc.)
-    virtual MeshElement* getRawElement();
+    //! Function to get a pointer to the raw mesh element (libMeshElement, structuredMeshElement,
+    //! etc.)
+    virtual MeshElement *getRawElement();
 
-    //! Function to get a pointer to the raw mesh element (libMeshElement, structuredMeshElement, etc.)
-    virtual const MeshElement* getRawElement() const;
+    //! Function to get a pointer to the raw mesh element (libMeshElement, structuredMeshElement,
+    //! etc.)
+    virtual const MeshElement *getRawElement() const;
 
 
 protected:
-
     // Unique (per class) ID for identifing the underlying iterator
     unsigned int typeID;
 
@@ -156,14 +156,9 @@ protected:
     MeshElementID d_globalID;
 
     // Clone the iterator
-    virtual MeshElement* clone() const;
-
+    virtual MeshElement *clone() const;
 };
-
-
-
 }
 }
 
 #endif
-

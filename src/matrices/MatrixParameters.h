@@ -11,21 +11,26 @@ namespace LinearAlgebra {
 /** \class MatrixParameters
   * \brief  A class used to hold basic parameters for a matrix
   */
-class MatrixParameters
-{
+class MatrixParameters {
 public:
     //! Convenience typedef
-    typedef AMP::shared_ptr<MatrixParameters>     shared_ptr;
+    typedef AMP::shared_ptr<MatrixParameters> shared_ptr;
 
     /** \brief Constructor
-      * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
-      * \param[in] right    The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
+      * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$y\f$ is a left
+     * vector )
+      * \param[in] right    The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$x\f$ is a right
+     * vector )
       * \param[in] comm     Communicator for the matrix
       */
-    explicit MatrixParameters( AMP::Discretization::DOFManager::shared_ptr left, AMP::Discretization::DOFManager::shared_ptr right, AMP_MPI comm );
+    explicit MatrixParameters( AMP::Discretization::DOFManager::shared_ptr left,
+                               AMP::Discretization::DOFManager::shared_ptr right,
+                               AMP_MPI comm );
 
     //! Deconstructor
-    virtual ~MatrixParameters() {};
+    virtual ~MatrixParameters(){};
 
     //! Return the local number of rows
     inline size_t getLocalNumberOfRows() const { return numLocalRows; }
@@ -39,53 +44,58 @@ public:
     //! Return the global number of columns
     inline size_t getGlobalNumberOfColumns() const { return numGlobalColumns; }
 
-    //!  Get the DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
-    inline AMP::Discretization::DOFManager::shared_ptr getLeftDOFManager() { return d_DOFManagerLeft; }
+    //!  Get the DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
+    //!  left vector )
+    inline AMP::Discretization::DOFManager::shared_ptr getLeftDOFManager()
+    {
+        return d_DOFManagerLeft;
+    }
 
-    //!  Get the DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
-    inline AMP::Discretization::DOFManager::shared_ptr getRightDOFManager() { return d_DOFManagerRight; }
+    //!  Get the DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a
+    //!  right vector )
+    inline AMP::Discretization::DOFManager::shared_ptr getRightDOFManager()
+    {
+        return d_DOFManagerRight;
+    }
 
     //!  Get the communicator for the matric
-    inline AMP::AMP_MPI& getComm() { return d_comm; }
+    inline AMP::AMP_MPI &getComm() { return d_comm; }
 
-    //!  The communication list of a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
-    CommunicationList::shared_ptr   d_CommListLeft;
+    //!  The communication list of a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
+    //!  left vector )
+    CommunicationList::shared_ptr d_CommListLeft;
 
-    //!  The communication list of a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
-    CommunicationList::shared_ptr   d_CommListRight;
+    //!  The communication list of a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a
+    //!  right vector )
+    CommunicationList::shared_ptr d_CommListRight;
 
-    //!  The variable for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
-    AMP::LinearAlgebra::Variable::shared_ptr   d_VariableLeft;
+    //!  The variable for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left
+    //!  vector )
+    AMP::LinearAlgebra::Variable::shared_ptr d_VariableLeft;
 
-    //!  The variable for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
-    AMP::LinearAlgebra::Variable::shared_ptr   d_VariableRight;
+    //!  The variable for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right
+    //!  vector )
+    AMP::LinearAlgebra::Variable::shared_ptr d_VariableRight;
 
 protected:
-
-    MatrixParameters() {};
+    MatrixParameters(){};
 
     // The DOFManager for the left vector ( may be null )
-    AMP::Discretization::DOFManager::shared_ptr   d_DOFManagerLeft;
+    AMP::Discretization::DOFManager::shared_ptr d_DOFManagerLeft;
 
     // The DOFManager for the right vector ( may be null )
-    AMP::Discretization::DOFManager::shared_ptr   d_DOFManagerRight;
+    AMP::Discretization::DOFManager::shared_ptr d_DOFManagerRight;
 
     // The comm of the matrix
-    AMP_MPI     d_comm;
-    
+    AMP_MPI d_comm;
+
     // The size of the matrix
     size_t numLocalRows;
     size_t numLocalColumns;
     size_t numGlobalRows;
     size_t numGlobalColumns;
-
 };
-
-
-
 }
 }
 
 #endif
-
-

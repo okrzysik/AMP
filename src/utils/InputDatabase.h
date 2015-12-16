@@ -1,5 +1,7 @@
 //
-// File:	$URL: file:///usr/casc/samrai/repository/AMP/trunk/source/toolbox/inputdb/InputDatabase.h $
+// File:	$URL:
+// file:///usr/casc/samrai/repository/AMP/trunk/source/toolbox/inputdb/InputDatabase.h
+// $
 // Package:	AMP toolbox
 // Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
 // Revision:	$LastChangedRevision: 2662 $
@@ -11,15 +13,14 @@
 #define included_InputDatabase
 
 
-
 #include "MemoryDatabase.h"
 
 namespace AMP {
-   
+
 
 /**
  * @brief Class InputDatabase stores (key,value) pairs in a hierarchical
- * database. 
+ * database.
  *
  * This is just another name for the MemoryDatabase. @see MemoryDatabase
  *
@@ -29,6 +30,5 @@ namespace AMP {
  *
  */
 typedef AMP::MemoryDatabase InputDatabase;
-
 }
 #endif

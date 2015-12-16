@@ -2,14 +2,14 @@
 #define included_AMP_PetscSNESSolver
 
 #include "solvers/SolverStrategy.h"
-#include "solvers/petsc/PetscSNESSolverParameters.h"
 #include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/petsc/PetscMonitor.h"
+#include "solvers/petsc/PetscSNESSolverParameters.h"
 #include "utils/AMP_MPI.h"
 
 #include <list>
 
-extern "C"{
+extern "C" {
 
 #ifdef MPICH_SKIP_MPICXX
 #define _FIX_FOR_PETSC_MPI_CXX
@@ -36,7 +36,6 @@ extern "C"{
 #define MPICH_SKIP_MPICXX
 #endif
 #endif
-
 }
 
 
@@ -48,87 +47,87 @@ namespace Solver {
   * The PETScSNESSolver is a wrapper to the PETSc SNES solver which provides an implementation
   * of the inexact Newton method.
   */
-class PetscSNESSolver: public SolverStrategy{
+class PetscSNESSolver : public SolverStrategy {
 public:
-    
     /**
      * default constructor, sets default values for member variables
      */
     PetscSNESSolver();
 
-    
+
     /**
      * main constructor
      @param [in] parameters The parameters object
      contains a database objects containing the following fields:
-     
+
      1. type: string, name: SNESOptions, default value: "",
-     
-     2. type: bool, name: usesJacobian, default value: false, 
+
+     2. type: bool, name: usesJacobian, default value: false,
      acceptable values (true, false)
-     
-     3. name: MFFDDifferencingStrategy, type:string , default value: MATMFFD_WP, 
+
+     3. name: MFFDDifferencingStrategy, type:string , default value: MATMFFD_WP,
      acceptable values ()
-     
-     4. name: MFFDFunctionDifferencingError, type: double, default value: PETSC_DEFAULT, 
+
+     4. name: MFFDFunctionDifferencingError, type: double, default value: PETSC_DEFAULT,
      acceptable values ()
-     
-     5. name: maximumFunctionEvals, type: integer, default value: none 
+
+     5. name: maximumFunctionEvals, type: integer, default value: none
      acceptable values ()
-     
+
      6. name: absoluteTolerance, type: double, default value: none
      acceptable values ()
-     
+
      7. name: relativeTolerance, type: double, default value: none
      acceptable values ()
-     
+
      8. name: stepTolerance, type: double, default value: none
      acceptable values ()
-     
-     9. name: enableLineSearchPreCheck, type: bool, default value: FALSE 
+
+     9. name: enableLineSearchPreCheck, type: bool, default value: FALSE
      acceptable values ()
-     
-     10. name: numberOfLineSearchPreCheckAttempts, type: integer, default value: 5 
+
+     10. name: numberOfLineSearchPreCheckAttempts, type: integer, default value: 5
      acceptable values (non negative integer values)
-     
+
      11. name: enableMFFDBoundsCheck, type: bool, default value: FALSE
      acceptable values ()
-     
-     12. name: operatorComponentToEnableBoundsCheck, type: integer, default value: none 
+
+     12. name: operatorComponentToEnableBoundsCheck, type: integer, default value: none
      acceptable values ()
     */
-     explicit PetscSNESSolver(AMP::shared_ptr< PetscSNESSolverParameters> parameters);
+    explicit PetscSNESSolver( AMP::shared_ptr<PetscSNESSolverParameters> parameters );
 
-     /**
-      * Default destructor.
-      */
+    /**
+     * Default destructor.
+     */
     virtual ~PetscSNESSolver();
-    
+
     /**
      * Solve the system \f$Au = 0\f$.
     @param [in] f : shared pointer to right hand side vector
-    @param [out] u : shared pointer to approximate computed solution 
+    @param [out] u : shared pointer to approximate computed solution
      */
-    void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
-	       AMP::shared_ptr<AMP::LinearAlgebra::Vector>  u);
-    
-    
-   /**
-    * Initialize the solution vector by copying the initial guess vector
-    * @param [in] initialGuess: shared pointer to the initial guess vector.
-    */
-    void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector>  initialGuess );
+    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                    u );
+
+
+    /**
+     * Initialize the solution vector by copying the initial guess vector
+     * @param [in] initialGuess: shared pointer to the initial guess vector.
+     */
+    void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess );
 
     /**
      * return the PETSc SNES solver object
      */
-    SNES getSNESSolver(void){ return d_SNESSolver; }
+    SNES getSNESSolver( void ) { return d_SNESSolver; }
 
     /**
      * Returns boolean to indicate whether the solver expects
      * a Jacobian matrix to be provided or not.
-     */    
-    bool getUsesJacobian(void){ return d_bUsesJacobian; }
+     */
+    bool getUsesJacobian( void ) { return d_bUsesJacobian; }
 
     /**
      * Returns a shared pointer to the PetscKrylovSolver used internally for the linear solves
@@ -138,66 +137,71 @@ public:
     /**
      * Return a shared pointer to the solution vector
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector>  getSolution( void ) { return d_pSolutionVector; }
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> getSolution( void ) { return d_pSolutionVector; }
 
     /**
      * Return a shared pointer to the scratch vector used internally.
      */
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector>  getScratchVector( void ) { return d_pScratchVector; }
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> getScratchVector( void )
+    {
+        return d_pScratchVector;
+    }
 
     /**
      * Return the number of line search precheck attempts that were made for the current step
      */
-    int getNumberOfLineSearchPreCheckAttempts( void ){ return d_iNumberOfLineSearchPreCheckAttempts; }
+    int getNumberOfLineSearchPreCheckAttempts( void )
+    {
+        return d_iNumberOfLineSearchPreCheckAttempts;
+    }
 
     /**
      * Return an integer value for the component for which bounds checking is enabled.
      */
-    int getBoundsCheckComponent(void){ return d_operatorComponentToEnableBoundsCheck; }
-    
+    int getBoundsCheckComponent( void ) { return d_operatorComponentToEnableBoundsCheck; }
+
 protected:
 private:
+    void initialize( AMP::shared_ptr<SolverStrategyParameters> parameters );
 
-    void initialize(AMP::shared_ptr<SolverStrategyParameters> parameters);
-    
-    void getFromInput(const AMP::shared_ptr<AMP::Database> db);
-    
-    void setSNESFunction( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  rhs);
-    
-    static PetscErrorCode apply(SNES snes,Vec x,Vec f,void *ctx);
-    
-    static PetscErrorCode setJacobian(SNES snes,
-				      Vec x,
-				      Mat* A,
-				      Mat* B,
-				      MatStructure* mstruct,
-				      void* ctx);
-    
-    
-    static bool isVectorValid ( AMP::shared_ptr<AMP::Operator::Operator> &op , AMP::LinearAlgebra::Vector::shared_ptr &v , AMP_MPI comm );
+    void getFromInput( const AMP::shared_ptr<AMP::Database> db );
 
-#if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
-    static PetscErrorCode lineSearchPreCheck(SNES snes, Vec x, Vec y, void *checkctx, PetscTruth *changed_y);
-#elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
-    static PetscErrorCode lineSearchPreCheck(SNES snes, Vec x, Vec y, void *checkctx, PetscBool *changed_y);
+    void setSNESFunction( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> rhs );
+
+    static PetscErrorCode apply( SNES snes, Vec x, Vec f, void *ctx );
+
+    static PetscErrorCode
+    setJacobian( SNES snes, Vec x, Mat *A, Mat *B, MatStructure *mstruct, void *ctx );
+
+
+    static bool isVectorValid( AMP::shared_ptr<AMP::Operator::Operator> &op,
+                               AMP::LinearAlgebra::Vector::shared_ptr &v,
+                               AMP_MPI comm );
+
+#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
+    static PetscErrorCode
+    lineSearchPreCheck( SNES snes, Vec x, Vec y, void *checkctx, PetscTruth *changed_y );
+#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+    static PetscErrorCode
+    lineSearchPreCheck( SNES snes, Vec x, Vec y, void *checkctx, PetscBool *changed_y );
 #else
-    #error Not programmed for this version yet
+#error Not programmed for this version yet
 #endif
 
-    
-    static PetscErrorCode mffdCheckBounds(void *checkctx, Vec U, Vec a, PetscScalar *h);
-    
+
+    static PetscErrorCode mffdCheckBounds( void *checkctx, Vec U, Vec a, PetscScalar *h );
+
     bool d_bUsesJacobian;
     bool d_bEnableLineSearchPreCheck;
     bool d_bEnableMFFDBoundsCheck;
-    int    d_iMaximumFunctionEvals;
+    int d_iMaximumFunctionEvals;
     int d_iNumberOfLineSearchPreCheckAttempts;
     int d_operatorComponentToEnableBoundsCheck;
-    
+
     double d_dAbsoluteTolerance;
     double d_dRelativeTolerance;
     double d_dStepTolerance;
-    
+
     // strategy to use for MFFD differencing (DS or WP)
     std::string d_sMFFDDifferencingStrategy;
 
@@ -205,30 +209,28 @@ private:
     std::string d_SNESAppendOptionsPrefix;
     // error in MFFD approximations
     double d_dMFFDFunctionDifferencingError;
-    
+
     AMP_MPI d_comm;
-    
+
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionVector;
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pResidualVector;
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector;
-    
+
     AMP::shared_ptr<PetscMonitor> d_PetscMonitor;
-    
-    #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
-        // The following SNES solver keeps a reference to certain vectors around. 
-        // By declaring the vectors here, we ensure correct behavior during destruction.
-        // This will ensure that the AMP::shared_ptr destructor calls VecDestroy on the last reference.
-        std::list<AMP::LinearAlgebra::Vector::const_shared_ptr>  d_refVectors;
-    #endif
-    
+
+#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
+    // The following SNES solver keeps a reference to certain vectors around.
+    // By declaring the vectors here, we ensure correct behavior during destruction.
+    // This will ensure that the AMP::shared_ptr destructor calls VecDestroy on the last reference.
+    std::list<AMP::LinearAlgebra::Vector::const_shared_ptr> d_refVectors;
+#endif
+
     SNES d_SNESSolver;
-    
+
     Mat d_Jacobian;
 
     AMP::shared_ptr<PetscKrylovSolver> d_pKrylovSolver;
-    
-  };
-  
+};
 }
 }
 

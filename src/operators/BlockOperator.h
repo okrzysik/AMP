@@ -7,69 +7,66 @@
 #include <vector>
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class BlockOperator : public Operator 
-    {
-      public:
+class BlockOperator : public Operator {
+public:
+    BlockOperator();
 
-        BlockOperator();
+    explicit BlockOperator( const AMP::shared_ptr<OperatorParameters> &params );
 
-        explicit BlockOperator(const AMP::shared_ptr<OperatorParameters>& params);
+    virtual ~BlockOperator() {}
 
-        virtual ~BlockOperator() { }
+    void setNumRowBlocks( int val );
 
-        void setNumRowBlocks(int val);
+    void setNumColumnBlocks( int val );
 
-        void setNumColumnBlocks(int val);
+    void allocateBlocks();
 
-        void allocateBlocks();
+    bool supportsMatrixFunctions();
 
-        bool supportsMatrixFunctions();
+    void setBlock( int row, int col, AMP::shared_ptr<Operator> op );
 
-        void setBlock(int row, int col, AMP::shared_ptr<Operator> op);
+    void reset( const AMP::shared_ptr<OperatorParameters> &params );
 
-        void reset(const AMP::shared_ptr<OperatorParameters>& params);
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-        void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-		    AMP::LinearAlgebra::Vector::shared_ptr f) override;
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
-        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    void computeFirstIndices();
 
-        void computeFirstIndices();
+    int getNumRows();
 
-        int getNumRows();
+    int getNumColumns();
 
-        int getNumColumns();
+    int getNumRowsForBlock( int id );
 
-        int getNumRowsForBlock(int id);
+    int getNumColumnsForBlock( int id );
 
-        int getNumColumnsForBlock(int id);
+    static void
+    getRow( void *object, int row, std::vector<unsigned int> &cols, std::vector<double> &values );
 
-        static void getRow(void * object, int row, std::vector<unsigned int> &cols, std::vector<double> &values);
+    void getRowForBlock( int locRow,
+                         int blkRowId,
+                         int blkColId,
+                         std::vector<unsigned int> &locCols,
+                         std::vector<double> &values );
 
-        void getRowForBlock(int locRow, int blkRowId, int blkColId,
-            std::vector<unsigned int> &locCols, std::vector<double> &values);
+protected:
+    int d_iNumRowBlocks;
+    int d_iNumColumnBlocks;
 
-      protected :
+    std::vector<std::vector<AMP::shared_ptr<Operator>>> d_blocks;
 
-        int d_iNumRowBlocks;
-        int d_iNumColumnBlocks;
+    std::vector<int> d_firstRowId;
+    std::vector<int> d_firstColumnId;
 
-        std::vector<std::vector<AMP::shared_ptr<Operator> > > d_blocks;
-
-        std::vector<int> d_firstRowId;
-        std::vector<int> d_firstColumnId;
-
-      private :
-
-    };
-
-  }
+private:
+};
+}
 }
 
 #endif
-
-

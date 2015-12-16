@@ -5,32 +5,26 @@
 #include "operators/Operator.h"
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class MoveMeshOperator : public Operator {
-      public :
-        explicit MoveMeshOperator(const AMP::shared_ptr<OperatorParameters>& params);
+class MoveMeshOperator : public Operator {
+public:
+    explicit MoveMeshOperator( const AMP::shared_ptr<OperatorParameters> &params );
 
-        virtual ~MoveMeshOperator() { }
+    virtual ~MoveMeshOperator() {}
 
-        void setVariable(AMP::LinearAlgebra::Variable::shared_ptr var);
+    void setVariable( AMP::LinearAlgebra::Variable::shared_ptr var );
 
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
-        virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-			    AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-      protected :
-        AMP::LinearAlgebra::Variable::shared_ptr d_var;
-        AMP::LinearAlgebra::Vector::shared_ptr d_prevDisp;
-
-    };
-
-  }
+protected:
+    AMP::LinearAlgebra::Variable::shared_ptr d_var;
+    AMP::LinearAlgebra::Vector::shared_ptr d_prevDisp;
+};
+}
 }
 
 #endif
-
-
-
-

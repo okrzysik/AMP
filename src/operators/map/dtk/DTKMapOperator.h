@@ -15,14 +15,13 @@
 namespace AMP {
 namespace Operator {
 
-class DTKMapOperatorParameters : public OperatorParameters
-{
-  public:
-
+class DTKMapOperatorParameters : public OperatorParameters {
+public:
     // Constructor.
-    explicit DTKMapOperatorParameters(const AMP::shared_ptr<AMP::Database> & db)
-	: OperatorParameters(db)
-    { /* ... */ }
+    explicit DTKMapOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : OperatorParameters( db )
+    { /* ... */
+    }
 
     // Domain mesh. A manager for the mesh that is the data source.
     AMP::shared_ptr<AMP::Mesh::Mesh> d_domain_mesh;
@@ -41,35 +40,28 @@ class DTKMapOperatorParameters : public OperatorParameters
 /**
   * AMP operator element implementation for DTK Map operator.
 */
-class DTKMapOperator : public Operator
-{
-public :
-
+class DTKMapOperator : public Operator {
+public:
     /**
      * Constructor.
      */
-    explicit DTKMapOperator( const AMP::shared_ptr<OperatorParameters>& params );
+    explicit DTKMapOperator( const AMP::shared_ptr<OperatorParameters> &params );
 
     //! Destructor
-    ~DTKMapOperator() { }
+    ~DTKMapOperator() {}
 
     //! Apply function.
-    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f, 
-		AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-		AMP::LinearAlgebra::Vector::shared_ptr r,
-		const double a = -1.0, 
-		const double b = 1.0 );
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
+                AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                AMP::LinearAlgebra::Vector::shared_ptr r,
+                const double a = -1.0,
+                const double b = 1.0 );
 
-  private:
-
+private:
     // DTK map operator.
-    AMP::shared_ptr<DataTransferKit::MapOperator<double> > d_dtk_operator;
+    AMP::shared_ptr<DataTransferKit::MapOperator<double>> d_dtk_operator;
 };
-
-
 }
 }
 
 #endif
-
-

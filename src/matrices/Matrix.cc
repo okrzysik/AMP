@@ -6,12 +6,12 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-Matrix::shared_ptr  Matrix::matMultiply ( shared_ptr A , shared_ptr B )
+Matrix::shared_ptr Matrix::matMultiply( shared_ptr A, shared_ptr B )
 {
     if ( A->numGlobalColumns() != B->numGlobalRows() )
         AMP_ERROR( "Inner matrix dimensions must agree" );
     shared_ptr retVal;
-    A->multiply ( B , retVal );
+    A->multiply( B, retVal );
     return retVal;
 }
 
@@ -49,9 +49,9 @@ size_t Matrix::numGlobalColumns() const
 
 
 // Print the matrix to a IO stream
-std::ostream &operator << ( std::ostream &out , const Matrix &M_in )
+std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
 {
-    Matrix* M = (Matrix*) &M_in;
+    Matrix *M = (Matrix *) &M_in;
     // Print the matrix type (not supported yet)
     /*out << "Vector type: " << v.type() << "\n";
     if ( v.getVariable() )
@@ -59,15 +59,16 @@ std::ostream &operator << ( std::ostream &out , const Matrix &M_in )
       out << "Variable name: " << v.getVariable()->getName() << "\n";
     }*/
     // Print the rank
-    Discretization::DOFManager::shared_ptr leftDOF = M->getLeftDOFManager();
+    Discretization::DOFManager::shared_ptr leftDOF  = M->getLeftDOFManager();
     Discretization::DOFManager::shared_ptr rightDOF = M->getRightDOFManager();
-    AMP_MPI leftComm = leftDOF->getComm();
-    AMP_MPI rightComm = rightDOF->getComm();
-    if ( leftComm==rightComm ) {
+    AMP_MPI leftComm                                = leftDOF->getComm();
+    AMP_MPI rightComm                               = rightDOF->getComm();
+    if ( leftComm == rightComm ) {
         int rank = leftComm.getRank();
         out << "Processor: " << rank << "\n";
-    } else {
-        int leftRank = leftComm.getRank();
+    }
+    else {
+        int leftRank  = leftComm.getRank();
         int rightRank = rightComm.getRank();
         out << "Processor (left comm):  " << leftRank << "\n";
         out << "Processor (right comm): " << rightRank << "\n";
@@ -82,28 +83,27 @@ std::ostream &operator << ( std::ostream &out , const Matrix &M_in )
     std::vector<unsigned int> cols;
     std::vector<double> values;
     out << "Compressed Matix: " << std::endl;
-    for (size_t row=leftDOF->beginDOF(); row<leftDOF->endDOF(); row++) {
+    for ( size_t row = leftDOF->beginDOF(); row < leftDOF->endDOF(); row++ ) {
         M->getRowByGlobalID( row, cols, values );
-        out << "Row " << row << " (" << cols.size() << " entries):" << "\n";
-        for (size_t i=0; i<cols.size(); i++)
-        out << "    M(" << row << "," << cols[i] << ") = " << values[i] << "\n";
+        out << "Row " << row << " (" << cols.size() << " entries):"
+            << "\n";
+        for ( size_t i = 0; i < cols.size(); i++ )
+            out << "    M(" << row << "," << cols[i] << ") = " << values[i] << "\n";
     }
-/*
-    out << "Full Matix: " << std::endl;
-    out << std::setprecision(15);
-    for (size_t row=0; row<leftDOF->numGlobalDOF(); row++) {
-        M->getRowByGlobalID( row, cols, values );
-        std::vector<double> A(M->numGlobalColumns(),0.);
-        for (size_t i=0; i<cols.size(); i++)
-          A[cols[i]]=values[i];
-        for (size_t i=0; i<A.size(); i++) out<< A[i]<<"  ";
-        out<<std::endl;
-    }
-    out.unsetf(std::ios::floatfield);
-*/
+    /*
+        out << "Full Matix: " << std::endl;
+        out << std::setprecision(15);
+        for (size_t row=0; row<leftDOF->numGlobalDOF(); row++) {
+            M->getRowByGlobalID( row, cols, values );
+            std::vector<double> A(M->numGlobalColumns(),0.);
+            for (size_t i=0; i<cols.size(); i++)
+              A[cols[i]]=values[i];
+            for (size_t i=0; i<A.size(); i++) out<< A[i]<<"  ";
+            out<<std::endl;
+        }
+        out.unsetf(std::ios::floatfield);
+    */
     return out;
 }
-
 }
 }
-

@@ -2,9 +2,9 @@
 #ifndef included_AMP_MatrixBuider
 #define included_AMP_MatrixBuider
 
-#include <string>
-#include "vectors/Vector.h"
 #include "matrices/Matrix.h"
+#include "vectors/Vector.h"
+#include <string>
 
 
 namespace AMP {
@@ -25,13 +25,11 @@ namespace LinearAlgebra {
  *                 1: ManagedPetscMatrix
  *                 2: DenseSerialMatrix
  */
-AMP::LinearAlgebra::Matrix::shared_ptr  createMatrix( AMP::LinearAlgebra::Vector::shared_ptr operand, 
-    AMP::LinearAlgebra::Vector::shared_ptr result, int type=0 );
-
-
+AMP::LinearAlgebra::Matrix::shared_ptr createMatrix( AMP::LinearAlgebra::Vector::shared_ptr operand,
+                                                     AMP::LinearAlgebra::Vector::shared_ptr result,
+                                                     int type = 0 );
 }
 }
 
 #endif
 #endif
-

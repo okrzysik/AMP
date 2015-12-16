@@ -2,33 +2,32 @@
 #define included_OxideTimeIntegrator
 
 
-#include "vectors/Vector.h"
 #include "time_integrators/TimeIntegrator.h"
 #include "time_integrators/oxide/OxideTimeIntegratorParameters.h"
+#include "vectors/Vector.h"
 
 #include <string>
 
 
-namespace AMP{
-namespace TimeIntegrator{
+namespace AMP {
+namespace TimeIntegrator {
 
 /*!
-  @brief This class solves the time-dependent oxide growth on a surface.  
+  @brief This class solves the time-dependent oxide growth on a surface.
  */
-class OxideTimeIntegrator : public TimeIntegrator
-{
+class OxideTimeIntegrator : public TimeIntegrator {
 public:
     /**
-     * The constructor for TimeIntegrator initializes the 
-     * default state of the integrator. Data members are 
-     * initialized from the input and restart databases. 
-     * 
+     * The constructor for TimeIntegrator initializes the
+     * default state of the integrator. Data members are
+     * initialized from the input and restart databases.
+     *
      * Note that no vectors are created in the constructor.  Vectors are
      * created and initialized in the initialize()
      * member function.
      *
      */
-   explicit OxideTimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters);
+    explicit OxideTimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters );
 
     //! Empty destructor for TimeIntegrator
     virtual ~OxideTimeIntegrator();
@@ -37,25 +36,25 @@ public:
      * Initialize state of time integrator.  This includes creating
      * solution vector and initializing solver components.
      */
-    virtual void initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters);
+    virtual void initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters );
 
     /**
      * Resets the internal state of the time integrator as needed.
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset.
      */
-    virtual void reset(AMP::shared_ptr<TimeIntegratorParameters> parameters);
+    virtual void reset( AMP::shared_ptr<TimeIntegratorParameters> parameters );
 
     /*!
      * @brief Integrate through the specified time increment in days.
      *
-     * Integrate through the specified time increment in days.  
+     * Integrate through the specified time increment in days.
      *
      * The boolean first_step argument is true when this is the very
-     * first call to the advance function.  Otherwise it is 
-     * false.  Note that, when the argument is true, the use of extrapolation 
-     * to construct the initial guess for the advanced solution may not be 
-     * possible.  
+     * first call to the advance function.  Otherwise it is
+     * false.  Note that, when the argument is true, the use of extrapolation
+     * to construct the initial guess for the advanced solution may not be
+     * possible.
      *
      *
      * @param dt Time step size (days)
@@ -69,15 +68,15 @@ public:
     /**
      * Check time advanced solution to determine whether it is acceptable.
      * Return true if the solution is acceptable; return false otherwise.
-     * The meaning of this value must be intepreted 
+     * The meaning of this value must be intepreted
      * properly by the user-supplied solution checking routine.
      */
-    virtual bool checkNewSolution(void) const;
+    virtual bool checkNewSolution( void ) const;
 
     /**
-     * Update solution (e.g., reset pointers for solution data, update 
-     * dependent variables, etc.) after time advance.  It is assumed that 
-     * when this routine is invoked, an acceptable new solution has been 
+     * Update solution (e.g., reset pointers for solution data, update
+     * dependent variables, etc.) after time advance.  It is assumed that
+     * when this routine is invoked, an acceptable new solution has been
      * computed.  The double return value is the simulation time corresponding
      * to the advanced solution.
      */
@@ -85,12 +84,12 @@ public:
 
     /**
      * Return time increment for next solution advance.  Timestep selection
-     * is generally based on whether the solution meets some user-defined 
-     * criteria.  This routine assumes that, before it is called, the 
-     * routine checkNewSolution() was called.  The boolean argument is the 
-     * return value from that call.   
+     * is generally based on whether the solution meets some user-defined
+     * criteria.  This routine assumes that, before it is called, the
+     * routine checkNewSolution() was called.  The boolean argument is the
+     * return value from that call.
      */
-    virtual double getNextDt(const bool good_solution);
+    virtual double getNextDt( const bool good_solution );
 
 
 private:
@@ -107,15 +106,10 @@ private:
 
     // Internal data for calculating the oxide
     std::vector<int> N_layer;
-    AMP::LinearAlgebra::Vector::shared_ptr depth;   // Depth of each layer (cm)
-    AMP::LinearAlgebra::Vector::shared_ptr conc;    // Oxygen concentration of each layer (g/cm^3)
-
-
+    AMP::LinearAlgebra::Vector::shared_ptr depth; // Depth of each layer (cm)
+    AMP::LinearAlgebra::Vector::shared_ptr conc;  // Oxygen concentration of each layer (g/cm^3)
 };
-
 }
 }
 
 #endif
-
-

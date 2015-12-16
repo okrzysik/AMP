@@ -8,41 +8,38 @@
 #include <vector>
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
+
+/**
+ * This class encapsulates parameters used to initialize or reset the
+ MechanicsLinearFEOperator.
+ @see MechanicsLinearFEOperator
+ */
+class MechanicsLinearFEOperatorParameters : public LinearFEOperatorParameters {
+public:
+    /**
+      Constructor.
+      */
+    explicit MechanicsLinearFEOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : LinearFEOperatorParameters( db )
+    {
+    }
 
     /**
-     * This class encapsulates parameters used to initialize or reset the
-     MechanicsLinearFEOperator.    
-     @see MechanicsLinearFEOperator
-     */
-    class MechanicsLinearFEOperatorParameters : public LinearFEOperatorParameters {
-      public :
+      Destructor.
+      */
+    virtual ~MechanicsLinearFEOperatorParameters() {}
 
-        /**
-          Constructor.
-          */
-        explicit MechanicsLinearFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
-          : LinearFEOperatorParameters(db) {  }
+    AMP::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
 
-        /**
-          Destructor.
-          */
-        virtual ~MechanicsLinearFEOperatorParameters() { }
+    AMP::LinearAlgebra::Vector::shared_ptr
+        d_dispVec; /**< Displacement vector, which is passed from
+                     MechanicsNonlinearFEOperator to MechanicsLinearFEOperator. */
 
-        AMP::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
-
-        AMP::LinearAlgebra::Vector::shared_ptr d_dispVec; /**< Displacement vector, which is passed from 
-                                                            MechanicsNonlinearFEOperator to MechanicsLinearFEOperator. */
-
-      protected :
-
-      private :
-
-    };
-
-  }
+protected:
+private:
+};
+}
 }
 
 #endif
-
-

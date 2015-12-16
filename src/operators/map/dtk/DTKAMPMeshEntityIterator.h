@@ -8,8 +8,8 @@
 
 #include "ampmesh/MeshIterator.h"
 
-#include <DTK_EntityIterator.hpp>
 #include "DTKAMPMeshEntity.h"
+#include <DTK_EntityIterator.hpp>
 
 namespace AMP {
 namespace Operator {
@@ -18,10 +18,8 @@ namespace Operator {
 /**
   * AMP Mesh element implementation for DTK EntityIterator interface.
 */
-class AMPMeshEntityIterator : public DataTransferKit::EntityIterator
-{
-public :
-
+class AMPMeshEntityIterator : public DataTransferKit::EntityIterator {
+public:
     /*!
      * \brief Default constructor.
      */
@@ -30,19 +28,19 @@ public :
     /**
      * Constructor.
      */
-    explicit AMPMeshEntityIterator( 
-	const AMP::Mesh::MeshIterator& iterator,
-	const std::function<bool(DataTransferKit::Entity)>& predicate );
+    explicit AMPMeshEntityIterator(
+        const AMP::Mesh::MeshIterator &iterator,
+        const std::function<bool( DataTransferKit::Entity )> &predicate );
 
     /*!
      * \brief Copy constructor.
      */
-    AMPMeshEntityIterator( const AMPMeshEntityIterator& rhs );
+    AMPMeshEntityIterator( const AMPMeshEntityIterator &rhs );
 
     /*!
      * \brief Assignment operator.
      */
-    AMPMeshEntityIterator& operator=( const AMPMeshEntityIterator& rhs );
+    AMPMeshEntityIterator &operator=( const AMPMeshEntityIterator &rhs );
 
     /*!
      * \brief Destructor.
@@ -50,19 +48,19 @@ public :
     ~AMPMeshEntityIterator();
 
     // Pre-increment operator.
-    DataTransferKit::EntityIterator& operator++();
+    DataTransferKit::EntityIterator &operator++();
 
     // Dereference operator.
-    DataTransferKit::Entity& operator*(void);
+    DataTransferKit::Entity &operator*( void );
 
     // Dereference operator.
-    DataTransferKit::Entity* operator->(void);
+    DataTransferKit::Entity *operator->( void );
 
     // Equal comparison operator.
-    bool operator==( const DataTransferKit::EntityIterator& rhs ) const;
+    bool operator==( const DataTransferKit::EntityIterator &rhs ) const;
 
     // Not equal comparison operator.
-    bool operator!=( const DataTransferKit::EntityIterator& rhs ) const;
+    bool operator!=( const DataTransferKit::EntityIterator &rhs ) const;
 
     // An iterator assigned to the first valid element in the iterator.
     DataTransferKit::EntityIterator begin() const;
@@ -72,10 +70,9 @@ public :
 
     // Create a clone of the iterator. We need this for the copy constructor
     // and assignment operator to pass along the underlying implementation.
-    DataTransferKit::EntityIterator* clone() const;
+    DataTransferKit::EntityIterator *clone() const;
 
-  private:
-
+private:
     // AMP iterator.
     AMP::Mesh::MeshIterator d_amp_iterator;
 
@@ -88,5 +85,3 @@ public :
 } // end namespace AMP
 
 #endif
-
-

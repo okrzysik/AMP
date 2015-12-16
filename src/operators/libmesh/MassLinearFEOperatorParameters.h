@@ -7,26 +7,22 @@
 
 namespace AMP {
 namespace Operator {
-    
-    class MassLinearFEOperatorParameters : public LinearFEOperatorParameters {
-        public :
-        
-        explicit MassLinearFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
-        : LinearFEOperatorParameters(db) {  }
-        
-        virtual ~MassLinearFEOperatorParameters() {}
 
-        AMP::shared_ptr<MassDensityModel> d_densityModel;
-        
-        protected :
-        
-        private :
-        
-    };
-    
+class MassLinearFEOperatorParameters : public LinearFEOperatorParameters {
+public:
+    explicit MassLinearFEOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : LinearFEOperatorParameters( db )
+    {
+    }
+
+    virtual ~MassLinearFEOperatorParameters() {}
+
+    AMP::shared_ptr<MassDensityModel> d_densityModel;
+
+protected:
+private:
+};
 }
 }
 
 #endif
-
-

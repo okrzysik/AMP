@@ -10,30 +10,29 @@
 namespace AMP {
 namespace Operator {
 
-  class NavierStokesLSWFFEOperatorParameters : public FEOperatorParameters {
-    public :
+class NavierStokesLSWFFEOperatorParameters : public FEOperatorParameters {
+public:
+    explicit NavierStokesLSWFFEOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : FEOperatorParameters( db )
+    {
+    }
 
-      explicit NavierStokesLSWFFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
-        : FEOperatorParameters(db) { }
+    virtual ~NavierStokesLSWFFEOperatorParameters() {}
 
-      virtual ~NavierStokesLSWFFEOperatorParameters() { }
+    //      AMP::shared_ptr<AMP::Discretization::DOFManager>
+    //      d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
+    //      AMP::LinearAlgebra::Vector::shared_ptr
+    //      d_frozenVec[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
 
-//      AMP::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
-//      AMP::LinearAlgebra::Vector::shared_ptr d_frozenVec[NavierStokes::TOTAL_NUMBER_OF_VARIABLES]; 
-                                              
-      AMP::shared_ptr<AMP::Discretization::DOFManager> d_dofMap;
-      AMP::LinearAlgebra::Vector::shared_ptr d_frozenVec; 
+    AMP::shared_ptr<AMP::Discretization::DOFManager> d_dofMap;
+    AMP::LinearAlgebra::Vector::shared_ptr d_frozenVec;
 
-      AMP::shared_ptr<FlowTransportModel> d_transportModel;
+    AMP::shared_ptr<FlowTransportModel> d_transportModel;
 
-    protected :
-
-    private :
-
-  };
-
+protected:
+private:
+};
 }
 }
 
 #endif
-

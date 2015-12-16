@@ -3,11 +3,6 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-  inline
-  void ExternalVectorDeleter::operator() ( Vector * )
-  {
-  }
-
+inline void ExternalVectorDeleter::operator()( Vector * ) {}
 }
 }
-

@@ -5,14 +5,14 @@
 
 namespace AMP {
 namespace Operator {
-  class EpetraMatrixOperatorParameters : public OperatorParameters
-  {
-    public:
-      Epetra_CrsMatrix    *d_Matrix;
+class EpetraMatrixOperatorParameters : public OperatorParameters {
+public:
+    Epetra_CrsMatrix *d_Matrix;
 
-      EpetraMatrixOperatorParameters ( const AMP::shared_ptr<Database> &db ) : OperatorParameters ( db ) {}
-  };
-
+    EpetraMatrixOperatorParameters( const AMP::shared_ptr<Database> &db ) : OperatorParameters( db )
+    {
+    }
+};
 }
 }
 

@@ -2,26 +2,24 @@
 #ifndef included_LinearBoundaryOperatorParameters
 #define included_LinearBoundaryOperatorParameters
 
-#include "operators/OperatorParameters.h"
 #include "matrices/Matrix.h"
+#include "operators/OperatorParameters.h"
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class LinearBoundaryOperatorParameters: public OperatorParameters
+class LinearBoundaryOperatorParameters : public OperatorParameters {
+public:
+    explicit LinearBoundaryOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : OperatorParameters( db )
     {
-      public:
+    }
 
-        explicit LinearBoundaryOperatorParameters(const AMP::shared_ptr<AMP::Database> & db) : 
-          OperatorParameters(db){}
+    virtual ~LinearBoundaryOperatorParameters() {}
 
-        virtual ~LinearBoundaryOperatorParameters(){}
-
-        AMP::LinearAlgebra::Matrix::shared_ptr d_inputMatrix;
-
-    };
-
-  }
+    AMP::LinearAlgebra::Matrix::shared_ptr d_inputMatrix;
+};
+}
 }
 
 #endif

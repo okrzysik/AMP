@@ -11,14 +11,13 @@
 namespace AMP {
 namespace Operator {
 
-class MultiDofDTKMapOperatorParameters : public OperatorParameters
-{
-  public:
-
+class MultiDofDTKMapOperatorParameters : public OperatorParameters {
+public:
     // Constructor.
-    explicit MultiDofDTKMapOperatorParameters(const AMP::shared_ptr<AMP::Database> & db)
-	: OperatorParameters(db)
-    { /* ... */ }
+    explicit MultiDofDTKMapOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : OperatorParameters( db )
+    { /* ... */
+    }
 
     AMP::LinearAlgebra::Vector::const_shared_ptr d_SourceVector;
     AMP::LinearAlgebra::Vector::shared_ptr d_TargetVector;
@@ -33,24 +32,20 @@ class MultiDofDTKMapOperatorParameters : public OperatorParameters
     std::size_t d_StrideOffset2;
     std::size_t d_StrideLength1;
     std::size_t d_StrideLength2;
-
 };
 
 
-class MultiDofDTKMapOperator : public Operator
-{
-public :
+class MultiDofDTKMapOperator : public Operator {
+public:
+    explicit MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorParameters> &params );
 
-    explicit MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorParameters>& params );
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
+                AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                AMP::LinearAlgebra::Vector::shared_ptr r,
+                const double a = -1.0,
+                const double b = 1.0 );
 
-    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f, 
-                AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-                AMP::LinearAlgebra::Vector::shared_ptr       r,
-                const double                                 a = -1.0, 
-                const double                                 b =  1.0 );
-
-  private:
-
+private:
     AMP::shared_ptr<MultiDofDTKMapOperatorParameters> d_multiDofDTKMapOpParams;
     AMP::shared_ptr<AMP::Operator::DTKMapOperator> d_Map12;
     AMP::shared_ptr<AMP::Operator::DTKMapOperator> d_Map21;
@@ -59,11 +54,7 @@ public :
     AMP::LinearAlgebra::Vector::const_shared_ptr d_SourceVectorMap21;
     AMP::LinearAlgebra::Vector::shared_ptr d_TargetVectorMap21;
 };
-
-
 }
 }
 
 #endif
-
-

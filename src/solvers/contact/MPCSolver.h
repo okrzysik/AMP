@@ -5,22 +5,19 @@
 #include <solvers/SolverStrategy.h>
 
 namespace AMP {
-  namespace Solver {
+namespace Solver {
 
-    typedef SolverStrategyParameters MPCSolverParameters;
+typedef SolverStrategyParameters MPCSolverParameters;
 
-    class MPCSolver : public SolverStrategy {
-      public:
-        explicit MPCSolver(AMP::shared_ptr<MPCSolverParameters> params)
-          : SolverStrategy(params) { }
+class MPCSolver : public SolverStrategy {
+public:
+    explicit MPCSolver( AMP::shared_ptr<MPCSolverParameters> params ) : SolverStrategy( params ) {}
 
-        void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f, AMP::shared_ptr<AMP::LinearAlgebra::Vector> u);
-
-    };
-
-  }
+    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                    u );
+};
+}
 }
 
 #endif
-
-

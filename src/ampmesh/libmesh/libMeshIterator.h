@@ -1,60 +1,59 @@
 #ifndef included_AMP_libMeshIterators
 #define included_AMP_libMeshIterators
 
-#include "utils/shared_ptr.h"
-#include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/MeshIterator.h"
+#include "ampmesh/libmesh/libMesh.h"
+#include "utils/shared_ptr.h"
 
 #include "libmesh/mesh.h"
 
-namespace AMP { 
+namespace AMP {
 namespace Mesh {
 
 
-class libMeshIterator: public MeshIterator {
+class libMeshIterator : public MeshIterator {
 public:
-
     //! Empty MeshIterator constructor
     libMeshIterator();
 
     //! Deconstructor
-    virtual ~libMeshIterator ();
+    virtual ~libMeshIterator();
 
     //! Copy constructor
-    libMeshIterator(const libMeshIterator&);
+    libMeshIterator( const libMeshIterator & );
 
     //! Assignment operator
-    libMeshIterator& operator=(const libMeshIterator&);
+    libMeshIterator &operator=( const libMeshIterator & );
 
     // Increment
-    MeshIterator& operator++();
-    
+    MeshIterator &operator++();
+
     // Increment
-    MeshIterator operator++(int);
+    MeshIterator operator++( int );
 
     // Decrement
-    MeshIterator& operator--();
-    
+    MeshIterator &operator--();
+
     // Decrement
-    MeshIterator operator--(int);
+    MeshIterator operator--( int );
 
     // Arithmetic operator+
-    virtual MeshIterator operator+(int) const;
+    virtual MeshIterator operator+( int ) const;
 
     // Arithmetic operator+=
-    virtual MeshIterator& operator+=(int N);
+    virtual MeshIterator &operator+=( int N );
 
     // Check if two iterators are equal
-    bool operator==(const MeshIterator& rhs) const;
+    bool operator==( const MeshIterator &rhs ) const;
 
     // Check if two iterators are not equal
-    bool operator!=(const MeshIterator& rhs) const;
-    
-    // Dereference the iterator
-    MeshElement &operator*(void);
+    bool operator!=( const MeshIterator &rhs ) const;
 
     // Dereference the iterator
-    MeshElement *operator->(void);
+    MeshElement &operator*( void );
+
+    // Dereference the iterator
+    MeshElement *operator->( void );
 
     // Return an iterator to the begining
     MeshIterator begin() const;
@@ -82,12 +81,19 @@ protected:
      * \param size      Number of elements in the iterator (-1: unknown)
      * \param pos2      Index of the current position in the iterator (-1: unknown)
      */
-    libMeshIterator(int type, const AMP::Mesh::libMesh *mesh, int gcw, void *begin, void *end, void *pos, int size=-1, int pos2=-1 );
+    libMeshIterator( int type,
+                     const AMP::Mesh::libMesh *mesh,
+                     int gcw,
+                     void *begin,
+                     void *end,
+                     void *pos,
+                     int size = -1,
+                     int pos2 = -1 );
 
     //! Clone the iterator
-    virtual MeshIterator* clone() const;
+    virtual MeshIterator *clone() const;
 
-friend class AMP::Mesh::libMesh;
+    friend class AMP::Mesh::libMesh;
 
 private:
     // Data members
@@ -104,10 +110,7 @@ private:
     const AMP::Mesh::libMesh *d_mesh;
     MeshElement d_cur_element;
 };
-
-
 }
 }
 
 #endif
-

@@ -2,9 +2,9 @@
 #define included_AMP_Variable_h
 
 #include "utils/Utilities.h"
-#include <utils/Castable.h>
-#include "utils/shared_ptr.h"
 #include "utils/enable_shared_from_this.h"
+#include "utils/shared_ptr.h"
+#include <utils/Castable.h>
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -31,13 +31,11 @@ namespace LinearAlgebra {
   * variable is combined with a particular mesh, a vector of the appropriate
   * size can be created.
   */
-class Variable: public AMP::enable_shared_from_this<Variable>
-{
+class Variable : public AMP::enable_shared_from_this<Variable> {
 public:
-
     //!  Shared pointer name
-    typedef AMP::shared_ptr<Variable>         shared_ptr;
-    typedef AMP::shared_ptr<const Variable>   const_shared_ptr;
+    typedef AMP::shared_ptr<Variable> shared_ptr;
+    typedef AMP::shared_ptr<const Variable> const_shared_ptr;
 
 
     /** \brief  Construct a variable with a name
@@ -46,36 +44,36 @@ public:
       * \details At the very least, a variable must have a name.  Since this class
       * is virtual, this constructor is used by derived classes.
       */
-    explicit Variable ( const std::string &name );
+    explicit Variable( const std::string &name );
 
 
     //!  Destructor
-    virtual ~Variable ();
+    virtual ~Variable();
 
 
     //!  Set the units of this variable
-    virtual void  setUnits ( const std::string &t );
+    virtual void setUnits( const std::string &t );
 
 
     //!  Get the units of this variable
-    virtual const std::string &getUnits () const;
+    virtual const std::string &getUnits() const;
 
 
     /** \brief  A function that returns the name of a variable
       *
       * \details This gives access to the name
       */
-    virtual const std::string  &getName() const;
+    virtual const std::string &getName() const;
 
 
     /** \brief  Compares two variables for equality.
-      * \param  rhs  Variable to compare 
+      * \param  rhs  Variable to compare
       *
       * \details This operation compares the names.
       * A "temperature" stored for each node is different from a "temperature"
       * stored for each cell
       */
-    virtual bool operator == ( const Variable & rhs ) const;
+    virtual bool operator==( const Variable &rhs ) const;
 
 
     /** \brief  Inverse of ==
@@ -84,7 +82,7 @@ public:
       * \details This function performs an equality check and negates it.  Hence, it
       *  is not virtual
       */
-    bool operator != ( const Variable & rhs ) const;
+    bool operator!=( const Variable &rhs ) const;
 
 
     /** \brief  Create a variable of the same type with a new name
@@ -92,7 +90,7 @@ public:
       *
       * \details This function will create a "deep" copy of this variable.
       */
-    virtual Variable::shared_ptr   cloneVariable ( const std::string &name ) const;
+    virtual Variable::shared_ptr cloneVariable( const std::string &name ) const;
 
 protected:
     /** \brief  A name given to the variable
@@ -101,14 +99,12 @@ protected:
       * some variables are called displacement, concentration, search direction,
       * etc.
       */
-    std::string  d_VariableName;
+    std::string d_VariableName;
 
     /** \brief  The units this variable is measured in
       */
-    std::string  d_Units;
-
-  };
-
+    std::string d_Units;
+};
 }
 }
 

@@ -5,31 +5,29 @@
 #include <operators/ConstraintsEliminationOperator.h>
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class CustomConstraintsEliminationOperator : public ConstraintsEliminationOperator
-    {
+class CustomConstraintsEliminationOperator : public ConstraintsEliminationOperator {
 
-      public :
+public:
+    CustomConstraintsEliminationOperator( const AMP::shared_ptr<OperatorParameters> &params );
 
-        CustomConstraintsEliminationOperator (const AMP::shared_ptr<OperatorParameters> & params);
+    void addSlaveToMaster( AMP::LinearAlgebra::Vector::shared_ptr u );
 
-        void addSlaveToMaster(AMP::LinearAlgebra::Vector::shared_ptr u);
+    void copyMasterToSlave( AMP::LinearAlgebra::Vector::shared_ptr u );
 
-        void copyMasterToSlave(AMP::LinearAlgebra::Vector::shared_ptr u);
+    void initialize(
+        std::vector<size_t> const &slaveIndices,
+        std::vector<double> const &slaveShift,
+        std::vector<std::vector<size_t>> const &masterIndices = std::vector<std::vector<size_t>>(),
+        std::vector<std::vector<double>> const &masterCoefficients =
+            std::vector<std::vector<double>>() );
 
-        void initialize(std::vector<size_t> const & slaveIndices, 
-                        std::vector<double> const & slaveShift,
-                        std::vector<std::vector<size_t> > const & masterIndices = std::vector<std::vector<size_t> >(),
-                        std::vector<std::vector<double> > const & masterCoefficients = std::vector<std::vector<double> >());
-
-      protected :
-        std::vector<std::vector<size_t> > d_MasterIndices;
-        std::vector<std::vector<double> > d_MasterCoefficients;
-
-    };
-
-  }
+protected:
+    std::vector<std::vector<size_t>> d_MasterIndices;
+    std::vector<std::vector<double>> d_MasterCoefficients;
+};
+}
 }
 
 #endif

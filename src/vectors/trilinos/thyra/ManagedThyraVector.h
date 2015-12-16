@@ -6,12 +6,11 @@
 #include "vectors/trilinos/thyra/ThyraVector.h"
 
 
-
 namespace AMP {
 namespace LinearAlgebra {
 
 
-//! ManagedThyraVectorParameters 
+//! ManagedThyraVectorParameters
 typedef ManagedVectorParameters ManagedThyraVectorParameters;
 
 
@@ -23,25 +22,23 @@ typedef ManagedVectorParameters ManagedThyraVectorParameters;
   * not be used explicitly.  Rather, the EpetraVector interface provides
   * the getEpetra_Vector interface.  In this case, the class will populate
   * an Epetra_Vector with a view of an array that the ManagedVector has.
-  * 
+  *
   * This class is the class returned by EpetraVector::view() and
   * EpetraVector::constView().
   *
   * \see EpetraVector
   */
-class ManagedThyraVector : public ManagedVector, public ThyraVector
-{
+class ManagedThyraVector : public ManagedVector, public ThyraVector {
 public:
-
     /** \brief Create a ManagedThyraVector from a set of parameters
       * \param[in] params  A VectorParameters class used to construct this vector
       */
-    explicit ManagedThyraVector( VectorParameters::shared_ptr  params );
+    explicit ManagedThyraVector( VectorParameters::shared_ptr params );
 
     /** \brief Create a view of a vector
       * \param[in] alias  Vector to view
       */
-    explicit ManagedThyraVector( Vector::shared_ptr  alias );
+    explicit ManagedThyraVector( Vector::shared_ptr alias );
 
     //! Destructor
     virtual ~ManagedThyraVector();
@@ -50,16 +47,13 @@ public:
     virtual std::string type() const;
 
     using Vector::cloneVector;
-    virtual Vector::shared_ptr  cloneVector( const Variable::shared_ptr var ) const;
+    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const;
     virtual void copyVector( Vector::const_shared_ptr vec );
     virtual void assemble() {}
-    ManagedVector* getNewRawPtr() const;
+    ManagedVector *getNewRawPtr() const;
 
 protected:
-
-
 };
-
 }
 }
 

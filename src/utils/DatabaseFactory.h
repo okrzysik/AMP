@@ -11,29 +11,26 @@
 #define included_DatabaseFactory
 
 
-
 #include "Database.h"
 
 namespace AMP {
-   
+
 
 /**
  * @brief Abstract base class factory used to build Database objects.
- * 
- * Used to build database objects.  For example, RestartManager 
+ *
+ * Used to build database objects.  For example, RestartManager
  * may use a DatabaseFactory to build databases when creating
  * a restart file.
  */
-class DatabaseFactory
-{	
-  public:
-   /*
-    * Build a new Database instance.
-    */
-   virtual AMP::shared_ptr<Database> allocate(const std::string& name) = 0;
-   virtual ~DatabaseFactory () {}
+class DatabaseFactory {
+public:
+    /*
+     * Build a new Database instance.
+     */
+    virtual AMP::shared_ptr<Database> allocate( const std::string &name ) = 0;
+    virtual ~DatabaseFactory() {}
 };
-
 }
 
 #endif

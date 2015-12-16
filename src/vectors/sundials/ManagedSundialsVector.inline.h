@@ -3,9 +3,10 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-inline ManagedVector *ManagedSundialsVector::getNewRawPtr () const
-{ 
-    return new ManagedSundialsVector( AMP::dynamic_pointer_cast<VectorParameters> ( d_pParameters ) ); 
+inline ManagedVector *ManagedSundialsVector::getNewRawPtr() const
+{
+    return new ManagedSundialsVector(
+        AMP::dynamic_pointer_cast<VectorParameters>( d_pParameters ) );
 }
 
 
@@ -17,11 +18,6 @@ inline std::string ManagedSundialsVector::type() const
 }
 
 
-inline void ManagedSundialsVector::assemble () 
-{
-}
-
-
+inline void ManagedSundialsVector::assemble() {}
 }
 }
-

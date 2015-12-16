@@ -2,7 +2,7 @@
 /*!
  * \file   materials/FixedFuel.h
  * \author Aaron Phillippe
- * \brief  Header file for constant fuel properties  
+ * \brief  Header file for constant fuel properties
  */
 //---------------------------------------------------------------------------//
 #ifndef FixedFuel_H
@@ -12,22 +12,25 @@
 #include "utils/Factory.h"
 
 
-// Define the material 
+// Define the material
 namespace AMP {
 namespace Materials {
-    class FixedFuel : public Material { public:
-    	FixedFuel();
-    };
+class FixedFuel : public Material {
+public:
+    FixedFuel();
+};
 }
 }
 
 
-// Add static initialize to force symbols to be included 
+// Add static initialize to force symbols to be included
 // It will register the material with the factory
 static struct FixedFuel_INIT {
-    FixedFuel_INIT() {
-        static AMP::voodoo::Registration<AMP::Materials::Material,AMP::Materials::FixedFuel> reg("FixedFuel");
-     }
+    FixedFuel_INIT()
+    {
+        static AMP::voodoo::Registration<AMP::Materials::Material, AMP::Materials::FixedFuel> reg(
+            "FixedFuel" );
+    }
 } FixedFuel_init;
 
 

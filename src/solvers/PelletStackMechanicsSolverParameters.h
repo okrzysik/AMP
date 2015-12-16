@@ -5,24 +5,23 @@
 #include "solvers/ColumnSolver.h"
 
 namespace AMP {
-  namespace Solver {
+namespace Solver {
 
-    class PelletStackMechanicsSolverParameters : public SolverStrategyParameters {
-      public:
-        PelletStackMechanicsSolverParameters(){}
-        explicit PelletStackMechanicsSolverParameters(const AMP::shared_ptr<AMP::Database> db) : SolverStrategyParameters(db) { }
-        virtual ~PelletStackMechanicsSolverParameters(){}
+class PelletStackMechanicsSolverParameters : public SolverStrategyParameters {
+public:
+    PelletStackMechanicsSolverParameters() {}
+    explicit PelletStackMechanicsSolverParameters( const AMP::shared_ptr<AMP::Database> db )
+        : SolverStrategyParameters( db )
+    {
+    }
+    virtual ~PelletStackMechanicsSolverParameters() {}
 
-        AMP::shared_ptr<AMP::Solver::ColumnSolver> d_columnSolver;
+    AMP::shared_ptr<AMP::Solver::ColumnSolver> d_columnSolver;
 
-      protected:
-      private:
-
-    };
-
-  }
+protected:
+private:
+};
+}
 }
 
 #endif
-
-

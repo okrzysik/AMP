@@ -7,22 +7,20 @@
 namespace AMP {
 namespace Operator {
 
-  class FlowFrapconJacobianParameters : public OperatorParameters {
-    public :
+class FlowFrapconJacobianParameters : public OperatorParameters {
+public:
+    explicit FlowFrapconJacobianParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : OperatorParameters( db )
+    {
+    }
 
-      explicit FlowFrapconJacobianParameters(const AMP::shared_ptr<AMP::Database> &db)
-        : OperatorParameters(db) {  }
+    virtual ~FlowFrapconJacobianParameters() {}
 
-      virtual ~FlowFrapconJacobianParameters() { }
+    AMP::LinearAlgebra::Variable::shared_ptr d_variable;
 
-      AMP::LinearAlgebra::Variable::shared_ptr d_variable;
-
-      AMP::LinearAlgebra::Vector::shared_ptr d_frozenSolution;
-
-  };
-
+    AMP::LinearAlgebra::Vector::shared_ptr d_frozenSolution;
+};
 }
 }
 
 #endif
-

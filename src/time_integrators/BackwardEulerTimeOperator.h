@@ -3,24 +3,20 @@
 
 #include "TimeOperator.h"
 
-namespace AMP{
-namespace TimeIntegrator{
+namespace AMP {
+namespace TimeIntegrator {
 
-class BackwardEulerTimeOperator: public TimeOperator
-{
- public:
+class BackwardEulerTimeOperator : public TimeOperator {
+public:
+    explicit BackwardEulerTimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParameters> params );
 
-  explicit BackwardEulerTimeOperator(AMP::shared_ptr<AMP::Operator::OperatorParameters > params);
-  
-  void apply(AMP::LinearAlgebra::Vector::const_shared_ptr u,
-	     AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-  
- protected:
- private:
-  
+
+protected:
+private:
 };
-
 }
 }
 

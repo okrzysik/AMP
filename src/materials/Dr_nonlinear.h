@@ -5,22 +5,25 @@
 #include "utils/Factory.h"
 
 
-// Define the material 
+// Define the material
 namespace AMP {
 namespace Materials {
-    class Dr_nonlinear : public Material { public:
-    	Dr_nonlinear();
-    };
+class Dr_nonlinear : public Material {
+public:
+    Dr_nonlinear();
+};
 }
 }
 
 
-// Add static initialize to force symbols to be included 
+// Add static initialize to force symbols to be included
 // It will register the material with the factory
 static struct Dr_nonlinear_INIT {
-    Dr_nonlinear_INIT() {
-        static AMP::voodoo::Registration<AMP::Materials::Material,AMP::Materials::Dr_nonlinear> reg("Dr_nonlinear");
-     }
+    Dr_nonlinear_INIT()
+    {
+        static AMP::voodoo::Registration<AMP::Materials::Material, AMP::Materials::Dr_nonlinear>
+            reg( "Dr_nonlinear" );
+    }
 } Dr_nonlinear_init;
 
 

@@ -9,81 +9,91 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-void PetscVector::dataChanged ()
+void PetscVector::dataChanged()
 {
-    PetscObjectStateIncrease ( reinterpret_cast< ::PetscObject> ( getVec() ) );
+    PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( getVec() ) );
 }
 
 
-Vector::const_shared_ptr  PetscVector::constView ( Vector::const_shared_ptr inVector )
+Vector::const_shared_ptr PetscVector::constView( Vector::const_shared_ptr inVector )
 {
-    Vector::shared_ptr  retVal;
-    if ( inVector->isA<PetscVector> () ) {
+    Vector::shared_ptr retVal;
+    if ( inVector->isA<PetscVector>() ) {
         return inVector;
-    } else if ( inVector->hasView<PetscVector> () ) {
+    }
+    else if ( inVector->hasView<PetscVector>() ) {
         return inVector->getView<PetscVector>();
-    } else if ( inVector->isA<ManagedVector> () ) {
+    }
+    else if ( inVector->isA<ManagedVector>() ) {
         Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
-        retVal = Vector::shared_ptr ( new ManagedPetscVector( inVector2 ) );
-        retVal->setVariable ( inVector->getVariable() );
-        inVector->registerView ( retVal );
-    } else if ( inVector->isA<VectorEngine> () ) {
-        Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
+        retVal                       = Vector::shared_ptr( new ManagedPetscVector( inVector2 ) );
+        retVal->setVariable( inVector->getVariable() );
+        inVector->registerView( retVal );
+    }
+    else if ( inVector->isA<VectorEngine>() ) {
+        Vector::shared_ptr inVector2            = AMP::const_pointer_cast<Vector>( inVector );
         ManagedPetscVectorParameters *newParams = new ManagedPetscVectorParameters;
-        newParams->d_Engine = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
+        newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
         newParams->d_CloneEngine = false;
-        AMP_INSIST(inVector->getCommunicationList().get()!=NULL,"All vectors must have a communication list");
+        AMP_INSIST( inVector->getCommunicationList().get() != NULL,
+                    "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();
-        AMP_INSIST(inVector->getDOFManager().get()!=NULL,"All vectors must have a DOFManager list");
+        AMP_INSIST( inVector->getDOFManager().get() != NULL,
+                    "All vectors must have a DOFManager list" );
         newParams->d_DOFManager = inVector->getDOFManager();
-        ManagedPetscVector *t = new ManagedPetscVector ( VectorParameters::shared_ptr ( newParams ) );
+        ManagedPetscVector *t = new ManagedPetscVector( VectorParameters::shared_ptr( newParams ) );
         inVector2->castTo<DataChangeFirer>().registerListener( t );
-        t->setVariable ( inVector->getVariable() );
-        t->setUpdateStatusPtr ( inVector->getUpdateStatusPtr () );
-        retVal = Vector::shared_ptr ( t );
-        inVector->registerView ( retVal );
-    } else {
+        t->setVariable( inVector->getVariable() );
+        t->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
+        retVal = Vector::shared_ptr( t );
+        inVector->registerView( retVal );
+    }
+    else {
         Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
-        retVal = view ( MultiVector::view ( inVector2, inVector->getComm() ) );
-        inVector->registerView ( retVal );
+        retVal                       = view( MultiVector::view( inVector2, inVector->getComm() ) );
+        inVector->registerView( retVal );
     }
     return retVal;
 }
 
 
-Vector::shared_ptr  PetscVector::view ( Vector::shared_ptr inVector )
+Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
 {
-    Vector::shared_ptr  retVal;
-    if ( inVector->isA<PetscVector> () ) {
+    Vector::shared_ptr retVal;
+    if ( inVector->isA<PetscVector>() ) {
         retVal = inVector;
-    } else if ( inVector->hasView<PetscVector> () ) {
+    }
+    else if ( inVector->hasView<PetscVector>() ) {
         retVal = inVector->getView<PetscVector>();
-    } else if ( inVector->isA<ManagedVector> () ) {
-        retVal = Vector::shared_ptr ( new ManagedPetscVector ( inVector ) );
-        inVector->registerView ( retVal );
-    } else if ( inVector->isA<VectorEngine> () ) {
+    }
+    else if ( inVector->isA<ManagedVector>() ) {
+        retVal = Vector::shared_ptr( new ManagedPetscVector( inVector ) );
+        inVector->registerView( retVal );
+    }
+    else if ( inVector->isA<VectorEngine>() ) {
         ManagedPetscVectorParameters *newParams = new ManagedPetscVectorParameters;
-        newParams->d_Engine = AMP::dynamic_pointer_cast<VectorEngine> ( inVector );
+        newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector );
         newParams->d_CloneEngine = false;
-        AMP_INSIST(inVector->getCommunicationList().get()!=NULL,"All vectors must have a communication list");
+        AMP_INSIST( inVector->getCommunicationList().get() != NULL,
+                    "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();
-        AMP_INSIST(inVector->getDOFManager().get()!=NULL,"All vectors must have a DOFManager list");
+        AMP_INSIST( inVector->getDOFManager().get() != NULL,
+                    "All vectors must have a DOFManager list" );
         newParams->d_DOFManager = inVector->getDOFManager();
-        ManagedPetscVector *newVector = new ManagedPetscVector ( VectorParameters::shared_ptr ( newParams ) );
+        ManagedPetscVector *newVector =
+            new ManagedPetscVector( VectorParameters::shared_ptr( newParams ) );
         inVector->castTo<DataChangeFirer>().registerListener( newVector );
-        newVector->setVariable ( inVector->getVariable() );
-        newVector->setUpdateStatusPtr ( inVector->getUpdateStatusPtr () );
-        retVal = Vector::shared_ptr ( newVector );
-        inVector->registerView ( retVal );
-    } else {
+        newVector->setVariable( inVector->getVariable() );
+        newVector->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
+        retVal = Vector::shared_ptr( newVector );
+        inVector->registerView( retVal );
+    }
+    else {
         // Create a multivector to wrap the given vector and create a view
-        retVal = view ( MultiVector::view ( inVector, inVector->getComm() ) );
-        inVector->registerView ( retVal );
+        retVal = view( MultiVector::view( inVector, inVector->getComm() ) );
+        inVector->registerView( retVal );
     }
     return retVal;
 }
-
-
 }
 }
-

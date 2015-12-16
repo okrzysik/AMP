@@ -2,9 +2,9 @@
 #ifndef included_AMP_VectorBuider
 #define included_AMP_VectorBuider
 
-#include <string>
-#include "vectors/Vector.h"
 #include "discretization/DOF_Manager.h"
+#include "vectors/Vector.h"
+#include <string>
 
 
 namespace AMP {
@@ -19,12 +19,10 @@ namespace LinearAlgebra {
  * \param split     If we are given a multiDOFManager, do we want to split the vector
  *                      based on the individual DOFManagers to create a MultiVector
  */
-AMP::LinearAlgebra::Vector::shared_ptr  createVector( 
-    AMP::Discretization::DOFManager::shared_ptr DOFs, 
-    AMP::LinearAlgebra::Variable::shared_ptr variable,
-    bool split=true );
-
-
+AMP::LinearAlgebra::Vector::shared_ptr
+createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
+              AMP::LinearAlgebra::Variable::shared_ptr variable,
+              bool split = true );
 }
 }
 

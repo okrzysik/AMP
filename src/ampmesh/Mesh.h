@@ -3,19 +3,19 @@
 
 //#include "garbage.h"
 
-#include "ampmesh/MeshParameters.h"
 #include "ampmesh/MeshID.h"
 #include "ampmesh/MeshIterator.h"
+#include "ampmesh/MeshParameters.h"
 #include "utils/AMP_MPI.h"
-#include "utils/shared_ptr.h"
 #include "utils/enable_shared_from_this.h"
+#include "utils/shared_ptr.h"
 
 #ifdef USE_AMP_VECTORS
-    namespace AMP {
-    namespace LinearAlgebra {
-        class Vector;
-    }
-    }
+namespace AMP {
+namespace LinearAlgebra {
+class Vector;
+}
+}
 #endif
 
 
@@ -33,32 +33,34 @@ enum SetOP { Union, Intersection, Complement };
  *
  * \details  This class provides routines for reading, accessing and writing meshes.
  * The database fields control the mesh and will differ for each mesh type.  However,
- * there are some common fields to all meshes: 
+ * there are some common fields to all meshes:
  *     MeshName - The name to associate with the mesh
  *     MeshType - The mesh type (libMesh, Multimesh, AMP)
  *     x_offset - Optional argument specifying the offset in the x-direction
  *     y_offset - Optional argument specifying the offset in the y-direction
  *     z_offset - Optional argument specifying the offset in the z-direction
- *     NumberOfElements - Optional argument indicating the number of elements in the mesh (will override all other calulations)
- *     Weight - Optional argument indicating the relative weight of the mesh for the domain decomposition (relative to 1.0)
+ *     NumberOfElements - Optional argument indicating the number of elements in the mesh (will
+ * override all other
+ * calulations)
+ *     Weight - Optional argument indicating the relative weight of the mesh for the domain
+ * decomposition (relative to
+ * 1.0)
  */
-class Mesh: public AMP::enable_shared_from_this<AMP::Mesh::Mesh>
-{
+class Mesh : public AMP::enable_shared_from_this<AMP::Mesh::Mesh> {
 public:
-
     /**
      *\typedef shared_ptr
      *\brief  Name for the shared pointer.
      *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    typedef AMP::shared_ptr<AMP::Mesh::Mesh>  shared_ptr;
+    typedef AMP::shared_ptr<AMP::Mesh::Mesh> shared_ptr;
 
     /**
      *\typedef const_shared_ptr
      *\brief  Name for the const shared pointer.
      *\details  Use this typedef for a reference counted pointer to a mesh manager object.
      */
-    typedef AMP::shared_ptr<const AMP::Mesh::Mesh>  const_shared_ptr;
+    typedef AMP::shared_ptr<const AMP::Mesh::Mesh> const_shared_ptr;
 
 
     /**
@@ -68,7 +70,7 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params  Parameters for constructing a mesh from an input database
      */
-    Mesh ( const MeshParameters::shared_ptr &params );
+    Mesh( const MeshParameters::shared_ptr &params );
 
 
     /**
@@ -77,27 +79,27 @@ public:
      * using an iterator over the existing mesh.
      * This is designed as a path to create a new mesh object of one type from
      * an existing mesh of a different type.  It also allows creating a new single mesh
-     * from a subset or superset of other meshes.  Note that instantion of this routine 
-     * may not be able to create it's mesh from any arbitrary mesh, and may throw an 
+     * from a subset or superset of other meshes.  Note that instantion of this routine
+     * may not be able to create it's mesh from any arbitrary mesh, and may throw an
      * error.
      * \param old_mesh  Existing mesh that we will use to construct the new mesh
      * \param iterator  Iterator over the existing mesh
      */
-    Mesh ( const Mesh::shared_ptr &old_mesh, MeshIterator::shared_ptr &iterator);
+    Mesh( const Mesh::shared_ptr &old_mesh, MeshIterator::shared_ptr &iterator );
 
 
     /**
-     * \brief   Create a mesh 
+     * \brief   Create a mesh
      * \details  This function will create a mesh (or series of meshes) based on
-     *   the input database.  
+     *   the input database.
      * \param params Parameters for constructing a mesh from an input database
      */
     static AMP::shared_ptr<AMP::Mesh::Mesh> buildMesh( const MeshParameters::shared_ptr &params );
 
 
     /**
-     * \brief   Estimate the number of elements in the mesh 
-     * \details  This function will estimate the number of elements in the mesh. 
+     * \brief   Estimate the number of elements in the mesh
+     * \details  This function will estimate the number of elements in the mesh.
      *   This is used so that we can properly balance the meshes across multiple processors.
      *   Ideally this should be both an accurate estimate and very fast.  It should not require
      *   any communication and should not have to actually load a mesh.
@@ -108,7 +110,7 @@ public:
 
     /**
      * \brief   Return the maximum number of processors that can be used with the mesh
-     * \details  This function will return the maximum number of processors that can 
+     * \details  This function will return the maximum number of processors that can
      *   be used with the mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
@@ -116,11 +118,11 @@ public:
 
 
     //! Deconstructor
-    virtual ~Mesh ();
+    virtual ~Mesh();
 
 
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
-    virtual AMP::shared_ptr<Mesh> copy() const=0;
+    virtual AMP::shared_ptr<Mesh> copy() const = 0;
 
 
     /**
@@ -131,7 +133,7 @@ public:
      *    matches the meshID of the mesh, and a null pointer otherwise.
      * \param meshID  MeshID of the desired mesh
      */
-    virtual AMP::shared_ptr<Mesh>  Subset ( MeshID meshID ) const;
+    virtual AMP::shared_ptr<Mesh> Subset( MeshID meshID ) const;
 
 
     /**
@@ -140,12 +142,12 @@ public:
      *    For a single mesh this will return a pointer to itself if the mesh name
      *    matches the name of the mesh, and a null pointer otherwise.
      *    Note: The mesh name is not gaurenteed to be unique.  If there are multiple
-     *    meshes with the same name, all meshed with the given name will be returned 
+     *    meshes with the same name, all meshed with the given name will be returned
      *    within a new multimesh.
      *    It is strongly recommended to use the meshID when possible.
      * \param name  Name of the desired mesh
      */
-    virtual AMP::shared_ptr<Mesh>  Subset ( std::string name ) const;
+    virtual AMP::shared_ptr<Mesh> Subset( std::string name ) const;
 
 
     /**
@@ -153,10 +155,11 @@ public:
      * \details  This function will subset a mesh over a given iterator.
      *   This will return a new mesh object.
      * \param iterator  MeshIterator used to subset
-     * \param isGlobal  Is the new subset mesh global over the entire mesh (true,default), 
+     * \param isGlobal  Is the new subset mesh global over the entire mesh (true,default),
      *                  or do we only want to keep the local mesh (false)
      */
-    virtual AMP::shared_ptr<Mesh>  Subset ( const MeshIterator &iterator, bool isGlobal=true ) const;
+    virtual AMP::shared_ptr<Mesh> Subset( const MeshIterator &iterator,
+                                          bool isGlobal = true ) const;
 
 
     /**
@@ -164,26 +167,26 @@ public:
      * \details      This function will subset a mesh given another mesh
      * \param mesh   Mesh used to subset
      */
-    virtual AMP::shared_ptr<Mesh>  Subset ( Mesh &mesh ) const;
+    virtual AMP::shared_ptr<Mesh> Subset( Mesh &mesh ) const;
 
 
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */
-    virtual size_t  numLocalElements( const GeomType type ) const;
+    virtual size_t numLocalElements( const GeomType type ) const;
 
 
     /* Return the global number of elements of the given type
      * Note: depending on the mesh this routine may require global communication across the mesh.
      * \param type   Geometric type
      */
-    virtual size_t  numGlobalElements( const GeomType type ) const;
+    virtual size_t numGlobalElements( const GeomType type ) const;
 
 
     /* Return the number of ghost elements of the given type on the current processor
      * \param type   Geometric type
      */
-    virtual size_t  numGhostElements( const GeomType type, const int gcw ) const;
+    virtual size_t numGhostElements( const GeomType type, const int gcw ) const;
 
 
     /**
@@ -192,7 +195,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIterator ( const GeomType type, const int gcw=0 ) const;
+    virtual MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const;
 
 
     /**
@@ -201,7 +204,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getSurfaceIterator ( const GeomType type, const int gcw=0 ) const;
+    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const;
 
 
     /**
@@ -209,24 +212,27 @@ public:
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBoundaryIDs ( ) const;
+    virtual std::vector<int> getBoundaryIDs() const;
 
 
     /**
-     * \brief    Return an MeshIterator over the given geometric objects on the given boundary ID set
-     * \details  Return an MeshIterator over the given geometric objects on the given boundary ID set
+     * \brief    Return an MeshIterator over the given geometric objects on the given boundary ID
+     * set
+     * \details  Return an MeshIterator over the given geometric objects on the given boundary ID
+     * set
      * \param type   Geometric type to iterate over
      * \param id     Boundary id for the elements (example: sideset id)
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getBoundaryIDIterator ( const GeomType type, const int id, const int gcw=0 ) const;
+    virtual MeshIterator
+    getBoundaryIDIterator( const GeomType type, const int id, const int gcw = 0 ) const;
 
     /**
      * \brief    Return the list of all boundary ID sets in the mesh
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBlockIDs ( ) const;
+    virtual std::vector<int> getBlockIDs() const;
 
 
     /**
@@ -236,12 +242,15 @@ public:
      * \param id     Block id for the elements (example: block id in cubit, subdomain in libmesh)
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getBlockIDIterator ( const GeomType type, const int id, const int gcw=0 ) const;
+    virtual MeshIterator
+    getBlockIDIterator( const GeomType type, const int id, const int gcw = 0 ) const;
 
 
     /**
-     * \brief    Return an MeshIterator constructed through a set operation of two other MeshIterators.
-     * \details  Return an MeshIterator constructed through a set operation of two other MeshIterators.
+     * \brief    Return an MeshIterator constructed through a set operation of two other
+     * MeshIterators.
+     * \details  Return an MeshIterator constructed through a set operation of two other
+     * MeshIterators.
      * \param OP Set operation to perform.
      *           Union - Perform a union of the iterators ( A U B )
      *           Intersection - Perform an intersection of the iterators ( A n B )
@@ -249,27 +258,28 @@ public:
      * \param A  Pointer to MeshIterator A
      * \param B  Pointer to MeshIterator B
      */
-    static MeshIterator getIterator ( SetOP OP, const MeshIterator &A, const MeshIterator &B);
- 
+    static MeshIterator getIterator( SetOP OP, const MeshIterator &A, const MeshIterator &B );
+
 
     /**
      * \brief    Check if an element is in the mesh
-     * \details  This function queries the mesh to determine if the given element is a member of the mesh
+     * \details  This function queries the mesh to determine if the given element is a member of the
+     * mesh
      * \param id    Mesh element id we are querying.
      */
-    virtual bool isMember ( const MeshElementID &id ) const; 
+    virtual bool isMember( const MeshElementID &id ) const;
 
 
     /**
      * \brief    Return a mesh element given it's id.
      * \details  This function queries the mesh to get an element given the mesh id.
      *    This function is only required to return an element if the id is local.
-     *    Ideally, this should be done in O(1) time, but the implimentation is up to 
-     *    the underlying mesh.  The base class provides a basic implimentation, but 
+     *    Ideally, this should be done in O(1) time, but the implimentation is up to
+     *    the underlying mesh.  The base class provides a basic implimentation, but
      *    uses mesh iterators and requires O(N) time on the number of elements in the mesh.
      * \param id    Mesh element id we are requesting.
      */
-    virtual MeshElement getElement ( const MeshElementID &id ) const; 
+    virtual MeshElement getElement( const MeshElementID &id ) const;
 
 
     /**
@@ -279,15 +289,16 @@ public:
      * \param elem  Mesh element of interest
      * \param type  Element type of the parents requested
      */
-    virtual std::vector<MeshElement> getElementParents ( const MeshElement& elem, const GeomType type ) const;
- 
+    virtual std::vector<MeshElement> getElementParents( const MeshElement &elem,
+                                                        const GeomType type ) const;
+
 
     //! Get the largest geometric type in the mesh
-    virtual GeomType getGeomType() const { return GeomDim; } 
+    virtual GeomType getGeomType() const { return GeomDim; }
 
 
     //! Get the physical dimension of the mesh
-    virtual unsigned char getDim() const { return PhysicalDim; } 
+    virtual unsigned char getDim() const { return PhysicalDim; }
 
 
     //! Get the communicator for the mesh
@@ -314,7 +325,8 @@ public:
 
 
     /**
-     *  Get the meshIDs of all the basic meshes that compose the current mesh (excluding multimeshes and subset meshes)
+     *  Get the meshIDs of all the basic meshes that compose the current mesh (excluding multimeshes
+     * and subset meshes)
      *  Note: This function may require global communication depending on the implimentation
      */
     virtual std::vector<MeshID> getBaseMeshIDs() const;
@@ -328,7 +340,7 @@ public:
 
 
     /**
-     *  Get the meshIDs of all the basic meshes that compose the current mesh 
+     *  Get the meshIDs of all the basic meshes that compose the current mesh
      *  (excluding multimeshes and subset meshes) on the current processor.
      */
     virtual std::vector<MeshID> getLocalBaseMeshIDs() const;
@@ -339,12 +351,12 @@ public:
 
 
     //! Set the mesh name
-    virtual inline void setName(std::string name) { d_name = name; }
+    virtual inline void setName( std::string name ) { d_name = name; }
 
 
     /**
      * \brief    Get the bounding box for the mesh
-     * \details  This function will return the bounding box for the entire mesh. 
+     * \details  This function will return the bounding box for the entire mesh.
      *   The vector returned contains the box that contains the mesh in the form
      *   [ x_min  x_max  y_min  y_max  z_min  z_max ].
      */
@@ -353,7 +365,7 @@ public:
 
     /**
      * \brief    Get the bounding box for the local part of the mesh
-     * \details  This function will return the bounding box for the local part of the mesh. 
+     * \details  This function will return the bounding box for the local part of the mesh.
      *   The vector returned contains the box that contains the mesh in the form
      *   [ x_min  x_max  y_min  y_max  z_min  z_max ].
      */
@@ -364,46 +376,47 @@ public:
      * \brief    Displace the entire mesh
      * \details  This function will displace the entire mesh by a scalar value.
      *   This function is a blocking call for the mesh communicator, and requires
-     *   the same value on all processors.  The displacement vector should be the 
+     *   the same value on all processors.  The displacement vector should be the
      *   size of the physical dimension.
      * \param x  Displacement vector
      */
-    virtual void displaceMesh( const std::vector<double>& x )=0;
+    virtual void displaceMesh( const std::vector<double> &x ) = 0;
 
 
 #ifdef USE_AMP_VECTORS
     /**
      * \brief    Displace the entire mesh
      * \details  This function will displace the entire mesh by displacing
-     *   each node by the values provided in the vector.  This function is 
+     *   each node by the values provided in the vector.  This function is
      *   a blocking call for the mesh communicator
-     * \param x  Displacement vector.  Must have N DOFs per node where N 
+     * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh ( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x )=0;
+    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x ) = 0;
 
 
     /**
      * \brief    Get a vector of the coordinates of the nodes
-     * \details  This function will return a const vector containing the coordinates of 
-     *           all the nodes.  
+     * \details  This function will return a const vector containing the coordinates of
+     *           all the nodes.
      * \param name   Name of the vector
      * \param gcw    Desired ghost cell width
      */
-    virtual AMP::shared_ptr<AMP::LinearAlgebra::Vector>  getPositionVector( std::string name, const int gcw=0 ) const;
+    virtual AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+    getPositionVector( std::string name, const int gcw = 0 ) const;
 #endif
 
     const AMP::shared_ptr<AMP::Database> &DB() const { return d_db; }
 
 protected:
-
     //!  Empty constructor for a mesh
     Mesh() {}
 
     //! The mesh parameters
     MeshParameters::shared_ptr params;
 
-    //! The geometric dimension (equivalent to the highest geometric object that could be represented)
+    //! The geometric dimension (equivalent to the highest geometric object that could be
+    //! represented)
     GeomType GeomDim;
 
     //! The physical dimension
@@ -416,7 +429,7 @@ protected:
     AMP_MPI d_comm;
 
     //! A pointer to an AMP database containing the mesh info
-    AMP::shared_ptr<AMP::Database>  d_db;
+    AMP::shared_ptr<AMP::Database> d_db;
 
     //! A unique id for each mesh
     MeshID d_meshID;
@@ -430,17 +443,16 @@ protected:
     /**
      *  A function to create a unique id for the mesh (requires the comm to be set)
      *  Note: this requires a global communication across the mesh communicator.
-     *  Note: this function is NOT thread safe, and will need to be modified before threads are used.
+     *  Note: this function is NOT thread safe, and will need to be modified before threads are
+     * used.
      */
     void setMeshID();
 
     // Private copy constructor
-    Mesh ( const Mesh::shared_ptr &old_mesh );
-
+    Mesh( const Mesh::shared_ptr &old_mesh );
 };
 
 } // Mesh namespace
 } // AMP namespace
 
 #endif
-

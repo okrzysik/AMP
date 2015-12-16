@@ -1,60 +1,59 @@
 #ifndef included_AMP_STKMeshIterators
 #define included_AMP_STKMeshIterators
 
-#include "utils/shared_ptr.h"
-#include "ampmesh/STKmesh/STKMesh.h"
 #include "ampmesh/MeshIterator.h"
+#include "ampmesh/STKmesh/STKMesh.h"
+#include "utils/shared_ptr.h"
 
 namespace AMP {
 namespace Mesh {
 
 
-class STKMeshIterator: public MeshIterator {
+class STKMeshIterator : public MeshIterator {
 public:
-
-    typedef AMP::shared_ptr<std::vector<stk::mesh::Entity*> > MeshPtr ;
+    typedef AMP::shared_ptr<std::vector<stk::mesh::Entity *>> MeshPtr;
 
     //! Empty MeshIterator constructor
     STKMeshIterator();
 
     //! Deconstructor
-    virtual ~STKMeshIterator ();
+    virtual ~STKMeshIterator();
 
     //! Copy constructor
-    STKMeshIterator(const STKMeshIterator&);
+    STKMeshIterator( const STKMeshIterator & );
 
     //! Assignment operator
-    STKMeshIterator& operator=(const STKMeshIterator&);
+    STKMeshIterator &operator=( const STKMeshIterator & );
 
     //! Increment
-    virtual MeshIterator& operator++();
+    virtual MeshIterator &operator++();
 
     //! Increment
-    virtual MeshIterator operator++(int);
+    virtual MeshIterator operator++( int );
 
     //! Decrement
-    virtual MeshIterator& operator--();
+    virtual MeshIterator &operator--();
 
     //! Decrement
-    virtual MeshIterator operator--(int);
+    virtual MeshIterator operator--( int );
 
     //! Check if two iterators are equal
-    virtual bool operator==(const MeshIterator& rhs) const;
+    virtual bool operator==( const MeshIterator &rhs ) const;
 
     //! Check if two iterators are not equal
-    virtual bool operator!=(const MeshIterator& rhs) const;
+    virtual bool operator!=( const MeshIterator &rhs ) const;
 
     //! Dereference the iterator
-    virtual MeshElement &operator*(void);
+    virtual MeshElement &operator*( void );
 
     //! Dereference the iterator
-    virtual MeshElement *operator->(void);
+    virtual MeshElement *operator->( void );
 
     //! Return an iterator to the begining
-    virtual MeshIterator begin() const; 
+    virtual MeshIterator begin() const;
 
     //! Return an iterator to the begining
-    virtual MeshIterator end() const ;
+    virtual MeshIterator end() const;
 
     //! Return the number of elements in the iterator
     virtual size_t size() const;
@@ -73,27 +72,27 @@ protected:
      *        size      Number of elements in the iterator (-1: unknown)
      *        pos2      Index of the current position in the iterator (-1: unknown)
      */
-    STKMeshIterator(const AMP::Mesh::STKMesh *mesh, int gcw, std::vector< stk::mesh::Entity*> &entities );
-    STKMeshIterator(const AMP::Mesh::STKMesh *mesh, int gcw, MeshPtr entities );
+    STKMeshIterator( const AMP::Mesh::STKMesh *mesh,
+                     int gcw,
+                     std::vector<stk::mesh::Entity *> &entities );
+    STKMeshIterator( const AMP::Mesh::STKMesh *mesh, int gcw, MeshPtr entities );
 
     //! Clone the iterator
-    virtual MeshIterator* clone() const;
+    virtual MeshIterator *clone() const;
 
-friend class AMP::Mesh::STKMesh;
+    friend class AMP::Mesh::STKMesh;
 
 private:
     // Data members
-    int    d_gcw;
-    int    d_dim;
-    int    d_rank;
+    int d_gcw;
+    int d_dim;
+    int d_rank;
     MeshID d_meshID;
     const AMP::Mesh::STKMesh *d_mesh;
     MeshPtr d_entries;
-    std::vector<stk::mesh::Entity*>::iterator d_pos;
-    MeshElement  d_cur_element;
+    std::vector<stk::mesh::Entity *>::iterator d_pos;
+    MeshElement d_cur_element;
 };
-
-
 }
 }
 

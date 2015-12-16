@@ -1,12 +1,12 @@
 #include "operators/subchannel/SubchannelFourEqNonlinearOperator.h"
-#include "operators/subchannel/SubchannelOperatorParameters.h"
 #include "operators/subchannel/SubchannelConstants.h"
 #include "operators/subchannel/SubchannelHelpers.h"
+#include "operators/subchannel/SubchannelOperatorParameters.h"
 
-#include "ampmesh/StructuredMeshHelper.h"
-#include "utils/Utilities.h"
-#include "utils/InputDatabase.h"
 #include "ProfilerApp.h"
+#include "ampmesh/StructuredMeshHelper.h"
+#include "utils/InputDatabase.h"
+#include "utils/Utilities.h"
 
 #include <string>
 
@@ -15,130 +15,147 @@ namespace AMP {
 namespace Operator {
 
 
-//Constructor
-SubchannelFourEqNonlinearOperator::SubchannelFourEqNonlinearOperator(const AMP::shared_ptr<SubchannelOperatorParameters> & params)
-    : Operator (params)
+// Constructor
+SubchannelFourEqNonlinearOperator::SubchannelFourEqNonlinearOperator(
+    const AMP::shared_ptr<SubchannelOperatorParameters> &params )
+    : Operator( params )
 {
-    AMP_INSIST( params->d_db->keyExists("InputVariable"), "Key 'InputVariable' does not exist");
-    std::string inpVar = params->d_db->getString("InputVariable");
-    d_inpVariable.reset(new AMP::LinearAlgebra::Variable(inpVar));
+    AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "Key 'InputVariable' does not exist" );
+    std::string inpVar = params->d_db->getString( "InputVariable" );
+    d_inpVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
 
-    AMP_INSIST( params->d_db->keyExists("OutputVariable"), "Key 'OutputVariable' does not exist");
-    std::string outVar = params->d_db->getString("OutputVariable");
-    d_outVariable.reset(new AMP::LinearAlgebra::Variable(outVar));
+    AMP_INSIST( params->d_db->keyExists( "OutputVariable" ),
+                "Key 'OutputVariable' does not exist" );
+    std::string outVar = params->d_db->getString( "OutputVariable" );
+    d_outVariable.reset( new AMP::LinearAlgebra::Variable( outVar ) );
 
-    d_params = params;
+    d_params      = params;
     d_initialized = false;
 }
 
 // reset
-void SubchannelFourEqNonlinearOperator :: reset(const AMP::shared_ptr<OperatorParameters>& params)
+void SubchannelFourEqNonlinearOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
 {
-      AMP::shared_ptr<SubchannelOperatorParameters> myparams = 
-        AMP::dynamic_pointer_cast<SubchannelOperatorParameters>(params);
-      AMP_INSIST( ((myparams.get()) != NULL), "NULL parameters" );
-      AMP_INSIST( (((myparams->d_db).get()) != NULL), "NULL database" );
-      d_params = myparams;
+    AMP::shared_ptr<SubchannelOperatorParameters> myparams =
+        AMP::dynamic_pointer_cast<SubchannelOperatorParameters>( params );
+    AMP_INSIST( ( ( myparams.get() ) != NULL ), "NULL parameters" );
+    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != NULL ), "NULL database" );
+    d_params = myparams;
 
     // Get the subchannel mesh coordinates
     AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( d_Mesh, d_x, d_y, d_z );
-    d_numSubchannels = (d_x.size()-1)*(d_y.size()-1);
+    d_numSubchannels = ( d_x.size() - 1 ) * ( d_y.size() - 1 );
 
     // Get the properties from the database
-      d_Pout = getDoubleParameter(myparams,"Exit_Pressure",15.5132e6);
-      d_Tin  = getDoubleParameter(myparams,"Inlet_Temperature",569.26);  
-      d_mass = getDoubleParameter(myparams,"Inlet_Mass_Flow_Rate",0.3522*d_numSubchannels);  
-      d_win  = getDoubleParameter(myparams,"Inlet_Lateral_Flow_Rate",0.0);  
-      d_gamma     = getDoubleParameter(myparams,"Fission_Heating_Coefficient",0.0);  
-      d_theta     = getDoubleParameter(myparams,"Channel_Angle",0.0);  
-      d_reynolds  = getDoubleParameter(myparams,"Reynolds",0.0);  
-      d_prandtl   = getDoubleParameter(myparams,"Prandtl",0.0);  
-      d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
-      d_turbulenceCoef = getDoubleParameter(myparams,"Turbulence_Coefficient",1.0);
-      d_KG = getDoubleParameter(myparams,"Lateral_Form_Loss_Coefficient",0.2);
+    d_Pout     = getDoubleParameter( myparams, "Exit_Pressure", 15.5132e6 );
+    d_Tin      = getDoubleParameter( myparams, "Inlet_Temperature", 569.26 );
+    d_mass     = getDoubleParameter( myparams, "Inlet_Mass_Flow_Rate", 0.3522 * d_numSubchannels );
+    d_win      = getDoubleParameter( myparams, "Inlet_Lateral_Flow_Rate", 0.0 );
+    d_gamma    = getDoubleParameter( myparams, "Fission_Heating_Coefficient", 0.0 );
+    d_theta    = getDoubleParameter( myparams, "Channel_Angle", 0.0 );
+    d_reynolds = getDoubleParameter( myparams, "Reynolds", 0.0 );
+    d_prandtl  = getDoubleParameter( myparams, "Prandtl", 0.0 );
+    d_friction = getDoubleParameter( myparams, "Friction_Factor", 0.001 );
+    d_turbulenceCoef = getDoubleParameter( myparams, "Turbulence_Coefficient", 1.0 );
+    d_KG             = getDoubleParameter( myparams, "Lateral_Form_Loss_Coefficient", 0.2 );
 
-      d_forceNoConduction = getBoolParameter(myparams,"Force_No_Conduction",false);
-      d_forceNoTurbulence = getBoolParameter(myparams,"Force_No_Turbulence",false);
-      d_forceNoHeatSource = getBoolParameter(myparams,"Force_No_Heat_Source",false);
-      d_forceNoFriction = getBoolParameter(myparams,"Force_No_Friction",false);
+    d_forceNoConduction = getBoolParameter( myparams, "Force_No_Conduction", false );
+    d_forceNoTurbulence = getBoolParameter( myparams, "Force_No_Turbulence", false );
+    d_forceNoHeatSource = getBoolParameter( myparams, "Force_No_Heat_Source", false );
+    d_forceNoFriction   = getBoolParameter( myparams, "Force_No_Friction", false );
 
-      // get additional parameters based on heat source type
-      d_source = getStringParameter(myparams,"Heat_Source_Type","totalHeatGeneration");
-      if ((d_source == "totalHeatGeneration")||(d_source == "totalHeatGenerationWithDiscretizationError")) {
-          d_Q            = getDoubleParameter(myparams,"Max_Rod_Power",66.0e3);
-          d_QFraction    = (myparams->d_db)->getDoubleArray("Rod_Power_Fraction");
-          d_heatShape = getStringParameter(myparams,"Heat_Shape","Sinusoidal");
-      }
+    // get additional parameters based on heat source type
+    d_source = getStringParameter( myparams, "Heat_Source_Type", "totalHeatGeneration" );
+    if ( ( d_source == "totalHeatGeneration" ) ||
+         ( d_source == "totalHeatGenerationWithDiscretizationError" ) ) {
+        d_Q         = getDoubleParameter( myparams, "Max_Rod_Power", 66.0e3 );
+        d_QFraction = ( myparams->d_db )->getDoubleArray( "Rod_Power_Fraction" );
+        d_heatShape = getStringParameter( myparams, "Heat_Shape", "Sinusoidal" );
+    }
 
-      // get additional parameters based on friction model
-      d_frictionModel = getStringParameter(myparams,"Friction_Model","Constant");
-      if (d_frictionModel == "Constant") {
-         d_friction  = getDoubleParameter(myparams,"Friction_Factor",0.001);  
-      } else if (d_frictionModel == "Selander"){
-         d_roughness = getDoubleParameter(myparams,"Surface_Roughness",0.0015e-3);  
-      }
+    // get additional parameters based on friction model
+    d_frictionModel = getStringParameter( myparams, "Friction_Model", "Constant" );
+    if ( d_frictionModel == "Constant" ) {
+        d_friction = getDoubleParameter( myparams, "Friction_Factor", 0.001 );
+    }
+    else if ( d_frictionModel == "Selander" ) {
+        d_roughness = getDoubleParameter( myparams, "Surface_Roughness", 0.0015e-3 );
+    }
 
-      // get form loss parameters if there are grid spacers
-      d_NGrid = getIntegerParameter(myparams,"Number_GridSpacers",0);
-      if (d_NGrid > 0){
-         d_zMinGrid = (myparams->d_db)->getDoubleArray("zMin_GridSpacers");
-         d_zMaxGrid = (myparams->d_db)->getDoubleArray("zMax_GridSpacers");
-         d_lossGrid = (myparams->d_db)->getDoubleArray("LossCoefficient_GridSpacers");
-         // check that sizes of grid spacer loss vectors are consistent with the provided number of grid spacers
-         if (!(d_NGrid == d_zMinGrid.size() && d_NGrid == d_zMaxGrid.size() && d_NGrid == d_lossGrid.size()))
-            AMP_ERROR("The size of a grid spacer loss vector is inconsistent with the provided number of grid spacers");
-      }
+    // get form loss parameters if there are grid spacers
+    d_NGrid = getIntegerParameter( myparams, "Number_GridSpacers", 0 );
+    if ( d_NGrid > 0 ) {
+        d_zMinGrid = ( myparams->d_db )->getDoubleArray( "zMin_GridSpacers" );
+        d_zMaxGrid = ( myparams->d_db )->getDoubleArray( "zMax_GridSpacers" );
+        d_lossGrid = ( myparams->d_db )->getDoubleArray( "LossCoefficient_GridSpacers" );
+        // check that sizes of grid spacer loss vectors are consistent with the provided number of
+        // grid spacers
+        if ( !( d_NGrid == d_zMinGrid.size() && d_NGrid == d_zMaxGrid.size() &&
+                d_NGrid == d_lossGrid.size() ) )
+            AMP_ERROR( "The size of a grid spacer loss vector is inconsistent with the provided "
+                       "number of grid spacers" );
+    }
 
-      // get subchannel physics model
-      d_subchannelPhysicsModel = myparams->d_subchannelPhysicsModel;  
-    
+    // get subchannel physics model
+    d_subchannelPhysicsModel = myparams->d_subchannelPhysicsModel;
+
     // Check for obsolete properites
-    if ( (myparams->d_db)->keyExists("Rod_Diameter") )
-        AMP_WARNING("Field 'Rod_Diameter' is obsolete and should be removed from database");
-    if ( (myparams->d_db)->keyExists("Channel_Diameter") )
-        AMP_WARNING("Field 'Channel_Diameter' is obsolete and should be removed from database");
-    if ( (myparams->d_db)->keyExists("Lattice_Pitch") )
-        AMP_WARNING("Field 'Lattice_Pitch' is obsolete and should be removed from database");
-    if ( (myparams->d_db)->keyExists("ChannelFractions") )
-        AMP_WARNING("Field 'ChannelFractions' is obsolete and should be removed from database");
-    if ( (myparams->d_db)->keyExists("Mass_Flow_Rate") )
-        AMP_WARNING("Field 'Mass_Flow_Rate' is obsolete and should be removed from database");
-    
+    if ( ( myparams->d_db )->keyExists( "Rod_Diameter" ) )
+        AMP_WARNING( "Field 'Rod_Diameter' is obsolete and should be removed from database" );
+    if ( ( myparams->d_db )->keyExists( "Channel_Diameter" ) )
+        AMP_WARNING( "Field 'Channel_Diameter' is obsolete and should be removed from database" );
+    if ( ( myparams->d_db )->keyExists( "Lattice_Pitch" ) )
+        AMP_WARNING( "Field 'Lattice_Pitch' is obsolete and should be removed from database" );
+    if ( ( myparams->d_db )->keyExists( "ChannelFractions" ) )
+        AMP_WARNING( "Field 'ChannelFractions' is obsolete and should be removed from database" );
+    if ( ( myparams->d_db )->keyExists( "Mass_Flow_Rate" ) )
+        AMP_WARNING( "Field 'Mass_Flow_Rate' is obsolete and should be removed from database" );
+
     // Get the subchannel properties from the mesh
     std::vector<double> x, y;
-    Subchannel::getSubchannelProperties( d_Mesh, myparams->clad_x, myparams->clad_y, myparams->clad_d, 
-        x, y, d_channelArea, d_channelDiam, d_rodDiameter, d_rodFraction );
-    AMP_ASSERT(d_channelArea.size()==d_numSubchannels);
+    Subchannel::getSubchannelProperties( d_Mesh,
+                                         myparams->clad_x,
+                                         myparams->clad_y,
+                                         myparams->clad_d,
+                                         x,
+                                         y,
+                                         d_channelArea,
+                                         d_channelDiam,
+                                         d_rodDiameter,
+                                         d_rodFraction );
+    AMP_ASSERT( d_channelArea.size() == d_numSubchannels );
     // compute total area
     double total_area = 0.0;
-    for (size_t i=0; i<d_numSubchannels; i++)
-        total_area += d_channelArea[i];
+    for ( size_t i = 0; i < d_numSubchannels; i++ ) total_area += d_channelArea[i];
     // inlet mass flow rate for each subchannel
-    d_channelMass.resize(d_numSubchannels,0.0);
-    for (size_t i=0; i<d_numSubchannels; i++)
-        d_channelMass[i] = d_mass*d_channelArea[i]/total_area;
+    d_channelMass.resize( d_numSubchannels, 0.0 );
+    for ( size_t i       = 0; i < d_numSubchannels; i++ )
+        d_channelMass[i] = d_mass * d_channelArea[i] / total_area;
 
     // Get the subchannel elements
-    d_ownSubChannel = std::vector<bool>(d_numSubchannels,false);
-    d_subchannelElem = std::vector<std::vector<AMP::Mesh::MeshElement> >(d_numSubchannels,std::vector<AMP::Mesh::MeshElement>(0));
-    AMP::Mesh::MeshIterator el = d_Mesh->getIterator(AMP::Mesh::Volume, 0);
-    for(size_t i=0; i<el.size(); i++) {
+    d_ownSubChannel  = std::vector<bool>( d_numSubchannels, false );
+    d_subchannelElem = std::vector<std::vector<AMP::Mesh::MeshElement>>(
+        d_numSubchannels, std::vector<AMP::Mesh::MeshElement>( 0 ) );
+    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+    for ( size_t i = 0; i < el.size(); i++ ) {
         std::vector<double> center = el->centroid();
-        int index = getSubchannelIndex( center[0], center[1] );
-        if ( index>=0 ){
-           d_ownSubChannel[index] = true;
-           d_subchannelElem[index].push_back( *el );
+        int index                  = getSubchannelIndex( center[0], center[1] );
+        if ( index >= 0 ) {
+            d_ownSubChannel[index] = true;
+            d_subchannelElem[index].push_back( *el );
         }
         ++el;
     }
-    d_subchannelFace = std::vector<std::vector<AMP::Mesh::MeshElement> >(d_numSubchannels,std::vector<AMP::Mesh::MeshElement>(0));
-    for (size_t i=0; i<d_numSubchannels; i++) {
-        if ( !d_ownSubChannel[i] )
-            continue;
-        AMP::Mesh::MeshIterator localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
+    d_subchannelFace = std::vector<std::vector<AMP::Mesh::MeshElement>>(
+        d_numSubchannels, std::vector<AMP::Mesh::MeshElement>( 0 ) );
+    for ( size_t i = 0; i < d_numSubchannels; i++ ) {
+        if ( !d_ownSubChannel[i] ) continue;
+        AMP::Mesh::MeshIterator localSubchannelIt =
+            AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
         AMP::Mesh::Mesh::shared_ptr localSubchannel = d_Mesh->Subset( localSubchannelIt, false );
-        AMP::Mesh::MeshIterator face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator(localSubchannel, 0);
-        for (size_t j=0; j<face.size(); j++) {
+        AMP::Mesh::MeshIterator face =
+            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( localSubchannel, 0 );
+        for ( size_t j = 0; j < face.size(); j++ ) {
             d_subchannelFace[i].push_back( *face );
             ++face;
         }
@@ -148,189 +165,213 @@ void SubchannelFourEqNonlinearOperator :: reset(const AMP::shared_ptr<OperatorPa
 }
 
 // function used in reset to get double parameter or set default if missing
-double SubchannelFourEqNonlinearOperator::getDoubleParameter(	AMP::shared_ptr<SubchannelOperatorParameters> myparams,
-								std::string paramString,
-                                                                double defaultValue)
+double SubchannelFourEqNonlinearOperator::getDoubleParameter(
+    AMP::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::string paramString,
+    double defaultValue )
 {
-    bool keyExists = (myparams->d_db)->keyExists(paramString);
-    if (keyExists) {
-       return (myparams->d_db)->getDouble(paramString);
-    } else {
-       AMP_WARNING("Key '" + paramString+"' was not provided. Using default value: " << defaultValue << "\n");
-       return defaultValue;
+    bool keyExists = ( myparams->d_db )->keyExists( paramString );
+    if ( keyExists ) {
+        return ( myparams->d_db )->getDouble( paramString );
+    }
+    else {
+        AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
+                     << defaultValue
+                     << "\n" );
+        return defaultValue;
     }
 }
 
 // function used in reset to get integer parameter or set default if missing
-int SubchannelFourEqNonlinearOperator::getIntegerParameter(	AMP::shared_ptr<SubchannelOperatorParameters> myparams,
-								std::string paramString,
-                                                                int defaultValue)
+int SubchannelFourEqNonlinearOperator::getIntegerParameter(
+    AMP::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::string paramString,
+    int defaultValue )
 {
-    bool keyExists = (myparams->d_db)->keyExists(paramString);
-    if (keyExists) {
-       return (myparams->d_db)->getInteger(paramString);
-    } else {
-       AMP_WARNING("Key '" + paramString + "' was not provided. Using default value: " << defaultValue << "\n");
-       return defaultValue;
+    bool keyExists = ( myparams->d_db )->keyExists( paramString );
+    if ( keyExists ) {
+        return ( myparams->d_db )->getInteger( paramString );
+    }
+    else {
+        AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
+                     << defaultValue
+                     << "\n" );
+        return defaultValue;
     }
 }
 
 // function used in reset to get string parameter or set default if missing
-std::string SubchannelFourEqNonlinearOperator::getStringParameter(	AMP::shared_ptr<SubchannelOperatorParameters> myparams,
-									std::string paramString,
-                                                                	std::string defaultValue)
+std::string SubchannelFourEqNonlinearOperator::getStringParameter(
+    AMP::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::string paramString,
+    std::string defaultValue )
 {
-    bool keyExists = (myparams->d_db)->keyExists(paramString);
-    if (keyExists) {
-       return (myparams->d_db)->getString(paramString);
-    } else {
-       AMP_WARNING("Key '" + paramString + "' was not provided. Using default value: " << defaultValue << "\n");
-       return defaultValue;
+    bool keyExists = ( myparams->d_db )->keyExists( paramString );
+    if ( keyExists ) {
+        return ( myparams->d_db )->getString( paramString );
+    }
+    else {
+        AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
+                     << defaultValue
+                     << "\n" );
+        return defaultValue;
     }
 }
 
 // function used in reset to get bool parameter or set default if missing
-bool SubchannelFourEqNonlinearOperator::getBoolParameter(	AMP::shared_ptr<SubchannelOperatorParameters> myparams,
-									std::string paramString,
-                                                                	bool defaultValue)
+bool SubchannelFourEqNonlinearOperator::getBoolParameter(
+    AMP::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::string paramString,
+    bool defaultValue )
 {
-    bool keyExists = (myparams->d_db)->keyExists(paramString);
-    if (keyExists) {
-       return (myparams->d_db)->getBool(paramString);
-    } else {
-       AMP_WARNING("Key '" + paramString + "' was not provided. Using default value: " << defaultValue << "\n");
-       return defaultValue;
+    bool keyExists = ( myparams->d_db )->keyExists( paramString );
+    if ( keyExists ) {
+        return ( myparams->d_db )->getBool( paramString );
+    }
+    else {
+        AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
+                     << defaultValue
+                     << "\n" );
+        return defaultValue;
     }
 }
 
 // function used to get all lateral gaps
 void SubchannelFourEqNonlinearOperator::getLateralFaces(
-   AMP::Mesh::Mesh::shared_ptr mesh,
-   std::map<std::vector<double>,AMP::Mesh::MeshElement> &interiorLateralFaceMap,
-   std::map<std::vector<double>,AMP::Mesh::MeshElement> &exteriorLateralFaceMap
-)
+    AMP::Mesh::Mesh::shared_ptr mesh,
+    std::map<std::vector<double>, AMP::Mesh::MeshElement> &interiorLateralFaceMap,
+    std::map<std::vector<double>, AMP::Mesh::MeshElement> &exteriorLateralFaceMap )
 {
-   // get iterator over all faces of mesh
-   AMP::Mesh::MeshIterator face = mesh->getIterator(AMP::Mesh::Face,0);
-   // loop over faces
-   for (; face != face.end(); face++) {
-      // check that face is vertical
-      // ---------------------------
-      // get centroid of current face
-      std::vector<double> faceCentroid = face->centroid();
-      // get vertices of current face
-      std::vector<AMP::Mesh::MeshElement> vertices = face->getElements(AMP::Mesh::Vertex);
+    // get iterator over all faces of mesh
+    AMP::Mesh::MeshIterator face = mesh->getIterator( AMP::Mesh::Face, 0 );
+    // loop over faces
+    for ( ; face != face.end(); face++ ) {
+        // check that face is vertical
+        // ---------------------------
+        // get centroid of current face
+        std::vector<double> faceCentroid = face->centroid();
+        // get vertices of current face
+        std::vector<AMP::Mesh::MeshElement> vertices = face->getElements( AMP::Mesh::Vertex );
 
-      bool perpindicular_to_x = true; // is the current face perpindicular to x-axis?
-      bool perpindicular_to_y = true; // is the current face perpindicular to y-axis?
-      // loop over vertices of current face
-      for (size_t j=0; j<vertices.size(); ++j) {
-        // get coordinates of current vertex
-        std::vector<double> vertexCoord = vertices[j].coord();
-        // if any vertex does not have the same x-coordinate as the face centroid,
-        if ( !AMP::Utilities::approx_equal(vertexCoord[0],faceCentroid[0], 1.0e-6) )
-          // then the face is not perpindicular to x-axis
-          perpindicular_to_x = false;
-        // if any vertex does not have the same y-coordinate as the face centroid,
-        if ( !AMP::Utilities::approx_equal(vertexCoord[1],faceCentroid[1], 1.0e-6) )
-          // then the face is not perpindicular to y-axis
-          perpindicular_to_y = false;
-      }
-      // check that face is in the interior of the mesh; it must have two adjacent cells
-      // -------------------------------------------------------------------------------
-      // if the face is vertical
-      if (perpindicular_to_x || perpindicular_to_y) {
-         // if the face has more than 1 adjacent cell
-         if ((mesh->getElementParents(*face,AMP::Mesh::Volume)).size() > 1) {
-            // insert face into map with centroid
-            interiorLateralFaceMap.insert(std::pair<std::vector<double>,AMP::Mesh::MeshElement>(faceCentroid,*face));
-         } else {
-            // insert face into exterior lateral face map with centroid
-            exteriorLateralFaceMap.insert(std::pair<std::vector<double>,AMP::Mesh::MeshElement>(faceCentroid,*face));
-         }
-      }
-   }// end loop over faces
-   return;
+        bool perpindicular_to_x = true; // is the current face perpindicular to x-axis?
+        bool perpindicular_to_y = true; // is the current face perpindicular to y-axis?
+        // loop over vertices of current face
+        for ( size_t j = 0; j < vertices.size(); ++j ) {
+            // get coordinates of current vertex
+            std::vector<double> vertexCoord = vertices[j].coord();
+            // if any vertex does not have the same x-coordinate as the face centroid,
+            if ( !AMP::Utilities::approx_equal( vertexCoord[0], faceCentroid[0], 1.0e-6 ) )
+                // then the face is not perpindicular to x-axis
+                perpindicular_to_x = false;
+            // if any vertex does not have the same y-coordinate as the face centroid,
+            if ( !AMP::Utilities::approx_equal( vertexCoord[1], faceCentroid[1], 1.0e-6 ) )
+                // then the face is not perpindicular to y-axis
+                perpindicular_to_y = false;
+        }
+        // check that face is in the interior of the mesh; it must have two adjacent cells
+        // -------------------------------------------------------------------------------
+        // if the face is vertical
+        if ( perpindicular_to_x || perpindicular_to_y ) {
+            // if the face has more than 1 adjacent cell
+            if ( ( mesh->getElementParents( *face, AMP::Mesh::Volume ) ).size() > 1 ) {
+                // insert face into map with centroid
+                interiorLateralFaceMap.insert(
+                    std::pair<std::vector<double>, AMP::Mesh::MeshElement>( faceCentroid, *face ) );
+            }
+            else {
+                // insert face into exterior lateral face map with centroid
+                exteriorLateralFaceMap.insert(
+                    std::pair<std::vector<double>, AMP::Mesh::MeshElement>( faceCentroid, *face ) );
+            }
+        }
+    } // end loop over faces
+    return;
 }
 
 // function to map x,y position to gap widths
-std::map<std::vector<double>,double> SubchannelFourEqNonlinearOperator::getGapWidths(
-   AMP::Mesh::Mesh::shared_ptr mesh,
-   const std::vector<double>& clad_x,
-   const std::vector<double>& clad_y,
-   const std::vector<double>& clad_d
-)
+std::map<std::vector<double>, double>
+SubchannelFourEqNonlinearOperator::getGapWidths( AMP::Mesh::Mesh::shared_ptr mesh,
+                                                 const std::vector<double> &clad_x,
+                                                 const std::vector<double> &clad_y,
+                                                 const std::vector<double> &clad_d )
 {
-   std::map<std::vector<double>,double> gapWidthMap;
-   size_t Nz = d_z.size()-1;
-   double topZ = 0.5*(d_z[Nz]+d_z[Nz-1]);
-   // get iterator over all faces of mesh
-   AMP::Mesh::MeshIterator face = mesh->getIterator(AMP::Mesh::Face,0);
-   for (; face != face.end(); face++) {
-      std::vector<double> faceCentroid = face->centroid();
-      if (AMP::Utilities::approx_equal(faceCentroid[2],topZ,1.0e-12)) {
-         // if the face has more than 1 adjacent cell
-         if ((mesh->getElementParents(*face,AMP::Mesh::Volume)).size() > 1) {
-            // create vector of xy position of gap face
-            std::vector<double> xyPos(2);
-            xyPos[0] = faceCentroid[0];
-            xyPos[1] = faceCentroid[1];
-            // get vertices of current face
-            std::vector<AMP::Mesh::MeshElement> vertices = face->getElements(AMP::Mesh::Vertex);
-            // loop over vertices of current face
-            bool topVertex1Found = false;
-            double x1 = 0.0;
-            double y1 = 0.0;
-            double correction = 0.0; // gap width correction for exclusion of clad
-            double gapWidth = 0.0;
-            for (size_t j=0; j<vertices.size(); ++j) {
-               // get coordinates of current vertex
-               std::vector<double> vertexCoord = vertices[j].coord();
-               if (AMP::Utilities::approx_equal(vertexCoord[2],d_z[Nz],1.0e-12)) {
-                  if (topVertex1Found) { // second top vertex has been found
-                     // check for clad centered at this vertex
-                     for (size_t k=0; k < clad_x.size(); k++) {
-                        if ( fabs(clad_x[k] - x1) < 1.0e-12 && fabs(clad_y[k] - y1) < 1.0e-12 ) {
-                           correction = correction - 0.5*clad_d[k];
-                           break;
+    std::map<std::vector<double>, double> gapWidthMap;
+    size_t Nz   = d_z.size() - 1;
+    double topZ = 0.5 * ( d_z[Nz] + d_z[Nz - 1] );
+    // get iterator over all faces of mesh
+    AMP::Mesh::MeshIterator face = mesh->getIterator( AMP::Mesh::Face, 0 );
+    for ( ; face != face.end(); face++ ) {
+        std::vector<double> faceCentroid = face->centroid();
+        if ( AMP::Utilities::approx_equal( faceCentroid[2], topZ, 1.0e-12 ) ) {
+            // if the face has more than 1 adjacent cell
+            if ( ( mesh->getElementParents( *face, AMP::Mesh::Volume ) ).size() > 1 ) {
+                // create vector of xy position of gap face
+                std::vector<double> xyPos( 2 );
+                xyPos[0] = faceCentroid[0];
+                xyPos[1] = faceCentroid[1];
+                // get vertices of current face
+                std::vector<AMP::Mesh::MeshElement> vertices =
+                    face->getElements( AMP::Mesh::Vertex );
+                // loop over vertices of current face
+                bool topVertex1Found = false;
+                double x1            = 0.0;
+                double y1            = 0.0;
+                double correction    = 0.0; // gap width correction for exclusion of clad
+                double gapWidth      = 0.0;
+                for ( size_t j = 0; j < vertices.size(); ++j ) {
+                    // get coordinates of current vertex
+                    std::vector<double> vertexCoord = vertices[j].coord();
+                    if ( AMP::Utilities::approx_equal( vertexCoord[2], d_z[Nz], 1.0e-12 ) ) {
+                        if ( topVertex1Found ) { // second top vertex has been found
+                            // check for clad centered at this vertex
+                            for ( size_t k = 0; k < clad_x.size(); k++ ) {
+                                if ( fabs( clad_x[k] - x1 ) < 1.0e-12 &&
+                                     fabs( clad_y[k] - y1 ) < 1.0e-12 ) {
+                                    correction = correction - 0.5 * clad_d[k];
+                                    break;
+                                }
+                            }
+                            // calculate gap width
+                            gapWidth = std::pow( std::pow( x1 - vertexCoord[0], 2 ) +
+                                                     std::pow( y1 - vertexCoord[1], 2 ),
+                                                 0.5 ) +
+                                       correction;
+                            break;
                         }
-                     }
-                     // calculate gap width
-                     gapWidth = std::pow(std::pow(x1-vertexCoord[0],2)+std::pow(y1-vertexCoord[1],2),0.5) + correction;
-                     break;
-                  } else { // first top vertex has been found
-                     x1 = vertexCoord[0];
-                     y1 = vertexCoord[1];
-                     // check for clad centered at this vertex
-                     for (size_t k=0; k < clad_x.size(); k++) {
-                        if ( fabs(clad_x[k] - x1) < 1.0e-12 && fabs(clad_y[k] - y1) < 1.0e-12 ) {
-                           correction = -0.5*clad_d[k];
-                           break;
+                        else { // first top vertex has been found
+                            x1 = vertexCoord[0];
+                            y1 = vertexCoord[1];
+                            // check for clad centered at this vertex
+                            for ( size_t k = 0; k < clad_x.size(); k++ ) {
+                                if ( fabs( clad_x[k] - x1 ) < 1.0e-12 &&
+                                     fabs( clad_y[k] - y1 ) < 1.0e-12 ) {
+                                    correction = -0.5 * clad_d[k];
+                                    break;
+                                }
+                            }
+                            topVertex1Found = true; // first top vertex has been found
                         }
-                     }
-                     topVertex1Found = true; // first top vertex has been found
-                  }
-               }
+                    }
+                }
+                // insert face into map with xy position
+                gapWidthMap.insert( std::pair<std::vector<double>, double>( xyPos, gapWidth ) );
             }
-            // insert face into map with xy position
-            gapWidthMap.insert(std::pair<std::vector<double>,double>(xyPos,gapWidth));
-         }
-      }
-   }
-   return gapWidthMap;
+        }
+    }
+    return gapWidthMap;
 }
 
 // function used to get all of the unique x,y,z points in subchannel mesh
-void SubchannelFourEqNonlinearOperator::fillSubchannelGrid(AMP::Mesh::Mesh::shared_ptr mesh)
+void SubchannelFourEqNonlinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Create the grid for all processors
     std::set<double> x, y, z;
     if ( mesh.get() != NULL ) {
         AMP::Mesh::MeshIterator vertex = mesh->getIterator( AMP::Mesh::Vertex, 0 );
         // for all vertices in mesh
-        for (size_t i=0; i<vertex.size(); i++) {
+        for ( size_t i = 0; i < vertex.size(); i++ ) {
             std::vector<double> coord = vertex->coord();
-            AMP_ASSERT(coord.size()==3);
+            AMP_ASSERT( coord.size() == 3 );
             // insert x,y,z points into sets, even if duplicate
             x.insert( coord[0] );
             y.insert( coord[1] );
@@ -338,552 +379,622 @@ void SubchannelFourEqNonlinearOperator::fillSubchannelGrid(AMP::Mesh::Mesh::shar
             ++vertex;
         }
     }
-    d_Mesh->getComm().setGather(x);
-    d_Mesh->getComm().setGather(y);
-    d_Mesh->getComm().setGather(z);
+    d_Mesh->getComm().setGather( x );
+    d_Mesh->getComm().setGather( y );
+    d_Mesh->getComm().setGather( z );
     double last = 1.0e300; // arbitary large number
     // erase duplicate x points
-    std::set<double>::iterator it=x.begin();
-    while ( it!=x.end() ) {
-        if ( Utilities::approx_equal(last,*it,1e-12) ) {
-            x.erase(it++); // increments before erasing
-        } else {
+    std::set<double>::iterator it = x.begin();
+    while ( it != x.end() ) {
+        if ( Utilities::approx_equal( last, *it, 1e-12 ) ) {
+            x.erase( it++ ); // increments before erasing
+        }
+        else {
             last = *it;
             ++it;
         }
     }
     // erase duplicate y points
     last = 1.0e300; // arbitary large number
-    it=y.begin();
-    while ( it!=y.end() ) {
-        if ( Utilities::approx_equal(last,*it,1e-12) ) {
-            y.erase(it++); // increments before erasing
-        } else {
+    it   = y.begin();
+    while ( it != y.end() ) {
+        if ( Utilities::approx_equal( last, *it, 1e-12 ) ) {
+            y.erase( it++ ); // increments before erasing
+        }
+        else {
             last = *it;
             ++it;
         }
     }
     // erase duplicate z points
     last = 1.0e300; // arbitary large number
-    it=z.begin();
-    while ( it!=z.end() ) {
-        if ( Utilities::approx_equal(last,*it,1e-12) ) {
-            z.erase(it++); // increments before erasing
-        } else {
+    it   = z.begin();
+    while ( it != z.end() ) {
+        if ( Utilities::approx_equal( last, *it, 1e-12 ) ) {
+            z.erase( it++ ); // increments before erasing
+        }
+        else {
             last = *it;
             ++it;
         }
     }
-    d_x = std::vector<double>(x.begin(),x.end());
-    d_y = std::vector<double>(y.begin(),y.end());
-    d_z = std::vector<double>(z.begin(),z.end());
-    size_t Nx = d_x.size()-1; // number of mesh divisions along x-axis
-    size_t Ny = d_y.size()-1; // number of mesh divisions along y-axis
-    size_t Nz = d_z.size()-1; // number of mesh divisions along z-axis
-    if ( mesh.get() != NULL ) 
+    d_x       = std::vector<double>( x.begin(), x.end() );
+    d_y       = std::vector<double>( y.begin(), y.end() );
+    d_z       = std::vector<double>( z.begin(), z.end() );
+    size_t Nx = d_x.size() - 1; // number of mesh divisions along x-axis
+    size_t Ny = d_y.size() - 1; // number of mesh divisions along y-axis
+    size_t Nz = d_z.size() - 1; // number of mesh divisions along z-axis
+    if ( mesh.get() != NULL )
         // check that computed number of elements matches that found by numGlobalElements()
-        AMP_ASSERT(Nx*Ny*Nz==mesh->numGlobalElements(AMP::Mesh::Volume));
+        AMP_ASSERT( Nx * Ny * Nz == mesh->numGlobalElements( AMP::Mesh::Volume ) );
     // compute number of subchannels
-    d_numSubchannels = Nx*Ny;
+    d_numSubchannels = Nx * Ny;
 }
 
 // function to get a unique index for a subchannel based on its x,y coordinates
 int SubchannelFourEqNonlinearOperator::getSubchannelIndex( double x, double y )
 {
     // get index of first entry in subchannel x mesh >= x
-    size_t ix = Utilities::findfirst(d_x,x);
+    size_t ix = Utilities::findfirst( d_x, x );
     // get index of first entry in subchannel y mesh >= y
-    size_t iy = Utilities::findfirst(d_y,y);
+    size_t iy = Utilities::findfirst( d_y, y );
     // check that indices are valid
-    if ( ix>0 && ix<d_x.size() && iy>0 && iy<d_y.size() ) {
-        size_t Nx = d_x.size()-1;
-        size_t Ny = d_y.size()-1;
-        return (ix-1)+((Ny-1)-(iy-1))*Nx;
-    } else {
-        AMP_ERROR("Invalid indices found for getSubchannelIndex()");
+    if ( ix > 0 && ix < d_x.size() && iy > 0 && iy < d_y.size() ) {
+        size_t Nx = d_x.size() - 1;
+        size_t Ny = d_y.size() - 1;
+        return ( ix - 1 ) + ( ( Ny - 1 ) - ( iy - 1 ) ) * Nx;
+    }
+    else {
+        AMP_ERROR( "Invalid indices found for getSubchannelIndex()" );
     }
     return 0;
 }
 
 // apply
-void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::const_shared_ptr u,
-						AMP::LinearAlgebra::Vector::shared_ptr r)
+void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                               AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    PROFILE_START("apply");
+    PROFILE_START( "apply" );
 
     // Check that the operator has been initialized
-    if ( !d_initialized )
-        reset(d_params);
+    if ( !d_initialized ) reset( d_params );
 
-      // ensure that solution and residual vectors aren't NULL
-      AMP_INSIST( ((r.get()) != NULL), "NULL Residual Vector" );
-      AMP_INSIST( ((u.get()) != NULL), "NULL Solution Vector" );
+    // ensure that solution and residual vectors aren't NULL
+    AMP_INSIST( ( ( r.get() ) != NULL ), "NULL Residual Vector" );
+    AMP_INSIST( ( ( u.get() ) != NULL ), "NULL Solution Vector" );
 
-      // Constants
-      const double pi = 4.0*atan(1.0); // pi
-      const double gravity = 9.805;          // acceleration due to gravity [m/s2]
-      const double m_scale = 1.0/Subchannel::scaleAxialMassFlowRate;
-      const double h_scale = 1.0/Subchannel::scaleEnthalpy;
-      const double p_scale = 1.0/Subchannel::scalePressure;
-      const double w_scale = 1.0/Subchannel::scaleLateralMassFlowRate;
+    // Constants
+    const double pi      = 4.0 * atan( 1.0 ); // pi
+    const double gravity = 9.805;             // acceleration due to gravity [m/s2]
+    const double m_scale = 1.0 / Subchannel::scaleAxialMassFlowRate;
+    const double h_scale = 1.0 / Subchannel::scaleEnthalpy;
+    const double p_scale = 1.0 / Subchannel::scalePressure;
+    const double w_scale = 1.0 / Subchannel::scaleLateralMassFlowRate;
 
-      // Subset the vectors
-      AMP::LinearAlgebra::Vector::const_shared_ptr inputVec  = subsetInputVector( u );
-      AMP::LinearAlgebra::Vector::shared_ptr       outputVec = subsetOutputVector( r );
+    // Subset the vectors
+    AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
+    AMP::LinearAlgebra::Vector::shared_ptr outputVec      = subsetOutputVector( r );
 
-      AMP::Discretization::DOFManager::shared_ptr dof_manager = inputVec->getDOFManager();
-      AMP::Discretization::DOFManager::shared_ptr cladDofManager;
-      if (d_source == "averageCladdingTemperature"){
-         cladDofManager = d_cladTemperature->getDOFManager();
-      }
+    AMP::Discretization::DOFManager::shared_ptr dof_manager = inputVec->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr cladDofManager;
+    if ( d_source == "averageCladdingTemperature" ) {
+        cladDofManager = d_cladTemperature->getDOFManager();
+    }
 
-      // get all of the unique x,y,z points in subchannel mesh
-      fillSubchannelGrid(d_Mesh);
+    // get all of the unique x,y,z points in subchannel mesh
+    fillSubchannelGrid( d_Mesh );
 
-      // get map of all of the lateral faces to their centroids
-      std::map<std::vector<double>,AMP::Mesh::MeshElement> interiorLateralFaceMap;
-      std::map<std::vector<double>,AMP::Mesh::MeshElement> exteriorLateralFaceMap;
-      getLateralFaces(d_Mesh,interiorLateralFaceMap,exteriorLateralFaceMap);
-      
-      // get map of gap widths to their xy positions
-      std::map<std::vector<double>,double> gapWidthMap = getGapWidths(d_Mesh,d_params->clad_x,d_params->clad_y,d_params->clad_d);
+    // get map of all of the lateral faces to their centroids
+    std::map<std::vector<double>, AMP::Mesh::MeshElement> interiorLateralFaceMap;
+    std::map<std::vector<double>, AMP::Mesh::MeshElement> exteriorLateralFaceMap;
+    getLateralFaces( d_Mesh, interiorLateralFaceMap, exteriorLateralFaceMap );
 
-      // compute height of subchannels
-      std::vector<double> box = d_Mesh->getBoundingBox();
-      const double height = box[5] - box[4];
+    // get map of gap widths to their xy positions
+    std::map<std::vector<double>, double> gapWidthMap =
+        getGapWidths( d_Mesh, d_params->clad_x, d_params->clad_y, d_params->clad_d );
 
-      // create vector of the mid points of each axial interval
-      std::vector<double> zMid(d_z.size()-1);
-      for (size_t j = 0; j < d_z.size()-1; ++j)
-         zMid[j] = d_z[j] + 0.5*(d_z[j+1] - d_z[j]);
+    // compute height of subchannels
+    std::vector<double> box = d_Mesh->getBoundingBox();
+    const double height     = box[5] - box[4];
 
-      AMP::Mesh::MeshIterator cell = d_Mesh->getIterator(AMP::Mesh::Volume, 0); // iterator for cells of mesh
+    // create vector of the mid points of each axial interval
+    std::vector<double> zMid( d_z.size() - 1 );
+    for ( size_t j = 0; j < d_z.size() - 1; ++j ) zMid[j] = d_z[j] + 0.5 * ( d_z[j + 1] - d_z[j] );
 
-      std::vector<std::vector<AMP::Mesh::MeshElement> > d_elem(d_numSubchannels); // array of array of elements for each subchannel
-      std::vector<bool> d_ownSubChannel(d_numSubchannels);
+    AMP::Mesh::MeshIterator cell =
+        d_Mesh->getIterator( AMP::Mesh::Volume, 0 ); // iterator for cells of mesh
 
-      // for each cell,
-      for( ; cell != cell.end(); ++cell) {
+    std::vector<std::vector<AMP::Mesh::MeshElement>> d_elem(
+        d_numSubchannels ); // array of array of elements for each subchannel
+    std::vector<bool> d_ownSubChannel( d_numSubchannels );
+
+    // for each cell,
+    for ( ; cell != cell.end(); ++cell ) {
         std::vector<double> center = cell->centroid();
         // get the index of the subchannel
         int index = getSubchannelIndex( center[0], center[1] );
-        if ( index>=0 ){
-          d_ownSubChannel[index] = true;
-          // put cell into array of cells for that subchannel
-          d_elem[index].push_back( *cell );
+        if ( index >= 0 ) {
+            d_ownSubChannel[index] = true;
+            // put cell into array of cells for that subchannel
+            d_elem[index].push_back( *cell );
         }
-      }// end for cell
+    } // end for cell
 
-      // for each subchannel,
-      for(size_t isub =0; isub<d_numSubchannels; ++isub){
-        if ( !d_ownSubChannel[isub] )
-            continue;
+    // for each subchannel,
+    for ( size_t isub = 0; isub < d_numSubchannels; ++isub ) {
+        if ( !d_ownSubChannel[isub] ) continue;
 
-          // extract subchannel cells from d_elem[isub]
-          AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement> > subchannelElements( new std::vector<AMP::Mesh::MeshElement>() );
-          subchannelElements->reserve(d_numSubchannels);
-          for(size_t ielem=0; ielem<d_elem[isub].size(); ++ielem){
-            subchannelElements->push_back(d_elem[isub][ielem]);
-          }
-          AMP::Mesh::MeshIterator     localSubchannelCell = AMP::Mesh::MultiVectorIterator( subchannelElements ); // iterator over elements of current subchannel
-          // get subchannel index
-          std::vector<double> subchannelCentroid = localSubchannelCell->centroid();
-          size_t currentSubchannelIndex = getSubchannelIndex(subchannelCentroid[0],subchannelCentroid[1]);
+        // extract subchannel cells from d_elem[isub]
+        AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement>> subchannelElements(
+            new std::vector<AMP::Mesh::MeshElement>() );
+        subchannelElements->reserve( d_numSubchannels );
+        for ( size_t ielem = 0; ielem < d_elem[isub].size(); ++ielem ) {
+            subchannelElements->push_back( d_elem[isub][ielem] );
+        }
+        AMP::Mesh::MeshIterator localSubchannelCell = AMP::Mesh::MultiVectorIterator(
+            subchannelElements ); // iterator over elements of current subchannel
+        // get subchannel index
+        std::vector<double> subchannelCentroid = localSubchannelCell->centroid();
+        size_t currentSubchannelIndex =
+            getSubchannelIndex( subchannelCentroid[0], subchannelCentroid[1] );
 
-          // compute flux
-          std::vector<double> flux(d_z.size()-1);
-          if (d_source == "averageCladdingTemperature") {
-             AMP::Mesh::MeshIterator localSubchannelFace = AMP::Mesh::MultiVectorIterator( d_subchannelFace[isub] );
-             AMP_ASSERT(localSubchannelFace.size()==d_z.size());
-             AMP::Mesh::MeshIterator face = localSubchannelFace.begin();
-             std::vector<AMP::Mesh::MeshElementID> face_ids(face.size());
-             for (size_t j=0; j<face.size(); j++) {
+        // compute flux
+        std::vector<double> flux( d_z.size() - 1 );
+        if ( d_source == "averageCladdingTemperature" ) {
+            AMP::Mesh::MeshIterator localSubchannelFace =
+                AMP::Mesh::MultiVectorIterator( d_subchannelFace[isub] );
+            AMP_ASSERT( localSubchannelFace.size() == d_z.size() );
+            AMP::Mesh::MeshIterator face = localSubchannelFace.begin();
+            std::vector<AMP::Mesh::MeshElementID> face_ids( face.size() );
+            for ( size_t j = 0; j < face.size(); j++ ) {
                 std::vector<double> center = face->centroid();
-                AMP_ASSERT(Utilities::approx_equal(center[2],d_z[j]));
+                AMP_ASSERT( Utilities::approx_equal( center[2], d_z[j] ) );
                 face_ids[j] = face->globalID();
                 ++face;
-             }
-             flux = Subchannel::getHeatFluxClad( d_z, face_ids, d_channelDiam[isub], d_reynolds, d_prandtl, 
-                d_rodFraction[isub], d_subchannelPhysicsModel, inputVec, d_cladTemperature );
-          } else if (d_source == "averageHeatFlux") {
-             AMP_ERROR("Heat source type 'averageHeatFlux' not yet implemented.");
-          } else if (d_source == "totalHeatGeneration") {
-             AMP_ASSERT(d_QFraction.size()==d_numSubchannels);
-             flux = Subchannel::getHeatFluxGeneration( d_heatShape, d_z, d_rodDiameter[isub], d_Q );
-             // multiply by power fraction
-             for (size_t i=0; i < flux.size(); i++)
-                flux[i] = flux[i]*d_QFraction[isub];
-          } else if (d_source == "totalHeatGenerationWithDiscretizationError") {
-             AMP_ASSERT(d_QFraction.size()==d_numSubchannels);
-             flux = Subchannel::getHeatFluxGenerationWithDiscretizationError( d_heatShape, d_z, d_rodDiameter[isub], d_Q );
-             // multiply by power fraction
-             for (size_t i=0; i < flux.size(); i++)
-                flux[i] = flux[i]*d_QFraction[isub];
-          } else {
-             AMP_ERROR("Heat source type '"+d_source+"' is invalid");
-          }
+            }
+            flux = Subchannel::getHeatFluxClad( d_z,
+                                                face_ids,
+                                                d_channelDiam[isub],
+                                                d_reynolds,
+                                                d_prandtl,
+                                                d_rodFraction[isub],
+                                                d_subchannelPhysicsModel,
+                                                inputVec,
+                                                d_cladTemperature );
+        }
+        else if ( d_source == "averageHeatFlux" ) {
+            AMP_ERROR( "Heat source type 'averageHeatFlux' not yet implemented." );
+        }
+        else if ( d_source == "totalHeatGeneration" ) {
+            AMP_ASSERT( d_QFraction.size() == d_numSubchannels );
+            flux = Subchannel::getHeatFluxGeneration( d_heatShape, d_z, d_rodDiameter[isub], d_Q );
+            // multiply by power fraction
+            for ( size_t i = 0; i < flux.size(); i++ ) flux[i] = flux[i] * d_QFraction[isub];
+        }
+        else if ( d_source == "totalHeatGenerationWithDiscretizationError" ) {
+            AMP_ASSERT( d_QFraction.size() == d_numSubchannels );
+            flux = Subchannel::getHeatFluxGenerationWithDiscretizationError(
+                d_heatShape, d_z, d_rodDiameter[isub], d_Q );
+            // multiply by power fraction
+            for ( size_t i = 0; i < flux.size(); i++ ) flux[i] = flux[i] * d_QFraction[isub];
+        }
+        else {
+            AMP_ERROR( "Heat source type '" + d_source + "' is invalid" );
+        }
 
-          // loop over cells of current subchannel
-          double area = d_channelArea[isub]; // subchannel area
-          double D = d_channelDiam[isub];    // subchannel hydraulic diameter
-          for (; localSubchannelCell != localSubchannelCell.end(); ++localSubchannelCell) {
-             // get upper and lower axial faces of current cell
-             AMP::Mesh::MeshElement plusFace;  // upper axial face for current cell
-             AMP::Mesh::MeshElement minusFace; // lower axial face for current cell
-             // get the axial faces of cell
-             getAxialFaces(*localSubchannelCell,plusFace,minusFace);
+        // loop over cells of current subchannel
+        double area = d_channelArea[isub]; // subchannel area
+        double D    = d_channelDiam[isub]; // subchannel hydraulic diameter
+        for ( ; localSubchannelCell != localSubchannelCell.end(); ++localSubchannelCell ) {
+            // get upper and lower axial faces of current cell
+            AMP::Mesh::MeshElement plusFace;  // upper axial face for current cell
+            AMP::Mesh::MeshElement minusFace; // lower axial face for current cell
+            // get the axial faces of cell
+            getAxialFaces( *localSubchannelCell, plusFace, minusFace );
 
-             std::vector<double> plusFaceCentroid = plusFace.centroid();
-             std::vector<double> minusFaceCentroid = minusFace.centroid();
+            std::vector<double> plusFaceCentroid  = plusFace.centroid();
+            std::vector<double> minusFaceCentroid = minusFace.centroid();
 
-             // extract unknowns from solution vector
-             // -------------------------------------
-             std::vector<size_t> plusDofs;
-             std::vector<size_t> minusDofs;
-             dof_manager->getDOFs(plusFace.globalID(),plusDofs);
-             dof_manager->getDOFs(minusFace.globalID(),minusDofs);
-             double m_plus = m_scale*inputVec->getValueByGlobalID(plusDofs[0]);
-             double h_plus = h_scale*inputVec->getValueByGlobalID(plusDofs[1]);
-             double p_plus = p_scale*inputVec->getValueByGlobalID(plusDofs[2]);
-             double m_minus = m_scale*inputVec->getValueByGlobalID(minusDofs[0]);
-             double h_minus = h_scale*inputVec->getValueByGlobalID(minusDofs[1]);
-             double p_minus = p_scale*inputVec->getValueByGlobalID(minusDofs[2]);
+            // extract unknowns from solution vector
+            // -------------------------------------
+            std::vector<size_t> plusDofs;
+            std::vector<size_t> minusDofs;
+            dof_manager->getDOFs( plusFace.globalID(), plusDofs );
+            dof_manager->getDOFs( minusFace.globalID(), minusDofs );
+            double m_plus  = m_scale * inputVec->getValueByGlobalID( plusDofs[0] );
+            double h_plus  = h_scale * inputVec->getValueByGlobalID( plusDofs[1] );
+            double p_plus  = p_scale * inputVec->getValueByGlobalID( plusDofs[2] );
+            double m_minus = m_scale * inputVec->getValueByGlobalID( minusDofs[0] );
+            double h_minus = h_scale * inputVec->getValueByGlobalID( minusDofs[1] );
+            double p_minus = p_scale * inputVec->getValueByGlobalID( minusDofs[2] );
 
-             // compute additional quantities
-             // -----------------------------
-             double m_mid = 0.5*(m_plus + m_minus);
-             double p_mid = 0.5*(p_plus + p_minus);
+            // compute additional quantities
+            // -----------------------------
+            double m_mid = 0.5 * ( m_plus + m_minus );
+            double p_mid = 0.5 * ( p_plus + p_minus );
 
-             // evaluate specific volume
-             double vol_plus  = Volume(h_plus,p_plus);          // upper face
-             double vol_minus = Volume(h_minus,p_minus);        // lower face
+            // evaluate specific volume
+            double vol_plus  = Volume( h_plus, p_plus );   // upper face
+            double vol_minus = Volume( h_minus, p_minus ); // lower face
 
-             // determine axial donor quantities
-             double h_axialDonor;
-             double vol_axialDonor;
-             if (m_mid >= 0.0) {
+            // determine axial donor quantities
+            double h_axialDonor;
+            double vol_axialDonor;
+            if ( m_mid >= 0.0 ) {
                 vol_axialDonor = vol_minus;
-                h_axialDonor = h_minus;
-             } else {
+                h_axialDonor   = h_minus;
+            }
+            else {
                 vol_axialDonor = vol_plus;
-                h_axialDonor = h_minus;
-             }
+                h_axialDonor   = h_minus;
+            }
 
-             // evaluate density
-             double rho_mid = 1.0/vol_axialDonor;
+            // evaluate density
+            double rho_mid = 1.0 / vol_axialDonor;
 
-             // evaluate axial velocity
-             double u_plus  = m_plus*vol_plus/area;
-             double u_minus = m_minus*vol_minus/area;
-             double u_mid   = m_mid*vol_axialDonor/area;
+            // evaluate axial velocity
+            double u_plus  = m_plus * vol_plus / area;
+            double u_minus = m_minus * vol_minus / area;
+            double u_mid   = m_mid * vol_axialDonor / area;
 
-             // evaluate temperature for cell
-             double T_mid = Temperature(h_axialDonor,p_mid);
+            // evaluate temperature for cell
+            double T_mid = Temperature( h_axialDonor, p_mid );
 
-             // evaluate conductivity for cell
-             double k_mid = ThermalConductivity(T_mid,rho_mid);
+            // evaluate conductivity for cell
+            double k_mid = ThermalConductivity( T_mid, rho_mid );
 
-             // evaluate dynamic viscosity
-             double visc_mid = DynamicViscosity(T_mid,rho_mid);
+            // evaluate dynamic viscosity
+            double visc_mid = DynamicViscosity( T_mid, rho_mid );
 
-             // compute element height
-             double z_minus = minusFaceCentroid[2];
-             double z_plus  = plusFaceCentroid[2];
-             double dz = z_plus - z_minus;
+            // compute element height
+            double z_minus = minusFaceCentroid[2];
+            double z_plus  = plusFaceCentroid[2];
+            double dz      = z_plus - z_minus;
 
-              // evaluate friction factor
-              double Re_mid = rho_mid*u_mid*D/visc_mid;
-              double fl = 64.0/Re_mid; // laminar friction factor
-              double fric; // friction factor
-              if (d_frictionModel == "Constant") {
-                 fric = d_friction;
-              } else {
-                 double ft = 0.; // turbulent friction factor evaluated from computed Re
-                 double ft4000 = 0.; // turbulent friction factor evaluated from Re = 4000
-                 if (d_frictionModel == "Blasius") {
-                    ft = 0.316*std::pow(Re_mid,-0.25);
-                    ft4000 = 0.316*std::pow(4000.0,-0.25);
-                 } else if (d_frictionModel == "Drew") {
-                    ft = 0.0056 + 0.5*std::pow(Re_mid,-0.32);
-                    ft4000 = 0.0056 + 0.5*std::pow(4000.0,-0.32);
-                 } else if (d_frictionModel == "Filonenko") {
-                    ft = std::pow(1.82*std::log(Re_mid)-1.64,-2);
-                    ft4000 = std::pow(1.82*std::log(4000.0)-1.64,-2);
-                 } else if (d_frictionModel == "Selander") {
-                    ft = 4.0*std::pow(3.8*std::log(10.0/Re_mid+0.2*d_roughness/D),-2);
-                    ft4000 = 4.0*std::pow(3.8*std::log(10.0/4000.0+0.2*d_roughness/D),-2);
-                 } else {
-                    AMP_ERROR("Invalid choice for Friction_Model.");
-                 }
-                 if (Re_mid < 4000.0)
-                    fric = std::max(fl,ft4000);
-                 else
+            // evaluate friction factor
+            double Re_mid = rho_mid * u_mid * D / visc_mid;
+            double fl     = 64.0 / Re_mid; // laminar friction factor
+            double fric;                   // friction factor
+            if ( d_frictionModel == "Constant" ) {
+                fric = d_friction;
+            }
+            else {
+                double ft     = 0.; // turbulent friction factor evaluated from computed Re
+                double ft4000 = 0.; // turbulent friction factor evaluated from Re = 4000
+                if ( d_frictionModel == "Blasius" ) {
+                    ft     = 0.316 * std::pow( Re_mid, -0.25 );
+                    ft4000 = 0.316 * std::pow( 4000.0, -0.25 );
+                }
+                else if ( d_frictionModel == "Drew" ) {
+                    ft     = 0.0056 + 0.5 * std::pow( Re_mid, -0.32 );
+                    ft4000 = 0.0056 + 0.5 * std::pow( 4000.0, -0.32 );
+                }
+                else if ( d_frictionModel == "Filonenko" ) {
+                    ft     = std::pow( 1.82 * std::log( Re_mid ) - 1.64, -2 );
+                    ft4000 = std::pow( 1.82 * std::log( 4000.0 ) - 1.64, -2 );
+                }
+                else if ( d_frictionModel == "Selander" ) {
+                    ft = 4.0 *
+                         std::pow( 3.8 * std::log( 10.0 / Re_mid + 0.2 * d_roughness / D ), -2 );
+                    ft4000 =
+                        4.0 *
+                        std::pow( 3.8 * std::log( 10.0 / 4000.0 + 0.2 * d_roughness / D ), -2 );
+                }
+                else {
+                    AMP_ERROR( "Invalid choice for Friction_Model." );
+                }
+                if ( Re_mid < 4000.0 )
+                    fric = std::max( fl, ft4000 );
+                else
                     fric = ft;
-             } 
+            }
 
-              // compute form loss coefficient
-              double K = 0.0;
-              for (size_t igrid=0; igrid < d_lossGrid.size(); igrid++){
-                 double zMin_grid = d_zMinGrid[igrid];
-                 double zMax_grid = d_zMaxGrid[igrid];
-                 AMP_INSIST((zMax_grid > zMin_grid),"Grid spacer zMin > zMax");
-                 double K_grid = d_lossGrid[igrid];
-                 double K_perLength = K_grid/(zMax_grid - zMin_grid);
-                 if (zMax_grid >= z_plus){
+            // compute form loss coefficient
+            double K = 0.0;
+            for ( size_t igrid = 0; igrid < d_lossGrid.size(); igrid++ ) {
+                double zMin_grid = d_zMinGrid[igrid];
+                double zMax_grid = d_zMaxGrid[igrid];
+                AMP_INSIST( ( zMax_grid > zMin_grid ), "Grid spacer zMin > zMax" );
+                double K_grid      = d_lossGrid[igrid];
+                double K_perLength = K_grid / ( zMax_grid - zMin_grid );
+                if ( zMax_grid >= z_plus ) {
                     double overlap = 0.0;
-                    if (zMin_grid >= z_plus){
-                       overlap = 0.0;
-                    } else if (zMin_grid > z_minus && zMin_grid < z_plus){
-                       overlap = z_plus - zMin_grid;
-                    } else if (zMin_grid <= z_minus){
-                       overlap = z_plus - z_minus;
-                    } else {
-                       AMP_ERROR("Unexpected position comparison for zMin_grid");
+                    if ( zMin_grid >= z_plus ) {
+                        overlap = 0.0;
                     }
-                    K += overlap*K_perLength;
-                 } else if (zMax_grid < z_plus && zMax_grid > z_minus){
+                    else if ( zMin_grid > z_minus && zMin_grid < z_plus ) {
+                        overlap = z_plus - zMin_grid;
+                    }
+                    else if ( zMin_grid <= z_minus ) {
+                        overlap = z_plus - z_minus;
+                    }
+                    else {
+                        AMP_ERROR( "Unexpected position comparison for zMin_grid" );
+                    }
+                    K += overlap * K_perLength;
+                }
+                else if ( zMax_grid < z_plus && zMax_grid > z_minus ) {
                     double overlap = 0.0;
-                    if (zMin_grid > z_minus){
-                       overlap = zMax_grid - zMin_grid;
-                    } else if (zMin_grid <= z_minus){
-                       overlap = zMax_grid - z_minus;
-                    } else {
-                       AMP_ERROR("Unexpected position comparison for zMin_grid");
+                    if ( zMin_grid > z_minus ) {
+                        overlap = zMax_grid - zMin_grid;
                     }
-                    K += overlap*K_perLength;
-                 }
-              }
+                    else if ( zMin_grid <= z_minus ) {
+                        overlap = zMax_grid - z_minus;
+                    }
+                    else {
+                        AMP_ERROR( "Unexpected position comparison for zMin_grid" );
+                    }
+                    K += overlap * K_perLength;
+                }
+            }
 
-             // initialize sum terms
-             double mass_crossflow_sum = 0.0;
-             double energy_crossflow_sum = 0.0;
-             double energy_heatflux_sum = 0.0;
-             double energy_turbulence_sum = 0.0;
-             double energy_conduction_sum = 0.0;
-             double axial_crossflow_sum = 0.0;
-             double axial_turbulence_sum = 0.0;
+            // initialize sum terms
+            double mass_crossflow_sum    = 0.0;
+            double energy_crossflow_sum  = 0.0;
+            double energy_heatflux_sum   = 0.0;
+            double energy_turbulence_sum = 0.0;
+            double energy_conduction_sum = 0.0;
+            double axial_crossflow_sum   = 0.0;
+            double axial_turbulence_sum  = 0.0;
 
-             double zMidCell = 0.5*(plusFaceCentroid[2] + minusFaceCentroid[2]);
-             size_t j = Utilities::findfirst(zMid,zMidCell);
-             energy_heatflux_sum       = (1+d_gamma)*pi*d_rodDiameter[isub]*flux[j];
+            double zMidCell     = 0.5 * ( plusFaceCentroid[2] + minusFaceCentroid[2] );
+            size_t j            = Utilities::findfirst( zMid, zMidCell );
+            energy_heatflux_sum = ( 1 + d_gamma ) * pi * d_rodDiameter[isub] * flux[j];
 
-             // loop over gap faces
-             std::vector<AMP::Mesh::MeshElement> cellFaces = localSubchannelCell->getElements(AMP::Mesh::Face);
-             for (std::vector<AMP::Mesh::MeshElement>::iterator face = cellFaces.begin(); face != cellFaces.end(); ++face) {
+            // loop over gap faces
+            std::vector<AMP::Mesh::MeshElement> cellFaces =
+                localSubchannelCell->getElements( AMP::Mesh::Face );
+            for ( std::vector<AMP::Mesh::MeshElement>::iterator face = cellFaces.begin();
+                  face != cellFaces.end();
+                  ++face ) {
                 std::vector<double> faceCentroid = face->centroid();
-                std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = interiorLateralFaceMap.find(faceCentroid);
-                if (lateralFaceIterator != interiorLateralFaceMap.end()) {
-                   // get face
-                   AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
-                   // get crossflow
-                   std::vector<size_t> gapDofs;
-                   dof_manager->getDOFs(lateralFace.globalID(),gapDofs);
-                   double w = w_scale*inputVec->getValueByGlobalID(gapDofs[0]);
-                   // get index of neighboring subchannel
-                   std::vector<AMP::Mesh::MeshElement> adjacentCells = d_Mesh->getElementParents(lateralFace, AMP::Mesh::Volume);
-                   AMP_INSIST(adjacentCells.size() == 2,"There were not 2 adjacent cells to a lateral gap face");
-                   std::vector<double> subchannelCentroid1 = adjacentCells[0].centroid();
-                   std::vector<double> subchannelCentroid2 = adjacentCells[1].centroid();
-                   size_t subchannelIndex1 = getSubchannelIndex(subchannelCentroid1[0],subchannelCentroid1[1]);
-                   size_t subchannelIndex2 = getSubchannelIndex(subchannelCentroid2[0],subchannelCentroid2[1]);
-                   size_t neighborSubchannelIndex = 0;
-                   AMP::Mesh::MeshElement neighborCell;
-                   if (subchannelIndex1 == currentSubchannelIndex) {
-                      AMP_INSIST(subchannelIndex2 != currentSubchannelIndex,"Adjacent cells have the same subchannel index.");
-                      neighborSubchannelIndex = subchannelIndex2;
-                      neighborCell = adjacentCells[1];
-                   } else if (subchannelIndex2 == currentSubchannelIndex) {
-                      neighborSubchannelIndex = subchannelIndex1;
-                      neighborCell = adjacentCells[0];
-                   } else {
-                      AMP_ERROR("Neither of adjacent cells had the same index as the current subchannel.");
-                   }
-                   // determine sign of crossflow term
-                   double crossflowSign =0.;
-                   if (currentSubchannelIndex < neighborSubchannelIndex) {
-                      crossflowSign = 1.0;
-                   } else if (currentSubchannelIndex > neighborSubchannelIndex) {
-                      crossflowSign = -1.0;
-                   } else {
-                      AMP_ERROR("Adjacent cells have the same subchannel index.");
-                   }
-                   // get upper and lower axial faces of neighbor cell
-                   // ------------------------------------------------
-                   std::vector<double> neighborCentroid = neighborCell.centroid();
-                   // get axial faces of current cell
-                   AMP::Mesh::MeshElement neighborPlusFace;  // upper axial face for current cell
-                   AMP::Mesh::MeshElement neighborMinusFace; // lower axial face for current cell
-                   getAxialFaces(neighborCell,neighborPlusFace,neighborMinusFace);
-      
-                   double neighborArea = d_channelArea[neighborSubchannelIndex]; // neighbor subchannel area
-                   double neighborDiam = d_channelDiam[neighborSubchannelIndex]; // neighbor hydraulic diameter
+                std::map<std::vector<double>, AMP::Mesh::MeshElement>::iterator
+                    lateralFaceIterator = interiorLateralFaceMap.find( faceCentroid );
+                if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
+                    // get face
+                    AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
+                    // get crossflow
+                    std::vector<size_t> gapDofs;
+                    dof_manager->getDOFs( lateralFace.globalID(), gapDofs );
+                    double w = w_scale * inputVec->getValueByGlobalID( gapDofs[0] );
+                    // get index of neighboring subchannel
+                    std::vector<AMP::Mesh::MeshElement> adjacentCells =
+                        d_Mesh->getElementParents( lateralFace, AMP::Mesh::Volume );
+                    AMP_INSIST( adjacentCells.size() == 2,
+                                "There were not 2 adjacent cells to a lateral gap face" );
+                    std::vector<double> subchannelCentroid1 = adjacentCells[0].centroid();
+                    std::vector<double> subchannelCentroid2 = adjacentCells[1].centroid();
+                    size_t subchannelIndex1 =
+                        getSubchannelIndex( subchannelCentroid1[0], subchannelCentroid1[1] );
+                    size_t subchannelIndex2 =
+                        getSubchannelIndex( subchannelCentroid2[0], subchannelCentroid2[1] );
+                    size_t neighborSubchannelIndex = 0;
+                    AMP::Mesh::MeshElement neighborCell;
+                    if ( subchannelIndex1 == currentSubchannelIndex ) {
+                        AMP_INSIST( subchannelIndex2 != currentSubchannelIndex,
+                                    "Adjacent cells have the same subchannel index." );
+                        neighborSubchannelIndex = subchannelIndex2;
+                        neighborCell            = adjacentCells[1];
+                    }
+                    else if ( subchannelIndex2 == currentSubchannelIndex ) {
+                        neighborSubchannelIndex = subchannelIndex1;
+                        neighborCell            = adjacentCells[0];
+                    }
+                    else {
+                        AMP_ERROR( "Neither of adjacent cells had the same index as the current "
+                                   "subchannel." );
+                    }
+                    // determine sign of crossflow term
+                    double crossflowSign = 0.;
+                    if ( currentSubchannelIndex < neighborSubchannelIndex ) {
+                        crossflowSign = 1.0;
+                    }
+                    else if ( currentSubchannelIndex > neighborSubchannelIndex ) {
+                        crossflowSign = -1.0;
+                    }
+                    else {
+                        AMP_ERROR( "Adjacent cells have the same subchannel index." );
+                    }
+                    // get upper and lower axial faces of neighbor cell
+                    // ------------------------------------------------
+                    std::vector<double> neighborCentroid = neighborCell.centroid();
+                    // get axial faces of current cell
+                    AMP::Mesh::MeshElement neighborPlusFace;  // upper axial face for current cell
+                    AMP::Mesh::MeshElement neighborMinusFace; // lower axial face for current cell
+                    getAxialFaces( neighborCell, neighborPlusFace, neighborMinusFace );
 
-                   // extract unknowns from solution vector
-                   // -------------------------------------
-                   std::vector<size_t> neighborPlusDofs;
-                   std::vector<size_t> neighborMinusDofs;
-                   dof_manager->getDOFs(neighborPlusFace.globalID(),neighborPlusDofs);
-                   dof_manager->getDOFs(neighborMinusFace.globalID(),neighborMinusDofs);
-                   double m_plus_neighbor = m_scale*inputVec->getValueByGlobalID(neighborPlusDofs[0]);
-                   double h_plus_neighbor = h_scale*inputVec->getValueByGlobalID(neighborPlusDofs[1]);
-                   double p_plus_neighbor = p_scale*inputVec->getValueByGlobalID(neighborPlusDofs[2]);
-                   double m_minus_neighbor = m_scale*inputVec->getValueByGlobalID(neighborMinusDofs[0]);
-                   double h_minus_neighbor = h_scale*inputVec->getValueByGlobalID(neighborMinusDofs[1]);
-                   double p_minus_neighbor = p_scale*inputVec->getValueByGlobalID(neighborMinusDofs[2]);
+                    double neighborArea =
+                        d_channelArea[neighborSubchannelIndex]; // neighbor subchannel area
+                    double neighborDiam =
+                        d_channelDiam[neighborSubchannelIndex]; // neighbor hydraulic diameter
 
-                   // compute additional quantities from neighboring cell
-                   double m_mid_neighbor = 0.5*(m_plus_neighbor + m_minus_neighbor);
-                   double p_mid_neighbor = 0.5*(p_plus_neighbor + p_minus_neighbor);
+                    // extract unknowns from solution vector
+                    // -------------------------------------
+                    std::vector<size_t> neighborPlusDofs;
+                    std::vector<size_t> neighborMinusDofs;
+                    dof_manager->getDOFs( neighborPlusFace.globalID(), neighborPlusDofs );
+                    dof_manager->getDOFs( neighborMinusFace.globalID(), neighborMinusDofs );
+                    double m_plus_neighbor =
+                        m_scale * inputVec->getValueByGlobalID( neighborPlusDofs[0] );
+                    double h_plus_neighbor =
+                        h_scale * inputVec->getValueByGlobalID( neighborPlusDofs[1] );
+                    double p_plus_neighbor =
+                        p_scale * inputVec->getValueByGlobalID( neighborPlusDofs[2] );
+                    double m_minus_neighbor =
+                        m_scale * inputVec->getValueByGlobalID( neighborMinusDofs[0] );
+                    double h_minus_neighbor =
+                        h_scale * inputVec->getValueByGlobalID( neighborMinusDofs[1] );
+                    double p_minus_neighbor =
+                        p_scale * inputVec->getValueByGlobalID( neighborMinusDofs[2] );
 
-                   // evaluate specific volume at upper face
-                   double vol_plus_neighbor = Volume(h_plus_neighbor,p_plus_neighbor);
-      
-                   // evaluate specific volume at lower face
-                   double vol_minus_neighbor = Volume(h_minus_neighbor,p_minus_neighbor);
+                    // compute additional quantities from neighboring cell
+                    double m_mid_neighbor = 0.5 * ( m_plus_neighbor + m_minus_neighbor );
+                    double p_mid_neighbor = 0.5 * ( p_plus_neighbor + p_minus_neighbor );
 
-                   double h_axialDonor_neighbor;
-                   double vol_axialDonor_neighbor;
-                   if (m_mid_neighbor >= 0.0) {
-                      h_axialDonor_neighbor = h_minus_neighbor;
-                      vol_axialDonor_neighbor = vol_minus_neighbor;
-                   } else {
-                      h_axialDonor_neighbor = h_plus_neighbor;
-                      vol_axialDonor_neighbor = vol_plus_neighbor;
-                   }
+                    // evaluate specific volume at upper face
+                    double vol_plus_neighbor = Volume( h_plus_neighbor, p_plus_neighbor );
 
-                   double rho_mid_neighbor = 1.0/vol_axialDonor_neighbor;
-                   double u_mid_neighbor = m_mid_neighbor*vol_axialDonor_neighbor/neighborArea;
-                      
-                   double h_lateralDonor;
-                   double u_lateralDonor;
-                   if (crossflowSign*w >= 0.0) {
-                      h_lateralDonor = h_axialDonor;
-                      u_lateralDonor = u_mid;
-                   } else {
-                      h_lateralDonor = h_axialDonor_neighbor;
-                      u_lateralDonor = u_mid_neighbor;
-                   }
-             
-                   // evaluate temperature for neighbor cell
-                   double T_mid_neighbor = Temperature(h_axialDonor_neighbor,p_mid_neighbor);
-      
-                   // evaluate conductivity for cell
-                   double k_mid_neighbor = ThermalConductivity(T_mid_neighbor,rho_mid_neighbor);
+                    // evaluate specific volume at lower face
+                    double vol_minus_neighbor = Volume( h_minus_neighbor, p_minus_neighbor );
 
-                   // compute thermal conductivity across gap
-                   double k_gap_harmonic_avg = 2.0*k_mid*k_mid_neighbor/(k_mid + k_mid_neighbor);
+                    double h_axialDonor_neighbor;
+                    double vol_axialDonor_neighbor;
+                    if ( m_mid_neighbor >= 0.0 ) {
+                        h_axialDonor_neighbor   = h_minus_neighbor;
+                        vol_axialDonor_neighbor = vol_minus_neighbor;
+                    }
+                    else {
+                        h_axialDonor_neighbor   = h_plus_neighbor;
+                        vol_axialDonor_neighbor = vol_plus_neighbor;
+                    }
 
-                   // evaluate dynamic viscosity for cell
-                   double visc_mid_neighbor = DynamicViscosity(T_mid_neighbor,rho_mid_neighbor);
+                    double rho_mid_neighbor = 1.0 / vol_axialDonor_neighbor;
+                    double u_mid_neighbor = m_mid_neighbor * vol_axialDonor_neighbor / neighborArea;
 
-                   // compute distance between centroids of cells adjacent to gap
-                   std::vector<double> cellCentroid = localSubchannelCell->centroid();
-                   double x_distance = std::abs(neighborCentroid[0] - cellCentroid[0]);
-                   double y_distance = std::abs(neighborCentroid[1] - cellCentroid[1]);
-                   double pitch = std::pow(std::pow(x_distance,2)+std::pow(y_distance,2),0.5);
+                    double h_lateralDonor;
+                    double u_lateralDonor;
+                    if ( crossflowSign * w >= 0.0 ) {
+                        h_lateralDonor = h_axialDonor;
+                        u_lateralDonor = u_mid;
+                    }
+                    else {
+                        h_lateralDonor = h_axialDonor_neighbor;
+                        u_lateralDonor = u_mid_neighbor;
+                    }
 
-                   // compute gap width
-                   std::vector<double> lateralFaceCentroid = lateralFace.centroid();
-                   std::vector<double> xyPos(2);
-                   xyPos[0] = lateralFaceCentroid[0];
-                   xyPos[1] = lateralFaceCentroid[1];
-                   std::map<std::vector<double>,double>::iterator gapWidthIt = gapWidthMap.find(xyPos);
-                   AMP_INSIST( gapWidthIt != gapWidthMap.end(), "Gap was not found.");
-                   double gapWidth = gapWidthIt->second;
+                    // evaluate temperature for neighbor cell
+                    double T_mid_neighbor = Temperature( h_axialDonor_neighbor, p_mid_neighbor );
 
-                   double conductance = 1.0*k_gap_harmonic_avg/pitch;
+                    // evaluate conductivity for cell
+                    double k_mid_neighbor = ThermalConductivity( T_mid_neighbor, rho_mid_neighbor );
 
-                   // compute turbulent crossflow
-                   double D_gap_avg = 0.5*(D + neighborDiam);
-                   double Re_mid_neighbor = rho_mid_neighbor*u_mid_neighbor*neighborDiam/visc_mid_neighbor;
-                   double Re_gap_avg = 0.5*(Re_mid + Re_mid_neighbor);
-                   double rodDiameter = 0.5*(d_rodDiameter[isub]+d_rodDiameter[neighborSubchannelIndex]);
-                   double beta = 0.005*D_gap_avg/gapWidth*pow(gapWidth/rodDiameter,0.106)*pow(Re_gap_avg,-0.1);
-                   double massFlux_gap_avg = 0.5*(m_mid/area + m_mid_neighbor/neighborArea);
-                   double wt = beta*gapWidth*massFlux_gap_avg;
+                    // compute thermal conductivity across gap
+                    double k_gap_harmonic_avg =
+                        2.0 * k_mid * k_mid_neighbor / ( k_mid + k_mid_neighbor );
 
-                   // add to sums
-                   mass_crossflow_sum += crossflowSign*w;
-                   energy_crossflow_sum += crossflowSign*w*h_lateralDonor;
-                   energy_turbulence_sum += wt*(h_axialDonor - h_axialDonor_neighbor);
-                   energy_conduction_sum += conductance*gapWidth*(T_mid - T_mid_neighbor);
-                   axial_crossflow_sum += crossflowSign*w*u_lateralDonor;
-                   axial_turbulence_sum += wt*(u_mid - u_mid_neighbor);
-                      
-                }// end if (lateralFaceIterator != interiorLateralFaceMap.end()) {
-             }// end loop over gap faces
+                    // evaluate dynamic viscosity for cell
+                    double visc_mid_neighbor = DynamicViscosity( T_mid_neighbor, rho_mid_neighbor );
 
-             // force terms to zero if requested
-             double force_factor_conduction = 1.0;
-             double force_factor_turbulence = 1.0;
-             double force_factor_heat_source = 1.0;
-             double force_factor_friction = 1.0;
-             if (d_forceNoConduction) force_factor_conduction  = 0.0;
-             if (d_forceNoTurbulence) force_factor_turbulence  = 0.0;
-             if (d_forceNoHeatSource) force_factor_heat_source = 0.0;
-             if (d_forceNoFriction)   force_factor_friction    = 0.0;
+                    // compute distance between centroids of cells adjacent to gap
+                    std::vector<double> cellCentroid = localSubchannelCell->centroid();
+                    double x_distance = std::abs( neighborCentroid[0] - cellCentroid[0] );
+                    double y_distance = std::abs( neighborCentroid[1] - cellCentroid[1] );
+                    double pitch =
+                        std::pow( std::pow( x_distance, 2 ) + std::pow( y_distance, 2 ), 0.5 );
 
-             // calculate residuals for current cell
-             // ------------------------------------
-             // mass
-             double R_m = m_plus - m_minus
-                        + dz*mass_crossflow_sum;
-             // energy
-             double R_h = m_plus*h_plus - m_minus*h_minus
-                        + dz*energy_crossflow_sum
-                        - dz*energy_heatflux_sum   * force_factor_heat_source
-                        + dz*energy_turbulence_sum * force_factor_turbulence
-                        + dz*energy_conduction_sum * force_factor_conduction;
-             // axial momentum
-             double R_p = m_plus*u_plus - m_minus*u_minus
-                        + dz*axial_crossflow_sum
-                        + area*(p_plus-p_minus)
-                        + gravity*area*dz*std::cos(d_theta)/vol_axialDonor
-                        + 1.0/(2.0*area)*(dz*fric/D + K)*std::abs(m_mid)*m_mid*vol_axialDonor * force_factor_friction
-                        + d_turbulenceCoef*dz*axial_turbulence_sum                            * force_factor_turbulence;
+                    // compute gap width
+                    std::vector<double> lateralFaceCentroid = lateralFace.centroid();
+                    std::vector<double> xyPos( 2 );
+                    xyPos[0] = lateralFaceCentroid[0];
+                    xyPos[1] = lateralFaceCentroid[1];
+                    std::map<std::vector<double>, double>::iterator gapWidthIt =
+                        gapWidthMap.find( xyPos );
+                    AMP_INSIST( gapWidthIt != gapWidthMap.end(), "Gap was not found." );
+                    double gapWidth = gapWidthIt->second;
 
-             // put residuals into global residual vector
-             outputVec->setValueByGlobalID(plusDofs[0], Subchannel::scaleAxialMassFlowRate*R_m);
-             outputVec->setValueByGlobalID(plusDofs[1], Subchannel::scaleEnthalpy*R_h);
-             outputVec->setValueByGlobalID(minusDofs[2], Subchannel::scalePressure*R_p);
+                    double conductance = 1.0 * k_gap_harmonic_avg / pitch;
 
-             // impose boundary conditions
-             // --------------------------
-             // if face is exit face,
-             if (AMP::Utilities::approx_equal(plusFaceCentroid[2],height)){
+                    // compute turbulent crossflow
+                    double D_gap_avg = 0.5 * ( D + neighborDiam );
+                    double Re_mid_neighbor =
+                        rho_mid_neighbor * u_mid_neighbor * neighborDiam / visc_mid_neighbor;
+                    double Re_gap_avg = 0.5 * ( Re_mid + Re_mid_neighbor );
+                    double rodDiameter =
+                        0.5 * ( d_rodDiameter[isub] + d_rodDiameter[neighborSubchannelIndex] );
+                    double beta = 0.005 * D_gap_avg / gapWidth *
+                                  pow( gapWidth / rodDiameter, 0.106 ) * pow( Re_gap_avg, -0.1 );
+                    double massFlux_gap_avg =
+                        0.5 * ( m_mid / area + m_mid_neighbor / neighborArea );
+                    double wt = beta * gapWidth * massFlux_gap_avg;
+
+                    // add to sums
+                    mass_crossflow_sum += crossflowSign * w;
+                    energy_crossflow_sum += crossflowSign * w * h_lateralDonor;
+                    energy_turbulence_sum += wt * ( h_axialDonor - h_axialDonor_neighbor );
+                    energy_conduction_sum += conductance * gapWidth * ( T_mid - T_mid_neighbor );
+                    axial_crossflow_sum += crossflowSign * w * u_lateralDonor;
+                    axial_turbulence_sum += wt * ( u_mid - u_mid_neighbor );
+
+                } // end if (lateralFaceIterator != interiorLateralFaceMap.end()) {
+            }     // end loop over gap faces
+
+            // force terms to zero if requested
+            double force_factor_conduction                      = 1.0;
+            double force_factor_turbulence                      = 1.0;
+            double force_factor_heat_source                     = 1.0;
+            double force_factor_friction                        = 1.0;
+            if ( d_forceNoConduction ) force_factor_conduction  = 0.0;
+            if ( d_forceNoTurbulence ) force_factor_turbulence  = 0.0;
+            if ( d_forceNoHeatSource ) force_factor_heat_source = 0.0;
+            if ( d_forceNoFriction ) force_factor_friction      = 0.0;
+
+            // calculate residuals for current cell
+            // ------------------------------------
+            // mass
+            double R_m = m_plus - m_minus + dz * mass_crossflow_sum;
+            // energy
+            double R_h = m_plus * h_plus - m_minus * h_minus + dz * energy_crossflow_sum -
+                         dz * energy_heatflux_sum * force_factor_heat_source +
+                         dz * energy_turbulence_sum * force_factor_turbulence +
+                         dz * energy_conduction_sum * force_factor_conduction;
+            // axial momentum
+            double R_p = m_plus * u_plus - m_minus * u_minus + dz * axial_crossflow_sum +
+                         area * ( p_plus - p_minus ) +
+                         gravity * area * dz * std::cos( d_theta ) / vol_axialDonor +
+                         1.0 / ( 2.0 * area ) * ( dz * fric / D + K ) * std::abs( m_mid ) * m_mid *
+                             vol_axialDonor * force_factor_friction +
+                         d_turbulenceCoef * dz * axial_turbulence_sum * force_factor_turbulence;
+
+            // put residuals into global residual vector
+            outputVec->setValueByGlobalID( plusDofs[0], Subchannel::scaleAxialMassFlowRate * R_m );
+            outputVec->setValueByGlobalID( plusDofs[1], Subchannel::scaleEnthalpy * R_h );
+            outputVec->setValueByGlobalID( minusDofs[2], Subchannel::scalePressure * R_p );
+
+            // impose boundary conditions
+            // --------------------------
+            // if face is exit face,
+            if ( AMP::Utilities::approx_equal( plusFaceCentroid[2], height ) ) {
                 // impose fixed exit pressure boundary condition
-                outputVec->setValueByGlobalID(plusDofs[2],Subchannel::scalePressure*(p_plus-d_Pout));
-             }
-             if (AMP::Utilities::approx_equal(minusFaceCentroid[2],0.0)){
+                outputVec->setValueByGlobalID( plusDofs[2],
+                                               Subchannel::scalePressure * ( p_plus - d_Pout ) );
+            }
+            if ( AMP::Utilities::approx_equal( minusFaceCentroid[2], 0.0 ) ) {
                 // impose fixed inlet axial mass flow rate boundary condition
-                outputVec->setValueByGlobalID(minusDofs[0],Subchannel::scaleAxialMassFlowRate*(m_minus-d_channelMass[isub]));
+                outputVec->setValueByGlobalID( minusDofs[0],
+                                               Subchannel::scaleAxialMassFlowRate *
+                                                   ( m_minus - d_channelMass[isub] ) );
 
                 // evaluate enthalpy at inlet
-                double h_eval = Enthalpy(d_Tin,p_minus);
+                double h_eval = Enthalpy( d_Tin, p_minus );
                 // impose fixed inlet temperature boundary condition
-                outputVec->setValueByGlobalID(minusDofs[1],Subchannel::scaleEnthalpy*(h_minus-h_eval));
-             }
-          }// end loop over cells of current subchannel
-      }// end loop over subchannels
+                outputVec->setValueByGlobalID( minusDofs[1],
+                                               Subchannel::scaleEnthalpy * ( h_minus - h_eval ) );
+            }
+        } // end loop over cells of current subchannel
+    }     // end loop over subchannels
 
-      // loop over lateral faces
-      AMP::Mesh::MeshIterator face = d_Mesh->getIterator(AMP::Mesh::Face, 0); // iterator for cells of mesh
-      for (; face != face.end(); face++) {
-         std::vector<double> faceCentroid = face->centroid();
-         std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = interiorLateralFaceMap.find(faceCentroid);
-         if (lateralFaceIterator != interiorLateralFaceMap.end()) {
+    // loop over lateral faces
+    AMP::Mesh::MeshIterator face =
+        d_Mesh->getIterator( AMP::Mesh::Face, 0 ); // iterator for cells of mesh
+    for ( ; face != face.end(); face++ ) {
+        std::vector<double> faceCentroid = face->centroid();
+        std::map<std::vector<double>, AMP::Mesh::MeshElement>::iterator lateralFaceIterator =
+            interiorLateralFaceMap.find( faceCentroid );
+        if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
             // get lateral face
             AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
             // get crossflow from solution vector
             std::vector<size_t> gapDofs;
-            dof_manager->getDOFs(lateralFace.globalID(),gapDofs);
-            double w_mid = w_scale*inputVec->getValueByGlobalID(gapDofs[0]);
+            dof_manager->getDOFs( lateralFace.globalID(), gapDofs );
+            double w_mid = w_scale * inputVec->getValueByGlobalID( gapDofs[0] );
 
             // get adjacent cells
-            std::vector<AMP::Mesh::MeshElement> adjacentCells = d_Mesh->getElementParents(lateralFace, AMP::Mesh::Volume);
-            AMP_INSIST(adjacentCells.size() == 2,"There were not 2 adjacent cells to a lateral gap face");
-            AMP::Mesh::MeshElement cell1 = adjacentCells[0];
-            AMP::Mesh::MeshElement cell2 = adjacentCells[1];
+            std::vector<AMP::Mesh::MeshElement> adjacentCells =
+                d_Mesh->getElementParents( lateralFace, AMP::Mesh::Volume );
+            AMP_INSIST( adjacentCells.size() == 2,
+                        "There were not 2 adjacent cells to a lateral gap face" );
+            AMP::Mesh::MeshElement cell1      = adjacentCells[0];
+            AMP::Mesh::MeshElement cell2      = adjacentCells[1];
             std::vector<double> cell1Centroid = cell1.centroid();
             std::vector<double> cell2Centroid = cell2.centroid();
             // get upper and lower axial faces
@@ -891,439 +1002,532 @@ void SubchannelFourEqNonlinearOperator :: apply(AMP::LinearAlgebra::Vector::cons
             AMP::Mesh::MeshElement cell1MinusFace; // lower axial face for cell 1
             AMP::Mesh::MeshElement cell2PlusFace;  // upper axial face for cell 2
             AMP::Mesh::MeshElement cell2MinusFace; // lower axial face for cell 2
-            getAxialFaces(cell1,cell1PlusFace,cell1MinusFace);
-            getAxialFaces(cell2,cell2PlusFace,cell2MinusFace);
+            getAxialFaces( cell1, cell1PlusFace, cell1MinusFace );
+            getAxialFaces( cell2, cell2PlusFace, cell2MinusFace );
 
             // determine if cells are in the first axial interval
             std::vector<double> cell1MinusFaceCentroid = cell1MinusFace.centroid();
             std::vector<double> cell1PlusFaceCentroid  = cell1PlusFace.centroid();
             std::vector<double> cell2MinusFaceCentroid = cell2MinusFace.centroid();
             // if bottom face is at z = 0,
-            if (AMP::Utilities::approx_equal(cell1MinusFaceCentroid[2],0.0)) {
-               // implement fixed lateral mass flow rates inlet boundary condition
-               outputVec->setValueByGlobalID(gapDofs[0],Subchannel::scaleLateralMassFlowRate*w_mid);
-            } else {
-               // get cells below bottom faces
-               // get adjacent cells
-               std::vector<AMP::Mesh::MeshElement> cell1MinusFaceAdjacentCells = d_Mesh->getElementParents(cell1MinusFace, AMP::Mesh::Volume);
-               std::vector<AMP::Mesh::MeshElement> cell2MinusFaceAdjacentCells = d_Mesh->getElementParents(cell2MinusFace, AMP::Mesh::Volume);
-               AMP_INSIST(cell1MinusFaceAdjacentCells.size() == 2,"There were not 2 adjacent cells to an axial face");
-               AMP_INSIST(cell2MinusFaceAdjacentCells.size() == 2,"There were not 2 adjacent cells to an axial face");
-               AMP::Mesh::MeshElement axialCell11 = cell1MinusFaceAdjacentCells[0];
-               AMP::Mesh::MeshElement axialCell12 = cell1MinusFaceAdjacentCells[1];
-               AMP::Mesh::MeshElement axialCell21 = cell2MinusFaceAdjacentCells[0];
-               AMP::Mesh::MeshElement axialCell22 = cell2MinusFaceAdjacentCells[1];
-               std::vector<double> axialCell11Centroid = axialCell11.centroid();
-               std::vector<double> axialCell12Centroid = axialCell12.centroid();
-               std::vector<double> axialCell21Centroid = axialCell21.centroid();
-               std::vector<double> axialCell22Centroid = axialCell22.centroid();
-               // determine which cell is bottom cell
-               AMP::Mesh::MeshElement *bottomCell1;
-               //std::vector<double> *bottomCell1Centroid;
-               AMP::Mesh::MeshElement *bottomCell2;
-               //std::vector<double> *bottomCell2Centroid;
-               if (axialCell11Centroid[2] < cell1MinusFaceCentroid[2]) {
-                  // axialCell11 is bottom cell
-                  // ensure that axialCell12 is above
-                  AMP_INSIST(axialCell12Centroid[2] > cell1MinusFaceCentroid[2],"Both adjacent cells are below axial face parent");
-                  bottomCell1 = &axialCell11;
-                  //bottomCell1Centroid = &axialCell11Centroid;
-               } else {
-                  // axialCell12 is bottom cell
-                  // ensure that axialCell11 is above
-                  AMP_INSIST(axialCell11Centroid[2] > cell1MinusFaceCentroid[2],"Both adjacent cells are below axial face parent");
-                  bottomCell1 = &axialCell12;
-                  //bottomCell1Centroid = &axialCell12Centroid;
-               }
-               if (axialCell21Centroid[2] < cell2MinusFaceCentroid[2]) {
-                  // axialCell21 is bottom cell
-                  // ensure that axialCell22 is above
-                  AMP_INSIST(axialCell22Centroid[2] > cell2MinusFaceCentroid[2],"Both adjacent cells are below axial face parent");
-                  bottomCell2 = &axialCell21;
-                  //bottomCell2Centroid = &axialCell21Centroid;
-               } else {
-                  // axialCell22 is bottom cell
-                  // ensure that axialCell21 is above
-                  AMP_INSIST(axialCell21Centroid[2] > cell2MinusFaceCentroid[2],"Both adjacent cells are below axial face parent");
-                  bottomCell2 = &axialCell22;
-                  //bottomCell2Centroid = &axialCell22Centroid;
-               }
-               AMP::Mesh::MeshElement belowLateralFace = getAxiallyAdjacentLateralFace(bottomCell1,lateralFace,interiorLateralFaceMap);
-               std::vector<size_t> belowDofs;
-               dof_manager->getDOFs(belowLateralFace.globalID(),belowDofs);
-               double w_minus = w_scale*inputVec->getValueByGlobalID(belowDofs[0]);
-
-               // get axial faces of bottom cells
-               AMP::Mesh::MeshElement bottomCell1PlusFace;
-               AMP::Mesh::MeshElement bottomCell1MinusFace;
-               AMP::Mesh::MeshElement bottomCell2PlusFace;
-               AMP::Mesh::MeshElement bottomCell2MinusFace;
-               getAxialFaces(*bottomCell1,bottomCell1PlusFace,bottomCell1MinusFace);
-               getAxialFaces(*bottomCell2,bottomCell2PlusFace,bottomCell2MinusFace);
-               // get unknowns from axial faces of bottom cells
-               std::vector<size_t> dofs;
-               dof_manager->getDOFs(bottomCell1PlusFace.globalID(),dofs);
-               double m1_bottomPlus = m_scale*inputVec->getValueByGlobalID(dofs[0]);
-               dof_manager->getDOFs(bottomCell1MinusFace.globalID(),dofs);
-               double m1_bottomMinus = m_scale*inputVec->getValueByGlobalID(dofs[0]);
-               dof_manager->getDOFs(bottomCell2PlusFace.globalID(),dofs);
-               double m2_bottomPlus = m_scale*inputVec->getValueByGlobalID(dofs[0]);
-               dof_manager->getDOFs(bottomCell2MinusFace.globalID(),dofs);
-               double m2_bottomMinus = m_scale*inputVec->getValueByGlobalID(dofs[0]);
-
-               double m1_bottomMid = 0.5*(m1_bottomPlus + m1_bottomMinus);
-               double m2_bottomMid = 0.5*(m2_bottomPlus + m2_bottomMinus);
-               double m_bottomMid = 0.5*(m1_bottomMid + m2_bottomMid);
-
-               std::vector<size_t> cell1PlusDofs;
-               std::vector<size_t> cell2PlusDofs;
-               std::vector<size_t> cell1MinusDofs;
-               std::vector<size_t> cell2MinusDofs;
-               dof_manager->getDOFs(cell1PlusFace.globalID(),cell1PlusDofs);
-               dof_manager->getDOFs(cell2PlusFace.globalID(),cell2PlusDofs);
-               dof_manager->getDOFs(cell1MinusFace.globalID(),cell1MinusDofs);
-               dof_manager->getDOFs(cell2MinusFace.globalID(),cell2MinusDofs);
-
-               double m1_plus = m_scale*inputVec->getValueByGlobalID(cell1PlusDofs[0]);
-               double m2_plus = m_scale*inputVec->getValueByGlobalID(cell2PlusDofs[0]);
-               double m1_minus = m_scale*inputVec->getValueByGlobalID(cell1MinusDofs[0]);
-               double m2_minus = m_scale*inputVec->getValueByGlobalID(cell2MinusDofs[0]);
-               double m1_mid = 0.5*(m1_plus + m1_minus);
-               double m2_mid = 0.5*(m2_plus + m2_minus);
-               double m_gap_avg = 0.5*(m1_mid + m2_mid);
-
-               double h1_plus = h_scale*inputVec->getValueByGlobalID(cell1PlusDofs[1]);
-               double h2_plus = h_scale*inputVec->getValueByGlobalID(cell2PlusDofs[1]);
-               double h1_minus = h_scale*inputVec->getValueByGlobalID(cell1MinusDofs[1]);
-               double h2_minus = h_scale*inputVec->getValueByGlobalID(cell2MinusDofs[1]);
-
-               double p1_plus = p_scale*inputVec->getValueByGlobalID(cell1PlusDofs[2]);
-               double p2_plus = p_scale*inputVec->getValueByGlobalID(cell2PlusDofs[2]);
-               double p1_minus = p_scale*inputVec->getValueByGlobalID(cell1MinusDofs[2]);
-               double p2_minus = p_scale*inputVec->getValueByGlobalID(cell2MinusDofs[2]);
-
-               double vol1_plus = Volume(h1_plus,p1_plus);
-               double vol1_minus = Volume(h1_minus,p1_minus);
-               double vol1_axialDonor;
-               if (m1_mid >= 0.0) vol1_axialDonor = vol1_minus;
-               else vol1_axialDonor = vol1_plus;
-
-               double vol2_plus = Volume(h2_plus,p2_plus);
-               double vol2_minus = Volume(h2_minus,p2_minus);
-               double vol2_axialDonor;
-               if (m2_mid >= 0.0) vol2_axialDonor = vol2_minus;
-               else vol2_axialDonor = vol2_plus;
-
-               double vol_gap_avg = 0.5*(vol1_axialDonor + vol2_axialDonor);
-
-               size_t isubCell1 = getSubchannelIndex(cell1Centroid[0],cell1Centroid[1]);
-               size_t isubCell2 = getSubchannelIndex(cell2Centroid[0],cell2Centroid[1]);
-               double crossflowSign;
-               if (isubCell1 < isubCell2) crossflowSign = 1.0;
-               else crossflowSign = -1.0;
-               double area1 = d_channelArea[isubCell1];
-               double area2 = d_channelArea[isubCell2];
-               double u1_plus = m1_plus*vol1_plus/area1;
-               double u1_minus = m1_minus*vol1_minus/area1;
-               double u2_plus = m2_plus*vol2_plus/area2;
-               double u2_minus = m2_minus*vol2_minus/area2;
-               double u_plus = 0.5*(u1_plus + u2_plus);
-               double u_minus = 0.5*(u1_minus + u2_minus);
-
-               double w_axialDonor_plus;
-               double w_axialDonor_minus;
-               if (m_gap_avg >= 0.0) w_axialDonor_plus = w_mid;
-               else {
-                  std::vector<double> cell1PlusFaceCentroid = cell1PlusFace.centroid();
-                  if (AMP::Utilities::approx_equal(cell1PlusFaceCentroid[2],height,1.0e-6)) {
-                     // cell is in the uppermost axial interval
-                     w_axialDonor_plus = w_mid;
-                  } else {
-                     std::vector<AMP::Mesh::MeshElement> cell1PlusFaceAdjacentCells = d_Mesh->getElementParents(cell1PlusFace, AMP::Mesh::Volume);
-                     AMP_INSIST(cell1PlusFaceAdjacentCells.size() == 2,"There were not 2 adjacent cells to an axial gap face");
-                     AMP::Mesh::MeshElement axialCell1 = cell1PlusFaceAdjacentCells[0];
-                     AMP::Mesh::MeshElement axialCell2 = cell1PlusFaceAdjacentCells[1];
-                     std::vector<double> axialCell1Centroid = axialCell1.centroid();
-                     std::vector<double> axialCell2Centroid = axialCell2.centroid();
-                     // determine which cell is top cell
-                     AMP::Mesh::MeshElement *topCell;
-                     std::vector<double> *topCellCentroid;
-                     if (axialCell1Centroid[2] > cell1PlusFaceCentroid[2]) {
-                        // axialCell1 is top cell
-                        // ensure that axialCell2 is above
-                        AMP_INSIST(axialCell2Centroid[2] < cell1PlusFaceCentroid[2],"Both adjacent cells are above axial face parent");
-                        topCell = &axialCell1;
-                        topCellCentroid = &axialCell1Centroid;
-                     } else {
-                        // axialCell2 is top cell
-                        // ensure that axialCell1 is above
-                        AMP_INSIST(axialCell1Centroid[2] < cell1PlusFaceCentroid[2],"Both adjacent cells are above axial face parent");
-                        topCell = &axialCell2;
-                        topCellCentroid = &axialCell2Centroid;
-                     }
-                     AMP::pout<<" topCellCentroid[0] "<< &topCellCentroid[0] <<std::endl;
-                     AMP::Mesh::MeshElement aboveLateralFace = getAxiallyAdjacentLateralFace(topCell,lateralFace,interiorLateralFaceMap);
-                     std::vector<size_t> aboveDofs;
-                     dof_manager->getDOFs(aboveLateralFace.globalID(),aboveDofs);
-                     double w_plus = w_scale*inputVec->getValueByGlobalID(aboveDofs[0]);
-                     w_axialDonor_plus = w_plus;
-                  }
-               }
-               if (m_bottomMid >= 0.0) w_axialDonor_minus = w_minus;
-               else w_axialDonor_minus = w_mid;
-
-               // compute distance between centroids of cells adjacent to gap
-               double x_distance = std::abs(cell1Centroid[0] - cell2Centroid[0]);
-               double y_distance = std::abs(cell1Centroid[1] - cell2Centroid[1]);
-               double pitch = std::pow(std::pow(x_distance,2)+std::pow(y_distance,2),0.5);
-
-               // compute gap width
-               std::vector<double> lateralFaceCentroid = lateralFace.centroid();
-               std::vector<double> xyPos(2);
-               xyPos[0] = lateralFaceCentroid[0];
-               xyPos[1] = lateralFaceCentroid[1];
-               std::map<std::vector<double>,double>::iterator gapWidthIt = gapWidthMap.find(xyPos);
-               AMP_INSIST( gapWidthIt != gapWidthMap.end(), "Gap was not found.");
-               double gapWidth = gapWidthIt->second;
-    
-               // compute element height
-               double dz = cell1PlusFaceCentroid[2] - cell1MinusFaceCentroid[2];
-
-               double R_w = u_plus*w_axialDonor_plus - u_minus*w_axialDonor_minus
-                          - crossflowSign*gapWidth/pitch*dz*(p1_minus - p2_minus)
-                          + dz*d_KG/(2.0*gapWidth*pitch)*std::abs(w_mid)*w_mid*vol_gap_avg
-                          + gapWidth*pitch*dz*gravity*std::sin(d_theta)/vol_gap_avg;
-               outputVec->setValueByGlobalID(gapDofs[0],Subchannel::scaleLateralMassFlowRate*R_w);
+            if ( AMP::Utilities::approx_equal( cell1MinusFaceCentroid[2], 0.0 ) ) {
+                // implement fixed lateral mass flow rates inlet boundary condition
+                outputVec->setValueByGlobalID( gapDofs[0],
+                                               Subchannel::scaleLateralMassFlowRate * w_mid );
             }
-         } else {
+            else {
+                // get cells below bottom faces
+                // get adjacent cells
+                std::vector<AMP::Mesh::MeshElement> cell1MinusFaceAdjacentCells =
+                    d_Mesh->getElementParents( cell1MinusFace, AMP::Mesh::Volume );
+                std::vector<AMP::Mesh::MeshElement> cell2MinusFaceAdjacentCells =
+                    d_Mesh->getElementParents( cell2MinusFace, AMP::Mesh::Volume );
+                AMP_INSIST( cell1MinusFaceAdjacentCells.size() == 2,
+                            "There were not 2 adjacent cells to an axial face" );
+                AMP_INSIST( cell2MinusFaceAdjacentCells.size() == 2,
+                            "There were not 2 adjacent cells to an axial face" );
+                AMP::Mesh::MeshElement axialCell11      = cell1MinusFaceAdjacentCells[0];
+                AMP::Mesh::MeshElement axialCell12      = cell1MinusFaceAdjacentCells[1];
+                AMP::Mesh::MeshElement axialCell21      = cell2MinusFaceAdjacentCells[0];
+                AMP::Mesh::MeshElement axialCell22      = cell2MinusFaceAdjacentCells[1];
+                std::vector<double> axialCell11Centroid = axialCell11.centroid();
+                std::vector<double> axialCell12Centroid = axialCell12.centroid();
+                std::vector<double> axialCell21Centroid = axialCell21.centroid();
+                std::vector<double> axialCell22Centroid = axialCell22.centroid();
+                // determine which cell is bottom cell
+                AMP::Mesh::MeshElement *bottomCell1;
+                // std::vector<double> *bottomCell1Centroid;
+                AMP::Mesh::MeshElement *bottomCell2;
+                // std::vector<double> *bottomCell2Centroid;
+                if ( axialCell11Centroid[2] < cell1MinusFaceCentroid[2] ) {
+                    // axialCell11 is bottom cell
+                    // ensure that axialCell12 is above
+                    AMP_INSIST( axialCell12Centroid[2] > cell1MinusFaceCentroid[2],
+                                "Both adjacent cells are below axial face parent" );
+                    bottomCell1 = &axialCell11;
+                    // bottomCell1Centroid = &axialCell11Centroid;
+                }
+                else {
+                    // axialCell12 is bottom cell
+                    // ensure that axialCell11 is above
+                    AMP_INSIST( axialCell11Centroid[2] > cell1MinusFaceCentroid[2],
+                                "Both adjacent cells are below axial face parent" );
+                    bottomCell1 = &axialCell12;
+                    // bottomCell1Centroid = &axialCell12Centroid;
+                }
+                if ( axialCell21Centroid[2] < cell2MinusFaceCentroid[2] ) {
+                    // axialCell21 is bottom cell
+                    // ensure that axialCell22 is above
+                    AMP_INSIST( axialCell22Centroid[2] > cell2MinusFaceCentroid[2],
+                                "Both adjacent cells are below axial face parent" );
+                    bottomCell2 = &axialCell21;
+                    // bottomCell2Centroid = &axialCell21Centroid;
+                }
+                else {
+                    // axialCell22 is bottom cell
+                    // ensure that axialCell21 is above
+                    AMP_INSIST( axialCell21Centroid[2] > cell2MinusFaceCentroid[2],
+                                "Both adjacent cells are below axial face parent" );
+                    bottomCell2 = &axialCell22;
+                    // bottomCell2Centroid = &axialCell22Centroid;
+                }
+                AMP::Mesh::MeshElement belowLateralFace = getAxiallyAdjacentLateralFace(
+                    bottomCell1, lateralFace, interiorLateralFaceMap );
+                std::vector<size_t> belowDofs;
+                dof_manager->getDOFs( belowLateralFace.globalID(), belowDofs );
+                double w_minus = w_scale * inputVec->getValueByGlobalID( belowDofs[0] );
+
+                // get axial faces of bottom cells
+                AMP::Mesh::MeshElement bottomCell1PlusFace;
+                AMP::Mesh::MeshElement bottomCell1MinusFace;
+                AMP::Mesh::MeshElement bottomCell2PlusFace;
+                AMP::Mesh::MeshElement bottomCell2MinusFace;
+                getAxialFaces( *bottomCell1, bottomCell1PlusFace, bottomCell1MinusFace );
+                getAxialFaces( *bottomCell2, bottomCell2PlusFace, bottomCell2MinusFace );
+                // get unknowns from axial faces of bottom cells
+                std::vector<size_t> dofs;
+                dof_manager->getDOFs( bottomCell1PlusFace.globalID(), dofs );
+                double m1_bottomPlus = m_scale * inputVec->getValueByGlobalID( dofs[0] );
+                dof_manager->getDOFs( bottomCell1MinusFace.globalID(), dofs );
+                double m1_bottomMinus = m_scale * inputVec->getValueByGlobalID( dofs[0] );
+                dof_manager->getDOFs( bottomCell2PlusFace.globalID(), dofs );
+                double m2_bottomPlus = m_scale * inputVec->getValueByGlobalID( dofs[0] );
+                dof_manager->getDOFs( bottomCell2MinusFace.globalID(), dofs );
+                double m2_bottomMinus = m_scale * inputVec->getValueByGlobalID( dofs[0] );
+
+                double m1_bottomMid = 0.5 * ( m1_bottomPlus + m1_bottomMinus );
+                double m2_bottomMid = 0.5 * ( m2_bottomPlus + m2_bottomMinus );
+                double m_bottomMid  = 0.5 * ( m1_bottomMid + m2_bottomMid );
+
+                std::vector<size_t> cell1PlusDofs;
+                std::vector<size_t> cell2PlusDofs;
+                std::vector<size_t> cell1MinusDofs;
+                std::vector<size_t> cell2MinusDofs;
+                dof_manager->getDOFs( cell1PlusFace.globalID(), cell1PlusDofs );
+                dof_manager->getDOFs( cell2PlusFace.globalID(), cell2PlusDofs );
+                dof_manager->getDOFs( cell1MinusFace.globalID(), cell1MinusDofs );
+                dof_manager->getDOFs( cell2MinusFace.globalID(), cell2MinusDofs );
+
+                double m1_plus   = m_scale * inputVec->getValueByGlobalID( cell1PlusDofs[0] );
+                double m2_plus   = m_scale * inputVec->getValueByGlobalID( cell2PlusDofs[0] );
+                double m1_minus  = m_scale * inputVec->getValueByGlobalID( cell1MinusDofs[0] );
+                double m2_minus  = m_scale * inputVec->getValueByGlobalID( cell2MinusDofs[0] );
+                double m1_mid    = 0.5 * ( m1_plus + m1_minus );
+                double m2_mid    = 0.5 * ( m2_plus + m2_minus );
+                double m_gap_avg = 0.5 * ( m1_mid + m2_mid );
+
+                double h1_plus  = h_scale * inputVec->getValueByGlobalID( cell1PlusDofs[1] );
+                double h2_plus  = h_scale * inputVec->getValueByGlobalID( cell2PlusDofs[1] );
+                double h1_minus = h_scale * inputVec->getValueByGlobalID( cell1MinusDofs[1] );
+                double h2_minus = h_scale * inputVec->getValueByGlobalID( cell2MinusDofs[1] );
+
+                double p1_plus  = p_scale * inputVec->getValueByGlobalID( cell1PlusDofs[2] );
+                double p2_plus  = p_scale * inputVec->getValueByGlobalID( cell2PlusDofs[2] );
+                double p1_minus = p_scale * inputVec->getValueByGlobalID( cell1MinusDofs[2] );
+                double p2_minus = p_scale * inputVec->getValueByGlobalID( cell2MinusDofs[2] );
+
+                double vol1_plus  = Volume( h1_plus, p1_plus );
+                double vol1_minus = Volume( h1_minus, p1_minus );
+                double vol1_axialDonor;
+                if ( m1_mid >= 0.0 )
+                    vol1_axialDonor = vol1_minus;
+                else
+                    vol1_axialDonor = vol1_plus;
+
+                double vol2_plus  = Volume( h2_plus, p2_plus );
+                double vol2_minus = Volume( h2_minus, p2_minus );
+                double vol2_axialDonor;
+                if ( m2_mid >= 0.0 )
+                    vol2_axialDonor = vol2_minus;
+                else
+                    vol2_axialDonor = vol2_plus;
+
+                double vol_gap_avg = 0.5 * ( vol1_axialDonor + vol2_axialDonor );
+
+                size_t isubCell1 = getSubchannelIndex( cell1Centroid[0], cell1Centroid[1] );
+                size_t isubCell2 = getSubchannelIndex( cell2Centroid[0], cell2Centroid[1] );
+                double crossflowSign;
+                if ( isubCell1 < isubCell2 )
+                    crossflowSign = 1.0;
+                else
+                    crossflowSign = -1.0;
+                double area1      = d_channelArea[isubCell1];
+                double area2      = d_channelArea[isubCell2];
+                double u1_plus    = m1_plus * vol1_plus / area1;
+                double u1_minus   = m1_minus * vol1_minus / area1;
+                double u2_plus    = m2_plus * vol2_plus / area2;
+                double u2_minus   = m2_minus * vol2_minus / area2;
+                double u_plus     = 0.5 * ( u1_plus + u2_plus );
+                double u_minus    = 0.5 * ( u1_minus + u2_minus );
+
+                double w_axialDonor_plus;
+                double w_axialDonor_minus;
+                if ( m_gap_avg >= 0.0 )
+                    w_axialDonor_plus = w_mid;
+                else {
+                    std::vector<double> cell1PlusFaceCentroid = cell1PlusFace.centroid();
+                    if ( AMP::Utilities::approx_equal(
+                             cell1PlusFaceCentroid[2], height, 1.0e-6 ) ) {
+                        // cell is in the uppermost axial interval
+                        w_axialDonor_plus = w_mid;
+                    }
+                    else {
+                        std::vector<AMP::Mesh::MeshElement> cell1PlusFaceAdjacentCells =
+                            d_Mesh->getElementParents( cell1PlusFace, AMP::Mesh::Volume );
+                        AMP_INSIST( cell1PlusFaceAdjacentCells.size() == 2,
+                                    "There were not 2 adjacent cells to an axial gap face" );
+                        AMP::Mesh::MeshElement axialCell1      = cell1PlusFaceAdjacentCells[0];
+                        AMP::Mesh::MeshElement axialCell2      = cell1PlusFaceAdjacentCells[1];
+                        std::vector<double> axialCell1Centroid = axialCell1.centroid();
+                        std::vector<double> axialCell2Centroid = axialCell2.centroid();
+                        // determine which cell is top cell
+                        AMP::Mesh::MeshElement *topCell;
+                        std::vector<double> *topCellCentroid;
+                        if ( axialCell1Centroid[2] > cell1PlusFaceCentroid[2] ) {
+                            // axialCell1 is top cell
+                            // ensure that axialCell2 is above
+                            AMP_INSIST( axialCell2Centroid[2] < cell1PlusFaceCentroid[2],
+                                        "Both adjacent cells are above axial face parent" );
+                            topCell         = &axialCell1;
+                            topCellCentroid = &axialCell1Centroid;
+                        }
+                        else {
+                            // axialCell2 is top cell
+                            // ensure that axialCell1 is above
+                            AMP_INSIST( axialCell1Centroid[2] < cell1PlusFaceCentroid[2],
+                                        "Both adjacent cells are above axial face parent" );
+                            topCell         = &axialCell2;
+                            topCellCentroid = &axialCell2Centroid;
+                        }
+                        AMP::pout << " topCellCentroid[0] " << &topCellCentroid[0] << std::endl;
+                        AMP::Mesh::MeshElement aboveLateralFace = getAxiallyAdjacentLateralFace(
+                            topCell, lateralFace, interiorLateralFaceMap );
+                        std::vector<size_t> aboveDofs;
+                        dof_manager->getDOFs( aboveLateralFace.globalID(), aboveDofs );
+                        double w_plus     = w_scale * inputVec->getValueByGlobalID( aboveDofs[0] );
+                        w_axialDonor_plus = w_plus;
+                    }
+                }
+                if ( m_bottomMid >= 0.0 )
+                    w_axialDonor_minus = w_minus;
+                else
+                    w_axialDonor_minus = w_mid;
+
+                // compute distance between centroids of cells adjacent to gap
+                double x_distance = std::abs( cell1Centroid[0] - cell2Centroid[0] );
+                double y_distance = std::abs( cell1Centroid[1] - cell2Centroid[1] );
+                double pitch =
+                    std::pow( std::pow( x_distance, 2 ) + std::pow( y_distance, 2 ), 0.5 );
+
+                // compute gap width
+                std::vector<double> lateralFaceCentroid = lateralFace.centroid();
+                std::vector<double> xyPos( 2 );
+                xyPos[0] = lateralFaceCentroid[0];
+                xyPos[1] = lateralFaceCentroid[1];
+                std::map<std::vector<double>, double>::iterator gapWidthIt =
+                    gapWidthMap.find( xyPos );
+                AMP_INSIST( gapWidthIt != gapWidthMap.end(), "Gap was not found." );
+                double gapWidth = gapWidthIt->second;
+
+                // compute element height
+                double dz = cell1PlusFaceCentroid[2] - cell1MinusFaceCentroid[2];
+
+                double R_w = u_plus * w_axialDonor_plus - u_minus * w_axialDonor_minus -
+                             crossflowSign * gapWidth / pitch * dz * ( p1_minus - p2_minus ) +
+                             dz * d_KG / ( 2.0 * gapWidth * pitch ) * std::abs( w_mid ) * w_mid *
+                                 vol_gap_avg +
+                             gapWidth * pitch * dz * gravity * std::sin( d_theta ) / vol_gap_avg;
+                outputVec->setValueByGlobalID( gapDofs[0],
+                                               Subchannel::scaleLateralMassFlowRate * R_w );
+            }
+        }
+        else {
             // determine if face is an external gap face; in this case, a zero must by set
             // to the nonlinear residual entry for this DOF, i.e., a zero Dirichlet BC
             // is applied to exterior gap face lateral mass flow rates
-            lateralFaceIterator = exteriorLateralFaceMap.find(faceCentroid);
-            if (lateralFaceIterator != exteriorLateralFaceMap.end()) {
-               // get lateral face
-               AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
-               std::vector<size_t> gapDofs;
-               dof_manager->getDOFs(lateralFace.globalID(),gapDofs);
-               outputVec->setValueByGlobalID(gapDofs[0],0.0);
+            lateralFaceIterator = exteriorLateralFaceMap.find( faceCentroid );
+            if ( lateralFaceIterator != exteriorLateralFaceMap.end() ) {
+                // get lateral face
+                AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
+                std::vector<size_t> gapDofs;
+                dof_manager->getDOFs( lateralFace.globalID(), gapDofs );
+                outputVec->setValueByGlobalID( gapDofs[0], 0.0 );
             }
-         }
-      }// end loop over lateral faces
-}// end of apply function
+        }
+    } // end loop over lateral faces
+} // end of apply function
 
-AMP::shared_ptr<OperatorParameters> SubchannelFourEqNonlinearOperator :: 
-getJacobianParameters(AMP::LinearAlgebra::Vector::const_shared_ptr u_in) 
+AMP::shared_ptr<OperatorParameters> SubchannelFourEqNonlinearOperator::getJacobianParameters(
+    AMP::LinearAlgebra::Vector::const_shared_ptr u_in )
 {
-  AMP::shared_ptr<AMP::InputDatabase> tmp_db (new AMP::InputDatabase("Dummy"));
+    AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
 
-  tmp_db->putString("name","SubchannelFourEqLinearOperator");
+    tmp_db->putString( "name", "SubchannelFourEqLinearOperator" );
 
-  AMP::shared_ptr<SubchannelOperatorParameters> outParams(new SubchannelOperatorParameters(tmp_db));
-  outParams->d_db = d_params->d_db; 
-  auto u = std::const_pointer_cast<AMP::LinearAlgebra::Vector>(u_in);
-  outParams->d_frozenSolution =  subsetInputVector( u );
-  outParams->d_initialize = true;
-  outParams->d_subchannelPhysicsModel =  d_subchannelPhysicsModel;
-  outParams->clad_x = d_params->clad_x;
-  outParams->clad_y = d_params->clad_y;
-  outParams->clad_d = d_params->clad_d;
+    AMP::shared_ptr<SubchannelOperatorParameters> outParams(
+        new SubchannelOperatorParameters( tmp_db ) );
+    outParams->d_db             = d_params->d_db;
+    auto u                      = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
+    outParams->d_frozenSolution = subsetInputVector( u );
+    outParams->d_initialize     = true;
+    outParams->d_subchannelPhysicsModel = d_subchannelPhysicsModel;
+    outParams->clad_x                   = d_params->clad_x;
+    outParams->clad_y                   = d_params->clad_y;
+    outParams->clad_d                   = d_params->clad_d;
 
-  return outParams;
+    return outParams;
 }
 
-AMP::LinearAlgebra::Vector::shared_ptr  SubchannelFourEqNonlinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
+AMP::LinearAlgebra::Vector::shared_ptr
+SubchannelFourEqNonlinearOperator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-  AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
-  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
-  if(d_Mesh.get() != NULL) {
-    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-    AMP::LinearAlgebra::Vector::shared_ptr commVec = vec->select(commSelector, var->getName());
-    return commVec->subsetVectorForVariable(var);
-  } else {
-    return vec->subsetVectorForVariable(var);
-  }
-}
-
-AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelFourEqNonlinearOperator::subsetInputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
-{
-  AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
-  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
-  if(d_Mesh.get() != NULL) {
-    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-    AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
-    return commVec->constSubsetVectorForVariable(var);
-  } else {
-    return vec->constSubsetVectorForVariable(var);
-  }
-}
-
-AMP::LinearAlgebra::Vector::shared_ptr  SubchannelFourEqNonlinearOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::shared_ptr vec)
-{
-  AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
-  // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
-  if(d_Mesh.get() != NULL) {
-    AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-    AMP::LinearAlgebra::Vector::shared_ptr commVec = vec->select(commSelector, var->getName());
-    return commVec->subsetVectorForVariable(var);
-  } else {
-    return vec->subsetVectorForVariable(var);
-  }
-}
-
-AMP::LinearAlgebra::Vector::const_shared_ptr  SubchannelFourEqNonlinearOperator::subsetOutputVector(AMP::LinearAlgebra::Vector::const_shared_ptr vec)
-{
-  AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
-    // Subset the vectors, they are simple vectors and we need to subset for the current comm instead of the mesh
-    if(d_Mesh.get() != NULL) {
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    // Subset the vectors, they are simple vectors and we need to subset for the current comm
+    // instead of the mesh
+    if ( d_Mesh.get() != NULL ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::const_shared_ptr commVec = vec->constSelect(commSelector, var->getName());
-        return commVec->constSubsetVectorForVariable(var);
-    } else {
-        return vec->constSubsetVectorForVariable(var);
+        AMP::LinearAlgebra::Vector::shared_ptr commVec =
+            vec->select( commSelector, var->getName() );
+        return commVec->subsetVectorForVariable( var );
+    }
+    else {
+        return vec->subsetVectorForVariable( var );
     }
 }
 
-double SubchannelFourEqNonlinearOperator::Volume(double h, double p)
+AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::subsetInputVector(
+    AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-   // evaluates specific volume
-   // h: enthalpy
-   // p: pressure
-   std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
-   argMap.insert(std::make_pair(std::string("enthalpy"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,h))));
-   argMap.insert(std::make_pair(std::string("pressure"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,p))));
-   std::vector<double> result(1);
-   d_subchannelPhysicsModel->getProperty("SpecificVolume",result,argMap); 
-   return result[0];
+    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    // Subset the vectors, they are simple vectors and we need to subset for the current comm
+    // instead of the mesh
+    if ( d_Mesh.get() != NULL ) {
+        AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+        AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
+            vec->constSelect( commSelector, var->getName() );
+        return commVec->constSubsetVectorForVariable( var );
+    }
+    else {
+        return vec->constSubsetVectorForVariable( var );
+    }
 }
 
-double SubchannelFourEqNonlinearOperator::Temperature(double h, double p)
+AMP::LinearAlgebra::Vector::shared_ptr
+SubchannelFourEqNonlinearOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-   // evaluates temperature
-   // h: enthalpy
-   // p: pressure
-   std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
-   argMap.insert(std::make_pair(std::string("enthalpy"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,h))));
-   argMap.insert(std::make_pair(std::string("pressure"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,p))));
-   std::vector<double> result(1);
-   d_subchannelPhysicsModel->getProperty("Temperature",result,argMap); 
-   return result[0];
+    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    // Subset the vectors, they are simple vectors and we need to subset for the current comm
+    // instead of the mesh
+    if ( d_Mesh.get() != NULL ) {
+        AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+        AMP::LinearAlgebra::Vector::shared_ptr commVec =
+            vec->select( commSelector, var->getName() );
+        return commVec->subsetVectorForVariable( var );
+    }
+    else {
+        return vec->subsetVectorForVariable( var );
+    }
 }
 
-double SubchannelFourEqNonlinearOperator::ThermalConductivity(double T, double rho)
+AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::subsetOutputVector(
+    AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-   // evaluates thermal conductivity
-   // T: temperature
-   // rho: density
-   std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
-   argMap.insert(std::make_pair(std::string("temperature"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,T))));
-   argMap.insert(std::make_pair(std::string("density"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,rho))));  
-   std::vector<double> result(1);
-   d_subchannelPhysicsModel->getProperty("ThermalConductivity",result,argMap); 
-   return result[0];
+    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    // Subset the vectors, they are simple vectors and we need to subset for the current comm
+    // instead of the mesh
+    if ( d_Mesh.get() != NULL ) {
+        AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
+        AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
+            vec->constSelect( commSelector, var->getName() );
+        return commVec->constSubsetVectorForVariable( var );
+    }
+    else {
+        return vec->constSubsetVectorForVariable( var );
+    }
 }
 
-double SubchannelFourEqNonlinearOperator::DynamicViscosity(double T, double rho)
+double SubchannelFourEqNonlinearOperator::Volume( double h, double p )
 {
-   // evaluates dynamic viscosity
-   // T: temperature
-   // rho: density
-   std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
-   argMap.insert(std::make_pair(std::string("temperature"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,T))));
-   argMap.insert(std::make_pair(std::string("density"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,rho))));
-   std::vector<double> result(1);
-   d_subchannelPhysicsModel->getProperty("DynamicViscosity",result,argMap); 
-   return result[0];
+    // evaluates specific volume
+    // h: enthalpy
+    // p: pressure
+    std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
+    argMap.insert(
+        std::make_pair( std::string( "enthalpy" ),
+                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, h ) ) ) );
+    argMap.insert(
+        std::make_pair( std::string( "pressure" ),
+                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p ) ) ) );
+    std::vector<double> result( 1 );
+    d_subchannelPhysicsModel->getProperty( "SpecificVolume", result, argMap );
+    return result[0];
 }
 
-double SubchannelFourEqNonlinearOperator::Enthalpy(double T, double p)
+double SubchannelFourEqNonlinearOperator::Temperature( double h, double p )
 {
-   // evaluates specific enthalpy
-   // T: temperature
-   // p: pressure
-   std::map<std::string, AMP::shared_ptr<std::vector<double> > > argMap;
-   argMap.insert(std::make_pair(std::string("temperature"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,T))));
-   argMap.insert(std::make_pair(std::string("pressure"),AMP::shared_ptr<std::vector<double> >(new std::vector<double>(1,p))));
-   std::vector<double> result(1);
-   d_subchannelPhysicsModel->getProperty("Enthalpy",result,argMap); 
-   return result[0];
+    // evaluates temperature
+    // h: enthalpy
+    // p: pressure
+    std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
+    argMap.insert(
+        std::make_pair( std::string( "enthalpy" ),
+                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, h ) ) ) );
+    argMap.insert(
+        std::make_pair( std::string( "pressure" ),
+                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p ) ) ) );
+    std::vector<double> result( 1 );
+    d_subchannelPhysicsModel->getProperty( "Temperature", result, argMap );
+    return result[0];
 }
 
-void SubchannelFourEqNonlinearOperator::getAxialFaces(
-   AMP::Mesh::MeshElement cell,
-   AMP::Mesh::MeshElement &upperFace,
-   AMP::Mesh::MeshElement &lowerFace)
+double SubchannelFourEqNonlinearOperator::ThermalConductivity( double T, double rho )
 {
-   // gets upper and lower faces of a cell
+    // evaluates thermal conductivity
+    // T: temperature
+    // rho: density
+    std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
+    argMap.insert(
+        std::make_pair( std::string( "temperature" ),
+                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, T ) ) ) );
+    argMap.insert( std::make_pair(
+        std::string( "density" ),
+        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, rho ) ) ) );
+    std::vector<double> result( 1 );
+    d_subchannelPhysicsModel->getProperty( "ThermalConductivity", result, argMap );
+    return result[0];
+}
 
-   bool upperFaceFound = false;
-   bool lowerFaceFound = false;
-   std::vector<double> cellCentroid = cell.centroid();
-   // get all faces of cell
-   std::vector<AMP::Mesh::MeshElement> cellFaces = cell.getElements(AMP::Mesh::Face);
-   // loop over faces of cell
-   for (std::vector<AMP::Mesh::MeshElement>::iterator face = cellFaces.begin(); face != cellFaces.end(); ++face) {
-      std::vector<double> faceCentroid = face->centroid();
-      // if z-coordinates of centroids of the cell and face are not equal,
-      if (!AMP::Utilities::approx_equal(faceCentroid[2],cellCentroid[2],1.0e-6)) {
-         // if face is above cell centroid,
-         if (faceCentroid[2] > cellCentroid[2])
-            // face is the upper axial face
-            if (upperFaceFound) AMP_ERROR("Two upper axial faces were found for the same cell.");
+double SubchannelFourEqNonlinearOperator::DynamicViscosity( double T, double rho )
+{
+    // evaluates dynamic viscosity
+    // T: temperature
+    // rho: density
+    std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
+    argMap.insert(
+        std::make_pair( std::string( "temperature" ),
+                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, T ) ) ) );
+    argMap.insert( std::make_pair(
+        std::string( "density" ),
+        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, rho ) ) ) );
+    std::vector<double> result( 1 );
+    d_subchannelPhysicsModel->getProperty( "DynamicViscosity", result, argMap );
+    return result[0];
+}
+
+double SubchannelFourEqNonlinearOperator::Enthalpy( double T, double p )
+{
+    // evaluates specific enthalpy
+    // T: temperature
+    // p: pressure
+    std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
+    argMap.insert(
+        std::make_pair( std::string( "temperature" ),
+                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, T ) ) ) );
+    argMap.insert(
+        std::make_pair( std::string( "pressure" ),
+                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p ) ) ) );
+    std::vector<double> result( 1 );
+    d_subchannelPhysicsModel->getProperty( "Enthalpy", result, argMap );
+    return result[0];
+}
+
+void SubchannelFourEqNonlinearOperator::getAxialFaces( AMP::Mesh::MeshElement cell,
+                                                       AMP::Mesh::MeshElement &upperFace,
+                                                       AMP::Mesh::MeshElement &lowerFace )
+{
+    // gets upper and lower faces of a cell
+
+    bool upperFaceFound              = false;
+    bool lowerFaceFound              = false;
+    std::vector<double> cellCentroid = cell.centroid();
+    // get all faces of cell
+    std::vector<AMP::Mesh::MeshElement> cellFaces = cell.getElements( AMP::Mesh::Face );
+    // loop over faces of cell
+    for ( std::vector<AMP::Mesh::MeshElement>::iterator face = cellFaces.begin();
+          face != cellFaces.end();
+          ++face ) {
+        std::vector<double> faceCentroid = face->centroid();
+        // if z-coordinates of centroids of the cell and face are not equal,
+        if ( !AMP::Utilities::approx_equal( faceCentroid[2], cellCentroid[2], 1.0e-6 ) ) {
+            // if face is above cell centroid,
+            if ( faceCentroid[2] > cellCentroid[2] )
+                // face is the upper axial face
+                if ( upperFaceFound )
+                    AMP_ERROR( "Two upper axial faces were found for the same cell." );
+                else {
+                    upperFace      = *face;
+                    upperFaceFound = true;
+                }
+            else
+                // face is the lower axial face
+                if ( lowerFaceFound )
+                AMP_ERROR( "Two lower axial faces were found for the same cell." );
             else {
-               upperFace = *face;
-               upperFaceFound = true;
+                lowerFace      = *face;
+                lowerFaceFound = true;
             }
-         else
-            // face is the lower axial face
-            if (lowerFaceFound) AMP_ERROR("Two lower axial faces were found for the same cell.");
-            else {
-               lowerFace = *face;
-               lowerFaceFound = true;
-            }
-      }
-   }// end loop over faces of cell
-   if (!(upperFaceFound && lowerFaceFound)) AMP_ERROR("One or both axial faces of a cell were not found.");
+        }
+    } // end loop over faces of cell
+    if ( !( upperFaceFound && lowerFaceFound ) )
+        AMP_ERROR( "One or both axial faces of a cell were not found." );
 }
 
 AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLateralFace(
-   AMP::Mesh::MeshElement* daughterCell,
-   AMP::Mesh::MeshElement parentLateralFace,
-   std::map<std::vector<double>,AMP::Mesh::MeshElement> interiorLateralFaceMap)
+    AMP::Mesh::MeshElement *daughterCell,
+    AMP::Mesh::MeshElement parentLateralFace,
+    std::map<std::vector<double>, AMP::Mesh::MeshElement>
+        interiorLateralFaceMap )
 {
-   // gets the lateral face that is either below or above another lateral face
-   // daughterCell: cell that is either above or below the parent cell
-   // parentLateralFace: lateral face belonging to the parent cell for which the function seeks to find an axially adjacent lateral face
+    // gets the lateral face that is either below or above another lateral face
+    // daughterCell: cell that is either above or below the parent cell
+    // parentLateralFace: lateral face belonging to the parent cell for which the function seeks to
+    // find an axially
+    // adjacent lateral face
 
-   bool axiallyAdjacentLateralFaceFound = false; // has the axially adjacent lateral face been found?
-   // get centroid of parent lateral face
-   std::vector<double> parentLateralFaceCentroid = parentLateralFace.centroid();
-   std::vector<double> daughterCellCentroid = daughterCell->centroid();
-   // loop over faces of daughter cell to determine which face is the lateral face axially adjacent to the current lateral face
-   AMP::Mesh::MeshElement axiallyAdjacentLateralFace;
-   std::vector<AMP::Mesh::MeshElement> daughterCellFaces = daughterCell->getElements(AMP::Mesh::Face);
-   for (std::vector<AMP::Mesh::MeshElement>::iterator face = daughterCellFaces.begin(); face != daughterCellFaces.end(); ++face) {
-      std::vector<double> faceCentroid = face->centroid();
-      std::map<std::vector<double>,AMP::Mesh::MeshElement>::iterator lateralFaceIterator = interiorLateralFaceMap.find(faceCentroid);
-      if (lateralFaceIterator != interiorLateralFaceMap.end()) {
-         // get lateral face
-         AMP::Mesh::MeshElement daughterLateralFace = lateralFaceIterator->second;
-         std::vector<double> daughterLateralFaceCentroid = daughterLateralFace.centroid();
-         // loop through coordinates to determine if lateral face is the lateral face axially adjacent to the current lateral face
-         double knownCentroid[3] = {parentLateralFaceCentroid[0],parentLateralFaceCentroid[1],daughterCellCentroid[2]};
-         bool isAxiallyAdjacentLateralFace = true;
-         for (size_t i = 0; i < 3; i++) {
-            if (!AMP::Utilities::approx_equal(daughterLateralFaceCentroid[i],knownCentroid[i],1.0e-6)) isAxiallyAdjacentLateralFace = false;
-         }
-         if (isAxiallyAdjacentLateralFace) {
-            axiallyAdjacentLateralFace = daughterLateralFace; 
-            if (axiallyAdjacentLateralFaceFound) AMP_ERROR("Found multiple axially adjacent lateral faces.");
-            else axiallyAdjacentLateralFaceFound = true;
-         }
-      }
-   }// end loop over faces of daughter cell
-   AMP_INSIST(axiallyAdjacentLateralFaceFound,"Axially adjacent lateral face was not found.");
-   return axiallyAdjacentLateralFace;
+    bool axiallyAdjacentLateralFaceFound =
+        false; // has the axially adjacent lateral face been found?
+    // get centroid of parent lateral face
+    std::vector<double> parentLateralFaceCentroid = parentLateralFace.centroid();
+    std::vector<double> daughterCellCentroid      = daughterCell->centroid();
+    // loop over faces of daughter cell to determine which face is the lateral face axially adjacent
+    // to the current
+    // lateral face
+    AMP::Mesh::MeshElement axiallyAdjacentLateralFace;
+    std::vector<AMP::Mesh::MeshElement> daughterCellFaces =
+        daughterCell->getElements( AMP::Mesh::Face );
+    for ( std::vector<AMP::Mesh::MeshElement>::iterator face = daughterCellFaces.begin();
+          face != daughterCellFaces.end();
+          ++face ) {
+        std::vector<double> faceCentroid = face->centroid();
+        std::map<std::vector<double>, AMP::Mesh::MeshElement>::iterator lateralFaceIterator =
+            interiorLateralFaceMap.find( faceCentroid );
+        if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
+            // get lateral face
+            AMP::Mesh::MeshElement daughterLateralFace      = lateralFaceIterator->second;
+            std::vector<double> daughterLateralFaceCentroid = daughterLateralFace.centroid();
+            // loop through coordinates to determine if lateral face is the lateral face axially
+            // adjacent to the current
+            // lateral face
+            double knownCentroid[3] = { parentLateralFaceCentroid[0],
+                                        parentLateralFaceCentroid[1],
+                                        daughterCellCentroid[2] };
+            bool isAxiallyAdjacentLateralFace = true;
+            for ( size_t i = 0; i < 3; i++ ) {
+                if ( !AMP::Utilities::approx_equal(
+                         daughterLateralFaceCentroid[i], knownCentroid[i], 1.0e-6 ) )
+                    isAxiallyAdjacentLateralFace = false;
+            }
+            if ( isAxiallyAdjacentLateralFace ) {
+                axiallyAdjacentLateralFace = daughterLateralFace;
+                if ( axiallyAdjacentLateralFaceFound )
+                    AMP_ERROR( "Found multiple axially adjacent lateral faces." );
+                else
+                    axiallyAdjacentLateralFaceFound = true;
+            }
+        }
+    } // end loop over faces of daughter cell
+    AMP_INSIST( axiallyAdjacentLateralFaceFound, "Axially adjacent lateral face was not found." );
+    return axiallyAdjacentLateralFace;
 }
-
 }
 }

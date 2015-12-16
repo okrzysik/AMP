@@ -5,25 +5,21 @@
 
 namespace AMP {
 namespace Operator {
-    
-    class MassAssemblyParameters : public AssemblyParameters {
-        public :
-        
-        explicit MassAssemblyParameters(const AMP::shared_ptr<AMP::Database> &db)
-        : AssemblyParameters(db) {  }
-        
-        virtual ~MassAssemblyParameters() {}
-        
-        
-        protected :
-        
-        private :
-        
-    };
-    
+
+class MassAssemblyParameters : public AssemblyParameters {
+public:
+    explicit MassAssemblyParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : AssemblyParameters( db )
+    {
+    }
+
+    virtual ~MassAssemblyParameters() {}
+
+
+protected:
+private:
+};
 }
 }
 
 #endif
-
-

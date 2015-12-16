@@ -13,62 +13,51 @@
 namespace AMP {
 namespace Operator {
 
-  typedef ElementPhysicsModelParameters FlowTransportModelParameters;
+typedef ElementPhysicsModelParameters FlowTransportModelParameters;
 
-  class FlowTransportModel : public ElementPhysicsModel
-  {
-    public :
+class FlowTransportModel : public ElementPhysicsModel {
+public:
+    explicit FlowTransportModel( const AMP::shared_ptr<FlowTransportModelParameters> &params )
+        : ElementPhysicsModel( params )
+    {
+        d_useMaterialsLibrary =
+            ( params->d_db )->getBoolWithDefault( "USE_MATERIALS_LIBRARY", false );
 
-      explicit FlowTransportModel(const AMP::shared_ptr<FlowTransportModelParameters>& params)
-        : ElementPhysicsModel(params) { 
-          d_useMaterialsLibrary = (params->d_db)->getBoolWithDefault("USE_MATERIALS_LIBRARY",false);
-
-          if(d_useMaterialsLibrary == true) 
-          {
-            AMP_INSIST( (params->d_db->keyExists("Material")), "Key ''Material'' is missing!" );
-            std::string matname = params->d_db->getString("Material");
-            d_coolant = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(matname);
-          }
-          else{
-            d_density = (params->d_db)->getDoubleWithDefault("DENSITY",1);
-            d_fmu     = (params->d_db)->getDoubleWithDefault("VISCOSITY",1.0);
-            d_Re      = (params->d_db)->getDoubleWithDefault("ReynoldsNumber",1.0);
-          }
-
+        if ( d_useMaterialsLibrary == true ) {
+            AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Key ''Material'' is missing!" );
+            std::string matname = params->d_db->getString( "Material" );
+            d_coolant =
+                AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
         }
+        else {
+            d_density = ( params->d_db )->getDoubleWithDefault( "DENSITY", 1 );
+            d_fmu     = ( params->d_db )->getDoubleWithDefault( "VISCOSITY", 1.0 );
+            d_Re      = ( params->d_db )->getDoubleWithDefault( "ReynoldsNumber", 1.0 );
+        }
+    }
 
 
-      /**
-       * Destructor.
-       */ 
-      virtual ~FlowTransportModel() { }
+    /**
+     * Destructor.
+     */
+    virtual ~FlowTransportModel() {}
 
-      double getDensity(){
-        return d_density;
-      }
+    double getDensity() { return d_density; }
 
-      double getViscosity(){
-        return d_fmu;
-      }
+    double getViscosity() { return d_fmu; }
 
-      double getReynoldsNumber(){
-        return d_Re;
-      }
+    double getReynoldsNumber() { return d_Re; }
 
-    protected :
+protected:
+    bool d_useMaterialsLibrary;
 
-      bool d_useMaterialsLibrary;
+    double d_density, d_fmu, d_Re;
 
-      double d_density , d_fmu , d_Re ;
+    AMP::Materials::Material::shared_ptr d_coolant; /**< Shared pointer to the materials object. */
 
-      AMP::Materials::Material::shared_ptr d_coolant; /**< Shared pointer to the materials object. */
-
-    private :
-
-  };
-
+private:
+};
 }
 }
 
 #endif
-

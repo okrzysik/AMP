@@ -1,12 +1,12 @@
 #ifndef included_AMP_MultiVectorIterator
 #define included_AMP_MultiVectorIterator
 
-#include <iterator>
-#include "utils/shared_ptr.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshIterator.h"
+#include "utils/shared_ptr.h"
+#include <iterator>
 
-namespace AMP { 
+namespace AMP {
 namespace Mesh {
 
 
@@ -16,58 +16,57 @@ namespace Mesh {
  * \details  This class provides routines for iterating over a set
  * of mesh elments that are in a std::vector.
  */
-class MultiVectorIterator: public MeshIterator {
+class MultiVectorIterator : public MeshIterator {
 public:
-
     //! Empty MultiVectorIterator constructor
     MultiVectorIterator();
 
     //! Default MultiVectorIterator constructor
-    MultiVectorIterator( AMP::shared_ptr<std::vector<MeshElement> > elements, size_t pos=0 );
+    MultiVectorIterator( AMP::shared_ptr<std::vector<MeshElement>> elements, size_t pos = 0 );
 
     /** MultiVectorIterator constructor
      *  Note that this version of the constructor will create a copy of the elements
      */
-    MultiVectorIterator( const std::vector<MeshElement>& elements, size_t pos=0 );
+    MultiVectorIterator( const std::vector<MeshElement> &elements, size_t pos = 0 );
 
     //! Deconstructor
-    virtual ~MultiVectorIterator ();
+    virtual ~MultiVectorIterator();
 
     //! Copy constructor
-    MultiVectorIterator(const MultiVectorIterator&);
+    MultiVectorIterator( const MultiVectorIterator & );
 
     //! Assignment operator
-    MultiVectorIterator& operator=(const MultiVectorIterator&);
+    MultiVectorIterator &operator=( const MultiVectorIterator & );
 
     //! Increment
-    MeshIterator& operator++();
-    
+    MeshIterator &operator++();
+
     //! Increment
-    MeshIterator operator++(int);
+    MeshIterator operator++( int );
 
     //! Decrement
-    MeshIterator& operator--();
-    
+    MeshIterator &operator--();
+
     //! Decrement
-    MeshIterator operator--(int);
+    MeshIterator operator--( int );
 
     // Arithmetic operator+
-    virtual MeshIterator operator+(int) const;
+    virtual MeshIterator operator+( int ) const;
 
     // Arithmetic operator+=
-    virtual MeshIterator& operator+=(int N);
+    virtual MeshIterator &operator+=( int N );
 
     //! Check if two iterators are equal
-    bool operator==(const MeshIterator& rhs) const;
+    bool operator==( const MeshIterator &rhs ) const;
 
     //! Check if two iterators are not equal
-    bool operator!=(const MeshIterator& rhs) const;
-    
-    //! Dereference the iterator
-    MeshElement &operator*(void);
+    bool operator!=( const MeshIterator &rhs ) const;
 
     //! Dereference the iterator
-    MeshElement *operator->(void);
+    MeshElement &operator*( void );
+
+    //! Dereference the iterator
+    MeshElement *operator->( void );
 
     //! Return an iterator to the begining
     MeshIterator begin() const;
@@ -85,19 +84,15 @@ public:
     using MeshIterator::operator+=;
 
 protected:
-
     //! Clone the iterator
-    virtual MeshIterator* clone() const;
+    virtual MeshIterator *clone() const;
 
     // A pointer to a std::vector containing the desired mesh elements
-    AMP::shared_ptr<std::vector<MeshElement> > d_elements;
+    AMP::shared_ptr<std::vector<MeshElement>> d_elements;
     // An integer containing the current position
     size_t d_pos;
 };
-
-
 }
 }
 
 #endif
-

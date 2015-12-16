@@ -1,5 +1,7 @@
 //
-// File:	$URL: file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/inputdb/Parser.I $
+// File:	$URL:
+// file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/inputdb/Parser.I
+// $
 // Package:	AMP toolbox
 // Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
 // Revision:	$LastChangedRevision: 1917 $
@@ -12,44 +14,24 @@
 #endif
 
 namespace AMP {
-   
 
-inline
-Parser *Parser::getParser()
+
+inline Parser *Parser::getParser() { return ( s_default_parser ); }
+
+inline AMP::shared_ptr<Database> &Parser::getScope() { return ( d_scope_stack.front() ); }
+
+inline void Parser::enterScope( const std::string &name )
 {
-   return(s_default_parser);
+    d_scope_stack.push_front( d_scope_stack.front()->putDatabase( name ) );
 }
 
-inline AMP::shared_ptr<Database> & Parser::getScope()
-{
-   return(d_scope_stack.front());
-}
+inline void Parser::leaveScope() { d_scope_stack.pop_front(); }
 
-inline void Parser::enterScope(const std::string& name)
-{
-   d_scope_stack.push_front(d_scope_stack.front()->putDatabase(name));
-}
+inline int Parser::getNumberErrors() const { return ( d_errors ); }
 
-inline void Parser::leaveScope()
-{
-   d_scope_stack.pop_front();
-}
-
-inline
-int Parser::getNumberErrors() const
-{
-   return(d_errors);
-}
-
-inline
-int Parser::getNumberWarnings() const
-{
-   return(d_warnings);
-}
+inline int Parser::getNumberWarnings() const { return ( d_warnings ); }
 
 #ifdef DEBUG_NO_INLINE
 #undef inline
 #endif
-
 }
-

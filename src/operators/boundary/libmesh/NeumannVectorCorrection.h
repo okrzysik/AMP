@@ -9,15 +9,15 @@
 #include "discretization/createLibmeshElements.h"
 
 /* Libmesh files */
-#include "libmesh/fe_type.h"
-#include "libmesh/fe_base.h"
 #include "libmesh/elem.h"
+#include "libmesh/fe_base.h"
+#include "libmesh/fe_type.h"
 #include "libmesh/quadrature.h"
 
-#include "libmesh/enum_order.h"
-#include "libmesh/enum_fe_family.h"
-#include "libmesh/enum_quadrature_type.h"
 #include "libmesh/auto_ptr.h"
+#include "libmesh/enum_fe_family.h"
+#include "libmesh/enum_order.h"
+#include "libmesh/enum_quadrature_type.h"
 #include "libmesh/string_to_enum.h"
 
 #include <string>
@@ -25,123 +25,115 @@
 namespace AMP {
 namespace Operator {
 
-  /**
-    A class to impose Neumann (Flux) Boundary Conditions for both Linear and Nonlinear operator.
-    For both the Linear/Nonlinear operator to impose these conditions involves adding the corrections
-    to the RHS vector at the appropriate locations. When you do not impose these Neumann condition for
-    the weak formulation, a natural condition is assumed.
-    This class is also a base class for the Robin Boundary Operator.
-    */
-  class NeumannVectorCorrection : public BoundaryOperator
-  {
-    public :
+/**
+  A class to impose Neumann (Flux) Boundary Conditions for both Linear and Nonlinear operator.
+  For both the Linear/Nonlinear operator to impose these conditions involves adding the corrections
+  to the RHS vector at the appropriate locations. When you do not impose these Neumann condition for
+  the weak formulation, a natural condition is assumed.
+  This class is also a base class for the Robin Boundary Operator.
+  */
+class NeumannVectorCorrection : public BoundaryOperator {
+public:
+    //! Constructor. This function reads all the parameters required for surface elements.
+    explicit NeumannVectorCorrection(
+        const AMP::shared_ptr<NeumannVectorCorrectionParameters> &params );
 
-      //! Constructor. This function reads all the parameters required for surface elements.
-      explicit NeumannVectorCorrection(const AMP::shared_ptr<NeumannVectorCorrectionParameters> & params);
+    /**
+      Set the variable for the vector that will used with this operator.
+      */
+    void setVariable( const AMP::LinearAlgebra::Variable::shared_ptr &var ) { d_variable = var; }
 
-      /**
-        Set the variable for the vector that will used with this operator.
-        */
-      void setVariable(const AMP::LinearAlgebra::Variable::shared_ptr & var) {
-        d_variable = var;
-      }
+    /**
+      Destructor
+      */
+    virtual ~NeumannVectorCorrection() {}
 
-      /**
-        Destructor
-        */
-      virtual ~NeumannVectorCorrection() { }
+    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-      virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-			  AMP::LinearAlgebra::Vector::shared_ptr f) override;
+    /**
+      This function computes the surface integral for either constant or varrying flux values
+      across the boundary.
+      */
+    void computeRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhsCorrection );
 
-      /**
-        This function computes the surface integral for either constant or varrying flux values
-        across the boundary.
-        */
-      void computeRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhsCorrection);
+    /**
+      This function reads parameters related to boundary Ids
+      */
+    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params );
 
-      /**
-        This function reads parameters related to boundary Ids
-        */
-      virtual void reset(const AMP::shared_ptr<OperatorParameters>& params);
+    /**
+      Adds a vector to the RHS vector.
+      */
+    void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs );
 
-      /**
-        Adds a vector to the RHS vector.
-        */
-      void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs); 
+    /**
+     * get a pointer to the cached parameters that were used to create this
+     * operator
+     */
+    AMP::shared_ptr<OperatorParameters> getOperatorParameters() { return d_params; }
 
-      /** 
-       * get a pointer to the cached parameters that were used to create this
-       * operator
-       */
-      AMP::shared_ptr<OperatorParameters> getOperatorParameters() {
-        return d_params;
-      }
+    void setVariableFlux( const AMP::LinearAlgebra::Vector::shared_ptr &flux );
 
-      void setVariableFlux(const AMP::LinearAlgebra::Vector::shared_ptr &flux);
+    void setFrozenVector( AMP::LinearAlgebra::Vector::shared_ptr f );
 
-      void setFrozenVector ( AMP::LinearAlgebra::Vector::shared_ptr f );
+    AMP::shared_ptr<RobinPhysicsModel> getRobinPhysicsModel() { return d_robinPhysicsModel; }
 
-      AMP::shared_ptr<RobinPhysicsModel>  getRobinPhysicsModel () { return d_robinPhysicsModel; }
+    std::vector<short int> getBoundaryIds() const { return d_boundaryIds; }
 
-      std::vector<short int> getBoundaryIds() const { return d_boundaryIds; }
+    std::vector<std::vector<unsigned int>> getDofIds() const { return d_dofIds; }
 
-      std::vector<std::vector<unsigned int> > getDofIds() const { return d_dofIds; }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_variable; }
 
-      AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_variable; }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_variable; }
 
-      AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_variable; }
+protected:
+    /**
+      This function returns a parameter object that can be used to reset the corresponding
+      NeumannVectorCorrection operator.
+      */
+    AMP::shared_ptr<OperatorParameters>
+    getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
 
-    protected :
+    Discretization::createLibmeshElements d_libmeshElements;
 
-      /**
-        This function returns a parameter object that can be used to reset the corresponding
-        NeumannVectorCorrection operator.
-        */
-      AMP::shared_ptr<OperatorParameters> getJacobianParameters(AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
+    std::vector<short int> d_boundaryIds;
 
-      Discretization::createLibmeshElements d_libmeshElements;
+    std::vector<std::vector<double>> d_neumannValues;
 
-      std::vector<short int> d_boundaryIds;
+    std::vector<std::vector<unsigned int>> d_dofIds;
 
-      std::vector<std::vector<double> > d_neumannValues;
+    AMP::LinearAlgebra::Vector::shared_ptr d_rhsCorrectionAdd;
 
-      std::vector<std::vector<unsigned int> > d_dofIds;
+    // This must be a simple variable not a dual or multivariable
+    AMP::LinearAlgebra::Variable::shared_ptr d_variable;
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_rhsCorrectionAdd;
+    bool d_isConstantFlux;
 
-      //This must be a simple variable not a dual or multivariable
-      AMP::LinearAlgebra::Variable::shared_ptr d_variable;
+    AMP::LinearAlgebra::Vector::shared_ptr d_Frozen;
 
-      bool d_isConstantFlux;
+    AMP::LinearAlgebra::Vector::shared_ptr d_variableFlux;
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_Frozen;
+    std::vector<bool> d_IsCoupledBoundary;
+    bool d_isFluxGaussPtVector;
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_variableFlux;
+    int d_numBndIds;
 
-      std::vector<bool> d_IsCoupledBoundary;
-      bool d_isFluxGaussPtVector ;
+    std::vector<short int> d_numDofIds;
 
-      int d_numBndIds;
+    AMP::shared_ptr<NeumannVectorCorrectionParameters> d_params;
 
-      std::vector<short int> d_numDofIds;
+    AMP::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 
-      AMP::shared_ptr<NeumannVectorCorrectionParameters> d_params;
+    AMP::shared_ptr<const libMesh::FEType> d_type;
+    libMeshEnums::Order d_qruleOrder;
+    libMeshEnums::QuadratureType d_qruleType;
 
-      AMP::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
+    std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
-      AMP::shared_ptr<const libMesh::FEType> d_type;
-      libMeshEnums::Order d_qruleOrder; 
-      libMeshEnums::QuadratureType d_qruleType;
-
-      std::vector<AMP::Mesh::MeshElement> d_currNodes;
-
-    private :
-
-  };
-
+private:
+};
 }
 }
 
 #endif
-

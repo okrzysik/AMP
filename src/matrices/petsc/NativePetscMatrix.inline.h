@@ -4,151 +4,142 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-inline Matrix::shared_ptr  NativePetscMatrix::cloneMatrix () const
-{ 
+inline Matrix::shared_ptr NativePetscMatrix::cloneMatrix() const
+{
     Mat new_mat;
-    MatDuplicate ( d_Mat , MAT_DO_NOT_COPY_VALUES , &new_mat );
+    MatDuplicate( d_Mat, MAT_DO_NOT_COPY_VALUES, &new_mat );
     AMP_ERROR( "not qutie implemented" );
-    return shared_ptr ( new NativePetscMatrix ( new_mat , true ) );
+    return shared_ptr( new NativePetscMatrix( new_mat, true ) );
 }
 
 
-inline size_t NativePetscMatrix::numGlobalRows () const
+inline size_t NativePetscMatrix::numGlobalRows() const
 {
-    int rows , cols;
-    MatGetSize ( d_Mat , &rows , &cols );
+    int rows, cols;
+    MatGetSize( d_Mat, &rows, &cols );
     return rows;
 }
 
 
-inline size_t NativePetscMatrix::numGlobalColumns () const
+inline size_t NativePetscMatrix::numGlobalColumns() const
 {
-    int rows , cols;
-    MatGetSize ( d_Mat , &rows , &cols );
+    int rows, cols;
+    MatGetSize( d_Mat, &rows, &cols );
     return cols;
 }
 
 
-inline NativePetscMatrix::NativePetscMatrix ( Mat m , bool internally_created )
+inline NativePetscMatrix::NativePetscMatrix( Mat m, bool internally_created )
 {
-    d_Mat = m;
+    d_Mat                  = m;
     d_MatCreatedInternally = internally_created;
 }
 
 
-inline NativePetscMatrix::NativePetscMatrix() {
-    d_MatCreatedInternally = false;
-}
+inline NativePetscMatrix::NativePetscMatrix() { d_MatCreatedInternally = false; }
 
 
-inline NativePetscMatrix::~NativePetscMatrix ()
+inline NativePetscMatrix::~NativePetscMatrix()
 {
     if ( d_MatCreatedInternally ) {
-        #if ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==0 )
-            MatDestroy( d_Mat ); 
-        #elif ( PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR==2 )
-            MatDestroy( &d_Mat ); 
-        #else
-            #error Not programmed for this version yet
-        #endif
+#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
+        MatDestroy( d_Mat );
+#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+        MatDestroy( &d_Mat );
+#else
+#error Not programmed for this version yet
+#endif
     }
 }
 
 
-inline Matrix::shared_ptr   NativePetscMatrix::duplicateMat ( Mat m )
+inline Matrix::shared_ptr NativePetscMatrix::duplicateMat( Mat m )
 {
     Mat newMat;
-    MatDuplicate ( m , MAT_DO_NOT_COPY_VALUES , &newMat );
-    return Matrix::shared_ptr ( new NativePetscMatrix ( newMat , true ) );
+    MatDuplicate( m, MAT_DO_NOT_COPY_VALUES, &newMat );
+    return Matrix::shared_ptr( new NativePetscMatrix( newMat, true ) );
 }
 
 
-inline void  NativePetscMatrix::copyFromMat ( Mat m )
+inline void NativePetscMatrix::copyFromMat( Mat m ) { MatCopy( m, d_Mat, SAME_NONZERO_PATTERN ); }
+
+
+inline void NativePetscMatrix::mult( Vector::const_shared_ptr in, Vector::shared_ptr out )
 {
-    MatCopy ( m , d_Mat , SAME_NONZERO_PATTERN );
+    MatMult( d_Mat,
+             in->castTo<const NativePetscVector>().getVec(),
+             out->castTo<NativePetscVector>().getVec() );
 }
 
 
-inline void  NativePetscMatrix::mult ( Vector::const_shared_ptr in , Vector::shared_ptr out )
+inline void NativePetscMatrix::multTranspose( Vector::const_shared_ptr in, Vector::shared_ptr out )
 {
-    MatMult ( d_Mat , in->castTo<const NativePetscVector>().getVec() , out->castTo<NativePetscVector>().getVec() );
+    MatMultTranspose( d_Mat,
+                      in->castTo<const NativePetscVector>().getVec(),
+                      out->castTo<NativePetscVector>().getVec() );
 }
 
 
-inline void  NativePetscMatrix::multTranspose ( Vector::const_shared_ptr in , Vector::shared_ptr out )
+inline void NativePetscMatrix::addValuesByGlobalID(
+    int num_rows, int num_cols, int *rows, int *cols, double *values )
 {
-    MatMultTranspose ( d_Mat , in->castTo<const NativePetscVector>().getVec() , out->castTo<NativePetscVector>().getVec() );
+    MatSetValues( d_Mat, num_rows, rows, num_cols, cols, values, ADD_VALUES );
 }
 
 
-inline void  NativePetscMatrix::addValuesByGlobalID ( int num_rows , int num_cols , int *rows, int *cols, double *values )
+inline void NativePetscMatrix::setValuesByGlobalID(
+    int num_rows, int num_cols, int *rows, int *cols, double *values )
 {
-    MatSetValues ( d_Mat , num_rows , rows , num_cols , cols , values , ADD_VALUES );
+    MatSetValues( d_Mat, num_rows, rows, num_cols, cols, values, INSERT_VALUES );
 }
 
 
-inline void  NativePetscMatrix::setValuesByGlobalID ( int num_rows , int num_cols , int *rows, int *cols, double *values )
+inline void NativePetscMatrix::scale( double alpha ) { MatScale( d_Mat, alpha ); }
+
+
+inline void NativePetscMatrix::axpy( double alpha, const Matrix &x )
 {
-    MatSetValues ( d_Mat , num_rows , rows , num_cols , cols , values , INSERT_VALUES );
+    AMP_ASSERT( x.numGlobalRows() == this->numGlobalRows() );
+    AMP_ASSERT( x.numGlobalColumns() == this->numGlobalColumns() );
+    MatAXPY( d_Mat, alpha, x.castTo<NativePetscMatrix>().d_Mat, SAME_NONZERO_PATTERN );
 }
 
 
-inline void  NativePetscMatrix::scale ( double alpha )
+inline void NativePetscMatrix::setScalar( double ans )
 {
-    MatScale ( d_Mat , alpha );
-}
-
-
-inline void  NativePetscMatrix::axpy ( double alpha , const Matrix  &x )
-{
-    AMP_ASSERT(x.numGlobalRows()==this->numGlobalRows());
-    AMP_ASSERT(x.numGlobalColumns()==this->numGlobalColumns());
-    MatAXPY ( d_Mat , alpha , x.castTo<NativePetscMatrix>().d_Mat , SAME_NONZERO_PATTERN );
-}
-
-
-inline void  NativePetscMatrix::setScalar ( double ans )
-{
-    if ( ans != 0.0 )
-        AMP_ERROR( "Cannot perform operation on NativePetscMatrix yet!" );
+    if ( ans != 0.0 ) AMP_ERROR( "Cannot perform operation on NativePetscMatrix yet!" );
     MatZeroEntries( d_Mat );
 }
 
 
-inline void  NativePetscMatrix::zero ( )
-{
-    MatZeroEntries( d_Mat );
-}
+inline void NativePetscMatrix::zero() { MatZeroEntries( d_Mat ); }
 
 
-inline void NativePetscMatrix::setDiagonal ( Vector::const_shared_ptr in )
+inline void NativePetscMatrix::setDiagonal( Vector::const_shared_ptr in )
 {
-    const PetscVector &pVec = in->castTo<NativePetscVector> ();
-    MatDiagonalSet ( d_Mat , pVec.getVec() , INSERT_VALUES );
+    const PetscVector &pVec = in->castTo<NativePetscVector>();
+    MatDiagonalSet( d_Mat, pVec.getVec(), INSERT_VALUES );
 }
-   
-inline void NativePetscMatrix::setIdentity ( )
+
+inline void NativePetscMatrix::setIdentity()
 {
     MatZeroEntries( d_Mat );
     MatShift( d_Mat, 1.0 );
 }
-      
 
-inline void NativePetscMatrix::makeConsistent ()
+
+inline void NativePetscMatrix::makeConsistent()
 {
-    MatAssemblyBegin ( d_Mat , MAT_FINAL_ASSEMBLY );
-    MatAssemblyEnd   ( d_Mat , MAT_FINAL_ASSEMBLY );
+    MatAssemblyBegin( d_Mat, MAT_FINAL_ASSEMBLY );
+    MatAssemblyEnd( d_Mat, MAT_FINAL_ASSEMBLY );
 }
 
 
-inline double NativePetscMatrix::L1Norm () const
+inline double NativePetscMatrix::L1Norm() const
 {
     double retVal;
-    MatNorm ( d_Mat , NORM_1 , &retVal );
+    MatNorm( d_Mat, NORM_1, &retVal );
     return retVal;
 }
-
-
 }
 }
-

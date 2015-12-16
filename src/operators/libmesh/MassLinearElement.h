@@ -10,41 +10,38 @@
 
 namespace AMP {
 namespace Operator {
-    
 
-class MassLinearElement : public MassElement 
-{
-public :
-        
-    explicit MassLinearElement(const AMP::shared_ptr<ElementOperationParameters>& params) :
-        MassElement(params), 
-        d_elementMassMatrix(NULL), 
-        d_equation(MassDensityModel::UnknownMassEquation)
+
+class MassLinearElement : public MassElement {
+public:
+    explicit MassLinearElement( const AMP::shared_ptr<ElementOperationParameters> &params )
+        : MassElement( params ),
+          d_elementMassMatrix( NULL ),
+          d_equation( MassDensityModel::UnknownMassEquation )
     {
-          d_densityAtGauss = params->d_db->getBoolWithDefault("DensityAtGaussPoints", true);
+        d_densityAtGauss = params->d_db->getBoolWithDefault( "DensityAtGaussPoints", true );
     }
 
-    virtual ~MassLinearElement() {  }
+    virtual ~MassLinearElement() {}
 
-    void setElementMassMatrix( std::vector<std::vector<double> > & elementMassMatrix )
+    void setElementMassMatrix( std::vector<std::vector<double>> &elementMassMatrix )
     {
-        d_elementMassMatrix = &(elementMassMatrix);
+        d_elementMassMatrix = &( elementMassMatrix );
     }
 
-    void setElementVectors(const std::vector<double>& localTemp,
-                       const std::vector<double>& localConc,
-                       const std::vector<double>& localBurn ) 
+    void setElementVectors( const std::vector<double> &localTemp,
+                            const std::vector<double> &localConc,
+                            const std::vector<double> &localBurn )
     {
-        d_LocalTemperature = localTemp;
+        d_LocalTemperature   = localTemp;
         d_LocalConcentration = localConc;
-        d_LocalBurnup = localBurn;
+        d_LocalBurnup        = localBurn;
     }
 
     void apply();
 
-protected :
-
-    std::vector<std::vector<double> > *d_elementMassMatrix;
+protected:
+    std::vector<std::vector<double>> *d_elementMassMatrix;
 
     bool d_densityAtGauss;
 
@@ -54,16 +51,9 @@ protected :
 
     MassDensityModel::MassEquation d_equation;
 
-private :
-
+private:
 };
-
-
 }
 }
 
 #endif
-
-
-
-

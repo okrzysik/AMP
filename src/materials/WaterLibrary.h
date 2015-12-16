@@ -5,22 +5,25 @@
 #include "utils/Factory.h"
 
 
-// Define the material 
+// Define the material
 namespace AMP {
 namespace Materials {
-    class WaterLibrary : public Material { public:
-    	WaterLibrary();
-    };
+class WaterLibrary : public Material {
+public:
+    WaterLibrary();
+};
 }
 }
 
 
-// Add static initialize to force symbols to be included 
+// Add static initialize to force symbols to be included
 // It will register the material with the factory
 static struct WaterLibrary {
-    WaterLibrary() {
-        static AMP::voodoo::Registration<AMP::Materials::Material,AMP::Materials::WaterLibrary> reg("WaterLibrary");
-     }
+    WaterLibrary()
+    {
+        static AMP::voodoo::Registration<AMP::Materials::Material, AMP::Materials::WaterLibrary>
+            reg( "WaterLibrary" );
+    }
 } WaterLibrary_init;
 
 

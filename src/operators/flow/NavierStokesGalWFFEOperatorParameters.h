@@ -9,26 +9,23 @@
 namespace AMP {
 namespace Operator {
 
-  class NavierStokesGalWFFEOperatorParameters : public LinearFEOperatorParameters {
-    public :
+class NavierStokesGalWFFEOperatorParameters : public LinearFEOperatorParameters {
+public:
+    explicit NavierStokesGalWFFEOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : LinearFEOperatorParameters( db )
+    {
+    }
 
-      explicit NavierStokesGalWFFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
-        : LinearFEOperatorParameters(db) { }
+    virtual ~NavierStokesGalWFFEOperatorParameters() {}
 
-      virtual ~NavierStokesGalWFFEOperatorParameters() { }
+    AMP::LinearAlgebra::Vector::shared_ptr d_FrozenTemperature;
 
-      AMP::LinearAlgebra::Vector::shared_ptr d_FrozenTemperature; 
-                                              
-      AMP::shared_ptr<FlowTransportModel> d_transportModel;
+    AMP::shared_ptr<FlowTransportModel> d_transportModel;
 
-    protected :
-
-    private :
-
-  };
-
+protected:
+private:
+};
 }
 }
 
 #endif
-

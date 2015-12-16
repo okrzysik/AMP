@@ -1,7 +1,7 @@
 /*
-Copyright 2005, The Regents of the University 
+Copyright 2005, The Regents of the University
 of California. This software was produced under
-a U.S. Government contract (W-7405-ENG-36) 
+a U.S. Government contract (W-7405-ENG-36)
 by Los Alamos National Laboratory, which is
 operated by the University of California for the
 U.S. Department of Energy. The U.S.
@@ -34,40 +34,38 @@ responsibility for the use of this software.
 #include <memory>
 
 
-namespace AMP{
-namespace TimeIntegrator{
+namespace AMP {
+namespace TimeIntegrator {
 
 /**\class TimeIntegratorFactory
- * 
+ *
  * TimeIntegratorFactory is a factory class that creates specific multilevel
  * solver classes.  These are used to provide methods that operate on
  * a SAMR hierarchy
  */
-class TimeIntegratorFactory
-{
+class TimeIntegratorFactory {
 public:
-   /**
-    * Constructor.
-    */
-   TimeIntegratorFactory();
+    /**
+     * Constructor.
+     */
+    TimeIntegratorFactory();
 
-   /**
-    * Destructor.
-    */
-   virtual ~TimeIntegratorFactory();
+    /**
+     * Destructor.
+     */
+    virtual ~TimeIntegratorFactory();
 
-   /**
-    * Factory method for generating multilevel solvers with characteristics
-    * specified by parameters.
-    */
-   AMP::shared_ptr<TimeIntegrator> createTimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> timeIntegratorParameters);
+    /**
+     * Factory method for generating multilevel solvers with characteristics
+     * specified by parameters.
+     */
+    AMP::shared_ptr<TimeIntegrator>
+    createTimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> timeIntegratorParameters );
 
 protected:
-private:  
+private:
 };
-
 }
 }
 
-#endif //included_TimeIntegratorFactory
-
+#endif // included_TimeIntegratorFactory

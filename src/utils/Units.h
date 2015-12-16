@@ -5,14 +5,11 @@
 namespace AMP {
 namespace Units {
 
-enum Time { unknown_time=0, seconds, minutes, hours, days };
-enum Length { unknown_length=0, meters };
-enum Temperature { unknown_temperature=0, kelvin };
-enum Mass { unknown_mass=0, kilograms  };
-
-
+enum Time { unknown_time = 0, seconds, minutes, hours, days };
+enum Length { unknown_length = 0, meters };
+enum Temperature { unknown_temperature = 0, kelvin };
+enum Mass { unknown_mass = 0, kilograms };
 }
 }
 
 #endif
-

@@ -7,20 +7,18 @@
 namespace AMP {
 namespace Operator {
 
-  class RobinVectorCorrectionParameters : public OperatorParameters {
-    public :
+class RobinVectorCorrectionParameters : public OperatorParameters {
+public:
+    explicit RobinVectorCorrectionParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : OperatorParameters( db )
+    {
+    }
 
-      explicit RobinVectorCorrectionParameters(const AMP::shared_ptr<AMP::Database> &db)
-        : OperatorParameters(db) {  }
+    virtual ~RobinVectorCorrectionParameters() {}
 
-      virtual ~RobinVectorCorrectionParameters() { }
-
-      AMP::LinearAlgebra::Variable::shared_ptr d_variable;
-
-  };
-
+    AMP::LinearAlgebra::Variable::shared_ptr d_variable;
+};
 }
 }
 
 #endif
-

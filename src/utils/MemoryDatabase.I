@@ -1,5 +1,6 @@
 //
-// File:	$URL: file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/database/MemoryDatabase.I $
+// File:	$URL:
+// file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/database/MemoryDatabase.I $
 // Package:	AMP toolbox
 // Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
 // Revision:	$LastChangedRevision: 2122 $
@@ -12,33 +13,22 @@
 #endif
 
 namespace AMP {
-   
 
 
-
-inline
-MemoryDatabase::MemoryDatabase(const std::string& name):
-   d_database_name(name),
-   comm(AMP_COMM_WORLD)
+inline MemoryDatabase::MemoryDatabase( const std::string &name )
+    : d_database_name( name ), comm( AMP_COMM_WORLD )
 {
 }
 
-inline
-std::string
-MemoryDatabase::getName() const
-{
-   return(d_database_name);
-}
+inline std::string MemoryDatabase::getName() const { return ( d_database_name ); }
 
-inline
-bool MemoryDatabase::keyAccessed(const std::string& key)
+inline bool MemoryDatabase::keyAccessed( const std::string &key )
 {
-   KeyData* keydata = findKeyData(key);
-   return(keydata ? keydata->d_accessed : false);
+    KeyData *keydata = findKeyData( key );
+    return ( keydata ? keydata->d_accessed : false );
 }
 
 #ifdef DEBUG_NO_INLINE
 #undef inline
 #endif
-
 }

@@ -1,5 +1,6 @@
 //
-// File:	$URL: file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/database/DatabaseBox.C $
+// File:	$URL:
+// file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/database/DatabaseBox.C $
 // Package:	AMP toolbox
 // Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
 // Revision:	$LastChangedRevision: 1917 $
@@ -14,42 +15,38 @@
 #endif
 
 namespace AMP {
-   
 
 
-DatabaseBox::DatabaseBox(const int dimension, const int *lower, const int *upper)
+DatabaseBox::DatabaseBox( const int dimension, const int *lower, const int *upper )
 {
-   AMP_ASSERT((dimension >= 0) && (dimension <= DatabaseBox_MAX_DIM));
-   d_data.d_dimension = dimension;
-   for (int i = 0; i < d_data.d_dimension; i++) {
-      d_data.d_lo[i] = lower[i];
-      d_data.d_hi[i] = upper[i];
-   }
-   for (int j = d_data.d_dimension; j < DatabaseBox_MAX_DIM ; j++) {
-      d_data.d_lo[j] = 0;
-      d_data.d_hi[j] = 0;
-   }
+    AMP_ASSERT( ( dimension >= 0 ) && ( dimension <= DatabaseBox_MAX_DIM ) );
+    d_data.d_dimension = dimension;
+    for ( int i = 0; i < d_data.d_dimension; i++ ) {
+        d_data.d_lo[i] = lower[i];
+        d_data.d_hi[i] = upper[i];
+    }
+    for ( int j = d_data.d_dimension; j < DatabaseBox_MAX_DIM; j++ ) {
+        d_data.d_lo[j] = 0;
+        d_data.d_hi[j] = 0;
+    }
 }
 
 bool DatabaseBox::empty() const
 {
-   bool is_empty = (d_data.d_dimension == 0 ? true : false);
-   for (int i = 0; i < d_data.d_dimension; i++) {
-      if (d_data.d_hi[i] < d_data.d_lo[i]) is_empty = true;
-   }
-   return(is_empty);
+    bool is_empty = ( d_data.d_dimension == 0 ? true : false );
+    for ( int i = 0; i < d_data.d_dimension; i++ ) {
+        if ( d_data.d_hi[i] < d_data.d_lo[i] ) is_empty = true;
+    }
+    return ( is_empty );
 }
 
-int DatabaseBox::operator==(const DatabaseBox& box) const
+int DatabaseBox::operator==( const DatabaseBox &box ) const
 {
-   bool equals = (d_data.d_dimension == box.d_data.d_dimension);
-   for (int i = 0; i < d_data.d_dimension; i++) {
-      if (d_data.d_lo[i] != box.d_data.d_lo[i]) equals = false;
-      if (d_data.d_hi[i] != box.d_data.d_hi[i]) equals = false;
-   }
-   return(equals);
+    bool equals = ( d_data.d_dimension == box.d_data.d_dimension );
+    for ( int i = 0; i < d_data.d_dimension; i++ ) {
+        if ( d_data.d_lo[i] != box.d_data.d_lo[i] ) equals = false;
+        if ( d_data.d_hi[i] != box.d_data.d_hi[i] ) equals = false;
+    }
+    return ( equals );
 }
-
-
 }
-

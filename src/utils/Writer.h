@@ -1,28 +1,28 @@
 #ifndef included_AMP_Writer
 #define included_AMP_Writer
 
-#include <string.h>
-#include <sstream>
-#include <vector>
 #include <map>
 #include <set>
+#include <sstream>
+#include <string.h>
+#include <vector>
 
 #include "utils/AMP_MPI.h"
 #include "utils/Database.h"
 #include "utils/shared_ptr.h"
 
 #ifdef USE_AMP_MESH
-    #include "ampmesh/Mesh.h"
+#include "ampmesh/Mesh.h"
 #endif
 #ifdef USE_AMP_VECTORS
-    #include "vectors/Vector.h"
+#include "vectors/Vector.h"
 #endif
 #ifdef USE_AMP_MATRICES
-    #include "matrices/Matrix.h"
+#include "matrices/Matrix.h"
 #endif
 
 
-namespace AMP { 
+namespace AMP {
 namespace Utilities {
 
 
@@ -32,19 +32,17 @@ namespace Utilities {
  * \details  This class provides routines for reading, accessing and writing meshes and vectors.
  *    The writers can be used to generate files for visualization or interfacing with other codes.
  */
-class Writer
-{
+class Writer {
 public:
-
     //!  Convenience typedef
-    typedef AMP::shared_ptr<AMP::Utilities::Writer>  shared_ptr;
+    typedef AMP::shared_ptr<AMP::Utilities::Writer> shared_ptr;
 
     /**
      * \brief   Function to build a writer
      * \details This function will build a default writer for use.
      * \param type   Writer type:
      *               "None"  - An empty writer will be created
-     *               "Silo"  - A silo writer will be created if silo is configured, 
+     *               "Silo"  - A silo writer will be created if silo is configured,
      *                        otherwise an empty writer will be created.
      *               "Ascii" - A simple ascii writer
      */
@@ -64,32 +62,32 @@ public:
     virtual ~Writer();
 
     //!  Function to return the file extension
-    virtual std::string getExtension()=0;
+    virtual std::string getExtension() = 0;
 
     /**
      * \brief   Function to set the file decomposition
-     * \details This function will set the method used for file IO.  When writing files, 
-     *    there are different decompositions that affect the performance and usability 
+     * \details This function will set the method used for file IO.  When writing files,
+     *    there are different decompositions that affect the performance and usability
      *    of the output files.  By default, this writer will generate a single file.
      * \param decomposition   Decomposition method to use:
-     *             1:  This will write all of the data to a single file.  
+     *             1:  This will write all of the data to a single file.
      *                 Note that this requires a serial write and will have the worst performance
-     *             2:  Each processor will write a separate file and a separate 
+     *             2:  Each processor will write a separate file and a separate
      *                 summary file will be written.  Note that this will have better performance
-     *                 at large scale, but will write many files simultaneously.  
+     *                 at large scale, but will write many files simultaneously.
      */
     virtual void setDecomposition( int decomposition );
 
     //!  Function to read a file
-    virtual void  readFile( const std::string &fname )=0;
+    virtual void readFile( const std::string &fname ) = 0;
 
     //!  Function to write a file
-    virtual void  writeFile( const std::string &fname, size_t iteration_count )=0;
+    virtual void writeFile( const std::string &fname, size_t iteration_count ) = 0;
 
 #ifdef USE_AMP_MESH
     /**
      * \brief    Function to register a mesh
-     * \details  This function will register a mesh with the writer.  
+     * \details  This function will register a mesh with the writer.
      *           Note: if mesh is a MultiMesh, it will register all sub meshes.
      * \param mesh  The mesh to register
      * \param level How many sub meshes do we want?
@@ -100,14 +98,18 @@ public:
 
      * \param path  The directory path for the mesh.  Default is an empty string.
      */
-    virtual void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level=1, std::string path=std::string() )=0;
+    virtual void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh,
+                               int level        = 1,
+                               std::string path = std::string() ) = 0;
 #endif
 
-#if defined(USE_AMP_VECTORS) && defined(USE_AMP_MESH)
+#if defined( USE_AMP_VECTORS ) && defined( USE_AMP_MESH )
     /**
      * \brief    Function to register a vector
-     * \details  This function will register a vector with the writer and register it with the given mesh.
-     *     This version of registerVector allows the data to be "stored" on the mesh for visualization
+     * \details  This function will register a vector with the writer and register it with the given
+     * mesh.
+     *     This version of registerVector allows the data to be "stored" on the mesh for
+     * visualization
      *     or mesh-based operations.
      * \param vec   The vector we want to write
      * \param mesh  The mesh we want to write the vector over.
@@ -119,45 +121,42 @@ public:
      *              the vector multiple times (one for each entity type).
      * \param name  Optional name for the vector.
      */
-    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec, AMP::Mesh::Mesh::shared_ptr mesh,
-        AMP::Mesh::GeomType type, const std::string &name = "" )=0;
+    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
+                                 AMP::Mesh::Mesh::shared_ptr mesh,
+                                 AMP::Mesh::GeomType type,
+                                 const std::string &name = "" ) = 0;
 #endif
 
-#if defined(USE_AMP_VECTORS) 
+#if defined( USE_AMP_VECTORS )
     /**
      * \brief    Function to register a vector
-     * \details  This function will register a vector with the writer.  
-     *     This version of registerVector only stores the raw data.  It is not associated with a mesh.
+     * \details  This function will register a vector with the writer.
+     *     This version of registerVector only stores the raw data.  It is not associated with a
+     * mesh.
      * \param vec   The vector we want to write
      */
-    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec )=0;
+    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) = 0;
 #endif
 
 #ifdef USE_AMP_MATRICES
     /**
      * \brief    Function to register a matrix
-     * \details  This function will register a matrix with the writer.  
-     *     This version of registerMatrix only stores the raw data.  It is not associated with a mesh.
+     * \details  This function will register a matrix with the writer.
+     *     This version of registerMatrix only stores the raw data.  It is not associated with a
+     * mesh.
      * \param mat   The matrix we want to write
      */
-    virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat )=0;
+    virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat ) = 0;
 #endif
 
 protected:
-
     // The comm of the writer
     AMP_MPI d_comm;
 
     // The decomposition to use
     int d_decomposition;
-
-
 };
-
-
 }
 }
 
 #endif
-
-

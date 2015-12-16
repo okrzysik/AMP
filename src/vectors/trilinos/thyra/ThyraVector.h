@@ -2,8 +2,8 @@
 #define included_AMP_ThyraVector
 
 // AMP includes
-#include "vectors/Vector.h"
 #include "vectors/DataChangePassThrough.h"
+#include "vectors/Vector.h"
 
 // Thyra includes
 #include "Thyra_VectorDefaultBase_decl.hpp"
@@ -37,10 +37,8 @@ namespace LinearAlgebra {
   *  ThyraVector::view or ThyraVector::constView
   *  to create the Thyra Vector if it doesn't already exist, give or take some edge cases.
   */
-class ThyraVector: public DataChangePassThrough
-{
+class ThyraVector : public DataChangePassThrough {
 public:
-
     //!  Destructor
     virtual ~ThyraVector();
 
@@ -48,19 +46,19 @@ public:
       *  \brief  Obtain Thyra Vector for use in Thyra routines
       *
       *  This function is used to get a Thyra vector.  The following idiom
-      *  should be used since it fails gracefully.  In this function, 
+      *  should be used since it fails gracefully.  In this function,
       *  a view may be created before the Vec is extracted
       */
-    virtual Teuchos::RCP<Thyra::VectorBase<double> > getVec();
+    virtual Teuchos::RCP<Thyra::VectorBase<double>> getVec();
 
     /**
       *  \brief  Obtain Thyra Vector for use in Thyra routines
       *
       *  This function is used to get a Thyra vector.  The following idiom
-      *  should be used since it fails gracefully.  In this function, 
+      *  should be used since it fails gracefully.  In this function,
       *  a view may be created before the Vec is extracted
       */
-    virtual Teuchos::RCP<const Thyra::VectorBase<double> >  getVec() const;
+    virtual Teuchos::RCP<const Thyra::VectorBase<double>> getVec() const;
 
     /**
       *  \brief  If needed, create a Thyra wrapper for AmpVector.  Otherwise, return AmpVector.
@@ -74,10 +72,11 @@ public:
       *    is created and returned.
       *  Otherwise, this function will throw an error.
       */
-    static Vector::shared_ptr  view ( Vector::shared_ptr AmpVector );
+    static Vector::shared_ptr view( Vector::shared_ptr AmpVector );
 
     /**
-      *  \brief  If needed, create a const Thyra wrapper for AmpVector.  Otherwise, return AmpVector.
+      *  \brief  If needed, create a const Thyra wrapper for AmpVector.  Otherwise, return
+     * AmpVector.
       *  \param  AmpVector  a shared pointer to a Vector
       *
       *  \details The function attempts to return a view with the least amount of work.
@@ -88,14 +87,15 @@ public:
       *    is created and returned.
       *  Otherwise, this function will throw an error.
       */
-    static Vector::const_shared_ptr  constView ( Vector::const_shared_ptr AmpVector );
+    static Vector::const_shared_ptr constView( Vector::const_shared_ptr AmpVector );
 
-    
-    //! Return an AMP Vector from the Thyra::VectorBase
-    static AMP::LinearAlgebra::Vector::shared_ptr view( Thyra::VectorBase<double>* vec );
 
     //! Return an AMP Vector from the Thyra::VectorBase
-    static AMP::LinearAlgebra::Vector::const_shared_ptr constView( const Thyra::VectorBase<double> *vec );
+    static AMP::LinearAlgebra::Vector::shared_ptr view( Thyra::VectorBase<double> *vec );
+
+    //! Return an AMP Vector from the Thyra::VectorBase
+    static AMP::LinearAlgebra::Vector::const_shared_ptr
+    constView( const Thyra::VectorBase<double> *vec );
 
 protected:
     /**
@@ -105,15 +105,13 @@ protected:
       *  a view of an AMP:Vector (called Managed), this pointer
       *  is what is used when calling the Thyra Vector interface
       */
-    Teuchos::RCP<Thyra::VectorBase<double> >  d_thyraVec;
+    Teuchos::RCP<Thyra::VectorBase<double>> d_thyraVec;
 
     /**
       *  \brief  Swap the underlying PETSc Vec with another
       *  AMP::LinearAlgebra::Vector.
       */
-    void swapThyraVec( ThyraVector &rhs ) {
-        std::swap ( d_thyraVec, rhs.d_thyraVec );
-    }
+    void swapThyraVec( ThyraVector &rhs ) { std::swap( d_thyraVec, rhs.d_thyraVec ); }
 
     /**
       *  \brief  Construct a PetscVector
@@ -122,9 +120,7 @@ protected:
       *  no need to create this vector directly since it is virtual.
       */
     ThyraVector();
-
 };
-
 }
 }
 

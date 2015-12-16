@@ -15,28 +15,22 @@ namespace Operator {
 /**
   * AMP Mesh element implementation for DTK EntityExtraData interface.
 */
-class AMPMeshEntityExtraData : public DataTransferKit::EntityExtraData
-{
-public :
-
+class AMPMeshEntityExtraData : public DataTransferKit::EntityExtraData {
+public:
     /**
      * Constructor.
      */
-    explicit AMPMeshEntityExtraData( const AMP::Mesh::MeshElement& element )
-	: d_element( element )
-    { /* ... */ }
+    explicit AMPMeshEntityExtraData( const AMP::Mesh::MeshElement &element ) : d_element( element )
+    { /* ... */
+    }
 
     //! Destructor
-    ~AMPMeshEntityExtraData() { }
+    ~AMPMeshEntityExtraData() {}
 
     // Underlying mesh element.
     AMP::Mesh::MeshElement d_element;
 };
-
-
 }
 }
 
 #endif
-
-

@@ -4,244 +4,256 @@
 
 #include <cstring>
 
-#include "operators/ElementPhysicsModel.h"
 #include "UpdatedLagrangianUtils.h"
+#include "operators/ElementPhysicsModel.h"
 
 #include "materials/Material.h"
 
 #include "utils/shared_ptr.h"
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    typedef ElementPhysicsModelParameters MechanicsMaterialModelParameters;
+typedef ElementPhysicsModelParameters MechanicsMaterialModelParameters;
+
+/**
+ * An abstract base class for representing the mechanics material models. The
+ derived classes can represent both linear and nonlinear material behavior.
+ * Derived classes must implement the function named getConstitutiveMatrix,
+ which provides the ConstitutiveMatrix that is used
+ * in the construction of the Jacobian. Non-linear material models must
+ * implement the function getInternalStress. Linear material models that
+ use an implicit method must implement the getInternalStress function too.
+ */
+class MechanicsMaterialModel : public ElementPhysicsModel {
+public:
+    /**
+     *  Constructor. This reads the value for the key USE_MATERIALS_LIBRARY (false by default)
+     from the database object contained in the parameter object, params. This key specifies
+     whether or not the AMP::materials interface is used in this model.
+     */
+    explicit MechanicsMaterialModel(
+        const AMP::shared_ptr<MechanicsMaterialModelParameters> &params )
+        : ElementPhysicsModel( params )
+    {
+        d_useMaterialsLibrary =
+            ( params->d_db )->getBoolWithDefault( "USE_MATERIALS_LIBRARY", false );
+
+        d_useUpdatedLagrangian =
+            ( params->d_db )->getBoolWithDefault( "USE_UPDATED_LAGRANGIAN", false );
+
+        d_useJaumannRate = ( params->d_db )->getBoolWithDefault( "USE_JAUMANN_RATE", false );
+
+        d_useContinuumTangent =
+            ( params->d_db )->getBoolWithDefault( "USE_CONTINUUM_TANGENT", false );
+
+        d_checkCladOrPellet = ( params->d_db )->getBoolWithDefault( "IS_IT_CLAD", false );
+
+        if ( d_useMaterialsLibrary == true ) {
+            AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Key ''Material'' is missing!" );
+            std::string matname = params->d_db->getString( "Material" );
+            d_material =
+                AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+        }
+
+        d_currentTime  = 0;
+        d_previousTime = 0;
+    }
 
     /**
-     * An abstract base class for representing the mechanics material models. The
-     derived classes can represent both linear and nonlinear material behavior. 
-     * Derived classes must implement the function named getConstitutiveMatrix,
-     which provides the ConstitutiveMatrix that is used
-     * in the construction of the Jacobian. Non-linear material models must 
-     * implement the function getInternalStress. Linear material models that
-     use an implicit method must implement the getInternalStress function too. 
+     * Destructor.
      */
-    class MechanicsMaterialModel : public ElementPhysicsModel
+    virtual ~MechanicsMaterialModel() {}
+
+    /**
+     * Calculates the constitutive matrix for the material model. This matrix
+     * is used for the construction of the Jacobian during the solve process.
+     */
+    virtual void getConstitutiveMatrix( double *& ) {}
+
+    /**
+     * Calculates the constitutive matrix for the material model in Updated Lagrangian. This matrix
+     * is used for the construction of the Jacobian during the solve process.
+     */
+    virtual void getConstitutiveMatrixUpdatedLagrangian( double[6][6], double[3][3] ) {}
+
+    /**
+     * Returns the 6x1 stress vector at the current gauss point.
+     * Used in UpdatedLagrangian calculations.
+     */
+    virtual void getStressForUpdatedLagrangian( double[6] ) {}
+
+    /**
+     * Given a strain, the stress state is calculated in ths function. It is
+     * necessary for non-linear material models or linear models with
+     * implicit solver.
+     */
+    virtual void getInternalStress( const std::vector<std::vector<double>> &, double *& ) {}
+
+    virtual void getInternalStress_UL(
+        const std::vector<std::vector<double>> &, double *&, double[3][3], double[3][3], double )
     {
-      public :
-
-        /**
-         *  Constructor. This reads the value for the key USE_MATERIALS_LIBRARY (false by default)
-         from the database object contained in the parameter object, params. This key specifies 
-         whether or not the AMP::materials interface is used in this model.
-         */
-        explicit MechanicsMaterialModel(const AMP::shared_ptr<MechanicsMaterialModelParameters>& params)
-          : ElementPhysicsModel(params) { 
-            d_useMaterialsLibrary = (params->d_db)->getBoolWithDefault("USE_MATERIALS_LIBRARY",false);
+    }
 
-            d_useUpdatedLagrangian = (params->d_db)->getBoolWithDefault("USE_UPDATED_LAGRANGIAN",false);
+    /**
+     * Used to print the effective stress at any point of the simulation.
+     */
+    virtual void getEffectiveStress( double *& ) {}
 
-            d_useJaumannRate = (params->d_db)->getBoolWithDefault("USE_JAUMANN_RATE",false);
+    /**
+     * Used to print the equivalent plastic or creep
+     * or thermal strain at any point of the simulation.
+     */
+    virtual void getEquivalentStrain( double *& ) {}
 
-            d_useContinuumTangent = (params->d_db)->getBoolWithDefault("USE_CONTINUUM_TANGENT",false);
+    /**
+     * Used for linear material models if the problem is being solved in an
+     * explicit method. This function has not been implemented, because all
+     * the linear material model problems are being solved in implicit way.
+     */
+    virtual void getExternalStress( double *& ) {}
 
-            d_checkCladOrPellet = (params->d_db)->getBoolWithDefault("IS_IT_CLAD",false);
+    /*
+       A bunch of virtual functions have been implemented to allow the
+       programmer to initialize, reset or update any of the variables within
+       the material model from outside the gauss point calculation.
+       Most of these functions are not implemented. The are added whenever it
+       is required.
+       */
 
-            if(d_useMaterialsLibrary == true) 
-            {
-              AMP_INSIST( (params->d_db->keyExists("Material")), "Key ''Material'' is missing!" );
-              std::string matname = params->d_db->getString("Material");
-              d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(matname);
-            }
+    // For LinearOperator's Reset/Init
 
-            d_currentTime = 0;
-            d_previousTime = 0;
-          }
+    virtual void preLinearAssembly() {}
 
-        /**
-         * Destructor.
-         */ 
-        virtual ~MechanicsMaterialModel() { }
+    virtual void postLinearAssembly() {}
 
-        /**
-         * Calculates the constitutive matrix for the material model. This matrix
-         * is used for the construction of the Jacobian during the solve process.
-         */
-        virtual void getConstitutiveMatrix(double*& ) { }
+    virtual void preLinearElementOperation() {}
 
-        /**
-         * Calculates the constitutive matrix for the material model in Updated Lagrangian. This matrix
-         * is used for the construction of the Jacobian during the solve process.
-         */
-        virtual void getConstitutiveMatrixUpdatedLagrangian(double[6][6], double[3][3] ) { }
+    virtual void postLinearElementOperation() {}
 
-        /**
-         * Returns the 6x1 stress vector at the current gauss point. 
-         * Used in UpdatedLagrangian calculations.
-         */
-        virtual void getStressForUpdatedLagrangian(double[6]) { }
+    virtual void preLinearGaussPointOperation() {}
 
-        /**
-         * Given a strain, the stress state is calculated in ths function. It is
-         * necessary for non-linear material models or linear models with
-         * implicit solver.
-         */
-        virtual void getInternalStress(const std::vector<std::vector<double> >&, double*& ) { }
+    virtual void postLinearGaussPointOperation() {}
 
-        virtual void getInternalStress_UL(const std::vector<std::vector<double> >&, double*&, double[3][3], double[3][3], double) { }
+    // For NonlinearOperator's Init
 
-        /**
-         * Used to print the effective stress at any point of the simulation.
-         */
-        virtual void getEffectiveStress(double*&) { }
+    virtual void preNonlinearInit( bool, bool ) {}
 
-        /**
-         * Used to print the equivalent plastic or creep
-         * or thermal strain at any point of the simulation.
-         */
-        virtual void getEquivalentStrain(double*&) { }
+    virtual void postNonlinearInit() {}
 
-        /**
-         * Used for linear material models if the problem is being solved in an
-         * explicit method. This function has not been implemented, because all
-         * the linear material model problems are being solved in implicit way.
-         */
-        virtual void getExternalStress(double*& ) { }
+    virtual void preNonlinearInitElementOperation() {}
 
-        /*
-           A bunch of virtual functions have been implemented to allow the
-           programmer to initialize, reset or update any of the variables within
-           the material model from outside the gauss point calculation.
-           Most of these functions are not implemented. The are added whenever it
-           is required.
-           */
+    virtual void postNonlinearInitElementOperation() {}
 
-        //For LinearOperator's Reset/Init
+    virtual void preNonlinearInitGaussPointOperation() {}
 
-        virtual void preLinearAssembly() { }
+    virtual void postNonlinearInitGaussPointOperation() {}
 
-        virtual void postLinearAssembly() { }
+    /**
+     * Initializes all the variables with zero, except the temperature
+     * variable which has some non-zero value initially (something like
+     * room temperature). The input argument is the initial_Temperature.
+     */
+    virtual void nonlinearInitGaussPointOperation( double ) {}
 
-        virtual void preLinearElementOperation() { }
+    // For NonlinearOperator's Apply
 
-        virtual void postLinearElementOperation() { }
+    virtual void preNonlinearAssembly() {}
 
-        virtual void preLinearGaussPointOperation() { }
+    virtual void postNonlinearAssembly() {}
 
-        virtual void postLinearGaussPointOperation() { }
+    virtual void preNonlinearAssemblyElementOperation() {}
 
-        //For NonlinearOperator's Init
+    virtual void postNonlinearAssemblyElementOperation() {}
 
-        virtual void preNonlinearInit(bool, bool) { }
+    virtual void preNonlinearAssemblyGaussPointOperation() {}
 
-        virtual void postNonlinearInit() { }
+    virtual void postNonlinearAssemblyGaussPointOperation() {}
 
-        virtual void preNonlinearInitElementOperation() { }
+    // For NonlinearOperator's Reset
 
-        virtual void postNonlinearInitElementOperation() { }
+    virtual void globalReset() {}
 
-        virtual void preNonlinearInitGaussPointOperation() { }
+    virtual void preNonlinearReset() {}
 
-        virtual void postNonlinearInitGaussPointOperation() { }
+    virtual void postNonlinearReset() {}
 
-        /**
-         * Initializes all the variables with zero, except the temperature
-         * variable which has some non-zero value initially (something like 
-         * room temperature). The input argument is the initial_Temperature.
-         */
-        virtual void nonlinearInitGaussPointOperation(double ) { }
+    virtual void preNonlinearResetElementOperation() {}
 
-        //For NonlinearOperator's Apply
+    virtual void postNonlinearResetElementOperation() {}
 
-        virtual void preNonlinearAssembly() { }
+    virtual void preNonlinearResetGaussPointOperation() {}
 
-        virtual void postNonlinearAssembly() { }
+    virtual void postNonlinearResetGaussPointOperation() {}
 
-        virtual void preNonlinearAssemblyElementOperation() { }
+    /**
+     * In the implicit solution technique, once the solver converges,
+     * the previous equilibrium values are replaced by the current converged
+     * values in this function. The input is a vector of all the variables at
+     * that particular gauss point.
+     */
+    virtual void nonlinearResetGaussPointOperation( const std::vector<std::vector<double>> & ) {}
 
-        virtual void postNonlinearAssemblyElementOperation() { }
+    virtual void nonlinearResetGaussPointOperation_UL( const std::vector<std::vector<double>> &,
+                                                       double[3][3],
+                                                       double[3][3] )
+    {
+    }
 
-        virtual void preNonlinearAssemblyGaussPointOperation() { }
+    // For NonlinearOperator's GetJacobianParameters
 
-        virtual void postNonlinearAssemblyGaussPointOperation() { }
+    virtual void preNonlinearJacobian() {}
 
-        //For NonlinearOperator's Reset
+    virtual void postNonlinearJacobian() {}
 
-        virtual void globalReset() { }
+    virtual void preNonlinearJacobianElementOperation() {}
 
-        virtual void preNonlinearReset() { }
+    virtual void postNonlinearJacobianElementOperation() {}
 
-        virtual void postNonlinearReset() { }
+    virtual void preNonlinearJacobianGaussPointOperation() {}
 
-        virtual void preNonlinearResetElementOperation() { }
+    virtual void postNonlinearJacobianGaussPointOperation() {}
 
-        virtual void postNonlinearResetElementOperation() { }
+    virtual void nonlinearJacobianGaussPointOperation( const std::vector<std::vector<double>> & ) {}
 
-        virtual void preNonlinearResetGaussPointOperation() { }
+    virtual void nonlinearJacobianGaussPointOperation_UL( const std::vector<std::vector<double>> &,
+                                                          double[3][3],
+                                                          double[3][3] )
+    {
+    }
 
-        virtual void postNonlinearResetGaussPointOperation() { }
+    void updateTime( double currTime )
+    {
+        d_previousTime = d_currentTime;
+        d_currentTime  = currTime;
+    }
 
-        /**
-         * In the implicit solution technique, once the solver converges,
-         * the previous equilibrium values are replaced by the current converged
-         * values in this function. The input is a vector of all the variables at
-         * that particular gauss point.
-         */
-        virtual void nonlinearResetGaussPointOperation(const std::vector<std::vector<double> >& ) { }
+    AMP::shared_ptr<AMP::Materials::Material> getMaterial() { return d_material; }
 
-        virtual void nonlinearResetGaussPointOperation_UL(const std::vector<std::vector<double> >&, double[3][3], double[3][3] ) { }
+protected:
+    double d_currentTime; /**< The time at present. */
 
-        //For NonlinearOperator's GetJacobianParameters
+    double d_previousTime; /**< Time at the previous step. */
 
-        virtual void preNonlinearJacobian() { }
+    bool d_useMaterialsLibrary; /**< A flag that is true if the AMP::materials
+                                  library is used in this model and false otherwise.  */
 
-        virtual void postNonlinearJacobian() { }
+    bool d_useUpdatedLagrangian; /**< Flag to check whether to use updated lagrangian or not. */
 
-        virtual void preNonlinearJacobianElementOperation() { }
+    bool d_useJaumannRate; /**< Flag to check whether to use Jaumann rate in updated lagrangian or
+                              not. */
 
-        virtual void postNonlinearJacobianElementOperation() { }
+    bool d_useContinuumTangent; /**< Flag to check whether to use Continuum tangent is elasto
+                                   plasticity or not. */
 
-        virtual void preNonlinearJacobianGaussPointOperation() { }
+    bool d_checkCladOrPellet;
 
-        virtual void postNonlinearJacobianGaussPointOperation() { }
+    AMP::shared_ptr<AMP::Materials::Material>
+        d_material; /**< Shared pointer to the materials object. */
 
-        virtual void nonlinearJacobianGaussPointOperation(const std::vector<std::vector<double> >& ) { }
-
-        virtual void nonlinearJacobianGaussPointOperation_UL(const std::vector<std::vector<double> >&, double[3][3], double[3][3] ) { }
-
-        void updateTime(double currTime) {
-          d_previousTime = d_currentTime;
-          d_currentTime = currTime;
-        }
-
-        AMP::shared_ptr<AMP::Materials::Material> getMaterial() {
-          return d_material;
-        }
-
-      protected :
-
-        double d_currentTime; /**< The time at present. */
-
-        double d_previousTime; /**< Time at the previous step. */
-
-        bool d_useMaterialsLibrary; /**< A flag that is true if the AMP::materials 
-                                      library is used in this model and false otherwise.  */
-
-        bool d_useUpdatedLagrangian; /**< Flag to check whether to use updated lagrangian or not. */
-
-        bool d_useJaumannRate; /**< Flag to check whether to use Jaumann rate in updated lagrangian or not. */
-
-        bool d_useContinuumTangent; /**< Flag to check whether to use Continuum tangent is elasto plasticity or not. */
-
-        bool d_checkCladOrPellet;
-
-        AMP::shared_ptr<AMP::Materials::Material> d_material; /**< Shared pointer to the materials object. */
-
-      private :
-
-    };
-
-  }
+private:
+};
+}
 }
 
 #endif
-

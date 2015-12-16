@@ -14,29 +14,25 @@
 namespace AMP {
 namespace Operator {
 
-  /**
-    A class for encapsulating the parameters that are required for constructing the 
-    neutronics source operator. 
-    @see NeutronicsRhsExtras
-    */
-  class NeutronicsRhsExtrasParameters : public OperatorParameters {
-    public :
-      
-      typedef AMP::shared_ptr<AMP::Database>  SP_Database;
+/**
+  A class for encapsulating the parameters that are required for constructing the
+  neutronics source operator.
+  @see NeutronicsRhsExtras
+  */
+class NeutronicsRhsExtrasParameters : public OperatorParameters {
+public:
+    typedef AMP::shared_ptr<AMP::Database> SP_Database;
 
-      explicit NeutronicsRhsExtrasParameters(const SP_Database &db)
-    : OperatorParameters(db){ d_numExtras=0; } 
+    explicit NeutronicsRhsExtrasParameters( const SP_Database &db ) : OperatorParameters( db )
+    {
+        d_numExtras = 0;
+    }
 
-//      AMP::shared_ptr<AMP::MeshUtils> d_MeshUtils; 
-      int                                       d_numExtras;
-      std::vector<std::string>                  d_extrasName;
-
-  };
-
+    //      AMP::shared_ptr<AMP::MeshUtils> d_MeshUtils;
+    int d_numExtras;
+    std::vector<std::string> d_extrasName;
+};
 }
 }
 
 #endif
-
-
-

@@ -43,52 +43,48 @@ namespace LinearAlgebra {
       vec2.copyVector( vec3 );
     \endcode
   */
-class  SubsetVector : public Vector
-{
+class SubsetVector : public Vector {
 
 public:
-    static Vector::shared_ptr   view( Vector::shared_ptr , Variable::shared_ptr );
-    static Vector::const_shared_ptr   view( Vector::const_shared_ptr , Variable::shared_ptr );
+    static Vector::shared_ptr view( Vector::shared_ptr, Variable::shared_ptr );
+    static Vector::const_shared_ptr view( Vector::const_shared_ptr, Variable::shared_ptr );
 
-    virtual std::string  type() const override;
+    virtual std::string type() const override;
 
     using Vector::cloneVector;
-    virtual Vector::shared_ptr  cloneVector( Variable::shared_ptr ) const override;
+    virtual Vector::shared_ptr cloneVector( Variable::shared_ptr ) const override;
     virtual size_t numberOfDataBlocks() const override;
     virtual size_t sizeOfDataBlock( size_t i ) const override;
-    virtual void   swapVectors( Vector &rhs ) override;
-    virtual void   aliasVector( Vector &rhs ) override;
+    virtual void swapVectors( Vector &rhs ) override;
+    virtual void aliasVector( Vector &rhs ) override;
     virtual size_t getLocalSize() const override;
     virtual size_t getGlobalSize() const override;
-    virtual void   assemble() override {}
+    virtual void assemble() override {}
 
-    virtual void   addValuesByLocalID( int , size_t * , const double * ) override;
-    virtual void   setValuesByLocalID( int , size_t * , const double * ) override;
-    virtual void   getValuesByLocalID( int , size_t * , double *vals ) const override;
-    virtual void   addLocalValuesByGlobalID( int , size_t * , const double * ) override;
-    virtual void   setLocalValuesByGlobalID( int , size_t * , const double * ) override;
-    virtual void   getLocalValuesByGlobalID( int , size_t * , double * ) const override;
-    virtual void   putRawData( const double *in ) override;
-    virtual void   copyOutRawData( double *out ) const override;
+    virtual void addValuesByLocalID( int, size_t *, const double * ) override;
+    virtual void setValuesByLocalID( int, size_t *, const double * ) override;
+    virtual void getValuesByLocalID( int, size_t *, double *vals ) const override;
+    virtual void addLocalValuesByGlobalID( int, size_t *, const double * ) override;
+    virtual void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
+    virtual void getLocalValuesByGlobalID( int, size_t *, double * ) const override;
+    virtual void putRawData( const double *in ) override;
+    virtual void copyOutRawData( double *out ) const override;
 
     virtual uint64_t getDataID() const override { return d_ViewVector->getDataID(); }
 
 private:
-    SubsetVector () {}
-    void  computeIDMap();
+    SubsetVector() {}
+    void computeIDMap();
 
     void *getRawDataBlockAsVoid( size_t i );
-    const void *getRawDataBlockAsVoid( size_t i ) const ;
+    const void *getRawDataBlockAsVoid( size_t i ) const;
 
     // Internal data
-    Vector::shared_ptr      d_ViewVector;                   // Vector we subsetted for the view
-    std::vector<size_t>     d_SubsetLocalIDToViewGlobalID;  // The list of global ID in the parent vector
-    std::vector<size_t>     d_dataBlockSize;                // The size of the data blocks
-    std::vector<double*>    d_dataBlockPtr;                 // The pointers to the data blocks
-
+    Vector::shared_ptr d_ViewVector;                   // Vector we subsetted for the view
+    std::vector<size_t> d_SubsetLocalIDToViewGlobalID; // The list of global ID in the parent vector
+    std::vector<size_t> d_dataBlockSize;               // The size of the data blocks
+    std::vector<double *> d_dataBlockPtr;              // The pointers to the data blocks
 };
-
-
 }
 }
 

@@ -1,5 +1,6 @@
 //
-// File:	$URL: file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/database/DatabaseBox.h $
+// File:	$URL:
+// file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/database/DatabaseBox.h $
 // Package:	AMP toolbox
 // Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
 // Revision:	$LastChangedRevision: 2132 $
@@ -16,20 +17,19 @@
 #endif
 
 namespace AMP {
-   
 
 
 /*!
  * @brief POD data for class DatabaseBox
- * 
+ *
  * The data in DatabaseBox need to reside in a POD class so that
  * HDF5's HOFFSET macro works.  (According to ANSI C++ standard,
  * it does not have to work with non-POD data.)
  */
 struct DatabaseBox_POD {
-   int d_dimension;
-   int d_lo[DatabaseBox_MAX_DIM];
-   int d_hi[DatabaseBox_MAX_DIM];
+    int d_dimension;
+    int d_lo[DatabaseBox_MAX_DIM];
+    int d_hi[DatabaseBox_MAX_DIM];
 };
 
 
@@ -48,94 +48,91 @@ struct DatabaseBox_POD {
  * See d_data for details.
  */
 
-class DatabaseBox
-{
+class DatabaseBox {
 public:
-   /**
-    * The default constructor creates a zero dimension empty box.
-    */
-   DatabaseBox();
+    /**
+     * The default constructor creates a zero dimension empty box.
+     */
+    DatabaseBox();
 
-   /**
-    * Create a box of the specified dimension describing the index space
-    * between lower and upper.  The dimension argument must be zero, one,
-    * two, or three.
-    */
-   DatabaseBox(const int dimension, const int *lower, const int *upper);
+    /**
+     * Create a box of the specified dimension describing the index space
+     * between lower and upper.  The dimension argument must be zero, one,
+     * two, or three.
+     */
+    DatabaseBox( const int dimension, const int *lower, const int *upper );
 
-   /**
-    * The copy constructor copies the index space of the argument box.
-    */
-   DatabaseBox(const DatabaseBox& box);
+    /**
+     * The copy constructor copies the index space of the argument box.
+     */
+    DatabaseBox( const DatabaseBox &box );
 
-   /**
-    * The assignment operator copies the index space of the argument box.
-    */
-   DatabaseBox& operator=(const DatabaseBox& box);
+    /**
+     * The assignment operator copies the index space of the argument box.
+     */
+    DatabaseBox &operator=( const DatabaseBox &box );
 
-   /**
-    * The destructor does nothing interesting.
-    */
-   ~DatabaseBox();
+    /**
+     * The destructor does nothing interesting.
+     */
+    ~DatabaseBox();
 
-   /**
-    * Return whether the box is empty.  A box is empty if it has dimension
-    * zero or if any of the upper dimensions is less than its corresponding
-    * lower dimension.
-    */
-   bool empty() const;
+    /**
+     * Return whether the box is empty.  A box is empty if it has dimension
+     * zero or if any of the upper dimensions is less than its corresponding
+     * lower dimension.
+     */
+    bool empty() const;
 
-   /**
-    * Return the currently defined dimension of the box.
-    */
-   int getDimension() const;
+    /**
+     * Return the currently defined dimension of the box.
+     */
+    int getDimension() const;
 
-   /**
-    * Set the current dimension of the box.  This must be in the range
-    * from zero (an empty box) to three.
-    */
-   void setDimension(const int dimension);
+    /**
+     * Set the current dimension of the box.  This must be in the range
+     * from zero (an empty box) to three.
+     */
+    void setDimension( const int dimension );
 
-   /**
-    * Return the specified component (non-const) of the lower index of the box.
-    */
-   int& lower(const int i);
+    /**
+     * Return the specified component (non-const) of the lower index of the box.
+     */
+    int &lower( const int i );
 
-   /** 
-    * Return the specified component (non-const) of the upper index of the box.
-    */
-   int& upper(const int i);
+    /**
+     * Return the specified component (non-const) of the upper index of the box.
+     */
+    int &upper( const int i );
 
-   /** 
-    * Return the specified component (const) of the lower index of the box.
-    */
-   int lower(const int i) const;
+    /**
+     * Return the specified component (const) of the lower index of the box.
+     */
+    int lower( const int i ) const;
 
-   /** 
-    * Return the specified component (const) of the upper index of the box.
-    */
-   int upper(const int i) const;
+    /**
+     * Return the specified component (const) of the upper index of the box.
+     */
+    int upper( const int i ) const;
 
-   /**
-    * Check whether two boxes represent the same portion of index space.
-    */
-   int operator==(const DatabaseBox& box) const;
+    /**
+     * Check whether two boxes represent the same portion of index space.
+     */
+    int operator==( const DatabaseBox &box ) const;
 
-   /**
-    * @brief All data members in a POD type.
-    *
-    * Due to the need to compute offsets for data members and that
-    * offsets cannot be computed for non-POD data, we place all
-    * data members in a POD struct and own an object of that
-    * struct.
-    *
-    * Data members are public so that the HDFDatabase need not 
-    * mirror this structure in defining a compound type for HDF.
-    */
-   DatabaseBox_POD d_data;
+    /**
+     * @brief All data members in a POD type.
+     *
+     * Due to the need to compute offsets for data members and that
+     * offsets cannot be computed for non-POD data, we place all
+     * data members in a POD struct and own an object of that
+     * struct.
+     *
+     * Data members are public so that the HDFDatabase need not
+     * mirror this structure in defining a compound type for HDF.
+     */
+    DatabaseBox_POD d_data;
 };
-
-
 }
 
 #ifndef DEBUG_NO_INLINE

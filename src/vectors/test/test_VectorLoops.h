@@ -4,13 +4,13 @@
 #include "utils/UnitTest.h"
 
 #include "test_Vector.h"
-#include "test_VectorTests.h"
 #include "test_VectorSelectorTests.h"
+#include "test_VectorTests.h"
 #ifdef USE_EXT_SUNDIALS
-    #include "test_SundialsVectorTests.h"
+#include "test_SundialsVectorTests.h"
 #endif
 #ifdef USE_EXT_PETSC
-    #include "test_PetscVector.h"
+#include "test_PetscVector.h"
 #endif
 
 /// \cond UNDOCUMENTED
@@ -20,7 +20,7 @@ using namespace AMP::unit_test;
 
 #ifdef USE_EXT_PETSC
 template <class FACTORY>
-void  testPetscVector( AMP::UnitTest *ut )
+void testPetscVector( AMP::UnitTest *ut )
 {
     InstantiatePetscVectors<FACTORY>::run_test( ut );
     DuplicatePetscVector<FACTORY>::run_test( ut );
@@ -77,16 +77,16 @@ void testBasicVector( AMP::UnitTest *ut )
     VerifyVectorMin<FACTORY>( ut );
     VerifyVectorMax<FACTORY>( ut );
     VerifyVectorMaxMin<FACTORY>( ut );
-    #ifdef USE_EXT_PETSC
-        DeepCloneOfView<FACTORY,AMP::LinearAlgebra::PetscVector>( ut );
-        Bug_491<FACTORY>( ut );
-    #endif
-    #ifdef USE_EXT_SUNDIALS
-        DeepCloneOfView<FACTORY,AMP::LinearAlgebra::SundialsVector>( ut );
-    #endif
+#ifdef USE_EXT_PETSC
+    DeepCloneOfView<FACTORY, AMP::LinearAlgebra::PetscVector>( ut );
+    Bug_491<FACTORY>( ut );
+#endif
+#ifdef USE_EXT_SUNDIALS
+    DeepCloneOfView<FACTORY, AMP::LinearAlgebra::SundialsVector>( ut );
+#endif
     VectorIteratorLengthTest<FACTORY>( ut );
     Bug_728<FACTORY>( ut );
-//    VectorIteratorTests<FACTORY>( ut );
+    //    VectorIteratorTests<FACTORY>( ut );
     TestMultivectorDuplicate<FACTORY>( ut );
 }
 
@@ -115,35 +115,32 @@ void testSundialsVector( AMP::UnitTest *ut )
 template <class FACTORY>
 void testManagedVector( AMP::UnitTest *ut )
 {
-  testBasicVector<FACTORY> ( ut );
+    testBasicVector<FACTORY>( ut );
 
-  #ifdef USE_EXT_PETSC
-    typedef SimplePetscVectorFactory<FACTORY>   PETSC_FACTORY;
-    testPetscVector<PetscViewFactory<PETSC_FACTORY> > ( ut );
-    testPetscVector<PetscCloneFactory<PetscViewFactory<PETSC_FACTORY> > > ( ut );
-  #endif
+#ifdef USE_EXT_PETSC
+    typedef SimplePetscVectorFactory<FACTORY> PETSC_FACTORY;
+    testPetscVector<PetscViewFactory<PETSC_FACTORY>>( ut );
+    testPetscVector<PetscCloneFactory<PetscViewFactory<PETSC_FACTORY>>>( ut );
+#endif
 
-  #ifdef USE_EXT_SUNDIALS
-    testBasicVector<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> >( ut );
-    testBasicVector<CloneFactory<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> > > ( ut );
-    testSundialsVector<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> >( ut );
-    testSundialsVector<CloneFactory<ViewFactory<AMP::LinearAlgebra::SundialsVector , FACTORY> > > ( ut );
-  #endif
-
+#ifdef USE_EXT_SUNDIALS
+    testBasicVector<ViewFactory<AMP::LinearAlgebra::SundialsVector, FACTORY>>( ut );
+    testBasicVector<CloneFactory<ViewFactory<AMP::LinearAlgebra::SundialsVector, FACTORY>>>( ut );
+    testSundialsVector<ViewFactory<AMP::LinearAlgebra::SundialsVector, FACTORY>>( ut );
+    testSundialsVector<CloneFactory<ViewFactory<AMP::LinearAlgebra::SundialsVector, FACTORY>>>(
+        ut );
+#endif
 }
 
 
-void testNullVector ( AMP::UnitTest *ut )
-{
-    InstantiateVector<NullVectorFactory>( ut );
-}
+void testNullVector( AMP::UnitTest *ut ) { InstantiateVector<NullVectorFactory>( ut ); }
 
 
 template <class FACTORY>
-void test_parallel_vectors_loop ( AMP::UnitTest *ut )
+void test_parallel_vectors_loop( AMP::UnitTest *ut )
 {
     InstantiateVector<FACTORY>( ut );
-    //VerifyVectorGhostCreate<FACTORY>( ut );
+    // VerifyVectorGhostCreate<FACTORY>( ut );
     VerifyVectorMakeConsistentSet<FACTORY>( ut );
     VerifyVectorMakeConsistentAdd<FACTORY>( ut );
     CopyVectorConsistency<FACTORY>( ut );
@@ -151,7 +148,7 @@ void test_parallel_vectors_loop ( AMP::UnitTest *ut )
 
 
 template <class FACTORY>
-void test_vector_selector_loop ( AMP::UnitTest *ut )
+void test_vector_selector_loop( AMP::UnitTest *ut )
 {
     testAllSelectors<FACTORY>( ut );
     test_VS_ByVariableName<FACTORY>( ut );

@@ -7,9 +7,7 @@ namespace Discretization {
 /************************************************************************
 *  Constructors                                                         *
 ************************************************************************/
-DOFManagerParameters::DOFManagerParameters() 
-{
-}
+DOFManagerParameters::DOFManagerParameters() {}
 DOFManagerParameters::DOFManagerParameters( AMP::shared_ptr<AMP::Mesh::Mesh> mesh_in )
 {
     mesh = mesh_in;
@@ -18,5 +16,3 @@ DOFManagerParameters::DOFManagerParameters( AMP::shared_ptr<AMP::Mesh::Mesh> mes
 
 } // Discretization namespace
 } // AMP namespace
-
-

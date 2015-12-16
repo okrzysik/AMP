@@ -2,17 +2,17 @@
 #define included_TimeIntegratorParameters
 
 
-#include "utils/shared_ptr.h"
+#include "operators/Operator.h"
 #include "utils/Database.h"
 #include "utils/ParameterBase.h"
+#include "utils/shared_ptr.h"
 #include "vectors/Vector.h"
-#include "operators/Operator.h"
 
 #include <string>
 
 
-namespace AMP{
-namespace TimeIntegrator{
+namespace AMP {
+namespace TimeIntegrator {
 
 /*!
   @brief TimeIntegratorParameters is a base class for providing
@@ -21,73 +21,71 @@ namespace TimeIntegrator{
 
   Required input keys and data types:
   @param initial_time double value for the initial simulation time.
-  @param final_time double value for the final simulation time. 
+  @param final_time double value for the final simulation time.
   @param max_integrator_steps integer value for the maximum number
   of timesteps allowed.
-  
+
   All input data items described above, except for initial_time,
   may be overwritten by new input values when continuing from restart.
 
  */
 
-class TimeIntegratorParameters: public ParameterBase
-{
+class TimeIntegratorParameters : public ParameterBase {
 public:
-   //! Convience typedef
-   typedef AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters>  shared_ptr;
+    //! Convience typedef
+    typedef AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> shared_ptr;
 
-   explicit TimeIntegratorParameters(const AMP::shared_ptr<AMP::Database> db);
+    explicit TimeIntegratorParameters( const AMP::shared_ptr<AMP::Database> db );
 
-   virtual ~TimeIntegratorParameters();
-   /**
-   *  Database object which needs to be initialized specific to the time integrator.
-   *  Documentation for parameters required by each integrator can be found in the
-   *  documentation for the integrator.
-   */
-   AMP::shared_ptr<AMP::Database> d_db;
-
-   /**
-    * String used to identify specific class instantiation of the time integrator
+    virtual ~TimeIntegratorParameters();
+    /**
+    *  Database object which needs to be initialized specific to the time integrator.
+    *  Documentation for parameters required by each integrator can be found in the
+    *  documentation for the integrator.
     */
-   std::string d_object_name; 
+    AMP::shared_ptr<AMP::Database> d_db;
 
-   /**
-    * Initial conditions vector
-    */
-   AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_ic_vector;
+    /**
+     * String used to identify specific class instantiation of the time integrator
+     */
+    std::string d_object_name;
 
-   /**
-    * source term for time integration, can also include boundary conditions for IBVP problems
-    */
-   AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
+    /**
+     * Initial conditions vector
+     */
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_ic_vector;
 
-   /**
-    * The operator is the right hand side operator for an explicit integrator when the time integration problem is : u_t = f(u)
-    * but in the case of implicit time integrators the operator represents u_t-f(u) 
-    */
-   AMP::shared_ptr< AMP::Operator::Operator > d_operator;
+    /**
+     * source term for time integration, can also include boundary conditions for IBVP problems
+     */
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
 
-   /**
-    * The operator is the left hand side mass operator (for FEM formulations)
-    */
-   AMP::shared_ptr< AMP::Operator::Operator > d_pMassOperator;
+    /**
+     * The operator is the right hand side operator for an explicit integrator when the time
+     * integration problem is :
+     * u_t = f(u)
+     * but in the case of implicit time integrators the operator represents u_t-f(u)
+     */
+    AMP::shared_ptr<AMP::Operator::Operator> d_operator;
 
-   /**
-    * algebraic variable
-    */
-   AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_pAlgebraicVariable;
+    /**
+     * The operator is the left hand side mass operator (for FEM formulations)
+     */
+    AMP::shared_ptr<AMP::Operator::Operator> d_pMassOperator;
+
+    /**
+     * algebraic variable
+     */
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_pAlgebraicVariable;
 
 protected:
-
 private:
-   // not implemented
-   TimeIntegratorParameters(){}
-   explicit TimeIntegratorParameters(const TimeIntegratorParameters&);
-   void operator=(const TimeIntegratorParameters&);
+    // not implemented
+    TimeIntegratorParameters() {}
+    explicit TimeIntegratorParameters( const TimeIntegratorParameters & );
+    void operator=( const TimeIntegratorParameters & );
 };
-
 }
 }
 
 #endif
-

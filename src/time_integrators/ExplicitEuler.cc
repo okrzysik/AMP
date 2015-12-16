@@ -10,8 +10,8 @@
 /*Design-By-Contract Macros*/
 #include "utils/Utilities.h"
 
-namespace AMP{
-namespace TimeIntegrator{
+namespace AMP {
+namespace TimeIntegrator {
 
 /*
 ************************************************************************
@@ -20,9 +20,10 @@ namespace TimeIntegrator{
 *                                                                      *
 ************************************************************************
 */
-ExplicitEuler::ExplicitEuler( AMP::shared_ptr<TimeIntegratorParameters> parameters ):TimeIntegrator(parameters)
+ExplicitEuler::ExplicitEuler( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+    : TimeIntegrator( parameters )
 {
-   initialize( parameters );
+    initialize( parameters );
 }
 
 /*
@@ -32,9 +33,7 @@ ExplicitEuler::ExplicitEuler( AMP::shared_ptr<TimeIntegratorParameters> paramete
 *                                                                      *
 ************************************************************************
 */
-ExplicitEuler::~ExplicitEuler()
-{
-}
+ExplicitEuler::~ExplicitEuler() {}
 
 /*
 ************************************************************************
@@ -43,73 +42,65 @@ ExplicitEuler::~ExplicitEuler()
 *                                                                      *
 ************************************************************************
 */
-void
-ExplicitEuler::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+void ExplicitEuler::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
-   AMP_ASSERT(parameters.get() != NULL);
+    AMP_ASSERT( parameters.get() != NULL );
 
-   TimeIntegrator::initialize(parameters);
+    TimeIntegrator::initialize( parameters );
 
-   setupVectors();
+    setupVectors();
 
-   /*
-    * Initialize data members from input.
+    /*
+     * Initialize data members from input.
+     */
+    getFromInput( parameters->d_db );
+}
+
+void ExplicitEuler::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+{
+    AMP_ASSERT( parameters.get() != NULL );
+
+    abort();
+}
+
+void ExplicitEuler::setupVectors( void )
+{
+
+    // clone vectors so they have the same data layout as d_solution
+    d_new_solution = d_solution->cloneVector( "new solution" );
+    d_f_vec        = d_solution->cloneVector( "f term" );
+
+    /* allocateVectorData is no longer necessary
+    d_new_solution->allocateVectorData();
+    d_f_vec->allocateVectorData();
     */
-   getFromInput(parameters->d_db );
+
+    /*
+     * Set initial value of vectors to 0.
+     */
+    d_new_solution->setToScalar( (double) 0.0 );
+    d_f_vec->setToScalar( (double) 0.0 );
 }
 
-void
-ExplicitEuler::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
+int ExplicitEuler::advanceSolution( const double dt, const bool first_step )
 {
-   AMP_ASSERT(parameters.get() != NULL);
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> f;
 
-   abort();
-}
-
-void
-ExplicitEuler::setupVectors( void )
-{
-
-   // clone vectors so they have the same data layout as d_solution 
-   d_new_solution = d_solution->cloneVector("new solution");
-   d_f_vec       = d_solution->cloneVector("f term");
-
-   /* allocateVectorData is no longer necessary
-   d_new_solution->allocateVectorData();
-   d_f_vec->allocateVectorData();
-   */
-
-   /*
-    * Set initial value of vectors to 0.
-    */
-   d_new_solution->setToScalar((double) 0.0);
-   d_f_vec->setToScalar((double) 0.0);
-
-}
-
-int 
-ExplicitEuler::advanceSolution( const double dt, const bool first_step )
-{
-  AMP::shared_ptr<AMP::LinearAlgebra::Vector> f;
-
-  if(first_step)
-    {
-      d_current_dt = d_initial_dt;
+    if ( first_step ) {
+        d_current_dt = d_initial_dt;
     }
-  else
-    {
-      d_current_dt = dt;
+    else {
+        d_current_dt = dt;
     }
 
-  if (stepsRemaining() && (d_current_time < d_final_time)) 
-    {
-      // f_vec = f(tn,un)
-      d_operator->apply( d_solution, d_f_vec );
-      // u* = un+dt*f
-      d_new_solution->axpy(d_current_dt, *d_f_vec, *d_solution);
+    if ( stepsRemaining() && ( d_current_time < d_final_time ) ) {
+        // f_vec = f(tn,un)
+        d_operator->apply( d_solution, d_f_vec );
+        // u* = un+dt*f
+        d_new_solution->axpy( d_current_dt, *d_f_vec, *d_solution );
     }
-  
-  return (0);
+
+    return ( 0 );
 }
 
 /*
@@ -119,15 +110,14 @@ ExplicitEuler::advanceSolution( const double dt, const bool first_step )
 *                                                                      *
 ************************************************************************
 */
-bool
-ExplicitEuler::checkNewSolution( void ) const
+bool ExplicitEuler::checkNewSolution( void ) const
 {
-   /*
-    * Ordinarily we would check the actual error in the solution
-    * (proportional to the size of d_corrector) against a specified
-    * tolerance.  For now, accept everything.
-    */
-   return(true);
+    /*
+     * Ordinarily we would check the actual error in the solution
+     * (proportional to the size of d_corrector) against a specified
+     * tolerance.  For now, accept everything.
+     */
+    return ( true );
 }
 
 /*
@@ -137,11 +127,7 @@ ExplicitEuler::checkNewSolution( void ) const
 *                                                                      *
 ************************************************************************
 */
-void
-ExplicitEuler::updateSolution( void )
-{
-  d_solution->swapVectors(*d_new_solution);
-}
+void ExplicitEuler::updateSolution( void ) { d_solution->swapVectors( *d_new_solution ); }
 
 /*
 ************************************************************************
@@ -150,23 +136,17 @@ ExplicitEuler::updateSolution( void )
 *                                                                      *
 ************************************************************************
 */
-void
-ExplicitEuler::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
+void ExplicitEuler::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 {
-   if ( input_db->keyExists("initial_timestep") ) {
-      d_initial_dt = input_db->getDouble("initial_timestep");
-   } else {
-      AMP_ERROR(d_object_name << " -- Key data `initial_timestep'"
-                               << " missing in input.");
-   }
+    if ( input_db->keyExists( "initial_timestep" ) ) {
+        d_initial_dt = input_db->getDouble( "initial_timestep" );
+    }
+    else {
+        AMP_ERROR( d_object_name << " -- Key data `initial_timestep'"
+                                 << " missing in input." );
+    }
 }
 
-double 
-ExplicitEuler::getNextDt(const bool)
-{
-  return d_current_dt;
-}
-
+double ExplicitEuler::getNextDt( const bool ) { return d_current_dt; }
 }
 }
-

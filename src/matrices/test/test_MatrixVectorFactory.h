@@ -1,15 +1,15 @@
 #ifndef included_test_MatrixVectorFactory
 #define included_test_MatrixVectorFactory
 
-#include "utils/UnitTest.h"
 #include "discretization/DOF_Manager.h"
-#include "vectors/Vector.h"
 #include "matrices/Matrix.h"
+#include "utils/UnitTest.h"
+#include "vectors/Vector.h"
 
 #ifdef USE_EXT_PETSC
-    #include "matrices/petsc/PetscMatrix.h"
-    #include "vectors/petsc/NativePetscVector.h"
-    #include "vectors/petsc/ManagedPetscVector.h"
+#include "matrices/petsc/PetscMatrix.h"
+#include "vectors/petsc/ManagedPetscVector.h"
+#include "vectors/petsc/NativePetscVector.h"
 #endif
 
 
@@ -17,143 +17,137 @@ namespace AMP {
 namespace unit_test {
 
 
-AMP::LinearAlgebra::Matrix::shared_ptr global_cached_matrix = AMP::LinearAlgebra::Matrix::shared_ptr();
+AMP::LinearAlgebra::Matrix::shared_ptr global_cached_matrix =
+    AMP::LinearAlgebra::Matrix::shared_ptr();
 
 
 // Classes to serve as the vector factories
-class AmpInterfaceLeftVectorFactory
-{
+class AmpInterfaceLeftVectorFactory {
 public:
-    typedef  AMP::LinearAlgebra::Vector        vector;
+    typedef AMP::LinearAlgebra::Vector vector;
 
-    static AMP::LinearAlgebra::Variable::shared_ptr   getVariable()
+    static AMP::LinearAlgebra::Variable::shared_ptr getVariable()
     {
-        return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable("left") );
+        return AMP::LinearAlgebra::Variable::shared_ptr(
+            new AMP::LinearAlgebra::Variable( "left" ) );
     }
 
-    static AMP::LinearAlgebra::Vector::shared_ptr     getVector()
+    static AMP::LinearAlgebra::Vector::shared_ptr getVector()
     {
-        PROFILE_START("AmpInterfaceLeftVectorFactory::getVector");
-        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = global_cached_matrix;
-        AMP_ASSERT(global_cached_matrix!=NULL);
-        AMP::LinearAlgebra::Vector::shared_ptr  vector = matrix->getLeftVector();
+        PROFILE_START( "AmpInterfaceLeftVectorFactory::getVector" );
+        AMP::LinearAlgebra::Matrix::shared_ptr matrix = global_cached_matrix;
+        AMP_ASSERT( global_cached_matrix != NULL );
+        AMP::LinearAlgebra::Vector::shared_ptr vector = matrix->getLeftVector();
         vector->setVariable( getVariable() );
-        PROFILE_STOP("AmpInterfaceLeftVectorFactory::getVector");
+        PROFILE_STOP( "AmpInterfaceLeftVectorFactory::getVector" );
         return vector;
     }
 };
 
 
-class AmpInterfaceRightVectorFactory
-{
+class AmpInterfaceRightVectorFactory {
 public:
-    typedef  AMP::LinearAlgebra::Vector        vector;
+    typedef AMP::LinearAlgebra::Vector vector;
 
-    static AMP::LinearAlgebra::Variable::shared_ptr   getVariable()
+    static AMP::LinearAlgebra::Variable::shared_ptr getVariable()
     {
-        return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable("right") );
+        return AMP::LinearAlgebra::Variable::shared_ptr(
+            new AMP::LinearAlgebra::Variable( "right" ) );
     }
 
-    static AMP::LinearAlgebra::Vector::shared_ptr     getVector()
+    static AMP::LinearAlgebra::Vector::shared_ptr getVector()
     {
-        PROFILE_START("AmpInterfaceRightVectorFactory::getVector");
-        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = global_cached_matrix;
-        AMP_ASSERT(global_cached_matrix!=NULL);
-        AMP::LinearAlgebra::Vector::shared_ptr  vector = matrix->getRightVector();
+        PROFILE_START( "AmpInterfaceRightVectorFactory::getVector" );
+        AMP::LinearAlgebra::Matrix::shared_ptr matrix = global_cached_matrix;
+        AMP_ASSERT( global_cached_matrix != NULL );
+        AMP::LinearAlgebra::Vector::shared_ptr vector = matrix->getRightVector();
         vector->setVariable( getVariable() );
-        PROFILE_STOP("AmpInterfaceRightVectorFactory::getVector");
+        PROFILE_STOP( "AmpInterfaceRightVectorFactory::getVector" );
         return vector;
     }
 };
 
 
-#if defined(USE_EXT_PETSC) && defined(USE_EXT_PETSC)
+#if defined( USE_EXT_PETSC ) && defined( USE_EXT_PETSC )
 
-class PETScInterfaceLeftVectorFactory
-{
- public:
-    typedef  AMP::LinearAlgebra::ManagedPetscVector        vector;
+class PETScInterfaceLeftVectorFactory {
+public:
+    typedef AMP::LinearAlgebra::ManagedPetscVector vector;
 
-    static AMP::LinearAlgebra::Variable::shared_ptr   getVariable()
+    static AMP::LinearAlgebra::Variable::shared_ptr getVariable()
     {
-        return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable("petsc_left") );
+        return AMP::LinearAlgebra::Variable::shared_ptr(
+            new AMP::LinearAlgebra::Variable( "petsc_left" ) );
     }
 
-    static AMP::LinearAlgebra::Vector::shared_ptr     getVector()
+    static AMP::LinearAlgebra::Vector::shared_ptr getVector()
     {
-        PROFILE_START("PETScInterfaceLeftVectorFactory::getVector");
-        AMP_ASSERT(global_cached_matrix!=NULL);
-        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = 
-            AMP::LinearAlgebra::PetscMatrix::createView(global_cached_matrix);
-        ::Mat m = matrix->castTo<AMP::LinearAlgebra::PetscMatrix>().getMat ();
+        PROFILE_START( "PETScInterfaceLeftVectorFactory::getVector" );
+        AMP_ASSERT( global_cached_matrix != NULL );
+        AMP::LinearAlgebra::Matrix::shared_ptr matrix =
+            AMP::LinearAlgebra::PetscMatrix::createView( global_cached_matrix );
+        ::Mat m = matrix->castTo<AMP::LinearAlgebra::PetscMatrix>().getMat();
         ::Vec v;
-        MatGetVecs ( m , &v , 0 );
-        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> p( 
+        MatGetVecs( m, &v, 0 );
+        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> p(
             new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
-        AMP::LinearAlgebra::Vector::shared_ptr  vector( new AMP::LinearAlgebra::NativePetscVector ( p ) );
+        AMP::LinearAlgebra::Vector::shared_ptr vector(
+            new AMP::LinearAlgebra::NativePetscVector( p ) );
         vector->setVariable( getVariable() );
-        PROFILE_STOP("PETScInterfaceLeftVectorFactory::getVector");
+        PROFILE_STOP( "PETScInterfaceLeftVectorFactory::getVector" );
         return vector;
     }
 
-    static AMP::LinearAlgebra::Vector::shared_ptr   getNativeVector()
-    {
-        return getVector();
-    }
+    static AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() { return getVector(); }
 
-    static AMP::LinearAlgebra::Vector::shared_ptr   getManagedVector()
+    static AMP::LinearAlgebra::Vector::shared_ptr getManagedVector()
     {
-        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = global_cached_matrix;
-        AMP_ASSERT(global_cached_matrix!=NULL);
-        return AMP::LinearAlgebra::PetscVector::view ( matrix->getLeftVector () );
+        AMP::LinearAlgebra::Matrix::shared_ptr matrix = global_cached_matrix;
+        AMP_ASSERT( global_cached_matrix != NULL );
+        return AMP::LinearAlgebra::PetscVector::view( matrix->getLeftVector() );
     }
 };
 
 
-class PETScInterfaceRightVectorFactory
-{
+class PETScInterfaceRightVectorFactory {
 public:
-    typedef  AMP::LinearAlgebra::ManagedPetscVector        vector;
+    typedef AMP::LinearAlgebra::ManagedPetscVector vector;
 
-    static AMP::LinearAlgebra::Variable::shared_ptr   getVariable()
+    static AMP::LinearAlgebra::Variable::shared_ptr getVariable()
     {
-        return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable("petsc_right") );
+        return AMP::LinearAlgebra::Variable::shared_ptr(
+            new AMP::LinearAlgebra::Variable( "petsc_right" ) );
     }
 
-    static AMP::LinearAlgebra::Vector::shared_ptr     getVector()
+    static AMP::LinearAlgebra::Vector::shared_ptr getVector()
     {
-        PROFILE_START("PETScInterfaceRightVectorFactory::getVector");
-        AMP_ASSERT(global_cached_matrix!=NULL);
-        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = 
-            AMP::LinearAlgebra::PetscMatrix::createView(global_cached_matrix);
-        ::Mat m = matrix->castTo<AMP::LinearAlgebra::PetscMatrix>().getMat ();
+        PROFILE_START( "PETScInterfaceRightVectorFactory::getVector" );
+        AMP_ASSERT( global_cached_matrix != NULL );
+        AMP::LinearAlgebra::Matrix::shared_ptr matrix =
+            AMP::LinearAlgebra::PetscMatrix::createView( global_cached_matrix );
+        ::Mat m = matrix->castTo<AMP::LinearAlgebra::PetscMatrix>().getMat();
         ::Vec v;
-        MatGetVecs ( m , &v , 0 );
-        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> p( 
+        MatGetVecs( m, &v, 0 );
+        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> p(
             new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
-        AMP::LinearAlgebra::Vector::shared_ptr  vector( new AMP::LinearAlgebra::NativePetscVector ( p ) );
+        AMP::LinearAlgebra::Vector::shared_ptr vector(
+            new AMP::LinearAlgebra::NativePetscVector( p ) );
         vector->setVariable( getVariable() );
-        PROFILE_STOP("PETScInterfaceRightVectorFactory::getVector");
+        PROFILE_STOP( "PETScInterfaceRightVectorFactory::getVector" );
         return vector;
     }
 
-    static AMP::LinearAlgebra::Vector::shared_ptr   getNativeVector()
-    {
-        return getVector();
-    }
+    static AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() { return getVector(); }
 
-    static AMP::LinearAlgebra::Vector::shared_ptr   getManagedVector()
+    static AMP::LinearAlgebra::Vector::shared_ptr getManagedVector()
     {
-        AMP_ASSERT(global_cached_matrix!=NULL);
-        AMP::LinearAlgebra::Matrix::shared_ptr  matrix = global_cached_matrix;
-        return AMP::LinearAlgebra::PetscVector::view ( matrix->getRightVector () );
+        AMP_ASSERT( global_cached_matrix != NULL );
+        AMP::LinearAlgebra::Matrix::shared_ptr matrix = global_cached_matrix;
+        return AMP::LinearAlgebra::PetscVector::view( matrix->getRightVector() );
     }
 };
 
 #endif
-
-
 }
 }
 #endif
-

@@ -3,114 +3,108 @@
 #define included_AMP_NavierStokesGalWFFEOperator
 
 /* AMP files */
-#include "vectors/Variable.h"
-#include "vectors/MultiVariable.h"
-#include "vectors/Vector.h"
-#include "discretization/DOF_Manager.h"
 #include "ampmesh/MeshElement.h"
+#include "discretization/DOF_Manager.h"
+#include "vectors/MultiVariable.h"
+#include "vectors/Variable.h"
+#include "vectors/Vector.h"
 
-#include "operators/libmesh/NonlinearFEOperator.h"
-#include "operators/libmesh/NonlinearFEOperator.h"
 #include "operators/flow/NavierStokesConstants.h"
-#include "operators/flow/NavierStokesGalWFFEOperatorParameters.h"
 #include "operators/flow/NavierStokesGalWFElement.h"
+#include "operators/flow/NavierStokesGalWFFEOperatorParameters.h"
+#include "operators/libmesh/NonlinearFEOperator.h"
+#include "operators/libmesh/NonlinearFEOperator.h"
 
 #include <vector>
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class NavierStokesGalWFFEOperator : public NonlinearFEOperator 
+class NavierStokesGalWFFEOperator : public NonlinearFEOperator {
+public:
+    explicit NavierStokesGalWFFEOperator(
+        const AMP::shared_ptr<NavierStokesGalWFFEOperatorParameters> &params );
+
+    virtual ~NavierStokesGalWFFEOperator() {}
+
+    void preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                      AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                          r );
+
+    void postAssembly();
+
+    void preElementOperation( const AMP::Mesh::MeshElement & );
+
+    void postElementOperation();
+
+    void reset( const AMP::shared_ptr<OperatorParameters> & );
+
+    AMP::shared_ptr<OperatorParameters>
+    getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u_in ) override;
+
+    void init();
+
+    void setVector( unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr frozenVec );
+
+    static AMP::LinearAlgebra::Variable::shared_ptr createInputVariable( const std::string &name,
+                                                                         int varId = -1 );
+
+    static AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable( const std::string &name,
+                                                                          int varId = -1 )
     {
-      public :
+        (void) varId;
+        AMP::LinearAlgebra::Variable::shared_ptr outVar( new AMP::LinearAlgebra::Variable( name ) );
+        return outVar;
+    }
 
-        explicit NavierStokesGalWFFEOperator(const AMP::shared_ptr<NavierStokesGalWFFEOperatorParameters>& params);
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_inpVariables; }
 
-        virtual ~NavierStokesGalWFFEOperator() { }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outVariables; }
 
-        void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::shared_ptr<AMP::LinearAlgebra::Vector>  r);
+    unsigned int numberOfDOFMaps();
 
-        void postAssembly();
+    AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap( unsigned int id );
 
-        void preElementOperation(const AMP::Mesh::MeshElement &);
+protected:
+    void gettype0DofIndicesForCurrentElement( int varId, std::vector<std::vector<size_t>> &dofIds );
+    void gettype1DofIndicesForCurrentElement( int varId, std::vector<size_t> &dofIds );
 
-        void postElementOperation();
+    std::vector<std::vector<size_t>> d_type0DofIndices; /**< Primary DOF indices */
+    std::vector<size_t> d_type1DofIndices;
 
-        void reset(const AMP::shared_ptr<OperatorParameters>& );
+    unsigned int d_numNodesForCurrentElement;
 
-        AMP::shared_ptr<OperatorParameters> 
-          getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u_in  ) override;
+    std::vector<double> d_elementOutputVector;
 
-        void init();
+    AMP::shared_ptr<NavierStokesGalWFElement> d_flowGalWFElem;
 
-        void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr frozenVec);
+    AMP::shared_ptr<FlowTransportModel> d_transportModel; /**< Flow Transport model. */
 
-        static AMP::LinearAlgebra::Variable::shared_ptr createInputVariable(const std::string & name, int varId = -1);
+    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_inVec; /**< Input vector. */
 
-        static AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable(const std::string & name, int varId = -1) {
-          (void) varId;      
-          AMP::LinearAlgebra::Variable::shared_ptr outVar(new AMP::LinearAlgebra::Variable(name) );
-          return outVar;
-        }
+    AMP::LinearAlgebra::Vector::shared_ptr d_referenceTemperature;
 
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() {
-          return d_inpVariables; 
-        }
+    AMP::LinearAlgebra::Vector::shared_ptr d_outVec;
 
-        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
-          return d_outVariables;
-        }
+    std::vector<bool> d_isActive;
 
-        unsigned int numberOfDOFMaps();
+    std::vector<bool> d_isFrozen;
 
-        AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap(unsigned int id);
+    std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
-      protected :
+    bool d_coupledFormulation;
 
-        void gettype0DofIndicesForCurrentElement(int varId, std::vector<std::vector<size_t> > & dofIds);
-        void gettype1DofIndicesForCurrentElement(int varId, std::vector<size_t> & dofIds);
+    AMP::shared_ptr<AMP::Discretization::DOFManager>
+        d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
 
-        std::vector<std::vector<size_t> > d_type0DofIndices; /**< Primary DOF indices */
-        std::vector<size_t> d_type1DofIndices; 
+private:
+    bool d_isInitialized; /**< A flag that is true if init() has been called and false otherwsie. */
 
-        unsigned int d_numNodesForCurrentElement; 
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; /**< Input variables. */
 
-        std::vector<double> d_elementOutputVector; 
-
-        AMP::shared_ptr<NavierStokesGalWFElement> d_flowGalWFElem; 
-
-        AMP::shared_ptr<FlowTransportModel> d_transportModel; /**< Flow Transport model. */
-
-        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_inVec; /**< Input vector. */
-
-        AMP::LinearAlgebra::Vector::shared_ptr d_referenceTemperature; 
-
-        AMP::LinearAlgebra::Vector::shared_ptr d_outVec; 
-
-        std::vector<bool> d_isActive; 
-
-        std::vector<bool> d_isFrozen;
-
-        std::vector<AMP::Mesh::MeshElement> d_currNodes; 
-
-        bool d_coupledFormulation;
-
-        AMP::shared_ptr<AMP::Discretization::DOFManager> d_dofMap[NavierStokes::TOTAL_NUMBER_OF_VARIABLES];
-
-      private :
-
-        bool d_isInitialized; /**< A flag that is true if init() has been called and false otherwsie. */
-
-        AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables; /**< Input variables. */
-
-        AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_outVariables; /**< Output variable. */
-
-    };
-
-  }
+    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_outVariables; /**< Output variable. */
+};
+}
 }
 
 #endif
-
-
-

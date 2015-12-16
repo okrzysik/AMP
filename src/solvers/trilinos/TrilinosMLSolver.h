@@ -2,14 +2,14 @@
 #ifndef included_AMP_TrilinosMLSolver
 #define included_AMP_TrilinosMLSolver
 
+#include "matrices/trilinos/EpetraMatrix.h"
 #include "solvers/SolverStrategy.h"
 #include "solvers/SolverStrategyParameters.h"
 #include "solvers/trilinos/MLoptions.h"
-#include "matrices/trilinos/EpetraMatrix.h"
 
-#pragma GCC diagnostic push 
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic push 
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wextra"
 #include "ml_MultiLevelPreconditioner.h"
 #include "ml_include.h"
@@ -30,9 +30,9 @@ typedef SolverStrategyParameters TrilinosMLSolverParameters;
  * to enable AMP users to use the black box ML preconditioner.
  */
 
-class TrilinosMLSolver: public SolverStrategy {
+class TrilinosMLSolver : public SolverStrategy {
 
-  public:
+public:
     /**
      * Default constructor
      */
@@ -76,7 +76,8 @@ class TrilinosMLSolver: public SolverStrategy {
      11. name:  aggregation_nodes_per_aggregate, type: integer, (optional), default value: none
      acceptable values (see ML manual)
 
-     12. name:  aggregation_nextlevel_aggregates_per_process, type: integer, (optional), default value: none
+     12. name:  aggregation_nextlevel_aggregates_per_process, type: integer, (optional), default
+    value: none
      acceptable values (see ML manual)
 
      13. name:  aggregation_damping_factor, type: , (optional), default value: none
@@ -102,7 +103,7 @@ class TrilinosMLSolver: public SolverStrategy {
 
      20. name: USE_EPETRA, type: bool, (optional), default value: true
 
-     21. name: problem_type, type: string, (optional), default value: "SA" 
+     21. name: problem_type, type: string, (optional), default value: "SA"
      acceptable values "SA" for symmetric and "NSSA" for unsymmetric problems
 
      22. name: aggregation_aux_enable, type: bool, (optional), default_value: false
@@ -115,7 +116,7 @@ class TrilinosMLSolver: public SolverStrategy {
 
       26. name: null_space_add_default_vectors, type: bool, (optional), default value: true
       */
-      explicit TrilinosMLSolver(AMP::shared_ptr<TrilinosMLSolverParameters> parameters);
+    explicit TrilinosMLSolver( AMP::shared_ptr<TrilinosMLSolverParameters> parameters );
 
     /**
      * Default destructor
@@ -125,37 +126,43 @@ class TrilinosMLSolver: public SolverStrategy {
     /**
      * Solve the system \f$Au = f\f$.
      @param [in] f : shared pointer to right hand side vector
-     @param [out] u : shared pointer to approximate computed solution 
+     @param [out] u : shared pointer to approximate computed solution
      */
-    void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u);
+    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                    u );
 
     /**
      * Return a shared pointer to the ML_Epetra::MultiLevelPreconditioner object
      */
-    inline const AMP::shared_ptr<ML_Epetra::MultiLevelPreconditioner> getMLSolver(void){ return d_mlSolver; }
+    inline const AMP::shared_ptr<ML_Epetra::MultiLevelPreconditioner> getMLSolver( void )
+    {
+        return d_mlSolver;
+    }
 
     /**
      * Initialize the solution vector and potentially create internal vectors needed for solution
      @param [in] parameters The parameters object
-     contains a database object. Refer to the documentation for the constructor to see what fields are required.
-     This routine assumes that a non-NULL operator of type LinearOperator has been registered with the solver.
+     contains a database object. Refer to the documentation for the constructor to see what fields
+     are required.
+     This routine assumes that a non-NULL operator of type LinearOperator has been registered with
+     the solver.
      The LinearOperator currently is assumed to contain a pointer to an EpetraMatrix object.
      */
-    void initialize(AMP::shared_ptr<SolverStrategyParameters> const parameters);
+    void initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters );
 
     /**
      * Register the operator that the solver will use during solves
-     @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$ 
+     @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$
      */
-    void registerOperator(const AMP::shared_ptr<AMP::Operator::Operator> op);
+    void registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op );
 
     /**
      * Resets the associated operator internally with new parameters if necessary
      * @param [in] params
      *        OperatorParameters object that is NULL by default
      */
-    void resetOperator(const AMP::shared_ptr<AMP::Operator::OperatorParameters> params);
+    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params );
 
     /**
      * Resets the solver internally with new parameters if necessary
@@ -165,34 +172,33 @@ class TrilinosMLSolver: public SolverStrategy {
      * and recreates it based on the parameters object. See constructor for
      * fields required for parameter object.
      */
-    void reset(AMP::shared_ptr<SolverStrategyParameters> params);
+    void reset( AMP::shared_ptr<SolverStrategyParameters> params );
 
-  protected:
+protected:
+    void reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                        AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                            u );
 
-    void reSolveWithLU(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u);
-
-    void getFromInput(const AMP::shared_ptr<AMP::Database>& db);
+    void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
 
     void convertMLoptionsToTeuchosParameterList();
 
     void buildML();
 
-    void computeCoordinates(  const AMP::shared_ptr<AMP::Operator::Operator> op );
-    void computeNullSpace(    const AMP::shared_ptr<AMP::Operator::Operator> op );
+    void computeCoordinates( const AMP::shared_ptr<AMP::Operator::Operator> op );
+    void computeNullSpace( const AMP::shared_ptr<AMP::Operator::Operator> op );
 
-  private:
-
+private:
     bool d_bUseEpetra;
-    ML* d_ml;
-    ML_Aggregate* d_mlAggregate;
+    ML *d_ml;
+    ML_Aggregate *d_mlAggregate;
 
     AMP_MPI d_comm;
 
     bool d_bCreationPhase; /**< set to true if the PC is not ready and false otherwise. */
     bool d_bRobustMode;
 
-    AMP::shared_ptr<MLoptions> d_mlOptions; 
+    AMP::shared_ptr<MLoptions> d_mlOptions;
 
     AMP::shared_ptr<ML_Epetra::MultiLevelPreconditioner> d_mlSolver;
     AMP::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> d_matrix;
@@ -203,9 +209,7 @@ class TrilinosMLSolver: public SolverStrategy {
     std::vector<double> d_z_values;
     std::vector<double> d_null_space;
 };
-
 }
 }
 
 #endif
-

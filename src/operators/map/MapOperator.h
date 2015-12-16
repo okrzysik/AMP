@@ -9,8 +9,8 @@
 #include "operators/Operator.h"
 #include "operators/OperatorParameters.h"
 #include "operators/map/MapOperatorParameters.h"
-#include "vectors/Vector.h"
 #include "vectors/Variable.h"
+#include "vectors/Vector.h"
 
 #include <string>
 
@@ -25,69 +25,65 @@ namespace Operator {
 
 /**
   * Class MapOperator is the base class for various mapping alogorithms. This
-  * class stores a pointer to the mapAdapter to which the solution has to be 
-  * mapped from Operator's meshAdapter. 
+  * class stores a pointer to the mapAdapter to which the solution has to be
+  * mapped from Operator's meshAdapter.
   */
 
-class MapOperator : public Operator
-{
-public :
+class MapOperator : public Operator {
+public:
+    /**
+      Constructor calls the reset member which reads the information about the boundary.
+      */
+    explicit MapOperator( const AMP::shared_ptr<OperatorParameters> &params ) : Operator( params )
+    {
+        AMP::shared_ptr<MapOperatorParameters> myparams =
+            AMP::dynamic_pointer_cast<MapOperatorParameters>( params );
 
-      /**
-        Constructor calls the reset member which reads the information about the boundary.
-        */
-      explicit MapOperator(const AMP::shared_ptr<OperatorParameters> & params) : Operator (params)
-    { 
-      AMP::shared_ptr<MapOperatorParameters> myparams = 
-        AMP::dynamic_pointer_cast<MapOperatorParameters>(params);
-
-      reset(myparams);   
+        reset( myparams );
     }
 
-      /**
-        Destructor
-        */
-      virtual ~MapOperator() { }
+    /**
+      Destructor
+      */
+    virtual ~MapOperator() {}
 
-      virtual void reset(const AMP::shared_ptr<OperatorParameters>& params);
+    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params );
 
-      virtual AMP::LinearAlgebra::Variable::shared_ptr createInputVariable (const std::string & , int )
-      {
-        //Implemented in derived classes
+    virtual AMP::LinearAlgebra::Variable::shared_ptr createInputVariable( const std::string &, int )
+    {
+        // Implemented in derived classes
         AMP::LinearAlgebra::Variable::shared_ptr emptyPointer;
         return emptyPointer;
-      }
+    }
 
-      virtual AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable (const std::string & , int ) 
-      {
-        //Implemented in derived classes
+    virtual AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable( const std::string &,
+                                                                           int )
+    {
+        // Implemented in derived classes
         AMP::LinearAlgebra::Variable::shared_ptr emptyPointer;
         return emptyPointer;
-      }
+    }
 
-      virtual void setInputVariableName(const std::string & , int ) 
-      {
-        //Implemented in derived classes. 
-      }
+    virtual void setInputVariableName( const std::string &, int )
+    {
+        // Implemented in derived classes.
+    }
 
-      virtual void setOutputVariableName(const std::string & , int )
-      {
-        //Implemented in derived classes. 
-      }
+    virtual void setOutputVariableName( const std::string &, int )
+    {
+        // Implemented in derived classes.
+    }
 
-    protected :
+protected:
+    unsigned int d_boundaryId;
 
-      unsigned int d_boundaryId;
+    AMP::Mesh::Mesh::shared_ptr d_MapMesh;
 
-      AMP::Mesh::Mesh::shared_ptr d_MapMesh;
+    // Communicator for the Map
+    AMP_MPI d_MapComm;
 
-      // Communicator for the Map
-      AMP_MPI d_MapComm;
-
-    private :
-
-  };
-
+private:
+};
 }
 }
 

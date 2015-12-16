@@ -1,8 +1,8 @@
-#ifndef  included_AMP_CommVariable_H
-#define  included_AMP_CommVariable_H
+#ifndef included_AMP_CommVariable_H
+#define included_AMP_CommVariable_H
 
-#include "vectors/SubsetVariable.h"
 #include "utils/AMP_MPI.h"
+#include "vectors/SubsetVariable.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -12,24 +12,22 @@ namespace LinearAlgebra {
   * \brief An AMP Variable that describes how to subset a DOF for a mesh
   * \see SubsetVector
   */
-class CommVariable : public SubsetVariable
-{
+class CommVariable : public SubsetVariable {
 public:
     /** \brief Constructor
       * \param[in] name  The name of the new variable
       * \param[in] comm  The AMP_MPI communicator of the new variable
       */
-    CommVariable ( const std::string &name, AMP_MPI comm );
+    CommVariable( const std::string &name, AMP_MPI comm );
 
-    virtual AMP::Discretization::DOFManager::shared_ptr  getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr ) const;
+    virtual AMP::Discretization::DOFManager::shared_ptr
+        getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr ) const;
 
 private:
-    CommVariable ();
+    CommVariable();
     AMP_MPI d_comm;
 };
-
 }
 }
 
 #endif
-

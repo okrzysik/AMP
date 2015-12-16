@@ -2,37 +2,34 @@
 #ifndef included_AMP_LinearFEOperatorParameters
 #define included_AMP_LinearFEOperatorParameters
 
-#include "operators/libmesh/FEOperatorParameters.h"
 #include "discretization/DOF_Manager.h"
+#include "operators/libmesh/FEOperatorParameters.h"
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-   class LinearFEOperatorParameters : public FEOperatorParameters {
-      public :
+class LinearFEOperatorParameters : public FEOperatorParameters {
+public:
+    /**
+      Constructor.
+      */
+    explicit LinearFEOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : FEOperatorParameters( db )
+    {
+    }
 
-        /**
-          Constructor.
-          */
-        explicit LinearFEOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
-          : FEOperatorParameters(db) {  }
+    /**
+      Destructor.
+      */
+    virtual ~LinearFEOperatorParameters() {}
 
-        /**
-          Destructor.
-          */
-        virtual ~LinearFEOperatorParameters() {}
+    AMP::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
+    AMP::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
 
-        AMP::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
-        AMP::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
-
-      protected :
-
-      private :
-
-    };
-
-  }
+protected:
+private:
+};
+}
 }
 
 #endif
-

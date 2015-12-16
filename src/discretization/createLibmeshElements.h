@@ -8,10 +8,10 @@
 
 
 // Libmesh headers
-#include "libmesh/enum_quadrature_type.h"
 #include "libmesh/elem.h"
-#include "libmesh/fe_type.h"
+#include "libmesh/enum_quadrature_type.h"
 #include "libmesh/fe_base.h"
+#include "libmesh/fe_type.h"
 
 
 namespace AMP {
@@ -20,11 +20,10 @@ namespace Discretization {
 
 /**
   This is a helper class to create libmesh elements given a MeshIterator.
-  It will cache the elements and allow for fast O(log(n)) access to the 
-  libmesh element given the MeshElementID. 
+  It will cache the elements and allow for fast O(log(n)) access to the
+  libmesh element given the MeshElementID.
 */
-class createLibmeshElements
-{
+class createLibmeshElements {
 public:
     //! Empty constructor
     createLibmeshElements();
@@ -49,43 +48,46 @@ public:
      *  \param[in] qtype        Type of the quadrature rule to use for the elements
      *  \param[in] qorder       Order of the quadrature rule to use for the elements
      *  \param[in] type         FE type to use for the elements
-     *  \param[in] cache_fe     Do we want to cahce fe operators (true) or reinitialize the the libmesh object (false).  
-     *                          If we cache the operators it will increase performance 
+     *  \param[in] cache_fe     Do we want to cahce fe operators (true) or reinitialize the the
+     * libmesh object (false).
+     *                          If we cache the operators it will increase performance
      *                          but significantly increase memory requirements.
      *                          Note: these functions are not thread safe.
      */
-    void reinit( const AMP::Mesh::MeshIterator &iterator, 
-        libMeshEnums::QuadratureType qtype, libMeshEnums::Order qorder,
-        AMP::shared_ptr<const libMesh::FEType> type,
-        bool cache_fe=false );
+    void reinit( const AMP::Mesh::MeshIterator &iterator,
+                 libMeshEnums::QuadratureType qtype,
+                 libMeshEnums::Order qorder,
+                 AMP::shared_ptr<const libMesh::FEType>
+                     type,
+                 bool cache_fe = false );
 
     /**
      *  This function returns the libmesh element given a MeshElementID
      *  \param[in] id           MeshElementID for the element of interest
      */
-    const libMesh::Elem* getElement( const AMP::Mesh::MeshElementID &id ) const;
+    const libMesh::Elem *getElement( const AMP::Mesh::MeshElementID &id ) const;
 
     /**
      *  This function returns the FE base given a MeshElementID
      *  \param[in] id           MeshElementID for the element of interest
      */
-    const libMesh::FEBase* getFEBase( const AMP::Mesh::MeshElementID &id ) const;
+    const libMesh::FEBase *getFEBase( const AMP::Mesh::MeshElementID &id ) const;
 
     /**
      *  This function returns the quadrature rule used to build the elements
      *  \param[in] id           MeshElementID for the element of interest
      */
-    const libMesh::QBase* getQBase( const AMP::Mesh::MeshElementID &id ) const;
+    const libMesh::QBase *getQBase( const AMP::Mesh::MeshElementID &id ) const;
 
     /**
      *  This function returns the FE type used to build the elements
      */
-    const libMesh::FEType* getFEType( ) const { return d_type.get(); }
+    const libMesh::FEType *getFEType() const { return d_type.get(); }
 
     /**
      *  Create a libmesh element from an AMP element (user must deallocate)
      */
-    static libMesh::Elem* createElement( const AMP::Mesh::MeshElement& elem );
+    static libMesh::Elem *createElement( const AMP::Mesh::MeshElement &elem );
 
 private:
     std::vector<AMP::Mesh::MeshElementID> d_ids;
@@ -96,13 +98,10 @@ private:
     mutable AMP::Mesh::MeshElementID d_last_id;
     AMP::shared_ptr<libMesh::FEBase> d_base;
     AMP::shared_ptr<libMesh::QBase> d_rule;
-    std::vector<libMesh::Elem*> d_elements;
-    std::vector<libMesh::FEBase*> d_base_element;
-    std::vector<libMesh::QBase*> d_rule_element;
-    
+    std::vector<libMesh::Elem *> d_elements;
+    std::vector<libMesh::FEBase *> d_base_element;
+    std::vector<libMesh::QBase *> d_rule_element;
 };
-
-
 }
 }
 

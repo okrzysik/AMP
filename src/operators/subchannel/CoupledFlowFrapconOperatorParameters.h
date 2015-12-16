@@ -13,31 +13,28 @@
 namespace AMP {
 namespace Operator {
 
-  /**
-    A class that encapsulates the parameters required to construct
-    the composite Operator operator.
-    @see ColumnOperator
-    */
-  class CoupledFlowFrapconOperatorParameters : public ColumnOperatorParameters {
-    public :
+/**
+  A class that encapsulates the parameters required to construct
+  the composite Operator operator.
+  @see ColumnOperator
+  */
+class CoupledFlowFrapconOperatorParameters : public ColumnOperatorParameters {
+public:
+    explicit CoupledFlowFrapconOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : ColumnOperatorParameters( db )
+    {
+    }
 
-      explicit CoupledFlowFrapconOperatorParameters(const AMP::shared_ptr<AMP::Database>& db)
-        : ColumnOperatorParameters(db) { }
+    virtual ~CoupledFlowFrapconOperatorParameters() {}
 
-      virtual ~CoupledFlowFrapconOperatorParameters() { }
+    AMP::shared_ptr<Operator> d_Map3to1;
 
-      AMP::shared_ptr<Operator> d_Map3to1 ;
+    AMP::shared_ptr<Operator> d_Map1to3;
 
-      AMP::shared_ptr<Operator> d_Map1to3 ;
-
-      AMP::shared_ptr<Operator> d_FlowOperator;
-  };
-
-}  
+    AMP::shared_ptr<Operator> d_FlowOperator;
+};
+}
 }
 
 
 #endif
-
-
-

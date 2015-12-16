@@ -8,40 +8,36 @@
  */
 
 
-#include<map>
-#include<vector>
-#include<iostream>
+#include <iostream>
+#include <map>
+#include <vector>
 
 
-namespace AMP
+namespace AMP {
+namespace voodoo {
+/**
+ * \brief	Given a map that is referenced by a key value, takes the keys and
+ *			shoves them into a vector that is returned
+ */
+template <typename key, class T>
+std::vector<key> getKeys( const std::map<key, T> &keyMap )
 {
-	namespace voodoo
-	{
-		/**
-		 * \brief	Given a map that is referenced by a key value, takes the keys and
-		 *			shoves them into a vector that is returned
-		 */
-		template<typename key, class T>
-		std::vector<key> getKeys( const std::map<key, T>& keyMap ) 
-		{
-			std::vector<key> keyVector;
-			
-			// Create an iterator to mark the end, so that we don't have to constantly re-evaluate
-			typedef typename std::map<key,T>::const_iterator const_iterator;
-			const_iterator	mapEnd( keyMap.end() );
+    std::vector<key> keyVector;
 
-			// Grab the keys from the map and shove into a vector
-			for(const_iterator iter(keyMap.begin()); iter!=mapEnd; ++iter) 
-			{
-				keyVector.push_back(iter->first);
-			}
+    // Create an iterator to mark the end, so that we don't have to constantly re-evaluate
+    typedef typename std::map<key, T>::const_iterator const_iterator;
+    const_iterator mapEnd( keyMap.end() );
 
-			return keyVector;
-		}
+    // Grab the keys from the map and shove into a vector
+    for ( const_iterator iter( keyMap.begin() ); iter != mapEnd; ++iter ) {
+        keyVector.push_back( iter->first );
+    }
 
-	} // namespace VoodooFactory
+    return keyVector;
+}
+
+} // namespace VoodooFactory
 } // namespace amp
 
 
 #endif // DETAILS_H
-

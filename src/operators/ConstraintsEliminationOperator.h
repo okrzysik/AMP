@@ -2,102 +2,98 @@
 #ifndef included_AMP_ConstraintsEliminationOperator
 #define included_AMP_ConstraintsEliminationOperator
 
-#include <vector>
 #include <operators/Operator.h>
-#include <vectors/Vector.h>
+#include <vector>
 #include <vectors/Variable.h>
+#include <vectors/Vector.h>
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
+
+/**
+  u^s = C u^m + d
+  */
+class ConstraintsEliminationOperator : public Operator {
+
+public:
+    /**
+      Constructor.
+      @param [in] params
+      */
+    ConstraintsEliminationOperator( const AMP::shared_ptr<OperatorParameters> &params )
+        : Operator( params )
+    {
+        AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "key not found" );
+        std::string inpVarName = params->d_db->getString( "InputVariable" );
+        d_InputVariable.reset( new AMP::LinearAlgebra::Variable( inpVarName ) );
+
+        AMP_INSIST( params->d_db->keyExists( "OutputVariable" ), "key not found" );
+        std::string outVarName = params->d_db->getString( "OutputVariable" );
+        d_OutputVariable.reset( new AMP::LinearAlgebra::Variable( outVarName ) );
+    }
 
     /**
-      u^s = C u^m + d
+      Destructor
       */
-    class ConstraintsEliminationOperator : public Operator 
-    {
+    virtual ~ConstraintsEliminationOperator() {}
 
-      public :
+    /**
+     * This function is useful for re-initializing/updating an operator
+     * \param params
+     *        parameter object containing parameters to change
+     */
+    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params );
 
-        /**
-          Constructor.
-          @param [in] params 
-          */
-        ConstraintsEliminationOperator (const AMP::shared_ptr<OperatorParameters> & params)
-          : Operator(params)
-        {
-          AMP_INSIST( params->d_db->keyExists("InputVariable"), "key not found" );
-          std::string inpVarName = params->d_db->getString("InputVariable");
-          d_InputVariable.reset(new AMP::LinearAlgebra::Variable(inpVarName) );
+    /**
+      Calls first addSlaveToMaster(...) and second setSlaveToZero(...) on the residual vector:
+      r^m = r^m + C^T r^s
+      r^s = 0
 
-          AMP_INSIST( params->d_db->keyExists("OutputVariable"), "key not found" );
-          std::string outVarName = params->d_db->getString("OutputVariable");
-          d_OutputVariable.reset(new AMP::LinearAlgebra::Variable(outVarName) );
-        }
+      The apply function for this operator, A, performs the following operation:
+      r = A(u)
+      Here, A(u) is simply a Matrix-Vector multiplication.
+      @param [in] u input vector.
+      @param [out] f residual/output vector.
+      */
+    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-        /**
-          Destructor
-          */
-        virtual ~ConstraintsEliminationOperator() { }
+    /**
+      @return The variable for the input vector.
+      */
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
 
-        /**
-         * This function is useful for re-initializing/updating an operator
-         * \param params
-         *        parameter object containing parameters to change
-         */
-        virtual void reset(const AMP::shared_ptr<OperatorParameters> & params);
+    /**
+      @return The variable for the output vector.
+      */
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
 
-        /**
-          Calls first addSlaveToMaster(...) and second setSlaveToZero(...) on the residual vector:
-          r^m = r^m + C^T r^s
-          r^s = 0
+    /**
+      u^m = u^m + C^T u^s
+      */
+    virtual void addSlaveToMaster( AMP::LinearAlgebra::Vector::shared_ptr u ) = 0;
+    /**
+      u^s = C u^m
+      */
+    virtual void copyMasterToSlave( AMP::LinearAlgebra::Vector::shared_ptr u ) = 0;
+    /**
+      u^s = 0
+      */
+    virtual void setSlaveToZero( AMP::LinearAlgebra::Vector::shared_ptr u );
+    /**
+      u^s = u^s + d
+      */
+    virtual void addShiftToSlave( AMP::LinearAlgebra::Vector::shared_ptr u );
 
-          The apply function for this operator, A, performs the following operation:
-          r = A(u)
-          Here, A(u) is simply a Matrix-Vector multiplication.
-          @param [in] u input vector. 
-          @param [out] f residual/output vector. 
-          */
-        virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-			    AMP::LinearAlgebra::Vector::shared_ptr f) override;
+protected:
+    std::vector<size_t> d_SlaveIndices;
+    std::vector<double> d_SlaveShift;
 
-        /**
-          @return The variable for the input vector. 
-          */
-        AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
-
-        /**
-          @return The variable for the output vector.
-          */
-        AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
-
-        /**
-          u^m = u^m + C^T u^s
-          */
-        virtual void addSlaveToMaster(AMP::LinearAlgebra::Vector::shared_ptr u) = 0;
-        /**
-          u^s = C u^m 
-          */
-        virtual void copyMasterToSlave(AMP::LinearAlgebra::Vector::shared_ptr u) = 0; 
-        /**
-          u^s = 0 
-          */
-        virtual void setSlaveToZero(AMP::LinearAlgebra::Vector::shared_ptr u);
-        /**
-          u^s = u^s + d 
-          */
-        virtual void addShiftToSlave(AMP::LinearAlgebra::Vector::shared_ptr u); 
-
-      protected :
-        std::vector<size_t> d_SlaveIndices;
-        std::vector<double> d_SlaveShift;
-
-      private :
-        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable; /**< Input variable */
-        AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
-
-    };
-
-  }
+private:
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable;  /**< Input variable */
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
+};
+}
 }
 
 #endif

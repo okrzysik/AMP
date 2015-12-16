@@ -7,57 +7,57 @@
 #include "BackwardEulerTimeIntegrator.h"
 #endif
 
-#include "TimeOperatorParameters.h"
 #include "BackwardEulerTimeOperator.h"
+#include "TimeOperatorParameters.h"
 
 /*Design-By-Contract Macros*/
 #include "utils/Utilities.h"
 
-namespace AMP{
-namespace TimeIntegrator{
+namespace AMP {
+namespace TimeIntegrator {
 
 
 /***********************************************************************
 *  Constructor.                                                        *
 ***********************************************************************/
-BackwardEulerTimeIntegrator::BackwardEulerTimeIntegrator( AMP::shared_ptr< TimeIntegratorParameters > parameters ):ImplicitTimeIntegrator(parameters)
+BackwardEulerTimeIntegrator::BackwardEulerTimeIntegrator(
+    AMP::shared_ptr<TimeIntegratorParameters> parameters )
+    : ImplicitTimeIntegrator( parameters )
 {
-   initialize( parameters );
+    initialize( parameters );
 }
 
 
 /***********************************************************************
 *  Destructor.                                                         *
 ***********************************************************************/
-BackwardEulerTimeIntegrator::~BackwardEulerTimeIntegrator()
-{
-}
+BackwardEulerTimeIntegrator::~BackwardEulerTimeIntegrator() {}
 
 
 /***********************************************************************
 * Initialize.                                                          *
 ***********************************************************************/
-void BackwardEulerTimeIntegrator::initialize( AMP::shared_ptr< TimeIntegratorParameters> parameters )
+void BackwardEulerTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
-   AMP_ASSERT(parameters.get() != NULL);
+    AMP_ASSERT( parameters.get() != NULL );
 
-   /*
-    * Initialize data members from input.
-    */
-   getFromInput( parameters->d_db );
+    /*
+     * Initialize data members from input.
+     */
+    getFromInput( parameters->d_db );
 
-   ImplicitTimeIntegrator::initialize(parameters);
+    ImplicitTimeIntegrator::initialize( parameters );
 
-  // This call must take place in the constructor
-   initializeTimeOperator(parameters);
+    // This call must take place in the constructor
+    initializeTimeOperator( parameters );
 
-   d_solver->registerOperator(d_operator);
+    d_solver->registerOperator( d_operator );
 }
-void BackwardEulerTimeIntegrator::reset( AMP::shared_ptr< TimeIntegratorParameters > parameters )
+void BackwardEulerTimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
-   AMP_ASSERT(parameters.get() != NULL);
+    AMP_ASSERT( parameters.get() != NULL );
 
-   abort();
+    abort();
 }
 
 
@@ -65,11 +65,13 @@ void BackwardEulerTimeIntegrator::reset( AMP::shared_ptr< TimeIntegratorParamete
 *  Calculate an approximate time advanced solution.  We use FE as the  *
 *  predictor.                                                          *
 ***********************************************************************/
-void BackwardEulerTimeIntegrator::setInitialGuess( const bool, 
-    const double, const double, const double )
+void BackwardEulerTimeIntegrator::setInitialGuess( const bool,
+                                                   const double,
+                                                   const double,
+                                                   const double )
 {
-  // lousy initial guess - just to get things moving...
-  d_solution->setToScalar((double) 0.0);
+    // lousy initial guess - just to get things moving...
+    d_solution->setToScalar( (double) 0.0 );
 }
 
 
@@ -78,8 +80,8 @@ void BackwardEulerTimeIntegrator::setInitialGuess( const bool,
 ***********************************************************************/
 void BackwardEulerTimeIntegrator::updateSolution( void )
 {
-  // we can figure out a swap later
-   d_pPreviousTimeSolution->copyVector( d_solution );
+    // we can figure out a swap later
+    d_pPreviousTimeSolution->copyVector( d_solution );
 }
 
 
@@ -90,17 +92,15 @@ void BackwardEulerTimeIntegrator::updateSolution( void )
 ***********************************************************************/
 void BackwardEulerTimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 {
-   if ( input_db->keyExists("initial_timestep") ) {
-      d_initial_dt = input_db->getDouble("initial_timestep");
-   } else {
-      AMP_ERROR(d_object_name << " -- Key data `initial_timestep'"
-                               << " missing in input.");
-   }
+    if ( input_db->keyExists( "initial_timestep" ) ) {
+        d_initial_dt = input_db->getDouble( "initial_timestep" );
+    }
+    else {
+        AMP_ERROR( d_object_name << " -- Key data `initial_timestep'"
+                                 << " missing in input." );
+    }
 }
-double BackwardEulerTimeIntegrator::getNextDt(const bool)
-{
-    return d_current_dt;
-}
+double BackwardEulerTimeIntegrator::getNextDt( const bool ) { return d_current_dt; }
 
 
 /***********************************************************************
@@ -108,16 +108,17 @@ double BackwardEulerTimeIntegrator::getNextDt(const bool)
 ***********************************************************************/
 bool BackwardEulerTimeIntegrator::checkNewSolution( void ) const
 {
-   /*
-    * Ordinarily we would check the actual error in the solution
-    * (proportional to the size of d_corrector) against a specified
-    * tolerance.  For now, accept everything.
-    */
-   return(true);
+    /*
+     * Ordinarily we would check the actual error in the solution
+     * (proportional to the size of d_corrector) against a specified
+     * tolerance.  For now, accept everything.
+     */
+    return ( true );
 }
-void BackwardEulerTimeIntegrator::initializeTimeOperator(AMP::shared_ptr< TimeIntegratorParameters > parameters)
+void BackwardEulerTimeIntegrator::initializeTimeOperator(
+    AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    d_pTimeOperatorParameters.reset( new TimeOperatorParameters(parameters->d_db) );
+    d_pTimeOperatorParameters.reset( new TimeOperatorParameters( parameters->d_db ) );
 
     d_pTimeOperatorParameters->d_pRhsOperator = parameters->d_operator;
 
@@ -130,11 +131,7 @@ void BackwardEulerTimeIntegrator::initializeTimeOperator(AMP::shared_ptr< TimeIn
     // note that we are resetting the d_operator pointer which
     // may initially have pointer to the rhs operator, now replacing
     // it with a pointer to a TimeOperator
-    d_operator.reset(new BackwardEulerTimeOperator(d_pTimeOperatorParameters) );
-  
-}
-
-
+    d_operator.reset( new BackwardEulerTimeOperator( d_pTimeOperatorParameters ) );
 }
 }
-
+}

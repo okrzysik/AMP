@@ -2,31 +2,29 @@
 #ifndef included_AMP_NeumannVectorCorrectionParameters
 #define included_AMP_NeumannVectorCorrectionParameters
 
-#include "operators/boundary/LinearBoundaryOperatorParameters.h"
 #include "operators/OperatorParameters.h"
+#include "operators/boundary/LinearBoundaryOperatorParameters.h"
 #include "operators/boundary/libmesh/RobinPhysicsModel.h"
 
 namespace AMP {
 namespace Operator {
 
-  class NeumannVectorCorrectionParameters : public OperatorParameters {
-    public :
+class NeumannVectorCorrectionParameters : public OperatorParameters {
+public:
+    explicit NeumannVectorCorrectionParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : OperatorParameters( db )
+    {
+    }
 
-      explicit NeumannVectorCorrectionParameters(const AMP::shared_ptr<AMP::Database> &db)
-        : OperatorParameters(db) {  }
+    virtual ~NeumannVectorCorrectionParameters() {}
 
-      virtual ~NeumannVectorCorrectionParameters() { }
+    AMP::LinearAlgebra::Variable::shared_ptr d_variable;
 
-      AMP::LinearAlgebra::Variable::shared_ptr d_variable;
- 
-      AMP::LinearAlgebra::Vector::shared_ptr d_variableFlux;
+    AMP::LinearAlgebra::Vector::shared_ptr d_variableFlux;
 
-      AMP::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
-
-  };
-
+    AMP::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
+};
 }
 }
 
 #endif
-

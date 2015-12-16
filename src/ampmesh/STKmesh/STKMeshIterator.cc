@@ -11,10 +11,11 @@ namespace Mesh {
 
 // Create a unique id for this class
 namespace {
-    unsigned int STKMeshIteratorTypeID() {
-        static const unsigned int id (TYPE_HASH(STKMeshIterator));
-        return id;
-    }
+unsigned int STKMeshIteratorTypeID()
+{
+    static const unsigned int id( TYPE_HASH( STKMeshIterator ) );
+    return id;
+}
 }
 
 // unused global variable to prevent compiler warning
@@ -23,76 +24,78 @@ static MeshElement nullElement;
 /********************************************************
 * Constructors                                          *
 ********************************************************/
-STKMeshIterator::STKMeshIterator() :
-    MeshIterator(),
-    d_gcw    (0),
-    d_dim    (0),
-    d_rank   (0),
-    d_meshID (),
-    d_mesh   (0),
-    d_entries(),
-    d_pos    (),
-    d_cur_element()
+STKMeshIterator::STKMeshIterator()
+    : MeshIterator(),
+      d_gcw( 0 ),
+      d_dim( 0 ),
+      d_rank( 0 ),
+      d_meshID(),
+      d_mesh( 0 ),
+      d_entries(),
+      d_pos(),
+      d_cur_element()
 {
-  iterator = NULL;
-  typeID = STKMeshIteratorTypeID();
+    iterator = NULL;
+    typeID   = STKMeshIteratorTypeID();
 }
 
-STKMeshIterator::STKMeshIterator(const AMP::Mesh::STKMesh *mesh, int gcw, std::vector<stk::mesh::Entity*> &entries) :
-    MeshIterator(),
-    d_gcw    (gcw),
-    d_dim    (mesh->getSTKMeshMeta()->spatial_dimension()),
-    d_rank   (mesh->getComm().getRank()),
-    d_meshID (mesh->meshID()),
-    d_mesh   (mesh),
-    d_entries(new std::vector<stk::mesh::Entity*>(entries)),
-    d_pos    (d_entries->begin()),
-    d_cur_element()
+STKMeshIterator::STKMeshIterator( const AMP::Mesh::STKMesh *mesh,
+                                  int gcw,
+                                  std::vector<stk::mesh::Entity *> &entries )
+    : MeshIterator(),
+      d_gcw( gcw ),
+      d_dim( mesh->getSTKMeshMeta()->spatial_dimension() ),
+      d_rank( mesh->getComm().getRank() ),
+      d_meshID( mesh->meshID() ),
+      d_mesh( mesh ),
+      d_entries( new std::vector<stk::mesh::Entity *>( entries ) ),
+      d_pos( d_entries->begin() ),
+      d_cur_element()
 {
-  iterator = NULL;
-  typeID  = STKMeshIteratorTypeID();
+    iterator = NULL;
+    typeID   = STKMeshIteratorTypeID();
 }
-STKMeshIterator::STKMeshIterator(const AMP::Mesh::STKMesh *mesh, int gcw, MeshPtr entries) :
-    MeshIterator(),
-    d_gcw    (gcw),
-    d_dim    (mesh->getSTKMeshMeta()->spatial_dimension()),
-    d_rank   (mesh->getComm().getRank()),
-    d_meshID (mesh->meshID()),
-    d_mesh   (mesh),
-    d_entries(entries),
-    d_pos    (d_entries->begin()),
-    d_cur_element()
+STKMeshIterator::STKMeshIterator( const AMP::Mesh::STKMesh *mesh, int gcw, MeshPtr entries )
+    : MeshIterator(),
+      d_gcw( gcw ),
+      d_dim( mesh->getSTKMeshMeta()->spatial_dimension() ),
+      d_rank( mesh->getComm().getRank() ),
+      d_meshID( mesh->meshID() ),
+      d_mesh( mesh ),
+      d_entries( entries ),
+      d_pos( d_entries->begin() ),
+      d_cur_element()
 {
-  iterator = NULL;
-  typeID  = STKMeshIteratorTypeID();
+    iterator = NULL;
+    typeID   = STKMeshIteratorTypeID();
 }
-STKMeshIterator::STKMeshIterator(const STKMeshIterator& rhs) :
-    MeshIterator(),
-    d_gcw    (rhs.d_gcw),
-    d_dim    (rhs.d_dim),
-    d_rank   (rhs.d_rank),
-    d_meshID (rhs.d_meshID),
-    d_mesh   (rhs.d_mesh),
-    d_entries(rhs.d_entries),
-    d_pos    (d_entries->begin() + rhs.position()),
-    d_cur_element(rhs.d_cur_element)
+STKMeshIterator::STKMeshIterator( const STKMeshIterator &rhs )
+    : MeshIterator(),
+      d_gcw( rhs.d_gcw ),
+      d_dim( rhs.d_dim ),
+      d_rank( rhs.d_rank ),
+      d_meshID( rhs.d_meshID ),
+      d_mesh( rhs.d_mesh ),
+      d_entries( rhs.d_entries ),
+      d_pos( d_entries->begin() + rhs.position() ),
+      d_cur_element( rhs.d_cur_element )
 {
-  iterator = NULL;
-  typeID = STKMeshIteratorTypeID();
+    iterator = NULL;
+    typeID   = STKMeshIteratorTypeID();
 }
-STKMeshIterator& STKMeshIterator::operator=(const STKMeshIterator& rhs)
+STKMeshIterator &STKMeshIterator::operator=( const STKMeshIterator &rhs )
 {
     this->iterator = NULL;
-    if (this == &rhs) // protect against invalid self-assignment
+    if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID   = STKMeshIteratorTypeID();
-    this->d_gcw    = rhs.d_gcw;
-    this->d_dim    = rhs.d_dim;
-    this->d_rank   = rhs.d_rank;
-    this->d_meshID = rhs.d_meshID;
-    this->d_mesh   = rhs.d_mesh;
-    this->d_entries= rhs.d_entries;
-    this->d_pos    = this->d_entries->begin() + rhs.position();
+    this->typeID        = STKMeshIteratorTypeID();
+    this->d_gcw         = rhs.d_gcw;
+    this->d_dim         = rhs.d_dim;
+    this->d_rank        = rhs.d_rank;
+    this->d_meshID      = rhs.d_meshID;
+    this->d_mesh        = rhs.d_mesh;
+    this->d_entries     = rhs.d_entries;
+    this->d_pos         = this->d_entries->begin() + rhs.position();
     this->d_cur_element = rhs.d_cur_element;
     return *this;
 }
@@ -101,17 +104,13 @@ STKMeshIterator& STKMeshIterator::operator=(const STKMeshIterator& rhs)
 /********************************************************
 * Function to clone the iterator                        *
 ********************************************************/
-MeshIterator* STKMeshIterator::clone() const
-{
-    return new STKMeshIterator(*this);
-}
+MeshIterator *STKMeshIterator::clone() const { return new STKMeshIterator( *this ); }
 
 
 /********************************************************
 * De-constructor                                        *
 ********************************************************/
-STKMeshIterator::~STKMeshIterator()
-{}
+STKMeshIterator::~STKMeshIterator() {}
 
 
 /********************************************************
@@ -133,10 +132,7 @@ MeshIterator STKMeshIterator::end() const
 /********************************************************
 * Return the number of elements in the iterator         *
 ********************************************************/
-size_t STKMeshIterator::size() const
-{
-    return d_entries->size();
-}
+size_t STKMeshIterator::size() const { return d_entries->size(); }
 size_t STKMeshIterator::position() const
 {
     const int size = d_pos - d_entries->begin();
@@ -147,86 +143,86 @@ size_t STKMeshIterator::position() const
 /********************************************************
 * Increment/Decrement the iterator                      *
 ********************************************************/
-MeshIterator& STKMeshIterator::operator++()
+MeshIterator &STKMeshIterator::operator++()
 {
     // Prefix increment (increment and return this)
     ++d_pos;
     return *this;
 }
-MeshIterator STKMeshIterator::operator++(int)
+MeshIterator STKMeshIterator::operator++( int )
 {
     // Postfix increment (increment and return temporary object)
-    STKMeshIterator tmp(*this);     // Create a temporary variable
-    this->operator++();             // apply operator
-    return tmp;                     // return temporary result
+    STKMeshIterator tmp( *this ); // Create a temporary variable
+    this->operator++();           // apply operator
+    return tmp;                   // return temporary result
 }
-MeshIterator& STKMeshIterator::operator--()
+MeshIterator &STKMeshIterator::operator--()
 {
     // Prefix decrement (increment and return this)
     --d_pos;
     return *this;
 }
-MeshIterator STKMeshIterator::operator--(int)
+MeshIterator STKMeshIterator::operator--( int )
 {
     // Postfix decrement (increment and return temporary object)
-    STKMeshIterator tmp(*this);      // Create a temporary variable
-    --(*this);                      // apply operator
-    return tmp;                     // return temporary result
+    STKMeshIterator tmp( *this ); // Create a temporary variable
+    --( *this );                  // apply operator
+    return tmp;                   // return temporary result
 }
 
 
 /********************************************************
 * Compare two iterators                                 *
 ********************************************************/
-bool STKMeshIterator::operator==(const MeshIterator& rhs) const
+bool STKMeshIterator::operator==( const MeshIterator &rhs ) const
 {
-    const STKMeshIterator* rhs2 = NULL;
-    const STKMeshIterator* tmp = static_cast<const STKMeshIterator*>(&rhs);
-    if ( typeid(rhs)==typeid(STKMeshIterator) ) {
-        rhs2 = dynamic_cast<const STKMeshIterator*>(&rhs);     // We can safely cast rhs to a STKMeshIterator
-    } else if ( tmp->typeID==STKMeshIteratorTypeID() ) {
-        rhs2 = static_cast<const STKMeshIterator*>(&rhs);     // We can safely cast rhs.iterator to a STKMeshIterator
-    } else if ( tmp->iterator->type_id()==STKMeshIteratorTypeID() ) {
-        rhs2 = static_cast<const STKMeshIterator*>(tmp->iterator);
+    const STKMeshIterator *rhs2 = NULL;
+    const STKMeshIterator *tmp  = static_cast<const STKMeshIterator *>( &rhs );
+    if ( typeid( rhs ) == typeid( STKMeshIterator ) ) {
+        rhs2 = dynamic_cast<const STKMeshIterator *>(
+            &rhs ); // We can safely cast rhs to a STKMeshIterator
+    }
+    else if ( tmp->typeID == STKMeshIteratorTypeID() ) {
+        rhs2 = static_cast<const STKMeshIterator *>(
+            &rhs ); // We can safely cast rhs.iterator to a STKMeshIterator
+    }
+    else if ( tmp->iterator->type_id() == STKMeshIteratorTypeID() ) {
+        rhs2 = static_cast<const STKMeshIterator *>( tmp->iterator );
     }
     // Perform direct comparisions if we are dealing with two STKMeshIterators
-    if ( rhs2 != NULL ) return (d_pos == rhs2->d_pos);
+    if ( rhs2 != NULL ) return ( d_pos == rhs2->d_pos );
 
     /* We are comparing a STKMeshIterator to an arbitrary iterator
      * The iterators are the same if they point to the same position and iterate
      * over the same elements in the same order
      */
     // Check the size
-    if ( this->size() != rhs.size() )         return false;
+    if ( this->size() != rhs.size() ) return false;
     // Check the current position
     if ( this->position() != rhs.position() ) return false;
     // Check that the elements match
     MeshIterator iterator1 = this->begin();
     MeshIterator iterator2 = rhs.begin();
-    bool elements_match = true;
-    for (size_t i=0; i<this->size(); i++) {
-        if ( iterator1->globalID() != iterator2->globalID() )
-            elements_match = false;
+    bool elements_match    = true;
+    for ( size_t i = 0; i < this->size(); i++ ) {
+        if ( iterator1->globalID() != iterator2->globalID() ) elements_match = false;
         ++iterator1;
         ++iterator2;
     }
     return elements_match;
 }
-bool STKMeshIterator::operator!=(const MeshIterator& rhs) const
-{
-    return !((*this)==rhs);
-}
+bool STKMeshIterator::operator!=( const MeshIterator &rhs ) const { return !( ( *this ) == rhs ); }
 
 
 /********************************************************
 * Dereference the iterator to get the element           *
 ********************************************************/
-MeshElement& STKMeshIterator::operator*()
+MeshElement &STKMeshIterator::operator*()
 {
-    this->operator->();      // Initialize d_cur_element
+    this->operator->(); // Initialize d_cur_element
     return d_cur_element;
 }
-MeshElement* STKMeshIterator::operator->()
+MeshElement *STKMeshIterator::operator->()
 {
     d_cur_element = STKMeshElement( d_dim, *d_pos, d_rank, d_meshID, d_mesh );
     return &d_cur_element;

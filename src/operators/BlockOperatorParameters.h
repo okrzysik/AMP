@@ -7,23 +7,20 @@
 #include "utils/shared_ptr.h"
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class BlockOperatorParameters : public OperatorParameters {
-      public :
+class BlockOperatorParameters : public OperatorParameters {
+public:
+    explicit BlockOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
+        : OperatorParameters( db )
+    {
+    }
 
-        explicit BlockOperatorParameters(const AMP::shared_ptr<AMP::Database> &db)
-          : OperatorParameters(db) { }
+    virtual ~BlockOperatorParameters() {}
 
-        virtual ~BlockOperatorParameters() { }
-
-        std::vector<std::vector<AMP::shared_ptr<OperatorParameters> > > d_blockParams;
-    };
-
-  }  
+    std::vector<std::vector<AMP::shared_ptr<OperatorParameters>>> d_blockParams;
+};
+}
 }
 
 #endif
-
-
-

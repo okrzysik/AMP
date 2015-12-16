@@ -3,8 +3,8 @@
 
 #include "ColumnOperator.h"
 #include "CoupledOperatorParameters.h"
-#include "vectors/Vector.h"
 #include "utils/Utilities.h"
+#include "vectors/Vector.h"
 #include <vector>
 
 namespace AMP {
@@ -15,13 +15,12 @@ namespace Operator {
    A class for representing a coupled operator combining a NodeToGaussPointOperator,
    a CopyOperator, a MapOperator, and a d_BVPOperator.
   */
-class CoupledOperator : public ColumnOperator
-{
-public :
-    explicit CoupledOperator(const AMP::shared_ptr<OperatorParameters>& params);
+class CoupledOperator : public ColumnOperator {
+public:
+    explicit CoupledOperator( const AMP::shared_ptr<OperatorParameters> &params );
 
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-			AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
 
     /**
@@ -30,64 +29,55 @@ public :
      * \param u: shared pointer to const vector u
      * \param r: shared pointer to vector residual
      */
-    virtual void residual(AMP::LinearAlgebra::Vector::const_shared_ptr f, 
-			  AMP::LinearAlgebra::Vector::const_shared_ptr u, 
-			  AMP::LinearAlgebra::Vector::shared_ptr r) override;
+    virtual void residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
+                           AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                           AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
 
-    AMP::shared_ptr<AMP::Operator::Operator> getMapOperator() {
-        return d_Operators[2];
-    }
+    AMP::shared_ptr<AMP::Operator::Operator> getMapOperator() { return d_Operators[2]; }
 
-    void setMapOperator( AMP::shared_ptr<AMP::Operator::Operator> op ) {
-        d_Operators[2] = op;
-    }
+    void setMapOperator( AMP::shared_ptr<AMP::Operator::Operator> op ) { d_Operators[2] = op; }
 
-    AMP::shared_ptr<AMP::Operator::Operator> getBVPOperator() {
-        return d_Operators[3];
-    }
+    AMP::shared_ptr<AMP::Operator::Operator> getBVPOperator() { return d_Operators[3]; }
 
-    void setBVPOperator( AMP::shared_ptr<AMP::Operator::Operator> op ) {
-        d_Operators[3] = op;
-    }
+    void setBVPOperator( AMP::shared_ptr<AMP::Operator::Operator> op ) { d_Operators[3] = op; }
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() {
+    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable()
+    {
         return d_Operators[3]->getOutputVariable();
     }
 
-    virtual void append(AMP::shared_ptr< Operator > op) {
-        AMP_ASSERT(d_Operators.size() < 4);
-        AMP_ASSERT(op.get() != NULL);
-        d_Operators.push_back(op);
-    }
-
-    bool isValidInput(AMP::shared_ptr<AMP::LinearAlgebra::Vector> &u)
+    virtual void append( AMP::shared_ptr<Operator> op )
     {
-        return d_Operators[3]->isValidInput(u);
+        AMP_ASSERT( d_Operators.size() < 4 );
+        AMP_ASSERT( op.get() != NULL );
+        d_Operators.push_back( op );
     }
 
-    void setFrozenGaussPointVector(AMP::LinearAlgebra::Vector::shared_ptr u) {
+    bool isValidInput( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &u )
+    {
+        return d_Operators[3]->isValidInput( u );
+    }
+
+    void setFrozenGaussPointVector( AMP::LinearAlgebra::Vector::shared_ptr u )
+    {
         d_frozenGaussPointVector = u;
     }
 
-    AMP::shared_ptr<OperatorParameters> getParameters(const std::string &type,
-                     AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                     AMP::shared_ptr<OperatorParameters> params = NULL ) override
+    AMP::shared_ptr<OperatorParameters>
+    getParameters( const std::string &type,
+                   AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                   AMP::shared_ptr<OperatorParameters> params = NULL ) override
     {
-       return (d_Operators[3]->getParameters(type, u, params));
+        return ( d_Operators[3]->getParameters( type, u, params ) );
     }
 
-    virtual ~CoupledOperator() { }
+    virtual ~CoupledOperator() {}
 
 protected:
-
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenGaussPointVector;
-
 };
-
-
 }
 }
 
 #endif
-

@@ -5,28 +5,23 @@
 #include "operators/Operator.h"
 
 namespace AMP {
-  namespace Operator {
+namespace Operator {
 
-    class OnePointOperator : public Operator {
-      public :
-        OnePointOperator(const AMP::shared_ptr<OperatorParameters> & params) : Operator(params) {
-          d_constant = 0.0;
-        }
+class OnePointOperator : public Operator {
+public:
+    OnePointOperator( const AMP::shared_ptr<OperatorParameters> &params ) : Operator( params )
+    {
+        d_constant = 0.0;
+    }
 
-        double getConstant() { 
-          return d_constant;
-        }
+    double getConstant() { return d_constant; }
 
-      protected :
-        double d_constant;
+protected:
+    double d_constant;
 
-      private :
-    };
-
-  }
+private:
+};
+}
 }
 
 #endif
-
-
-

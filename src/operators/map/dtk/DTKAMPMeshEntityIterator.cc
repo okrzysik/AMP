@@ -9,47 +9,42 @@ namespace Operator {
 /*!
  * \brief Default constructor.
  */
-AMPMeshEntityIterator::AMPMeshEntityIterator()
-{ 
-    this->b_iterator_impl = NULL;
-}
+AMPMeshEntityIterator::AMPMeshEntityIterator() { this->b_iterator_impl = NULL; }
 
 //---------------------------------------------------------------------------//
 /**
  * Constructor.
  */
-AMPMeshEntityIterator::AMPMeshEntityIterator( 
-    const AMP::Mesh::MeshIterator& iterator,
-    const std::function<bool(DataTransferKit::Entity)>& predicate )
+AMPMeshEntityIterator::AMPMeshEntityIterator(
+    const AMP::Mesh::MeshIterator &iterator,
+    const std::function<bool( DataTransferKit::Entity )> &predicate )
     : d_amp_iterator( iterator.begin() )
 {
     this->b_iterator_impl = NULL;
-    this->b_predicate = predicate;
+    this->b_predicate     = predicate;
 }
 
 //---------------------------------------------------------------------------//
 /*!
  * \brief Copy constructor.
  */
-AMPMeshEntityIterator::AMPMeshEntityIterator( const AMPMeshEntityIterator& rhs )
+AMPMeshEntityIterator::AMPMeshEntityIterator( const AMPMeshEntityIterator &rhs )
     : d_amp_iterator( rhs.d_amp_iterator )
 {
     this->b_iterator_impl = NULL;
-    this->b_predicate = rhs.b_predicate;
+    this->b_predicate     = rhs.b_predicate;
 }
 
 //---------------------------------------------------------------------------//
 /*!
  * \brief Assignment operator.
  */
-AMPMeshEntityIterator& AMPMeshEntityIterator::operator=( 
-    const AMPMeshEntityIterator& rhs )
+AMPMeshEntityIterator &AMPMeshEntityIterator::operator=( const AMPMeshEntityIterator &rhs )
 {
     this->b_iterator_impl = NULL;
-    this->b_predicate = rhs.b_predicate;
-    if ( &rhs == this )
-    {
-	return *this;
+    this->b_predicate     = rhs.b_predicate;
+    if ( &rhs == this ) {
+        return *this;
     }
     d_amp_iterator = rhs.d_amp_iterator;
     return *this;
@@ -57,14 +52,11 @@ AMPMeshEntityIterator& AMPMeshEntityIterator::operator=(
 
 //---------------------------------------------------------------------------//
 // Destructor.
-AMPMeshEntityIterator::~AMPMeshEntityIterator()
-{
-    this->b_iterator_impl = NULL;
-}
+AMPMeshEntityIterator::~AMPMeshEntityIterator() { this->b_iterator_impl = NULL; }
 
 //---------------------------------------------------------------------------//
 // Pre-increment operator.
-DataTransferKit::EntityIterator& AMPMeshEntityIterator::operator++()
+DataTransferKit::EntityIterator &AMPMeshEntityIterator::operator++()
 {
     ++d_amp_iterator;
     return *this;
@@ -72,7 +64,7 @@ DataTransferKit::EntityIterator& AMPMeshEntityIterator::operator++()
 
 //---------------------------------------------------------------------------//
 // Dereference operator.
-DataTransferKit::Entity& AMPMeshEntityIterator::operator*(void)
+DataTransferKit::Entity &AMPMeshEntityIterator::operator*( void )
 {
     this->operator->();
     return d_current_entity;
@@ -80,7 +72,7 @@ DataTransferKit::Entity& AMPMeshEntityIterator::operator*(void)
 
 //---------------------------------------------------------------------------//
 // Dereference operator.
-DataTransferKit::Entity* AMPMeshEntityIterator::operator->(void)
+DataTransferKit::Entity *AMPMeshEntityIterator::operator->( void )
 {
     d_current_entity = AMPMeshEntity( *d_amp_iterator );
     return &d_current_entity;
@@ -88,25 +80,21 @@ DataTransferKit::Entity* AMPMeshEntityIterator::operator->(void)
 
 //---------------------------------------------------------------------------//
 // Equal comparison operator.
-bool AMPMeshEntityIterator::operator==( 
-    const DataTransferKit::EntityIterator& rhs ) const
+bool AMPMeshEntityIterator::operator==( const DataTransferKit::EntityIterator &rhs ) const
 {
-    const AMPMeshEntityIterator* rhs_it = 
-	static_cast<const AMPMeshEntityIterator*>(&rhs);
-    const AMPMeshEntityIterator* rhs_it_impl = 
-	static_cast<const AMPMeshEntityIterator*>(rhs_it->b_iterator_impl);
+    const AMPMeshEntityIterator *rhs_it = static_cast<const AMPMeshEntityIterator *>( &rhs );
+    const AMPMeshEntityIterator *rhs_it_impl =
+        static_cast<const AMPMeshEntityIterator *>( rhs_it->b_iterator_impl );
     return ( rhs_it_impl->d_amp_iterator == d_amp_iterator );
 }
 
 //---------------------------------------------------------------------------//
 // Not equal comparison operator.
-bool AMPMeshEntityIterator::operator!=( 
-    const DataTransferKit::EntityIterator& rhs ) const
+bool AMPMeshEntityIterator::operator!=( const DataTransferKit::EntityIterator &rhs ) const
 {
-    const AMPMeshEntityIterator* rhs_it = 
-    	static_cast<const AMPMeshEntityIterator*>(&rhs);
-    const AMPMeshEntityIterator* rhs_it_impl = 
-    	static_cast<const AMPMeshEntityIterator*>(rhs_it->b_iterator_impl);
+    const AMPMeshEntityIterator *rhs_it = static_cast<const AMPMeshEntityIterator *>( &rhs );
+    const AMPMeshEntityIterator *rhs_it_impl =
+        static_cast<const AMPMeshEntityIterator *>( rhs_it->b_iterator_impl );
     return ( rhs_it_impl->d_amp_iterator != d_amp_iterator );
 }
 
@@ -129,14 +117,11 @@ DataTransferKit::EntityIterator AMPMeshEntityIterator::end() const
 //---------------------------------------------------------------------------//
 // Create a clone of the iterator. We need this for the copy constructor
 // and assignment operator to pass along the underlying implementation.
-DataTransferKit::EntityIterator* AMPMeshEntityIterator::clone() const
+DataTransferKit::EntityIterator *AMPMeshEntityIterator::clone() const
 {
     return new AMPMeshEntityIterator( *this );
 }
 
 //---------------------------------------------------------------------------//
-
 }
 }
-
-

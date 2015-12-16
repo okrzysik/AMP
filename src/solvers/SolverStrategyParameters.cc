@@ -4,21 +4,14 @@
 namespace AMP {
 namespace Solver {
 
-SolverStrategyParameters::SolverStrategyParameters()
+SolverStrategyParameters::SolverStrategyParameters() { d_name = "SolverStrategyParameters"; }
+
+SolverStrategyParameters::SolverStrategyParameters( const AMP::shared_ptr<AMP::Database> &db )
+    : d_db( db )
 {
-   d_name="SolverStrategyParameters";
+    d_name = "SolverStrategyParameters";
 }
 
-  SolverStrategyParameters::SolverStrategyParameters(const AMP::shared_ptr<AMP::Database> &db)
-:d_db(db)
-{
-   d_name     = "SolverStrategyParameters";
-}
-
-SolverStrategyParameters::~SolverStrategyParameters()
-{
-}
-
+SolverStrategyParameters::~SolverStrategyParameters() {}
 }
 }
-

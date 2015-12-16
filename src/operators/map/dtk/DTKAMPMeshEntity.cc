@@ -11,12 +11,9 @@ namespace Operator {
 */
 
 // Constructor.
-AMPMeshEntity::AMPMeshEntity( const AMP::Mesh::MeshElement& element )
+AMPMeshEntity::AMPMeshEntity( const AMP::Mesh::MeshElement &element )
 {
-this->b_entity_impl = 
-    Teuchos::rcp( new AMPMeshEntityImpl(element) );
+    this->b_entity_impl = Teuchos::rcp( new AMPMeshEntityImpl( element ) );
 }
-
-
 }
 }

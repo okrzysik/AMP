@@ -8,7 +8,6 @@ namespace AMP {
 namespace Mesh {
 
 
-
 /**
  * \class MultiMesh
  * \brief A concrete mesh class for a multi-mesh
@@ -25,10 +24,8 @@ namespace Mesh {
  *                       1 - Use independent processor sets for all meshes (default)
  *                       2 - Use all processors for all meshes
  */
-class MultiMesh: public Mesh
-{
+class MultiMesh : public Mesh {
 public:
-
     /**
      * \brief Default constructor
      * \details  This constructor works with the input parameters to create the mesh.
@@ -37,7 +34,7 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params Parameters for constructing a mesh from an input database
      */
-    MultiMesh ( const MeshParameters::shared_ptr &params );
+    MultiMesh( const MeshParameters::shared_ptr &params );
 
 
     /**
@@ -47,18 +44,18 @@ public:
      * \param comm      Desired communicator for the multimesh
      * \param meshes    Meshes to be used as part of the multimesh
      */
-    MultiMesh ( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> &meshes );
+    MultiMesh( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> &meshes );
 
 
     //! Deconstructor
-    virtual ~MultiMesh ();
+    virtual ~MultiMesh();
 
     //! Function to copy the mesh (allows use to proply copy the derived class)
     AMP::shared_ptr<Mesh> copy() const;
 
     /**
-     * \brief   Estimate the number of elements in the mesh 
-     * \details  This function will estimate the number of elements in the mesh. 
+     * \brief   Estimate the number of elements in the mesh
+     * \details  This function will estimate the number of elements in the mesh.
      *   This is used so that we can properly balance the meshes across multiple processors.
      *   Ideally this should be both an accurate estimate and very fast.  It should not require
      *   any communication and should not have to actually load a mesh.
@@ -68,7 +65,7 @@ public:
 
     /**
      * \brief   Return the maximum number of processors that can be used with the mesh
-     * \details  This function will return the maximum number of processors that can 
+     * \details  This function will return the maximum number of processors that can
      *   be used with the mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
@@ -77,7 +74,7 @@ public:
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */
-    virtual size_t  numLocalElements( const GeomType type ) const;
+    virtual size_t numLocalElements( const GeomType type ) const;
 
 
     /* Return the global number of elements of the given type.
@@ -86,13 +83,13 @@ public:
      *  some type of listener to check if the value changed on any sub meshes.
      * \param type   Geometric type
      */
-    virtual size_t  numGlobalElements( const GeomType type ) const;
+    virtual size_t numGlobalElements( const GeomType type ) const;
 
 
     /* Return the number of ghost elements of the given type on the current processor
      * \param type   Geometric type
      */
-    virtual size_t  numGhostElements( const GeomType type, const int gcw ) const;
+    virtual size_t numGhostElements( const GeomType type, const int gcw ) const;
 
 
     /**
@@ -103,7 +100,7 @@ public:
      *    matches the meshID of the mesh, and a null pointer otherwise.
      * \param meshID  MeshID of the desired mesh
      */
-    virtual AMP::shared_ptr<Mesh>  Subset( MeshID meshID ) const;
+    virtual AMP::shared_ptr<Mesh> Subset( MeshID meshID ) const;
 
 
     /**
@@ -111,10 +108,11 @@ public:
      * \details  This function will subset a mesh over a given iterator.
      *   This will return a new mesh object.
      * \param iterator  MeshIterator used to subset
-     * \param isGlobal  Is the new subset mesh global over the entire mesh (true,default), 
+     * \param isGlobal  Is the new subset mesh global over the entire mesh (true,default),
      *                  or do we only want to keep the local mesh (false)
      */
-    virtual AMP::shared_ptr<Mesh>  Subset ( const MeshIterator &iterator, bool isGlobal=true ) const;
+    virtual AMP::shared_ptr<Mesh> Subset( const MeshIterator &iterator,
+                                          bool isGlobal = true ) const;
 
 
     /**
@@ -123,12 +121,12 @@ public:
      *    For a single mesh this will return a pointer to itself if the mesh name
      *    matches the name of the mesh, and a null pointer otherwise.
      *    Note: The mesh name is not gaurenteed to be unique.  If there are multiple
-     *    meshes with the same name, all meshed with the given name will be returned 
+     *    meshes with the same name, all meshed with the given name will be returned
      *    within a new multimesh.
      *    It is strongly recommended to use the meshID when possible.
      * \param name  Name of the desired mesh
      */
-    virtual AMP::shared_ptr<Mesh>  Subset ( std::string name ) const;
+    virtual AMP::shared_ptr<Mesh> Subset( std::string name ) const;
 
 
     /**
@@ -137,7 +135,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIterator ( const GeomType type, const int gcw=0 ) const;
+    virtual MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const;
 
 
     /**
@@ -146,7 +144,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator  getSurfaceIterator ( const GeomType type, const int gcw=0 ) const;
+    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const;
 
 
     /**
@@ -154,24 +152,27 @@ public:
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBoundaryIDs ( ) const;
+    virtual std::vector<int> getBoundaryIDs() const;
 
 
     /**
-     * \brief    Return an MeshIterator over the given geometric objects on the given boundary ID set
-     * \details  Return an MeshIterator over the given geometric objects on the given boundary ID set
+     * \brief    Return an MeshIterator over the given geometric objects on the given boundary ID
+     * set
+     * \details  Return an MeshIterator over the given geometric objects on the given boundary ID
+     * set
      * \param type   Geometric type to iterate over
      * \param id     Boundary id for the elements (example: sideset id)
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getBoundaryIDIterator ( const GeomType type, const int id, const int gcw=0 ) const;
+    virtual MeshIterator
+    getBoundaryIDIterator( const GeomType type, const int id, const int gcw = 0 ) const;
 
     /**
      * \brief    Return the list of all boundary ID sets in the mesh
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBlockIDs ( ) const;
+    virtual std::vector<int> getBlockIDs() const;
 
 
     /**
@@ -181,27 +182,29 @@ public:
      * \param id     Block id for the elements (example: block id in cubit, subdomain in libmesh)
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getBlockIDIterator ( const GeomType type, const int id, const int gcw=0 ) const;
+    virtual MeshIterator
+    getBlockIDIterator( const GeomType type, const int id, const int gcw = 0 ) const;
 
- 
+
     /**
      * \brief    Check if an element is in the mesh
-     * \details  This function queries the mesh to determine if the given element is a member of the mesh
+     * \details  This function queries the mesh to determine if the given element is a member of the
+     * mesh
      * \param id    Mesh element id we are querying.
      */
-    virtual bool isMember ( const MeshElementID &id ) const; 
+    virtual bool isMember( const MeshElementID &id ) const;
 
 
     /**
      * \brief    Return a mesh element given it's id.
      * \details  This function queries the mesh to get an element given the mesh id.
      *    This function is only required to return an element if the id is local.
-     *    Ideally, this should be done in O(1) time, but the implimentation is up to 
-     *    the underlying mesh.  The base class provides a basic implimentation, but 
+     *    Ideally, this should be done in O(1) time, but the implimentation is up to
+     *    the underlying mesh.  The base class provides a basic implimentation, but
      *    uses mesh iterators and requires O(N) time on the number of elements in the mesh.
      * \param id    Mesh element id we are requesting.
      */
-    virtual MeshElement getElement ( const MeshElementID &id ) const;
+    virtual MeshElement getElement( const MeshElementID &id ) const;
 
 
     /**
@@ -211,18 +214,19 @@ public:
      * \param elem  Mesh element of interest
      * \param type  Element type of the parents requested
      */
-    virtual std::vector<MeshElement> getElementParents ( const MeshElement& elem, const GeomType type ) const;
+    virtual std::vector<MeshElement> getElementParents( const MeshElement &elem,
+                                                        const GeomType type ) const;
 
 
     /**
      * \brief    Displace the entire mesh
      * \details  This function will displace the entire mesh by a scalar value.
      *   This function is a blocking call for the mesh communicator, and requires
-     *   the same value on all processors.  The displacement vector should be the 
+     *   the same value on all processors.  The displacement vector should be the
      *   size of the physical dimension.
      * \param x  Displacement vector
      */
-    virtual void displaceMesh( const std::vector<double>& x );
+    virtual void displaceMesh( const std::vector<double> &x );
 
 
     //! Is the current mesh a base mesh
@@ -237,7 +241,8 @@ public:
 
 
     /**
-     *  Get the meshIDs of all the basic meshes that compose the current mesh (excluding multimeshes and subset meshes)
+     *  Get the meshIDs of all the basic meshes that compose the current mesh (excluding multimeshes
+     * and subset meshes)
      *  Note: This function will require global communication
      */
     virtual std::vector<MeshID> getBaseMeshIDs() const;
@@ -251,7 +256,7 @@ public:
 
 
     /**
-     *  Get the meshIDs of all the basic meshes that compose the current mesh 
+     *  Get the meshIDs of all the basic meshes that compose the current mesh
      *  (excluding multimeshes and subset meshes) on the current processor.
      */
     virtual std::vector<MeshID> getLocalBaseMeshIDs() const;
@@ -272,12 +277,12 @@ public:
     /**
      * \brief    Displace the entire mesh
      * \details  This function will displace the entire mesh by displacing
-     *   each node by the values provided in the vector.  This function is 
+     *   each node by the values provided in the vector.  This function is
      *   a blocking call for the mesh communicator
-     * \param x  Displacement vector.  Must have N DOFs per node where N 
+     * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh ( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x );
+    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x );
 #endif
 
 
@@ -286,29 +291,33 @@ public:
 
 
     // Function to simulate loading a multimesh
-    static LoadBalance  simulateBuildMesh( const MeshParameters::shared_ptr params, const std::vector<int> &comm_ranks );
+    static LoadBalance simulateBuildMesh( const MeshParameters::shared_ptr params,
+                                          const std::vector<int> &comm_ranks );
 
     // Function to add a processor to the load balance simulation
-    static bool addProcSimulation( const LoadBalance& mesh, std::vector<LoadBalance> &submeshes, int rank, char &decomp );
+    static bool addProcSimulation( const LoadBalance &mesh,
+                                   std::vector<LoadBalance> &submeshes,
+                                   int rank,
+                                   char &decomp );
 
 private:
-
     //! Empty constructor for a mesh
-    MultiMesh ( ) {};
+    MultiMesh(){};
 
     //! Function to create the databases for the meshes within the multimesh
-    static std::vector<AMP::shared_ptr<AMP::Database> >  createDatabases(AMP::shared_ptr<AMP::Database> database);
+    static std::vector<AMP::shared_ptr<AMP::Database>>
+    createDatabases( AMP::shared_ptr<AMP::Database> database );
 
     //! A list of all meshes in the multimesh
     std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
 
     //! A convienence typedef to hold a list of ranks
-    typedef std::vector<int>  rank_list;    
+    typedef std::vector<int> rank_list;
 
     /**
      * \brief    A function to compute the comm groups given a weight
-     * \details  This function computes the sub communicator groups given 
-     *   the weights for each submesh.  
+     * \details  This function computes the sub communicator groups given
+     *   the weights for each submesh.
      * \param N_procs   The size of the communicator for the splitting
      * \param params    Array of mesh parameters used to contruct the submeshes
      * \param size      Array of the number of elements in each submesh
@@ -323,8 +332,11 @@ private:
      *                     communicators, but may combine them to achieve a better load
      *                     balance.  This is not implimented yet.
      */
-    static std::vector<rank_list> loadBalancer( int N_procs, 
-        const std::vector<MeshParameters::shared_ptr> &params, const std::vector<size_t> &size, int method=1 );
+    static std::vector<rank_list>
+    loadBalancer( int N_procs,
+                  const std::vector<MeshParameters::shared_ptr> &params,
+                  const std::vector<size_t> &size,
+                  int method = 1 );
 
     /**
      * \brief    A function to compute the AMP_MPI comms for each mesh
@@ -334,21 +346,27 @@ private:
     std::vector<AMP_MPI> createComms( const std::vector<rank_list> &groups );
 
     // Structure used to create communication groups
-    struct comm_groups{
-        int N_procs;                // Number of processor in the group
-        std::vector<int> ids;       // mesh ids in the groups
+    struct comm_groups {
+        int N_procs;          // Number of processor in the group
+        std::vector<int> ids; // mesh ids in the groups
     };
-    
-    // Function to distribute N groups with weights onto P processors (P>N) with the greatest number of groups possible (smallest comms)
-    static std::vector<comm_groups>  independentGroups1( int N_procs, const std::vector<MeshParameters::shared_ptr> &params, const std::vector<size_t> &size );
 
-    // Function to distribute N groups with weights onto P processors (N>P) with the greatest number of groups possible (comm size = 1)
-    static std::vector<comm_groups>  independentGroups2( int N_procs, std::vector<std::pair<double,int> >  &ids );
+    // Function to distribute N groups with weights onto P processors (P>N) with the greatest number
+    // of groups possible
+    // (smallest comms)
+    static std::vector<comm_groups>
+    independentGroups1( int N_procs,
+                        const std::vector<MeshParameters::shared_ptr> &params,
+                        const std::vector<size_t> &size );
 
+    // Function to distribute N groups with weights onto P processors (N>P) with the greatest number
+    // of groups possible
+    // (comm size = 1)
+    static std::vector<comm_groups> independentGroups2( int N_procs,
+                                                        std::vector<std::pair<double, int>> &ids );
 };
 
 } // Mesh namespace
 } // AMP namespace
 
 #endif
-

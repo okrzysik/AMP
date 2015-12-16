@@ -10,31 +10,26 @@ namespace AMP {
 namespace unit_test {
 
 template <typename TEST>
-class  OperatorParameterTest : public AMP::UnitTest
-{
+class OperatorParameterTest : public AMP::UnitTest {
 protected:
-    explicit OperatorParameterTest ( UnitTest *ut ) { d_ut=ut; }
+    explicit OperatorParameterTest( UnitTest *ut ) { d_ut = ut; }
     UnitTest *d_ut;
+
 public:
-    virtual ~OperatorParameterTest () {}
+    virtual ~OperatorParameterTest() {}
 
-    void passes(const std::string &in) { d_ut->passes(in); }
-    void failure(const std::string &in) { d_ut->failure(in); }
-    void expected_failure(const std::string &in) { d_ut->expected_failure(in); }
+    void passes( const std::string &in ) { d_ut->passes( in ); }
+    void failure( const std::string &in ) { d_ut->failure( in ); }
+    void expected_failure( const std::string &in ) { d_ut->expected_failure( in ); }
 
-    static void  run ( UnitTest  *ut )
+    static void run( UnitTest *ut )
     {
-        OperatorParameterTest test ( ut );
-        TEST::run_test ( &test );
+        OperatorParameterTest test( ut );
+        TEST::run_test( &test );
     }
-
 };
-
 }
 }
-
-
-
 
 
 #endif

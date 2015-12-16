@@ -1,5 +1,7 @@
 //
-// File:	$URL: file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/inputdb/Parser.C $
+// File:	$URL:
+// file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/inputdb/Parser.C
+// $
 // Package:	AMP toolbox
 // Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
 // Revision:	$LastChangedRevision: 1917 $
@@ -15,17 +17,17 @@
 #endif
 
 #ifndef NULL
-#define NULL (0)
+#define NULL ( 0 )
 #endif
 
 namespace AMP {
-   
+
 extern int yyparse();
-extern void yyrestart(FILE*);
+extern void yyrestart( FILE * );
 
 extern void parser_static_table_initialize();
 
-Parser *Parser::s_default_parser = NULL;
+Parser *Parser::s_default_parser         = NULL;
 bool Parser::s_static_tables_initialized = 0;
 
 /*
@@ -39,11 +41,11 @@ bool Parser::s_static_tables_initialized = 0;
 
 Parser::Parser()
 {
-   if (!s_static_tables_initialized) {
-      parser_static_table_initialize();
-      s_static_tables_initialized = 1;
-   }
-   comm = AMP_MPI(AMP_COMM_WORLD);
+    if ( !s_static_tables_initialized ) {
+        parser_static_table_initialize();
+        s_static_tables_initialized = 1;
+    }
+    comm = AMP_MPI( AMP_COMM_WORLD );
 }
 
 /*
@@ -54,9 +56,7 @@ Parser::Parser()
 *************************************************************************
 */
 
-Parser::~Parser()
-{
-}
+Parser::~Parser() {}
 
 /*
 *************************************************************************
@@ -67,44 +67,43 @@ Parser::~Parser()
 *************************************************************************
 */
 
-int Parser::parse(
-   const std::string& filename,
-   FILE* fstream, AMP::shared_ptr<Database> database)
+int Parser::parse( const std::string &filename, FILE *fstream, AMP::shared_ptr<Database> database )
 {
-   d_errors     = 0;
-   d_warnings   = 0;
+    d_errors   = 0;
+    d_warnings = 0;
 
-   // Find the path in the filename, if one exists
-   std::string::size_type slash_pos = filename.find_last_of( '/' );
-   if(slash_pos == std::string::npos) {
-      d_pathname   = "";
-   } else {
-      d_pathname   = filename.substr(0, slash_pos+1);      
-   }
-   
-   ParseData pd;
-   pd.d_filename   = filename;
-   pd.d_fstream    = fstream;
-   pd.d_linenumber = 1;
-   pd.d_cursor     = 1;
-   pd.d_nextcursor = 1;
-   d_parse_stack.clear();
-   d_parse_stack.push_front(pd);
+    // Find the path in the filename, if one exists
+    std::string::size_type slash_pos = filename.find_last_of( '/' );
+    if ( slash_pos == std::string::npos ) {
+        d_pathname = "";
+    }
+    else {
+        d_pathname = filename.substr( 0, slash_pos + 1 );
+    }
 
-   d_scope_stack.clear();
-   d_scope_stack.push_front(database);
+    ParseData pd;
+    pd.d_filename   = filename;
+    pd.d_fstream    = fstream;
+    pd.d_linenumber = 1;
+    pd.d_cursor     = 1;
+    pd.d_nextcursor = 1;
+    d_parse_stack.clear();
+    d_parse_stack.push_front( pd );
 
-   s_default_parser = this;
-   yyrestart(NULL);
-   if (yyparse() && (d_errors == 0)) {
-      error("Unexpected parse error");
-   }
-   s_default_parser = NULL;
+    d_scope_stack.clear();
+    d_scope_stack.push_front( database );
 
-   d_parse_stack.clear();
-   d_scope_stack.clear();
+    s_default_parser = this;
+    yyrestart( NULL );
+    if ( yyparse() && ( d_errors == 0 ) ) {
+        error( "Unexpected parse error" );
+    }
+    s_default_parser = NULL;
 
-   return(d_errors);
+    d_parse_stack.clear();
+    d_scope_stack.clear();
+
+    return ( d_errors );
 }
 
 /*
@@ -115,12 +114,12 @@ int Parser::parse(
 *************************************************************************
 */
 
-void Parser::advanceLine(const int nline)
+void Parser::advanceLine( const int nline )
 {
-   Parser::ParseData& pd = d_parse_stack.front();
-   pd.d_linenumber += nline;
-   pd.d_cursor      = 1;
-   pd.d_nextcursor  = 1;
+    Parser::ParseData &pd = d_parse_stack.front();
+    pd.d_linenumber += nline;
+    pd.d_cursor     = 1;
+    pd.d_nextcursor = 1;
 }
 
 /*
@@ -132,17 +131,18 @@ void Parser::advanceLine(const int nline)
 *************************************************************************
 */
 
-void Parser::advanceCursor(const std::string& token)
+void Parser::advanceCursor( const std::string &token )
 {
-   Parser::ParseData& pd = d_parse_stack.front();
-   pd.d_cursor = pd.d_nextcursor;
-   for (std::string::const_iterator i = token.begin(); i != token.end(); i++) {
-      if (*i == '\t') {
-         pd.d_nextcursor = ((pd.d_nextcursor + 7) & (~7)) + 1;
-      } else {
-         pd.d_nextcursor++;
-      }
-   }
+    Parser::ParseData &pd = d_parse_stack.front();
+    pd.d_cursor           = pd.d_nextcursor;
+    for ( std::string::const_iterator i = token.begin(); i != token.end(); i++ ) {
+        if ( *i == '\t' ) {
+            pd.d_nextcursor = ( ( pd.d_nextcursor + 7 ) & ( ~7 ) ) + 1;
+        }
+        else {
+            pd.d_nextcursor++;
+        }
+    }
 }
 
 /*
@@ -153,21 +153,20 @@ void Parser::advanceCursor(const std::string& token)
 *************************************************************************
 */
 
-void Parser::error(const std::string& message)
+void Parser::error( const std::string &message )
 {
-   Parser::ParseData& pd = d_parse_stack.front();
+    Parser::ParseData &pd = d_parse_stack.front();
 
-   pout << "Error in " << pd.d_filename << " at line " << pd.d_linenumber 
-	<< " column " << pd.d_cursor
-        << " : " << message << std::endl << std::flush;
+    pout << "Error in " << pd.d_filename << " at line " << pd.d_linenumber << " column "
+         << pd.d_cursor << " : " << message << std::endl
+         << std::flush;
 
-   pout << pd.d_linebuffer << std::endl << std::flush;
+    pout << pd.d_linebuffer << std::endl << std::flush;
 
-   for(int i=0; i < pd.d_cursor; i++)
-      pout << " ";
-   pout << "^\n";
+    for ( int i = 0; i < pd.d_cursor; i++ ) pout << " ";
+    pout << "^\n";
 
-   d_errors++;
+    d_errors++;
 }
 
 /*
@@ -178,21 +177,20 @@ void Parser::error(const std::string& message)
 *************************************************************************
 */
 
-void Parser::warning(const std::string& message)
+void Parser::warning( const std::string &message )
 {
-   Parser::ParseData& pd = d_parse_stack.front();
+    Parser::ParseData &pd = d_parse_stack.front();
 
-   pout << "Warning in " << pd.d_filename << " at line " << pd.d_linenumber 
-	<< " column " << pd.d_cursor
-        << " : " << message << std::endl << std::flush;
+    pout << "Warning in " << pd.d_filename << " at line " << pd.d_linenumber << " column "
+         << pd.d_cursor << " : " << message << std::endl
+         << std::flush;
 
-   pout << pd.d_linebuffer << std::endl << std::flush;
+    pout << pd.d_linebuffer << std::endl << std::flush;
 
-   for(int i=0; i < pd.d_cursor; i++)
-      pout << " ";
-   pout << "^\n";
+    for ( int i = 0; i < pd.d_cursor; i++ ) pout << " ";
+    pout << "^\n";
 
-   d_warnings++;
+    d_warnings++;
 }
 
 /*
@@ -203,10 +201,10 @@ void Parser::warning(const std::string& message)
 *************************************************************************
 */
 
-void Parser::setLine(const std::string& line)
+void Parser::setLine( const std::string &line )
 {
-   Parser::ParseData& pd = d_parse_stack.front();
-   pd.d_linebuffer            = line; 
+    Parser::ParseData &pd = d_parse_stack.front();
+    pd.d_linebuffer       = line;
 }
 
 /*
@@ -218,14 +216,15 @@ void Parser::setLine(const std::string& line)
 *************************************************************************
 */
 
- AMP::shared_ptr<Database> Parser::getDatabaseWithKey(const std::string& key) {
-   AMP::shared_ptr<Database> returnPtr;
-  
-  std::list< AMP::shared_ptr<Database> >::iterator i = d_scope_stack.begin();
-  for ( ; i!=d_scope_stack.end(); i++) {
-    if ((*i)->keyExists(key)) return((*i));
-   }
-   return(returnPtr);
+AMP::shared_ptr<Database> Parser::getDatabaseWithKey( const std::string &key )
+{
+    AMP::shared_ptr<Database> returnPtr;
+
+    std::list<AMP::shared_ptr<Database>>::iterator i = d_scope_stack.begin();
+    for ( ; i != d_scope_stack.end(); i++ ) {
+        if ( ( *i )->keyExists( key ) ) return ( ( *i ) );
+    }
+    return ( returnPtr );
 }
 
 /*
@@ -237,43 +236,45 @@ void Parser::setLine(const std::string& line)
 *************************************************************************
 */
 
-bool Parser::pushIncludeFile(const std::string& filename)
+bool Parser::pushIncludeFile( const std::string &filename )
 {
-   FILE *fstream = NULL;
+    FILE *fstream = NULL;
 
-   std::string filename_with_path;
+    std::string filename_with_path;
 
-   // If this is not a fully qualified pathname use 
-   // current search path
-   std::string::size_type slash_pos;
-   slash_pos = filename.find_first_of( '/' );
-   if ( slash_pos == 0 ) {
-      filename_with_path = filename;
-   } else {
-      filename_with_path = d_pathname;
-      filename_with_path += filename;
-   }
+    // If this is not a fully qualified pathname use
+    // current search path
+    std::string::size_type slash_pos;
+    slash_pos = filename.find_first_of( '/' );
+    if ( slash_pos == 0 ) {
+        filename_with_path = filename;
+    }
+    else {
+        filename_with_path = d_pathname;
+        filename_with_path += filename;
+    }
 
-   if (comm.getRank() == 0) {
-      fstream = fopen(filename_with_path.c_str(), "r");
-   }
+    if ( comm.getRank() == 0 ) {
+        fstream = fopen( filename_with_path.c_str(), "r" );
+    }
 
-   int worked = (fstream ? 1 : 0);
-   worked = comm.bcast(worked, 0);
+    int worked = ( fstream ? 1 : 0 );
+    worked     = comm.bcast( worked, 0 );
 
-   if (!worked) {
-      error("Could not open include file ``" + filename_with_path + "''");
-   } else {
-      ParseData pd;
-      pd.d_filename   = filename_with_path;
-      pd.d_fstream    = fstream;
-      pd.d_linenumber = 1;
-      pd.d_cursor     = 1;
-      pd.d_nextcursor = 1;
-      d_parse_stack.push_front(pd);
-   }
+    if ( !worked ) {
+        error( "Could not open include file ``" + filename_with_path + "''" );
+    }
+    else {
+        ParseData pd;
+        pd.d_filename   = filename_with_path;
+        pd.d_fstream    = fstream;
+        pd.d_linenumber = 1;
+        pd.d_cursor     = 1;
+        pd.d_nextcursor = 1;
+        d_parse_stack.push_front( pd );
+    }
 
-   return(worked ? true : false);
+    return ( worked ? true : false );
 }
 
 /*
@@ -286,9 +287,9 @@ bool Parser::pushIncludeFile(const std::string& filename)
 
 void Parser::popIncludeFile()
 {
-   Parser::ParseData& pd = d_parse_stack.front();
-   if (pd.d_fstream) fclose(pd.d_fstream);
-   d_parse_stack.pop_front();
+    Parser::ParseData &pd = d_parse_stack.front();
+    if ( pd.d_fstream ) fclose( pd.d_fstream );
+    d_parse_stack.pop_front();
 }
 
 /*
@@ -301,20 +302,18 @@ void Parser::popIncludeFile()
 *************************************************************************
 */
 
-int Parser::yyinput(char *buffer, const int max_size)
+int Parser::yyinput( char *buffer, const int max_size )
 {
-   int byte = 0;
-   if (comm.getRank() == 0) {
-      byte = fread(buffer, 1, max_size, d_parse_stack.front().d_fstream);
-   }
-   byte = comm.bcast(byte, 0);
-   if (byte > 0) {
-      comm.bcast(buffer, byte, 0);
-   }
-   return(byte);
+    int byte = 0;
+    if ( comm.getRank() == 0 ) {
+        byte = fread( buffer, 1, max_size, d_parse_stack.front().d_fstream );
+    }
+    byte = comm.bcast( byte, 0 );
+    if ( byte > 0 ) {
+        comm.bcast( buffer, byte, 0 );
+    }
+    return ( byte );
 }
 
 
 } // namespace AMP
-
-

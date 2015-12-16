@@ -12,37 +12,32 @@
 namespace AMP {
 namespace Operator {
 
-class ConvectiveHeatCoefficient  : public RobinPhysicsModel
- {
-    public :
-      
-      explicit ConvectiveHeatCoefficient(const AMP::shared_ptr<RobinPhysicsModelParameters>& params);
+class ConvectiveHeatCoefficient : public RobinPhysicsModel {
+public:
+    explicit ConvectiveHeatCoefficient(
+        const AMP::shared_ptr<RobinPhysicsModelParameters> &params );
 
-      virtual ~ConvectiveHeatCoefficient() {}
+    virtual ~ConvectiveHeatCoefficient() {}
 
-      void getConductance(std::vector<double> & beta,
-          std::vector<double> & gamma, 
-          const std::vector<std::vector <double> > &arguments);
+    void getConductance( std::vector<double> &beta,
+                         std::vector<double> &gamma,
+                         const std::vector<std::vector<double>> &arguments );
 
-      AMP::Materials::Material::shared_ptr getMaterial(){return d_material;}
-      AMP::Materials::PropertyPtr getProperty(){return d_property;}
+    AMP::Materials::Material::shared_ptr getMaterial() { return d_material; }
+    AMP::Materials::PropertyPtr getProperty() { return d_property; }
 
-    protected:
+protected:
+    AMP::Materials::Material::shared_ptr d_material;
 
-      AMP::Materials::Material::shared_ptr d_material;
+    AMP::Materials::PropertyPtr d_property;
 
-      AMP::Materials::PropertyPtr d_property;
+    std::vector<std::string> d_argNames;
 
-      std::vector<std::string> d_argNames;
-    
-      std::vector<double> d_defaults;
+    std::vector<double> d_defaults;
 
-    private:
-
- };
-
+private:
+};
 }
 }
 
 #endif
-

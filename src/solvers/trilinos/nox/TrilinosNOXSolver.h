@@ -8,10 +8,10 @@
 
 
 // Trilinos includes
+#include "NOX_Solver_Factory.H"
 #include "NOX_StatusTest_Combo.H"
 #include "NOX_Thyra.H"
 #include <NOX_Solver_Generic.H>
-#include "NOX_Solver_Factory.H"
 
 
 namespace AMP {
@@ -22,88 +22,91 @@ namespace Solver {
   * The TrilinosNOXSolver is a wrapper to the PETSc SNES solver which provides an implementation
   * of the inexact Newton method.
   */
-class TrilinosNOXSolver: public SolverStrategy{
+class TrilinosNOXSolver : public SolverStrategy {
 public:
-    
     /**
      * default constructor, sets default values for member variables
      */
     TrilinosNOXSolver();
-    
+
     /**
      * main constructor
      @param [in] parameters The parameters object
      contains a database objects containing the following fields:
-     
+
      1. type: string, name: SNESOptions, default value: "",
-     
-     2. type: bool, name: usesJacobian, default value: false, 
+
+     2. type: bool, name: usesJacobian, default value: false,
      acceptable values (true, false)
-     
-     3. name: MFFDDifferencingStrategy, type:string , default value: MATMFFD_WP, 
+
+     3. name: MFFDDifferencingStrategy, type:string , default value: MATMFFD_WP,
      acceptable values ()
-     
-     4. name: MFFDFunctionDifferencingError, type: double, default value: PETSC_DEFAULT, 
+
+     4. name: MFFDFunctionDifferencingError, type: double, default value: PETSC_DEFAULT,
      acceptable values ()
-     
-     5. name: maximumFunctionEvals, type: integer, default value: none 
+
+     5. name: maximumFunctionEvals, type: integer, default value: none
      acceptable values ()
-     
+
      6. name: absoluteTolerance, type: double, default value: none
      acceptable values ()
-     
+
      7. name: relativeTolerance, type: double, default value: none
      acceptable values ()
-     
+
      8. name: stepTolerance, type: double, default value: none
      acceptable values ()
-     
-     9. name: enableLineSearchPreCheck, type: bool, default value: FALSE 
+
+     9. name: enableLineSearchPreCheck, type: bool, default value: FALSE
      acceptable values ()
-     
-     10. name: numberOfLineSearchPreCheckAttempts, type: integer, default value: 5 
+
+     10. name: numberOfLineSearchPreCheckAttempts, type: integer, default value: 5
      acceptable values (non negative integer values)
-     
+
      11. name: enableMFFDBoundsCheck, type: bool, default value: FALSE
      acceptable values ()
-     
-     12. name: operatorComponentToEnableBoundsCheck, type: integer, default value: none 
+
+     12. name: operatorComponentToEnableBoundsCheck, type: integer, default value: none
      acceptable values ()
     */
-     explicit TrilinosNOXSolver(AMP::shared_ptr< TrilinosNOXSolverParameters> parameters);
+    explicit TrilinosNOXSolver( AMP::shared_ptr<TrilinosNOXSolverParameters> parameters );
 
-     /**
-      * Default destructor.
-      */
+    /**
+     * Default destructor.
+     */
     virtual ~TrilinosNOXSolver();
-    
+
     /**
     * Resets the solver internally with new parameters if necessary
     * @param parameters
     *        SolverStrategyParameters object that is NULL by default
     */
-    virtual void reset(AMP::shared_ptr<SolverStrategyParameters> parameters);
+    virtual void reset( AMP::shared_ptr<SolverStrategyParameters> parameters );
 
     /**
      * Solve the system \f$Au = 0\f$.
      * @param [in] f : shared pointer to right hand side vector
-     * @param [out] u : shared pointer to approximate computed solution 
+     * @param [out] u : shared pointer to approximate computed solution
      */
-    virtual void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector>  f,
-	       AMP::shared_ptr<AMP::LinearAlgebra::Vector>  u);
-    
+    virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                        AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                            u );
+
     /**
-     * Provide the initial guess for the solver. This is a pure virtual function that the derived classes
+     * Provide the initial guess for the solver. This is a pure virtual function that the derived
+     * classes
      * need to provide an implementation of.
      * @param [in] initialGuess: shared pointer to the initial guess vector.
      */
-    virtual void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) { d_initialGuess = initialGuess; }
-   
+    virtual void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess )
+    {
+        d_initialGuess = initialGuess;
+    }
+
 
 protected:
-
     void initialize( AMP::shared_ptr<SolverStrategyParameters> parameters );
-    
+
     AMP_MPI d_comm;
 
     AMP::LinearAlgebra::Vector::shared_ptr d_initialGuess;
@@ -112,12 +115,10 @@ protected:
 
     Teuchos::RCP<TrilinosThyraModelEvaluator> d_thyraModel;
     Teuchos::RCP<Teuchos::ParameterList> d_nlParams;
-    Teuchos::RCP<Thyra::PreconditionerBase<double> > d_precOp;
-    Teuchos::RCP< ::Thyra::LinearOpWithSolveFactoryBase<double> > d_lowsFactory;
+    Teuchos::RCP<Thyra::PreconditionerBase<double>> d_precOp;
+    Teuchos::RCP<::Thyra::LinearOpWithSolveFactoryBase<double>> d_lowsFactory;
     Teuchos::RCP<NOX::StatusTest::Combo> d_status;
-
 };
-  
 }
 }
 
