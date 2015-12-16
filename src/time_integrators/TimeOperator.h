@@ -179,7 +179,7 @@ public:
     AMP::shared_ptr<AMP::Operator::OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                   AMP::shared_ptr<AMP::Operator::OperatorParameters> params = NULL ) override;
+                   AMP::shared_ptr<AMP::Operator::OperatorParameters> params = nullptr ) override;
 
 protected:
     TimeOperator();

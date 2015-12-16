@@ -374,7 +374,7 @@ void libMesh::initialize()
             else
                 ghostBoundaryElements.insert( element );
             for ( unsigned int i = 0; i < element->n_sides(); i++ ) {
-                if ( element->neighbor( i ) == NULL ) {
+                if ( element->neighbor( i ) == nullptr ) {
                     ::AutoPtr<::Elem> side = element->build_side( i );
                     for ( unsigned int j = 0; j < side->n_nodes(); j++ ) {
                         ::Node *node = side->get_node( j );
@@ -540,7 +540,7 @@ void libMesh::initialize()
 size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
     AMP::shared_ptr<AMP::Database> database = params->getDatabase();
-    AMP_ASSERT( database.get() != NULL );
+    AMP_ASSERT( database.get() != nullptr );
     size_t NumberOfElements = 0;
     if ( database->keyExists( "NumberOfElements" ) ) {
         // User specified the number of elements, this should override everything
@@ -694,7 +694,7 @@ MeshIterator libMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
     AMP_ASSERT( type >= 0 && type <= GeomDim );
     AMP::shared_ptr<std::vector<MeshElement>> local = d_localSurfaceElements[type];
     AMP::shared_ptr<std::vector<MeshElement>> ghost = d_ghostSurfaceElements[type];
-    if ( local.get() == NULL || ghost.get() == NULL )
+    if ( local.get() == nullptr || ghost.get() == nullptr )
         AMP_ERROR( "Surface iterator over the given geometry type is not supported" );
     if ( gcw == 0 ) {
         return MultiVectorIterator( local, 0 );

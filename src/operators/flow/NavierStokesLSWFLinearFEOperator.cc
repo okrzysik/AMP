@@ -12,11 +12,11 @@ NavierStokesLSWFLinearFEOperator::NavierStokesLSWFLinearFEOperator(
     const AMP::shared_ptr<NavierStokesLinearFEOperatorParameters> &params )
     : LinearFEOperator( params )
 {
-    AMP_INSIST( ( ( params.get() ) != NULL ), "NULL parameter" );
+    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
 
     d_flowLSWFLinElem = AMP::dynamic_pointer_cast<NavierStokesLSWFLinearElement>( d_elemOp );
 
-    AMP_INSIST( ( ( d_flowLSWFLinElem.get() ) != NULL ),
+    AMP_INSIST( ( ( d_flowLSWFLinElem.get() ) != nullptr ),
                 "d_elemOp is not of type NavierStokesLSWFLinearElement" );
 
     d_transportModel = params->d_transportModel;
@@ -71,7 +71,7 @@ void NavierStokesLSWFLinearFEOperator::preAssembly(
     AMP::shared_ptr<NavierStokesLinearFEOperatorParameters> params =
         AMP::dynamic_pointer_cast<NavierStokesLinearFEOperatorParameters>( oparams );
 
-    if ( params->d_frozenVec.get() != NULL ) {
+    if ( params->d_frozenVec.get() != nullptr ) {
         d_inVec = mySubsetVector( params->d_frozenVec, d_inpVariables );
     }
     /*
@@ -113,7 +113,7 @@ void NavierStokesLSWFLinearFEOperator::preElementOperation( const AMP::Mesh::Mes
 
     for ( unsigned int r = 0; r < numNodesInCurrElem; r++ ) {
         for ( unsigned int d = 0; d < 10; d++ ) {
-            if ( d_inVec != NULL ) {
+            if ( d_inVec != nullptr ) {
                 elementInputVectors[( 10 * r ) + d] =
                     d_inVec->getValueByGlobalID( d_type0DofIndices[r][d] );
             } else {
@@ -195,7 +195,7 @@ AMP::LinearAlgebra::Vector::shared_ptr
 NavierStokesLSWFLinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                                   AMP::LinearAlgebra::Variable::shared_ptr var )
 {
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
             vec->select( meshSelector, var->getName() );

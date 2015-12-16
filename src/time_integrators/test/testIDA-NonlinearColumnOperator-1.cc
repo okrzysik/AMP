@@ -263,7 +263,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
         ida_db->getDatabase( "Preconditioner" );
     AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> columnPreconditionerParams(
         new AMP::Solver::SolverStrategyParameters( columnPreconditioner_db ) );
-    if ( columnPreconditionerParams.get() == NULL ) {
+    if ( columnPreconditionerParams.get() == nullptr ) {
         ut->failure( "Testing SolverStrategyParameters's constructor: FAIL" );
     } else {
         ut->passes( "Testing SolverStrategyParameters's constructor: PASS" );
@@ -283,7 +283,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     columnPreconditioner->append( linearThermalPreconditioner );
 
-    if ( columnPreconditioner.get() == NULL ) {
+    if ( columnPreconditioner.get() == nullptr ) {
         ut->failure( "Testing column preconditioner's constructor: FAIL" );
     } else {
         ut->passes( "Testing column preconditioner's constructor: PASS" );
@@ -294,7 +294,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
     AMP::shared_ptr<AMP::TimeIntegrator::IDATimeIntegratorParameters> time_Params(
         new AMP::TimeIntegrator::IDATimeIntegratorParameters( ida_db ) );
 
-    if ( ( time_Params.get() ) == NULL ) {
+    if ( ( time_Params.get() ) == nullptr ) {
         ut->failure( "Testing IDATimeIntegratorParameters' Constructor" );
     } else {
         ut->passes( "Testing IDATimeIntegratorParameters' Constructor" );
@@ -315,7 +315,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
     AMP::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(
         new AMP::TimeIntegrator::IDATimeIntegrator( time_Params ) );
 
-    if ( pIDATimeIntegrator.get() == NULL ) {
+    if ( pIDATimeIntegrator.get() == nullptr ) {
         ut->failure( "Testing IDATimeIntegrator's constructor" );
     } else {
         ut->passes( "Tested IDATimeIntegrator's constructor" );

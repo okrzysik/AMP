@@ -57,8 +57,8 @@ void NeumannVectorCorrection::reset( const AMP::shared_ptr<OperatorParameters> &
     AMP::shared_ptr<NeumannVectorCorrectionParameters> myparams =
         AMP::dynamic_pointer_cast<NeumannVectorCorrectionParameters>( params );
 
-    AMP_INSIST( ( ( myparams.get() ) != NULL ), "NULL parameters" );
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
+    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
 
     AMP_INSIST( ( myparams->d_db )->keyExists( "number_of_ids" ),
                 "Key ''number_of_ids'' is missing!" );
@@ -170,8 +170,8 @@ void NeumannVectorCorrection::addRHScorrection(
                     // Get the current libmesh element
                     const libMesh::FEBase *fe  = d_libmeshElements.getFEBase( bnd->globalID() );
                     const libMesh::QBase *rule = d_libmeshElements.getQBase( bnd->globalID() );
-                    AMP_ASSERT( fe != NULL );
-                    AMP_ASSERT( rule != NULL );
+                    AMP_ASSERT( fe != nullptr );
+                    AMP_ASSERT( rule != nullptr );
                     const unsigned int numGaussPts = rule->n_points();
 
                     const std::vector<std::vector<Real>> phi = fe->get_phi();
@@ -283,11 +283,11 @@ AMP::shared_ptr<OperatorParameters>
 void NeumannVectorCorrection::setFrozenVector( AMP::LinearAlgebra::Vector::shared_ptr f )
 {
     AMP::LinearAlgebra::Vector::shared_ptr f2 = f;
-    if ( d_Mesh.get() != NULL )
+    if ( d_Mesh.get() != nullptr )
         f2 = f->select( AMP::LinearAlgebra::VS_Mesh( d_Mesh ), f->getVariable()->getName() );
-    if ( f2 == NULL )
+    if ( f2 == nullptr )
         return;
-    if ( d_Frozen == NULL )
+    if ( d_Frozen == nullptr )
         d_Frozen = AMP::LinearAlgebra::MultiVector::create( "frozenMultiVec", d_Mesh->getComm() );
     d_Frozen->castTo<AMP::LinearAlgebra::MultiVector>().addVector( f2 );
 }
@@ -295,7 +295,7 @@ void NeumannVectorCorrection::setFrozenVector( AMP::LinearAlgebra::Vector::share
 
 void NeumannVectorCorrection::setVariableFlux( const AMP::LinearAlgebra::Vector::shared_ptr &flux )
 {
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
             flux->select( meshSelector, d_variable->getName() );

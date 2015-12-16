@@ -29,7 +29,7 @@ void PelletStackMechanicsSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra
                 ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED ) );
     AMP::shared_ptr<const AMP::LinearAlgebra::Vector> fInternal = f;
     if ( d_pelletStackOp->useScaling() ) {
-        if ( d_fbuffer1 == NULL ) {
+        if ( d_fbuffer1 == nullptr ) {
             d_fbuffer1 = f->cloneVector();
         }
         d_fbuffer1->copyVector( f );
@@ -47,7 +47,7 @@ void PelletStackMechanicsSolver::solveSerial( AMP::shared_ptr<const AMP::LinearA
                                               AMP::shared_ptr<AMP::LinearAlgebra::Vector>
                                                   u )
 {
-    if ( d_fbuffer2 == NULL ) {
+    if ( d_fbuffer2 == nullptr ) {
         d_fbuffer2 = f->cloneVector();
     }
 
@@ -60,9 +60,9 @@ void PelletStackMechanicsSolver::solveSerial( AMP::shared_ptr<const AMP::LinearA
             d_columnSolver->getSolver( locPellIdx );
         AMP::shared_ptr<AMP::Operator::Operator> currOp = currSolver->getOperator();
         AMP::LinearAlgebra::Vector::shared_ptr subUvec  = currOp->subsetInputVector( u );
-        AMP_ASSERT( subUvec != NULL );
+        AMP_ASSERT( subUvec != nullptr );
         AMP::LinearAlgebra::Vector::const_shared_ptr subFvec = currOp->subsetOutputVector( f );
-        AMP_ASSERT( subFvec != NULL );
+        AMP_ASSERT( subFvec != nullptr );
         currSolver->solve( subFvec, subUvec );
     }
 
@@ -79,10 +79,10 @@ void PelletStackMechanicsSolver::solveSerial( AMP::shared_ptr<const AMP::LinearA
                 d_columnSolver->getSolver( locPellIdx );
             AMP::shared_ptr<AMP::Operator::Operator> currOp = currSolver->getOperator();
             AMP::LinearAlgebra::Vector::shared_ptr subUvec  = currOp->subsetInputVector( u );
-            AMP_ASSERT( subUvec != NULL );
+            AMP_ASSERT( subUvec != nullptr );
             AMP::LinearAlgebra::Vector::shared_ptr subFvec =
                 currOp->subsetOutputVector( d_fbuffer2 );
-            AMP_ASSERT( subFvec != NULL );
+            AMP_ASSERT( subFvec != nullptr );
             currSolver->solve( subFvec, subUvec );
         }
     } // end for pellId
@@ -97,7 +97,7 @@ void PelletStackMechanicsSolver::solveScan( AMP::shared_ptr<const AMP::LinearAlg
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         d_pelletStackOp->apply( nullVec, u );
     } else {
-        if ( d_fbuffer2 == NULL ) {
+        if ( d_fbuffer2 == nullptr ) {
             d_fbuffer2 = f->cloneVector();
         }
         d_pelletStackOp->residual( f, u, d_fbuffer2 );

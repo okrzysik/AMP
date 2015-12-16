@@ -77,7 +77,7 @@ void calculateManufacturedSolution(
 
     AMP::Mesh::Mesh::shared_ptr bottomAdapter = meshAdapter->Subset( "Bottom" );
 
-    if ( bottomAdapter.get() != NULL ) {
+    if ( bottomAdapter.get() != nullptr ) {
         AMP::Mesh::MeshIterator el     = bottomAdapter->getIterator( AMP::Mesh::Volume, 0 );
         AMP::Mesh::MeshIterator end_el = el.end();
 
@@ -362,8 +362,8 @@ void myTest(
     createThermalOperators(
         input_db, manager, nonlinearThermalColumnOperator, linearThermalColumnOperator );
 
-    AMP_ASSERT( nonlinearThermalColumnOperator != NULL );
-    AMP_ASSERT( linearThermalColumnOperator != NULL );
+    AMP_ASSERT( nonlinearThermalColumnOperator != nullptr );
+    AMP_ASSERT( linearThermalColumnOperator != nullptr );
 
     AMP::LinearAlgebra::Variable::shared_ptr outputVar(
         new AMP::LinearAlgebra::Variable( "Temperature" ) );

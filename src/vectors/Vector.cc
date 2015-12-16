@@ -39,9 +39,9 @@ Vector::Vector( VectorParameters::shared_ptr parameters )
     // Set default output stream
     d_output_stream = &AMP::plog;
     // Copy the relavent parameters
-    AMP_INSIST( parameters->d_CommList.get() != NULL,
+    AMP_INSIST( parameters->d_CommList.get() != nullptr,
                 "d_CommList must be set in VectorParameters" );
-    AMP_INSIST( parameters->d_DOFManager.get() != NULL,
+    AMP_INSIST( parameters->d_DOFManager.get() != nullptr,
                 "d_DOFManager must be set in VectorParameters" );
     setCommunicationList( parameters->d_CommList );
     d_UpdateState.reset( new UpdateState );
@@ -67,7 +67,7 @@ Vector::shared_ptr Vector::selectInto( const VectorSelector &s )
     if ( s.isSelected( shared_from_this() ) ) {
         // Subset the vector
         subvector = s.subset( shared_from_this() );
-        if ( subvector != NULL ) {
+        if ( subvector != nullptr ) {
             // Check the global size of the new vector to make sure it is <= the current size
             size_t N1 = this->getGlobalSize();
             size_t N2 = subvector->getGlobalSize();
@@ -82,7 +82,7 @@ Vector::const_shared_ptr Vector::selectInto( const VectorSelector &s ) const
     if ( s.isSelected( shared_from_this() ) ) {
         // Subset the vector
         subvector = s.subset( shared_from_this() );
-        if ( subvector != NULL ) {
+        if ( subvector != nullptr ) {
             // Check the global size of the new vector to make sure it is <= the current size
             size_t N1 = this->getGlobalSize();
             size_t N2 = subvector->getGlobalSize();
@@ -99,8 +99,8 @@ Vector::shared_ptr Vector::select( const VectorSelector &s, const std::string &v
             return shared_from_this();
     }
     Vector::shared_ptr retVal = this->selectInto( s );
-    if ( retVal != NULL ) {
-        if ( AMP::dynamic_pointer_cast<MultiVector>( retVal ) == NULL )
+    if ( retVal != nullptr ) {
+        if ( AMP::dynamic_pointer_cast<MultiVector>( retVal ) == nullptr )
             retVal = MultiVector::view( retVal, retVal->getComm() );
         Variable::shared_ptr var( new Variable( variable_name ) );
         retVal->setVariable( var );
@@ -116,8 +116,8 @@ Vector::const_shared_ptr Vector::constSelect( const VectorSelector &s,
             return shared_from_this();
     }
     Vector::const_shared_ptr retVal = this->selectInto( s );
-    if ( retVal != NULL ) {
-        if ( AMP::dynamic_pointer_cast<const MultiVector>( retVal ) == NULL )
+    if ( retVal != nullptr ) {
+        if ( AMP::dynamic_pointer_cast<const MultiVector>( retVal ) == nullptr )
             retVal = MultiVector::view( retVal, retVal->getComm() );
         Variable::shared_ptr var( new Variable( variable_name ) );
         AMP::const_pointer_cast<Vector>( retVal )->setVariable( var );

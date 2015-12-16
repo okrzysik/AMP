@@ -8,9 +8,9 @@
 
 triangle_t::triangle_t( double const *A, double const *B, double const *C )
 {
-    edges_ptr[0] = NULL;
-    edges_ptr[1] = NULL;
-    edges_ptr[2] = NULL;
+    edges_ptr[0] = nullptr;
+    edges_ptr[1] = nullptr;
+    edges_ptr[2] = nullptr;
     set_support_points( A, B, C );
 }
 
@@ -117,10 +117,10 @@ edge_t *triangle_t::get_edge( unsigned int i )
 void triangle_t::clear_edges()
 {
     for ( unsigned int i = 0; i < 3; ++i ) {
-        if ( edges_ptr[i] != NULL ) {
+        if ( edges_ptr[i] != nullptr ) {
             delete edges_ptr[i];
         }
-        edges_ptr[i] = NULL;
+        edges_ptr[i] = nullptr;
     } // end for i
 }
 

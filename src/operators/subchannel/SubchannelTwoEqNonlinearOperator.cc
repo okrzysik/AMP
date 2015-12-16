@@ -39,8 +39,8 @@ void SubchannelTwoEqNonlinearOperator::reset( const AMP::shared_ptr<OperatorPara
 {
     AMP::shared_ptr<SubchannelOperatorParameters> myparams =
         AMP::dynamic_pointer_cast<SubchannelOperatorParameters>( params );
-    AMP_INSIST( ( ( myparams.get() ) != NULL ), "NULL parameters" );
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
+    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
     d_params = myparams;
 
     // Get the subchannel mesh coordinates
@@ -167,8 +167,8 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
         reset( d_params );
 
     // ensure that solution and residual vectors aren't NULL
-    AMP_INSIST( ( ( r.get() ) != NULL ), "NULL Residual Vector" );
-    AMP_INSIST( ( ( u.get() ) != NULL ), "NULL Solution Vector" );
+    AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL Residual Vector" );
+    AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Solution Vector" );
 
     // Constants
     const double pi = 4.0 * atan( 1.0 ); // pi

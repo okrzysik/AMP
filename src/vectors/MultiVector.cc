@@ -142,9 +142,9 @@ void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
     // Create a new multiDOFManager for the multivector
     std::vector<AMP::Discretization::DOFManager::shared_ptr> managers( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ ) {
-        AMP_ASSERT( d_vVectors[i].get() != NULL );
+        AMP_ASSERT( d_vVectors[i].get() != nullptr );
         managers[i] = d_vVectors[i]->getDOFManager();
-        AMP_INSIST( managers[i].get() != NULL,
+        AMP_INSIST( managers[i].get() != nullptr,
                     "All vectors must have a DOFManager for MultiVector to work properly" );
     }
     d_DOFManager = AMP::Discretization::DOFManager::shared_ptr(
@@ -167,7 +167,7 @@ void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
 }
 void MultiVector::addVectorHelper( Vector::shared_ptr vec )
 {
-    if ( vec.get() == NULL )
+    if ( vec.get() == nullptr )
         return;
     auto id = vec->getDataID();
     if ( id == 0 ) {
@@ -183,7 +183,7 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
                     vec->castTo<ManagedVector>().getVectorEngine() );
             }
         }
-        if ( multivec.get() != NULL ) {
+        if ( multivec.get() != nullptr ) {
             for ( size_t i = 0; i != multivec->getNumberOfSubvectors(); i++ )
                 addVectorHelper( multivec->getVector( i ) );
         } else {
@@ -220,14 +220,14 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
     // Append the variable if we have a multivariable
     AMP::shared_ptr<MultiVariable> multiVar =
         AMP::dynamic_pointer_cast<MultiVariable>( d_pVariable );
-    if ( multiVar != NULL )
+    if ( multiVar != nullptr )
         multiVar->add( vec->getVariable() );
 }
 void MultiVector::eraseVector( Vector::shared_ptr ) { AMP_ERROR( "Needs to be fixed" ); }
 void MultiVector::replaceSubVector( Vector::shared_ptr oldVec, Vector::shared_ptr newVec )
 {
-    AMP_ASSERT( oldVec.get() != NULL );
-    AMP_ASSERT( newVec.get() != NULL );
+    AMP_ASSERT( oldVec.get() != nullptr );
+    AMP_ASSERT( newVec.get() != nullptr );
     AMP_INSIST( oldVec->getDOFManager() == newVec->getDOFManager(),
                 "oldVec and newVec must chare the same DOFManager" );
     int pos = -1;
@@ -252,8 +252,8 @@ Vector::shared_ptr MultiVector::selectInto( const VectorSelector &s )
     for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
         // Subset the individual vector
         Vector::shared_ptr retVec2 = d_vVectors[i]->selectInto( s );
-        AMP_ASSERT( AMP::dynamic_pointer_cast<MultiVector>( retVec2 ) == NULL );
-        if ( retVec2 != NULL ) {
+        AMP_ASSERT( AMP::dynamic_pointer_cast<MultiVector>( retVec2 ) == nullptr );
+        if ( retVec2 != nullptr ) {
             if ( retVec2->getDOFManager()->numGlobalDOF() > 0 )
                 subvectors.push_back( retVec2 );
         }
@@ -272,8 +272,8 @@ Vector::const_shared_ptr MultiVector::selectInto( const VectorSelector &s ) cons
     for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
         // Subset the individual vector
         Vector::const_shared_ptr retVec2 = d_vVectors[i]->selectInto( s );
-        AMP_ASSERT( AMP::dynamic_pointer_cast<const MultiVector>( retVec2 ) == NULL );
-        if ( retVec2 != NULL ) {
+        AMP_ASSERT( AMP::dynamic_pointer_cast<const MultiVector>( retVec2 ) == nullptr );
+        if ( retVec2 != nullptr ) {
             if ( retVec2->getDOFManager()->numGlobalDOF() > 0 )
                 subvectors.push_back( retVec2 );
         }
@@ -542,7 +542,7 @@ void *MultiVector::getRawDataBlockAsVoid( size_t i )
                                                            d_vVectors[j]->numberOfDataBlocks() );
         }
     }
-    return 0;
+    return nullptr;
 }
 const void *MultiVector::getRawDataBlockAsVoid( size_t i ) const
 {
@@ -554,7 +554,7 @@ const void *MultiVector::getRawDataBlockAsVoid( size_t i ) const
                                                            d_vVectors[j]->numberOfDataBlocks() );
         }
     }
-    return 0;
+    return nullptr;
 }
 const void *MultiVector::getDataBlock( size_t i ) const { return getRawDataBlockAsVoid( i ); }
 void *MultiVector::getDataBlock( size_t i ) { return getRawDataBlockAsVoid( i ); }
@@ -606,7 +606,7 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( const Variable::shared_
     /* A variable used to contain a mesh and a name, now it only contains a name
      * as a result we need to subset for the variable name (there may be many)
      * and then create a new multivector if necessary */
-    AMP_ASSERT( name.get() != NULL );
+    AMP_ASSERT( name.get() != nullptr );
 
     // Check if the variable matches the variable of the multivector
     if ( *d_pVariable == *name ) {
@@ -617,7 +617,7 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( const Variable::shared_
     std::vector<Vector::shared_ptr> subvectors;
     for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
         Vector::shared_ptr subset = d_vVectors[i]->subsetVectorForVariable( name );
-        if ( subset.get() != NULL )
+        if ( subset.get() != nullptr )
             subvectors.push_back( subset );
     }
 
@@ -626,7 +626,7 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( const Variable::shared_
     if ( comm.sumReduce( subvectors.size() ) == 0 ) {
         AMP::shared_ptr<MultiVariable> multivariable =
             AMP::dynamic_pointer_cast<MultiVariable>( name );
-        if ( multivariable.get() != NULL ) {
+        if ( multivariable.get() != nullptr ) {
             bool all_found = true;
             std::vector<Vector::shared_ptr> sub_subvectors( multivariable->numVariables() );
             for ( size_t i = 0; i != multivariable->numVariables(); i++ ) {
@@ -715,7 +715,7 @@ void MultiVector::setUpdateStatus( UpdateState state )
 void MultiVector::copyVector( Vector::const_shared_ptr src )
 {
     AMP::shared_ptr<const MultiVector> rhs = AMP::dynamic_pointer_cast<const MultiVector>( src );
-    if ( rhs.get() != NULL ) {
+    if ( rhs.get() != nullptr ) {
         // We are dealing with 2 multivectors
         AMP_ASSERT( rhs->d_vVectors.size() == d_vVectors.size() );
         for ( size_t i = 0; i != d_vVectors.size(); i++ )
@@ -971,7 +971,7 @@ void MultiVector::partitionGlobalValues( const int num,
         globalDOFs[i] = indices[i];
     out_indices.resize( d_vVectors.size() );
     out_vals.resize( d_vVectors.size() );
-    if ( remap != NULL )
+    if ( remap != nullptr )
         remap->resize( d_vVectors.size() );
     AMP::Discretization::multiDOFManager *manager =
         (AMP::Discretization::multiDOFManager *) d_DOFManager.get();
@@ -988,14 +988,14 @@ void MultiVector::partitionGlobalValues( const int num,
         }
         out_indices[i] = std::vector<size_t>( count, neg_one );
         out_vals[i]    = std::vector<double>( count, 0.0 );
-        if ( remap != NULL )
+        if ( remap != nullptr )
             remap->operator[]( i ) = std::vector<int>( count, -1 );
         count                      = 0;
         for ( size_t j = 0; j < subDOFs.size(); j++ ) {
             if ( subDOFs[j] != neg_one ) {
                 out_indices[i][count] = subDOFs[j];
                 out_vals[i][count]    = vals[j];
-                if ( remap != NULL )
+                if ( remap != nullptr )
                     remap->operator[]( i )[count] = j;
                 count++;
             }

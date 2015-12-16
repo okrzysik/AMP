@@ -586,7 +586,7 @@ void BoxMesh::initialize()
             bool interior_element = true;
             structuredMeshElement *elem =
                 dynamic_cast<structuredMeshElement *>( iterator->getRawElement() );
-            AMP_ASSERT( elem != NULL );
+            AMP_ASSERT( elem != nullptr );
             MeshElementIndex index = elem->d_index;
             for ( int d = 0; d < PhysicalDim; d++ ) {
                 // If we are outside or on the +boundary, we are not an interior element
@@ -604,7 +604,7 @@ void BoxMesh::initialize()
                 // Loop through the current elements
                 for ( size_t j = 0; j < elements.size(); j++ ) {
                     elem = dynamic_cast<structuredMeshElement *>( elements[j].getRawElement() );
-                    AMP_ASSERT( elem != NULL );
+                    AMP_ASSERT( elem != nullptr );
                     index = elem->d_index;
                     // Check if the current element exists in the list of elements so far
                     bool found = false;
@@ -640,7 +640,7 @@ void BoxMesh::initialize()
     for ( size_t i = 0; i < nodeIterator.size(); i++ ) {
         MeshElement *elem_ptr          = nodeIterator->getRawElement();
         structuredMeshElement *element = dynamic_cast<structuredMeshElement *>( elem_ptr );
-        AMP_ASSERT( element != NULL );
+        AMP_ASSERT( element != nullptr );
         MeshElementIndex index = element->d_index;
         AMP_ASSERT( index.type == 0 );
         d_index[i] = index;
@@ -847,7 +847,7 @@ std::vector<MeshElement> BoxMesh::getElementParents( const MeshElement &meshelem
     // Get the element of interest
     const structuredMeshElement *elem =
         dynamic_cast<const structuredMeshElement *>( meshelem.getRawElement() );
-    AMP_ASSERT( elem != NULL );
+    AMP_ASSERT( elem != nullptr );
     return elem->getParents( type );
 }
 

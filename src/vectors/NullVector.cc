@@ -161,10 +161,10 @@ size_t NullVector::numberOfDataBlocks() const { return 0; }
 size_t NullVector::sizeOfDataBlock( size_t ) const { return 0; }
 
 
-void *NullVector::getRawDataBlockAsVoid( size_t ) { return 0; }
+void *NullVector::getRawDataBlockAsVoid( size_t ) { return nullptr; }
 
 
-const void *NullVector::getRawDataBlockAsVoid( size_t ) const { return 0; }
+const void *NullVector::getRawDataBlockAsVoid( size_t ) const { return nullptr; }
 
 
 /// \endcond

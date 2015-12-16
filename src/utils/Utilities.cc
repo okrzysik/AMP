@@ -339,7 +339,7 @@ std::string print_address( void *address )
 std::string remove_path( const std::string &var )
 {
     const char *tmp = std::max( strrchr( var.c_str(), 47 ), strrchr( var.c_str(), 92 ) );
-    if ( tmp == 0 )
+    if ( tmp == nullptr )
         tmp = var.c_str();
     else
         tmp++;
@@ -353,7 +353,7 @@ std::vector<std::string> Utilities::getCallStack()
     memset( trace, 0, 100 * sizeof( void * ) );
     Dl_info dlinfo;
     const char *symname;
-    char *demangled = NULL;
+    char *demangled = nullptr;
     int trace_size  = backtrace( trace, 100 );
     char **names    = backtrace_symbols( trace, 100 );
     for ( int i = 0; i < trace_size; ++i ) {
@@ -362,13 +362,13 @@ std::vector<std::string> Utilities::getCallStack()
         symname = dlinfo.dli_sname;
 #if defined( USE_ABI )
         int status = 0;
-        demangled  = abi::__cxa_demangle( symname, NULL, 0, &status );
+        demangled  = abi::__cxa_demangle( symname, nullptr, nullptr, &status );
         if ( status == 0 && demangled )
             symname = demangled;
 #endif
         std::string object   = std::string( dlinfo.dli_fname );
         std::string function = "";
-        if ( symname != NULL )
+        if ( symname != nullptr )
             function = std::string( symname );
         // Create the stack item
         object                 = remove_path( object );
@@ -377,9 +377,9 @@ std::vector<std::string> Utilities::getCallStack()
             stack_item.push_back( ' ' );
         stack_item += function;
         stack_list.push_back( stack_item );
-        if ( demangled != NULL ) {
+        if ( demangled != nullptr ) {
             free( demangled );
-            demangled = NULL;
+            demangled = nullptr;
         }
     }
     free( names );
@@ -504,22 +504,22 @@ int Utilities::get_symbols( std::vector<void *> &address,
         char cmd[1024];
         sprintf( cmd, "nm --demangle --numeric-sort %s", buf );
         FILE *in = popen( cmd, "r" );
-        if ( in == NULL ) {
+        if ( in == nullptr ) {
             delete[] buf;
             return -2;
         }
-        while ( fgets( buf, 0xFFFFF, in ) != NULL ) {
-            if ( buf[0] == ' ' || buf == NULL )
+        while ( fgets( buf, 0xFFFFF, in ) != nullptr ) {
+            if ( buf[0] == ' ' || buf == nullptr )
                 continue;
             char *a = buf;
             char *b = strchr( a, ' ' );
-            if ( b == NULL ) {
+            if ( b == nullptr ) {
                 continue;
             }
             b[0] = 0;
             b++;
             char *c = strchr( b, ' ' );
-            if ( c == NULL ) {
+            if ( c == nullptr ) {
                 continue;
             }
             c[0] = 0;
@@ -528,7 +528,7 @@ int Utilities::get_symbols( std::vector<void *> &address,
             if ( d ) {
                 d[0] = 0;
             }
-            size_t add = strtoul( a, NULL, 16 );
+            size_t add = strtoul( a, nullptr, 16 );
             address.push_back( reinterpret_cast<void *>( add ) );
             type.push_back( b[0] );
             obj.push_back( std::string( c ) );
@@ -568,17 +568,17 @@ double Utilities::tick()
 double Utilities::time()
 {
     timeval current_time;
-    gettimeofday( &current_time, NULL );
+    gettimeofday( &current_time, nullptr );
     double time = ( (double) current_time.tv_sec ) + 1e-6 * ( (double) current_time.tv_usec );
     return time;
 }
 double Utilities::tick()
 {
     timeval start, end;
-    gettimeofday( &start, NULL );
-    gettimeofday( &end, NULL );
+    gettimeofday( &start, nullptr );
+    gettimeofday( &end, nullptr );
     while ( end.tv_sec == start.tv_sec && end.tv_usec == start.tv_usec )
-        gettimeofday( &end, NULL );
+        gettimeofday( &end, nullptr );
     double resolution = ( (double) ( end.tv_sec - start.tv_sec ) ) +
                         1e-6 * ( (double) ( end.tv_usec - start.tv_usec ) );
     return resolution;

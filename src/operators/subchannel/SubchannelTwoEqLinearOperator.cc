@@ -44,8 +44,8 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
     AMP::shared_ptr<SubchannelOperatorParameters> myparams =
         AMP::dynamic_pointer_cast<SubchannelOperatorParameters>( params );
 
-    AMP_INSIST( ( ( myparams.get() ) != NULL ), "NULL parameters" );
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
+    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
 
     d_params = myparams;
 
@@ -161,7 +161,7 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
 
     // check to ensure frozen vector isn't null
     d_frozenVec = myparams->d_frozenSolution;
-    AMP_INSIST( d_frozenVec.get() != NULL, "Null Frozen Vector inside Jacobian" );
+    AMP_INSIST( d_frozenVec.get() != nullptr, "Null Frozen Vector inside Jacobian" );
     AMP::shared_ptr<AMP::Discretization::DOFManager> dofMap =
         myparams->d_frozenSolution->getDOFManager();
 

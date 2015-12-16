@@ -53,7 +53,7 @@ void myTest( AMP::UnitTest *ut, std::string input_file )
 
     // Create the matrix
     AMP::LinearAlgebra::Matrix::shared_ptr mat1 = AMP::LinearAlgebra::createMatrix( inVec, outVec );
-    if ( mat1.get() != NULL ) {
+    if ( mat1.get() != nullptr ) {
         ut->passes( "Able to create a non-square matrices" );
     } else {
         ut->failure( "Unable to create a non-square matrices" );
@@ -71,7 +71,7 @@ void myTest( AMP::UnitTest *ut, std::string input_file )
     // Create the matrix
     AMP::LinearAlgebra::Matrix::shared_ptr mat2 =
         AMP::LinearAlgebra::createMatrix( multiVarVec, multiVarVec );
-    if ( mat2.get() != NULL ) {
+    if ( mat2.get() != nullptr ) {
         ut->passes( "Able to create a mutli-var matrices" );
     } else {
         ut->failure( "Unable to create a multi-var matrices" );

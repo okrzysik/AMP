@@ -92,13 +92,13 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     AMP::LinearAlgebra::VS_Stride zSelector( 2, 3 );
     AMP::LinearAlgebra::Vector::shared_ptr vec_meshSubset =
         position->select( meshSelector, "mesh subset" );
-    AMP_ASSERT( vec_meshSubset.get() != NULL );
+    AMP_ASSERT( vec_meshSubset.get() != nullptr );
     AMP::LinearAlgebra::Vector::shared_ptr z_surface =
         vec_meshSubset->select( zSelector, "z surface" );
-    AMP_ASSERT( z_surface.get() != NULL );
+    AMP_ASSERT( z_surface.get() != nullptr );
     AMP::Mesh::Mesh::shared_ptr clad = mesh->Subset( "clad" );
     AMP::LinearAlgebra::Vector::shared_ptr cladPosition;
-    if ( clad.get() != NULL ) {
+    if ( clad.get() != nullptr ) {
         clad->setName( "clad" );
         AMP::LinearAlgebra::VS_Mesh cladMeshSelector( clad );
         cladPosition = position->select( cladMeshSelector, "cladPosition" );
@@ -117,7 +117,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     siloWriter->registerVector( gauss_pt, mesh, AMP::Mesh::Volume, "gauss_pnt" );
     siloWriter->registerVector( id_vec, submesh, AMP::Mesh::Face, "surface_ids" );
     // Register a vector over the clad
-    if ( clad.get() != NULL )
+    if ( clad.get() != nullptr )
         siloWriter->registerVector( cladPosition, clad, AMP::Mesh::Vertex, "clad_position" );
 #endif
     globalComm.barrier();

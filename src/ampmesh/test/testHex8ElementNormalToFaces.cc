@@ -71,7 +71,7 @@ void test_recovering_local_coordinates_on_face_from_basis_functions_values(
 }
 
 unsigned int perform_battery_of_tests( hex8_element_t *volume_element,
-                                       double const *normal_to_faces          = NULL,
+                                       double const *normal_to_faces          = nullptr,
                                        unsigned int n_random_candidate_points = 1000,
                                        double tolerance                       = 1.0e-12 )
 {
@@ -86,7 +86,7 @@ unsigned int perform_battery_of_tests( hex8_element_t *volume_element,
         for ( unsigned int f = 0; f < 6; ++f ) {
             volume_element->compute_normal_to_face(
                 f, local_coordinates_on_face, computed_normal_vector );
-            if ( normal_to_faces != NULL ) {
+            if ( normal_to_faces != nullptr ) {
                 //        std::transform(computed_normal_vector, computed_normal_vector+3,
                 //        normal_to_faces+3*f,
                 //        error_vector, std::minus<double>());

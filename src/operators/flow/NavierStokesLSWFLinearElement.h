@@ -19,7 +19,7 @@ class NavierStokesLSWFLinearElement : public FlowElement
 public:
     explicit NavierStokesLSWFLinearElement(
         const AMP::shared_ptr<ElementOperationParameters> &params )
-        : FlowElement( params ), d_elementStiffnessMatrix( NULL )
+        : FlowElement( params ), d_elementStiffnessMatrix( nullptr )
     {
         d_JxW     = &( d_fe->get_JxW() );
         d_dphi    = &( d_fe->get_dphi() );

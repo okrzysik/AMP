@@ -35,12 +35,12 @@ static inline void checkErr( PetscErrorCode ierr )
 PetscKrylovSolver::PetscKrylovSolver()
 {
     d_bKSPCreatedInternally = false;
-    d_KrylovSolver          = NULL;
+    d_KrylovSolver          = nullptr;
 }
 PetscKrylovSolver::PetscKrylovSolver( AMP::shared_ptr<PetscKrylovSolverParameters> parameters )
     : SolverStrategy( parameters )
 {
-    assert( parameters.get() != NULL );
+    assert( parameters.get() != nullptr );
 
     // Create a default KrylovSolver
     d_bKSPCreatedInternally = true;
@@ -75,7 +75,7 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
 {
     AMP::shared_ptr<PetscKrylovSolverParameters> parameters =
         AMP::dynamic_pointer_cast<PetscKrylovSolverParameters>( params );
-    AMP_ASSERT( parameters.get() != NULL );
+    AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
 
@@ -100,7 +100,7 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
     if ( d_bUsesPreconditioner ) {
         if ( d_sPcType != "shell" ) {
             // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
-            assert( d_pPreconditioner.get() == NULL );
+            assert( d_pPreconditioner.get() == nullptr );
             PCSetType( pc, d_sPcType.c_str() );
         } else {
             // for a shell preconditioner the user context is set to an instance of this class
@@ -145,13 +145,13 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
     if ( d_bKSPCreatedInternally ) {
         checkErr( KSPSetFromOptions( d_KrylovSolver ) );
     }
-    if ( d_PetscMonitor.get() != NULL ) {
+    if ( d_PetscMonitor.get() != nullptr ) {
         // Add the monitor
         checkErr( KSPMonitorSet(
             d_KrylovSolver, PetscMonitor::monitorKSP, d_PetscMonitor.get(), PETSC_NULL ) );
     }
     // in this case we make the assumption we can access a PetscMat for now
-    if ( d_pOperator.get() != NULL ) {
+    if ( d_pOperator.get() != nullptr ) {
         registerOperator( d_pOperator );
     }
 }
@@ -253,7 +253,7 @@ void PetscKrylovSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
     if ( d_bUsesPreconditioner ) {
         if ( d_sPcType != "shell" ) {
             // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
-            assert( d_pPreconditioner.get() == NULL );
+            assert( d_pPreconditioner.get() == nullptr );
             PCSetType( pc, d_sPcType.c_str() );
         } else {
             // for a shell preconditioner the user context is set to an instance of this class
@@ -277,7 +277,7 @@ void PetscKrylovSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
     } else {
         checkErr( PCSetType( pc, PCNONE ) );
     }
-    if ( d_pOperator.get() != NULL ) {
+    if ( d_pOperator.get() != nullptr ) {
         registerOperator( d_pOperator );
     }
 
@@ -322,17 +322,17 @@ void PetscKrylovSolver::setKrylovSolver( KSP *ksp )
 void PetscKrylovSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
 {
     // in this case we make the assumption we can access a PetscMat for now
-    assert( op.get() != NULL );
+    assert( op.get() != nullptr );
 
     d_pOperator = op;
 
     AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
-    assert( linearOperator.get() != NULL );
+    assert( linearOperator.get() != nullptr );
 
     AMP::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix =
         AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>( linearOperator->getMatrix() );
-    assert( pMatrix.get() != NULL );
+    assert( pMatrix.get() != nullptr );
 
     Mat mat;
     mat = pMatrix->getMat();
@@ -342,16 +342,16 @@ void PetscKrylovSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::O
 void PetscKrylovSolver::resetOperator(
     const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
-    if ( d_pOperator.get() != NULL ) {
+    if ( d_pOperator.get() != nullptr ) {
         d_pOperator->reset( params );
         AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
             AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-        assert( linearOperator.get() != NULL );
+        assert( linearOperator.get() != nullptr );
 
         AMP::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix =
             AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(
                 linearOperator->getMatrix() );
-        assert( pMatrix.get() != NULL );
+        assert( pMatrix.get() != nullptr );
 
         Mat mat;
         mat = pMatrix->getMat();
@@ -363,7 +363,7 @@ void PetscKrylovSolver::resetOperator(
     // should add a mechanism for the linear operator to provide updated parameters for the
     // preconditioner operator
     // though it's unclear where this might be necessary
-    if ( d_pPreconditioner.get() != NULL ) {
+    if ( d_pPreconditioner.get() != nullptr ) {
         d_pPreconditioner->resetOperator( params );
     }
 }
@@ -383,7 +383,7 @@ int PetscKrylovSolver::setupPreconditioner( void * )
 PetscErrorCode PetscKrylovSolver::setupPreconditioner( PC pc )
 {
     int ierr  = 0;
-    void *ctx = NULL;
+    void *ctx = nullptr;
     ierr      = PCShellGetContext( pc, &ctx );
     return ierr;
 }
@@ -408,7 +408,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     void *ctx;
     PCShellGetContext( pc, &ctx );
 #endif
-    AMP_ASSERT( ctx != NULL );
+    AMP_ASSERT( ctx != nullptr );
 
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> sp_r(
         reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( r->data ),
@@ -437,7 +437,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     // Call the preconditioner
     AMP::shared_ptr<AMP::Solver::SolverStrategy> preconditioner =
         ( (PetscKrylovSolver *) ctx )->getPreconditioner();
-    if ( preconditioner != NULL ) {
+    if ( preconditioner != nullptr ) {
         preconditioner->solve( sp_r, sp_z );
     } else {
         // Use the identity preconditioner

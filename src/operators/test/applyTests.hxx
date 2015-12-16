@@ -44,7 +44,7 @@ void applyTests(AMP::UnitTest *ut, std::string msgPrefix,
     AMP::LinearAlgebra::Vector::shared_ptr resVec, const double *shift, const double *scale, const size_t nshift)
 {
   AMP::LinearAlgebra::Variable::shared_ptr testOperatorVariable = testOperator->getOutputVariable();
-  AMP_ASSERT(testOperatorVariable.get()!=NULL);
+  AMP_ASSERT(testOperatorVariable.get()!=nullptr);
   // first test for apply - random values in all three input vectors
   AMP::pout<<"ApplyTest #1"<<std::endl; 
   bool passed = true;

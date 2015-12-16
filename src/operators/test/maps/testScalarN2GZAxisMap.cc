@@ -36,7 +36,7 @@ void setBoundary( int id,
                   AMP::LinearAlgebra::Vector::shared_ptr &v1,
                   AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    if ( mesh.get() == NULL )
+    if ( mesh.get() == nullptr )
         return;
 
     AMP::Discretization::DOFManager::shared_ptr d1 = v1->getDOFManager();
@@ -57,7 +57,7 @@ void setGpBoundary( int id,
                     AMP::LinearAlgebra::Vector::shared_ptr &v1,
                     AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    if ( mesh.get() == NULL )
+    if ( mesh.get() == nullptr )
         return;
 
     libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );

@@ -22,13 +22,13 @@ ScalarZAxisMap::ScalarZAxisMap( const AMP::shared_ptr<AMP::Operator::OperatorPar
     AMP_INSIST( DofsPerObj == 1, "ScalarZAxis is currently only designed for 1 DOF per node" );
 
     // Create the element iterators
-    if ( d_mesh1.get() != NULL ) {
+    if ( d_mesh1.get() != nullptr ) {
         d_srcIterator1 =
             d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
         d_dstIterator1 =
             d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
     }
-    if ( d_mesh2.get() != NULL ) {
+    if ( d_mesh2.get() != nullptr ) {
         d_srcIterator2 =
             d_mesh2->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID2, 0 );
         d_dstIterator2 =

@@ -64,7 +64,7 @@ PowerShape::~PowerShape() {}
  */
 void PowerShape::reset( const AMP::shared_ptr<OperatorParameters> &parameters )
 {
-    AMP_ASSERT( parameters.get() != NULL );
+    AMP_ASSERT( parameters.get() != nullptr );
     d_db = parameters->d_db;
 
     if ( d_coordinateSystem == "cartesian" ) {
@@ -352,8 +352,8 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr r )
 {
 
-    AMP_INSIST( ( ( u.get() ) != NULL ), "NULL Power Vector" );
-    AMP_INSIST( ( ( r.get() ) != NULL ), "NULL PowerWithShape Vector" );
+    AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Power Vector" );
+    AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL PowerWithShape Vector" );
 
     const double PI = 4.0 * atan( 1.0 );
     double x, y, z;
@@ -901,10 +901,10 @@ void PowerShape::destroyCurrentLibMeshElement()
 {
     for ( unsigned int j = 0; j < d_currElemPtr->n_nodes(); j++ ) {
         delete ( d_currElemPtr->get_node( j ) );
-        d_currElemPtr->set_node( j ) = NULL;
+        d_currElemPtr->set_node( j ) = nullptr;
     } // end for j
     delete d_currElemPtr;
-    d_currElemPtr = NULL;
+    d_currElemPtr = nullptr;
 }
 
 /*!

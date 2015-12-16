@@ -63,21 +63,21 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
     // Destroy the existing libmesh elements
     for ( size_t i = 0; i < d_base_element.size(); i++ ) {
         delete d_base_element[i];
-        d_base_element[i] = NULL;
+        d_base_element[i] = nullptr;
     }
     d_base_element.resize( 0 );
     for ( size_t i = 0; i < d_rule_element.size(); i++ ) {
         delete d_rule_element[i];
-        d_rule_element[i] = NULL;
+        d_rule_element[i] = nullptr;
     }
     d_rule_element.resize( 0 );
     for ( size_t i = 0; i < d_elements.size(); i++ ) {
         for ( size_t j = 0; j < d_elements[i]->n_nodes(); j++ ) {
             delete d_elements[i]->get_node( j );
-            d_elements[i]->set_node( j ) = NULL;
+            d_elements[i]->set_node( j ) = nullptr;
         }
         delete d_elements[i];
-        d_elements[i] = NULL;
+        d_elements[i] = nullptr;
     }
     d_ids.resize( 0 );
     d_index.resize( 0 );
@@ -91,7 +91,7 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
     d_qorder                         = qorder;
     d_type                           = type;
     AMP::Mesh::MeshIterator iterator = iterator_in.begin();
-    if ( d_type != NULL && iterator.size() > 0 ) {
+    if ( d_type != nullptr && iterator.size() > 0 ) {
         int dim = (int) iterator->elementType();
         d_rule.reset( libMesh::QBase::build( d_qtype, dim, d_qorder ).release() );
         d_base.reset( libMesh::FEBase::build( dim, *d_type ).release() );
@@ -99,15 +99,15 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
     }
     const size_t N = iterator.size();
     d_ids.resize( N );
-    std::vector<libMesh::Elem *> elements( N, NULL );
-    std::vector<libMesh::FEBase *> base( N, NULL );
-    std::vector<libMesh::QBase *> rule( N, NULL );
+    std::vector<libMesh::Elem *> elements( N, nullptr );
+    std::vector<libMesh::FEBase *> base( N, nullptr );
+    std::vector<libMesh::QBase *> rule( N, nullptr );
     for ( size_t i = 0; i < N; ++i, ++iterator ) {
         d_ids[i] = iterator->globalID();
         // Create the libmesh element
         elements[i] = createLibmeshElements::createElement( *iterator );
         // Create the libmesh QBase and FEBase for the element
-        if ( d_type != NULL && cache_fe ) {
+        if ( d_type != nullptr && cache_fe ) {
             int dim = (int) iterator->elementType();
             rule[i] = libMesh::QBase::build( d_qtype, dim, d_qorder ).release();
             base[i] = libMesh::FEBase::build( dim, *d_type ).release();
@@ -120,11 +120,11 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
     for ( size_t i = 0; i < N; i++ )
         d_index[i] = i;
     AMP::Utilities::quicksort( d_ids, d_index );
-    d_elements.resize( N, NULL );
+    d_elements.resize( N, nullptr );
     for ( size_t i    = 0; i < N; i++ )
         d_elements[i] = elements[d_index[i]];
     if ( !d_base_element.empty() ) {
-        d_base_element.resize( N, NULL );
+        d_base_element.resize( N, nullptr );
         d_rule_element.resize( N );
         for ( size_t i        = 0; i < N; i++ )
             d_base_element[i] = base[d_index[i]];
@@ -140,7 +140,7 @@ libMesh::Elem *createLibmeshElements::createElement( const AMP::Mesh::MeshElemen
 {
     int dim                                   = (int) elem.elementType();
     std::vector<AMP::Mesh::MeshElement> nodes = elem.getElements( AMP::Mesh::Vertex );
-    libMesh::Elem *element                    = NULL;
+    libMesh::Elem *element                    = nullptr;
     // Create the libmesh element
     if ( dim == 3 && nodes.size() == 8 ) {
         // We are dealing with a hex8 element
@@ -186,8 +186,8 @@ const libMesh::Elem *createLibmeshElements::getElement( const AMP::Mesh::MeshEle
 const libMesh::FEBase *createLibmeshElements::getFEBase( const AMP::Mesh::MeshElementID &id ) const
 {
     PROFILE_START( "getFEBase", 2 );
-    const libMesh::FEBase *result = NULL;
-    if ( d_base != NULL ) {
+    const libMesh::FEBase *result = nullptr;
+    if ( d_base != nullptr ) {
         size_t index = AMP::Utilities::findfirst( d_ids, id );
         index        = std::min<size_t>( index, d_ids.size() - 1 );
         AMP_INSIST( d_ids[index] == id, "Desired element was not found" );
@@ -211,8 +211,8 @@ const libMesh::FEBase *createLibmeshElements::getFEBase( const AMP::Mesh::MeshEl
 const libMesh::QBase *createLibmeshElements::getQBase( const AMP::Mesh::MeshElementID &id ) const
 {
     PROFILE_START( "getQBase", 2 );
-    const libMesh::QBase *result = NULL;
-    if ( d_rule != NULL ) {
+    const libMesh::QBase *result = nullptr;
+    if ( d_rule != nullptr ) {
         size_t index = AMP::Utilities::findfirst( d_ids, id );
         index        = std::min<size_t>( index, d_ids.size() - 1 );
         AMP_INSIST( d_ids[index] == id, "Desired element was not found" );

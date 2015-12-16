@@ -20,7 +20,7 @@ static unsigned int generate_id( const std::vector<unsigned int> &ids );
 libMeshElement::libMeshElement()
 {
     typeID     = libMeshElementTypeID;
-    element    = NULL;
+    element    = nullptr;
     d_dim      = -1;
     d_globalID = MeshElementID();
 }
@@ -31,9 +31,9 @@ libMeshElement::libMeshElement( int dim,
                                 MeshID meshID,
                                 const libMesh *mesh )
 {
-    AMP_ASSERT( libmesh_element != NULL );
+    AMP_ASSERT( libmesh_element != nullptr );
     typeID                  = libMeshElementTypeID;
-    element                 = NULL;
+    element                 = nullptr;
     d_dim                   = dim;
     d_rank                  = rank;
     d_mesh                  = mesh;
@@ -66,9 +66,9 @@ libMeshElement::libMeshElement( int dim,
                                 MeshID meshID,
                                 const libMesh *mesh )
 {
-    AMP_ASSERT( libmesh_element.get() != NULL );
+    AMP_ASSERT( libmesh_element.get() != nullptr );
     typeID                  = libMeshElementTypeID;
-    element                 = NULL;
+    element                 = nullptr;
     d_dim                   = dim;
     d_rank                  = rank;
     d_mesh                  = mesh;
@@ -95,7 +95,7 @@ libMeshElement::libMeshElement( const libMeshElement &rhs )
     : MeshElement() // Note: we never want to call the base copy constructor
 {
     typeID      = libMeshElementTypeID;
-    element     = NULL;
+    element     = nullptr;
     d_globalID  = rhs.d_globalID;
     d_dim       = rhs.d_dim;
     ptr_element = rhs.ptr_element;
@@ -109,7 +109,7 @@ libMeshElement &libMeshElement::operator=( const libMeshElement &rhs )
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
     this->typeID      = libMeshElementTypeID;
-    this->element     = NULL;
+    this->element     = nullptr;
     this->d_globalID  = rhs.d_globalID;
     this->d_dim       = rhs.d_dim;
     this->ptr_element = rhs.ptr_element;
@@ -124,7 +124,7 @@ libMeshElement &libMeshElement::operator=( const libMeshElement &rhs )
 /****************************************************************
 * De-constructor                                                *
 ****************************************************************/
-libMeshElement::~libMeshElement() { element = NULL; }
+libMeshElement::~libMeshElement() { element = nullptr; }
 
 
 /****************************************************************
@@ -228,7 +228,7 @@ std::vector<MeshElement::shared_ptr> libMeshElement::getNeighbors() const
         for ( size_t i = 0; i < neighbors.size(); i++ ) {
             void *neighbor_elem = (void *) elem->neighbor( i );
             AMP::shared_ptr<libMeshElement> neighbor;
-            if ( neighbor_elem != NULL )
+            if ( neighbor_elem != nullptr )
                 neighbor = AMP::shared_ptr<libMeshElement>( new libMeshElement(
                     d_dim, d_globalID.type(), neighbor_elem, d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;

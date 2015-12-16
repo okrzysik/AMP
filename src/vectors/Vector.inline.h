@@ -155,7 +155,7 @@ inline Vector::shared_ptr Vector::cloneVector() const { return cloneVector( getV
 
 inline void Vector::setVariable( const Variable::shared_ptr name )
 {
-    AMP_ASSERT( name.get() != NULL );
+    AMP_ASSERT( name.get() != nullptr );
     d_pVariable = name;
 }
 

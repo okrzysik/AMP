@@ -14,7 +14,7 @@ namespace Solver {
 CoupledFlow1DSolver::CoupledFlow1DSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
-    AMP_ASSERT( parameters.get() != NULL );
+    AMP_ASSERT( parameters.get() != nullptr );
 
     AMP::shared_ptr<CoupledFlow1DSolverParameters> params =
         AMP::dynamic_pointer_cast<CoupledFlow1DSolverParameters>( parameters );
@@ -68,14 +68,14 @@ void CoupledFlow1DSolver::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::V
 void CoupledFlow1DSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
 {
 
-    if ( d_pOperator.get() != NULL ) {
+    if ( d_pOperator.get() != nullptr ) {
     }
 }
 
 void CoupledFlow1DSolver::resetOperator(
     const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
-    if ( d_pOperator.get() != NULL ) {
+    if ( d_pOperator.get() != nullptr ) {
         d_pOperator->reset( params );
     }
 }

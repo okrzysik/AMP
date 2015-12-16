@@ -78,7 +78,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
 
     // Create a surface mesh on the clad
     AMP::Mesh::Mesh::shared_ptr surfaceMesh;
-    if ( meshAdapter2.get() != NULL ) {
+    if ( meshAdapter2.get() != nullptr ) {
         surfaceMesh =
             meshAdapter2->Subset( meshAdapter2->getBoundaryIDIterator( AMP::Mesh::Face, 4, 0 ) );
         surfaceMesh->setName( "clad_surface" );
@@ -93,12 +93,12 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     // AMP::Discretization::DOFManager::shared_ptr flowNodalScalarDOF =
     //    AMP::Discretization::simpleDOFManager::create(surfaceMesh,AMP::Mesh::Vertex,1,1,true);
     AMP::Discretization::DOFManager::shared_ptr flowNodalScalarDOF;
-    if ( meshAdapter2.get() != NULL )
+    if ( meshAdapter2.get() != nullptr )
         flowNodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
             meshAdapter2, AMP::Mesh::Vertex, 1, 1, true );
     int DOFsPerElement = 8;
     AMP::Discretization::DOFManager::shared_ptr gaussPointDOF1;
-    if ( meshAdapter1.get() != NULL )
+    if ( meshAdapter1.get() != nullptr )
         gaussPointDOF1 = AMP::Discretization::simpleDOFManager::create(
             meshAdapter1, AMP::Mesh::Volume, 1, DOFsPerElement, true );
 
@@ -118,7 +118,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     //----------------------------------------------------------------------------
     AMP::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator;
     AMP::LinearAlgebra::Vector::shared_ptr specificPowerGpVec;
-    if ( meshAdapter1.get() != NULL ) {
+    if ( meshAdapter1.get() != nullptr ) {
         neutronicsOperator = AMP::shared_ptr<AMP::Operator::NeutronicsRhs>(
             new AMP::Operator::NeutronicsRhs( neutronicsParams ) );
         AMP::LinearAlgebra::Variable::shared_ptr specificPowerGpVar =
@@ -141,11 +141,11 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr thermalMapCladToPelletVec;
     AMP::LinearAlgebra::Vector::shared_ptr thermalMapToCladVec;
-    if ( meshAdapter1.get() != NULL ) {
+    if ( meshAdapter1.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector1( meshAdapter1 );
         thermalMapCladToPelletVec = thermalMapVec->select( meshSelector1, "Temperature" );
     }
-    if ( meshAdapter2.get() != NULL ) {
+    if ( meshAdapter2.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector2( meshAdapter2 );
         thermalMapToCladVec = thermalMapVec->select( meshSelector2, "Temperature" );
     }
@@ -170,14 +170,14 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr thermalSolVec1, thermalRhsVec1, thermalSolVec2,
         thermalRhsVec2;
     double intguess = input_db->getDoubleWithDefault( "InitialGuess", 300 );
-    if ( meshAdapter1.get() != NULL ) {
+    if ( meshAdapter1.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector1( meshAdapter1 );
         thermalSolVec1 = globalSolVec->select( meshSelector1, "Temperature" );
         //  Set the initial guess for the temperature to be 400, or as defined on the input.
         thermalRhsVec1 = globalRhsVec->select( meshSelector1, "Temperature" );
         thermalSolVec1->setToScalar( intguess );
     }
-    if ( meshAdapter2.get() != NULL ) {
+    if ( meshAdapter2.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector2( meshAdapter2 );
         thermalSolVec2 = globalSolVec->select( meshSelector2, "Temperature" );
         thermalRhsVec2 = globalRhsVec->select( meshSelector2, "Temperature" );
@@ -194,7 +194,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     //-----------------------------------------------
     AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> thermalNonlinearOperator1;
     AMP::shared_ptr<AMP::Operator::LinearBVPOperator> thermalLinearOperator1;
-    if ( meshAdapter1.get() != NULL ) {
+    if ( meshAdapter1.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector1( meshAdapter1 );
         AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator1" ), "key missing!" );
         AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel1;
@@ -213,7 +213,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     //----------------------------------------------------------
     AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator>
         specificPowerGpVecToPowerDensityNodalVecOperatator;
-    if ( meshAdapter1.get() != NULL ) {
+    if ( meshAdapter1.get() != nullptr ) {
         AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
         AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
         specificPowerGpVecToPowerDensityNodalVecOperatator =
@@ -227,7 +227,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     //--------------------------------------------
     AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> thermalNonlinearOperator2;
     AMP::shared_ptr<AMP::Operator::LinearBVPOperator> thermalLinearOperator2;
-    if ( meshAdapter2.get() != NULL ) {
+    if ( meshAdapter2.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector2( meshAdapter2 );
         AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator2" ), "key missing!" );
 
@@ -247,7 +247,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     //--------------------------------------
     AMP::shared_ptr<AMP::Operator::FlowFrapconOperator> flowOperator;
     AMP::shared_ptr<AMP::Operator::FlowFrapconJacobian> flowJacobian;
-    if ( meshAdapter2.get() != NULL ) {
+    if ( meshAdapter2.get() != nullptr ) {
         AMP_INSIST( input_db->keyExists( "FlowFrapconOperator" ),
                     "Key ''FlowFrapconOperator'' is missing!" );
 
@@ -303,7 +303,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr flowSolVec;
     AMP::LinearAlgebra::Vector::shared_ptr flowRhsVec;
     AMP::LinearAlgebra::Vector::shared_ptr flowResVec;
-    if ( meshAdapter2.get() != NULL ) {
+    if ( meshAdapter2.get() != nullptr ) {
         AMP::shared_ptr<AMP::InputDatabase> mapcladflow_db =
             AMP::dynamic_pointer_cast<AMP::InputDatabase>(
                 input_db->getDatabase( "MapCladto1DFlow" ) );
@@ -410,7 +410,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     AMP::shared_ptr<AMP::Operator::ColumnOperator> columnMapstoCladOperator(
         new AMP::Operator::ColumnOperator( columnMapsParams ) );
     columnMapstoCladOperator->append( mapPelletAndClad );
-    if ( map3DFlowToClad.get() != NULL )
+    if ( map3DFlowToClad.get() != nullptr )
         columnMapstoCladOperator->append( map3DFlowToClad );
 
     //------------------------------------------
@@ -420,7 +420,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> correctionParameters1;
     AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> correctionParameters2;
     AMP::shared_ptr<AMP::Operator::NeumannVectorCorrectionParameters> correctionParameters3;
-    if ( thermalNonlinearOperator1.get() != NULL ) {
+    if ( thermalNonlinearOperator1.get() != nullptr ) {
         robinBoundaryOp1 = AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
             thermalNonlinearOperator1->getBoundaryOperator() );
         correctionParameters1 =
@@ -429,7 +429,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
         robinBoundaryOp1->setVariableFlux( thermalMapCladToPelletVec );
         robinBoundaryOp1->reset( correctionParameters1 );
     }
-    if ( thermalNonlinearOperator2.get() != NULL ) {
+    if ( thermalNonlinearOperator2.get() != nullptr ) {
         robinBoundaryOp2 = AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
             ( AMP::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator>(
                   thermalNonlinearOperator2->getBoundaryOperator() ) )
@@ -461,7 +461,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
         new AMP::Operator::OperatorParameters( tmp_db ) );
     AMP::shared_ptr<AMP::Operator::ColumnOperator> columnNonlinearOperator(
         new AMP::Operator::ColumnOperator( columnNonlinearParams ) );
-    if ( thermalNonlinearOperator1.get() != NULL ) {
+    if ( thermalNonlinearOperator1.get() != nullptr ) {
         AMP::shared_ptr<AMP::Operator::CoupledOperatorParameters> coupledNonlinearParams1(
             new AMP::Operator::CoupledOperatorParameters( tmp_db ) );
         coupledNonlinearParams1->d_MapOperator = mapPelletAndClad;
@@ -470,7 +470,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
             new AMP::Operator::CoupledOperator( coupledNonlinearParams1 ) );
         columnNonlinearOperator->append( coupledNonlinearOperator1 );
     }
-    if ( thermalNonlinearOperator2.get() != NULL ) {
+    if ( thermalNonlinearOperator2.get() != nullptr ) {
         AMP::shared_ptr<AMP::Operator::CoupledOperatorParameters> coupledNonlinearParams2(
             new AMP::Operator::CoupledOperatorParameters( tmp_db ) );
         coupledNonlinearParams2->d_MapOperator = columnMapstoCladOperator;
@@ -479,7 +479,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
             new AMP::Operator::CoupledOperator( coupledNonlinearParams2 ) );
         columnNonlinearOperator->append( coupledNonlinearOperator2 );
     }
-    if ( flowOperator.get() != NULL ) {
+    if ( flowOperator.get() != nullptr ) {
         AMP::shared_ptr<AMP::Operator::CoupledFlowFrapconOperatorParameters>
             coupledNonlinearParams3(
                 new AMP::Operator::CoupledFlowFrapconOperatorParameters( tmp_db ) );
@@ -498,12 +498,12 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
         new AMP::Operator::OperatorParameters( tmp_db ) );
     AMP::shared_ptr<AMP::Operator::ColumnOperator> coupledLinearOperator(
         new AMP::Operator::ColumnOperator( columnLinearParams ) );
-    if ( thermalLinearOperator1.get() != NULL )
+    if ( thermalLinearOperator1.get() != nullptr )
         coupledLinearOperator->append( thermalLinearOperator1 );
-    if ( thermalLinearOperator2.get() != NULL )
+    if ( thermalLinearOperator2.get() != nullptr )
         coupledLinearOperator->append( thermalLinearOperator2 );
     AMP::shared_ptr<AMP::Operator::CoupledFlowFrapconOperator> coupledlinearOperator3;
-    if ( flowJacobian.get() != NULL ) {
+    if ( flowJacobian.get() != nullptr ) {
         AMP::shared_ptr<AMP::Operator::CoupledFlowFrapconOperatorParameters> coupledlinearParams3(
             new AMP::Operator::CoupledFlowFrapconOperatorParameters( tmp_db ) );
         coupledlinearParams3->d_Map3to1      = mapCladTo1DFlow2;
@@ -516,7 +516,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     }
 
     //---------------------------------------------------------------------------------------------------------------------//
-    if ( neutronicsOperator.get() != NULL ) {
+    if ( neutronicsOperator.get() != nullptr ) {
         neutronicsOperator->setTimeStep( 0 );
         neutronicsOperator->apply( nullVec, specificPowerGpVec );
         thermalRhsVec1->zero();
@@ -537,7 +537,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
               << globalResMultiVector->L2Norm() << std::endl;
     AMP::pout << "Initial Temperature Residual Norm: " << std::setprecision( 12 )
               << globalResVec->L2Norm() << std::endl;
-    if ( flowResVec.get() != NULL )
+    if ( flowResVec.get() != nullptr )
         AMP::pout << "Initial Flow Residual Norm: " << std::setprecision( 12 )
                   << flowResVec->L2Norm() << std::endl;
 
@@ -569,7 +569,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
         new AMP::Solver::ColumnSolver( columnPreconditionerParams ) );
 
     //---------------
-    if ( thermalLinearOperator1.get() != NULL ) {
+    if ( thermalLinearOperator1.get() != nullptr ) {
         AMP::shared_ptr<AMP::Database> thermalPreconditioner_db1 =
             columnPreconditioner_db->getDatabase( "pelletThermalPreconditioner" );
         AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams1(
@@ -579,7 +579,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
             new AMP::Solver::TrilinosMLSolver( thermalPreconditionerParams1 ) );
         columnPreconditioner->append( thermalPreconditioner1 );
     }
-    if ( thermalLinearOperator2.get() != NULL ) {
+    if ( thermalLinearOperator2.get() != nullptr ) {
         AMP::shared_ptr<AMP::Database> thermalPreconditioner_db2 =
             columnPreconditioner_db->getDatabase( "cladThermalPreconditioner" );
         AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> thermalPreconditionerParams2(
@@ -589,7 +589,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
             new AMP::Solver::TrilinosMLSolver( thermalPreconditionerParams2 ) );
         columnPreconditioner->append( thermalPreconditioner2 );
     }
-    if ( flowJacobian.get() != NULL ) {
+    if ( flowJacobian.get() != nullptr ) {
         AMP::shared_ptr<AMP::Database> JacobianSolver_db = input_db->getDatabase( "Flow1DSolver" );
         AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> flowSolverParams(
             new AMP::Solver::SolverStrategyParameters( JacobianSolver_db ) );
@@ -623,11 +623,11 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
 #ifdef USE_EXT_SILO
     // Register the quantities to plot
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    if ( meshAdapter1.get() != NULL ) {
+    if ( meshAdapter1.get() != nullptr ) {
         siloWriter->registerVector(
             globalSolVec, meshAdapter1, AMP::Mesh::Vertex, "PelletTemperature" );
     }
-    if ( meshAdapter2.get() != NULL ) {
+    if ( meshAdapter2.get() != nullptr ) {
         siloWriter->registerVector(
             globalSolVec, meshAdapter2, AMP::Mesh::Vertex, "CladTemperature" );
         siloWriter->registerVector( flowSolVec, surfaceMesh, AMP::Mesh::Vertex, "FlowTemperature" );
@@ -635,29 +635,29 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
 #endif
 
     for ( int tstep = 0; tstep < 1; tstep++ ) {
-        if ( neutronicsOperator.get() != NULL ) {
+        if ( neutronicsOperator.get() != nullptr ) {
             neutronicsOperator->setTimeStep( tstep );
             neutronicsOperator->apply( nullVec, specificPowerGpVec );
         }
 
-        if ( robinBoundaryOp1.get() != NULL )
+        if ( robinBoundaryOp1.get() != nullptr )
             robinBoundaryOp1->reset( correctionParameters1 );
-        if ( robinBoundaryOp2.get() != NULL )
+        if ( robinBoundaryOp2.get() != nullptr )
             robinBoundaryOp2->reset( correctionParameters2 );
-        if ( robinBoundaryOp3.get() != NULL )
+        if ( robinBoundaryOp3.get() != nullptr )
             robinBoundaryOp3->reset( correctionParameters3 );
 
-        if ( meshAdapter1.get() != NULL ) {
+        if ( meshAdapter1.get() != nullptr ) {
             thermalRhsVec1->zero();
             // specificPowerGpVec is in Watts/kilogram
             specificPowerGpVecToPowerDensityNodalVecOperatator->apply( specificPowerGpVec,
                                                                        thermalRhsVec1 );
         }
-        if ( thermalNonlinearOperator1.get() != NULL ) {
+        if ( thermalNonlinearOperator1.get() != nullptr ) {
             thermalNonlinearOperator1->modifyRHSvector( thermalRhsVec1 );
             thermalNonlinearOperator1->modifyInitialSolutionVector( thermalSolVec1 );
         }
-        if ( thermalNonlinearOperator2.get() != NULL ) {
+        if ( thermalNonlinearOperator2.get() != nullptr ) {
             thermalNonlinearOperator2->modifyRHSvector( thermalRhsVec2 );
             thermalNonlinearOperator2->modifyInitialSolutionVector( thermalSolVec2 );
         }
@@ -666,12 +666,12 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
                   << " is: " << globalSolMultiVector->L2Norm() << std::endl;
         AMP::pout << "Initial Guess  Norm12 for Step " << tstep << " is: " << globalSolVec->L2Norm()
                   << std::endl;
-        if ( flowSolVec.get() != NULL )
+        if ( flowSolVec.get() != nullptr )
             AMP::pout << "Initial Guess  Flow   for Step " << tstep
                       << " is: " << flowSolVec->L2Norm() << std::endl;
         AMP::pout << "Initial Source Norm for Step " << tstep
                   << " is: " << globalRhsMultiVector->L2Norm() << std::endl;
-        if ( thermalRhsVec1.get() != NULL ) {
+        if ( thermalRhsVec1.get() != nullptr ) {
             AMP::pout << "Initial Source Norm1 for Step " << tstep
                       << " is: " << thermalRhsVec1->L2Norm() << std::endl;
             AMP::pout << "Initial Guess  Norm1 for Step " << tstep
@@ -679,7 +679,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
             AMP::pout << "Initial Power  Norm1 for Step " << tstep
                       << " is: " << specificPowerGpVec->L2Norm() << std::endl;
         }
-        if ( thermalRhsVec2.get() != NULL ) {
+        if ( thermalRhsVec2.get() != nullptr ) {
             AMP::pout << "Initial Source Norm2 for Step " << tstep
                       << " is: " << thermalRhsVec2->L2Norm() << std::endl;
             AMP::pout << "Initial Guess  Norm2 for Step " << tstep
@@ -692,7 +692,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
                   << " is: " << globalResMultiVector->L2Norm() << std::endl;
         AMP::pout << "Initial Temperature Residual Norm for Step " << tstep
                   << " is: " << globalResVec->L2Norm() << std::endl;
-        if ( flowResVec.get() != NULL )
+        if ( flowResVec.get() != nullptr )
             AMP::pout << "Initial Flow Residual for Step " << tstep
                       << " is: " << flowResVec->L2Norm() << std::endl;
 
@@ -706,15 +706,15 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
         siloWriter->writeFile( silo_name, tstep );
 #endif
 
-        if ( thermalSolVec1.get() != NULL )
+        if ( thermalSolVec1.get() != nullptr )
             std::cout << "The Fuel Max value - " << thermalSolVec1->max() << std::endl;
-        if ( thermalSolVec2.get() != NULL )
+        if ( thermalSolVec2.get() != nullptr )
             std::cout << "The Clad Min value - " << thermalSolVec2->min() << std::endl;
-        if ( flowSolVec.get() != NULL )
+        if ( flowSolVec.get() != nullptr )
             std::cout << "Flow Max:Min values -  " << flowSolVec->max() << " " << flowSolVec->min()
                       << std::endl;
 
-        if ( meshAdapter2.get() != NULL ) {
+        if ( meshAdapter2.get() != nullptr ) {
             std::cout << "Intermediate Flow Solution " << std::endl;
             mapCladTo1DFlow1->setVector( flowSol1DVec );
             mapCladTo1DFlow1->apply( thermalMapToCladVec, nullVec );

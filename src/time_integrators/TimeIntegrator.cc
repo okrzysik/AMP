@@ -41,7 +41,7 @@ namespace TimeIntegrator {
 TimeIntegrator::TimeIntegrator(
     AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
 {
-    AMP_INSIST( parameters.get() != NULL, "Null parameter" );
+    AMP_INSIST( parameters.get() != nullptr, "Null parameter" );
 
     // initialize member data
     d_initial_time         = 0;
@@ -88,7 +88,7 @@ void TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> param
 
     d_pSourceTerm = parameters->d_pSourceTerm;
 
-    if ( d_solution.get() == NULL ) {
+    if ( d_solution.get() == nullptr ) {
         AMP_ERROR( "TimeIntegrator::TimeIntegrator()::TimeIntegrators must be initialized with non "
                    "null initial "
                    "condition_vectors" );
@@ -139,7 +139,7 @@ double TimeIntegrator::getNextDt( const bool ) { return ( d_current_dt ); }
 
 void TimeIntegrator::getFromInput( const AMP::shared_ptr<AMP::Database> db )
 {
-    AMP_ASSERT( db.get() != NULL );
+    AMP_ASSERT( db.get() != nullptr );
 
     if ( db->keyExists( "initial_time" ) ) {
         d_initial_time = db->getDouble( "initial_time" );

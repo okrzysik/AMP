@@ -173,10 +173,10 @@ void GaussPointToGaussPointMap::createIdxMap(
 
         for ( unsigned int j = 0; j < elem->n_nodes(); ++j ) {
             delete ( elem->get_node( j ) );
-            elem->set_node( j ) = NULL;
+            elem->set_node( j ) = nullptr;
         } // end for j
         delete elem;
-        elem = NULL;
+        elem = nullptr;
     } // end i
 
     db->putInteger( "DOFsPerObject", dofsPerElem );
@@ -235,10 +235,10 @@ void GaussPointToGaussPointMap::createIdxMap(
 
         for ( unsigned int j = 0; j < elem->n_nodes(); ++j ) {
             delete ( elem->get_node( j ) );
-            elem->set_node( j ) = NULL;
+            elem->set_node( j ) = nullptr;
         } // end for j
         delete elem;
-        elem = NULL;
+        elem = nullptr;
     } // end for i
 }
 }

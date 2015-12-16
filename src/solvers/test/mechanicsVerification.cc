@@ -293,7 +293,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
         manufacturedSolution->set_bzx( 0.0 );
     } else if ( typeCoeffAB == "random" ) {
         // all coeffs aij and bij are random numbers taken between min and max
-        srand( time( NULL ) );
+        srand( time( nullptr ) );
         double randMin = -1.0;
         double randMax = +1.0;
         srand( 0 ); // to be able to reproduce results

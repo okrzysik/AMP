@@ -232,7 +232,7 @@ AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP_MPI &comm_in )
     std::vector<DOFManager::shared_ptr> sub_managers;
     for ( size_t i = 0; i < d_managers.size(); i++ ) {
         DOFManager::shared_ptr subset = d_managers[i]->subset( comm );
-        if ( subset != NULL )
+        if ( subset != nullptr )
             sub_managers.push_back( subset );
     }
     // Check that we have a valid DOF manager somewhere
@@ -249,7 +249,7 @@ AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::Mesh::shar
     // Get the comm for the new DOFManager
     AMP_MPI comm( AMP_COMM_NULL );
     if ( useMeshComm ) {
-        if ( mesh.get() != NULL )
+        if ( mesh.get() != nullptr )
             comm = mesh->getComm();
     } else {
         comm = d_comm;
@@ -263,7 +263,7 @@ AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::Mesh::shar
         DOFManager::shared_ptr subset = d_managers[i]->subset( mesh, useMeshComm );
         if ( subset.get() != d_managers[i].get() )
             changed = true;
-        if ( subset != NULL )
+        if ( subset != nullptr )
             sub_managers.push_back( subset );
     }
     // Check if the DOF manager changed and the comms are compatible
@@ -292,7 +292,7 @@ AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::MeshIterat
         DOFManager::shared_ptr subset = d_managers[i]->subset( iterator, comm );
         if ( subset.get() != d_managers[i].get() )
             changed = true;
-        if ( subset != NULL )
+        if ( subset != nullptr )
             sub_managers.push_back( subset );
     }
     // Check if the DOF manager changed and the comms are compatible

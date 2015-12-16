@@ -1127,7 +1127,7 @@ MemoryDatabase::KeyData *MemoryDatabase::findKeyData( const std::string &key )
         if ( key == ( *i ).d_key )
             return ( &( *i ) );
     }
-    return ( NULL );
+    return ( nullptr );
 }
 
 /*
@@ -1147,7 +1147,7 @@ MemoryDatabase::KeyData *MemoryDatabase::findKeyDataOrExit( const std::string &k
             return ( &( *i ) );
     }
     MEMORY_DB_ERROR( "Key ``" << key << "'' does not exist in the database..." );
-    return ( NULL );
+    return ( nullptr );
 }
 
 /*

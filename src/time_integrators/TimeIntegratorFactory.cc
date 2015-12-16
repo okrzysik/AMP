@@ -38,7 +38,7 @@ TimeIntegratorFactory::~TimeIntegratorFactory() {}
 AMP::shared_ptr<TimeIntegrator> TimeIntegratorFactory::createTimeIntegrator(
     AMP::shared_ptr<TimeIntegratorParameters> timeIntegratorParameters )
 {
-    AMP_ASSERT( timeIntegratorParameters.get() != NULL );
+    AMP_ASSERT( timeIntegratorParameters.get() != nullptr );
 
     AMP::shared_ptr<TimeIntegrator> timeIntegrator;
 

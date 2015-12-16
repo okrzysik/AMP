@@ -98,11 +98,11 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
     const AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params )
     : NonlinearFEOperator( params ), d_Frozen( Diffusion::NUMBER_VARIABLES )
 {
-    AMP_INSIST( ( ( params.get() ) != NULL ), "NULL parameter!" );
+    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
 
     d_diffNonlinElem = AMP::dynamic_pointer_cast<DiffusionNonlinearElement>( d_elemOp );
 
-    AMP_INSIST( ( ( d_diffNonlinElem.get() ) != NULL ),
+    AMP_INSIST( ( ( d_diffNonlinElem.get() ) != nullptr ),
                 "d_elemOp is not of type DiffusionNonlinearElement" );
 
     d_transportModel = params->d_transportModel;
@@ -160,7 +160,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
             d_inpVariables->setVariable( var, dummyVar );
             if ( d_isFrozen[var] ) {
                 d_inVec[var] = d_Frozen[var];
-                if ( d_inVec[var] != NULL )
+                if ( d_inVec[var] != nullptr )
                     AMP_ASSERT( d_inVec[var]->getUpdateStatus() ==
                                 AMP::LinearAlgebra::Vector::UNCHANGED );
             }
@@ -181,7 +181,7 @@ void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
                                                 AMP::LinearAlgebra::Vector::shared_ptr r )
 {
     // PROFILE_START("preAssembly",2);
-    AMP_INSIST( ( u != NULL ), "NULL Input Vector!" );
+    AMP_INSIST( ( u != nullptr ), "NULL Input Vector!" );
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
     AMP::LinearAlgebra::Vector::const_shared_ptr u_meshVec =
         u->constSelect( meshSelector, "u_mesh" );
@@ -200,7 +200,7 @@ void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
                 AMP_ASSERT( d_inVec[var] );
             }
 
-            AMP_ASSERT( d_inVec[var] != NULL );
+            AMP_ASSERT( d_inVec[var] != nullptr );
             AMP_ASSERT( d_inVec[var]->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
             if ( d_iDebugPrintInfoLevel > 5 )
                 std::cout << "Max Value inside preAssembly: " << d_inVec[var]->max() << std::endl;

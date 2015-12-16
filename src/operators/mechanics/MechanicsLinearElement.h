@@ -23,7 +23,7 @@ class MechanicsLinearElement : public MechanicsElement
 public:
     //! Constructor.
     explicit MechanicsLinearElement( const AMP::shared_ptr<ElementOperationParameters> &params )
-        : MechanicsElement( params ), d_elementStiffnessMatrix( NULL )
+        : MechanicsElement( params ), d_elementStiffnessMatrix( nullptr )
     {
         d_JxW  = &( d_fe->get_JxW() );
         d_dphi = &( d_fe->get_dphi() );

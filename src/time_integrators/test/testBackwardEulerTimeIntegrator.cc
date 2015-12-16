@@ -186,7 +186,7 @@ void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
     AMP::shared_ptr<AMP::TimeIntegrator::BackwardEulerTimeIntegrator> BDFTimeIntegrator(
         new AMP::TimeIntegrator::BackwardEulerTimeIntegrator( time_Params ) );
 
-    if ( BDFTimeIntegrator.get() == NULL ) {
+    if ( BDFTimeIntegrator.get() == nullptr ) {
         ut->failure( "Testing BDFTimeIntegrator's constructor" );
     } else {
         ut->passes( "Tested BDFTimeIntegrator's constructor" );

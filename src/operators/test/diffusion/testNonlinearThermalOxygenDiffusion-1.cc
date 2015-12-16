@@ -105,7 +105,7 @@ void thermalOxygenDiffusionTest( AMP::UnitTest *ut, std::string exeName )
         AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
             volumeOperator->getInputVariable() );
     for ( size_t i = 0; i < tmp->numVariables(); i++ ) {
-        if ( tmp->getVariable( i ).get() != NULL )
+        if ( tmp->getVariable( i ).get() != nullptr )
             inputVariable->add( tmp->getVariable( i ) );
     }
 

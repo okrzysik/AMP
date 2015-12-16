@@ -39,7 +39,7 @@ BackwardEulerTimeIntegrator::~BackwardEulerTimeIntegrator() {}
 ***********************************************************************/
 void BackwardEulerTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    AMP_ASSERT( parameters.get() != NULL );
+    AMP_ASSERT( parameters.get() != nullptr );
 
     /*
      * Initialize data members from input.
@@ -55,7 +55,7 @@ void BackwardEulerTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorPara
 }
 void BackwardEulerTimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    AMP_ASSERT( parameters.get() != NULL );
+    AMP_ASSERT( parameters.get() != nullptr );
 
     abort();
 }

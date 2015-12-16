@@ -15,11 +15,11 @@ namespace AMP {
 namespace Operator {
 
 FlowElement::FlowElement( const AMP::shared_ptr<ElementOperationParameters> &params )
-    : ElementOperation( params ), d_elem( NULL )
+    : ElementOperation( params ), d_elem( nullptr )
 {
-    AMP_INSIST( ( params.get() != NULL ), "''params'' is NULL" );
+    AMP_INSIST( ( params.get() != nullptr ), "''params'' is NULL" );
 
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
     const unsigned int dimension = ( params->d_db )->getIntegerWithDefault( "DIMENSION", 3 );
     // int numApprox = (params->d_db)->getIntegerWithDefault("NUM_APPROX", 2);

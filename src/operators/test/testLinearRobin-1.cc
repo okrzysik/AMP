@@ -75,7 +75,7 @@ void bcTests( AMP::UnitTest *ut,
         bcCorrectionVec->setToScalar( 0.0 );
         ( AMP::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( bcOperator ) )
             ->addRHScorrection( bcCorrectionVec );
-        AMP_INSIST( ( ( bcCorrectionVec.get() ) != NULL ), "NULL rhs correction vector" );
+        AMP_INSIST( ( ( bcCorrectionVec.get() ) != nullptr ), "NULL rhs correction vector" );
 
         ut->passes( msgPrefix + ": Robin returns a rhs correction vector " );
 

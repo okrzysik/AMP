@@ -15,7 +15,7 @@ namespace LinearAlgebra {
 static inline double *getBufferPtr( VectorEngine::BufferPtr buf )
 {
     if ( buf->empty() )
-        return NULL;
+        return nullptr;
     return &buf->operator[]( 0 );
 }
 
@@ -42,7 +42,7 @@ EpetraVectorEngineParameters::~EpetraVectorEngineParameters() {}
 ********************************************************/
 Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
 {
-    if ( d_emap.get() != NULL )
+    if ( d_emap.get() != nullptr )
         return *d_emap;
 // Create the epetra map
 #ifdef USE_EXT_MPI

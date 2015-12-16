@@ -60,7 +60,7 @@ void ElementOperationFactoryTest( AMP::UnitTest *ut )
             AMP::shared_ptr<AMP::Operator::MechanicsLinearElement> mechOperation =
                 AMP::dynamic_pointer_cast<AMP::Operator::MechanicsLinearElement>(
                     elementOperation );
-            if ( mechOperation.get() != NULL ) {
+            if ( mechOperation.get() != nullptr ) {
                 ut->passes( exeName + " : " + inputFile + " : MechanicsLinearElement" );
             } else {
                 ut->failure( exeName + " : " + inputFile + " : MechanicsLinearElement" );
@@ -69,7 +69,7 @@ void ElementOperationFactoryTest( AMP::UnitTest *ut )
             AMP::shared_ptr<AMP::Operator::DiffusionLinearElement> diffusionOperation =
                 AMP::dynamic_pointer_cast<AMP::Operator::DiffusionLinearElement>(
                     elementOperation );
-            if ( diffusionOperation.get() != NULL ) {
+            if ( diffusionOperation.get() != nullptr ) {
                 ut->passes( exeName + " : " + inputFile + " : DiffusionLinearElement" );
             } else {
                 ut->failure( exeName + " : " + inputFile + " : DiffusionLinearElement" );
@@ -78,7 +78,7 @@ void ElementOperationFactoryTest( AMP::UnitTest *ut )
             AMP::shared_ptr<AMP::Operator::MechanicsNonlinearElement> mechOperation =
                 AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearElement>(
                     elementOperation );
-            if ( mechOperation.get() != NULL ) {
+            if ( mechOperation.get() != nullptr ) {
                 ut->passes( exeName + " : " + inputFile + " : MechanicsNonlinearElement" );
             } else {
                 ut->failure( exeName + " : " + inputFile + " : MechanicsNonlinearElement" );
@@ -87,7 +87,7 @@ void ElementOperationFactoryTest( AMP::UnitTest *ut )
             AMP::shared_ptr<AMP::Operator::DiffusionNonlinearElement> diffusionOperation =
                 AMP::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearElement>(
                     elementOperation );
-            if ( diffusionOperation.get() != NULL ) {
+            if ( diffusionOperation.get() != nullptr ) {
                 ut->passes( exeName + " : " + inputFile + " : DiffusionNonlinearElement" );
             } else {
                 ut->failure( exeName + " : " + inputFile + " : DiffusionNonlinearElement" );
@@ -95,7 +95,7 @@ void ElementOperationFactoryTest( AMP::UnitTest *ut )
         } else if ( name == "MassLinearElement" ) {
             AMP::shared_ptr<AMP::Operator::MassLinearElement> massOperation =
                 AMP::dynamic_pointer_cast<AMP::Operator::MassLinearElement>( elementOperation );
-            if ( massOperation.get() != NULL ) {
+            if ( massOperation.get() != nullptr ) {
                 ut->passes( exeName + " : " + inputFile + " : MassLinearElement" );
             } else {
                 ut->failure( exeName + " : " + inputFile + " : MassLinearElement" );

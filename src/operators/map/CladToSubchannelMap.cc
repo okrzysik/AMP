@@ -35,9 +35,9 @@ CladToSubchannelMap::CladToSubchannelMap(
     d_currRequests = std::vector<MPI_Request>();
 
     // Get the iterators
-    if ( d_mesh1.get() != NULL )
+    if ( d_mesh1.get() != nullptr )
         d_iterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
-    if ( d_mesh2.get() != NULL )
+    if ( d_mesh2.get() != nullptr )
         d_iterator2 = getSubchannelIterator( d_mesh2 );
 
     // Get the x-y-z grid for the subchannel mesh
@@ -45,7 +45,7 @@ CladToSubchannelMap::CladToSubchannelMap(
 
     // For each subchannel, get the list of local MeshElement in that channel
     d_elem = std::vector<std::vector<AMP::Mesh::MeshElementID>>( N_subchannels );
-    if ( d_mesh1.get() != NULL ) {
+    if ( d_mesh1.get() != nullptr ) {
         AMP::Mesh::MeshIterator it = d_iterator1.begin();
         for ( size_t k = 0; k < it.size(); k++ ) {
             std::vector<double> center = it->centroid();
@@ -69,8 +69,8 @@ CladToSubchannelMap::CladToSubchannelMap(
 
     // Create the send/recv buffers
     d_sendMaxBufferSize = 0;
-    d_sendBuffer        = std::vector<double *>( N_subchannels, NULL );
-    if ( d_mesh1.get() != NULL ) {
+    d_sendBuffer        = std::vector<double *>( N_subchannels, nullptr );
+    if ( d_mesh1.get() != nullptr ) {
         for ( size_t i = 0; i < N_subchannels; i++ ) {
             if ( d_elem[i].size() > 0 ) {
                 d_sendBuffer[i] = new double[2 * d_elem[i].size()];
@@ -90,7 +90,7 @@ CladToSubchannelMap::~CladToSubchannelMap()
 {
     for ( size_t i = 0; i < d_sendBuffer.size(); i++ ) {
         delete[] d_sendBuffer[i];
-        d_sendBuffer[i] = NULL;
+        d_sendBuffer[i] = nullptr;
     }
     d_sendBuffer.resize( 0 );
     d_x.resize( 0 );
@@ -122,7 +122,7 @@ void CladToSubchannelMap::fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Create the grid for all processors
     int root = -1;
-    if ( mesh != NULL ) {
+    if ( mesh != nullptr ) {
         root = d_MapComm.getRank();
         AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( mesh, d_x, d_y, d_z );
     }
@@ -139,7 +139,7 @@ void CladToSubchannelMap::fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr mesh )
     N_subchannels = Nx * Ny;
     // Get a list of processors that need each x-y point
     d_ownSubChannel = std::vector<bool>( Nx * Ny, false );
-    if ( mesh.get() != NULL ) {
+    if ( mesh.get() != nullptr ) {
         AMP::Mesh::MeshIterator it = getSubchannelIterator( mesh );
         AMP_ASSERT( it.size() > 0 );
         for ( size_t k = 0; k < it.size(); k++ ) {
@@ -202,7 +202,7 @@ void CladToSubchannelMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
                                       AMP::LinearAlgebra::Vector::shared_ptr )
 {
     // Check if we have any data to send
-    if ( d_mesh1.get() == NULL )
+    if ( d_mesh1.get() == nullptr )
         return;
 
     // Subset the vector for the variable (we only need the local portion of the vector)
@@ -251,7 +251,7 @@ void CladToSubchannelMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
 void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
                                        AMP::LinearAlgebra::Vector::shared_ptr )
 {
-    if ( d_mesh2.get() == NULL ) {
+    if ( d_mesh2.get() == nullptr ) {
         // We don't have an output vector to fill, wait for communication to finish and return
         if ( d_currRequests.size() > 0 )
             AMP::AMP_MPI::waitAll( (int) d_currRequests.size(), &d_currRequests[0] );
@@ -310,12 +310,12 @@ void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
 ************************************************************************/
 void CladToSubchannelMap::setVector( AMP::LinearAlgebra::Vector::shared_ptr result )
 {
-    if ( result.get() != NULL )
+    if ( result.get() != nullptr )
         d_OutputVector = subsetInputVector( result );
     else
         d_OutputVector = AMP::LinearAlgebra::Vector::shared_ptr();
-    if ( d_mesh2.get() != NULL )
-        AMP_ASSERT( d_OutputVector.get() != NULL );
+    if ( d_mesh2.get() != nullptr )
+        AMP_ASSERT( d_OutputVector.get() != nullptr );
 }
 
 

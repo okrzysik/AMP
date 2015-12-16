@@ -168,7 +168,7 @@ void getCladProperties( AMP::AMP_MPI comm,
 {
     // Get the center of each local clad
     std::set<AMP::Utilities::triplet<double, double, double>> center;
-    if ( clad != NULL ) {
+    if ( clad != nullptr ) {
         AMP_ASSERT( clad->getComm() <= comm );
         std::vector<AMP::Mesh::MeshID> ids = clad->getLocalBaseMeshIDs();
         for ( size_t i = 0; i < ids.size(); i++ ) {
@@ -281,8 +281,8 @@ std::vector<double> getHeatFluxClad( std::vector<double> z,
         dz[i]      = z[i + 1] - z[i];
     // const double pi = 3.1415926535897932;
     AMP_ASSERT( face_ids.size() == z.size() );
-    AMP_ASSERT( flow != NULL );
-    AMP_ASSERT( clad_temp != NULL );
+    AMP_ASSERT( flow != nullptr );
+    AMP_ASSERT( clad_temp != nullptr );
     AMP::Discretization::DOFManager::shared_ptr flow_manager = flow->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr clad_manager = clad_temp->getDOFManager();
     const double h_scale =
@@ -348,21 +348,21 @@ std::vector<double> getHeatFluxClad( std::vector<double> z,
 AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
     AMP::Mesh::Mesh::shared_ptr clad, AMP::Mesh::Mesh::shared_ptr subchannel, AMP::AMP_MPI comm )
 {
-    if ( clad.get() != NULL )
+    if ( clad.get() != nullptr )
         AMP_ASSERT( clad->getComm() <= comm );
-    if ( subchannel.get() != NULL )
+    if ( subchannel.get() != nullptr )
         AMP_ASSERT( subchannel->getComm() <= comm );
     // Get the clad properties
     std::vector<double> clad_x, clad_y, clad_d;
     getCladProperties( comm, clad, clad_x, clad_y, clad_d );
     AMP::Mesh::Mesh::shared_ptr clad_surface;
-    if ( clad.get() != NULL )
+    if ( clad.get() != nullptr )
         clad_surface = clad->Subset( clad->getBoundaryIDIterator( AMP::Mesh::Face, 4, 1 ) );
     // Get the subchannel properties
     size_t N[2];
     std::vector<double> x, y, hydraulic_diam;
     int root = -1;
-    if ( subchannel.get() != NULL ) {
+    if ( subchannel.get() != nullptr ) {
         std::vector<double> area, rod_diameter, channel_fraction;
         getSubchannelProperties( subchannel,
                                  clad_x,
@@ -382,7 +382,7 @@ AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
     root = comm.maxReduce( root );
     comm.bcast( N, 2, root );
     size_t N_subchannels = ( N[0] - 1 ) * ( N[1] - 1 );
-    if ( subchannel.get() == NULL ) {
+    if ( subchannel.get() == nullptr ) {
         x.resize( N[0] );
         y.resize( N[1] );
         hydraulic_diam.resize( N_subchannels );
@@ -391,7 +391,7 @@ AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
     comm.bcast( &y[0], N[1], root );
     comm.bcast( &hydraulic_diam[0], N_subchannels, root );
     // Return if we are not on the clad surface
-    if ( clad_surface.get() == NULL )
+    if ( clad_surface.get() == nullptr )
         return AMP::LinearAlgebra::Vector::shared_ptr();
     // Create and initialize the vector
     AMP::Discretization::DOFManager::shared_ptr DOF = AMP::Discretization::simpleDOFManager::create(

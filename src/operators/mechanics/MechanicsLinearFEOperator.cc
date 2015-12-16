@@ -11,17 +11,17 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
     const AMP::shared_ptr<MechanicsLinearFEOperatorParameters> &params )
     : LinearFEOperator( params )
 {
-    AMP_INSIST( ( ( params.get() ) != NULL ), "NULL parameter" );
+    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
     d_useUpdatedLagrangian =
         ( params->d_db )->getBoolWithDefault( "USE_UPDATED_LAGRANGIAN", false );
     if ( d_useUpdatedLagrangian ) {
         d_mechLinULElem =
             AMP::dynamic_pointer_cast<MechanicsLinearUpdatedLagrangianElement>( d_elemOp );
-        AMP_INSIST( ( ( d_mechLinULElem.get() ) != NULL ),
+        AMP_INSIST( ( ( d_mechLinULElem.get() ) != nullptr ),
                     "d_elemOp is not of type MechanicsLinearUpdatedLagrangianElement" );
     } else {
         d_mechLinElem = AMP::dynamic_pointer_cast<MechanicsLinearElement>( d_elemOp );
-        AMP_INSIST( ( ( d_mechLinElem.get() ) != NULL ),
+        AMP_INSIST( ( ( d_mechLinElem.get() ) != nullptr ),
                     "d_elemOp is not of type MechanicsLinearElement" );
     }
     d_materialModel = params->d_materialModel;
@@ -103,13 +103,13 @@ void MechanicsLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
     if ( d_useUpdatedLagrangian ) {
         AMP::shared_ptr<MechanicsLinearFEOperatorParameters> params =
             AMP::dynamic_pointer_cast<MechanicsLinearFEOperatorParameters>( oparams );
-        AMP_INSIST( ( params != NULL ), "NULL params" );
+        AMP_INSIST( ( params != nullptr ), "NULL params" );
 
-        if ( ( d_dispVec == NULL ) and ( params->d_dispVec != NULL ) ) {
+        if ( ( d_dispVec == nullptr ) and ( params->d_dispVec != nullptr ) ) {
             d_dispVec = ( params->d_dispVec )->cloneVector();
         }
-        if ( d_dispVec != NULL ) {
-            if ( params->d_dispVec != NULL ) {
+        if ( d_dispVec != nullptr ) {
+            if ( params->d_dispVec != nullptr ) {
                 d_dispVec->copyVector( params->d_dispVec );
                 d_dispVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
             } else {
@@ -147,7 +147,7 @@ void MechanicsLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
         elementRefXYZ.resize( num_local_dofs );
         for ( unsigned int r = 0; r < numNodesInCurrElem; r++ ) {
             for ( unsigned int d = 0; d < 3; d++ ) {
-                if ( d_dispVec != NULL ) {
+                if ( d_dispVec != nullptr ) {
                     elementInputVectors[Mechanics::DISPLACEMENT][( 3 * r ) + d] =
                         d_dispVec->getValueByGlobalID( d_dofIndices[r][d] );
                 } else {

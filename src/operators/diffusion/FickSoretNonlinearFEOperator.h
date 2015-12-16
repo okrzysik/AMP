@@ -40,7 +40,7 @@ public:
     virtual AMP::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                   AMP::shared_ptr<OperatorParameters> params = NULL ) override
+                   AMP::shared_ptr<OperatorParameters> params = nullptr ) override
     {
         return d_FickOperator->getParameters( type, u, params );
     }

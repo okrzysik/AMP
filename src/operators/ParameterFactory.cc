@@ -26,7 +26,7 @@ ParameterFactory::createParameter( AMP::shared_ptr<AMP::Database> input_db,
     AMP::shared_ptr<OperatorParameters> retParameters;
     std::string name;
 
-    AMP_INSIST( input_db.get() != NULL,
+    AMP_INSIST( input_db.get() != nullptr,
                 "ParameterFactory::createParameter:: NULL Database object input" );
     AMP_INSIST( input_db->keyExists( "name" ),
                 "ParameterFactory::createParameter:: key 'name' must be a part of database " );
@@ -39,7 +39,7 @@ ParameterFactory::createParameter( AMP::shared_ptr<AMP::Database> input_db,
     resetParameters( MechanicsLinearFEOperator );
     resetParameters( MechanicsNonlinearFEOperator );
     resetParameters( NeutronicsRhs );
-    AMP_ASSERT( retParameters != NULL );
+    AMP_ASSERT( retParameters != nullptr );
     retParameters->d_Mesh = mesh;
 #endif
 

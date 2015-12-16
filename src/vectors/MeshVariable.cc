@@ -10,7 +10,7 @@ MeshVariable::MeshVariable( const std::string &name,
                             bool useMeshComm )
     : SubsetVariable( name )
 {
-    AMP_ASSERT( mesh.get() != NULL );
+    AMP_ASSERT( mesh.get() != nullptr );
     d_mesh        = mesh;
     d_useMeshComm = useMeshComm;
 }

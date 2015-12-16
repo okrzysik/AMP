@@ -19,7 +19,7 @@ public:
     // Routine to get the pointer to the mesh
     virtual AMP::Mesh::Mesh::shared_ptr getMesh()
     {
-        if ( mesh.get() == NULL )
+        if ( mesh.get() == nullptr )
             this->build_mesh();
         return mesh;
     }

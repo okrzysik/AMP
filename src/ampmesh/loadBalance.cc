@@ -39,7 +39,7 @@ LoadBalance::LoadBalance( AMP::shared_ptr<MeshParameters> params,
     // Get required values from the parameters
     AMP_ASSERT( !ranks.empty() );
     AMP::shared_ptr<AMP::Database> database = params->getDatabase();
-    AMP_ASSERT( database != NULL );
+    AMP_ASSERT( database != nullptr );
     AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
     AMP_INSIST( database->keyExists( "MeshName" ), "MeshName must exist in input database" );
     d_name = database->getString( "MeshName" );
@@ -85,7 +85,7 @@ LoadBalance::LoadBalance( AMP::shared_ptr<MeshParameters> params,
                           int decomp )
 {
     AMP::shared_ptr<AMP::Database> database = params->getDatabase();
-    AMP_ASSERT( database != NULL );
+    AMP_ASSERT( database != nullptr );
     AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
     AMP_INSIST( database->keyExists( "MeshName" ), "MeshName must exist in input database" );
     d_name       = database->getString( "MeshName" );

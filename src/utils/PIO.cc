@@ -21,7 +21,7 @@
 namespace AMP {
 
 int PIO::s_rank                  = -1;
-std::ofstream *PIO::s_filestream = NULL;
+std::ofstream *PIO::s_filestream = nullptr;
 
 /*
 *************************************************************************
@@ -53,7 +53,7 @@ void PIO::initialize()
 {
     AMP_MPI comm = AMP_MPI( AMP_COMM_WORLD );
     s_rank       = comm.getRank();
-    s_filestream = NULL;
+    s_filestream = nullptr;
 
     /*
      * Initialize the standard parallel output stream
@@ -62,7 +62,7 @@ void PIO::initialize()
     pout_buffer.setActive( s_rank == 0 );
     pout_buffer.setPrefixString( std::string() );
     pout_buffer.setOutputStream1( &std::cout );
-    pout_buffer.setOutputStream2( NULL );
+    pout_buffer.setOutputStream2( nullptr );
 
     /*
      * Initialize the error parallel output stream
@@ -73,7 +73,7 @@ void PIO::initialize()
     perr_buffer.setActive( true );
     perr_buffer.setPrefixString( buffer );
     perr_buffer.setOutputStream1( &std::cerr );
-    perr_buffer.setOutputStream2( NULL );
+    perr_buffer.setOutputStream2( nullptr );
 
     /*
      * Initialize the parallel log file (disabled by default)
@@ -81,8 +81,8 @@ void PIO::initialize()
 
     plog_buffer.setActive( false );
     plog_buffer.setPrefixString( std::string() );
-    plog_buffer.setOutputStream1( NULL );
-    plog_buffer.setOutputStream2( NULL );
+    plog_buffer.setOutputStream1( nullptr );
+    plog_buffer.setOutputStream2( nullptr );
 }
 
 /*
@@ -120,11 +120,11 @@ void PIO::shutdownFilestream()
         s_filestream->close();
 
         delete s_filestream;
-        s_filestream = NULL;
+        s_filestream = nullptr;
 
-        pout_buffer.setOutputStream2( NULL );
-        perr_buffer.setOutputStream2( NULL );
-        plog_buffer.setOutputStream1( NULL );
+        pout_buffer.setOutputStream2( nullptr );
+        perr_buffer.setOutputStream2( nullptr );
+        plog_buffer.setOutputStream1( nullptr );
         plog_buffer.setActive( false );
     }
 }
@@ -155,7 +155,7 @@ void PIO::logOnlyNodeZero( const std::string &filename )
         s_filestream = new std::ofstream( filename.c_str() );
         if ( !( *s_filestream ) ) {
             delete s_filestream;
-            s_filestream = NULL;
+            s_filestream = nullptr;
             perr << "PIO: Could not open log file ``" << filename.c_str() << "''\n";
         } else {
             pout_buffer.setOutputStream2( s_filestream );
@@ -193,7 +193,7 @@ void PIO::logAllNodes( const std::string &filename )
 
     if ( !( *s_filestream ) ) {
         delete s_filestream;
-        s_filestream = NULL;
+        s_filestream = nullptr;
         perr << "PIO: Could not open log file ``" << full_filename << "''\n";
     } else {
         pout_buffer.setOutputStream2( s_filestream );
@@ -214,9 +214,9 @@ void PIO::logAllNodes( const std::string &filename )
 
 void PIO::suspendLogging()
 {
-    pout_buffer.setOutputStream2( NULL );
-    perr_buffer.setOutputStream2( NULL );
-    plog_buffer.setOutputStream1( NULL );
+    pout_buffer.setOutputStream2( nullptr );
+    perr_buffer.setOutputStream2( nullptr );
+    plog_buffer.setOutputStream1( nullptr );
     plog_buffer.setActive( false );
 }
 

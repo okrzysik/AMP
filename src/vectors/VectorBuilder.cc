@@ -31,9 +31,9 @@ createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
               AMP::LinearAlgebra::Variable::shared_ptr variable,
               bool split )
 {
-    if ( DOFs.get() == NULL )
+    if ( DOFs.get() == nullptr )
         return AMP::LinearAlgebra::Vector::shared_ptr();
-    AMP_ASSERT( variable.get() != NULL );
+    AMP_ASSERT( variable.get() != nullptr );
     // Check if we are dealing with a multiDOFManager
     AMP::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF;
     if ( split )
@@ -41,12 +41,12 @@ createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
     // Check if we are dealing with a multiVariable
     AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> multiVariable =
         AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( variable );
-    if ( multiVariable.get() != NULL ) {
+    if ( multiVariable.get() != nullptr ) {
         // We are dealing with a MultiVariable, first check that there are no duplicate or null
         // variables
         for ( size_t i = 0; i < multiVariable->numVariables(); i++ ) {
             AMP::LinearAlgebra::Variable::shared_ptr var1 = multiVariable->getVariable( i );
-            AMP_INSIST( var1.get() != NULL,
+            AMP_INSIST( var1.get() != nullptr,
                         "Error using a MultiVariable in createVector, NULL variables detected" );
             for ( size_t j = 0; j < i; j++ ) {
                 AMP::LinearAlgebra::Variable::shared_ptr var2 = multiVariable->getVariable( j );
@@ -75,7 +75,7 @@ createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
             AMP::LinearAlgebra::MultiVector::create( variable, comm );
         multiVector->addVector( vectors );
         return multiVector;
-    } else if ( multiDOF.get() != NULL ) {
+    } else if ( multiDOF.get() != nullptr ) {
         // We are dealing with a multiDOFManager and want to split the vector based on the DOF
         // managers
         std::vector<AMP::Discretization::DOFManager::shared_ptr> subDOFs =

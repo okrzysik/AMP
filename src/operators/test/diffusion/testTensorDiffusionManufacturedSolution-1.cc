@@ -104,7 +104,7 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshName )
     AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> solVar(
         new AMP::LinearAlgebra::MultiVariable( tmp->getName() ) );
     for ( size_t i = 0; i < tmp->numVariables(); i++ ) {
-        if ( tmp->getVariable( i ).get() != NULL )
+        if ( tmp->getVariable( i ).get() != nullptr )
             solVar->add( tmp->getVariable( i ) );
     }
     AMP::LinearAlgebra::Variable::shared_ptr rhsVar    = nlinOp->getOutputVariable();

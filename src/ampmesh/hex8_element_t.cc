@@ -141,10 +141,10 @@ unsigned int hex8_element_t::faces[24] = { 0, 3, 2, 1, 0, 1, 5, 4, 1, 2, 6, 5,
 void hex8_element_t::clear_triangles_ptr( std::vector<triangle_t *> &triangles_ptr )
 {
     for ( unsigned int i = 0; i < triangles_ptr.size(); ++i ) {
-        if ( triangles_ptr[i] != NULL ) {
+        if ( triangles_ptr[i] != nullptr ) {
             delete triangles_ptr[i];
         }
-        triangles_ptr[i] = NULL;
+        triangles_ptr[i] = nullptr;
     } // end for i
     triangles_ptr.clear();
 }
@@ -230,8 +230,8 @@ void hex8_element_t::build_bounding_polyhedron()
                     assert(!tmp_triangles[3].above_point(tmp_triangles[1].get_centroid()));*/
             bounding_polyhedron.push_back( tmp_triangles_ptr[0] );
             bounding_polyhedron.push_back( tmp_triangles_ptr[1] );
-            tmp_triangles_ptr[0] = NULL;
-            tmp_triangles_ptr[1] = NULL;
+            tmp_triangles_ptr[0] = nullptr;
+            tmp_triangles_ptr[1] = nullptr;
         } else {
             /*
                assert(!tmp_triangles[0].above_point(tmp_triangles[3].get_centroid()));
@@ -247,8 +247,8 @@ void hex8_element_t::build_bounding_polyhedron()
                                                        tolerance ) );
             bounding_polyhedron.push_back( tmp_triangles_ptr[2] );
             bounding_polyhedron.push_back( tmp_triangles_ptr[3] );
-            tmp_triangles_ptr[2] = NULL;
-            tmp_triangles_ptr[3] = NULL;
+            tmp_triangles_ptr[2] = nullptr;
+            tmp_triangles_ptr[3] = nullptr;
         } // end if
     }     // end for i
     bounding_polyhedron_updated = true;

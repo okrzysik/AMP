@@ -17,7 +17,7 @@ void StructuredMeshHelper::getXYZCoordinates( AMP::Mesh::Mesh::shared_ptr mesh,
                                               std::vector<double> &z_out,
                                               bool check )
 {
-    AMP_ASSERT( mesh != NULL );
+    AMP_ASSERT( mesh != nullptr );
     std::set<double> x, y, z;
     AMP::Mesh::MeshIterator it = mesh->getIterator( AMP::Mesh::Vertex, 0 );
     for ( size_t i = 0; i < it.size(); i++ ) {
@@ -85,7 +85,7 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
         AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     AMP::shared_ptr<AMP::Mesh::BoxMesh> boxmesh =
         AMP::dynamic_pointer_cast<AMP::Mesh::BoxMesh>( mesh );
-    if ( multimesh != NULL ) {
+    if ( multimesh != nullptr ) {
         // Optimization for multi-meshes
         std::vector<AMP::Mesh::Mesh::shared_ptr> meshlist = multimesh->getMeshes();
         if ( meshlist.size() == 1 ) {
@@ -99,7 +99,7 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
             }
             return AMP::Mesh::MultiIterator( iterators );
         }
-    } else if ( boxmesh != NULL ) {
+    } else if ( boxmesh != nullptr ) {
         // Optimization for AMP structured meshes
         AMP::Mesh::BoxMesh::Box box = boxmesh->getLocalBox( gcw );
         std::vector<bool> periodic  = boxmesh->periodic();

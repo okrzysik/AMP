@@ -24,7 +24,7 @@
 
 namespace AMP {
 
-InputManager *InputManager::s_manager_instance     = NULL;
+InputManager *InputManager::s_manager_instance     = nullptr;
 bool InputManager::s_registered_callback           = false;
 AMP::shared_ptr<Database> InputManager::s_input_db = AMP::shared_ptr<Database>();
 
@@ -68,7 +68,7 @@ void InputManager::freeManager()
 {
     if ( s_manager_instance )
         delete s_manager_instance;
-    s_manager_instance = ( (InputManager *) NULL );
+    s_manager_instance = ( (InputManager *) nullptr );
 
     s_input_db.reset();
 }
@@ -94,7 +94,7 @@ InputManager::~InputManager() {}
 *************************************************************************
 */
 
-bool InputManager::inputDatabaseExists() { return ( !( s_input_db.get() == NULL ) ); }
+bool InputManager::inputDatabaseExists() { return ( !( s_input_db.get() == nullptr ) ); }
 
 /*
 *************************************************************************
@@ -131,7 +131,7 @@ AMP::shared_ptr<Database> InputManager::getInputDatabase() { return ( s_input_db
 
 void InputManager::parseInputFile( const std::string &filename, AMP::shared_ptr<InputDatabase> db )
 {
-    FILE *fstream = NULL;
+    FILE *fstream = nullptr;
     if ( comm.getRank() == 0 ) {
         fstream = fopen( filename.c_str(), "r" );
     }

@@ -20,12 +20,12 @@ Vector::const_shared_ptr SundialsVector::constView( Vector::const_shared_ptr inV
         ManagedSundialsVectorParameters *new_params = new ManagedSundialsVectorParameters;
         new_params->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
         new_params->d_CloneEngine = false;
-        if ( inVector->getCommunicationList().get() != NULL )
+        if ( inVector->getCommunicationList().get() != nullptr )
             new_params->d_CommList = inVector->getCommunicationList();
         else
             new_params->d_CommList =
                 CommunicationList::createEmpty( inVector->getLocalSize(), inVector->getComm() );
-        if ( inVector->getDOFManager().get() != NULL )
+        if ( inVector->getDOFManager().get() != nullptr )
             new_params->d_DOFManager = inVector->getDOFManager();
         else
             new_params->d_DOFManager =
@@ -61,12 +61,12 @@ Vector::shared_ptr SundialsVector::view( Vector::shared_ptr inVector )
         ManagedSundialsVectorParameters *new_params = new ManagedSundialsVectorParameters;
         new_params->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector );
         new_params->d_CloneEngine = false;
-        if ( inVector->getCommunicationList().get() != NULL )
+        if ( inVector->getCommunicationList().get() != nullptr )
             new_params->d_CommList = inVector->getCommunicationList();
         else
             new_params->d_CommList =
                 CommunicationList::createEmpty( inVector->getLocalSize(), inVector->getComm() );
-        if ( inVector->getDOFManager().get() != NULL )
+        if ( inVector->getDOFManager().get() != nullptr )
             new_params->d_DOFManager = inVector->getDOFManager();
         else
             new_params->d_DOFManager =

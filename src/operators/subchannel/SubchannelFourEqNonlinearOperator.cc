@@ -38,8 +38,8 @@ void SubchannelFourEqNonlinearOperator::reset( const AMP::shared_ptr<OperatorPar
 {
     AMP::shared_ptr<SubchannelOperatorParameters> myparams =
         AMP::dynamic_pointer_cast<SubchannelOperatorParameters>( params );
-    AMP_INSIST( ( ( myparams.get() ) != NULL ), "NULL parameters" );
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
+    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
     d_params = myparams;
 
     // Get the subchannel mesh coordinates
@@ -361,7 +361,7 @@ void SubchannelFourEqNonlinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::sha
 {
     // Create the grid for all processors
     std::set<double> x, y, z;
-    if ( mesh.get() != NULL ) {
+    if ( mesh.get() != nullptr ) {
         AMP::Mesh::MeshIterator vertex = mesh->getIterator( AMP::Mesh::Vertex, 0 );
         // for all vertices in mesh
         for ( size_t i = 0; i < vertex.size(); i++ ) {
@@ -416,7 +416,7 @@ void SubchannelFourEqNonlinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::sha
     size_t Nx = d_x.size() - 1; // number of mesh divisions along x-axis
     size_t Ny = d_y.size() - 1; // number of mesh divisions along y-axis
     size_t Nz = d_z.size() - 1; // number of mesh divisions along z-axis
-    if ( mesh.get() != NULL )
+    if ( mesh.get() != nullptr )
         // check that computed number of elements matches that found by numGlobalElements()
         AMP_ASSERT( Nx * Ny * Nz == mesh->numGlobalElements( AMP::Mesh::Volume ) );
     // compute number of subchannels
@@ -452,8 +452,8 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
         reset( d_params );
 
     // ensure that solution and residual vectors aren't NULL
-    AMP_INSIST( ( ( r.get() ) != NULL ), "NULL Residual Vector" );
-    AMP_INSIST( ( ( u.get() ) != NULL ), "NULL Solution Vector" );
+    AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL Residual Vector" );
+    AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Solution Vector" );
 
     // Constants
     const double pi      = 4.0 * atan( 1.0 ); // pi
@@ -1256,7 +1256,7 @@ SubchannelFourEqNonlinearOperator::subsetInputVector( AMP::LinearAlgebra::Vector
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::shared_ptr commVec =
             vec->select( commSelector, var->getName() );
@@ -1272,7 +1272,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
             vec->constSelect( commSelector, var->getName() );
@@ -1288,7 +1288,7 @@ SubchannelFourEqNonlinearOperator::subsetOutputVector( AMP::LinearAlgebra::Vecto
     AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::shared_ptr commVec =
             vec->select( commSelector, var->getName() );
@@ -1304,7 +1304,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::
     AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
             vec->constSelect( commSelector, var->getName() );

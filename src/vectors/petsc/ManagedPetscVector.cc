@@ -149,7 +149,7 @@ _AMP_axpbypcz( Vec c, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Ve
 
 PetscErrorCode _AMP_max( Vec a, PetscInt *p, PetscReal *ans )
 {
-    if ( ( p != NULL ) && ( p != PETSC_NULL ) ) {
+    if ( ( p != nullptr ) && ( p != PETSC_NULL ) ) {
         AMP_ERROR( "Cannot find position for max" );
     }
     PETSC_RECAST( x, a );
@@ -159,7 +159,7 @@ PetscErrorCode _AMP_max( Vec a, PetscInt *p, PetscReal *ans )
 
 PetscErrorCode _AMP_min( Vec a, PetscInt *p, PetscReal *ans )
 {
-    if ( ( p != NULL ) && ( p != PETSC_NULL ) ) {
+    if ( ( p != nullptr ) && ( p != PETSC_NULL ) ) {
         AMP_ERROR( "Cannot find position for max" );
     }
     PETSC_RECAST( x, a );

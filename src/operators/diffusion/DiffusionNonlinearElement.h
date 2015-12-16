@@ -18,8 +18,8 @@ class DiffusionNonlinearElement : public DiffusionElement
 public:
     explicit DiffusionNonlinearElement( const AMP::shared_ptr<ElementOperationParameters> &params )
         : DiffusionElement( params ),
-          d_elementOutputVector( NULL ),
-          d_transportOutputVector( NULL ),
+          d_elementOutputVector( nullptr ),
+          d_transportOutputVector( nullptr ),
           d_PrincipalVariable( 0 )
     {
         d_JxW = &( d_fe->get_JxW() );

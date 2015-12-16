@@ -277,7 +277,7 @@ public:
                                   1U,                                        // Number of parameters
                                   arguments, // Names of arguments to the eval function
                                   0,         // Number of arguments
-                                  ( double ( * )[2] )( NULL ), // ranges
+                                  ( double ( * )[2] )( nullptr ), // ranges
                                   dim )                        // dimension
     {
         AMP_INSIST( d_nparams == dim, "dimensions and number of parameters don't match" );
@@ -308,7 +308,7 @@ public:
                                   1U,                                        // Number of parameters
                                   arguments, // Names of arguments to the eval function
                                   0,         // Number of arguments
-                                  ( double ( * )[2] )( NULL ), // ranges
+                                  ( double ( * )[2] )( nullptr ), // ranges
                                   dims )                       // dimensions
     {
         AMP_INSIST( d_nparams == dims[0] * dims[1],

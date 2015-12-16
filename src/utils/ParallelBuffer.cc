@@ -36,9 +36,9 @@ namespace AMP {
 ParallelBuffer::ParallelBuffer() : d_prefix()
 {
     d_active      = true;
-    d_ostream1    = NULL;
-    d_ostream2    = NULL;
-    d_buffer      = NULL;
+    d_ostream1    = nullptr;
+    d_ostream2    = nullptr;
+    d_buffer      = nullptr;
     d_buffer_size = 0;
     d_buffer_ptr  = 0;
 }
@@ -53,7 +53,7 @@ ParallelBuffer::~ParallelBuffer() { reset(); }
 void ParallelBuffer::reset()
 {
     delete[] d_buffer;
-    d_buffer      = NULL;
+    d_buffer      = nullptr;
     d_buffer_size = 0;
     d_buffer_ptr  = 0;
     d_prefix      = std::string();
@@ -71,7 +71,7 @@ void ParallelBuffer::setActive( bool active )
 {
     if ( !active && d_buffer ) {
         delete[] d_buffer;
-        d_buffer      = NULL;
+        d_buffer      = nullptr;
         d_buffer_size = 0;
         d_buffer_ptr  = 0;
     }

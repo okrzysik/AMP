@@ -267,7 +267,7 @@ int main( int argc, char *argv[] )
         // Test quicksort performance
         size_t N = 10000;
         std::vector<int> data1( N );
-        srand( time( NULL ) );
+        srand( time( nullptr ) );
         for ( size_t i         = 0; i < N; i++ )
             data1[i]           = rand();
         std::vector<int> data2 = data1;
@@ -370,7 +370,7 @@ int main( int argc, char *argv[] )
                     ut.failure( "Internal error" );
             }
             delete[] tmp2;
-            tmp2            = NULL;
+            tmp2            = nullptr;
             size_t n_bytes3 = AMP::Utilities::getMemoryUsage();
             if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1 + 0x81000000 &&
                  abs_diff( n_bytes1, n_bytes3 ) < 50e3 ) {
@@ -387,7 +387,7 @@ int main( int argc, char *argv[] )
             n_bytes1       = AMP::Utilities::getMemoryUsage();
             size_t size    = 0x20000000;
             uint64_t *tmp2 = new uint64_t[size]; // Allocate 2^31+8 bytes
-            if ( tmp == NULL ) {
+            if ( tmp == nullptr ) {
                 ut.expected_failure( "Unable to allocate variable of size 4 GB" );
             } else {
                 memset( tmp2, 0xAA, size * sizeof( uint64_t ) );
@@ -397,7 +397,7 @@ int main( int argc, char *argv[] )
                         ut.failure( "Internal error" );
                 }
                 delete[] tmp2;
-                tmp2 = NULL;
+                tmp2 = nullptr;
                 NULL_USE( tmp2 );
                 n_bytes3 = AMP::Utilities::getMemoryUsage();
                 if ( n_bytes2 > 0x100000000 && n_bytes2 < n_bytes1 + 0x110000000 &&

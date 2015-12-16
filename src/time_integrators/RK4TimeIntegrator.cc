@@ -44,7 +44,7 @@ RK4TimeIntegrator::~RK4TimeIntegrator() {}
 */
 void RK4TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) NULL );
+    AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) nullptr );
 
     TimeIntegrator::initialize( parameters );
 
@@ -58,7 +58,7 @@ void RK4TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> pa
 
 void RK4TimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) NULL );
+    AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) nullptr );
 
     abort();
 }

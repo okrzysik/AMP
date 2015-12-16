@@ -20,9 +20,9 @@ static MeshElement nullElement;
 structuredMeshIterator::structuredMeshIterator()
 {
     typeID   = structuredMeshIteratorTypeID;
-    iterator = NULL;
+    iterator = nullptr;
     d_pos    = 0;
-    d_mesh   = NULL;
+    d_mesh   = nullptr;
 }
 structuredMeshIterator::structuredMeshIterator(
     AMP::shared_ptr<std::vector<BoxMesh::MeshElementIndex>> elements,
@@ -30,7 +30,7 @@ structuredMeshIterator::structuredMeshIterator(
     size_t pos )
 {
     typeID     = structuredMeshIteratorTypeID;
-    iterator   = NULL;
+    iterator   = nullptr;
     d_pos      = pos;
     d_mesh     = mesh;
     d_elements = elements;
@@ -38,7 +38,7 @@ structuredMeshIterator::structuredMeshIterator(
 structuredMeshIterator::structuredMeshIterator( const structuredMeshIterator &rhs ) : MeshIterator()
 {
     typeID     = structuredMeshIteratorTypeID;
-    iterator   = NULL;
+    iterator   = nullptr;
     d_pos      = rhs.d_pos;
     d_mesh     = rhs.d_mesh;
     d_elements = rhs.d_elements;
@@ -48,7 +48,7 @@ structuredMeshIterator &structuredMeshIterator::operator=( const structuredMeshI
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
     this->typeID     = structuredMeshIteratorTypeID;
-    this->iterator   = NULL;
+    this->iterator   = nullptr;
     this->d_pos      = rhs.d_pos;
     this->d_mesh     = rhs.d_mesh;
     this->d_elements = rhs.d_elements;
@@ -153,7 +153,7 @@ MeshIterator &structuredMeshIterator::operator+=( int n )
 ********************************************************/
 bool structuredMeshIterator::operator==( const MeshIterator &rhs ) const
 {
-    structuredMeshIterator *rhs2 = NULL;
+    structuredMeshIterator *rhs2 = nullptr;
     structuredMeshIterator *tmp =
         (structuredMeshIterator *) &rhs; // Convert rhs to a structuredMeshIterator* so we can
                                          // access the base class members
@@ -166,7 +166,7 @@ bool structuredMeshIterator::operator==( const MeshIterator &rhs ) const
         rhs2 = (structuredMeshIterator *) tmp->iterator;
     }
     // Perform direct comparisions if we are dealing with two structuredMeshIterators
-    if ( rhs2 != NULL ) {
+    if ( rhs2 != nullptr ) {
         if ( d_pos != rhs2->d_pos )
             return false;
         if ( d_elements->size() != rhs2->d_elements->size() )
@@ -194,7 +194,7 @@ bool structuredMeshIterator::operator==( const MeshIterator &rhs ) const
     for ( size_t i = 0; i < d_elements->size(); i++ ) {
         structuredMeshElement *elem =
             dynamic_cast<structuredMeshElement *>( iterator->getRawElement() );
-        if ( elem == NULL )
+        if ( elem == nullptr )
             return false;
         if ( elem->d_index != d_elements->operator[]( i ) )
             return false;

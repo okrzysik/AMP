@@ -80,7 +80,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         ut->passes( "single and multivector are the right size" );
     else
         ut->failure( "Sub Vector is the right size" );
-    if ( subVector.get() != NULL ) {
+    if ( subVector.get() != nullptr ) {
         ut->passes( "Sub Vector is not NULL" );
         if ( multiVector->getGlobalSize() == 2 * subVector->getGlobalSize() )
             ut->passes( "Sub Vector is the right size" );

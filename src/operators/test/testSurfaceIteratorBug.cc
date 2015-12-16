@@ -137,10 +137,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         // Destroy the libmesh element
         for ( size_t i = 0; i < nodes.size(); i++ ) {
             delete ( currElemPtr->get_node( i ) );
-            currElemPtr->set_node( i ) = NULL;
+            currElemPtr->set_node( i ) = nullptr;
         } // end for j
         delete currElemPtr;
-        currElemPtr = NULL;
+        currElemPtr = nullptr;
 
         ++bnd;
     } // end for bnd

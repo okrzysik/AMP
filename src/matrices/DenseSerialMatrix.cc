@@ -129,7 +129,7 @@ void DenseSerialMatrix::axpy( double alpha, const Matrix &X )
 {
     AMP_ASSERT( X.numGlobalRows() == this->numGlobalRows() );
     AMP_ASSERT( X.numGlobalColumns() == this->numGlobalColumns() );
-    if ( dynamic_cast<const DenseSerialMatrix *>( &X ) == NULL ) {
+    if ( dynamic_cast<const DenseSerialMatrix *>( &X ) == nullptr ) {
         // X is an unknown matrix type
         std::vector<unsigned int> cols;
         std::vector<double> values;
@@ -222,7 +222,7 @@ Vector::shared_ptr DenseSerialMatrix::extractDiagonal( Vector::shared_ptr buf ) 
 {
     AMP_ASSERT( d_cols == d_rows );
     Vector::shared_ptr out = buf;
-    if ( buf == NULL )
+    if ( buf == nullptr )
         out = this->getRightVector();
     AMP_ASSERT( out->getGlobalSize() == d_cols );
     double *y = new double[d_cols];
@@ -318,7 +318,7 @@ void DenseSerialMatrix::multiply( Matrix::shared_ptr other_op, Matrix::shared_pt
     result = newMatrix;
     memset( newMatrix->d_M, 0, N * M * sizeof( double ) );
     // Perform the muliplication
-    if ( AMP::dynamic_pointer_cast<DenseSerialMatrix>( other_op ) == NULL ) {
+    if ( AMP::dynamic_pointer_cast<DenseSerialMatrix>( other_op ) == nullptr ) {
         // X is an unknown matrix type
         AMP_ERROR( "Not programmed yet" );
     } else {

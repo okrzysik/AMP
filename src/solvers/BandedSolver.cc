@@ -10,7 +10,7 @@ namespace Solver {
 
 
 BandedSolver::BandedSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
-    : SolverStrategy( parameters ), N( 0 ), M( 0 ), KL( 0 ), KU( 0 ), AB( NULL ), IPIV( NULL )
+    : SolverStrategy( parameters ), N( 0 ), M( 0 ), KL( 0 ), KU( 0 ), AB( nullptr ), IPIV( nullptr )
 {
     reset( parameters );
 }
@@ -32,9 +32,9 @@ void BandedSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters )
     leftDOF.reset();
     delete[] AB;
     delete[] IPIV;
-    AB   = NULL;
-    IPIV = NULL;
-    if ( parameters != NULL ) {
+    AB   = nullptr;
+    IPIV = nullptr;
+    if ( parameters != nullptr ) {
         KL = parameters->d_db->getInteger( "KL" );
         KU = parameters->d_db->getInteger( "KU" );
     }
@@ -42,11 +42,11 @@ void BandedSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters )
     // Get the linear operator
     AMP::shared_ptr<AMP::Operator::LinearOperator> linear_op =
         AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-    AMP_INSIST( linear_op.get() != NULL, "ERROR: BandedSolver requires a linear operator" );
+    AMP_INSIST( linear_op.get() != nullptr, "ERROR: BandedSolver requires a linear operator" );
 
     // Get the matrix
     AMP::LinearAlgebra::Matrix::shared_ptr matrix = linear_op->getMatrix();
-    AMP_INSIST( matrix.get() != NULL, "ERROR: BandedSolver requires a matrix" );
+    AMP_INSIST( matrix.get() != nullptr, "ERROR: BandedSolver requires a matrix" );
     rightDOF = matrix->getRightDOFManager();
     leftDOF  = matrix->getLeftDOFManager();
     M        = static_cast<int>( matrix->numLocalRows() );
@@ -104,7 +104,7 @@ void BandedSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters )
 void BandedSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     PROFILE_START( "resetOperator" );
-    AMP_INSIST( ( d_pOperator.get() != NULL ),
+    AMP_INSIST( ( d_pOperator.get() != nullptr ),
                 "ERROR: BandedSolver::resetOperator() operator cannot be NULL" );
     d_pOperator->reset( params );
     reset( AMP::shared_ptr<SolverStrategyParameters>() );

@@ -20,7 +20,7 @@ DOFManager::shared_ptr structuredFaceDOFManager::create( AMP::shared_ptr<AMP::Me
                                                          int DOFsPerFace[3],
                                                          int gcw )
 {
-    if ( mesh.get() == NULL )
+    if ( mesh.get() == nullptr )
         return DOFManager::shared_ptr();
     if ( mesh->getGeomType() != AMP::Mesh::Volume || mesh->getDim() != 3 )
         AMP_ERROR( "The mesh must be a volume/3d mesh for structuredFaceDOFManager" );
@@ -199,7 +199,7 @@ std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshE
     for ( size_t i = 0; i < p_size; i++ ) {
         std::vector<AMP::Mesh::MeshElement::shared_ptr> neighbors = parents[i].getNeighbors();
         for ( size_t j = 0; j < neighbors.size(); j++ ) {
-            if ( neighbors[j] != NULL )
+            if ( neighbors[j] != nullptr )
                 parents.push_back( *neighbors[j] );
         }
     }
@@ -256,7 +256,7 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
         int root_submesh = d_comm.getSize();
         int subcommSize  = -1;
         int myRank       = -1;
-        if ( submesh.get() != NULL ) {
+        if ( submesh.get() != nullptr ) {
             AMP_MPI subcomm = submesh->getComm();
             rank_submesh    = subcomm.getRank();
             root_submesh    = d_comm.getRank();
@@ -324,7 +324,7 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
         recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
     }
     std::vector<AMP::Mesh::MeshElementID> recv_id( tot_size + 1 );
-    AMP::Mesh::MeshElementID *send_buffer = NULL;
+    AMP::Mesh::MeshElementID *send_buffer = nullptr;
     if ( !remote_ids2.empty() )
         send_buffer = &remote_ids2[0];
     size_t N        = d_comm.allToAll<AMP::Mesh::MeshElementID>(
@@ -343,7 +343,7 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
     // Send the DOFs back to the original processor
     std::vector<size_t> remote_dof;
     remote_dof.resize( remote_ids2.size() + 1, static_cast<size_t>( -1 ) );
-    size_t *send_buffer_DOFs = NULL;
+    size_t *send_buffer_DOFs = nullptr;
     if ( tot_size > 0 )
         send_buffer_DOFs = &recieved_DOF[0];
     N                    = d_comm.allToAll<size_t>( send_buffer_DOFs,

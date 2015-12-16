@@ -33,7 +33,7 @@ SolverStrategy::SolverStrategy()
 }
 SolverStrategy::SolverStrategy( AMP::shared_ptr<SolverStrategyParameters> parameters )
 {
-    AMP_INSIST( parameters.get() != NULL, "NULL SolverStrategyParameters object" );
+    AMP_INSIST( parameters.get() != nullptr, "NULL SolverStrategyParameters object" );
 
     d_iObjectId            = SolverStrategy::d_iInstanceId;
     d_iNumberIterations    = -1;
@@ -59,7 +59,7 @@ SolverStrategy::~SolverStrategy() {}
 ****************************************************************/
 void SolverStrategy::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 {
-    AMP_INSIST( db.get() != NULL, "InputDatabase object must be non-NULL" );
+    AMP_INSIST( db.get() != nullptr, "InputDatabase object must be non-NULL" );
     d_iMaxIterations       = db->getIntegerWithDefault( "max_iterations", 1 );
     d_dMaxError            = db->getDoubleWithDefault( "max_error", 1.0e-12 );
     d_iDebugPrintInfoLevel = db->getIntegerWithDefault( "print_info_level", 0 );
@@ -67,7 +67,7 @@ void SolverStrategy::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 }
 void SolverStrategy::initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters )
 {
-    AMP_INSIST( parameters.get() != NULL, "SolverStrategyParameters object cannot be NULL" );
+    AMP_INSIST( parameters.get() != nullptr, "SolverStrategyParameters object cannot be NULL" );
 }
 
 
@@ -77,7 +77,7 @@ void SolverStrategy::initialize( AMP::shared_ptr<SolverStrategyParameters> const
 void SolverStrategy::resetOperator(
     const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
-    if ( d_pOperator.get() != NULL ) {
+    if ( d_pOperator.get() != nullptr ) {
         d_pOperator->reset( params );
     }
 }

@@ -103,7 +103,7 @@ void IDATimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> pa
                       << std::endl;
         }
 
-        AMP_INSIST( d_pPreconditioner.get() != NULL,
+        AMP_INSIST( d_pPreconditioner.get() != nullptr,
                     "ERROR: IDATimeIntegrator::initialize(): creation of linear time "
                     "operators internally is only currently supported with a valid "
                     "non NULL preconditioner " );
@@ -120,7 +120,7 @@ void IDATimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> pa
 
 void IDATimeIntegrator::initializeIDA()
 {
-    N_Vector id = NULL;
+    N_Vector id = nullptr;
 
     AMP::LinearAlgebra::Vector::shared_ptr pSundials_sol =
         AMP::LinearAlgebra::SundialsVector::view( d_solution );
@@ -130,7 +130,7 @@ void IDATimeIntegrator::initializeIDA()
     id = N_VClone( pSundials_sol->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector() );
 
     d_ida_mem = IDACreate();
-    AMP_ASSERT( d_ida_mem != 0 );
+    AMP_ASSERT( d_ida_mem != nullptr );
 
     int ierr = IDASetUserData( d_ida_mem, this );
     AMP_ASSERT( ierr == IDA_SUCCESS );
@@ -204,7 +204,7 @@ void IDATimeIntegrator::initializeIDA()
 
 void IDATimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    AMP_ASSERT( parameters.get() != NULL );
+    AMP_ASSERT( parameters.get() != nullptr );
     abort();
 }
 

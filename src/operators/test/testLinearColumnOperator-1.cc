@@ -107,7 +107,7 @@ void myTest( AMP::UnitTest *ut )
 
             AMP::shared_ptr<AMP::Operator::LinearOperator> myLinOp =
                 AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( testOperator );
-            AMP_INSIST( myLinOp != NULL, "Is not a linear operator!" );
+            AMP_INSIST( myLinOp != nullptr, "Is not a linear operator!" );
 
             columnOperator->append( testOperator );
 
@@ -143,7 +143,7 @@ void myTest( AMP::UnitTest *ut )
             AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> solVec =
                 AMP::LinearAlgebra::MultiVector::create( tmp_var, meshAdapter->getComm() );
             for ( size_t i = 0; i < inputVariables.size(); i++ ) {
-                if ( inputVariables[i].get() != NULL )
+                if ( inputVariables[i].get() != nullptr )
                     solVec->addVector(
                         AMP::LinearAlgebra::createVector( dofMapVec[i], inputVariables[i] ) );
             }

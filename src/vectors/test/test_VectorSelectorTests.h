@@ -30,7 +30,7 @@ void testSelector( AMP::UnitTest *ut,
         vec->select( selector, vec->getVariable()->getName() );
     AMP::LinearAlgebra::Vector::const_shared_ptr vec4 =
         vec->constSelect( selector, vec->getVariable()->getName() );
-    if ( vec1 == NULL || vec2 == NULL || vec3 == NULL || vec4 == NULL ) {
+    if ( vec1 == nullptr || vec2 == nullptr || vec3 == nullptr || vec4 == nullptr ) {
         ut->failure( "Failed to select (" + test_name + ")" );
         return;
     }
@@ -151,7 +151,7 @@ void test_VS_Comm( AMP::UnitTest *ut )
     for ( int i = 0; i < vec_comm.getRank(); i++ )
         vec_comm.barrier();
     vec2 = AMP::LinearAlgebra::VS_Comm( self_comm ).subset( vec1 );
-    if ( vec1 != NULL ) {
+    if ( vec1 != nullptr ) {
         if ( vec2->getLocalSize() != vec1->getLocalSize() ||
              vec2->getGlobalSize() != vec1->getLocalSize() || vec2->getComm().getSize() != 1 ) {
             ut->failure( "Subset for AMP_COMM_SELF" );

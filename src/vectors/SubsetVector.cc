@@ -26,7 +26,7 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
 {
     PROFILE_START( "view", 2 );
     AMP::shared_ptr<SubsetVariable> var = AMP::dynamic_pointer_cast<SubsetVariable>( var_in );
-    AMP_ASSERT( var.get() != NULL );
+    AMP_ASSERT( var.get() != nullptr );
     if ( AMP::dynamic_pointer_cast<const MultiVector>( v ) ) {
         // We are dealing with a multivector, it is more efficient to subset the individual pieces,
         // then create a new mulitvector
@@ -34,7 +34,7 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
         std::vector<Vector::const_shared_ptr> vec_list;
         for ( size_t i = 0; i < mv->getNumberOfSubvectors(); i++ ) {
             Vector::const_shared_ptr sub_vec = SubsetVector::view( mv->getVector( i ), var_in );
-            if ( sub_vec != NULL )
+            if ( sub_vec != nullptr )
                 vec_list.push_back( sub_vec );
         }
         if ( vec_list.empty() ) {
@@ -50,7 +50,7 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
     // Subset the DOFManager and create a new communication list
     AMP::Discretization::DOFManager::shared_ptr parentDOF = v->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr subsetDOF = var->getSubsetDOF( parentDOF );
-    if ( subsetDOF.get() == NULL ) {
+    if ( subsetDOF.get() == nullptr ) {
         PROFILE_STOP2( "view", 2 );
         return Vector::shared_ptr();
     } else if ( subsetDOF->numGlobalDOF() == 0 ) {
@@ -84,7 +84,7 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
     retVal->setCommunicationList( commList );
     AMP::shared_ptr<AMP::Discretization::subsetDOFManager> tmp =
         AMP::dynamic_pointer_cast<AMP::Discretization::subsetDOFManager>( subsetDOF );
-    if ( tmp != NULL ) {
+    if ( tmp != nullptr ) {
         retVal->d_SubsetLocalIDToViewGlobalID = tmp->getLocalParentDOFs();
     } else if ( subsetDOF->numLocalDOF() == parentDOF->numLocalDOF() ) {
         retVal->d_SubsetLocalIDToViewGlobalID.resize( parentDOF->numLocalDOF() );
@@ -96,7 +96,7 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
         AMP_ERROR( "Internal error with SubsetVector" );
     }
     // Get a pointer to every value in the subset
-    std::vector<double *> data_ptr( retVal->d_SubsetLocalIDToViewGlobalID.size(), NULL );
+    std::vector<double *> data_ptr( retVal->d_SubsetLocalIDToViewGlobalID.size(), nullptr );
     VectorDataIterator iterator = retVal->d_ViewVector->begin();
     size_t last_pos             = retVal->d_ViewVector->getCommunicationList()->getStartGID();
     for ( size_t i = 0; i < data_ptr.size(); i++ ) {
@@ -158,7 +158,7 @@ void SubsetVector::copyOutRawData( double *out ) const
 void SubsetVector::addLocalValuesByGlobalID( int cnt, size_t *ndx, const double *vals )
 {
     INCREMENT_COUNT( "Virtual" );
-    AMP_ASSERT( d_ViewVector.get() != NULL );
+    AMP_ASSERT( d_ViewVector.get() != nullptr );
     if ( cnt == 0 )
         return;
     std::vector<size_t> parentDOFs;
@@ -180,7 +180,7 @@ void SubsetVector::addLocalValuesByGlobalID( int cnt, size_t *ndx, const double 
 void SubsetVector::getLocalValuesByGlobalID( int cnt, size_t *ndx, double *vals ) const
 {
     INCREMENT_COUNT( "Virtual" );
-    AMP_ASSERT( d_ViewVector.get() != NULL );
+    AMP_ASSERT( d_ViewVector.get() != nullptr );
     if ( cnt == 0 )
         return;
     std::vector<size_t> parentDOFs;
@@ -202,7 +202,7 @@ void SubsetVector::getLocalValuesByGlobalID( int cnt, size_t *ndx, double *vals 
 void SubsetVector::setLocalValuesByGlobalID( int cnt, size_t *ndx, const double *vals )
 {
     INCREMENT_COUNT( "Virtual" );
-    AMP_ASSERT( d_ViewVector.get() != NULL );
+    AMP_ASSERT( d_ViewVector.get() != nullptr );
     if ( cnt == 0 )
         return;
     std::vector<size_t> parentDOFs;
@@ -224,7 +224,7 @@ void SubsetVector::setLocalValuesByGlobalID( int cnt, size_t *ndx, const double 
 void SubsetVector::addValuesByLocalID( int cnt, size_t *ndx, const double *vals )
 {
     INCREMENT_COUNT( "Virtual" );
-    AMP_ASSERT( d_ViewVector.get() != NULL );
+    AMP_ASSERT( d_ViewVector.get() != nullptr );
     size_t *t = new size_t[cnt];
     for ( int i = 0; i != cnt; i++ )
         t[i]    = d_SubsetLocalIDToViewGlobalID[ndx[i]];
@@ -234,7 +234,7 @@ void SubsetVector::addValuesByLocalID( int cnt, size_t *ndx, const double *vals 
 void SubsetVector::setValuesByLocalID( int cnt, size_t *ndx, const double *vals )
 {
     INCREMENT_COUNT( "Virtual" );
-    AMP_ASSERT( d_ViewVector.get() != NULL );
+    AMP_ASSERT( d_ViewVector.get() != nullptr );
     size_t *t = new size_t[cnt];
     for ( int i = 0; i != cnt; i++ )
         t[i]    = d_SubsetLocalIDToViewGlobalID[ndx[i]];
@@ -244,7 +244,7 @@ void SubsetVector::setValuesByLocalID( int cnt, size_t *ndx, const double *vals 
 void SubsetVector::getValuesByLocalID( int cnt, size_t *ndx, double *vals ) const
 {
     INCREMENT_COUNT( "Virtual" );
-    AMP_ASSERT( d_ViewVector.get() != NULL );
+    AMP_ASSERT( d_ViewVector.get() != nullptr );
     size_t *t = new size_t[cnt];
     for ( int i = 0; i != cnt; i++ )
         t[i]    = d_SubsetLocalIDToViewGlobalID[ndx[i]];

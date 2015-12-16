@@ -40,13 +40,13 @@ Epetra_Map &ManagedEpetraMatrixParameters::getEpetraRowMap()
 #else
     Epetra_SerialComm comm;
 #endif
-    AMP_ASSERT( d_DOFManagerLeft.get() != NULL );
-    AMP_ASSERT( d_DOFManagerRight.get() != NULL );
+    AMP_ASSERT( d_DOFManagerLeft.get() != nullptr );
+    AMP_ASSERT( d_DOFManagerRight.get() != nullptr );
     AMP_INSIST( d_DOFManagerLeft->numGlobalDOF() < 0x80000000,
                 "Epetra does not support vectors with global size greater than 2^31" );
     int N_row_local  = static_cast<int>( d_DOFManagerLeft->numLocalDOF() );
     int N_row_global = static_cast<int>( d_DOFManagerLeft->numGlobalDOF() );
-    if ( d_eRowMap.get() == 0 ) {
+    if ( d_eRowMap.get() == nullptr ) {
         d_eRowMap =
             AMP::shared_ptr<Epetra_Map>( new Epetra_Map( N_row_global, N_row_local, 0, comm ) );
     }
@@ -61,7 +61,7 @@ Epetra_Map *ManagedEpetraMatrixParameters::getEpetraColMap()
 #else
     Epetra_SerialComm comm;
 #endif
-    return NULL;
+    return nullptr;
     /*AMP_ASSERT(d_DOFManagerLeft.get()!=NULL);
     AMP_ASSERT(d_DOFManagerRight.get()!=NULL);
     AMP_INSIST(d_DOFManagerLeft->numGlobalDOF()<0x80000000,"Epetra does not support vectors with
@@ -112,8 +112,8 @@ int ManagedEpetraMatrixParameters::maxEntitiesInRow() const
 
 bool ManagedEpetraMatrixParameters::isSquare()
 {
-    AMP_ASSERT( d_DOFManagerLeft.get() != NULL );
-    AMP_ASSERT( d_DOFManagerRight.get() != NULL );
+    AMP_ASSERT( d_DOFManagerLeft.get() != nullptr );
+    AMP_ASSERT( d_DOFManagerRight.get() != nullptr );
     return d_DOFManagerLeft->numLocalDOF() == d_DOFManagerRight->numLocalDOF() &&
            d_DOFManagerLeft->numGlobalDOF() == d_DOFManagerRight->numGlobalDOF();
 }

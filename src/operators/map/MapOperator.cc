@@ -10,8 +10,8 @@ void MapOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
     AMP::shared_ptr<MapOperatorParameters> myparams =
         AMP::dynamic_pointer_cast<MapOperatorParameters>( params );
 
-    AMP_INSIST( myparams.get() != NULL, "NULL parameter" );
-    AMP_INSIST( myparams->d_db.get() != NULL, "NULL database" );
+    AMP_INSIST( myparams.get() != nullptr, "NULL parameter" );
+    AMP_INSIST( myparams->d_db.get() != nullptr, "NULL database" );
     AMP_INSIST( !myparams->d_MapComm.isNull(), "NULL communicator" );
 
     AMP_INSIST( ( myparams->d_db )->keyExists( "BoundaryId" ), "Key ''tflow_id'' is missing!" );

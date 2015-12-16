@@ -33,9 +33,9 @@ public:
 
     static AMP::LinearAlgebra::Vector::shared_ptr getVector()
     {
-        if ( globalMeshForMeshVectorFactory.get() == NULL )
+        if ( globalMeshForMeshVectorFactory.get() == nullptr )
             AMP_ERROR( "mesh must be set before this can be called" );
-        if ( globalDOFforMeshVectorFactory.get() == NULL )
+        if ( globalDOFforMeshVectorFactory.get() == nullptr )
             AMP_ERROR( "DOF must be set before this can be called" );
         return AMP::LinearAlgebra::createVector(
             globalDOFforMeshVectorFactory, getVariable(), SPLIT );
@@ -43,7 +43,7 @@ public:
 
     static AMP::Discretization::DOFManager::shared_ptr getDOFMap()
     {
-        if ( globalDOFforMeshVectorFactory.get() == NULL )
+        if ( globalDOFforMeshVectorFactory.get() == nullptr )
             AMP_ERROR( "DOF must be set before this can be called" );
         return globalDOFforMeshVectorFactory;
     }

@@ -28,7 +28,7 @@ template <class T>
 static T *getPtr( std::vector<T> &x )
 {
     if ( x.size() == 0 )
-        return NULL;
+        return nullptr;
     return &x[0];
 }
 
@@ -48,13 +48,13 @@ void Map1Dto3D::reset( const AMP::shared_ptr<OperatorParameters> &params )
     AMP::shared_ptr<MapOperatorParameters> myparams =
         AMP::dynamic_pointer_cast<MapOperatorParameters>( params );
 
-    AMP_INSIST( ( ( myparams.get() ) != NULL ), "NULL parameter" );
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameter" );
+    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
     AMP_INSIST( !myparams->d_MapComm.isNull(), "NULL communicator" );
     d_Mesh    = myparams->d_Mesh;
     d_MapComm = myparams->d_MapComm;
     d_MapMesh = myparams->d_MapMesh;
-    AMP_INSIST( d_MapComm.sumReduce<int>( d_MapMesh.get() != NULL ? 1 : 0 ) > 0,
+    AMP_INSIST( d_MapComm.sumReduce<int>( d_MapMesh.get() != nullptr ? 1 : 0 ) > 0,
                 "Somebody must own the mesh" );
 
     d_useGaussVec = myparams->d_db->getBoolWithDefault( "UseGaussVec", false );
@@ -84,12 +84,12 @@ void Map1Dto3D::computeZNodeLocations()
 {
 
     // Check that the mesh exists on some processors
-    int N_mesh = d_MapComm.sumReduce<int>( ( d_MapMesh.get() != NULL ? 1 : 0 ) );
+    int N_mesh = d_MapComm.sumReduce<int>( ( d_MapMesh.get() != nullptr ? 1 : 0 ) );
     AMP_ASSERT( N_mesh > 0 );
 
     // Get the local location of nodes on the boundary
     std::vector<double> t_zLocations;
-    if ( d_MapMesh.get() != NULL ) {
+    if ( d_MapMesh.get() != nullptr ) {
         // Get an iterator over the nodes on the boundary
         AMP::Mesh::MeshIterator bnd =
             d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryId, 0 );
@@ -127,12 +127,12 @@ void Map1Dto3D::computeZGaussLocations()
 {
 
     // Check that the mesh exists on some processors
-    int N_mesh = d_MapComm.sumReduce<int>( ( d_MapMesh.get() != NULL ? 1 : 0 ) );
+    int N_mesh = d_MapComm.sumReduce<int>( ( d_MapMesh.get() != nullptr ? 1 : 0 ) );
     AMP_ASSERT( N_mesh > 0 );
 
     // Get the local location of nodes on the boundary
     std::vector<double> t_zLocations;
-    if ( d_MapMesh.get() != NULL ) {
+    if ( d_MapMesh.get() != nullptr ) {
         // Get an iterator over the nodes on the boundary
         AMP::Mesh::MeshIterator bnd =
             d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryId, 0 );
@@ -229,10 +229,10 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                              AMP::LinearAlgebra::Vector::shared_ptr )
 {
 
-    if ( d_MapMesh.get() == NULL )
+    if ( d_MapMesh.get() == nullptr )
         return;
 
-    AMP_ASSERT( u != NULL );
+    AMP_ASSERT( u != nullptr );
 
     // Subset the input vector, it is a simple vector and we need to subset for the current comm
     // before the variable
@@ -243,8 +243,8 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         commSubsetVec->constSubsetVectorForVariable( d_inpVariable );
 
     // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  subsetOutputVector( r );
-    AMP_ASSERT( inputVec != NULL );
-    AMP_ASSERT( outputVec != NULL );
+    AMP_ASSERT( inputVec != nullptr );
+    AMP_ASSERT( outputVec != nullptr );
     // outputVec->zero();
 
     std::vector<int> numFaceGauss( outputVec->getLocalSize(), 0 );
@@ -323,10 +323,10 @@ void Map1Dto3D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                              AMP::LinearAlgebra::Vector::shared_ptr )
 {
 
-    if ( d_MapMesh.get() == NULL )
+    if ( d_MapMesh.get() == nullptr )
         return;
 
-    AMP_ASSERT( u != NULL );
+    AMP_ASSERT( u != nullptr );
 
     // Subset the input vector, it is a simple vector and we need to subset for the current comm
     // before the variable
@@ -337,8 +337,8 @@ void Map1Dto3D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         commSubsetVec->constSubsetVectorForVariable( d_inpVariable );
 
     // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  subsetOutputVector( r );
-    AMP_ASSERT( inputVec != NULL );
-    AMP_ASSERT( outputVec != NULL );
+    AMP_ASSERT( inputVec != nullptr );
+    AMP_ASSERT( outputVec != nullptr );
     // outputVec->zero();
 
     std::vector<int> numFaceNodes( outputVec->getLocalSize(), 0 );

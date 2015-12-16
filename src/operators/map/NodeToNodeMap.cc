@@ -16,7 +16,7 @@ template <class T>
 static T *getPtr( std::vector<T> &x )
 {
     if ( x.empty() )
-        return NULL;
+        return nullptr;
     return &x[0];
 }
 
@@ -35,7 +35,7 @@ NodeToNodeMap::NodeToNodeMap( const AMP::shared_ptr<AMP::Operator::OperatorParam
 
     // Set class members
     dim = -1;
-    if ( d_mesh1.get() != NULL )
+    if ( d_mesh1.get() != nullptr )
         dim = d_mesh1->getDim();
     dim     = d_MapComm.maxReduce( dim );
     AMP_INSIST( dim <= 3, "Node to Node map only works up to 3d (see Point)" );
@@ -46,9 +46,9 @@ NodeToNodeMap::NodeToNodeMap( const AMP::shared_ptr<AMP::Operator::OperatorParam
     d_callMakeConsistentSet = Params.callMakeConsistentSet;
 
     // Create the element iterators
-    if ( d_mesh1.get() != NULL )
+    if ( d_mesh1.get() != nullptr )
         d_iterator1 = d_mesh1->getBoundaryIDIterator( geomType, Params.d_BoundaryID1, 0 );
-    if ( d_mesh2.get() != NULL )
+    if ( d_mesh2.get() != nullptr )
         d_iterator2 = d_mesh2->getBoundaryIDIterator( geomType, Params.d_BoundaryID2, 0 );
 
     // Create the pairs of points that are aligned
@@ -267,9 +267,9 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
     // For each mesh, get the list of points owned by the current processor
     std::vector<Point> ownedPointsMesh1;
     std::vector<Point> ownedPointsMesh2;
-    if ( d_mesh1.get() != NULL )
+    if ( d_mesh1.get() != nullptr )
         ownedPointsMesh1 = createOwnedPoints( d_iterator1 );
-    if ( d_mesh2.get() != NULL )
+    if ( d_mesh2.get() != nullptr )
         ownedPointsMesh2 = createOwnedPoints( d_iterator2 );
 
 

@@ -22,10 +22,10 @@ static MeshElement nullElement;
 libMeshIterator::libMeshIterator()
 {
     typeID   = libMeshIteratorTypeID;
-    iterator = NULL;
-    d_begin  = NULL;
-    d_end    = NULL;
-    d_pos    = NULL;
+    iterator = nullptr;
+    d_begin  = nullptr;
+    d_end    = nullptr;
+    d_pos    = nullptr;
     d_pos2   = -1;
     d_type   = -1;
     d_size   = 0;
@@ -41,7 +41,7 @@ libMeshIterator::libMeshIterator( int type,
                                   int pos2 )
 {
     typeID   = libMeshIteratorTypeID;
-    iterator = NULL;
+    iterator = nullptr;
     d_type   = type;
     d_mesh   = mesh;
     d_gcw    = gcw;
@@ -101,7 +101,7 @@ libMeshIterator::libMeshIterator( const libMeshIterator &rhs )
     : MeshIterator() // Note: we never want to call the base copy constructor
 {
     typeID   = libMeshIteratorTypeID;
-    iterator = NULL;
+    iterator = nullptr;
     d_type   = rhs.d_type;
     d_mesh   = rhs.d_mesh;
     d_gcw    = rhs.d_gcw;
@@ -132,7 +132,7 @@ libMeshIterator &libMeshIterator::operator=( const libMeshIterator &rhs )
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
     this->typeID   = libMeshIteratorTypeID;
-    this->iterator = NULL;
+    this->iterator = nullptr;
     this->d_type   = rhs.d_type;
     this->d_mesh   = rhs.d_mesh;
     this->d_gcw    = rhs.d_gcw;
@@ -175,7 +175,7 @@ MeshIterator *libMeshIterator::clone() const { return new libMeshIterator( *this
 ********************************************************/
 libMeshIterator::~libMeshIterator()
 {
-    if ( d_pos != NULL ) {
+    if ( d_pos != nullptr ) {
         if ( d_type == 0 ) {
             // Node iterator
             delete (::Mesh::node_iterator *) d_pos;
@@ -188,7 +188,7 @@ libMeshIterator::~libMeshIterator()
             delete (::Mesh::element_iterator *) d_end;
         }
     }
-    iterator = NULL;
+    iterator = nullptr;
 }
 
 
@@ -305,7 +305,7 @@ MeshIterator &libMeshIterator::operator+=( int n )
 ********************************************************/
 bool libMeshIterator::operator==( const MeshIterator &rhs ) const
 {
-    libMeshIterator *rhs2 = NULL;
+    libMeshIterator *rhs2 = nullptr;
     libMeshIterator *tmp =
         (libMeshIterator
              *) &rhs; // Convert rhs to a libMeshIterator* so we can access the base class members
@@ -317,7 +317,7 @@ bool libMeshIterator::operator==( const MeshIterator &rhs ) const
         rhs2 = (libMeshIterator *) tmp->iterator;
     }
     // Perform direct comparisions if we are dealing with two libMeshIterators
-    if ( rhs2 != NULL ) {
+    if ( rhs2 != nullptr ) {
         if ( d_type != rhs2->d_type ) {
             // We are dealing with different types of elements
             return false;

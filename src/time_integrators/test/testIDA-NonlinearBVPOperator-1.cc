@@ -247,7 +247,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
         new AMP::Solver::SolverStrategyParameters( pcSolver_db ) );
     pcSolverParams->d_pOperator = linearTimeOperator;
 
-    if ( pcSolverParams.get() == NULL ) {
+    if ( pcSolverParams.get() == nullptr ) {
         ut->failure( "Testing SolverStrategyParameters's constructor: FAIL" );
     } else {
         ut->passes( "Testing SolverStrategyParameters's constructor: PASS" );
@@ -256,7 +256,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
     AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver(
         new AMP::Solver::TrilinosMLSolver( pcSolverParams ) );
 
-    if ( pcSolver.get() == NULL ) {
+    if ( pcSolver.get() == nullptr ) {
         ut->failure( "Testing TrilinosMLSolver's constructor: FAIL" );
     } else {
         ut->passes( "Testing TrilinosMLSolver's constructor: PASS" );
@@ -277,7 +277,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
     AMP::shared_ptr<AMP::TimeIntegrator::IDATimeIntegratorParameters> time_Params(
         new AMP::TimeIntegrator::IDATimeIntegratorParameters( ida_db ) );
 
-    if ( ( time_Params.get() ) == NULL ) {
+    if ( ( time_Params.get() ) == nullptr ) {
         ut->failure( "Testing IDATimeIntegratorParameters' Constructor" );
     } else {
         ut->passes( "Testing IDATimeIntegratorParameters' Constructor" );
@@ -298,7 +298,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
     AMP::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(
         new AMP::TimeIntegrator::IDATimeIntegrator( time_Params ) );
 
-    if ( pIDATimeIntegrator.get() == NULL ) {
+    if ( pIDATimeIntegrator.get() == nullptr ) {
         ut->failure( "Testing IDATimeIntegrator's constructor" );
     } else {
         ut->passes( "Tested IDATimeIntegrator's constructor" );

@@ -35,7 +35,7 @@ void TractionBoundaryOperator::addRHScorrection( AMP::LinearAlgebra::Vector::sha
 {
     if ( !d_residualMode ) {
         AMP::LinearAlgebra::Vector::shared_ptr myRhs = mySubsetVector( rhs, d_var );
-        if ( d_correction == NULL ) {
+        if ( d_correction == nullptr ) {
             d_correction = myRhs->cloneVector();
         }
         computeCorrection();
@@ -49,7 +49,7 @@ void TractionBoundaryOperator::apply( AMP::LinearAlgebra::Vector::const_shared_p
 {
     if ( d_residualMode ) {
         AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector( r, d_var );
-        if ( d_correction == NULL ) {
+        if ( d_correction == nullptr ) {
             d_correction = rInternal->cloneVector();
         }
         computeCorrection();
@@ -109,10 +109,10 @@ void TractionBoundaryOperator::computeCorrection()
 
         for ( size_t j = 0; j < elem->n_nodes(); ++j ) {
             delete ( elem->get_node( j ) );
-            elem->set_node( j ) = NULL;
+            elem->set_node( j ) = nullptr;
         } // end for j
         delete elem;
-        elem = NULL;
+        elem = nullptr;
     } // end b
     d_correction->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
 }
@@ -121,8 +121,8 @@ AMP::LinearAlgebra::Vector::shared_ptr
 TractionBoundaryOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                           AMP::LinearAlgebra::Variable::shared_ptr var )
 {
-    if ( vec != NULL ) {
-        if ( d_Mesh.get() != NULL ) {
+    if ( vec != nullptr ) {
+        if ( d_Mesh.get() != nullptr ) {
             AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
             AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
                 vec->select( meshSelector, ( ( vec->getVariable() )->getName() ) );

@@ -12,8 +12,8 @@ void DirichletVectorCorrection::reset( const AMP::shared_ptr<OperatorParameters>
     AMP::shared_ptr<DirichletVectorCorrectionParameters> params =
         AMP::dynamic_pointer_cast<DirichletVectorCorrectionParameters>( tmpParams );
 
-    AMP_INSIST( ( ( params.get() ) != NULL ), "NULL parameters" );
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameters" );
+    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
     bool skipParams = ( params->d_db )->getBoolWithDefault( "skip_params", false );
 
@@ -190,7 +190,7 @@ AMP::LinearAlgebra::Vector::shared_ptr
 DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                            AMP::LinearAlgebra::Variable::shared_ptr var )
 {
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
             vec->select( meshSelector, ( vec->getVariable() )->getName() );
@@ -206,7 +206,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr
 DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
                                            AMP::LinearAlgebra::Variable::shared_ptr var )
 {
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec =
             vec->constSelect( meshSelector, ( vec->getVariable() )->getName() );

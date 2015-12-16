@@ -45,31 +45,31 @@ void LinearTimeOperator::reset(
 
     // the parameter object for the rhs operator will be NULL during construction, but should
     // not be NULL during a reset based on getJacobianParameters
-    if ( params->d_pRhsOperatorParameters.get() != NULL ) {
+    if ( params->d_pRhsOperatorParameters.get() != nullptr ) {
         d_pRhsOperator->reset( params->d_pRhsOperatorParameters );
     }
 
     // the parameter object for the mass operator will be NULL during construction, but should
     // not be NULL during a reset based on getJacobianParameters
-    if ( params->d_pMassOperatorParameters.get() != NULL ) {
+    if ( params->d_pMassOperatorParameters.get() != nullptr ) {
         d_pMassOperator->reset( params->d_pMassOperatorParameters );
     }
 
     AMP::shared_ptr<AMP::Operator::LinearOperator> pRhsOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pRhsOperator );
-    AMP_INSIST( pRhsOperator.get() != NULL, "ERROR: RhsOperator is not of type LinearOperator" );
+    AMP_INSIST( pRhsOperator.get() != nullptr, "ERROR: RhsOperator is not of type LinearOperator" );
 
     AMP::shared_ptr<AMP::LinearAlgebra::Matrix> pMatrix = pRhsOperator->getMatrix();
 
     if ( d_bModifyRhsOperatorMatrix ) {
-        AMP_INSIST( pMatrix.get() != NULL, "ERROR: NULL matrix pointer" );
+        AMP_INSIST( pMatrix.get() != nullptr, "ERROR: NULL matrix pointer" );
         setMatrix( pMatrix );
     } else {
         // if it's not okay to modify the rhs matrix then copy it over
-        if ( d_matrix.get() == NULL ) {
-            AMP_INSIST( pMatrix.get() != NULL, "ERROR: NULL matrix pointer" );
+        if ( d_matrix.get() == nullptr ) {
+            AMP_INSIST( pMatrix.get() != nullptr, "ERROR: NULL matrix pointer" );
             d_matrix = pMatrix->cloneMatrix();
-            AMP_INSIST( d_matrix.get() != NULL, "ERROR: NULL matrix pointer" );
+            AMP_INSIST( d_matrix.get() != nullptr, "ERROR: NULL matrix pointer" );
         }
 
         d_matrix->zero();
@@ -82,12 +82,12 @@ void LinearTimeOperator::reset(
     if ( !d_bAlgebraicComponent ) {
         AMP::shared_ptr<AMP::Operator::LinearOperator> pMassOperator =
             AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pMassOperator );
-        AMP_INSIST( pMassOperator.get() != NULL,
+        AMP_INSIST( pMassOperator.get() != nullptr,
                     "ERROR: MassOperator is not of type LinearOperator" );
 
         AMP::shared_ptr<AMP::LinearAlgebra::Matrix> pMassMatrix = pMassOperator->getMatrix();
 
-        AMP_INSIST( pMassMatrix.get() != NULL, "ERROR: NULL matrix pointer" );
+        AMP_INSIST( pMassMatrix.get() != nullptr, "ERROR: NULL matrix pointer" );
         // update the matrix to incorporate the contribution from the time derivative
         d_matrix->axpy( d_dScalingFactor, *pMassMatrix );
     }

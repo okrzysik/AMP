@@ -18,7 +18,7 @@ DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManage
                                                  const AMP_MPI &comm_in )
 {
     // Limit the new comm to be <= the parent comm
-    if ( parentDOFManager.get() == NULL || comm_in.isNull() )
+    if ( parentDOFManager.get() == nullptr || comm_in.isNull() )
         return DOFManager::shared_ptr();
     PROFILE_START( "subsetDOFManager", 2 );
     AMP_MPI comm = AMP_MPI::intersect( parentDOFManager->getComm(), comm_in );
@@ -57,7 +57,7 @@ DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManage
         return AMP::const_pointer_cast<DOFManager>( parentDOFManager );
     }
     // Determine which remote DOFs we will need to keep
-    size_t *send_data = NULL;
+    size_t *send_data = nullptr;
     if ( N_local > 0 )
         send_data = &( subsetDOF->d_localDOFs[0] );
     std::vector<int> N_remote( subsetDOF->d_comm.getSize(), 0 );

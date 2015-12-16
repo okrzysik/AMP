@@ -19,7 +19,7 @@ void ColumnOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
                                AMP::LinearAlgebra::Vector::shared_ptr r )
 {
     for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
-        AMP_INSIST( ( d_Operators[i].get() != NULL ),
+        AMP_INSIST( ( d_Operators[i].get() != nullptr ),
                     "ColumnOperator::operator component is NULL" );
         d_Operators[i]->residual( f, u, r );
     }
@@ -48,7 +48,7 @@ void ColumnOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
     AMP::shared_ptr<ColumnOperatorParameters> columnParameters =
         AMP::dynamic_pointer_cast<ColumnOperatorParameters>( params );
 
-    AMP_INSIST( ( columnParameters.get() != NULL ),
+    AMP_INSIST( ( columnParameters.get() != nullptr ),
                 "ColumnOperator::reset parameter object is NULL" );
 
     AMP_INSIST( ( ( ( columnParameters->d_OperatorParameters ).size() ) == ( d_Operators.size() ) ),
@@ -61,7 +61,7 @@ void ColumnOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
 
 void ColumnOperator::append( AMP::shared_ptr<Operator> op )
 {
-    AMP_INSIST( ( op.get() != NULL ),
+    AMP_INSIST( ( op.get() != nullptr ),
                 "AMP::ColumnOperator::appendRow input argument is a NULL operator" );
 
     d_Operators.push_back( op );
@@ -74,7 +74,7 @@ AMP::LinearAlgebra::Variable::shared_ptr ColumnOperator::getInputVariable()
 
     for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
         AMP::LinearAlgebra::Variable::shared_ptr opVar = d_Operators[i]->getInputVariable();
-        if ( opVar.get() != NULL ) {
+        if ( opVar.get() != nullptr ) {
             retVariable->add( opVar );
         }
     }
@@ -90,7 +90,7 @@ AMP::LinearAlgebra::Variable::shared_ptr ColumnOperator::getOutputVariable()
 
     for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
         AMP::LinearAlgebra::Variable::shared_ptr opVar = d_Operators[i]->getOutputVariable();
-        if ( opVar.get() != NULL ) {
+        if ( opVar.get() != nullptr ) {
             retVariable->add( opVar );
         }
     }

@@ -13,7 +13,7 @@ NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params )
 {
     NativePetscVectorParameters &npvParams = in_params->castTo<NativePetscVectorParameters>();
     d_petscVec                             = npvParams.d_InVec;
-    d_pArray                               = 0;
+    d_pArray                               = nullptr;
     CommunicationListParameters::shared_ptr params( new CommunicationListParameters() );
     params->d_comm      = npvParams.d_Comm;
     params->d_localsize = npvParams.d_localsize;

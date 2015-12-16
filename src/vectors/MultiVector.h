@@ -288,7 +288,7 @@ protected:
                                 const double *vals,
                                 std::vector<std::vector<size_t>> &out_indices,
                                 std::vector<std::vector<double>> &out_vals,
-                                std::vector<std::vector<int>> *remap = NULL ) const;
+                                std::vector<std::vector<int>> *remap = nullptr ) const;
 
     /** A method that will translate an array of local ids relative to the multivector
       * into an array of arrays of local ids relative to the component vectors
@@ -306,7 +306,7 @@ protected:
                                const double *vals,
                                std::vector<std::vector<size_t>> &out_indices,
                                std::vector<std::vector<double>> &out_vals,
-                               std::vector<std::vector<int>> *remap = NULL ) const;
+                               std::vector<std::vector<int>> *remap = nullptr ) const;
 
     //! Return the id of the data
     virtual uint64_t getDataID() const override { return 0; }

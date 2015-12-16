@@ -249,10 +249,10 @@ void computeTemperatureRhsVector(
 
         for ( size_t j = 0; j < elem->n_nodes(); ++j ) {
             delete ( elem->get_node( j ) );
-            elem->set_node( j ) = NULL;
+            elem->set_node( j ) = nullptr;
         } // end j
         delete elem;
-        elem = NULL;
+        elem = nullptr;
     } // end el
 
     rInternal->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );

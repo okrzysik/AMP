@@ -10,8 +10,8 @@ namespace LinearAlgebra {
 ****************************************************************/
 VectorDataIterator::VectorDataIterator()
 {
-    d_Vec          = NULL;
-    d_Block        = NULL;
+    d_Vec          = nullptr;
+    d_Block        = nullptr;
     d_CurBlock     = 0;
     d_CurOffset    = 0;
     d_position     = 0;
@@ -31,7 +31,7 @@ VectorDataIterator::VectorDataIterator( const VectorDataIterator &rhs )
 VectorDataIterator::VectorDataIterator( Vector *p, size_t position )
 {
     d_Vec          = p;
-    d_Block        = NULL;
+    d_Block        = nullptr;
     d_CurBlock     = 0;
     d_CurOffset    = 0;
     d_position     = 0;
@@ -55,8 +55,8 @@ VectorDataIterator::VectorDataIterator( Vector *p, size_t position )
 }
 ConstVectorDataIterator::ConstVectorDataIterator()
 {
-    d_Vec          = NULL;
-    d_Block        = NULL;
+    d_Vec          = nullptr;
+    d_Block        = nullptr;
     d_CurBlock     = 0;
     d_CurOffset    = 0;
     d_position     = 0;
@@ -86,7 +86,7 @@ ConstVectorDataIterator::ConstVectorDataIterator( const ConstVectorDataIterator 
 ConstVectorDataIterator::ConstVectorDataIterator( const Vector *p, size_t position )
 {
     d_Vec          = p;
-    d_Block        = NULL;
+    d_Block        = nullptr;
     d_CurBlock     = 0;
     d_CurOffset    = 0;
     d_position     = 0;

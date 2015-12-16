@@ -15,8 +15,8 @@ NonlinearKrylovAccelerator::NonlinearKrylovAccelerator(
 {
     int j, n;
 
-    d_pCorrectionVectors         = NULL;
-    d_pFunctionDifferenceVectors = NULL;
+    d_pCorrectionVectors         = nullptr;
+    d_pFunctionDifferenceVectors = nullptr;
     d_iNonlinearIterationCount   = 0;
     d_iMaximumFunctionEvals      = 50;
     d_dAbsoluteTolerance         = 1.0e-12;
@@ -42,7 +42,7 @@ NonlinearKrylovAccelerator::NonlinearKrylovAccelerator(
     d_piNext     = new int[n];
     d_piPrevious = new int[n];
 
-    if ( params->d_pInitialGuess.get() != NULL ) {
+    if ( params->d_pInitialGuess.get() != nullptr ) {
         initialize( params );
     }
 
@@ -52,7 +52,7 @@ NonlinearKrylovAccelerator::NonlinearKrylovAccelerator(
 
 NonlinearKrylovAccelerator::~NonlinearKrylovAccelerator( void )
 {
-    if ( d_ppdFunctionDifferenceInnerProducts != NULL ) {
+    if ( d_ppdFunctionDifferenceInnerProducts != nullptr ) {
         delete d_ppdFunctionDifferenceInnerProducts[0];
         delete[] d_ppdFunctionDifferenceInnerProducts;
     }
@@ -280,7 +280,7 @@ void NonlinearKrylovAccelerator::correction( AMP::shared_ptr<AMP::LinearAlgebra:
     if ( d_bIsSubspace ) {
         c = new double[( d_iMaximumNumberOfVectors + 1 )];
 
-        AMP_INSIST( c != NULL, "c is NULL" );
+        AMP_INSIST( c != nullptr, "c is NULL" );
 
         /* Project f onto the span of the w vectors: */
         /* forward substitution */
@@ -335,8 +335,8 @@ void NonlinearKrylovAccelerator::solve( AMP::shared_ptr<const AMP::LinearAlgebra
                                         AMP::shared_ptr<AMP::LinearAlgebra::Vector>
                                             u )
 {
-    AMP_INSIST( d_pOperator != NULL, "Operator cannot be NULL" );
-    AMP_INSIST( d_pPreconditioner.get() != NULL, "Preconditioning operator cannot be NULL" );
+    AMP_INSIST( d_pOperator != nullptr, "Operator cannot be NULL" );
+    AMP_INSIST( d_pPreconditioner.get() != nullptr, "Preconditioning operator cannot be NULL" );
 
     double residual_norm = 1.0e10;
 
@@ -359,7 +359,7 @@ void NonlinearKrylovAccelerator::solve( AMP::shared_ptr<const AMP::LinearAlgebra
         d_pOperator->getParameters( "Jacobian", d_pvSolution );
     AMP::shared_ptr<AMP::Operator::Operator> pc_operator = d_pPreconditioner->getOperator();
 
-    AMP_INSIST( pc_operator.get() != NULL,
+    AMP_INSIST( pc_operator.get() != nullptr,
                 "NonlinearKrylovAccelerator::solve: preconditioning operator cannot be NULL" );
 
     // if using a frozen preconditioner set it up iFirstVectorIndex
@@ -505,7 +505,7 @@ void NonlinearKrylovAccelerator::setMaxFunctionEvaluations( int max_feval )
 void NonlinearKrylovAccelerator::putToDatabase( AMP::shared_ptr<AMP::Database> &db )
 {
 
-    AMP_INSIST( db.get() != NULL, "database object cannot be NULL" );
+    AMP_INSIST( db.get() != nullptr, "database object cannot be NULL" );
 
     db->putInteger( "d_MaxIterations", d_iMaxIterations );
     db->putInteger( "d_iMaximumFunctionEvals", d_iMaximumFunctionEvals );

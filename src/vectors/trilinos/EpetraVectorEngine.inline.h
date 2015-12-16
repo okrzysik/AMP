@@ -13,7 +13,7 @@ inline AMP_MPI EpetraVectorEngine::getComm() const { return getEngineParameters(
 inline void *EpetraVectorEngine::getDataBlock( size_t i )
 {
     if ( i > 1 )
-        return 0;
+        return nullptr;
     double *p;
     getEpetra_Vector().ExtractView( &p );
     return p;
@@ -22,7 +22,7 @@ inline void *EpetraVectorEngine::getDataBlock( size_t i )
 inline const void *EpetraVectorEngine::getDataBlock( size_t i ) const
 {
     if ( i > 1 )
-        return 0;
+        return nullptr;
     double *p;
     getEpetra_Vector().ExtractView( &p );
     return p;

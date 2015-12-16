@@ -14,18 +14,18 @@ CoupledChannelToCladMapOperator::CoupledChannelToCladMapOperator(
     const AMP::shared_ptr<CoupledChannelToCladMapOperatorParameters> &params )
     : Operator( params )
 {
-    AMP_ASSERT( params->d_thermalMapOperator.get() != NULL );
-    AMP_ASSERT( params->d_densityMapOperator.get() != NULL );
+    AMP_ASSERT( params->d_thermalMapOperator.get() != nullptr );
+    AMP_ASSERT( params->d_densityMapOperator.get() != nullptr );
     d_thermalMapOperator     = params->d_thermalMapOperator;
     d_densityMapOperator     = params->d_densityMapOperator;
     d_flowVariable           = params->d_variable;
     d_Mesh                   = params->d_subchannelMesh;
     d_subchannelPhysicsModel = params->d_subchannelPhysicsModel;
     d_subchannelTemperature  = params->d_vector;
-    if ( d_Mesh.get() != NULL ) {
-        AMP_ASSERT( d_subchannelPhysicsModel != NULL );
+    if ( d_Mesh.get() != nullptr ) {
+        AMP_ASSERT( d_subchannelPhysicsModel != nullptr );
     }
-    if ( d_subchannelTemperature.get() != NULL ) {
+    if ( d_subchannelTemperature.get() != nullptr ) {
         d_subchannelDensity = d_subchannelTemperature->cloneVector();
         AMP::LinearAlgebra::Variable::shared_ptr densityVariable(
             new AMP::LinearAlgebra::Variable( "Density" ) );
@@ -39,7 +39,7 @@ void CoupledChannelToCladMapOperator::apply( AMP::LinearAlgebra::Vector::const_s
 {
 
     // Compute the subchannel temperature and density
-    if ( d_Mesh != NULL ) {
+    if ( d_Mesh != nullptr ) {
         const double h_scale =
             1.0 /
             Subchannel::scaleEnthalpy; // Scale to change the input vector back to correct units

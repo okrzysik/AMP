@@ -44,7 +44,7 @@ ExplicitEuler::~ExplicitEuler() {}
 */
 void ExplicitEuler::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    AMP_ASSERT( parameters.get() != NULL );
+    AMP_ASSERT( parameters.get() != nullptr );
 
     TimeIntegrator::initialize( parameters );
 
@@ -58,7 +58,7 @@ void ExplicitEuler::initialize( AMP::shared_ptr<TimeIntegratorParameters> parame
 
 void ExplicitEuler::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    AMP_ASSERT( parameters.get() != NULL );
+    AMP_ASSERT( parameters.get() != nullptr );
 
     abort();
 }

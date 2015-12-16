@@ -20,7 +20,7 @@ void MoveMeshOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 {
     AMP::LinearAlgebra::Vector::const_shared_ptr dispVec = u->constSubsetVectorForVariable( d_var );
 
-    if ( d_prevDisp == NULL ) {
+    if ( d_prevDisp == nullptr ) {
         d_prevDisp = dispVec->cloneVector();
         d_prevDisp->zero();
     }

@@ -34,7 +34,7 @@ PelletStackOperator::PelletStackOperator(
         sprintf( pellId2Str, "%u", ( pellId + 1 ) );
         std::string meshName                 = meshNamePrefix + "_" + pellId2Str;
         AMP::Mesh::Mesh::shared_ptr currMesh = d_Mesh->Subset( meshName );
-        if ( currMesh == NULL ) {
+        if ( currMesh == nullptr ) {
             continue;
         }
         currMesh->setName(

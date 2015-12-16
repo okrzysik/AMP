@@ -14,11 +14,11 @@ MatrixParameters::MatrixParameters( AMP::Discretization::DOFManager::shared_ptr 
     d_comm            = comm;
     d_DOFManagerLeft  = left;
     d_DOFManagerRight = right;
-    if ( d_DOFManagerLeft != NULL ) {
+    if ( d_DOFManagerLeft != nullptr ) {
         AMP_ASSERT( d_comm >= d_DOFManagerLeft->getComm() );
         numLocalRows = d_DOFManagerLeft->numLocalDOF();
     }
-    if ( d_DOFManagerRight != NULL ) {
+    if ( d_DOFManagerRight != nullptr ) {
         AMP_ASSERT( d_comm >= d_DOFManagerRight->getComm() );
         numLocalColumns = d_DOFManagerRight->numLocalDOF();
     }

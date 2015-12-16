@@ -42,15 +42,15 @@ void TimeOperator::reset( const AMP::shared_ptr<AMP::Operator::OperatorParameter
     AMP::shared_ptr<TimeOperatorParameters> params =
         AMP::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
 
-    AMP_INSIST( params.get() != NULL, "Error: NULL TimeOperatorParameters object" );
+    AMP_INSIST( params.get() != nullptr, "Error: NULL TimeOperatorParameters object" );
 
     getFromInput( params->d_db );
 
-    if ( params->d_pRhsOperatorParameters.get() != NULL ) {
+    if ( params->d_pRhsOperatorParameters.get() != nullptr ) {
         d_pRhsOperator->reset( params->d_pRhsOperatorParameters );
     }
 
-    if ( params->d_pMassOperatorParameters.get() != NULL ) {
+    if ( params->d_pMassOperatorParameters.get() != nullptr ) {
         d_pMassOperator->reset( params->d_pMassOperatorParameters );
     }
 }
@@ -64,16 +64,16 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> fTmp;
 
-    AMP_INSIST( d_pMassOperator.get() != NULL,
+    AMP_INSIST( d_pMassOperator.get() != nullptr,
                 "ERROR: "
                 "AMP::TimeIntegrator::TimeIntegrator::TimeOperator::"
                 "apply, the mass operator is NULL!" );
-    AMP_INSIST( d_pRhsOperator.get() != NULL,
+    AMP_INSIST( d_pRhsOperator.get() != nullptr,
                 "ERROR: "
                 "AMP::TimeIntegrator::TimeIntegrator::TimeOperator::"
                 "apply, the rhs operator is NULL!" );
 
-    if ( u.get() != NULL )
+    if ( u.get() != nullptr )
         AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
 
     d_pScratchVector = r->cloneVector();

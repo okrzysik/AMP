@@ -91,7 +91,7 @@ bool Database::getBoolWithDefault( const std::string &key, const bool &defaultva
     if ( keyExists( key ) ) {
         std::vector<unsigned char> local_bool = getBoolArray( key );
         bool *locptr                          = (bool *) &( local_bool[0] );
-        return ( locptr == NULL ? defaultvalue : *locptr );
+        return ( locptr == nullptr ? defaultvalue : *locptr );
     } else {
         return defaultvalue;
     }
@@ -208,7 +208,7 @@ DatabaseBox Database::getDatabaseBoxWithDefault( const std::string &key,
     if ( keyExists( key ) ) {
         std::vector<DatabaseBox> local_box = getDatabaseBoxArray( key );
         DatabaseBox *locptr                = &( local_box[0] );
-        return ( locptr == NULL ? defaultvalue : *locptr );
+        return ( locptr == nullptr ? defaultvalue : *locptr );
     } else {
         return defaultvalue;
     }
@@ -317,7 +317,7 @@ char Database::getCharWithDefault( const std::string &key, const char &defaultva
     if ( keyExists( key ) ) {
         std::vector<char> local_char = getCharArray( key );
         char *locptr                 = &( local_char[0] );
-        return ( locptr == NULL ? defaultvalue : *locptr );
+        return ( locptr == nullptr ? defaultvalue : *locptr );
     } else {
         return defaultvalue;
     }
@@ -441,7 +441,7 @@ std::complex<double> Database::getComplexWithDefault( const std::string &key,
     if ( keyExists( key ) ) {
         std::vector<std::complex<double>> local_complex = getComplexArray( key );
         std::complex<double> *locptr                    = &( local_complex[0] );
-        return ( locptr == NULL ? defaultvalue : *locptr );
+        return ( locptr == nullptr ? defaultvalue : *locptr );
     } else {
         return defaultvalue;
     }
@@ -572,7 +572,7 @@ float Database::getFloatWithDefault( const std::string &key, const float &defaul
     if ( keyExists( key ) ) {
         std::vector<float> local_float = getFloatArray( key );
         float *locptr                  = &( local_float[0] );
-        return ( locptr == NULL ? defaultvalue : *locptr );
+        return ( locptr == nullptr ? defaultvalue : *locptr );
     } else {
         return defaultvalue;
     }
@@ -695,7 +695,7 @@ double Database::getDoubleWithDefault( const std::string &key, const double &def
     if ( keyExists( key ) ) {
         std::vector<double> local_double = getDoubleArray( key );
         double *locptr                   = &( local_double[0] );
-        return ( locptr == NULL ? defaultvalue : *locptr );
+        return ( locptr == nullptr ? defaultvalue : *locptr );
     } else {
         return defaultvalue;
     }
@@ -822,7 +822,7 @@ int Database::getIntegerWithDefault( const std::string &key, const int &defaultv
     if ( keyExists( key ) ) {
         std::vector<int> local_int = getIntegerArray( key );
         int *locptr                = &( local_int[0] );
-        return ( locptr == NULL ? defaultvalue : *locptr );
+        return ( locptr == nullptr ? defaultvalue : *locptr );
     } else {
         return defaultvalue;
     }
@@ -945,7 +945,7 @@ std::string Database::getStringWithDefault( const std::string &key,
     if ( keyExists( key ) ) {
         std::vector<std::string> local_string = getStringArray( key );
         std::string *locptr                   = &( local_string[0] );
-        return ( locptr == NULL ? defaultvalue : *locptr );
+        return ( locptr == nullptr ? defaultvalue : *locptr );
     } else {
         return defaultvalue;
     }

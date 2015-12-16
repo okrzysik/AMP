@@ -61,7 +61,7 @@ void MultiVariable::add( Variable::shared_ptr newVar )
 {
     AMP::shared_ptr<MultiVariable> multivariable =
         AMP::dynamic_pointer_cast<MultiVariable>( newVar );
-    if ( multivariable.get() != NULL ) {
+    if ( multivariable.get() != nullptr ) {
         iterator curVar = multivariable->beginVariable();
         while ( curVar != multivariable->endVariable() ) {
             add( *curVar );
@@ -88,7 +88,7 @@ void MultiVariable::sortVariablesByName( const std::vector<std::string> &order )
 bool MultiVariable::operator==( const Variable &rhs ) const
 {
     const MultiVariable *multivariable = dynamic_cast<const MultiVariable *>( &rhs );
-    if ( multivariable == NULL ) {
+    if ( multivariable == nullptr ) {
         // We are comparing a multi variable to another variable
         // The two variables match if the variable equals all sub-variable and
         // the names match
@@ -125,7 +125,7 @@ void MultiVariable::removeDuplicateVariables()
     // First remove any NULL pointers
     std::vector<Variable::shared_ptr>::iterator iterator = d_vVariables.begin();
     while ( iterator != d_vVariables.end() ) {
-        if ( iterator->get() == NULL )
+        if ( iterator->get() == nullptr )
             iterator = d_vVariables.erase( iterator );
         else
             ++iterator;

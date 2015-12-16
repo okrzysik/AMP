@@ -69,13 +69,13 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr manager  = AMP::Mesh::Mesh::buildMesh( params );
     AMP::Mesh::Mesh::shared_ptr pin_mesh = manager->Subset( "MultiPin" );
     AMP::Mesh::Mesh::shared_ptr clad_mesh;
-    if ( pin_mesh.get() != NULL ) {
+    if ( pin_mesh.get() != nullptr ) {
         pin_mesh->setName( "MultiPin" );
         clad_mesh = pin_mesh->Subset( "clad" );
     }
     AMP::Mesh::Mesh::shared_ptr subchannel_mesh = manager->Subset( "subchannel" );
     AMP::Mesh::Mesh::shared_ptr subchannel_face;
-    if ( subchannel_mesh.get() != NULL ) {
+    if ( subchannel_mesh.get() != nullptr ) {
         subchannel_mesh->setName( "subchannel" );
         subchannel_face = subchannel_mesh->Subset( getZFaceIterator( subchannel_mesh, 1 ) );
     }
@@ -95,13 +95,13 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     AMP::LinearAlgebra::Vector::shared_ptr T1;
     AMP::LinearAlgebra::Vector::shared_ptr T2;
     AMP::LinearAlgebra::Vector::shared_ptr dummy;
-    if ( pin_mesh.get() != NULL ) {
+    if ( pin_mesh.get() != nullptr ) {
         pin_DOFs = AMP::Discretization::simpleDOFManager::create(
             pin_mesh, AMP::Mesh::Vertex, 1, DOFsPerNode );
         T1 = AMP::LinearAlgebra::createVector( pin_DOFs, temperature );
         T1->setToScalar( 0.0 );
     }
-    if ( subchannel_face.get() != NULL ) {
+    if ( subchannel_face.get() != nullptr ) {
         subchannel_DOFs = AMP::Discretization::simpleDOFManager::create(
             subchannel_face, AMP::Mesh::Face, 1, DOFsPerNode );
         T2 = AMP::LinearAlgebra::createVector( subchannel_DOFs, temperature );
@@ -109,7 +109,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     }
 
     // Initialize the pin temperatures
-    if ( pin_mesh.get() != NULL ) {
+    if ( pin_mesh.get() != nullptr ) {
         AMP::Mesh::MeshIterator it = pin_mesh->getIterator( AMP::Mesh::Vertex, 0 );
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
@@ -163,9 +163,9 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 // Write the results
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    if ( T1.get() != NULL )
+    if ( T1.get() != nullptr )
         siloWriter->registerVector( T1, pin_mesh, AMP::Mesh::Vertex, "Temperature" );
-    if ( T2.get() != NULL )
+    if ( T2.get() != nullptr )
         siloWriter->registerVector( T2, subchannel_face, AMP::Mesh::Face, "Temperature" );
     siloWriter->setDecomposition( 1 );
     siloWriter->writeFile( fname, 0 );

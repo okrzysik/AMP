@@ -22,11 +22,11 @@ DiffusionLinearFEOperator::DiffusionLinearFEOperator(
     const AMP::shared_ptr<DiffusionLinearFEOperatorParameters> &params )
     : LinearFEOperator( params )
 {
-    AMP_INSIST( ( ( params.get() ) != NULL ), "NULL parameter" );
+    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
 
     d_diffLinElem = AMP::dynamic_pointer_cast<DiffusionLinearElement>( d_elemOp );
 
-    AMP_INSIST( ( ( d_diffLinElem.get() ) != NULL ),
+    AMP_INSIST( ( ( d_diffLinElem.get() ) != nullptr ),
                 "d_elemOp is not of type DiffusionLinearElement" );
 
     d_useConstantTemperature   = params->d_db->getBoolWithDefault( "FixedTemperature", false );
@@ -54,11 +54,11 @@ void DiffusionLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
 
     d_transportModel = params->d_transportModel;
 
-    if ( d_temperature.get() == NULL and params->d_temperature.get() != NULL ) {
+    if ( d_temperature.get() == nullptr and params->d_temperature.get() != nullptr ) {
         d_temperature = params->d_temperature->cloneVector();
     }
-    if ( d_temperature.get() != NULL ) {
-        if ( params->d_temperature.get() != NULL ) {
+    if ( d_temperature.get() != nullptr ) {
+        if ( params->d_temperature.get() != nullptr ) {
             d_temperature->copyVector( params->d_temperature );
             d_temperature->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
         } else {
@@ -67,11 +67,11 @@ void DiffusionLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
         //    std::cout << d_temperature << std::endl;
     }
 
-    if ( d_concentration.get() == NULL and params->d_concentration.get() != NULL ) {
+    if ( d_concentration.get() == nullptr and params->d_concentration.get() != nullptr ) {
         d_concentration = params->d_concentration->cloneVector();
     }
-    if ( d_concentration.get() != NULL ) {
-        if ( params->d_concentration.get() != NULL ) {
+    if ( d_concentration.get() != nullptr ) {
+        if ( params->d_concentration.get() != nullptr ) {
             d_concentration->copyVector( params->d_concentration );
             d_concentration->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
         } else {
@@ -79,11 +79,11 @@ void DiffusionLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
         }
     }
 
-    if ( d_burnup.get() == NULL and params->d_burnup.get() != NULL ) {
+    if ( d_burnup.get() == nullptr and params->d_burnup.get() != nullptr ) {
         d_burnup = params->d_burnup->cloneVector();
     }
-    if ( d_burnup.get() != NULL ) {
-        if ( params->d_burnup.get() != NULL ) {
+    if ( d_burnup.get() != nullptr ) {
+        if ( params->d_burnup.get() != nullptr ) {
             d_burnup->copyVector( params->d_burnup );
             d_burnup->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
         } else {
@@ -140,7 +140,7 @@ void DiffusionLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
     std::vector<double> localConcentration( num_local_dofs );
     std::vector<double> localBurnup( num_local_dofs );
 
-    if ( d_useConstantTemperature or d_temperature.get() == NULL ) {
+    if ( d_useConstantTemperature or d_temperature.get() == nullptr ) {
         localTemperature.resize( 0 );
     } else {
         //    AMP::pout << d_temperature << std::endl;
@@ -155,7 +155,7 @@ void DiffusionLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
         }
     }
 
-    if ( d_useConstantConcentration or d_concentration.get() == NULL ) {
+    if ( d_useConstantConcentration or d_concentration.get() == nullptr ) {
         localConcentration.resize( 0 );
     } else {
         if ( localConcentration.size() == 0 )
@@ -169,7 +169,7 @@ void DiffusionLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
         }
     }
 
-    if ( d_useConstantBurnup or d_burnup.get() == NULL ) {
+    if ( d_useConstantBurnup or d_burnup.get() == nullptr ) {
         localBurnup.resize( 0 );
     } else {
         if ( localBurnup.size() == 0 )

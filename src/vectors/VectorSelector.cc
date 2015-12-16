@@ -97,7 +97,7 @@ AMP_MPI VS_Mesh::communicator( Vector::const_shared_ptr p ) const
 }
 Vector::shared_ptr VS_Mesh::subset( Vector::shared_ptr p ) const
 {
-    if ( d_mesh == NULL )
+    if ( d_mesh == nullptr )
         return Vector::shared_ptr();
     Variable::shared_ptr variable(
         new MeshVariable( p->getVariable()->getName(), d_mesh, d_useMeshComm ) );
@@ -106,7 +106,7 @@ Vector::shared_ptr VS_Mesh::subset( Vector::shared_ptr p ) const
 }
 Vector::const_shared_ptr VS_Mesh::subset( Vector::const_shared_ptr p ) const
 {
-    if ( d_mesh == NULL )
+    if ( d_mesh == nullptr )
         return Vector::shared_ptr();
     Variable::shared_ptr variable(
         new MeshVariable( p->getVariable()->getName(), d_mesh, d_useMeshComm ) );

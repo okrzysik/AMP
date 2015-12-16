@@ -65,13 +65,13 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
 {
     PROFILE_START( "writeFile" );
     // Open the file for writing
-    FILE *fid = NULL;
+    FILE *fid = nullptr;
     if ( d_comm.getRank() == 0 ) {
         std::stringstream tmp;
         tmp << fname_in << "_" << iteration_count << "." << getExtension();
         std::string fname = tmp.str();
         fid               = fopen( fname.c_str(), "w" );
-        AMP_ASSERT( fid != NULL );
+        AMP_ASSERT( fid != nullptr );
     }
 // Get the ids for the vectors and save the data
 #ifdef USE_AMP_VECTORS
@@ -107,7 +107,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
             mat = d_matrices[*it];
         std::string name;
         size_t size[2] = { 0, 0 };
-        if ( mat != NULL ) {
+        if ( mat != nullptr ) {
             name = mat->getLeftVector()->getVariable()->getName() + " - " +
                    mat->getRightVector()->getVariable()->getName();
             size[0] = mat->getLeftVector()->getGlobalSize();
@@ -140,7 +140,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
     }
 #endif
     // Close the file
-    if ( fid != NULL )
+    if ( fid != nullptr )
         fclose( fid );
     PROFILE_STOP( "writeFile" );
 }
@@ -199,7 +199,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
         name          = src_vec->getVariable()->getName();
     name              = comm.bcast( name, vec_root );
     size_t local_size = 0;
-    if ( src_vec != NULL )
+    if ( src_vec != nullptr )
         local_size = src_vec->getLocalSize();
     std::vector<size_t> size( comm.getSize(), 0 );
     comm.allGather( local_size, &size[0] );
@@ -207,7 +207,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
     for ( int i = 0; i < comm.getSize(); i++ )
         global_size += size[i];
     // If we are not rank 0 and do not have a copy of the vector we are done
-    if ( src_vec == NULL && rank != 0 )
+    if ( src_vec == nullptr && rank != 0 )
         return AMP::LinearAlgebra::Vector::const_shared_ptr();
     // Send the local data to rank 0
     std::vector<MPI_Request> requests;
@@ -255,7 +255,7 @@ void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr ma
     data.clear();
     // Determine who "owns" the row
     int own_rank = 0;
-    if ( mat != NULL ) {
+    if ( mat != nullptr ) {
         AMP::Discretization::DOFManager::shared_ptr DOF = mat->getLeftDOFManager();
         if ( row >= (int) DOF->beginDOF() && row < (int) DOF->endDOF() )
             own_rank = rank;

@@ -49,7 +49,7 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP::pout << d_pScratchVector << std::endl;
     }
 
-    if ( d_pAlgebraicVariable.get() != NULL ) {
+    if ( d_pAlgebraicVariable.get() != nullptr ) {
         AMP::shared_ptr<AMP::LinearAlgebra::Vector> algebraicComponent =
             d_pScratchVector->subsetVectorForVariable( d_pAlgebraicVariable );
         algebraicComponent->zero();
@@ -58,7 +58,7 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     d_pRhsOperator->apply( u, r );
     r->axpby( 1.0, 1.0, d_pScratchVector );
 
-    bool dpSourceTermNull = ( d_pSourceTerm.get() == NULL );
+    bool dpSourceTermNull = ( d_pSourceTerm.get() == nullptr );
 
     if ( d_iDebugPrintInfoLevel > 5 ) {
         AMP::pout << "Output of M * yp-frhs(y,t) in IDATimeOperator" << std::endl;

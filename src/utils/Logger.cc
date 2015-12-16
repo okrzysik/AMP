@@ -13,7 +13,7 @@
 
 namespace AMP {
 
-Logger *Logger::s_instance = NULL;
+Logger *Logger::s_instance = nullptr;
 
 /*
  * Default Appender to print abort message and calling location to perr stream.
@@ -94,14 +94,14 @@ void Logger::free()
 {
     if ( s_instance ) {
         delete s_instance;
-        s_instance = static_cast<Logger *>( NULL );
+        s_instance = static_cast<Logger *>( nullptr );
     }
 }
 
 
 Logger *Logger::getInstance()
 {
-    if ( s_instance == static_cast<Logger *>( NULL ) ) {
+    if ( s_instance == static_cast<Logger *>( nullptr ) ) {
         s_instance = new Logger();
     }
 

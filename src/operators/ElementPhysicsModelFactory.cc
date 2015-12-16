@@ -62,7 +62,7 @@ AMP::shared_ptr<ElementPhysicsModel> ElementPhysicsModelFactory::createElementPh
     AMP::shared_ptr<ElementPhysicsModelParameters> params;
 
     AMP_INSIST(
-        elementPhysicsModelDb.get() != NULL,
+        elementPhysicsModelDb.get() != nullptr,
         "ElementPhysicsModelFactory::createElementPhysicsModel:: NULL Database object input" );
 
     std::string name = elementPhysicsModelDb->getString( "name" );
@@ -90,7 +90,7 @@ AMP::shared_ptr<ElementPhysicsModel> ElementPhysicsModelFactory::createElementPh
     resetElementPhysicsModel( SubchannelPhysicsModel );
 #endif
 
-    AMP_INSIST( retElementPhysicsModel != NULL, "requested model " + name + " is invalid" );
+    AMP_INSIST( retElementPhysicsModel != nullptr, "requested model " + name + " is invalid" );
     return retElementPhysicsModel;
 }
 

@@ -20,7 +20,7 @@ BiCGSTABSolver::BiCGSTABSolver() : d_restarts( 0 ) {}
 BiCGSTABSolver::BiCGSTABSolver( AMP::shared_ptr<KrylovSolverParameters> parameters )
     : SolverStrategy( parameters ), d_restarts( 0 )
 {
-    assert( parameters.get() != NULL );
+    assert( parameters.get() != nullptr );
 
     // Initialize
     initialize( parameters );
@@ -39,7 +39,7 @@ void BiCGSTABSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const
 {
     AMP::shared_ptr<KrylovSolverParameters> parameters =
         AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
-    AMP_ASSERT( parameters.get() != NULL );
+    AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
 
@@ -47,7 +47,7 @@ void BiCGSTABSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const
 
     getFromInput( parameters->d_db );
 
-    if ( d_pOperator.get() != NULL ) {
+    if ( d_pOperator.get() != nullptr ) {
         registerOperator( d_pOperator );
     }
 }
@@ -95,7 +95,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         std::cout << "BiCGSTABSolver::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
     }
 
-    if ( d_pOperator.get() != NULL ) {
+    if ( d_pOperator.get() != nullptr ) {
         registerOperator( d_pOperator );
     }
 
@@ -243,25 +243,25 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 ****************************************************************/
 void BiCGSTABSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
 {
-    assert( op.get() != NULL );
+    assert( op.get() != nullptr );
 
     d_pOperator = op;
 
     AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
-    assert( linearOperator.get() != NULL );
+    assert( linearOperator.get() != nullptr );
 }
 void BiCGSTABSolver::resetOperator(
     const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
-    if ( d_pOperator.get() != NULL ) {
+    if ( d_pOperator.get() != nullptr ) {
         d_pOperator->reset( params );
     }
 
     // should add a mechanism for the linear operator to provide updated parameters for the
     // preconditioner operator
     // though it's unclear where this might be necessary
-    if ( d_pPreconditioner.get() != NULL ) {
+    if ( d_pPreconditioner.get() != nullptr ) {
         d_pPreconditioner->resetOperator( params );
     }
 }

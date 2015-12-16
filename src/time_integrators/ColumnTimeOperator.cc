@@ -17,12 +17,12 @@ ColumnTimeOperator::ColumnTimeOperator(
     AMP::shared_ptr<AMP::Database> column_db = params->d_db;
     d_Mesh                                   = params->d_Mesh;
     d_pRhsOperator = AMP::dynamic_pointer_cast<ColumnOperator>( params->d_pRhsOperator );
-    AMP_INSIST( d_pRhsOperator.get() != NULL,
+    AMP_INSIST( d_pRhsOperator.get() != nullptr,
                 "Error: ColumnTimeOperator::ColumnTimeOperator() rhs "
                 "operator must be a non-NULL column operator" );
 
     d_pMassOperator = AMP::dynamic_pointer_cast<ColumnOperator>( params->d_pMassOperator );
-    AMP_INSIST( d_pRhsOperator.get() != NULL,
+    AMP_INSIST( d_pRhsOperator.get() != nullptr,
                 "Error: ColumnTimeOperator::ColumnTimeOperator() "
                 "mass operator must be a non-NULL column operator" );
 
@@ -97,7 +97,7 @@ void ColumnTimeOperator::reset(
         AMP::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(
             params->d_pMassOperatorParameters );
 
-    AMP_INSIST( params.get() != NULL, "Error: NULL TimeOperatorParameters object" );
+    AMP_INSIST( params.get() != nullptr, "Error: NULL TimeOperatorParameters object" );
 
     getFromInput( params->d_db );
 
@@ -121,14 +121,14 @@ void ColumnTimeOperator::reset(
                                     column_db->getDoubleWithDefault( "ScalingFactor", 1.0e6 ) );
         AMP::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(
             new AMP::TimeIntegrator::TimeOperatorParameters( timeOperator_db ) );
-        if ( pRhsParameters.get() != NULL ) {
+        if ( pRhsParameters.get() != nullptr ) {
             timeOperatorParameters->d_pRhsOperatorParameters =
                 ( pRhsParameters->d_OperatorParameters )[i];
         }
 
         // if there are algebraic components set the mass operator to NULL
         if ( i != d_iAlgebraicComponent ) {
-            if ( pMassParameters.get() != NULL ) {
+            if ( pMassParameters.get() != nullptr ) {
                 timeOperatorParameters->d_pMassOperatorParameters =
                     ( pMassParameters->d_OperatorParameters )[i];
             }

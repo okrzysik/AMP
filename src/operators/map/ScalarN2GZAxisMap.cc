@@ -40,13 +40,13 @@ ScalarN2GZAxisMap::ScalarN2GZAxisMap( const AMP::shared_ptr<AMP::Operator::Opera
     AMP_INSIST( DofsPerObj == 4, "ScalarZAxis is currently only designed for 4 Gp per elem" );
 
     // Create the element iterators
-    if ( d_mesh1.get() != NULL ) {
+    if ( d_mesh1.get() != nullptr ) {
         d_srcIterator1 =
             d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
         d_dstIterator1 =
             d_mesh1->getBoundaryIDIterator( AMP::Mesh::Face, params->d_BoundaryID1, 0 );
     }
-    if ( d_mesh2.get() != NULL ) {
+    if ( d_mesh2.get() != nullptr ) {
         d_srcIterator2 =
             d_mesh2->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID2, 0 );
         d_dstIterator2 =
@@ -122,9 +122,9 @@ ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator &iterator )
 {
     if ( iterator.size() == 0 )
         return AMP::LinearAlgebra::Vector::const_shared_ptr();
-    if ( iterator == d_dstIterator1 && d_z_coord1.get() != NULL )
+    if ( iterator == d_dstIterator1 && d_z_coord1.get() != nullptr )
         return d_z_coord1;
-    if ( iterator == d_dstIterator2 && d_z_coord2.get() != NULL )
+    if ( iterator == d_dstIterator2 && d_z_coord2.get() != nullptr )
         return d_z_coord2;
     PROFILE_START( "getGaussPoints" );
     AMP::Discretization::DOFManager::shared_ptr GpDofMap =
@@ -187,7 +187,7 @@ void ScalarN2GZAxisMap::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec,
 
     // Get the coordinates of the gauss points
     AMP::LinearAlgebra::Vector::const_shared_ptr z_pos = getGaussPoints( iterator );
-    AMP_ASSERT( z_pos.get() != NULL );
+    AMP_ASSERT( z_pos.get() != nullptr );
 
     // Get the DOF managers
     AMP::Discretization::DOFManager::shared_ptr DOFs      = vec->getDOFManager();

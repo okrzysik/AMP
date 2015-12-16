@@ -50,7 +50,7 @@ public:
               const std::string &source  = std::string( "None" ),
               const Number *params       = NULL,
               const unsigned int nparams = 0,
-              const std::string *args    = NULL,
+              const std::string *args    = nullptr,
               const unsigned int nargs   = 0,
               const Number ranges[][2]   = NULL )
         : d_name( name ),
@@ -70,7 +70,7 @@ public:
         for ( size_t i = 0; i < d_n_arguments; i++ ) {
             d_argToIndexMap.insert( std::pair<std::string, size_t>( d_arguments[i], i ) );
         }
-        if ( ranges == NULL && d_n_arguments > 0 ) {
+        if ( ranges == nullptr && d_n_arguments > 0 ) {
             AMP_INSIST( false, "argument ranges not set" );
         }
         for ( size_t i = 0; i < d_n_arguments; i++ ) {

@@ -19,7 +19,7 @@ static MeshElement nullElement;
 MultiIterator::MultiIterator()
 {
     typeID         = MultiIteratorTypeID;
-    iterator       = NULL;
+    iterator       = nullptr;
     d_iterators    = std::vector<AMP::shared_ptr<MeshIterator>>( 0 );
     d_iteratorSize = std::vector<size_t>( 0 );
     d_localPos     = 0;
@@ -30,10 +30,10 @@ MultiIterator::MultiIterator( std::vector<AMP::shared_ptr<MeshIterator>> iterato
                               size_t global_pos )
 {
     typeID   = MultiIteratorTypeID;
-    iterator = NULL;
+    iterator = nullptr;
     d_iterators.resize( 0 );
     for ( size_t i = 0; i < iterators.size(); i++ ) {
-        if ( iterators[i] == NULL )
+        if ( iterators[i] == nullptr )
             continue;
         if ( iterators[i]->size() > 0 )
             d_iterators.push_back( iterators[i] );
@@ -72,7 +72,7 @@ MultiIterator::MultiIterator( const MultiIterator &rhs )
     : MeshIterator() // Note: we never want to call the base copy constructor
 {
     typeID         = MultiIteratorTypeID;
-    iterator       = NULL;
+    iterator       = nullptr;
     d_iterators    = rhs.d_iterators;
     d_iteratorSize = rhs.d_iteratorSize;
     d_globalSize   = rhs.d_globalSize;
@@ -86,7 +86,7 @@ MultiIterator &MultiIterator::operator=( const MultiIterator &rhs )
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
     this->typeID         = MultiIteratorTypeID;
-    this->iterator       = NULL;
+    this->iterator       = nullptr;
     this->d_iterators    = rhs.d_iterators;
     this->d_iteratorSize = rhs.d_iteratorSize;
     this->d_globalSize   = rhs.d_globalSize;
@@ -274,7 +274,7 @@ MeshIterator &MultiIterator::operator+=( int n )
 ********************************************************/
 bool MultiIterator::operator==( const MeshIterator &rhs ) const
 {
-    MultiIterator *rhs2 = NULL;
+    MultiIterator *rhs2 = nullptr;
     MultiIterator *tmp =
         (MultiIterator
              *) &rhs; // Convert rhs to a MultiIterator* so we can access the base class members
@@ -286,7 +286,7 @@ bool MultiIterator::operator==( const MeshIterator &rhs ) const
         rhs2 = (MultiIterator *) tmp->iterator;
     }
     // Perform direct comparisions if we are dealing with two MultiIterator
-    if ( rhs2 != NULL ) {
+    if ( rhs2 != nullptr ) {
         bool equal = true;
         equal      = equal && d_globalSize == rhs2->d_globalSize;
         equal      = equal && d_globalPos == rhs2->d_globalPos;

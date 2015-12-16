@@ -15,7 +15,7 @@ class DiffusionLinearElement : public DiffusionElement
 {
 public:
     explicit DiffusionLinearElement( const AMP::shared_ptr<ElementOperationParameters> &params )
-        : DiffusionElement( params ), d_elementStiffnessMatrix( NULL )
+        : DiffusionElement( params ), d_elementStiffnessMatrix( nullptr )
     {
         d_num_dofs         = 0;
         d_transportAtGauss = params->d_db->getBoolWithDefault( "TransportAtGaussPoints", true );

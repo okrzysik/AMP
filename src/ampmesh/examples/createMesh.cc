@@ -33,7 +33,7 @@ void createMesh( AMP::UnitTest *ut, const std::string &input_file )
     AMP::Utilities::recursiveMkdir( "output" );
     std::string output_file                       = "output/" + input_file;
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    if ( siloWriter != NULL ) {
+    if ( siloWriter != nullptr ) {
         siloWriter->registerMesh( mesh, 1 );
         siloWriter->setDecomposition( 1 );
         siloWriter->writeFile( output_file, 0 );

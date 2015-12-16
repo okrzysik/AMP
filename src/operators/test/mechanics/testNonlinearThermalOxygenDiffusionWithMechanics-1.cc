@@ -169,7 +169,7 @@ void thermoMechanicsTest( AMP::UnitTest *ut, std::string exeName )
     AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> resVec =
         AMP::LinearAlgebra::MultiVector::create( outputVariable, meshAdapter->getComm() );
     for ( size_t i = 0; i < inputVariables.size(); i++ ) {
-        if ( inputVariables[i].get() != NULL ) {
+        if ( inputVariables[i].get() != nullptr ) {
             solVec->addVector(
                 AMP::LinearAlgebra::createVector( inputDOFs[i], inputVariables[i] ) );
             rhsVec->addVector(

@@ -44,9 +44,9 @@ void CopyVectorConsistency( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vec2                = vec1->cloneVector();
     AMP::LinearAlgebra::Vector::shared_ptr vec3                = vec1->cloneVector();
     AMP::LinearAlgebra::CommunicationList::shared_ptr commList = vec1->getCommunicationList();
-    double *t1                                                 = NULL;
-    double *t2                                                 = NULL;
-    size_t *ndx                                                = NULL;
+    double *t1                                                 = nullptr;
+    double *t2                                                 = nullptr;
+    size_t *ndx                                                = nullptr;
     size_t numGhosts                                           = commList->getGhostIDList().size();
 
     vec1->setRandomValues();

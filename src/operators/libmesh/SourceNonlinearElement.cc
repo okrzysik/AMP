@@ -16,12 +16,12 @@ namespace Operator {
 
 SourceNonlinearElement::SourceNonlinearElement(
     const AMP::shared_ptr<ElementOperationParameters> &params )
-    : ElementOperation( params ), d_elementOutputVector( NULL ), d_elem( NULL )
+    : ElementOperation( params ), d_elementOutputVector( nullptr ), d_elem( nullptr )
 {
 
-    AMP_INSIST( ( params.get() != NULL ), "''params'' is NULL" );
+    AMP_INSIST( ( params.get() != nullptr ), "''params'' is NULL" );
 
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
     std::string feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "FIRST" );
     libMeshEnums::Order feTypeOrder =
@@ -73,7 +73,7 @@ void SourceNonlinearElement::initializeForCurrentElement(
 {
     d_elem = elem;
 
-    if ( sourcePhysicsModel.get() != NULL ) {
+    if ( sourcePhysicsModel.get() != nullptr ) {
         d_sourcePhysicsModel = sourcePhysicsModel;
     }
 }
@@ -106,7 +106,7 @@ void SourceNonlinearElement::apply()
             }
         }
 
-        if ( d_sourcePhysicsModel.get() != NULL ) {
+        if ( d_sourcePhysicsModel.get() != nullptr ) {
             d_sourcePhysicsModel->getConstitutiveProperty(
                 source_physics, source_vectors, auxillary_vectors, coordinates );
         }
@@ -131,20 +131,20 @@ void SourceNonlinearElement::apply()
             }
         }
 
-        if ( d_sourcePhysicsModel.get() != NULL ) {
+        if ( d_sourcePhysicsModel.get() != nullptr ) {
             d_sourcePhysicsModel->getConstitutiveProperty(
                 source_physics, source_vectors, auxillary_vectors, coordinates );
         }
     }
 
-    if ( d_sourcePhysicsModel.get() == NULL ) {
+    if ( d_sourcePhysicsModel.get() == nullptr ) {
         AMP_INSIST(
             ( source_vectors.size() == 1 ),
             "In absence of SourcePhysicsModel Element Operation Expects only one source vector" );
     }
     for ( unsigned int j = 0; j < n_nodes; j++ ) {
         for ( unsigned int qp = 0; qp < n_points; qp++ ) {
-            if ( d_sourcePhysicsModel.get() != NULL ) {
+            if ( d_sourcePhysicsModel.get() != nullptr ) {
                 elementOutputVector[j] += ( JxW[qp] * source_physics[qp] * phi[j][qp] );
             } else {
                 if ( d_integrateVolume ) {

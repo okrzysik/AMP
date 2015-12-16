@@ -96,8 +96,8 @@ PressureBoundaryOperator::PressureBoundaryOperator(
 
     std::vector<unsigned int> recvSideList( recvDisps[npes - 1] + recvCnts[npes - 1] );
 
-    unsigned int *sendSideListPtr = NULL;
-    unsigned int *recvSideListPtr = NULL;
+    unsigned int *sendSideListPtr = nullptr;
+    unsigned int *recvSideListPtr = nullptr;
     if ( !( sendSideList.empty() ) ) {
         sendSideListPtr = &( sendSideList[0] );
     }
@@ -122,8 +122,8 @@ PressureBoundaryOperator::PressureBoundaryOperator(
 
     std::vector<AMP::Mesh::MeshElementID> recvIDlist( 8 * ( recvSideList.size() ) );
 
-    AMP::Mesh::MeshElementID *sendIDlistPtr = NULL;
-    AMP::Mesh::MeshElementID *recvIDlistPtr = NULL;
+    AMP::Mesh::MeshElementID *sendIDlistPtr = nullptr;
+    AMP::Mesh::MeshElementID *recvIDlistPtr = nullptr;
     if ( !( sendIDlist.empty() ) ) {
         sendIDlistPtr = &( sendIDlist[0] );
     }
@@ -148,8 +148,8 @@ PressureBoundaryOperator::PressureBoundaryOperator(
 
     std::vector<double> recvVolElemList( 24 * ( recvSideList.size() ) );
 
-    double *sendVolElemListPtr = NULL;
-    double *recvVolElemListPtr = NULL;
+    double *sendVolElemListPtr = nullptr;
+    double *recvVolElemListPtr = nullptr;
     if ( !( sendVolElemList.empty() ) ) {
         sendVolElemListPtr = &( sendVolElemList[0] );
     }
@@ -209,10 +209,10 @@ PressureBoundaryOperator::PressureBoundaryOperator(
 
         for ( size_t j = 0; j < elem->n_nodes(); ++j ) {
             delete ( elem->get_node( j ) );
-            elem->set_node( j ) = NULL;
+            elem->set_node( j ) = nullptr;
         } // end for j
         delete elem;
-        elem = NULL;
+        elem = nullptr;
     } // end i
 
     AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );

@@ -26,11 +26,11 @@ void NonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 {
     PROFILE_START( "apply" );
 
-    AMP_INSIST( ( r != NULL ), "NULL Residual/Output Vector" );
+    AMP_INSIST( ( r != nullptr ), "NULL Residual/Output Vector" );
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector( r );
-    AMP_INSIST( ( rInternal != NULL ), "NULL Residual/Output Vector" );
+    AMP_INSIST( ( rInternal != nullptr ), "NULL Residual/Output Vector" );
 
-    if ( u.get() != NULL )
+    if ( u.get() != nullptr )
         AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
 
     d_currElemIdx = static_cast<unsigned int>( -1 );
@@ -80,10 +80,10 @@ void NonlinearFEOperator::destroyLibMeshElementList()
     for ( size_t i = 0; i < d_currElemPtrs.size(); ++i ) {
         for ( size_t j = 0; j < d_currElemPtrs[i]->n_nodes(); ++j ) {
             delete ( d_currElemPtrs[i]->get_node( j ) );
-            d_currElemPtrs[i]->set_node( j ) = NULL;
+            d_currElemPtrs[i]->set_node( j ) = nullptr;
         } // end for j
         delete ( d_currElemPtrs[i] );
-        d_currElemPtrs[i] = NULL;
+        d_currElemPtrs[i] = nullptr;
     } // end for i
     d_currElemPtrs.clear();
 }

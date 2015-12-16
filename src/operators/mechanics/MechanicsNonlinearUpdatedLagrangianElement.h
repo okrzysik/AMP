@@ -30,7 +30,7 @@ public:
     //! Constructor.
     explicit MechanicsNonlinearUpdatedLagrangianElement(
         const AMP::shared_ptr<ElementOperationParameters> &params )
-        : MechanicsElement( params ), d_elementOutputVector( NULL )
+        : MechanicsElement( params ), d_elementOutputVector( nullptr )
     {
         d_JxW = &( d_fe->get_JxW() );
 

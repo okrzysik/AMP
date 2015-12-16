@@ -15,7 +15,7 @@ namespace LinearAlgebra {
 ManagedVector::ManagedVector( VectorParameters::shared_ptr params_in ) : Vector( params_in )
 {
     d_pParameters = AMP::dynamic_pointer_cast<ManagedVectorParameters>( params_in );
-    if ( d_pParameters->d_Buffer.get() != NULL )
+    if ( d_pParameters->d_Buffer.get() != nullptr )
         d_vBuffer = d_pParameters->d_Buffer;
     else
         d_vBuffer = d_pParameters->d_Engine->getNewBuffer();
@@ -80,14 +80,14 @@ void ManagedVector::copyVector( Vector::const_shared_ptr other )
         AMP::dynamic_pointer_cast<const ManagedVector>( other );
     AMP::shared_ptr<Vector> vec1;
     AMP::shared_ptr<const Vector> vec2;
-    if ( rhs_managed.get() != NULL ) {
+    if ( rhs_managed.get() != nullptr ) {
         // We are dealing with two managed vectors, check if they both have data engines
-        if ( d_Engine.get() != NULL )
+        if ( d_Engine.get() != nullptr )
             vec1 = AMP::dynamic_pointer_cast<Vector>( d_Engine );
-        if ( rhs_managed->d_Engine.get() != NULL )
+        if ( rhs_managed->d_Engine.get() != nullptr )
             vec2 = AMP::dynamic_pointer_cast<const Vector>( rhs_managed->d_Engine );
     }
-    if ( vec1.get() != NULL && vec2.get() != NULL ) {
+    if ( vec1.get() != nullptr && vec2.get() != nullptr ) {
         // We have two data engines, perform the copy between them
         vec1->copyVector( vec2 );
         fireDataChange();
@@ -117,10 +117,10 @@ Vector::UpdateState ManagedVector::getUpdateStatus() const
 {
     Vector::UpdateState state = *d_UpdateState;
     AMP::shared_ptr<const Vector> vec;
-    if ( d_Engine.get() != NULL ) {
+    if ( d_Engine.get() != nullptr ) {
         vec = AMP::dynamic_pointer_cast<const Vector>( d_Engine );
     }
-    if ( vec.get() != NULL ) {
+    if ( vec.get() != nullptr ) {
         Vector::UpdateState sub_state = vec->getUpdateStatus();
         if ( sub_state == UNCHANGED ) {
             // No change in state
@@ -146,9 +146,9 @@ void ManagedVector::setUpdateStatus( UpdateState state )
 {
     *d_UpdateState = state;
     AMP::shared_ptr<Vector> vec;
-    if ( d_Engine.get() != NULL )
+    if ( d_Engine.get() != nullptr )
         vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
-    if ( vec.get() != NULL )
+    if ( vec.get() != nullptr )
         vec->setUpdateStatus( state );
 }
 
@@ -173,7 +173,7 @@ void ManagedVector::getValuesByGlobalID( int numVals, size_t *ndx, double *vals 
 {
     INCREMENT_COUNT( "Virtual" );
     Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
-    if ( vec.get() == NULL ) {
+    if ( vec.get() == nullptr ) {
         Vector::getValuesByGlobalID( numVals, ndx, vals );
     } else {
         vec->getValuesByGlobalID( numVals, ndx, vals );
@@ -196,7 +196,7 @@ void ManagedVector::getGhostValuesByGlobalID( int numVals, size_t *ndx, double *
 {
     INCREMENT_COUNT( "Virtual" );
     Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
-    if ( vec.get() == NULL ) {
+    if ( vec.get() == nullptr ) {
         Vector::getGhostValuesByGlobalID( numVals, ndx, vals );
     } else {
         vec->getGhostValuesByGlobalID( numVals, ndx, vals );
@@ -227,7 +227,7 @@ void ManagedVector::setGhostValuesByGlobalID( int numVals, size_t *ndx, const do
 {
     INCREMENT_COUNT( "Virtual" );
     Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
-    if ( vec.get() == NULL ) {
+    if ( vec.get() == nullptr ) {
         Vector::setGhostValuesByGlobalID( numVals, ndx, vals );
     } else {
         vec->setGhostValuesByGlobalID( numVals, ndx, vals );
@@ -237,7 +237,7 @@ void ManagedVector::setGhostValuesByGlobalID( int numVals, size_t *ndx, const do
 void ManagedVector::setValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
     Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
-    if ( vec.get() != NULL ) {
+    if ( vec.get() != nullptr ) {
         INCREMENT_COUNT( "Virtual" );
         AMP_ASSERT( *d_UpdateState != ADDING );
         *d_UpdateState         = SETTING;

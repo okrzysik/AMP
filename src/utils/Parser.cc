@@ -27,7 +27,7 @@ extern void yyrestart( FILE * );
 
 extern void parser_static_table_initialize();
 
-Parser *Parser::s_default_parser         = NULL;
+Parser *Parser::s_default_parser         = nullptr;
 bool Parser::s_static_tables_initialized = 0;
 
 /*
@@ -93,11 +93,11 @@ int Parser::parse( const std::string &filename, FILE *fstream, AMP::shared_ptr<D
     d_scope_stack.push_front( database );
 
     s_default_parser = this;
-    yyrestart( NULL );
+    yyrestart( nullptr );
     if ( yyparse() && ( d_errors == 0 ) ) {
         error( "Unexpected parse error" );
     }
-    s_default_parser = NULL;
+    s_default_parser = nullptr;
 
     d_parse_stack.clear();
     d_scope_stack.clear();
@@ -239,7 +239,7 @@ AMP::shared_ptr<Database> Parser::getDatabaseWithKey( const std::string &key )
 
 bool Parser::pushIncludeFile( const std::string &filename )
 {
-    FILE *fstream = NULL;
+    FILE *fstream = nullptr;
 
     std::string filename_with_path;
 

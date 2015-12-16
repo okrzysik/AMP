@@ -23,11 +23,11 @@ MassLinearFEOperator::MassLinearFEOperator(
     const AMP::shared_ptr<MassLinearFEOperatorParameters> &params )
     : LinearFEOperator( params )
 {
-    AMP_INSIST( ( ( params.get() ) != NULL ), "NULL parameter" );
+    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
 
     d_massLinElem = AMP::dynamic_pointer_cast<MassLinearElement>( d_elemOp );
 
-    AMP_INSIST( ( ( d_massLinElem.get() ) != NULL ), "d_elemOp is not of type MassLinearElement" );
+    AMP_INSIST( ( ( d_massLinElem.get() ) != nullptr ), "d_elemOp is not of type MassLinearElement" );
 
     d_densityModel = params->d_densityModel;
 

@@ -21,8 +21,8 @@ void FlowFrapconOperator::reset( const AMP::shared_ptr<OperatorParameters> &para
     AMP::shared_ptr<FlowFrapconOperatorParameters> myparams =
         AMP::dynamic_pointer_cast<FlowFrapconOperatorParameters>( params );
 
-    AMP_INSIST( ( ( myparams.get() ) != NULL ), "NULL parameters" );
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
+    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
 
     AMP_INSIST( ( myparams->d_db )->keyExists( "numpoints" ), "Key ''numpoints'' is missing!" );
     d_numpoints = ( myparams->d_db )->getInteger( "numpoints" );
@@ -57,8 +57,8 @@ void FlowFrapconOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     // AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);
 
-    AMP_INSIST( ( ( r.get() ) != NULL ), "NULL Residual Vector" );
-    AMP_INSIST( ( ( u.get() ) != NULL ), "NULL Solution Vector" );
+    AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL Residual Vector" );
+    AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Solution Vector" );
 
     if ( !zPoints.empty() ) {
         d_numpoints = zPoints.size();
@@ -166,7 +166,7 @@ FlowFrapconOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr 
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::shared_ptr commVec =
             vec->select( commSelector, var->getName() );
@@ -183,7 +183,7 @@ FlowFrapconOperator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr v
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::shared_ptr commVec =
             vec->select( commSelector, var->getName() );
@@ -200,7 +200,7 @@ FlowFrapconOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_share
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
             vec->constSelect( commSelector, var->getName() );
@@ -217,7 +217,7 @@ FlowFrapconOperator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
             vec->constSelect( commSelector, var->getName() );

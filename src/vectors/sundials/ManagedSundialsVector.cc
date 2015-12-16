@@ -21,7 +21,7 @@ ManagedSundialsVector::ManagedSundialsVector( VectorParameters::shared_ptr param
 {
     // Create N_Vector
     d_n_vector = (N_Vector) malloc( sizeof *d_n_vector );
-    AMP_ASSERT( d_n_vector != NULL );
+    AMP_ASSERT( d_n_vector != nullptr );
     // Attach the content and the ops fields
     d_n_vector->content = this;
     d_n_vector->ops     = ManagedSundialsVector::createNVectorOps();
@@ -31,7 +31,7 @@ ManagedSundialsVector::ManagedSundialsVector( shared_ptr alias )
 {
     // Create N_Vector
     d_n_vector = (N_Vector) malloc( sizeof *d_n_vector );
-    AMP_ASSERT( d_n_vector != NULL );
+    AMP_ASSERT( d_n_vector != nullptr );
     // Attach the content and the ops fields
     d_n_vector->content = this;
     d_n_vector->ops     = ManagedSundialsVector::createNVectorOps();
@@ -47,10 +47,10 @@ ManagedSundialsVector::~ManagedSundialsVector()
     if ( d_n_vector ) {
         if ( d_n_vector->ops ) {
             free( d_n_vector->ops );
-            d_n_vector->ops = NULL;
+            d_n_vector->ops = nullptr;
         }
         free( d_n_vector );
-        d_n_vector = NULL;
+        d_n_vector = nullptr;
     }
 }
 
@@ -93,7 +93,7 @@ N_Vector_Ops ManagedSundialsVector::createNVectorOps()
     ops->nvcloneempty = cloneempty_no_impl;
     ops->nvdestroy    = freeVectorComponents_AMP;
     // ops->nvspace         = space_no_impl;
-    ops->nvspace           = NULL;
+    ops->nvspace           = nullptr;
     ops->nvgetarraypointer = getarraypointer_no_impl;
     ops->nvsetarraypointer = setarraypointer_no_impl;
     ops->nvlinearsum       = linearSum_AMP;
@@ -147,7 +147,7 @@ void ManagedSundialsVector::freeVectorComponents_AMP( N_Vector v )
 realtype *ManagedSundialsVector::getarraypointer_no_impl( N_Vector )
 {
     AMP_ERROR( "nvgetarraypointer not implemented" );
-    return NULL;
+    return nullptr;
 }
 
 void ManagedSundialsVector::setarraypointer_no_impl( realtype *, N_Vector )

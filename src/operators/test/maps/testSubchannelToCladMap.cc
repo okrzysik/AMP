@@ -67,13 +67,13 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr manager  = AMP::Mesh::Mesh::buildMesh( params );
     AMP::Mesh::Mesh::shared_ptr pin_mesh = manager->Subset( "MultiPin" );
     AMP::Mesh::Mesh::shared_ptr clad_mesh;
-    if ( pin_mesh.get() != NULL ) {
+    if ( pin_mesh.get() != nullptr ) {
         pin_mesh->setName( "MultiPin" );
         clad_mesh = pin_mesh->Subset( "clad" );
     }
     AMP::Mesh::Mesh::shared_ptr subchannel_mesh = manager->Subset( "subchannel" );
     AMP::Mesh::Mesh::shared_ptr subchannel_face;
-    if ( subchannel_mesh.get() != NULL ) {
+    if ( subchannel_mesh.get() != nullptr ) {
         subchannel_mesh->setName( "subchannel" );
         subchannel_face = subchannel_mesh->Subset( getZFaceIterator( subchannel_mesh, 1 ) );
     }
@@ -94,13 +94,13 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     AMP::LinearAlgebra::Vector::shared_ptr T_clad;
     AMP::LinearAlgebra::Vector::shared_ptr T_subchannel;
     AMP::LinearAlgebra::Vector::shared_ptr dummy;
-    if ( pin_mesh.get() != NULL ) {
+    if ( pin_mesh.get() != nullptr ) {
         pin_DOFs = AMP::Discretization::simpleDOFManager::create(
             pin_mesh, AMP::Mesh::Vertex, 1, DOFsPerNode );
         T_clad = AMP::LinearAlgebra::createVector( pin_DOFs, temperature );
         T_clad->setToScalar( 500 );
     }
-    if ( subchannel_face.get() != NULL ) {
+    if ( subchannel_face.get() != nullptr ) {
         subchannel_DOFs = AMP::Discretization::simpleDOFManager::create(
             subchannel_face, AMP::Mesh::Face, 1, DOFsPerNode );
         T_subchannel = AMP::LinearAlgebra::createVector( subchannel_DOFs, temperature );
@@ -108,7 +108,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     }
 
     // Initialize the subchannel temperatures
-    if ( subchannel_face.get() != NULL ) {
+    if ( subchannel_face.get() != nullptr ) {
         AMP::Mesh::MeshIterator it = subchannel_face->getIterator( AMP::Mesh::Face, 0 );
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
@@ -151,7 +151,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     map->apply( T_subchannel, dummy );
 
     // Check the results
-    if ( pin_mesh.get() != NULL ) {
+    if ( pin_mesh.get() != nullptr ) {
         bool passes                = true;
         AMP::Mesh::MeshIterator it = pin_mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 4, 1 );
         std::vector<size_t> dofs;
@@ -174,7 +174,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     // Perform a complete test of SubchannelToCladGPMap
     AMP::Discretization::DOFManager::shared_ptr gauss_DOFs;
     AMP::LinearAlgebra::Vector::shared_ptr T_gauss;
-    if ( pin_mesh.get() != NULL ) {
+    if ( pin_mesh.get() != nullptr ) {
         gauss_DOFs =
             AMP::Discretization::simpleDOFManager::create( pin_mesh, AMP::Mesh::Face, 1, 4 );
         T_gauss = AMP::LinearAlgebra::createVector( gauss_DOFs, temperature );
@@ -189,7 +189,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     map->apply( T_subchannel, dummy );
 
     // Check the results
-    if ( clad_mesh.get() != NULL ) {
+    if ( clad_mesh.get() != nullptr ) {
         bool passes                = true;
         AMP::Mesh::MeshIterator it = clad_mesh->getBoundaryIDIterator( AMP::Mesh::Face, 4, 1 );
         std::vector<size_t> dofs( 4 );
@@ -215,9 +215,9 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 // Write the results
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    if ( T_clad.get() != NULL )
+    if ( T_clad.get() != nullptr )
         siloWriter->registerVector( T_clad, pin_mesh, AMP::Mesh::Vertex, "Temperature" );
-    if ( T_subchannel.get() != NULL )
+    if ( T_subchannel.get() != nullptr )
         siloWriter->registerVector( T_subchannel, subchannel_face, AMP::Mesh::Face, "Temperature" );
     siloWriter->setDecomposition( 1 );
     siloWriter->writeFile( fname, 0 );

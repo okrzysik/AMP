@@ -32,7 +32,7 @@ public:
       AMP::shared_ptr<ColumnOperatorParameters> fParams =
           AMP::dynamic_pointer_cast<ColumnOperatorParameters>(params);
 
-      AMP_INSIST((fParams.get() != NULL),
+      AMP_INSIST((fParams.get() != nullptr),
                  "RowOperator::reset parameter object is NULL");
 
       AMP_INSIST(
@@ -48,7 +48,7 @@ public:
 
     void append( AMP::shared_ptr<Operator> op, double a )
     {
-        AMP_INSIST( ( op.get() != NULL ),
+        AMP_INSIST( ( op.get() != nullptr ),
                     "AMP::RowOperator::appendRow input argument is a NULL operator" );
 
         d_Operators.push_back( op );
@@ -75,7 +75,7 @@ protected:
     virtual AMP::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                   AMP::shared_ptr<OperatorParameters> params = NULL ) override
+                   AMP::shared_ptr<OperatorParameters> params = nullptr ) override
     {
         AMP::shared_ptr<AMP::Database> db;
 

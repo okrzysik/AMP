@@ -295,7 +295,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         ML_Create( &ml_object, numGrids );
 
         ML_Init_Amatrix( ml_object, 0, localSize, localSize, fusedOperator.get() );
-        ML_Set_Amatrix_Getrow( ml_object, 0, &myGetRow, NULL, localSize );
+        ML_Set_Amatrix_Getrow( ml_object, 0, &myGetRow, nullptr, localSize );
         ML_Set_Amatrix_Matvec( ml_object, 0, &myMatVec );
         ML_Set_MaxIterations( ml_object, 1 + mlSolver_db->getInteger( "max_iterations" ) );
         ML_Set_ResidualOutputFrequency( ml_object, 1 );
@@ -333,9 +333,9 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         fusedSolVec->putRawData( solArr );
         fusedRhsVec->putRawData( rhsArr );
         delete[] solArr;
-        solArr = NULL;
+        solArr = nullptr;
         delete[] rhsArr;
-        rhsArr = NULL;
+        rhsArr = nullptr;
 
         if ( fusedSolVec->isA<AMP::LinearAlgebra::DataChangeFirer>() ) {
             fusedSolVec->castTo<AMP::LinearAlgebra::DataChangeFirer>().fireDataChange();

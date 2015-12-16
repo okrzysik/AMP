@@ -25,7 +25,7 @@ public:
                     const std::string &source             = std::string( "None" ),
                     const Number *params                  = NULL,
                     const unsigned int nparams            = 0,
-                    const std::string *args               = NULL,
+                    const std::string *args               = nullptr,
                     const unsigned int nargs              = 0,
                     const Number ranges[][2]              = NULL,
                     const std::vector<size_t> &dimensions = std::vector<size_t>( 2, 1 ) )

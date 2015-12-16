@@ -75,7 +75,7 @@ void myTest( AMP::UnitTest *ut )
 
         msgPrefix = exeName + " : " + innerInput_file;
 
-        if ( testOperator.get() != NULL ) {
+        if ( testOperator.get() != nullptr ) {
             ut->passes( msgPrefix + " : create" );
         } else {
             ut->failure( msgPrefix + " : create" );
@@ -84,7 +84,7 @@ void myTest( AMP::UnitTest *ut )
         AMP::shared_ptr<AMP::Operator::LinearOperator> myLinOp =
             AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( testOperator );
 
-        AMP_INSIST( myLinOp != NULL, "Is not a linear operator!" );
+        AMP_INSIST( myLinOp != nullptr, "Is not a linear operator!" );
 
         AMP_INSIST( innerInput_db->keyExists( "dofsPerNode" ), "key missing!" );
         int dofsPerNode = innerInput_db->getInteger( "dofsPerNode" );
@@ -141,7 +141,7 @@ void myTest( AMP::UnitTest *ut )
         AMP::shared_ptr<AMP::Operator::OperatorParameters> jacobianParameters =
             testOperator->getParameters( "Jacobian", nullGuess );
 
-        if ( jacobianParameters.get() == NULL ) {
+        if ( jacobianParameters.get() == nullptr ) {
             ut->passes( msgPrefix + "getJacobianParameters (should return NULL for now)" );
         } else {
             ut->failure( msgPrefix + "getJacobianParameters (should return NULL for now)" );

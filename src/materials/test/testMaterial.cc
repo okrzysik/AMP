@@ -1494,7 +1494,7 @@ int main( int argc, char **argv )
             string name( "flubber" );
             Material::shared_ptr mat =
                 AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
-            if ( mat != NULL )
+            if ( mat != nullptr )
                 maxpassed += 1;
         } catch ( std::exception &err ) {
             string msg = err.what();

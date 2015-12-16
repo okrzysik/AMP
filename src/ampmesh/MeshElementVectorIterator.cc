@@ -15,7 +15,7 @@ static unsigned int MultiVectorIteratorTypeID = TYPE_HASH( MultiVectorIterator )
 MultiVectorIterator::MultiVectorIterator()
 {
     typeID     = MultiVectorIteratorTypeID;
-    iterator   = NULL;
+    iterator   = nullptr;
     d_elements = AMP::shared_ptr<std::vector<MeshElement>>();
     d_pos      = 0;
 }
@@ -23,14 +23,14 @@ MultiVectorIterator::MultiVectorIterator( AMP::shared_ptr<std::vector<MeshElemen
                                           size_t pos )
 {
     typeID     = MultiVectorIteratorTypeID;
-    iterator   = NULL;
+    iterator   = nullptr;
     d_elements = elements;
     d_pos      = pos;
 }
 MultiVectorIterator::MultiVectorIterator( const std::vector<MeshElement> &elements, size_t pos )
 {
     typeID   = MultiVectorIteratorTypeID;
-    iterator = NULL;
+    iterator = nullptr;
     d_elements.reset( new std::vector<MeshElement>( elements ) );
     d_pos = pos;
 }
@@ -38,7 +38,7 @@ MultiVectorIterator::MultiVectorIterator( const MultiVectorIterator &rhs )
     : MeshIterator() // Note: we never want to call the base copy constructor
 {
     typeID     = MultiVectorIteratorTypeID;
-    iterator   = NULL;
+    iterator   = nullptr;
     d_elements = rhs.d_elements;
     d_pos      = rhs.d_pos;
 }
@@ -47,7 +47,7 @@ MultiVectorIterator &MultiVectorIterator::operator=( const MultiVectorIterator &
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
     this->typeID     = MultiVectorIteratorTypeID;
-    this->iterator   = NULL;
+    this->iterator   = nullptr;
     this->d_elements = rhs.d_elements;
     this->d_pos      = rhs.d_pos;
     return *this;
@@ -81,7 +81,7 @@ MeshIterator MultiVectorIterator::end() const
 ********************************************************/
 size_t MultiVectorIterator::size() const
 {
-    if ( d_elements.get() == NULL )
+    if ( d_elements.get() == nullptr )
         return 0;
     return d_elements->size();
 }
@@ -150,7 +150,7 @@ MeshIterator &MultiVectorIterator::operator+=( int n )
 ********************************************************/
 bool MultiVectorIterator::operator==( const MeshIterator &rhs ) const
 {
-    MultiVectorIterator *rhs2 = NULL;
+    MultiVectorIterator *rhs2 = nullptr;
     MultiVectorIterator *tmp  = (MultiVectorIterator *) &rhs; // Convert rhs to a
                                                               // MultiVectorIterator* so we can
                                                               // access the base class members
@@ -162,7 +162,7 @@ bool MultiVectorIterator::operator==( const MeshIterator &rhs ) const
         rhs2 = (MultiVectorIterator *) tmp->iterator;
     }
     // Perform direct comparisions if we are dealing with two MultiVectorIterators
-    if ( rhs2 != NULL ) {
+    if ( rhs2 != nullptr ) {
         // Check that we are at the same position
         if ( d_pos != rhs2->d_pos )
             return false;

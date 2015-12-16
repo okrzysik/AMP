@@ -106,7 +106,7 @@ bool AMPManager::use_MPI_Abort              = true;
 bool AMPManager::print_times                = false;
 AMP_MPI AMPManager::comm_world              = AMP::AMP_MPI();
 int AMPManager::argc                        = 0;
-char **AMPManager::argv                     = NULL;
+char **AMPManager::argv                     = nullptr;
 AMPManagerProperties AMPManager::properties = AMPManagerProperties();
 
 
@@ -132,7 +132,7 @@ double time()
 double time()
 {
     timeval current_time;
-    gettimeofday( &current_time, NULL );
+    gettimeofday( &current_time, nullptr );
     double time = ( (double) current_time.tv_sec ) + 1e-6 * ( (double) current_time.tv_usec );
     return time;
 }
@@ -298,7 +298,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     } else {
         std::vector<char *> petscArgs = getPetscArgs();
         int n_args                    = static_cast<int>( petscArgs.size() );
-        char **args                   = NULL;
+        char **args                   = nullptr;
         if ( n_args > 0 )
             args = &petscArgs[0];
         PetscInitialize( &n_args, &( args ), PETSC_NULL, PETSC_NULL );
@@ -466,7 +466,7 @@ AMP::shared_ptr<MPI_Errhandler> AMPManager::mpierr;
 void AMPManager::setMPIErrorHandler()
 {
 #ifdef USE_EXT_MPI
-    if ( mpierr.get() == NULL ) {
+    if ( mpierr.get() == nullptr ) {
         mpierr = AMP::shared_ptr<MPI_Errhandler>( new MPI_Errhandler );
         MPI_Comm_create_errhandler( MPI_error_handler_fun, mpierr.get() );
     }
@@ -477,7 +477,7 @@ void AMPManager::setMPIErrorHandler()
 void AMPManager::clearMPIErrorHandler()
 {
 #ifdef USE_EXT_MPI
-    if ( mpierr.get() != NULL )
+    if ( mpierr.get() != nullptr )
         MPI_Errhandler_free( mpierr.get() ); // Delete the error handler
     mpierr.reset();
     MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );

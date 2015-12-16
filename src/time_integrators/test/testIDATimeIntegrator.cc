@@ -119,7 +119,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
         AMP::shared_ptr<AMP::TimeIntegrator::IDATimeIntegrator> pIDATimeIntegrator(
             new AMP::TimeIntegrator::IDATimeIntegrator( time_Params ) );
-        if ( pIDATimeIntegrator.get() == NULL ) {
+        if ( pIDATimeIntegrator.get() == nullptr ) {
             ut->failure( "Testing IDATimeIntegrator's constructor" );
         } else {
             ut->passes( "Tested IDATimeIntegrator's constructor" );

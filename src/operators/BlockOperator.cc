@@ -79,10 +79,10 @@ bool BlockOperator::supportsMatrixFunctions()
         for ( int j = 0; j < d_iNumColumnBlocks; j++ ) {
             AMP::shared_ptr<BlockOperator> blockOp =
                 AMP::dynamic_pointer_cast<BlockOperator>( d_blocks[i][j] );
-            if ( blockOp == NULL ) {
+            if ( blockOp == nullptr ) {
                 AMP::shared_ptr<LinearOperator> matOp =
                     AMP::dynamic_pointer_cast<LinearOperator>( d_blocks[i][j] );
-                if ( matOp == NULL ) {
+                if ( matOp == nullptr ) {
                     return false;
                 }
             } else {
@@ -150,10 +150,10 @@ int BlockOperator::getNumRowsForBlock( int id )
     int result = 0;
     AMP::shared_ptr<BlockOperator> blockOp =
         AMP::dynamic_pointer_cast<BlockOperator>( d_blocks[id][0] );
-    if ( blockOp == NULL ) {
+    if ( blockOp == nullptr ) {
         AMP::shared_ptr<LinearOperator> matOp =
             AMP::dynamic_pointer_cast<LinearOperator>( d_blocks[id][0] );
-        if ( matOp == NULL ) {
+        if ( matOp == nullptr ) {
             AMP_ERROR( "This is not supported." );
         } else {
             result = ( ( matOp->getMatrix() )->numGlobalRows() );
@@ -169,10 +169,10 @@ int BlockOperator::getNumColumnsForBlock( int id )
     int result = 0;
     AMP::shared_ptr<BlockOperator> blockOp =
         AMP::dynamic_pointer_cast<BlockOperator>( d_blocks[0][id] );
-    if ( blockOp == NULL ) {
+    if ( blockOp == nullptr ) {
         AMP::shared_ptr<LinearOperator> matOp =
             AMP::dynamic_pointer_cast<LinearOperator>( d_blocks[0][id] );
-        if ( matOp == NULL ) {
+        if ( matOp == nullptr ) {
             AMP_ERROR( "This is not supported." );
         } else {
             result = ( ( matOp->getMatrix() )->numGlobalColumns() );
@@ -236,14 +236,14 @@ void BlockOperator::getRowForBlock( int locRow,
 {
     AMP::shared_ptr<BlockOperator> blockOp =
         AMP::dynamic_pointer_cast<BlockOperator>( d_blocks[blkRowId][blkColId] );
-    if ( blockOp == NULL ) {
+    if ( blockOp == nullptr ) {
         AMP::shared_ptr<LinearOperator> matOp =
             AMP::dynamic_pointer_cast<LinearOperator>( d_blocks[blkRowId][blkColId] );
-        if ( matOp == NULL ) {
+        if ( matOp == nullptr ) {
             AMP_ERROR( "This is not supported." );
         } else {
             AMP::LinearAlgebra::Matrix::shared_ptr mat = matOp->getMatrix();
-            if ( mat == NULL ) {
+            if ( mat == nullptr ) {
                 AMP_ERROR( "Matrix is NULL" );
             } else {
                 mat->getRowByGlobalID( locRow, locCols, values );

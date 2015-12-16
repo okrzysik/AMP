@@ -47,7 +47,7 @@ void ParameterFactoryTest( AMP::UnitTest *ut )
             AMP::dynamic_pointer_cast<AMP::Operator::DirichletMatrixCorrectionParameters>(
                 operatorParameters );
 
-        if ( operatorParams.get() != NULL )
+        if ( operatorParams.get() != nullptr )
             ut->passes( exeName.c_str() );
         else
             ut->failure( exeName.c_str() );

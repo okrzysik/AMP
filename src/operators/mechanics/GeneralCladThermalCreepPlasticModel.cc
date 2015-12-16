@@ -12,9 +12,9 @@ GeneralCladThermalCreepPlasticModel::GeneralCladThermalCreepPlasticModel(
     const AMP::shared_ptr<MechanicsMaterialModelParameters> &params )
     : MechanicsMaterialModel( params )
 {
-    AMP_INSIST( ( ( params.get() ) != NULL ), "NULL parameter" );
+    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
 
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
     AMP_INSIST( ( d_useMaterialsLibrary == true ),
                 "For GeneralCladThermalCreepPlasticModel, the materials library must be used." );

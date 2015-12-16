@@ -89,7 +89,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
                 // Open the file
                 DBfile *FileHandle;
                 if ( d_comm.getRank() == 0 ) {
-                    FileHandle = DBCreate( fname.c_str(), DB_CLOBBER, DB_LOCAL, NULL, DB_HDF5 );
+                    FileHandle = DBCreate( fname.c_str(), DB_CLOBBER, DB_LOCAL, nullptr, DB_HDF5 );
                 } else {
                     FileHandle = DBOpen( fname.c_str(), DB_HDF5, DB_APPEND );
                 }
@@ -116,7 +116,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
         tmp2 << fname_in << "_silo/" << iteration_count << "." << d_comm.getRank() + 1 << "."
              << getExtension();
         std::string fname_rank = tmp2.str();
-        DBfile *FileHandle = DBCreate( fname_rank.c_str(), DB_CLOBBER, DB_LOCAL, NULL, DB_HDF5 );
+        DBfile *FileHandle = DBCreate( fname_rank.c_str(), DB_CLOBBER, DB_LOCAL, nullptr, DB_HDF5 );
         // Write the base meshes
         std::map<AMP::Mesh::MeshID, siloBaseMeshData>::iterator iterator;
         for ( iterator = d_baseMeshes.begin(); iterator != d_baseMeshes.end(); ++iterator ) {
@@ -133,7 +133,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
     // Write the summary results (multimeshes, multivariables, etc.)
     if ( d_decomposition != 1 ) {
         if ( d_comm.getRank() == 0 ) {
-            DBfile *FileHandle = DBCreate( fname.c_str(), DB_CLOBBER, DB_LOCAL, NULL, DB_HDF5 );
+            DBfile *FileHandle = DBCreate( fname.c_str(), DB_CLOBBER, DB_LOCAL, nullptr, DB_HDF5 );
             DBClose( FileHandle );
         }
         d_comm.barrier();
@@ -156,7 +156,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
     AMP_INSIST( level >= 0 && level <= 3, "Invalid value for level" );
     AMP::shared_ptr<AMP::Mesh::MultiMesh> multimesh =
         AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
-    if ( multimesh.get() == NULL ) {
+    if ( multimesh.get() == nullptr ) {
         // We are dealing with a single mesh
         siloBaseMeshData data;
         data.id   = mesh->meshID();
@@ -226,7 +226,7 @@ std::vector<AMP::Mesh::MeshID> SiloIO::getMeshIDs( AMP::Mesh::Mesh::shared_ptr m
     std::vector<AMP::Mesh::MeshID> ids;
     AMP::shared_ptr<AMP::Mesh::MultiMesh> multimesh =
         AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
-    if ( multimesh.get() == NULL ) {
+    if ( multimesh.get() == nullptr ) {
         // We are dealing with a single mesh
         ids = std::vector<AMP::Mesh::MeshID>( 1, mesh->meshID() );
     } else {
@@ -408,19 +408,19 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
                     &shapesize,
                     &shapecnt,
                     1,
-                    0 );
+                    nullptr );
     // Write the mesh
     DBPutUcdmesh( FileHandle,
                   meshName.c_str(),
                   d_dim,
-                  NULL,
+                  nullptr,
                   coord,
                   node_iterator.size(),
                   nodelist.size(),
                   zoneName.c_str(),
-                  0,
+                  nullptr,
                   DB_DOUBLE,
-                  0 );
+                  nullptr );
     for ( int i = 0; i < d_dim; ++i )
         delete[] coord[i];
 // Write the variables
@@ -431,7 +431,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
         int centering                                    = 0;
         double **var                                     = new double *[data.varSize[i]];
         for ( int j            = 0; j < data.varSize[i]; ++j )
-            var[j]             = NULL;
+            var[j]             = nullptr;
         const char *varnames[] = { "1", "2", "3" };
         if ( data.varType[i] == AMP::Mesh::Vertex ) {
             // We are saving node-centered data
@@ -479,11 +479,11 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
                          (char **) varnames,
                          var,
                          nvar,
-                         NULL,
+                         nullptr,
                          0,
                          DB_DOUBLE,
                          centering,
-                         NULL );
+                         nullptr );
         } else {
             // Write each component
             for ( int j = 0; j < data.varSize[i]; ++j ) {
@@ -496,15 +496,15 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
                              (char **) varnames,
                              &var[j],
                              nvar,
-                             NULL,
+                             nullptr,
                              0,
                              DB_DOUBLE,
                              centering,
-                             NULL );
+                             nullptr );
             }
         }
         for ( int j = 0; j < data.varSize[i]; ++j ) {
-            if ( var[j] != NULL )
+            if ( var[j] != nullptr )
                 delete[] var[j];
         }
         delete[] var;
@@ -801,7 +801,7 @@ void SiloIO::writeSummary( std::string filename )
             DBoptlist *optList    = DBMakeOptlist( 10 );
             DBAddOption( optList, DBOPT_MRGTREE_NAME, (char *) tree_name.c_str() );
             DBPutMultimesh(
-                FileHandle, data.name.c_str(), meshNames.size(), meshnames, meshtypes, NULL );
+                FileHandle, data.name.c_str(), meshNames.size(), meshnames, meshtypes, nullptr );
             DBFreeOptlist( optList );
             delete[] meshnames;
             delete[] meshtypes;
@@ -835,7 +835,7 @@ void SiloIO::writeSummary( std::string filename )
                 }
                 std::string multiMeshName = data.name;
                 std::string visitVarName  = multiMeshName + "_" + varName;
-                DBoptlist *opts           = NULL;
+                DBoptlist *opts           = nullptr;
                 // DBoptlist *opts = DBMakeOptlist(1);
                 // DBAddOption( opts, DBOPT_MMESH_NAME, (char*) multiMeshName.c_str() );
                 if ( varSize == 1 || varSize == d_dim || varSize == d_dim * d_dim ) {

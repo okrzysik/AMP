@@ -137,12 +137,12 @@ void NeutronicsRhs::printClassData( std::ostream &os ) const
 void NeutronicsRhs::reset( const SP_OperatorParameters &parameters )
 {
 
-    AMP_ASSERT( parameters.get() != NULL );
+    AMP_ASSERT( parameters.get() != nullptr );
     d_db = parameters->d_db;
     SP_Parameters params =
         AMP::dynamic_pointer_cast<NeutronicsRhsParameters, OperatorParameters>( parameters );
-    AMP_ASSERT( params.get() != NULL );
-    AMP_ASSERT( ( ( params->d_db ).get() ) != NULL );
+    AMP_ASSERT( params.get() != nullptr );
+    AMP_ASSERT( ( ( params->d_db ).get() ) != nullptr );
     getFromInput( params->d_db );
 
     if ( !d_useFixedValue ) {
@@ -171,7 +171,7 @@ void NeutronicsRhs::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // subsetOutputVector is from Operator.h
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector( r );
 
-    AMP_ASSERT( rInternal != NULL );
+    AMP_ASSERT( rInternal != nullptr );
 
     // determine the present time
     int this_step = d_timeStep;

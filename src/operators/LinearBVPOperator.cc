@@ -23,7 +23,7 @@ void LinearBVPOperator::reset( const AMP::shared_ptr<OperatorParameters> &params
     AMP::shared_ptr<BVPOperatorParameters> inParams =
         AMP::dynamic_pointer_cast<BVPOperatorParameters>( params );
 
-    AMP_INSIST( ( inParams.get() != NULL ), "LinearBVPOperator :: reset Null parameter" );
+    AMP_INSIST( ( inParams.get() != nullptr ), "LinearBVPOperator :: reset Null parameter" );
 
     d_volumeOperator->reset( inParams->d_volumeOperatorParams );
 
@@ -35,7 +35,7 @@ void LinearBVPOperator::reset( const AMP::shared_ptr<OperatorParameters> &params
         AMP::dynamic_pointer_cast<LinearBoundaryOperatorParameters>(
             inParams->d_boundaryOperatorParams );
 
-    if ( linearBoundaryParams != NULL ) {
+    if ( linearBoundaryParams != nullptr ) {
         linearBoundaryParams->d_inputMatrix = d_volumeOperator->getMatrix();
         d_boundaryOperator->reset( linearBoundaryParams );
     } else {
@@ -43,14 +43,14 @@ void LinearBVPOperator::reset( const AMP::shared_ptr<OperatorParameters> &params
             AMP::dynamic_pointer_cast<ColumnBoundaryOperatorParameters>(
                 inParams->d_boundaryOperatorParams );
 
-        AMP_ASSERT( columnBoundaryParams != NULL );
+        AMP_ASSERT( columnBoundaryParams != nullptr );
 
         for ( unsigned int i = 0; i < columnBoundaryParams->d_OperatorParameters.size(); i++ ) {
             AMP::shared_ptr<OperatorParameters> cparams =
                 columnBoundaryParams->d_OperatorParameters[i];
             AMP::shared_ptr<LinearBoundaryOperatorParameters> linearBoundaryParams =
                 AMP::dynamic_pointer_cast<LinearBoundaryOperatorParameters>( cparams );
-            if ( linearBoundaryParams != NULL ) {
+            if ( linearBoundaryParams != nullptr ) {
                 linearBoundaryParams->d_inputMatrix = d_volumeOperator->getMatrix();
             }
         }

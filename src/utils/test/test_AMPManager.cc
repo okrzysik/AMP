@@ -51,7 +51,7 @@ int main( int argc, char *argv[] )
             AMP_ERROR( "AMP did not initialize on a sub-communicator" );
         // Introduce a memory leak to catch in valgrind later
         double *x = new double[100];
-        if ( x == NULL )
+        if ( x == nullptr )
             AMP_ERROR( "error" );
         // Test the abort
         try {

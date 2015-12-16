@@ -141,7 +141,7 @@ AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP_MPI &comm )
 AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh,
                                                 bool useMeshComm )
 {
-    if ( mesh.get() == NULL )
+    if ( mesh.get() == nullptr )
         return AMP::shared_ptr<DOFManager>();
     // Get a list of the elements in the mesh
     AMP::Mesh::MeshIterator iterator = getIterator();
@@ -176,7 +176,7 @@ AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::Mesh::shared_pt
     // Create the subset DOF Manager
     AMP_MPI comm( AMP_COMM_NULL );
     if ( useMeshComm ) {
-        if ( mesh.get() != NULL )
+        if ( mesh.get() != nullptr )
             comm = mesh->getComm();
     } else {
         comm = d_comm;

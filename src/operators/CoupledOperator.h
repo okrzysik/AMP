@@ -50,7 +50,7 @@ public:
 
     virtual void append(AMP::shared_ptr<Operator> op) override {
       AMP_ASSERT(d_Operators.size() < 4);
-      AMP_ASSERT(op.get() != NULL);
+      AMP_ASSERT(op.get() != nullptr);
       d_Operators.push_back(op);
     }
 
@@ -66,7 +66,7 @@ public:
     AMP::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                   AMP::shared_ptr<OperatorParameters> params = NULL ) override
+                   AMP::shared_ptr<OperatorParameters> params = nullptr ) override
     {
         return ( d_Operators[3]->getParameters( type, u, params ) );
     }

@@ -132,7 +132,7 @@ int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
     else
         ut->failure( message );
     sprintf( message, "minReduce (%s) (x,y)", typeid( type ).name() );
-    comm.minReduce<type>( &x, &y, 1, NULL );
+    comm.minReduce<type>( &x, &y, 1, nullptr );
     if ( y == 1 )
         ut->passes( message );
     else
@@ -144,7 +144,7 @@ int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
     else
         ut->failure( message );
     sprintf( message, "maxReduce (%s) (x,y)", typeid( type ).name() );
-    comm.maxReduce<type>( &x, &y, 1, NULL );
+    comm.maxReduce<type>( &x, &y, 1, nullptr );
     if ( y == size )
         ut->passes( message );
     else
@@ -395,7 +395,7 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
     size = new int[comm.getSize()];
     sprintf( message, "allGather scalar (%s)", typeid( type ).name() );
     try {
-        comm.allGather( &x1, 0, (type *) NULL, size );
+        comm.allGather( &x1, 0, (type *) nullptr, size );
         ut->passes( message );
     } catch ( ... ) {
         ut->failure( message );

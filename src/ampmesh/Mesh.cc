@@ -64,7 +64,7 @@ Mesh::~Mesh() {}
 AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_ptr &params )
 {
     AMP::shared_ptr<AMP::Database> database = params->d_db;
-    AMP_ASSERT( database != NULL );
+    AMP_ASSERT( database != nullptr );
     AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
     AMP_INSIST( database->keyExists( "MeshName" ), "MeshName must exist in input database" );
     std::string MeshType = database->getString( "MeshType" );
@@ -112,7 +112,7 @@ AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
 size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
     AMP::shared_ptr<AMP::Database> database = params->d_db;
-    AMP_ASSERT( database != NULL );
+    AMP_ASSERT( database != nullptr );
     size_t meshSize = 0;
     if ( database->keyExists( "NumberOfElements" ) ) {
         // User specified the number of elements, this should override everything
@@ -165,7 +165,7 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 size_t Mesh::maxProcs( const MeshParameters::shared_ptr &params )
 {
     AMP::shared_ptr<AMP::Database> database = params->d_db;
-    AMP_ASSERT( database != NULL );
+    AMP_ASSERT( database != nullptr );
     // This is being called through the base class, call the appropriate function
     AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
     std::string MeshType = database->getString( "MeshType" );

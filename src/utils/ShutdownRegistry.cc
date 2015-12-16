@@ -36,7 +36,7 @@ void ShutdownRegistry::registerShutdownRoutine( void ( *callback )(), unsigned c
 
     ShutdownRegistryItem *item = new ShutdownRegistryItem;
     item->callback             = callback;
-    item->next                 = (ShutdownRegistryItem *) NULL;
+    item->next                 = (ShutdownRegistryItem *) nullptr;
     if ( s_num_shutdown_items[priority] == 0 ) {
         s_shutdown_list[priority] = item;
     } else {
@@ -69,7 +69,7 @@ void ShutdownRegistry::callRegisteredShutdowns()
                     delete byebye;
                     found = true;
                 }
-                s_shutdown_list_last[priority] = (ShutdownRegistryItem *) NULL;
+                s_shutdown_list_last[priority] = (ShutdownRegistryItem *) nullptr;
             }
         }
     }
@@ -78,8 +78,8 @@ void ShutdownRegistry::callRegisteredShutdowns()
 void ShutdownRegistry::initialize()
 {
     for ( int priority = s_number_of_priorities - 1; priority > -1; priority-- ) {
-        s_shutdown_list[priority]      = (ShutdownRegistryItem *) NULL;
-        s_shutdown_list_last[priority] = (ShutdownRegistryItem *) NULL;
+        s_shutdown_list[priority]      = (ShutdownRegistryItem *) nullptr;
+        s_shutdown_list_last[priority] = (ShutdownRegistryItem *) nullptr;
         s_num_shutdown_items[priority] = 0;
     }
 

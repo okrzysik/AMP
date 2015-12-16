@@ -14,12 +14,12 @@ namespace AMP {
 namespace Operator {
 
 MassElement::MassElement( const AMP::shared_ptr<ElementOperationParameters> &params )
-    : ElementOperation( params ), d_elem( NULL )
+    : ElementOperation( params ), d_elem( nullptr )
 {
 
-    AMP_INSIST( ( params.get() != NULL ), "''params'' is NULL" );
+    AMP_INSIST( ( params.get() != nullptr ), "''params'' is NULL" );
 
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
     std::string feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "FIRST" );
 

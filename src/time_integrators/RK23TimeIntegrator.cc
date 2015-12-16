@@ -44,7 +44,7 @@ RK23TimeIntegrator::~RK23TimeIntegrator() {}
 */
 void RK23TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) NULL );
+    AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) nullptr );
 
     TimeIntegrator::initialize( parameters );
 
@@ -58,7 +58,7 @@ void RK23TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> p
 
 void RK23TimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) NULL );
+    AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) nullptr );
 
     abort();
 }

@@ -14,8 +14,8 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
     const AMP::shared_ptr<MechanicsNonlinearFEOperatorParameters> &params )
     : NonlinearFEOperator( params )
 {
-    AMP_INSIST( ( ( params.get() ) != NULL ), "NULL parameter!" );
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != NULL ), "NULL database!" );
+    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
+    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database!" );
 
     d_resetReusesRadialReturn =
         ( params->d_db )->getBoolWithDefault( "RESET_REUSES_RADIAL_RETURN", true );
@@ -33,10 +33,10 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
     }
 
     if ( d_useUpdatedLagrangian ) {
-        AMP_INSIST( ( ( d_mechNULElem.get() ) != NULL ),
+        AMP_INSIST( ( ( d_mechNULElem.get() ) != nullptr ),
                     "d_elemOp is not of type MechanicsNonlinearUpdatedLagrangianElement" );
     } else {
-        AMP_INSIST( ( ( d_mechNonlinElem.get() ) != NULL ),
+        AMP_INSIST( ( ( d_mechNonlinElem.get() ) != nullptr ),
                     "d_elemOp is not of type MechanicsNonlinearElement" );
     }
 
@@ -88,7 +88,7 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
                 new AMP::LinearAlgebra::Variable( varName ) );
             d_inpVariables->setVariable( i, dummyVar );
             if ( d_isFrozen[i] ) {
-                if ( params->d_FrozenVec[i] != NULL ) {
+                if ( params->d_FrozenVec[i] != nullptr ) {
                     setVector( i, params->d_FrozenVec[i] );
                 }
             }
@@ -112,7 +112,7 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
         }
     }
 
-    if ( params->d_ReferenceTemperature != NULL ) {
+    if ( params->d_ReferenceTemperature != nullptr ) {
         setReferenceTemperature( params->d_ReferenceTemperature );
     }
 
@@ -126,7 +126,7 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
 void MechanicsNonlinearFEOperator::preAssembly(
     AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::shared_ptr<AMP::LinearAlgebra::Vector> r )
 {
-    AMP_INSIST( ( u != NULL ), "NULL Input Vector" );
+    AMP_INSIST( ( u != nullptr ), "NULL Input Vector" );
 
     if ( !d_isInitialized ) {
         init();
@@ -354,7 +354,7 @@ void MechanicsNonlinearFEOperator::reset( const AMP::shared_ptr<OperatorParamete
     AMP::shared_ptr<MechanicsNonlinearFEOperatorParameters> myParams =
         AMP::dynamic_pointer_cast<MechanicsNonlinearFEOperatorParameters>( params );
 
-    AMP_INSIST( ( ( myParams.get() ) != NULL ), "Null parameter!" );
+    AMP_INSIST( ( ( myParams.get() ) != nullptr ), "Null parameter!" );
 
     if ( d_resetReusesRadialReturn ) {
         d_materialModel->globalReset();
@@ -365,27 +365,27 @@ void MechanicsNonlinearFEOperator::reset( const AMP::shared_ptr<OperatorParamete
         setVector( Mechanics::DISPLACEMENT, myParams->d_EquilibriumVec[Mechanics::DISPLACEMENT] );
 
         if ( d_isActive[Mechanics::TEMPERATURE] ) {
-            if ( myParams->d_EquilibriumVec[Mechanics::TEMPERATURE] != NULL ) {
+            if ( myParams->d_EquilibriumVec[Mechanics::TEMPERATURE] != nullptr ) {
                 setVector( Mechanics::TEMPERATURE,
                            myParams->d_EquilibriumVec[Mechanics::TEMPERATURE] );
             }
         }
 
         if ( d_isActive[Mechanics::BURNUP] ) {
-            if ( myParams->d_EquilibriumVec[Mechanics::BURNUP] != NULL ) {
+            if ( myParams->d_EquilibriumVec[Mechanics::BURNUP] != nullptr ) {
                 setVector( Mechanics::BURNUP, myParams->d_EquilibriumVec[Mechanics::BURNUP] );
             }
         }
 
         if ( d_isActive[Mechanics::OXYGEN_CONCENTRATION] ) {
-            if ( myParams->d_EquilibriumVec[Mechanics::OXYGEN_CONCENTRATION] != NULL ) {
+            if ( myParams->d_EquilibriumVec[Mechanics::OXYGEN_CONCENTRATION] != nullptr ) {
                 setVector( Mechanics::OXYGEN_CONCENTRATION,
                            myParams->d_EquilibriumVec[Mechanics::OXYGEN_CONCENTRATION] );
             }
         }
 
         if ( d_isActive[Mechanics::LHGR] ) {
-            if ( myParams->d_EquilibriumVec[Mechanics::LHGR] != NULL ) {
+            if ( myParams->d_EquilibriumVec[Mechanics::LHGR] != nullptr ) {
                 setVector( Mechanics::LHGR, myParams->d_EquilibriumVec[Mechanics::LHGR] );
             }
         }
@@ -424,7 +424,7 @@ void MechanicsNonlinearFEOperator::reset( const AMP::shared_ptr<OperatorParamete
     for ( unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++ ) {
         if ( d_isActive[i] ) {
             if ( d_isFrozen[i] ) {
-                if ( myParams->d_FrozenVec[i] != NULL ) {
+                if ( myParams->d_FrozenVec[i] != nullptr ) {
                     setVector( i, myParams->d_FrozenVec[i] );
                 }
             }
@@ -761,7 +761,7 @@ AMP::LinearAlgebra::Vector::shared_ptr
 MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                               AMP::LinearAlgebra::Variable::shared_ptr var )
 {
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
             vec->select( meshSelector, vec->getVariable()->getName() );
@@ -775,7 +775,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr
 MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
                                               AMP::LinearAlgebra::Variable::shared_ptr var )
 {
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec =
             vec->constSelect( meshSelector, vec->getVariable()->getName() );

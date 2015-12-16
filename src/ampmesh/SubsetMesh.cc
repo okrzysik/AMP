@@ -140,7 +140,7 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
         if ( N_ghost_global == 0 )
             continue;
         std::vector<MeshElementID> ghost_global( N_ghost_global );
-        MeshElementID *send_ptr = NULL;
+        MeshElementID *send_ptr = nullptr;
         if ( N_ghost_local > 0 ) {
             send_ptr = &ghost_local[0];
         }
@@ -247,7 +247,7 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
         }
     }
     d_boundaryIdSets = std::vector<int>( new_boundary_ids.begin(), new_boundary_ids.end() );
-    int *send_ptr    = NULL;
+    int *send_ptr    = nullptr;
     if ( d_boundaryIdSets.size() > 0 )
         send_ptr     = &d_boundaryIdSets[0];
     size_t recv_size = d_comm.sumReduce( d_boundaryIdSets.size() );
@@ -298,7 +298,7 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
             ++iterator;
         }
         d_blockIdSets = std::vector<int>( new_block_ids.begin(), new_block_ids.end() );
-        send_ptr      = NULL;
+        send_ptr      = nullptr;
         if ( d_boundaryIdSets.size() > 0 )
             send_ptr = &d_boundaryIdSets[0];
         recv_size    = d_comm.sumReduce( d_blockIdSets.size() );
@@ -448,7 +448,7 @@ bool SubsetMesh::isMember( const MeshElementID &id ) const
     if ( type >= static_cast<int>( d_elements.size() ) )
         return false;
     for ( size_t gcw = 0; gcw < d_elements[type].size(); gcw++ ) {
-        if ( d_elements[type][gcw] == NULL )
+        if ( d_elements[type][gcw] == nullptr )
             continue;
         const std::vector<MeshElement> &elements = *( d_elements[type][gcw].get() );
         for ( size_t i = 0; i < elements.size(); i++ ) {

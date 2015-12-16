@@ -8,7 +8,7 @@ namespace Operator {
 void MassMatrixCorrection::resetBoundaryIds(
     const AMP::shared_ptr<MassMatrixCorrectionParameters> &params )
 {
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
     bool skipParams = ( params->d_db )->getBoolWithDefault( "skip_params", true );
     d_bSetIdentityOnDiagonal =
         ( params->d_db )->getBoolWithDefault( "setIdentityOnDiagonal", false );
@@ -48,14 +48,14 @@ void MassMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &par
     AMP::shared_ptr<MassMatrixCorrectionParameters> myParams =
         AMP::dynamic_pointer_cast<MassMatrixCorrectionParameters>( params );
 
-    AMP_INSIST( ( ( myParams.get() ) != NULL ), "NULL parameters" );
+    AMP_INSIST( ( ( myParams.get() ) != nullptr ), "NULL parameters" );
 
     resetBoundaryIds( myParams );
 
     double diagVal = d_bSetIdentityOnDiagonal ? 1.0 : 0.0;
 
     AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myParams->d_inputMatrix;
-    AMP_INSIST( ( ( inputMatrix.get() ) != NULL ), "NULL matrix" );
+    AMP_INSIST( ( ( inputMatrix.get() ) != nullptr ), "NULL matrix" );
 
     AMP::LinearAlgebra::Vector::shared_ptr inVec        = inputMatrix->getRightVector();
     AMP::Discretization::DOFManager::shared_ptr dof_map = inVec->getDOFManager();

@@ -144,12 +144,12 @@ void NeutronicsRhsExtras::printClassData( std::ostream &os ) const
 void NeutronicsRhsExtras::reset( const SP_OperatorParameters &parameters )
 {
 
-    AMP_ASSERT( parameters.get() != NULL );
+    AMP_ASSERT( parameters.get() != nullptr );
     d_db = parameters->d_db;
     SP_Parameters params =
         AMP::dynamic_pointer_cast<NeutronicsRhsExtrasParameters, OperatorParameters>( parameters );
-    AMP_ASSERT( params.get() != NULL );
-    AMP_ASSERT( ( ( params->d_db ).get() ) != NULL );
+    AMP_ASSERT( params.get() != nullptr );
+    AMP_ASSERT( ( ( params->d_db ).get() ) != nullptr );
     getFromInput( params->d_db );
 
     if ( !d_useFixedValue ) {

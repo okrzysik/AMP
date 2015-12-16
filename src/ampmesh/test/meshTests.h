@@ -31,7 +31,7 @@ std::map<AMP::Mesh::MeshID, std::vector<int>> createRankMap( AMP::Mesh::Mesh::sh
         AMP::Mesh::Mesh::shared_ptr mesh2 = mesh->Subset( meshIDs[i] );
         int N_send                        = 0;
         std::pair<int, int> map;
-        if ( mesh2.get() != NULL ) {
+        if ( mesh2.get() != nullptr ) {
             map    = std::pair<int, int>( mesh2->getComm().getRank(), mesh->getComm().getRank() );
             N_send = 1;
         }
@@ -443,7 +443,7 @@ void MeshBasicTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
     else
         ut->failure( "subset on mesh name for self" );
     mesh2 = mesh->Subset( "Garbage name" );
-    if ( mesh2.get() == NULL )
+    if ( mesh2.get() == nullptr )
         ut->passes( "subset on mesh name for garbage" );
     else
         ut->failure( "subset on mesh name for garbage" );
@@ -486,7 +486,7 @@ void VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh 
         if ( N_ghost_global == 0 )
             continue;
         std::vector<AMP::Mesh::MeshElementID> ghost_global( N_ghost_global );
-        AMP::Mesh::MeshElementID *send_data = NULL;
+        AMP::Mesh::MeshElementID *send_data = nullptr;
         if ( !ghost.empty() ) {
             send_data = &ghost[0];
         }
@@ -504,12 +504,12 @@ void VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh 
             if ( ghost_global[i].meshID() != my_mesh_id ) {
                 my_mesh_id = ghost_global[i].meshID();
                 my_mesh    = mesh->Subset( my_mesh_id );
-                if ( my_mesh.get() == NULL )
+                if ( my_mesh.get() == nullptr )
                     continue;
                 my_rank = my_mesh->getComm().getRank();
             }
             // Check if we are the owning rank
-            if ( my_mesh.get() == NULL )
+            if ( my_mesh.get() == nullptr )
                 continue;
             if ( ghost_global[i].owner_rank() != my_rank )
                 continue;
@@ -591,7 +591,7 @@ void VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr m
             AMP::Mesh::MeshIterator iterator = mesh->getSurfaceIterator( type, gcw );
             size_t global_size               = mesh->getComm().sumReduce( iterator.size() );
             bool passes                      = global_size > 0;
-            if ( AMP::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>( mesh ).get() == NULL ) {
+            if ( AMP::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>( mesh ).get() == nullptr ) {
                 if ( mesh->numGlobalElements( type ) >= 100 )
                     passes = passes && ( global_size < mesh->numGlobalElements( type ) );
             }
@@ -692,7 +692,7 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
         // Store the neighbor list
         neighbors.resize( 0 );
         for ( size_t j = 0; j < elements.size(); j++ ) {
-            if ( elements[j].get() != NULL )
+            if ( elements[j].get() != nullptr )
                 neighbors.push_back( elements[j]->globalID() );
         }
         // Sort the neighbor list for easy searching

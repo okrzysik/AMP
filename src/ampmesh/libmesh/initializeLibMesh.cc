@@ -19,7 +19,7 @@ namespace Mesh {
 
 // Initialize static member variables
 volatile int initializeLibMesh::N_copies = 0;
-void *initializeLibMesh::lminit          = NULL;
+void *initializeLibMesh::lminit          = nullptr;
 AMP_MPI initializeLibMesh::d_comm        = AMP_MPI( AMP_COMM_NULL );
 
 
@@ -73,7 +73,7 @@ initializeLibMesh::initializeLibMesh( AMP_MPI comm )
         }
     } else {
         // libmesh is not initialized
-        if ( lminit != NULL )
+        if ( lminit != nullptr )
             AMP_ERROR( "Internal error" );
         // Use a barrier to ensure all processors are at the same point
         N_copies = 1;
@@ -81,7 +81,7 @@ initializeLibMesh::initializeLibMesh( AMP_MPI comm )
         d_comm.barrier();
         // Reinitialize LibMesh with the new communicator
         int argc_libmesh    = 0;
-        char **argv_libmesh = NULL;
+        char **argv_libmesh = nullptr;
         const int argc      = AMPManager::get_argc();
         const char **argv   = (const char **) AMPManager::get_argv();
         argc_libmesh        = add_libmesh_cmdline( argc, argv, &argv_libmesh );
@@ -116,13 +116,13 @@ initializeLibMesh::~initializeLibMesh()
     d_comm.barrier();
     if ( N_copies == 1 ) {
         // Shutdown libmesh
-        if ( lminit == NULL )
+        if ( lminit == nullptr )
             AMP_ERROR( "Internal error" );
         // Free libmesh MPI types
         // type_hilbert.reset();
         // Delete libmesh
         delete (LibMeshInit *) lminit;
-        lminit   = NULL;
+        lminit   = nullptr;
         d_comm   = AMP_MPI( AMP_COMM_NULL );
         N_copies = 0;
     } else {

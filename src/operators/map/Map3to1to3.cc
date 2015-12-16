@@ -12,7 +12,7 @@ template <class T>
 static T *getPtr( std::vector<T> &x )
 {
     if ( x.size() == 0 )
-        return NULL;
+        return nullptr;
     return &x[0];
 }
 
@@ -41,20 +41,20 @@ Map3to1to3::Map3to1to3( const AMP::shared_ptr<OperatorParameters> &params_in )
     d_own_mesh2 = std::vector<bool>( d_MapComm.getSize(), false );
     std::vector<char> tmp1( d_MapComm.getSize(), false );
     std::vector<char> tmp2( d_MapComm.getSize(), false );
-    d_MapComm.allGather<char>( d_mesh1.get() != NULL, &tmp1[0] );
-    d_MapComm.allGather<char>( d_mesh2.get() != NULL, &tmp2[0] );
+    d_MapComm.allGather<char>( d_mesh1.get() != nullptr, &tmp1[0] );
+    d_MapComm.allGather<char>( d_mesh2.get() != nullptr, &tmp2[0] );
     for ( int i = 0; i < d_MapComm.getSize(); i++ ) {
         d_own_mesh1[i] = tmp1[i] != 0;
         d_own_mesh2[i] = tmp2[i] != 0;
     }
     size_t numToSend = 0;
-    if ( d_mesh1.get() != NULL ) {
+    if ( d_mesh1.get() != nullptr ) {
         for ( size_t i = 0; i < d_own_mesh2.size(); i++ ) {
             if ( d_own_mesh2[i] == 1 )
                 numToSend++;
         }
     }
-    if ( d_mesh2.get() != NULL ) {
+    if ( d_mesh2.get() != nullptr ) {
         for ( size_t i = 0; i < d_own_mesh1.size(); i++ ) {
             if ( d_own_mesh1[i] == 1 )
                 numToSend++;
@@ -175,7 +175,7 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // Send the data
     size_t myRank                             = (size_t) d_MapComm.getRank();
     std::vector<MPI_Request>::iterator curReq = beginRequests();
-    if ( d_mesh1.get() != NULL ) {
+    if ( d_mesh1.get() != nullptr ) {
         for ( size_t i = 0; i < d_own_mesh2.size(); i++ ) {
             if ( i == myRank )
                 continue; // Don't communicate local data
@@ -186,7 +186,7 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             }
         }
     }
-    if ( d_mesh2.get() != NULL ) {
+    if ( d_mesh2.get() != nullptr ) {
         for ( size_t i = 0; i < d_own_mesh1.size(); i++ ) {
             if ( i == myRank )
                 continue; // Don't communicate local data
@@ -215,7 +215,7 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     std::map<double, std::pair<int, double>> map1;
     std::map<double, std::pair<int, double>> map2;
     std::vector<comm_data> recvBuf;
-    if ( d_mesh1.get() != NULL ) {
+    if ( d_mesh1.get() != nullptr ) {
         // First get any local data
         if ( d_own_mesh2[myRank] )
             unpackBuffer( d_SendBuf2, map1 );
@@ -233,7 +233,7 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
             }
         }
     }
-    if ( d_mesh2.get() != NULL ) {
+    if ( d_mesh2.get() != nullptr ) {
         // First get any local data
         if ( d_own_mesh1[myRank] )
             unpackBuffer( d_SendBuf1, map2 );
@@ -270,9 +270,9 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     }
 
     // Build the return vector
-    if ( d_mesh1.get() != NULL )
+    if ( d_mesh1.get() != nullptr )
         buildReturn( d_ResultVector, d_mesh1, d_dstIterator1, final_map1 );
-    if ( d_mesh2.get() != NULL )
+    if ( d_mesh2.get() != nullptr )
         buildReturn( d_ResultVector, d_mesh2, d_dstIterator2, final_map2 );
 
     // Apply make consistent

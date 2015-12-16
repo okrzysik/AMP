@@ -15,12 +15,12 @@ NavierStokesLSWFFEOperator::NavierStokesLSWFFEOperator(
     const AMP::shared_ptr<NavierStokesLSWFFEOperatorParameters> &params )
     : NonlinearFEOperator( params )
 {
-    AMP_INSIST( ( ( params.get() ) != NULL ), "NULL parameter!" );
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != NULL ), "NULL database!" );
+    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
+    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database!" );
 
     d_nsLSWFElem = AMP::dynamic_pointer_cast<NavierStokesLSWFElement>( d_elemOp );
 
-    AMP_INSIST( ( ( d_nsLSWFElem.get() ) != NULL ),
+    AMP_INSIST( ( ( d_nsLSWFElem.get() ) != nullptr ),
                 "d_elemOp is not of type NavierStokesLSWFElement" );
 
     d_transportModel = params->d_transportModel;
@@ -75,7 +75,7 @@ NavierStokesLSWFFEOperator::NavierStokesLSWFFEOperator(
 void NavierStokesLSWFFEOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                               AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    AMP_INSIST( ( u != NULL ), "NULL Input Vector" );
+    AMP_INSIST( ( u != nullptr ), "NULL Input Vector" );
     /*
           for(unsigned int i = 0; i < NavierStokes::TOTAL_NUMBER_OF_VARIABLES; i++) {
             if(d_isActive[i]) {
@@ -259,7 +259,7 @@ AMP::LinearAlgebra::Vector::shared_ptr
 NavierStokesLSWFFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                             AMP::LinearAlgebra::Variable::shared_ptr var )
 {
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
             vec->select( meshSelector, var->getName() );
@@ -273,7 +273,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr
 NavierStokesLSWFFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
                                             AMP::LinearAlgebra::Variable::shared_ptr var )
 {
-    if ( d_Mesh.get() != NULL ) {
+    if ( d_Mesh.get() != nullptr ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec =
             vec->constSelect( meshSelector, var->getName() );

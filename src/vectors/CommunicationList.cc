@@ -18,7 +18,7 @@ namespace LinearAlgebra {
 template <typename T>
 static T *getPtr( std::vector<T> &in )
 {
-    T *retVal = 0;
+    T *retVal = nullptr;
     if ( !in.empty() )
         retVal = &( in[0] );
     return retVal;
@@ -26,7 +26,7 @@ static T *getPtr( std::vector<T> &in )
 template <typename T>
 static T *getPtr( const std::vector<T> &in )
 {
-    T *retVal = 0;
+    T *retVal = nullptr;
     if ( !in.empty() )
         retVal = (T *) &( in[0] );
     return retVal;

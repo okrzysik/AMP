@@ -50,10 +50,10 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
     AMP::shared_ptr<RobinMatrixCorrectionParameters> myparams =
         AMP::dynamic_pointer_cast<RobinMatrixCorrectionParameters>( params );
 
-    AMP_INSIST( ( ( myparams.get() ) != NULL ), "NULL parameters" );
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
+    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
 
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
     bool skipParams = ( myparams->d_db )->getBoolWithDefault( "skip_params", true );
 
     bool d_isFluxGaussPtVector =
@@ -126,7 +126,7 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
         libmeshElements.reinit( iterator );
 
         AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myparams->d_inputMatrix;
-        AMP_INSIST( ( ( inputMatrix.get() ) != NULL ), "NULL matrix" );
+        AMP_INSIST( ( ( inputMatrix.get() ) != nullptr ), "NULL matrix" );
 
         AMP::LinearAlgebra::Vector::shared_ptr inVec = inputMatrix->getRightVector();
         d_dofManager                                 = inVec->getDOFManager();
@@ -147,7 +147,7 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
         std::vector<size_t> dofs;
 
         AMP::Discretization::DOFManager::shared_ptr gpDOFManager;
-        if ( d_isFluxGaussPtVector && myparams->d_variableFlux.get() != NULL ) {
+        if ( d_isFluxGaussPtVector && myparams->d_variableFlux.get() != nullptr ) {
             gpDOFManager = ( myparams->d_variableFlux )->getDOFManager();
         }
 
@@ -193,7 +193,7 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
                     for ( size_t n = 0; n < dofIndices.size(); n++ )
                         dofs[n]    = dofIndices[n][d_dofIds[nid][k]];
 
-                    if ( d_isFluxGaussPtVector && myparams->d_variableFlux.get() != NULL ) {
+                    if ( d_isFluxGaussPtVector && myparams->d_variableFlux.get() != nullptr ) {
                         gpDOFManager->getDOFs( bnd1->globalID(), gpDofs );
                     }
 
@@ -214,7 +214,7 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
                         elementInputVec.size(), std::vector<double>( numGaussPts ) );
                     std::vector<double> beta( numGaussPts, d_beta );
                     std::vector<double> gamma( numGaussPts, d_gamma );
-                    if ( d_robinPhysicsModel.get() != NULL ) {
+                    if ( d_robinPhysicsModel.get() != nullptr ) {
                         unsigned int startIdx = 0;
                         if ( d_isFluxGaussPtVector ) {
                             ( myparams->d_variableFlux )

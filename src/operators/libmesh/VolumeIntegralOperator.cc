@@ -16,11 +16,11 @@ VolumeIntegralOperator::VolumeIntegralOperator(
     const AMP::shared_ptr<VolumeIntegralOperatorParameters> &params )
     : NonlinearFEOperator( params )
 {
-    AMP_INSIST( ( ( params.get() ) != NULL ), "NULL parameter!" );
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != NULL ), "NULL database!" );
+    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
+    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database!" );
 
     d_srcNonlinElem = AMP::dynamic_pointer_cast<SourceNonlinearElement>( d_elemOp );
-    AMP_INSIST( ( ( d_srcNonlinElem.get() ) != NULL ),
+    AMP_INSIST( ( ( d_srcNonlinElem.get() ) != nullptr ),
                 "d_elemOp is not of type SourceNonlinearElement" );
 
     if ( params->d_sourcePhysicsModel ) {
@@ -49,7 +49,7 @@ VolumeIntegralOperator::VolumeIntegralOperator(
                 "to SourcePhysicsModel.h does not appear to be "
                 "complete." );
     if ( numAuxillaryVariables > 0 ) {
-        AMP_INSIST( ( ( ( params->d_auxVec ).get() ) != NULL ), "NULL Auxillary Vector!" );
+        AMP_INSIST( ( ( ( params->d_auxVec ).get() ) != nullptr ), "NULL Auxillary Vector!" );
     }
     d_multiAuxPtr = params->d_auxVec;
     d_auxVec.resize( numAuxillaryVariables );
@@ -78,7 +78,7 @@ VolumeIntegralOperator::VolumeIntegralOperator(
 void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                           AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    AMP_INSIST( ( u != NULL ), "NULL Input Vector" );
+    AMP_INSIST( ( u != nullptr ), "NULL Input Vector" );
 
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
     AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetPrimary, meshSubsetAuxillary;
@@ -89,7 +89,7 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
         AMP::LinearAlgebra::Variable::shared_ptr primaryVariable =
             d_inpVariables->getVariable( var );
         d_inVec[var] = meshSubsetPrimary->constSubsetVectorForVariable( primaryVariable );
-        AMP_ASSERT( d_inVec[var] != NULL );
+        AMP_ASSERT( d_inVec[var] != nullptr );
         AMP_ASSERT( d_inVec[var]->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
     }
 
@@ -99,7 +99,7 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
         AMP::LinearAlgebra::Variable::shared_ptr auxillaryVariable =
             d_auxVariables->getVariable( var );
         d_auxVec[var] = meshSubsetAuxillary->constSubsetVectorForVariable( auxillaryVariable );
-        AMP_ASSERT( d_auxVec[var] != NULL );
+        AMP_ASSERT( d_auxVec[var] != nullptr );
         AMP_ASSERT( d_auxVec[var]->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
     }
 

@@ -8,7 +8,7 @@ namespace Operator {
 
 TrilinosMatrixShellOperator::TrilinosMatrixShellOperator(
     const AMP::shared_ptr<OperatorParameters> &params )
-    : LinearOperator( params ), d_getRow( NULL )
+    : LinearOperator( params ), d_getRow( nullptr )
 {
 }
 

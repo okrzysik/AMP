@@ -20,11 +20,11 @@ void NonlinearBVPOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
 {
     PROFILE_START( "apply" );
 
-    AMP_INSIST( ( ( r.get() ) != NULL ), "NULL Residual Vector" );
+    AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL Residual Vector" );
 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector( r );
 
-    AMP_INSIST( ( ( rInternal.get() ) != NULL ), "NULL Internal Residual Vector" );
+    AMP_INSIST( ( ( rInternal.get() ) != nullptr ), "NULL Internal Residual Vector" );
 
     if ( d_iDebugPrintInfoLevel > 3 ) {
         AMP::pout << "L2 Norm of u in NonlinearBVPOperator volumeOperator::apply is : "
@@ -63,7 +63,7 @@ void NonlinearBVPOperator::reset( const AMP::shared_ptr<OperatorParameters> &par
     AMP::shared_ptr<BVPOperatorParameters> inParams =
         AMP::dynamic_pointer_cast<BVPOperatorParameters>( params );
 
-    AMP_INSIST( ( inParams.get() != NULL ), "NonlinearBVPOperator :: reset Null parameter" );
+    AMP_INSIST( ( inParams.get() != nullptr ), "NonlinearBVPOperator :: reset Null parameter" );
 
     d_volumeOperator->reset( inParams->d_volumeOperatorParams );
     d_boundaryOperator->reset( inParams->d_boundaryOperatorParams );

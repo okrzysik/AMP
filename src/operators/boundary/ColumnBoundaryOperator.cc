@@ -39,7 +39,7 @@ void ColumnBoundaryOperator::reset( const AMP::shared_ptr<OperatorParameters> &p
     AMP::shared_ptr<ColumnBoundaryOperatorParameters> columnParameters =
         AMP::dynamic_pointer_cast<ColumnBoundaryOperatorParameters>( params );
 
-    AMP_INSIST( ( columnParameters.get() != NULL ),
+    AMP_INSIST( ( columnParameters.get() != nullptr ),
                 "ColumnBoundaryOperator::reset parameter object is NULL" );
 
     AMP_INSIST( ( ( ( columnParameters->d_OperatorParameters ).size() ) == ( d_Operators.size() ) ),
@@ -53,7 +53,7 @@ void ColumnBoundaryOperator::reset( const AMP::shared_ptr<OperatorParameters> &p
 void ColumnBoundaryOperator::append( AMP::shared_ptr<BoundaryOperator> op )
 {
     AMP_INSIST(
-        ( op.get() != NULL ),
+        ( op.get() != nullptr ),
         "AMP::Operator::ColumnBoundaryOperator::appendRow input argument is a NULL operator" );
 
     d_Operators.push_back( op );

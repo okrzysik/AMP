@@ -32,10 +32,10 @@ Vector::const_shared_ptr PetscVector::constView( Vector::const_shared_ptr inVect
         ManagedPetscVectorParameters *newParams = new ManagedPetscVectorParameters;
         newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
         newParams->d_CloneEngine = false;
-        AMP_INSIST( inVector->getCommunicationList().get() != NULL,
+        AMP_INSIST( inVector->getCommunicationList().get() != nullptr,
                     "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();
-        AMP_INSIST( inVector->getDOFManager().get() != NULL,
+        AMP_INSIST( inVector->getDOFManager().get() != nullptr,
                     "All vectors must have a DOFManager list" );
         newParams->d_DOFManager = inVector->getDOFManager();
         ManagedPetscVector *t = new ManagedPetscVector( VectorParameters::shared_ptr( newParams ) );
@@ -67,10 +67,10 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
         ManagedPetscVectorParameters *newParams = new ManagedPetscVectorParameters;
         newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector );
         newParams->d_CloneEngine = false;
-        AMP_INSIST( inVector->getCommunicationList().get() != NULL,
+        AMP_INSIST( inVector->getCommunicationList().get() != nullptr,
                     "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();
-        AMP_INSIST( inVector->getDOFManager().get() != NULL,
+        AMP_INSIST( inVector->getDOFManager().get() != nullptr,
                     "All vectors must have a DOFManager list" );
         newParams->d_DOFManager = inVector->getDOFManager();
         ManagedPetscVector *newVector =

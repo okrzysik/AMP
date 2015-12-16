@@ -47,7 +47,7 @@ MapSurface::MapSurface( const AMP::shared_ptr<OperatorParameters> &params ) : Ma
 void MapSurface::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr )
 {
-    AMP_INSIST( ( ( u.get() ) != NULL ), "NULL Solution Vector" );
+    AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Solution Vector" );
 
     inpVec = subsetInputVector( u );
 

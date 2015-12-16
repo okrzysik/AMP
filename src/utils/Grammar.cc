@@ -1855,7 +1855,7 @@ yyreduce:
         ( yyval.u_keydata )->d_node_type  = KEY_BOOL;
         ( yyval.u_keydata )->d_array_type = KEY_BOOL;
         ( yyval.u_keydata )->d_array_size = 1;
-        ( yyval.u_keydata )->d_next       = 0;
+        ( yyval.u_keydata )->d_next       = nullptr;
         ( yyval.u_keydata )->d_bool       = true;
     } break;
 
@@ -1866,7 +1866,7 @@ yyreduce:
         ( yyval.u_keydata )->d_node_type  = KEY_BOOL;
         ( yyval.u_keydata )->d_array_type = KEY_BOOL;
         ( yyval.u_keydata )->d_array_size = 1;
-        ( yyval.u_keydata )->d_next       = 0;
+        ( yyval.u_keydata )->d_next       = nullptr;
         ( yyval.u_keydata )->d_bool       = false;
     } break;
 
@@ -1883,7 +1883,7 @@ yyreduce:
         ( yyval.u_keydata )->d_node_type  = KEY_CHAR;
         ( yyval.u_keydata )->d_array_type = KEY_CHAR;
         ( yyval.u_keydata )->d_array_size = 1;
-        ( yyval.u_keydata )->d_next       = 0;
+        ( yyval.u_keydata )->d_next       = nullptr;
         ( yyval.u_keydata )->d_char       = ( yyvsp[( 1 ) - ( 1 )].u_char );
     } break;
 
@@ -1900,7 +1900,7 @@ yyreduce:
         ( yyval.u_keydata )->d_node_type  = KEY_DOUBLE;
         ( yyval.u_keydata )->d_array_type = KEY_DOUBLE;
         ( yyval.u_keydata )->d_array_size = 1;
-        ( yyval.u_keydata )->d_next       = 0;
+        ( yyval.u_keydata )->d_next       = nullptr;
         ( yyval.u_keydata )->d_double     = ( yyvsp[( 1 ) - ( 1 )].u_double );
     } break;
 
@@ -1911,7 +1911,7 @@ yyreduce:
         ( yyval.u_keydata )->d_node_type  = KEY_INTEGER;
         ( yyval.u_keydata )->d_array_type = KEY_INTEGER;
         ( yyval.u_keydata )->d_array_size = 1;
-        ( yyval.u_keydata )->d_next       = 0;
+        ( yyval.u_keydata )->d_next       = nullptr;
         ( yyval.u_keydata )->d_integer    = ( yyvsp[( 1 ) - ( 1 )].u_integer );
     } break;
 
@@ -1922,7 +1922,7 @@ yyreduce:
         ( yyval.u_keydata )->d_node_type  = KEY_STRING;
         ( yyval.u_keydata )->d_array_type = KEY_STRING;
         ( yyval.u_keydata )->d_array_size = 1;
-        ( yyval.u_keydata )->d_next       = 0;
+        ( yyval.u_keydata )->d_next       = nullptr;
         ( yyval.u_keydata )->d_string     = *( yyvsp[( 1 ) - ( 1 )].u_string );
         delete ( yyvsp[( 1 ) - ( 1 )].u_string );
     } break;
@@ -2489,105 +2489,105 @@ void parser_static_table_initialize()
 {
     af[0].d_name     = "abs";
     af[0].d_r2r_func = fabs;
-    af[0].d_c2c_func = 0;
+    af[0].d_c2c_func = nullptr;
     af[0].d_c2r_func = std::abs;
 
 
     af[1].d_name     = "acos";
     af[1].d_r2r_func = acos;
-    af[1].d_c2c_func = 0;
-    af[1].d_c2r_func = 0;
+    af[1].d_c2c_func = nullptr;
+    af[1].d_c2r_func = nullptr;
 
     af[2].d_name     = "asin";
     af[2].d_r2r_func = asin;
-    af[2].d_c2c_func = 0;
-    af[2].d_c2r_func = 0;
+    af[2].d_c2c_func = nullptr;
+    af[2].d_c2r_func = nullptr;
 
     af[3].d_name     = "atan";
     af[3].d_r2r_func = atan;
-    af[3].d_c2c_func = 0;
-    af[3].d_c2r_func = 0;
+    af[3].d_c2c_func = nullptr;
+    af[3].d_c2r_func = nullptr;
 
     af[4].d_name     = "ceil";
     af[4].d_r2r_func = ceil;
-    af[4].d_c2c_func = 0;
-    af[4].d_c2r_func = 0;
+    af[4].d_c2c_func = nullptr;
+    af[4].d_c2r_func = nullptr;
 
     af[5].d_name     = "conj";
-    af[5].d_r2r_func = 0;
+    af[5].d_r2r_func = nullptr;
     af[5].d_c2c_func = conj;
-    af[5].d_c2r_func = 0;
+    af[5].d_c2r_func = nullptr;
 
 
     af[6].d_name     = "cos";
     af[6].d_r2r_func = ::cos;
     af[6].d_c2c_func = std::cos;
-    af[6].d_c2r_func = 0;
+    af[6].d_c2r_func = nullptr;
 
     af[7].d_name     = "cosh";
     af[7].d_r2r_func = ::cosh;
     af[7].d_c2c_func = std::cosh;
-    af[7].d_c2r_func = 0;
+    af[7].d_c2r_func = nullptr;
 
     af[8].d_name     = "exp";
     af[8].d_r2r_func = ::exp;
     af[8].d_c2c_func = std::exp;
-    af[8].d_c2r_func = 0;
+    af[8].d_c2r_func = nullptr;
 
     af[9].d_name     = "fabs";
     af[9].d_r2r_func = fabs;
-    af[9].d_c2c_func = 0;
-    af[9].d_c2r_func = 0;
+    af[9].d_c2c_func = nullptr;
+    af[9].d_c2r_func = nullptr;
 
     af[10].d_name     = "floor";
     af[10].d_r2r_func = floor;
-    af[10].d_c2c_func = 0;
-    af[10].d_c2r_func = 0;
+    af[10].d_c2c_func = nullptr;
+    af[10].d_c2r_func = nullptr;
 
     af[11].d_name     = "imag";
-    af[11].d_r2r_func = 0;
-    af[11].d_c2c_func = 0;
+    af[11].d_r2r_func = nullptr;
+    af[11].d_c2c_func = nullptr;
     af[11].d_c2r_func = imag_thunk;
 
     af[12].d_name     = "log10";
     af[12].d_r2r_func = ::log10;
-    af[12].d_c2c_func = 0;
-    af[12].d_c2r_func = 0;
+    af[12].d_c2c_func = nullptr;
+    af[12].d_c2r_func = nullptr;
 
     af[13].d_name     = "log";
     af[13].d_r2r_func = ::log;
     af[13].d_c2c_func = std::log;
-    af[13].d_c2r_func = 0;
+    af[13].d_c2r_func = nullptr;
 
     af[14].d_name     = "real";
-    af[14].d_r2r_func = 0;
-    af[14].d_c2c_func = 0;
+    af[14].d_r2r_func = nullptr;
+    af[14].d_c2c_func = nullptr;
     af[14].d_c2r_func = real_thunk;
 
     af[15].d_name     = "sin";
     af[15].d_r2r_func = ::sin;
     af[15].d_c2c_func = std::sin;
-    af[15].d_c2r_func = 0;
+    af[15].d_c2r_func = nullptr;
 
     af[16].d_name     = "sinh";
     af[16].d_r2r_func = ::sinh;
     af[16].d_c2c_func = std::sinh;
-    af[16].d_c2r_func = 0;
+    af[16].d_c2r_func = nullptr;
 
     af[17].d_name     = "sqrt";
     af[17].d_r2r_func = ::sqrt;
     af[17].d_c2c_func = std::sqrt;
-    af[17].d_c2r_func = 0;
+    af[17].d_c2r_func = nullptr;
 
     af[18].d_name     = "tan";
     af[18].d_r2r_func = tan;
-    af[18].d_c2c_func = 0;
-    af[18].d_c2r_func = 0;
+    af[18].d_c2c_func = nullptr;
+    af[18].d_c2r_func = nullptr;
 
     af[19].d_name     = "";
-    af[19].d_r2r_func = 0;
-    af[19].d_c2c_func = 0;
-    af[19].d_c2r_func = 0;
+    af[19].d_r2r_func = nullptr;
+    af[19].d_c2c_func = nullptr;
+    af[19].d_c2r_func = nullptr;
 }
 
 static KeyData *eval_function( KeyData *arg, const string &func )
@@ -2657,7 +2657,7 @@ static KeyData *lookup_variable( const string &key, const int index, const bool 
     result->d_node_type  = KEY_INTEGER;
     result->d_array_type = KEY_INTEGER;
     result->d_array_size = 1;
-    result->d_next       = 0;
+    result->d_next       = nullptr;
     result->d_integer    = 0;
 
     Parser *parser = Parser::getParser();

@@ -35,7 +35,7 @@ double dot3cross( double a[3], double b[3], double c[3] )
 structuredMeshElement::structuredMeshElement()
 {
     typeID     = structuredMeshElementTypeID;
-    element    = NULL;
+    element    = nullptr;
     d_dim      = 0;
     d_index    = BoxMesh::MeshElementIndex();
     d_globalID = MeshElementID();
@@ -69,7 +69,7 @@ structuredMeshElement::structuredMeshElement( const structuredMeshElement &rhs )
     : MeshElement() // Note: we never want to call the base copy constructor
 {
     typeID     = structuredMeshElementTypeID;
-    element    = NULL;
+    element    = nullptr;
     d_globalID = rhs.d_globalID;
     d_dim      = rhs.d_dim;
     d_index    = rhs.d_index;
@@ -80,7 +80,7 @@ structuredMeshElement &structuredMeshElement::operator=( const structuredMeshEle
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
     this->typeID     = structuredMeshElementTypeID;
-    this->element    = NULL;
+    this->element    = nullptr;
     this->d_globalID = rhs.d_globalID;
     this->d_dim      = rhs.d_dim;
     this->d_index    = rhs.d_index;

@@ -19,15 +19,15 @@ DOFManager::shared_ptr simpleDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh
                                                  int DOFsPerObject,
                                                  bool split )
 {
-    if ( mesh.get() == NULL )
+    if ( mesh.get() == nullptr )
         return DOFManager::shared_ptr();
-    if ( split && AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh ).get() != NULL ) {
+    if ( split && AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh ).get() != nullptr ) {
         // We want to split the DOFs by the mesh
         std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getLocalBaseMeshIDs();
         std::vector<DOFManager::shared_ptr> managers;
         for ( size_t i = 0; i < meshIDs.size(); i++ ) {
             AMP::Mesh::Mesh::shared_ptr subMesh = mesh->Subset( meshIDs[i] );
-            if ( subMesh.get() != NULL )
+            if ( subMesh.get() != nullptr )
                 managers.push_back( create( subMesh, type, gcw, DOFsPerObject, false ) );
         }
         AMP::shared_ptr<multiDOFManager> rtn( new multiDOFManager( mesh->getComm(), managers ) );
@@ -113,7 +113,7 @@ simpleDOFManager::~simpleDOFManager() {}
 void simpleDOFManager::initialize()
 {
     // Get the mesh ids
-    if ( d_mesh != NULL ) {
+    if ( d_mesh != nullptr ) {
         d_meshID     = d_mesh->meshID();
         d_isBaseMesh = d_mesh->isBaseMesh();
         // Get the list of global mesh ids (use communication on this->comm)
@@ -182,7 +182,7 @@ AMP::shared_ptr<DOFManager> simpleDOFManager::subset( const AMP::Mesh::Mesh::sha
             return AMP::shared_ptr<DOFManager>();
     }
     // Check if the desired mesh is a multimesh that contains the current mesh
-    if ( AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) != NULL ) {
+    if ( AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) != nullptr ) {
         AMP::shared_ptr<const AMP::Mesh::MultiMesh> multimesh =
             AMP::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
         std::vector<AMP::Mesh::Mesh::const_shared_ptr> list = multimesh->getMeshes();
@@ -281,7 +281,7 @@ std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
         ids.reserve( neighbor_elements.size() + 1 );
         ids.push_back( obj.globalID() );
         for ( size_t i = 0; i < neighbor_elements.size(); i++ ) {
-            if ( neighbor_elements[i].get() != NULL )
+            if ( neighbor_elements[i].get() != nullptr )
                 ids.push_back( neighbor_elements[i]->globalID() );
         }
     } else if ( objType == d_type ) {
@@ -343,7 +343,7 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
         // Nobody has any remote ids to identify
         return std::vector<size_t>();
     }
-    AMP::Mesh::MeshID *send_ptr = NULL;
+    AMP::Mesh::MeshID *send_ptr = nullptr;
     if ( !tmpLocalIDs.empty() )
         send_ptr = &tmpLocalIDs[0];
     std::vector<AMP::Mesh::MeshID> tmpGlobalIDs( N );
@@ -362,7 +362,7 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
         int rank_submesh = -1;
         int root_submesh = comm.getSize();
         int subcommSize  = -1;
-        if ( submesh.get() != NULL ) {
+        if ( submesh.get() != nullptr ) {
             AMP_MPI subcomm = submesh->getComm();
             rank_submesh    = subcomm.getRank();
             root_submesh    = comm.getRank();
@@ -428,7 +428,7 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
         recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
     }
     std::vector<AMP::Mesh::MeshElementID> recv_id( tot_size + 1 );
-    AMP::Mesh::MeshElementID *send_buffer = NULL;
+    AMP::Mesh::MeshElementID *send_buffer = nullptr;
     if ( !remote_ids2.empty() )
         send_buffer = &remote_ids2[0];
     N               = comm.allToAll<AMP::Mesh::MeshElementID>(
@@ -445,7 +445,7 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
     // Send the DOFs back to the original processor
     std::vector<size_t> remote_dof;
     remote_dof.resize( remote_ids2.size() + 1, static_cast<size_t>( -1 ) );
-    size_t *send_buffer_DOFs = NULL;
+    size_t *send_buffer_DOFs = nullptr;
     if ( tot_size > 0 )
         send_buffer_DOFs = &recieved_DOF[0];
     N                    = comm.allToAll<size_t>( send_buffer_DOFs,

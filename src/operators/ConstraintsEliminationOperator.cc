@@ -10,8 +10,8 @@ namespace Operator {
 void ConstraintsEliminationOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
 {
 
-    AMP_INSIST( ( params != NULL ), "NULL parameter" );
-    AMP_INSIST( ( ( params->d_db ) != NULL ), "NULL database" );
+    AMP_INSIST( ( params != nullptr ), "NULL parameter" );
+    AMP_INSIST( ( ( params->d_db ) != nullptr ), "NULL database" );
 }
 
 AMP::LinearAlgebra::Variable::shared_ptr ConstraintsEliminationOperator::getInputVariable()

@@ -37,13 +37,13 @@ void Map3Dto1D::reset( const AMP::shared_ptr<OperatorParameters> &params )
     AMP::shared_ptr<MapOperatorParameters> myparams =
         AMP::dynamic_pointer_cast<MapOperatorParameters>( params );
 
-    AMP_INSIST( ( ( myparams.get() ) != NULL ), "NULL parameter" );
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != NULL ), "NULL database" );
+    AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameter" );
+    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
     AMP_INSIST( !myparams->d_MapComm.isNull(), "NULL communicator" );
     d_Mesh    = myparams->d_Mesh;
     d_MapMesh = myparams->d_MapMesh;
     d_MapComm = myparams->d_MapComm;
-    AMP_INSIST( d_MapComm.sumReduce<int>( d_MapMesh.get() != NULL ? 1 : 0 ) > 0,
+    AMP_INSIST( d_MapComm.sumReduce<int>( d_MapMesh.get() != nullptr ? 1 : 0 ) > 0,
                 "Somebody must own the mesh" );
 
     d_useGaussVec = myparams->d_db->getBoolWithDefault( "UseGaussVec", false );
@@ -83,10 +83,10 @@ void Map3Dto1D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     std::vector<int> numFaceGauss( numPoints, 0 );
 
     // Get the local contributions to the map
-    if ( d_MapMesh != NULL ) {
-        AMP_ASSERT( u != NULL );
+    if ( d_MapMesh != nullptr ) {
+        AMP_ASSERT( u != nullptr );
         AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
-        AMP_ASSERT( inputVec != NULL );
+        AMP_ASSERT( inputVec != nullptr );
         AMP_ASSERT( inputVec->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
 
         AMP::Discretization::DOFManager::shared_ptr dof_map = inputVec->getDOFManager();
@@ -96,7 +96,7 @@ void Map3Dto1D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             AMP::pout << inputVec << std::endl;
         }
 
-        AMP_ASSERT( outputVec != NULL );
+        AMP_ASSERT( outputVec != nullptr );
 
         // Get an iterator over the side elements
         AMP::Mesh::MeshIterator bnd =
@@ -220,12 +220,12 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     std::vector<int> numFaceNodes( numPoints, 0 );
 
     // Get the local contributions to the map
-    if ( d_MapMesh != NULL ) {
-        AMP_ASSERT( u != NULL );
+    if ( d_MapMesh != nullptr ) {
+        AMP_ASSERT( u != nullptr );
 
         // Subset u for the local vector of interest
         AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
-        AMP_ASSERT( inputVec != NULL );
+        AMP_ASSERT( inputVec != nullptr );
         AMP_ASSERT( inputVec->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
 
         AMP::Discretization::DOFManager::shared_ptr dof_map = inputVec->getDOFManager();
@@ -235,7 +235,7 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             AMP::pout << inputVec << std::endl;
         }
 
-        AMP_ASSERT( outputVec != NULL );
+        AMP_ASSERT( outputVec != nullptr );
 
         // Get an iterator over the side elements
         AMP::Mesh::MeshIterator bnd =
