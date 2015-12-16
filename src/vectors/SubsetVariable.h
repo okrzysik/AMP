@@ -20,7 +20,7 @@ namespace LinearAlgebra {
       /** \brief Constructor
         * \param[in]  name  The name of the variable
         */
-      SubsetVariable ( const std::string &name );
+      explicit SubsetVariable ( const std::string &name );
 
       /** \brief Return a DOFManager that describes the subset
         * \return The DOFManager

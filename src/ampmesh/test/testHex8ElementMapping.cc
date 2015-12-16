@@ -10,7 +10,7 @@
 
 class soft_equal_to {
 public:
-  soft_equal_to(double const tol = 1.0e-15) : tolerance(tol) { };
+  explicit soft_equal_to(double const tol = 1.0e-15) : tolerance(tol) { };
   inline bool operator()(double const x, double const y) { return std::abs(x-y) < tolerance; };
 private:
   double tolerance;

@@ -73,7 +73,7 @@ public:
         * \param[in] p  A (non-reference counted) pointer to the vector being iterated over
         * \param[in] position  The local position in the vector.
         */
-      VectorDataIterator ( Vector *p , size_t position );
+      explicit VectorDataIterator ( Vector *p , size_t position );
 
       /** \brief Dereference the iterator
         * \return Value pointed to by the iterator
@@ -274,7 +274,7 @@ public:
         * \param[in] p  A (non-reference counted) pointer to the vector being iterated over
         * \param[in] position  The local position in the vector.
         */
-      ConstVectorDataIterator ( const Vector *p , size_t position );
+      explicit ConstVectorDataIterator ( const Vector *p , size_t position );
 
       /** \brief Dereference the iterator
         */

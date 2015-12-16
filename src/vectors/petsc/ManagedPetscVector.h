@@ -60,7 +60,7 @@ public:
       /** \brief Construct a view of another vector
         * \param[in] alias The vector to view
         */
-      ManagedPetscVector ( Vector::shared_ptr alias );
+      explicit ManagedPetscVector ( Vector::shared_ptr alias );
 
       /** \brief Method to create a duplicate of this vector for VecDuplicate
         * \return Raw pointer to a new vector.  This does not copy data

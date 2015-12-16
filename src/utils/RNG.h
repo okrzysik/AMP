@@ -149,7 +149,7 @@ public:
         *\param[in] high  The supremum or one more than the max value the variable can take
         *\param[in] r  The generator to use for making the variable
         */
-      RandomVariable ( type low , type high , RNG::shared_ptr r );
+      explicit RandomVariable ( type low , type high , RNG::shared_ptr r );
 
       /**\brief  The casting operator to allow the RandomVariable to be an appropriate
         * rvalue for type.  Everytime it is cast, it generates a new number.
@@ -172,7 +172,7 @@ public:
 
     public:
 
-      RandomVariable ( type low , type high , RNG::shared_ptr r );
+      explicit RandomVariable ( type low , type high , RNG::shared_ptr r );
 
       operator type ();
   };
@@ -192,7 +192,7 @@ public:
 
     public:
 
-      RandomVariable ( type low , type high , RNG::shared_ptr r );
+      explicit RandomVariable ( type low , type high , RNG::shared_ptr r );
 
       operator type ();
   };

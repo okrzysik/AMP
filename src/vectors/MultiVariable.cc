@@ -14,7 +14,7 @@ private:
     std::map<std::string,int> new_order;
 
 public:
-    MVSortByName ( const std::vector<std::string> &in ) 
+    explicit MVSortByName ( const std::vector<std::string> &in ) 
     {
         std::vector<std::string>::const_iterator cur = in.begin();
         int i = 0;

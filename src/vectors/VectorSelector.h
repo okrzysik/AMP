@@ -77,7 +77,7 @@ public:
     /** \brief Constructor
       * \param[in] name  The name of the variable to subset on
       */
-    VS_ByVariableName ( std::string  name );
+    explicit VS_ByVariableName ( std::string  name );
 
     virtual bool   isSelected ( Vector::const_shared_ptr v ) const;
 
@@ -95,7 +95,7 @@ public:
       * \param[in]  a  The offset to stride
       * \param[in]  b  The length to stride
       */
-    VS_Stride ( size_t a , size_t b );
+    explicit VS_Stride ( size_t a , size_t b );
 
     /** \brief Subset the given vector
       * \param[in]  vec  The Vector to subset
@@ -130,7 +130,7 @@ public:
     /** \brief Constructor
       * \param[in]  comm  The new comm to use
       */
-    VS_Comm ( AMP_MPI comm );
+    explicit VS_Comm ( AMP_MPI comm );
 
     /** \brief Returns the communicator for the subset
       * \param[in]  vec  The Vector to match
@@ -169,7 +169,7 @@ public:
       * \param[in]  mesh            The desired mesh
       * \param[in]  useMeshComm     Use the comm of the mesh (otherwise use the comm of the parent DOFManager)
       */
-    VS_Mesh ( AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm=true );
+    explicit VS_Mesh ( AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm=true );
 
     /** \brief Returns the communicator for the subset
       * \param[in]  vec  The Vector to match
@@ -207,7 +207,7 @@ public:
       * \param[in]  iterator    The mesh iterator to use
       * \param[in]  comm        The communicator to use
       */
-    VS_MeshIterator ( const AMP::Mesh::MeshIterator &iterator, const AMP::AMP_MPI &comm );
+    explicit VS_MeshIterator ( const AMP::Mesh::MeshIterator &iterator, const AMP::AMP_MPI &comm );
 
     /** \brief Subset the given vector
       * \param[in]  vec  The Vector to subset

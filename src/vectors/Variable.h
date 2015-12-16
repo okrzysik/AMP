@@ -46,7 +46,7 @@ public:
       * \details At the very least, a variable must have a name.  Since this class
       * is virtual, this constructor is used by derived classes.
       */
-    Variable ( const std::string &name );
+    explicit Variable ( const std::string &name );
 
 
     //!  Destructor

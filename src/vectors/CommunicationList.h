@@ -68,7 +68,7 @@ public:
      * compute the communication lists.  Derived classes are expected to call
      * buildCommunicationArrays with appropriate data to compute the communication list
      */
-    CommunicationList ( CommunicationListParameters::shared_ptr params );
+    explicit CommunicationList ( CommunicationListParameters::shared_ptr params );
 
     /**
      * \brief Destroy the communication list
