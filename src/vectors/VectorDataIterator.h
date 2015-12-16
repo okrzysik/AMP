@@ -265,7 +265,7 @@ public:
         * \param rhs iterator to copy
         * \details  Copies an iterator
         */
-      ConstVectorDataIterator ( const VectorDataIterator &rhs );
+      explicit ConstVectorDataIterator ( const VectorDataIterator &rhs );
 
       /** \brief Constructor from a vector
         * \details This will construct an iterator over the local data in the vector.
