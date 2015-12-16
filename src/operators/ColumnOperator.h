@@ -47,7 +47,8 @@ public:
                            AMP::LinearAlgebra::Vector::const_shared_ptr u,
                            AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    virtual void
+    reset(const AMP::shared_ptr<OperatorParameters> &params) override;
 
     /**
       A function for computing the information necessary to construct the jacobian.
@@ -70,11 +71,13 @@ public:
      * should be called only after all column operators have been appended.
      * no checks to do this right now.
      */
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+    virtual AMP::LinearAlgebra::Variable::shared_ptr
+    getOutputVariable() override;
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    virtual AMP::LinearAlgebra::Variable::shared_ptr
+    getInputVariable() override;
 
-    bool isValidInput( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &u );
+    bool isValidInput(AMP::shared_ptr<AMP::LinearAlgebra::Vector> &u) override;
 
     AMP::shared_ptr<Operator> getOperator( size_t i ) { return d_Operators[i]; }
 

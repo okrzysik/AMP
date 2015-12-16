@@ -25,7 +25,7 @@ public:
     virtual void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                              AMP::LinearAlgebra::Vector::shared_ptr f );
 
-    virtual void append( AMP::shared_ptr<Operator> op );
+    virtual void append(AMP::shared_ptr<Operator> op) override;
 };
 }
 }

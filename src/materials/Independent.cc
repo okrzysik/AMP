@@ -55,7 +55,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class FickCoefficientProp : public Property<double>
@@ -71,7 +71,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class SoretCoefficientProp : public Property<double>
@@ -87,7 +87,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class DensityProp : public Property<double>
@@ -103,7 +103,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class ThermalExpansionProp : public Property<double>
@@ -119,7 +119,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class HeatCapacityPressureProp : public Property<double>
@@ -135,7 +135,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class YoungsModulusProp : public Property<double>
@@ -151,7 +151,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class PoissonRatioProp : public Property<double>
@@ -167,7 +167,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class DTThermalConductivityProp : public Property<double>
@@ -183,7 +183,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class DTFickCoefficientProp : public Property<double>
@@ -199,7 +199,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class DTSoretCoefficientProp : public Property<double>
@@ -215,7 +215,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class DxThermalConductivityProp : public Property<double>
@@ -231,7 +231,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class DxFickCoefficientProp : public Property<double>
@@ -247,7 +247,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class DxSoretCoefficientProp : public Property<double>
@@ -263,7 +263,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class VectorFickCoefficientProp : public VectorProperty<double>
@@ -285,13 +285,15 @@ public:
     }
 
     // NOTE: must change dimension first before changing number of parameters
-    virtual void set_parameters_and_number( const double *params, const unsigned int nparams )
-    {
-        AMP_INSIST( d_dimension == nparams, "number of new parameters must be same as dimension" );
-        Property<double>::set_parameters_and_number( params, nparams );
+    virtual void
+    set_parameters_and_number(const double *params,
+                              const unsigned int nparams) override {
+      AMP_INSIST(d_dimension == nparams,
+                 "number of new parameters must be same as dimension");
+      Property<double>::set_parameters_and_number(params, nparams);
     }
 
-    virtual std::vector<double> evalVector( std::vector<double> &args );
+    virtual std::vector<double> evalVector(std::vector<double> &args) override;
 };
 
 class TensorFickCoefficientProp : public TensorProperty<double>
@@ -315,14 +317,16 @@ public:
     }
 
     // NOTE: must change dimension first before changing number of parameters
-    virtual void set_parameters_and_number( const double *params, const unsigned int nparams )
-    {
-        AMP_INSIST( d_dimensions[0] * d_dimensions[1] == nparams,
-                    "number of new parameters must be product of dimensions" );
-        Property<double>::set_parameters_and_number( params, nparams );
+    virtual void
+    set_parameters_and_number(const double *params,
+                              const unsigned int nparams) override {
+      AMP_INSIST(d_dimensions[0] * d_dimensions[1] == nparams,
+                 "number of new parameters must be product of dimensions");
+      Property<double>::set_parameters_and_number(params, nparams);
     }
 
-    virtual std::vector<std::vector<double>> evalTensor( std::vector<double> &args );
+    virtual std::vector<std::vector<double>>
+    evalTensor(std::vector<double> &args) override;
 };
 
 static const unsigned int numberThDiffParams             = 2;

@@ -378,7 +378,7 @@ public:
      * \param[in]  alpha a scalar double
      * For Vectors, the components of <em>this</em> are set to \f$\alpha\f$.
      */
-    virtual void setToScalar( double alpha );
+    virtual void setToScalar(double alpha) override;
 
     /**
       *\brief Set vector entries (including ghosts) to zero
@@ -393,7 +393,7 @@ public:
      *
      * For Vectors, \f$\mathit{this}_i = \alpha\mathit{this}_i\f$.
      */
-    virtual void scale( double alpha );
+    virtual void scale(double alpha) override;
 
     /**
      * \brief  Set vector equal to scaled input.
@@ -491,7 +491,7 @@ public:
     /**
      * \brief Set data in this vector to random values on [0,1).
      */
-    virtual void setRandomValues( void );
+    virtual void setRandomValues(void) override;
 
     /**
      * \brief Set data in this vector to random values using
@@ -503,30 +503,30 @@ public:
     /**
       * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
      */
-    virtual double min( void ) const;
+    virtual double min(void) const override;
 
     /**
       * \brief Return the maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
      */
-    virtual double max( void ) const;
+    virtual double max(void) const override;
 
     /**
      * \brief Return discrete @f$ L_1 @f$ -norm of this vector.
      * \details Returns \f[\sum_i |\mathit{this}_i|\f]
      */
-    virtual double L1Norm( void ) const;
+    virtual double L1Norm(void) const override;
 
     /**
      * \brief Return discrete @f$ L_2 @f$ -norm of this vector.
      * \details Returns \f[\sqrt{\sum_i \mathit{this}_i^2}\f]
      */
-    virtual double L2Norm( void ) const;
+    virtual double L2Norm(void) const override;
 
     /**
      * \brief Return the @f$ L_\infty @f$ -norm of this vector.
      * \details Returns \f[\max_i |\mathit{this}_i|\f]
      */
-    virtual double maxNorm( void ) const;
+    virtual double maxNorm(void) const override;
 
     /**
       * \param[in] x a vector
@@ -891,18 +891,24 @@ public:
 
     //! \name VectorOperations virtual interface
     //@{
-    virtual void scale( double alpha, const VectorOperations &x );
-    virtual void add( const VectorOperations &x, const VectorOperations &y );
-    virtual void subtract( const VectorOperations &x, const VectorOperations &y );
-    virtual void multiply( const VectorOperations &x, const VectorOperations &y );
-    virtual void divide( const VectorOperations &x, const VectorOperations &y );
-    virtual void reciprocal( const VectorOperations &x );
-    virtual void
-    linearSum( double alpha, const VectorOperations &x, double beta, const VectorOperations &y );
-    virtual void axpy( double alpha, const VectorOperations &x, const VectorOperations &y );
-    virtual void axpby( double alpha, double beta, const VectorOperations &x );
-    virtual void abs( const VectorOperations &x );
-    virtual double dot( const VectorOperations &x ) const;
+    virtual void scale(double alpha, const VectorOperations &x) override;
+    virtual void add(const VectorOperations &x,
+                     const VectorOperations &y) override;
+    virtual void subtract(const VectorOperations &x,
+                          const VectorOperations &y) override;
+    virtual void multiply(const VectorOperations &x,
+                          const VectorOperations &y) override;
+    virtual void divide(const VectorOperations &x,
+                        const VectorOperations &y) override;
+    virtual void reciprocal(const VectorOperations &x) override;
+    virtual void linearSum(double alpha, const VectorOperations &x, double beta,
+                           const VectorOperations &y) override;
+    virtual void axpy(double alpha, const VectorOperations &x,
+                      const VectorOperations &y) override;
+    virtual void axpby(double alpha, double beta,
+                       const VectorOperations &x) override;
+    virtual void abs(const VectorOperations &x) override;
+    virtual double dot(const VectorOperations &x) const override;
     //@}
 
     //! \name Static methods for computation

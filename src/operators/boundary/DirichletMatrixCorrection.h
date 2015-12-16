@@ -32,9 +32,13 @@ public:
     //! Set the variable for the vector that will used with this operator.
     void setVariable( const AMP::LinearAlgebra::Variable::shared_ptr &var ) { d_variable = var; }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_variable; }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override {
+      return d_variable;
+    }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_variable; }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override {
+      return d_variable;
+    }
 
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
                         AMP::LinearAlgebra::Vector::shared_ptr ) override
@@ -49,20 +53,20 @@ public:
       in order to impose Dirichlet boundary conditions. This function can also be used
       to change the Dirichlet boundary conditions, if required.
       */
-    void reset( const AMP::shared_ptr<OperatorParameters> & );
+    void reset(const AMP::shared_ptr<OperatorParameters> &) override;
 
     /**
       Adds a vector to the RHS vector. This is one of the steps for imposing Dirichlet boundary
       conditions.
       This step can be skipped if the Dirichlet boundary conditons are homogeneous.
       */
-    void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs );
+    void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) override;
 
     /**
       Sets the Dirichlet values at the appropriate locations in the RHS vector. This is one
       of the steps for imposing Dirichlet boundary conditions.
       */
-    void setRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs );
+    void setRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) override;
 
     std::vector<short int> getBoundaryIds() { return d_boundaryIds; }
 

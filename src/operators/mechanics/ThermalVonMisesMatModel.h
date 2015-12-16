@@ -18,59 +18,62 @@ public:
 
     virtual ~ThermalVonMisesMatModel() {}
 
-    void getConstitutiveMatrix( double *& );
+    void getConstitutiveMatrix(double *&) override;
 
-    void getInternalStress( const std::vector<std::vector<double>> &, double *& );
+    void getInternalStress(const std::vector<std::vector<double>> &,
+                           double *&) override;
 
-    void preLinearAssembly() { d_gaussPtCnt = 0; }
+    void preLinearAssembly() override { d_gaussPtCnt = 0; }
 
-    void postLinearGaussPointOperation() { d_gaussPtCnt++; }
+    void postLinearGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void preNonlinearInit( bool, bool );
+    void preNonlinearInit(bool, bool) override;
 
-    void nonlinearInitGaussPointOperation( double );
+    void nonlinearInitGaussPointOperation(double) override;
 
-    void preNonlinearAssembly()
-    {
+    void preNonlinearAssembly() override {
 
-        Plastic_Gauss_Point = 0;
+      Plastic_Gauss_Point = 0;
 
-        d_gaussPtCnt = 0;
+      d_gaussPtCnt = 0;
     }
 
-    void postNonlinearAssembly()
-    {
+    void postNonlinearAssembly() override {
 
-        if ( Total_Gauss_Point == 0 ) {
-            std::cout << "Total number of gauss points are zero." << std::endl;
-        } else {
-            double Plastic_Fraction =
-                ( (double) Plastic_Gauss_Point ) / ( (double) Total_Gauss_Point );
-            Plastic_Fraction = Plastic_Fraction * 100.0;
-            std::cout << "Fraction = " << Plastic_Fraction << "% Plastic = " << Plastic_Gauss_Point
-                      << " Total = " << Total_Gauss_Point << " Gauss Points." << std::endl;
-        }
+      if (Total_Gauss_Point == 0) {
+        std::cout << "Total number of gauss points are zero." << std::endl;
+      } else {
+        double Plastic_Fraction =
+            ((double)Plastic_Gauss_Point) / ((double)Total_Gauss_Point);
+        Plastic_Fraction = Plastic_Fraction * 100.0;
+        std::cout << "Fraction = " << Plastic_Fraction
+                  << "% Plastic = " << Plastic_Gauss_Point
+                  << " Total = " << Total_Gauss_Point << " Gauss Points."
+                  << std::endl;
+      }
     }
 
-    void postNonlinearAssemblyGaussPointOperation() { d_gaussPtCnt++; }
+    void postNonlinearAssemblyGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void preNonlinearReset() { d_gaussPtCnt = 0; }
+    void preNonlinearReset() override { d_gaussPtCnt = 0; }
 
-    void postNonlinearResetGaussPointOperation() { d_gaussPtCnt++; }
+    void postNonlinearResetGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void nonlinearResetGaussPointOperation( const std::vector<std::vector<double>> & );
+    void nonlinearResetGaussPointOperation(
+        const std::vector<std::vector<double>> &) override;
 
-    void globalReset();
+    void globalReset() override;
 
-    void postNonlinearReset();
+    void postNonlinearReset() override;
 
-    void preNonlinearJacobian() { d_gaussPtCnt = 0; }
+    void preNonlinearJacobian() override { d_gaussPtCnt = 0; }
 
-    void postNonlinearJacobianGaussPointOperation() { d_gaussPtCnt++; }
+    void postNonlinearJacobianGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void nonlinearJacobianGaussPointOperation( const std::vector<std::vector<double>> & );
+    void nonlinearJacobianGaussPointOperation(
+        const std::vector<std::vector<double>> &) override;
 
-protected:
+  protected:
     void computeEvalv( const std::vector<std::vector<double>> & );
 
     void radialReturn( const double *stra_np1,

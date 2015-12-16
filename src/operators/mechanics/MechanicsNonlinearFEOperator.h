@@ -70,7 +70,7 @@ public:
     /**
       This is used to update the operator between successive solves with the operator.
       */
-    void reset( const AMP::shared_ptr<OperatorParameters> & );
+    void reset(const AMP::shared_ptr<OperatorParameters> &) override;
 
     /**
       This function is used to set the reference temperature when using temperature dependent
@@ -94,12 +94,16 @@ public:
       it
       returns the multivariable for the entire vector.
       */
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_inpVariables; }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override {
+      return d_inpVariables;
+    }
 
     /**
       @return The variable for the output vector
       */
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outVariable; }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override {
+      return d_outVariable;
+    }
 
     /**
       Writes the stress and strain at each Gauss point to a file.
@@ -135,29 +139,28 @@ protected:
       @param [in] u  input vector
       @param [out] r output vector
       */
-    void preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                      AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                          r );
+    void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                     AMP::shared_ptr<AMP::LinearAlgebra::Vector> r) override;
 
     /**
       This function is called at the end of the FE assembly.
       The values of the output vector on the nodes shared between two or more processors are made
       consistent.
       */
-    void postAssembly();
+    void postAssembly() override;
 
     /**
       This function is called at the beginning of the element computation. The part of the
       input vector that is relevant for the computation in the current element is extracted
       and passed to MechanicsNonlinearElement.
       */
-    void preElementOperation( const AMP::Mesh::MeshElement & );
+    void preElementOperation(const AMP::Mesh::MeshElement &) override;
 
     /**
       This function is called at the end of the element computation. The entries of the
       element output vector are added to the corresponding entries of the global output vector.
       */
-    void postElementOperation();
+    void postElementOperation() override;
 
     AMP::LinearAlgebra::Vector::shared_ptr
     mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,

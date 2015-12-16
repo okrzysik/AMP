@@ -92,21 +92,22 @@ public:
     /**
      * Synchronize the parallel buffer (called from streambuf).
      */
-    virtual int sync();
+    virtual int sync() override;
 
 #if !defined( __INTEL_COMPILER ) && ( defined( __GNUG__ ) )
     /**
      * Write the specified number of characters into the output stream (called
      * from streambuf).
      */
-    virtual std::streamsize xsputn( const char *text, std::streamsize n );
+    virtual std::streamsize xsputn(const char *text,
+                                   std::streamsize n) override;
 #endif
 
     /**
      * Write an overflow character into the parallel buffer (called from
      * streambuf).
      */
-    virtual int overflow( int ch );
+    virtual int overflow(int ch) override;
 
 #ifdef _MSC_VER
 

@@ -40,10 +40,9 @@ public:
         d_elementInputVectors = elementInputVectors;
     }
 
-    void apply();
+    void apply() override;
 
-
-protected:
+  protected:
     double d_density;
 
     double d_fmu;

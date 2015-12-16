@@ -27,17 +27,18 @@ public:
 
     virtual ~DiffusionLinearFEOperator() {}
 
-    void preAssembly( const AMP::shared_ptr<OperatorParameters> &params );
+    void
+    preAssembly(const AMP::shared_ptr<OperatorParameters> &params) override;
 
-    void postAssembly();
+    void postAssembly() override;
 
-    void preElementOperation( const AMP::Mesh::MeshElement & );
+    void preElementOperation(const AMP::Mesh::MeshElement &) override;
 
-    void postElementOperation();
+    void postElementOperation() override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 
     AMP::shared_ptr<DiffusionTransportModel> getTransportModel();
 

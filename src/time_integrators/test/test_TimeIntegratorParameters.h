@@ -17,9 +17,11 @@ protected:
 public:
     virtual ~TimeIntegratorParameterTest() {}
 
-    void passes( const std::string &in ) { d_ut->passes( in ); }
-    void failure( const std::string &in ) { d_ut->failure( in ); }
-    void expected_failure( const std::string &in ) { d_ut->expected_failure( in ); }
+    void passes(const std::string &in) override { d_ut->passes(in); }
+    void failure(const std::string &in) override { d_ut->failure(in); }
+    void expected_failure(const std::string &in) override {
+      d_ut->expected_failure(in);
+    }
 
     static void run( UnitTest *ut )
     {

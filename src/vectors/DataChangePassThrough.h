@@ -53,7 +53,7 @@ public:
     /** \brief Invoke the dataChange method on all registered listeners.
       * \details  This simply calls the fireDataChange() method of the DataChangeFirer class
       */
-    virtual void dataChanged();
+    virtual void dataChanged() override;
 };
 }
 }

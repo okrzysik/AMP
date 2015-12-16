@@ -57,7 +57,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    void reset(const AMP::shared_ptr<OperatorParameters> &params) override;
 
     AMP::shared_ptr<Operator> getVolumeOperator() { return d_volumeOperator; }
 
@@ -67,19 +67,16 @@ public:
 
     void modifyInitialSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr sol );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable()
-    {
-        return d_volumeOperator->getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override {
+      return d_volumeOperator->getInputVariable();
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable()
-    {
-        return d_volumeOperator->getOutputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override {
+      return d_volumeOperator->getOutputVariable();
     }
 
-    bool isValidInput( AMP::LinearAlgebra::Vector::shared_ptr &sol )
-    {
-        return d_volumeOperator->isValidInput( sol );
+    bool isValidInput(AMP::LinearAlgebra::Vector::shared_ptr &sol) override {
+      return d_volumeOperator->isValidInput(sol);
     }
 
 

@@ -61,13 +61,15 @@ public:
      NonlinearKrylovAcceleratorParameters)
      Should contain a pointer to a solution guess vector.
      */
-    void initialize( AMP::shared_ptr<SolverStrategyParameters> parameters );
+    void
+    initialize(AMP::shared_ptr<SolverStrategyParameters> parameters) override;
 
     /**
      * Provide the initial guess for the solver.
      * @param [in] initialGuess: shared pointer to the initial guess vector.
      */
-    void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess );
+    void setInitialGuess(
+        AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess) override;
 
     /**
      * This routine corrects the acceleration subspace using the vector f
@@ -129,9 +131,8 @@ public:
      @param [in] f : shared pointer to right hand side vector
      @param [out] u : shared pointer to approximate computed solution
      */
-    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u );
+    void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+               AMP::shared_ptr<AMP::LinearAlgebra::Vector> u) override;
 
     /*!
      * Obtain number of nonlinear iterations.

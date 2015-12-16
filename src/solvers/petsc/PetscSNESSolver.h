@@ -108,16 +108,15 @@ public:
     @param [in] f : shared pointer to right hand side vector
     @param [out] u : shared pointer to approximate computed solution
      */
-    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u );
-
+    void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+               AMP::shared_ptr<AMP::LinearAlgebra::Vector> u) override;
 
     /**
      * Initialize the solution vector by copying the initial guess vector
      * @param [in] initialGuess: shared pointer to the initial guess vector.
      */
-    void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess );
+    void setInitialGuess(
+        AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess) override;
 
     /**
      * return the PETSc SNES solver object
@@ -163,21 +162,21 @@ public:
 
 protected:
 private:
-    void initialize( AMP::shared_ptr<SolverStrategyParameters> parameters );
+  void
+  initialize(AMP::shared_ptr<SolverStrategyParameters> parameters) override;
 
-    void getFromInput( const AMP::shared_ptr<AMP::Database> db );
+  void getFromInput(const AMP::shared_ptr<AMP::Database> db);
 
-    void setSNESFunction( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> rhs );
+  void setSNESFunction(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> rhs);
 
-    static PetscErrorCode apply( SNES snes, Vec x, Vec f, void *ctx );
+  static PetscErrorCode apply(SNES snes, Vec x, Vec f, void *ctx);
 
-    static PetscErrorCode
-    setJacobian( SNES snes, Vec x, Mat *A, Mat *B, MatStructure *mstruct, void *ctx );
+  static PetscErrorCode setJacobian(SNES snes, Vec x, Mat *A, Mat *B,
+                                    MatStructure *mstruct, void *ctx);
 
-
-    static bool isVectorValid( AMP::shared_ptr<AMP::Operator::Operator> &op,
-                               AMP::LinearAlgebra::Vector::shared_ptr &v,
-                               AMP_MPI comm );
+  static bool isVectorValid(AMP::shared_ptr<AMP::Operator::Operator> &op,
+                            AMP::LinearAlgebra::Vector::shared_ptr &v,
+                            AMP_MPI comm);
 
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     static PetscErrorCode

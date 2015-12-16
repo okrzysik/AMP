@@ -27,19 +27,21 @@ public:
 
     virtual ~RowOperator() {}
 
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params )
-    {
-        AMP::shared_ptr<ColumnOperatorParameters> fParams =
-            AMP::dynamic_pointer_cast<ColumnOperatorParameters>( params );
+    virtual void
+    reset(const AMP::shared_ptr<OperatorParameters> &params) override {
+      AMP::shared_ptr<ColumnOperatorParameters> fParams =
+          AMP::dynamic_pointer_cast<ColumnOperatorParameters>(params);
 
-        AMP_INSIST( ( fParams.get() != NULL ), "RowOperator::reset parameter object is NULL" );
+      AMP_INSIST((fParams.get() != NULL),
+                 "RowOperator::reset parameter object is NULL");
 
-        AMP_INSIST( ( ( ( fParams->d_OperatorParameters ).size() ) == ( d_Operators.size() ) ),
-                    " std::vector sizes do not match! " );
+      AMP_INSIST(
+          (((fParams->d_OperatorParameters).size()) == (d_Operators.size())),
+          " std::vector sizes do not match! ");
 
-        for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
-            d_Operators[i]->reset( ( fParams->d_OperatorParameters )[i] );
-        }
+      for (unsigned int i = 0; i < d_Operators.size(); i++) {
+        d_Operators[i]->reset((fParams->d_OperatorParameters)[i]);
+      }
     }
 
     void resetScaling( int idx, double a ) { scalea[idx] = a; }
@@ -59,10 +61,10 @@ public:
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable()
-    {
-        d_OutputVariable = d_Operators[0]->getOutputVariable();
-        return d_OutputVariable;
+    virtual AMP::LinearAlgebra::Variable::shared_ptr
+    getOutputVariable() override {
+      d_OutputVariable = d_Operators[0]->getOutputVariable();
+      return d_OutputVariable;
     }
 
     AMP::shared_ptr<Operator> getOperator( const int i ) { return d_Operators[i]; }

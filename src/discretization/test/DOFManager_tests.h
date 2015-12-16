@@ -6,7 +6,7 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "discretization/structuredFaceDOFManager.h"
 #include "discretization/subsetDOFManager.h"
-
+#include "utils/UnitTest.h"
 
 #ifdef USE_AMP_VECTORS
 #include "vectors/MeshVariable.h"

@@ -58,13 +58,14 @@ public:
     /**
       This is called at the start of the FE assembly. The matrix is set to 0.
       */
-    void preAssembly( const AMP::shared_ptr<OperatorParameters> &params );
+    void
+    preAssembly(const AMP::shared_ptr<OperatorParameters> &params) override;
 
     /**
       This is called at the end of the FE assembly. The entries of the matrix corresponding
       to nodes that are shared between two or more processors are made consistent.
       */
-    void postAssembly();
+    void postAssembly() override;
 
     /**
       This function will be called once for each element, just before performing
@@ -72,25 +73,24 @@ public:
       the global mesh objects (DOFMap, global vectors and matrices) and
       passes them to the element operation.
       */
-    void preElementOperation( const AMP::Mesh::MeshElement & );
+    void preElementOperation(const AMP::Mesh::MeshElement &) override;
 
     /**
       This function will be called once for each element, just after performing the element
       operation.
       The element stiffness matrix is added to the global stiffness matrix in this function.
       */
-    void postElementOperation();
+    void postElementOperation() override;
 
     /**
       @return The variable for the input vector.
       */
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
     /**
       @return The variable for the output vector
       */
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
-
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 
     /**
       Writes the stress and strain at each Gauss point to a file.

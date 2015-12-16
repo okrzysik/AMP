@@ -43,21 +43,19 @@ public:
 
     void setBVPOperator( AMP::shared_ptr<AMP::Operator::Operator> op ) { d_Operators[3] = op; }
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable()
-    {
-        return d_Operators[3]->getOutputVariable();
+    virtual AMP::LinearAlgebra::Variable::shared_ptr
+    getOutputVariable() override {
+      return d_Operators[3]->getOutputVariable();
     }
 
-    virtual void append( AMP::shared_ptr<Operator> op )
-    {
-        AMP_ASSERT( d_Operators.size() < 4 );
-        AMP_ASSERT( op.get() != NULL );
-        d_Operators.push_back( op );
+    virtual void append(AMP::shared_ptr<Operator> op) override {
+      AMP_ASSERT(d_Operators.size() < 4);
+      AMP_ASSERT(op.get() != NULL);
+      d_Operators.push_back(op);
     }
 
-    bool isValidInput( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &u )
-    {
-        return d_Operators[3]->isValidInput( u );
+    bool isValidInput(AMP::shared_ptr<AMP::LinearAlgebra::Vector> &u) override {
+      return d_Operators[3]->isValidInput(u);
     }
 
     void setFrozenGaussPointVector( AMP::LinearAlgebra::Vector::shared_ptr u )

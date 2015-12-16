@@ -113,16 +113,17 @@ public:
         d_variableNumberParameters = true;
     }
 
-    virtual void set_parameters_and_number( const double *params, const unsigned int nparams )
-    {
-        AMP_ASSERT( nparams > 0 );
-        Property<double>::set_parameters_and_number( params, nparams );
+    virtual void
+    set_parameters_and_number(const double *params,
+                              const unsigned int nparams) override {
+      AMP_ASSERT(nparams > 0);
+      Property<double>::set_parameters_and_number(params, nparams);
     }
 
     /** returns property and derivative wrto r
      * \return [0]=property, [1]=property derivative wrto r
      */
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 /** radial diffusion coefficient */
@@ -141,16 +142,17 @@ public:
         d_variableNumberParameters = true;
     }
 
-    virtual void set_parameters_and_number( const double *params, const unsigned int nparams )
-    {
-        AMP_ASSERT( nparams > 0 );
-        Property<double>::set_parameters_and_number( params, nparams );
+    virtual void
+    set_parameters_and_number(const double *params,
+                              const unsigned int nparams) override {
+      AMP_ASSERT(nparams > 0);
+      Property<double>::set_parameters_and_number(params, nparams);
     }
 
     /** returns property and derivative wrto r
      * \return [0]=property, [1]=property derivative wrto r
      */
-    virtual std::vector<double> evalVector( std::vector<double> &args );
+    virtual std::vector<double> evalVector(std::vector<double> &args) override;
 };
 
 /** longitudinal diffusion coefficient */
@@ -170,13 +172,14 @@ public:
         d_variableNumberParameters = true;
     }
 
-    virtual void set_parameters_and_number( const double *params, const unsigned int nparams )
-    {
-        AMP_ASSERT( nparams > 0 );
-        Property<double>::set_parameters_and_number( params, nparams );
+    virtual void
+    set_parameters_and_number(const double *params,
+                              const unsigned int nparams) override {
+      AMP_ASSERT(nparams > 0);
+      Property<double>::set_parameters_and_number(params, nparams);
     }
 
-    virtual std::vector<double> evalVector( std::vector<double> &args );
+    virtual std::vector<double> evalVector(std::vector<double> &args) override;
 };
 
 /** full cylindrically symmetric tensor diffusion coefficient
@@ -208,21 +211,23 @@ public:
     }
 
     // NOTE: must change dimension first before changing number of parameters
-    virtual void set_parameters_and_number( const double *params, const unsigned int nparams )
-    {
-        Property<double>::set_parameters_and_number( params, nparams );
-        AMP_ASSERT( d_nparams >= 3 );
-        d_nparamsRadial = round_zero( d_params[0] );
-        AMP_ASSERT( d_nparamsRadial < d_nparams - 1 );
-        d_nparamsLongitudinal = d_nparams - 1 - d_nparamsRadial;
-        d_radialK.set_parameters_and_number( &d_params[1], d_nparamsRadial );
-        d_longitudinalK.set_parameters_and_number( &d_params[1 + d_nparamsRadial],
-                                                   d_nparamsLongitudinal );
+    virtual void
+    set_parameters_and_number(const double *params,
+                              const unsigned int nparams) override {
+      Property<double>::set_parameters_and_number(params, nparams);
+      AMP_ASSERT(d_nparams >= 3);
+      d_nparamsRadial = round_zero(d_params[0]);
+      AMP_ASSERT(d_nparamsRadial < d_nparams - 1);
+      d_nparamsLongitudinal = d_nparams - 1 - d_nparamsRadial;
+      d_radialK.set_parameters_and_number(&d_params[1], d_nparamsRadial);
+      d_longitudinalK.set_parameters_and_number(&d_params[1 + d_nparamsRadial],
+                                                d_nparamsLongitudinal);
     }
 
-    virtual std::vector<std::vector<double>> evalTensor( std::vector<double> &args );
+    virtual std::vector<std::vector<double>>
+    evalTensor(std::vector<double> &args) override;
 
-private:
+  private:
     RadialFickProp d_radialK;
     LongitudinalFickProp d_longitudinalK;
     unsigned int d_nparamsRadial;

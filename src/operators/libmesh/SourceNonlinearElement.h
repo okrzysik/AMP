@@ -87,7 +87,7 @@ public:
     /**
       Element residual vector computation.
       */
-    void apply();
+    void apply() override;
 
     AMP::shared_ptr<::FEBase> getFEBase() { return d_fe; }
 

@@ -52,7 +52,7 @@ public:
     /**
     Element residual vector computation.
     */
-    void apply();
+    void apply() override;
 
     void initTransportModel();
 

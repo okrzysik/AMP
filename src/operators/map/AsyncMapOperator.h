@@ -29,8 +29,8 @@ public:
     virtual void setVector( AMP::LinearAlgebra::Vector::shared_ptr p ) = 0;
 
     // Overload the apply operator to include makeConsistent
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr f );
+    virtual void apply(AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                       AMP::LinearAlgebra::Vector::shared_ptr f) override;
 
     // Function to determine if a makeConsistentSet is required
     virtual bool requiresMakeConsistentSet();
@@ -41,10 +41,16 @@ public:
      */
     AMP::Mesh::Mesh::shared_ptr getMesh( int which );
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_inpVariable; }
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outVariable; }
+    virtual AMP::LinearAlgebra::Variable::shared_ptr
+    getInputVariable() override {
+      return d_inpVariable;
+    }
+    virtual AMP::LinearAlgebra::Variable::shared_ptr
+    getOutputVariable() override {
+      return d_outVariable;
+    }
 
-protected:
+  protected:
     // Communicator for the Map
     AMP_MPI d_MapComm;
 

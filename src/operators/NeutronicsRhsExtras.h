@@ -79,9 +79,11 @@ public:
     /**
       A function to reinitialize this object.
       */
-    void reset( const SP_OperatorParameters &parameters );
+    void reset(const SP_OperatorParameters &parameters) override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outputVariable; }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override {
+      return d_outputVariable;
+    }
 
     void setTimeStep( int tStep ) { d_timeStep = tStep; }
     void setExtrasId( int extrasId ) { d_extrasId = extrasId; }

@@ -45,16 +45,20 @@ public:
     /**
       This is used to update the operator between successive solves with the operator.
       */
-    void reset( const AMP::shared_ptr<OperatorParameters> & );
+    void reset(const AMP::shared_ptr<OperatorParameters> &) override;
 
     void setAuxVariable( const AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> &var )
     {
         d_auxVariables = var;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_inpVariables; }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override {
+      return d_inpVariables;
+    }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outVariable; }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override {
+      return d_outVariable;
+    }
 
     AMP::shared_ptr<SourcePhysicsModel> getSourcePhysicsModel() { return d_sourcePhysicsModel; }
 
@@ -77,24 +81,23 @@ protected:
     /**
       This function is called at the beginning of the FE assembly
       */
-    void preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                      AMP::LinearAlgebra::Vector::shared_ptr r );
+    void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                     AMP::LinearAlgebra::Vector::shared_ptr r) override;
 
     /**
       This function is called at the end of the FE assembly
       */
-    void postAssembly();
+    void postAssembly() override;
 
     /**
       This function is called at the beginning of the element computation
       */
-    void preElementOperation( const AMP::Mesh::MeshElement & );
+    void preElementOperation(const AMP::Mesh::MeshElement &) override;
 
     /**
       This function is called at the end of the element computation
       */
-    void postElementOperation();
-
+    void postElementOperation() override;
 
     void getNodeDofIndicesForCurrentElement();
 

@@ -19,61 +19,65 @@ public:
 
     virtual ~ThermalStrainMaterialModel() {}
 
-    void getConstitutiveMatrix( double *& );
+    void getConstitutiveMatrix(double *&) override;
 
-    void getConstitutiveMatrixUpdatedLagrangian( double[6][6], double[3][3] );
+    void getConstitutiveMatrixUpdatedLagrangian(double[6][6],
+                                                double[3][3]) override;
 
-    void getStressForUpdatedLagrangian( double currentStress[6] )
-    {
-        for ( int i = 0; i < 6; i++ ) {
-            currentStress[i] = d_tmp1Stress[( 6 * d_gaussPtCnt ) + i];
-        }
+    void getStressForUpdatedLagrangian(double currentStress[6]) override {
+      for (int i = 0; i < 6; i++) {
+        currentStress[i] = d_tmp1Stress[(6 * d_gaussPtCnt) + i];
+      }
     }
 
-    void getExternalStress( double *& );
+    void getExternalStress(double *&) override;
 
-    void getInternalStress( const std::vector<std::vector<double>> &, double *& );
+    void getInternalStress(const std::vector<std::vector<double>> &,
+                           double *&) override;
 
-    void getInternalStress_UL(
-        const std::vector<std::vector<double>> &, double *&, double[3][3], double[3][3], double );
+    void getInternalStress_UL(const std::vector<std::vector<double>> &,
+                              double *&, double[3][3], double[3][3],
+                              double) override;
 
-    void preLinearAssembly() { d_gaussPtCnt = 0; }
+    void preLinearAssembly() override { d_gaussPtCnt = 0; }
 
-    void postLinearGaussPointOperation() { d_gaussPtCnt++; }
+    void postLinearGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void preNonlinearInit( bool, bool );
+    void preNonlinearInit(bool, bool) override;
 
-    void nonlinearInitGaussPointOperation( double );
+    void nonlinearInitGaussPointOperation(double) override;
 
-    void preNonlinearAssembly() { d_gaussPtCnt = 0; }
+    void preNonlinearAssembly() override { d_gaussPtCnt = 0; }
 
-    void postNonlinearAssemblyGaussPointOperation() { d_gaussPtCnt++; }
+    void postNonlinearAssemblyGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void preNonlinearReset() { d_gaussPtCnt = 0; }
+    void preNonlinearReset() override { d_gaussPtCnt = 0; }
 
-    void postNonlinearResetGaussPointOperation() { d_gaussPtCnt++; }
+    void postNonlinearResetGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void nonlinearResetGaussPointOperation( const std::vector<std::vector<double>> & );
+    void nonlinearResetGaussPointOperation(
+        const std::vector<std::vector<double>> &) override;
 
-    void nonlinearResetGaussPointOperation_UL( const std::vector<std::vector<double>> &,
-                                               double[3][3],
-                                               double[3][3] );
+    void nonlinearResetGaussPointOperation_UL(
+        const std::vector<std::vector<double>> &, double[3][3],
+        double[3][3]) override;
 
-    void globalReset();
+    void globalReset() override;
 
-    void postNonlinearReset();
+    void postNonlinearReset() override;
 
-    void preNonlinearJacobian() { d_gaussPtCnt = 0; }
+    void preNonlinearJacobian() override { d_gaussPtCnt = 0; }
 
-    void postNonlinearJacobianGaussPointOperation() { d_gaussPtCnt++; }
+    void postNonlinearJacobianGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void nonlinearJacobianGaussPointOperation( const std::vector<std::vector<double>> & );
+    void nonlinearJacobianGaussPointOperation(
+        const std::vector<std::vector<double>> &) override;
 
-    void nonlinearJacobianGaussPointOperation_UL( const std::vector<std::vector<double>> &,
-                                                  double[3][3],
-                                                  double[3][3] );
+    void nonlinearJacobianGaussPointOperation_UL(
+        const std::vector<std::vector<double>> &, double[3][3],
+        double[3][3]) override;
 
-protected:
+  protected:
     void Thermal_Strain_Gauss_Point( const double *stra_np1,
                                      const double Temp,
                                      double *stre_np1,

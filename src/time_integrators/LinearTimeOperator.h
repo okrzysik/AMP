@@ -38,7 +38,8 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    virtual void reset( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &params );
+    virtual void reset(const AMP::shared_ptr<AMP::Operator::OperatorParameters>
+                           &params) override;
 
     void registerRhsOperator( AMP::shared_ptr<AMP::Operator::LinearOperator> op )
     {
@@ -63,17 +64,15 @@ public:
     void setScalingFactor( double scalingFactor ) { d_dScalingFactor = scalingFactor; }
 
     // added by JL //correction by RS
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable()
-    {
-        return d_pRhsOperator->getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override {
+      return d_pRhsOperator->getInputVariable();
     }
 
     /**
      * returns a Variable object corresponding to the rhs operator
      */
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable()
-    {
-        return d_pRhsOperator->getOutputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override {
+      return d_pRhsOperator->getOutputVariable();
     }
     // JL
     void registerCurrentTime( double currentTime ) { d_current_time = currentTime; }

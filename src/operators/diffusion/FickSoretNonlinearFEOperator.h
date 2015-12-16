@@ -24,13 +24,14 @@ public:
 
     virtual ~FickSoretNonlinearFEOperator() {}
 
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params )
-    {
-        AMP::shared_ptr<FickSoretNonlinearFEOperatorParameters> fsParams =
-            AMP::dynamic_pointer_cast<FickSoretNonlinearFEOperatorParameters>( params );
+    virtual void
+    reset(const AMP::shared_ptr<OperatorParameters> &params) override {
+      AMP::shared_ptr<FickSoretNonlinearFEOperatorParameters> fsParams =
+          AMP::dynamic_pointer_cast<FickSoretNonlinearFEOperatorParameters>(
+              params);
 
-        d_FickOperator->reset( fsParams->d_FickParameters );
-        d_SoretOperator->reset( fsParams->d_SoretParameters );
+      d_FickOperator->reset(fsParams->d_FickParameters);
+      d_SoretOperator->reset(fsParams->d_SoretParameters);
     }
 
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
@@ -44,24 +45,23 @@ public:
         return d_FickOperator->getParameters( type, u, params );
     }
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable()
-    {
-        return d_OutputVariable;
+    virtual AMP::LinearAlgebra::Variable::shared_ptr
+    getOutputVariable() override {
+      return d_OutputVariable;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable()
-    {
-        return d_FickOperator->getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override {
+      return d_FickOperator->getInputVariable();
     }
 
     /**
      * checks input to apply operator for satisfaction of range conditions
      */
-    bool isValidInput( AMP::LinearAlgebra::Vector::shared_ptr &u )
-    {
-        bool result;
-        result = d_FickOperator->isValidInput( u ) and d_SoretOperator->isValidInput( u );
-        return result;
+    bool isValidInput(AMP::LinearAlgebra::Vector::shared_ptr &u) override {
+      bool result;
+      result =
+          d_FickOperator->isValidInput(u) and d_SoretOperator->isValidInput(u);
+      return result;
     }
 
     DiffusionNonlinearFEOperator::shared_ptr getFickOperator() { return d_FickOperator; }

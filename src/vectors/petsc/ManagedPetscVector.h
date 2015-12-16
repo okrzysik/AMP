@@ -97,17 +97,18 @@ public:
 
     // These are adequately documented in a base class.
 public:
-    virtual void swapVectors( Vector &other );
-    using Vector::cloneVector;
-    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr p ) const;
+  virtual void swapVectors(Vector &other) override;
+  using Vector::cloneVector;
+  virtual Vector::shared_ptr
+  cloneVector(const Variable::shared_ptr p) const override;
 
-    virtual std::string type() const;
-    void assemble();
+  virtual std::string type() const override;
+  void assemble() override;
 
-    virtual bool petscHoldsView() const;
+  virtual bool petscHoldsView() const override;
 
 protected:
-    virtual ManagedVector *getNewRawPtr() const;
+  virtual ManagedVector *getNewRawPtr() const override;
 };
 }
 }

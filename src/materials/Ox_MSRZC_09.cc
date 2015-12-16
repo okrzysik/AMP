@@ -58,7 +58,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 class SoretCoefficientProp : public Property<double>
@@ -75,7 +75,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval( std::vector<double> &args );
+    virtual double eval(std::vector<double> &args) override;
 };
 
 //=================== Functions =====================================================

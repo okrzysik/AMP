@@ -51,13 +51,12 @@ public:
     /**
       Element stiffness matrix computation.
      */
-    void apply()
-    {
-        if ( d_useReducedIntegration ) {
-            apply_Reduced();
-        } else {
-            apply_Normal();
-        }
+    void apply() override {
+      if (d_useReducedIntegration) {
+        apply_Reduced();
+      } else {
+        apply_Normal();
+      }
     }
 
     /**

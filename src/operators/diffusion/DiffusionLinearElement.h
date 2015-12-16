@@ -39,9 +39,9 @@ public:
         d_LocalBurnup        = localBurn;
     }
 
-    void apply();
+    void apply() override;
 
-protected:
+  protected:
     std::vector<std::vector<double>> *d_elementStiffnessMatrix;
 
     bool d_transportAtGauss;

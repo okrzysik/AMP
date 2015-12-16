@@ -46,16 +46,14 @@ public:
     /**
      * This function is useful for re-initializing/updating an operator
      */
-    void reset( const AMP::shared_ptr<OperatorParameters> & );
+    void reset(const AMP::shared_ptr<OperatorParameters> &) override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable()
-    {
-        return d_volumeOperator->getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override {
+      return d_volumeOperator->getInputVariable();
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable()
-    {
-        return d_volumeOperator->getOutputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override {
+      return d_volumeOperator->getOutputVariable();
     }
 
     AMP::shared_ptr<LinearOperator> getVolumeOperator() { return d_volumeOperator; }

@@ -21,11 +21,11 @@ public:
 
     virtual ~PelletContactConductanceModel() {}
 
-    void getConductance( std::vector<double> &beta,
-                         std::vector<double> &gamma,
-                         const std::vector<std::vector<double>> &arguments );
+    void
+    getConductance(std::vector<double> &beta, std::vector<double> &gamma,
+                   const std::vector<std::vector<double>> &arguments) override;
 
-protected:
+  protected:
     unsigned int d_nTransportModels; /**< Number of Transport Models. */
     std::vector<AMP::shared_ptr<DiffusionTransportModel>> d_transportModels;
 

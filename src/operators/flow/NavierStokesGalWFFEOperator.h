@@ -28,17 +28,16 @@ public:
 
     virtual ~NavierStokesGalWFFEOperator() {}
 
-    void preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                      AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                          r );
+    void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                     AMP::shared_ptr<AMP::LinearAlgebra::Vector> r) override;
 
-    void postAssembly();
+    void postAssembly() override;
 
-    void preElementOperation( const AMP::Mesh::MeshElement & );
+    void preElementOperation(const AMP::Mesh::MeshElement &) override;
 
-    void postElementOperation();
+    void postElementOperation() override;
 
-    void reset( const AMP::shared_ptr<OperatorParameters> & );
+    void reset(const AMP::shared_ptr<OperatorParameters> &) override;
 
     AMP::shared_ptr<OperatorParameters>
     getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u_in ) override;
@@ -58,9 +57,13 @@ public:
         return outVar;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_inpVariables; }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override {
+      return d_inpVariables;
+    }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outVariables; }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override {
+      return d_outVariables;
+    }
 
     unsigned int numberOfDOFMaps();
 

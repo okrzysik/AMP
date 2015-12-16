@@ -19,46 +19,48 @@ public:
 
     virtual ~VonMises_IsotropicKinematicHardening() {}
 
-    void getConstitutiveMatrix( double *& );
+    void getConstitutiveMatrix(double *&) override;
 
-    void getInternalStress( const std::vector<std::vector<double>> &, double *& );
+    void getInternalStress(const std::vector<std::vector<double>> &,
+                           double *&) override;
 
-    void preLinearAssembly() { d_gaussPtCnt = 0; }
+    void preLinearAssembly() override { d_gaussPtCnt = 0; }
 
-    void postLinearGaussPointOperation() { d_gaussPtCnt++; }
+    void postLinearGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void preNonlinearInit( bool, bool );
+    void preNonlinearInit(bool, bool) override;
 
-    void nonlinearInitGaussPointOperation( double );
+    void nonlinearInitGaussPointOperation(double) override;
 
-    void preNonlinearAssembly()
-    {
-        Plastic_Gauss_Point = 0;
+    void preNonlinearAssembly() override {
+      Plastic_Gauss_Point = 0;
 
-        d_gaussPtCnt = 0;
+      d_gaussPtCnt = 0;
     }
 
-    void postNonlinearAssemblyGaussPointOperation() { d_gaussPtCnt++; }
+    void postNonlinearAssemblyGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void postNonlinearAssembly();
+    void postNonlinearAssembly() override;
 
-    void preNonlinearReset() { d_gaussPtCnt = 0; }
+    void preNonlinearReset() override { d_gaussPtCnt = 0; }
 
-    void postNonlinearResetGaussPointOperation() { d_gaussPtCnt++; }
+    void postNonlinearResetGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void nonlinearResetGaussPointOperation( const std::vector<std::vector<double>> & );
+    void nonlinearResetGaussPointOperation(
+        const std::vector<std::vector<double>> &) override;
 
-    void globalReset();
+    void globalReset() override;
 
-    void postNonlinearReset();
+    void postNonlinearReset() override;
 
-    void preNonlinearJacobian() { d_gaussPtCnt = 0; }
+    void preNonlinearJacobian() override { d_gaussPtCnt = 0; }
 
-    void postNonlinearJacobianGaussPointOperation() { d_gaussPtCnt++; }
+    void postNonlinearJacobianGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void nonlinearJacobianGaussPointOperation( const std::vector<std::vector<double>> & );
+    void nonlinearJacobianGaussPointOperation(
+        const std::vector<std::vector<double>> &) override;
 
-protected:
+  protected:
     void radialReturn( const double *stra_np1,
                        double *stre_np1,
                        double *back_stress_np1,

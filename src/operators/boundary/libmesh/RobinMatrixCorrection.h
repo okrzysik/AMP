@@ -66,14 +66,13 @@ public:
        is passed to the NeumannVectorCorrection. This function also does a matrix
        correction on the boundary.
     */
-    void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    void reset(const AMP::shared_ptr<OperatorParameters> &params) override;
 
     /**
        Adds a Neumann Correction Vector to the RHS vector.
     */
-    void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs )
-    {
-        d_NeumannCorrection->addRHScorrection( rhs );
+    void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) override {
+      d_NeumannCorrection->addRHScorrection(rhs);
     }
 
 

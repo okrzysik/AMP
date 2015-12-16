@@ -81,7 +81,7 @@ public:
       */
     explicit VS_ByVariableName( std::string name );
 
-    virtual bool isSelected( Vector::const_shared_ptr v ) const;
+    virtual bool isSelected(Vector::const_shared_ptr v) const override;
 
     std::string getName() const { return d_VecName; };
 };
@@ -103,15 +103,16 @@ public:
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
       */
-    virtual Vector::shared_ptr subset( Vector::shared_ptr vec ) const;
+    virtual Vector::shared_ptr subset(Vector::shared_ptr vec) const override;
 
     /** \brief Subset the given vector
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
       */
-    virtual Vector::const_shared_ptr subset( Vector::const_shared_ptr vec ) const;
+    virtual Vector::const_shared_ptr
+    subset(Vector::const_shared_ptr vec) const override;
 
-protected:
+  protected:
     //  Offset to start striding on
     size_t d_Offset;
     //  The stride to use
@@ -140,21 +141,22 @@ public:
       *     For most subsetters, this will be the same communicator as the current vector,
       *     however some subsetters (VectorSelector) may opperate on a different (smaller) comm.
       */
-    virtual AMP_MPI communicator( Vector::const_shared_ptr vec ) const;
+    virtual AMP_MPI communicator(Vector::const_shared_ptr vec) const override;
 
     /** \brief Subset the given vector
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
       */
-    virtual Vector::shared_ptr subset( Vector::shared_ptr vec ) const;
+    virtual Vector::shared_ptr subset(Vector::shared_ptr vec) const override;
 
     /** \brief Subset the given vector
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
       */
-    virtual Vector::const_shared_ptr subset( Vector::const_shared_ptr vec ) const;
+    virtual Vector::const_shared_ptr
+    subset(Vector::const_shared_ptr vec) const override;
 
-protected:
+  protected:
     std::string d_Name; //  The name of this subset
     AMP_MPI d_comm;     // The new desired comm
 };
@@ -180,21 +182,22 @@ public:
       *     For most subsetters, this will be the same communicator as the current vector,
       *     however some subsetters (MeshSelector) may opperate on a different (smaller) comm.
       */
-    virtual AMP_MPI communicator( Vector::const_shared_ptr vec ) const;
+    virtual AMP_MPI communicator(Vector::const_shared_ptr vec) const override;
 
     /** \brief Subset the given vector
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
       */
-    virtual Vector::shared_ptr subset( Vector::shared_ptr vec ) const;
+    virtual Vector::shared_ptr subset(Vector::shared_ptr vec) const override;
 
     /** \brief Subset the given vector
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
       */
-    virtual Vector::const_shared_ptr subset( Vector::const_shared_ptr vec ) const;
+    virtual Vector::const_shared_ptr
+    subset(Vector::const_shared_ptr vec) const override;
 
-protected:
+  protected:
     bool d_useMeshComm;            //  Use the comm of the mesh
     Mesh::Mesh::shared_ptr d_mesh; //  Mesh
 };
@@ -216,15 +219,16 @@ public:
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
       */
-    virtual Vector::shared_ptr subset( Vector::shared_ptr vec ) const;
+    virtual Vector::shared_ptr subset(Vector::shared_ptr vec) const override;
 
     /** \brief Subset the given vector
       * \param[in]  vec  The Vector to subset
       * \details Base class defaults to returning all data in the vector
       */
-    virtual Vector::const_shared_ptr subset( Vector::const_shared_ptr vec ) const;
+    virtual Vector::const_shared_ptr
+    subset(Vector::const_shared_ptr vec) const override;
 
-protected:
+  protected:
     const AMP_MPI d_comm;                // comm for the subset
     const Mesh::MeshIterator d_iterator; //  MeshIterator
 };

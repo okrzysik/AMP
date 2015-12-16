@@ -104,7 +104,8 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    virtual void reset( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &params );
+    virtual void reset(const AMP::shared_ptr<AMP::Operator::OperatorParameters>
+                           &params) override;
 
     /**
      * This function registers a rhs operator with the TimeOperator class
@@ -160,9 +161,8 @@ public:
      * Currently
      * this is the output variable associated with the rhs operator.
      */
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable()
-    {
-        return d_pRhsOperator->getOutputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override {
+      return d_pRhsOperator->getOutputVariable();
     }
 
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,

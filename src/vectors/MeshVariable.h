@@ -25,10 +25,10 @@ public:
                   AMP::Mesh::Mesh::shared_ptr mesh,
                   bool useMeshComm = true );
 
-    virtual AMP::Discretization::DOFManager::shared_ptr
-        getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr ) const;
+    virtual AMP::Discretization::DOFManager::shared_ptr getSubsetDOF(
+        AMP::Discretization::DOFManager::shared_ptr) const override;
 
-private:
+  private:
     MeshVariable();
     bool d_useMeshComm;
     AMP::Mesh::Mesh::shared_ptr d_mesh;
@@ -51,10 +51,10 @@ public:
                           const AMP::Mesh::MeshIterator &iterator,
                           const AMP_MPI &comm );
 
-    virtual AMP::Discretization::DOFManager::shared_ptr
-        getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr ) const;
+    virtual AMP::Discretization::DOFManager::shared_ptr getSubsetDOF(
+        AMP::Discretization::DOFManager::shared_ptr) const override;
 
-private:
+  private:
     MeshIteratorVariable();
     const AMP::AMP_MPI d_comm;
     const AMP::Mesh::MeshIterator d_iterator;

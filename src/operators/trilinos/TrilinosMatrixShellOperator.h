@@ -33,11 +33,11 @@ public:
                            AMP::LinearAlgebra::Vector::const_shared_ptr u,
                            AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
-    void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    void reset(const AMP::shared_ptr<OperatorParameters> &params) override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
     static int
     matVec( ML_Operator *data, int in_length, double in[], int out_length, double out[] );

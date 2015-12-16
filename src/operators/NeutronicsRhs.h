@@ -76,14 +76,14 @@ public:
     /**
       A function to reinitialize this object.
       */
-    void reset( const SP_OperatorParameters &parameters );
+    void reset(const SP_OperatorParameters &parameters) override;
 
     // static SP_HexGaussPointVariable createOutputVariable (const std::string & name, int varId =
     // -1);
 
     void setOutputVariableName( const std::string &name, int varId = -1 );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 
     void setTimeStep( int tStep ) { d_timeStep = tStep; }
     void setTimeInSeconds( double seconds );

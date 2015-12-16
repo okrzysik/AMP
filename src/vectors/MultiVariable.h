@@ -116,11 +116,12 @@ public:
     virtual void setVariable( size_t i, Variable::shared_ptr &var );
 
     // These are adequately documented elsewhere.
-    virtual bool operator==( const Variable &rhs ) const;
-    virtual Variable::shared_ptr cloneVariable( const std::string &name ) const;
-    virtual void setUnits( const std::string &units );
+    virtual bool operator==(const Variable &rhs) const override;
+    virtual Variable::shared_ptr
+    cloneVariable(const std::string &name) const override;
+    virtual void setUnits(const std::string &units) override;
 
-protected:
+  protected:
     //! List of variables comprising the MultiVariable
     std::vector<Variable::shared_ptr> d_vVariables;
 };

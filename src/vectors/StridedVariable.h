@@ -22,10 +22,10 @@ public:
       */
     StridedVariable( const std::string &name, size_t offset, size_t stride );
 
-    virtual AMP::Discretization::DOFManager::shared_ptr
-        getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr ) const;
+    virtual AMP::Discretization::DOFManager::shared_ptr getSubsetDOF(
+        AMP::Discretization::DOFManager::shared_ptr) const override;
 
-private:
+  private:
     StridedVariable();
     size_t d_offset;
     size_t d_stride;

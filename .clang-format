@@ -3,7 +3,9 @@
 # To update format only:
 #   find src -name "*.h" -or -name "*.cpp" -or -name "*.cc" -or -name "*.I" | xargs -I{} clang-format -i {}
 # To run modernize
-#   clang-modernize -p=src_dir -include=build_dir -format -style-config=.clang-format -use-nullptr -add-override -override-macros
+#   find src -name "*.cc" | xargs -I{} clang-modernize -p=/projects/AMP/build/debug/AMP -include=/projects/AMP/AMP/src -use-nullptr -add-override {}
+
+
 
 ---
 Language:        Cpp

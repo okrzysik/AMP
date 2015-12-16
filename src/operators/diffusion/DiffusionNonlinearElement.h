@@ -50,7 +50,7 @@ public:
         d_transportOutputVector = &( elementOutputVector );
     }
 
-    void apply();
+    void apply() override;
 
     void initTransportModel();
 

@@ -41,18 +41,19 @@ public:
 
 
     // These methods are adequately documented in a base class
-    virtual std::string type() const;
+    virtual std::string type() const override;
 
     using Vector::cloneVector;
-    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const;
-    virtual void copyVector( Vector::const_shared_ptr vec );
+    virtual Vector::shared_ptr
+    cloneVector(const Variable::shared_ptr var) const override;
+    virtual void copyVector(Vector::const_shared_ptr vec) override;
 
-    Epetra_Vector &getEpetra_Vector();
-    const Epetra_Vector &getEpetra_Vector() const;
-    virtual void assemble();
+    Epetra_Vector &getEpetra_Vector() override;
+    const Epetra_Vector &getEpetra_Vector() const override;
+    virtual void assemble() override;
 
-protected:
-    virtual ManagedVector *getNewRawPtr() const;
+  protected:
+    virtual ManagedVector *getNewRawPtr() const override;
 };
 }
 }

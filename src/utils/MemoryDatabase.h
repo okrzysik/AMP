@@ -70,8 +70,7 @@ public:
      *
      * @param name name of database. Normally a filename.
      */
-    virtual bool create( const std::string &name );
-
+    virtual bool create(const std::string &name) override;
 
     /**
      * Open an existing database file.
@@ -80,8 +79,7 @@ public:
      *
      * @param name name of database. Normally a filename.
      */
-    virtual bool open( const std::string &name );
-
+    virtual bool open(const std::string &name) override;
 
     /**
      * Close the database.
@@ -91,7 +89,7 @@ public:
      * If the database is currently open then close it.  This should
      * flush all data to the file (if the database is on disk).
      */
-    virtual bool close();
+    virtual bool close() override;
 
     /**
      * Return string name of memory database object.
@@ -102,12 +100,12 @@ public:
      * Return true if the specified key exists in the database and false
      * otherwise.
      */
-    virtual bool keyExists( const std::string &key );
+    virtual bool keyExists(const std::string &key) override;
 
     /**
      * Return all keys in the database.
      */
-    virtual std::vector<std::string> getAllKeys();
+    virtual std::vector<std::string> getAllKeys() override;
 
     /**
      * @brief Return the type of data associated with the key.
@@ -116,61 +114,65 @@ public:
      *
      * @param key Key name in database.
      */
-    virtual enum DataType getArrayType( const std::string &key );
+    virtual enum DataType getArrayType(const std::string &key) override;
 
     /**
      * Return the size of the array associated with the key.  If the key
      * does not exist, then zero is returned.
      */
-    virtual int getArraySize( const std::string &key );
+    virtual int getArraySize(const std::string &key) override;
 
     /**
      * Return whether the specified key represents a database entry.  If
      * the key does not exist, then false is returned.
      */
-    virtual bool isDatabase( const std::string &key );
+    virtual bool isDatabase(const std::string &key) override;
 
     /**
      * Create a new database with the specified key name.  If the key already
      * exists in the database, then the old key record is deleted and the new
      * one is silently created in its place.
      */
-    virtual AMP::shared_ptr<Database> putDatabase( const std::string &key );
+    virtual AMP::shared_ptr<Database>
+    putDatabase(const std::string &key) override;
 
     /**
      * Get the database with the specified key name.  If the specified
      * key does not exist in the database or it is not a database, then
      * an error message is printed and the program exits.
      */
-    virtual AMP::shared_ptr<Database> getDatabase( const std::string &key );
+    virtual AMP::shared_ptr<Database>
+    getDatabase(const std::string &key) override;
 
     /**
      * Return whether the specified key represents a boolean entry.  If
      * the key does not exist, then false is returned.
      */
-    virtual bool isBool( const std::string &key );
+    virtual bool isBool(const std::string &key) override;
 
     /**
      * Create a boolean scalar entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putBool( const std::string &key, const bool &data );
+    virtual void putBool(const std::string &key, const bool &data) override;
 
     /**
      * Create a boolean array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putBoolArray( const std::string &key, const std::vector<unsigned char> &data );
+    virtual void putBoolArray(const std::string &key,
+                              const std::vector<unsigned char> &data) override;
 
     /**
      * Create a boolean array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void
-    putBoolArray( const std::string &key, const unsigned char *const data, const int nelements );
+    virtual void putBoolArray(const std::string &key,
+                              const unsigned char *const data,
+                              const int nelements) override;
 
     /**
      * Get a boolean entry in the database with the specified key name.
@@ -178,7 +180,7 @@ public:
      * boolean scalar, then an error message is printed and the program
      * exits.
      */
-    virtual bool getBool( const std::string &key );
+    virtual bool getBool(const std::string &key) override;
 
     /**
      * Get a boolean entry in the database with the specified key name.
@@ -186,7 +188,8 @@ public:
      * value is returned.  If the key exists but is not a boolean scalar,
      * then an error message is printed and the program exits.
      */
-    virtual bool getBoolWithDefault( const std::string &key, const bool &defaultvalue );
+    virtual bool getBoolWithDefault(const std::string &key,
+                                    const bool &defaultvalue) override;
 
     /**
      * Get a boolean entry from the database with the specified key
@@ -194,7 +197,8 @@ public:
      * is not a boolean array, then an error message is printed and
      * the program exits.
      */
-    virtual std::vector<unsigned char> getBoolArray( const std::string &key );
+    virtual std::vector<unsigned char>
+    getBoolArray(const std::string &key) override;
 
     /**
      * Get a boolean entry from the database with the specified key
@@ -203,37 +207,40 @@ public:
      * the program exits.  The specified number of elements must match
      * exactly the number of elements in the array in the database.
      */
-    virtual void getBoolArray( const std::string &key, bool *data, const int nelements );
+    virtual void getBoolArray(const std::string &key, bool *data,
+                              const int nelements) override;
 
     /**
      * Return whether the specified key represents a box entry.  If
      * the key does not exist, then false is returned.
      */
-    virtual bool isDatabaseBox( const std::string &key );
+    virtual bool isDatabaseBox(const std::string &key) override;
 
     /**
      * Create a box scalar entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putDatabaseBox( const std::string &key, const DatabaseBox &data );
+    virtual void putDatabaseBox(const std::string &key,
+                                const DatabaseBox &data) override;
 
     /**
      * Create a box array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putDatabaseBoxArray( const std::string &key,
-                                      const std::vector<DatabaseBox> &data );
+    virtual void
+    putDatabaseBoxArray(const std::string &key,
+                        const std::vector<DatabaseBox> &data) override;
 
     /**
      * Create a box array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putDatabaseBoxArray( const std::string &key,
-                                      const DatabaseBox *const data,
-                                      const int nelements );
+    virtual void putDatabaseBoxArray(const std::string &key,
+                                     const DatabaseBox *const data,
+                                     const int nelements) override;
 
     /**
      * Get a box entry in the database with the specified key name.
@@ -241,7 +248,7 @@ public:
      * box scalar, then an error message is printed and the program
      * exits.
      */
-    virtual DatabaseBox getDatabaseBox( const std::string &key );
+    virtual DatabaseBox getDatabaseBox(const std::string &key) override;
 
     /**
      * Get a box entry in the database with the specified key name.
@@ -249,8 +256,9 @@ public:
      * value is returned.  If the key exists but is not a box scalar,
      * then an error message is printed and the program exits.
      */
-    virtual DatabaseBox getDatabaseBoxWithDefault( const std::string &key,
-                                                   const DatabaseBox &defaultvalue );
+    virtual DatabaseBox
+    getDatabaseBoxWithDefault(const std::string &key,
+                              const DatabaseBox &defaultvalue) override;
 
     /**
      * Get a box entry from the database with the specified key
@@ -258,7 +266,8 @@ public:
      * is not a box array, then an error message is printed and
      * the program exits.
      */
-    virtual std::vector<DatabaseBox> getDatabaseBoxArray( const std::string &key );
+    virtual std::vector<DatabaseBox>
+    getDatabaseBoxArray(const std::string &key) override;
 
     /**
      * Get a box entry from the database with the specified key
@@ -267,36 +276,37 @@ public:
      * the program exits.  The specified number of elements must match
      * exactly the number of elements in the array in the database.
      */
-    virtual void
-    getDatabaseBoxArray( const std::string &key, DatabaseBox *data, const int nelements );
+    virtual void getDatabaseBoxArray(const std::string &key, DatabaseBox *data,
+                                     const int nelements) override;
 
     /**
      * Return whether the specified key represents a character entry.  If
      * the key does not exist, then false is returned.
      */
-    virtual bool isChar( const std::string &key );
+    virtual bool isChar(const std::string &key) override;
 
     /**
      * Create a character scalar entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putChar( const std::string &key, const char &data );
+    virtual void putChar(const std::string &key, const char &data) override;
 
     /**
      * Create a character array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putCharArray( const std::string &key, const std::vector<char> &data );
+    virtual void putCharArray(const std::string &key,
+                              const std::vector<char> &data) override;
 
     /**
      * Create a character array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void
-    putCharArray( const std::string &key, const char *const data, const int nelements );
+    virtual void putCharArray(const std::string &key, const char *const data,
+                              const int nelements) override;
 
     /**
      * Get a character entry in the database with the specified key name.
@@ -304,7 +314,7 @@ public:
      * character scalar, then an error message is printed and the program
      * exits.
      */
-    virtual char getChar( const std::string &key );
+    virtual char getChar(const std::string &key) override;
 
     /**
      * Get a character entry in the database with the specified key name.
@@ -312,7 +322,8 @@ public:
      * value is returned.  If the key exists but is not a character scalar,
      * then an error message is printed and the program exits.
      */
-    virtual char getCharWithDefault( const std::string &key, const char &defaultvalue );
+    virtual char getCharWithDefault(const std::string &key,
+                                    const char &defaultvalue) override;
 
     /**
      * Get a character entry from the database with the specified key
@@ -320,7 +331,7 @@ public:
      * is not a character array, then an error message is printed and
      * the program exits.
      */
-    virtual std::vector<char> getCharArray( const std::string &key );
+    virtual std::vector<char> getCharArray(const std::string &key) override;
 
     /**
      * Get a character entry from the database with the specified key
@@ -329,38 +340,41 @@ public:
      * the program exits.  The specified number of elements must match
      * exactly the number of elements in the array in the database.
      */
-    virtual void getCharArray( const std::string &key, char *data, const int nelements );
+    virtual void getCharArray(const std::string &key, char *data,
+                              const int nelements) override;
 
     /**
      * Return whether the specified key represents a complex entry.  If
      * the key does not exist, then false is returned.  Complex values
      * may be promoted from integers, floats, or doubles.
      */
-    virtual bool isComplex( const std::string &key );
+    virtual bool isComplex(const std::string &key) override;
 
     /**
      * Create a complex scalar entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putComplex( const std::string &key, const std::complex<double> &data );
+    virtual void putComplex(const std::string &key,
+                            const std::complex<double> &data) override;
 
     /**
      * Create a complex array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putComplexArray( const std::string &key,
-                                  const std::vector<std::complex<double>> &data );
+    virtual void
+    putComplexArray(const std::string &key,
+                    const std::vector<std::complex<double>> &data) override;
 
     /**
      * Create a complex array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putComplexArray( const std::string &key,
-                                  const std::complex<double> *const data,
-                                  const int nelements );
+    virtual void putComplexArray(const std::string &key,
+                                 const std::complex<double> *const data,
+                                 const int nelements) override;
 
     /**
      * Get a complex entry in the database with the specified key name.
@@ -369,7 +383,7 @@ public:
      * exits.  Complex values may be promoted from integers, floats, or
      * doubles.
      */
-    virtual std::complex<double> getComplex( const std::string &key );
+    virtual std::complex<double> getComplex(const std::string &key) override;
 
     /**
      * Get a complex entry in the database with the specified key name.
@@ -378,8 +392,9 @@ public:
      * then an error message is printed and the program exits.  Complex
      * values may be promoted from integers, floats, or doubles.
      */
-    virtual std::complex<double> getComplexWithDefault( const std::string &key,
-                                                        const std::complex<double> &defaultvalue );
+    virtual std::complex<double>
+    getComplexWithDefault(const std::string &key,
+                          const std::complex<double> &defaultvalue) override;
 
     /**
      * Get a complex entry from the database with the specified key
@@ -388,7 +403,8 @@ public:
      * the program exits.  Complex values may be promoted from integers,
      * floats, or doubles.
      */
-    virtual std::vector<std::complex<double>> getComplexArray( const std::string &key );
+    virtual std::vector<std::complex<double>>
+    getComplexArray(const std::string &key) override;
 
     /**
      * Get a complex entry from the database with the specified key
@@ -398,37 +414,40 @@ public:
      * exactly the number of elements in the array in the database.
      * Complex values may be promoted from integers, floats, or doubles.
      */
-    virtual void
-    getComplexArray( const std::string &key, std::complex<double> *data, const int nelements );
+    virtual void getComplexArray(const std::string &key,
+                                 std::complex<double> *data,
+                                 const int nelements) override;
 
     /**
      * Return whether the specified key represents a double entry.  If
      * the key does not exist, then false is returned.  Double values
      * may be promoted from integers or floats.
      */
-    virtual bool isDouble( const std::string &key );
+    virtual bool isDouble(const std::string &key) override;
 
     /**
      * Create a double scalar entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putDouble( const std::string &key, const double &data );
+    virtual void putDouble(const std::string &key, const double &data) override;
 
     /**
      * Create a double array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putDoubleArray( const std::string &key, const std::vector<double> &data );
+    virtual void putDoubleArray(const std::string &key,
+                                const std::vector<double> &data) override;
 
     /**
      * Create a double array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void
-    putDoubleArray( const std::string &key, const double *const data, const int nelements );
+    virtual void putDoubleArray(const std::string &key,
+                                const double *const data,
+                                const int nelements) override;
 
     /**
      * Get a double entry in the database with the specified key name.
@@ -436,7 +455,7 @@ public:
      * double scalar, then an error message is printed and the program
      * exits.  Double values may be promoted from integers or floats.
      */
-    virtual double getDouble( const std::string &key );
+    virtual double getDouble(const std::string &key) override;
 
     /**
      * Get a double entry in the database with the specified key name.
@@ -445,7 +464,8 @@ public:
      * an error message is printed and the program exits.  Double values may
      * be promoted from integers or floats.
      */
-    virtual double getDoubleWithDefault( const std::string &key, const double &defaultvalue );
+    virtual double getDoubleWithDefault(const std::string &key,
+                                        const double &defaultvalue) override;
 
     /**
      * Get a double entry from the database with the specified key
@@ -454,7 +474,7 @@ public:
      * the program exits.  Double values may be promoted from integers
      * or floats.
      */
-    virtual std::vector<double> getDoubleArray( const std::string &key );
+    virtual std::vector<double> getDoubleArray(const std::string &key) override;
 
     /**
      * Get a double entry from the database with the specified key
@@ -464,36 +484,38 @@ public:
      * exactly the number of elements in the array in the database.
      * Double values may be promoted from integers or floats.
      */
-    virtual void getDoubleArray( const std::string &key, double *data, const int nelements );
+    virtual void getDoubleArray(const std::string &key, double *data,
+                                const int nelements) override;
 
     /**
      * Return whether the specified key represents a float entry.  If
      * the key does not exist, then false is returned.  Float values
      * may be promoted from integers or silently truncated from doubles.
      */
-    virtual bool isFloat( const std::string &key );
+    virtual bool isFloat(const std::string &key) override;
 
     /**
      * Create a float scalar entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putFloat( const std::string &key, const float &data );
+    virtual void putFloat(const std::string &key, const float &data) override;
 
     /**
      * Create a float array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putFloatArray( const std::string &key, const std::vector<float> &data );
+    virtual void putFloatArray(const std::string &key,
+                               const std::vector<float> &data) override;
 
     /**
      * Create a float array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void
-    putFloatArray( const std::string &key, const float *const data, const int nelements );
+    virtual void putFloatArray(const std::string &key, const float *const data,
+                               const int nelements) override;
 
     /**
      * Get a float entry in the database with the specified key name.
@@ -502,7 +524,7 @@ public:
      * exits.  Float values may be promoted from integers or silently
      * truncated from doubles.
      */
-    virtual float getFloat( const std::string &key );
+    virtual float getFloat(const std::string &key) override;
 
     /**
      * Get a float entry in the database with the specified key name.
@@ -511,7 +533,8 @@ public:
      * an error message is printed and the program exits.  Float values may
      * be promoted from integers or silently truncated from doubles.
      */
-    virtual float getFloatWithDefault( const std::string &key, const float &defaultvalue );
+    virtual float getFloatWithDefault(const std::string &key,
+                                      const float &defaultvalue) override;
 
     /**
      * Get a float entry from the database with the specified key
@@ -520,7 +543,7 @@ public:
      * the program exits.  Float values may be promoted from integers
      * or silently truncated from doubles.
      */
-    virtual std::vector<float> getFloatArray( const std::string &key );
+    virtual std::vector<float> getFloatArray(const std::string &key) override;
 
     /**
      * Get a float entry from the database with the specified key
@@ -531,35 +554,37 @@ public:
      * Float values may be promoted from integers or silently truncated
      * from doubles.
      */
-    virtual void getFloatArray( const std::string &key, float *data, const int nelements );
+    virtual void getFloatArray(const std::string &key, float *data,
+                               const int nelements) override;
 
     /**
      * Return whether the specified key represents an integer entry.  If
      * the key does not exist, then false is returned.
      */
-    virtual bool isInteger( const std::string &key );
+    virtual bool isInteger(const std::string &key) override;
 
     /**
      * Create an integer scalar entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putInteger( const std::string &key, const int &data );
+    virtual void putInteger(const std::string &key, const int &data) override;
 
     /**
      * Create an integer array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putIntegerArray( const std::string &key, const std::vector<int> &data );
+    virtual void putIntegerArray(const std::string &key,
+                                 const std::vector<int> &data) override;
 
     /**
      * Create an integer array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void
-    putIntegerArray( const std::string &key, const int *const data, const int nelements );
+    virtual void putIntegerArray(const std::string &key, const int *const data,
+                                 const int nelements) override;
 
     /**
      * Get an integer entry in the database with the specified key name.
@@ -567,7 +592,7 @@ public:
      * integer scalar, then an error message is printed and the program
      * exits.
      */
-    virtual int getInteger( const std::string &key );
+    virtual int getInteger(const std::string &key) override;
 
     /**
      * Get an integer entry in the database with the specified key name.
@@ -575,7 +600,8 @@ public:
      * value is returned.  If the key exists but is not an integer scalar,
      * then an error message is printed and the program exits.
      */
-    virtual int getIntegerWithDefault( const std::string &key, const int &defaultvalue );
+    virtual int getIntegerWithDefault(const std::string &key,
+                                      const int &defaultvalue) override;
 
     /**
      * Get an integer entry from the database with the specified key
@@ -583,7 +609,7 @@ public:
      * is not an integer array, then an error message is printed and
      * the program exits.
      */
-    virtual std::vector<int> getIntegerArray( const std::string &key );
+    virtual std::vector<int> getIntegerArray(const std::string &key) override;
 
     /**
      * Get an integer entry from the database with the specified key
@@ -592,35 +618,39 @@ public:
      * the program exits.  The specified number of elements must match
      * exactly the number of elements in the array in the database.
      */
-    virtual void getIntegerArray( const std::string &key, int *data, const int nelements );
+    virtual void getIntegerArray(const std::string &key, int *data,
+                                 const int nelements) override;
 
     /**
      * Return whether the specified key represents a std::string entry.  If
      * the key does not exist, then false is returned.
      */
-    virtual bool isString( const std::string &key );
+    virtual bool isString(const std::string &key) override;
 
     /**
      * Create a string scalar entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putString( const std::string &key, const std::string &data );
+    virtual void putString(const std::string &key,
+                           const std::string &data) override;
 
     /**
      * Create a string array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void putStringArray( const std::string &key, const std::vector<std::string> &data );
+    virtual void putStringArray(const std::string &key,
+                                const std::vector<std::string> &data) override;
 
     /**
      * Create a string array entry in the database with the specified
      * key name.  If the key already exists in the database, then the old
      * key record is deleted and the new one is silently created in its place.
      */
-    virtual void
-    putStringArray( const std::string &key, const std::string *const data, const int nelements );
+    virtual void putStringArray(const std::string &key,
+                                const std::string *const data,
+                                const int nelements) override;
 
     /**
      * Get a string entry in the database with the specified key name.
@@ -628,7 +658,7 @@ public:
      * string scalar, then an error message is printed and the program
      * exits.
      */
-    virtual std::string getString( const std::string &key );
+    virtual std::string getString(const std::string &key) override;
 
     /**
      * Get a string entry in the database with the specified key name.
@@ -636,8 +666,9 @@ public:
      * value is returned.  If the key exists but is not a string scalar,
      * then an error message is printed and the program exits.
      */
-    virtual std::string getStringWithDefault( const std::string &key,
-                                              const std::string &defaultvalue );
+    virtual std::string
+    getStringWithDefault(const std::string &key,
+                         const std::string &defaultvalue) override;
 
     /**
      * Get a string entry from the database with the specified key
@@ -645,7 +676,8 @@ public:
      * is not a string array, then an error message is printed and
      * the program exits.
      */
-    virtual std::vector<std::string> getStringArray( const std::string &key );
+    virtual std::vector<std::string>
+    getStringArray(const std::string &key) override;
 
     /**
      * Get a string entry from the database with the specified key
@@ -654,7 +686,8 @@ public:
      * the program exits.  The specified number of elements must match
      * exactly the number of elements in the array in the database.
      */
-    virtual void getStringArray( const std::string &key, std::string *data, const int nelements );
+    virtual void getStringArray(const std::string &key, std::string *data,
+                                const int nelements) override;
 
     /**
      * @brief Returns the name of this database.
@@ -663,7 +696,7 @@ public:
      * Names for nested databases are the keyname of the database.
      *
      */
-    virtual std::string getName();
+    virtual std::string getName() override;
 
     /**
      * Return whether the specified key has been accessed by one of the
@@ -682,7 +715,7 @@ public:
      * NOTE:  under the g++ compiler libraries, printClassData has a
      * maximum output of 4096 characters per line.
      */
-    virtual void printClassData( std::ostream &os = pout );
+    virtual void printClassData(std::ostream &os = pout) override;
 
     /**
      * Print the database keys that were not used to the specified output

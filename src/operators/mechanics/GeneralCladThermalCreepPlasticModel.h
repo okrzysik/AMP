@@ -102,102 +102,104 @@ public:
       Calculates the linearized elasto-plastic stress-strain constitutive matrix at each gauss
       point which enters the computation of the jacobian for the element.
       */
-    void getConstitutiveMatrix( double *& );
+    void getConstitutiveMatrix(double *&) override;
 
     /**
       Given a certain strain, this function calculates the corresponding stress taking into
       consideration the
       thermal swelling and creep effects. Creep is modeled in an implicit fashion.
       */
-    void getInternalStress( const std::vector<std::vector<double>> &, double *& );
+    void getInternalStress(const std::vector<std::vector<double>> &,
+                           double *&) override;
 
     /**
       This function is called just before the linear assembly.
       */
-    void preLinearAssembly() { d_gaussPtCnt = 0; }
+    void preLinearAssembly() override { d_gaussPtCnt = 0; }
 
     /**
       This is called after the apply() at each gauss point is called.
       */
-    void postLinearGaussPointOperation() { d_gaussPtCnt++; }
+    void postLinearGaussPointOperation() override { d_gaussPtCnt++; }
 
     /**
       This function is called before the NonlinearInit is invoked. Here the memory
       assigned to all the gauss point vectors are cleared.
       */
-    void preNonlinearInit( bool, bool );
+    void preNonlinearInit(bool, bool) override;
 
     /**
       This function initializes all the gauss point vectors with the default values.
       */
-    void nonlinearInitGaussPointOperation( double );
+    void nonlinearInitGaussPointOperation(double) override;
 
     /**
       This is called before every non-linear assembly. Here the gauss point count and the total
       number of gauss points which have reached plasticity, are initialized to zero.
       */
-    void preNonlinearAssembly()
-    {
+    void preNonlinearAssembly() override {
 
-        Plastic_Gauss_Point = 0;
+      Plastic_Gauss_Point = 0;
 
-        d_gaussPtCnt = 0;
+      d_gaussPtCnt = 0;
     }
 
     /**
       How many gauss points have reached plasticity, is calculated in this function (done after each
       assembly).
       */
-    void postNonlinearAssembly();
+    void postNonlinearAssembly() override;
 
     /**
       After the apply at each gauss point , this function increments the gauss point count by one.
       */
-    void postNonlinearAssemblyGaussPointOperation() { d_gaussPtCnt++; }
+    void postNonlinearAssemblyGaussPointOperation() override { d_gaussPtCnt++; }
 
     /**
       This function initializes the gauss point count for the nonlinear reset.
       */
-    void preNonlinearReset() { d_gaussPtCnt = 0; }
+    void preNonlinearReset() override { d_gaussPtCnt = 0; }
 
     /**
       Incrementing the gauss point count by unity is conducted in this function.
       */
-    void postNonlinearResetGaussPointOperation() { d_gaussPtCnt++; }
+    void postNonlinearResetGaussPointOperation() override { d_gaussPtCnt++; }
 
     /**
       At each gauss point the "radialReturn" function is called from this function.
       */
-    void nonlinearResetGaussPointOperation( const std::vector<std::vector<double>> & );
+    void nonlinearResetGaussPointOperation(
+        const std::vector<std::vector<double>> &) override;
 
     /**
       This function updates the old equilibrium values with the new one under certain conditions.
       */
-    void globalReset();
+    void globalReset() override;
 
     /**
       If the updating is not done in the global reset, it is done in this function.
       */
-    void postNonlinearReset();
+    void postNonlinearReset() override;
 
     /**
       Initializes the gauss point count before the nonlinear jacobian is called.
       */
-    void preNonlinearJacobian() { d_gaussPtCnt = 0; }
+    void preNonlinearJacobian() override { d_gaussPtCnt = 0; }
 
     /**
       The gauss point count is incremented after computing the nonlinear jacobian at every gauss
       point.
       */
-    void postNonlinearJacobianGaussPointOperation() { d_gaussPtCnt++; }
+    void postNonlinearJacobianGaussPointOperation() override { d_gaussPtCnt++; }
 
     /**
       This function updates all the material parameters and calls the radialReturn before
       calculating the jacobian.
       */
-    void nonlinearJacobianGaussPointOperation( const std::vector<std::vector<double>> & );
+    void nonlinearJacobianGaussPointOperation(
+        const std::vector<std::vector<double>> &) override;
 
-protected:
+  protected:
     /**
       This function calls the evalv functions in the materials library and updates the material
       parameters, such as,

@@ -42,19 +42,27 @@ public:
       * \param params
       *    parameter object containing parameters to change
       */
-    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    virtual void
+    reset(const AMP::shared_ptr<OperatorParameters> &params) override;
 
     /**
      * Copies the shared pointer for the matrix representation of this linear operator.
      *  @param [in] in_mat The matrix representation of this linear operator.
      */
-    virtual void setMatrix( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> in_mat );
+    virtual void
+    setMatrix(AMP::shared_ptr<AMP::LinearAlgebra::Matrix> in_mat) override;
 
     //! Return the input variable
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outVar; }
+    virtual AMP::LinearAlgebra::Variable::shared_ptr
+    getOutputVariable() override {
+      return d_outVar;
+    }
 
     //! Return the output variable
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_inVar; }
+    virtual AMP::LinearAlgebra::Variable::shared_ptr
+    getInputVariable() override {
+      return d_inVar;
+    }
 
     //! Set the input variable
     virtual void setInputVariable( AMP::LinearAlgebra::Variable::shared_ptr var ) { d_inVar = var; }

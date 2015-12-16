@@ -73,18 +73,17 @@ public:
     /**
       This function can be used to change the Dirichlet boundary conditions, if required.
       */
-    void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    void reset(const AMP::shared_ptr<OperatorParameters> &params) override;
 
-    void setRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs )
-    {
-        this->applyZeroValues( rhs );
+    void setRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) override {
+      this->applyZeroValues(rhs);
     }
 
-    void modifyInitialSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr sol )
-    {
-        if ( !d_setResidual ) {
-            this->applyNonZeroValues( sol );
-        }
+    void modifyInitialSolutionVector(
+        AMP::LinearAlgebra::Vector::shared_ptr sol) override {
+      if (!d_setResidual) {
+        this->applyNonZeroValues(sol);
+      }
     }
 
     std::vector<short int> getBoundaryIds() { return d_boundaryIds; }
