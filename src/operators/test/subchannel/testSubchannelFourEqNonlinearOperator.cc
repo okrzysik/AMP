@@ -344,8 +344,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
     for ( ; face != face.end(); face++ ) { // loop over all faces in mesh
         std::vector<double> faceCentroid = face->centroid();
         // try to find face in lateral face map
-        std::map<std::vector<double>, AMP::Mesh::MeshElement>::iterator lateralFaceIterator =
-            interiorLateralFaceMap.find( faceCentroid );
+        auto lateralFaceIterator = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) { // if face in lateral face map,
             // get lateral face
             AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;

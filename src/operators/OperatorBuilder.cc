@@ -1283,7 +1283,7 @@ AMP::shared_ptr<BoundaryOperator> OperatorBuilder::createColumnBoundaryOperator(
     int numberOfBoundaryOperators =
         operator_db->getIntegerWithDefault( "numberOfBoundaryOperators", 1 );
 
-    std::string *boundaryOps = new std::string[numberOfBoundaryOperators];
+    auto boundaryOps = new std::string[numberOfBoundaryOperators];
     operator_db->getStringArray( "boundaryOperators", boundaryOps, numberOfBoundaryOperators );
 
     AMP::shared_ptr<OperatorParameters> params( new OperatorParameters( operator_db ) );

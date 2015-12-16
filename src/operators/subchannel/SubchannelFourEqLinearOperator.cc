@@ -435,12 +435,9 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
             // loop over gap faces
             std::vector<AMP::Mesh::MeshElement> cellFaces =
                 localSubchannelCell->getElements( AMP::Mesh::Face );
-            for ( std::vector<AMP::Mesh::MeshElement>::iterator face = cellFaces.begin();
-                  face != cellFaces.end();
-                  ++face ) {
+            for ( auto face = cellFaces.begin(); face != cellFaces.end(); ++face ) {
                 std::vector<double> faceCentroid = face->centroid();
-                std::map<std::vector<double>, AMP::Mesh::MeshElement>::iterator
-                    lateralFaceIterator = interiorLateralFaceMap.find( faceCentroid );
+                auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
                 if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
                     // get face
                     AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
@@ -567,10 +564,9 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
                     // compute gap width
                     std::vector<double> lateralFaceCentroid = lateralFace.centroid();
                     std::vector<double> xyPos( 2 );
-                    xyPos[0] = lateralFaceCentroid[0];
-                    xyPos[1] = lateralFaceCentroid[1];
-                    std::map<std::vector<double>, double>::iterator gapWidthIt =
-                        gapWidthMap.find( xyPos );
+                    xyPos[0]        = lateralFaceCentroid[0];
+                    xyPos[1]        = lateralFaceCentroid[1];
+                    auto gapWidthIt = gapWidthMap.find( xyPos );
                     AMP_INSIST( gapWidthIt != gapWidthMap.end(), "Gap was not found." );
                     double gapWidth = gapWidthIt->second;
 
@@ -726,8 +722,7 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
         d_Mesh->getIterator( AMP::Mesh::Face, 0 ); // iterator for cells of mesh
     for ( ; face != face.end(); face++ ) {
         std::vector<double> faceCentroid = face->centroid();
-        std::map<std::vector<double>, AMP::Mesh::MeshElement>::iterator lateralFaceIterator =
-            interiorLateralFaceMap.find( faceCentroid );
+        auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
             // get lateral face
             AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
@@ -964,10 +959,9 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
                 // compute gap width
                 std::vector<double> lateralFaceCentroid = lateralFace.centroid();
                 std::vector<double> xyPos( 2 );
-                xyPos[0] = lateralFaceCentroid[0];
-                xyPos[1] = lateralFaceCentroid[1];
-                std::map<std::vector<double>, double>::iterator gapWidthIt =
-                    gapWidthMap.find( xyPos );
+                xyPos[0]        = lateralFaceCentroid[0];
+                xyPos[1]        = lateralFaceCentroid[1];
+                auto gapWidthIt = gapWidthMap.find( xyPos );
                 AMP_INSIST( gapWidthIt != gapWidthMap.end(), "Gap was not found." );
                 double gapWidth = gapWidthIt->second;
 
@@ -1241,7 +1235,7 @@ void SubchannelFourEqLinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::shared
     d_Mesh->getComm().setGather( z );
     // erase duplicate x points
     double last = 1.0e300;
-    for ( std::set<double>::iterator it = x.begin(); it != x.end(); ++it ) {
+    for ( auto it = x.begin(); it != x.end(); ++it ) {
         if ( Utilities::approx_equal_abs( last, *it, 1e-12 ) ) {
             x.erase( it );
             it = x.find( last );
@@ -1251,7 +1245,7 @@ void SubchannelFourEqLinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::shared
     }
     // erase duplicate y points
     last = 1.0e300;
-    for ( std::set<double>::iterator it = y.begin(); it != y.end(); ++it ) {
+    for ( auto it = y.begin(); it != y.end(); ++it ) {
         if ( Utilities::approx_equal_abs( last, *it, 1e-12 ) ) {
             y.erase( it );
             it = y.find( last );
@@ -1261,7 +1255,7 @@ void SubchannelFourEqLinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::shared
     }
     // erase duplicate z points
     last = 1.0e300;
-    for ( std::set<double>::iterator it = z.begin(); it != z.end(); ++it ) {
+    for ( auto it = z.begin(); it != z.end(); ++it ) {
         if ( Utilities::approx_equal_abs( last, *it, 1e-12 ) ) {
             z.erase( it );
             it = z.find( last );
@@ -1475,9 +1469,7 @@ void SubchannelFourEqLinearOperator::getAxialFaces( AMP::Mesh::MeshElement cell,
     // get all faces of cell
     std::vector<AMP::Mesh::MeshElement> cellFaces = cell.getElements( AMP::Mesh::Face );
     // loop over faces of cell
-    for ( std::vector<AMP::Mesh::MeshElement>::iterator face = cellFaces.begin();
-          face != cellFaces.end();
-          ++face ) {
+    for ( auto face = cellFaces.begin(); face != cellFaces.end(); ++face ) {
         std::vector<double> faceCentroid = face->centroid();
         // if z-coordinates of centroids of the cell and face are not equal,
         if ( !AMP::Utilities::approx_equal_abs( faceCentroid[2], cellCentroid[2], 1.0e-12 ) ) {
@@ -1527,12 +1519,9 @@ AMP::Mesh::MeshElement SubchannelFourEqLinearOperator::getAxiallyAdjacentLateral
     AMP::Mesh::MeshElement axiallyAdjacentLateralFace;
     std::vector<AMP::Mesh::MeshElement> daughterCellFaces =
         daughterCell->getElements( AMP::Mesh::Face );
-    for ( std::vector<AMP::Mesh::MeshElement>::iterator face = daughterCellFaces.begin();
-          face != daughterCellFaces.end();
-          ++face ) {
+    for ( auto face = daughterCellFaces.begin(); face != daughterCellFaces.end(); ++face ) {
         std::vector<double> faceCentroid = face->centroid();
-        std::map<std::vector<double>, AMP::Mesh::MeshElement>::iterator lateralFaceIterator =
-            interiorLateralFaceMap.find( faceCentroid );
+        auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
             // get lateral face
             AMP::Mesh::MeshElement daughterLateralFace      = lateralFaceIterator->second;

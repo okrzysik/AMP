@@ -324,8 +324,7 @@ void createGlobalIDMaps( AMP::Discretization::DOFManager::shared_ptr dof_manager
     AMP::Mesh::MeshIterator face = mesh->getIterator( AMP::Mesh::Face, 0 );
     for ( ; face != face.end(); face++ ) {
         std::vector<double> centroid = face->centroid();
-        std::map<std::vector<double>, AMP::Mesh::MeshElement>::iterator lateral_face_iterator =
-            lateral_face_map.find( centroid );
+        auto lateral_face_iterator   = lateral_face_map.find( centroid );
         if ( lateral_face_iterator != lateral_face_map.end() ) {
             AMP::Mesh::MeshElement lateral_face = lateral_face_iterator->second;
             std::vector<size_t> dofs;
@@ -369,22 +368,17 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
         J_test_AMP->getRowByGlobalID( i_p_AMP, ind_p, val_p );
         // loop over all DOFs
         for ( size_t j_AMP = 0; j_AMP < num_dofs_AMP; j_AMP++ ) {
-            std::map<size_t, AMP::Mesh::MeshElement>::iterator face_iterator =
-                elements_by_globalID.find( j_AMP );
+            auto face_iterator = elements_by_globalID.find( j_AMP );
             if ( face_iterator != elements_by_globalID.end() ) {
                 AMP::Mesh::MeshElement face = face_iterator->second;
-                std::map<size_t, size_t>::iterator variable_id_iterator =
-                    variables_by_globalID.find( j_AMP );
+                auto variable_id_iterator   = variables_by_globalID.find( j_AMP );
                 if ( variable_id_iterator == variables_by_globalID.end() )
                     AMP_ERROR( "index exists only for face" );
                 size_t variable_id = variable_id_iterator->second;
                 size_t j_MATLAB    = AMP_to_MATLAB( face, variable_id );
-                std::vector<unsigned int>::iterator nonzero_ind_m =
-                    std::find( ind_m.begin(), ind_m.end(), j_AMP );
-                std::vector<unsigned int>::iterator nonzero_ind_h =
-                    std::find( ind_h.begin(), ind_h.end(), j_AMP );
-                std::vector<unsigned int>::iterator nonzero_ind_p =
-                    std::find( ind_p.begin(), ind_p.end(), j_AMP );
+                auto nonzero_ind_m = std::find( ind_m.begin(), ind_m.end(), j_AMP );
+                auto nonzero_ind_h = std::find( ind_h.begin(), ind_h.end(), j_AMP );
+                auto nonzero_ind_p = std::find( ind_p.begin(), ind_p.end(), j_AMP );
                 if ( nonzero_ind_m != ind_m.end() ) {
                     size_t m_ind = std::distance( ind_m.begin(), nonzero_ind_m );
                     J_test_MATLAB[i_m_MATLAB][j_MATLAB] = val_m[m_ind];
@@ -405,8 +399,7 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
     AMP::Mesh::MeshIterator lateral_face = mesh->getIterator( AMP::Mesh::Face, 0 );
     for ( ; lateral_face != lateral_face.end(); lateral_face++ ) {
         std::vector<double> centroid = lateral_face->centroid();
-        std::map<std::vector<double>, AMP::Mesh::MeshElement>::iterator lateral_face_iterator =
-            lateral_face_map.find( centroid );
+        auto lateral_face_iterator   = lateral_face_map.find( centroid );
         if ( lateral_face_iterator != lateral_face_map.end() ) {
             std::vector<size_t> dofs;
             dof_manager->getDOFs( lateral_face->globalID(), dofs );
@@ -417,18 +410,15 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
             J_test_AMP->getRowByGlobalID( i_w_AMP, ind_w, val_w );
             // loop over all DOFs
             for ( size_t j_AMP = 0; j_AMP < num_dofs_AMP; j_AMP++ ) {
-                std::map<size_t, AMP::Mesh::MeshElement>::iterator face_iterator =
-                    elements_by_globalID.find( j_AMP );
+                auto face_iterator = elements_by_globalID.find( j_AMP );
                 if ( face_iterator != elements_by_globalID.end() ) {
                     AMP::Mesh::MeshElement face = face_iterator->second;
-                    std::map<size_t, size_t>::iterator variable_id_iterator =
-                        variables_by_globalID.find( j_AMP );
+                    auto variable_id_iterator   = variables_by_globalID.find( j_AMP );
                     if ( variable_id_iterator == variables_by_globalID.end() )
                         AMP_ERROR( "index exists only for face" );
                     size_t variable_id = variable_id_iterator->second;
                     size_t j_MATLAB    = AMP_to_MATLAB( face, variable_id );
-                    std::vector<unsigned int>::iterator nonzero_ind_w =
-                        std::find( ind_w.begin(), ind_w.end(), j_AMP );
+                    auto nonzero_ind_w = std::find( ind_w.begin(), ind_w.end(), j_AMP );
                     if ( nonzero_ind_w != ind_w.end() ) {
                         size_t w_ind = std::distance( ind_w.begin(), nonzero_ind_w );
                         J_test_MATLAB[i_w_MATLAB][j_MATLAB] = val_w[w_ind];
@@ -672,8 +662,7 @@ void Test( AMP::UnitTest *ut, const std::string &exeName )
     for ( ; face != face.end(); face++ ) { // loop over all faces in mesh
         std::vector<double> faceCentroid = face->centroid();
         // try to find face in lateral face map
-        std::map<std::vector<double>, AMP::Mesh::MeshElement>::iterator lateralFaceIterator =
-            interiorLateralFaceMap.find( faceCentroid );
+        auto lateralFaceIterator = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) { // if face in lateral face map,
             // get lateral face
             AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;

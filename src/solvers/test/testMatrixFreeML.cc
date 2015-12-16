@@ -325,8 +325,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         std::cout << "MatFree-2: L2 norm of residual before solve " << std::setprecision( 15 )
                   << fusedResVec->L2Norm() << std::endl;
 
-        double *solArr = new double[fusedSolVec->getLocalSize()];
-        double *rhsArr = new double[fusedRhsVec->getLocalSize()];
+        auto solArr = new double[fusedSolVec->getLocalSize()];
+        auto rhsArr = new double[fusedRhsVec->getLocalSize()];
         fusedSolVec->copyOutRawData( solArr );
         fusedRhsVec->copyOutRawData( rhsArr );
         ML_Iterate( ml_object, solArr, rhsArr );

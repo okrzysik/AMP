@@ -63,9 +63,7 @@ createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
             "The multivariable has a different number of varaibles on different processors" );
         // Create the Vector for each variable, then combine
         std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vectors;
-        for ( AMP::LinearAlgebra::MultiVariable::iterator it = multiVariable->beginVariable();
-              it != multiVariable->endVariable();
-              ++it )
+        for ( auto it = multiVariable->beginVariable(); it != multiVariable->endVariable(); ++it )
             vectors.push_back( createVector( DOFs, *it, split ) );
         // Create the multivector
         AMP_MPI comm = DOFs->getComm();

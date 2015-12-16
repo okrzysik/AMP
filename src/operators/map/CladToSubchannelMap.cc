@@ -260,7 +260,7 @@ void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
     std::vector<std::vector<double>> x( N_subchannels );
     std::vector<std::vector<double>> f( N_subchannels );
     std::vector<std::pair<double, double>> mapData;
-    double *tmp_data = new double[2 * d_sendMaxBufferSize];
+    auto tmp_data = new double[2 * d_sendMaxBufferSize];
     for ( size_t i = 0; i < N_subchannels; i++ ) {
         if ( d_ownSubChannel[i] ) {
             int tag = (int) i; // We have an independent comm

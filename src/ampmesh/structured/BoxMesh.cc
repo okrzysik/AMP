@@ -915,8 +915,7 @@ std::vector<int> BoxMesh::getBoundaryIDs() const { return d_ids; }
 MeshIterator
 BoxMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw ) const
 {
-    std::map<std::pair<int, GeomType>, std::vector<ElementIndexList>>::const_iterator it =
-        d_id_list.find( std::pair<int, GeomType>( id, type ) );
+    auto it = d_id_list.find( std::pair<int, GeomType>( id, type ) );
     if ( it == d_id_list.end() )
         return MeshIterator();
     AMP_ASSERT( gcw < (int) it->second.size() );
@@ -1168,7 +1167,7 @@ void BoxMesh::map_logical_shell( size_t N, double r1, double r2, double *x, doub
     //    723–752 (2008)
     double dr = r2 - r1;
     AMP_ASSERT( r1 >= 0 && r2 > 0 && dr > 0 );
-    bool *index = new bool[N];
+    auto index = new bool[N];
     memset( index, 0, N * sizeof( bool ) );
     for ( size_t i = 0; i < N; i++ ) {
         x[i] = 2 * x[i] - 1; // Change domain to [-1,1]

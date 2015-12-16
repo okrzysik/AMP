@@ -416,8 +416,7 @@ SubsetMesh::getBoundaryIDIterator( const GeomType type, const int id, const int 
         map_id.id   = id;
         map_id.type = type;
         map_id.gcw  = i;
-        std::map<map_id_struct, AMP::shared_ptr<std::vector<MeshElement>>>::const_iterator map_it =
-            d_boundarySets.find( map_id );
+        auto map_it = d_boundarySets.find( map_id );
         if ( map_it == d_boundarySets.end() )
             continue;
         iterators.push_back(

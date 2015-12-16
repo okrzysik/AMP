@@ -18,7 +18,7 @@ void test_above_point( triangle_t *t_ptr, unsigned int n_random_candidate_points
         t_ptr->get_support_point_ptr( 1 ), t_ptr->get_support_point_ptr( 2 ), edges + 3 );
     make_vector_from_two_points(
         t_ptr->get_support_point_ptr( 2 ), t_ptr->get_support_point_ptr( 0 ), edges + 6 );
-    double random_candidate_point[3]={0,0,0}, random_motion_along_edges[3]={0,0,0};
+    double random_candidate_point[3] = { 0, 0, 0 }, random_motion_along_edges[3] = { 0, 0, 0 };
     double random_motion_along_normal;
     bool triangle_above_random_candidate_point;
     double tolerance = 1.0e-12;

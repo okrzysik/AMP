@@ -145,8 +145,7 @@ MassDensityModel::MassDensityModel( const AMP::shared_ptr<MassDensityModelParame
             if ( defaultkeys.size() == property->get_number_arguments() ) {
                 std::vector<std::string> argnames = property->get_arguments();
                 for ( auto &defaultkey : defaultkeys ) {
-                    std::vector<std::string>::iterator hit =
-                        std::find( argnames.begin(), argnames.end(), defaultkey );
+                    auto hit = std::find( argnames.begin(), argnames.end(), defaultkey );
                     AMP_INSIST( hit != argnames.end(),
                                 std::string( "Argument name " ) + defaultkey +
                                     std::string( " is invalid" ) );

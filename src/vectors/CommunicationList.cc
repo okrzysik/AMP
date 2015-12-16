@@ -70,8 +70,8 @@ CommunicationList::CommunicationList( CommunicationListParameters::shared_ptr pa
 }
 CommunicationList::shared_ptr CommunicationList::createEmpty( size_t local, AMP_MPI comm )
 {
-    int size                  = comm.getSize();
-    CommunicationList *retVal = new CommunicationList;
+    int size    = comm.getSize();
+    auto retVal = new CommunicationList;
     retVal->d_ReceiveSizes.resize( size );
     retVal->d_ReceiveDisplacements.resize( size );
     retVal->d_ReceiveDOFList.resize( 0 );
@@ -97,7 +97,7 @@ CommunicationList::shared_ptr CommunicationList::createEmpty( size_t local, AMP_
 ************************************************************************/
 CommunicationList::shared_ptr CommunicationList::subset( VectorIndexer::shared_ptr ndx )
 {
-    CommunicationList *retVal = new CommunicationList;
+    auto retVal = new CommunicationList;
 
     retVal->d_ReceiveSizes.resize( std::max( d_SendSizes.size(), (size_t) 1 ) );
     retVal->d_ReceiveDisplacements.resize( std::max( d_SendSizes.size(), (size_t) 1 ) );

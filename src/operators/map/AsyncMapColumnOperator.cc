@@ -28,8 +28,7 @@ void AsyncMapColumnOperator::append( AMP::shared_ptr<Operator> op )
     AMP::shared_ptr<AsyncMapColumnOperator> mapColumn =
         AMP::dynamic_pointer_cast<AsyncMapColumnOperator>( op );
     if ( mapColumn ) {
-        std::vector<AMP::shared_ptr<Operator>>::iterator curOp =
-            mapColumn.get()->d_Operators.begin();
+        auto curOp = mapColumn.get()->d_Operators.begin();
         while ( curOp != mapColumn.get()->d_Operators.end() ) {
             append( *curOp );
             ++curOp;

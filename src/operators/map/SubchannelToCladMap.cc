@@ -263,7 +263,7 @@ void SubchannelToCladMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
     }
     // Recieve the data
     std::vector<std::vector<double>> f( N_subchannels );
-    double *tmp_data = new double[d_z.size()];
+    auto tmp_data = new double[d_z.size()];
     for ( size_t i = 0; i < N_subchannels; i++ ) {
         if ( d_elem[i].size() > 0 ) {
             f[i]    = std::vector<double>( d_z.size(), 0.0 );

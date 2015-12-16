@@ -15,9 +15,9 @@ subsetExceptForVariable( AMP::LinearAlgebra::Vector::shared_ptr inVec,
             AMP::LinearAlgebra::MultiVector::create( "MultiVariable", AMP_COMM_SELF ) );
     AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> castedInVec =
         AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( inVec );
-    AMP::LinearAlgebra::Vector::shared_ptr vec2skip       = inVec->subsetVectorForVariable( var );
-    AMP::LinearAlgebra::MultiVector::vector_iterator curr = castedInVec->beginVector();
-    AMP::LinearAlgebra::MultiVector::vector_iterator end  = castedInVec->endVector();
+    AMP::LinearAlgebra::Vector::shared_ptr vec2skip = inVec->subsetVectorForVariable( var );
+    auto curr                                       = castedInVec->beginVector();
+    auto end                                        = castedInVec->endVector();
     for ( ; curr != end; curr++ ) {
         if ( ( *curr ) != vec2skip ) {
             outVec->addVector( *curr );

@@ -193,7 +193,7 @@ void BlockOperator::getRow( void *object,
     AMP_ASSERT( row >= 0 );
     AMP_ASSERT( row < ( myObject->getNumRows() ) );
 
-    std::vector<int>::iterator blkPtr =
+    auto blkPtr =
         std::lower_bound( myObject->d_firstRowId.begin(), myObject->d_firstRowId.end(), row );
 
     int blkRowId = -1;

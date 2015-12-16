@@ -35,8 +35,7 @@ ConvectiveHeatCoefficient::ConvectiveHeatCoefficient(
                     "Incorrect number of defaults supplied." );
         d_argNames = d_property->get_arguments();
         for ( auto &defaultkey : defaultkeys ) {
-            std::vector<std::string>::iterator hit =
-                std::find( d_argNames.begin(), d_argNames.end(), defaultkey );
+            auto hit = std::find( d_argNames.begin(), d_argNames.end(), defaultkey );
             AMP_INSIST( hit != d_argNames.end(),
                         std::string( "Argument name " ) + defaultkey +
                             std::string( " is invalid" ) );

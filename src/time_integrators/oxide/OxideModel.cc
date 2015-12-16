@@ -125,7 +125,7 @@ int OxideModel::integrateOxide( double dT,
     int N2_max = 0;
     for ( int i = 0; i < N; i++ )
         N2_max = std::max( N2_max, N2[i] );
-    double *C2 = new double[N2_max];
+    auto C2    = new double[N2_max];
     // Copy the current solution
     for ( int i = 0; i < N + 1; i++ ) {
         x1[i] = x0[i];
@@ -245,7 +245,7 @@ void OxideModel::solveLinearDiffusionLayer( const int N,
                                             double *x1 )
 {
     // Allocate memory for internal variables
-    double *mem   = new double[4 * N + 1]; // We want a single block for cache access
+    auto mem      = new double[4 * N + 1]; // We want a single block for cache access
     double *diag  = &mem[0];
     double *lower = &mem[N];
     double *upper = &mem[2 * N];

@@ -265,8 +265,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
         if ( ExtractData ) {
             FILE *fin;
-            fin = fopen( fname.c_str(), "r" );
-            double coord[3]={0,0,0}, stress1[6]={0,0,0}, strain1[6]={0,0,0};
+            fin             = fopen( fname.c_str(), "r" );
+            double coord[3] = { 0, 0, 0 }, stress1[6] = { 0, 0, 0 }, strain1[6] = { 0, 0, 0 };
             for ( int ijk = 0; ijk < 8; ijk++ ) {
                 for ( auto &elem : coord ) {
                     int ret = fscanf( fin, "%lf", &elem );

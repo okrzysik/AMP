@@ -221,21 +221,21 @@ void ManagedEpetraMatrix::setOtherData()
     if ( totNdxLen == 0 ) {
         return;
     }
-    int dataLen = 0;
-    std::map<int, std::map<int, double>>::iterator cur_row = d_OtherData.begin();
+    int dataLen  = 0;
+    auto cur_row = d_OtherData.begin();
     while ( cur_row != d_OtherData.end() ) {
         dataLen += cur_row->second.size();
         ++cur_row;
     }
-    int *rows    = new int[dataLen + 1]; // Add one to have the new work
-    int *cols    = new int[dataLen + 1];
-    double *data = new double[dataLen + 1];
-    int cur_ndx  = 0;
-    int cur_ptr  = 0;
-    cur_row      = d_OtherData.begin();
+    auto rows   = new int[dataLen + 1]; // Add one to have the new work
+    auto cols   = new int[dataLen + 1];
+    auto data   = new double[dataLen + 1];
+    int cur_ndx = 0;
+    int cur_ptr = 0;
+    cur_row     = d_OtherData.begin();
     while ( cur_row != d_OtherData.end() ) {
         cur_ndx++;
-        std::map<int, double>::iterator cur_elem = cur_row->second.begin();
+        auto cur_elem = cur_row->second.begin();
         while ( cur_elem != cur_row->second.end() ) {
             rows[cur_ptr] = cur_row->first;
             cols[cur_ptr] = cur_elem->first;
@@ -248,9 +248,9 @@ void ManagedEpetraMatrix::setOtherData()
 
     int totDataLen = myComm.sumReduce( dataLen );
 
-    int *aggregateRows    = new int[totDataLen];
-    int *aggregateCols    = new int[totDataLen];
-    double *aggregateData = new double[totDataLen];
+    auto aggregateRows = new int[totDataLen];
+    auto aggregateCols = new int[totDataLen];
+    auto aggregateData = new double[totDataLen];
 
     myComm.allGather( rows, dataLen, aggregateRows );
     myComm.allGather( cols, dataLen, aggregateCols );

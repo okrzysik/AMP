@@ -820,8 +820,8 @@ void Vector::dumpGhostedData( std::ostream &out, size_t offset ) const
 {
     if ( !getCommunicationList() )
         return;
-    const std::vector<size_t> &ghosts    = getCommunicationList()->getGhostIDList();
-    std::vector<double>::iterator curVal = d_Ghosts->begin();
+    const std::vector<size_t> &ghosts = getCommunicationList()->getGhostIDList();
+    auto curVal                       = d_Ghosts->begin();
     for ( auto &ghost : ghosts ) {
         out << "  GID: " << ( ghost + offset ) << "  Value: " << ( *curVal ) << "\n";
         ++curVal;

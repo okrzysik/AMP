@@ -279,9 +279,9 @@ void Array<TYPE>::reshape( const std::vector<size_t> &N )
         AMP_ERROR( "reshape is not allowed to change the array size" );
     d_ndim = N.size();
     for ( size_t i = 0; i < ARRAY_NDIM_MAX; i++ )
-        d_N[i] = 1;
+        d_N[i]     = 1;
     for ( size_t i = 0; i < N.size(); i++ )
-        d_N[i] = N[i];
+        d_N[i]     = N[i];
 }
 
 

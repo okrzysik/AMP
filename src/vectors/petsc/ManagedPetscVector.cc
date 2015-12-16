@@ -101,8 +101,8 @@ PetscErrorCode
 _AMP_setvalues( Vec px, PetscInt ni, const PetscInt ix[], const PetscScalar y[], InsertMode iora )
 {
     PETSC_RECAST( x, px );
-    size_t *indices = new size_t[ni];
-    double *vals    = new double[ni];
+    auto indices = new size_t[ni];
+    auto vals    = new double[ni];
     for ( PetscInt i = 0; i < ni; i++ ) {
         indices[i] = static_cast<size_t>( ix[i] );
         vals[i]    = static_cast<double>( y[i] );
@@ -561,7 +561,7 @@ PetscErrorCode _AMP_duplicate( Vec in, Vec *out )
 
 PetscErrorCode _AMP_duplicatevecs( Vec v, PetscInt num, Vec **vecArray )
 {
-    Vec *tvecArray = new Vec[num];
+    auto tvecArray = new Vec[num];
     for ( PetscInt i = 0; i != num; i++ )
         VecDuplicate( v, tvecArray + i );
     *vecArray = tvecArray;
@@ -830,7 +830,7 @@ void ManagedPetscVector::copyFromPetscVec( Vector &dest, Vec source )
                     "than 2^31 elements" );
 
     const VectorEngineParameters &eparams = *( params->d_Engine->getEngineParameters() );
-    PetscInt *ids                         = new PetscInt[eparams.getLocalSize()];
+    auto ids                              = new PetscInt[eparams.getLocalSize()];
     PetscInt begin                        = (PetscInt) eparams.beginDOF();
     PetscInt end                          = (PetscInt) eparams.endDOF();
     for ( PetscInt i   = begin; i < end; i++ )

@@ -225,7 +225,7 @@ void SubsetVector::addValuesByLocalID( int cnt, size_t *ndx, const double *vals 
 {
     INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( d_ViewVector.get() != nullptr );
-    size_t *t = new size_t[cnt];
+    auto t = new size_t[cnt];
     for ( int i = 0; i != cnt; i++ )
         t[i]    = d_SubsetLocalIDToViewGlobalID[ndx[i]];
     d_ViewVector->addValuesByLocalID( cnt, t, vals );
@@ -235,7 +235,7 @@ void SubsetVector::setValuesByLocalID( int cnt, size_t *ndx, const double *vals 
 {
     INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( d_ViewVector.get() != nullptr );
-    size_t *t = new size_t[cnt];
+    auto t = new size_t[cnt];
     for ( int i = 0; i != cnt; i++ )
         t[i]    = d_SubsetLocalIDToViewGlobalID[ndx[i]];
     d_ViewVector->setValuesByLocalID( cnt, t, vals );
@@ -245,7 +245,7 @@ void SubsetVector::getValuesByLocalID( int cnt, size_t *ndx, double *vals ) cons
 {
     INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( d_ViewVector.get() != nullptr );
-    size_t *t = new size_t[cnt];
+    auto t = new size_t[cnt];
     for ( int i = 0; i != cnt; i++ )
         t[i]    = d_SubsetLocalIDToViewGlobalID[ndx[i]];
     d_ViewVector->getValuesByLocalID( cnt, t, vals );

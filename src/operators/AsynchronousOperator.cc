@@ -26,7 +26,7 @@ OperatorParameters > & )
 
 void AsynchronousOperator::waitForAllRequests()
 {
-    std::vector<MPI_Request>::iterator curReq = beginRequests();
+    auto curReq = beginRequests();
     while ( curReq != endRequests() ) {
         MPI_Request request = *curReq;
         if ( request != 0 )

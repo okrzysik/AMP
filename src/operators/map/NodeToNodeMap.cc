@@ -137,7 +137,7 @@ void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     // Start the communication
     PROFILE_START( "startCommunication", 1 );
-    std::vector<MPI_Request>::iterator curReq = beginRequests();
+    auto curReq = beginRequests();
     for ( int i = 0; i < d_MapComm.getSize(); i++ ) {
         int count  = DofsPerObj * d_count[i];
         int offset = DofsPerObj * d_displ[i];

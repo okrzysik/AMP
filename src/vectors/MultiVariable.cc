@@ -16,8 +16,8 @@ private:
 public:
     explicit MVSortByName( const std::vector<std::string> &in )
     {
-        std::vector<std::string>::const_iterator cur = in.begin();
-        int i                                        = 0;
+        auto cur = in.begin();
+        int i    = 0;
         while ( cur != in.end() ) {
             new_order[*cur] = i++;
             ++cur;
@@ -62,7 +62,7 @@ void MultiVariable::add( Variable::shared_ptr newVar )
     AMP::shared_ptr<MultiVariable> multivariable =
         AMP::dynamic_pointer_cast<MultiVariable>( newVar );
     if ( multivariable.get() != nullptr ) {
-        iterator curVar = multivariable->beginVariable();
+        auto curVar = multivariable->beginVariable();
         while ( curVar != multivariable->endVariable() ) {
             add( *curVar );
             ++curVar;
@@ -123,7 +123,7 @@ Variable::shared_ptr MultiVariable::cloneVariable( const std::string &name ) con
 void MultiVariable::removeDuplicateVariables()
 {
     // First remove any NULL pointers
-    std::vector<Variable::shared_ptr>::iterator iterator = d_vVariables.begin();
+    auto iterator = d_vVariables.begin();
     while ( iterator != d_vVariables.end() ) {
         if ( iterator->get() == nullptr )
             iterator = d_vVariables.erase( iterator );

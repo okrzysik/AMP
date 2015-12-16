@@ -264,8 +264,8 @@ void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> 
 
         d_mlSolver->ApplyInverse( fVec, uVec );
     } else {
-        double *uArr = new double[u->getLocalSize()];
-        double *fArr = new double[f->getLocalSize()];
+        auto uArr = new double[u->getLocalSize()];
+        auto fArr = new double[f->getLocalSize()];
         u->copyOutRawData( uArr );
         f->copyOutRawData( fArr );
         ML_Iterate( d_ml, uArr, fArr );

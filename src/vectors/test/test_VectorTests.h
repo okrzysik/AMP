@@ -898,7 +898,7 @@ public:
             utils->failure( "copy vector 2" );
 
         vectorb->zero();
-        double *buf = new double[vectora->getLocalSize()];
+        auto buf = new double[vectora->getLocalSize()];
         vectora->copyOutRawData( buf );
         vectorb->putRawData( buf );
         delete[] buf;
@@ -979,14 +979,12 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
             }
         }
     }
-    std::vector<size_t>::const_iterator cur_replicated =
-        vector->getCommunicationList()->getReplicatedIDList().begin();
-    std::vector<size_t>::const_iterator end_replicated =
-        vector->getCommunicationList()->getReplicatedIDList().end();
+    auto cur_replicated = vector->getCommunicationList()->getReplicatedIDList().begin();
+    auto end_replicated = vector->getCommunicationList()->getReplicatedIDList().end();
     while ( cur_replicated != end_replicated ) {
         bool found = false;
         for ( int i = 0; i != utils->size(); i++ ) {
-            std::set<size_t>::iterator location = ghosted_entities[i].find( *cur_replicated );
+            auto location = ghosted_entities[i].find( *cur_replicated );
             if ( location != ghosted_entities[i].end() ) {
                 found = true;
                 ghosted_entities[i].erase( location );

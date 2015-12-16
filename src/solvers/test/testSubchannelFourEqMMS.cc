@@ -232,8 +232,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     // loop over lateral faces
     for ( face = face.begin(); face != face.end(); face++ ) {
         std::vector<double> faceCentroid = face->centroid();
-        std::map<std::vector<double>, AMP::Mesh::MeshElement>::iterator lateralFaceIterator =
-            interiorLateralFaceMap.find( faceCentroid );
+        auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
             // get lateral face
             AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
@@ -262,8 +261,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     // loop over lateral faces
     for ( face = face.begin(); face != face.end(); face++ ) {
         std::vector<double> faceCentroid = face->centroid();
-        std::map<std::vector<double>, AMP::Mesh::MeshElement>::iterator lateralFaceIterator =
-            interiorLateralFaceMap.find( faceCentroid );
+        auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
             // get lateral face
             AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;

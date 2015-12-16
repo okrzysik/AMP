@@ -54,8 +54,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
         AMP_ERROR( "Invalid Formulation key" );
     }
     // add properties to property pointer map
-    for ( std::vector<std::string>::iterator prop = properties.begin(); prop != properties.end();
-          ++prop ) {
+    for ( auto prop = properties.begin(); prop != properties.end(); ++prop ) {
         d_properties.insert( std::make_pair( *prop, d_material->property( *prop ) ) );
     }
 
@@ -71,33 +70,24 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
         std::map<std::string, bool>
             defaults_found; // maps Defaults key to boolean for that key being found
         // initialize entries in defaults_found to false
-        for ( std::vector<std::string>::iterator key = defaultkeys.begin();
-              key != defaultkeys.end();
-              ++key ) {
+        for ( auto key = defaultkeys.begin(); key != defaultkeys.end(); ++key ) {
             defaults_found.insert( std::make_pair( *key, false ) );
         }
         // for each property needed by formulation
-        for ( std::vector<std::string>::iterator prop = properties.begin();
-              prop != properties.end();
-              ++prop ) {
+        for ( auto prop = properties.begin(); prop != properties.end(); ++prop ) {
             // get its arguments
             std::vector<std::string> argnames = d_properties.find( *prop )->second->get_arguments();
             // for each Defaults key
-            for ( std::vector<std::string>::iterator key = defaultkeys.begin();
-                  key != defaultkeys.end();
-                  ++key ) {
+            for ( auto key = defaultkeys.begin(); key != defaultkeys.end(); ++key ) {
                 // try to find it in the property arguments
-                std::vector<std::string>::iterator hit =
-                    std::find( argnames.begin(), argnames.end(), *key );
+                auto hit = std::find( argnames.begin(), argnames.end(), *key );
                 // if found, report it as being found
                 if ( hit != argnames.end() )
                     defaults_found.find( *key )->second = true;
             }
         }
         // generate error if a Defaults key was not found in any property arguments
-        for ( std::vector<std::string>::iterator key = defaultkeys.begin();
-              key != defaultkeys.end();
-              ++key ) {
+        for ( auto key = defaultkeys.begin(); key != defaultkeys.end(); ++key ) {
             std::string insist_string =
                 "Default argument '" + ( *key ) + "' was not found as a property argument";
             std::map<std::string, bool>::const_iterator it = defaults_found.find( *key );
@@ -110,9 +100,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
 
         // load and check defaults:
         // for each property needed by formulation
-        for ( std::vector<std::string>::iterator prop = properties.begin();
-              prop != properties.end();
-              ++prop ) {
+        for ( auto prop = properties.begin(); prop != properties.end(); ++prop ) {
             AMP::Materials::PropertyPtr property =
                 d_properties.find( *prop )->second;                        // pointer to property
             size_t n_arguments = property->get_number_arguments();         // number of arguments
@@ -124,8 +112,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
                 // initially set default value to 1.0000001*(argument range minimum)
                 prop_defaults[i] = ranges[i][0] * ( 1.0000001 );
                 // try to find argument in Defaults keys
-                std::vector<std::string>::iterator hit =
-                    std::find( defaultkeys.begin(), defaultkeys.end(), argnames[i] );
+                auto hit = std::find( defaultkeys.begin(), defaultkeys.end(), argnames[i] );
                 // if found,
                 if ( hit != defaultkeys.end() ) {
                     // use the value provided with the Defaults key
@@ -155,7 +142,7 @@ void SubchannelPhysicsModel::getProperty(
     std::map<std::string, AMP::shared_ptr<std::vector<double>>> &args )
 {
     // evaluate material property
-    std::map<std::string, AMP::Materials::PropertyPtr>::iterator it = d_properties.find( property );
+    auto it = d_properties.find( property );
     AMP_INSIST( it != d_properties.end(), "Model does not have property (" + property + ")" );
     d_properties.find( property )->second->evalv( result, args );
 }

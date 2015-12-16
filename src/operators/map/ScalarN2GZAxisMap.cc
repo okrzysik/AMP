@@ -175,7 +175,7 @@ void ScalarN2GZAxisMap::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec,
     // Convert the map to a std::vector
     AMP_ASSERT( map.size() > 1 );
     std::vector<double> z( map.size() ), f( map.size() );
-    std::map<double, double>::const_iterator it_map = map.begin();
+    auto it_map = map.begin();
     for ( size_t i = 0; it_map != map.end(); ++it_map, ++i ) {
         z[i] = it_map->first;
         f[i] = it_map->second;

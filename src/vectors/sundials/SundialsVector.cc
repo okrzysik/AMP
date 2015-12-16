@@ -16,10 +16,10 @@ Vector::const_shared_ptr SundialsVector::constView( Vector::const_shared_ptr inV
         retVal                       = Vector::shared_ptr( new ManagedSundialsVector( inVector2 ) );
         inVector->registerView( retVal );
     } else if ( inVector->isA<VectorEngine>() ) {
-        Vector::shared_ptr inVector2                = AMP::const_pointer_cast<Vector>( inVector );
-        ManagedSundialsVectorParameters *new_params = new ManagedSundialsVectorParameters;
-        new_params->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
-        new_params->d_CloneEngine = false;
+        Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
+        auto new_params              = new ManagedSundialsVectorParameters;
+        new_params->d_Engine         = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
+        new_params->d_CloneEngine    = false;
         if ( inVector->getCommunicationList().get() != nullptr )
             new_params->d_CommList = inVector->getCommunicationList();
         else
@@ -58,7 +58,7 @@ Vector::shared_ptr SundialsVector::view( Vector::shared_ptr inVector )
         retVal = Vector::shared_ptr( new ManagedSundialsVector( inVector ) );
         inVector->registerView( retVal );
     } else if ( inVector->isA<VectorEngine>() ) {
-        ManagedSundialsVectorParameters *new_params = new ManagedSundialsVectorParameters;
+        auto new_params           = new ManagedSundialsVectorParameters;
         new_params->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector );
         new_params->d_CloneEngine = false;
         if ( inVector->getCommunicationList().get() != nullptr )

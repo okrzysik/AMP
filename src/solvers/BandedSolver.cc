@@ -120,7 +120,7 @@ void BandedSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // Copy f
     AMP_ASSERT( *rightDOF == *( f->getDOFManager() ) );
-    double *B = new double[N];
+    auto B = new double[N];
     f->copyOutRawData( B );
 
     // Solve the

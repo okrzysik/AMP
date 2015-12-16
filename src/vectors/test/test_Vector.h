@@ -184,8 +184,7 @@ public:
             new AMP::LinearAlgebra::NativePetscVector( npvParams );
         VecSetFromOptions( v );
         newVec->assemble();
-        AMP::LinearAlgebra::ManagedVectorParameters *p1 =
-            new AMP::LinearAlgebra::ManagedVectorParameters;
+        auto p1        = new AMP::LinearAlgebra::ManagedVectorParameters;
         p1->d_Engine   = AMP::LinearAlgebra::VectorEngine::shared_ptr( newVec );
         p1->d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( 210, globalComm );
         AMP::LinearAlgebra::Vector::shared_ptr retval(

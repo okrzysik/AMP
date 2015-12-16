@@ -173,8 +173,8 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
 
     // Send the data
-    size_t myRank                             = (size_t) d_MapComm.getRank();
-    std::vector<MPI_Request>::iterator curReq = beginRequests();
+    size_t myRank = (size_t) d_MapComm.getRank();
+    auto curReq   = beginRequests();
     if ( d_mesh1.get() != nullptr ) {
         for ( size_t i = 0; i < d_own_mesh2.size(); i++ ) {
             if ( i == myRank )

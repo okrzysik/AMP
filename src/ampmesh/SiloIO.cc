@@ -287,8 +287,7 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
         it->second.vec.push_back( vec );
     }
     // Register the vector with the appropriate multi-meshes
-    std::map<AMP::Mesh::MeshID, siloMultiMeshData>::iterator it =
-        d_multiMeshes.find( mesh->meshID() );
+    auto it = d_multiMeshes.find( mesh->meshID() );
     AMP_ASSERT( it != d_multiMeshes.end() );
     it->second.varName.push_back( name );
     // Add the vector to the list of vectors so we can perform makeConsistent
@@ -430,7 +429,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
         AMP::Discretization::DOFManager::shared_ptr DOFs = data.vec[i]->getDOFManager();
         int nvar                                         = 0;
         int centering                                    = 0;
-        double **var                                     = new double *[data.varSize[i]];
+        auto var                                         = new double *[data.varSize[i]];
         for ( int j            = 0; j < data.varSize[i]; ++j )
             var[j]             = nullptr;
         const char *varnames[] = { "1", "2", "3" };
@@ -553,8 +552,8 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &
         AMP_ASSERT( ids[i] == meshdata[i].id );
         send_size += meshdata[i].size();
     }
-    char *send_buf = new char[send_size];
-    char *ptr      = send_buf;
+    auto send_buf = new char[send_size];
+    char *ptr     = send_buf;
     for ( auto &elem : meshdata ) {
         elem.pack( ptr );
         ptr = &ptr[elem.size()];
@@ -564,7 +563,7 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &
     if ( root == -1 ) {
         // Everybody gets a copy
         size_t tot_size = d_comm.sumReduce( send_size );
-        char *recv_buf  = new char[tot_size];
+        auto recv_buf   = new char[tot_size];
         meshdata.resize( tot_num );
         d_comm.allGather( send_buf, send_size, recv_buf );
         ptr = recv_buf;
@@ -584,7 +583,7 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &
             // Recieve all data
             meshdata.resize( 0 );
             meshdata.reserve( tot_num );
-            char *recv_buf = new char[max_size];
+            auto recv_buf = new char[max_size];
             for ( int i = 0; i < d_comm.getSize(); ++i ) {
                 if ( i == root )
                     continue;
@@ -643,12 +642,12 @@ void SiloIO::syncVariableList( std::set<std::string> &data_set, int root ) const
 {
     PROFILE_START( "syncVariableList" );
     std::vector<std::string> data( data_set.begin(), data_set.end() );
-    size_t N_local     = data.size();
-    size_t N_global    = d_comm.sumReduce( N_local );
-    size_t *size_local = new size_t[N_local];
-    for ( size_t i      = 0; i < N_local; ++i )
-        size_local[i]   = data[i].size();
-    size_t *size_global = new size_t[N_global];
+    size_t N_local  = data.size();
+    size_t N_global = d_comm.sumReduce( N_local );
+    auto size_local = new size_t[N_local];
+    for ( size_t i    = 0; i < N_local; ++i )
+        size_local[i] = data[i].size();
+    auto size_global  = new size_t[N_global];
     d_comm.allGather( size_local, N_local, size_global );
     size_t tot_size_local = 0;
     for ( size_t i = 0; i < N_local; ++i )
@@ -656,9 +655,9 @@ void SiloIO::syncVariableList( std::set<std::string> &data_set, int root ) const
     size_t tot_size_global = 0;
     for ( size_t i = 0; i < N_global; ++i )
         tot_size_global += size_global[i];
-    char *send_buf = new char[tot_size_local];
-    char *recv_buf = new char[tot_size_global];
-    size_t k       = 0;
+    auto send_buf = new char[tot_size_local];
+    auto recv_buf = new char[tot_size_global];
+    size_t k      = 0;
     for ( size_t i = 0; i < N_local; ++i ) {
         data[i].copy( &send_buf[k], data[i].size(), 0 );
         k += size_local[i];
@@ -788,8 +787,8 @@ void SiloIO::writeSummary( std::string filename )
                     file     = file.substr( base_path.size() );
                 meshNames[i] = file + ":" + data.meshes[i].path + "/" + data.meshes[i].meshName;
             }
-            char **meshnames = new char *[data.meshes.size()];
-            int *meshtypes   = new int[data.meshes.size()];
+            auto meshnames = new char *[data.meshes.size()];
+            auto meshtypes = new int[data.meshes.size()];
             for ( size_t i = 0; i < data.meshes.size(); ++i ) {
                 meshnames[i] = (char *) meshNames[i].c_str();
                 meshtypes[i] = DB_UCDMESH;
@@ -812,8 +811,8 @@ void SiloIO::writeSummary( std::string filename )
             for ( size_t i = 0; i < data.varName.size(); ++i ) {
                 std::string varName = data.varName[i];
                 std::vector<std::string> varNames( data.meshes.size() );
-                char **varnames = new char *[data.meshes.size()];
-                int *vartypes   = new int[data.meshes.size()];
+                auto varnames = new char *[data.meshes.size()];
+                auto vartypes = new int[data.meshes.size()];
                 for ( size_t i = 0; i < data.meshes.size(); ++i ) {
                     std::stringstream stream;
                     stream << data.meshes[i].rank;

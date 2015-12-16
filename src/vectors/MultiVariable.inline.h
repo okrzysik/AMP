@@ -5,7 +5,7 @@ namespace LinearAlgebra {
 inline void MultiVariable::setUnits( const std::string &units )
 {
     Variable::setUnits( units );
-    iterator curVar = beginVariable();
+    auto curVar = beginVariable();
     while ( curVar != endVariable() ) {
         ( *curVar )->setUnits( units );
         ++curVar;

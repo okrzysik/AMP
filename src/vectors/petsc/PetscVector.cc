@@ -28,10 +28,10 @@ Vector::const_shared_ptr PetscVector::constView( Vector::const_shared_ptr inVect
         retVal->setVariable( inVector->getVariable() );
         inVector->registerView( retVal );
     } else if ( inVector->isA<VectorEngine>() ) {
-        Vector::shared_ptr inVector2            = AMP::const_pointer_cast<Vector>( inVector );
-        ManagedPetscVectorParameters *newParams = new ManagedPetscVectorParameters;
-        newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
-        newParams->d_CloneEngine = false;
+        Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
+        auto newParams               = new ManagedPetscVectorParameters;
+        newParams->d_Engine          = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
+        newParams->d_CloneEngine     = false;
         AMP_INSIST( inVector->getCommunicationList().get() != nullptr,
                     "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();
@@ -64,7 +64,7 @@ Vector::shared_ptr PetscVector::view( Vector::shared_ptr inVector )
         retVal = Vector::shared_ptr( new ManagedPetscVector( inVector ) );
         inVector->registerView( retVal );
     } else if ( inVector->isA<VectorEngine>() ) {
-        ManagedPetscVectorParameters *newParams = new ManagedPetscVectorParameters;
+        auto newParams           = new ManagedPetscVectorParameters;
         newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector );
         newParams->d_CloneEngine = false;
         AMP_INSIST( inVector->getCommunicationList().get() != nullptr,

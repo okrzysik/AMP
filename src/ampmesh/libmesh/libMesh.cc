@@ -281,9 +281,7 @@ void libMesh::initialize()
     for ( i = 0; i < neighborNodeIDs.size(); i++ ) {
         neighborNodes[i] = std::vector<::Node *>( tmpNeighborNodes[i].size() );
         int j            = 0;
-        for ( std::set<unsigned int>::iterator it = tmpNeighborNodes[i].begin();
-              it != tmpNeighborNodes[i].end();
-              ++it ) {
+        for ( auto it = tmpNeighborNodes[i].begin(); it != tmpNeighborNodes[i].end(); ++it ) {
             neighborNodes[i][j] = d_libMesh->node_ptr( *it );
             j++;
         }
@@ -388,7 +386,7 @@ void libMesh::initialize()
     }
     d_localSurfaceElements[GeomDim] = AMP::shared_ptr<std::vector<MeshElement>>(
         new std::vector<MeshElement>( localBoundaryElements.size() ) );
-    std::set<::Elem *>::iterator elem_iterator = localBoundaryElements.begin();
+    auto elem_iterator = localBoundaryElements.begin();
     for ( size_t i = 0; i < localBoundaryElements.size(); i++ ) {
         ( *d_localSurfaceElements[GeomDim] )[i] =
             libMeshElement( PhysicalDim, GeomDim, (void *) *elem_iterator, rank, d_meshID, this );
@@ -406,7 +404,7 @@ void libMesh::initialize()
     AMP::Utilities::quicksort( *d_ghostSurfaceElements[GeomDim] );
     d_localSurfaceElements[Vertex] = AMP::shared_ptr<std::vector<MeshElement>>(
         new std::vector<MeshElement>( localBoundaryNodes.size() ) );
-    std::set<::Node *>::iterator node_iterator = localBoundaryNodes.begin();
+    auto node_iterator = localBoundaryNodes.begin();
     for ( size_t i = 0; i < localBoundaryNodes.size(); i++ ) {
         ( *d_localSurfaceElements[Vertex] )[i] =
             libMeshElement( PhysicalDim, Vertex, (void *) *node_iterator, rank, d_meshID, this );
@@ -716,7 +714,7 @@ std::vector<int> libMesh::getBoundaryIDs() const
 {
     const std::set<short int> libmesh_bids = d_libMesh->boundary_info->get_boundary_ids();
     std::vector<int> bids( libmesh_bids.size(), 0 );
-    std::set<short int>::iterator it = libmesh_bids.begin();
+    auto it = libmesh_bids.begin();
     for ( auto &bid : bids ) {
         bid = *it;
         ++it;

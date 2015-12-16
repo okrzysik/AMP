@@ -25,7 +25,7 @@ void NativePetscMatrix::multiply( shared_ptr other_op, shared_ptr &result )
         AMP_ERROR( "Incompatible matrix types" );
     }
 
-    NativePetscMatrix *res = new NativePetscMatrix;
+    auto res = new NativePetscMatrix;
     MatMatMult( d_Mat,
                 other_op->castTo<NativePetscMatrix>().d_Mat,
                 MAT_INITIAL_MATRIX,

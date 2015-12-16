@@ -96,8 +96,7 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double> &result,
         AMP::shared_ptr<DiffusionTransportModel> tmp =
             AMP::dynamic_pointer_cast<DiffusionTransportModel>( d_elementPhysicsModel );
 
-        std::map<std::string, AMP::shared_ptr<std::vector<double>>>::iterator it =
-            d_inputMaterialParameters.find( "temperature" );
+        auto it = d_inputMaterialParameters.find( "temperature" );
         AMP_ASSERT( it != d_inputMaterialParameters.end() );
         std::vector<double> &tempVec = *( it->second );
 

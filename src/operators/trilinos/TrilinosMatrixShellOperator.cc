@@ -143,7 +143,7 @@ void TrilinosMatrixShellOperator::getColumn( int column,
     d_operator->apply( inVec, outVec );
 
     size_t outLength = outVec->getLocalSize();
-    double *outPtr   = new double[outLength];
+    auto outPtr      = new double[outLength];
     outVec->copyOutRawData( outPtr );
 
     rows.clear();
