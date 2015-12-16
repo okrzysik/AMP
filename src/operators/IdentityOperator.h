@@ -23,7 +23,7 @@ public :
      * Constructor. This resets the matrix shared pointer.
      * @param [in] params 
      */
-    IdentityOperator (const AMP::shared_ptr<OperatorParameters> & params);
+    explicit IdentityOperator (const AMP::shared_ptr<OperatorParameters> & params);
 
     //! Destructor
     virtual ~IdentityOperator() { }

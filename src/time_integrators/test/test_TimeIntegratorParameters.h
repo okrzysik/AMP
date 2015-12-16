@@ -11,7 +11,7 @@ template <typename TEST>
 class  TimeIntegratorParameterTest : public AMP::UnitTest
 {
 protected:
-    TimeIntegratorParameterTest ( UnitTest *ut ) { d_ut=ut; }
+    explicit TimeIntegratorParameterTest ( UnitTest *ut ) { d_ut=ut; }
     UnitTest *d_ut;
 
 public:

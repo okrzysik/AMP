@@ -26,7 +26,7 @@ public :
      * Constructor. This resets the matrix shared pointer.
      * @param [in] params 
      */
-    LinearOperator (const AMP::shared_ptr<OperatorParameters> & params);
+    explicit LinearOperator (const AMP::shared_ptr<OperatorParameters> & params);
 
     //! Destructor
     virtual ~LinearOperator() { }

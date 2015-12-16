@@ -38,7 +38,7 @@ namespace AMP {
 class ManufacturedSolution {
 public:
 
-	ManufacturedSolution(AMP::shared_ptr<Database> db);
+	explicit ManufacturedSolution(AMP::shared_ptr<Database> db);
 
 	/**
 	 * Evaluate the manufactured solution at a point.

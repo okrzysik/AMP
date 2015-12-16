@@ -22,7 +22,7 @@ namespace Operator {
 class DiffusionElement: public ElementOperation {
 public:
 
-    DiffusionElement(
+    explicit DiffusionElement(
             const AMP::shared_ptr<ElementOperationParameters>& params);
 
     virtual ~DiffusionElement() {

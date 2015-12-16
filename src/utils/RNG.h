@@ -78,7 +78,7 @@ public:
      *\details  This calls srand() with the chosen seed plus the rank.  THIS IS A COMPLETELY
      * INADEQUATE RNG.
      */
-    RNG ( RNGParameters::shared_ptr  params );
+    explicit RNG ( RNGParameters::shared_ptr  params );
 
     /**\brief Destructor
      */

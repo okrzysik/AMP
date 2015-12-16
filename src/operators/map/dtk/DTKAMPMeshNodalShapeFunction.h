@@ -23,7 +23,7 @@ public :
     /**
      * Constructor.
      */
-    AMPMeshNodalShapeFunction( 
+    explicit AMPMeshNodalShapeFunction( 
 	const AMP::shared_ptr<AMP::Discretization::DOFManager>& dof_manager );
 
     //! Destructor

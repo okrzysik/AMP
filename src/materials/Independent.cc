@@ -229,7 +229,7 @@ namespace Independent_NS {
 
 	class VectorFickCoefficientProp : public VectorProperty<double>{
 	public:
-		VectorFickCoefficientProp(const size_t dim=1) :
+		explicit VectorFickCoefficientProp(const size_t dim=1) :
 		VectorProperty<double> (name_base + "_" + "VectorFickCoefficient",	// Name string
 								source,										// Reference source
 								fickVectorVal,								// Property parameters
@@ -253,7 +253,7 @@ namespace Independent_NS {
 
 	class TensorFickCoefficientProp : public TensorProperty<double>{
 	public:
-		TensorFickCoefficientProp(const std::vector<size_t>& dims=std::vector<size_t>(2,1)) :
+		explicit TensorFickCoefficientProp(const std::vector<size_t>& dims=std::vector<size_t>(2,1)) :
 		TensorProperty<double> (name_base + "_" + "TensorFickCoefficient",		// Name string
 								source,										// Reference source
 								fickTensorVal,								// Property parameters

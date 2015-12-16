@@ -16,7 +16,7 @@ class MultiDofDTKMapOperatorParameters : public OperatorParameters
   public:
 
     // Constructor.
-    MultiDofDTKMapOperatorParameters(const AMP::shared_ptr<AMP::Database> & db)
+    explicit MultiDofDTKMapOperatorParameters(const AMP::shared_ptr<AMP::Database> & db)
 	: OperatorParameters(db)
     { /* ... */ }
 
@@ -41,7 +41,7 @@ class MultiDofDTKMapOperator : public Operator
 {
 public :
 
-    MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorParameters>& params );
+    explicit MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorParameters>& params );
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f, 
                 AMP::LinearAlgebra::Vector::const_shared_ptr u, 

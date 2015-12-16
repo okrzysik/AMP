@@ -36,7 +36,7 @@ class MoabBasedOperator : public AMP::Operator::Operator
         typedef AMP::shared_ptr<MoabBasedOperatorParameters> SP_Params;
 
         // Constructor
-        MoabBasedOperator( const SP_Params &params ){/* ... */}
+        explicit MoabBasedOperator( const SP_Params &params ){/* ... */}
 
         //------------------------------//
         // Required Inherited Interface //

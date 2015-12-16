@@ -13,7 +13,7 @@ namespace Operator {
       char    d_AsynchronousConstructionParam;
       size_t  d_ConstructionPhase;
 
-      AsynchronousOperatorParameters ( const AMP::shared_ptr<AMP::Database> &db )
+      explicit AsynchronousOperatorParameters ( const AMP::shared_ptr<AMP::Database> &db )
         : OperatorParameters ( db ), d_AsynchronousConstructionParam(0), d_ConstructionPhase(0)
       {
       }

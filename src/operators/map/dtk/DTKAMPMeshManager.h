@@ -24,7 +24,7 @@ public :
     /**
      * Constructor.
      */
-    DTKAMPMeshManager(
+    explicit DTKAMPMeshManager(
 	const AMP::shared_ptr<AMP::Mesh::Mesh>& mesh,
 	const AMP::shared_ptr<AMP::Discretization::DOFManager>& dof_manager,
 	const DataTransferKit::EntityType entity_type,

@@ -22,7 +22,7 @@ public :
     /**
      * Constructor.
      */
-    AMPMeshEntitySet( const AMP::shared_ptr<AMP::Mesh::Mesh>& mesh );
+    explicit AMPMeshEntitySet( const AMP::shared_ptr<AMP::Mesh::Mesh>& mesh );
 
     //! Destructor
     ~AMPMeshEntitySet() { }

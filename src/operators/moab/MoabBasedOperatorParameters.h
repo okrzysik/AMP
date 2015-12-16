@@ -34,7 +34,7 @@ class MoabBasedOperatorParameters : public AMP::Operator::OperatorParameters
         typedef AMP::Operator::OperatorParameters   Base;
 
         // Constructor
-        MoabBasedOperatorParameters( const SP_Database &db )
+        explicit MoabBasedOperatorParameters( const SP_Database &db )
             : Base( db )
         {
         }

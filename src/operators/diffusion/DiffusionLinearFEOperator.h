@@ -22,7 +22,7 @@ namespace Operator {
 class DiffusionLinearFEOperator: public LinearFEOperator {
 public:
 
-        DiffusionLinearFEOperator(const AMP::shared_ptr<
+        explicit DiffusionLinearFEOperator(const AMP::shared_ptr<
             DiffusionLinearFEOperatorParameters>& params);
 
         virtual ~DiffusionLinearFEOperator() { }

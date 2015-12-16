@@ -37,7 +37,7 @@ class MoabMapOperatorParameters : public AMP::Operator::OperatorParameters
         typedef AMP::shared_ptr<MoabOp>           SP_MoabOp;
 
         // Constructor
-        MoabMapOperatorParameters( const SP_Database &db )
+        explicit MoabMapOperatorParameters( const SP_Database &db )
             : Base( db )
         { /* ... */ }
 

@@ -23,7 +23,7 @@
 
 class TestParameters : public AMP::Operator::OperatorParameters {
   public:
-    TestParameters(const AMP::shared_ptr<AMP::Database> &db) : AMP::Operator::OperatorParameters(db) {
+    explicit TestParameters(const AMP::shared_ptr<AMP::Database> &db) : AMP::Operator::OperatorParameters(db) {
     }
 };
 

@@ -14,7 +14,7 @@ namespace Operator {
     public:
       /** Constructor
         */
-      AsynchronousColumnOperator ( const AMP::shared_ptr < OperatorParameters > & );
+      explicit AsynchronousColumnOperator ( const AMP::shared_ptr < OperatorParameters > & );
 
       virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u, 
 			  AMP::LinearAlgebra::Vector::shared_ptr f) override;

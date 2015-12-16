@@ -33,7 +33,7 @@ public :
      * and also USE_ELEMENT_PHYSICS from the database. These specify if material library or the 
      * element physics model are used for calculating the source terms.
     */
-    SourcePhysicsModel (const AMP::shared_ptr<SourcePhysicsModelParameters>& params );
+    explicit SourcePhysicsModel (const AMP::shared_ptr<SourcePhysicsModelParameters>& params );
 
     /**
     * Destructor.

@@ -70,7 +70,7 @@ class MoabMapOperator : public AMP::Operator::Operator
         typedef std::vector<double> Vec_Dbl;
 
         // Constructor
-        MoabMapOperator( const SP_MoabMapParams &params );
+        explicit MoabMapOperator( const SP_MoabMapParams &params );
 
         // Apply
         void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,

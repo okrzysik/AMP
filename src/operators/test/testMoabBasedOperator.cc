@@ -55,7 +55,7 @@ class MoabDummyOperator : public MoabBasedOp
 {
     public : 
 
-        MoabDummyOperator( SP_MoabOpParams &moabParams )
+        explicit MoabDummyOperator( SP_MoabOpParams &moabParams )
             : MoabBasedOp( moabParams )
         {
             // Create iMesh instance

@@ -26,7 +26,7 @@ class  AsyncMapColumnOperator : public AsynchronousColumnOperator
 {
 public:
     //! Constructor
-      AsyncMapColumnOperator ( const AMP::shared_ptr<OperatorParameters> & params );
+      explicit AsyncMapColumnOperator( const AMP::shared_ptr<OperatorParameters> & params );
 
     /** \brief  Call setVector on all vectors in the column
       * \param[in] p  The auxiliary or "frozen" vector to store results in

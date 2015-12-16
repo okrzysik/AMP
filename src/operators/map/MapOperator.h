@@ -36,7 +36,7 @@ public :
       /**
         Constructor calls the reset member which reads the information about the boundary.
         */
-      MapOperator (const AMP::shared_ptr<OperatorParameters> & params) : Operator (params)
+      explicit MapOperator(const AMP::shared_ptr<OperatorParameters> & params) : Operator (params)
     { 
       AMP::shared_ptr<MapOperatorParameters> myparams = 
         AMP::dynamic_pointer_cast<MapOperatorParameters>(params);

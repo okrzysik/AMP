@@ -13,7 +13,7 @@ template <typename TEST>
 class  OperatorParameterTest : public AMP::UnitTest
 {
 protected:
-    OperatorParameterTest ( UnitTest *ut ) { d_ut=ut; }
+    explicit OperatorParameterTest ( UnitTest *ut ) { d_ut=ut; }
     UnitTest *d_ut;
 public:
     virtual ~OperatorParameterTest () {}

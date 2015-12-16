@@ -36,7 +36,7 @@ public:
     /** \brief   Standard constructor
      * \param[in] params  Input parameters
      */
-    CladToSubchannelMap ( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &params );
+    explicit CladToSubchannelMap( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &params );
 
     //! Destructor
     virtual ~CladToSubchannelMap();

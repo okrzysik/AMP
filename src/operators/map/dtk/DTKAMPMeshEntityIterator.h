@@ -30,7 +30,7 @@ public :
     /**
      * Constructor.
      */
-    AMPMeshEntityIterator( 
+    explicit AMPMeshEntityIterator( 
 	const AMP::Mesh::MeshIterator& iterator,
 	const std::function<bool(DataTransferKit::Entity)>& predicate );
 

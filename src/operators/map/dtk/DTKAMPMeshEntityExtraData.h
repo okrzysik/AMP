@@ -22,7 +22,7 @@ public :
     /**
      * Constructor.
      */
-    AMPMeshEntityExtraData( const AMP::Mesh::MeshElement& element )
+    explicit AMPMeshEntityExtraData( const AMP::Mesh::MeshElement& element )
 	: d_element( element )
     { /* ... */ }
 

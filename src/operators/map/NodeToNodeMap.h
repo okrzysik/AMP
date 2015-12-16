@@ -39,7 +39,7 @@ public:
     enum { CommTagBase = 10000 };
 
     //! Constructor
-      NodeToNodeMap ( const AMP::shared_ptr<AMP::Operator::OperatorParameters> & params );
+      explicit NodeToNodeMap( const AMP::shared_ptr<AMP::Operator::OperatorParameters> & params );
 
     //! Destructor
     virtual ~NodeToNodeMap ();

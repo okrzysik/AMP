@@ -12,7 +12,7 @@ class NodeToGaussPointOperator : public Operator
 {
 public :
 
-    NodeToGaussPointOperator (const AMP::shared_ptr<OperatorParameters> & params);
+    explicit NodeToGaussPointOperator (const AMP::shared_ptr<OperatorParameters> & params);
 
     virtual ~NodeToGaussPointOperator() { }
 

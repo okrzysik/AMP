@@ -14,7 +14,7 @@ class TrilinosMatrixShellOperator : public LinearOperator
 {
 public:
 
-    TrilinosMatrixShellOperator(const AMP::shared_ptr<OperatorParameters>& params);
+    explicit TrilinosMatrixShellOperator(const AMP::shared_ptr<OperatorParameters>& params);
 
     virtual ~TrilinosMatrixShellOperator() { }
 

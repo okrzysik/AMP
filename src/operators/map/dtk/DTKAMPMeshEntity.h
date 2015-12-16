@@ -22,7 +22,7 @@ public :
     /**
      * Constructor.
      */
-    AMPMeshEntity( const AMP::Mesh::MeshElement& element );
+    explicit AMPMeshEntity( const AMP::Mesh::MeshElement& element );
 
     //! Destructor
     ~AMPMeshEntity() { }

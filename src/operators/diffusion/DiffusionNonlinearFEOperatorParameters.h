@@ -14,7 +14,7 @@ namespace Operator {
 class DiffusionNonlinearFEOperatorParameters: public FEOperatorParameters {
 public:
 
-    DiffusionNonlinearFEOperatorParameters(const AMP::shared_ptr<
+    explicit DiffusionNonlinearFEOperatorParameters(const AMP::shared_ptr<
             AMP::Database> &db) :
         FEOperatorParameters(db)
     {

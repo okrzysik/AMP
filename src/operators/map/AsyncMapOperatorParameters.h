@@ -22,7 +22,7 @@ namespace Operator {
       int                           d_commTag;
       bool                          callMakeConsistentSet;
 
-      AsyncMapOperatorParameters ( const AMP::shared_ptr<AMP::Database> &db );
+      explicit AsyncMapOperatorParameters( const AMP::shared_ptr<AMP::Database> &db );
 
       virtual ~AsyncMapOperatorParameters ();
 

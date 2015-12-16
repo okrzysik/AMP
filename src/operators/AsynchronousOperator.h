@@ -79,7 +79,7 @@ namespace Operator {
 
 
     public:
-      AsynchronousOperator ( const AMP::shared_ptr < OperatorParameters > &params );
+      explicit AsynchronousOperator ( const AMP::shared_ptr < OperatorParameters > &params );
 
       virtual ~AsynchronousOperator ();
 
