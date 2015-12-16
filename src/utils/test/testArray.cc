@@ -139,7 +139,7 @@ int main( int argc, char *argv[] )
         else
             ut.failure("partial subset");
         M3.scale(2);
-        M2.copyFromSubset({3,7,1,3},M3);
+        M2.copySubset({3,7,1,3},M3);
         pass = true;
         for (size_t i=0; i<M3.size(0); i++) {
             for (size_t j=0; j<M3.size(1); j++)
