@@ -76,8 +76,7 @@ int Parser::parse( const std::string &filename, FILE *fstream, AMP::shared_ptr<D
     std::string::size_type slash_pos = filename.find_last_of( '/' );
     if ( slash_pos == std::string::npos ) {
         d_pathname = "";
-    }
-    else {
+    } else {
         d_pathname = filename.substr( 0, slash_pos + 1 );
     }
 
@@ -138,8 +137,7 @@ void Parser::advanceCursor( const std::string &token )
     for ( std::string::const_iterator i = token.begin(); i != token.end(); i++ ) {
         if ( *i == '\t' ) {
             pd.d_nextcursor = ( ( pd.d_nextcursor + 7 ) & ( ~7 ) ) + 1;
-        }
-        else {
+        } else {
             pd.d_nextcursor++;
         }
     }
@@ -163,7 +161,8 @@ void Parser::error( const std::string &message )
 
     pout << pd.d_linebuffer << std::endl << std::flush;
 
-    for ( int i = 0; i < pd.d_cursor; i++ ) pout << " ";
+    for ( int i = 0; i < pd.d_cursor; i++ )
+        pout << " ";
     pout << "^\n";
 
     d_errors++;
@@ -187,7 +186,8 @@ void Parser::warning( const std::string &message )
 
     pout << pd.d_linebuffer << std::endl << std::flush;
 
-    for ( int i = 0; i < pd.d_cursor; i++ ) pout << " ";
+    for ( int i = 0; i < pd.d_cursor; i++ )
+        pout << " ";
     pout << "^\n";
 
     d_warnings++;
@@ -222,7 +222,8 @@ AMP::shared_ptr<Database> Parser::getDatabaseWithKey( const std::string &key )
 
     std::list<AMP::shared_ptr<Database>>::iterator i = d_scope_stack.begin();
     for ( ; i != d_scope_stack.end(); i++ ) {
-        if ( ( *i )->keyExists( key ) ) return ( ( *i ) );
+        if ( ( *i )->keyExists( key ) )
+            return ( ( *i ) );
     }
     return ( returnPtr );
 }
@@ -248,8 +249,7 @@ bool Parser::pushIncludeFile( const std::string &filename )
     slash_pos = filename.find_first_of( '/' );
     if ( slash_pos == 0 ) {
         filename_with_path = filename;
-    }
-    else {
+    } else {
         filename_with_path = d_pathname;
         filename_with_path += filename;
     }
@@ -263,8 +263,7 @@ bool Parser::pushIncludeFile( const std::string &filename )
 
     if ( !worked ) {
         error( "Could not open include file ``" + filename_with_path + "''" );
-    }
-    else {
+    } else {
         ParseData pd;
         pd.d_filename   = filename_with_path;
         pd.d_fstream    = fstream;
@@ -288,7 +287,8 @@ bool Parser::pushIncludeFile( const std::string &filename )
 void Parser::popIncludeFile()
 {
     Parser::ParseData &pd = d_parse_stack.front();
-    if ( pd.d_fstream ) fclose( pd.d_fstream );
+    if ( pd.d_fstream )
+        fclose( pd.d_fstream );
     d_parse_stack.pop_front();
 }
 

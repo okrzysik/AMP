@@ -32,7 +32,8 @@ NOX::StatusTest::StatusType AndersonStatusTest::checkStatus( const NOX::Solver::
                                                              NOX::StatusTest::CheckType checkType )
 {
     // Check for early exit
-    if ( checkType == NOX::StatusTest::None ) return NOX::StatusTest::Unevaluated;
+    if ( checkType == NOX::StatusTest::None )
+        return NOX::StatusTest::Unevaluated;
 
     // Get the current and previous solutions from solver
     Teuchos::RCP<const NOX::Abstract::Vector> curSolVec = solver.getSolutionGroup().getXPtr();
@@ -81,14 +82,16 @@ NOX::StatusTest::StatusType AndersonStatusTest::checkStatus( const NOX::Solver::
             AMP::LinearAlgebra::Vector::shared_ptr thisDiffVec = thisCurVec->cloneVector();
             thisDiffVec->subtract( thisCurVec, thisPrevVec );
             d_relativeResiduals[i] = thisDiffVec->L2Norm() / thisCurVec->L2Norm();
-            if ( d_relativeResiduals[i] > d_tolerances[i] ) converged = false;
+            if ( d_relativeResiduals[i] > d_tolerances[i] )
+                converged = false;
         }
     }
 
     // Perform reduction on convergence
-    converged                 = curSolAmpVec->getComm().allReduce( converged );
-    d_status                  = NOX::StatusTest::Unconverged;
-    if ( converged ) d_status = NOX::StatusTest::Converged;
+    converged = curSolAmpVec->getComm().allReduce( converged );
+    d_status  = NOX::StatusTest::Unconverged;
+    if ( converged )
+        d_status = NOX::StatusTest::Converged;
 
     return d_status;
 }
@@ -100,12 +103,12 @@ std::ostream &AndersonStatusTest::print( std::ostream &stream, int indent ) cons
     AMP_ASSERT( indent >= 0 );
 
     for ( size_t i = 0; i < d_variableNames.size(); ++i ) {
-        for ( int j = 0; j < indent; j++ ) stream << ' ';
+        for ( int j = 0; j < indent; j++ )
+            stream << ' ';
         stream << "Relative update on " << d_variableNames[i] << " = ";
         if ( d_status == NOX::StatusTest::Unevaluated ) {
             stream << "?";
-        }
-        else {
+        } else {
             stream << std::scientific << d_relativeResiduals[i];
         }
         stream << " < " << std::scientific << d_tolerances[i] << std::endl;

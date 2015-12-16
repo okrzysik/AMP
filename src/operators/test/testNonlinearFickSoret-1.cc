@@ -173,9 +173,12 @@ void nonlinearTest( AMP::UnitTest *ut, std::string exeName )
             defaults = ( matFick->property( property ) )->get_defaults(); // compile error
         }
     }
-    if ( defaults.size() > 0 ) tVec->setToScalar( defaults[0] ); // compile error
-    if ( defaults.size() > 1 ) cVec->setToScalar( defaults[1] ); // compile error
-    if ( defaults.size() > 2 ) bVec->setToScalar( defaults[2] ); // compile error
+    if ( defaults.size() > 0 )
+        tVec->setToScalar( defaults[0] ); // compile error
+    if ( defaults.size() > 1 )
+        cVec->setToScalar( defaults[1] ); // compile error
+    if ( defaults.size() > 2 )
+        bVec->setToScalar( defaults[2] ); // compile error
     // set up input multivariable and output variable
     AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> fsInpVar(
         new AMP::LinearAlgebra::MultiVariable( "fsInput" ) );
@@ -196,9 +199,12 @@ void nonlinearTest( AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr inTempVec = solVec->subsetVectorForVariable( tVar );
     AMP::LinearAlgebra::Vector::shared_ptr inConcVec = solVec->subsetVectorForVariable( cVar );
     AMP::LinearAlgebra::Vector::shared_ptr inBurnVec = solVec->subsetVectorForVariable( bVar );
-    if ( defaults.size() > 0 ) inTempVec->setToScalar( defaults[0] ); // compile error
-    if ( defaults.size() > 1 ) inConcVec->setToScalar( defaults[1] ); // compile error
-    if ( defaults.size() > 2 ) inBurnVec->setToScalar( defaults[2] ); // compile error
+    if ( defaults.size() > 0 )
+        inTempVec->setToScalar( defaults[0] ); // compile error
+    if ( defaults.size() > 1 )
+        inConcVec->setToScalar( defaults[1] ); // compile error
+    if ( defaults.size() > 2 )
+        inBurnVec->setToScalar( defaults[2] ); // compile error
 
     AMP_INSIST( fsOp->isValidInput( solVec ), "input variable not set up correctly" );
 
@@ -220,12 +226,10 @@ int main( int argc, char *argv[] )
     for ( int i = 0; i < NUMFILES; i++ ) {
         try {
             nonlinearTest( &ut, files[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing:" + files[i] );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing:" + files[i] );

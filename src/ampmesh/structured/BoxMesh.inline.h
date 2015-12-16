@@ -61,21 +61,18 @@ inline bool BoxMesh::MeshElementIndex::operator>( const MeshElementIndex &rhs ) 
 {
     if ( type < rhs.type ) {
         return false;
-    }
-    else if ( type > rhs.type ) {
+    } else if ( type > rhs.type ) {
         return true;
     }
     if ( side < rhs.side ) {
         return false;
-    }
-    else if ( side > rhs.side ) {
+    } else if ( side > rhs.side ) {
         return true;
     }
     for ( int i = 2; i >= 0; i-- ) {
         if ( index[i] < rhs.index[i] ) {
             return false;
-        }
-        else if ( index[i] > rhs.index[i] ) {
+        } else if ( index[i] > rhs.index[i] ) {
             return true;
         }
     }
@@ -99,7 +96,8 @@ inline bool BoxMesh::MeshElementIndex::operator<=( const MeshElementIndex &rhs )
 inline std::vector<bool> BoxMesh::periodic() const
 {
     std::vector<bool> per( static_cast<int>( GeomDim ) );
-    for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) per[d] = d_isPeriodic[d];
+    for ( int d = 0; d < static_cast<int>( GeomDim ); d++ )
+        per[d]  = d_isPeriodic[d];
     return per;
 }
 inline BoxMesh::Box BoxMesh::getGlobalBox( int gcw ) const

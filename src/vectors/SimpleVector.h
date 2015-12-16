@@ -11,7 +11,8 @@ namespace LinearAlgebra {
 * \details This is a Vector that implements the Vector interface for a std::vector<double>.
 */
 template <typename T>
-class SimpleVector : public Vector {
+class SimpleVector : public Vector
+{
 protected:
     std::vector<T> d_Data;
     size_t d_startIndex;

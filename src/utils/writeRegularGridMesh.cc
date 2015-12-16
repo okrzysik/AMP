@@ -32,8 +32,7 @@ int main( int argc, char **argv )
 
     if ( useBinary ) {
         fp = fopen( argv[8], "wb" );
-    }
-    else {
+    } else {
         fp = fopen( argv[8], "w" );
     }
 
@@ -44,8 +43,7 @@ int main( int argc, char **argv )
     int numPts = nx * ny * nz;
     if ( useBinary ) {
         fwrite( &numPts, sizeof( int ), 1, fp );
-    }
-    else {
+    } else {
         fprintf( fp, "NumberOfNodes = %d \n", numPts );
     }
 
@@ -58,8 +56,7 @@ int main( int argc, char **argv )
                 p[2] = ( static_cast<double>( zi ) ) * hz;
                 if ( useBinary ) {
                     fwrite( p, sizeof( double ), 3, fp );
-                }
-                else {
+                } else {
                     fprintf( fp, "Point%d = %lf, %lf, %lf \n", pi, p[0], p[1], p[2] );
                 }
             } // end for xi
@@ -73,8 +70,7 @@ int main( int argc, char **argv )
     int numElem = ( nx - 1 ) * ( ny - 1 ) * ( nz - 1 );
     if ( useBinary ) {
         fwrite( &numElem, sizeof( int ), 1, fp );
-    }
-    else {
+    } else {
         fprintf( fp, "NumberOfElements = %d \n", numElem );
     }
 
@@ -92,8 +88,7 @@ int main( int argc, char **argv )
                 p[7] = __NODE__( xi, ( yi + 1 ), ( zi + 1 ), nx, ny );
                 if ( useBinary ) {
                     fwrite( p, sizeof( int ), 8, fp );
-                }
-                else {
+                } else {
                     fprintf( fp,
                              "Elem%d = %d, %d, %d, %d, %d, %d, %d, %d \n",
                              pi,
@@ -118,8 +113,7 @@ int main( int argc, char **argv )
         int num = 6;
         if ( useBinary ) {
             fwrite( &num, sizeof( int ), 1, fp );
-        }
-        else {
+        } else {
             fprintf( fp, "NumberOfBoundaryNodeIds = %d \n\n", num );
         }
     }
@@ -129,8 +123,7 @@ int main( int argc, char **argv )
         int num = ( ny * nz );
         if ( useBinary ) {
             fwrite( &num, sizeof( int ), 1, fp );
-        }
-        else {
+        } else {
             fprintf( fp, "NumberOfBoundaryNodes1 = %d \n", num );
             fprintf( fp, "BoundaryNodeId1 = " );
         }
@@ -141,8 +134,7 @@ int main( int argc, char **argv )
             int num = __NODE__( 0, yi, zi, nx, ny );
             if ( useBinary ) {
                 fwrite( &num, sizeof( int ), 1, fp );
-            }
-            else {
+            } else {
                 fprintf( fp, "%d", num );
                 if ( cnt < ( ( ny * nz ) - 1 ) ) {
                     fprintf( fp, ", " );
@@ -160,8 +152,7 @@ int main( int argc, char **argv )
         int num = ( ny * nz );
         if ( useBinary ) {
             fwrite( &num, sizeof( int ), 1, fp );
-        }
-        else {
+        } else {
             fprintf( fp, "NumberOfBoundaryNodes2 = %d \n", num );
             fprintf( fp, "BoundaryNodeId2 = " );
         }
@@ -172,8 +163,7 @@ int main( int argc, char **argv )
             int num = __NODE__( ( nx - 1 ), yi, zi, nx, ny );
             if ( useBinary ) {
                 fwrite( &num, sizeof( int ), 1, fp );
-            }
-            else {
+            } else {
                 fprintf( fp, "%d", num );
                 if ( cnt < ( ( ny * nz ) - 1 ) ) {
                     fprintf( fp, ", " );
@@ -191,8 +181,7 @@ int main( int argc, char **argv )
         int num = ( ( ny - 2 ) * ( nz - 2 ) );
         if ( useBinary ) {
             fwrite( &num, sizeof( int ), 1, fp );
-        }
-        else {
+        } else {
             fprintf( fp, "NumberOfBoundaryNodes3 = %d \n", num );
         }
     }
@@ -207,8 +196,7 @@ int main( int argc, char **argv )
                 int num = __NODE__( ( nx - 1 ), yi, zi, nx, ny );
                 if ( useBinary ) {
                     fwrite( &num, sizeof( int ), 1, fp );
-                }
-                else {
+                } else {
                     fprintf( fp, "%d", num );
                     if ( cnt < ( ( ( ny - 2 ) * ( nz - 2 ) ) - 1 ) ) {
                         fprintf( fp, ", " );
@@ -227,8 +215,7 @@ int main( int argc, char **argv )
         int num = ( 2 * ( ny - 2 ) );
         if ( useBinary ) {
             fwrite( &num, sizeof( int ), 1, fp );
-        }
-        else {
+        } else {
             fprintf( fp, "NumberOfBoundaryNodes4 = %d \n", num );
         }
     }
@@ -242,8 +229,7 @@ int main( int argc, char **argv )
             int num = __NODE__( ( nx - 1 ), yi, 0, nx, ny );
             if ( useBinary ) {
                 fwrite( &num, sizeof( int ), 1, fp );
-            }
-            else {
+            } else {
                 fprintf( fp, "%d, ", num );
             }
         } // end for yi
@@ -252,8 +238,7 @@ int main( int argc, char **argv )
             int num = __NODE__( ( nx - 1 ), yi, ( nz - 1 ), nx, ny );
             if ( useBinary ) {
                 fwrite( &num, sizeof( int ), 1, fp );
-            }
-            else {
+            } else {
                 fprintf( fp, "%d, ", num );
             }
         } // end for yi
@@ -261,8 +246,7 @@ int main( int argc, char **argv )
         int num = __NODE__( ( nx - 1 ), ( ny - 2 ), ( nz - 1 ), nx, ny );
         if ( useBinary ) {
             fwrite( &num, sizeof( int ), 1, fp );
-        }
-        else {
+        } else {
             fprintf( fp, "%d ", num );
         }
     }
@@ -276,8 +260,7 @@ int main( int argc, char **argv )
         int num = ( 2 * ( nz - 2 ) );
         if ( useBinary ) {
             fwrite( &num, sizeof( int ), 1, fp );
-        }
-        else {
+        } else {
             fprintf( fp, "NumberOfBoundaryNodes5 = %d \n", num );
         }
     }
@@ -291,8 +274,7 @@ int main( int argc, char **argv )
             int num = __NODE__( ( nx - 1 ), 0, zi, nx, ny );
             if ( useBinary ) {
                 fwrite( &num, sizeof( int ), 1, fp );
-            }
-            else {
+            } else {
                 fprintf( fp, "%d, ", num );
             }
         } // end for zi
@@ -301,8 +283,7 @@ int main( int argc, char **argv )
             int num = __NODE__( ( nx - 1 ), ( ny - 1 ), zi, nx, ny );
             if ( useBinary ) {
                 fwrite( &num, sizeof( int ), 1, fp );
-            }
-            else {
+            } else {
                 fprintf( fp, "%d, ", num );
             }
         } // end for zi
@@ -310,8 +291,7 @@ int main( int argc, char **argv )
         int num = __NODE__( ( nx - 1 ), ( ny - 1 ), ( nz - 2 ), nx, ny );
         if ( useBinary ) {
             fwrite( &num, sizeof( int ), 1, fp );
-        }
-        else {
+        } else {
             fprintf( fp, "%d ", num );
         }
     }
@@ -325,8 +305,7 @@ int main( int argc, char **argv )
         int num = 4;
         if ( useBinary ) {
             fwrite( &num, sizeof( int ), 1, fp );
-        }
-        else {
+        } else {
             fprintf( fp, "NumberOfBoundaryNodes6 = %d \n", num );
             fprintf( fp, "BoundaryNodeId6 = " );
         }
@@ -340,8 +319,7 @@ int main( int argc, char **argv )
         num[3] = __NODE__( ( nx - 1 ), ( ny - 1 ), ( nz - 1 ), nx, ny );
         if ( useBinary ) {
             fwrite( num, sizeof( int ), 4, fp );
-        }
-        else {
+        } else {
             fprintf( fp, "%d, %d, %d, %d ", num[0], num[1], num[2], num[3] );
         }
     }
@@ -354,8 +332,7 @@ int main( int argc, char **argv )
         int num = 0;
         if ( useBinary ) {
             fwrite( &num, sizeof( int ), 1, fp );
-        }
-        else {
+        } else {
             fprintf( fp, "NumberOfBoundarySideIds = %d \n\n", num );
         }
     }

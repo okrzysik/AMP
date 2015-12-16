@@ -74,43 +74,35 @@ void PowerShape::reset( const AMP::shared_ptr<OperatorParameters> &parameters )
             d_numXmoments   = 0;
             d_numYmoments   = 0;
             d_numZmoments   = 0;
-        }
-        else if ( d_type == "gaussian" ) {
+        } else if ( d_type == "gaussian" ) {
             d_muX    = 0.;
             d_muY    = 0.;
             d_sigmaX = 3;
             d_sigmaY = 3;
-        }
-        else {
+        } else {
             AMP_INSIST(
                 0, "The power shape type used is not valid for cartesian coordinate systems." );
         }
-    }
-    else if ( d_coordinateSystem == "cylindrical" ) {
+    } else if ( d_coordinateSystem == "cylindrical" ) {
 
         if ( d_type == "frapcon" ) {
             //      AMP_ASSERT(!(d_type == "frapcon"))
             d_numZmoments     = 0;
             d_frapconConstant = 3.45;
             d_angularConstant = 0.0;
-        }
-        else if ( d_type == "zernikeRadial" ) {
+        } else if ( d_type == "zernikeRadial" ) {
             d_numMoments  = 0;
             d_numZmoments = 0;
-        }
-        else if ( d_type == "zernike" ) {
+        } else if ( d_type == "zernike" ) {
             d_numZmoments = 0;
             d_numMoments  = 0;
-        }
-        else if ( d_type == "diffusion" ) {
+        } else if ( d_type == "diffusion" ) {
             d_numZmoments = 0;
-        }
-        else {
+        } else {
             AMP_INSIST(
                 0, "The power shape type used is not valid for cylindrical coordinate systems." );
         }
-    }
-    else {
+    } else {
         AMP_INSIST( 0, "The coordinate system is not valid." );
     }
 }
@@ -195,8 +187,7 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
                     AMP_ASSERT( fabs( d_Zmoments[i] ) <= 1.0 );
                 }
             }
-        }
-        else if ( d_type == "gaussian" ) {
+        } else if ( d_type == "gaussian" ) {
 
             std::vector<double> min_max_pos = d_Mesh->getBoundingBox();
             double centerx                  = 0.5 * ( min_max_pos[0] + min_max_pos[1] );
@@ -219,13 +210,11 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
                     AMP_ASSERT( fabs( d_Zmoments[i] ) <= 1.0 );
                 }
             }
-        }
-        else {
+        } else {
             AMP_INSIST(
                 0, "The power shape type used is not valid for cartesian coordinate systems." );
         }
-    }
-    else if ( d_coordinateSystem == "cylindrical" ) {
+    } else if ( d_coordinateSystem == "cylindrical" ) {
 
         // Number of moments in the Z direction. Default =0
         d_numZmoments = db->getIntegerWithDefault( "numZmoments", 0 );
@@ -251,8 +240,7 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
             // Read the angular constant from input database.
             d_angularConstant = db->getDoubleWithDefault( "angularConstant", 0.0 );
             AMP_ASSERT( fabs( d_angularConstant ) <= 1.0 );
-        }
-        else if ( d_type == "zernikeRadial" ) {
+        } else if ( d_type == "zernikeRadial" ) {
 
             // Number of moments in the Radial direction. Default =0
             d_numMoments = db->getIntegerWithDefault( "numMoments", 4 );
@@ -287,8 +275,7 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
             // Read the angular constant from input database.
             d_angularConstant = db->getDoubleWithDefault( "angularConstant", 0.0 );
             AMP_ASSERT( fabs( d_angularConstant ) <= 1.0 );
-        }
-        else if ( d_type == "zernike" ) {
+        } else if ( d_type == "zernike" ) {
 
             // Number of "m" moments in the zernike polynomial. Default =0
             d_numMoments = db->getIntegerWithDefault( "numMoments", 0 );
@@ -307,16 +294,13 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
                     AMP_ASSERT( fabs( d_Moments[i] ) <= 1.0 );
                 }
             }
-        }
-        else if ( d_type == "diffusion" ) {
+        } else if ( d_type == "diffusion" ) {
             d_numZmoments = 0;
-        }
-        else {
+        } else {
             AMP_INSIST(
                 0, "The power shape type used is not valid for cylindrical coordinate systems!" );
         }
-    }
-    else {
+    } else {
         AMP_INSIST( 0, "The coordinate system is not valid." );
     }
 
@@ -339,8 +323,7 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
         libMeshEnums::Order qruleOrder;
         if ( qruleOrderName == "DEFAULT" ) {
             qruleOrder = d_feType->default_quadrature_order();
-        }
-        else {
+        } else {
             qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
         }
 
@@ -478,8 +461,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "End Power Shape Loop over : " << countGP << " Gauss Points."
                           << std::endl;
-        }
-        else if ( d_type == "gaussian" ) {
+        } else if ( d_type == "gaussian" ) {
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processing all Gauss-Points." << std::endl;
@@ -535,13 +517,11 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processing GP #: " << countGP << std::endl;
-        }
-        else {
+        } else {
             AMP_INSIST(
                 0, "The power shape type used is not valid for cylindrical coordinate systems." );
         }
-    }
-    else if ( d_coordinateSystem == "cylindrical" ) {
+    } else if ( d_coordinateSystem == "cylindrical" ) {
 
         if ( d_type == "frapcon" ) {
 
@@ -601,8 +581,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processing GP #: " << countGP << std::endl;
-        }
-        else if ( d_type == "diffusion" ) {
+        } else if ( d_type == "diffusion" ) {
 
             // Infinite cylinder diffusion shape
             // Note: Dimensions are all in meter (m).
@@ -751,8 +730,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processed GP #: " << countGP << std::endl;
-        }
-        else if ( d_type == "zernike" ) {
+        } else if ( d_type == "zernike" ) {
 
             // Note: Dimensions are all in meter (m).
 
@@ -801,13 +779,11 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processed GP #: " << countGP << std::endl;
-        }
-        else {
+        } else {
             AMP_INSIST(
                 0, "The power shape type used is not valid for cylindrical coordinate systems" );
         }
-    }
-    else {
+    } else {
         AMP_INSIST( 0, "The coordinate system is not valid." );
     }
 }
@@ -1040,7 +1016,8 @@ double PowerShape::getZernike( const double rhor, const double phi )
 double PowerShape::evalFactorial( int n )
 {
     double f = 1;
-    while ( n > 1 ) f *= n--;
+    while ( n > 1 )
+        f *= n--;
     return f;
 }
 
@@ -1051,7 +1028,8 @@ double PowerShape::evalFactorial( int n )
  */
 double PowerShape::choose( int n, int k )
 {
-    if ( k > n ) return 0;
+    if ( k > n )
+        return 0;
 
     int r = 1;
     for ( int d = 1; d <= k; ++d ) {
@@ -1072,8 +1050,10 @@ double PowerShape::evalZernike( int n, int m, const double rho, const double phi
 
     double rhoFact = 0;
     bool even      = n >= 0;
-    if ( n < 0 ) n = -n;
-    if ( ( m - n ) % 2 ) return 0;
+    if ( n < 0 )
+        n = -n;
+    if ( ( m - n ) % 2 )
+        return 0;
 
     // This should be slightly more stable numerically than
     //  multiplying/dividing factorials, probably doesn't matter

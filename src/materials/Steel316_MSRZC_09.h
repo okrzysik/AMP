@@ -8,7 +8,8 @@
 // Define the material
 namespace AMP {
 namespace Materials {
-class Steel316_MSRZC_09 : public Material {
+class Steel316_MSRZC_09 : public Material
+{
 public:
     Steel316_MSRZC_09();
 };

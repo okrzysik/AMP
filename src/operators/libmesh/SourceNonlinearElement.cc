@@ -49,8 +49,7 @@ SourceNonlinearElement::SourceNonlinearElement(
 
     if ( qruleOrderName == "DEFAULT" ) {
         qruleOrder = d_feType->default_quadrature_order();
-    }
-    else {
+    } else {
         qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 
@@ -111,8 +110,7 @@ void SourceNonlinearElement::apply()
             d_sourcePhysicsModel->getConstitutiveProperty(
                 source_physics, source_vectors, auxillary_vectors, coordinates );
         }
-    }
-    else if ( d_isInputType == "NodalScalar" ) {
+    } else if ( d_isInputType == "NodalScalar" ) {
 
         for ( unsigned int var = 0; var < d_elementInputVector.size(); var++ ) {
             source_vectors[var].resize( n_points );
@@ -148,12 +146,10 @@ void SourceNonlinearElement::apply()
         for ( unsigned int qp = 0; qp < n_points; qp++ ) {
             if ( d_sourcePhysicsModel.get() != NULL ) {
                 elementOutputVector[j] += ( JxW[qp] * source_physics[qp] * phi[j][qp] );
-            }
-            else {
+            } else {
                 if ( d_integrateVolume ) {
                     elementOutputVector[j] += ( JxW[qp] * source_vectors[0][qp] * phi[j][qp] );
-                }
-                else {
+                } else {
                     elementOutputVector[j] += ( source_vectors[0][qp] * phi[j][qp] ) / 8;
                 }
             }

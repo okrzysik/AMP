@@ -46,7 +46,8 @@ typedef AMP::Operator::MassLinearFEOperator MassOperator;
 
  */
 
-class IDATimeIntegratorParameters : public TimeIntegratorParameters {
+class IDATimeIntegratorParameters : public TimeIntegratorParameters
+{
 public:
     explicit IDATimeIntegratorParameters( const AMP::shared_ptr<AMP::Database> db );
 

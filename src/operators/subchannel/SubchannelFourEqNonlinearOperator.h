@@ -15,7 +15,8 @@ namespace Operator {
   equations:
   see /AMPFuel-Docs/technicalInfo/flow/SubchannelFlow.pdf for details
   */
-class SubchannelFourEqNonlinearOperator : public Operator {
+class SubchannelFourEqNonlinearOperator : public Operator
+{
 public:
     //! Constructor
     explicit SubchannelFourEqNonlinearOperator(

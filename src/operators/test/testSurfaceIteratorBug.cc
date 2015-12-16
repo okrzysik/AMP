@@ -79,7 +79,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         std::vector<size_t> bndGlobalIds;
         for ( size_t i = 0; i < nodes.size(); i++ ) {
             nodalScalarDOF->getDOFs( nodes[i].globalID(), dofs );
-            for ( size_t j = 0; j < dofs.size(); j++ ) bndGlobalIds.push_back( dofs[j] );
+            for ( size_t j = 0; j < dofs.size(); j++ )
+                bndGlobalIds.push_back( dofs[j] );
         }
 
         // Some basic checks
@@ -108,8 +109,9 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
         // Check the volume
         double vol1 = 0.0;
-        for ( unsigned int qp = 0; qp < qrule->n_points(); qp++ ) vol1 += djxw[qp];
-        double vol2           = bnd->volume();
+        for ( unsigned int qp = 0; qp < qrule->n_points(); qp++ )
+            vol1 += djxw[qp];
+        double vol2 = bnd->volume();
         if ( fabs( vol1 - vol2 ) > ( 1.0e-8 * vol2 ) ) {
             std::cout << "Volume 1 = " << std::setprecision( 15 ) << vol1 << std::endl;
             std::cout << "Volume 2 = " << std::setprecision( 15 ) << vol2 << std::endl << std::endl;
@@ -120,8 +122,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         if ( setConstantValue ) {
             std::vector<double> vals( bndGlobalIds.size(), 100.0 );
             vec->addValuesByGlobalID( bndGlobalIds.size(), &( bndGlobalIds[0] ), &( vals[0] ) );
-        }
-        else {
+        } else {
             std::vector<double> vals( bndGlobalIds.size(), 0.0 );
             for ( unsigned int i = 0; i < bndGlobalIds.size(); i++ ) {
                 for ( unsigned int qp = 0; qp < qrule->n_points(); qp++ ) {
@@ -171,12 +172,10 @@ int main( int argc, char *argv[] )
     try {
         myTest( &ut, exeName );
         ut.passes( exeName );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

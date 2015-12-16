@@ -213,8 +213,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
         if ( finalResidualNorm > ( 1.0e-9 * initialResidualNorm ) ) {
             ut->failure( "Nonlinear solve for current loading step" );
-        }
-        else {
+        } else {
             ut->passes( "Nonlinear solve for current loading step" );
         }
 
@@ -291,12 +290,10 @@ int main( int argc, char *argv[] )
     for ( size_t i = 0; i < exeNames.size(); i++ ) {
         try {
             myTest( &ut, exeNames[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing" );

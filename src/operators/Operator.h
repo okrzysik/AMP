@@ -23,7 +23,8 @@ namespace Operator {
   * The constructor for the class takes a pointer to
   * a OperatorParameters object.
   */
-class Operator {
+class Operator
+{
 public:
     typedef AMP::shared_ptr<AMP::Operator::Operator> shared_ptr;
 
@@ -89,8 +90,7 @@ public:
 
         if ( type == "Jacobian" ) {
             rPointer = getJacobianParameters( u );
-        }
-        else {
+        } else {
             AMP_ERROR( "Unknown OperatorParameters type specified" );
             // should be implemented in derived class
         }

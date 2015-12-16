@@ -29,7 +29,8 @@ void AsynchronousOperator::waitForAllRequests()
     std::vector<MPI_Request>::iterator curReq = beginRequests();
     while ( curReq != endRequests() ) {
         MPI_Request request = *curReq;
-        if ( request != 0 ) AMP_MPI::wait( request );
+        if ( request != 0 )
+            AMP_MPI::wait( request );
         ++curReq;
     }
 }

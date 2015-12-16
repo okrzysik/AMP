@@ -78,11 +78,9 @@ void DirichletVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_
 
     if ( d_setResidual ) {
         this->applyResidual( u, rInternal );
-    }
-    else if ( d_isAttachedToVolumeOperator ) {
+    } else if ( d_isAttachedToVolumeOperator ) {
         this->applyZeroValues( rInternal );
-    }
-    else {
+    } else {
         this->applyNonZeroValues( rInternal );
     }
 
@@ -133,8 +131,7 @@ void DirichletVectorCorrection::applyNonZeroValues( AMP::LinearAlgebra::Vector::
                 double dVal;
                 if ( d_valuesType == 1 ) {
                     dVal = d_dirichletValues1[j][i];
-                }
-                else {
+                } else {
                     dVal =
                         d_dirichletValues2->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
                 }
@@ -165,8 +162,7 @@ void DirichletVectorCorrection::applyResidual( AMP::LinearAlgebra::Vector::const
                 double dVal;
                 if ( d_valuesType == 1 ) {
                     dVal = d_dirichletValues1[j][i];
-                }
-                else {
+                } else {
                     dVal =
                         d_dirichletValues2->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
                 }
@@ -201,8 +197,7 @@ DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::shared_pt
         AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec =
             meshSubsetVec->subsetVectorForVariable( var );
         return varSubsetVec;
-    }
-    else {
+    } else {
         return vec->subsetVectorForVariable( var );
     }
 }
@@ -218,8 +213,7 @@ DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::const_sha
         AMP::LinearAlgebra::Vector::const_shared_ptr varSubsetVec =
             meshSubsetVec->constSubsetVectorForVariable( var );
         return varSubsetVec;
-    }
-    else {
+    } else {
         return vec->constSubsetVectorForVariable( var );
     }
 }

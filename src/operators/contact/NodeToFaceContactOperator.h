@@ -20,7 +20,8 @@ namespace Operator {
   an implementation of the apply() function.
   @see Operator
   */
-class NodeToFaceContactOperator : public ContactOperator {
+class NodeToFaceContactOperator : public ContactOperator
+{
 
 public:
     /**

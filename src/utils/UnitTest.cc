@@ -32,7 +32,8 @@ namespace AMP {
 ********************************************************************/
 UnitTest::UnitTest()
 {
-    if ( !AMP::AMPManager::isInitialized() ) AMP_ERROR( "AMPManager must be initialized first" );
+    if ( !AMP::AMPManager::isInitialized() )
+        AMP_ERROR( "AMPManager must be initialized first" );
     comm = MPI_COMM_WORLD;
 }
 UnitTest::~UnitTest() { reset(); }
@@ -57,7 +58,8 @@ void UnitTest::report( const int level0 ) const
     Sleep( 10 );
     // Broadcast the print level from rank 0
     int level = comm.bcast( level0, 0 );
-    if ( level < 0 || level > 2 ) AMP_ERROR( "Invalid print level" );
+    if ( level < 0 || level > 2 )
+        AMP_ERROR( "Invalid print level" );
     // Perform a global all gather to get the number of failures per processor
     std::vector<int> N_pass( size, 0 );
     std::vector<int> N_fail( size, 0 );
@@ -88,8 +90,7 @@ void UnitTest::report( const int level0 ) const
                 else if ( N_pass[i] > 0 )
                     pass_messages_rank[i] = unpack_message_stream( i, 1 );
             }
-        }
-        else if ( !pass_messages.empty() ) {
+        } else if ( !pass_messages.empty() ) {
             // All other ranks send their message (use non-blocking communication)
             pack_message_stream( pass_messages, 0, 1 );
         }
@@ -104,8 +105,7 @@ void UnitTest::report( const int level0 ) const
                 else if ( N_fail[i] > 0 )
                     fail_messages_rank[i] = unpack_message_stream( i, 2 );
             }
-        }
-        else if ( !fail_messages.empty() ) {
+        } else if ( !fail_messages.empty() ) {
             // All other ranks send their message (use non-blocking communication)
             pack_message_stream( fail_messages, 0, 2 );
         }
@@ -120,8 +120,7 @@ void UnitTest::report( const int level0 ) const
                 else if ( N_expected_fail[i] > 0 )
                     expected_fail_rank[i] = unpack_message_stream( i, 3 );
             }
-        }
-        else if ( !expected_fail_messages.empty() ) {
+        } else if ( !expected_fail_messages.empty() ) {
             // All other ranks send their message (use non-blocking communication)
             pack_message_stream( expected_fail_messages, 0, 3 );
         }
@@ -137,15 +136,13 @@ void UnitTest::report( const int level0 ) const
                 // Print 1 summary for all processors
                 std::cout << "     " << N_pass_tot
                           << " tests passed (use report level 2 for more detail)" << std::endl;
-            }
-            else {
+            } else {
                 // Print a summary for each processor
                 for ( int i = 0; i < size; i++ )
                     std::cout << "     " << N_pass[i] << " tests passed (proc " << i
                               << ") (use report level 2 for more detail)" << std::endl;
             }
-        }
-        else {
+        } else {
             // We want to print all messages
             for ( int i = 0; i < size; i++ ) {
                 AMP_ASSERT( (int) pass_messages_rank[i].size() == N_pass[i] );
@@ -165,15 +162,13 @@ void UnitTest::report( const int level0 ) const
                 // Print 1 summary for all processors
                 std::cout << "     " << N_pass_tot
                           << " tests failed (use report level 2 for more detail)" << std::endl;
-            }
-            else {
+            } else {
                 // Print a summary for each processor
                 for ( int i = 0; i < size; i++ )
                     std::cout << "     " << N_fail[i] << " tests failed (proc " << i
                               << ") (use report level 1 or 2 for more detail)" << std::endl;
             }
-        }
-        else {
+        } else {
             // We want to print all messages
             for ( int i = 0; i < size; i++ ) {
                 AMP_ASSERT( (int) fail_messages_rank[i].size() == N_fail[i] );
@@ -194,15 +189,13 @@ void UnitTest::report( const int level0 ) const
                 std::cout << "     " << N_expected_fail_tot
                           << " tests expected failed (use report level 2 for more detail)"
                           << std::endl;
-            }
-            else {
+            } else {
                 // Print a summary for each processor
                 for ( int i = 0; i < size; i++ )
                     std::cout << "     " << N_expected_fail[i] << " tests expected failed (proc "
                               << i << ") (use report level 1 or 2 for more detail)" << std::endl;
             }
-        }
-        else {
+        } else {
             // We want to print all messages
             for ( int i = 0; i < size; i++ ) {
                 AMP_ASSERT( (int) expected_fail_rank[i].size() == N_expected_fail[i] );
@@ -242,8 +235,9 @@ void UnitTest::pack_message_stream( const std::vector<std::string> &messages,
     // Pack the message stream
     int *tmp = (int *) data;
     tmp[0]   = N_messages;
-    for ( int i = 0; i < N_messages; i++ ) tmp[i + 1] = msg_size[i];
-    int k                                             = ( N_messages + 1 ) * sizeof( int );
+    for ( int i    = 0; i < N_messages; i++ )
+        tmp[i + 1] = msg_size[i];
+    int k          = ( N_messages + 1 ) * sizeof( int );
     for ( int i = 0; i < N_messages; i++ ) {
         messages[i].copy( &data[k], msg_size[i] );
         k += msg_size[i];

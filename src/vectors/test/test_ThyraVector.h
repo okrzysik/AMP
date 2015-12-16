@@ -26,7 +26,8 @@ namespace AMP {
 namespace unit_test {
 
 
-class NativeThyraFactory {
+class NativeThyraFactory
+{
 public:
     typedef AMP::LinearAlgebra::ThyraVector vector;
 
@@ -68,7 +69,8 @@ public:
 
 
 template <typename FACTORY>
-class ManagedThyraFactory {
+class ManagedThyraFactory
+{
 public:
     typedef AMP::LinearAlgebra::ThyraVector vector;
 
@@ -92,7 +94,8 @@ public:
 
 
 template <typename FACTORY>
-class ManagedNativeThyraFactory {
+class ManagedNativeThyraFactory
+{
 public:
     typedef AMP::LinearAlgebra::ThyraVector vector;
 

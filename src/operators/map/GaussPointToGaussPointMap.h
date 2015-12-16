@@ -9,7 +9,8 @@
 namespace AMP {
 namespace Operator {
 
-class GaussPointToGaussPointMap : public NodeToNodeMap {
+class GaussPointToGaussPointMap : public NodeToNodeMap
+{
 public:
     explicit GaussPointToGaussPointMap(
         const AMP::shared_ptr<AMP::Operator::OperatorParameters> &params );

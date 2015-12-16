@@ -93,7 +93,8 @@ VonMises_IsotropicKinematicHardening::VonMises_IsotropicKinematicHardening(
         ( params->d_db )->getDoubleWithDefault( "Default_Oxygen_Concentration", 0.0 );
 
     for ( size_t i = 0; i < 6; i++ ) {
-        for ( size_t j = 0; j < 6; j++ ) d_constitutiveMatrix[i][j] = 0.;
+        for ( size_t j                 = 0; j < 6; j++ )
+            d_constitutiveMatrix[i][j] = 0.;
     }
     d_gaussPtCnt                 = 0;
     Total_Gauss_Point            = 0;
@@ -139,8 +140,7 @@ void VonMises_IsotropicKinematicHardening::nonlinearInitGaussPointOperation( dou
     if ( d_useMaterialsLibrary == false ) {
         d_E.push_back( default_E );
         d_Nu.push_back( default_Nu );
-    }
-    else {
+    } else {
         d_E.push_back( 0.0 );
         d_Nu.push_back( 0.0 );
     }
@@ -299,22 +299,19 @@ void VonMises_IsotropicKinematicHardening::computeEvalv(
 
         if ( strain[Mechanics::TEMPERATURE].empty() ) {
             tempVec->push_back( default_TEMPERATURE );
-        }
-        else {
+        } else {
             ( *tempVec ) = strain[Mechanics::TEMPERATURE];
         }
 
         if ( strain[Mechanics::BURNUP].empty() ) {
             burnupVec->push_back( default_BURNUP );
-        }
-        else {
+        } else {
             ( *burnupVec ) = strain[Mechanics::BURNUP];
         }
 
         if ( strain[Mechanics::OXYGEN_CONCENTRATION].empty() ) {
             oxygenVec->push_back( default_OXYGEN_CONCENTRATION );
-        }
-        else {
+        } else {
             ( *oxygenVec ) = strain[Mechanics::OXYGEN_CONCENTRATION];
         }
 
@@ -359,8 +356,7 @@ void VonMises_IsotropicKinematicHardening::getConstitutiveMatrix( double *&const
         alpha_np1        = &( d_tmp1BackStress[6 * d_gaussPtCnt] );
         ystre_np1        = d_tmp1YieldStress[d_gaussPtCnt];
         eph_bar_plas_np1 = d_tmp1EffectivePlasticStrain[d_gaussPtCnt];
-    }
-    else {
+    } else {
         stre_np1         = &( d_tmp2Stress[6 * d_gaussPtCnt] );
         alpha_np1        = &( d_tmp2BackStress[6 * d_gaussPtCnt] );
         ystre_np1        = d_tmp2YieldStress[d_gaussPtCnt];
@@ -567,8 +563,7 @@ void VonMises_IsotropicKinematicHardening::getConstitutiveMatrix( double *&const
                 d_constitutiveMatrix[i][j] -= ( term2 * n_dir[i] * n_dir[j] );
             }
         }
-    }
-    else {
+    } else {
         for ( int i = 0; i < 3; i++ ) {
             for ( int j = 0; j < 3; j++ ) {
                 d_constitutiveMatrix[i][j] += ( K - ( one3 * 2.0 * G ) );
@@ -878,8 +873,7 @@ void VonMises_IsotropicKinematicHardening::postNonlinearAssembly()
 {
     if ( Total_Gauss_Point == 0 ) {
         std::cout << "Total number of gauss points are zero." << std::endl;
-    }
-    else {
+    } else {
         double Plastic_Fraction = ( (double) Plastic_Gauss_Point ) / ( (double) Total_Gauss_Point );
         Plastic_Fraction        = Plastic_Fraction * 100.0;
         if ( d_iDebugPrintInfoLevel > 5 ) {

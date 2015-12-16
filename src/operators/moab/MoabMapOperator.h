@@ -45,7 +45,8 @@ namespace Operator {
  *\brief Map Operator for mapping quantity from Moab mesh onto AMP mesh.
  */
 //---------------------------------------------------------------------------//
-class MoabMapOperator : public AMP::Operator::Operator {
+class MoabMapOperator : public AMP::Operator::Operator
+{
 public:
     // Typedefs
     typedef AMP::Operator::Operator Base;

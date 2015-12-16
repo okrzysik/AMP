@@ -311,14 +311,12 @@ struct triplet {
     {
         if ( first < rhs.first ) {
             return false;
-        }
-        else if ( first > rhs.first ) {
+        } else if ( first > rhs.first ) {
             return true;
         }
         if ( second < rhs.second ) {
             return false;
-        }
-        else if ( second > rhs.second ) {
+        } else if ( second > rhs.second ) {
             return true;
         }
         return third >= rhs.third;
@@ -327,14 +325,12 @@ struct triplet {
     {
         if ( first < rhs.first ) {
             return false;
-        }
-        else if ( first > rhs.first ) {
+        } else if ( first > rhs.first ) {
             return true;
         }
         if ( second < rhs.second ) {
             return false;
-        }
-        else if ( second > rhs.second ) {
+        } else if ( second > rhs.second ) {
             return true;
         }
         return third > rhs.third;
@@ -343,14 +339,12 @@ struct triplet {
     {
         if ( first > rhs.first ) {
             return false;
-        }
-        else if ( first < rhs.first ) {
+        } else if ( first < rhs.first ) {
             return true;
         }
         if ( second > rhs.second ) {
             return false;
-        }
-        else if ( second < rhs.second ) {
+        } else if ( second < rhs.second ) {
             return true;
         }
         return third < rhs.third;
@@ -359,14 +353,12 @@ struct triplet {
     {
         if ( first > rhs.first ) {
             return false;
-        }
-        else if ( first < rhs.first ) {
+        } else if ( first < rhs.first ) {
             return true;
         }
         if ( second > rhs.second ) {
             return false;
-        }
-        else if ( second < rhs.second ) {
+        } else if ( second < rhs.second ) {
             return true;
         }
         return third <= rhs.third;
@@ -380,7 +372,8 @@ template <class T>
 void Utilities::quicksort( std::vector<T> &x )
 {
     long int n = static_cast<long int>( x.size() );
-    if ( n <= 1 ) return;
+    if ( n <= 1 )
+        return;
     T *arr = &x[0];
     bool test;
     long int i, ir, j, jstack, k, l, istack[100];
@@ -406,12 +399,12 @@ void Utilities::quicksort( std::vector<T> &x )
                     arr[i + 1] = a;
                 }
             }
-            if ( jstack == 0 ) return;
+            if ( jstack == 0 )
+                return;
             ir = istack[jstack]; // Pop stack and begin a new round of partitioning.
             l  = istack[jstack - 1];
             jstack -= 2;
-        }
-        else {
+        } else {
             k = ( l + ir ) / 2; // Choose median of left, center and right elements as partitioning
                                 // element a. Also rearrange so that a(l) < a(l+1) < a(ir).
             tmp_a      = arr[k];
@@ -436,11 +429,13 @@ void Utilities::quicksort( std::vector<T> &x )
             j = ir;
             a = arr[l + 1]; // Partitioning element.
             for ( i = l + 2; i <= ir; i++ ) {
-                if ( arr[i] < a ) continue;
+                if ( arr[i] < a )
+                    continue;
                 while ( arr[j] > a ) // Scan down to find element < a.
                     j--;
-                if ( j < i ) break; // Pointers crossed. Exit with partitioning complete.
-                tmp_a  = arr[i];    // Exchange elements of both arrays.
+                if ( j < i )
+                    break;       // Pointers crossed. Exit with partitioning complete.
+                tmp_a  = arr[i]; // Exchange elements of both arrays.
                 arr[i] = arr[j];
                 arr[j] = tmp_a;
             }
@@ -452,8 +447,7 @@ void Utilities::quicksort( std::vector<T> &x )
                 istack[jstack]     = ir;
                 istack[jstack - 1] = i;
                 ir                 = j - 1;
-            }
-            else {
+            } else {
                 istack[jstack]     = j - 1;
                 istack[jstack - 1] = l;
                 l                  = i;
@@ -467,9 +461,11 @@ void Utilities::quicksort( std::vector<T> &x )
 template <class T1, class T2>
 void Utilities::quicksort( std::vector<T1> &x, std::vector<T2> &y )
 {
-    if ( x.size() != y.size() ) AMP_ERROR( "x and y must be the same size" );
+    if ( x.size() != y.size() )
+        AMP_ERROR( "x and y must be the same size" );
     long int n = static_cast<long int>( x.size() );
-    if ( n <= 1 ) return;
+    if ( n <= 1 )
+        return;
     T1 *arr = &x[0];
     T2 *brr = &y[0];
     bool test;
@@ -501,12 +497,12 @@ void Utilities::quicksort( std::vector<T1> &x, std::vector<T2> &y )
                     brr[i + 1] = b;
                 }
             }
-            if ( jstack == 0 ) return;
+            if ( jstack == 0 )
+                return;
             ir = istack[jstack]; // Pop stack and begin a new round of partitioning.
             l  = istack[jstack - 1];
             jstack -= 2;
-        }
-        else {
+        } else {
             k = ( l + ir ) / 2; // Choose median of left, center and right elements as partitioning
                                 // element a. Also rearrange so that a(l) ? a(l+1) ? a(ir).
             tmp_a      = arr[k];
@@ -544,11 +540,13 @@ void Utilities::quicksort( std::vector<T1> &x, std::vector<T2> &y )
             a = arr[l + 1]; // Partitioning element.
             b = brr[l + 1];
             for ( i = l + 2; i <= ir; i++ ) {
-                if ( arr[i] < a ) continue;
+                if ( arr[i] < a )
+                    continue;
                 while ( arr[j] > a ) // Scan down to find element < a.
                     j--;
-                if ( j < i ) break; // Pointers crossed. Exit with partitioning complete.
-                tmp_a  = arr[i];    // Exchange elements of both arrays.
+                if ( j < i )
+                    break;       // Pointers crossed. Exit with partitioning complete.
+                tmp_a  = arr[i]; // Exchange elements of both arrays.
                 arr[i] = arr[j];
                 arr[j] = tmp_a;
                 tmp_b  = brr[i];
@@ -565,8 +563,7 @@ void Utilities::quicksort( std::vector<T1> &x, std::vector<T2> &y )
                 istack[jstack]     = ir;
                 istack[jstack - 1] = i;
                 ir                 = j - 1;
-            }
-            else {
+            } else {
                 istack[jstack]     = j - 1;
                 istack[jstack - 1] = l;
                 l                  = i;
@@ -582,7 +579,8 @@ void Utilities::quicksort( std::vector<T1> &x, std::vector<T2> &y )
 template <class T>
 void Utilities::unique( std::vector<T> &x )
 {
-    if ( x.size() <= 1 ) return;
+    if ( x.size() <= 1 )
+        return;
     // First perform a quicksort
     Utilities::quicksort( x );
     // Next remove duplicate entries
@@ -593,7 +591,8 @@ void Utilities::unique( std::vector<T> &x )
             pos++;
         }
     }
-    if ( pos < x.size() ) x.resize( pos );
+    if ( pos < x.size() )
+        x.resize( pos );
 }
 
 

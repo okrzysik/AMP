@@ -7,7 +7,8 @@
   @author Rahul Sampath
   */
 template <typename T>
-class IndexHolder {
+class IndexHolder
+{
 public:
     T *value;
     unsigned int index;

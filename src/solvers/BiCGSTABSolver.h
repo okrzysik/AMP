@@ -19,7 +19,8 @@ namespace Solver {
  * If a preconditioner is provided right preconditioning is done
  */
 
-class BiCGSTABSolver : public SolverStrategy {
+class BiCGSTABSolver : public SolverStrategy
+{
 public:
     /**
      * default constructor

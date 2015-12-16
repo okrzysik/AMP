@@ -45,8 +45,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             material->property( ymString )->evalv( YM, inputMaterialParameters );
             material->property( prString )->evalv( PR, inputMaterialParameters );
             std::cout << exeName << ": Passed if burnup is NOT used." << std::endl;
-        }
-        else {
+        } else {
             inputMaterialParameters.insert( std::make_pair( oxygenString, oxygenVec ) );
             inputMaterialParameters.insert( std::make_pair( burnupString, burnupVec ) );
             inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec ) );
@@ -68,12 +67,10 @@ int main( int argc, char *argv[] )
 
     try {
         myTest( &ut, exeName );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

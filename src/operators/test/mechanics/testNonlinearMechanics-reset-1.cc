@@ -79,8 +79,7 @@ void myTest( AMP::UnitTest *ut )
                         "Key ''Mechanics_Linear_Element_Reduced'' is missing!" );
             mechNonlinElemDbStr = "Mechanics_Nonlinear_Element_Reduced";
             mechLinElemDbStr    = "Mechanics_Linear_Element_Reduced";
-        }
-        else {
+        } else {
             AMP_INSIST( input_db->keyExists( "Mechanics_Nonlinear_Element_Normal" ),
                         "Key ''Mechanics_Nonlinear_Element_Normal'' is missing!" );
             AMP_INSIST( input_db->keyExists( "Mechanics_Linear_Element_Normal" ),
@@ -229,12 +228,10 @@ int main( int argc, char *argv[] )
 
     try {
         myTest( &ut );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

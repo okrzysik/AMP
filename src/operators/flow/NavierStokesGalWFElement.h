@@ -14,7 +14,8 @@ namespace AMP {
 namespace Operator {
 
 
-class NavierStokesGalWFElement : public FlowElement {
+class NavierStokesGalWFElement : public FlowElement
+{
 public:
     //!  Constructor.
     explicit NavierStokesGalWFElement( const AMP::shared_ptr<ElementOperationParameters> &params )

@@ -9,7 +9,8 @@
 namespace AMP {
 namespace Operator {
 
-class LinearCoupledFlowOperator : public Operator {
+class LinearCoupledFlowOperator : public Operator
+{
 public:
     explicit LinearCoupledFlowOperator( const AMP::shared_ptr<OperatorParameters> &params )
         : Operator( params )

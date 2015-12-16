@@ -169,14 +169,12 @@ int triangle_t::project_point( double const *point, double *projection, double t
             ++i;
             // 2 -> projection onto the edge is normal, we have found the closest point on the
             // triangle
-        }
-        else if ( status == 2 ) {
+        } else if ( status == 2 ) {
             return 3 + i;
             // 0 -> point was projected onto the first support point
             //      if we are on edge 0 we need to check edge 2
             //      otherwise we are done
-        }
-        else if ( status == 0 ) {
+        } else if ( status == 0 ) {
             if ( i == 0 ) {
                 i = 2;
                 continue;
@@ -185,15 +183,13 @@ int triangle_t::project_point( double const *point, double *projection, double t
             // 1 -> point was projected onto the second support point
             //      if we are on edge 2 we are done
             //      otherwise we check the next edge
-        }
-        else if ( status == 1 ) {
+        } else if ( status == 1 ) {
             if ( i == 2 ) {
                 return 0;
             }
             ++i;
             // just making sure nothing unexpected happened
-        }
-        else {
+        } else {
             std::cerr << "how did you end up here in the first place?" << std::endl;
             assert( false );
         } // end if

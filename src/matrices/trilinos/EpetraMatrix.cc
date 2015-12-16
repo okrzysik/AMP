@@ -34,7 +34,8 @@ EpetraMatrix::EpetraMatrix( Epetra_Map &map, Epetra_Map *, int *entities )
 
 Matrix::shared_ptr EpetraMatrix::createView( shared_ptr in_matrix )
 {
-    if ( in_matrix->isA<ManagedEpetraMatrix>() ) return in_matrix;
+    if ( in_matrix->isA<ManagedEpetraMatrix>() )
+        return in_matrix;
 
     AMP_ERROR( "Managed memory matrix is not well defined" );
     return Matrix::shared_ptr();
@@ -73,8 +74,7 @@ void EpetraMatrix::fillComplete()
             d_epetraMatrix->FillComplete( *d_DomainMap, *d_RangeMap );
         else
             d_epetraMatrix->FillComplete( *d_RangeMap, *d_RangeMap );
-    }
-    else {
+    } else {
         d_epetraMatrix->FillComplete();
     }
 }

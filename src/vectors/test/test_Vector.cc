@@ -137,7 +137,8 @@ int main( int argc, char **argv )
     ut.report();
 
     int num_failed = ut.NumFailGlobal();
-    if ( num_failed == 0 ) AMP::pout << "No errors detected" << std::endl;
+    if ( num_failed == 0 )
+        AMP::pout << "No errors detected" << std::endl;
     AMP::AMPManager::shutdown();
     return num_failed;
 }

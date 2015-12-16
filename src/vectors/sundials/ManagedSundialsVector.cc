@@ -69,8 +69,7 @@ ManagedSundialsVector *ManagedSundialsVector::rawClone() const
     AMP::shared_ptr<ManagedVectorParameters> p( new ManagedSundialsVectorParameters );
     if ( !d_vBuffer ) {
         p->d_Engine = d_Engine->cloneEngine( VectorEngine::BufferPtr() );
-    }
-    else {
+    } else {
         p->d_Buffer = VectorEngine::BufferPtr( new VectorEngine::Buffer( d_vBuffer->size() ) );
         p->d_Engine = d_Engine->cloneEngine( p->d_Buffer );
     }

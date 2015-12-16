@@ -15,7 +15,8 @@ namespace LinearAlgebra {
   *
   * \see MultiVector
   */
-class MultiVariable : public Variable {
+class MultiVariable : public Variable
+{
 public:
     //! A typedef for an iterator for a MultiVariable
     typedef std::vector<Variable::shared_ptr>::iterator iterator;

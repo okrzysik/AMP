@@ -22,7 +22,8 @@ namespace Operator {
   A class for representing the element level computation performed within a
   nonlinear volume integral operator.
 */
-class SourceNonlinearElement : public ElementOperation {
+class SourceNonlinearElement : public ElementOperation
+{
 public:
     /**
       Constructor. This builds the finite element shape functions. Since this derived

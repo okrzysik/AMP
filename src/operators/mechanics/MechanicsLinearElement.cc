@@ -242,10 +242,12 @@ void MechanicsLinearElement::apply_Reduced()
                 materialStiffnessTemp[i][j] = 0.0;
 
         for ( unsigned int i = 0; i < ( 3 * num_nodes ); i++ )
-            for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ ) materialStiffness[i][j] = 0.0;
+            for ( unsigned int j        = 0; j < ( 3 * num_nodes ); j++ )
+                materialStiffness[i][j] = 0.0;
 
         for ( int i = 0; i < 6; i++ )
-            for ( int j = 0; j < 6; j++ ) materialMatrix[i][j] = 0.0;
+            for ( int j              = 0; j < 6; j++ )
+                materialMatrix[i][j] = 0.0;
 
         d_materialModel->getConstitutiveMatrix( constitutiveMatrix );
 
@@ -436,10 +438,12 @@ void MechanicsLinearElement::apply_Normal()
                 materialStiffnessTemp[i][j] = 0.0;
 
         for ( unsigned int i = 0; i < ( 3 * num_nodes ); i++ )
-            for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ ) materialStiffness[i][j] = 0.0;
+            for ( unsigned int j        = 0; j < ( 3 * num_nodes ); j++ )
+                materialStiffness[i][j] = 0.0;
 
         for ( int i = 0; i < 6; i++ )
-            for ( int j = 0; j < 6; j++ ) materialMatrix[i][j] = 0.0;
+            for ( int j              = 0; j < 6; j++ )
+                materialMatrix[i][j] = 0.0;
 
         d_materialModel->getConstitutiveMatrix( constitutiveMatrix );
 

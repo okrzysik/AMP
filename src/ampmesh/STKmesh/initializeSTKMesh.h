@@ -13,7 +13,8 @@ namespace Mesh {
  * \details  This class provides routines for initializing and finalizing STKmesh.
  *    Note: this class is not thread safe yet.
  */
-class initializeSTKMesh {
+class initializeSTKMesh
+{
 public:
     /*!
      *  Constructor that inializes STKmesh on the given communicator.

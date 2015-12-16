@@ -12,7 +12,8 @@ namespace Solver {
  * The CGSolver class implements the Conjugate Gradient method
  */
 
-class CGSolver : public SolverStrategy {
+class CGSolver : public SolverStrategy
+{
 public:
     /**
      * default constructor

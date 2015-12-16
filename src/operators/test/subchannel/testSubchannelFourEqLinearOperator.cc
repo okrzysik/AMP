@@ -165,8 +165,7 @@ size_t getMATLABAxialIndex( AMP::Mesh::MeshElement face, bool is_axial_face_quan
                 break;
             }
         }
-    }
-    else {
+    } else {
         for ( size_t k = 0; k < numAxialIntervals; ++k ) {
             if ( AMP::Utilities::approx_equal( centroid[2], ( k + 0.5 ) * dz, 1.0e-12 ) ) {
                 j          = k;
@@ -175,7 +174,8 @@ size_t getMATLABAxialIndex( AMP::Mesh::MeshElement face, bool is_axial_face_quan
             }
         }
     }
-    if ( !foundIndex ) AMP_ERROR( "Axial index was not found" );
+    if ( !foundIndex )
+        AMP_ERROR( "Axial index was not found" );
 
     return j;
 }
@@ -449,9 +449,8 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
                               << ") (MATLAB indices): " << J_reference[i][j] << " (MATLAB) vs. "
                               << J_test_MATLAB[i][j] << " (AMP)" << std::endl;
                 }
-            }
-            else if ( !AMP::Utilities::approx_equal(
-                          J_reference[i][j], J_test_MATLAB[i][j], 1.0e-7 ) ) {
+            } else if ( !AMP::Utilities::approx_equal(
+                            J_reference[i][j], J_test_MATLAB[i][j], 1.0e-7 ) ) {
                 passed = false;
                 std::cout << "Values are inconsistent for entry (" << i << "," << j
                           << ") (MATLAB indices): " << J_reference[i][j] << " (MATLAB) vs. "
@@ -565,8 +564,7 @@ void Test( AMP::UnitTest *ut, const std::string &exeName )
     size_t Ngaps = interiorLateralFaceMap.size();
     if ( Ngaps == 36 ) { // for 3x3 subchannel array with 3 axial intervals, there are 12x3=36 gaps
         ut->passes( exeName + ": number of lateral gaps" );
-    }
-    else {
+    } else {
         std::cout << "Incorrent number of lateral gaps. Found: " << Ngaps << ". Expected: 36."
                   << std::endl;
         ut->failure( exeName + ": number of lateral gaps" );
@@ -602,7 +600,8 @@ void Test( AMP::UnitTest *ut, const std::string &exeName )
             }
         }
         // ensure that a valid axial index was found
-        if ( !found_axial_index ) AMP_ERROR( "A cell was not in center of any axial interval" );
+        if ( !found_axial_index )
+            AMP_ERROR( "A cell was not in center of any axial interval" );
     } // end for cell
 
     // get scale factors for axial mass flow rate, enthalpy, and pressure
@@ -21447,8 +21446,10 @@ void Test( AMP::UnitTest *ut, const std::string &exeName )
     AMP::Discretization::DOFManager::shared_ptr right_DOFManager =
         testJacobian->getRightDOFManager();
     bool equal_to_leftDOFManager = false, equal_to_rightDOFManager = false;
-    if ( *left_DOFManager == *subchannelDOFManager ) equal_to_leftDOFManager   = true;
-    if ( *right_DOFManager == *subchannelDOFManager ) equal_to_rightDOFManager = true;
+    if ( *left_DOFManager == *subchannelDOFManager )
+        equal_to_leftDOFManager = true;
+    if ( *right_DOFManager == *subchannelDOFManager )
+        equal_to_rightDOFManager = true;
     AMP_ASSERT( equal_to_leftDOFManager );
     AMP_ASSERT( equal_to_rightDOFManager );
 
@@ -21489,12 +21490,10 @@ int main( int argc, char *argv[] )
     for ( int i = 0; i < NUMFILES; i++ ) {
         try {
             Test( &ut, files[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing: " + files[i] );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing: " + files[i] );

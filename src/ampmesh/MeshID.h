@@ -82,8 +82,9 @@ public:
         data[0] = mesh_ID.data;
         // memcpy(data,(uint64*)&mesh_ID,sizeof(uint64));
         // Set the bit for is_local
-        unsigned int tmp   = 0x00000000;
-        if ( isLocal ) tmp = 0x80000000;
+        unsigned int tmp = 0x00000000;
+        if ( isLocal )
+            tmp = 0x80000000;
         // Add the owner_rank
         tmp += ( 0x007FFFFF & owner_rank_id ) << 8;
         // Add the type_id

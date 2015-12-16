@@ -433,12 +433,10 @@ int main( int argc, char *argv[] )
         if ( l2err1 < 1.e-6 and l2err2 < 1.e-6 and l2err3 < 1.e-6 ) {
             ut.passes( "fick, fick-soret/off, and fick-soret/zero all agree" );
         }
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

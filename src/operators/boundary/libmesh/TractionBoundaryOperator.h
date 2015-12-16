@@ -8,7 +8,8 @@
 namespace AMP {
 namespace Operator {
 
-class TractionBoundaryOperator : public BoundaryOperator {
+class TractionBoundaryOperator : public BoundaryOperator
+{
 public:
     explicit TractionBoundaryOperator(
         const AMP::shared_ptr<TractionBoundaryOperatorParameters> &params );

@@ -8,7 +8,8 @@ namespace AMP {
 /** \class Castable
   * \brief A convenience class for determining type information
   */
-class Castable {
+class Castable
+{
 public:
     /** \brief Destructor
       */

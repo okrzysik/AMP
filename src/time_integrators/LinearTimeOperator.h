@@ -27,7 +27,8 @@ namespace TimeIntegrator {
   @see Operator
   @see SolverStrategy
 */
-class LinearTimeOperator : public AMP::Operator::LinearOperator {
+class LinearTimeOperator : public AMP::Operator::LinearOperator
+{
 public:
     explicit LinearTimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParameters> params );
     virtual ~LinearTimeOperator();

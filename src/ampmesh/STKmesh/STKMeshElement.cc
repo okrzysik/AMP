@@ -28,10 +28,14 @@ unsigned int STKMeshElementTypeID()
 AMP::Mesh::GeomType geom_type( const stk::mesh::EntityRank rank )
 {
     switch ( rank ) {
-    case stk::mesh::fem::FEMMetaData::NODE_RANK + 0: return Vertex;
-    case stk::mesh::fem::FEMMetaData::NODE_RANK + 1: return Edge;
-    case stk::mesh::fem::FEMMetaData::NODE_RANK + 2: return Face;
-    case stk::mesh::fem::FEMMetaData::NODE_RANK + 3: return Volume;
+    case stk::mesh::fem::FEMMetaData::NODE_RANK + 0:
+        return Vertex;
+    case stk::mesh::fem::FEMMetaData::NODE_RANK + 1:
+        return Edge;
+    case stk::mesh::fem::FEMMetaData::NODE_RANK + 2:
+        return Face;
+    case stk::mesh::fem::FEMMetaData::NODE_RANK + 3:
+        return Volume;
     }
     return Vertex;
 }
@@ -144,8 +148,7 @@ std::vector<MeshElement> STKMeshElement::getElements( const GeomType type ) cons
             AMP_ERROR( "A vertex is the base element and cannot have and sub-elements" );
         children.resize( 1 );
         children[0] = *this;
-    }
-    else if ( type == d_globalID.type() ) {
+    } else if ( type == d_globalID.type() ) {
         // Return the children of the current element
         const stk::mesh::PairIterRelation r = elem->relations( elem->entity_rank() );
         if ( r.first != r.second ) {
@@ -153,21 +156,18 @@ std::vector<MeshElement> STKMeshElement::getElements( const GeomType type ) cons
             unsigned c = 0;
             for ( stk::mesh::PairIterRelation::iterator i = r.first; i != r.second; ++i, ++c )
                 children[c] = STKMeshElement( d_dim, i->entity(), d_rank, d_meshID, d_mesh );
-        }
-        else {
+        } else {
             children.resize( 1 );
             children[0] = *this;
         }
-    }
-    else if ( type == Vertex ) {
+    } else if ( type == Vertex ) {
         // Return the nodes of the current element
         const stk::mesh::PairIterRelation r = elem->node_relations();
         children.resize( r.second - r.first );
         int c = 0;
         for ( stk::mesh::PairIterRelation::iterator i = r.first; i != r.second; ++i, ++c )
             children[c] = STKMeshElement( d_dim, i->entity(), d_rank, d_meshID, d_mesh );
-    }
-    else {
+    } else {
         // Return the children
         stk::mesh::PairIterRelation r;
         if ( type == Edge )
@@ -205,8 +205,7 @@ std::vector<MeshElement::shared_ptr> STKMeshElement::getNeighbors() const
                 new STKMeshElement( d_dim, neighbor_nodes[i], d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;
         }
-    }
-    else if ( (int) d_globalID.type() == d_dim ) {
+    } else if ( (int) d_globalID.type() == d_dim ) {
         // Return the neighbors of the current element
         stk::mesh::Entity *elem = ptr_element;
 
@@ -240,8 +239,7 @@ std::vector<MeshElement::shared_ptr> STKMeshElement::getNeighbors() const
                 new STKMeshElement( d_dim, neighbor_elem, d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;
         }
-    }
-    else {
+    } else {
         // We constructed a temporary STKmesh object and do not have access to the neighbor info
     }
     return neighbors;
@@ -278,8 +276,7 @@ double STKMeshElement::volume() const
         const unsigned cubDegree = 4;
         Intrepid::DefaultCubatureFactory<double> cubFactory;
         myCub = cubFactory.create( cell_topo, cubDegree );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         AMP_ERROR( "STKMeshElement::volume mesh contains elements that Intrepid doesn't support "
                    "for quadrature." );
     }
@@ -298,7 +295,8 @@ double STKMeshElement::volume() const
     for ( unsigned i = 0; i != numNodes; ++i ) {
         const stk::mesh::Entity *node = elem_nodes[i].entity();
         const double *X = (const double *) stk::mesh::field_data( *coordinates, *node );
-        for ( int j = 0; j < d_dim; j++ ) cellNodes( 0, i, j ) = X[j];
+        for ( int j = 0; j < d_dim; j++ )
+            cellNodes( 0, i, j ) = X[j];
     }
 
     myCub->getCubature( cub_points, cub_weights );
@@ -315,7 +313,8 @@ double STKMeshElement::volume() const
 }
 std::vector<double> STKMeshElement::coord() const
 {
-    if ( d_globalID.type() != Vertex ) AMP_ERROR( "coord is only defined for Nodes" );
+    if ( d_globalID.type() != Vertex )
+        AMP_ERROR( "coord is only defined for Nodes" );
     stk::mesh::Entity *node = (stk::mesh::Entity *) ptr_element;
 
     CartesianField *coordinates = d_mesh->d_STKMeshMeta->get_field<CartesianField>( "coordinates" );
@@ -326,7 +325,8 @@ std::vector<double> STKMeshElement::coord() const
 }
 std::vector<double> STKMeshElement::centroid() const
 {
-    if ( d_globalID.type() == Vertex ) return coord();
+    if ( d_globalID.type() == Vertex )
+        return coord();
     stk::mesh::Entity *elem = (stk::mesh::Entity *) ptr_element;
 
     std::vector<double> x( d_dim, 0.0 );
@@ -336,10 +336,12 @@ std::vector<double> STKMeshElement::centroid() const
           ++i ) {
         const stk::mesh::Entity *node = i->entity();
         const double *X               = (double *) stk::mesh::field_data( *coordinates, *node );
-        for ( int j = 0; j < d_dim; j++ ) x[j] += X[j];
+        for ( int j = 0; j < d_dim; j++ )
+            x[j] += X[j];
     }
     const unsigned len = elem_nodes.end() - elem_nodes.begin();
-    for ( int i = 0; i < d_dim; i++ ) x[i] /= len;
+    for ( int i = 0; i < d_dim; i++ )
+        x[i] /= len;
     return x;
 }
 bool STKMeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
@@ -369,8 +371,7 @@ bool STKMeshElement::isOnSurface() const
                  d_globalID )
                 return true;
         }
-    }
-    else {
+    } else {
         std::vector<MeshElement> &data = *( d_mesh->d_ghostSurfaceElements[type] );
         size_t index                   = AMP::Utilities::findfirst( data, search );
         if ( index < data.size() ) {
@@ -390,13 +391,11 @@ bool STKMeshElement::isInBlock( int id ) const
     if ( type == Vertex ) {
         // Entity is a libmesh node
         AMP_ERROR( "isInBlock is not currently implimented for anything but elements" );
-    }
-    else if ( (int) type == d_dim ) {
+    } else if ( (int) type == d_dim ) {
         // Entity is a libmesh node
         // stk::mesh::Entity* elem = (stk::mesh::Entity*) ptr_element;
         in_block = false; // elem->subdomain_id() == id;
-    }
-    else {
+    } else {
         // All other entities are on the boundary iff all of their verticies are on the surface
         AMP_ERROR( "isInBlock is not currently implimented for anything but elements" );
     }

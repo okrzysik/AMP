@@ -14,7 +14,8 @@ namespace LinearAlgebra {
 
 static inline double *getBufferPtr( VectorEngine::BufferPtr buf )
 {
-    if ( buf->empty() ) return NULL;
+    if ( buf->empty() )
+        return NULL;
     return &buf->operator[]( 0 );
 }
 
@@ -41,7 +42,8 @@ EpetraVectorEngineParameters::~EpetraVectorEngineParameters() {}
 ********************************************************/
 Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
 {
-    if ( d_emap.get() != NULL ) return *d_emap;
+    if ( d_emap.get() != NULL )
+        return *d_emap;
 // Create the epetra map
 #ifdef USE_EXT_MPI
     Epetra_MpiComm comm = d_comm.getCommunicator();
@@ -211,34 +213,41 @@ void EpetraVectorEngine::setRandomValues( void )
 void EpetraVectorEngine::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
     INCREMENT_COUNT( "Virtual" );
-    for ( int i = 0; i != num; i++ ) getEpetra_Vector()[indices[i]] = vals[i];
+    for ( int i                        = 0; i != num; i++ )
+        getEpetra_Vector()[indices[i]] = vals[i];
 }
 
 
 void EpetraVectorEngine::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
     INCREMENT_COUNT( "Virtual" );
-    if ( num == 0 ) return;
+    if ( num == 0 )
+        return;
     AMP_ASSERT( getGlobalSize() < 0x80000000 );
     std::vector<int> indices2( num, 0 );
-    for ( int i = 0; i < num; i++ ) indices2[i] = (int) indices[i];
+    for ( int i     = 0; i < num; i++ )
+        indices2[i] = (int) indices[i];
     getEpetra_Vector().ReplaceGlobalValues( num, const_cast<double *>( vals ), &indices2[0] );
 }
 
 void EpetraVectorEngine::addValuesByLocalID( int num, size_t *indices, const double *vals )
 {
     INCREMENT_COUNT( "Virtual" );
-    if ( num == 0 ) return;
-    for ( int i = 0; i != num; i++ ) getEpetra_Vector()[indices[i]] += vals[i];
+    if ( num == 0 )
+        return;
+    for ( int i = 0; i != num; i++ )
+        getEpetra_Vector()[indices[i]] += vals[i];
 }
 
 void EpetraVectorEngine::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
     INCREMENT_COUNT( "Virtual" );
-    if ( num == 0 ) return;
+    if ( num == 0 )
+        return;
     AMP_ASSERT( getGlobalSize() < 0x80000000 );
     std::vector<int> indices2( num, 0 );
-    for ( int i = 0; i < num; i++ ) indices2[i] = (int) indices[i];
+    for ( int i     = 0; i < num; i++ )
+        indices2[i] = (int) indices[i];
     getEpetra_Vector().SumIntoGlobalValues( num, const_cast<double *>( vals ), &indices2[0] );
 }
 

@@ -128,7 +128,8 @@ void testAMPMesh( AMP::UnitTest *ut )
     AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Edge );
     bool passes                      = true;
     for ( size_t i = 0; i < iterator.size(); i++ ) {
-        if ( !AMP::Utilities::approx_equal( iterator->volume(), dx, 1e-12 ) ) passes = false;
+        if ( !AMP::Utilities::approx_equal( iterator->volume(), dx, 1e-12 ) )
+            passes = false;
     }
     if ( passes )
         ut->passes( "Simple structured mesh has correct edge legth" );
@@ -137,7 +138,8 @@ void testAMPMesh( AMP::UnitTest *ut )
     iterator = mesh->getIterator( AMP::Mesh::Face );
     passes   = true;
     for ( size_t i = 0; i < iterator.size(); i++ ) {
-        if ( !AMP::Utilities::approx_equal( iterator->volume(), dx * dx, 1e-12 ) ) passes = false;
+        if ( !AMP::Utilities::approx_equal( iterator->volume(), dx * dx, 1e-12 ) )
+            passes = false;
     }
     if ( passes )
         ut->passes( "Simple structured mesh has correct face area" );
@@ -229,8 +231,7 @@ void testMoabMesh( AMP::UnitTest *ut )
     // Create an MOAB mesh
     try {
         AMP::shared_ptr<AMP::Mesh::moabMesh> mesh( new AMP::Mesh::moabMesh( params ) );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         ut->expected_failure( "MOAB meshes cannot be created yet" );
     }
 

@@ -42,7 +42,8 @@ static const double ranges[2][2] = { { TminVal, TmaxVal }, { uminVal, umaxVal } 
 
 //=================== Classes =======================================================
 
-class FickCoefficientProp : public Property<double> {
+class FickCoefficientProp : public Property<double>
+{
 public:
     FickCoefficientProp()
         : Property<double>( name_base + "_" + "FickCoefficient", // Name string

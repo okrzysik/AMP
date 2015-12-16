@@ -17,7 +17,8 @@ namespace Solver {
  * solver
  * as described and implemented by Carlson et. al.
  */
-class NonlinearKrylovAccelerator : public SolverStrategy {
+class NonlinearKrylovAccelerator : public SolverStrategy
+{
 
 public:
     /**

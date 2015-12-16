@@ -20,7 +20,8 @@ namespace Operator {
   A class to represent Frapcon Flow operator. This operator acts as a heat sink and
   should be used to compute the 1D flow temperature in the axial direction of the pellet/clad.
   */
-class FlowFrapconJacobian : public Operator {
+class FlowFrapconJacobian : public Operator
+{
 public:
     /**
       Constructor creates a simpleVariables for Input and Output. The reset is called to
@@ -101,11 +102,9 @@ public:
         double cp = 0.0;
         if ( T_b < 544 ) {
             cp = 2.4e5;
-        }
-        else if ( 544 <= T_b && T_b < 588 ) {
+        } else if ( 544 <= T_b && T_b < 588 ) {
             cp = 2.4e5 * ( 1.0 + 2.9e-3 * ( 1.8 * T_b - 1031.0 ) );
-        }
-        else {
+        } else {
             cp = 2.4e5 * ( 1.0 + 2.9e-3 * ( 1.8 * T_b - 979.4 ) );
         }
         return cp;

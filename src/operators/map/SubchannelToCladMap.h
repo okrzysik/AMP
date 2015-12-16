@@ -19,7 +19,8 @@ typedef AsyncMapOperatorParameters SubchannelToCladMapParameters;
  *    mesh1 - clad meshes
  *    mesh2 - subchannel mesh
  */
-class SubchannelToCladMap : public AMP::Operator::AsyncMapOperator {
+class SubchannelToCladMap : public AMP::Operator::AsyncMapOperator
+{
 public:
     /** \brief  Returns true if MapType = "SubchannelToCladMapParameters"
      * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db

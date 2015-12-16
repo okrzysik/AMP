@@ -11,7 +11,8 @@ inline VectorEngine::const_shared_ptr ManagedVector::getVectorEngine() const { r
 
 inline std::string ManagedVector::type() const
 {
-    if ( d_vBuffer ) return " ( managed data )";
+    if ( d_vBuffer )
+        return " ( managed data )";
     std::string retVal = " ( managed view of ";
     retVal += d_Engine->castTo<Vector>().type();
     retVal += " )";
@@ -21,9 +22,11 @@ inline std::string ManagedVector::type() const
 
 inline Vector::shared_ptr ManagedVector::getRootVector()
 {
-    if ( d_vBuffer ) return shared_from_this();
+    if ( d_vBuffer )
+        return shared_from_this();
     Vector *t = &( d_Engine->castTo<Vector>() );
-    if ( t->isA<ManagedVector>() ) return t->castTo<ManagedVector>().getRootVector();
+    if ( t->isA<ManagedVector>() )
+        return t->castTo<ManagedVector>().getRootVector();
     return t->shared_from_this();
 }
 
@@ -66,7 +69,8 @@ inline Vector::iterator ManagedVector::end()
 
 inline void ManagedVector::dataChanged()
 {
-    if ( *d_UpdateState == UNCHANGED ) *d_UpdateState = LOCAL_CHANGED;
+    if ( *d_UpdateState == UNCHANGED )
+        *d_UpdateState = LOCAL_CHANGED;
 }
 
 
@@ -75,8 +79,7 @@ inline Vector::shared_ptr ManagedVector::selectInto( const VectorSelector &s )
     Vector::shared_ptr result;
     if ( d_vBuffer ) {
         result = Vector::selectInto( s );
-    }
-    else {
+    } else {
         result = d_Engine->castTo<Vector>().selectInto( s );
     }
     return result;
@@ -88,8 +91,7 @@ inline Vector::const_shared_ptr ManagedVector::selectInto( const VectorSelector 
     Vector::const_shared_ptr result;
     if ( d_vBuffer ) {
         result = Vector::selectInto( s );
-    }
-    else {
+    } else {
         result = d_Engine->castTo<Vector>().selectInto( s );
     }
     return result;
@@ -170,7 +172,8 @@ inline double ManagedVector::maxNorm( void ) const { return d_Engine->maxNorm();
 
 inline double ManagedVector::dot( const VectorOperations &x ) const
 {
-    if ( x.isA<ManagedVector>() ) return d_Engine->dot( *x.castTo<ManagedVector>().d_Engine );
+    if ( x.isA<ManagedVector>() )
+        return d_Engine->dot( *x.castTo<ManagedVector>().d_Engine );
     return Vector::dot( *this );
 }
 
@@ -179,8 +182,7 @@ inline void ManagedVector::scale( double alpha, const VectorOperations &x )
 {
     if ( x.isA<ManagedVector>() ) {
         d_Engine->scale( alpha, *x.castTo<ManagedVector>().d_Engine );
-    }
-    else {
+    } else {
         Vector::scale( alpha, x );
     }
     dataChanged();
@@ -198,8 +200,7 @@ inline void ManagedVector::add( const VectorOperations &x, const VectorOperation
 {
     if ( x.isA<ManagedVector>() && y.isA<ManagedVector>() ) {
         d_Engine->add( *x.castTo<ManagedVector>().d_Engine, *y.castTo<ManagedVector>().d_Engine );
-    }
-    else {
+    } else {
         Vector::add( x, y );
     }
     dataChanged();
@@ -211,8 +212,7 @@ inline void ManagedVector::subtract( const VectorOperations &x, const VectorOper
     if ( x.isA<ManagedVector>() && y.isA<ManagedVector>() ) {
         d_Engine->subtract( *x.castTo<ManagedVector>().d_Engine,
                             *y.castTo<ManagedVector>().d_Engine );
-    }
-    else {
+    } else {
         Vector::subtract( x, y );
     }
     dataChanged();
@@ -224,8 +224,7 @@ inline void ManagedVector::multiply( const VectorOperations &x, const VectorOper
     if ( x.isA<ManagedVector>() && y.isA<ManagedVector>() ) {
         d_Engine->multiply( *x.castTo<ManagedVector>().d_Engine,
                             *y.castTo<ManagedVector>().d_Engine );
-    }
-    else {
+    } else {
         Vector::multiply( x, y );
     }
     dataChanged();
@@ -237,8 +236,7 @@ inline void ManagedVector::divide( const VectorOperations &x, const VectorOperat
     if ( x.isA<ManagedVector>() && y.isA<ManagedVector>() ) {
         d_Engine->divide( *x.castTo<ManagedVector>().d_Engine,
                           *y.castTo<ManagedVector>().d_Engine );
-    }
-    else {
+    } else {
         Vector::divide( x, y );
     }
     dataChanged();
@@ -260,8 +258,7 @@ inline void ManagedVector::linearSum( double alpha,
     if ( x.isA<ManagedVector>() && y.isA<ManagedVector>() ) {
         d_Engine->linearSum(
             alpha, *x.castTo<ManagedVector>().d_Engine, beta, *y.castTo<ManagedVector>().d_Engine );
-    }
-    else {
+    } else {
         Vector::linearSum( alpha, x, beta, y );
     }
     dataChanged();
@@ -274,8 +271,7 @@ ManagedVector::axpy( double alpha, const VectorOperations &x, const VectorOperat
     if ( x.isA<ManagedVector>() && y.isA<ManagedVector>() ) {
         d_Engine->axpy(
             alpha, *x.castTo<ManagedVector>().d_Engine, *y.castTo<ManagedVector>().d_Engine );
-    }
-    else {
+    } else {
         Vector::axpy( alpha, x, y );
     }
     dataChanged();
@@ -286,8 +282,7 @@ inline void ManagedVector::axpby( double alpha, double beta, const VectorOperati
 {
     if ( x.isA<ManagedVector>() ) {
         d_Engine->axpby( alpha, beta, *x.castTo<ManagedVector>().d_Engine );
-    }
-    else {
+    } else {
         Vector::axpby( alpha, beta, x );
     }
     dataChanged();
@@ -298,8 +293,7 @@ inline void ManagedVector::abs( const VectorOperations &x )
 {
     if ( x.isA<ManagedVector>() ) {
         d_Engine->abs( *x.castTo<ManagedVector>().d_Engine );
-    }
-    else {
+    } else {
         Vector::abs( x );
     }
     dataChanged();

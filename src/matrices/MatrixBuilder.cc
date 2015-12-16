@@ -33,8 +33,9 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr operandVec,
     if ( operandDOF->getComm().compare( resultVec->getComm() ) == 0 )
         AMP_ERROR( "operandDOF and resultDOF on different comm groups is NOT tested, and needs to "
                    "be fixed" );
-    AMP_MPI comm                    = operandDOF->getComm();
-    if ( comm.getSize() == 1 ) comm = AMP_MPI( AMP_COMM_SELF );
+    AMP_MPI comm = operandDOF->getComm();
+    if ( comm.getSize() == 1 )
+        comm = AMP_MPI( AMP_COMM_SELF );
 
     // Create the matrix parameters
     AMP::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrixParameters> params(
@@ -60,7 +61,8 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr operandVec,
         std::vector<size_t> row = operandDOF->getRowDOFs( obj );
         AMP_ASSERT( !row.empty() );
         size_t nnz = row.size();
-        for ( size_t i = 0; i < row.size(); i++ ) columns[i] = (int) row[i];
+        for ( size_t i = 0; i < row.size(); i++ )
+            columns[i] = (int) row[i];
         // Add the rows
         for ( size_t i = 0; i < ids.size(); i++ ) {
             int globalRowID = ids[i];
@@ -97,7 +99,8 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr operandVec,
         // Get the operand DOFs associated with the given element
         std::vector<size_t> row = operandDOF->getRowDOFs( obj );
         size_t nnz              = row.size();
-        for ( size_t i = 0; i < row.size(); i++ ) columns[i] = (int) row[i];
+        for ( size_t i = 0; i < row.size(); i++ )
+            columns[i] = (int) row[i];
         // Add the rows
         for ( size_t i = 0; i < ids.size(); i++ ) {
             int globalRowID = ids[i];
@@ -165,14 +168,11 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr operandVec,
 #else
         matrix = createDenseSerialMatrix( operandVec, resultVec );
 #endif
-    }
-    else if ( type == 1 ) {
+    } else if ( type == 1 ) {
         matrix = createManagedMatrix( operandVec, resultVec );
-    }
-    else if ( type == 2 ) {
+    } else if ( type == 2 ) {
         matrix = createDenseSerialMatrix( operandVec, resultVec );
-    }
-    else {
+    } else {
         AMP_ERROR( "Unknown matrix type to build" );
     }
     return matrix;

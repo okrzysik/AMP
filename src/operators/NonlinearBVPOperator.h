@@ -16,7 +16,8 @@ namespace Operator {
  * constructor
  * takes a pointer to a BVPOperatorParameters object
  */
-class NonlinearBVPOperator : public Operator {
+class NonlinearBVPOperator : public Operator
+{
 public:
     /**
      * Main constructor

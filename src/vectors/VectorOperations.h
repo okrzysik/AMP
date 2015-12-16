@@ -33,7 +33,8 @@ namespace LinearAlgebra {
   to know about VectorOperations.
   */
 
-class VectorOperations : public Castable {
+class VectorOperations : public Castable
+{
 public:
     /**
      * \brief  Virtual destructor

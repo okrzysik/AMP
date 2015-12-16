@@ -25,8 +25,7 @@ VolumeIntegralOperator::VolumeIntegralOperator(
 
     if ( params->d_sourcePhysicsModel ) {
         d_sourcePhysicsModel = params->d_sourcePhysicsModel;
-    }
-    else if ( params->d_db->keyExists( "SourcePhysicsModel" ) ) {
+    } else if ( params->d_db->keyExists( "SourcePhysicsModel" ) ) {
         d_sourcePhysicsModel = params->d_sourcePhysicsModel;
     }
 
@@ -110,8 +109,7 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
 
     if ( d_inpVariables->numVariables() > 0 ) {
         d_elementDofMap = d_inVec[0]->getDOFManager();
-    }
-    else if ( d_auxVariables->numVariables() > 0 ) {
+    } else if ( d_auxVariables->numVariables() > 0 ) {
         d_elementDofMap = d_auxVec[0]->getDOFManager();
     }
 
@@ -160,8 +158,7 @@ void VolumeIntegralOperator::preElementOperation( const AMP::Mesh::MeshElement &
             d_auxVec[var]->getValuesByGlobalID(
                 elemDofIds.size(), &elemDofIds[0], &elementAuxVectors[var][0] );
         }
-    }
-    else if ( d_isInputType == "NodalScalar" ) {
+    } else if ( d_isInputType == "NodalScalar" ) {
         AMP_INSIST( elemDofIds.empty(),
                     "d_elementDofMap contains elements, but type is NodalScalar" );
         for ( unsigned int var = 0; var < d_inpVariables->numVariables(); var++ ) {
@@ -178,7 +175,8 @@ void VolumeIntegralOperator::preElementOperation( const AMP::Mesh::MeshElement &
 
     d_elementOutputVector.resize( d_dofIndices.size() );
     // Reinitialize the std::vector to zero (resize does not do this)
-    for ( unsigned int i = 0; i < d_dofIndices.size(); i++ ) d_elementOutputVector[i] = 0.0;
+    for ( unsigned int i         = 0; i < d_dofIndices.size(); i++ )
+        d_elementOutputVector[i] = 0.0;
 
     d_srcNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
                                                   d_sourcePhysicsModel );

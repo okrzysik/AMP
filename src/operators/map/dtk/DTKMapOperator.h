@@ -15,7 +15,8 @@
 namespace AMP {
 namespace Operator {
 
-class DTKMapOperatorParameters : public OperatorParameters {
+class DTKMapOperatorParameters : public OperatorParameters
+{
 public:
     // Constructor.
     explicit DTKMapOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
@@ -40,7 +41,8 @@ public:
 /**
   * AMP operator element implementation for DTK Map operator.
 */
-class DTKMapOperator : public Operator {
+class DTKMapOperator : public Operator
+{
 public:
     /**
      * Constructor.

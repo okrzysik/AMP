@@ -11,7 +11,8 @@ namespace Operator {
 
 typedef OperatorParameters ContactResidualCorrectionParameters;
 
-class ContactResidualCorrection : public Operator {
+class ContactResidualCorrection : public Operator
+{
 public:
     explicit ContactResidualCorrection(
         const AMP::shared_ptr<ContactResidualCorrectionParameters> &params )

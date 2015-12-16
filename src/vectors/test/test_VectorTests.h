@@ -84,7 +84,8 @@ template <typename VECTOR_FACTORY, typename VIEWER>
 void DeepCloneOfView( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( VECTOR_FACTORY::getVector() );
-    if ( !vector1->isA<AMP::LinearAlgebra::MultiVector>() ) return;
+    if ( !vector1->isA<AMP::LinearAlgebra::MultiVector>() )
+        return;
     vector1                                        = VIEWER::view( vector1 );
     AMP::LinearAlgebra::Vector::shared_ptr vector2 = vector1->cloneVector();
     bool pass                                      = true;
@@ -105,7 +106,8 @@ void Bug_728( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Variable::shared_ptr var1 = vector->getVariable();
 
     // Exit if there is no associated variable
-    if ( !var1 ) return;
+    if ( !var1 )
+        return;
 
     AMP::LinearAlgebra::Variable::shared_ptr var2 = var1->cloneVariable( var1->getName() );
 
@@ -158,7 +160,8 @@ void SetToScalarVector( AMP::UnitTest *utils )
     std::vector<size_t> remoteDofs = vector->getDOFManager()->getRemoteDOFs();
     fail                           = false;
     for ( size_t i = 0; i < remoteDofs.size(); i++ ) {
-        if ( vector->getValueByGlobalID( remoteDofs[i] ) != 5. ) fail = true;
+        if ( vector->getValueByGlobalID( remoteDofs[i] ) != 5. )
+            fail = true;
     }
     if ( !fail )
         utils->passes( "Set ghost data to 5" );
@@ -176,9 +179,10 @@ void CloneVector( AMP::UnitTest *utils )
     utils->passes( "Clone created" );
     bool pass = true;
     for ( size_t i = 0; i != vector->numberOfDataBlocks(); i++ ) {
-        double *clone_ptr                   = clone->getRawDataBlock<double>( i );
-        double *vector_ptr                  = vector->getRawDataBlock<double>( i );
-        if ( clone_ptr == vector_ptr ) pass = false;
+        double *clone_ptr  = clone->getRawDataBlock<double>( i );
+        double *vector_ptr = vector->getRawDataBlock<double>( i );
+        if ( clone_ptr == vector_ptr )
+            pass = false;
     }
     if ( pass )
         utils->passes( "New data allocated" );
@@ -314,7 +318,8 @@ void ScaleVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::iterator endData1 = vector1->end();
     AMP::LinearAlgebra::Vector::iterator curData2 = vector2->begin();
     while ( curData1 != endData1 ) {
-        if ( *curData1 != beta * *curData2 ) pass = false;
+        if ( *curData1 != beta * *curData2 )
+            pass = false;
         ++curData1;
         ++curData2;
     }
@@ -417,7 +422,8 @@ void AddVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::iterator curData2 = vector2->begin();
     AMP::LinearAlgebra::Vector::iterator curData3 = vector3->begin();
     while ( curData1 != endData1 ) {
-        if ( *curData3 != *curData1 + *curData2 ) pass = false;
+        if ( *curData3 != *curData1 + *curData2 )
+            pass = false;
         ++curData1;
         ++curData2;
         ++curData3;
@@ -446,7 +452,8 @@ void SubtractVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::iterator curData2 = vector2->begin();
     AMP::LinearAlgebra::Vector::iterator curData3 = vector3->begin();
     while ( curData1 != endData1 ) {
-        if ( *curData3 != *curData1 - *curData2 ) pass = false;
+        if ( *curData3 != *curData1 - *curData2 )
+            pass = false;
         ++curData1;
         ++curData2;
         ++curData3;
@@ -480,7 +487,8 @@ void MultiplyVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::iterator curData2 = vector2->begin();
     AMP::LinearAlgebra::Vector::iterator curData3 = vector3->begin();
     while ( curData1 != endData1 ) {
-        if ( *curData3 != *curData1 * *curData2 ) pass = false;
+        if ( *curData3 != *curData1 * *curData2 )
+            pass = false;
         ++curData1;
         ++curData2;
         ++curData3;
@@ -507,7 +515,8 @@ void DivideVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::iterator curVal3 = vector3->begin();
     AMP::LinearAlgebra::Vector::iterator endVal3 = vector3->end();
     while ( curVal3 != endVal3 ) {
-        if ( *curVal3 != *curVal1 / *curVal2 ) pass = false;
+        if ( *curVal3 != *curVal1 / *curVal2 )
+            pass = false;
         ++curVal1;
         ++curVal2;
         ++curVal3;
@@ -565,7 +574,8 @@ void both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::Un
     ++cur2;
     int i = 0;
     while ( cur2 != end ) {
-        if ( i == 10 ) break;
+        if ( i == 10 )
+            break;
         ++cur2;
         i++;
     }
@@ -578,7 +588,8 @@ void both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::Un
     p->setToScalar( 5.0 );
     i = 0;
     for ( cur1 = ref.begin(); cur1 != end; cur1++ ) {
-        if ( ( *cur1 ) != 5.0 ) break;
+        if ( ( *cur1 ) != 5.0 )
+            break;
         i++;
     }
     if ( i == (int) p->getLocalSize() )
@@ -590,7 +601,8 @@ void both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::Un
     i    = 0;
     do {
         --cur1;
-        if ( ( *cur1 ) != 5.0 ) break;
+        if ( ( *cur1 ) != 5.0 )
+            break;
         i++;
     } while ( cur1 != ref.begin() );
 
@@ -673,10 +685,11 @@ void VerifyVectorMaxMin( AMP::UnitTest *utils )
         vec->setRandomValues();
         vec->addScalar( vec, -0.5 );
         vec->scale( 2.0 ); // vec i.i.d [-1,1);
-        double max                                           = vec->max();
-        double min                                           = vec->min();
-        double ans                                           = std::max( fabs( max ), fabs( min ) );
-        if ( fabs( ans - vec->maxNorm() ) >= 1.e-20 ) passes = false;
+        double max = vec->max();
+        double min = vec->min();
+        double ans = std::max( fabs( max ), fabs( min ) );
+        if ( fabs( ans - vec->maxNorm() ) >= 1.e-20 )
+            passes = false;
     }
     if ( passes )
         utils->passes( "Max and min correctly predict maxNorm()" );
@@ -686,7 +699,8 @@ void VerifyVectorMaxMin( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-class SetRandomValuesVector {
+class SetRandomValuesVector
+{
 public:
     static const char *get_test_name() { return "vector::setRandomValues"; }
 
@@ -739,15 +753,15 @@ void ReciprocalVector( AMP::UnitTest *utils )
     vectord->subtract( vectorb, vectorc );
     if ( vectord->maxNorm() < 0.0000001 ) {
         utils->passes( "vector::reciprocal" );
-    }
-    else {
+    } else {
         utils->failure( "vector::reciprocal" );
     }
 }
 
 
 template <typename VECTOR_FACTORY>
-class LinearSumVector {
+class LinearSumVector
+{
 public:
     static const char *get_test_name() { return "vector::linearSum"; }
 
@@ -781,7 +795,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class AxpyVector {
+class AxpyVector
+{
 public:
     static const char *get_test_name() { return "vector::axpy"; }
 
@@ -811,7 +826,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class AxpbyVector {
+class AxpbyVector
+{
 public:
     static const char *get_test_name() { return "vector::axpby"; }
 
@@ -853,7 +869,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class CopyVector {
+class CopyVector
+{
 public:
     static const char *get_test_name() { return "vector::copyVector"; }
 
@@ -916,7 +933,8 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
 {
     AMP::Discretization::DOFManager::shared_ptr dofmap = VECTOR_FACTORY::getDOFMap();
     AMP::LinearAlgebra::Vector::shared_ptr vector      = VECTOR_FACTORY::getVector();
-    if ( !vector ) utils->failure( "verify makeConsistent () for add" );
+    if ( !vector )
+        utils->failure( "verify makeConsistent () for add" );
 
     // Zero the vector
     vector->zero();
@@ -954,7 +972,8 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
             int ioffset  = lround( diff_double );
             int cur_rank = 0;
             while ( ioffset > 0 ) {
-                if ( ioffset & 1 ) ghosted_entities[cur_rank].insert( i );
+                if ( ioffset & 1 )
+                    ghosted_entities[cur_rank].insert( i );
                 ioffset >>= 1;
                 cur_rank++;
             }
@@ -981,7 +1000,8 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
         ++cur_replicated;
     }
     size_t last_size = 0;
-    for ( int i = 0; i != utils->size(); i++ ) last_size += ghosted_entities[i].size();
+    for ( int i = 0; i != utils->size(); i++ )
+        last_size += ghosted_entities[i].size();
     if ( last_size == 0 )
         utils->passes( "all ghosted values accounted for" );
     else
@@ -1044,7 +1064,8 @@ void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
         for ( size_t i = 0; i != vector->getGhostSize(); i++ ) {
             size_t ghostNdx = ghostIDList[i];
             double ghostVal = vector->getValueByGlobalID( ghostNdx );
-            if ( fabs( ghostVal - (double) ghostNdx ) > 0.0000001 ) testPassed = false;
+            if ( fabs( ghostVal - (double) ghostNdx ) > 0.0000001 )
+                testPassed = false;
         }
         if ( testPassed )
             utils->passes( "ghost set correctly in alias" );

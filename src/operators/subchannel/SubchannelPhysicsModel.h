@@ -19,7 +19,8 @@ namespace Operator {
   This class acts a interface to the water material library for the subchannel
   flow operators.
 */
-class SubchannelPhysicsModel : public ElementPhysicsModel {
+class SubchannelPhysicsModel : public ElementPhysicsModel
+{
 public:
     /**
       Constructor

@@ -16,7 +16,8 @@ namespace LinearAlgebra {
 /**
   \brief Data necessary to create a managed vector
 */
-class ManagedVectorParameters : public VectorParameters {
+class ManagedVectorParameters : public VectorParameters
+{
 protected:
     //!  Copy constructor is protected to prevent unintended copies
     ManagedVectorParameters( const ManagedVectorParameters & );
@@ -44,7 +45,8 @@ public:
    A ManagedVector has two pointers: data and engine.  If the data pointer
    is null, then the engine is assumed to have the data.
 */
-class ManagedVector : public Vector, public DataChangeFirer {
+class ManagedVector : public Vector, public DataChangeFirer
+{
 
 public:
     /** \brief Construct a ManagedVector from a set of parameters

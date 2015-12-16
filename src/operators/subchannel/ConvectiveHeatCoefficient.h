@@ -12,7 +12,8 @@
 namespace AMP {
 namespace Operator {
 
-class ConvectiveHeatCoefficient : public RobinPhysicsModel {
+class ConvectiveHeatCoefficient : public RobinPhysicsModel
+{
 public:
     explicit ConvectiveHeatCoefficient(
         const AMP::shared_ptr<RobinPhysicsModelParameters> &params );

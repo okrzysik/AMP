@@ -40,7 +40,8 @@ class STKMeshElement;
  * communicators.  If multiple meshes are used, they must either share communicators or have unique
  * communicators.
  */
-class STKMesh : public Mesh {
+class STKMesh : public Mesh
+{
 public:
     /**
      * \brief Read in mesh files, partition domain, and prepare environment for simulation

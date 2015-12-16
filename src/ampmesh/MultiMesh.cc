@@ -26,8 +26,10 @@ namespace Mesh {
 // Function to check if a string contains another string as the prefix
 static bool check_prefix( std::string prefix, std::string str )
 {
-    if ( str.size() < prefix.size() ) return false;
-    if ( str.compare( 0, prefix.size(), prefix ) == 0 ) return true;
+    if ( str.size() < prefix.size() )
+        return false;
+    if ( str.compare( 0, prefix.size(), prefix ) == 0 )
+        return true;
     return false;
 }
 
@@ -75,14 +77,17 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
     // Check that every mesh exist on some comm
     std::vector<int> onComm( comms.size(), 0 );
     for ( size_t i = 0; i < comms.size(); i++ ) {
-        if ( !comms[i].isNull() ) onComm[i] = 1;
+        if ( !comms[i].isNull() )
+            onComm[i] = 1;
     }
     d_comm.maxReduce( &onComm[0], (int) onComm.size() );
-    for ( size_t i = 0; i < onComm.size(); i++ ) AMP_ASSERT( onComm[i] == 1 );
+    for ( size_t i = 0; i < onComm.size(); i++ )
+        AMP_ASSERT( onComm[i] == 1 );
     // Create the meshes
     d_meshes = std::vector<AMP::Mesh::Mesh::shared_ptr>( 0 );
     for ( size_t i = 0; i < comms.size(); i++ ) {
-        if ( comms[i].isNull() ) continue;
+        if ( comms[i].isNull() )
+            continue;
         params->params[i]->setComm( comms[i] );
         AMP::Mesh::Mesh::shared_ptr new_mesh = AMP::Mesh::Mesh::buildMesh( params->params[i] );
         d_meshes.push_back( new_mesh );
@@ -94,7 +99,8 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
     for ( size_t i = 1; i < d_meshes.size(); i++ ) {
         AMP_INSIST( PhysicalDim == d_meshes[i]->getDim(),
                     "Physical dimension must match for all meshes in multimesh" );
-        if ( d_meshes[i]->getGeomType() > GeomDim ) GeomDim = d_meshes[i]->getGeomType();
+        if ( d_meshes[i]->getGeomType() > GeomDim )
+            GeomDim = d_meshes[i]->getGeomType();
         if ( d_meshes[i]->getMaxGhostWidth() > d_max_gcw )
             d_max_gcw = d_meshes[i]->getMaxGhostWidth();
     }
@@ -120,14 +126,19 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
     }
     // Displace the meshes
     std::vector<double> displacement( PhysicalDim, 0.0 );
-    if ( d_db->keyExists( "x_offset" ) ) displacement[0] = d_db->getDouble( "x_offset" );
-    if ( d_db->keyExists( "y_offset" ) ) displacement[1] = d_db->getDouble( "y_offset" );
-    if ( d_db->keyExists( "z_offset" ) ) displacement[2] = d_db->getDouble( "z_offset" );
-    bool test                                            = false;
+    if ( d_db->keyExists( "x_offset" ) )
+        displacement[0] = d_db->getDouble( "x_offset" );
+    if ( d_db->keyExists( "y_offset" ) )
+        displacement[1] = d_db->getDouble( "y_offset" );
+    if ( d_db->keyExists( "z_offset" ) )
+        displacement[2] = d_db->getDouble( "z_offset" );
+    bool test           = false;
     for ( size_t i = 0; i < displacement.size(); i++ ) {
-        if ( displacement[i] != 0.0 ) test = true;
+        if ( displacement[i] != 0.0 )
+            test = true;
     }
-    if ( test ) displaceMesh( displacement );
+    if ( test )
+        displaceMesh( displacement );
 }
 MultiMesh::MultiMesh( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> &meshes )
 {
@@ -136,7 +147,8 @@ MultiMesh::MultiMesh( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> &
     // Get the list of non-null meshes
     d_meshes = std::vector<Mesh::shared_ptr>();
     for ( size_t i = 0; i < meshes.size(); i++ ) {
-        if ( meshes[i].get() != NULL ) d_meshes.push_back( meshes[i] );
+        if ( meshes[i].get() != NULL )
+            d_meshes.push_back( meshes[i] );
     }
     if ( d_comm.sumReduce( d_meshes.size() ) == 0 ) {
         AMP_ERROR( "Empty multimeshes have not been tested yet" );
@@ -152,7 +164,8 @@ MultiMesh::MultiMesh( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> &
     for ( size_t i = 1; i < d_meshes.size(); i++ ) {
         AMP_INSIST( PhysicalDim == d_meshes[i]->getDim(),
                     "Physical dimension must match for all meshes in multimesh" );
-        if ( d_meshes[i]->getGeomType() > GeomDim ) GeomDim = d_meshes[i]->getGeomType();
+        if ( d_meshes[i]->getGeomType() > GeomDim )
+            GeomDim = d_meshes[i]->getGeomType();
         if ( d_meshes[i]->getMaxGhostWidth() > d_max_gcw )
             d_max_gcw = d_meshes[i]->getMaxGhostWidth();
     }
@@ -215,7 +228,8 @@ AMP::Mesh::LoadBalance MultiMesh::simulateBuildMesh( const MeshParameters::share
     size_t N_proc_groups = 0;
     for ( size_t i = 0; i < groups.size(); i++ ) {
         AMP_ASSERT( groups[i].size() > 0 );
-        for ( size_t j = 0; j < groups[i].size(); j++ ) groups[i][j] = comm_ranks[groups[i][j]];
+        for ( size_t j   = 0; j < groups[i].size(); j++ )
+            groups[i][j] = comm_ranks[groups[i][j]];
         N_proc_groups += groups[i].size();
     }
     int decomp = ( N_proc_groups == comm_ranks.size() ) ? 1 : 0;
@@ -307,8 +321,7 @@ size_t MultiMesh::maxProcs( const MeshParameters::shared_ptr &params )
         AMP_ASSERT( localMaxSize > 0 );
         if ( method == 1 ) {
             totalMaxSize += localMaxSize;
-        }
-        else if ( method == 2 ) {
+        } else if ( method == 2 ) {
             totalMaxSize = std::max( totalMaxSize, localMaxSize );
         }
     }
@@ -347,8 +360,7 @@ MultiMesh::createDatabases( AMP::shared_ptr<AMP::Database> database )
     for ( size_t i = 0; i < keys.size(); i++ ) {
         if ( check_prefix( MeshPrefix, keys[i] ) ) {
             meshes.push_back( keys[i] );
-        }
-        else if ( check_prefix( MeshArrayPrefix, keys[i] ) ) {
+        } else if ( check_prefix( MeshArrayPrefix, keys[i] ) ) {
             meshArrays.push_back( keys[i] );
         }
     }
@@ -379,11 +391,9 @@ MultiMesh::createDatabases( AMP::shared_ptr<AMP::Database> database )
                     ss << array[j];
                     index[j] = ss.str();
                 }
-            }
-            else if ( dataType == AMP::Database::AMP_STRING ) {
+            } else if ( dataType == AMP::Database::AMP_STRING ) {
                 index = database1->getStringArray( "indicies" );
-            }
-            else {
+            } else {
                 AMP_ERROR( "Unknown type for indicies" );
             }
         }
@@ -398,12 +408,10 @@ MultiMesh::createDatabases( AMP::shared_ptr<AMP::Database> database )
             if ( keys[k].compare( "N" ) == 0 || keys[k].compare( "iterator" ) == 0 ||
                  keys[k].compare( "indicies" ) == 0 ) {
                 // These keys are used by the mesh-array and should not be copied
-            }
-            else if ( keys[k].compare( "Size" ) == 0 || keys[k].compare( "Range" ) == 0 ) {
+            } else if ( keys[k].compare( "Size" ) == 0 || keys[k].compare( "Range" ) == 0 ) {
                 // These are special keys that should not be divided
                 copyKey( database1, databaseArray, keys[k], false, std::string(), index );
-            }
-            else {
+            } else {
                 // We need to copy the key (and possibly replace the iterator)
                 copyKey( database1, databaseArray, keys[k], true, iterator, index );
             }
@@ -424,7 +432,8 @@ size_t MultiMesh::numLocalElements( const GeomType type ) const
 {
     // Should we cache this?
     size_t N = 0;
-    for ( size_t i = 0; i < d_meshes.size(); i++ ) N += d_meshes[i]->numLocalElements( type );
+    for ( size_t i = 0; i < d_meshes.size(); i++ )
+        N += d_meshes[i]->numLocalElements( type );
     return N;
 }
 size_t MultiMesh::numGlobalElements( const GeomType type ) const
@@ -437,14 +446,16 @@ size_t MultiMesh::numGhostElements( const GeomType type, int gcw ) const
 {
     // Should we cache this?
     size_t N = 0;
-    for ( size_t i = 0; i < d_meshes.size(); i++ ) N += d_meshes[i]->numGhostElements( type, gcw );
+    for ( size_t i = 0; i < d_meshes.size(); i++ )
+        N += d_meshes[i]->numGhostElements( type, gcw );
     return N;
 }
 std::vector<Mesh::shared_ptr> MultiMesh::getMeshes() { return d_meshes; }
 std::vector<Mesh::const_shared_ptr> MultiMesh::getMeshes() const
 {
     std::vector<Mesh::const_shared_ptr> list( d_meshes.size() );
-    for ( size_t i = 0; i < d_meshes.size(); i++ ) list[i] = d_meshes[i];
+    for ( size_t i = 0; i < d_meshes.size(); i++ )
+        list[i]    = d_meshes[i];
     return list;
 }
 
@@ -486,15 +497,19 @@ std::vector<int> MultiMesh::getBoundaryIDs() const
     std::vector<int> count( d_comm.getSize(), 0 );
     std::vector<int> disp( d_comm.getSize(), 0 );
     d_comm.allGather( N_id_local, &count[0] );
-    for ( int i = 1; i < d_comm.getSize(); i++ ) disp[i] = disp[i - 1] + count[i - 1];
+    for ( int i     = 1; i < d_comm.getSize(); i++ )
+        disp[i]     = disp[i - 1] + count[i - 1];
     int N_id_global = disp[d_comm.getSize() - 1] + count[d_comm.getSize() - 1];
-    if ( N_id_global == 0 ) return std::vector<int>();
+    if ( N_id_global == 0 )
+        return std::vector<int>();
     std::vector<int> global_id_list( N_id_global, 0 );
-    int *ptr                  = NULL;
-    if ( N_id_local > 0 ) ptr = &local_ids[0];
+    int *ptr = NULL;
+    if ( N_id_local > 0 )
+        ptr = &local_ids[0];
     d_comm.allGather( ptr, N_id_local, &global_id_list[0], &count[0], &disp[0], true );
     // Get the unique set
-    for ( size_t i = 0; i < global_id_list.size(); i++ ) ids_set.insert( global_id_list[i] );
+    for ( size_t i = 0; i < global_id_list.size(); i++ )
+        ids_set.insert( global_id_list[i] );
     // Return the final vector of ids
     return std::vector<int>( ids_set.begin(), ids_set.end() );
 }
@@ -524,15 +539,19 @@ std::vector<int> MultiMesh::getBlockIDs() const
     std::vector<int> count( d_comm.getSize(), 0 );
     std::vector<int> disp( d_comm.getSize(), 0 );
     d_comm.allGather( N_id_local, &count[0] );
-    for ( int i = 1; i < d_comm.getSize(); i++ ) disp[i] = disp[i - 1] + count[i - 1];
+    for ( int i     = 1; i < d_comm.getSize(); i++ )
+        disp[i]     = disp[i - 1] + count[i - 1];
     int N_id_global = disp[d_comm.getSize() - 1] + count[d_comm.getSize() - 1];
-    if ( N_id_global == 0 ) return std::vector<int>();
+    if ( N_id_global == 0 )
+        return std::vector<int>();
     std::vector<int> global_id_list( N_id_global, 0 );
-    int *ptr                  = NULL;
-    if ( N_id_local > 0 ) ptr = &local_ids[0];
+    int *ptr = NULL;
+    if ( N_id_local > 0 )
+        ptr = &local_ids[0];
     d_comm.allGather( ptr, N_id_local, &global_id_list[0], &count[0], &disp[0], true );
     // Get the unique set
-    for ( size_t i = 0; i < global_id_list.size(); i++ ) ids_set.insert( global_id_list[i] );
+    for ( size_t i = 0; i < global_id_list.size(); i++ )
+        ids_set.insert( global_id_list[i] );
     // Return the final vector of ids
     return std::vector<int>( ids_set.begin(), ids_set.end() );
 }
@@ -572,7 +591,8 @@ std::vector<MeshID> MultiMesh::getLocalMeshIDs() const
     ids.insert( d_meshID );
     for ( size_t i = 0; i < d_meshes.size(); i++ ) {
         std::vector<MeshID> mesh_ids = d_meshes[i]->getLocalMeshIDs();
-        for ( size_t j = 0; j < mesh_ids.size(); j++ ) ids.insert( mesh_ids[j] );
+        for ( size_t j = 0; j < mesh_ids.size(); j++ )
+            ids.insert( mesh_ids[j] );
     }
     return std::vector<MeshID>( ids.begin(), ids.end() );
 }
@@ -581,7 +601,8 @@ std::vector<MeshID> MultiMesh::getLocalBaseMeshIDs() const
     std::set<MeshID> ids;
     for ( size_t i = 0; i < d_meshes.size(); i++ ) {
         std::vector<MeshID> mesh_ids = d_meshes[i]->getLocalBaseMeshIDs();
-        for ( size_t j = 0; j < mesh_ids.size(); j++ ) ids.insert( mesh_ids[j] );
+        for ( size_t j = 0; j < mesh_ids.size(); j++ )
+            ids.insert( mesh_ids[j] );
     }
     return std::vector<MeshID>( ids.begin(), ids.end() );
 }
@@ -593,7 +614,8 @@ std::vector<MeshID> MultiMesh::getLocalBaseMeshIDs() const
 bool MultiMesh::isMember( const MeshElementID &id ) const
 {
     for ( size_t i = 0; i < d_meshes.size(); i++ ) {
-        if ( d_meshes[i]->isMember( id ) ) return true;
+        if ( d_meshes[i]->isMember( id ) )
+            return true;
     }
     return false;
 }
@@ -609,9 +631,11 @@ MeshElement MultiMesh::getElement( const MeshElementID &elem_id ) const
         std::vector<MeshID> ids = d_meshes[i]->getLocalBaseMeshIDs();
         bool mesh_found         = false;
         for ( size_t j = 0; j < ids.size(); j++ ) {
-            if ( ids[j] == mesh_id ) mesh_found = true;
+            if ( ids[j] == mesh_id )
+                mesh_found = true;
         }
-        if ( mesh_found ) return d_meshes[i]->getElement( elem_id );
+        if ( mesh_found )
+            return d_meshes[i]->getElement( elem_id );
     }
     AMP_ERROR( "A mesh matching the element's mesh id was not found" );
     return MeshElement();
@@ -629,9 +653,11 @@ std::vector<MeshElement> MultiMesh::getElementParents( const MeshElement &elem,
         std::vector<MeshID> ids = d_meshes[i]->getLocalBaseMeshIDs();
         bool mesh_found         = false;
         for ( size_t j = 0; j < ids.size(); j++ ) {
-            if ( ids[j] == mesh_id ) mesh_found = true;
+            if ( ids[j] == mesh_id )
+                mesh_found = true;
         }
-        if ( mesh_found ) return d_meshes[i]->getElementParents( elem, type );
+        if ( mesh_found )
+            return d_meshes[i]->getElementParents( elem, type );
     }
     AMP_ERROR( "A mesh matching the element's mesh id was not found" );
     return std::vector<MeshElement>();
@@ -643,10 +669,12 @@ std::vector<MeshElement> MultiMesh::getElementParents( const MeshElement &elem,
 ********************************************************/
 AMP::shared_ptr<Mesh> MultiMesh::Subset( MeshID meshID ) const
 {
-    if ( d_meshID == meshID ) return AMP::const_pointer_cast<Mesh>( shared_from_this() );
+    if ( d_meshID == meshID )
+        return AMP::const_pointer_cast<Mesh>( shared_from_this() );
     for ( size_t i = 0; i < d_meshes.size(); i++ ) {
         AMP::shared_ptr<Mesh> mesh = d_meshes[i]->Subset( meshID );
-        if ( mesh.get() != NULL ) return mesh;
+        if ( mesh.get() != NULL )
+            return mesh;
     }
     return AMP::shared_ptr<Mesh>();
 }
@@ -657,7 +685,8 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( MeshID meshID ) const
 ********************************************************/
 AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool isGlobal ) const
 {
-    if ( iterator_in.size() == 0 ) return AMP::shared_ptr<Mesh>();
+    if ( iterator_in.size() == 0 )
+        return AMP::shared_ptr<Mesh>();
     AMP_ASSERT( iterator_in.size() > 0 );
     MeshIterator iterator = iterator_in.begin();
     GeomType type         = iterator->elementType();
@@ -674,7 +703,8 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
             Mesh::getIterator( Intersection,
                                iterator_in,
                                d_meshes[i]->getIterator( type, d_meshes[i]->getMaxGhostWidth() ) );
-        if ( iterator.size() == 0 ) continue;
+        if ( iterator.size() == 0 )
+            continue;
         AMP::shared_ptr<Mesh> mesh = d_meshes[i]->Subset( iterator, isGlobal );
         if ( mesh.get() != NULL ) {
             subset.push_back( mesh );
@@ -683,13 +713,14 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
     }
     // Count the number of globally unique sub-meshes
     AMP::AMP_MPI new_comm( AMP_COMM_SELF );
-    if ( isGlobal ) d_comm.setGather( subsetID );
+    if ( isGlobal )
+        d_comm.setGather( subsetID );
     if ( subsetID.size() <= 1 ) {
         if ( subset.empty() ) {
             return AMP::shared_ptr<Mesh>();
-        }
-        else {
-            if ( isGlobal ) new_comm = subset[0]->getComm();
+        } else {
+            if ( isGlobal )
+                new_comm = subset[0]->getComm();
             AMP::shared_ptr<Mesh> subsetMultiMesh( new MultiMesh( new_comm, subset ) );
             subsetMultiMesh->setName( d_name + "_subset" );
             return subsetMultiMesh;
@@ -700,7 +731,8 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
         int color = subset.empty() ? -1 : 0;
         new_comm  = d_comm.split( color );
     }
-    if ( new_comm.isNull() ) return AMP::shared_ptr<Mesh>();
+    if ( new_comm.isNull() )
+        return AMP::shared_ptr<Mesh>();
     AMP::shared_ptr<Mesh> subsetMultiMesh( new MultiMesh( new_comm, subset ) );
     subsetMultiMesh->setName( d_name + "_subset" );
     return subsetMultiMesh;
@@ -712,7 +744,8 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
 ********************************************************/
 AMP::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
 {
-    if ( d_name == name ) return AMP::const_pointer_cast<Mesh>( shared_from_this() );
+    if ( d_name == name )
+        return AMP::const_pointer_cast<Mesh>( shared_from_this() );
     // Subset for the name in each submesh
     std::vector<Mesh::shared_ptr> subset;
     std::set<MeshID> subsetID;
@@ -728,8 +761,7 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
     if ( subsetID.size() <= 1 ) {
         if ( subset.size() == 0 ) {
             return AMP::shared_ptr<Mesh>();
-        }
-        else {
+        } else {
             AMP::shared_ptr<Mesh> subsetMultiMesh( new MultiMesh( subset[0]->getComm(), subset ) );
             subsetMultiMesh->setName( d_name + "_subset" );
             return subsetMultiMesh;
@@ -738,7 +770,8 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
     // Create a new multi-mesh to contain the subset
     int color             = subset.empty() ? -1 : 0;
     AMP::AMP_MPI new_comm = d_comm.split( color );
-    if ( new_comm.isNull() ) return AMP::shared_ptr<Mesh>();
+    if ( new_comm.isNull() )
+        return AMP::shared_ptr<Mesh>();
     AMP::shared_ptr<MultiMesh> subsetMultiMesh( new MultiMesh( new_comm, subset ) );
     subsetMultiMesh->setName( name );
     return subsetMultiMesh;
@@ -758,7 +791,8 @@ void MultiMesh::displaceMesh( const std::vector<double> &x_in )
     for ( size_t i = 0; i < x.size(); i++ )
         AMP_INSIST( fabs( x[i] - x_in[i] ) < 1e-12, "x does not match on all processors" );
     // Displace the meshes
-    for ( size_t i = 0; i < d_meshes.size(); i++ ) d_meshes[i]->displaceMesh( x );
+    for ( size_t i = 0; i < d_meshes.size(); i++ )
+        d_meshes[i]->displaceMesh( x );
     // Update the bounding box
     for ( int i = 0; i < PhysicalDim; i++ ) {
         d_box[2 * i + 0] += x[i];
@@ -771,7 +805,8 @@ void MultiMesh::displaceMesh( const std::vector<double> &x_in )
 void MultiMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
     // Displace the individual meshes
-    for ( size_t i = 0; i < d_meshes.size(); i++ ) d_meshes[i]->displaceMesh( x );
+    for ( size_t i = 0; i < d_meshes.size(); i++ )
+        d_meshes[i]->displaceMesh( x );
     // Compute the bounding box of the multimesh
     d_box_local = d_meshes[0]->getBoundingBox();
     for ( size_t i = 1; i < d_meshes.size(); i++ ) {
@@ -845,8 +880,7 @@ static void copyKey( AMP::Database::shared_ptr database1,
         for ( size_t i = 0; i < database2.size(); i++ ) {
             if ( N == size && select ) {
                 database2[i]->putChar( key, data[i] );
-            }
-            else {
+            } else {
                 // We need to try a search and replace
                 database2[i]->putCharArray( key, data );
             }
@@ -905,8 +939,7 @@ static void copyKey( AMP::Database::shared_ptr database1,
             if ( N == size && select ) {
                 data2.resize( 1 );
                 data2[0] = data[i];
-            }
-            else {
+            } else {
                 data2 = data;
             }
             if ( !iterator.empty() ) {
@@ -921,7 +954,8 @@ static void copyKey( AMP::Database::shared_ptr database1,
         // Copy a box
         AMP_ERROR( "Not programmed for boxes yet" );
     } break;
-    default: AMP_ERROR( "Unknown key type" );
+    default:
+        AMP_ERROR( "Unknown key type" );
     }
 }
 
@@ -935,7 +969,8 @@ replaceSubString( std::string &string, const std::string &search, const std::str
 {
     while ( 1 ) {
         size_t pos = string.find( search );
-        if ( pos == std::string::npos ) break;
+        if ( pos == std::string::npos )
+            break;
         string.replace( pos, search.size(), replace );
     }
 }
@@ -988,10 +1023,12 @@ std::vector<AMP_MPI> MultiMesh::createComms( const std::vector<rank_list> &group
     for ( size_t i = 0; i < groups.size(); i++ ) {
         int color = -1;
         for ( size_t j = 0; j < groups[i].size(); j++ ) {
-            if ( groups[i][j] == myRank ) color = 0;
+            if ( groups[i][j] == myRank )
+                color = 0;
         }
         comms[i] = d_comm.split( color, d_comm.getRank() );
-        if ( color != -1 ) AMP_ASSERT( comms[i].getSize() == (int) groups[i].size() );
+        if ( color != -1 )
+            AMP_ASSERT( comms[i].getSize() == (int) groups[i].size() );
     }
     return comms;
 }
@@ -1010,21 +1047,21 @@ MultiMesh::loadBalancer( int N_procs,
     if ( meshParams.size() <= 1 || N_procs == 1 || method == 0 ) {
         // Everybody is on the same communicator
         std::vector<int> allRanks( N_procs );
-        for ( int i = 0; i < N_procs; i++ ) allRanks[i] = i;
+        for ( int i     = 0; i < N_procs; i++ )
+            allRanks[i] = i;
         return std::vector<rank_list>( meshParams.size(), allRanks );
-    }
-    else if ( method == 1 ) {
+    } else if ( method == 1 ) {
         // We want to split the meshes onto independent processors
         std::vector<comm_groups> groups;
         if ( N_procs > (int) meshParams.size() ) {
             // We have more processors than meshes
             groups = independentGroups1( N_procs, meshParams, meshSizes );
-        }
-        else {
+        } else {
             // The number of meshes is <= the number of processors
             // Create the weights
             size_t totalMeshSize = 0;
-            for ( size_t i = 0; i < meshSizes.size(); i++ ) totalMeshSize += meshSizes[i];
+            for ( size_t i = 0; i < meshSizes.size(); i++ )
+                totalMeshSize += meshSizes[i];
             std::vector<double> weights( meshParams.size(), 0 );
             for ( size_t i = 0; i < meshSizes.size(); i++ )
                 weights[i] = ( (double) meshSizes[i] ) / ( (double) totalMeshSize );
@@ -1044,19 +1081,19 @@ MultiMesh::loadBalancer( int N_procs,
             }
             myStartRank += groups[i].N_procs;
         }
-        for ( size_t i = 0; i < commGroups.size(); i++ ) AMP_ASSERT( commGroups[i].size() > 0 );
+        for ( size_t i = 0; i < commGroups.size(); i++ )
+            AMP_ASSERT( commGroups[i].size() > 0 );
         return commGroups;
-    }
-    else if ( method == 2 ) {
+    } else if ( method == 2 ) {
         // We want to use all processors for all meshes
         std::vector<rank_list> commGroups( meshParams.size() );
         for ( size_t i = 0; i < meshParams.size(); i++ ) {
             int N_procs2 = std::min<int>( N_procs, Mesh::maxProcs( meshParams[i] ) );
-            for ( int j = 0; j < N_procs2; j++ ) commGroups[i].push_back( j );
+            for ( int j = 0; j < N_procs2; j++ )
+                commGroups[i].push_back( j );
         }
         return commGroups;
-    }
-    else {
+    } else {
         AMP_ERROR( "Unknown load balancer" );
     }
     return std::vector<rank_list>( 0 );
@@ -1082,8 +1119,7 @@ bool MultiMesh::addProcSimulation( const LoadBalance &mesh,
             }
             decomp = 1;
             added  = true;
-        }
-        else if ( mesh.getRanks().size() < submeshes.size() ) {
+        } else if ( mesh.getRanks().size() < submeshes.size() ) {
             // We need to create new group sets
             std::vector<int> ranks = mesh.getRanks();
             ranks.push_back( rank );
@@ -1106,10 +1142,10 @@ bool MultiMesh::addProcSimulation( const LoadBalance &mesh,
                     comms[groups[i].ids[j]][0] = ranks[i];
             }
             // Create the new submeshes
-            for ( size_t i = 0; i < submeshes.size(); i++ ) submeshes[i].changeRanks( comms[i] );
-            added          = true;
-        }
-        else {
+            for ( size_t i = 0; i < submeshes.size(); i++ )
+                submeshes[i].changeRanks( comms[i] );
+            added = true;
+        } else {
             // We need to add a processor to the mesh with the largest # of elements per processor
             size_t max = 0;
             int i_max  = 0;
@@ -1123,14 +1159,12 @@ bool MultiMesh::addProcSimulation( const LoadBalance &mesh,
             }
             added = submeshes[i_max].addProc( rank );
         }
-    }
-    else if ( method == 2 ) {
+    } else if ( method == 2 ) {
         for ( size_t i = 0; i < submeshes.size(); i++ ) {
             bool test = submeshes[i].addProc( rank );
             added     = added || test;
         }
-    }
-    else {
+    } else {
         AMP_ERROR( "Not ready for other load balancers yet" );
     }
     return added;
@@ -1160,7 +1194,8 @@ MultiMesh::independentGroups1( int N_procs,
     }
     // Special case where all sub-meshes are the same size
     bool all_match = true;
-    for ( size_t i = 1; i < size.size(); i++ ) all_match = all_match && size[i] == size[0];
+    for ( size_t i = 1; i < size.size(); i++ )
+        all_match = all_match && size[i] == size[0];
     if ( all_match ) {
         std::vector<comm_groups> groups( meshParameters.size() );
         int N_procs2 = N_procs;
@@ -1176,7 +1211,8 @@ MultiMesh::independentGroups1( int N_procs,
     }
     // Start by using ~80% of the procs
     size_t N_total = 0;
-    for ( size_t i = 0; i < meshParameters.size(); i++ ) N_total += size[i];
+    for ( size_t i = 0; i < meshParameters.size(); i++ )
+        N_total += size[i];
     std::vector<LoadBalance> load_balance( meshParameters.size() );
     std::vector<size_t> max_size( meshParameters.size() );
     std::vector<int> rank1( N_procs );
@@ -1187,7 +1223,8 @@ MultiMesh::independentGroups1( int N_procs,
         N_proc_local = std::min( N_proc_local, N_procs - (int) size.size() );
         N_proc_local = std::max( N_proc_local, 1 );
         rank1.resize( N_proc_local );
-        for ( int j = 0; j < N_proc_local; j++ ) rank1[j] = j;
+        for ( int j     = 0; j < N_proc_local; j++ )
+            rank1[j]    = j;
         load_balance[i] = LoadBalance( meshParameters[i], rank1, size[i] );
         max_size[i]     = load_balance[i].max();
         N_procs_remaining -= N_proc_local;
@@ -1205,12 +1242,12 @@ MultiMesh::independentGroups1( int N_procs,
                 max2 = max1;
                 max1 = local_max;
                 i1   = i;
-            }
-            else if ( local_max > max2 ) {
+            } else if ( local_max > max2 ) {
                 max2 = local_max;
             }
         }
-        if ( max1 == max2 ) max2--;
+        if ( max1 == max2 )
+            max2--;
         // Add processors to the mesh pointed to by i1, until max1 is <= max2
         AMP_ASSERT( max1 > max2 && max1 > 0 );
         while ( N_procs_remaining > 0 && max1 > max2 ) {
@@ -1262,16 +1299,19 @@ MultiMesh::independentGroups2( int N_procs, std::vector<std::pair<double, int>> 
             AMP_ASSERT( i1 > i0 && i1 <= ids.size() );
             groups[i].N_procs = 1;
             groups[i].ids     = std::vector<int>( i1 - i0 );
-            for ( size_t j = 0; j < i1 - i0; j++ ) groups[i].ids[j] = (int) ( i0 + j );
+            for ( size_t j       = 0; j < i1 - i0; j++ )
+                groups[i].ids[j] = (int) ( i0 + j );
         }
         return groups;
     }
     // Remove any ids that require a processor by themselves
     for ( int i = (int) ids.size() - 1; i >= 0; i-- ) {
         double total_weight = 0.0;
-        for ( size_t j    = 0; j < ids.size(); j++ ) total_weight += ids[i].first;
+        for ( size_t j = 0; j < ids.size(); j++ )
+            total_weight += ids[i].first;
         double weight_avg = total_weight / ( (double) N_procs - groups.size() );
-        if ( ids[i].first < weight_avg ) break;
+        if ( ids[i].first < weight_avg )
+            break;
         tmp_group.ids.resize( 1 );
         tmp_group.ids[0] = ids[i].second;
         groups.push_back( tmp_group );
@@ -1289,7 +1329,8 @@ MultiMesh::independentGroups2( int N_procs, std::vector<std::pair<double, int>> 
             break;
         }
         double total_weight = 0.0;
-        for ( size_t j    = 0; j < ids.size(); j++ ) total_weight += ids[j].first;
+        for ( size_t j = 0; j < ids.size(); j++ )
+            total_weight += ids[j].first;
         double weight_avg = total_weight / static_cast<double>( N_procs - groups.size() ) - 1e-14;
         tmp_group.ids.resize( 0 );
         double weight_sum = 0.0;
@@ -1299,13 +1340,13 @@ MultiMesh::independentGroups2( int N_procs, std::vector<std::pair<double, int>> 
                 weight_sum += ids[i].first;
                 tmp_group.ids.push_back( ids[i].second );
                 ids.resize( i );
-            }
-            else {
+            } else {
                 for ( size_t j = 0; j <= i; j++ ) {
                     if ( weight_sum + ids[j].first >= weight_avg ) {
                         weight_sum += ids[j].first;
                         tmp_group.ids.push_back( ids[j].second );
-                        for ( size_t k = j; k < i; k++ ) ids[k] = ids[k + 1];
+                        for ( size_t k = j; k < i; k++ )
+                            ids[k]     = ids[k + 1];
                         ids.resize( i );
                         break;
                     }

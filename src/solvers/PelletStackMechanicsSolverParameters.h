@@ -7,7 +7,8 @@
 namespace AMP {
 namespace Solver {
 
-class PelletStackMechanicsSolverParameters : public SolverStrategyParameters {
+class PelletStackMechanicsSolverParameters : public SolverStrategyParameters
+{
 public:
     PelletStackMechanicsSolverParameters() {}
     explicit PelletStackMechanicsSolverParameters( const AMP::shared_ptr<AMP::Database> db )

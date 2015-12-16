@@ -18,7 +18,8 @@ namespace Operator {
   A class for representing the element level computation performed within a
   nonlinear finite element operator for modelling solid mechanics.
  */
-class MechanicsNonlinearElement : public MechanicsElement {
+class MechanicsNonlinearElement : public MechanicsElement
+{
 public:
     /**
       This is primarily for use with the updateMaterialModel() function.
@@ -64,8 +65,7 @@ public:
     {
         if ( d_useReducedIntegration ) {
             apply_Reduced();
-        }
-        else {
+        } else {
             apply_Normal();
         }
     }
@@ -161,13 +161,14 @@ protected:
                   the Gauss points in the current element. */
 
     const std::vector<std::vector<Real>> *d_phi; /**< Shape functions at
-                                                     the Gauss points in the current element. */
+                                                        the Gauss points in the current element. */
 
     const std::vector<Point> *d_xyz; /**< Locations of the Gauss points in the current element. */
 
-    std::vector<std::vector<double>> d_elementInputVectors; /**< Element input vectors
-                                                                  (Displacement, temperature, burnup
-                                                                  etc). */
+    std::vector<std::vector<double>>
+        d_elementInputVectors; /**< Element input vectors
+                                      (Displacement, temperature, burnup
+                                      etc). */
 
     std::vector<double> *d_elementOutputVector; /**< Element residual vector */
 

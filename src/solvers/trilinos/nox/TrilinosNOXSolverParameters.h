@@ -17,7 +17,8 @@ namespace Solver {
  * shared pointers to a PertscKrylovSolver object and a vector
  * for initial guesses. All member variables are public.
  */
-class TrilinosNOXSolverParameters : public SolverStrategyParameters {
+class TrilinosNOXSolverParameters : public SolverStrategyParameters
+{
 public:
     TrilinosNOXSolverParameters() {}
     explicit TrilinosNOXSolverParameters( const AMP::shared_ptr<AMP::Database> &db )

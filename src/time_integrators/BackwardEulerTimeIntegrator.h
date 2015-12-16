@@ -15,7 +15,8 @@ namespace TimeIntegrator {
  * Class BackwardEulerTimeIntegrator is a concrete time integrator
  * that implements the backward Euler method.
  */
-class BackwardEulerTimeIntegrator : public ImplicitTimeIntegrator {
+class BackwardEulerTimeIntegrator : public ImplicitTimeIntegrator
+{
 public:
     /**
      * Constructor that accepts parameter list.

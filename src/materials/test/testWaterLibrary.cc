@@ -47,7 +47,8 @@ void checkConsistency( double h, double p, double T, bool &allCorrect, bool &all
         "pressure", AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p ) ) ) );
     std::vector<double> hOutput( 1 );
     enthalpyProperty->evalv( hOutput, hMap );
-    if ( !AMP::Utilities::approx_equal( hOutput[0], h, 0.01 ) ) allConsistent = false;
+    if ( !AMP::Utilities::approx_equal( hOutput[0], h, 0.01 ) )
+        allConsistent = false;
 }
 
 int main( int argc, char **argv )
@@ -217,8 +218,7 @@ int main( int argc, char **argv )
                     AMP::pout << "The calculated temperature was " << temperatureOutput[i]
                               << " K and actual is ";
                     AMP::pout << temperatureKnown[i] << " K\n";
-                }
-                else
+                } else
                     AMP::pout << "temperature value is approximately equal to known value.\n";
                 // saturated liquid enthalpy
                 if ( !AMP::Utilities::approx_equal(
@@ -227,8 +227,7 @@ int main( int argc, char **argv )
                     AMP::pout << "The calculated saturated liquid enthalpy was "
                               << liquidEnthalpyOutput[i] << " J/kg and actual is ";
                     AMP::pout << liquidEnthalpyKnown[i] << " J/kg\n";
-                }
-                else
+                } else
                     AMP::pout << "saturated liquid enthalpy value is approximately equal to known "
                                  "value.\n";
                 // specific volume
@@ -237,8 +236,7 @@ int main( int argc, char **argv )
                     AMP::pout << "The calculated specific volume was " << volumeOutput[i]
                               << " m3/kg and actual is ";
                     AMP::pout << volumeKnown[i] << " m3/kg\n";
-                }
-                else
+                } else
                     AMP::pout << "specific volume value is approximately equal to known value.\n";
                 // thermal conductivity
                 if ( !AMP::Utilities::approx_equal(
@@ -247,8 +245,7 @@ int main( int argc, char **argv )
                     AMP::pout << "The calculated thermal conductivity was " << conductivityOutput[i]
                               << " W/m-K and actual is ";
                     AMP::pout << conductivityKnown[i] << " W/m-K\n";
-                }
-                else
+                } else
                     AMP::pout
                         << "thermal conductivity value is approximately equal to known value.\n";
                 // dynamic viscosity
@@ -258,8 +255,7 @@ int main( int argc, char **argv )
                     AMP::pout << "The calculated dynamic viscosity was " << viscosityOutput[i]
                               << " Pa-s and actual is ";
                     AMP::pout << viscosityKnown[i] << " Pa-s\n";
-                }
-                else
+                } else
                     AMP::pout << "dynamic viscosity value is approximately equal to known value.\n";
                 // enthalpy
                 if ( !AMP::Utilities::approx_equal( enthalpyOutput[i], enthalpyKnown[i], 0.01 ) ) {
@@ -267,8 +263,7 @@ int main( int argc, char **argv )
                     AMP::pout << "The calculated enthalpy was " << enthalpyOutput[i]
                               << " J/kg and actual is ";
                     AMP::pout << enthalpyKnown[i] << " J/kg\n";
-                }
-                else
+                } else
                     AMP::pout << "enthalpy value is approximately equal to known value.\n";
             }
 
@@ -731,12 +726,10 @@ int main( int argc, char **argv )
             ut.passes( "Extended water library tests." );
         else
             ut.failure( "Extended water library tests." );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         AMP::pout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         AMP::pout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown"
                   << std::endl;
         ut.failure( "ERROR: While testing" );

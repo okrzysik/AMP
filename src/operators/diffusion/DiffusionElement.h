@@ -19,7 +19,8 @@
 namespace AMP {
 namespace Operator {
 
-class DiffusionElement : public ElementOperation {
+class DiffusionElement : public ElementOperation
+{
 public:
     explicit DiffusionElement( const AMP::shared_ptr<ElementOperationParameters> &params );
 

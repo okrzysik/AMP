@@ -43,7 +43,8 @@ namespace TimeIntegrator {
  * solver classes.  These are used to provide methods that operate on
  * a SAMR hierarchy
  */
-class TimeIntegratorFactory {
+class TimeIntegratorFactory
+{
 public:
     /**
      * Constructor.

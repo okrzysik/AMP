@@ -24,16 +24,14 @@ int main( int, char *[] )
     N_errors += Lapack<double>::run_all_test();
     if ( N_errors == 0 ) {
         printf( "  passed dp tests\n" );
-    }
-    else {
+    } else {
         printf( "failed %d dp tests\n", N_errors );
     }
     printf( "\nRunning single precision basic tests\n" );
     N_errors += Lapack<float>::run_all_test();
     if ( N_errors == 0 ) {
         printf( "  passed sp tests\n" );
-    }
-    else {
+    } else {
         printf( "failed %d sp tests \n", N_errors );
     }
 
@@ -56,8 +54,7 @@ int main( int, char *[] )
     }
     if ( N_errors == 0 ) {
         printf( "  passed dp timing tests\n" );
-    }
-    else {
+    } else {
         printf( "failed %d dp timing tests\n", N_errors );
     }
 
@@ -79,8 +76,7 @@ int main( int, char *[] )
     }
     if ( N_errors == 0 ) {
         printf( "  passed sp timing tests\n" );
-    }
-    else {
+    } else {
         printf( "failed %d sp timing tests\n", N_errors );
     }
 

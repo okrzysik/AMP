@@ -9,7 +9,8 @@
 namespace AMP {
 namespace Operator {
 
-class ContactOperatorParameters : public OperatorParameters {
+class ContactOperatorParameters : public OperatorParameters
+{
 public:
     ContactOperatorParameters( const AMP::shared_ptr<AMP::Database> &db ) : OperatorParameters( db )
     {

@@ -166,8 +166,7 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
 
                     if ( d_qruleOrderName == "DEFAULT" ) {
                         d_qruleOrder = d_feType->default_quadrature_order();
-                    }
-                    else {
+                    } else {
                         d_qruleOrder =
                             Utility::string_to_enum<libMeshEnums::Order>( d_qruleOrderName );
                     }

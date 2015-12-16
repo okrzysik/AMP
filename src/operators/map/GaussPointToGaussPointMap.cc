@@ -56,7 +56,8 @@ void GaussPointToGaussPointMap::applyFinish( AMP::LinearAlgebra::Vector::const_s
 // Check if we have the correct map
 bool GaussPointToGaussPointMap::validMapType( const std::string &t )
 {
-    if ( t == "GaussPointToGaussPoint" ) return true;
+    if ( t == "GaussPointToGaussPoint" )
+        return true;
     return false;
 }
 
@@ -110,8 +111,7 @@ void GaussPointToGaussPointMap::createIdxMap(
 
     if ( qruleOrderName == "DEFAULT" ) {
         qruleOrder = feType->default_quadrature_order();
-    }
-    else {
+    } else {
         qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 

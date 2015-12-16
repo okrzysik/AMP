@@ -18,7 +18,8 @@ namespace Operator {
 /**
   * Class NullOperator is an empty operator that does nothing
   */
-class NullOperator : public AMP::Operator::Operator {
+class NullOperator : public AMP::Operator::Operator
+{
 public:
     typedef AMP::shared_ptr<AMP::Operator::Operator> shared_ptr;
 

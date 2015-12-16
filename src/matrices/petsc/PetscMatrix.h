@@ -58,7 +58,8 @@ typedef MatrixParameters PetscMatrixParameters;
     Mat &mat = matrix->castTo<PetscMatrix>().getMat();
   \endcode
   */
-class PetscMatrix : virtual public Matrix {
+class PetscMatrix : virtual public Matrix
+{
 protected:
     /** \brief Unused default constrcutor
       */

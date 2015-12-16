@@ -8,7 +8,8 @@
 namespace AMP {
 namespace TimeIntegrator {
 
-class TimeOperatorParameters : public AMP::Operator::OperatorParameters {
+class TimeOperatorParameters : public AMP::Operator::OperatorParameters
+{
 public:
     /**
      * Construct and initialize a parameter list according to input

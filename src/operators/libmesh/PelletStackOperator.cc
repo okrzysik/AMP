@@ -19,8 +19,7 @@ PelletStackOperator::PelletStackOperator(
     if ( ( params->d_db )->keyExists( "SCALING_FACTOR" ) ) {
         d_useScaling    = true;
         d_scalingFactor = ( params->d_db )->getDouble( "SCALING_FACTOR" );
-    }
-    else {
+    } else {
         d_useScaling = false;
     }
     d_frozenVectorSet   = false;
@@ -95,16 +94,14 @@ void PelletStackOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 {
     if ( d_onlyZcorrection ) {
         applyOnlyZcorrection( f );
-    }
-    else {
+    } else {
         if ( !d_frozenVectorSet ) {
             d_frozenVectorForMaps = d_n2nMaps->getFrozenVector();
             d_frozenVectorSet     = true;
         }
         if ( d_useSerial ) {
             applySerial( u, f );
-        }
-        else {
+        } else {
             applyXYZcorrection( u, f );
         }
     }

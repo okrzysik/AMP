@@ -16,9 +16,10 @@
 #endif
 
 
-#define resetElementOperation( NAME )                                  \
-    do {                                                               \
-        if ( name == #NAME ) retElementOp.reset( new NAME( params ) ); \
+#define resetElementOperation( NAME )                 \
+    do {                                              \
+        if ( name == #NAME )                          \
+            retElementOp.reset( new NAME( params ) ); \
     } while ( 0 )
 
 

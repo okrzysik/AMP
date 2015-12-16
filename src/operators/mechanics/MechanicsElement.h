@@ -29,7 +29,8 @@ namespace Operator {
   @see MechanicsLinearFEOperator
   @see MechanicsNonlinearFEOperator
   */
-class MechanicsElement : public ElementOperation {
+class MechanicsElement : public ElementOperation
+{
 public:
     /**
       Constructor. This builds the finite element shape functions. This reads the

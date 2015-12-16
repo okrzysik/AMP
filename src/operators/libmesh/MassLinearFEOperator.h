@@ -16,7 +16,8 @@
 namespace AMP {
 namespace Operator {
 
-class MassLinearFEOperator : public LinearFEOperator {
+class MassLinearFEOperator : public LinearFEOperator
+{
 public:
     explicit MassLinearFEOperator( const AMP::shared_ptr<MassLinearFEOperatorParameters> &params );
 

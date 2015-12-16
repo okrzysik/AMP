@@ -18,15 +18,17 @@ namespace LinearAlgebra {
 template <typename T>
 static T *getPtr( std::vector<T> &in )
 {
-    T *retVal                 = 0;
-    if ( !in.empty() ) retVal = &( in[0] );
+    T *retVal = 0;
+    if ( !in.empty() )
+        retVal = &( in[0] );
     return retVal;
 }
 template <typename T>
 static T *getPtr( const std::vector<T> &in )
 {
-    T *retVal                 = 0;
-    if ( !in.empty() ) retVal = (T *) &( in[0] );
+    T *retVal = 0;
+    if ( !in.empty() )
+        retVal = (T *) &( in[0] );
     return retVal;
 }
 
@@ -57,7 +59,8 @@ CommunicationList::CommunicationList( CommunicationListParameters::shared_ptr pa
     // Get the partition (the total number of DOFs for all ranks <= current rank)
     std::vector<size_t> partition( d_comm.getSize(), 0 );
     d_comm.allGather<size_t>( params->d_localsize, &partition[0] );
-    for ( int i = 1; i < d_comm.getSize(); i++ ) partition[i] += partition[i - 1];
+    for ( int i = 1; i < d_comm.getSize(); i++ )
+        partition[i] += partition[i - 1];
     // Get the first DOF on the current rank
     d_iBegin = partition[d_comm.getRank()] - params->d_localsize;
     // Get the total number of DOFs
@@ -137,7 +140,8 @@ CommunicationList::shared_ptr CommunicationList::subset( VectorIndexer::shared_p
 
     retVal->d_iNumRows = 0;
     for ( size_t i = getStartGID(); i != getStartGID() + numLocalRows(); i++ ) {
-        if ( ndx->isInSub( i ) ) retVal->d_iNumRows++;
+        if ( ndx->isInSub( i ) )
+            retVal->d_iNumRows++;
     }
     d_comm.sumScan( &( retVal->d_iNumRows ), &( retVal->d_iTotalRows ), 1 );
     retVal->d_iBegin     = retVal->d_iTotalRows - retVal->d_iNumRows;
@@ -151,7 +155,8 @@ CommunicationList::shared_ptr CommunicationList::subset( VectorIndexer::shared_p
 void CommunicationList::packReceiveBuffer( std::vector<double> &recv, const Vector &vec ) const
 {
     AMP_ASSERT( recv.size() == d_ReceiveDOFList.size() );
-    if ( recv.empty() ) return;
+    if ( recv.empty() )
+        return;
     vec.getGhostAddValuesByGlobalID(
         (int) recv.size(), getPtr( d_ReceiveDOFList ), getPtr( recv ) );
 }
@@ -159,7 +164,8 @@ void CommunicationList::packReceiveBuffer( std::vector<double> &recv, const Vect
 void CommunicationList::packSendBuffer( std::vector<double> &send, const Vector &vec ) const
 {
     AMP_ASSERT( send.size() == d_SendDOFList.size() );
-    if ( send.empty() ) return;
+    if ( send.empty() )
+        return;
     vec.getLocalValuesByGlobalID( (int) send.size(), getPtr( d_SendDOFList ), getPtr( send ) );
 }
 
@@ -238,8 +244,7 @@ void CommunicationList::buildCommunicationArrays( std::vector<size_t> &DOFs,
         if ( d_ReceiveDOFList[index] < partitionInfo[rank] ) {
             // Move to the next DOF
             index++;
-        }
-        else {
+        } else {
             // Store the number of DOFs with the given rank, and move to the next rank
             d_ReceiveDisplacements[rank] = start;
             d_ReceiveSizes[rank]         = index - start;
@@ -274,7 +279,8 @@ void CommunicationList::buildCommunicationArrays( std::vector<size_t> &DOFs,
 
 void CommunicationList::scatter_set( std::vector<double> &in, std::vector<double> &out ) const
 {
-    if ( d_SendSizes.empty() ) return;
+    if ( d_SendSizes.empty() )
+        return;
     double *send_buf = getPtr( in );
     int *send_sizes  = (int *) &( d_SendSizes[0] );
     int *send_disps  = (int *) &( d_SendDisplacements[0] );

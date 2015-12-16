@@ -28,7 +28,8 @@ namespace Operator {
  *   An inherited map must impliment buildMap and buildReturn to manage how
  *   the data is mapped between 3D and 1D.
  */
-class Map3to1to3 : public AsyncMapOperator {
+class Map3to1to3 : public AsyncMapOperator
+{
 public:
     /** \brief   Standard constructor
      * \param[in] params  Input parameters

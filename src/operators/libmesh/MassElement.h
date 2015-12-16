@@ -18,7 +18,8 @@
 namespace AMP {
 namespace Operator {
 
-class MassElement : public ElementOperation {
+class MassElement : public ElementOperation
+{
 public:
     explicit MassElement( const AMP::shared_ptr<ElementOperationParameters> &params );
 

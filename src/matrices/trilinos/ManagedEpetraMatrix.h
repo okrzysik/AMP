@@ -20,7 +20,8 @@ namespace LinearAlgebra {
   * \details  This class stores an Epetra_FECrsMatrix and provides
   * the AMP interface to this matrix.
   */
-class ManagedEpetraMatrix : public EpetraMatrix, public ManagedMatrix {
+class ManagedEpetraMatrix : public EpetraMatrix, public ManagedMatrix
+{
 protected:
     //!  Parameters used to construct the matrix
     AMP::shared_ptr<ManagedEpetraMatrixParameters> d_pParameters;

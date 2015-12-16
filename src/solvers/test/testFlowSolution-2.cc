@@ -410,7 +410,8 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     AMP::shared_ptr<AMP::Operator::ColumnOperator> columnMapstoCladOperator(
         new AMP::Operator::ColumnOperator( columnMapsParams ) );
     columnMapstoCladOperator->append( mapPelletAndClad );
-    if ( map3DFlowToClad.get() != NULL ) columnMapstoCladOperator->append( map3DFlowToClad );
+    if ( map3DFlowToClad.get() != NULL )
+        columnMapstoCladOperator->append( map3DFlowToClad );
 
     //------------------------------------------
     AMP::shared_ptr<AMP::Operator::RobinVectorCorrection> robinBoundaryOp1;
@@ -639,9 +640,12 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
             neutronicsOperator->apply( nullVec, specificPowerGpVec );
         }
 
-        if ( robinBoundaryOp1.get() != NULL ) robinBoundaryOp1->reset( correctionParameters1 );
-        if ( robinBoundaryOp2.get() != NULL ) robinBoundaryOp2->reset( correctionParameters2 );
-        if ( robinBoundaryOp3.get() != NULL ) robinBoundaryOp3->reset( correctionParameters3 );
+        if ( robinBoundaryOp1.get() != NULL )
+            robinBoundaryOp1->reset( correctionParameters1 );
+        if ( robinBoundaryOp2.get() != NULL )
+            robinBoundaryOp2->reset( correctionParameters2 );
+        if ( robinBoundaryOp3.get() != NULL )
+            robinBoundaryOp3->reset( correctionParameters3 );
 
         if ( meshAdapter1.get() != NULL ) {
             thermalRhsVec1->zero();
@@ -737,7 +741,8 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
 
     input_db.reset();
 
-    if ( ut->NumFailLocal() == 0 ) ut->passes( exeName );
+    if ( ut->NumFailLocal() == 0 )
+        ut->passes( exeName );
 }
 
 int main( int argc, char *argv[] )
@@ -747,12 +752,10 @@ int main( int argc, char *argv[] )
 
     try {
         PelletCladQuasiStaticThermalFlow( &ut, "testFlowSolution-2" );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

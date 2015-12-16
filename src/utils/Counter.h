@@ -10,7 +10,8 @@
 
 namespace AMP {
 
-class Counter {
+class Counter
+{
 private:
     static std::map<std::string, size_t> d_Data;
 

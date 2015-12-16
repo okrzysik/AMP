@@ -7,7 +7,8 @@ namespace AMP {
 namespace Operator {
 
 
-class AsynchronousOperatorParameters : public OperatorParameters {
+class AsynchronousOperatorParameters : public OperatorParameters
+{
 public:
     char d_AsynchronousConstructionParam;
     size_t d_ConstructionPhase;

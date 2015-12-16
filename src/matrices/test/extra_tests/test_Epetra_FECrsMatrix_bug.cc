@@ -34,7 +34,8 @@ int main( int argc, char *argv[] )
     if ( rank == 0 ) {
         int cols[4]      = { 1, 1, 1, 1 };
         double values[4] = { 0, 0, 0, 0 };
-        for ( int i = 0; i < 4; i++ ) matrix.ReplaceGlobalValues( i, 4, values, cols );
+        for ( int i = 0; i < 4; i++ )
+            matrix.ReplaceGlobalValues( i, 4, values, cols );
     }
     matrix.GlobalAssemble( true );
 
@@ -44,8 +45,7 @@ int main( int argc, char *argv[] )
         int rows[2] = { 0, 1 };
         matrix.ReplaceGlobalValues( rows[0], 1, &one, &rows[0] );
         matrix.ReplaceGlobalValues( rows[1], 1, &one, &rows[1] );
-    }
-    else {
+    } else {
         int rows[2] = { 2, 3 };
         matrix.ReplaceGlobalValues( rows[0], 1, &one, &rows[0] );
         matrix.ReplaceGlobalValues( rows[1], 1, &one, &rows[1] );

@@ -142,7 +142,8 @@ void test_interp( AMP::UnitTest *ut )
     for ( int i = 0; i < Nix; i++ ) {
         double xi = ( (double) i - 2 ) / ( (double) ( Nix - 5 ) );
         double fi = AMP::Utilities::linear( x, f1, xi );
-        if ( !AMP::Utilities::approx_equal( fi, a + bx * xi, 1e-12 ) ) pass_linear = false;
+        if ( !AMP::Utilities::approx_equal( fi, a + bx * xi, 1e-12 ) )
+            pass_linear = false;
         for ( int j = 0; j < Niy; j++ ) {
             double yi = ( (double) j - 2 ) / ( (double) ( Niy - 5 ) );
             fi        = AMP::Utilities::bilinear( x, y, f2, xi, yi );
@@ -172,7 +173,8 @@ void test_interp( AMP::UnitTest *ut )
 
 
 // Test enable_shared_from_this
-class dummy : public AMP::enable_shared_from_this<dummy> {
+class dummy : public AMP::enable_shared_from_this<dummy>
+{
 public:
     AMP::shared_ptr<dummy> getPtr() { return shared_from_this(); }
 };
@@ -183,9 +185,9 @@ void test_shared_from_this( AMP::UnitTest *ut )
         AMP::shared_ptr<dummy> p1( new dummy );
         AMP::shared_ptr<dummy> p2 = p1.get()->getPtr();
         int count                 = p2.use_count();
-        if ( count != 2 ) pass    = false;
-    }
-    catch ( ... ) {
+        if ( count != 2 )
+            pass = false;
+    } catch ( ... ) {
         pass = false;
     }
     if ( pass )
@@ -209,8 +211,7 @@ void test_shared_from_this( AMP::UnitTest *ut )
         pass                      = pass && p3.use_count() == 2 && p5.use_count() == 0;
         std::shared_ptr<dummy> p6 = p3->getPtr();
         pass                      = pass && p3.use_count() == 3 && p6.use_count() == 3;
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         pass = false;
     }
     if ( pass )
@@ -267,10 +268,11 @@ int main( int argc, char *argv[] )
         size_t N = 10000;
         std::vector<int> data1( N );
         srand( time( NULL ) );
-        for ( size_t i = 0; i < N; i++ ) data1[i] = rand();
-        std::vector<int> data2                    = data1;
-        std::vector<int> data3                    = data1;
-        double t1                                 = AMP::AMP_MPI::time();
+        for ( size_t i         = 0; i < N; i++ )
+            data1[i]           = rand();
+        std::vector<int> data2 = data1;
+        std::vector<int> data3 = data1;
+        double t1              = AMP::AMP_MPI::time();
         AMP::Utilities::quicksort( data1 );
         double t2 = AMP::AMP_MPI::time();
         std::sort( data2.begin(), data2.end() );
@@ -279,7 +281,8 @@ int main( int argc, char *argv[] )
         double t4 = AMP::AMP_MPI::time();
         bool pass = true;
         for ( size_t i = 0; i < N; i++ ) {
-            if ( data1[i] != data2[i] ) pass = false;
+            if ( data1[i] != data2[i] )
+                pass = false;
         }
         if ( pass )
             ut.passes( "quicksort sorts correctly" );
@@ -332,13 +335,11 @@ int main( int argc, char *argv[] )
         }
         if ( n_bytes1 == 0 ) {
             ut.failure( "getMemoryUsage returns 0" );
-        }
-        else {
+        } else {
             ut.passes( "getMemoryUsage returns non-zero" );
             if ( n_bytes2 > n_bytes1 ) {
                 ut.passes( "getMemoryUsage increases size" );
-            }
-            else {
+            } else {
 #if defined( USE_MAC )
                 ut.expected_failure( "getMemoryUsage does not increase size" );
 #else
@@ -347,8 +348,7 @@ int main( int argc, char *argv[] )
             }
             if ( n_bytes1 == n_bytes3 ) {
                 ut.passes( "getMemoryUsage decreases size properly" );
-            }
-            else {
+            } else {
 #if defined( USE_MAC ) || defined( USE_WINDOWS )
                 ut.expected_failure( "getMemoryUsage does not decrease size properly" );
 #else
@@ -366,7 +366,8 @@ int main( int argc, char *argv[] )
             memset( tmp2, 0xAA, 0x10000001 * sizeof( uint64_t ) );
             n_bytes2 = AMP::Utilities::getMemoryUsage();
             for ( int i = 0; i < 10; i++ ) {
-                if ( ( tmp2[rand() % 0x1000000] & 0xFF ) != 0xAA ) ut.failure( "Internal error" );
+                if ( ( tmp2[rand() % 0x1000000] & 0xFF ) != 0xAA )
+                    ut.failure( "Internal error" );
             }
             delete[] tmp2;
             tmp2            = NULL;
@@ -374,8 +375,7 @@ int main( int argc, char *argv[] )
             if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1 + 0x81000000 &&
                  abs_diff( n_bytes1, n_bytes3 ) < 50e3 ) {
                 ut.passes( "getMemoryUsage correctly handles 2^31 - 2^32 bytes" );
-            }
-            else {
+            } else {
                 std::cout << "Memtest 2-4 GB failes: " << n_bytes1 << " " << n_bytes2 << " "
                           << n_bytes3 << std::endl;
                 ut.failure( "getMemoryUsage correctly handles 2^31 - 2^32 bytes" );
@@ -389,12 +389,12 @@ int main( int argc, char *argv[] )
             uint64_t *tmp2 = new uint64_t[size]; // Allocate 2^31+8 bytes
             if ( tmp == NULL ) {
                 ut.expected_failure( "Unable to allocate variable of size 4 GB" );
-            }
-            else {
+            } else {
                 memset( tmp2, 0xAA, size * sizeof( uint64_t ) );
                 n_bytes2 = AMP::Utilities::getMemoryUsage();
                 for ( int i = 0; i < 10; i++ ) {
-                    if ( ( tmp2[rand() % size] & 0xFF ) != 0xAA ) ut.failure( "Internal error" );
+                    if ( ( tmp2[rand() % size] & 0xFF ) != 0xAA )
+                        ut.failure( "Internal error" );
                 }
                 delete[] tmp2;
                 tmp2 = NULL;
@@ -403,8 +403,7 @@ int main( int argc, char *argv[] )
                 if ( n_bytes2 > 0x100000000 && n_bytes2 < n_bytes1 + 0x110000000 &&
                      abs_diff( n_bytes1, n_bytes3 ) < 50e3 ) {
                     ut.passes( "getMemoryUsage correctly handles memory > 2^32 bytes" );
-                }
-                else {
+                } else {
                     std::cout << "Memtest >4 GB failes: " << n_bytes1 << " " << n_bytes2 << " "
                               << n_bytes3 << std::endl;
                     ut.expected_failure( "getMemoryUsage does not handle memory > 2^32 bytes" );
@@ -416,20 +415,21 @@ int main( int argc, char *argv[] )
         std::vector<std::string> call_stack = get_call_stack();
         if ( globalComm.getRank() == 0 ) {
             std::cout << "Call stack:" << std::endl;
-            for ( size_t i = 0; i < call_stack.size(); i++ ) std::cout << "   " << call_stack[i];
+            for ( size_t i = 0; i < call_stack.size(); i++ )
+                std::cout << "   " << call_stack[i];
         }
         if ( !call_stack.empty() ) {
             ut.passes( "non empty call stack" );
             bool pass = false;
             if ( call_stack.size() > 1 ) {
-                if ( call_stack[1].find( "get_call_stack()" ) != std::string::npos ) pass = true;
+                if ( call_stack[1].find( "get_call_stack()" ) != std::string::npos )
+                    pass = true;
             }
             if ( pass )
                 ut.passes( "call stack decoded function symbols" );
             else
                 ut.expected_failure( "call stack was unable to decode function symbols" );
-        }
-        else {
+        } else {
             ut.failure( "non empty call stack" );
         }
 
@@ -438,7 +438,8 @@ int main( int argc, char *argv[] )
         std::vector<char> type;
         std::vector<std::string> obj;
         int rtn = AMP::Utilities::get_symbols( address, type, obj );
-        if ( rtn == 0 && !address.empty() ) ut.passes( "Read symbols from executable" );
+        if ( rtn == 0 && !address.empty() )
+            ut.passes( "Read symbols from executable" );
 
         // Test deleting and checking if a file exists
         if ( globalComm.getRank() == 0 ) {

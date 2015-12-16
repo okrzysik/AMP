@@ -35,7 +35,8 @@ StridedZAxisMap::~StridedZAxisMap() {}
 ************************************************************************/
 bool StridedZAxisMap::validMapType( const std::string &t )
 {
-    if ( t == "StridedZAxis" ) return true;
+    if ( t == "StridedZAxis" )
+        return true;
     return false;
 }
 
@@ -53,8 +54,7 @@ void StridedZAxisMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             AMP::LinearAlgebra::VS_Stride( d_inpStride, d_inpDofs ), inpVar->getName() );
         AMP_ASSERT( inpStridedPhysics );
         AMP::Operator::AsyncMapOperator::apply( inpStridedPhysics, r );
-    }
-    else {
+    } else {
         AMP::Operator::AsyncMapOperator::apply( inpPhysics, r );
     }
 }
@@ -70,8 +70,7 @@ void StridedZAxisMap::setVector( AMP::LinearAlgebra::Vector::shared_ptr result )
             AMP::LinearAlgebra::VS_Stride( d_outStride, d_outDofs ), outVar->getName() );
         AMP_ASSERT( outStridedPhysics );
         AMP::Operator::Map3to1to3::setVector( outStridedPhysics );
-    }
-    else {
+    } else {
         AMP::Operator::Map3to1to3::setVector( outPhysics );
     }
 

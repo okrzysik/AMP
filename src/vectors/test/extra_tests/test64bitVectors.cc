@@ -57,7 +57,8 @@ void simpleDOFManagerVectorTest( AMP::UnitTest *ut,
     AMP_ASSERT( v1->L2Norm() == 0.0 );
     size_t index = v1->getGlobalSize() - 4;
     double val   = (double) index;
-    if ( v1->containsGlobalElement( index ) ) v1->setValueByGlobalID( index, val );
+    if ( v1->containsGlobalElement( index ) )
+        v1->setValueByGlobalID( index, val );
     // Time makeConsistentSet
     mesh->getComm().barrier();
     start_time = AMP::AMP_MPI::time();

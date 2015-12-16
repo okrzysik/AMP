@@ -12,7 +12,8 @@ namespace Operator {
   An abstract base class for representing the physics (material) models in
   the finite element operators.
   */
-class ElementPhysicsModel {
+class ElementPhysicsModel
+{
 public:
     /**
       Constructor.

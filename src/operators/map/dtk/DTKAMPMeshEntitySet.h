@@ -15,7 +15,8 @@ namespace Operator {
 /**
   * AMP Mesh element implementation for DTK EntitySet interface.
 */
-class AMPMeshEntitySet : public DataTransferKit::EntitySet {
+class AMPMeshEntitySet : public DataTransferKit::EntitySet
+{
 public:
     /**
      * Constructor.

@@ -52,7 +52,8 @@ static const double ranges[2][2] = { { TminVal, TmaxVal }, { uminVal, umaxVal } 
 
 //=================== Classes =======================================================
 
-class ThermalConductivityProp : public Property<double> {
+class ThermalConductivityProp : public Property<double>
+{
 public:
     ThermalConductivityProp()
         : Property<double>( name_base + "_" + "ThermalConductivity", // Name string
@@ -68,7 +69,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class DensityProp : public Property<double> {
+class DensityProp : public Property<double>
+{
 public:
     DensityProp()
         : Property<double>( name_base + "_" + "Density", // Name string
@@ -84,7 +86,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class ThermalExpansionProp : public Property<double> {
+class ThermalExpansionProp : public Property<double>
+{
 public:
     ThermalExpansionProp()
         : Property<double>( name_base + "_" + "ThermalExpansion", // Name string
@@ -100,7 +103,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class HeatCapacityPressureProp : public Property<double> {
+class HeatCapacityPressureProp : public Property<double>
+{
 public:
     HeatCapacityPressureProp()
         : Property<double>( name_base + "_" + "HeatCapacityPressure", // Name string
@@ -116,7 +120,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class YoungsModulusProp : public Property<double> {
+class YoungsModulusProp : public Property<double>
+{
 public:
     YoungsModulusProp()
         : Property<double>( name_base + "_" + "YoungsModulus", // Name string
@@ -132,7 +137,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class PoissonRatioProp : public Property<double> {
+class PoissonRatioProp : public Property<double>
+{
 public:
     PoissonRatioProp()
         : Property<double>( name_base + "_" + "PoissonRatio", // Name string
@@ -147,7 +153,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class DxThermalConductivityProp : public Property<double> {
+class DxThermalConductivityProp : public Property<double>
+{
 public:
     DxThermalConductivityProp()
         : Property<double>( name_base + "_" + "DxThermalConductivity", // Name string
@@ -163,7 +170,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class DTThermalConductivityProp : public Property<double> {
+class DTThermalConductivityProp : public Property<double>
+{
 public:
     DTThermalConductivityProp()
         : Property<double>( name_base + "_" + "DTThermalConductivity", // Name string
@@ -191,8 +199,9 @@ inline double ThermalConductivityProp::eval( std::vector<double> &args )
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
-    double x           = u;
-    if ( x < 0.001 ) x = 0.001;
+    double x = u;
+    if ( x < 0.001 )
+        x = 0.001;
 
     double lambda0 = 1. / ( p[0] + p[1] * T );
     double Dtherm  = p[2] * exp( p[3] * T );
@@ -214,8 +223,7 @@ inline double DensityProp::eval( std::vector<double> &args )
     double expDe;
     if ( T > 923 ) {
         expDe = p[0] + p[1] * T + p[2] * T2 + p[3] * T2 * T;
-    }
-    else {
+    } else {
         expDe = p[4] + p[5] * T + p[6] * T2 + p[7] * T2 * T;
     }
     double dens = p[8] * exp( -3 * log( expDe ) );
@@ -235,8 +243,7 @@ inline double ThermalExpansionProp::eval( std::vector<double> &args )
     double alpha;
     if ( T > 923 ) {
         alpha = p[0] + p[1] * T + p[2] * T2 + p[3] * T2 * T;
-    }
-    else {
+    } else {
         alpha = p[4] + p[5] * T + p[6] * T2 + p[7] * T2 * T;
     }
     return alpha;
@@ -251,8 +258,9 @@ inline double HeatCapacityPressureProp::eval( std::vector<double> &args )
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
-    double x           = u;
-    if ( x < 0.001 ) x = 0.001;
+    double x = u;
+    if ( x < 0.001 )
+        x = 0.001;
 
     double T2     = T * T;
     double heatcp = p[0] + p[1] * x + ( p[2] + p[3] * x ) * T +
@@ -270,8 +278,9 @@ inline double YoungsModulusProp::eval( std::vector<double> &args )
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
-    double x           = u;
-    if ( x < 0.001 ) x = 0.001;
+    double x = u;
+    if ( x < 0.001 )
+        x = 0.001;
 
     double youngs = p[0] * ( 1. + p[1] * T ) * exp( p[2] * x );
     return youngs;
@@ -288,8 +297,9 @@ inline double DxThermalConductivityProp::eval( std::vector<double> &args )
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
-    double x           = u;
-    if ( x < 0.001 ) x = 0.001;
+    double x = u;
+    if ( x < 0.001 )
+        x = 0.001;
 
     double DxThCond =
         ( ( -0.35355339059327373 *
@@ -311,8 +321,9 @@ inline double DTThermalConductivityProp::eval( std::vector<double> &args )
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
-    double x           = u;
-    if ( x < 0.001 ) x = 0.001;
+    double x = u;
+    if ( x < 0.001 )
+        x = 0.001;
 
     double DTThCond =
         ( -0.5 * p[1] ) / ( ( p[0] + T * p[1] ) *

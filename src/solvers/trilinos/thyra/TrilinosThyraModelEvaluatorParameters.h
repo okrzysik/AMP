@@ -16,7 +16,8 @@ namespace Solver {
   * The TrilinosThyraModelEvaluator is a wrapper for a Thyra ModelEvaluator to
   * wrap AMP::Operators for use with Trilinos NOX solvers.
   */
-class TrilinosThyraModelEvaluatorParameters {
+class TrilinosThyraModelEvaluatorParameters
+{
 public:
     AMP::LinearAlgebra::Vector::shared_ptr d_icVec;             //!< The dofs to use for the vectors
     AMP::Operator::Operator::shared_ptr d_nonlinearOp;          //!< The non-linear operator

@@ -9,7 +9,8 @@ namespace AMP {
 namespace Operator {
 
 template <typename OPERATOR>
-class OperatorFactory {
+class OperatorFactory
+{
 public:
     typedef OPERATOR Operator_t;
     typedef typename Operator_t::Parameters OperatorParameters;

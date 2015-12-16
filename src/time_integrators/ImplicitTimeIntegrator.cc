@@ -73,8 +73,7 @@ void ImplicitTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameter
         * Initialize object with data read from input and restart databases.
         */
         getFromInput( params->d_db );
-    }
-    else {
+    } else {
         AMP_ERROR( "ImplicitTimeIntegrator::ImplicitTimeIntegrator: TimeIntegratorParameters "
                    "argument must be of "
                    "derived type ImplicitTimeIntegratorParameters" );

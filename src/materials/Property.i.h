@@ -75,7 +75,8 @@ void Property<Number>::getAuxiliaryData( const std::string &key, std::string &va
 template <class Number>
 bool Property<Number>::in_range( const std::string &argname, const Number value )
 {
-    if ( !is_argument( argname ) ) return true;
+    if ( !is_argument( argname ) )
+        return true;
     std::vector<Number> range = get_arg_range( argname );
     return value >= range[0] && value <= range[1];
 }
@@ -83,7 +84,8 @@ template <class Number>
 template <class INPUT_VTYPE>
 bool Property<Number>::in_range( const std::string &argname, const INPUT_VTYPE &values )
 {
-    if ( !is_argument( argname ) ) return true;
+    if ( !is_argument( argname ) )
+        return true;
     std::vector<Number> range                = get_arg_range( argname );
     bool result                              = true;
     typename INPUT_VTYPE::const_iterator pos = values.begin();
@@ -149,8 +151,7 @@ void Property<Number>::evalvActual(
         mapIter = args.find( d_arguments[i] );
         if ( mapIter == args.end() ) {
             eval_args[i] = d_defaults[i];
-        }
-        else {
+        } else {
             parameter_iter.push_back( mapIter->second->begin() );
             parameter_indices.push_back( i );
             parameter_map_iter.push_back( mapIter );
@@ -214,7 +215,8 @@ void Property<Number>::evalv(
                 ss << "Property '" + it->first + "' out of range in function '" + d_name + "'."
                    << std::endl;
                 ss << "Values are ";
-                for ( size_t i = 0; i < values.size(); ++i ) ss << values[i] << " ";
+                for ( size_t i = 0; i < values.size(); ++i )
+                    ss << values[i] << " ";
                 ss << std::endl;
                 ss << "Valid range is [" << range[0] << "," << range[1] << "]" << std::endl;
                 AMP_ERROR( ss.str() );

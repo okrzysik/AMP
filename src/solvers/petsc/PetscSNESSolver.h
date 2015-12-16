@@ -47,7 +47,8 @@ namespace Solver {
   * The PETScSNESSolver is a wrapper to the PETSc SNES solver which provides an implementation
   * of the inexact Newton method.
   */
-class PetscSNESSolver : public SolverStrategy {
+class PetscSNESSolver : public SolverStrategy
+{
 public:
     /**
      * default constructor, sets default values for member variables

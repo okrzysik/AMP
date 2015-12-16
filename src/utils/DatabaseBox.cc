@@ -35,7 +35,8 @@ bool DatabaseBox::empty() const
 {
     bool is_empty = ( d_data.d_dimension == 0 ? true : false );
     for ( int i = 0; i < d_data.d_dimension; i++ ) {
-        if ( d_data.d_hi[i] < d_data.d_lo[i] ) is_empty = true;
+        if ( d_data.d_hi[i] < d_data.d_lo[i] )
+            is_empty = true;
     }
     return ( is_empty );
 }
@@ -44,8 +45,10 @@ int DatabaseBox::operator==( const DatabaseBox &box ) const
 {
     bool equals = ( d_data.d_dimension == box.d_data.d_dimension );
     for ( int i = 0; i < d_data.d_dimension; i++ ) {
-        if ( d_data.d_lo[i] != box.d_data.d_lo[i] ) equals = false;
-        if ( d_data.d_hi[i] != box.d_data.d_hi[i] ) equals = false;
+        if ( d_data.d_lo[i] != box.d_data.d_lo[i] )
+            equals = false;
+        if ( d_data.d_hi[i] != box.d_data.d_hi[i] )
+            equals = false;
     }
     return ( equals );
 }

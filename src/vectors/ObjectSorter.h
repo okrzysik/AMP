@@ -10,7 +10,8 @@ namespace LinearAlgebra {
   \brief A list of parameters used for creating an ObjectSorter
   \see ObjectSorter
   */
-class ObjectSorterParameters : public ParameterBase {
+class ObjectSorterParameters : public ParameterBase
+{
 public:
     /** Convenience typedef
       */
@@ -28,7 +29,8 @@ public:
 /** \class ObjectSorter
   * \brief An abstract class for mapping ids to and from particular orderings
   */
-class ObjectSorter {
+class ObjectSorter
+{
 private:
     ObjectSorter( const ObjectSorter &rhs );
 

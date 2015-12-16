@@ -28,16 +28,14 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
     if ( d_useUpdatedLagrangian ) {
         d_mechNULElem =
             AMP::dynamic_pointer_cast<MechanicsNonlinearUpdatedLagrangianElement>( d_elemOp );
-    }
-    else {
+    } else {
         d_mechNonlinElem = AMP::dynamic_pointer_cast<MechanicsNonlinearElement>( d_elemOp );
     }
 
     if ( d_useUpdatedLagrangian ) {
         AMP_INSIST( ( ( d_mechNULElem.get() ) != NULL ),
                     "d_elemOp is not of type MechanicsNonlinearUpdatedLagrangianElement" );
-    }
-    else {
+    } else {
         AMP_INSIST( ( ( d_mechNonlinElem.get() ) != NULL ),
                     "d_elemOp is not of type MechanicsNonlinearElement" );
     }
@@ -79,8 +77,7 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
         if ( i == Mechanics::DISPLACEMENT ) {
             d_isActive[i] = true;
             d_isFrozen[i] = false;
-        }
-        else {
+        } else {
             d_isActive[i] = activeInpVar_db->keyExists( keysForVariables[i] );
             d_isFrozen[i] =
                 ( params->d_db )->getBoolWithDefault( "FREEZE_" + keysForVariables[i], true );
@@ -259,8 +256,7 @@ void MechanicsNonlinearFEOperator::preElementOperation( const AMP::Mesh::MeshEle
         d_mechNULElem->setElementVectors(
             elementInputVectors, elementInputVectors_pre, d_elementOutputVector );
         d_mechNULElem->assignReferenceXYZ( elementRefXYZ );
-    }
-    else {
+    } else {
         d_mechNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
                                                        d_materialModel );
         d_mechNonlinElem->setElementVectors( elementInputVectors, d_elementOutputVector );
@@ -323,8 +319,7 @@ void MechanicsNonlinearFEOperator::init()
                                                         d_materialModel );
             d_mechNULElem->initMaterialModel( localVector );
             d_mechNULElem->initializeReferenceXYZ( elementRefXYZ );
-        }
-        else {
+        } else {
             d_mechNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
                                                            d_materialModel );
             d_mechNonlinElem->initMaterialModel( localVector );
@@ -363,8 +358,7 @@ void MechanicsNonlinearFEOperator::reset( const AMP::shared_ptr<OperatorParamete
 
     if ( d_resetReusesRadialReturn ) {
         d_materialModel->globalReset();
-    }
-    else {
+    } else {
         AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
         AMP::Mesh::MeshIterator end_el = el.end();
 
@@ -404,8 +398,7 @@ void MechanicsNonlinearFEOperator::reset( const AMP::shared_ptr<OperatorParamete
             if ( d_useUpdatedLagrangian ) {
                 updateMaterialForUpdatedLagrangianElement<
                     MechanicsNonlinearUpdatedLagrangianElement::RESET>( *el );
-            }
-            else {
+            } else {
                 updateMaterialForElement<MechanicsNonlinearElement::RESET>( *el );
             }
         } // end for el
@@ -518,8 +511,7 @@ AMP::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
             if ( d_useUpdatedLagrangian ) {
                 updateMaterialForUpdatedLagrangianElement<
                     MechanicsNonlinearUpdatedLagrangianElement::JACOBIAN>( *el );
-            }
-            else {
+            } else {
                 updateMaterialForElement<MechanicsNonlinearElement::JACOBIAN>( *el );
             }
         } // end for el
@@ -727,8 +719,7 @@ void MechanicsNonlinearFEOperator::updateMaterialForElementCommonFunction(
         d_mechNULElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
                                                     d_materialModel );
         d_mechNULElem->assignReferenceXYZ( elementRefXYZ );
-    }
-    else {
+    } else {
         d_mechNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
                                                        d_materialModel );
     }
@@ -775,8 +766,7 @@ MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
             vec->select( meshSelector, vec->getVariable()->getName() );
         return meshSubsetVec->subsetVectorForVariable( var );
-    }
-    else {
+    } else {
         return vec->subsetVectorForVariable( var );
     }
 }
@@ -790,8 +780,7 @@ MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_
         AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec =
             vec->constSelect( meshSelector, vec->getVariable()->getName() );
         return meshSubsetVec->constSubsetVectorForVariable( var );
-    }
-    else {
+    } else {
         return vec->constSubsetVectorForVariable( var );
     }
 }

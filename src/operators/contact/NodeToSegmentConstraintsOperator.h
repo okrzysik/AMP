@@ -22,7 +22,8 @@ namespace Operator {
   an implementation of the apply() function.
   @see Operator
   */
-class NodeToSegmentConstraintsOperator : public Operator {
+class NodeToSegmentConstraintsOperator : public Operator
+{
 
 public:
     /**

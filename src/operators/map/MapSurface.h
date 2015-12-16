@@ -21,7 +21,8 @@
 namespace AMP {
 namespace Operator {
 
-class MapSurface : public MapOperator {
+class MapSurface : public MapOperator
+{
 public:
     explicit MapSurface( const AMP::shared_ptr<OperatorParameters> &params );
     virtual ~MapSurface() {}

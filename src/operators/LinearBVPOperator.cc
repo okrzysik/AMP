@@ -38,8 +38,7 @@ void LinearBVPOperator::reset( const AMP::shared_ptr<OperatorParameters> &params
     if ( linearBoundaryParams != NULL ) {
         linearBoundaryParams->d_inputMatrix = d_volumeOperator->getMatrix();
         d_boundaryOperator->reset( linearBoundaryParams );
-    }
-    else {
+    } else {
         AMP::shared_ptr<ColumnBoundaryOperatorParameters> columnBoundaryParams =
             AMP::dynamic_pointer_cast<ColumnBoundaryOperatorParameters>(
                 inParams->d_boundaryOperatorParams );

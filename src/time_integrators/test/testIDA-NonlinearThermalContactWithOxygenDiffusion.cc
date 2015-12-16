@@ -556,8 +556,7 @@ void thermalContactTest( AMP::UnitTest *ut, std::string exeName )
 
     if ( ( time_Params.get() ) == NULL ) {
         ut.failure( "Testing IDATimeIntegratorParameters' Constructor" );
-    }
-    else {
+    } else {
         ut.passes( "Testing IDATimeIntegratorParameters' Constructor" );
     }
 
@@ -577,8 +576,7 @@ void thermalContactTest( AMP::UnitTest *ut, std::string exeName )
 
     if ( pIDATimeIntegrator.get() == NULL ) {
         ut.failure( "Testing IDATimeIntegrator's constructor" );
-    }
-    else {
+    } else {
         ut.passes( "Tested IDATimeIntegrator's constructor" );
     }
 
@@ -597,8 +595,7 @@ void thermalContactTest( AMP::UnitTest *ut, std::string exeName )
         cout << j++ << "-th timestep" << endl;
         if ( retval == 0 ) {
             ut.passes( "Testing IDATimeIntegrator's advanceSolution. PASS!!" );
-        }
-        else {
+        } else {
             ut.failure( "Tested IDATimeIntegrator's advanceSolution. FAIL!!" );
         }
 
@@ -645,12 +642,10 @@ int main( int argc, char *argv[] )
         gpass += ut.numPasses;
         gfail += ut.numFails;
         ut.reset();
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: " << err.what() << std::endl;
         ut.numFails++;
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: "
                   << "An unknown exception was thrown." << std::endl;
         ut.numFails++;

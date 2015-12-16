@@ -64,7 +64,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 #if defined( USE_EXT_TRILINOS )
     types.push_back( 1 );
 #endif
-    if ( globalComm.getSize() == 1 ) types.push_back( 2 );
+    if ( globalComm.getSize() == 1 )
+        types.push_back( 2 );
     for ( size_t i = 0; i < types.size(); i++ ) {
         char tmp[100];
         sprintf( tmp, "%s: %i", exeName.c_str(), types[i] );
@@ -85,8 +86,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             AMP_ASSERT( thirdMat->numGlobalRows() == n && thirdMat->numGlobalColumns() == n );
             AMP_ASSERT( fourthMat->numGlobalRows() == m && fourthMat->numGlobalColumns() == m );
             ut->passes( tmp );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             ut->failure( tmp );
         }
     }
@@ -102,12 +102,10 @@ int main( int argc, char *argv[] )
     try {
         myTest( &ut, exeName );
         ut.passes( exeName );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

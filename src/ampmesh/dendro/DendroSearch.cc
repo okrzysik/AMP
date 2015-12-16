@@ -164,8 +164,7 @@ void DendroSearch::projectOnBoundaryID(
                     break; // we assume only one face will be on the boundary
                 }          // end if
             }              // end for f
-        }
-        else { // point was found but element is not on boundary
+        } else {           // point was found but element is not on boundary
             tmpData.d_SearchStatus = FoundNotOnBoundary;
             tmpData.d_VolumeID     = d_localElems[elementLocalID].globalID();
         } // end if
@@ -334,8 +333,7 @@ void DendroSearch::setupDSforSearch()
                 if ( j == 0 ) {
                     minId[k] = id;
                     maxId[k] = id;
-                }
-                else {
+                } else {
                     if ( minId[k] > id ) {
                         minId[k] = id;
                     }
@@ -361,14 +359,12 @@ void DendroSearch::setupDSforSearch()
                     if ( found ) {
                         if ( tmpNodeList[retIdx] == box ) {
                             tmpElemIdList[retIdx].push_back( eId );
-                        }
-                        else {
+                        } else {
                             tmpNodeList.insert( tmpNodeList.begin() + retIdx + 1, box );
                             tmpElemIdList.insert( tmpElemIdList.begin() + retIdx + 1,
                                                   eIdSingleton );
                         }
-                    }
-                    else {
+                    } else {
                         tmpNodeList.insert( tmpNodeList.begin(), box );
                         tmpElemIdList.insert( tmpElemIdList.begin(), eIdSingleton );
                     }
@@ -407,8 +403,7 @@ void DendroSearch::setupDSforSearch()
         ot::TreeNode firstNode = d_nodeList[0];
         firstNode.setWeight( rank );
         d_mins.resize( 1, firstNode );
-    }
-    else {
+    } else {
         int numInitialLocalOcts  = tmpNodeList.size();
         int numInitialGlobalOcts = meshComm.sumReduce<int>( numInitialLocalOcts );
         AMP_CHECK_ASSERT( numInitialGlobalOcts > 0 );
@@ -502,8 +497,7 @@ void DendroSearch::setupDSforSearch()
             }     // end i
             recvEidDisps.clear();
             recvEidCnts.clear();
-        }
-        else {
+        } else {
             if ( d_verbose ) {
                 meshComm.barrier();
                 if ( !rank ) {

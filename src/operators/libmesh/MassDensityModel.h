@@ -15,7 +15,8 @@ namespace Operator {
 
 typedef ElementPhysicsModelParameters MassDensityModelParameters;
 
-class MassDensityModel : public ElementPhysicsModel {
+class MassDensityModel : public ElementPhysicsModel
+{
 public:
     // This was moved from the AMP namespace due to a conflict with
     // MechanicsConstants.h.  --WKC

@@ -15,7 +15,8 @@ namespace TimeIntegrator {
  * Class RK4TimeIntegrator is a concrete time integrator
  * that implements the explicit Runge-Kutta fourth order (RK4) method.
  */
-class RK4TimeIntegrator : public TimeIntegrator {
+class RK4TimeIntegrator : public TimeIntegrator
+{
 public:
     /**
      * Constructor that accepts parameter list.

@@ -73,7 +73,8 @@ namespace AMP {
  * Normally this would be done at the start of an application.
  *
  */
-class Logger {
+class Logger
+{
 
 public:
     typedef AMP::shared_ptr<Logger> shared_ptr;
@@ -83,7 +84,8 @@ public:
      *
      *
      */
-    class Appender {
+    class Appender
+    {
 
     public:
         typedef AMP::shared_ptr<Appender> shared_ptr;

@@ -5,7 +5,8 @@
 #include "ampmesh/latex_visualization_tools.h"
 #include "newton_solver.h"
 
-class my_problem_parameters_t {
+class my_problem_parameters_t
+{
 public:
     my_problem_parameters_t()
     {
@@ -137,8 +138,7 @@ void makeConstraintsOnFuel(
                         tmp.insert( std::pair<size_t, double>( 2, 0.0 ) );
                     }
                 } // end if
-            }
-            else if ( std::abs( coord[1] - 0.0 ) < epsilon ) {
+            } else if ( std::abs( coord[1] - 0.0 ) < epsilon ) {
                 tmp.insert( std::pair<size_t, double>( 1, 0.0 ) );
             } // end if
             if ( option && ( dishRadius > 0.0 ) ) {
@@ -177,13 +177,11 @@ void makeConstraintsOnClad(
             if ( std::abs( radius - cladInnerRadius ) > epsilon ) {
                 if ( std::abs( coord[0] - 0.0 ) < epsilon ) {
                     tmp.insert( std::pair<size_t, double>( 0, 0.0 ) );
-                }
-                else if ( std::abs( coord[1] - 0.0 ) < epsilon ) {
+                } else if ( std::abs( coord[1] - 0.0 ) < epsilon ) {
                     tmp.insert( std::pair<size_t, double>( 1, 0.0 ) );
                 } // end if
             }     // end if
-        }
-        else if ( std::abs( coord[2] - 0.0 ) < epsilon ) {
+        } else if ( std::abs( coord[2] - 0.0 ) < epsilon ) {
             if ( std::abs( radius - cladOuterRadius ) < epsilon ) {
                 tmp.insert( std::pair<size_t, double>( 2, 0.0 ) );
             } // end if
@@ -239,8 +237,7 @@ void applyCustomDirichletCondition(
                 for ( size_t k = 0; k < dofIndices.size(); ++k ) {
                     if ( jt->first == k ) {
                         mat->setValueByGlobalID( dofIndices[k], dofIndices[k], 1.0 );
-                    }
-                    else {
+                    } else {
                         mat->setValueByGlobalID( dofIndices[jt->first], dofIndices[k], 0.0 );
                         mat->setValueByGlobalID( dofIndices[k], dofIndices[jt->first], 0.0 );
                     } // end if
@@ -406,8 +403,7 @@ void computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
             AMP_ASSERT( temperatureIndices.size() == 8 );
             temperatureField->getValuesByGlobalID(
                 8, &( temperatureIndices[0] ), &( temperatureValues[0] ) );
-        }
-        else {
+        } else {
             std::fill( temperatureValues, temperatureValues + 8, referenceTemperature );
         } // end if
 
@@ -444,8 +440,7 @@ void computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
                 sigma_xz->setLocalValueByGlobalID( indices[0], stressTensor[4] );
                 sigma_xy->setLocalValueByGlobalID( indices[0], stressTensor[5] );
                 sigma_eff->setLocalValueByGlobalID( indices[0], vonMisesStress );
-            }
-            else {
+            } else {
                 // sigh...
                 ++verticesInHowManyVolumeElements[dummy.first->second];
                 sigma_xx->addLocalValueByGlobalID( indices[0], stressTensor[0] );

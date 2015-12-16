@@ -22,7 +22,8 @@ namespace Mesh {
  * A mesh element can be thought of as the smallest unit of a mesh.  It is of a type
  * of GeomType.  This class is derived to store a libMesh element.
  */
-class libMeshElement : public MeshElement {
+class libMeshElement : public MeshElement
+{
 public:
     //! Empty constructor for a MeshElement
     libMeshElement();

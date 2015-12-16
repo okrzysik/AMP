@@ -171,8 +171,7 @@ OperatorBuilder::createOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
         // use it, else call the AMP ElementPhysicsModelFactory interface
         if ( localModelFactory.get() != NULL ) {
             elementPhysicsModel = localModelFactory->createElementPhysicsModel( localModel_db );
-        }
-        else {
+        } else {
             elementPhysicsModel =
                 ElementPhysicsModelFactory::createElementPhysicsModel( localModel_db );
         }
@@ -185,87 +184,65 @@ OperatorBuilder::createOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 
     if ( operatorType == "IdentityOperator" ) {
         retOperator = OperatorBuilder::createIdentityOperator( meshAdapter, operator_db );
-    }
-    else if ( operatorType == "MechanicsLinearFEOperator" ) {
+    } else if ( operatorType == "MechanicsLinearFEOperator" ) {
         retOperator = OperatorBuilder::createLinearMechanicsOperator(
             meshAdapter, operator_db, elementPhysicsModel );
-    }
-    else if ( operatorType == "MechanicsNonlinearFEOperator" ) {
+    } else if ( operatorType == "MechanicsNonlinearFEOperator" ) {
         retOperator = OperatorBuilder::createNonlinearMechanicsOperator(
             meshAdapter, operator_db, elementPhysicsModel );
-    }
-    else if ( operatorType == "DiffusionLinearFEOperator" ) {
+    } else if ( operatorType == "DiffusionLinearFEOperator" ) {
         retOperator = OperatorBuilder::createLinearDiffusionOperator(
             meshAdapter, operator_db, elementPhysicsModel );
-    }
-    else if ( operatorType == "DiffusionNonlinearFEOperator" ) {
+    } else if ( operatorType == "DiffusionNonlinearFEOperator" ) {
         retOperator = OperatorBuilder::createNonlinearDiffusionOperator(
             meshAdapter, operator_db, elementPhysicsModel );
-    }
-    else if ( operatorType == "NavierStokesLSWFLinearFEOperator" ) {
+    } else if ( operatorType == "NavierStokesLSWFLinearFEOperator" ) {
         retOperator = OperatorBuilder::createLinearNavierStokesLSWFOperator(
             meshAdapter, operator_db, elementPhysicsModel );
-    }
-    else if ( operatorType == "NavierStokesLSWFFEOperator" ) {
+    } else if ( operatorType == "NavierStokesLSWFFEOperator" ) {
         retOperator = OperatorBuilder::createNonlinearNavierStokesLSWFOperator(
             meshAdapter, operator_db, elementPhysicsModel );
-    }
-    else if ( operatorType == "FickSoretNonlinearFEOperator" ) {
+    } else if ( operatorType == "FickSoretNonlinearFEOperator" ) {
         retOperator = OperatorBuilder::createNonlinearFickSoretOperator(
             meshAdapter, operatorName, input_db, elementPhysicsModel, localModelFactory );
-    }
-    else if ( operatorType == "FlowFrapconOperator" ) {
+    } else if ( operatorType == "FlowFrapconOperator" ) {
         retOperator = OperatorBuilder::createFlowFrapconOperator( meshAdapter, operator_db );
-    }
-    else if ( operatorType == "FlowFrapconJacobian" ) {
+    } else if ( operatorType == "FlowFrapconJacobian" ) {
         retOperator = OperatorBuilder::createFlowFrapconJacobian( meshAdapter, operator_db );
-    }
-    else if ( operatorType == "SubchannelTwoEqLinearOperator" ) {
+    } else if ( operatorType == "SubchannelTwoEqLinearOperator" ) {
         retOperator = OperatorBuilder::createSubchannelTwoEqLinearOperator(
             meshAdapter, operator_db, elementPhysicsModel );
-    }
-    else if ( operatorType == "SubchannelTwoEqNonlinearOperator" ) {
+    } else if ( operatorType == "SubchannelTwoEqNonlinearOperator" ) {
         retOperator = OperatorBuilder::createSubchannelTwoEqNonlinearOperator(
             meshAdapter, operator_db, elementPhysicsModel );
-    }
-    else if ( operatorType == "SubchannelFourEqNonlinearOperator" ) {
+    } else if ( operatorType == "SubchannelFourEqNonlinearOperator" ) {
         retOperator = OperatorBuilder::createSubchannelFourEqNonlinearOperator(
             meshAdapter, operator_db, elementPhysicsModel );
-    }
-    else if ( operatorType == "NeutronicsRhsOperator" ) {
+    } else if ( operatorType == "NeutronicsRhsOperator" ) {
         retOperator = OperatorBuilder::createNeutronicsRhsOperator( meshAdapter, operator_db );
-    }
-    else if ( operatorType == "MassLinearFEOperator" ) {
+    } else if ( operatorType == "MassLinearFEOperator" ) {
         retOperator = OperatorBuilder::createMassLinearFEOperator(
             meshAdapter, operator_db, elementPhysicsModel );
-    }
-    else if ( operatorType == "VolumeIntegralOperator" ) {
+    } else if ( operatorType == "VolumeIntegralOperator" ) {
         retOperator = OperatorBuilder::createVolumeIntegralOperator(
             meshAdapter, operator_db, elementPhysicsModel );
-    }
-    else if ( operatorType == "LinearBVPOperator" ) {
+    } else if ( operatorType == "LinearBVPOperator" ) {
         // note that we pass in the full database here and not the operator db
         retOperator = OperatorBuilder::createLinearBVPOperator(
             meshAdapter, operatorName, input_db, elementPhysicsModel, localModelFactory );
-    }
-    else if ( operatorType == "NonlinearBVPOperator" ) {
+    } else if ( operatorType == "NonlinearBVPOperator" ) {
         // note that we pass in the full database here and not the operator db
         retOperator = OperatorBuilder::createNonlinearBVPOperator(
             meshAdapter, operatorName, input_db, elementPhysicsModel, localModelFactory );
-    }
-    else if ( operatorType == "DirichletMatrixCorrection" ) {
-    }
-    else if ( operatorType == "DirichletVectorCorrection" ) {
+    } else if ( operatorType == "DirichletMatrixCorrection" ) {
+    } else if ( operatorType == "DirichletVectorCorrection" ) {
         retOperator = OperatorBuilder::createDirichletVectorCorrection(
             meshAdapter, operator_db, elementPhysicsModel );
-    }
-    else if ( operatorType == "PressureBoundaryOperator" ) {
+    } else if ( operatorType == "PressureBoundaryOperator" ) {
         retOperator = OperatorBuilder::createPressureBoundaryOperator(
             meshAdapter, operator_db, elementPhysicsModel );
-    }
-    else if ( operatorType == "NeumannVectorCorrection" ) {
-    }
-    else if ( operatorType == "RobinMatrixCorrection" ) {
+    } else if ( operatorType == "NeumannVectorCorrection" ) {
+    } else if ( operatorType == "RobinMatrixCorrection" ) {
     }
 
     return retOperator;
@@ -301,8 +278,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createFlowFrapconOperator(
     AMP::shared_ptr<AMP::Database> flowOp_db;
     if ( input_db->getString( "name" ) == "FlowFrapconOperator" ) {
         flowOp_db = input_db;
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 
@@ -331,13 +307,11 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqLinear
     if ( elementPhysicsModel.get() != NULL ) {
         transportModel =
             AMP::dynamic_pointer_cast<AMP::Operator::SubchannelPhysicsModel>( elementPhysicsModel );
-    }
-    else {
+    } else {
         AMP::shared_ptr<AMP::Database> transportModel_db;
         if ( input_db->keyExists( "SubchannelPhysicsModel" ) ) {
             transportModel_db = input_db->getDatabase( "SubchannelPhysicsModel" );
-        }
-        else {
+        } else {
             AMP_INSIST( false, "Key ''SubchannelPhysicsModel'' is missing!" );
         }
         elementPhysicsModel =
@@ -350,8 +324,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqLinear
     AMP::shared_ptr<AMP::Database> subchannel_db;
     if ( input_db->getString( "name" ) == "SubchannelTwoEqLinearOperator" ) {
         subchannel_db = input_db;
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 
@@ -384,13 +357,11 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqNonlin
     if ( elementPhysicsModel.get() != NULL ) {
         transportModel =
             AMP::dynamic_pointer_cast<AMP::Operator::SubchannelPhysicsModel>( elementPhysicsModel );
-    }
-    else {
+    } else {
         AMP::shared_ptr<AMP::Database> transportModel_db;
         if ( input_db->keyExists( "SubchannelPhysicsModel" ) ) {
             transportModel_db = input_db->getDatabase( "SubchannelPhysicsModel" );
-        }
-        else {
+        } else {
             AMP_INSIST( false, "Key ''SubchannelPhysicsModel'' is missing!" );
         }
         elementPhysicsModel =
@@ -404,8 +375,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqNonlin
     AMP::shared_ptr<AMP::Database> subchannel_db;
     if ( input_db->getString( "name" ) == "SubchannelTwoEqNonlinearOperator" ) {
         subchannel_db = input_db;
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 
@@ -437,13 +407,11 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createSubchannelFourEqNonli
     if ( elementPhysicsModel.get() != NULL ) {
         transportModel =
             AMP::dynamic_pointer_cast<AMP::Operator::SubchannelPhysicsModel>( elementPhysicsModel );
-    }
-    else {
+    } else {
         AMP::shared_ptr<AMP::Database> transportModel_db;
         if ( input_db->keyExists( "SubchannelPhysicsModel" ) ) {
             transportModel_db = input_db->getDatabase( "SubchannelPhysicsModel" );
-        }
-        else {
+        } else {
             AMP_INSIST( false, "Key ''SubchannelPhysicsModel'' is missing!" );
         }
         elementPhysicsModel =
@@ -457,8 +425,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createSubchannelFourEqNonli
     AMP::shared_ptr<AMP::Database> subchannel_db;
     if ( input_db->getString( "name" ) == "SubchannelFourEqNonlinearOperator" ) {
         subchannel_db = input_db;
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 
@@ -484,8 +451,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNeutronicsRhsOperator
     AMP::shared_ptr<AMP::Database> NeutronicsOp_db;
     if ( input_db->getString( "name" ) == "NeutronicsRhsOperator" ) {
         NeutronicsOp_db = input_db;
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 
@@ -516,13 +482,11 @@ OperatorBuilder::createLinearDiffusionOperator( AMP::Mesh::Mesh::shared_ptr mesh
     if ( elementPhysicsModel.get() != NULL ) {
         transportModel = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>(
             elementPhysicsModel );
-    }
-    else {
+    } else {
         AMP::shared_ptr<AMP::Database> transportModel_db;
         if ( input_db->keyExists( "DiffusionTransportModel" ) ) {
             transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
-        }
-        else {
+        } else {
             AMP_INSIST( false, "Key ''DiffusionTransportModel'' is missing!" );
         }
         elementPhysicsModel =
@@ -542,8 +506,7 @@ OperatorBuilder::createLinearDiffusionOperator( AMP::Mesh::Mesh::shared_ptr mesh
     AMP::shared_ptr<AMP::Database> diffusionLinFEOp_db;
     if ( input_db->getString( "name" ) == "DiffusionLinearFEOperator" ) {
         diffusionLinFEOp_db = input_db;
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 
@@ -581,8 +544,7 @@ OperatorBuilder::createVolumeIntegralOperator( AMP::Mesh::Mesh::shared_ptr meshA
     if ( elementPhysicsModel.get() != NULL ) {
         sourcePhysicsModel =
             AMP::dynamic_pointer_cast<AMP::Operator::SourcePhysicsModel>( elementPhysicsModel );
-    }
-    else {
+    } else {
         if ( input_db->keyExists( "SourcePhysicsModel" ) ) {
             AMP::shared_ptr<AMP::Database> sourceModel_db =
                 input_db->getDatabase( "SourcePhysicsModel" );
@@ -602,8 +564,7 @@ OperatorBuilder::createVolumeIntegralOperator( AMP::Mesh::Mesh::shared_ptr meshA
     AMP::shared_ptr<AMP::Database> sourceNLinFEOp_db;
     if ( input_db->getString( "name" ) == "VolumeIntegralOperator" ) {
         sourceNLinFEOp_db = input_db;
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 
@@ -633,13 +594,11 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOpe
     if ( elementPhysicsModel.get() != NULL ) {
         transportModel = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>(
             elementPhysicsModel );
-    }
-    else {
+    } else {
         AMP::shared_ptr<AMP::Database> transportModel_db;
         if ( input_db->keyExists( "DiffusionTransportModel" ) ) {
             transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
-        }
-        else {
+        } else {
             AMP_INSIST( false, "Key ''DiffusionTransportModel'' is missing!" );
         }
         elementPhysicsModel =
@@ -659,8 +618,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOpe
     AMP::shared_ptr<AMP::Database> diffusionNLinFEOp_db;
     if ( input_db->getString( "name" ) == "DiffusionNonlinearFEOperator" ) {
         diffusionNLinFEOp_db = input_db;
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
     AMP_INSIST( diffusionNLinFEOp_db.get() != NULL,
@@ -802,8 +760,7 @@ OperatorBuilder::createLinearMechanicsOperator( AMP::Mesh::Mesh::shared_ptr mesh
     AMP::shared_ptr<AMP::Database> mechanicsLinFEOp_db;
     if ( input_db->getString( "name" ) == "MechanicsLinearFEOperator" ) {
         mechanicsLinFEOp_db = input_db;
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 
@@ -859,8 +816,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearMechanicsOpe
     AMP::shared_ptr<AMP::Database> mechanicsFEOp_db;
     if ( input_db->getString( "name" ) == "MechanicsNonlinearFEOperator" ) {
         mechanicsFEOp_db = input_db;
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 
@@ -919,8 +875,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createLinearNavierStokesLSW
     AMP::shared_ptr<AMP::Database> flowLinFEOp_db;
     if ( input_db->getString( "name" ) == "NavierStokesLSWFLinearFEOperator" ) {
         flowLinFEOp_db = input_db;
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 
@@ -974,8 +929,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearNavierStokes
     AMP::shared_ptr<AMP::Database> flowFEOp_db;
     if ( input_db->getString( "name" ) == "NavierStokesLSWFFEOperator" ) {
         flowFEOp_db = input_db;
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 
@@ -1011,8 +965,7 @@ OperatorBuilder::createMassLinearFEOperator( AMP::Mesh::Mesh::shared_ptr meshAda
     if ( elementPhysicsModel.get() != NULL ) {
         densityModel =
             AMP::dynamic_pointer_cast<AMP::Operator::MassDensityModel>( elementPhysicsModel );
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "MassDensityModel" ),
                     "Key ''MassDensityModel'' is missing!" );
         AMP::shared_ptr<AMP::Database> densityModel_db =
@@ -1033,8 +986,7 @@ OperatorBuilder::createMassLinearFEOperator( AMP::Mesh::Mesh::shared_ptr meshAda
     AMP::shared_ptr<AMP::Database> densityLinFEOp_db;
     if ( input_db->getString( "name" ) == "MassLinearFEOperator" ) {
         densityLinFEOp_db = input_db;
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 
@@ -1198,8 +1150,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createFlowFrapconJacobian(
     AMP::shared_ptr<AMP::Database> flowOp_db;
     if ( input_db->getString( "name" ) == "FlowFrapconJacobian" ) {
         flowOp_db = input_db;
-    }
-    else {
+    } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
 
@@ -1258,8 +1209,7 @@ OperatorBuilder::createBoundaryOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter
         // use it, else call the AMP ElementPhysicsModelFactory interface
         if ( localModelFactory.get() != NULL ) {
             elementPhysicsModel = localModelFactory->createElementPhysicsModel( localModel_db );
-        }
-        else {
+        } else {
             elementPhysicsModel =
                 ElementPhysicsModelFactory::createElementPhysicsModel( localModel_db );
         }
@@ -1274,34 +1224,27 @@ OperatorBuilder::createBoundaryOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter
         // in this case the volume operator has to be a linear operator
         retOperator = createDirichletMatrixCorrection(
             meshAdapter, operator_db, volumeOperator, elementPhysicsModel );
-    }
-    else if ( boundaryType == "MassMatrixCorrection" ) {
+    } else if ( boundaryType == "MassMatrixCorrection" ) {
         retOperator = createMassMatrixCorrection(
             meshAdapter, operator_db, volumeOperator, elementPhysicsModel );
-    }
-    else if ( boundaryType == "RobinMatrixCorrection" ) {
+    } else if ( boundaryType == "RobinMatrixCorrection" ) {
         // in this case the volume operator has to be a linear operator
         retOperator = createRobinMatrixCorrection(
             meshAdapter, operator_db, volumeOperator, elementPhysicsModel );
-    }
-    else if ( boundaryType == "RobinVectorCorrection" ) {
+    } else if ( boundaryType == "RobinVectorCorrection" ) {
         retOperator = createRobinVectorCorrection(
             meshAdapter, operator_db, volumeOperator, elementPhysicsModel );
-    }
-    else if ( boundaryType == "NeumannVectorCorrection" ) {
+    } else if ( boundaryType == "NeumannVectorCorrection" ) {
         retOperator = createNeumannVectorCorrection(
             meshAdapter, operator_db, volumeOperator, elementPhysicsModel );
-    }
-    else if ( boundaryType == "DirichletVectorCorrection" ) {
+    } else if ( boundaryType == "DirichletVectorCorrection" ) {
         // in this case the volume operator has to be a nonlinear operator
         retOperator = createDirichletVectorCorrection(
             meshAdapter, operator_db, volumeOperator, elementPhysicsModel );
-    }
-    else if ( boundaryType == "PressureBoundaryOperator" ) {
+    } else if ( boundaryType == "PressureBoundaryOperator" ) {
         retOperator =
             createPressureBoundaryOperator( meshAdapter, operator_db, elementPhysicsModel );
-    }
-    else if ( boundaryType == "ColumnBoundaryOperator" ) {
+    } else if ( boundaryType == "ColumnBoundaryOperator" ) {
         // note that the global input database is passed here instead of the operator
         // database
         retOperator = createColumnBoundaryOperator( meshAdapter,

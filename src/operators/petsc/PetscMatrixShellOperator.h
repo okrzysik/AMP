@@ -37,7 +37,8 @@ namespace AMP {
 namespace Operator {
 
 
-class PetscMatrixShellOperator : public LinearOperator {
+class PetscMatrixShellOperator : public LinearOperator
+{
 public:
     PetscMatrixShellOperator( const AMP::shared_ptr<OperatorParameters> &params );
 

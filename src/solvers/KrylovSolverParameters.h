@@ -15,7 +15,8 @@ namespace Solver {
  * shared pointers to a database object and a preconditioner (which could be NULL).
  * All member variables are public.
  */
-class KrylovSolverParameters : public SolverStrategyParameters {
+class KrylovSolverParameters : public SolverStrategyParameters
+{
 public:
     KrylovSolverParameters() {}
     explicit KrylovSolverParameters( const AMP::shared_ptr<AMP::Database> db );

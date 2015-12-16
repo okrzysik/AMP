@@ -51,7 +51,8 @@
 
 #define ITFAILS ut.failure( __LINE__ );
 #define UNIT_TEST( a ) \
-    if ( !( a ) ) ut.failure( __LINE__ );
+    if ( !( a ) )      \
+        ut.failure( __LINE__ );
 
 //---------------------------------------------------------------------------//
 // TESTS
@@ -103,12 +104,10 @@ int main( int argc, char *argv[] )
 
     try {
         IDATimeIntegratorTest( &ut );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

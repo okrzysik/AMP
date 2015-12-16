@@ -188,8 +188,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> masterSolver(
                 new AMP::Solver::PetscKrylovSolver( masterSolverParams ) );
             columnPreconditioner->append( masterSolver );
-        }
-        else {
+        } else {
             AMP::shared_ptr<AMP::Database> masterSolver_db =
                 columnPreconditioner_db->getDatabase( "MLSolver" );
             AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> masterSolverParams(
@@ -224,8 +223,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> slaveSolver(
                 new AMP::Solver::PetscKrylovSolver( slaveSolverParams ) );
             columnPreconditioner->append( slaveSolver );
-        }
-        else {
+        } else {
             AMP::shared_ptr<AMP::Database> slaveSolver_db =
                 columnPreconditioner_db->getDatabase( "MLSolver" );
             AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> slaveSolverParams(
@@ -269,8 +267,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
                                    slaveConstraints,
                                    false );
         }
-    }
-    else {
+    } else {
         if ( !cladExpansionConstrained ) {
             double cladInnerRadius = input_db->getDouble( "CladInnerRadius" );
             double cladOuterRadius = input_db->getDouble( "CladOuterRadius" );
@@ -402,8 +399,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
                                 linearHeatGenerationRate,
                                 cladOuterRadiusTemperature,
                                 cladThermalConductivity );
-    }
-    else {
+    } else {
         computeFuelTemperature( slaveMeshAdapter,
                                 tempVec,
                                 fuelOuterRadius,
@@ -481,8 +477,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         contactOperator->updateActiveSetWithALittleHelp( columnSolVec );
         //    zDispVec->zero();
         columnSolVec->zero();
-    }
-    else {
+    } else {
         bool skipDisplaceMesh = true;
         contactOperator->updateActiveSet( nullVec, skipDisplaceMesh );
     } // end if
@@ -623,8 +618,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
                     masterCor = masterRhs->cloneVector();
                     applyCustomDirichletCondition(
                         masterRhs, masterCor, meshAdapter, masterConstraints, masterMat );
-                }
-                else {
+                } else {
                     applyCustomDirichletCondition( masterRhs,
                                                    masterCor,
                                                    meshAdapter,
@@ -641,8 +635,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
                     slaveCor = slaveRhs->cloneVector();
                     applyCustomDirichletCondition(
                         slaveRhs, slaveCor, meshAdapter, slaveConstraints, slaveMat );
-                }
-                else {
+                } else {
                     applyCustomDirichletCondition( slaveRhs,
                                                    slaveCor,
                                                    meshAdapter,
@@ -755,8 +748,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
                 meshAdapter->displaceMesh( columnSolVec );
                 if ( scaleSolution != 1.0 ) {
                     columnSolVec->scale( -1.0 / scaleSolution );
-                }
-                else {
+                } else {
                     columnSolVec->scale( -1.0 );
                 }
             }
@@ -822,8 +814,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             meshAdapter->displaceMesh( columnSolVec );
             if ( scaleSolution != 1.0 ) {
                 columnSolVec->scale( -1.0 / scaleSolution );
-            }
-            else {
+            } else {
                 columnSolVec->scale( -1.0 );
             }
 #endif
@@ -865,12 +856,10 @@ int main( int argc, char *argv[] )
         for ( size_t i = 0; i < exeNames.size(); ++i ) {
             myTest( &ut, exeNames[i] );
         } // end for
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

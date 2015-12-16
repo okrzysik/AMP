@@ -15,7 +15,8 @@ namespace Operator {
    A class for representing a coupled operator combining a NodeToGaussPointOperator,
    a CopyOperator, a MapOperator, and a d_BVPOperator.
   */
-class CoupledOperator : public ColumnOperator {
+class CoupledOperator : public ColumnOperator
+{
 public:
     explicit CoupledOperator( const AMP::shared_ptr<OperatorParameters> &params );
 

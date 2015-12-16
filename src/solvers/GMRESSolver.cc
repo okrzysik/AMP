@@ -119,8 +119,7 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
         res->copyVector( f );
-    }
-    else {
+    } else {
         d_pOperator->residual( f, u, res );
     }
 
@@ -222,8 +221,7 @@ void GMRESSolver::orthogonalize( AMP::shared_ptr<AMP::LinearAlgebra::Vector> v )
     if ( d_sOrthogonalizationMethod == "CGS" ) {
 
         AMP_ERROR( "Classical Gram-Schmidt not implemented as yet" );
-    }
-    else if ( d_sOrthogonalizationMethod == "MGS" ) {
+    } else if ( d_sOrthogonalizationMethod == "MGS" ) {
 
         for ( int j = 0; j < k; ++j ) {
 
@@ -231,8 +229,7 @@ void GMRESSolver::orthogonalize( AMP::shared_ptr<AMP::LinearAlgebra::Vector> v )
             v->axpy( -h_jk, d_vBasis[j], v );
             d_dHessenberg( j, k ) = h_jk;
         }
-    }
-    else {
+    } else {
 
         AMP_ERROR( "Unknown orthogonalization method in GMRES" );
     }
@@ -276,13 +273,11 @@ void GMRESSolver::computeGivensRotation( const int k )
 
         c = 1.0;
         s = 0.0;
-    }
-    else if ( f == 0.0 ) {
+    } else if ( f == 0.0 ) {
 
         c = 0.0;
         s = ( g < 0.0 ) ? -1.0 : 1.0;
-    }
-    else {
+    } else {
 
         r = std::sqrt( f * f + g * g );
         c = std::fabs( f ) / r;

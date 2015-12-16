@@ -60,8 +60,7 @@ ColumnTimeOperator::ColumnTimeOperator(
             // if there are algebraic components set the mass operator to NULL
             if ( i != d_iAlgebraicComponent ) {
                 timeOperatorParameters->d_pMassOperator = d_pMassOperator->getOperator( i );
-            }
-            else {
+            } else {
                 timeOperator_db->putBool( "bAlgebraicComponent", true );
             }
 
@@ -70,8 +69,7 @@ ColumnTimeOperator::ColumnTimeOperator(
 
             d_Operators.push_back( op );
         }
-    }
-    else {
+    } else {
         AMP::pout << "Error: ColumnTimeOperator::ColumnTimeOperator() currently implemented for "
                      "column rhs and mass "
                      "operators where all components are LinearOperators"
@@ -134,8 +132,7 @@ void ColumnTimeOperator::reset(
                 timeOperatorParameters->d_pMassOperatorParameters =
                     ( pMassParameters->d_OperatorParameters )[i];
             }
-        }
-        else {
+        } else {
             timeOperator_db->putBool( "bAlgebraicComponent", true );
         }
 

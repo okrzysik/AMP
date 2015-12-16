@@ -22,7 +22,8 @@ AMP::LinearAlgebra::Matrix::shared_ptr global_cached_matrix =
 
 
 // Classes to serve as the vector factories
-class AmpInterfaceLeftVectorFactory {
+class AmpInterfaceLeftVectorFactory
+{
 public:
     typedef AMP::LinearAlgebra::Vector vector;
 
@@ -45,7 +46,8 @@ public:
 };
 
 
-class AmpInterfaceRightVectorFactory {
+class AmpInterfaceRightVectorFactory
+{
 public:
     typedef AMP::LinearAlgebra::Vector vector;
 
@@ -70,7 +72,8 @@ public:
 
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_PETSC )
 
-class PETScInterfaceLeftVectorFactory {
+class PETScInterfaceLeftVectorFactory
+{
 public:
     typedef AMP::LinearAlgebra::ManagedPetscVector vector;
 
@@ -109,7 +112,8 @@ public:
 };
 
 
-class PETScInterfaceRightVectorFactory {
+class PETScInterfaceRightVectorFactory
+{
 public:
     typedef AMP::LinearAlgebra::ManagedPetscVector vector;
 

@@ -26,8 +26,10 @@ ThyraVector::~ThyraVector() { d_thyraVec.reset(); }
 Vector::const_shared_ptr ThyraVector::constView( Vector::const_shared_ptr inVector )
 {
     // Check if we have an exisiting view
-    if ( AMP::dynamic_pointer_cast<const ThyraVector>( inVector ) != NULL ) return inVector;
-    if ( inVector->hasView<ManagedThyraVector>() ) return inVector->getView<ManagedThyraVector>();
+    if ( AMP::dynamic_pointer_cast<const ThyraVector>( inVector ) != NULL )
+        return inVector;
+    if ( inVector->hasView<ManagedThyraVector>() )
+        return inVector->getView<ManagedThyraVector>();
     // Create a new view
     Vector::shared_ptr retVal;
     if ( inVector->isA<ManagedVector>() ) {
@@ -35,8 +37,7 @@ Vector::const_shared_ptr ThyraVector::constView( Vector::const_shared_ptr inVect
         retVal                       = Vector::shared_ptr( new ManagedThyraVector( inVector2 ) );
         retVal->setVariable( inVector->getVariable() );
         inVector->registerView( retVal );
-    }
-    else if ( inVector->isA<VectorEngine>() ) {
+    } else if ( inVector->isA<VectorEngine>() ) {
         Vector::shared_ptr inVector2            = AMP::const_pointer_cast<Vector>( inVector );
         ManagedThyraVectorParameters *newParams = new ManagedThyraVectorParameters;
         newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
@@ -50,8 +51,7 @@ Vector::const_shared_ptr ThyraVector::constView( Vector::const_shared_ptr inVect
         ManagedThyraVector *t = new ManagedThyraVector( VectorParameters::shared_ptr( newParams ) );
         retVal                = Vector::shared_ptr( t );
         inVector->registerView( retVal );
-    }
-    else {
+    } else {
         Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
         retVal                       = view( MultiVector::view( inVector2, inVector->getComm() ) );
         inVector->registerView( retVal );
@@ -66,15 +66,16 @@ Vector::const_shared_ptr ThyraVector::constView( Vector::const_shared_ptr inVect
 Vector::shared_ptr ThyraVector::view( Vector::shared_ptr inVector )
 {
     // Check if we have an exisiting view
-    if ( AMP::dynamic_pointer_cast<ThyraVector>( inVector ) != NULL ) return inVector;
-    if ( inVector->hasView<ManagedThyraVector>() ) return inVector->getView<ManagedThyraVector>();
+    if ( AMP::dynamic_pointer_cast<ThyraVector>( inVector ) != NULL )
+        return inVector;
+    if ( inVector->hasView<ManagedThyraVector>() )
+        return inVector->getView<ManagedThyraVector>();
     // Create a new view
     Vector::shared_ptr retVal;
     if ( inVector->isA<ManagedVector>() ) {
         retVal = Vector::shared_ptr( new ManagedThyraVector( inVector ) );
         inVector->registerView( retVal );
-    }
-    else if ( inVector->isA<VectorEngine>() ) {
+    } else if ( inVector->isA<VectorEngine>() ) {
         ManagedThyraVectorParameters *newParams = new ManagedThyraVectorParameters;
         newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector );
         newParams->d_CloneEngine = false;
@@ -90,8 +91,7 @@ Vector::shared_ptr ThyraVector::view( Vector::shared_ptr inVector )
         newVector->setUpdateStatusPtr( inVector->getUpdateStatusPtr() );
         retVal = Vector::shared_ptr( newVector );
         inVector->registerView( retVal );
-    }
-    else {
+    } else {
         retVal = view( MultiVector::view( inVector, inVector->getComm() ) );
         inVector->registerView( retVal );
     }
@@ -116,17 +116,14 @@ AMP::LinearAlgebra::Vector::shared_ptr ThyraVector::view( Thyra::VectorBase<doub
     AMP::LinearAlgebra::Vector::shared_ptr vec_out;
     if ( vec == NULL ) {
         // Null vec, do nothing
-    }
-    else if ( dynamic_cast<AMP::LinearAlgebra::ThyraVectorWrapper *>( vec ) ) {
+    } else if ( dynamic_cast<AMP::LinearAlgebra::ThyraVectorWrapper *>( vec ) ) {
         AMP::LinearAlgebra::ThyraVectorWrapper *tmp =
             dynamic_cast<AMP::LinearAlgebra::ThyraVectorWrapper *>( vec );
         if ( tmp->numVecs() == 0 ) {
             vec_out.reset();
-        }
-        else if ( tmp->numVecs() == 1 ) {
+        } else if ( tmp->numVecs() == 1 ) {
             vec_out = tmp->getVec( 0 );
-        }
-        else {
+        } else {
             std::vector<AMP::LinearAlgebra::Variable::shared_ptr> vars;
             for ( size_t i = 0; i < tmp->d_vecs.size(); i++ ) {
                 char name[100];
@@ -141,8 +138,7 @@ AMP::LinearAlgebra::Vector::shared_ptr ThyraVector::view( Thyra::VectorBase<doub
             // Currently our multivectors can't be easily subsetted to create the original vectors
             AMP_ERROR( "Not ready for ThyraMultiVectors yet" );
         }
-    }
-    else {
+    } else {
         AMP_ERROR( "Not finished" );
     }
     return vec_out;
@@ -153,17 +149,14 @@ ThyraVector::constView( const Thyra::VectorBase<double> *vec )
     AMP::LinearAlgebra::Vector::const_shared_ptr vec_out;
     if ( vec == NULL ) {
         // Null vec, do nothing
-    }
-    else if ( dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper *>( vec ) ) {
+    } else if ( dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper *>( vec ) ) {
         const AMP::LinearAlgebra::ThyraVectorWrapper *tmp =
             dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper *>( vec );
         if ( tmp->numVecs() == 0 ) {
             vec_out.reset();
-        }
-        else if ( tmp->numVecs() == 1 ) {
+        } else if ( tmp->numVecs() == 1 ) {
             vec_out = tmp->getVec( 0 );
-        }
-        else {
+        } else {
             std::vector<AMP::LinearAlgebra::Variable::shared_ptr> vars;
             for ( size_t i = 0; i < tmp->d_vecs.size(); i++ ) {
                 char name[100];
@@ -178,8 +171,7 @@ ThyraVector::constView( const Thyra::VectorBase<double> *vec )
             // Currently our multivectors can't be easily subsetted to create the original vectors
             AMP_ERROR( "Not ready for ThyraMultiVectors yet" );
         }
-    }
-    else {
+    } else {
         AMP_ERROR( "Not finished" );
     }
     return vec_out;

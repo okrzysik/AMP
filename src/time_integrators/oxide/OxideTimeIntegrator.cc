@@ -77,7 +77,8 @@ void OxideTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> 
     N_layer[1]  = 20; // Number of zones in the alpha layer
     N_layer[2]  = 5;  // Number of zones in the zirconium layer
     int N_total = 0;
-    for ( size_t i = 0; i < N_layer.size(); i++ ) N_total += N_layer[i];
+    for ( size_t i = 0; i < N_layer.size(); i++ )
+        N_total += N_layer[i];
     AMP::Discretization::DOFManager::shared_ptr DOF_d =
         AMP::Discretization::simpleDOFManager::create(
             d_mesh, AMP::Mesh::Vertex, 0, N_layer.size(), true );
@@ -108,7 +109,8 @@ void OxideTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> 
     }
     x0[N_layer.size()] = 1e2 * total_depth; // Convert from m to cm
     OxideModel::integrateOxide( 86400, N_layer.size(), &N_layer[0], x0, Cb, C0, D, C1, x1, v1 );
-    for ( size_t i = 0; i < N_layer.size(); i++ ) depth2[i] = x1[i + 1] - x1[i];
+    for ( size_t i = 0; i < N_layer.size(); i++ )
+        depth2[i]  = x1[i + 1] - x1[i];
     // Copy the initial solution to all points in the mesh
     AMP::Discretization::DOFManager::shared_ptr DOF_oxide = d_oxide->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr DOF_alpha = d_alpha->getDOFManager();
@@ -163,7 +165,8 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
     AMP::Discretization::DOFManager::shared_ptr DOF_alpha = d_alpha->getDOFManager();
     // Allocate memory for the solve
     int N_total = 0;
-    for ( size_t i = 0; i < N_layer.size(); i++ ) N_total += N_layer[i];
+    for ( size_t i = 0; i < N_layer.size(); i++ )
+        N_total += N_layer[i];
     double *C0[10], *C1[10], D[10], Cb[20], x0[11], x1[11], v1[11],
         depth2[10]; // Allocate enough space for 10 layers
     C0[0] = new double[N_total];
@@ -193,12 +196,14 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
         AMP_ASSERT( dofs.size() == N_layer.size() );
         depth->getValuesByGlobalID( dofs.size(), &dofs[0], depth2 );
         x0[0] = 0.0;
-        for ( size_t i = 0; i < N_layer.size(); i++ ) x0[i + 1] = x0[i] + depth2[i];
+        for ( size_t i = 0; i < N_layer.size(); i++ )
+            x0[i + 1]  = x0[i] + depth2[i];
         // Perform the time integration
         double dt2 = dt * 3600 * 24; // Convert from days to seconds
         AMP_ASSERT( dt2 >= 0.0 );
         OxideModel::integrateOxide( dt2, N_layer.size(), &N_layer[0], x0, Cb, C0, D, C1, x1, v1 );
-        for ( size_t i = 0; i < N_layer.size(); i++ ) depth2[i] = x1[i + 1] - x1[i];
+        for ( size_t i = 0; i < N_layer.size(); i++ )
+            depth2[i]  = x1[i + 1] - x1[i];
         // Save the results
         DOF_C->getDOFs( id, dofs );
         AMP_ASSERT( (int) dofs.size() == N_total );

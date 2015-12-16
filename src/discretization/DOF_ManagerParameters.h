@@ -16,7 +16,8 @@ namespace Discretization {
  *    using the degrees of freedom (DOF) per object.  It is also responsible
  *    for creating vectors.
  */
-class DOFManagerParameters {
+class DOFManagerParameters
+{
 public:
     typedef AMP::shared_ptr<AMP::Discretization::DOFManagerParameters> shared_ptr;
 

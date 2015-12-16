@@ -62,8 +62,7 @@ MechanicsElement::MechanicsElement( const AMP::shared_ptr<ElementOperationParame
 
     if ( qruleOrderName == "DEFAULT" ) {
         qruleOrder = d_feType->default_quadrature_order();
-    }
-    else {
+    } else {
         qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 

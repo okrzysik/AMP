@@ -44,7 +44,8 @@ struct Registration : public RegistrationBase<BaseClass, Key, n> {
  *    \brief        factory class is a singleton class
  */
 template <class BaseClass, typename Key = std::string, unsigned long n = 0>
-class Factory : public Singleton<Factory<BaseClass, Key, n>> {
+class Factory : public Singleton<Factory<BaseClass, Key, n>>
+{
 };
 
 
@@ -55,7 +56,8 @@ struct RegistrationBase<BaseClass, Key, 0> {
 
 
 template <class BaseClass, typename Key>
-class Factory<BaseClass, Key, 0> : public Singleton<Factory<BaseClass, Key, 0>> {
+class Factory<BaseClass, Key, 0> : public Singleton<Factory<BaseClass, Key, 0>>
+{
 public:
     friend class Singleton<Factory<BaseClass, Key, 0>>;
     bool Register( const Key &key, AMP::shared_ptr<RegistrationBase<BaseClass, Key, 0>> reg )
@@ -78,7 +80,8 @@ public:
     AMP::shared_ptr<BaseClass> create( const Key &id ) const
     {
         RegistrationMapIterator iter( regMapPtr->find( id ) );
-        if ( iter == regMapPtr->end() ) AMP_ERROR( "Unregistered creator" );
+        if ( iter == regMapPtr->end() )
+            AMP_ERROR( "Unregistered creator" );
         return iter->second->create();
     }
 
@@ -102,8 +105,7 @@ struct Registration<BaseClass, Derived, Key, 0> : public RegistrationBase<BaseCl
                 key,
                 AMP::shared_ptr<RegistrationBase<BaseClass, Key, 0>>(
                     new Registration<BaseClass, Derived, Key, 0> ) );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
         }
     }
     virtual ~Registration() {}

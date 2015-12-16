@@ -56,7 +56,8 @@ std::set<AsciiWriter::global_id> getKeys( const std::map<AsciiWriter::global_id,
 {
     std::set<AsciiWriter::global_id> ids;
     typename std::map<AsciiWriter::global_id, TYPE>::const_iterator it;
-    for ( it = local_map.begin(); it != local_map.end(); ++it ) ids.insert( it->first );
+    for ( it = local_map.begin(); it != local_map.end(); ++it )
+        ids.insert( it->first );
     comm.setGather( ids );
     return ids;
 }
@@ -79,7 +80,8 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
         // Send the data to rank 0
         d_comm.barrier();
         AMP::LinearAlgebra::Vector::shared_ptr src_vec;
-        if ( d_vectors.find( *it ) != d_vectors.end() ) src_vec = d_vectors[*it];
+        if ( d_vectors.find( *it ) != d_vectors.end() )
+            src_vec = d_vectors[*it];
         AMP::LinearAlgebra::Vector::const_shared_ptr dst_vec =
             sendVecToRoot( src_vec, it->first, d_comm );
         // Write the data
@@ -101,7 +103,8 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
         // Send the header data to rank 0
         d_comm.barrier();
         AMP::LinearAlgebra::Matrix::shared_ptr mat;
-        if ( d_matrices.find( *it ) != d_matrices.end() ) mat = d_matrices[*it];
+        if ( d_matrices.find( *it ) != d_matrices.end() )
+            mat = d_matrices[*it];
         std::string name;
         size_t size[2] = { 0, 0 };
         if ( mat != NULL ) {
@@ -137,7 +140,8 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
     }
 #endif
     // Close the file
-    if ( fid != NULL ) fclose( fid );
+    if ( fid != NULL )
+        fclose( fid );
     PROFILE_STOP( "writeFile" );
 }
 
@@ -191,21 +195,26 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
     int rank = comm.getRank();
     // Boradcast the local vector size and name to all processors for simplicity
     std::string name;
-    if ( rank == vec_root ) name      = src_vec->getVariable()->getName();
-    name                              = comm.bcast( name, vec_root );
-    size_t local_size                 = 0;
-    if ( src_vec != NULL ) local_size = src_vec->getLocalSize();
+    if ( rank == vec_root )
+        name          = src_vec->getVariable()->getName();
+    name              = comm.bcast( name, vec_root );
+    size_t local_size = 0;
+    if ( src_vec != NULL )
+        local_size = src_vec->getLocalSize();
     std::vector<size_t> size( comm.getSize(), 0 );
     comm.allGather( local_size, &size[0] );
     size_t global_size = 0;
-    for ( int i = 0; i < comm.getSize(); i++ ) global_size += size[i];
+    for ( int i = 0; i < comm.getSize(); i++ )
+        global_size += size[i];
     // If we are not rank 0 and do not have a copy of the vector we are done
-    if ( src_vec == NULL && rank != 0 ) return AMP::LinearAlgebra::Vector::const_shared_ptr();
+    if ( src_vec == NULL && rank != 0 )
+        return AMP::LinearAlgebra::Vector::const_shared_ptr();
     // Send the local data to rank 0
     std::vector<MPI_Request> requests;
     std::vector<double> local_data( local_size, 0 );
     if ( local_size > 0 ) {
-        for ( size_t i = 0; i < local_size; i++ ) local_data[i] = src_vec->getValueByLocalID( i );
+        for ( size_t i    = 0; i < local_size; i++ )
+            local_data[i] = src_vec->getValueByLocalID( i );
         requests.push_back( comm.Isend( &local_data[0], local_size, 0, 123 ) );
     }
     // Rank 0 needs to create the vector and recv all data
@@ -224,7 +233,8 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
             }
         }
     }
-    if ( !requests.empty() ) comm.waitAll( requests.size(), &requests[0] );
+    if ( !requests.empty() )
+        comm.waitAll( requests.size(), &requests[0] );
     return dst_vec;
 }
 #endif
@@ -247,14 +257,16 @@ void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr ma
     int own_rank = 0;
     if ( mat != NULL ) {
         AMP::Discretization::DOFManager::shared_ptr DOF = mat->getLeftDOFManager();
-        if ( row >= (int) DOF->beginDOF() && row < (int) DOF->endDOF() ) own_rank = rank;
+        if ( row >= (int) DOF->beginDOF() && row < (int) DOF->endDOF() )
+            own_rank = rank;
     }
     own_rank = comm.maxReduce( own_rank );
     // Send the data
     std::vector<MPI_Request> requests;
     if ( own_rank == rank ) {
         mat->getRowByGlobalID( row, cols, data );
-        if ( rank == 0 ) return;
+        if ( rank == 0 )
+            return;
         size_t size = cols.size();
         requests.push_back( comm.Isend<size_t>( &size, 1, 0, 124 ) );
         if ( size > 0 ) {
@@ -274,7 +286,8 @@ void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr ma
             requests.push_back( comm.Irecv<double>( &data[0], size, own_rank, 126 ) );
         }
     }
-    if ( !requests.empty() ) comm.waitAll( requests.size(), &requests[0] );
+    if ( !requests.empty() )
+        comm.waitAll( requests.size(), &requests[0] );
 }
 #endif
 

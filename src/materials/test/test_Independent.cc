@@ -141,12 +141,10 @@ int main( int argc, char **argv )
             ut.passes( "basic tests of parameterized Independent" );
         else
             ut.failure( "basic tests of parameterized Independent" );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown" << endl;
         ut.failure( "ERROR: While testing" );
     }

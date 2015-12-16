@@ -9,7 +9,8 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-class RandomAccessIndexer : public VectorIndexer {
+class RandomAccessIndexer : public VectorIndexer
+{
 private:
     // Temporary fix for const correctness.
     mutable std::map<size_t, size_t> d_SuperToSub;
@@ -36,7 +37,8 @@ public:
         std::map<size_t, size_t>::iterator c = d_SuperToSub.find( i );
         AMP_ASSERT( c != d_SuperToSub.end() );
         c++;
-        if ( c != d_SuperToSub.end() ) return ( c->first - i );
+        if ( c != d_SuperToSub.end() )
+            return ( c->first - i );
         return 2000000000; // For a SubsetVector, the iterator returns end when the
                            // internal iterator iterates past the end;
     }
@@ -50,13 +52,15 @@ public:
         size_t i     = 0;
         std::map<size_t, size_t>::iterator c = d_SuperToSub.begin();
         while ( c != d_SuperToSub.end() ) {
-            if ( c->first >= start ) break;
+            if ( c->first >= start )
+                break;
             i++;
             c++;
         }
         std::map<size_t, size_t>::reverse_iterator d = d_SuperToSub.rbegin();
         while ( d != d_SuperToSub.rend() ) {
-            if ( d->first < end ) break;
+            if ( d->first < end )
+                break;
             i++;
             d++;
         }

@@ -14,7 +14,8 @@ namespace Operator {
  * \class SubchannelToPointMapParameters
  * \brief Parameters for the SubchannelToPointMap
  */
-class SubchannelToPointMapParameters : public AMP::Operator::OperatorParameters {
+class SubchannelToPointMapParameters : public AMP::Operator::OperatorParameters
+{
 public:
     //! Default constructors
     SubchannelToPointMapParameters()

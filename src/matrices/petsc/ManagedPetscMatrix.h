@@ -19,7 +19,8 @@ namespace LinearAlgebra {
   * this class creates a new one and replaces methods in the Mat
   * structure with AMP methods.
   */
-class ManagedPetscMatrix : public PetscMatrix, public ManagedEpetraMatrix {
+class ManagedPetscMatrix : public PetscMatrix, public ManagedEpetraMatrix
+{
 protected:
     /** \brief Unused constructor
       */

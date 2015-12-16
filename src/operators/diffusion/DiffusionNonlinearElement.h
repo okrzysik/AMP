@@ -13,7 +13,8 @@
 namespace AMP {
 namespace Operator {
 
-class DiffusionNonlinearElement : public DiffusionElement {
+class DiffusionNonlinearElement : public DiffusionElement
+{
 public:
     explicit DiffusionNonlinearElement( const AMP::shared_ptr<ElementOperationParameters> &params )
         : DiffusionElement( params ),

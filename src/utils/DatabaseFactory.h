@@ -23,7 +23,8 @@ namespace AMP {
  * may use a DatabaseFactory to build databases when creating
  * a restart file.
  */
-class DatabaseFactory {
+class DatabaseFactory
+{
 public:
     /*
      * Build a new Database instance.

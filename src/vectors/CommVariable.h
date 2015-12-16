@@ -12,7 +12,8 @@ namespace LinearAlgebra {
   * \brief An AMP Variable that describes how to subset a DOF for a mesh
   * \see SubsetVector
   */
-class CommVariable : public SubsetVariable {
+class CommVariable : public SubsetVariable
+{
 public:
     /** \brief Constructor
       * \param[in] name  The name of the new variable

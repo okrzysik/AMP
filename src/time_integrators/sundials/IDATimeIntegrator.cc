@@ -96,8 +96,7 @@ void IDATimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> pa
             timeOperator_db->putString( "name", "TimeOperator" );
 
             d_pLinearTimeOperator.reset( new LinearTimeOperator( linearTimeOperatorParams ) );
-        }
-        else {
+        } else {
             AMP::pout << "ERROR: IDATimeIntegrator::initialize(): creation of linear time "
                          "operators internally is only "
                          "currently supported for linear mass and rhs operators"
@@ -244,36 +243,31 @@ void IDATimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 {
     if ( input_db->keyExists( "bLinearMassOperator" ) ) {
         d_bLinearMassOperator = input_db->getBool( "bLinearMassOperator" );
-    }
-    else {
+    } else {
         AMP_ERROR( d_object_name << " -- Key data `bLinearMassOperator' missing in input." );
     }
 
     if ( input_db->keyExists( "bLinearRhsOperator" ) ) {
         d_bLinearRhsOperator = input_db->getBool( "bLinearRhsOperator" );
-    }
-    else {
+    } else {
         AMP_ERROR( d_object_name << " -- Key data `bLinearRhsOperator' missing in input." );
     }
 
     if ( input_db->keyExists( "linear_solver_type" ) ) {
         d_linear_solver_type = input_db->getInteger( "linear_solver_type" );
-    }
-    else {
+    } else {
         AMP_ERROR( d_object_name << " -- Key data `linear_solver_type' missing in input." );
     }
 
     if ( input_db->keyExists( "relative_tolerance" ) ) {
         d_relative_tolerance = input_db->getDouble( "relative_tolerance" );
-    }
-    else {
+    } else {
         AMP_ERROR( d_object_name << " -- Key data `relative_tolerance' missing in input." );
     }
 
     if ( input_db->keyExists( "absolute_tolerance" ) ) {
         d_absolute_tolerance = input_db->getDouble( "absolute_tolerance" );
-    }
-    else {
+    } else {
         AMP_ERROR( d_object_name << " -- Key data `absolute_tolerance' missing in input." );
     }
 

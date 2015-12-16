@@ -14,7 +14,8 @@ namespace AMP {
 namespace Operator {
 
 
-class NavierStokesLSWFLinearElement : public FlowElement {
+class NavierStokesLSWFLinearElement : public FlowElement
+{
 public:
     explicit NavierStokesLSWFLinearElement(
         const AMP::shared_ptr<ElementOperationParameters> &params )

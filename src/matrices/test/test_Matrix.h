@@ -23,7 +23,8 @@ namespace unit_test {
 
 // Class to create a matrix from a simpleDOFManager
 template <int NUM_DOF_ROW, int NUM_DOF_COL, class GENERATOR, int TYPE>
-class DOFMatrixTestFactory {
+class DOFMatrixTestFactory
+{
 public:
     static std::string name()
     {

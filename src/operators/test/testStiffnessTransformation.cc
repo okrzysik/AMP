@@ -99,8 +99,7 @@ void myTest( AMP::UnitTest *ut )
                 if ( !AMP::Operator::softEquals( RtranR[i][j], 1.0 ) ) {
                     ut->failure( "R is not orthogonal." );
                 }
-            }
-            else {
+            } else {
                 if ( !AMP::Operator::softEquals( RtranR[i][j], 0.0 ) ) {
                     ut->failure( "R is not orthogonal." );
                 }
@@ -128,12 +127,10 @@ int main( int argc, char *argv[] )
 
     try {
         myTest( &ut );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         AMP::pout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         AMP::pout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

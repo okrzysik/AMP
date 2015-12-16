@@ -191,7 +191,8 @@ void moabInterface( AMP::UnitTest *ut )
 
 #endif
 
-    if ( ut->NumPassGlobal() == 0 ) ut->failure( "if it doesn't pass, it must have failed." );
+    if ( ut->NumPassGlobal() == 0 )
+        ut->failure( "if it doesn't pass, it must have failed." );
 }
 
 
@@ -203,12 +204,10 @@ int main( int argc, char *argv[] )
     try {
         moabInterface( &ut );
         ut.passes( "Moab interface used correctly." );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

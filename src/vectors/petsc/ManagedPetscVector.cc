@@ -109,11 +109,9 @@ _AMP_setvalues( Vec px, PetscInt ni, const PetscInt ix[], const PetscScalar y[],
     }
     if ( iora == INSERT_VALUES ) {
         x->setValuesByGlobalID( ni, indices, vals );
-    }
-    else if ( iora == ADD_VALUES ) {
+    } else if ( iora == ADD_VALUES ) {
         x->addValuesByGlobalID( ni, indices, vals );
-    }
-    else {
+    } else {
         AMP_ERROR( "Invalid option for InsertMode" );
     }
     delete[] indices;
@@ -138,11 +136,9 @@ _AMP_axpbypcz( Vec c, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Ve
 
     if ( z->isAnAliasOf( *x ) ) {
         z->linearSum( alpha + gamma, *x, beta, *y );
-    }
-    else if ( z->isAnAliasOf( *y ) ) {
+    } else if ( z->isAnAliasOf( *y ) ) {
         z->linearSum( alpha, *x, beta + gamma, *y );
-    }
-    else {
+    } else {
         z->linearSum( alpha, *x, gamma, *z );
         z->linearSum( beta, *y, 1., *z );
     }
@@ -194,13 +190,15 @@ PetscErrorCode _AMP_tdot_local( Vec a, Vec b, PetscScalar *ans )
 
 PetscErrorCode _AMP_mdot_local( Vec a, PetscInt num, const Vec array[], PetscScalar *ans )
 {
-    for ( PetscInt i = 0; i != num; i++ ) _AMP_dot_local( a, array[i], ans + i );
+    for ( PetscInt i = 0; i != num; i++ )
+        _AMP_dot_local( a, array[i], ans + i );
     return 0;
 }
 
 PetscErrorCode _AMP_mtdot_local( Vec a, PetscInt num, const Vec array[], PetscScalar *ans )
 {
-    for ( PetscInt i = 0; i != num; i++ ) _AMP_dot_local( a, array[i], ans + i );
+    for ( PetscInt i = 0; i != num; i++ )
+        _AMP_dot_local( a, array[i], ans + i );
     return 0;
 }
 
@@ -380,8 +378,7 @@ PetscErrorCode _AMP_maxpointwisedivide( Vec a, Vec b, PetscReal *res )
     while ( cur_x != end_x ) {
         if ( *cur_y == 0.0 ) {
             local_res = std::max( local_res, fabs( *cur_x ) );
-        }
-        else {
+        } else {
             local_res = std::max( local_res, fabs( ( *cur_x ) / ( *cur_y ) ) );
         }
         cur_x++;
@@ -410,7 +407,8 @@ PetscErrorCode _AMP_copy( Vec in, Vec out )
 
 PetscErrorCode _AMP_maxpy( Vec v, PetscInt num, const PetscScalar *alpha, Vec *vecs )
 {
-    for ( int i = 0; i != num; i++ ) VecAXPY( v, alpha[i], vecs[i] );
+    for ( int i = 0; i != num; i++ )
+        VecAXPY( v, alpha[i], vecs[i] );
     return 0;
 }
 
@@ -424,7 +422,8 @@ PetscErrorCode _AMP_dot( Vec a, Vec b, PetscScalar *ans )
 
 PetscErrorCode _AMP_mdot( Vec v, PetscInt num, const Vec vec[], PetscScalar *ans )
 {
-    for ( PetscInt i = 0; i != num; i++ ) VecDot( v, vec[i], ans + i );
+    for ( PetscInt i = 0; i != num; i++ )
+        VecDot( v, vec[i], ans + i );
     return 0;
 }
 
@@ -438,7 +437,8 @@ PetscErrorCode _AMP_tdot( Vec a, Vec b, PetscScalar *ans )
 
 PetscErrorCode _AMP_mtdot( Vec v, PetscInt num, const Vec vec[], PetscScalar *ans )
 {
-    for ( PetscInt i = 0; i != num; i++ ) VecTDot( v, vec[i], ans + i );
+    for ( PetscInt i = 0; i != num; i++ )
+        VecTDot( v, vec[i], ans + i );
     return 0;
 }
 
@@ -446,14 +446,16 @@ PetscErrorCode _AMP_mtdot( Vec v, PetscInt num, const Vec vec[], PetscScalar *an
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
 PetscErrorCode _AMP_destroyvecs( Vec vecArray[], PetscInt num )
 {
-    for ( PetscInt i = 0; i != num; i++ ) VecDestroy( vecArray[i] );
+    for ( PetscInt i = 0; i != num; i++ )
+        VecDestroy( vecArray[i] );
     delete[] vecArray;
     return 0;
 }
 #elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
 PetscErrorCode _AMP_destroyvecs( PetscInt num, Vec vecArray[] )
 {
-    for ( PetscInt i = 0; i != num; i++ ) VecDestroy( &vecArray[i] );
+    for ( PetscInt i = 0; i != num; i++ )
+        VecDestroy( &vecArray[i] );
     delete[] vecArray;
     return 0;
 }
@@ -505,8 +507,7 @@ PetscErrorCode _AMP_norm_local( Vec in, NormType type, PetscReal *ans )
             reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data )->localL1Norm();
         *( ans + 1 ) =
             reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data )->localL2Norm();
-    }
-    else
+    } else
         AMP_ERROR( "Unknown norm type" );
     if ( type != NORM_1_AND_2 ) {
         PetscObjectComposedDataSetReal(
@@ -528,8 +529,7 @@ PetscErrorCode _AMP_norm( Vec in, NormType type, PetscReal *ans )
         *ans = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data )->L1Norm();
         *( ans + 1 ) =
             reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data )->L2Norm();
-    }
-    else
+    } else
         AMP_ERROR( "Unknown norm type" );
     if ( type != NORM_1_AND_2 ) {
         PetscObjectComposedDataSetReal(
@@ -542,7 +542,8 @@ PetscErrorCode _AMP_norm( Vec in, NormType type, PetscReal *ans )
 bool _Verify_Memory( AMP::LinearAlgebra::Vector *p1, AMP::LinearAlgebra::Vector *p2 )
 {
     for ( size_t i = 0; i != p1->numberOfDataBlocks(); i++ ) {
-        if ( p1->getRawDataBlock<double>() == p2->getRawDataBlock<double>() ) return false;
+        if ( p1->getRawDataBlock<double>() == p2->getRawDataBlock<double>() )
+            return false;
     }
     return true;
 }
@@ -561,8 +562,9 @@ PetscErrorCode _AMP_duplicate( Vec in, Vec *out )
 PetscErrorCode _AMP_duplicatevecs( Vec v, PetscInt num, Vec **vecArray )
 {
     Vec *tvecArray = new Vec[num];
-    for ( PetscInt i = 0; i != num; i++ ) VecDuplicate( v, tvecArray + i );
-    *vecArray        = tvecArray;
+    for ( PetscInt i = 0; i != num; i++ )
+        VecDuplicate( v, tvecArray + i );
+    *vecArray = tvecArray;
     return 0;
 }
 
@@ -773,7 +775,8 @@ ManagedPetscVector::ManagedPetscVector( Vector::shared_ptr alias )
     : ManagedVector( alias ), PetscVector()
 {
     initPetsc();
-    if ( alias->isA<DataChangeFirer>() ) alias->castTo<DataChangeFirer>().registerListener( this );
+    if ( alias->isA<DataChangeFirer>() )
+        alias->castTo<DataChangeFirer>().registerListener( this );
 }
 
 
@@ -781,7 +784,8 @@ ManagedPetscVector::~ManagedPetscVector()
 {
     int refct = ( ( (PetscObject) d_petscVec )->refct );
     if ( !d_bMadeWithPetscDuplicate ) {
-        if ( refct > 1 ) AMP_ERROR( "Deleting a vector still held by PETSc" );
+        if ( refct > 1 )
+            AMP_ERROR( "Deleting a vector still held by PETSc" );
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
         VecDestroy( d_petscVec );
 #elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
@@ -796,7 +800,8 @@ ManagedPetscVector::~ManagedPetscVector()
 bool ManagedPetscVector::petscHoldsView() const
 {
     int refct = ( ( (PetscObject) d_petscVec )->refct );
-    if ( !d_bMadeWithPetscDuplicate && refct > 1 ) return true;
+    if ( !d_bMadeWithPetscDuplicate && refct > 1 )
+        return true;
     return false;
 }
 
@@ -815,7 +820,8 @@ void ManagedPetscVector::copyFromPetscVec( Vector &dest, Vec source )
     AMP::shared_ptr<ManagedVectorParameters> params =
         AMP::dynamic_pointer_cast<ManagedVectorParameters>(
             dest.castTo<ManagedVector>().getParameters() );
-    if ( !params ) throw( "Incompatible vector types" );
+    if ( !params )
+        throw( "Incompatible vector types" );
 
     if ( sizeof( PetscInt ) < 8 )
         AMP_INSIST( dest.getGlobalSize() < 0x80000000,
@@ -827,7 +833,8 @@ void ManagedPetscVector::copyFromPetscVec( Vector &dest, Vec source )
     PetscInt *ids                         = new PetscInt[eparams.getLocalSize()];
     PetscInt begin                        = (PetscInt) eparams.beginDOF();
     PetscInt end                          = (PetscInt) eparams.endDOF();
-    for ( PetscInt i = begin; i < end; i++ ) ids[i - begin] = i;
+    for ( PetscInt i   = begin; i < end; i++ )
+        ids[i - begin] = i;
     VecGetValues( source, dest.getLocalSize(), ids, dest.getRawDataBlock<double>() );
     delete[] ids;
 }

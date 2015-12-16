@@ -21,7 +21,8 @@ namespace Operator {
 
 typedef ColumnOperatorParameters ColumnBoundaryOperatorParameters;
 
-class ColumnBoundaryOperator : public BoundaryOperator {
+class ColumnBoundaryOperator : public BoundaryOperator
+{
 
 public:
     explicit ColumnBoundaryOperator( const AMP::shared_ptr<OperatorParameters> &params )

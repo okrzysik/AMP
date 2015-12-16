@@ -156,12 +156,10 @@ void DirichletMatrixCorrection::applyMatrixCorrection()
                     if ( d_dofIds[k][j] == i ) {
                         if ( d_zeroDirichletBlock ) {
                             d_inputMatrix->setValueByGlobalID( bndDofIds[i], bndDofIds[i], 0.0 );
-                        }
-                        else {
+                        } else {
                             d_inputMatrix->setValueByGlobalID( bndDofIds[i], bndDofIds[i], 1.0 );
                         }
-                    }
-                    else {
+                    } else {
                         d_inputMatrix->setValueByGlobalID(
                             bndDofIds[d_dofIds[k][j]], bndDofIds[i], 0.0 );
                         if ( d_symmetricCorrection ) {
@@ -226,8 +224,7 @@ void DirichletMatrixCorrection::initRhsCorrectionSet()
 
         if ( d_rhsCorrectionSet.get() == NULL ) {
             d_rhsCorrectionSet.reset( new DirichletVectorCorrection( setDispOpParams ) );
-        }
-        else {
+        } else {
             d_rhsCorrectionSet->reset( setDispOpParams );
         }
     }

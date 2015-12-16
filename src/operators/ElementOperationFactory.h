@@ -10,7 +10,8 @@
 namespace AMP {
 namespace Operator {
 
-class ElementOperationFactory {
+class ElementOperationFactory
+{
 public:
     ElementOperationFactory() {}
     ~ElementOperationFactory() {}

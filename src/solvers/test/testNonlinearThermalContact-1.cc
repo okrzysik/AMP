@@ -499,8 +499,7 @@ void thermalContactTest( AMP::UnitTest *ut, std::string exeName )
         if ( vecLag2->L2Norm() < 1.e-6 ) {
             testPassed = true;
             break;
-        }
-        else {
+        } else {
             std::cout << "for iteration cnt = " << cnt << " --> " << vecLag1->L2Norm() << " "
                       << vecLag2->L2Norm() << std::endl;
         }
@@ -515,8 +514,7 @@ void thermalContactTest( AMP::UnitTest *ut, std::string exeName )
     if ( testPassed ) {
         ut->passes( "Seggregated solve of Composite Operator using control loop of Nonlinear "
                     "Thermal+Robin->Map->Gap->Map->Ninlinear Thermal+Robin ." );
-    }
-    else {
+    } else {
         ut->failure( "Seggregated solve of Composite Operator using control loop of Nonlinear "
                      "Thermal+Robin->Map->Gap->Map->Ninlinear Thermal+Robin ." );
     }
@@ -536,12 +534,10 @@ int main( int argc, char *argv[] )
 
     try {
         thermalContactTest( &ut, "testNonlinearThermalContactPicard_HALDEN" );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

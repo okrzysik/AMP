@@ -33,7 +33,8 @@ typedef NeumannVectorCorrectionParameters RobinVectorCorrectionParameters;
   as it implements similar functionality.
   */
 
-class RobinVectorCorrection : public NeumannVectorCorrection {
+class RobinVectorCorrection : public NeumannVectorCorrection
+{
 public:
     /**
       Constructor. This function reads all the parameters required for Robin boundary

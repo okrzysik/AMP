@@ -10,7 +10,8 @@
 namespace AMP {
 namespace Operator {
 
-class AsyncMapOperatorParameters : public AsynchronousOperatorParameters {
+class AsyncMapOperatorParameters : public AsynchronousOperatorParameters
+{
 public:
     AMP_MPI d_MapComm;
     AMP::Mesh::Mesh::shared_ptr d_Mesh1;

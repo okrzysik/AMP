@@ -193,8 +193,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     if ( finalResidualNorm > 1.0e-08 ) {
         ut->failure( "ColumnSolver unsuccessfully solves two linear operators" );
-    }
-    else {
+    } else {
         ut->passes( "ColumnSolver successfully solves two linear operators" );
     }
     ut->passes( exeName );
@@ -211,12 +210,10 @@ int main( int argc, char *argv[] )
     for ( unsigned int i = 0; i < exeNames.size(); i++ ) {
         try {
             myTest( &ut, exeNames[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing" );

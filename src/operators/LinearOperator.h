@@ -18,7 +18,8 @@ namespace Operator {
   * an implementation of the apply() function.
   * @see Operator
 */
-class LinearOperator : public Operator {
+class LinearOperator : public Operator
+{
 public:
     /**
      * Constructor. This resets the matrix shared pointer.

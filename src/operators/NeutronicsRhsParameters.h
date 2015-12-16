@@ -19,7 +19,8 @@ namespace Operator {
   neutronics source operator.
   @see NeutronicsRhs
   */
-class NeutronicsRhsParameters : public OperatorParameters {
+class NeutronicsRhsParameters : public OperatorParameters
+{
 public:
     typedef AMP::shared_ptr<AMP::Database> SP_Database;
 

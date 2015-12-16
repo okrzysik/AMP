@@ -48,7 +48,8 @@ struct DatabaseBox_POD {
  * See d_data for details.
  */
 
-class DatabaseBox {
+class DatabaseBox
+{
 public:
     /**
      * The default constructor creates a zero dimension empty box.

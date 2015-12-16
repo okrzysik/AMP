@@ -12,7 +12,8 @@ namespace TimeIntegrator {
 /*!
   @brief This class provides routines for oxide calculations at a point
  */
-class OxideModel {
+class OxideModel
+{
 public:
     /*!
      * @brief Function to return the equiblibrium concentration at the phase

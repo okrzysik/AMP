@@ -31,7 +31,8 @@ typedef MatrixParameters EpetraMatrixParameters;
   \endcode
   */
 
-class EpetraMatrix : virtual public Matrix {
+class EpetraMatrix : virtual public Matrix
+{
 private:
     EpetraMatrix();
     EpetraMatrix( const EpetraMatrix &rhs );

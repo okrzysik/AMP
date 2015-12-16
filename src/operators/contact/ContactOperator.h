@@ -14,7 +14,8 @@ namespace Operator {
   an implementation of the apply() function.
   @see Operator
   */
-class ContactOperator : public ConstraintsEliminationOperator {
+class ContactOperator : public ConstraintsEliminationOperator
+{
 
 public:
     /**

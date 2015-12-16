@@ -63,13 +63,15 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian
                          << ", Computed = " << matVals[j] << ", Known = " << knownJacobian[i][col]
                          << std::endl;
             }
-            if ( matCols[j] < num_dofs - 1 ) std::cout << ",";
+            if ( matCols[j] < num_dofs - 1 )
+                std::cout << ",";
             col++;
         } // end for j
         // zeros after last nonzero entry
         while ( col < num_dofs ) {
             std::cout << "0";
-            if ( col < num_dofs - 1 ) std::cout << ",";
+            if ( col < num_dofs - 1 )
+                std::cout << ",";
             if ( !AMP::Utilities::approx_equal( 0.0, knownJacobian[i][col], 0.01 ) ) {
                 passed = false;
                 mismatch << "Entry does not match. i = " << i << ", j = " << col
@@ -78,7 +80,8 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian
             col++;
         }
         std::cout << "}";
-        if ( i < num_dofs - 1 ) std::cout << "," << std::endl;
+        if ( i < num_dofs - 1 )
+            std::cout << "," << std::endl;
     } // end for i
     std::cout << std::endl;
     std::cout << mismatch.str();
@@ -667,12 +670,10 @@ int main( int argc, char *argv[] )
     for ( int i = 0; i < NUMFILES; i++ ) {
         try {
             Test( &ut, files[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing: " + files[i] );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing: " + files[i] );

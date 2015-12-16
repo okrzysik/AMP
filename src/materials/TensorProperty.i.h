@@ -69,8 +69,7 @@ void TensorProperty<Number>::evalvActual(
         mapIter = args.find( Property<Number>::d_arguments[i] );
         if ( mapIter == args.end() ) {
             eval_args[i] = Property<Number>::d_defaults[i];
-        }
-        else {
+        } else {
             parameter_iter.push_back( mapIter->second->begin() );
             parameter_indices.push_back( i );
             parameter_map_iter.push_back( mapIter );
@@ -126,7 +125,8 @@ void TensorProperty<Number>::evalvActual(
                           r_iter[i][j] == r[i][j]->end(); // if alldone true, all reached the end
             }
         // if one reached the end, make sure all did
-        if ( !goAgain ) AMP_INSIST( alldone, "tensor result vectors have unequal sizes" );
+        if ( !goAgain )
+            AMP_INSIST( alldone, "tensor result vectors have unequal sizes" );
     }
     // Make sure the input value iterators all got to the end.
     if ( Property<Number>::d_n_arguments > 0 ) {

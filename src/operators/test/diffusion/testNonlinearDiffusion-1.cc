@@ -292,10 +292,9 @@ void nonlinearTest( AMP::UnitTest *ut, std::string exeName )
             if ( ( diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) &&
                  ( ( mat->property( property ) )->is_argument( "temperature" ) ) ) {
                 ut->failure( exeName + ": validInput-1" );
-            }
-            else if ( ( diffOp->getPrincipalVariableId() ==
-                        AMP::Operator::Diffusion::CONCENTRATION ) &&
-                      ( ( mat->property( property ) )->is_argument( "concentration" ) ) ) {
+            } else if ( ( diffOp->getPrincipalVariableId() ==
+                          AMP::Operator::Diffusion::CONCENTRATION ) &&
+                        ( ( mat->property( property ) )->is_argument( "concentration" ) ) ) {
                 ut->failure( exeName + ": validInput-1" );
             }
         }
@@ -306,10 +305,9 @@ void nonlinearTest( AMP::UnitTest *ut, std::string exeName )
             if ( ( diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) &&
                  ( ( mat->property( property ) )->is_argument( "temperature" ) ) ) {
                 ut->failure( exeName + ": validInput-2" );
-            }
-            else if ( ( diffOp->getPrincipalVariableId() ==
-                        AMP::Operator::Diffusion::CONCENTRATION ) &&
-                      ( ( mat->property( property ) )->is_argument( "concentration" ) ) ) {
+            } else if ( ( diffOp->getPrincipalVariableId() ==
+                          AMP::Operator::Diffusion::CONCENTRATION ) &&
+                        ( ( mat->property( property ) )->is_argument( "concentration" ) ) ) {
                 ut->failure( exeName + ": validInput-2" );
             }
         }
@@ -347,12 +345,10 @@ int main( int argc, char *argv[] )
     for ( int i = 0; i < NUMFILES; i++ ) {
         try {
             nonlinearTest( &ut, files[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing: " + files[i] );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing: " + files[i] );

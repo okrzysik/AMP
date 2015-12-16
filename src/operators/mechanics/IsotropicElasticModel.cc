@@ -77,8 +77,7 @@ void IsotropicElasticModel::nonlinearInitGaussPointOperation( double )
     if ( d_useMaterialsLibrary == false ) {
         d_E.push_back( default_E );
         d_Nu.push_back( default_Nu );
-    }
-    else {
+    } else {
         d_E.push_back( 0.0 );
         d_Nu.push_back( 0.0 );
     }
@@ -358,22 +357,19 @@ void IsotropicElasticModel::computeEvalv( const std::vector<std::vector<double>>
 
         if ( strain[Mechanics::TEMPERATURE].empty() ) {
             tempVec->push_back( default_TEMPERATURE );
-        }
-        else {
+        } else {
             ( *tempVec ) = strain[Mechanics::TEMPERATURE];
         }
 
         if ( strain[Mechanics::BURNUP].empty() ) {
             burnupVec->push_back( default_BURNUP );
-        }
-        else {
+        } else {
             ( *burnupVec ) = strain[Mechanics::BURNUP];
         }
 
         if ( strain[Mechanics::OXYGEN_CONCENTRATION].empty() ) {
             oxygenVec->push_back( default_OXYGEN_CONCENTRATION );
-        }
-        else {
+        } else {
             ( *oxygenVec ) = strain[Mechanics::OXYGEN_CONCENTRATION];
         }
 
@@ -426,8 +422,7 @@ void IsotropicElasticModel::calculateStress( const std::vector<std::vector<doubl
         double pass_E  = d_E[d_gaussPtCnt];
         double pass_Nu = d_Nu[d_gaussPtCnt];
         constructConstitutiveMatrixUpdatedLagrangian( pass_E, pass_Nu );
-    }
-    else {
+    } else {
         double pass_E  = d_E[d_gaussPtCnt];
         double pass_Nu = d_Nu[d_gaussPtCnt];
         constructConstitutiveMatrixUpdatedLagrangian( pass_E, pass_Nu );

@@ -87,8 +87,7 @@ void eigenVectors( double A[3][3], double val[3], double vec[3][3] )
                 vec[j][i] = 0.0;
             } // end for j
         }     // end for i
-    }
-    else {
+    } else {
         int vecColCnt = 0;
         for ( size_t i = 0; i < uniqVals.size(); i++ ) {
             double B[3][3];
@@ -130,24 +129,21 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                             tmp[1] = 0;
                             tmp[2] = 1;
                             sols.push_back( tmp );
-                        }
-                        else {
+                        } else {
                             std::vector<double> tmp( 3 );
                             tmp[0] = 0;
                             tmp[1] = 1;
                             tmp[2] = 0;
                             sols.push_back( tmp );
                         } // A22
-                    }
-                    else {
+                    } else {
                         std::vector<double> tmp( 3 );
                         tmp[0] = 0;
                         tmp[1] = -A[2][2] / A[2][1];
                         tmp[2] = 1;
                         sols.push_back( tmp );
                     } // A21
-                }
-                else {
+                } else {
                     if ( softEquals( A[2][1], 0 ) ) {
                         std::vector<double> tmp( 3 );
                         tmp[0] = 0;
@@ -156,8 +152,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                         sols.push_back( tmp );
                     } // A21
                 }     // A12
-            }
-            else {
+            } else {
                 if ( softEquals( ( A[1][1] * A[2][2] ), ( A[1][2] * A[2][1] ) ) ) {
                     std::vector<double> tmp( 3 );
                     tmp[0] = 0;
@@ -166,8 +161,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                     sols.push_back( tmp );
                 }
             } // A11
-        }
-        else {
+        } else {
             if ( softEquals( A[1][1], 0 ) ) {
                 if ( softEquals( A[2][1], 0 ) ) {
                     std::vector<double> tmp( 3 );
@@ -178,8 +172,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                 } // A21
             }     // A11
         }         // A02
-    }
-    else {
+    } else {
         if ( softEquals( ( A[1][2] * A[0][1] ), ( A[1][1] * A[0][2] ) ) ) {
             if ( softEquals( ( A[2][2] * A[0][1] ), ( A[2][1] * A[0][2] ) ) ) {
                 std::vector<double> tmp( 3 );
@@ -212,8 +205,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                                         tmp[2] = 0;
                                         sols.push_back( tmp );
                                     } // A20
-                                }
-                                else {
+                                } else {
                                     std::vector<double> tmp( 3 );
                                     tmp[0] = 1;
                                     tmp[1] = 0;
@@ -222,8 +214,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                                     tmp[1] = 1;
                                     sols.push_back( tmp );
                                 } // A22
-                            }
-                            else {
+                            } else {
                                 std::vector<double> tmp( 3 );
                                 tmp[0] = 1;
                                 tmp[2] = 0;
@@ -234,8 +225,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                                 sols.push_back( tmp );
                             } // A21
                         }     // A10
-                    }
-                    else {
+                    } else {
                         if ( softEquals( A[2][1], 0 ) ) {
                             if ( softEquals( ( A[2][2] * A[1][0] ), ( A[2][0] * A[1][2] ) ) ) {
                                 std::vector<double> tmp( 3 );
@@ -246,8 +236,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                                 tmp[1] = 1;
                                 sols.push_back( tmp );
                             }
-                        }
-                        else {
+                        } else {
                             std::vector<double> tmp( 3 );
                             tmp[0] = 1;
                             tmp[1] = ( ( A[2][2] * A[1][0] ) - ( A[2][0] * A[1][2] ) ) /
@@ -256,8 +245,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                             sols.push_back( tmp );
                         } // A21
                     }     // A12
-                }
-                else {
+                } else {
                     if ( softEquals( ( A[1][1] * A[2][2] ), ( A[2][1] * A[1][2] ) ) ) {
                         if ( softEquals( ( A[1][1] * A[2][0] ), ( A[2][1] * A[1][0] ) ) ) {
                             std::vector<double> tmp( 3 );
@@ -269,8 +257,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                             tmp[1] = -( A[1][0] + ( A[1][2] * tmp[2] ) ) / A[1][1];
                             sols.push_back( tmp );
                         }
-                    }
-                    else {
+                    } else {
                         std::vector<double> tmp( 3 );
                         tmp[0] = 1;
                         tmp[2] = ( ( A[2][1] * A[1][0] ) - ( A[2][0] * A[1][1] ) ) /
@@ -280,8 +267,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                     }
                 } // A11
             }     // A00
-        }
-        else {
+        } else {
             if ( softEquals( A[1][1], 0 ) ) {
                 std::vector<double> tmp( 3 );
                 tmp[0] = 1;
@@ -294,14 +280,12 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                             tmp[1] = 1;
                             sols.push_back( tmp );
                         }
-                    }
-                    else {
+                    } else {
                         tmp[1] = -( A[2][0] + ( A[2][2] * tmp[2] ) ) / A[2][1];
                         sols.push_back( tmp );
                     } // A21
                 }
-            }
-            else {
+            } else {
                 std::vector<double> tmp( 3 );
                 tmp[0] = 1;
                 tmp[2] = -A[0][0] / A[0][2];
@@ -311,8 +295,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                 }
             } // A11
         }     // A02
-    }
-    else {
+    } else {
         std::vector<double> tmp( 3 );
         tmp[0]   = 1;
         double b = A[1][2] - ( A[1][1] * A[0][2] / A[0][1] );
@@ -330,15 +313,13 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                         tmp[1] = -( ( A[0][2] * tmp[2] ) + A[0][0] ) / A[0][1];
                         sols.push_back( tmp );
                     }
-                }
-                else {
+                } else {
                     tmp[2] = e / d;
                     tmp[1] = -( ( A[0][2] * tmp[2] ) + A[0][0] ) / A[0][1];
                     sols.push_back( tmp );
                 }
             }
-        }
-        else {
+        } else {
             tmp[2] = c / b;
             tmp[1] = -( ( A[0][2] * tmp[2] ) + A[0][0] ) / A[0][1];
             if ( softEquals( ( d * tmp[2] ), e ) ) {
@@ -419,19 +400,15 @@ void firstCubicRoot( double a, double b, double c, double d, double &r1 )
 
     if ( softEquals( q, 0 ) ) {
         t = 0;
-    }
-    else if ( softEquals( p, 0 ) ) {
+    } else if ( softEquals( p, 0 ) ) {
         if ( q > 0 ) {
             t = -pow( q, ( 1.0 / 3.0 ) );
-        }
-        else {
+        } else {
             t = pow( -q, ( 1.0 / 3.0 ) );
         }
-    }
-    else if ( softEquals( ( 4.0 * p * p * p ), ( -27.0 * q * q ) ) ) {
+    } else if ( softEquals( ( 4.0 * p * p * p ), ( -27.0 * q * q ) ) ) {
         t = 3.0 * q / p;
-    }
-    else if ( ( ( 4.0 * p * p * p ) + ( 27.0 * q * q ) ) > 0 ) {
+    } else if ( ( ( 4.0 * p * p * p ) + ( 27.0 * q * q ) ) > 0 ) {
         double uCube = -( q / 2.0 ) + sqrt( ( q * q / 4.0 ) + ( p * p * p / 27.0 ) );
         double vCube = -( q / 2.0 ) - sqrt( ( q * q / 4.0 ) + ( p * p * p / 27.0 ) );
 
@@ -440,27 +417,22 @@ void firstCubicRoot( double a, double b, double c, double d, double &r1 )
 
         if ( softEquals( uCube, 0 ) ) {
             u = 0;
-        }
-        else if ( uCube > 0 ) {
+        } else if ( uCube > 0 ) {
             u = pow( uCube, ( 1.0 / 3.0 ) );
-        }
-        else {
+        } else {
             u = -pow( -uCube, ( 1.0 / 3.0 ) );
         }
 
         if ( softEquals( vCube, 0 ) ) {
             v = 0;
-        }
-        else if ( vCube > 0 ) {
+        } else if ( vCube > 0 ) {
             v = pow( vCube, ( 1.0 / 3.0 ) );
-        }
-        else {
+        } else {
             v = -pow( -vCube, ( 1.0 / 3.0 ) );
         }
 
         t = u + v;
-    }
-    else {
+    } else {
         t = 2.0 * sqrt( -p / 3.0 ) *
             cos( 1.0 / 3.0 * acos( ( 3.0 * q / ( 2.0 * p ) ) * sqrt( -3.0 / p ) ) );
     }
@@ -776,10 +748,12 @@ void polarDecompositionFeqRU_Simo(
     double tol = 1.0e-8;
 
     for ( int i = 0; i < 3; i++ )
-        for ( int j = 0; j < 3; j++ ) Ft[j][i] = F[i][j];
+        for ( int j  = 0; j < 3; j++ )
+            Ft[j][i] = F[i][j];
 
     for ( int i = 0; i < 3; i++ )
-        for ( int j = 0; j < 3; j++ ) I[i][j] = 0.0;
+        for ( int j = 0; j < 3; j++ )
+            I[i][j] = 0.0;
 
     I[0][0] = I[1][1] = I[2][2] = 1.0;
 
@@ -794,12 +768,13 @@ void polarDecompositionFeqRU_Simo(
     c = -( ( 2.0 / 27.0 ) * I1 * I1 * I1 ) + ( ( I1 * I2 ) / 3.0 ) - I3;
 
     if ( fabs( b ) < tol ) {
-        if ( fabs( c ) < tol ) c = fabs( c );
+        if ( fabs( c ) < tol )
+            c = fabs( c );
         AMP_INSIST( ( c >= 0.0 ),
                     "Error in the polar decomposition (Simo), value of c is less than zero." );
-        for ( int i = 0; i < 3; i++ ) x[i] = -pow( c, ( 1.0 / 3.0 ) );
-    }
-    else {
+        for ( int i = 0; i < 3; i++ )
+            x[i]    = -pow( c, ( 1.0 / 3.0 ) );
+    } else {
         AMP_INSIST( ( b <= 0.0 ),
                     "Error in the polar decomposition (Simo), value of b is greater than zero." );
         double m     = 2.0 * sqrt( -b / 3.0 );
@@ -816,8 +791,9 @@ void polarDecompositionFeqRU_Simo(
     }
 
     for ( int i = 0; i < 3; i++ ) {
-        double term2                     = x[i] + ( I1 / 3.0 );
-        if ( fabs( term2 ) < tol ) term2 = fabs( term2 );
+        double term2 = x[i] + ( I1 / 3.0 );
+        if ( fabs( term2 ) < tol )
+            term2 = fabs( term2 );
         AMP_INSIST( ( term2 >= 0.0 ),
                     "Error in the polar decomposition (Simo), while calculating "
                     "lambda, lambda^2 is negetive." );

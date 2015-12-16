@@ -29,7 +29,8 @@
   **/
 namespace AMP {
 
-class LinearRegression {
+class LinearRegression
+{
     friend std::ostream &operator<<( std::ostream &os, LinearRegression &linReg )
     {
         if ( linReg.haveData() )
@@ -52,8 +53,10 @@ public:
           stdError( -1.0 )
     {
         unsigned int sizeData = x.size();
-        if ( sizeData != y.size() ) std::cout << "throw an error\n";
-        for ( unsigned int i = 0; i < sizeData; ++i ) addXY( x[i], y[i] );
+        if ( sizeData != y.size() )
+            std::cout << "throw an error\n";
+        for ( unsigned int i = 0; i < sizeData; ++i )
+            addXY( x[i], y[i] );
     }
 
     void addXY( const double &x, const double &y )
@@ -107,8 +110,7 @@ protected:
                 coefD    = sx / sy2;
                 coefC    = sqrt( coefD );
                 stdError = sqrt( sy / double( nPoints - 1 ) );
-            }
-            else {
+            } else {
                 a = b = coefD = coefC = stdError = 0.0;
             }
         }

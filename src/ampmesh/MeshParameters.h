@@ -13,7 +13,8 @@ namespace Mesh {
  * \class Mesh
  * \brief A class used to pass the parameters for creating a mesh
  */
-class MeshParameters {
+class MeshParameters
+{
 public:
     /**
      *\typedef shared_ptr

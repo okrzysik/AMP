@@ -53,8 +53,7 @@ void PelletContactConductanceModel::getConductance(
                     for ( size_t j = 0; j < arguments[1].size(); j++ ) {
                         arguments[1][j] = inputVectors[l][j];
                     }
-                }
-                else if ( variableNames[k] == "Burnup" ) {
+                } else if ( variableNames[k] == "Burnup" ) {
                     arguments[2].resize( inputVectors[l].size() );
                     for ( size_t j = 0; j < arguments[2].size(); j++ ) {
                         arguments[2][j] = inputVectors[l][j];

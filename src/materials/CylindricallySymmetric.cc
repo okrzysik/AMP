@@ -98,7 +98,8 @@ static const double paramsTensor[] = { 1., 1., 1. };
 //=================== Classes =======================================================
 
 /** radial diffusion coefficient */
-class ScalarRadialFickProp : public Property<double> {
+class ScalarRadialFickProp : public Property<double>
+{
 public:
     ScalarRadialFickProp()
         : Property<double>( name_base + "_" + "ScalarRadialFick", // Name string
@@ -125,7 +126,8 @@ public:
 };
 
 /** radial diffusion coefficient */
-class RadialFickProp : public VectorProperty<double> {
+class RadialFickProp : public VectorProperty<double>
+{
 public:
     RadialFickProp()
         : VectorProperty<double>( name_base + "_" + "RadialFick", // Name string
@@ -152,7 +154,8 @@ public:
 };
 
 /** longitudinal diffusion coefficient */
-class LongitudinalFickProp : public VectorProperty<double> {
+class LongitudinalFickProp : public VectorProperty<double>
+{
 public:
     LongitudinalFickProp()
         : VectorProperty<double>(
@@ -185,7 +188,8 @@ public:
  * AuxiliaryInteger data "derivative" has values 0, 1, 2 for
  * zeroth, r- and z- derivatives, respectively.
  */
-class TensorFickProp : public TensorProperty<double> {
+class TensorFickProp : public TensorProperty<double>
+{
 public:
     TensorFickProp()
         : TensorProperty<double>( name_base + "_" + "TensorFick", // Name string
@@ -304,7 +308,9 @@ std::vector<std::vector<double>> TensorFickProp::evalTensor( std::vector<double>
         result[2][2] = Kz[1];
         break;
     }
-    default: AMP_ASSERT( false ); break;
+    default:
+        AMP_ASSERT( false );
+        break;
     }
     return result;
 }

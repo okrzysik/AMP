@@ -36,7 +36,8 @@
 
 #define ITFAILS ut.failure( __LINE__ );
 #define UNIT_TEST( a ) \
-    if ( !( a ) ) ut.failure( __LINE__ );
+    if ( !( a ) )      \
+        ut.failure( __LINE__ );
 
 void linearFickTest( AMP::UnitTest *ut )
 {
@@ -158,8 +159,7 @@ void linearFickTest( AMP::UnitTest *ut )
 
     if ( finalResidualNorm > 10.0 ) {
         ut->failure( "TrilinosMLSolver unsuccessfully solves a linear fick problem." );
-    }
-    else {
+    } else {
         ut->passes( "TrilinosMLSolver successfully solves a linear fick problem." );
     }
 
@@ -191,7 +191,8 @@ void linearFickTest( AMP::UnitTest *ut )
                 int rank                      = globalComm.getRank();
                 int nranks                    = globalComm.getSize();
                 std::ios_base::openmode omode = std::ios_base::out;
-                if ( rank > 0 ) omode |= std::ios_base::app;
+                if ( rank > 0 )
+                    omode |= std::ios_base::app;
                 std::ofstream file( filename.c_str(), omode );
                 if ( rank == 0 ) {
                     file << "(* x y z analytic calculated relative-error *)" << std::endl;
@@ -202,7 +203,8 @@ void linearFickTest( AMP::UnitTest *ut )
 
                 iterator        = iterator.begin();
                 size_t numNodes = 0, iNode = 0;
-                for ( ; iterator != iterator.end(); iterator++ ) numNodes++;
+                for ( ; iterator != iterator.end(); iterator++ )
+                    numNodes++;
 
                 iterator = iterator.begin();
                 for ( ; iterator != iterator.end(); iterator++ ) {
@@ -219,7 +221,8 @@ void linearFickTest( AMP::UnitTest *ut )
                     z = ( iterator->coord() )[2];
                     file << "{" << x << "," << y << "," << z << "," << sol << "," << cal << ","
                          << err << "}";
-                    if ( iNode < numNodes - 1 ) file << "," << std::endl;
+                    if ( iNode < numNodes - 1 )
+                        file << "," << std::endl;
                     if ( fabs( cal - sol ) > cal * 1e-3 ) {
                         passes = 0;
                         ut->failure( "Error" );
@@ -234,7 +237,8 @@ void linearFickTest( AMP::UnitTest *ut )
             }
         }
     }
-    if ( passes ) ut->passes( "The linear fick solve is verified." );
+    if ( passes )
+        ut->passes( "The linear fick solve is verified." );
 
 // Plot the results
 #ifdef USE_EXT_SILO
@@ -260,12 +264,10 @@ int main( int argc, char *argv[] )
 
     try {
         linearFickTest( &ut );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

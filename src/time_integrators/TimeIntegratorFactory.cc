@@ -48,8 +48,7 @@ AMP::shared_ptr<TimeIntegrator> TimeIntegratorFactory::createTimeIntegrator(
 
     if ( db->keyExists( "timeIntegrator_name" ) ) {
         timeIntegratorName = db->getString( "timeIntegrator_name" );
-    }
-    else {
+    } else {
         AMP_ERROR( "TimeIntegratorFactory"
                    << " -- Required key `timeIntegrator_name'"
                    << " missing in input." );
@@ -57,20 +56,15 @@ AMP::shared_ptr<TimeIntegrator> TimeIntegratorFactory::createTimeIntegrator(
 
     if ( timeIntegratorName == "ExplicitEuler" ) {
         timeIntegrator.reset( new ExplicitEuler( timeIntegratorParameters ) );
-    }
-    else if ( timeIntegratorName == "RK2" ) {
+    } else if ( timeIntegratorName == "RK2" ) {
         timeIntegrator.reset( new RK2TimeIntegrator( timeIntegratorParameters ) );
-    }
-    else if ( timeIntegratorName == "RK4" ) {
+    } else if ( timeIntegratorName == "RK4" ) {
         timeIntegrator.reset( new RK4TimeIntegrator( timeIntegratorParameters ) );
-    }
-    else if ( timeIntegratorName == "RK23" ) {
+    } else if ( timeIntegratorName == "RK23" ) {
         timeIntegrator.reset( new RK23TimeIntegrator( timeIntegratorParameters ) );
-    }
-    else if ( timeIntegratorName == "BackwardEuler" ) {
+    } else if ( timeIntegratorName == "BackwardEuler" ) {
         timeIntegrator.reset( new BackwardEulerTimeIntegrator( timeIntegratorParameters ) );
-    }
-    else {
+    } else {
         AMP::pout << "ERROR::"
                   << "TimeIntegratorFactory"
                   << " does not currently create timeIntegrator " << timeIntegratorName

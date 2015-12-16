@@ -69,8 +69,7 @@ void applyTest( AMP::UnitTest *ut,
             testOperator->residual( rhsVec, solVec, resVec );
         } // end for j
         ut->passes( msgPrefix + " : apply with random f, u, r, a=1, b=-1.0" );
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         ut->failure( msgPrefix + " : apply with random f, u, r, a=1, b=-1.0" );
     }
 
@@ -84,8 +83,7 @@ void applyTest( AMP::UnitTest *ut,
             testOperator->residual( fVec, solVec, resVec );
         } // end for j
         ut->passes( msgPrefix + " : apply with f NULL, random u, r, a=1, b=-1.0" );
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         ut->failure( msgPrefix + " : apply with f NULL, random u, r, a=1, b=-1.0" );
     }
 
@@ -101,8 +99,7 @@ void applyTest( AMP::UnitTest *ut,
         } // end for j
         ut->failure( msgPrefix +
                      " : apply with u NULL, random values in the vectors f,r, a=1, b=-1.0" );
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         ut->passes( msgPrefix +
                     " : apply with u NULL, random values in the vectors f,r, a=1, b=-1.0" );
     }
@@ -118,8 +115,7 @@ void applyTest( AMP::UnitTest *ut,
         } // end for j
         ut->failure( msgPrefix +
                      " : apply with r NULL, random values in the vectors f,u, a=1, b=-1.0" );
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         ut->passes( msgPrefix +
                     " : apply with r NULL, random values in the vectors f,u, a=1, b=-1.0" );
     }
@@ -134,8 +130,7 @@ void applyTest( AMP::UnitTest *ut,
         } // end for j
         ut->failure( msgPrefix +
                      " : apply with f NULL, u NULL random values in the vector r, a=1, b=-1.0" );
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         ut->passes( msgPrefix +
                     " : apply with f NULL, u NULL random values in the vector r, a=1, b=-1.0" );
     }
@@ -150,8 +145,7 @@ void applyTest( AMP::UnitTest *ut,
         } // end for j
         ut->failure( msgPrefix +
                      " : apply with u NULL, r NULL, random values in the vector f, a=1, b=-1.0" );
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         ut->passes( msgPrefix +
                     " : apply with u NULL, r NULL, random values in the vector f, a=1, b=-1.0" );
     }
@@ -167,8 +161,7 @@ void applyTest( AMP::UnitTest *ut,
         } // end for j
         ut->failure( msgPrefix +
                      " : apply with f, r NULL, random values in the vector u, a=1, b=-1.0" );
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         ut->passes( msgPrefix +
                     " : apply with f, r NULL, random values in the vector u, a=1, b=-1.0" );
     }
@@ -182,8 +175,7 @@ void applyTest( AMP::UnitTest *ut,
             testOperator->residual( fVec, uVec, rVec );
         } // end for j
         ut->failure( msgPrefix + " : apply with f, u, r NULL, a=1, b=-1.0" );
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         ut->passes( msgPrefix + " : apply with f, u, r NULL, a=1, b=-1.0" );
     }
 #if 0
@@ -288,8 +280,7 @@ void sourceTest( AMP::UnitTest *ut, std::string exeName )
             new AMP::Operator::VolumeIntegralOperatorParameters( sourceDatabase ) );
         sourceOperator->reset( volumeIntegralParameters );
         ut->passes( msgPrefix + " : pass " );
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         ut->failure( msgPrefix + " : fail " );
     }
 
@@ -327,12 +318,10 @@ int main( int argc, char *argv[] )
         for ( int i = 0; i < NUMFILES; i++ ) {
             sourceTest( &ut, files[i] );
         }
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

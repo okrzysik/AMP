@@ -15,7 +15,8 @@ namespace TimeIntegrator {
 /*!
   @brief This class solves the time-dependent oxide growth on a surface.
  */
-class OxideTimeIntegrator : public TimeIntegrator {
+class OxideTimeIntegrator : public TimeIntegrator
+{
 public:
     /**
      * The constructor for TimeIntegrator initializes the

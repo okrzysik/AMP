@@ -8,7 +8,8 @@
 namespace AMP {
 namespace Operator {
 
-class RowOperatorParameters : public OperatorParameters {
+class RowOperatorParameters : public OperatorParameters
+{
 public:
     explicit RowOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
         : OperatorParameters( db )

@@ -117,15 +117,19 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
     }
     // Sort the ids and elements for fast search
     d_index.resize( N, 0 );
-    for ( size_t i = 0; i < N; i++ ) d_index[i] = i;
+    for ( size_t i = 0; i < N; i++ )
+        d_index[i] = i;
     AMP::Utilities::quicksort( d_ids, d_index );
     d_elements.resize( N, NULL );
-    for ( size_t i = 0; i < N; i++ ) d_elements[i] = elements[d_index[i]];
+    for ( size_t i    = 0; i < N; i++ )
+        d_elements[i] = elements[d_index[i]];
     if ( !d_base_element.empty() ) {
         d_base_element.resize( N, NULL );
         d_rule_element.resize( N );
-        for ( size_t i = 0; i < N; i++ ) d_base_element[i] = base[d_index[i]];
-        for ( size_t i = 0; i < N; i++ ) d_rule_element[i] = rule[d_index[i]];
+        for ( size_t i        = 0; i < N; i++ )
+            d_base_element[i] = base[d_index[i]];
+        for ( size_t i        = 0; i < N; i++ )
+            d_rule_element[i] = rule[d_index[i]];
     }
     PROFILE_STOP( "reinit" );
 }
@@ -141,20 +145,16 @@ libMesh::Elem *createLibmeshElements::createElement( const AMP::Mesh::MeshElemen
     if ( dim == 3 && nodes.size() == 8 ) {
         // We are dealing with a hex8 element
         element = new libMesh::Hex8;
-    }
-    else if ( dim == 3 && nodes.size() == 27 ) {
+    } else if ( dim == 3 && nodes.size() == 27 ) {
         // We are dealing with a hex27 element
         element = new libMesh::Hex27;
-    }
-    else if ( dim == 2 && nodes.size() == 4 ) {
+    } else if ( dim == 2 && nodes.size() == 4 ) {
         // We are dealing with a hex8 element
         element = new libMesh::Quad4;
-    }
-    else if ( dim == 2 && nodes.size() == 4 ) {
+    } else if ( dim == 2 && nodes.size() == 4 ) {
         // We are dealing with a hex8 element
         element = new libMesh::Quad9;
-    }
-    else {
+    } else {
         AMP_ERROR( "Unknown element type" );
     }
     for ( size_t j = 0; j < nodes.size(); j++ ) {
@@ -193,8 +193,7 @@ const libMesh::FEBase *createLibmeshElements::getFEBase( const AMP::Mesh::MeshEl
         AMP_INSIST( d_ids[index] == id, "Desired element was not found" );
         if ( !d_base_element.empty() ) {
             result = d_base_element[index];
-        }
-        else {
+        } else {
             if ( d_last_id != id ) {
                 const libMesh::Elem *elem = d_elements[index];
                 d_base->reinit( elem );
@@ -219,8 +218,7 @@ const libMesh::QBase *createLibmeshElements::getQBase( const AMP::Mesh::MeshElem
         AMP_INSIST( d_ids[index] == id, "Desired element was not found" );
         if ( !d_rule_element.empty() ) {
             result = d_rule_element[index];
-        }
-        else {
+        } else {
             if ( d_last_id != id ) {
                 const libMesh::Elem *elem = d_elements[index];
                 d_base->reinit( elem );

@@ -27,7 +27,8 @@ SubchannelToPointMap::SubchannelToPointMap(
     AMP_INSIST( d_comm.anyReduce( d_Mesh != NULL ),
                 "d_Mesh must be set on at least one processor" );
     AMP_MPI mesh_comm( AMP_COMM_SELF );
-    if ( d_Mesh != NULL ) mesh_comm = d_Mesh->getComm();
+    if ( d_Mesh != NULL )
+        mesh_comm = d_Mesh->getComm();
     AMP_INSIST( d_comm >= mesh_comm, "d_comm must be >= comm of the subchannel mesh" );
     AMP_ASSERT( d_point_x.size() == d_point_y.size() && d_point_x.size() == d_point_z.size() );
     AMP_ASSERT( d_subchannelPhysicsModel != NULL );
@@ -80,14 +81,12 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
                 d_subchannelPhysicsModel->getProperty(
                     "SpecificVolume", specificVolume, subchannelArgMap );
                 output_face = 1.0 / specificVolume[0];
-            }
-            else if ( d_outputVar->getName() == "Temperature" ) {
+            } else if ( d_outputVar->getName() == "Temperature" ) {
                 std::vector<double> temperature( 1 );
                 d_subchannelPhysicsModel->getProperty(
                     "Temperature", temperature, subchannelArgMap );
                 output_face = temperature[0];
-            }
-            else {
+            } else {
                 AMP_ERROR( "Unknown output property" );
             }
             // Add it to the subchannel density vector
@@ -109,7 +108,8 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
     AMP::LinearAlgebra::VS_Comm commSelector( d_comm );
     AMP::LinearAlgebra::Vector::shared_ptr outputVec =
         r->select( commSelector, u->getVariable()->getName() );
-    if ( outputVec != NULL ) outputVec = outputVec->subsetVectorForVariable( getOutputVariable() );
+    if ( outputVec != NULL )
+        outputVec = outputVec->subsetVectorForVariable( getOutputVariable() );
     std::vector<double> localOutput( d_point_x.size(), 0.0 );
     if ( d_subchannel_x.size() > 1 && d_subchannel_y.size() > 1 ) {
         for ( size_t i     = 0; i < d_point_x.size(); i++ )
@@ -120,18 +120,15 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
                                                         d_point_x[i],
                                                         d_point_y[i],
                                                         d_point_z[i] );
-    }
-    else if ( d_subchannel_x.size() > 1 ) {
+    } else if ( d_subchannel_x.size() > 1 ) {
         for ( size_t i     = 0; i < d_point_x.size(); i++ )
             localOutput[i] = AMP::Utilities::bilinear(
                 d_subchannel_x, d_subchannel_z, output, d_point_x[i], d_point_z[i] );
-    }
-    else if ( d_subchannel_y.size() > 1 ) {
+    } else if ( d_subchannel_y.size() > 1 ) {
         for ( size_t i     = 0; i < d_point_x.size(); i++ )
             localOutput[i] = AMP::Utilities::bilinear(
                 d_subchannel_y, d_subchannel_z, output, d_point_y[i], d_point_z[i] );
-    }
-    else {
+    } else {
         for ( size_t i     = 0; i < d_point_x.size(); i++ )
             localOutput[i] = AMP::Utilities::linear( d_subchannel_z, output, d_point_z[i] );
     }
@@ -139,10 +136,12 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
         AMP_ASSERT( outputVec != NULL );
         AMP_ASSERT( outputVec->getLocalSize() == d_point_x.size() );
         std::vector<size_t> dofs( d_point_x.size() );
-        for ( size_t i = 0; i < d_point_x.size(); i++ ) dofs[i] = i;
+        for ( size_t i = 0; i < d_point_x.size(); i++ )
+            dofs[i]    = i;
         outputVec->setValuesByLocalID( dofs.size(), &dofs[0], &localOutput[0] );
     }
-    if ( outputVec ) outputVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    if ( outputVec )
+        outputVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     PROFILE_STOP( "apply" );
 }
 
@@ -171,9 +170,11 @@ void SubchannelToPointMap::createGrid()
     d_subchannel_x.resize( Nx );
     d_subchannel_y.resize( Ny );
     d_subchannel_z = z;
-    for ( size_t i = 0; i < Nx; i++ ) d_subchannel_x[i] = 0.5 * ( x[i + 1] + x[i] );
-    for ( size_t i = 0; i < Ny; i++ ) d_subchannel_y[i] = 0.5 * ( y[i + 1] + y[i] );
-    N_subchannels                                       = Nx * Ny;
+    for ( size_t i        = 0; i < Nx; i++ )
+        d_subchannel_x[i] = 0.5 * ( x[i + 1] + x[i] );
+    for ( size_t i        = 0; i < Ny; i++ )
+        d_subchannel_y[i] = 0.5 * ( y[i + 1] + y[i] );
+    N_subchannels         = Nx * Ny;
     PROFILE_STOP( "createGrid" );
 }
 }

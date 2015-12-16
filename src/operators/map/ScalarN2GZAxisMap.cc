@@ -73,7 +73,8 @@ ScalarN2GZAxisMap::~ScalarN2GZAxisMap() {}
 ************************************************************************/
 bool ScalarN2GZAxisMap::validMapType( const std::string &t )
 {
-    if ( t == "ScalarN2GZAxis" ) return true;
+    if ( t == "ScalarN2GZAxis" )
+        return true;
     return false;
 }
 
@@ -89,7 +90,8 @@ ScalarN2GZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
                              const AMP::Mesh::Mesh::shared_ptr,
                              const AMP::Mesh::MeshIterator &iterator )
 {
-    if ( iterator.size() == 0 ) return std::multimap<double, double>();
+    if ( iterator.size() == 0 )
+        return std::multimap<double, double>();
     PROFILE_START( "buildMap" );
     std::multimap<double, double> map;
     AMP::Discretization::DOFManager::shared_ptr dof = vec->getDOFManager();
@@ -118,9 +120,12 @@ ScalarN2GZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
 AMP::LinearAlgebra::Vector::const_shared_ptr
 ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator &iterator )
 {
-    if ( iterator.size() == 0 ) return AMP::LinearAlgebra::Vector::const_shared_ptr();
-    if ( iterator == d_dstIterator1 && d_z_coord1.get() != NULL ) return d_z_coord1;
-    if ( iterator == d_dstIterator2 && d_z_coord2.get() != NULL ) return d_z_coord2;
+    if ( iterator.size() == 0 )
+        return AMP::LinearAlgebra::Vector::const_shared_ptr();
+    if ( iterator == d_dstIterator1 && d_z_coord1.get() != NULL )
+        return d_z_coord1;
+    if ( iterator == d_dstIterator2 && d_z_coord2.get() != NULL )
+        return d_z_coord2;
     PROFILE_START( "getGaussPoints" );
     AMP::Discretization::DOFManager::shared_ptr GpDofMap =
         AMP::Discretization::simpleDOFManager::create( iterator, 4 );
@@ -162,7 +167,8 @@ void ScalarN2GZAxisMap::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                      const AMP::Mesh::MeshIterator &iterator,
                                      const std::map<double, double> &map )
 {
-    if ( iterator.size() == 0 ) return;
+    if ( iterator.size() == 0 )
+        return;
     PROFILE_START( "buildReturn" );
     const double TOL = 1e-8;
 
@@ -174,9 +180,10 @@ void ScalarN2GZAxisMap::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec,
         z[i] = it_map->first;
         f[i] = it_map->second;
     }
-    for ( size_t i = 1; i < z.size(); i++ ) AMP_ASSERT( z[i] > ( z[i - 1] + TOL ) );
-    double z0      = z[0];
-    double z1      = z[z.size() - 1];
+    for ( size_t i = 1; i < z.size(); i++ )
+        AMP_ASSERT( z[i] > ( z[i - 1] + TOL ) );
+    double z0 = z[0];
+    double z1 = z[z.size() - 1];
 
     // Get the coordinates of the gauss points
     AMP::LinearAlgebra::Vector::const_shared_ptr z_pos = getGaussPoints( iterator );

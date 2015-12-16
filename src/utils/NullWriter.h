@@ -13,7 +13,8 @@ namespace Utilities {
  * \brief A class used to abstract away reading/writing files for visualization
  * \details  This class provides default routines that do nothing.
  */
-class NullWriter : public AMP::Utilities::Writer {
+class NullWriter : public AMP::Utilities::Writer
+{
 public:
     //!  Default constructor
     NullWriter() {}

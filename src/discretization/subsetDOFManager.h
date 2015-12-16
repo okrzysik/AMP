@@ -18,7 +18,8 @@ namespace Discretization {
  * \details  This derived class impliments a concrete DOF_Manager for maintaining
  *   a subset of a DOFManager.
  */
-class subsetDOFManager : public DOFManager {
+class subsetDOFManager : public DOFManager
+{
 public:
     using DOFManager::getDOFs;
     using DOFManager::subset;

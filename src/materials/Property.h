@@ -33,7 +33,8 @@ namespace Materials {
  * provide both scalar and tensor
  */
 template <class Number>
-class Property {
+class Property
+{
 public:
     /**
      * Constructor
@@ -63,7 +64,8 @@ public:
           d_variableNumberParameters( false )
     {
         if ( args != nullptr ) {
-            for ( size_t i = 0; i < d_n_arguments; i++ ) d_arguments[i] = args[i];
+            for ( size_t i     = 0; i < d_n_arguments; i++ )
+                d_arguments[i] = args[i];
         }
         for ( size_t i = 0; i < d_n_arguments; i++ ) {
             d_argToIndexMap.insert( std::pair<std::string, size_t>( d_arguments[i], i ) );
@@ -122,8 +124,9 @@ public:
         AMP_INSIST( d_variableNumberParameters,
                     "changing number of parameters for this property not allowed" );
         d_params.resize( nparams );
-        for ( size_t i = 0; i < nparams; i++ ) d_params[i] = params[i];
-        d_nparams                                          = nparams;
+        for ( size_t i  = 0; i < nparams; i++ )
+            d_params[i] = params[i];
+        d_nparams       = nparams;
     }
 
     /** return the names of the arguments to eval */
@@ -149,7 +152,8 @@ public:
     bool is_argument( const std::string &argname )
     {
         std::map<std::string, size_t>::iterator it = d_argToIndexMap.find( argname );
-        if ( it == d_argToIndexMap.end() ) return false;
+        if ( it == d_argToIndexMap.end() )
+            return false;
         return true;
     }
 

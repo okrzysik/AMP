@@ -115,10 +115,10 @@ void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_
             bool slash_found = false;
             while ( ( !slash_found ) && ( pos >= 0 ) ) {
                 if ( path_buf[pos] == '/' || path_buf[pos] == 92 ) {
-                    slash_found                   = true;
-                    if ( pos >= 0 ) path_buf[pos] = '\0';
-                }
-                else
+                    slash_found = true;
+                    if ( pos >= 0 )
+                        path_buf[pos] = '\0';
+                } else
                     pos--;
             }
         }
@@ -200,8 +200,7 @@ std::string Utilities::intToString( int num, int min_width )
     std::ostringstream os;
     if ( num < 0 ) {
         os << '-' << std::setw( tmp_width - 1 ) << std::setfill( '0' ) << -num;
-    }
-    else {
+    } else {
         os << std::setw( tmp_width ) << std::setfill( '0' ) << num;
     }
     os << std::flush;
@@ -234,15 +233,15 @@ void Utilities::abort( const std::string &message, const std::string &filename, 
         printf( "Bytes used = %llu\n", N_bytes );
         std::vector<std::string> stack = getCallStack();
         printf( "Stack Trace:\n" );
-        for ( size_t i = 0; i < stack.size(); i++ ) printf( "   %s\n", stack[i].c_str() );
+        for ( size_t i = 0; i < stack.size(); i++ )
+            printf( "   %s\n", stack[i].c_str() );
         printf( "\n" );
         // Log the abort message
         Logger::getInstance()->logAbort( message, filename, line );
         // Use MPI_abort (will terminate all processes)
         AMP_MPI comm = AMP_MPI( AMP_COMM_WORLD );
         comm.abort();
-    }
-    else {
+    } else {
         // Throw and standard exception (allows the use of try, catch)
         // std::stringstream  stream;
         // stream << message << std::endl << "  " << filename << ":  " << line;
@@ -286,7 +285,8 @@ size_t Utilities::getSystemMemory()
     u_int namelen = sizeof( mib ) / sizeof( mib[0] );
     uint64_t size;
     size_t len = sizeof( size );
-    if ( sysctl( mib, namelen, &size, &len, NULL, 0 ) == 0 ) N_bytes = size;
+    if ( sysctl( mib, namelen, &size, &len, NULL, 0 ) == 0 )
+        N_bytes = size;
 #elif defined( USE_WINDOWS )
     MEMORYSTATUSEX status;
     status.dwLength = sizeof( status );
@@ -357,20 +357,24 @@ std::vector<std::string> Utilities::getCallStack()
     int trace_size  = backtrace( trace, 100 );
     char **names    = backtrace_symbols( trace, 100 );
     for ( int i = 0; i < trace_size; ++i ) {
-        if ( !dladdr( trace[i], &dlinfo ) ) continue;
+        if ( !dladdr( trace[i], &dlinfo ) )
+            continue;
         symname = dlinfo.dli_sname;
 #if defined( USE_ABI )
-        int status                              = 0;
-        demangled                               = abi::__cxa_demangle( symname, NULL, 0, &status );
-        if ( status == 0 && demangled ) symname = demangled;
+        int status = 0;
+        demangled  = abi::__cxa_demangle( symname, NULL, 0, &status );
+        if ( status == 0 && demangled )
+            symname = demangled;
 #endif
-        std::string object              = std::string( dlinfo.dli_fname );
-        std::string function            = "";
-        if ( symname != NULL ) function = std::string( symname );
+        std::string object   = std::string( dlinfo.dli_fname );
+        std::string function = "";
+        if ( symname != NULL )
+            function = std::string( symname );
         // Create the stack item
         object                 = remove_path( object );
         std::string stack_item = print_address( trace[i] ) + ":   " + object + ":   ";
-        while ( stack_item.size() < 40 ) stack_item.push_back( ' ' );
+        while ( stack_item.size() < 40 )
+            stack_item.push_back( ' ' );
         stack_item += function;
         stack_list.push_back( stack_item );
         if ( demangled != NULL ) {
@@ -435,17 +439,21 @@ std::vector<std::string> Utilities::getCallStack()
                                  &::SymFunctionTableAccess64,
                                  &::SymGetModuleBase64,
                                  NULL );
-        if ( !rtn ) break;
-        if ( lFrameStack.AddrPC.Offset == 0 ) break;
+        if ( !rtn )
+            break;
+        if ( lFrameStack.AddrPC.Offset == 0 )
+            break;
         ::MEMORY_BASIC_INFORMATION lInfoMemory;
         ::VirtualQuery( (::PVOID) lFrameStack.AddrPC.Offset, &lInfoMemory, sizeof( lInfoMemory ) );
-        if ( lInfoMemory.Type == MEM_PRIVATE ) continue;
+        if ( lInfoMemory.Type == MEM_PRIVATE )
+            continue;
         ::DWORD64 lBaseAllocation = reinterpret_cast<::DWORD64>( lInfoMemory.AllocationBase );
         ::TCHAR lNameModule[1024];
         ::HMODULE hBaseAllocation = reinterpret_cast<::HMODULE>( lBaseAllocation );
         ::GetModuleFileName( hBaseAllocation, lNameModule, 1024 );
         PIMAGE_DOS_HEADER lHeaderDOS = reinterpret_cast<PIMAGE_DOS_HEADER>( lBaseAllocation );
-        if ( lHeaderDOS == NULL ) continue;
+        if ( lHeaderDOS == NULL )
+            continue;
         PIMAGE_NT_HEADERS lHeaderNT =
             reinterpret_cast<PIMAGE_NT_HEADERS>( lBaseAllocation + lHeaderDOS->e_lfanew );
         PIMAGE_SECTION_HEADER lHeaderSection = IMAGE_FIRST_SECTION( lHeaderNT );
@@ -490,7 +498,8 @@ int Utilities::get_symbols( std::vector<void *> &address,
     char *buf = new char[0x100000];
     try {
         int len = ::readlink( "/proc/self/exe", buf, 900 );
-        if ( len == -1 ) return -2;
+        if ( len == -1 )
+            return -2;
         buf[len] = '\0';
         char cmd[1024];
         sprintf( cmd, "nm --demangle --numeric-sort %s", buf );
@@ -500,7 +509,8 @@ int Utilities::get_symbols( std::vector<void *> &address,
             return -2;
         }
         while ( fgets( buf, 0xFFFFF, in ) != NULL ) {
-            if ( buf[0] == ' ' || buf == NULL ) continue;
+            if ( buf[0] == ' ' || buf == NULL )
+                continue;
             char *a = buf;
             char *b = strchr( a, ' ' );
             if ( b == NULL ) {
@@ -524,8 +534,7 @@ int Utilities::get_symbols( std::vector<void *> &address,
             obj.push_back( std::string( c ) );
         }
         pclose( in );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         delete[] buf;
         return -3;
     }
@@ -568,7 +577,8 @@ double Utilities::tick()
     timeval start, end;
     gettimeofday( &start, NULL );
     gettimeofday( &end, NULL );
-    while ( end.tv_sec == start.tv_sec && end.tv_usec == start.tv_usec ) gettimeofday( &end, NULL );
+    while ( end.tv_sec == start.tv_sec && end.tv_usec == start.tv_usec )
+        gettimeofday( &end, NULL );
     double resolution = ( (double) ( end.tv_sec - start.tv_sec ) ) +
                         1e-6 * ( (double) ( end.tv_usec - start.tv_usec ) );
     return resolution;
@@ -631,13 +641,15 @@ void Utilities::printBanner()
 // Factor a number into it's prime factors
 std::vector<int> Utilities::factor( size_t number )
 {
-    if ( number <= 3 ) return std::vector<int>( 1, (int) number );
+    if ( number <= 3 )
+        return std::vector<int>( 1, (int) number );
     size_t i, n, n_max;
     bool factor_found;
     // Compute the maximum number of factors
     int N_primes_max = 1;
     n                = number;
-    while ( n >>= 1 ) ++N_primes_max;
+    while ( n >>= 1 )
+        ++N_primes_max;
     // Initialize n, factors
     n = number;
     std::vector<int> factors;
@@ -665,7 +677,8 @@ std::vector<int> Utilities::factor( size_t number )
                 break;
             }
         }
-        if ( factor_found ) continue;
+        if ( factor_found )
+            continue;
         // No factors were found, the number must be prime
         factors.push_back( (int) n );
         break;

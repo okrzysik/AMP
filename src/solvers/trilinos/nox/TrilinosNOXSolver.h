@@ -22,7 +22,8 @@ namespace Solver {
   * The TrilinosNOXSolver is a wrapper to the PETSc SNES solver which provides an implementation
   * of the inexact Newton method.
   */
-class TrilinosNOXSolver : public SolverStrategy {
+class TrilinosNOXSolver : public SolverStrategy
+{
 public:
     /**
      * default constructor, sets default values for member variables

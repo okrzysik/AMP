@@ -20,7 +20,8 @@ namespace Operator {
   This class only deals with the volume integration, the boundary conditions are
   handled separately by the boundary operators.
   */
-class NonlinearFEOperator : public Operator {
+class NonlinearFEOperator : public Operator
+{
 public:
     //! Constructor. This copies the share pointer to the element operation from the input parameter
     //! object.

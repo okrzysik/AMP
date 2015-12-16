@@ -18,14 +18,16 @@ namespace {
 unsigned N_copies( const int increment = 0 )
 {
     static unsigned copies( 0 );
-    if ( copies + increment < 0 ) AMP_ERROR( "Internal error" );
+    if ( copies + increment < 0 )
+        AMP_ERROR( "Internal error" );
     copies += increment;
     return copies;
 }
 AMP_MPI &d_comm( const AMP_MPI c = AMP_COMM_NULL )
 {
     static AMP_MPI comm( AMP_COMM_NULL );
-    if ( c != AMP_COMM_NULL ) comm = c;
+    if ( c != AMP_COMM_NULL )
+        comm = c;
     return comm;
 }
 }
@@ -40,13 +42,11 @@ initializeSTKMesh::initializeSTKMesh( AMP_MPI comm )
         if ( canBeInitialized( comm ) ) {
             // Add 1 to the count and return
             N_copies( 1 );
-        }
-        else {
+        } else {
             // We can't initialize STKmesh
             AMP_ERROR( "STKmesh was previously initialized with a different (incompatible) comm" );
         }
-    }
-    else {
+    } else {
         // STKmesh is not initialized
         // Use a barrier to ensure all processors are at the same point
         N_copies( 1 );

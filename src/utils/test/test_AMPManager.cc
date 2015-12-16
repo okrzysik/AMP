@@ -17,7 +17,8 @@ int main( int argc, char *argv[] )
     int procMax = -1;
     if ( argc > 1 ) {
         procMax = atoi( argv[1] );
-        if ( procMax <= 0 ) return -1;
+        if ( procMax <= 0 )
+            return -1;
     }
 
     // Create the comm used to initialize AMP
@@ -50,37 +51,36 @@ int main( int argc, char *argv[] )
             AMP_ERROR( "AMP did not initialize on a sub-communicator" );
         // Introduce a memory leak to catch in valgrind later
         double *x = new double[100];
-        if ( x == NULL ) AMP_ERROR( "error" );
+        if ( x == NULL )
+            AMP_ERROR( "error" );
         // Test the abort
         try {
             AMP_ERROR( "Catch this 1" );
             std::cout << "Failed to catch AMP_ERROR\n";
             return -1;
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             // This is correct
         }
         try {
             AMP::AMPManager::terminate_AMP( "Catch this 2" );
             std::cout << "Failed to catch terminate_AMP\n";
             return -1;
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             // This is correct
         }
     }
 
     // Shutdown
     AMP::AMPManager::shutdown();
-    if ( procMax > 0 ) MPI_Comm_free( &AMP_comm );
+    if ( procMax > 0 )
+        MPI_Comm_free( &AMP_comm );
 
     // Test a reinitialization of AMP
     try {
         AMP::AMPManager::startup( argc, argv, startup_properties );
         AMP_ERROR( "Catch this" );
         return -1;
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         // This is correct
     }
 

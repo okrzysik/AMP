@@ -23,8 +23,10 @@ AsyncMapOperator::AsyncMapOperator( const AMP::shared_ptr<OperatorParameters> &p
                 "Somebody must own mesh 2" );
     // Create a multimesh to use for the operator base class for subsetting
     std::vector<AMP::Mesh::Mesh::shared_ptr> meshes;
-    if ( d_mesh1.get() != NULL ) meshes.push_back( d_mesh1 );
-    if ( d_mesh2.get() != NULL ) meshes.push_back( d_mesh2 );
+    if ( d_mesh1.get() != NULL )
+        meshes.push_back( d_mesh1 );
+    if ( d_mesh2.get() != NULL )
+        meshes.push_back( d_mesh2 );
     d_Mesh = AMP::shared_ptr<AMP::Mesh::MultiMesh>( new AMP::Mesh::MultiMesh( d_MapComm, meshes ) );
     // Get the input variable
     bool var  = params->d_db->keyExists( "VariableName" );
@@ -39,8 +41,7 @@ AsyncMapOperator::AsyncMapOperator( const AMP::shared_ptr<OperatorParameters> &p
             new AMP::LinearAlgebra::Variable( variableName ) );
         d_outVariable = AMP::LinearAlgebra::Variable::shared_ptr(
             new AMP::LinearAlgebra::Variable( variableName ) );
-    }
-    else {
+    } else {
         AMP_INSIST( var1 && var2, "Both VariableName1 and VariableName2 must be used" );
         std::string variableName1 = params->d_db->getString( "VariableName1" );
         std::string variableName2 = params->d_db->getString( "VariableName2" );
@@ -75,11 +76,9 @@ AMP::Mesh::Mesh::shared_ptr AsyncMapOperator::getMesh( int which )
 {
     if ( which == 1 ) {
         return d_mesh1;
-    }
-    else if ( which == 2 ) {
+    } else if ( which == 2 ) {
         return d_mesh2;
-    }
-    else {
+    } else {
         AMP_ERROR( "Wrong option!" );
         return AMP::Mesh::Mesh::shared_ptr();
     }

@@ -20,7 +20,8 @@ ElasticDamageThermalStrainModel::ElasticDamageThermalStrainModel(
     d_Is_Source = ( params->d_db )->getBoolWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
 
     for ( size_t i = 0; i < 6; i++ ) {
-        for ( size_t j = 0; j < 6; j++ ) d_constitutiveMatrix[i][j] = 0.;
+        for ( size_t j                 = 0; j < 6; j++ )
+            d_constitutiveMatrix[i][j] = 0.;
     }
 
     if ( d_useMaterialsLibrary == false ) {
@@ -129,8 +130,7 @@ void ElasticDamageThermalStrainModel::nonlinearInitGaussPointOperation( double t
         d_E.push_back( default_E );
         d_Nu.push_back( default_Nu );
         d_alpha.push_back( default_alpha );
-    }
-    else {
+    } else {
         d_E.push_back( 0.0 );
         d_Nu.push_back( 0.0 );
         d_alpha.push_back( 0.0 );
@@ -375,22 +375,19 @@ void ElasticDamageThermalStrainModel::computeEvalv( const std::vector<std::vecto
 
         if ( strain[Mechanics::TEMPERATURE].empty() ) {
             tempVec->push_back( default_TEMPERATURE );
-        }
-        else {
+        } else {
             ( *tempVec ) = strain[Mechanics::TEMPERATURE];
         }
 
         if ( strain[Mechanics::BURNUP].empty() ) {
             burnupVec->push_back( default_BURNUP );
-        }
-        else {
+        } else {
             ( *burnupVec ) = strain[Mechanics::BURNUP];
         }
 
         if ( strain[Mechanics::OXYGEN_CONCENTRATION].empty() ) {
             oxygenVec->push_back( default_OXYGEN_CONCENTRATION );
-        }
-        else {
+        } else {
             ( *oxygenVec ) = strain[Mechanics::OXYGEN_CONCENTRATION];
         }
 
@@ -410,8 +407,7 @@ void ElasticDamageThermalStrainModel::computeEvalv( const std::vector<std::vecto
         d_material->property( prString )->evalv( PR, inputMaterialParameters );
         if ( d_checkCladOrPellet == false ) {
             d_material->property( tecString )->evalv( TEC, inputMaterialParameters );
-        }
-        else {
+        } else {
             d_material->property( tecStringAxial )->evalv( TEC, inputMaterialParameters );
             d_material->property( tecString )->evalv( TEC_2, inputMaterialParameters );
         }
@@ -425,8 +421,7 @@ void ElasticDamageThermalStrainModel::computeEvalv( const std::vector<std::vecto
         d_Nu[d_gaussPtCnt] = PR[0];
         if ( d_checkCladOrPellet == false ) {
             d_alpha[d_gaussPtCnt] = ( TEC[0] + TEC_1[0] ) / 2.0;
-        }
-        else {
+        } else {
             d_tmp1ThermalStrain_Axial[d_gaussPtCnt]  = TEC[0];
             d_tmp1ThermalStrain_Radial[d_gaussPtCnt] = TEC_2[0];
         }
@@ -484,8 +479,7 @@ void ElasticDamageThermalStrainModel::Thermal_Strain_Gauss_Point(
             thermal_expansion_coefficient * ( Temperature_np1 - Temperature_n );
         delta_thermal_strain[2] +=
             thermal_expansion_coefficient * ( Temperature_np1 - Temperature_n );
-    }
-    else {
+    } else {
         if ( d_useMaterialsLibrary == true ) {
             delta_thermal_strain[0] += ( d_tmp1ThermalStrain_Radial[d_gaussPtCnt] -
                                          d_EquilibriumThermalStrain_Radial[d_gaussPtCnt] );
@@ -521,8 +515,7 @@ void ElasticDamageThermalStrainModel::Thermal_Strain_Gauss_Point(
                 d_constitutiveMatrix[i][j] = d_initialConstitutiveMatrix[i][j];
             }
         }
-    }
-    else {
+    } else {
         d_tmp1DamageThreshold[d_gaussPtCnt] = d_tmp1Tau[d_gaussPtCnt];
         d_tmp1Damage[d_gaussPtCnt]          = d_EquilibriumDamage[d_gaussPtCnt] +
                                      ( d_tmp1Tau[d_gaussPtCnt] - d_EquilibriumTau[d_gaussPtCnt] );
@@ -545,8 +538,7 @@ void ElasticDamageThermalStrainModel::Thermal_Strain_Gauss_Point(
         for ( int i = 0; i < 6; i++ ) {
             stre_np1[i] = delta_thermal_stress[i];
         }
-    }
-    else {
+    } else {
         for ( int i = 0; i < 6; i++ ) {
             for ( int j = 0; j < 6; j++ ) {
                 delta_thermal_stress[i] += d_constitutiveMatrix[i][j] *

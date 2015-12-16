@@ -42,10 +42,18 @@ DataTransferKit::EntityType AMPMeshEntityImpl::entityType() const
     DataTransferKit::EntityType entity_type;
     Mesh::GeomType geom_type = d_extra_data->d_element.elementType();
     switch ( geom_type ) {
-    case Mesh::Vertex: entity_type = DataTransferKit::ENTITY_TYPE_NODE; break;
-    case Mesh::Edge: entity_type   = DataTransferKit::ENTITY_TYPE_EDGE; break;
-    case Mesh::Face: entity_type   = DataTransferKit::ENTITY_TYPE_FACE; break;
-    case Mesh::Volume: entity_type = DataTransferKit::ENTITY_TYPE_VOLUME; break;
+    case Mesh::Vertex:
+        entity_type = DataTransferKit::ENTITY_TYPE_NODE;
+        break;
+    case Mesh::Edge:
+        entity_type = DataTransferKit::ENTITY_TYPE_EDGE;
+        break;
+    case Mesh::Face:
+        entity_type = DataTransferKit::ENTITY_TYPE_FACE;
+        break;
+    case Mesh::Volume:
+        entity_type = DataTransferKit::ENTITY_TYPE_VOLUME;
+        break;
     default:
         AMP_INSIST( geom_type == Mesh::Vertex || geom_type == Mesh::Edge ||
                         geom_type == Mesh::Face || geom_type == Mesh::Volume,

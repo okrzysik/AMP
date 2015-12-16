@@ -118,10 +118,12 @@ void linearTest1( AMP::UnitTest *ut, std::string exeName )
             std::cout << "{";
             for ( size_t j = 0; j < matCols.size(); j++ ) {
                 std::cout << matCols[j];
-                if ( j < matCols.size() - 1 ) std::cout << ",";
+                if ( j < matCols.size() - 1 )
+                    std::cout << ",";
             }
             std::cout << "}";
-            if ( i < matdim - 1 ) std::cout << ",";
+            if ( i < matdim - 1 )
+                std::cout << ",";
             std::cout << std::endl;
         }
         std::cout << "};" << std::endl;
@@ -141,16 +143,19 @@ void linearTest1( AMP::UnitTest *ut, std::string exeName )
                     col++;
                 }
                 std::cout << matVals[j];
-                if ( matCols[j] < matdim - 1 ) std::cout << ",";
+                if ( matCols[j] < matdim - 1 )
+                    std::cout << ",";
                 col++;
             } // end for j
             while ( col < matdim ) {
                 std::cout << "0";
-                if ( col < matdim - 1 ) std::cout << ",";
+                if ( col < matdim - 1 )
+                    std::cout << ",";
                 col++;
             }
             std::cout << "}";
-            if ( i < matdim - 1 ) std::cout << "," << std::endl;
+            if ( i < matdim - 1 )
+                std::cout << "," << std::endl;
         } // end for i
 
         std::cout << "};" << std::endl;
@@ -309,12 +314,10 @@ int main( int argc, char *argv[] )
         for ( int i = 0; i < NUMFILES; i++ ) {
             linearTest1( &ut, files[i] );
         }
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

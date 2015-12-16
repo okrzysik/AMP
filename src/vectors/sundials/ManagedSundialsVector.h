@@ -26,7 +26,8 @@ namespace LinearAlgebra {
  */
 typedef ManagedVectorParameters ManagedSundialsVectorParameters;
 
-class ManagedSundialsVector : public ManagedVector, public SundialsVector {
+class ManagedSundialsVector : public ManagedVector, public SundialsVector
+{
 
 public:
     /** \brief Construct a ManagedSundialsVector from a set of parameters

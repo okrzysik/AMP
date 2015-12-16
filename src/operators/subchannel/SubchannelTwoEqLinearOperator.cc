@@ -94,7 +94,8 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
                                          d_rodFraction );
     AMP_ASSERT( d_channelArea.size() == d_numSubchannels );
     double total_area = 0.0;
-    for ( size_t i = 0; i < d_numSubchannels; i++ ) total_area += d_channelArea[i];
+    for ( size_t i = 0; i < d_numSubchannels; i++ )
+        total_area += d_channelArea[i];
     d_channelMass.resize( d_numSubchannels, 0.0 );
     for ( size_t i       = 0; i < d_numSubchannels; i++ )
         d_channelMass[i] = d_mass * d_channelArea[i] / total_area;
@@ -108,8 +109,7 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
     // get additional parameters based on friction model
     if ( d_frictionModel == "Constant" ) {
         d_friction = getDoubleParameter( myparams, "Friction_Factor", 0.001 );
-    }
-    else if ( d_frictionModel == "Selander" ) {
+    } else if ( d_frictionModel == "Selander" ) {
         d_roughness = getDoubleParameter( myparams, "Surface_Roughness", 0.0015e-3 );
     }
 
@@ -146,7 +146,8 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
     d_subchannelFace = std::vector<std::vector<AMP::Mesh::MeshElement>>(
         d_numSubchannels, std::vector<AMP::Mesh::MeshElement>( 0 ) );
     for ( size_t i = 0; i < d_numSubchannels; i++ ) {
-        if ( !d_ownSubChannel[i] ) continue;
+        if ( !d_ownSubChannel[i] )
+            continue;
         AMP::Mesh::MeshIterator localSubchannelIt =
             AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
         AMP::Mesh::Mesh::shared_ptr localSubchannel = d_Mesh->Subset( localSubchannelIt, false );
@@ -182,7 +183,8 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
     const double P_scale =
         1.0 / Subchannel::scalePressure; // Scale to change the input vector back to correct units
     for ( size_t isub = 0; isub < d_numSubchannels; ++isub ) {
-        if ( !d_ownSubChannel[isub] ) continue;
+        if ( !d_ownSubChannel[isub] )
+            continue;
 
         // Get the iterator over the faces in the local subchannel
         AMP::Mesh::MeshIterator localSubchannelIt =
@@ -209,8 +211,7 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
                 double p_in = P_scale * d_frozenVec->getValueByGlobalID( dofs[1] );
                 d_matrix->setValueByGlobalID( dofs[0], dofs[0], 1.0 );
                 d_matrix->setValueByGlobalID( dofs[0], dofs[1], -1.0 * dhdp( d_Tin, p_in ) );
-            }
-            else {
+            } else {
                 // residual at face corresponds to cell below
                 double z_plus = ( face->centroid() )[2];
                 --face;
@@ -239,8 +240,7 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
             if ( face == end_face - 1 ) {
                 dofMap->getDOFs( face->globalID(), dofs );
                 d_matrix->setValueByGlobalID( dofs[1], dofs[1], 1.0 );
-            }
-            else {
+            } else {
                 ++face;
                 dofMap->getDOFs( face->globalID(), dofs_plus );
                 std::vector<double> plusFaceCentroid = face->centroid();
@@ -310,27 +310,21 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
                         double overlap = 0.0;
                         if ( zMin_grid >= z_plus ) {
                             overlap = 0.0;
-                        }
-                        else if ( zMin_grid > z_minus && zMin_grid < z_plus ) {
+                        } else if ( zMin_grid > z_minus && zMin_grid < z_plus ) {
                             overlap = z_plus - zMin_grid;
-                        }
-                        else if ( zMin_grid <= z_minus ) {
+                        } else if ( zMin_grid <= z_minus ) {
                             overlap = z_plus - z_minus;
-                        }
-                        else {
+                        } else {
                             AMP_ERROR( "Unexpected position comparison for zMin_grid" );
                         }
                         K += overlap * K_perLength;
-                    }
-                    else if ( zMax_grid < z_plus && zMax_grid > z_minus ) {
+                    } else if ( zMax_grid < z_plus && zMax_grid > z_minus ) {
                         double overlap = 0.0;
                         if ( zMin_grid > z_minus ) {
                             overlap = zMax_grid - zMin_grid;
-                        }
-                        else if ( zMin_grid <= z_minus ) {
+                        } else if ( zMin_grid <= z_minus ) {
                             overlap = zMax_grid - z_minus;
-                        }
-                        else {
+                        } else {
                             AMP_ERROR( "Unexpected position comparison for zMin_grid" );
                         }
                         K += overlap * K_perLength;
@@ -388,8 +382,7 @@ double SubchannelTwoEqLinearOperator::getDoubleParameter(
     bool keyExists = ( myparams->d_db )->keyExists( paramString );
     if ( keyExists ) {
         return ( myparams->d_db )->getDouble( paramString );
-    }
-    else {
+    } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
                      << defaultValue
                      << "\n" );
@@ -406,8 +399,7 @@ int SubchannelTwoEqLinearOperator::getIntegerParameter(
     bool keyExists = ( myparams->d_db )->keyExists( paramString );
     if ( keyExists ) {
         return ( myparams->d_db )->getInteger( paramString );
-    }
-    else {
+    } else {
         AMP::pout << "Key '" + paramString + "' was not provided. Using default value: "
                   << defaultValue << "\n";
         return defaultValue;
@@ -423,8 +415,7 @@ std::string SubchannelTwoEqLinearOperator::getStringParameter(
     bool keyExists = ( myparams->d_db )->keyExists( paramString );
     if ( keyExists ) {
         return ( myparams->d_db )->getString( paramString );
-    }
-    else {
+    } else {
         AMP::pout << "Key '" + paramString + "' was not provided. Using default value: "
                   << defaultValue << "\n";
         return defaultValue;
@@ -555,7 +546,8 @@ double SubchannelTwoEqLinearOperator::friction(
     double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D )
 {
 
-    if ( d_frictionModel == "Constant" ) return d_friction;
+    if ( d_frictionModel == "Constant" )
+        return d_friction;
 
     std::stringstream ss;
     ss << "Dynamic viscosity calculation may be incorrect" << std::endl
@@ -630,20 +622,16 @@ double SubchannelTwoEqLinearOperator::friction(
     if ( d_frictionModel == "Blasius" ) {
         ft     = 0.316 * std::pow( Re, -0.25 );
         ft4000 = 0.316 * std::pow( 4000.0, -0.25 );
-    }
-    else if ( d_frictionModel == "Drew" ) {
+    } else if ( d_frictionModel == "Drew" ) {
         ft     = 0.0056 + 0.5 * std::pow( Re, -0.32 );
         ft4000 = 0.0056 + 0.5 * std::pow( 4000.0, -0.32 );
-    }
-    else if ( d_frictionModel == "Filonenko" ) {
+    } else if ( d_frictionModel == "Filonenko" ) {
         ft     = std::pow( 1.82 * std::log( Re ) - 1.64, -2 );
         ft4000 = std::pow( 1.82 * std::log( 4000.0 ) - 1.64, -2 );
-    }
-    else if ( d_frictionModel == "Selander" ) {
+    } else if ( d_frictionModel == "Selander" ) {
         ft     = 4.0 * std::pow( 3.8 * std::log( 10.0 / Re + 0.2 * d_roughness / D ), -2 );
         ft4000 = 4.0 * std::pow( 3.8 * std::log( 10.0 / 4000.0 + 0.2 * d_roughness / D ), -2 );
-    }
-    else {
+    } else {
         AMP_ERROR( "Invalid choice for Friction_Model." );
     }
     if ( Re < 4000.0 )

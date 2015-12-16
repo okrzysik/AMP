@@ -15,7 +15,8 @@
 // Define the material
 namespace AMP {
 namespace Materials {
-class FixedClad : public Material {
+class FixedClad : public Material
+{
 public:
     FixedClad();
 };

@@ -9,7 +9,8 @@ namespace Operator {
 /** \brief  A column operator of asynchronous operators.  The apply method will start the list
     of operators then finalize the list of operators
     */
-class AsynchronousColumnOperator : public ColumnOperator {
+class AsynchronousColumnOperator : public ColumnOperator
+{
 public:
     /** Constructor
       */

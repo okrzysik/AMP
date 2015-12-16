@@ -8,7 +8,8 @@ namespace AMP {
 
 
 //! Parameters used to instantiate a pseudorandom number generator
-class RNGParameters {
+class RNGParameters
+{
 public:
     /**\brief Flag to let the RNG know if you want to provide a seed or use a global seed
      */
@@ -46,7 +47,8 @@ public:
  * DOES NOT GENERATE STREAMS OF SUFFICIENT INDEPENDENCE FOR USE WITH SIMULATION.  USE
  * A DERIVED CLASS FOR BEST RESULTS.
  */
-class RNG {
+class RNG
+{
 protected:
     /**\brief  Constant used in the generation of random doubles
      */
@@ -127,7 +129,8 @@ public:
   \endcode
   */
 template <typename T>
-class RandomVariable {
+class RandomVariable
+{
 public:
     /**\brief Typedef of the type of the random variable
       */
@@ -156,7 +159,8 @@ public:
   * \see RandomVariable
   */
 template <>
-class RandomVariable<double> {
+class RandomVariable<double>
+{
 public:
     typedef double type;
 
@@ -174,7 +178,8 @@ public:
   * \see RandomVariable
   */
 template <>
-class RandomVariable<float> {
+class RandomVariable<float>
+{
 public:
     typedef float type;
 

@@ -160,7 +160,8 @@ void nekPipeOperator( AMP::UnitTest *ut )
     for ( myIter = r_gp->begin(); myIter != r_gp->end(); ++myIter ) {
         // AMP::pout << "GP Vector Element " << ctr << " is " << *myIter << std::endl;
 
-        if ( *myIter != 0.0 ) nonZero = true;
+        if ( *myIter != 0.0 )
+            nonZero = true;
 
         ctr++;
     }
@@ -173,7 +174,8 @@ void nekPipeOperator( AMP::UnitTest *ut )
     ctr     = 0;
     nonZero = false;
     for ( myIter = r_node->begin(); myIter != r_node->end(); ++myIter ) {
-        if ( *myIter != 0.0 ) nonZero = true;
+        if ( *myIter != 0.0 )
+            nonZero = true;
 
         ctr++;
     }
@@ -201,7 +203,8 @@ void nekPipeOperator( AMP::UnitTest *ut )
     ut->passes( "Nek was not used." );
 #endif
 
-    if ( ut->NumPassGlobal() == 0 ) ut->failure( "if it doesn't pass, it must have failed." );
+    if ( ut->NumPassGlobal() == 0 )
+        ut->failure( "if it doesn't pass, it must have failed." );
 }
 
 
@@ -213,12 +216,10 @@ int main( int argc, char *argv[] )
     try {
         nekPipeOperator( &ut );
         ut.passes( "Nek ran pipe to completion." );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

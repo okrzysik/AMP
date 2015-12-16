@@ -305,8 +305,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
                     slaveMeshAdapter, "SlaveBVPOperator", input_db, slaveElementPhysicsModel ) );
             columnOperator->append( slaveBVPOperator );
             slaveSolverParams->d_pOperator = slaveBVPOperator;
-        }
-        else {
+        } else {
             AMP::shared_ptr<AMP::Operator::MechanicsLinearFEOperator>
                 slaveMechanicsLinearFEOperator =
                     AMP::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
@@ -426,8 +425,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         linearSolver->setInitialGuess( columnSolVec );
 
         linearSolver->solve( columnRhsVec, columnSolVec );
-    }
-    else {
+    } else {
         size_t myPCGmaxIters = input_db->getInteger( "myPCGmaxIters" );
         double myPCGrelTol   = input_db->getDouble( "myPCGrelTol" );
         double myPCGabsTol   = input_db->getDouble( "myPCGabsTol" );
@@ -557,8 +555,7 @@ void myTest2( AMP::UnitTest *ut, std::string exeName )
         masterOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "FusedMeshBVPOperator", input_db, masterElementPhysicsModel ) );
-    }
-    else {
+    } else {
         masterOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "MasterBVPOperator", input_db, masterElementPhysicsModel ) );
@@ -595,8 +592,7 @@ void myTest2( AMP::UnitTest *ut, std::string exeName )
 
     if ( useSlaveBVPOperator ) {
         masterOperator->modifyRHSvector( columnRhsVec );
-    }
-    else {
+    } else {
         slaveLoadOperator->apply( nullVec, nullVec, columnRhsVec, 1.0, 0.0 );
     }
 
@@ -627,8 +623,7 @@ void myTest2( AMP::UnitTest *ut, std::string exeName )
         linearSolver->setZeroInitialGuess( true );
 
         linearSolver->solve( columnRhsVec, columnSolVec );
-    }
-    else {
+    } else {
         size_t myPCGmaxIters = input_db->getInteger( "myPCGmaxIters" );
         double myPCGrelTol   = input_db->getDouble( "myPCGrelTol" );
         double myPCGabsTol   = input_db->getDouble( "myPCGabsTol" );
@@ -662,12 +657,10 @@ int main( int argc, char *argv[] )
             myTest( &ut, exeNames[i] );
             myTest2( &ut, exeNames[i] );
         } // end for
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

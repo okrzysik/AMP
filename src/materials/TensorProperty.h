@@ -7,7 +7,8 @@ namespace AMP {
 namespace Materials {
 
 template <class Number>
-class TensorProperty : public Property<Number> {
+class TensorProperty : public Property<Number>
+{
 public:
     /**
      * Constructor

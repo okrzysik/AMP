@@ -43,7 +43,8 @@ namespace LinearAlgebra {
   *  use to any but Backplane developers.  Also, since PetscVector
   *  is almost trivial, so is the parameters class.
   */
-class PetscVectorParameters {
+class PetscVectorParameters
+{
 };
 
 
@@ -72,7 +73,8 @@ class PetscVectorParameters {
   *  to create the PETSc Vec if it doesn't already exist, give or take some edge cases.
   */
 
-class PetscVector : public DataChangeListener {
+class PetscVector : public DataChangeListener
+{
 private:
     PetscRandom *d_PetscRandom;
 

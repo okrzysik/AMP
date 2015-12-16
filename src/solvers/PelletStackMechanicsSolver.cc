@@ -38,8 +38,7 @@ void PelletStackMechanicsSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra
     }
     if ( d_pelletStackOp->useSerial() ) {
         solveSerial( fInternal, u );
-    }
-    else {
+    } else {
         solveScan( fInternal, u );
     }
 }
@@ -97,8 +96,7 @@ void PelletStackMechanicsSolver::solveScan( AMP::shared_ptr<const AMP::LinearAlg
     if ( d_pelletStackOp->onlyZcorrection() ) {
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         d_pelletStackOp->apply( nullVec, u );
-    }
-    else {
+    } else {
         if ( d_fbuffer2 == NULL ) {
             d_fbuffer2 = f->cloneVector();
         }

@@ -9,7 +9,8 @@ namespace AMP {
 namespace Mesh {
 
 
-class STKMeshIterator : public MeshIterator {
+class STKMeshIterator : public MeshIterator
+{
 public:
     typedef AMP::shared_ptr<std::vector<stk::mesh::Entity *>> MeshPtr;
 

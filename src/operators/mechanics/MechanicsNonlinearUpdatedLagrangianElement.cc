@@ -282,29 +282,25 @@ void MechanicsNonlinearUpdatedLagrangianElement::initMaterialModel(
 
                     if ( i == j ) {
                         d_leftStretchV_n.push_back( 1.0 );
-                    }
-                    else {
+                    } else {
                         d_leftStretchV_n.push_back( 0.0 );
                     }
 
                     if ( i == j ) {
                         d_leftStretchV_np1.push_back( 1.0 );
-                    }
-                    else {
+                    } else {
                         d_leftStretchV_np1.push_back( 0.0 );
                     }
 
                     if ( i == j ) {
                         d_rotationR_n.push_back( 1.0 );
-                    }
-                    else {
+                    } else {
                         d_rotationR_n.push_back( 0.0 );
                     }
 
                     if ( i == j ) {
                         d_rotationR_np1.push_back( 1.0 );
-                    }
-                    else {
+                    } else {
                         d_rotationR_np1.push_back( 0.0 );
                     }
                 }
@@ -466,8 +462,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
                 // polarDecomposeRU(F_np1, R_np1, U_np1);
                 polarDecompositionFeqRU_Simo( F_np1o2, R_np1o2, U_np1o2 );
                 // polarDecomposeRU(F_np1o2, R_np1o2, U_np1o2);
-            }
-            else {
+            } else {
                 // The Flanagan-Taylor element formulation is being implemented here.
                 double R_curr[3][3], V_curr[3][3], R_prev[3][3], V_prev[3][3];
                 double L_curr[3][3], D_curr[3][3], W_curr[3][3], Omega[3][3], tempMat[3][3],
@@ -541,10 +536,12 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
                 matInverse( tempMat, invTempMat );
 
                 matVecMultiply( invTempMat, z, tempVec );
-                for ( int i = 0; i < 3; i++ ) tempVec[i] = 1.0 * tempVec[i];
+                for ( int i    = 0; i < 3; i++ )
+                    tempVec[i] = 1.0 * tempVec[i];
 
                 vecVecAddition( w, tempVec, omega );
-                for ( int i = 0; i < 3; i++ ) omega[i] = 1.0 * omega[i];
+                for ( int i  = 0; i < 3; i++ )
+                    omega[i] = 1.0 * omega[i];
 
                 if ( d_iDebugPrintInfoLevel > 11 ) {
                     for ( int i = 0; i < 3; i++ ) {
@@ -588,10 +585,12 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
                 matMatMultiply( V_curr, Omega, VO );
 
                 for ( int i = 0; i < 3; i++ )
-                    for ( int j = 0; j < 3; j++ ) delta_V[i][j] = DpWV[i][j] - VO[i][j];
+                    for ( int j       = 0; j < 3; j++ )
+                        delta_V[i][j] = DpWV[i][j] - VO[i][j];
 
                 for ( int i = 0; i < 3; i++ )
-                    for ( int j = 0; j < 3; j++ ) V_curr[i][j] = V_prev[i][j] + delta_V[i][j];
+                    for ( int j      = 0; j < 3; j++ )
+                        V_curr[i][j] = V_prev[i][j] + delta_V[i][j];
 
                 for ( int i = 0; i < 3; i++ ) {
                     for ( int j = 0; j < 3; j++ ) {
@@ -824,8 +823,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
                 AMP::pout << "el_np1[4] = " << ( d_np1o2[0][2] + d_np1o2[2][0] ) << std::endl;
                 AMP::pout << "el_np1[5] = " << ( d_np1o2[0][1] + d_np1o2[1][0] ) << std::endl;
             }
-        }
-        else {
+        } else {
             d_materialModel->getInternalStress_UL(
                 fieldsAtGaussPt, currStress, spin_np1, Identity, detF );
             if ( d_iDebugPrintInfoLevel > 9 ) {
@@ -1313,8 +1311,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Reduced()
         /* Compute Stress Corresponding to Given Strain, Temperature, Burnup, ... */
         if ( d_useJaumannRate == false ) {
             d_materialModel->getInternalStress_UL( fieldsAtGaussPt, currStress, R_n, R_np1, detF );
-        }
-        else {
+        } else {
             d_materialModel->getInternalStress_UL(
                 fieldsAtGaussPt, currStress, spin_np1, Identity, detF );
         }

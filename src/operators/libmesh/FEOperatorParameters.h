@@ -14,7 +14,8 @@ namespace Operator {
  @see LinearFEOperator
  @see NonlinearFEOperator
  */
-class FEOperatorParameters : public OperatorParameters {
+class FEOperatorParameters : public OperatorParameters
+{
 public:
     /**
       Constructor.

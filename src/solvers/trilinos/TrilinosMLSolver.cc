@@ -144,8 +144,7 @@ void TrilinosMLSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Op
 
         d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(
             d_matrix->getEpetra_CrsMatrix(), d_MLParameterList, false ) );
-    }
-    else {
+    } else {
         AMP::shared_ptr<AMP::Operator::TrilinosMatrixShellOperator> matShellOperator =
             AMP::dynamic_pointer_cast<AMP::Operator::TrilinosMatrixShellOperator>( d_pOperator );
         AMP_ASSERT( matShellOperator.get() != NULL );
@@ -159,8 +158,7 @@ void TrilinosMLSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Op
                 d_ml, 0, &( AMP::Operator::TrilinosMatrixShellOperator::getRow ), NULL, matSize );
             ML_Set_Amatrix_Matvec(
                 d_ml, 0, &( AMP::Operator::TrilinosMatrixShellOperator::matVec ) );
-        }
-        else {
+        } else {
             AMP_ERROR( "The option, increasingordecreasing = \""
                        << ( d_mlOptions->d_increasingDecreasing )
                        << "\" , is not supported." );
@@ -219,8 +217,7 @@ void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> 
             if ( d_iDebugPrintInfoLevel > 2 ) {
                 d_mlSolver->PrintUnused();
             }
-        }
-        else {
+        } else {
             buildML();
         }
         d_bCreationPhase = false;
@@ -263,8 +260,7 @@ void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> 
                                   .getEpetra_Vector();
 
         d_mlSolver->ApplyInverse( fVec, uVec );
-    }
-    else {
+    } else {
         double *uArr = new double[u->getLocalSize()];
         double *fArr = new double[f->getLocalSize()];
         u->copyOutRawData( uArr );
@@ -370,8 +366,7 @@ void TrilinosMLSolver::buildML()
     ML_Aggregate_Set_MaxCoarseSize( d_mlAggregate, ( d_mlOptions->d_coarseMaxSize ) );
     if ( ( d_mlOptions->d_aggregationType ) == "Uncoupled-MIS" ) {
         ML_Aggregate_Set_CoarsenScheme_UncoupledMIS( d_mlAggregate );
-    }
-    else {
+    } else {
         AMP_ERROR( "The option, aggregationtype = \"" << ( d_mlOptions->d_aggregationType )
                                                       << "\" , is not supported." );
     }
@@ -387,47 +382,40 @@ void TrilinosMLSolver::buildML()
                                                 ML_PRESMOOTHER,
                                                 ( d_mlOptions->d_smootherSweeps ),
                                                 ( d_mlOptions->d_smootherDampingFactor ) );
-            }
-            else if ( ( d_mlOptions->d_prePost ) == "post" ) {
+            } else if ( ( d_mlOptions->d_prePost ) == "post" ) {
                 ML_Gen_Smoother_SymGaussSeidel( d_ml,
                                                 lev,
                                                 ML_POSTSMOOTHER,
                                                 ( d_mlOptions->d_smootherSweeps ),
                                                 ( d_mlOptions->d_smootherDampingFactor ) );
-            }
-            else if ( ( d_mlOptions->d_prePost ) == "both" ) {
+            } else if ( ( d_mlOptions->d_prePost ) == "both" ) {
                 ML_Gen_Smoother_SymGaussSeidel( d_ml,
                                                 lev,
                                                 ML_BOTH,
                                                 ( d_mlOptions->d_smootherSweeps ),
                                                 ( d_mlOptions->d_smootherDampingFactor ) );
-            }
-            else {
+            } else {
                 AMP_ERROR( "The option, smoother_preorpost = \"" << ( d_mlOptions->d_prePost )
                                                                  << "\" , is not supported." );
             }
         }
-    }
-    else {
+    } else {
         AMP_ERROR( "The option, smoothertype = \"" << ( d_mlOptions->d_smootherType )
                                                    << "\" , is not supported." );
     }
 
     if ( ( d_mlOptions->d_coarseType ) == "Amesos-KLU" ) {
         ML_Gen_Smoother_Amesos( d_ml, ( nlevels - 1 ), ML_AMESOS_KLU, -1, 0.0 );
-    }
-    else {
+    } else {
         AMP_ERROR( "The option, coarse_type = \"" << ( d_mlOptions->d_coarseType )
                                                   << "\" , is not supported." );
     }
 
     if ( ( d_mlOptions->d_precType ) == "MGV" ) {
         ML_Gen_Solver( d_ml, ML_MGV, 0, ( nlevels - 1 ) );
-    }
-    else if ( ( d_mlOptions->d_precType ) == "MGW" ) {
+    } else if ( ( d_mlOptions->d_precType ) == "MGW" ) {
         ML_Gen_Solver( d_ml, ML_MGW, 0, ( nlevels - 1 ) );
-    }
-    else {
+    } else {
         AMP_ERROR( "The option, prec_type = \"" << ( d_mlOptions->d_precType )
                                                 << "\" , is not supported." );
     }

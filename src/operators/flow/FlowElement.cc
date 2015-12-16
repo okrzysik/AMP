@@ -46,8 +46,7 @@ FlowElement::FlowElement( const AMP::shared_ptr<ElementOperationParameters> &par
 
     if ( qruleOrderName == "DEFAULT" ) {
         qruleOrder = d_feType->default_quadrature_order();
-    }
-    else {
+    } else {
         qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 

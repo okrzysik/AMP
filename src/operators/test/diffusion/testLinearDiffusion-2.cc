@@ -181,13 +181,13 @@ void linearTest( AMP::UnitTest *ut,
             double rval = diffResVec->getValueByLocalID( ii );
             double fval = function( x, y, z );
             file << "{" << x << "," << y << "," << z << "," << rval << "," << fval << "}";
-            if ( i < nnodes - 1 ) file << ",\n";
+            if ( i < nnodes - 1 )
+                file << ",\n";
             ++curNode;
         }
         if ( proc < nproc - 1 ) {
             file << ",\n";
-        }
-        else {
+        } else {
             file << "}\n";
         }
 
@@ -236,12 +236,10 @@ int main( int argc, char *argv[] )
         for ( int i = 0; i < NUMFILES; i++ ) {
             linearTest( &ut, files[i], x_linear );
         }
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

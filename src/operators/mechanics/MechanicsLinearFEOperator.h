@@ -24,7 +24,8 @@ namespace Operator {
   solid body. This class only deals with the volume integration,
   the boundary conditions are handled separately by the boundary operators.
   */
-class MechanicsLinearFEOperator : public LinearFEOperator {
+class MechanicsLinearFEOperator : public LinearFEOperator
+{
 public:
     /**
       Constructor. This allocates memory for the stiffness matrix. This also computes the entries of

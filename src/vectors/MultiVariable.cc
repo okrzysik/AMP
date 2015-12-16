@@ -8,7 +8,8 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-class MVSortByName {
+class MVSortByName
+{
 private:
     std::map<std::string, int> new_order;
 
@@ -66,8 +67,7 @@ void MultiVariable::add( Variable::shared_ptr newVar )
             add( *curVar );
             ++curVar;
         }
-    }
-    else {
+    } else {
         d_vVariables.push_back( newVar );
     }
 }
@@ -92,16 +92,19 @@ bool MultiVariable::operator==( const Variable &rhs ) const
         // We are comparing a multi variable to another variable
         // The two variables match if the variable equals all sub-variable and
         // the names match
-        if ( rhs.getName() != this->getName() ) return false;
+        if ( rhs.getName() != this->getName() )
+            return false;
         for ( size_t i = 0; i != d_vVariables.size(); i++ ) {
-            if ( *d_vVariables[i] != rhs ) return false;
+            if ( *d_vVariables[i] != rhs )
+                return false;
         }
-    }
-    else {
+    } else {
         // We are dealing with two multivariables, check that the internal variables match
         for ( size_t i = 0; i != d_vVariables.size(); i++ ) {
-            if ( i == multivariable->d_vVariables.size() ) return false;
-            if ( ( *d_vVariables[i] ) != ( *( multivariable->d_vVariables[i] ) ) ) return false;
+            if ( i == multivariable->d_vVariables.size() )
+                return false;
+            if ( ( *d_vVariables[i] ) != ( *( multivariable->d_vVariables[i] ) ) )
+                return false;
         }
     }
     return true;
@@ -135,9 +138,11 @@ void MultiVariable::removeDuplicateVariables()
     for ( size_t i = 0; i < d_vVariables.size(); i++ ) {
         bool found = false;
         for ( size_t j = 0; j < unique_list.size(); j++ ) {
-            if ( d_vVariables[i]->operator==( *( unique_list[j] ) ) ) found = true;
+            if ( d_vVariables[i]->operator==( *( unique_list[j] ) ) )
+                found = true;
         }
-        if ( !found ) unique_list.push_back( d_vVariables[i] );
+        if ( !found )
+            unique_list.push_back( d_vVariables[i] );
     }
     d_vVariables = unique_list;
 }

@@ -181,31 +181,33 @@ bool STKMeshIterator::operator==( const MeshIterator &rhs ) const
     if ( typeid( rhs ) == typeid( STKMeshIterator ) ) {
         rhs2 = dynamic_cast<const STKMeshIterator *>(
             &rhs ); // We can safely cast rhs to a STKMeshIterator
-    }
-    else if ( tmp->typeID == STKMeshIteratorTypeID() ) {
+    } else if ( tmp->typeID == STKMeshIteratorTypeID() ) {
         rhs2 = static_cast<const STKMeshIterator *>(
             &rhs ); // We can safely cast rhs.iterator to a STKMeshIterator
-    }
-    else if ( tmp->iterator->type_id() == STKMeshIteratorTypeID() ) {
+    } else if ( tmp->iterator->type_id() == STKMeshIteratorTypeID() ) {
         rhs2 = static_cast<const STKMeshIterator *>( tmp->iterator );
     }
     // Perform direct comparisions if we are dealing with two STKMeshIterators
-    if ( rhs2 != NULL ) return ( d_pos == rhs2->d_pos );
+    if ( rhs2 != NULL )
+        return ( d_pos == rhs2->d_pos );
 
     /* We are comparing a STKMeshIterator to an arbitrary iterator
      * The iterators are the same if they point to the same position and iterate
      * over the same elements in the same order
      */
     // Check the size
-    if ( this->size() != rhs.size() ) return false;
+    if ( this->size() != rhs.size() )
+        return false;
     // Check the current position
-    if ( this->position() != rhs.position() ) return false;
+    if ( this->position() != rhs.position() )
+        return false;
     // Check that the elements match
     MeshIterator iterator1 = this->begin();
     MeshIterator iterator2 = rhs.begin();
     bool elements_match    = true;
     for ( size_t i = 0; i < this->size(); i++ ) {
-        if ( iterator1->globalID() != iterator2->globalID() ) elements_match = false;
+        if ( iterator1->globalID() != iterator2->globalID() )
+            elements_match = false;
         ++iterator1;
         ++iterator2;
     }

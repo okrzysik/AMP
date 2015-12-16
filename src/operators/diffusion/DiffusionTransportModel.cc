@@ -110,8 +110,7 @@ DiffusionTransportModel::DiffusionTransportModel(
         if ( d_property->variable_number_parameters() ) {
             d_property->set_parameters_and_number( &d_MaterialParameters[0],
                                                    d_MaterialParameters.size() );
-        }
-        else {
+        } else {
             AMP_INSIST( nparams == ndefparams,
                         "attempted to set incorrect number of parameters for this property" );
             d_property->set_parameters( &d_MaterialParameters[0], d_MaterialParameters.size() );
@@ -179,7 +178,8 @@ void DiffusionTransportModel::getTransport(
             ( *args[d_BilogVariable] )[i] = scaled[i];
         }
 
-        if ( d_BilogScaleCoefficient ) bilogScale( result, lower, upper );
+        if ( d_BilogScaleCoefficient )
+            bilogScale( result, lower, upper );
     }
     PROFILE_STOP( "getTransport", 7 );
 }

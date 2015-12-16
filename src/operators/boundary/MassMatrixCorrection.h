@@ -20,7 +20,8 @@ typedef DirichletMatrixCorrectionParameters MassMatrixCorrectionParameters;
   DirichletMatrixCorrection. A feature to handle nonhomogeneous boundary condition needs to be
   implemented soon.
  */
-class MassMatrixCorrection : public BoundaryOperator {
+class MassMatrixCorrection : public BoundaryOperator
+{
 public:
     //! Constructor
     explicit MassMatrixCorrection( const AMP::shared_ptr<MassMatrixCorrectionParameters> &params )

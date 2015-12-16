@@ -43,7 +43,8 @@ namespace LinearAlgebra {
       vec2.copyVector( vec3 );
     \endcode
   */
-class SubsetVector : public Vector {
+class SubsetVector : public Vector
+{
 
 public:
     static Vector::shared_ptr view( Vector::shared_ptr, Variable::shared_ptr );

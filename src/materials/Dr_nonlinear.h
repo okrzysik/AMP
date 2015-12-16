@@ -8,7 +8,8 @@
 // Define the material
 namespace AMP {
 namespace Materials {
-class Dr_nonlinear : public Material {
+class Dr_nonlinear : public Material
+{
 public:
     Dr_nonlinear();
 };

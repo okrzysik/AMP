@@ -51,7 +51,8 @@ typedef AMP::LinearAlgebra::Vector AMPVec;
 typedef AMP::LinearAlgebra::Vector::shared_ptr SP_AMPVec;
 
 
-class MoabDummyOperator : public MoabBasedOp {
+class MoabDummyOperator : public MoabBasedOp
+{
 public:
     explicit MoabDummyOperator( SP_MoabOpParams &moabParams ) : MoabBasedOp( moabParams )
     {
@@ -242,7 +243,8 @@ void moabInterface( AMP::UnitTest *ut )
     int ctr      = 0;
     bool nonZero = false;
     for ( myIter = nodalVec->begin(); myIter != nodalVec->end(); ++myIter ) {
-        if ( *myIter != 0.0 ) nonZero = true;
+        if ( *myIter != 0.0 )
+            nonZero = true;
 
         ctr++;
     }
@@ -263,7 +265,8 @@ void moabInterface( AMP::UnitTest *ut )
     for ( size_t meshIndex = 0; meshIndex < meshIDs.size(); meshIndex++ ) {
         // this is an accessor to all the mesh info.
         AMP::Mesh::Mesh::shared_ptr currentMesh = mesh->Subset( meshIDs[meshIndex] );
-        if ( currentMesh.get() == NULL ) continue;
+        if ( currentMesh.get() == NULL )
+            continue;
 
         std::string meshCoords   = "Mesh_Coords";
         SP_AMPVec thisMeshCoords = currentMesh->getPositionVector( meshCoords );
@@ -304,7 +307,8 @@ void moabInterface( AMP::UnitTest *ut )
     siloWriter->writeFile( "Moab_Temp", 0 );
 #endif
 
-    if ( ut->NumPassGlobal() == 0 ) ut->failure( "if it doesn't pass, it must have failed." );
+    if ( ut->NumPassGlobal() == 0 )
+        ut->failure( "if it doesn't pass, it must have failed." );
 }
 
 
@@ -316,12 +320,10 @@ int main( int argc, char *argv[] )
     try {
         moabInterface( &ut );
         ut.passes( "Moab interface used correctly." );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

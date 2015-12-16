@@ -299,8 +299,7 @@ int main( int argc, char **argv )
         // Elem zone 5: mi = me
         if ( li < le ) {
             fprintf( fp, "%d, ", uniqueNodeId[4][li][me][ne] );
-        }
-        else {
+        } else {
             fprintf( fp, "%d ", uniqueNodeId[4][li][me][ne] );
         }
     } // end for li
@@ -325,8 +324,7 @@ int main( int argc, char **argv )
         // Elem zone 7: mi = me
         if ( li < le ) {
             fprintf( fp, "%d, ", uniqueNodeId[6][li][ne][me] );
-        }
-        else {
+        } else {
             fprintf( fp, "%d ", uniqueNodeId[6][li][ne][me] );
         }
     } // end for li

@@ -19,7 +19,8 @@ namespace Operator {
   the composite Operator operator.
   @see ColumnOperator
   */
-class CoupledChannelToCladMapOperatorParameters : public OperatorParameters {
+class CoupledChannelToCladMapOperatorParameters : public OperatorParameters
+{
 public:
     explicit CoupledChannelToCladMapOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
         : OperatorParameters( db )

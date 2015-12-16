@@ -50,7 +50,8 @@ namespace TimeIntegrator {
   @see SolverStrategy
   @see TimeOperatorParameters
 */
-class TimeOperator : public AMP::Operator::Operator {
+class TimeOperator : public AMP::Operator::Operator
+{
 public:
     /**
      * Main constructor meant for use by users.

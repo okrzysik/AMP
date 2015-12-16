@@ -33,20 +33,16 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
     std::vector<std::string> properties;
     if ( formulation == std::string( "OneEqnForwardSubstitution" ) ) {
         AMP_ERROR( "The formulation ''OneEqnForwardSubstitution'' has not yet been implemented" );
-    }
-    else if ( formulation == std::string( "TwoEqnPicardIteration" ) ) {
+    } else if ( formulation == std::string( "TwoEqnPicardIteration" ) ) {
         properties.push_back( "Enthalpy" );
-    }
-    else if ( formulation == std::string( "TwoEqnJFNKPressure" ) ) {
+    } else if ( formulation == std::string( "TwoEqnJFNKPressure" ) ) {
         properties.push_back( "Enthalpy" );
         properties.push_back( "SpecificVolume" );
-    }
-    else if ( formulation == std::string( "TwoEqnJFNKDensity" ) ) {
+    } else if ( formulation == std::string( "TwoEqnJFNKDensity" ) ) {
         properties.push_back( "Enthalpy" );
         properties.push_back( "Pressure" );
         AMP_ERROR( "The formulation ''TwoEqnJFNKDensity'' has not yet been implemented" );
-    }
-    else if ( formulation == std::string( "FunctionsTesting" ) ) {
+    } else if ( formulation == std::string( "FunctionsTesting" ) ) {
         properties.push_back( "Temperature" );
         properties.push_back( "SaturatedLiquidEnthalpy" );
         properties.push_back( "SpecificVolume" );
@@ -54,8 +50,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
         properties.push_back( "ConvectiveHeat" );
         properties.push_back( "DynamicViscosity" );
         properties.push_back( "Enthalpy" );
-    }
-    else {
+    } else {
         AMP_ERROR( "Invalid Formulation key" );
     }
     // add properties to property pointer map
@@ -95,7 +90,8 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
                 std::vector<std::string>::iterator hit =
                     std::find( argnames.begin(), argnames.end(), *key );
                 // if found, report it as being found
-                if ( hit != argnames.end() ) defaults_found.find( *key )->second = true;
+                if ( hit != argnames.end() )
+                    defaults_found.find( *key )->second = true;
             }
         }
         // generate error if a Defaults key was not found in any property arguments
@@ -138,8 +134,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
                     AMP_INSIST( property->in_range( argnames[i], prop_defaults[i] ),
                                 std::string( "Default for argument " ) + argnames[i] +
                                     std::string( " is out of range" ) );
-                }
-                else {
+                } else {
                     AMP_WARNING( "Default value for key ''" + argnames[i] +
                                      "'' was not found in SubchannelPhysicsModel database. " +
                                      "Default value set to "
@@ -149,8 +144,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
             // set the defaults
             property->set_defaults( prop_defaults );
         }
-    }
-    else {
+    } else {
         AMP_ERROR( "Defaults database was not supplied in input database" );
     }
 }

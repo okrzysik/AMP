@@ -28,7 +28,8 @@ typedef ManagedVectorParameters ManagedThyraVectorParameters;
   *
   * \see EpetraVector
   */
-class ManagedThyraVector : public ManagedVector, public ThyraVector {
+class ManagedThyraVector : public ManagedVector, public ThyraVector
+{
 public:
     /** \brief Create a ManagedThyraVector from a set of parameters
       * \param[in] params  A VectorParameters class used to construct this vector

@@ -14,7 +14,8 @@ namespace LinearAlgebra {
   * \details  This is a concrete class that stores a dense local matrix.
   *    This is not a distributed matrix and requires that the comm is AMP_COMM_SELF.
   */
-class DenseSerialMatrix : public Matrix {
+class DenseSerialMatrix : public Matrix
+{
 public:
     /** \brief Constructor
       * \param[in] params  Description of the matrix

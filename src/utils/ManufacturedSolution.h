@@ -38,7 +38,8 @@ namespace AMP {
  * quarter-shell
  * are suspect.
  */
-class ManufacturedSolution {
+class ManufacturedSolution
+{
 public:
     explicit ManufacturedSolution( AMP::shared_ptr<Database> db );
 

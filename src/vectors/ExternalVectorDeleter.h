@@ -12,7 +12,8 @@ class Vector;
   * of a Vector without the shared pointer having control over memory management.
   * This class provides this functionality
   */
-class ExternalVectorDeleter {
+class ExternalVectorDeleter
+{
 public:
     /** \brief Empty delete method
       * \param[in] v  Vector not to delete

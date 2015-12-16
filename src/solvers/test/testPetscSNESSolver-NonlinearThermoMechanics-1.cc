@@ -296,8 +296,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     if ( finalResidualNorm > initialResidualNorm * 1.0e-10 + 1.0e-05 ) {
         ut->failure( "Error" );
-    }
-    else {
+    } else {
         ut->passes( "PetscSNES Solver successfully solves a nonlinear thermo-mechanics equation "
                     "with JFNK, FGMRES for "
                     "Krylov, block diagonal preconditioning with ML solvers" );
@@ -320,12 +319,10 @@ int main( int argc, char *argv[] )
     for ( unsigned int i = 0; i < exeNames.size(); i++ ) {
         try {
             myTest( &ut, exeNames[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing" );

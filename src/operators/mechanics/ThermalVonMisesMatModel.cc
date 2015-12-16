@@ -57,7 +57,8 @@ ThermalVonMisesMatModel::ThermalVonMisesMatModel(
     d_Is_Init_Called = false;
 
     for ( size_t i = 0; i < 6; i++ ) {
-        for ( size_t j = 0; j < 6; j++ ) d_constitutiveMatrix[i][j] = 0.;
+        for ( size_t j                 = 0; j < 6; j++ )
+            d_constitutiveMatrix[i][j] = 0.;
     }
     d_gaussPtCnt                 = 0;
     Total_Gauss_Point            = 0;
@@ -109,8 +110,7 @@ void ThermalVonMisesMatModel::nonlinearInitGaussPointOperation( double tempAtGau
         d_E.push_back( default_E );
         d_Nu.push_back( default_Nu );
         d_alpha.push_back( default_alpha );
-    }
-    else {
+    } else {
         d_E.push_back( 0.0 );
         d_Nu.push_back( 0.0 );
         d_alpha.push_back( 0.0 );
@@ -314,22 +314,19 @@ void ThermalVonMisesMatModel::computeEvalv( const std::vector<std::vector<double
 
         if ( strain[Mechanics::TEMPERATURE].empty() ) {
             tempVec->push_back( default_TEMPERATURE );
-        }
-        else {
+        } else {
             ( *tempVec ) = strain[Mechanics::TEMPERATURE];
         }
 
         if ( strain[Mechanics::BURNUP].empty() ) {
             burnupVec->push_back( default_BURNUP );
-        }
-        else {
+        } else {
             ( *burnupVec ) = strain[Mechanics::BURNUP];
         }
 
         if ( strain[Mechanics::OXYGEN_CONCENTRATION].empty() ) {
             oxygenVec->push_back( default_OXYGEN_CONCENTRATION );
-        }
-        else {
+        } else {
             ( *oxygenVec ) = strain[Mechanics::OXYGEN_CONCENTRATION];
         }
 
@@ -378,8 +375,7 @@ void ThermalVonMisesMatModel::getConstitutiveMatrix( double *&constitutiveMatrix
     if ( d_jacobianReusesRadialReturn ) {
         stre_np1  = &( d_tmp1Stress[6 * d_gaussPtCnt] );
         ystre_np1 = d_tmp1YieldStress[d_gaussPtCnt];
-    }
-    else {
+    } else {
         stre_np1  = &( d_tmp2Stress[6 * d_gaussPtCnt] );
         ystre_np1 = d_tmp2YieldStress[d_gaussPtCnt];
     }

@@ -318,7 +318,8 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
             meshAdapter->getIterator( AMP::Mesh::Vertex, zeroGhostWidth );
         iterator        = iterator.begin();
         size_t numNodes = 0;
-        for ( ; iterator != iterator.end(); iterator++ ) numNodes++;
+        for ( ; iterator != iterator.end(); iterator++ )
+            numNodes++;
         results.resize( numNodes );
 
         iterator     = iterator.begin();
@@ -333,8 +334,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
 
     if ( finalResidualNorm > 1.0e-08 ) {
         ut->failure( exeName );
-    }
-    else {
+    } else {
         ut->passes( "PetscSNES Solver successfully solves a nonlinear mechanics equation with "
                     "Jacobian provided, "
                     "FGMRES for Krylov" );
@@ -353,12 +353,10 @@ int main( int argc, char *argv[] )
         fickSoretTest(
             &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-OxMSRZC09-1", results );
         ut.passes( "fick-soret quadratic external T" );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

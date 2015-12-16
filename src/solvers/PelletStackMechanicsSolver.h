@@ -11,7 +11,8 @@ namespace AMP {
 namespace Solver {
 
 
-class PelletStackMechanicsSolver : public SolverStrategy {
+class PelletStackMechanicsSolver : public SolverStrategy
+{
 public:
     explicit PelletStackMechanicsSolver(
         AMP::shared_ptr<PelletStackMechanicsSolverParameters> params );

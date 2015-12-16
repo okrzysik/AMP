@@ -12,7 +12,8 @@ namespace voodoo {
 
 
 template <class Object>
-class Singleton {
+class Singleton
+{
 public:
     static Object &instance()
     {

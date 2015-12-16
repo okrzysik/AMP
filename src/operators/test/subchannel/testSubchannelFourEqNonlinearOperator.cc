@@ -130,7 +130,8 @@ unsigned int getMATLABAxialIndex( AMP::Mesh::MeshElement gapFace )
             break;
         }
     }
-    if ( !foundIndex ) AMP_ERROR( "Axial index was not found for gap face" );
+    if ( !foundIndex )
+        AMP_ERROR( "Axial index was not found for gap face" );
 
     return j;
 }
@@ -235,8 +236,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
     if ( Ngaps ==
          108 ) { // for 3x3 subchannel array with 9 axial intervals, there are 12x9=108 gaps
         ut->passes( exeName + ": number of lateral gaps" );
-    }
-    else {
+    } else {
         std::cout << "Incorrent number of lateral gaps. Found: " << Ngaps << ". Expected: 108."
                   << std::endl;
         ut->failure( exeName + ": number of lateral gaps" );
@@ -278,7 +278,8 @@ void Test( AMP::UnitTest *ut, std::string exeName )
             }
         }
         // ensure that a valid axial index was found
-        if ( !found_axial_index ) AMP_ERROR( "A cell was not in center of any axial interval" );
+        if ( !found_axial_index )
+            AMP_ERROR( "A cell was not in center of any axial interval" );
     } // end for cell
 
     // get scale factors for axial mass flow rate, enthalpy, and pressure
@@ -969,12 +970,10 @@ int main( int argc, char *argv[] )
     for ( int i = 0; i < NUMFILES; i++ ) {
         try {
             Test( &ut, files[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing: " + files[i] );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing: " + files[i] );

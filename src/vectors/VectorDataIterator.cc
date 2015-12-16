@@ -42,8 +42,7 @@ VectorDataIterator::VectorDataIterator( Vector *p, size_t position )
             // We need to advance to the next data block
             d_position += d_Vec->sizeOfDataBlock( d_CurBlock );
             d_CurBlock++;
-        }
-        else {
+        } else {
             // We need to advance to the correct position within the current data block
             d_CurOffset = position - d_position;
             d_position += d_CurOffset;
@@ -98,8 +97,7 @@ ConstVectorDataIterator::ConstVectorDataIterator( const Vector *p, size_t positi
             // We need to advance to the next data block
             d_position += d_Vec->sizeOfDataBlock( d_CurBlock );
             d_CurBlock++;
-        }
-        else {
+        } else {
             // We need to advance to the correct position within the current data block
             d_CurOffset = position - d_position;
             d_position += d_CurOffset;
@@ -130,8 +128,7 @@ inline void VectorDataIterator::advance( size_t i )
                 d_Block        = d_Vec->getRawDataBlock<double>( d_CurBlock );
                 d_CurBlockSize = d_Vec->sizeOfDataBlock( d_CurBlock );
             }
-        }
-        else {
+        } else {
             // We need to advance to the correct position within the current data block
             d_position += togo;
             d_CurOffset += togo;
@@ -155,8 +152,7 @@ inline void ConstVectorDataIterator::advance( size_t i )
                 d_Block        = d_Vec->getRawDataBlock<double>( d_CurBlock );
                 d_CurBlockSize = d_Vec->sizeOfDataBlock( d_CurBlock );
             }
-        }
-        else {
+        } else {
             // We need to advance to the correct position within the current data block
             d_position += togo;
             d_CurOffset += togo;
@@ -177,8 +173,7 @@ inline void VectorDataIterator::recede( size_t i )
             d_Block        = d_Vec->getRawDataBlock<double>( d_CurBlock );
             d_CurBlockSize = d_Vec->sizeOfDataBlock( d_CurBlock );
             d_CurOffset    = d_CurBlockSize;
-        }
-        else {
+        } else {
             // We need to advance to the correct position within the current data block
             d_position -= togo;
             d_CurOffset -= togo;
@@ -199,8 +194,7 @@ inline void ConstVectorDataIterator::recede( size_t i )
             d_Block        = d_Vec->getRawDataBlock<double>( d_CurBlock );
             d_CurBlockSize = d_Vec->sizeOfDataBlock( d_CurBlock );
             d_CurOffset    = d_CurBlockSize;
-        }
-        else {
+        } else {
             // We need to advance to the correct position within the current data block
             d_position -= togo;
             d_CurOffset -= togo;
@@ -267,54 +261,70 @@ ConstVectorDataIterator ConstVectorDataIterator::operator--( int )
 }
 VectorDataIterator &VectorDataIterator::operator+=( int offset )
 {
-    if ( offset > 0 ) advance( offset );
-    if ( offset < 0 ) recede( -offset );
+    if ( offset > 0 )
+        advance( offset );
+    if ( offset < 0 )
+        recede( -offset );
     return *this;
 }
 ConstVectorDataIterator &ConstVectorDataIterator::operator+=( int offset )
 {
-    if ( offset > 0 ) advance( offset );
-    if ( offset < 0 ) recede( -offset );
+    if ( offset > 0 )
+        advance( offset );
+    if ( offset < 0 )
+        recede( -offset );
     return *this;
 }
 VectorDataIterator &VectorDataIterator::operator-=( int offset )
 {
-    if ( offset > 0 ) recede( offset );
-    if ( offset < 0 ) advance( -offset );
+    if ( offset > 0 )
+        recede( offset );
+    if ( offset < 0 )
+        advance( -offset );
     return *this;
 }
 ConstVectorDataIterator &ConstVectorDataIterator::operator-=( int offset )
 {
-    if ( offset > 0 ) recede( offset );
-    if ( offset < 0 ) advance( -offset );
+    if ( offset > 0 )
+        recede( offset );
+    if ( offset < 0 )
+        advance( -offset );
     return *this;
 }
 VectorDataIterator VectorDataIterator::operator+( int offset )
 {
     VectorDataIterator ans( *this );
-    if ( offset > 0 ) ans.advance( offset );
-    if ( offset < 0 ) ans.recede( -offset );
+    if ( offset > 0 )
+        ans.advance( offset );
+    if ( offset < 0 )
+        ans.recede( -offset );
     return ans;
 }
 ConstVectorDataIterator ConstVectorDataIterator::operator+( int offset )
 {
     ConstVectorDataIterator ans( *this );
-    if ( offset > 0 ) ans.advance( offset );
-    if ( offset < 0 ) ans.recede( -offset );
+    if ( offset > 0 )
+        ans.advance( offset );
+    if ( offset < 0 )
+        ans.recede( -offset );
     return ans;
 }
 VectorDataIterator VectorDataIterator::operator-( int offset )
 {
     VectorDataIterator ans( *this );
-    if ( offset > 0 ) ans.recede( offset );
-    if ( offset < 0 ) ans.advance( -offset );
+    if ( offset > 0 )
+        ans.recede( offset );
+    if ( offset < 0 )
+        ans.advance( -offset );
     return ans;
 }
 ConstVectorDataIterator ConstVectorDataIterator::operator-( int offset )
 {
     ConstVectorDataIterator ans( *this );
-    if ( offset > 0 ) ans.recede( offset );
-    if ( offset < 0 ) ans.advance( -offset );
+    if ( offset > 0 )
+        ans.recede( offset );
+    if ( offset < 0 )
+        ans.advance( -offset );
     return ans;
 }
 
@@ -359,15 +369,19 @@ bool ConstVectorDataIterator::operator!=( const ConstVectorDataIterator &rhs ) c
 double &VectorDataIterator::operator[]( int i )
 {
     VectorDataIterator tmp( *this ); // Create a temporary variable
-    if ( i > 0 ) tmp.advance( i );
-    if ( i < 0 ) tmp.recede( -i );
+    if ( i > 0 )
+        tmp.advance( i );
+    if ( i < 0 )
+        tmp.recede( -i );
     return tmp.d_Block[tmp.d_CurOffset];
 }
 const double &ConstVectorDataIterator::operator[]( int i )
 {
     ConstVectorDataIterator tmp( *this ); // Create a temporary variable
-    if ( i > 0 ) tmp.advance( i );
-    if ( i < 0 ) tmp.recede( -i );
+    if ( i > 0 )
+        tmp.advance( i );
+    if ( i < 0 )
+        tmp.recede( -i );
     return tmp.d_Block[tmp.d_CurOffset];
 }
 double &VectorDataIterator::operator*() { return d_Block[d_CurOffset]; }

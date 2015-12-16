@@ -10,7 +10,8 @@ namespace AMP {
 namespace unit_test {
 
 template <typename FACTORY>
-class PetscCloneFactory {
+class PetscCloneFactory
+{
 public:
     typedef AMP::LinearAlgebra::Vector vector;
 
@@ -36,7 +37,8 @@ public:
 };
 
 template <typename FACTORY>
-class PetscViewFactory {
+class PetscViewFactory
+{
 public:
     typedef AMP::LinearAlgebra::Vector vector;
 
@@ -62,7 +64,8 @@ public:
 };
 
 template <typename MANAGED_FACTORY>
-class SimplePetscVectorFactory {
+class SimplePetscVectorFactory
+{
 public:
     typedef AMP::LinearAlgebra::Vector vector;
 
@@ -98,7 +101,8 @@ public:
 template <typename T>
 class SimplePetscNativeFactory
     : public SimplePetscVectorFactory<
-          SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedPetscVector>> {
+          SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedPetscVector>>
+{
 public:
     typedef T vector;
 

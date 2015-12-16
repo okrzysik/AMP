@@ -44,7 +44,8 @@ namespace Solver {
  * methods. Currently
  * the wrapper has only been tested with the GMRES and FGMRES Krylov methods provided by PETSc.
  */
-class PetscKrylovSolver : public SolverStrategy {
+class PetscKrylovSolver : public SolverStrategy
+{
 public:
     /**
      * default constructor, currently only sets a boolean flag d_bKSPCreatedInternally = false

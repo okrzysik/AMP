@@ -18,7 +18,8 @@ namespace Solver {
   * The TrilinosLinearOP is a wrapper for a Thyra LinearOpBase to
   * wrap AMP::Operators or AMP::Solvers for use with Trilinos NOX solvers.
   */
-class TrilinosLinearOP : public Thyra::LinearOpBase<double> {
+class TrilinosLinearOP : public Thyra::LinearOpBase<double>
+{
 public:
     //! Constructor that wraps and AMP::Operator
     explicit TrilinosLinearOP( AMP::Operator::Operator::shared_ptr );

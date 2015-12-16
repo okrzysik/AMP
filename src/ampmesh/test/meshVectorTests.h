@@ -16,7 +16,8 @@ AMP::Mesh::Mesh::shared_ptr globalMeshForMeshVectorFactory = AMP::Mesh::Mesh::sh
 AMP::Discretization::DOFManager::shared_ptr globalDOFforMeshVectorFactory =
     AMP::shared_ptr<AMP::Discretization::DOFManager>();
 template <int SIZE, AMP::Mesh::GeomType TYPE, int GCW, bool SPLIT>
-class MeshVectorFactory {
+class MeshVectorFactory
+{
 public:
     typedef AMP::LinearAlgebra::Vector vector;
     static AMP::LinearAlgebra::Variable::shared_ptr getVariable()
@@ -24,8 +25,7 @@ public:
         if ( TYPE == AMP::Mesh::Vertex ) {
             return AMP::LinearAlgebra::Variable::shared_ptr(
                 new AMP::LinearAlgebra::Variable( "test vector" ) );
-        }
-        else {
+        } else {
             AMP_ERROR( "Unfinished" );
         }
         return AMP::LinearAlgebra::Variable::shared_ptr();
@@ -129,14 +129,12 @@ void VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh
                 utils );
             test_parallel_vectors_loop<
                 MeshVectorFactory<DOF_PER_NODE, AMP::Mesh::Vertex, 0, SPLIT>>( utils );
-        }
-        else if ( gcw == 1 ) {
+        } else if ( gcw == 1 ) {
             testManagedVector<MeshVectorFactory<DOF_PER_NODE, AMP::Mesh::Vertex, 1, SPLIT>>(
                 utils );
             test_parallel_vectors_loop<
                 MeshVectorFactory<DOF_PER_NODE, AMP::Mesh::Vertex, 1, SPLIT>>( utils );
-        }
-        else {
+        } else {
             AMP_ERROR( "Not finished" );
         }
         globalMeshForMeshVectorFactory.reset();

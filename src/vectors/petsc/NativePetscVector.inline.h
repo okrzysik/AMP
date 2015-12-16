@@ -15,8 +15,9 @@ inline NativePetscVectorParameters::NativePetscVectorParameters( Vec v, bool del
     d_InVec       = v;
     MPI_Comm comm = d_Comm.getCommunicator(); // Get a MPI_comm object from AMP_MPI to pass to PETSc
     PetscObjectGetComm( reinterpret_cast<PetscObject>( v ), &comm );
-    if ( comm != d_Comm.getCommunicator() ) d_Comm = AMP_MPI( comm );
-    d_Deleteable                                   = deleteable;
+    if ( comm != d_Comm.getCommunicator() )
+        d_Comm   = AMP_MPI( comm );
+    d_Deleteable = deleteable;
     int lsize;
     VecGetLocalSize( v, &lsize );
     d_localsize = (size_t) lsize;
@@ -28,7 +29,8 @@ inline size_t NativePetscVector::numberOfDataBlocks() const { return 1; }
 
 inline size_t NativePetscVector::sizeOfDataBlock( size_t i ) const
 {
-    if ( i != 0 ) return 0;
+    if ( i != 0 )
+        return 0;
     return getLocalSize();
 }
 
@@ -171,23 +173,19 @@ inline void NativePetscVector::axpbypcz( double alpha,
     if ( x != y && x != z && y != z ) {
         // We can safely perform  z = alpha x + beta y + gamma z
         VecAXPBYPCZ( z, alpha, beta, gamma, x, y );
-    }
-    else if ( x != y && x == z ) {
+    } else if ( x != y && x == z ) {
         // x==z:  z = (alpha+gamma)*z + beta*y
         double scale = alpha + gamma;
         VecAXPBY( z, beta, scale, y );
-    }
-    else if ( x != y && y == z ) {
+    } else if ( x != y && y == z ) {
         // y==z:  z = (beta+gamma)*z + alpha*x
         double scale = beta + gamma;
         VecAXPBY( z, alpha, scale, x );
-    }
-    else if ( x == y && x == z ) {
+    } else if ( x == y && x == z ) {
         // x==y==z:  z = (alpha+beta+gamma)*z
         double scale = alpha + beta + gamma;
         VecScale( z, scale );
-    }
-    else {
+    } else {
         AMP_ERROR( "Internal error\n" );
     }
 }
@@ -356,7 +354,8 @@ inline double NativePetscVector::localMaxNorm( void ) const
 inline void NativePetscVector::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
     INCREMENT_COUNT( "Virtual" );
-    for ( int i = 0; i != num; i++ ) getRawDataBlock<double>()[indices[i]] = vals[i];
+    for ( int i                               = 0; i != num; i++ )
+        getRawDataBlock<double>()[indices[i]] = vals[i];
 }
 
 
@@ -367,11 +366,11 @@ NativePetscVector::setLocalValuesByGlobalID( int num, size_t *indices, const dou
     resetArray();
     if ( sizeof( size_t ) == sizeof( PetscInt ) ) {
         VecSetValues( d_petscVec, num, (PetscInt *) indices, vals, INSERT_VALUES );
-    }
-    else {
+    } else {
         AMP_ASSERT( getGlobalSize() < 0x80000000 );
         std::vector<PetscInt> indices2( num, 0 );
-        for ( int i = 0; i < num; i++ ) indices2[i] = (PetscInt) indices[i];
+        for ( int i     = 0; i < num; i++ )
+            indices2[i] = (PetscInt) indices[i];
         VecSetValues( d_petscVec, num, &indices2[0], vals, INSERT_VALUES );
     }
 }
@@ -380,7 +379,8 @@ NativePetscVector::setLocalValuesByGlobalID( int num, size_t *indices, const dou
 inline void NativePetscVector::addValuesByLocalID( int num, size_t *indices, const double *vals )
 {
     INCREMENT_COUNT( "Virtual" );
-    for ( int i = 0; i != num; i++ ) getRawDataBlock<double>()[indices[i]] += vals[i];
+    for ( int i = 0; i != num; i++ )
+        getRawDataBlock<double>()[indices[i]] += vals[i];
 }
 
 
@@ -391,11 +391,11 @@ NativePetscVector::addLocalValuesByGlobalID( int num, size_t *indices, const dou
     resetArray();
     if ( sizeof( size_t ) == sizeof( PetscInt ) ) {
         VecSetValues( d_petscVec, num, (PetscInt *) indices, vals, ::ADD_VALUES );
-    }
-    else {
+    } else {
         AMP_ASSERT( getGlobalSize() < 0x80000000 );
         std::vector<PetscInt> indices2( num, 0 );
-        for ( int i = 0; i < num; i++ ) indices2[i] = (PetscInt) indices[i];
+        for ( int i     = 0; i < num; i++ )
+            indices2[i] = (PetscInt) indices[i];
         VecSetValues( d_petscVec, num, &indices2[0], vals, ::ADD_VALUES );
     }
 }
@@ -425,7 +425,8 @@ inline size_t NativePetscVector::getGlobalSize() const
 
 inline void *NativePetscVector::getRawDataBlockAsVoid( size_t i )
 {
-    if ( i > 0 ) return 0;
+    if ( i > 0 )
+        return 0;
     if ( d_pArray == 0 ) {
         VecGetArray( d_petscVec, &d_pArray );
     }
@@ -434,7 +435,8 @@ inline void *NativePetscVector::getRawDataBlockAsVoid( size_t i )
 
 inline const void *NativePetscVector::getRawDataBlockAsVoid( size_t i ) const
 {
-    if ( i > 0 ) return 0;
+    if ( i > 0 )
+        return 0;
     if ( d_pArray == 0 ) {
         VecGetArray( d_petscVec, &d_pArray );
     }
@@ -446,14 +448,15 @@ inline void
 NativePetscVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
     INCREMENT_COUNT( "Virtual" );
-    if ( numVals == 0 ) return;
+    if ( numVals == 0 )
+        return;
     if ( sizeof( size_t ) == sizeof( PetscInt ) ) {
         VecGetValues( d_petscVec, numVals, (PetscInt *) ndx, vals );
-    }
-    else {
+    } else {
         AMP_ASSERT( getGlobalSize() < 0x80000000 );
         std::vector<PetscInt> ndx2( numVals, 0 );
-        for ( int i = 0; i < numVals; i++ ) ndx2[i] = (PetscInt) ndx[i];
+        for ( int i = 0; i < numVals; i++ )
+            ndx2[i] = (PetscInt) ndx[i];
         VecGetValues( d_petscVec, numVals, &ndx2[0], vals );
     }
 }

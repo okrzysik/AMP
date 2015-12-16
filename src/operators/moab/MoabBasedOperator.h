@@ -28,7 +28,8 @@ namespace Operator {
  *\brief Base class for Moab-based physics operators
  */
 //---------------------------------------------------------------------------//
-class MoabBasedOperator : public AMP::Operator::Operator {
+class MoabBasedOperator : public AMP::Operator::Operator
+{
 public:
     // Typedefs
     typedef AMP::shared_ptr<MoabBasedOperatorParameters> SP_Params;

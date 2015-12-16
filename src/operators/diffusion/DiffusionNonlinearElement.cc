@@ -68,15 +68,13 @@ void DiffusionNonlinearElement::apply()
         // evaluate for scalars or tensors
         if ( not d_transportModel->isaTensor() ) {
             d_transportModel->getTransport( transportCoeff, transport_args, q_point );
-        }
-        else {
+        } else {
             d_transportTensorModel->getTensorTransport(
                 transportCoeffTensor, transport_args, q_point );
         }
 
         // at nodes
-    }
-    else {
+    } else {
         // get element nodes
         std::vector<Point> elem_nodes( num_nodes );
         for ( size_t i = 0; i < num_nodes; i++ ) {
@@ -111,8 +109,7 @@ void DiffusionNonlinearElement::apply()
             }     // end for qp
 
             // evaluate for tensors
-        }
-        else {
+        } else {
             for ( int i = 0; i < 3; i++ )
                 for ( int j = 0; j < 3; j++ ) {
                     std::vector<double> *vec( new std::vector<double>( num_nodes ) );
@@ -124,7 +121,8 @@ void DiffusionNonlinearElement::apply()
             // interpolate to gauss points
             for ( size_t qp = 0; qp < d_qrule->n_points(); qp++ ) {
                 for ( int i = 0; i < 3; i++ )
-                    for ( int j = 0; j < 3; j++ ) ( *transportCoeffTensor[i][j] )[qp] = 0.0;
+                    for ( int j                             = 0; j < 3; j++ )
+                        ( *transportCoeffTensor[i][j] )[qp] = 0.0;
                 for ( size_t n = 0; n < num_nodes; n++ ) {
                     for ( int i = 0; i < 3; i++ )
                         for ( int j = 0; j < 3; j++ ) {
@@ -150,8 +148,7 @@ void DiffusionNonlinearElement::apply()
                 ( *d_elementOutputVector )[n] +=
                     ( JxW[qp] * transportCoeff[qp] * dphi[n][qp] * grad_phi );
             } // end for n
-        }
-        else {
+        } else {
             for ( size_t n = 0; n < num_nodes; n++ ) {
                 for ( int i = 0; i < 3; i++ )
                     for ( int j = 0; j < 3; j++ ) {

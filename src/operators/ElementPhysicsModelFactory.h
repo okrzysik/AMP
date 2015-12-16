@@ -9,7 +9,8 @@
 namespace AMP {
 namespace Operator {
 
-class ElementPhysicsModelFactory {
+class ElementPhysicsModelFactory
+{
 public:
     ElementPhysicsModelFactory() {}
     ~ElementPhysicsModelFactory() {}

@@ -31,7 +31,8 @@ namespace LinearAlgebra {
   * variable is combined with a particular mesh, a vector of the appropriate
   * size can be created.
   */
-class Variable : public AMP::enable_shared_from_this<Variable> {
+class Variable : public AMP::enable_shared_from_this<Variable>
+{
 public:
     //!  Shared pointer name
     typedef AMP::shared_ptr<Variable> shared_ptr;

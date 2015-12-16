@@ -14,7 +14,8 @@ namespace AMP {
 namespace unit_test {
 
 
-class SundialsTestHelper {
+class SundialsTestHelper
+{
 public:
     static AMP::LinearAlgebra::ManagedSundialsVector *getVector( N_Vector &a )
     {
@@ -24,7 +25,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class CloneSundialsVector : public SundialsTestHelper {
+class CloneSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "N_VClone and N_VDestroy"; }
 
@@ -50,7 +52,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class LinearSumSundialsVector : public SundialsTestHelper {
+class LinearSumSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "Linear sum test"; }
 
@@ -79,7 +82,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class ConstSundialsVector : public SundialsTestHelper {
+class ConstSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "Setting vector to constant"; }
 
@@ -106,7 +110,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class ProdSundialsVector : public SundialsTestHelper {
+class ProdSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "Element-wise product.."; }
 
@@ -136,7 +141,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class DivSundialsVector : public SundialsTestHelper {
+class DivSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "Element-wise division.."; }
 
@@ -165,7 +171,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class ScaleSundialsVector : public SundialsTestHelper {
+class ScaleSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "Scaling a vector.."; }
 
@@ -191,7 +198,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class AbsSundialsVector : public SundialsTestHelper {
+class AbsSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "Abs of a vector.."; }
 
@@ -219,7 +227,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class InvSundialsVector : public SundialsTestHelper {
+class InvSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "Inv of a vector.."; }
 
@@ -245,7 +254,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class AddConstSundialsVector : public SundialsTestHelper {
+class AddConstSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "AddConst to a vector"; }
 
@@ -272,7 +282,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class DotProdSundialsVector : public SundialsTestHelper {
+class DotProdSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "Dot product"; }
 
@@ -297,7 +308,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class MaxNormSundialsVector : public SundialsTestHelper {
+class MaxNormSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "AddConst to a vector"; }
 
@@ -320,7 +332,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class WRMSNormSundialsVector : public SundialsTestHelper {
+class WRMSNormSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "Weighted Root Mean Square"; }
 
@@ -329,7 +342,8 @@ public:
         AMP::LinearAlgebra::Vector::shared_ptr vectora( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr vectorb( VECTOR_FACTORY::getVector() );
         AMP::LinearAlgebra::Vector::shared_ptr vectorc( VECTOR_FACTORY::getVector() );
-        if ( !vectorc ) utils->failure( "N_VWrmsNorm" );
+        if ( !vectorc )
+            utils->failure( "N_VWrmsNorm" );
 
         N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
         N_Vector vec_b = vectorb->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
@@ -348,7 +362,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class MinSundialsVector : public SundialsTestHelper {
+class MinSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "minimum of a vector"; }
 
@@ -371,7 +386,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class L1NormSundialsVector : public SundialsTestHelper {
+class L1NormSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "L1 norm of a vector"; }
 
@@ -394,7 +410,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class MinQuotientSundialsVector : public SundialsTestHelper {
+class MinQuotientSundialsVector : public SundialsTestHelper
+{
 public:
     static const char *get_test_name() { return "MinQuotient of two vectors"; }
 

@@ -11,7 +11,8 @@
 namespace AMP {
 namespace Operator {
 
-class ThermalStrainMaterialModel : public MechanicsMaterialModel {
+class ThermalStrainMaterialModel : public MechanicsMaterialModel
+{
 public:
     explicit ThermalStrainMaterialModel(
         const AMP::shared_ptr<MechanicsMaterialModelParameters> & );

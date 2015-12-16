@@ -18,7 +18,8 @@ namespace Operator {
   the composite Operator operator.
   @see ColumnOperator
   */
-class CoupledFlowFrapconOperatorParameters : public ColumnOperatorParameters {
+class CoupledFlowFrapconOperatorParameters : public ColumnOperatorParameters
+{
 public:
     explicit CoupledFlowFrapconOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
         : ColumnOperatorParameters( db )

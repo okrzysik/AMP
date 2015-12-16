@@ -31,7 +31,8 @@ typedef TimeOperatorParameters IDATimeOperatorParameters;
   @see TimeOperator
 */
 
-class IDATimeOperator : public TimeOperator {
+class IDATimeOperator : public TimeOperator
+{
 public:
     /**
      * Main constructor.

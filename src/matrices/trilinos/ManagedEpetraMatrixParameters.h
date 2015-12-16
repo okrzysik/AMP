@@ -14,7 +14,8 @@ namespace LinearAlgebra {
 /** \class ManagedEpetraMatrixParameters
   * \brief  A class used to create an Epetra matrix
   */
-class ManagedEpetraMatrixParameters : public MatrixParameters {
+class ManagedEpetraMatrixParameters : public MatrixParameters
+{
 public:
     /** \brief Constructor
       * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,

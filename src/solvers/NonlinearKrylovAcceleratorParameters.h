@@ -23,7 +23,8 @@ namespace Solver {
  * shared pointers to a database object, a preconditioner, and a solution vector for
  * storing initial guesses. All member variables are public.
  */
-class NonlinearKrylovAcceleratorParameters : public SolverStrategyParameters {
+class NonlinearKrylovAcceleratorParameters : public SolverStrategyParameters
+{
 public:
     /**
      * Empty constructor.

@@ -61,8 +61,7 @@ void DiffusionLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
         if ( params->d_temperature.get() != NULL ) {
             d_temperature->copyVector( params->d_temperature );
             d_temperature->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-        }
-        else {
+        } else {
             d_temperature.reset();
         }
         //    std::cout << d_temperature << std::endl;
@@ -75,8 +74,7 @@ void DiffusionLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
         if ( params->d_concentration.get() != NULL ) {
             d_concentration->copyVector( params->d_concentration );
             d_concentration->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-        }
-        else {
+        } else {
             d_concentration.reset();
         }
     }
@@ -88,8 +86,7 @@ void DiffusionLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
         if ( params->d_burnup.get() != NULL ) {
             d_burnup->copyVector( params->d_burnup );
             d_burnup->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-        }
-        else {
+        } else {
             d_burnup.reset();
         }
     }
@@ -145,10 +142,10 @@ void DiffusionLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
 
     if ( d_useConstantTemperature or d_temperature.get() == NULL ) {
         localTemperature.resize( 0 );
-    }
-    else {
+    } else {
         //    AMP::pout << d_temperature << std::endl;
-        if ( localTemperature.size() == 0 ) localTemperature.resize( num_local_dofs );
+        if ( localTemperature.size() == 0 )
+            localTemperature.resize( num_local_dofs );
         AMP::Discretization::DOFManager::shared_ptr DOF = d_temperature->getDOFManager();
         std::vector<size_t> dofs;
         for ( size_t r = 0; r < d_currNodes.size(); r++ ) {
@@ -160,9 +157,9 @@ void DiffusionLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
 
     if ( d_useConstantConcentration or d_concentration.get() == NULL ) {
         localConcentration.resize( 0 );
-    }
-    else {
-        if ( localConcentration.size() == 0 ) localConcentration.resize( num_local_dofs );
+    } else {
+        if ( localConcentration.size() == 0 )
+            localConcentration.resize( num_local_dofs );
         AMP::Discretization::DOFManager::shared_ptr DOF = d_concentration->getDOFManager();
         std::vector<size_t> dofs;
         for ( size_t r = 0; r < d_currNodes.size(); r++ ) {
@@ -174,9 +171,9 @@ void DiffusionLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
 
     if ( d_useConstantBurnup or d_burnup.get() == NULL ) {
         localBurnup.resize( 0 );
-    }
-    else {
-        if ( localBurnup.size() == 0 ) localBurnup.resize( num_local_dofs );
+    } else {
+        if ( localBurnup.size() == 0 )
+            localBurnup.resize( num_local_dofs );
         AMP::Discretization::DOFManager::shared_ptr DOF = d_burnup->getDOFManager();
         std::vector<size_t> dofs;
         for ( size_t r = 0; r < d_currNodes.size(); r++ ) {

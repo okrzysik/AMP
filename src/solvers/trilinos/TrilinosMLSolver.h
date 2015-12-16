@@ -30,7 +30,8 @@ typedef SolverStrategyParameters TrilinosMLSolverParameters;
  * to enable AMP users to use the black box ML preconditioner.
  */
 
-class TrilinosMLSolver : public SolverStrategy {
+class TrilinosMLSolver : public SolverStrategy
+{
 
 public:
     /**

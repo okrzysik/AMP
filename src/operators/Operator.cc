@@ -66,8 +66,7 @@ void Operator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     if ( f.get() != NULL ) {
         AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetOutputVector( f );
         rInternal->subtract( fInternal, rInternal );
-    }
-    else {
+    } else {
         rInternal->scale( -1.0 );
     }
 
@@ -95,8 +94,7 @@ Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
         AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec =
             meshSubsetVec->subsetVectorForVariable( var );
         retvec = varSubsetVec;
-    }
-    else {
+    } else {
         retvec = vec->subsetVectorForVariable( var );
     }
     PROFILE_STOP( "subsetOutputVector", 1 );
@@ -117,8 +115,7 @@ Operator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
         AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec =
             meshSubsetVec->subsetVectorForVariable( var );
         retvec = varSubsetVec;
-    }
-    else {
+    } else {
         retvec = vec->subsetVectorForVariable( var );
     }
     PROFILE_STOP( "subsetInputVector", 1 );
@@ -139,8 +136,7 @@ Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
         AMP::LinearAlgebra::Vector::const_shared_ptr varSubsetVec =
             meshSubsetVec->constSubsetVectorForVariable( var );
         retvec = varSubsetVec;
-    }
-    else {
+    } else {
         retvec = vec->constSubsetVectorForVariable( var );
     }
     PROFILE_STOP( "constSubsetOutputVector", 1 );
@@ -161,8 +157,7 @@ Operator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
         AMP::LinearAlgebra::Vector::const_shared_ptr varSubsetVec =
             meshSubsetVec->constSubsetVectorForVariable( var );
         retvec = varSubsetVec;
-    }
-    else {
+    } else {
         retvec = vec->constSubsetVectorForVariable( var );
     }
     PROFILE_STOP( "constSubsetInputVector", 1 );

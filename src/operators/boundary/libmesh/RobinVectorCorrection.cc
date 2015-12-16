@@ -68,13 +68,11 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
                                        cview ) != NULL ) {
                     d_elementInputVec[i + 1] = d_Frozen->constSelect(
                         AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ), cview );
-                }
-                else {
+                } else {
                     d_elementInputVec[i + 1] = uInternal->constSelect(
                         AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ), cview );
                 }
-            }
-            else {
+            } else {
                 d_elementInputVec[i + 1] = uInternal->constSelect(
                     AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ), cview );
             }
@@ -202,8 +200,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
                 if ( d_IsCoupledBoundary[nid] ) {
                     if ( !d_isFluxGaussPtVector ) {
                         d_variableFlux->getValuesByGlobalID( dofs.size(), &dofs[0], &values[0] );
-                    }
-                    else {
+                    } else {
                         d_variableFlux->getValuesByGlobalID(
                             gpDofs.size(), &gpDofs[0], &gpValues[0] );
                     }
@@ -212,8 +209,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
                         if ( !d_isFluxGaussPtVector ) {
                             for ( unsigned int l = 0; l < numNodesInCurrElem; l++ )
                                 phi_val += phi[l][qp] * values[l];
-                        }
-                        else {
+                        } else {
                             phi_val = gpValues[qp];
                         }
                         for ( unsigned int j = 0; j < numNodesInCurrElem; j++ )

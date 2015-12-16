@@ -107,7 +107,8 @@ inline void NativePetscMatrix::axpy( double alpha, const Matrix &x )
 
 inline void NativePetscMatrix::setScalar( double ans )
 {
-    if ( ans != 0.0 ) AMP_ERROR( "Cannot perform operation on NativePetscMatrix yet!" );
+    if ( ans != 0.0 )
+        AMP_ERROR( "Cannot perform operation on NativePetscMatrix yet!" );
     MatZeroEntries( d_Mat );
 }
 

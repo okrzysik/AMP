@@ -31,7 +31,8 @@ AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel
         bool is_valid                             = true;
         for ( size_t j = 0; j < nodes.size(); ++j ) {
             std::vector<double> coord = nodes[j].coord();
-            if ( !AMP::Utilities::approx_equal( coord[2], center[2], 1e-6 ) ) is_valid = false;
+            if ( !AMP::Utilities::approx_equal( coord[2], center[2], 1e-6 ) )
+                is_valid = false;
         }
         if ( is_valid ) {
             xyFace.insert( std::pair<double, AMP::Mesh::MeshElement>( center[2], *iterator ) );
@@ -125,8 +126,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
             manager, nodal_map_db );
         map.reset();
         ut->passes( "Created / Destroyed SubchannelToCladMap" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         ut->failure( "Created / Destroyed SubchannelToCladMap" );
     }
     try {
@@ -135,8 +135,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
             manager, gauss_map_db );
         map.reset();
         ut->passes( "Created / Destroyed SubchannelToCladGPMap" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         ut->failure( "Created / Destroyed SubchannelToCladGPMap" );
     }
 
@@ -162,7 +161,8 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
             std::vector<double> pos = it->centroid();
             double v1               = T_clad->getValueByGlobalID( dofs[0] );
             double v2               = getTemp( pos );
-            if ( !AMP::Utilities::approx_equal( v1, v2 ) ) passes = false;
+            if ( !AMP::Utilities::approx_equal( v1, v2 ) )
+                passes = false;
         }
         if ( passes )
             ut->passes( "correctly mapped temperature" );
@@ -202,7 +202,8 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
             T_gauss->getValuesByGlobalID( dofs.size(), &dofs[0], &vals[0] );
             double v1 = ( vals[0] + vals[1] + vals[2] + vals[3] ) / 4;
             double v2 = getTemp( pos );
-            if ( !AMP::Utilities::approx_equal( v1, v2 ) ) passes = false;
+            if ( !AMP::Utilities::approx_equal( v1, v2 ) )
+                passes = false;
         }
         if ( passes )
             ut->passes( "correctly mapped temperature (gauss points)" );

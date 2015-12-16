@@ -23,7 +23,8 @@ namespace Discretization {
   It will cache the elements and allow for fast O(log(n)) access to the
   libmesh element given the MeshElementID.
 */
-class createLibmeshElements {
+class createLibmeshElements
+{
 public:
     //! Empty constructor
     createLibmeshElements();

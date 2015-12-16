@@ -154,7 +154,8 @@ void ParallelBuffer::outputString( const std::string &text, const int length )
          */
 
         int eol_ptr = 0;
-        for ( ; ( eol_ptr < length ) && ( text[eol_ptr] != '\n' ); eol_ptr++ ) NULL_STATEMENT;
+        for ( ; ( eol_ptr < length ) && ( text[eol_ptr] != '\n' ); eol_ptr++ )
+            NULL_STATEMENT;
 
         /*
          * If no end-of-line found, copy the entire text string but no output
@@ -166,8 +167,7 @@ void ParallelBuffer::outputString( const std::string &text, const int length )
             /*
              * If we found end-of-line, copy and output; recurse if more chars
              */
-        }
-        else {
+        } else {
             const int ncopy = eol_ptr + 1;
             copyToBuffer( text, ncopy );
             outputBuffer();
@@ -250,7 +250,8 @@ void ParallelBuffer::outputBuffer()
 int ParallelBuffer::sync()
 {
     const int n = pptr() - pbase();
-    if ( n > 0 ) outputString( pbase(), n );
+    if ( n > 0 )
+        outputString( pbase(), n );
     return ( 0 );
 }
 
@@ -270,7 +271,8 @@ int ParallelBuffer::sync()
 std::streamsize ParallelBuffer::xsputn( const char *text, std::streamsize n )
 {
     sync();
-    if ( n > 0 ) outputString( text, n );
+    if ( n > 0 )
+        outputString( text, n );
     return ( n );
 }
 #endif

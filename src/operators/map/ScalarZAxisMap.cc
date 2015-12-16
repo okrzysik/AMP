@@ -48,7 +48,8 @@ ScalarZAxisMap::~ScalarZAxisMap() {}
 ************************************************************************/
 bool ScalarZAxisMap::validMapType( const std::string &t )
 {
-    if ( t == "ScalarZAxis" ) return true;
+    if ( t == "ScalarZAxis" )
+        return true;
     return false;
 }
 
@@ -91,7 +92,8 @@ void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr v
                                   const AMP::Mesh::MeshIterator &iterator,
                                   const std::map<double, double> &map )
 {
-    if ( iterator.size() == 0 ) return;
+    if ( iterator.size() == 0 )
+        return;
     PROFILE_START( "buildReturn" );
     const double TOL = 1e-8;
 
@@ -104,11 +106,12 @@ void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr v
         f[i] = it->second;
         i++;
     }
-    for ( size_t i = 1; i < z.size(); i++ ) AMP_ASSERT( z[i] > ( z[i - 1] + TOL ) );
-    double z0      = z[0];
-    double z1      = z[z.size() - 1];
-    double v0      = f[0];
-    double v1      = f[z.size() - 1];
+    for ( size_t i = 1; i < z.size(); i++ )
+        AMP_ASSERT( z[i] > ( z[i - 1] + TOL ) );
+    double z0 = z[0];
+    double z1 = z[z.size() - 1];
+    double v0 = f[0];
+    double v1 = f[z.size() - 1];
 
     // Loop through the points in the output vector
     AMP::Discretization::DOFManager::shared_ptr DOFs = vec->getDOFManager();
@@ -130,14 +133,12 @@ void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr v
             vec->setValueByGlobalID( dof, v0 );
             cur++;
             continue;
-        }
-        else if ( fabs( zi - z1 ) <= TOL ) {
+        } else if ( fabs( zi - z1 ) <= TOL ) {
             // We are within TOL of the last point
             vec->setValueByGlobalID( dof, v1 );
             cur++;
             continue;
-        }
-        else if ( zi < z0 || zi > z1 ) {
+        } else if ( zi < z0 || zi > z1 ) {
             // We are outside the bounds of the map
             cur++;
             continue;

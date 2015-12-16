@@ -413,10 +413,11 @@ union yyalloc {
 #if defined __GNUC__ && 1 < __GNUC__
 #define YYCOPY( To, From, Count ) __builtin_memcpy( To, From, ( Count ) * sizeof( *( From ) ) )
 #else
-#define YYCOPY( To, From, Count )                                            \
-    do {                                                                     \
-        YYSIZE_T yyi;                                                        \
-        for ( yyi = 0; yyi < ( Count ); yyi++ ) ( To )[yyi] = ( From )[yyi]; \
+#define YYCOPY( To, From, Count )                     \
+    do {                                              \
+        YYSIZE_T yyi;                                 \
+        for ( yyi       = 0; yyi < ( Count ); yyi++ ) \
+            ( To )[yyi] = ( From )[yyi];              \
     } while ( YYID( 0 ) )
 #endif
 #endif
@@ -671,8 +672,7 @@ static const yytype_uint8 yystos[] = { 0,  37, 38, 0,  21, 32, 39, 4,  12, 27, 4
             yytoken    = YYTRANSLATE( AMP_yychar );           \
             YYPOPSTACK( 1 );                                  \
             goto yybackup;                                    \
-        }                                                     \
-        else {                                                \
+        } else {                                              \
             yyerror( YY_( "syntax error: cannot back up" ) ); \
             YYERROR;                                          \
         }                                                     \
@@ -696,8 +696,7 @@ static const yytype_uint8 yystos[] = { 0,  37, 38, 0,  21, 32, 39, 4,  12, 27, 4
             ( Current ).first_column = YYRHSLOC( Rhs, 1 ).first_column;                          \
             ( Current ).last_line    = YYRHSLOC( Rhs, N ).last_line;                             \
             ( Current ).last_column  = YYRHSLOC( Rhs, N ).last_column;                           \
-        }                                                                                        \
-        else {                                                                                   \
+        } else {                                                                                 \
             ( Current ).first_line = ( Current ).last_line = YYRHSLOC( Rhs, 0 ).last_line;       \
             ( Current ).first_column = ( Current ).last_column = YYRHSLOC( Rhs, 0 ).last_column; \
         }                                                                                        \
@@ -740,9 +739,10 @@ static const yytype_uint8 yystos[] = { 0,  37, 38, 0,  21, 32, 39, 4,  12, 27, 4
 #define YYFPRINTF fprintf
 #endif
 
-#define YYDPRINTF( Args )              \
-    do {                               \
-        if ( yydebug ) YYFPRINTF Args; \
+#define YYDPRINTF( Args )   \
+    do {                    \
+        if ( yydebug )      \
+            YYFPRINTF Args; \
     } while ( YYID( 0 ) )
 
 #define YY_SYMBOL_PRINT( Title, Type, Value, Location ) \
@@ -768,14 +768,17 @@ int yytype;
 YYSTYPE const *const yyvaluep;
 #endif
 {
-    if ( !yyvaluep ) return;
+    if ( !yyvaluep )
+        return;
 #ifdef YYPRINT
-    if ( yytype < YYNTOKENS ) YYPRINT( yyoutput, yytoknum[yytype], *yyvaluep );
+    if ( yytype < YYNTOKENS )
+        YYPRINT( yyoutput, yytoknum[yytype], *yyvaluep );
 #else
     YYUSE( yyoutput );
 #endif
     switch ( yytype ) {
-    default: break;
+    default:
+        break;
     }
 }
 
@@ -814,13 +817,15 @@ yytype_int16 *top;
 #endif
 {
     YYFPRINTF( stderr, "Stack now" );
-    for ( ; bottom <= top; ++bottom ) YYFPRINTF( stderr, " %d", *bottom );
+    for ( ; bottom <= top; ++bottom )
+        YYFPRINTF( stderr, " %d", *bottom );
     YYFPRINTF( stderr, "\n" );
 }
 
-#define YY_STACK_PRINT( Bottom, Top )                         \
-    do {                                                      \
-        if ( yydebug ) yy_stack_print( ( Bottom ), ( Top ) ); \
+#define YY_STACK_PRINT( Bottom, Top )              \
+    do {                                           \
+        if ( yydebug )                             \
+            yy_stack_print( ( Bottom ), ( Top ) ); \
     } while ( YYID( 0 ) )
 
 
@@ -848,9 +853,10 @@ int yyrule;
     }
 }
 
-#define YY_REDUCE_PRINT( Rule )                        \
-    do {                                               \
-        if ( yydebug ) yy_reduce_print( yyvsp, Rule ); \
+#define YY_REDUCE_PRINT( Rule )             \
+    do {                                    \
+        if ( yydebug )                      \
+            yy_reduce_print( yyvsp, Rule ); \
     } while ( YYID( 0 ) )
 
 /* Nonzero means print parse trace.  It is left uninitialized so that
@@ -901,7 +907,8 @@ static YYSIZE_T yystrlen( yystr ) const char *yystr;
 #endif
 {
     YYSIZE_T yylen;
-    for ( yylen = 0; yystr[yylen]; yylen++ ) continue;
+    for ( yylen = 0; yystr[yylen]; yylen++ )
+        continue;
     return yylen;
 }
 #endif
@@ -923,7 +930,8 @@ const char *yysrc;
     char *yyd       = yydest;
     const char *yys = yysrc;
 
-    while ( ( *yyd++ = *yys++ ) != '\0' ) continue;
+    while ( ( *yyd++ = *yys++ ) != '\0' )
+        continue;
 
     return yyd - 1;
 }
@@ -944,26 +952,32 @@ static YYSIZE_T yytnamerr( char *yyres, const char *yystr )
         YYSIZE_T yyn    = 0;
         char const *yyp = yystr;
 
-        for ( ;; ) switch ( *++yyp ) {
+        for ( ;; )
+            switch ( *++yyp ) {
             case '\'':
-            case ',': goto do_not_strip_quotes;
+            case ',':
+                goto do_not_strip_quotes;
 
             case '\\':
-                if ( *++yyp != '\\' ) goto do_not_strip_quotes;
+                if ( *++yyp != '\\' )
+                    goto do_not_strip_quotes;
             /* Fall through.  */
             default:
-                if ( yyres ) yyres[yyn] = *yyp;
+                if ( yyres )
+                    yyres[yyn] = *yyp;
                 yyn++;
                 break;
 
             case '"':
-                if ( yyres ) yyres[yyn] = '\0';
+                if ( yyres )
+                    yyres[yyn] = '\0';
                 return yyn;
             }
     do_not_strip_quotes:;
     }
 
-    if ( !yyres ) return yystrlen( yystr );
+    if ( !yyres )
+        return yystrlen( yystr );
 
     return yystpcpy( yyres, yystr ) - yyres;
 }
@@ -1043,7 +1057,8 @@ static YYSIZE_T yysyntax_error( char *yyresult, int yystate, int AMP_yychar )
         yysize_overflow |= ( yysize1 < yysize );
         yysize = yysize1;
 
-        if ( yysize_overflow ) return YYSIZE_MAXIMUM;
+        if ( yysize_overflow )
+            return YYSIZE_MAXIMUM;
 
         if ( yyresult ) {
             /* Avoid sprintf, as that infringes on the user's name space.
@@ -1055,8 +1070,7 @@ static YYSIZE_T yysyntax_error( char *yyresult, int yystate, int AMP_yychar )
                 if ( *yyp == '%' && yyf[1] == 's' && yyi < yycount ) {
                     yyp += yytnamerr( yyp, yyarg[yyi++] );
                     yyf += 2;
-                }
-                else {
+                } else {
                     yyp++;
                     yyf++;
                 }
@@ -1083,12 +1097,14 @@ YYSTYPE *yyvaluep;
 {
     YYUSE( yyvaluep );
 
-    if ( !yymsg ) yymsg = "Deleting";
+    if ( !yymsg )
+        yymsg = "Deleting";
     YY_SYMBOL_PRINT( yymsg, yytype, yyvaluep, yylocationp );
 
     switch ( yytype ) {
 
-    default: break;
+    default:
+        break;
     }
 }
 
@@ -1247,19 +1263,23 @@ yysetstate:
         goto yyexhaustedlab;
 #else
         /* Extend the stack our own way.  */
-        if ( YYMAXDEPTH <= yystacksize ) goto yyexhaustedlab;
+        if ( YYMAXDEPTH <= yystacksize )
+            goto yyexhaustedlab;
         yystacksize *= 2;
-        if ( YYMAXDEPTH < yystacksize ) yystacksize = YYMAXDEPTH;
+        if ( YYMAXDEPTH < yystacksize )
+            yystacksize = YYMAXDEPTH;
 
         {
             yytype_int16 *yyss1  = yyss;
             union yyalloc *yyptr = (union yyalloc *) YYSTACK_ALLOC( YYSTACK_BYTES( yystacksize ) );
-            if ( !yyptr ) goto yyexhaustedlab;
+            if ( !yyptr )
+                goto yyexhaustedlab;
             YYSTACK_RELOCATE( yyss );
             YYSTACK_RELOCATE( yyvs );
 
 #undef YYSTACK_RELOCATE
-            if ( yyss1 != yyssa ) YYSTACK_FREE( yyss1 );
+            if ( yyss1 != yyssa )
+                YYSTACK_FREE( yyss1 );
         }
 #endif
 #endif /* no yyoverflow */
@@ -1270,7 +1290,8 @@ yysetstate:
 
         YYDPRINTF( ( stderr, "Stack size increased to %lu\n", (unsigned long int) yystacksize ) );
 
-        if ( yyss + yystacksize - 1 <= yyssp ) YYABORT;
+        if ( yyss + yystacksize - 1 <= yyssp )
+            YYABORT;
     }
 
     YYDPRINTF( ( stderr, "Entering state %d\n", yystate ) );
@@ -1287,7 +1308,8 @@ yybackup:
 
     /* First try to decide what to do without reference to look-ahead token.  */
     yyn = yypact[yystate];
-    if ( yyn == YYPACT_NINF ) goto yydefault;
+    if ( yyn == YYPACT_NINF )
+        goto yydefault;
 
     /* Not known => get a look-ahead token if don't already have one.  */
 
@@ -1300,8 +1322,7 @@ yybackup:
     if ( AMP_yychar <= YYEOF ) {
         AMP_yychar = yytoken = YYEOF;
         YYDPRINTF( ( stderr, "Now at end of input.\n" ) );
-    }
-    else {
+    } else {
         yytoken = YYTRANSLATE( AMP_yychar );
         YY_SYMBOL_PRINT( "Next token is", yytoken, &AMP_yylval, &yylloc );
     }
@@ -1309,25 +1330,30 @@ yybackup:
     /* If the proper action on seeing token YYTOKEN is to reduce or to
        detect an error, take that action.  */
     yyn += yytoken;
-    if ( yyn < 0 || YYLAST < yyn || yycheck[yyn] != yytoken ) goto yydefault;
+    if ( yyn < 0 || YYLAST < yyn || yycheck[yyn] != yytoken )
+        goto yydefault;
     yyn = yytable[yyn];
     if ( yyn <= 0 ) {
-        if ( yyn == 0 || yyn == YYTABLE_NINF ) goto yyerrlab;
+        if ( yyn == 0 || yyn == YYTABLE_NINF )
+            goto yyerrlab;
         yyn = -yyn;
         goto yyreduce;
     }
 
-    if ( yyn == YYFINAL ) YYACCEPT;
+    if ( yyn == YYFINAL )
+        YYACCEPT;
 
     /* Count tokens shifted since error; after three, turn off error
        status.  */
-    if ( yyerrstatus ) yyerrstatus--;
+    if ( yyerrstatus )
+        yyerrstatus--;
 
     /* Shift the look-ahead token.  */
     YY_SYMBOL_PRINT( "Shifting", yytoken, &AMP_yylval, &yylloc );
 
     /* Discard the shifted token unless it is eof.  */
-    if ( AMP_yychar != YYEOF ) AMP_yychar = YYEMPTY;
+    if ( AMP_yychar != YYEOF )
+        AMP_yychar = YYEMPTY;
 
     yystate  = yyn;
     *++yyvsp = AMP_yylval;
@@ -1340,7 +1366,8 @@ yybackup:
 `-----------------------------------------------------------*/
 yydefault:
     yyn = yydefact[yystate];
-    if ( yyn == 0 ) goto yyerrlab;
+    if ( yyn == 0 )
+        goto yyerrlab;
     goto yyreduce;
 
 
@@ -1470,7 +1497,9 @@ yyreduce:
                                                              data );
             break;
         }
-        default: Parser::getParser()->error( "Internal parser error!" ); break;
+        default:
+            Parser::getParser()->error( "Internal parser error!" );
+            break;
         }
 
         delete_list( ( yyvsp[( 4 ) - ( 4 )].u_keydata ) );
@@ -1557,7 +1586,9 @@ yyreduce:
                                                              data );
             break;
         }
-        default: Parser::getParser()->error( "Internal parser error!" ); break;
+        default:
+            Parser::getParser()->error( "Internal parser error!" );
+            break;
         }
 
         delete_list( ( yyvsp[( 4 ) - ( 4 )].u_keydata ) );
@@ -1588,8 +1619,7 @@ yyreduce:
                 Parser::getParser()->error( "Type mismatch in array" );
                 delete ( yyvsp[( 3 ) - ( 3 )].u_keydata );
                 ( yyval.u_keydata ) = ( yyvsp[( 1 ) - ( 3 )].u_keydata );
-            }
-            else {
+            } else {
                 ( yyvsp[( 3 ) - ( 3 )].u_keydata )->d_array_size =
                     ( yyvsp[( 1 ) - ( 3 )].u_keydata )->d_array_size + 1;
                 ( yyvsp[( 3 ) - ( 3 )].u_keydata )->d_next = ( yyvsp[( 1 ) - ( 3 )].u_keydata );
@@ -1603,8 +1633,7 @@ yyreduce:
                 Parser::getParser()->error( "Type mismatch in number array" );
                 delete ( yyvsp[( 3 ) - ( 3 )].u_keydata );
                 ( yyval.u_keydata ) = ( yyvsp[( 1 ) - ( 3 )].u_keydata );
-            }
-            else {
+            } else {
                 ( yyvsp[( 3 ) - ( 3 )].u_keydata )->d_array_type =
                     PROMOTE( ( yyvsp[( 1 ) - ( 3 )].u_keydata )->d_array_type,
                              ( yyvsp[( 3 ) - ( 3 )].u_keydata )->d_node_type );
@@ -1670,8 +1699,7 @@ yyreduce:
              ( ( yyvsp[( 2 ) - ( 8 )].u_keydata )->d_bool ) ) {
             ( yyval.u_keydata ) = ( yyvsp[( 5 ) - ( 8 )].u_keydata );
             delete ( yyvsp[( 7 ) - ( 8 )].u_keydata );
-        }
-        else {
+        } else {
             ( yyval.u_keydata ) = ( yyvsp[( 7 ) - ( 8 )].u_keydata );
             delete ( yyvsp[( 5 ) - ( 8 )].u_keydata );
         }
@@ -1763,8 +1791,7 @@ yyreduce:
             ( yyvsp[( 1 ) - ( 3 )].u_keydata )->d_string = tmp;
             delete ( yyvsp[( 3 ) - ( 3 )].u_keydata );
             ( yyval.u_keydata ) = ( yyvsp[( 1 ) - ( 3 )].u_keydata );
-        }
-        else {
+        } else {
             ( yyval.u_keydata ) = binary_op(
                 ( yyvsp[( 1 ) - ( 3 )].u_keydata ), ( yyvsp[( 3 ) - ( 3 )].u_keydata ), T_PLUS );
         }
@@ -1814,7 +1841,9 @@ yyreduce:
             ( yyvsp[( 2 ) - ( 2 )].u_keydata )->d_complex =
                 -( ( yyvsp[( 2 ) - ( 2 )].u_keydata )->d_complex );
             break;
-        default: Parser::getParser()->error( "X in -X is not a number" ); break;
+        default:
+            Parser::getParser()->error( "X in -X is not a number" );
+            break;
         }
         ( yyval.u_keydata ) = ( yyvsp[( 2 ) - ( 2 )].u_keydata );
     } break;
@@ -1931,7 +1960,8 @@ yyreduce:
 
     /* Line 1267 of yacc.c.  */
 
-    default: break;
+    default:
+        break;
     }
     YY_SYMBOL_PRINT( "-> $$ =", yyr1[yyn], &yyval, &yyloc );
 
@@ -1973,7 +2003,8 @@ yyerrlab:
                 YYSIZE_T yyalloc = 2 * yysize;
                 if ( !( yysize <= yyalloc && yyalloc <= YYSTACK_ALLOC_MAXIMUM ) )
                     yyalloc = YYSTACK_ALLOC_MAXIMUM;
-                if ( yymsg != yymsgbuf ) YYSTACK_FREE( yymsg );
+                if ( yymsg != yymsgbuf )
+                    YYSTACK_FREE( yymsg );
                 yymsg = (char *) YYSTACK_ALLOC( yyalloc );
                 if ( yymsg )
                     yymsg_alloc = yyalloc;
@@ -1986,10 +2017,10 @@ yyerrlab:
             if ( 0 < yysize && yysize <= yymsg_alloc ) {
                 (void) yysyntax_error( yymsg, yystate, AMP_yychar );
                 yyerror( yymsg );
-            }
-            else {
+            } else {
                 yyerror( YY_( "syntax error" ) );
-                if ( yysize != 0 ) goto yyexhaustedlab;
+                if ( yysize != 0 )
+                    goto yyexhaustedlab;
             }
         }
 #endif
@@ -2002,9 +2033,9 @@ yyerrlab:
 
         if ( AMP_yychar <= YYEOF ) {
             /* Return failure if at end of input.  */
-            if ( AMP_yychar == YYEOF ) YYABORT;
-        }
-        else {
+            if ( AMP_yychar == YYEOF )
+                YYABORT;
+        } else {
             yydestruct( "Error: discarding", yytoken, &AMP_yylval );
             AMP_yychar = YYEMPTY;
         }
@@ -2023,7 +2054,8 @@ yyerrorlab:
     /* Pacify compilers like GCC when the user code never invokes
        YYERROR and the label yyerrorlab therefore never appears in user
        code.  */
-    if ( /*CONSTCOND*/ 0 ) goto yyerrorlab;
+    if ( /*CONSTCOND*/ 0 )
+        goto yyerrorlab;
 
     /* Do not reclaim the symbols of the rule which action triggered
        this YYERROR.  */
@@ -2046,12 +2078,14 @@ yyerrlab1:
             yyn += YYTERROR;
             if ( 0 <= yyn && yyn <= YYLAST && yycheck[yyn] == YYTERROR ) {
                 yyn = yytable[yyn];
-                if ( 0 < yyn ) break;
+                if ( 0 < yyn )
+                    break;
             }
         }
 
         /* Pop the current state because it cannot handle the error token.  */
-        if ( yyssp == yyss ) YYABORT;
+        if ( yyssp == yyss )
+            YYABORT;
 
 
         yydestruct( "Error: popping", yystos[yystate], yyvsp );
@@ -2060,7 +2094,8 @@ yyerrlab1:
         YY_STACK_PRINT( yyss, yyssp );
     }
 
-    if ( yyn == YYFINAL ) YYACCEPT;
+    if ( yyn == YYFINAL )
+        YYACCEPT;
 
     *++yyvsp = AMP_yylval;
 
@@ -2108,10 +2143,12 @@ yyreturn:
         YYPOPSTACK( 1 );
     }
 #ifndef yyoverflow
-    if ( yyss != yyssa ) YYSTACK_FREE( yyss );
+    if ( yyss != yyssa )
+        YYSTACK_FREE( yyss );
 #endif
 #if YYERROR_VERBOSE
-    if ( yymsg != yymsgbuf ) YYSTACK_FREE( yymsg );
+    if ( yymsg != yymsgbuf )
+        YYSTACK_FREE( yymsg );
 #endif
     /* Make sure YYID is used.  */
     return YYID( yyresult );
@@ -2154,7 +2191,8 @@ static void to_boolean( KeyData *keydata )
 static void to_integer( KeyData *keydata )
 {
     switch ( keydata->d_node_type ) {
-    case KEY_INTEGER: break;
+    case KEY_INTEGER:
+        break;
     case KEY_DOUBLE:
         Parser::getParser()->warning( "Double truncated to integer" );
         keydata->d_integer = static_cast<int>( keydata->d_double );
@@ -2180,8 +2218,11 @@ static void to_integer( KeyData *keydata )
 static void to_double( KeyData *keydata )
 {
     switch ( keydata->d_node_type ) {
-    case KEY_INTEGER: keydata->d_double = (double) ( keydata->d_integer ); break;
-    case KEY_DOUBLE: break;
+    case KEY_INTEGER:
+        keydata->d_double = (double) ( keydata->d_integer );
+        break;
+    case KEY_DOUBLE:
+        break;
     case KEY_COMPLEX:
         Parser::getParser()->warning( "Complex truncated to double" );
         keydata->d_double = keydata->d_complex.real();
@@ -2206,8 +2247,11 @@ static void to_complex( KeyData *keydata )
     case KEY_INTEGER:
         keydata->d_complex = std::complex<double>( (double) keydata->d_integer, 0.0 );
         break;
-    case KEY_DOUBLE: keydata->d_complex = std::complex<double>( keydata->d_double, 0.0 ); break;
-    case KEY_COMPLEX: break;
+    case KEY_DOUBLE:
+        keydata->d_complex = std::complex<double>( keydata->d_double, 0.0 );
+        break;
+    case KEY_COMPLEX:
+        break;
     default:
         Parser::getParser()->error( "Cannot convert type into complex" );
         keydata->d_complex = std::complex<double>( 0.0, 0.0 );
@@ -2230,38 +2274,57 @@ static KeyData *binary_op( KeyData *a, KeyData *b, const int op )
         a->d_integer    = 0;
         a->d_node_type  = KEY_INTEGER;
         a->d_array_type = KEY_INTEGER;
-    }
-    else {
+    } else {
         const int result_type = PROMOTE( a->d_node_type, b->d_node_type );
         switch ( result_type ) {
         case KEY_INTEGER:
             switch ( op ) {
-            case T_DIV: a->d_integer = a->d_integer / b->d_integer; break;
+            case T_DIV:
+                a->d_integer = a->d_integer / b->d_integer;
+                break;
             case T_EXP:
                 a->d_integer =
                     static_cast<int>( pow( (double) a->d_integer, (double) b->d_integer ) );
                 break;
-            case T_MINUS: a->d_integer = a->d_integer - b->d_integer; break;
-            case T_MULT: a->d_integer  = a->d_integer * b->d_integer; break;
-            case T_PLUS: a->d_integer  = a->d_integer + b->d_integer; break;
+            case T_MINUS:
+                a->d_integer = a->d_integer - b->d_integer;
+                break;
+            case T_MULT:
+                a->d_integer = a->d_integer * b->d_integer;
+                break;
+            case T_PLUS:
+                a->d_integer = a->d_integer + b->d_integer;
+                break;
             }
             break;
         case KEY_DOUBLE:
             to_double( a );
             to_double( b );
             switch ( op ) {
-            case T_DIV: a->d_double   = a->d_double / b->d_double; break;
-            case T_EXP: a->d_double   = pow( a->d_double, b->d_double ); break;
-            case T_MINUS: a->d_double = a->d_double - b->d_double; break;
-            case T_MULT: a->d_double  = a->d_double * b->d_double; break;
-            case T_PLUS: a->d_double  = a->d_double + b->d_double; break;
+            case T_DIV:
+                a->d_double = a->d_double / b->d_double;
+                break;
+            case T_EXP:
+                a->d_double = pow( a->d_double, b->d_double );
+                break;
+            case T_MINUS:
+                a->d_double = a->d_double - b->d_double;
+                break;
+            case T_MULT:
+                a->d_double = a->d_double * b->d_double;
+                break;
+            case T_PLUS:
+                a->d_double = a->d_double + b->d_double;
+                break;
             }
             break;
         case KEY_COMPLEX:
             to_complex( a );
             to_complex( b );
             switch ( op ) {
-            case T_DIV: a->d_complex = a->d_complex / b->d_complex; break;
+            case T_DIV:
+                a->d_complex = a->d_complex / b->d_complex;
+                break;
             case T_EXP:
                 /*
          * SGS this is broken for insure++ and gcc 3.3.2
@@ -2270,9 +2333,15 @@ static KeyData *binary_op( KeyData *a, KeyData *b, const int op )
          */
                 a->d_complex = exp( a->d_complex * log( b->d_complex ) );
                 break;
-            case T_MINUS: a->d_complex = a->d_complex - b->d_complex; break;
-            case T_MULT: a->d_complex  = a->d_complex * b->d_complex; break;
-            case T_PLUS: a->d_complex  = a->d_complex + b->d_complex; break;
+            case T_MINUS:
+                a->d_complex = a->d_complex - b->d_complex;
+                break;
+            case T_MULT:
+                a->d_complex = a->d_complex * b->d_complex;
+                break;
+            case T_PLUS:
+                a->d_complex = a->d_complex + b->d_complex;
+                break;
             }
             break;
         }
@@ -2294,27 +2363,36 @@ static KeyData *compare_op( KeyData *a, KeyData *b, const int op )
         if ( a->d_node_type != b->d_node_type ) {
             Parser::getParser()->error( "Cannot compare different non-numeric types" );
             a->d_bool = false;
-        }
-        else if ( op != T_EQUALS ) {
+        } else if ( op != T_EQUALS ) {
             Parser::getParser()->error( "Cannot apply <, >, <=, or >= to non-numeric types" );
             a->d_bool = false;
-        }
-        else {
+        } else {
             switch ( a->d_node_type ) {
-            case KEY_BOOL: a->d_bool   = ( a->d_bool == b->d_bool ); break;
-            case KEY_CHAR: a->d_bool   = ( a->d_char == b->d_char ); break;
-            case KEY_STRING: a->d_bool = ( a->d_string == b->d_string ); break;
+            case KEY_BOOL:
+                a->d_bool = ( a->d_bool == b->d_bool );
+                break;
+            case KEY_CHAR:
+                a->d_bool = ( a->d_char == b->d_char );
+                break;
+            case KEY_STRING:
+                a->d_bool = ( a->d_string == b->d_string );
+                break;
             }
         }
-    }
-    else {
+    } else {
         const int promoted = PROMOTE( a->d_node_type, b->d_node_type );
         switch ( promoted ) {
         case KEY_INTEGER:
             switch ( op ) {
-            case T_EQUALS: a->d_bool  = ( a->d_integer == b->d_integer ); break;
-            case T_LESS: a->d_bool    = ( a->d_integer < b->d_integer ); break;
-            case T_GREATER: a->d_bool = ( a->d_integer > b->d_integer ); break;
+            case T_EQUALS:
+                a->d_bool = ( a->d_integer == b->d_integer );
+                break;
+            case T_LESS:
+                a->d_bool = ( a->d_integer < b->d_integer );
+                break;
+            case T_GREATER:
+                a->d_bool = ( a->d_integer > b->d_integer );
+                break;
             }
             break;
         case KEY_DOUBLE:
@@ -2325,16 +2403,24 @@ static KeyData *compare_op( KeyData *a, KeyData *b, const int op )
             to_double( a );
             to_double( b );
             switch ( op ) {
-            case T_EQUALS: a->d_bool  = ( a->d_double == b->d_double ); break;
-            case T_LESS: a->d_bool    = ( a->d_double < b->d_double ); break;
-            case T_GREATER: a->d_bool = ( a->d_double > b->d_double ); break;
+            case T_EQUALS:
+                a->d_bool = ( a->d_double == b->d_double );
+                break;
+            case T_LESS:
+                a->d_bool = ( a->d_double < b->d_double );
+                break;
+            case T_GREATER:
+                a->d_bool = ( a->d_double > b->d_double );
+                break;
             }
             break;
         case KEY_COMPLEX:
             to_complex( a );
             to_complex( b );
             switch ( op ) {
-            case T_EQUALS: a->d_bool = ( a->d_complex == b->d_complex ); break;
+            case T_EQUALS:
+                a->d_bool = ( a->d_complex == b->d_complex );
+                break;
             case T_LESS:
             case T_GREATER:
                 Parser::getParser()->error(
@@ -2513,42 +2599,35 @@ static KeyData *eval_function( KeyData *arg, const string &func )
         tmp += type_names[arg->d_node_type];
         tmp += ")";
         Parser::getParser()->error( tmp );
-    }
-    else if ( func == "int" ) {
+    } else if ( func == "int" ) {
         to_double( arg );
         arg->d_integer    = static_cast<int>( arg->d_double );
         arg->d_node_type  = KEY_INTEGER;
         arg->d_array_type = KEY_INTEGER;
-    }
-    else {
+    } else {
         for ( int f = 0; af[f].d_name.length() > 0; f++ ) {
             if ( af[f].d_name == func ) {
                 if ( arg->d_node_type == KEY_COMPLEX ) {
                     if ( af[f].d_c2c_func ) {
                         arg->d_complex = ( *af[f].d_c2c_func )( arg->d_complex );
-                    }
-                    else if ( af[f].d_c2r_func ) {
+                    } else if ( af[f].d_c2r_func ) {
                         arg->d_double     = ( *af[f].d_c2r_func )( arg->d_complex );
                         arg->d_node_type  = KEY_DOUBLE;
                         arg->d_array_type = KEY_DOUBLE;
-                    }
-                    else {
+                    } else {
                         to_double( arg );
                         arg->d_double = ( *af[f].d_r2r_func )( arg->d_double );
                     }
-                }
-                else {
+                } else {
                     if ( af[f].d_r2r_func ) {
                         to_double( arg );
                         arg->d_double = ( *af[f].d_r2r_func )( arg->d_double );
-                    }
-                    else if ( af[f].d_c2r_func ) {
+                    } else if ( af[f].d_c2r_func ) {
                         to_complex( arg );
                         arg->d_double     = ( *af[f].d_c2r_func )( arg->d_complex );
                         arg->d_node_type  = KEY_DOUBLE;
                         arg->d_array_type = KEY_DOUBLE;
-                    }
-                    else {
+                    } else {
                         to_complex( arg );
                         arg->d_complex = ( *af[f].d_c2c_func )( arg->d_complex );
                     }
@@ -2589,14 +2668,12 @@ static KeyData *lookup_variable( const string &key, const int index, const bool 
         tmp += key;
         tmp += "'' not found in database";
         parser->error( tmp );
-    }
-    else if ( !is_array && ( db->getArraySize( key ) > 1 ) ) {
+    } else if ( !is_array && ( db->getArraySize( key ) > 1 ) ) {
         string tmp( "Variable ``" );
         tmp += key;
         tmp += "'' is not a scalar value";
         parser->error( tmp );
-    }
-    else if ( ( index < 0 ) || ( index >= db->getArraySize( key ) ) ) {
+    } else if ( ( index < 0 ) || ( index >= db->getArraySize( key ) ) ) {
         ostrstream oss;
         oss << index;
         string tmp( "Variable ``" );
@@ -2605,38 +2682,31 @@ static KeyData *lookup_variable( const string &key, const int index, const bool 
         tmp += oss.str();
         tmp += "]'' out of range";
         parser->error( tmp );
-    }
-    else if ( db->isInteger( key ) ) {
+    } else if ( db->isInteger( key ) ) {
         result->d_integer    = db->getIntegerArray( key )[index];
         result->d_node_type  = KEY_INTEGER;
         result->d_array_type = KEY_INTEGER;
-    }
-    else if ( db->isDouble( key ) ) {
+    } else if ( db->isDouble( key ) ) {
         result->d_double     = db->getDoubleArray( key )[index];
         result->d_node_type  = KEY_DOUBLE;
         result->d_array_type = KEY_DOUBLE;
-    }
-    else if ( db->isComplex( key ) ) {
+    } else if ( db->isComplex( key ) ) {
         result->d_complex    = db->getComplexArray( key )[index];
         result->d_node_type  = KEY_COMPLEX;
         result->d_array_type = KEY_COMPLEX;
-    }
-    else if ( db->isBool( key ) ) {
+    } else if ( db->isBool( key ) ) {
         result->d_bool       = db->getBoolArray( key )[index];
         result->d_node_type  = KEY_BOOL;
         result->d_array_type = KEY_BOOL;
-    }
-    else if ( db->isChar( key ) ) {
+    } else if ( db->isChar( key ) ) {
         result->d_char       = db->getCharArray( key )[index];
         result->d_node_type  = KEY_CHAR;
         result->d_array_type = KEY_CHAR;
-    }
-    else if ( db->isString( key ) ) {
+    } else if ( db->isString( key ) ) {
         result->d_string     = db->getStringArray( key )[index];
         result->d_node_type  = KEY_STRING;
         result->d_array_type = KEY_STRING;
-    }
-    else {
+    } else {
         parser->error( "Unknown type for variable=" + key );
     }
 

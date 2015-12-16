@@ -43,7 +43,8 @@ namespace Solver {
  * shared pointers to a PertscKrylovSolver object and a vector
  * for initial guesses. All member variables are public.
  */
-class PetscSNESSolverParameters : public SolverStrategyParameters {
+class PetscSNESSolverParameters : public SolverStrategyParameters
+{
 public:
     PetscSNESSolverParameters() {}
     explicit PetscSNESSolverParameters( const AMP::shared_ptr<AMP::Database> &db );

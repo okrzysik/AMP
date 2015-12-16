@@ -29,7 +29,8 @@ namespace AMP {
   *    the additional functionallity
   */
 template <class T>
-class enable_shared_from_this : public base_enable_shared_from_this<T> {
+class enable_shared_from_this : public base_enable_shared_from_this<T>
+{
 public:
     AMP::shared_ptr<T> shared_from_this()
     {
@@ -40,13 +41,11 @@ public:
             try {
                 base_enable_shared_from_this<T> *tmp2 = this;
                 ptr                                   = tmp2->shared_from_this();
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 ptr = AMP::shared_ptr<T>( tmp, []( void * ) {} );
             }
             weak_ptr_ = ptr;
-        }
-        else {
+        } else {
             ptr = AMP::shared_ptr<T>( weak_ptr_ );
         }
         return ptr;
@@ -60,15 +59,13 @@ public:
             try {
                 const base_enable_shared_from_this<T> *tmp2 = this;
                 ptr                                         = tmp2->shared_from_this();
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 // Note: Clang on MAC has issues with the const version of this line, hence the
                 // const_cast
                 ptr = AMP::shared_ptr<T>( const_cast<T *>( tmp ), []( void * ) {} );
             }
             weak_ptr_ = const_pointer_cast<T>( ptr );
-        }
-        else {
+        } else {
             ptr = AMP::shared_ptr<const T>( weak_ptr_ );
         }
         return ptr;

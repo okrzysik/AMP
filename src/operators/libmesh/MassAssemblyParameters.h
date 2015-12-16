@@ -6,7 +6,8 @@
 namespace AMP {
 namespace Operator {
 
-class MassAssemblyParameters : public AssemblyParameters {
+class MassAssemblyParameters : public AssemblyParameters
+{
 public:
     explicit MassAssemblyParameters( const AMP::shared_ptr<AMP::Database> &db )
         : AssemblyParameters( db )

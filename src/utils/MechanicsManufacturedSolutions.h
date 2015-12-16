@@ -9,7 +9,8 @@ namespace MechanicsManufacturedSolution {
  * and corresponding forcing term @f$ f_i = - \sigma_{ij,j} @f$
  * where @f$ i \in \{x,y,z\}  @f$
  */
-class MMS {
+class MMS
+{
 public:
     typedef AMP::shared_ptr<MMS> shared_ptr;
     /**
@@ -317,7 +318,8 @@ protected:
  * hurt to verify it
  * actually does work
  */
-class MMSLinear : public MMS {
+class MMSLinear : public MMS
+{
 public:
     MMSLinear( double E = 0.0, double nu = 0.0 ) : MMS( E, nu ) { name = "Linear"; }
     double getExactSolutionX( double x, double y, double z ) const
@@ -430,7 +432,8 @@ public:
  * polynomial
  * approximation
  */
-class MMSTrigonometric : public MMS {
+class MMSTrigonometric : public MMS
+{
 public:
     MMSTrigonometric( double E = 0.0, double nu = 0.0 ) : MMS( E, nu ) { name = "Trigonometric"; }
     double getExactSolutionX( double x, double y, double z ) const
@@ -760,7 +763,8 @@ public:
  *
  * You are welcome to extend this to other parameters
  */
-class MMSBuilder {
+class MMSBuilder
+{
 public:
     MMSBuilder() {}
 
@@ -770,11 +774,9 @@ public:
         std::string name = mmsDatabase->getStringWithDefault( "name", "One" );
         if ( name == "Trigonometric" ) {
             mms = AMP::shared_ptr<MMS>( new MMSTrigonometric );
-        }
-        else if ( name == "Linear" ) {
+        } else if ( name == "Linear" ) {
             mms = AMP::shared_ptr<MMS>( new MMSLinear );
-        }
-        else {
+        } else {
             std::cerr << "Error: AMP::MechanicsManufacturedSolution::MMS" << name
                       << " is not defined" << std::endl;
             assert( false );

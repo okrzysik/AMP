@@ -66,7 +66,8 @@ void InputManager::setManager( InputManager *manager )
 
 void InputManager::freeManager()
 {
-    if ( s_manager_instance ) delete s_manager_instance;
+    if ( s_manager_instance )
+        delete s_manager_instance;
     s_manager_instance = ( (InputManager *) NULL );
 
     s_input_db.reset();
@@ -167,6 +168,7 @@ void InputManager::parseInputFile( const std::string &filename, AMP::shared_ptr<
     s_input_db = db;
 
     delete parser;
-    if ( fstream ) fclose( fstream );
+    if ( fstream )
+        fclose( fstream );
 }
 }

@@ -23,11 +23,9 @@ MeshElement::MeshElement( const MeshElement &rhs ) : d_globalID()
     element = NULL;
     if ( rhs.element == NULL && rhs.typeID == MeshElementTypeID ) {
         element = NULL;
-    }
-    else if ( rhs.typeID != MeshElementTypeID ) {
+    } else if ( rhs.typeID != MeshElementTypeID ) {
         element = rhs.clone();
-    }
-    else {
+    } else {
         element = rhs.element->clone();
     }
     d_globalID = rhs.d_globalID;
@@ -44,11 +42,9 @@ MeshElement &MeshElement::operator=( const MeshElement &rhs )
     typeID = MeshElementTypeID;
     if ( rhs.element == NULL && rhs.typeID == MeshElementTypeID ) {
         element = NULL;
-    }
-    else if ( rhs.typeID != MeshElementTypeID ) {
+    } else if ( rhs.typeID != MeshElementTypeID ) {
         element = rhs.clone();
-    }
-    else {
+    } else {
         element = rhs.element->clone();
     }
     d_globalID = rhs.d_globalID;
@@ -61,7 +57,8 @@ MeshElement &MeshElement::operator=( const MeshElement &rhs )
 ********************************************************/
 MeshElement::~MeshElement()
 {
-    if ( element != NULL ) delete element;
+    if ( element != NULL )
+        delete element;
     element = NULL;
 }
 
@@ -84,12 +81,14 @@ MeshElement *MeshElement::clone() const
 ********************************************************/
 MeshElement *MeshElement::getRawElement()
 {
-    if ( element == NULL ) return this;
+    if ( element == NULL )
+        return this;
     return element->getRawElement();
 }
 const MeshElement *MeshElement::getRawElement() const
 {
-    if ( element == NULL ) return this;
+    if ( element == NULL )
+        return this;
     return element->getRawElement();
 }
 
@@ -99,16 +98,20 @@ const MeshElement *MeshElement::getRawElement() const
 ********************************************************/
 std::vector<double> MeshElement::centroid() const
 {
-    if ( element != NULL ) return element->centroid();
-    if ( d_globalID.type() == Vertex ) return coord();
+    if ( element != NULL )
+        return element->centroid();
+    if ( d_globalID.type() == Vertex )
+        return coord();
     std::vector<MeshElement> nodes = getElements( Vertex );
     AMP_ASSERT( !nodes.empty() );
     std::vector<double> center = nodes[0].coord();
     for ( size_t i = 1; i < nodes.size(); i++ ) {
         std::vector<double> coord = nodes[i].coord();
-        for ( size_t j = 0; j < center.size(); j++ ) center[j] += coord[j];
+        for ( size_t j = 0; j < center.size(); j++ )
+            center[j] += coord[j];
     }
-    for ( size_t j = 0; j < center.size(); j++ ) center[j] /= nodes.size();
+    for ( size_t j = 0; j < center.size(); j++ )
+        center[j] /= nodes.size();
     return center;
 }
 
@@ -118,7 +121,8 @@ std::vector<double> MeshElement::centroid() const
 ********************************************************/
 bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
 {
-    if ( element != NULL ) return element->containsPoint( pos, TOL );
+    if ( element != NULL )
+        return element->containsPoint( pos, TOL );
     if ( d_globalID.type() == Vertex ) {
         // double dist = 0.0;
         std::vector<double> point = this->coord();
@@ -137,42 +141,50 @@ bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) co
 ********************************************************/
 std::vector<MeshElement> MeshElement::getElements( const GeomType type ) const
 {
-    if ( element == NULL ) AMP_ERROR( "getElements is not implimented for the base class" );
+    if ( element == NULL )
+        AMP_ERROR( "getElements is not implimented for the base class" );
     return element->getElements( type );
 }
 std::vector<MeshElement::shared_ptr> MeshElement::getNeighbors() const
 {
-    if ( element == NULL ) AMP_ERROR( "getNeighbors is not implimented for the base class" );
+    if ( element == NULL )
+        AMP_ERROR( "getNeighbors is not implimented for the base class" );
     return element->getNeighbors();
 }
 double MeshElement::volume() const
 {
-    if ( element == NULL ) AMP_ERROR( "volume is not implimented for the base class" );
+    if ( element == NULL )
+        AMP_ERROR( "volume is not implimented for the base class" );
     return element->volume();
 }
 std::vector<double> MeshElement::coord() const
 {
-    if ( element == NULL ) AMP_ERROR( "coord is not implimented for the base class" );
+    if ( element == NULL )
+        AMP_ERROR( "coord is not implimented for the base class" );
     return element->coord();
 }
 double MeshElement::coord( int i ) const
 {
-    if ( element == NULL ) return this->coord()[i];
+    if ( element == NULL )
+        return this->coord()[i];
     return element->coord( i );
 }
 bool MeshElement::isOnSurface() const
 {
-    if ( element == NULL ) AMP_ERROR( "isOnSurface is not implimented for the base class" );
+    if ( element == NULL )
+        AMP_ERROR( "isOnSurface is not implimented for the base class" );
     return element->isOnSurface();
 }
 bool MeshElement::isOnBoundary( int id ) const
 {
-    if ( element == NULL ) AMP_ERROR( "isOnBoundary is not implimented for the base class" );
+    if ( element == NULL )
+        AMP_ERROR( "isOnBoundary is not implimented for the base class" );
     return element->isOnBoundary( id );
 }
 bool MeshElement::isInBlock( int id ) const
 {
-    if ( element == NULL ) AMP_ERROR( "isInBlock is not implimented for the base class" );
+    if ( element == NULL )
+        AMP_ERROR( "isInBlock is not implimented for the base class" );
     return element->isInBlock( id );
 }
 

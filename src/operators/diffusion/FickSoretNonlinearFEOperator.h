@@ -15,7 +15,8 @@ namespace Operator {
 /**
   Class to add the output of the Fick and Soret operators.
   */
-class FickSoretNonlinearFEOperator : public Operator {
+class FickSoretNonlinearFEOperator : public Operator
+{
 public:
     typedef AMP::shared_ptr<FickSoretNonlinearFEOperator> shared_ptr;
 

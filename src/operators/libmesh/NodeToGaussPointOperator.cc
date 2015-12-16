@@ -37,8 +37,7 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
     if ( d_UseSurfaceElements ) {
         d_dim      = 2;
         d_iterator = d_Mesh->getIterator( AMP::Mesh::Face, 0 );
-    }
-    else {
+    } else {
         d_dim      = 3;
         d_iterator = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
     }
@@ -61,8 +60,9 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
         // Cache the nodes for all elements
         std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::Vertex );
         d_nodes[i].resize( nodes.size() );
-        for ( size_t j = 0; j < nodes.size(); j++ ) d_nodes[i][j] = nodes[j].globalID();
-        size_t N_nodes                                            = d_nodes[i].size();
+        for ( size_t j    = 0; j < nodes.size(); j++ )
+            d_nodes[i][j] = nodes[j].globalID();
+        size_t N_nodes    = d_nodes[i].size();
         // Cache the shape functions for all elements
         libMesh::Elem *elem =
             AMP::Discretization::createLibmeshElements::createElement( *iterator );
@@ -73,7 +73,8 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
         d_phi[i].resize( d_N_quad[i] * N_nodes, 0 );
         for ( size_t j = 0; j < phi.size(); j++ ) {
             AMP_ASSERT( phi[j].size() == d_N_quad[i] );
-            for ( size_t k = 0; k < phi[j].size(); k++ ) d_phi[i][j + k * N_nodes] = phi[j][k];
+            for ( size_t k                = 0; k < phi[j].size(); k++ )
+                d_phi[i][j + k * N_nodes] = phi[j][k];
         }
         delete elem;
     }
@@ -109,7 +110,8 @@ void NodeToGaussPointOperator::apply( AMP::LinearAlgebra::Vector::const_shared_p
         gaussPt_dof_map->getDOFs( iterator->globalID(), gaussPtIndices );
 
         // Check if we need to set any gauss points for the current element
-        if ( gaussPtIndices.size() == 0 ) continue;
+        if ( gaussPtIndices.size() == 0 )
+            continue;
         unsigned int N_quad = d_N_quad[i];
         AMP_ASSERT( gaussPtIndices.size() == N_quad );
 

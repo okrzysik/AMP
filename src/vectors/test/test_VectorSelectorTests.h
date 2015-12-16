@@ -57,9 +57,11 @@ void testAllSelectors( AMP::UnitTest *ut )
     testSelector( ut, "VS_Stride", AMP::LinearAlgebra::VS_Stride( 0, 1 ), vec );
     testSelector( ut, "VS_Comm(vec)", AMP::LinearAlgebra::VS_Comm( vec_comm ), vec );
     testSelector( ut, "VS_Comm(world)", AMP::LinearAlgebra::VS_Comm( world_comm ), vec );
-    for ( int i = 0; i < vec_comm.getRank(); i++ ) vec_comm.barrier();
+    for ( int i = 0; i < vec_comm.getRank(); i++ )
+        vec_comm.barrier();
     testSelector( ut, "VS_Comm(self)", AMP::LinearAlgebra::VS_Comm( self_comm ), vec );
-    for ( int i = vec_comm.getRank(); i < vec_comm.getSize(); i++ ) vec_comm.barrier();
+    for ( int i = vec_comm.getRank(); i < vec_comm.getSize(); i++ )
+        vec_comm.barrier();
     // testSelector( ut, "VS_Mesh", AMP::LinearAlgebra::VS_Mesh(), vec );
     // testSelector( ut, "VS_MeshIterator", AMP::LinearAlgebra::VS_MeshIterator(), vec );
 }
@@ -94,8 +96,7 @@ void test_VS_ByVariableName( AMP::UnitTest *ut )
             ut->failure( "Could not find vector" );
             pass = false;
         }
-    }
-    else {
+    } else {
         ut->failure( "Did not find a vector" );
     }
 
@@ -109,22 +110,20 @@ void test_VS_ByVariableName( AMP::UnitTest *ut )
             ut->failure( "Could not find vector" );
             pass = false;
         }
-    }
-    else {
+    } else {
         if ( AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vec2 ) ) {
             ut->expected_failure(
                 "Subsetting a multivector of multivectors by name is not functional yet" );
-        }
-        else if ( AMP::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedVector>( vec2 ) ) {
+        } else if ( AMP::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedVector>( vec2 ) ) {
             ut->expected_failure(
                 "Subsetting a multivector of multivectors by name is not functional yet" );
-        }
-        else {
+        } else {
             ut->failure( "Did not find a vector" );
             pass = false;
         }
     }
-    if ( pass ) ut->passes( "passed subset by name" );
+    if ( pass )
+        ut->passes( "passed subset by name" );
 }
 
 
@@ -149,21 +148,23 @@ void test_VS_Comm( AMP::UnitTest *ut )
         pass = false;
     }
     // Test comm subset for self without any other processors involved
-    for ( int i = 0; i < vec_comm.getRank(); i++ ) vec_comm.barrier();
-    vec2        = AMP::LinearAlgebra::VS_Comm( self_comm ).subset( vec1 );
+    for ( int i = 0; i < vec_comm.getRank(); i++ )
+        vec_comm.barrier();
+    vec2 = AMP::LinearAlgebra::VS_Comm( self_comm ).subset( vec1 );
     if ( vec1 != NULL ) {
         if ( vec2->getLocalSize() != vec1->getLocalSize() ||
              vec2->getGlobalSize() != vec1->getLocalSize() || vec2->getComm().getSize() != 1 ) {
             ut->failure( "Subset for AMP_COMM_SELF" );
             pass = false;
         }
-    }
-    else {
+    } else {
         if ( vec1->getLocalSize() != 0 ) {
             ut->failure( "Subset for AMP_COMM_SELF" );
             pass = false;
         }
     }
-    for ( int i = vec_comm.getRank(); i < vec_comm.getSize(); i++ ) vec_comm.barrier();
-    if ( pass ) ut->passes( "passed subset by comm" );
+    for ( int i = vec_comm.getRank(); i < vec_comm.getSize(); i++ )
+        vec_comm.barrier();
+    if ( pass )
+        ut->passes( "passed subset by comm" );
 }

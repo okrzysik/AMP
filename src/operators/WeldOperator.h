@@ -20,7 +20,8 @@
 namespace AMP {
 namespace Operator {
 
-class WeldOperator : public Operator {
+class WeldOperator : public Operator
+{
 
 public:
     WeldOperator( const AMP::shared_ptr<OperatorParameters> &params ) : Operator( params ) {}

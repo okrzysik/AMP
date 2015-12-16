@@ -477,8 +477,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             linearSolver->setInitialGuess( columnSolVec );
 
             linearSolver->solve( columnRhsVec, columnSolVec );
-        }
-        else {
+        } else {
             size_t myPCGmaxIters = input_db->getInteger( "myPCGmaxIters" );
             double myPCGrelTol   = input_db->getDouble( "myPCGrelTol" );
             double myPCGabsTol   = input_db->getDouble( "myPCGabsTol" );
@@ -564,12 +563,10 @@ int main( int argc, char *argv[] )
         for ( size_t i = 0; i < exeNames.size(); ++i ) {
             myTest( &ut, exeNames[i] );
         } // end for
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

@@ -11,7 +11,8 @@ namespace AMP {
 namespace Operator {
 
 //! Parameter class to provide parameters to all subchannel classes
-class SubchannelOperatorParameters : public OperatorParameters {
+class SubchannelOperatorParameters : public OperatorParameters
+{
 public:
     //! Constructor
     explicit SubchannelOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )

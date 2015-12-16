@@ -14,7 +14,8 @@ namespace LinearAlgebra {
 /** \class EpetraVectorEngineParameters
   * \brief Class that details how to construct an EpetraVectorEngine
   */
-class EpetraVectorEngineParameters : public VectorEngineParameters {
+class EpetraVectorEngineParameters : public VectorEngineParameters
+{
 public:
     /** \brief Constructor
         \param[in] local_size     The number of elements on this core
@@ -55,7 +56,8 @@ private:
   * libraries, it is very difficult to separate the data from the engine.  For this
   * reason, the EpetraVectorEngine contains the Epetra_Vector to operate on.
   */
-class EpetraVectorEngine : public VectorEngine {
+class EpetraVectorEngine : public VectorEngine
+{
 protected:
     /** \brief  The Epetra_Vector to perform work on
       */

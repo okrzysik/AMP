@@ -21,7 +21,8 @@ namespace Discretization {
  *   A multivector will have a pointer to a multiDOFManager instead of a standard DOFManager.
  *   It is also possible that a standard vector can use a multiDOFManager.
  */
-class multiDOFManager : public DOFManager {
+class multiDOFManager : public DOFManager
+{
 public:
     using DOFManager::getDOFs;
     using DOFManager::subset;
@@ -169,9 +170,12 @@ private:
         }
         inline bool operator>=( const subDOF_struct &rhs ) const
         {
-            if ( DOF1_begin != rhs.DOF1_begin ) return DOF1_begin >= rhs.DOF1_begin;
-            if ( DOF1_end != rhs.DOF1_end ) return DOF1_end >= rhs.DOF1_end;
-            if ( DOF2_begin != rhs.DOF2_begin ) return DOF2_begin >= rhs.DOF2_begin;
+            if ( DOF1_begin != rhs.DOF1_begin )
+                return DOF1_begin >= rhs.DOF1_begin;
+            if ( DOF1_end != rhs.DOF1_end )
+                return DOF1_end >= rhs.DOF1_end;
+            if ( DOF2_begin != rhs.DOF2_begin )
+                return DOF2_begin >= rhs.DOF2_begin;
             return DOF2_end >= rhs.DOF2_end;
         }
         inline bool operator>( const subDOF_struct &rhs ) const

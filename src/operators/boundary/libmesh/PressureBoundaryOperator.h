@@ -7,7 +7,8 @@
 namespace AMP {
 namespace Operator {
 
-class PressureBoundaryOperator : public BoundaryOperator {
+class PressureBoundaryOperator : public BoundaryOperator
+{
 public:
     explicit PressureBoundaryOperator( const AMP::shared_ptr<OperatorParameters> &params );
 

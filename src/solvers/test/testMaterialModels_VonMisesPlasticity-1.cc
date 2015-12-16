@@ -80,8 +80,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             strain[0][0] = sig11_init[i] / E;
             strain[0][1] = -nu * ( sig11_init[i] / E );
             strain[0][2] = -nu * ( sig11_init[i] / E );
-        }
-        else {
+        } else {
             strain[0][0] = ( sig11_init[i] / E ) + ( ( sig11_init[i] - sigy ) / Ep );
             strain[0][1] =
                 ( -nu * ( sig11_init[i] / E ) ) - ( ( 1.0 / 2.0 ) * ( sig11_init[i] - sigy ) / Ep );
@@ -99,8 +98,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         if ( i == 0 ) {
             slope[0]   = 0.0;
             slope_p[0] = 0.0;
-        }
-        else {
+        } else {
             slope[i]   = ( sig11[i] - sig11[i - 1] ) / ( eph11[i] - eph11[i - 1] );
             slope_p[i] = ( sig11p[i] - sig11p[i - 1] ) / ( eph11p[i] - eph11p[i - 1] );
         }
@@ -146,8 +144,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     diff_norm = sqrt( diff_norm ) / sig11[max_num - 1];
     if ( diff_norm > ( 1.0e-8 ) ) {
         ut->failure( "Gauss point test for Linear Isotropic Hardening" );
-    }
-    else {
+    } else {
         ut->passes( "Gauss point test for Linear Isotropic Hardening" );
     }
 
@@ -167,12 +164,10 @@ int main( int argc, char *argv[] )
     for ( unsigned int i = 0; i < exeNames.size(); i++ ) {
         try {
             myTest( &ut, exeNames[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             AMP::pout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             AMP::pout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing" );

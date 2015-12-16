@@ -8,7 +8,8 @@ namespace AMP {
 namespace unit_test {
 
 template <typename TEST>
-class TimeIntegratorParameterTest : public AMP::UnitTest {
+class TimeIntegratorParameterTest : public AMP::UnitTest
+{
 protected:
     explicit TimeIntegratorParameterTest( UnitTest *ut ) { d_ut = ut; }
     UnitTest *d_ut;
@@ -26,8 +27,7 @@ public:
             std::cout << "Running " << TEST::get_test_name() << std::endl;
             TimeIntegratorParameterTest test( ut );
             TEST::run_test( &test );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             ut->failure( "Unknown exception" );
         }
     }

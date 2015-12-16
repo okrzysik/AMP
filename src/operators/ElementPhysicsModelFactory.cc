@@ -44,9 +44,10 @@
 #endif
 
 
-#define resetElementPhysicsModel( NAME )                                         \
-    do {                                                                         \
-        if ( name == #NAME ) retElementPhysicsModel.reset( new NAME( params ) ); \
+#define resetElementPhysicsModel( NAME )                        \
+    do {                                                        \
+        if ( name == #NAME )                                    \
+            retElementPhysicsModel.reset( new NAME( params ) ); \
     } while ( 0 )
 
 

@@ -25,7 +25,8 @@ namespace unit_test {
 
 
 template <typename T>
-class CloneFactory {
+class CloneFactory
+{
 public:
     typedef typename T::vector vector;
 
@@ -44,7 +45,8 @@ public:
 };
 
 
-class NullVectorFactory {
+class NullVectorFactory
+{
 public:
     typedef AMP::LinearAlgebra::NullVector vector;
 
@@ -64,7 +66,8 @@ public:
 
 
 template <int I, bool GLOBAL>
-class SimpleVectorFactory {
+class SimpleVectorFactory
+{
 public:
     typedef AMP::LinearAlgebra::SimpleVector<double> vector;
 
@@ -90,7 +93,8 @@ public:
 
 
 template <int D, int I, bool GLOBAL>
-class ArrayVectorFactory {
+class ArrayVectorFactory
+{
 public:
     typedef AMP::LinearAlgebra::ArrayVector<double> vector;
 
@@ -118,7 +122,8 @@ public:
 
 #ifdef USE_EXT_TRILINOS
 template <typename T>
-class SimpleManagedVectorFactory {
+class SimpleManagedVectorFactory
+{
 public:
     typedef T vector;
 
@@ -157,7 +162,8 @@ public:
 
 #ifdef USE_EXT_PETSC
 template <typename T>
-class PetscManagedVectorFactory {
+class PetscManagedVectorFactory
+{
 public:
     typedef T vector;
 
@@ -194,7 +200,8 @@ public:
 #endif
 
 template <typename TYPE1, typename FACTORY2>
-class ViewFactory {
+class ViewFactory
+{
 public:
     typedef TYPE1 vector;
 
@@ -213,15 +220,18 @@ public:
 
 
 template <typename FACTORY1, int NUM1, typename FACTORY2, int NUM2>
-class MultiVectorFactory {
+class MultiVectorFactory
+{
 public:
     typedef AMP::LinearAlgebra::MultiVector vector;
 
     static AMP::LinearAlgebra::Variable::shared_ptr getVariable()
     {
         AMP::LinearAlgebra::MultiVariable *newVar = new AMP::LinearAlgebra::MultiVariable( "var1" );
-        for ( int i = 0; i != NUM1; i++ ) newVar->add( FACTORY1::getVariable() );
-        for ( int i = 0; i != NUM2; i++ ) newVar->add( FACTORY2::getVariable() );
+        for ( int i = 0; i != NUM1; i++ )
+            newVar->add( FACTORY1::getVariable() );
+        for ( int i = 0; i != NUM2; i++ )
+            newVar->add( FACTORY2::getVariable() );
         return AMP::LinearAlgebra::Variable::shared_ptr( newVar );
     }
 

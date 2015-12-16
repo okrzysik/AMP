@@ -200,7 +200,8 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
         // CREATE OPERATORS
         for ( size_t meshIndex = 0; meshIndex < pinMeshIDs.size(); meshIndex++ ) {
             AMP::Mesh::Mesh::shared_ptr adapter = manager->Subset( pinMeshIDs[meshIndex] );
-            if ( adapter.get() == NULL ) continue;
+            if ( adapter.get() == NULL )
+                continue;
 
             std::string meshName = adapter->getName();
             std::string prefix, prefixPower;
@@ -208,20 +209,16 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
             if ( meshName.compare( "clad" ) == 0 ) {
                 prefix      = "Clad";
                 prefixPower = "Clad";
-            }
-            else if ( meshName.compare( "pellet_1" ) == 0 ) {
+            } else if ( meshName.compare( "pellet_1" ) == 0 ) {
                 prefix      = "BottomPellet";
                 prefixPower = "Pellet";
-            }
-            else if ( meshName.compare( "pellet_3" ) == 0 ) {
+            } else if ( meshName.compare( "pellet_3" ) == 0 ) {
                 prefix      = "TopPellet";
                 prefixPower = "Pellet";
-            }
-            else if ( meshName.compare( 0, 7, "pellet_" ) == 0 ) {
+            } else if ( meshName.compare( 0, 7, "pellet_" ) == 0 ) {
                 prefix      = "MiddlePellet";
                 prefixPower = "Pellet";
-            }
-            else {
+            } else {
                 AMP_ERROR( "Unknown Mesh" );
             }
 
@@ -302,7 +299,8 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
 
         for ( size_t meshIndex = 0; meshIndex < subChannelMeshIDs.size(); meshIndex++ ) {
             AMP::Mesh::Mesh::shared_ptr adapter = manager->Subset( subChannelMeshIDs[meshIndex] );
-            if ( adapter.get() == NULL ) continue;
+            if ( adapter.get() == NULL )
+                continue;
 
             std::string meshName = adapter->getName();
             if ( meshName.compare( "subchannel" ) == 0 ) {
@@ -392,8 +390,10 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
                     szaColumn->append( sza->getOperator( j ) );
             }
         }
-        if ( n2nColumn->getNumberOfOperators() > 0 ) mapsColumn->append( n2nColumn );
-        if ( szaColumn->getNumberOfOperators() > 0 ) mapsColumn->append( szaColumn );
+        if ( n2nColumn->getNumberOfOperators() > 0 )
+            mapsColumn->append( n2nColumn );
+        if ( szaColumn->getNumberOfOperators() > 0 )
+            mapsColumn->append( szaColumn );
 
         n2nColumn->setVector( thermalMapVec );
         szaColumn->setVector( thermalMapVec );
@@ -401,24 +401,21 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
         int curOperator = 0;
         for ( size_t meshIndex = 0; meshIndex < pinMeshIDs.size(); meshIndex++ ) {
             AMP::Mesh::Mesh::shared_ptr adapter = manager->Subset( pinMeshIDs[meshIndex] );
-            if ( adapter.get() == NULL ) continue;
+            if ( adapter.get() == NULL )
+                continue;
 
             std::string meshName = adapter->getName();
             std::string prefix;
 
             if ( meshName.compare( "clad" ) == 0 ) {
                 prefix = "Clad";
-            }
-            else if ( meshName.compare( "pellet_1" ) == 0 ) {
+            } else if ( meshName.compare( "pellet_1" ) == 0 ) {
                 prefix = "BottomPellet";
-            }
-            else if ( meshName.compare( "pellet_3" ) == 0 ) {
+            } else if ( meshName.compare( "pellet_3" ) == 0 ) {
                 prefix = "TopPellet";
-            }
-            else if ( meshName.compare( 0, 7, "pellet_" ) == 0 ) {
+            } else if ( meshName.compare( 0, 7, "pellet_" ) == 0 ) {
                 prefix = "MiddlePellet";
-            }
-            else {
+            } else {
                 AMP_ERROR( "Unknown Mesh" );
             }
 
@@ -442,18 +439,16 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
                     AMP_ASSERT( thermalMapVec != NULL );
                     gapBC->setVariableFlux( thermalMapVec );
                     gapBC->reset( gapBC->getParameters() );
-                }
-                else if ( ( opNames[curBCentry] == "BottomP2PNonlinearRobinVectorCorrection" ) ||
-                          ( opNames[curBCentry] == "MiddleP2PNonlinearRobinBoundaryCondition" ) ||
-                          ( opNames[curBCentry] == "TopP2PNonlinearRobinBoundaryCondition" ) ) {
+                } else if ( ( opNames[curBCentry] == "BottomP2PNonlinearRobinVectorCorrection" ) ||
+                            ( opNames[curBCentry] == "MiddleP2PNonlinearRobinBoundaryCondition" ) ||
+                            ( opNames[curBCentry] == "TopP2PNonlinearRobinBoundaryCondition" ) ) {
                     AMP::shared_ptr<AMP::Operator::RobinVectorCorrection> p2pBC =
                         AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
                             curBCcol->getBoundaryOperator( curBCentry ) );
                     AMP_ASSERT( thermalMapVec != NULL );
                     p2pBC->setVariableFlux( thermalMapVec );
                     p2pBC->reset( p2pBC->getParameters() );
-                }
-                else if ( opNames[curBCentry] == "C2WBoundaryVectorCorrection" ) {
+                } else if ( opNames[curBCentry] == "C2WBoundaryVectorCorrection" ) {
                     AMP::shared_ptr<AMP::Database> thisDb =
                         global_input_db->getDatabase( opNames[curBCentry] );
                     bool isCoupled = thisDb->getBoolWithDefault( "IsCoupledBoundary_0", false );
@@ -467,16 +462,14 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
                         c2wBC->setFrozenVector( ChannelDiameterVec );
                         c2wBC->reset( c2wBC->getParameters() );
                     }
-                }
-                else if ( opNames[curBCentry] == "C2PRobinVectorCorrection" ) {
+                } else if ( opNames[curBCentry] == "C2PRobinVectorCorrection" ) {
                     AMP::shared_ptr<AMP::Operator::RobinVectorCorrection> gapBC =
                         AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
                             curBCcol->getBoundaryOperator( curBCentry ) );
                     AMP_ASSERT( thermalMapVec != NULL );
                     gapBC->setVariableFlux( thermalMapVec );
                     gapBC->reset( gapBC->getParameters() );
-                }
-                else {
+                } else {
                     AMP_ERROR( "Unknown boundary operator" );
                 }
             }
@@ -621,18 +614,15 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
                     new AMP::Solver::TrilinosMLSolver( subchannelPreconditionerParams ) );
                 linearColumnOperator->append( subchannelLinearOperator );
                 columnPreconditioner->append( subchannelPreconditioner );
-            }
-            else if ( preconditioner == "Banded" ) {
+            } else if ( preconditioner == "Banded" ) {
                 subchannelPreconditioner_db->putInteger( "KL", 3 );
                 subchannelPreconditioner_db->putInteger( "KU", 3 );
                 AMP::shared_ptr<AMP::Solver::BandedSolver> subchannelPreconditioner(
                     new AMP::Solver::BandedSolver( subchannelPreconditionerParams ) );
                 linearColumnOperator->append( subchannelLinearOperator );
                 columnPreconditioner->append( subchannelPreconditioner );
-            }
-            else if ( preconditioner == "None" ) {
-            }
-            else {
+            } else if ( preconditioner == "None" ) {
+            } else {
                 AMP_ERROR( "Invalid preconditioner type" );
             }
         }
@@ -666,7 +656,8 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
     if ( subchannelMesh.get() != NULL ) {
         range = subchannelMesh->getBoundingBox();
         AMP_ASSERT( range.size() == 6 );
-        if ( subchannelMesh->getComm().getRank() == 0 ) root_subchannel = globalComm.getRank();
+        if ( subchannelMesh->getComm().getRank() == 0 )
+            root_subchannel = globalComm.getRank();
     }
     root_subchannel = globalComm.maxReduce( root_subchannel );
     globalComm.bcast( &range[0], 6, root_subchannel );
@@ -739,8 +730,7 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
     size_t totalOp;
     if ( subchannelMesh != NULL ) {
         totalOp = nonlinearColumnOperator->getNumberOfOperators() - 1;
-    }
-    else {
+    } else {
         totalOp = nonlinearColumnOperator->getNumberOfOperators();
     }
     for ( size_t id = 0; id != totalOp; id++ ) {
@@ -762,12 +752,14 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
               << globalSolMultiVector->L2Norm() << std::endl;
     nonlinearCoupledOperator->residual(
         globalRhsMultiVector, globalSolMultiVector, globalResMultiVector );
-    double tempResNorm                        = 0.0;
-    double flowResNorm                        = 0.0;
-    if ( pinMesh != NULL ) tempResNorm        = globalThermalResVec->L2Norm();
-    if ( subchannelMesh != NULL ) flowResNorm = flowResVec->L2Norm();
-    tempResNorm                               = globalComm.maxReduce( tempResNorm );
-    flowResNorm                               = globalComm.maxReduce( flowResNorm );
+    double tempResNorm = 0.0;
+    double flowResNorm = 0.0;
+    if ( pinMesh != NULL )
+        tempResNorm = globalThermalResVec->L2Norm();
+    if ( subchannelMesh != NULL )
+        flowResNorm = flowResVec->L2Norm();
+    tempResNorm     = globalComm.maxReduce( tempResNorm );
+    flowResNorm     = globalComm.maxReduce( flowResNorm );
     AMP::pout << "Initial residual norm: " << std::setprecision( 13 )
               << globalResMultiVector->L2Norm() << std::endl;
     AMP::pout << "Initial temp residual norm: " << std::setprecision( 13 ) << tempResNorm
@@ -886,10 +878,12 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
             flowDensityVec->getDOFManager()->getDOFs( face->globalID(), dofs );
             double density1 = flowDensityVec->getValueByGlobalID( dofs[0] );
             double density2 = densityMapVec->getValueByLocalID( i );
-            if ( !AMP::Utilities::approx_equal( density1, density2 ) ) pass_density = false;
-            double temp1 = flowTempVec->getValueByGlobalID( dofs[0] );
-            double temp2 = temperatureMapVec->getValueByLocalID( i );
-            if ( !AMP::Utilities::approx_equal( temp1, temp2 ) ) pass_temperature = false;
+            if ( !AMP::Utilities::approx_equal( density1, density2 ) )
+                pass_density = false;
+            double temp1     = flowTempVec->getValueByGlobalID( dofs[0] );
+            double temp2     = temperatureMapVec->getValueByLocalID( i );
+            if ( !AMP::Utilities::approx_equal( temp1, temp2 ) )
+                pass_temperature = false;
             ++face;
         }
         if ( pass_density )
@@ -946,8 +940,9 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
     PROFILE_ENABLE( 0 );
 
-    std::string exeName      = "testSubchannelSolve-1";
-    if ( argc == 2 ) exeName = argv[1];
+    std::string exeName = "testSubchannelSolve-1";
+    if ( argc == 2 )
+        exeName = argv[1];
 
     SubchannelSolve( &ut, exeName );
 

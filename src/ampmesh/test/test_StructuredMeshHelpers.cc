@@ -41,7 +41,8 @@ void runTest( AMP::UnitTest *ut )
                 AMP::Mesh::StructuredMeshHelper::getYZFaceIterator( mesh, 0 );
             AMP::Mesh::MeshIterator face1 =
                 AMP::Mesh::StructuredMeshHelper::getYZFaceIterator( mesh, 1 );
-            if ( face1.size() > face0.size() ) pass = true;
+            if ( face1.size() > face0.size() )
+                pass = true;
         }
         if ( pass )
             ut->passes( "Found ghost faces on all processors" );

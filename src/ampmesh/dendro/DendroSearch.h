@@ -32,7 +32,8 @@ namespace AMP {
 namespace Mesh {
 
 
-class DendroSearch {
+class DendroSearch
+{
 public:
     struct ProjectOnBoundaryData;
 

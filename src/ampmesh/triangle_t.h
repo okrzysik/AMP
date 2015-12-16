@@ -6,7 +6,8 @@
 
 #include <vector>
 
-class triangle_t {
+class triangle_t
+{
 public:
     triangle_t( double const *A, double const *B, double const *C );
     ~triangle_t();

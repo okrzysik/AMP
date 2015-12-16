@@ -22,24 +22,24 @@ inline type MPI_CLASS::sumReduce( const type value ) const
         type tmp = value;
         call_sumReduce( &tmp, 1 );
         return tmp;
-    }
-    else {
+    } else {
         return value;
     }
 }
 template <class type>
 inline void MPI_CLASS::sumReduce( type *x, const int n ) const
 {
-    if ( comm_size > 1 ) call_sumReduce( x, n );
+    if ( comm_size > 1 )
+        call_sumReduce( x, n );
 }
 template <class type>
 inline void MPI_CLASS::sumReduce( const type *x, type *y, const int n ) const
 {
     if ( comm_size > 1 ) {
         call_sumReduce( x, y, n );
-    }
-    else {
-        for ( int i = 0; i < n; i++ ) y[i] = x[i];
+    } else {
+        for ( int i = 0; i < n; i++ )
+            y[i]    = x[i];
     }
 }
 // Define specializations of call_sumReduce(type*, const int)
@@ -128,8 +128,7 @@ inline type MPI_CLASS::minReduce( const type value ) const
         type tmp = value;
         call_minReduce( &tmp, 1, NULL );
         return tmp;
-    }
-    else {
+    } else {
         return value;
     }
 }
@@ -138,10 +137,10 @@ inline void MPI_CLASS::minReduce( type *x, const int n, int *rank_of_min ) const
 {
     if ( comm_size > 1 ) {
         call_minReduce( x, n, rank_of_min );
-    }
-    else {
+    } else {
         if ( rank_of_min != NULL ) {
-            for ( int i = 0; i < n; i++ ) rank_of_min[i] = 0;
+            for ( int i        = 0; i < n; i++ )
+                rank_of_min[i] = 0;
         }
     }
 }
@@ -150,11 +149,11 @@ inline void MPI_CLASS::minReduce( const type *x, type *y, const int n, int *rank
 {
     if ( comm_size > 1 ) {
         call_minReduce( x, y, n, rank_of_min );
-    }
-    else {
+    } else {
         for ( int i = 0; i < n; i++ ) {
-            y[i]                                      = x[i];
-            if ( rank_of_min != NULL ) rank_of_min[i] = 0;
+            y[i] = x[i];
+            if ( rank_of_min != NULL )
+                rank_of_min[i] = 0;
         }
     }
 }
@@ -257,8 +256,7 @@ inline type MPI_CLASS::maxReduce( const type value ) const
         type tmp = value;
         call_maxReduce( &tmp, 1, NULL );
         return tmp;
-    }
-    else {
+    } else {
         return value;
     }
 }
@@ -267,10 +265,10 @@ inline void MPI_CLASS::maxReduce( type *x, const int n, int *rank_of_max ) const
 {
     if ( comm_size > 1 ) {
         call_maxReduce( x, n, rank_of_max );
-    }
-    else {
+    } else {
         if ( rank_of_max != NULL ) {
-            for ( int i = 0; i < n; i++ ) rank_of_max[i] = 0;
+            for ( int i        = 0; i < n; i++ )
+                rank_of_max[i] = 0;
         }
     }
 }
@@ -279,11 +277,11 @@ inline void MPI_CLASS::maxReduce( const type *x, type *y, const int n, int *rank
 {
     if ( comm_size > 1 ) {
         call_maxReduce( x, y, n, rank_of_max );
-    }
-    else {
+    } else {
         for ( int i = 0; i < n; i++ ) {
-            y[i]                                      = x[i];
-            if ( rank_of_max != NULL ) rank_of_max[i] = 0;
+            y[i] = x[i];
+            if ( rank_of_max != NULL )
+                rank_of_max[i] = 0;
         }
     }
 }
@@ -407,13 +405,16 @@ void MPI_CLASS::call_bcast( type *x, const int n, const int root ) const
 template <>
 inline std::string MPI_CLASS::bcast<std::string>( const std::string value, const int root ) const
 {
-    if ( comm_size == 1 ) return value;
+    if ( comm_size == 1 )
+        return value;
     int length = static_cast<int>( value.size() );
     call_bcast<int>( &length, 1, root );
-    if ( length == 0 ) return std::string();
+    if ( length == 0 )
+        return std::string();
     char *str = new char[length + 1];
     if ( root == comm_rank ) {
-        for ( int i = 0; i < length; i++ ) str[i] = value[i];
+        for ( int i = 0; i < length; i++ )
+            str[i]  = value[i];
     }
     call_bcast<char>( str, length, root );
     str[length] = 0;
@@ -430,21 +431,23 @@ inline void MPI_CLASS::bcast<std::string>( std::string *, const int, const int )
 template <class type>
 inline type MPI_CLASS::bcast( const type value, const int root ) const
 {
-    if ( root >= comm_size ) MPI_CLASS_ERROR( "root cannot be >= size in bcast" );
+    if ( root >= comm_size )
+        MPI_CLASS_ERROR( "root cannot be >= size in bcast" );
     if ( comm_size > 1 ) {
         type tmp = value;
         call_bcast( &tmp, 1, root );
         return tmp;
-    }
-    else {
+    } else {
         return value;
     }
 }
 template <class type>
 inline void MPI_CLASS::bcast( type *x, const int n, const int root ) const
 {
-    if ( root >= comm_size ) MPI_CLASS_ERROR( "root cannot be >= size in bcast" );
-    if ( comm_size > 1 ) call_bcast( x, n, root );
+    if ( root >= comm_size )
+        MPI_CLASS_ERROR( "root cannot be >= size in bcast" );
+    if ( comm_size > 1 )
+        call_bcast( x, n, root );
 }
 
 
@@ -570,12 +573,14 @@ inline void MPI_CLASS::allGather<std::string>( const std::string x_in, std::stri
     std::vector<int> recv_cnt( comm_size, 0 );
     allGather<int>( (int) x_in.size() + 1, &recv_cnt[0] );
     std::vector<int> recv_disp( comm_size, 0 );
-    for ( int i = 1; i < comm_size; i++ ) recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
+    for ( int i      = 1; i < comm_size; i++ )
+        recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
     // Call the vector form of allGather for the char arrays
     char *recv_data = new char[recv_disp[comm_size - 1] + recv_cnt[comm_size - 1]];
     allGather<char>(
         x_in.c_str(), (int) x_in.size() + 1, recv_data, &recv_cnt[0], &recv_disp[0], true );
-    for ( int i = 0; i < comm_size; i++ ) x_out[i] = std::string( &recv_data[recv_disp[i]] );
+    for ( int i  = 0; i < comm_size; i++ )
+        x_out[i] = std::string( &recv_data[recv_disp[i]] );
     delete[] recv_data;
 }
 // Default instantiation of MPI_CLASS::allGather
@@ -585,8 +590,7 @@ inline void MPI_CLASS::allGather( const type x_in, type *x_out ) const
     if ( comm_size > 1 ) {
         // We can use the vector form of allGather with a char array to ge the data we want
         call_allGather( x_in, x_out );
-    }
-    else {
+    } else {
         // Single processor case
         x_out[0] = x_in;
     }
@@ -615,13 +619,16 @@ int MPI_CLASS::allGather( const type *send_data,
     if ( comm_size == 1 ) {
         if ( !known_recv ) {
             // We do not know the recieved sizes
-            for ( int i = 0; i < send_cnt; i++ ) recv_data[i] = send_data[i];
-            if ( recv_cnt != NULL ) recv_cnt[0]               = send_cnt;
-            if ( recv_disp != NULL ) recv_disp[0]             = 0;
-        }
-        else {
+            for ( int i      = 0; i < send_cnt; i++ )
+                recv_data[i] = send_data[i];
+            if ( recv_cnt != NULL )
+                recv_cnt[0] = send_cnt;
+            if ( recv_disp != NULL )
+                recv_disp[0] = 0;
+        } else {
             // We know the recieved sizes
-            for ( int i = 0; i < send_cnt; i++ ) recv_data[i + recv_disp[0]] = send_data[i];
+            for ( int i                     = 0; i < send_cnt; i++ )
+                recv_data[i + recv_disp[0]] = send_data[i];
         }
         return send_cnt;
     }
@@ -629,19 +636,25 @@ int MPI_CLASS::allGather( const type *send_data,
     int *recv_cnt2  = recv_cnt;
     int *recv_disp2 = recv_disp;
     if ( !known_recv ) {
-        if ( recv_cnt == NULL ) recv_cnt2   = new int[comm_size];
-        if ( recv_disp == NULL ) recv_disp2 = new int[comm_size];
+        if ( recv_cnt == NULL )
+            recv_cnt2 = new int[comm_size];
+        if ( recv_disp == NULL )
+            recv_disp2 = new int[comm_size];
         call_allGather( send_cnt, recv_cnt2 );
         recv_disp2[0] = 0;
-        for ( int i = 1; i < comm_size; i++ ) recv_disp2[i] = recv_disp2[i - 1] + recv_cnt2[i - 1];
+        for ( int i       = 1; i < comm_size; i++ )
+            recv_disp2[i] = recv_disp2[i - 1] + recv_cnt2[i - 1];
     }
     int N_recv = 0;
-    for ( int i = 0; i < comm_size; i++ ) N_recv += recv_cnt2[i];
+    for ( int i = 0; i < comm_size; i++ )
+        N_recv += recv_cnt2[i];
     // Send/recv the data
     call_allGather( send_data, send_cnt, recv_data, recv_cnt2, recv_disp2 );
     // Delete any temporary memory
-    if ( recv_cnt == NULL ) delete[] recv_cnt2;
-    if ( recv_disp == NULL ) delete[] recv_disp2;
+    if ( recv_cnt == NULL )
+        delete[] recv_cnt2;
+    if ( recv_disp == NULL )
+        delete[] recv_disp2;
     return N_recv;
 }
 // Define specializations of call_allGather(const type, type*)
@@ -723,10 +736,13 @@ inline void MPI_CLASS::setGather( std::set<type> &set ) const
     std::vector<int> recv_cnt( this->comm_size, 0 );
     this->allGather<int>( (int) send_buf.size(), &recv_cnt[0] );
     std::vector<int> recv_disp( this->comm_size, 0 );
-    for ( int i = 1; i < this->comm_size; i++ ) recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
-    size_t N_recv_tot                                        = 0;
-    for ( int i = 0; i < this->comm_size; i++ ) N_recv_tot += recv_cnt[i];
-    if ( N_recv_tot == 0 ) return;
+    for ( int i       = 1; i < this->comm_size; i++ )
+        recv_disp[i]  = recv_disp[i - 1] + recv_cnt[i - 1];
+    size_t N_recv_tot = 0;
+    for ( int i = 0; i < this->comm_size; i++ )
+        N_recv_tot += recv_cnt[i];
+    if ( N_recv_tot == 0 )
+        return;
     std::vector<type> recv_buf( N_recv_tot );
     type *send_data = NULL;
     if ( send_buf.size() > 0 ) {
@@ -735,7 +751,8 @@ inline void MPI_CLASS::setGather( std::set<type> &set ) const
     type *recv_data = &recv_buf[0];
     this->allGather<type>(
         send_data, (int) send_buf.size(), recv_data, &recv_cnt[0], &recv_disp[0], true );
-    for ( size_t i = 0; i < recv_buf.size(); i++ ) set.insert( recv_buf[i] );
+    for ( size_t i = 0; i < recv_buf.size(); i++ )
+        set.insert( recv_buf[i] );
 }
 
 
@@ -759,10 +776,13 @@ inline void MPI_CLASS::mapGather( std::map<KEY, DATA> &map ) const
     std::vector<int> recv_cnt( this->comm_size, 0 );
     this->allGather<int>( send_size, &recv_cnt[0] );
     std::vector<int> recv_disp( this->comm_size, 0 );
-    for ( int i = 1; i < this->comm_size; i++ ) recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
-    size_t N_recv_tot                                        = 0;
-    for ( int i = 0; i < this->comm_size; i++ ) N_recv_tot += recv_cnt[i];
-    if ( N_recv_tot == 0 ) return;
+    for ( int i       = 1; i < this->comm_size; i++ )
+        recv_disp[i]  = recv_disp[i - 1] + recv_cnt[i - 1];
+    size_t N_recv_tot = 0;
+    for ( int i = 0; i < this->comm_size; i++ )
+        N_recv_tot += recv_cnt[i];
+    if ( N_recv_tot == 0 )
+        return;
     std::vector<KEY> recv_id( N_recv_tot );
     std::vector<DATA> recv_data( N_recv_tot );
     KEY *send_data1  = NULL;
@@ -788,9 +808,9 @@ inline void MPI_CLASS::sumScan( const type *x, type *y, const int n ) const
 {
     if ( comm_size > 1 ) {
         call_sumScan( x, y, n );
-    }
-    else {
-        for ( int i = 0; i < n; i++ ) y[i] = x[i];
+    } else {
+        for ( int i = 0; i < n; i++ )
+            y[i]    = x[i];
     }
 }
 // Define specializations of call_sumScan(const type*, type*, int)
@@ -840,9 +860,9 @@ inline void MPI_CLASS::minScan( const type *x, type *y, const int n ) const
 {
     if ( comm_size > 1 ) {
         call_minScan( x, y, n );
-    }
-    else {
-        for ( int i = 0; i < n; i++ ) y[i] = x[i];
+    } else {
+        for ( int i = 0; i < n; i++ )
+            y[i]    = x[i];
     }
 }
 // Define specializations of call_minScan(const type*, type*, int)
@@ -888,9 +908,9 @@ inline void MPI_CLASS::maxScan( const type *x, type *y, const int n ) const
 {
     if ( comm_size > 1 ) {
         call_maxScan( x, y, n );
-    }
-    else {
-        for ( int i = 0; i < n; i++ ) y[i] = x[i];
+    } else {
+        for ( int i = 0; i < n; i++ )
+            y[i]    = x[i];
     }
 }
 // Define specializations of call_maxScan(const type*, type*, int)
@@ -965,8 +985,10 @@ void MPI_CLASS::allToAll( const int n, const type *send_data, type *recv_data ) 
 template <class type>
 void MPI_CLASS::allToAll( const int n, const type *send_data, type *recv_data ) const
 {
-    if ( comm_size != 1 ) MPI_CLASS_ERROR( "Invalid size for allToAll" );
-    for ( int i = 0; i < n; i++ ) recv_data[i] = send_data[i];
+    if ( comm_size != 1 )
+        MPI_CLASS_ERROR( "Invalid size for allToAll" );
+    for ( int i      = 0; i < n; i++ )
+        recv_data[i] = send_data[i];
 }
 #endif
 
@@ -989,36 +1011,42 @@ int MPI_CLASS::allToAll( const type *send_data,
         if ( known_recv ) {
             if ( recv_cnt[0] != send_cnt[0] && send_cnt[0] > 0 )
                 MPI_CLASS_ERROR( "Single processor send/recv are different sizes" );
-        }
-        else {
-            if ( recv_cnt != NULL ) recv_cnt[0]   = send_cnt[0];
-            if ( recv_disp != NULL ) recv_disp[0] = send_disp[0];
+        } else {
+            if ( recv_cnt != NULL )
+                recv_cnt[0] = send_cnt[0];
+            if ( recv_disp != NULL )
+                recv_disp[0] = send_disp[0];
         }
         for ( int i                     = 0; i < send_cnt[0]; i++ )
             recv_data[i + recv_disp[0]] = send_data[i + send_disp[0]];
         N_recieved                      = send_cnt[0];
-    }
-    else if ( known_recv ) {
+    } else if ( known_recv ) {
         // The recieve sizes are known
         MPI_CLASS_ASSERT( recv_cnt != NULL && recv_disp != NULL );
         call_allToAll( send_data, send_cnt, send_disp, recv_data, recv_cnt, recv_disp );
-        for ( int i = 0; i < comm_size; i++ ) N_recieved += recv_cnt[i];
-    }
-    else {
+        for ( int i = 0; i < comm_size; i++ )
+            N_recieved += recv_cnt[i];
+    } else {
         // The recieve sizes are not known, we need to communicate that information first
-        int *recv_cnt2                      = recv_cnt;
-        int *recv_disp2                     = recv_disp;
-        if ( recv_cnt == NULL ) recv_cnt2   = new int[comm_size];
-        if ( recv_disp == NULL ) recv_disp2 = new int[comm_size];
+        int *recv_cnt2  = recv_cnt;
+        int *recv_disp2 = recv_disp;
+        if ( recv_cnt == NULL )
+            recv_cnt2 = new int[comm_size];
+        if ( recv_disp == NULL )
+            recv_disp2 = new int[comm_size];
         // Communicate the size we will be recieving from each processor
         allToAll<int>( 1, send_cnt, recv_cnt2 );
         recv_disp2[0] = 0;
-        for ( int i = 1; i < comm_size; i++ ) recv_disp2[i] = recv_disp2[i - 1] + recv_cnt2[i - 1];
+        for ( int i       = 1; i < comm_size; i++ )
+            recv_disp2[i] = recv_disp2[i - 1] + recv_cnt2[i - 1];
         // Send the data
         call_allToAll( send_data, send_cnt, send_disp, recv_data, recv_cnt2, recv_disp2 );
-        for ( int i = 0; i < comm_size; i++ ) N_recieved += recv_cnt2[i];
-        if ( recv_cnt == NULL ) delete[] recv_cnt2;
-        if ( recv_disp == NULL ) delete[] recv_disp2;
+        for ( int i = 0; i < comm_size; i++ )
+            N_recieved += recv_cnt2[i];
+        if ( recv_cnt == NULL )
+            delete[] recv_cnt2;
+        if ( recv_disp == NULL )
+            delete[] recv_disp2;
     }
     return N_recieved;
 }

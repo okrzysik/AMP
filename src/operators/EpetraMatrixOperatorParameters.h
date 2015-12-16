@@ -5,7 +5,8 @@
 
 namespace AMP {
 namespace Operator {
-class EpetraMatrixOperatorParameters : public OperatorParameters {
+class EpetraMatrixOperatorParameters : public OperatorParameters
+{
 public:
     Epetra_CrsMatrix *d_Matrix;
 

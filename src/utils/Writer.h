@@ -32,7 +32,8 @@ namespace Utilities {
  * \details  This class provides routines for reading, accessing and writing meshes and vectors.
  *    The writers can be used to generate files for visualization or interfacing with other codes.
  */
-class Writer {
+class Writer
+{
 public:
     //!  Convenience typedef
     typedef AMP::shared_ptr<AMP::Utilities::Writer> shared_ptr;

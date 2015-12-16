@@ -31,8 +31,7 @@ size_t VectorEntryMap<AFFINE_MAP>::ComputeFirstDOF()
     size_t retVal;
     if ( AFFINE_MAP ) {
         retVal = d_SortedObjects->getFirstObject() * d_Variable->DOFsPerObject();
-    }
-    else {
+    } else {
         d_Comm.sumScan( (int *) &d_NumRows, (int *) &retVal, 1 );
         retVal -= d_NumRows;
     }
@@ -70,8 +69,7 @@ size_t VectorEntryMap<AFFINE_MAP>::getGlobalID( size_t obj_id, size_t dof ) cons
     size_t retVal;
     if ( AFFINE_MAP ) {
         retVal = ( *d_SortedObjects )[obj_id] * d_Variable->DOFsPerObject() + dof;
-    }
-    else {
+    } else {
         size_t sort_obj_id = ( *d_SortedObjects )[obj_id];
         retVal             = d_NonAffineMap.find( sort_obj_id )->second + dof;
     }
@@ -84,8 +82,7 @@ void VectorEntryMap<AFFINE_MAP>::getLocalID( size_t gid, size_t &lid, size_t &do
     if ( AFFINE_MAP ) {
         lid = gid / d_Variable->DOFsPerObject();
         dof = gid % d_Variable->DOFsPerObject();
-    }
-    else {
+    } else {
         AMP_ERROR( "Not yet implemented" );
     }
 }

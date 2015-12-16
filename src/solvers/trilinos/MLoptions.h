@@ -9,7 +9,8 @@
 namespace AMP {
 namespace Solver {
 
-class MLoptions {
+class MLoptions
+{
 public:
     explicit MLoptions( const AMP::shared_ptr<AMP::Database> &db );
 

@@ -18,8 +18,7 @@ void testLibmeshElement( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh )
             ++iterator;
         }
         ut->passes( "Created volume elements" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         ut->failure( "Created volume elements" );
     }
     try {
@@ -31,8 +30,7 @@ void testLibmeshElement( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh )
             ++iterator;
         }
         ut->passes( "Created face elements" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         ut->failure( "Created face elements" );
     }
 }

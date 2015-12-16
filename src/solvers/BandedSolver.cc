@@ -69,7 +69,8 @@ void BandedSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters )
         size_t row = i + row_begin;
         matrix->getRowByGlobalID( row, cols, values );
         for ( size_t k = 0; k < cols.size(); k++ ) {
-            if ( values[k] == 0 ) continue;
+            if ( values[k] == 0 )
+                continue;
             if ( cols[k] < col_begin || cols[k] >= col_end )
                 AMP_ERROR( "Matrix has entries that are non-local" );
             int j = cols[k] - col_begin;

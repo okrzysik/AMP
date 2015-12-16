@@ -19,7 +19,8 @@ Logger *Logger::s_instance = NULL;
  * Default Appender to print abort message and calling location to perr stream.
  */
 
-class AbortAppender : public Logger::Appender {
+class AbortAppender : public Logger::Appender
+{
 
     void logMessage( const std::string &message, const std::string &filename, const int line )
     {
@@ -33,7 +34,8 @@ class AbortAppender : public Logger::Appender {
 /*
  * Default Appender to print a warning message and calling location to log stream.
  */
-class WarningAppender : public Logger::Appender {
+class WarningAppender : public Logger::Appender
+{
 
     void logMessage( const std::string &message, const std::string &filename, const int line )
     {
@@ -47,7 +49,8 @@ class WarningAppender : public Logger::Appender {
 /*
  * Default Appender to print a debug message and calling location to log stream.
  */
-class DebugAppender : public Logger::Appender {
+class DebugAppender : public Logger::Appender
+{
 
     void logMessage( const std::string &message, const std::string &filename, const int line )
     {

@@ -30,7 +30,8 @@ void testGetDOFIterator( AMP::UnitTest *ut,
     std::vector<size_t> dofs;
     for ( size_t i = 0; i < cur.size(); i++ ) {
         DOF->getDOFs( cur->globalID(), dofs );
-        if ( dofs.empty() ) passes = false;
+        if ( dofs.empty() )
+            passes = false;
         ++cur;
     }
     if ( passes )
@@ -137,7 +138,8 @@ void testSubsetMesh( AMP::Mesh::Mesh::shared_ptr mesh,
                 AMP::Discretization::DOFManager::shared_ptr mesh_DOF =
                     AMP::Discretization::simpleDOFManager::create(
                         subsetMesh, AMP::Mesh::Vertex, gcw, DOFsPerNode, false );
-                if ( *mesh_DOF != *subsetDOF ) passes = false;
+                if ( *mesh_DOF != *subsetDOF )
+                    passes = false;
             }
         }
         if ( passes )
@@ -155,7 +157,8 @@ void testMultiDOFMap(
     // First create a global DOF list
     size_t N_global = multiDOF->numGlobalDOF();
     std::vector<size_t> globalDOFList( N_global );
-    for ( size_t i = 0; i < N_global; i++ ) globalDOFList[i] = i;
+    for ( size_t i       = 0; i < N_global; i++ )
+        globalDOFList[i] = i;
 
     // Loop through the DOFManagers
     std::vector<AMP::Discretization::DOFManager::shared_ptr> managers = multiDOF->getDOFManagers();
@@ -177,7 +180,8 @@ void testMultiDOFMap(
         // Check that we created the proper list
         bool passes = localDOFList.size() == managers[i]->numGlobalDOF();
         for ( size_t j = 0; j < localDOFList.size(); j++ ) {
-            if ( localDOFList[j] != j ) passes = false;
+            if ( localDOFList[j] != j )
+                passes = false;
         }
         if ( passes )
             ut->passes( "Conversion from global to sub DOFs in multiDOFManager" );
@@ -187,7 +191,8 @@ void testMultiDOFMap(
         std::vector<size_t> globalDOFList2 = multiDOF->getGlobalDOF( (int) i, localDOFList );
         passes                             = globalDOFList2.size() == localDOFList.size();
         for ( size_t j = 0; j < globalDOFList2.size(); j++ ) {
-            if ( globalDOFList2[j] != localToGlobal[j] ) passes = false;
+            if ( globalDOFList2[j] != localToGlobal[j] )
+                passes = false;
         }
         if ( passes )
             ut->passes( "Conversion from sub to global DOFs in multiDOFManager" );
@@ -228,7 +233,8 @@ void testMultiDOFVector( AMP::UnitTest *ut, AMP::Discretization::DOFManager::sha
         multiDOF->getDOFs( it->globalID(), dof2 );
         AMP_ASSERT( dof1.size() == 1 );
         AMP_ASSERT( dof2.size() == 2 );
-        if ( dof2[0] == dof2[1] ) uniqueMultiDOFs = false;
+        if ( dof2[0] == dof2[1] )
+            uniqueMultiDOFs = false;
         multiVector->setValueByGlobalID( dof2[0], dof1[0] );
         multiVector->setValueByGlobalID( dof2[1], 2 * dof1[0] );
         ++it;

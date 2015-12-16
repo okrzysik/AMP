@@ -10,7 +10,8 @@ namespace AMP {
 namespace unit_test {
 
 template <typename TEST>
-class OperatorParameterTest : public AMP::UnitTest {
+class OperatorParameterTest : public AMP::UnitTest
+{
 protected:
     explicit OperatorParameterTest( UnitTest *ut ) { d_ut = ut; }
     UnitTest *d_ut;

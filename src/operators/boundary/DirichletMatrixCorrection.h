@@ -19,7 +19,8 @@ namespace Operator {
  *  2) Add a vector of corrections to the RHS vector
  *  3) Set the Dirichlet values at the appropriate locations in the RHS vector.
  */
-class DirichletMatrixCorrection : public BoundaryOperator {
+class DirichletMatrixCorrection : public BoundaryOperator
+{
 public:
     //! Constructor
     explicit DirichletMatrixCorrection(

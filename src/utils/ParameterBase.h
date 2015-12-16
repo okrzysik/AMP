@@ -11,7 +11,8 @@ namespace AMP {
 /**\class ParameterBase
  * ParameterBase is a base class for classes that pass parameters to other classes
  */
-class ParameterBase {
+class ParameterBase
+{
 public:
     typedef AMP::shared_ptr<ParameterBase> shared_ptr;
 

@@ -188,8 +188,7 @@ void testMultiDOFManager( AMP::UnitTest *ut )
         if ( multiDOF.get() != NULL ) {
             ut->passes( "Created multiDOFManager from simpleDOFManager: " + GENERATOR::name() );
             testMultiDOFMap( ut, multiDOF );
-        }
-        else {
+        } else {
             ut->failure( "Created multiDOFManager from simpleDOFManager: " + GENERATOR::name() );
         }
     }
@@ -261,7 +260,8 @@ void testStructureDOFManager( AMP::UnitTest *ut )
                         if ( index == row.size() ) {
                             index--;
                         }
-                        if ( row[index] != dofs[k] ) pass = false;
+                        if ( row[index] != dofs[k] )
+                            pass = false;
                     }
                 }
             }

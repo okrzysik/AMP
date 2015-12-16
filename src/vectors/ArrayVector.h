@@ -11,7 +11,8 @@ namespace LinearAlgebra {
   * \details This is a Vector that implements the Vector interface for a std::vector<double>.
   */
 template <typename T>
-class ArrayVector : public SimpleVector<T> {
+class ArrayVector : public SimpleVector<T>
+{
 private:
     AMP::Array<T> d_array;
 

@@ -10,7 +10,8 @@ namespace AMP {
 namespace Mesh {
 
 
-class structuredMeshIterator : public MeshIterator {
+class structuredMeshIterator : public MeshIterator
+{
 public:
     //! Empty MultiVectorIterator constructor
     structuredMeshIterator();

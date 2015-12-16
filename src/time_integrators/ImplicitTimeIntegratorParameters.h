@@ -35,7 +35,8 @@ namespace TimeIntegrator {
 
   @see SolverStrategy
 */
-class ImplicitTimeIntegratorParameters : public TimeIntegratorParameters {
+class ImplicitTimeIntegratorParameters : public TimeIntegratorParameters
+{
 public:
     explicit ImplicitTimeIntegratorParameters( AMP::shared_ptr<AMP::Database> db );
 

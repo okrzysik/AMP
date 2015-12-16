@@ -132,8 +132,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             }
 
             std::cout << std::endl << std::endl;
-        }
-        else if ( type == 1 ) {
+        } else if ( type == 1 ) {
             std::cout << "Solving using CG algorithm (Petsc Implementation)..." << std::endl;
 
             AMP::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "CGsolver" );
@@ -149,8 +148,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             linearSolver->solve( mechRhsVec, mechSolVec );
 
             std::cout << std::endl << std::endl;
-        }
-        else if ( type == 2 ) {
+        } else if ( type == 2 ) {
             std::cout << "Solving using Jacobi preconditioned CG algorithm..." << std::endl;
 
             AMP::shared_ptr<AMP::Database> linearSolver_db =
@@ -167,8 +165,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             linearSolver->solve( mechRhsVec, mechSolVec );
 
             std::cout << std::endl << std::endl;
-        }
-        else {
+        } else {
             std::cout << "Solving using ML preconditioned CG algorithm..." << std::endl;
 
             AMP::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "MLCGsolver" );
@@ -209,12 +206,10 @@ int main( int argc, char *argv[] )
 
     try {
         myTest( &ut, exeName );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

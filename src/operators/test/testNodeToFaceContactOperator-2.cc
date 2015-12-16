@@ -264,8 +264,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> masterSolver(
                 new AMP::Solver::PetscKrylovSolver( masterSolverParams ) );
             columnPreconditioner->append( masterSolver );
-        }
-        else {
+        } else {
             AMP::shared_ptr<AMP::Database> masterSolver_db =
                 columnPreconditioner_db->getDatabase( "MLSolver" );
             AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> masterSolverParams(
@@ -306,8 +305,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> slaveSolver(
                 new AMP::Solver::PetscKrylovSolver( slaveSolverParams ) );
             columnPreconditioner->append( slaveSolver );
-        }
-        else {
+        } else {
             AMP::shared_ptr<AMP::Database> slaveSolver_db =
                 columnPreconditioner_db->getDatabase( "MLSolver" );
             AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> slaveSolverParams(
@@ -345,8 +343,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
                     dummyTmp.insert( std::pair<size_t, double>( 1, 0.0 ) );
                     //        dummyTmp.insert(std::pair<size_t, double>(2, 0.0));
                 }
-            }
-            else {
+            } else {
                 if ( ( ( std::abs( coord[2] + 1.0 ) < epsilon ) ||
                        ( std::abs( coord[2] - 1.0 ) < epsilon ) ) &&
                      ( std::abs( coord[0] - 0.0 ) < epsilon ) ) {
@@ -493,8 +490,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         yDispVec->setToScalar( yDisplacementHelper );
         contactOperator->updateActiveSetWithALittleHelp( columnSolVec );
         yDispVec->zero();
-    }
-    else {
+    } else {
         bool skipDisplaceMesh = true;
         contactOperator->updateActiveSet( nullVec, skipDisplaceMesh );
     } // end if
@@ -603,8 +599,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             if ( cor.get() == NULL ) {
                 cor = rhs->cloneVector();
                 applyCustomDirichletCondition( rhs, cor, meshAdapter, constraints, mat );
-            }
-            else {
+            } else {
                 applyCustomDirichletCondition(
                     rhs, cor, meshAdapter, constraints, AMP::LinearAlgebra::Matrix::shared_ptr() );
             } // end if
@@ -830,12 +825,10 @@ int main( int argc, char *argv[] )
         for ( size_t i = 0; i < exeNames.size(); ++i ) {
             myTest( &ut, exeNames[i] );
         } // end for
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

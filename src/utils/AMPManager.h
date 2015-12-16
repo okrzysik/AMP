@@ -9,7 +9,8 @@ namespace AMP {
 /*!
  * @brief Class AMPManagerProperties is a class that contains the various startup options for AMP
  */
-class AMPManagerProperties {
+class AMPManagerProperties
+{
 public:
     //! Empty constructor.  This creates the default startup parameters.
     AMPManagerProperties();
@@ -52,7 +53,8 @@ private:
  * AMPManager::shutdown() should be called at the end of the program, before calling exit(0).
  * Note that the shutdown, but it shuts down the packages, MPI, and deallocates memory.
  */
-class AMPManager {
+class AMPManager
+{
 public:
     /*!
      * Initialize the AMP package.  Depending on the architecture and

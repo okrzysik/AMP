@@ -11,7 +11,8 @@
 namespace AMP {
 namespace Operator {
 
-class ThermalVonMisesMatModel : public MechanicsMaterialModel {
+class ThermalVonMisesMatModel : public MechanicsMaterialModel
+{
 public:
     explicit ThermalVonMisesMatModel( const AMP::shared_ptr<MechanicsMaterialModelParameters> & );
 
@@ -42,8 +43,7 @@ public:
 
         if ( Total_Gauss_Point == 0 ) {
             std::cout << "Total number of gauss points are zero." << std::endl;
-        }
-        else {
+        } else {
             double Plastic_Fraction =
                 ( (double) Plastic_Gauss_Point ) / ( (double) Total_Gauss_Point );
             Plastic_Fraction = Plastic_Fraction * 100.0;

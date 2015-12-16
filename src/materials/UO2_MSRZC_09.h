@@ -8,7 +8,8 @@
 // Define the material
 namespace AMP {
 namespace Materials {
-class UO2_MSRZC_09 : public Material {
+class UO2_MSRZC_09 : public Material
+{
 public:
     UO2_MSRZC_09();
 };

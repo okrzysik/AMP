@@ -4,7 +4,8 @@
 namespace AMP {
 namespace unit_test {
 
-class InstantiateOperatorParameter {
+class InstantiateOperatorParameter
+{
 public:
     static const char *get_test_name() { return "instantiate OperatorParameters"; }
 

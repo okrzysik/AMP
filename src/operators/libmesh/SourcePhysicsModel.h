@@ -24,7 +24,8 @@ typedef ElementPhysicsModelParameters SourcePhysicsModelParameters;
   Element Operation of this operator passes the input vectors and coordinates
   through the getConstitutiveProperty function for calculating the source terms.
 */
-class SourcePhysicsModel : public ElementPhysicsModel {
+class SourcePhysicsModel : public ElementPhysicsModel
+{
 public:
     /**
      * This Constructor reads the value for the key USE_MATERIALS_LIBRARY (false by default)

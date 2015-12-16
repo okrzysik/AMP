@@ -41,7 +41,8 @@ namespace Solver {
  * initialization parameters to the PetscKrylovSolver solver. It contains
  * shared pointers to a database object and a preconditioner. All member variables are public.
  */
-class PetscKrylovSolverParameters : public SolverStrategyParameters {
+class PetscKrylovSolverParameters : public SolverStrategyParameters
+{
 public:
     PetscKrylovSolverParameters() {}
     explicit PetscKrylovSolverParameters( const AMP::shared_ptr<AMP::Database> db );

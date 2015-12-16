@@ -17,7 +17,8 @@ namespace Operator {
 typedef ElementPhysicsModelParameters ManufacturedSourceModel1Parameters;
 
 
-class ManufacturedSourceModel1 : public ElementPhysicsModel {
+class ManufacturedSourceModel1 : public ElementPhysicsModel
+{
 public:
     ManufacturedSourceModel1( const AMP::shared_ptr<ManufacturedSourceModel1Parameters> &params )
         : ElementPhysicsModel( params )

@@ -56,8 +56,9 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
         AMP::dynamic_pointer_cast<TrilinosNOXSolverParameters>( parameters );
     AMP_ASSERT( params.get() != NULL );
     AMP_ASSERT( params->d_db.get() != NULL );
-    d_comm                                                      = params->d_comm;
-    if ( params->d_pInitialGuess.get() != NULL ) d_initialGuess = params->d_pInitialGuess;
+    d_comm = params->d_comm;
+    if ( params->d_pInitialGuess.get() != NULL )
+        d_initialGuess = params->d_pInitialGuess;
     AMP_ASSERT( d_initialGuess != NULL );
     AMP::shared_ptr<AMP::Database> nonlinear_db = parameters->d_db;
     AMP::shared_ptr<AMP::Database> linear_db    = nonlinear_db->getDatabase( "LinearSolver" );
@@ -115,8 +116,7 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
                       Belos::Warnings + Belos::IterationDetails + Belos::OrthoDetails +
                           Belos::FinalSummary + Belos::Debug + Belos::StatusTestDetails );
         }
-    }
-    else if ( linear_db->getIntegerWithDefault( "print_info_level", 0 ) >= 1 ) {
+    } else if ( linear_db->getIntegerWithDefault( "print_info_level", 0 ) >= 1 ) {
         linearSolverParams.sublist( "Solver Types" )
             .sublist( linearSolver )
             .set( "Output Frequency", 1 );
@@ -152,8 +152,7 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
     std::string solverType = nonlinear_db->getString( "solver" );
     if ( solverType == "JFNK" ) {
         d_nlParams->set( "Nonlinear Solver", "Line Search Based" );
-    }
-    else if ( solverType == "Anderson" ) {
+    } else if ( solverType == "Anderson" ) {
         d_nlParams->set( "Nonlinear Solver", "Anderson Accelerated Fixed-Point" );
         int depth     = nonlinear_db->getIntegerWithDefault( "StorageDepth", 5 );
         double mixing = nonlinear_db->getDoubleWithDefault( "MixingParameter", 1.0 );
@@ -194,8 +193,7 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
         print_level = static_cast<NOX::Utils::MsgType>(
             print_level + NOX::Utils::OuterIteration + NOX::Utils::OuterIterationStatusTest +
             NOX::Utils::InnerIteration + NOX::Utils::Warning );
-    }
-    else if ( d_iDebugPrintInfoLevel >= 2 ) {
+    } else if ( d_iDebugPrintInfoLevel >= 2 ) {
         print_level = static_cast<NOX::Utils::MsgType>(
             print_level + NOX::Utils::LinearSolverDetails + NOX::Utils::Parameters +
             NOX::Utils::Details + NOX::Utils::Debug + NOX::Utils::TestDetails + NOX::Utils::Error );
@@ -233,7 +231,8 @@ void TrilinosNOXSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
     Teuchos::RCP<NOX::Thyra::MatrixFreeJacobianOperator<double>> jfnkOp(
         new NOX::Thyra::MatrixFreeJacobianOperator<double>( printParams ) );
     jfnkOp->setParameterList( jfnkParams );
-    if ( d_iDebugPrintInfoLevel >= 3 && d_comm.getRank() == 0 ) jfnkParams->print( AMP::pout );
+    if ( d_iDebugPrintInfoLevel >= 3 && d_comm.getRank() == 0 )
+        jfnkParams->print( AMP::pout );
     // Create the NOX::Thyra::Group
     // Teuchos::RCP<NOX::Thyra::Group> nox_group( new NOX::Thyra::Group( initial->getVec(),
     // d_thyraModel ) );
@@ -251,7 +250,8 @@ void TrilinosNOXSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
     // Solve
     d_nlParams->print( AMP::pout );
     NOX::StatusTest::StatusType solvStatus = d_solver->solve();
-    if ( solvStatus != NOX::StatusTest::Converged ) AMP_ERROR( "Failed to solve" );
+    if ( solvStatus != NOX::StatusTest::Converged )
+        AMP_ERROR( "Failed to solve" );
     // Copy the solution back to u
     const NOX::Thyra::Vector *tmp =
         dynamic_cast<const NOX::Thyra::Vector *>( &( nox_group->getX() ) );

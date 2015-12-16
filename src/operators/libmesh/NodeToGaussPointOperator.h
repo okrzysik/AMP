@@ -8,7 +8,8 @@
 namespace AMP {
 namespace Operator {
 
-class NodeToGaussPointOperator : public Operator {
+class NodeToGaussPointOperator : public Operator
+{
 public:
     explicit NodeToGaussPointOperator( const AMP::shared_ptr<OperatorParameters> &params );
 

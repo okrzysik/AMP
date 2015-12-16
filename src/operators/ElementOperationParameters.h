@@ -16,7 +16,8 @@ namespace Operator {
  used within a FEOperator.
  @see ElementOperation
  */
-class ElementOperationParameters : public ParameterBase {
+class ElementOperationParameters : public ParameterBase
+{
 public:
     /**
       Constructor.

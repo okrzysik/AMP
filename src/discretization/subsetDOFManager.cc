@@ -18,7 +18,8 @@ DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManage
                                                  const AMP_MPI &comm_in )
 {
     // Limit the new comm to be <= the parent comm
-    if ( parentDOFManager.get() == NULL || comm_in.isNull() ) return DOFManager::shared_ptr();
+    if ( parentDOFManager.get() == NULL || comm_in.isNull() )
+        return DOFManager::shared_ptr();
     PROFILE_START( "subsetDOFManager", 2 );
     AMP_MPI comm = AMP_MPI::intersect( parentDOFManager->getComm(), comm_in );
     // Set the basic info
@@ -56,8 +57,9 @@ DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManage
         return AMP::const_pointer_cast<DOFManager>( parentDOFManager );
     }
     // Determine which remote DOFs we will need to keep
-    size_t *send_data            = NULL;
-    if ( N_local > 0 ) send_data = &( subsetDOF->d_localDOFs[0] );
+    size_t *send_data = NULL;
+    if ( N_local > 0 )
+        send_data = &( subsetDOF->d_localDOFs[0] );
     std::vector<int> N_remote( subsetDOF->d_comm.getSize(), 0 );
     std::vector<int> N_disp( subsetDOF->d_comm.getSize(), 0 );
     std::vector<size_t> recv_data( subsetDOF->d_global );
@@ -86,7 +88,8 @@ DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManage
         }
     }
     PROFILE_STOP( "subsetDOFManager", 2 );
-    if ( subsetDOF->numGlobalDOF() == 0 ) return DOFManager::shared_ptr();
+    if ( subsetDOF->numGlobalDOF() == 0 )
+        return DOFManager::shared_ptr();
     return subsetDOF;
 }
 
@@ -117,13 +120,13 @@ void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
     while ( cur != subsetDOFs.end() ) {
         if ( *cur >= d_global ) {
             cur = subsetDOFs.erase( cur );
-        }
-        else {
+        } else {
             ++cur;
         }
     }
     dofs.resize( subsetDOFs.size() );
-    for ( size_t i = 0; i < subsetDOFs.size(); i++ ) dofs[i] = subsetDOFs[i];
+    for ( size_t i = 0; i < subsetDOFs.size(); i++ )
+        dofs[i]    = subsetDOFs[i];
 }
 
 
@@ -172,8 +175,7 @@ std::vector<size_t> subsetDOFManager::getParentDOF( const std::vector<size_t> &s
         if ( DOF >= d_begin && DOF < d_end ) {
             // The DOF is local
             parentDOFs[i] = d_localDOFs[DOF - d_begin];
-        }
-        else {
+        } else {
             // The DOF is a remote DOF
             size_t index = AMP::Utilities::findfirst( d_remoteSubsetDOFs, DOF );
             AMP_ASSERT( d_remoteSubsetDOFs[index] == DOF );
@@ -194,15 +196,16 @@ std::vector<size_t> subsetDOFManager::getSubsetDOF( const std::vector<size_t> &p
             if ( index == d_localDOFs.size() ) {
                 index--;
             }
-            if ( d_localDOFs[index] == DOF ) subsetDOFs[i] = index + d_begin;
-        }
-        else if ( !d_remoteParentDOFs.empty() ) {
+            if ( d_localDOFs[index] == DOF )
+                subsetDOFs[i] = index + d_begin;
+        } else if ( !d_remoteParentDOFs.empty() ) {
             // The DOF is a remote DOF
             size_t index = AMP::Utilities::findfirst( d_remoteParentDOFs, DOF );
             if ( index == d_remoteParentDOFs.size() ) {
                 index--;
             }
-            if ( d_remoteParentDOFs[index] == DOF ) subsetDOFs[i] = d_remoteSubsetDOFs[index];
+            if ( d_remoteParentDOFs[index] == DOF )
+                subsetDOFs[i] = d_remoteSubsetDOFs[index];
         }
     }
     return subsetDOFs;

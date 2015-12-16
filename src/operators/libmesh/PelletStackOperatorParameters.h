@@ -7,7 +7,8 @@
 namespace AMP {
 namespace Operator {
 
-class PelletStackOperatorParameters : public OperatorParameters {
+class PelletStackOperatorParameters : public OperatorParameters
+{
 public:
     explicit PelletStackOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
         : OperatorParameters( db )

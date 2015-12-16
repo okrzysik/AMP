@@ -14,7 +14,8 @@ namespace LinearAlgebra {
   * \see SubsetVector
   * \see VectorIndexer
   */
-class SubsetVariable : public Variable {
+class SubsetVariable : public Variable
+{
 public:
     /** \brief Constructor
       * \param[in]  name  The name of the variable

@@ -17,7 +17,8 @@
 namespace AMP {
 namespace Operator {
 
-class NavierStokesLSWFFEOperator : public NonlinearFEOperator {
+class NavierStokesLSWFFEOperator : public NonlinearFEOperator
+{
 public:
     explicit NavierStokesLSWFFEOperator(
         const AMP::shared_ptr<NavierStokesLSWFFEOperatorParameters> &params );

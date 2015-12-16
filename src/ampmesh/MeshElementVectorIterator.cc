@@ -81,7 +81,8 @@ MeshIterator MultiVectorIterator::end() const
 ********************************************************/
 size_t MultiVectorIterator::size() const
 {
-    if ( d_elements.get() == NULL ) return 0;
+    if ( d_elements.get() == NULL )
+        return 0;
     return d_elements->size();
 }
 size_t MultiVectorIterator::position() const { return d_pos; }
@@ -131,12 +132,13 @@ MeshIterator &MultiVectorIterator::operator+=( int n )
 {
     if ( n >= 0 ) { // increment *this
         size_t n2 = static_cast<size_t>( n );
-        if ( d_pos + n2 > d_elements->size() ) AMP_ERROR( "Iterated past end of iterator" );
+        if ( d_pos + n2 > d_elements->size() )
+            AMP_ERROR( "Iterated past end of iterator" );
         d_pos += n2;
-    }
-    else { // decrement *this
+    } else { // decrement *this
         size_t n2 = static_cast<size_t>( -n );
-        if ( n2 > d_pos ) AMP_ERROR( "Iterated past beginning of iterator" );
+        if ( n2 > d_pos )
+            AMP_ERROR( "Iterated past beginning of iterator" );
         d_pos -= n2;
     }
     return *this;
@@ -154,21 +156,22 @@ bool MultiVectorIterator::operator==( const MeshIterator &rhs ) const
                                                               // access the base class members
     if ( typeid( rhs ) == typeid( MultiVectorIterator ) ) {
         rhs2 = tmp; // We can safely cast rhs to a MultiVectorIterator
-    }
-    else if ( tmp->typeID == MultiVectorIteratorTypeID ) {
+    } else if ( tmp->typeID == MultiVectorIteratorTypeID ) {
         rhs2 = tmp; // We can safely cast rhs.iterator to a MultiVectorIterator
-    }
-    else if ( ( (MultiVectorIterator *) tmp->iterator )->typeID == MultiVectorIteratorTypeID ) {
+    } else if ( ( (MultiVectorIterator *) tmp->iterator )->typeID == MultiVectorIteratorTypeID ) {
         rhs2 = (MultiVectorIterator *) tmp->iterator;
     }
     // Perform direct comparisions if we are dealing with two MultiVectorIterators
     if ( rhs2 != NULL ) {
         // Check that we are at the same position
-        if ( d_pos != rhs2->d_pos ) return false;
+        if ( d_pos != rhs2->d_pos )
+            return false;
         // Check if we both arrays are the same memory address
-        if ( d_elements.get() == rhs2->d_elements.get() ) return true;
+        if ( d_elements.get() == rhs2->d_elements.get() )
+            return true;
         // If we are dealing with different arrays, check that the are the same size and values
-        if ( d_elements->size() != rhs2->d_elements->size() ) return false;
+        if ( d_elements->size() != rhs2->d_elements->size() )
+            return false;
         bool elements_match = true;
         for ( size_t i = 0; i < d_elements->size(); i++ ) {
             if ( d_elements->operator[]( i ) != rhs2->d_elements->operator[]( i ) )
@@ -181,9 +184,11 @@ bool MultiVectorIterator::operator==( const MeshIterator &rhs ) const
      * over the same elements in the same order
      */
     // Check the size
-    if ( this->size() != rhs.size() ) return false;
+    if ( this->size() != rhs.size() )
+        return false;
     // Check the current position
-    if ( this->position() != rhs.position() ) return false;
+    if ( this->position() != rhs.position() )
+        return false;
     // Check that the elements match
     MeshIterator iterator = rhs.begin();
     bool elements_match   = true;
@@ -205,12 +210,14 @@ bool MultiVectorIterator::operator!=( const MeshIterator &rhs ) const
 ********************************************************/
 MeshElement &MultiVectorIterator::operator*()
 {
-    if ( d_pos >= d_elements->size() ) AMP_ERROR( "Invalid dereference (iterator is out of range" );
+    if ( d_pos >= d_elements->size() )
+        AMP_ERROR( "Invalid dereference (iterator is out of range" );
     return d_elements->operator[]( d_pos );
 }
 MeshElement *MultiVectorIterator::operator->()
 {
-    if ( d_pos >= d_elements->size() ) AMP_ERROR( "Invalid dereference (iterator is out of range" );
+    if ( d_pos >= d_elements->size() )
+        AMP_ERROR( "Invalid dereference (iterator is out of range" );
     return &( d_elements->operator[]( d_pos ) );
 }
 

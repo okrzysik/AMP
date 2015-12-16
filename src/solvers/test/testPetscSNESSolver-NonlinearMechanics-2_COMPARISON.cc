@@ -113,8 +113,7 @@ void myTest( AMP::UnitTest *ut )
 
     if ( setFinalTempEqualsInitialTemp ) {
         finalTempVec->copyVector( initTempVec );
-    }
-    else {
+    } else {
         double Temp_n = Temp_0 + ( ( Temp_1 - Temp_0 ) / ( (double) ( NumberOfLoadingSteps ) ) );
         AMP::pout << "Temp_n = " << Temp_n << std::endl;
         finalTempVec->setToScalar( Temp_n );
@@ -242,8 +241,7 @@ void myTest( AMP::UnitTest *ut )
 
         if ( initialResidualNorm < 1.0e-2 ) {
             ut->passes( "Nonlinear solve for current loading step" );
-        }
-        else {
+        } else {
             AMP::pout << "Starting Nonlinear Solve..." << std::endl;
             nonlinearSolver->solve( mechNlScaledRhsVec, mechNlSolVec );
 
@@ -256,8 +254,7 @@ void myTest( AMP::UnitTest *ut )
 
             if ( finalResidualNorm > ( 1.0e-8 * initialResidualNorm ) ) {
                 ut->failure( "Nonlinear solve for current loading step" );
-            }
-            else {
+            } else {
                 ut->passes( "Nonlinear solve for current loading step" );
             }
         }
@@ -302,12 +299,10 @@ int main( int argc, char *argv[] )
 
     try {
         myTest( &ut );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

@@ -14,7 +14,8 @@ namespace Operator {
 /** \brief  A class that allows for overlapped communication
   */
 
-class AsynchronousOperator : public Operator {
+class AsynchronousOperator : public Operator
+{
 protected:
     /** \brief  A list of MPI_Requests for use in derived classes
       */
@@ -57,8 +58,9 @@ protected:
     template <typename T>
     T *getBufferToAvoidDebugVectorCrashing( std::vector<T> &in )
     {
-        T *retVal                   = 0;
-        if ( in.size() > 0 ) retVal = &( in[0] );
+        T *retVal = 0;
+        if ( in.size() > 0 )
+            retVal = &( in[0] );
         return retVal;
     }
 
@@ -70,8 +72,9 @@ protected:
     template <typename T>
     const T *getBufferToAvoidDebugVectorCrashing( const std::vector<T> &in )
     {
-        const T *retVal             = 0;
-        if ( in.size() > 0 ) retVal = &( in[0] );
+        const T *retVal = 0;
+        if ( in.size() > 0 )
+            retVal = &( in[0] );
         return retVal;
     }
 

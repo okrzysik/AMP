@@ -8,7 +8,8 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-class RandomSubsetVariable : public SubsetVariable {
+class RandomSubsetVariable : public SubsetVariable
+{
 private:
     VectorIndexer::shared_ptr d_Indexer;
 

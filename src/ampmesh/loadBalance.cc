@@ -63,8 +63,7 @@ LoadBalance::LoadBalance( AMP::shared_ptr<MeshParameters> params,
             d_max       = d_N_elements;
             cache_valid = true;
         }
-    }
-    else {
+    } else {
         d_params = params;
         d_ranks  = ranks;
         d_submeshes.resize( 0 );
@@ -77,7 +76,8 @@ LoadBalance::LoadBalance( AMP::shared_ptr<MeshParameters> params,
         d_max_ranks      = Mesh::maxProcs( params );
         cache_valid      = true;
     }
-    if ( d_ranks.size() > d_max_ranks ) d_ranks.resize( d_max_ranks );
+    if ( d_ranks.size() > d_max_ranks )
+        d_ranks.resize( d_max_ranks );
 }
 LoadBalance::LoadBalance( AMP::shared_ptr<MeshParameters> params,
                           const std::vector<int> &ranks,
@@ -97,7 +97,8 @@ LoadBalance::LoadBalance( AMP::shared_ptr<MeshParameters> params,
     cache_valid  = false;
     d_N_elements = 0;
     d_max_ranks  = ~static_cast<size_t>( 0 );
-    for ( size_t i = 0; i < d_submeshes.size(); i++ ) d_N_elements += d_submeshes[i].d_N_elements;
+    for ( size_t i = 0; i < d_submeshes.size(); i++ )
+        d_N_elements += d_submeshes[i].d_N_elements;
     if ( d_ranks.size() == 1 ) {
         d_min       = d_N_elements;
         d_max       = d_N_elements;
@@ -132,12 +133,11 @@ bool LoadBalance::addProc( int rank )
             d_ranks.push_back( rank );
             added = true;
         }
-    }
-    else if ( d_type == std::string( "Multimesh" ) ) {
+    } else if ( d_type == std::string( "Multimesh" ) ) {
         added = MultiMesh::addProcSimulation( *this, d_submeshes, rank, d_decomp );
-        if ( added ) d_ranks.push_back( rank );
-    }
-    else {
+        if ( added )
+            d_ranks.push_back( rank );
+    } else {
         AMP_ERROR( "Not finished" );
     }
     return added;
@@ -149,12 +149,14 @@ bool LoadBalance::addProc( int rank )
 ************************************************************/
 size_t LoadBalance::min()
 {
-    if ( !cache_valid ) updateCache();
+    if ( !cache_valid )
+        updateCache();
     return d_min;
 }
 size_t LoadBalance::max()
 {
-    if ( !cache_valid ) updateCache();
+    if ( !cache_valid )
+        updateCache();
     return d_max;
 }
 size_t LoadBalance::avg() { return divide_double( d_N_elements, d_ranks.size() ); }
@@ -166,7 +168,8 @@ size_t LoadBalance::avg() { return divide_double( d_N_elements, d_ranks.size() )
 void LoadBalance::print( unsigned char detail, unsigned char indent_N )
 {
     int N_procs = 0;
-    for ( size_t i = 0; i < d_ranks.size(); i++ ) N_procs = std::max( N_procs, d_ranks[i] + 1 );
+    for ( size_t i = 0; i < d_ranks.size(); i++ )
+        N_procs = std::max( N_procs, d_ranks[i] + 1 );
     char indent[257];
     memset( indent, 0, 257 );
     memset( indent, 0x20, indent_N );
@@ -189,7 +192,8 @@ void LoadBalance::print( unsigned char detail, unsigned char indent_N )
     }
     if ( detail & 0x2 ) {
         std::cout << indent << d_name << ": " << d_ranks.size() << std::endl;
-        for ( size_t i = 0; i < d_submeshes.size(); i++ ) d_submeshes[i].print( 2, indent_N + 3 );
+        for ( size_t i = 0; i < d_submeshes.size(); i++ )
+            d_submeshes[i].print( 2, indent_N + 3 );
     }
 }
 
@@ -202,10 +206,10 @@ void LoadBalance::changeRanks( const std::vector<int> &ranks )
     if ( d_submeshes.empty() ) {
         d_ranks = ranks;
         updateCache();
-    }
-    else {
+    } else {
         AMP_INSIST( ranks.size() == d_ranks.size(), "Cannot change ranks to different size" );
-        for ( size_t i = 0; i < ranks.size(); i++ ) d_ranks[i] = ranks[i];
+        for ( size_t i = 0; i < ranks.size(); i++ )
+            d_ranks[i] = ranks[i];
     }
 }
 void LoadBalance::countElements( const LoadBalance &mesh, std::vector<size_t> &N_elements )
@@ -213,8 +217,7 @@ void LoadBalance::countElements( const LoadBalance &mesh, std::vector<size_t> &N
     if ( mesh.d_submeshes.empty() ) {
         for ( size_t i = 0; i < mesh.d_ranks.size(); i++ )
             N_elements[mesh.d_ranks[i]] += mesh.d_N_elements / mesh.d_ranks.size();
-    }
-    else {
+    } else {
         for ( size_t i = 0; i < mesh.d_submeshes.size(); i++ )
             countElements( mesh.d_submeshes[i], N_elements );
     }
@@ -229,7 +232,8 @@ void LoadBalance::updateCache()
     if ( d_decomp == 0 ) {
         // General case
         int N_procs = 0;
-        for ( size_t i = 0; i < d_ranks.size(); i++ ) N_procs = std::max( N_procs, d_ranks[i] + 1 );
+        for ( size_t i = 0; i < d_ranks.size(); i++ )
+            N_procs = std::max( N_procs, d_ranks[i] + 1 );
         std::vector<size_t> N_elements( N_procs, 0 );
         countElements( *this, N_elements );
         d_min = d_N_elements;
@@ -238,23 +242,22 @@ void LoadBalance::updateCache()
             d_min = std::min( d_min, N_elements[d_ranks[i]] );
             d_max = std::max( d_max, N_elements[d_ranks[i]] );
         }
-    }
-    else if ( d_decomp == 1 ) {
+    } else if ( d_decomp == 1 ) {
         // Special case where no two submeshes share a processor
         d_min = d_N_elements;
         d_max = 0;
         for ( size_t i = 0; i < d_submeshes.size(); i++ ) {
             if ( d_submeshes[i].cache_valid ) {
-                if ( d_submeshes[i].d_min < d_min ) d_min = d_submeshes[i].d_min;
-                if ( d_submeshes[i].d_max > d_max ) d_max = d_submeshes[i].d_max;
-            }
-            else {
+                if ( d_submeshes[i].d_min < d_min )
+                    d_min = d_submeshes[i].d_min;
+                if ( d_submeshes[i].d_max > d_max )
+                    d_max = d_submeshes[i].d_max;
+            } else {
                 d_min = std::min( d_min, d_submeshes[i].min() );
                 d_max = std::max( d_max, d_submeshes[i].max() );
             }
         }
-    }
-    else {
+    } else {
         AMP_ERROR( "Unkown value for d_decomp" );
     }
     cache_valid = true;

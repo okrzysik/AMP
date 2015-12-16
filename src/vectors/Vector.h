@@ -37,7 +37,8 @@ namespace LinearAlgebra {
 
 
 //! Parameters used to instantiate a Vector
-class VectorParameters : public ParameterBase, public Castable {
+class VectorParameters : public ParameterBase, public Castable
+{
 public:
     //! Convenience typedef
     typedef AMP::shared_ptr<VectorParameters> shared_ptr;
@@ -80,7 +81,8 @@ class ManagedVector;
   * \f$\mathbf{\tilde{u}}\f$ and \f$\mathbf{f}\f$ are Vectors.
   */
 
-class Vector : virtual public VectorOperations, public AMP::enable_shared_from_this<Vector> {
+class Vector : virtual public VectorOperations, public AMP::enable_shared_from_this<Vector>
+{
 public:
     /**\brief Flag to choose algorithm for makeConsistent
       *\see makeConsistent

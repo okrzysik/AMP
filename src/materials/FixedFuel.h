@@ -15,7 +15,8 @@
 // Define the material
 namespace AMP {
 namespace Materials {
-class FixedFuel : public Material {
+class FixedFuel : public Material
+{
 public:
     FixedFuel();
 };

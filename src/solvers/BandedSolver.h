@@ -15,7 +15,8 @@ namespace Solver {
  * banded matrix
  */
 
-class BandedSolver : public SolverStrategy {
+class BandedSolver : public SolverStrategy
+{
 public:
     /**
      *  Main constructor for the base class.

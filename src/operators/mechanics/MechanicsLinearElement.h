@@ -18,7 +18,8 @@ namespace Operator {
   The linear operator could either be a linear elasticity operator or it could be
   the jacobian of a nonlinear elasticity/elasto-plasticity operator.
  */
-class MechanicsLinearElement : public MechanicsElement {
+class MechanicsLinearElement : public MechanicsElement
+{
 public:
     //! Constructor.
     explicit MechanicsLinearElement( const AMP::shared_ptr<ElementOperationParameters> &params )
@@ -51,8 +52,7 @@ public:
     {
         if ( d_useReducedIntegration ) {
             apply_Reduced();
-        }
-        else {
+        } else {
             apply_Normal();
         }
     }

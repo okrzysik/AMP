@@ -54,10 +54,10 @@ void MassLinearElement::apply()
             d_densityModel->getDensityManufactured(
                 density, temperature, concentration, burnup, d_fe->get_xyz() );
             break;
-        default: AMP_ERROR( "Unknown enum for d_equation" );
+        default:
+            AMP_ERROR( "Unknown enum for d_equation" );
         }
-    }
-    else {
+    } else {
         std::vector<double> nodalDensity( num_local_dofs );
         std::vector<Point> elem_nodes;
         switch ( d_equation ) {
@@ -75,11 +75,13 @@ void MassLinearElement::apply()
             break;
         case MassDensityModel::Manufactured:
             elem_nodes.resize( num_local_dofs );
-            for ( size_t i = 0; i < num_local_dofs; i++ ) elem_nodes[i] = d_elem->point( i );
+            for ( size_t i    = 0; i < num_local_dofs; i++ )
+                elem_nodes[i] = d_elem->point( i );
             d_densityModel->getDensityManufactured(
                 nodalDensity, d_LocalTemperature, d_LocalConcentration, d_LocalBurnup, elem_nodes );
             break;
-        default: AMP_ERROR( "Unknown enum for d_equation" );
+        default:
+            AMP_ERROR( "Unknown enum for d_equation" );
         }
 
         for ( unsigned int qp = 0; qp < d_qrule->n_points(); qp++ ) {

@@ -43,8 +43,7 @@ Vector::shared_ptr NativePetscMatrix::extractDiagonal( Vector::shared_ptr v ) co
     Vector::shared_ptr retVal;
     if ( v->isA<NativePetscVector>() ) {
         retVal = v;
-    }
-    else {
+    } else {
         retVal = getRightVector();
     }
     MatGetDiagonal( getMat(), retVal->castTo<PetscVector>().getVec() );
@@ -88,22 +87,26 @@ void NativePetscMatrix::getValuesByGlobalID(
     int num_rows, int num_cols, int *rows, int *cols, double *values ) const
 {
     // Zero out the data in values
-    for ( int i = 0; i < num_rows * num_cols; i++ ) values[i] = 0.0;
+    for ( int i   = 0; i < num_rows * num_cols; i++ )
+        values[i] = 0.0;
     // Get the data for each row
     Discretization::DOFManager::shared_ptr leftDOFManager = getLeftDOFManager();
     int firstRow                                          = leftDOFManager->beginDOF();
     int numRows                                           = leftDOFManager->endDOF();
     for ( int i = 0; i < num_rows; i++ ) {
-        if ( rows[i] < firstRow || rows[i] >= firstRow + numRows ) continue;
+        if ( rows[i] < firstRow || rows[i] >= firstRow + numRows )
+            continue;
         int numCols = 0;
         MatGetRow( d_Mat, rows[i], &numCols, PETSC_NULL, PETSC_NULL );
-        if ( numCols == 0 ) continue;
+        if ( numCols == 0 )
+            continue;
         const PetscInt *out_cols;
         const PetscScalar *out_vals;
         MatGetRow( d_Mat, rows[i], &numCols, &out_cols, &out_vals );
         for ( int j1 = 0; j1 < num_cols; j1++ ) {
             for ( int j2 = 0; j2 < numCols; j2++ ) {
-                if ( cols[j1] == out_cols[j2] ) values[i * num_cols + j1] = out_vals[j2];
+                if ( cols[j1] == out_cols[j2] )
+                    values[i * num_cols + j1] = out_vals[j2];
             }
         }
     }

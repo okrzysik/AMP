@@ -24,7 +24,8 @@ namespace Mesh {
  *                       1 - Use independent processor sets for all meshes (default)
  *                       2 - Use all processors for all meshes
  */
-class MultiMesh : public Mesh {
+class MultiMesh : public Mesh
+{
 public:
     /**
      * \brief Default constructor

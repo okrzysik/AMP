@@ -20,7 +20,8 @@ namespace LinearAlgebra {
   * way to interact with a matrix.  Matrix creation may require
   * use of one of the derived classes.
   */
-class Matrix : public Castable {
+class Matrix : public Castable
+{
 public:
     //! Convenience typedef
     typedef AMP::shared_ptr<Matrix> shared_ptr;

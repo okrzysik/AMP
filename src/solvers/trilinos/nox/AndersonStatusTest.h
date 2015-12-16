@@ -18,7 +18,8 @@ namespace Solver {
   * The AndersonStatusTest implements a AMP-specific stopping criteria
   * for use with the NOX Anderson acceleration solver.
   */
-class AndersonStatusTest : public NOX::StatusTest::Generic {
+class AndersonStatusTest : public NOX::StatusTest::Generic
+{
 public:
     /**
      * main constructor

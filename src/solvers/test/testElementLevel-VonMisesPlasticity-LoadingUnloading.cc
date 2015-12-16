@@ -205,8 +205,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         double scaleValue;
         if ( ( step + 1 ) <= TotalLoadingSteps ) {
             scaleValue = ( (double) step + 1.0 ) / TotalLoadingSteps;
-        }
-        else {
+        } else {
             scaleValue = 1.0 - ( ( (double) step + 1.0 - TotalLoadingSteps ) / TotalLoadingSteps );
         }
         scaledRhsVec->scale( scaleValue, rhsVec );
@@ -227,8 +226,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
         if ( finalResidualNorm > ( 1.0e-10 * initialResidualNorm ) ) {
             ut->failure( "Nonlinear solve for current loading step" );
-        }
-        else {
+        } else {
             ut->passes( "Nonlinear solve for current loading step" );
         }
 
@@ -287,8 +285,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
                     double prev_stress = 1.0, prev_strain = 1.0, slope = 1.0;
                     if ( step == 0 ) {
                         slope = 0.0;
-                    }
-                    else {
+                    } else {
                         slope = ( stress1[2] - prev_stress ) / ( strain1[2] - prev_strain );
                     }
                     fprintf( fout123, "%f %f %f\n", strain1[2], stress1[2], slope );
@@ -319,12 +316,10 @@ int main( int argc, char *argv[] )
     for ( unsigned int i = 0; i < exeNames.size(); i++ ) {
         try {
             myTest( &ut, exeNames[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing" );

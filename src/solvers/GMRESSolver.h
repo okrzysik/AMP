@@ -19,7 +19,8 @@ namespace Solver {
  * If a preconditioner is provided right preconditioning is done
  */
 
-class GMRESSolver : public SolverStrategy {
+class GMRESSolver : public SolverStrategy
+{
 public:
     /**
      * default constructor

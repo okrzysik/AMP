@@ -38,7 +38,8 @@ class libMeshElement;
  * communicators.  If multiple meshes are used, they must either share communicators or have unique
  * communicators.
  */
-class libMesh : public Mesh {
+class libMesh : public Mesh
+{
 public:
     /**
      * \brief Read in mesh files, partition domain, and prepare environment for simulation

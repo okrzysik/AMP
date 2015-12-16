@@ -77,8 +77,7 @@ void myTest( AMP::UnitTest *ut )
 
         if ( testOperator.get() != NULL ) {
             ut->passes( msgPrefix + " : create" );
-        }
-        else {
+        } else {
             ut->failure( msgPrefix + " : create" );
         }
 
@@ -144,8 +143,7 @@ void myTest( AMP::UnitTest *ut )
 
         if ( jacobianParameters.get() == NULL ) {
             ut->passes( msgPrefix + "getJacobianParameters (should return NULL for now)" );
-        }
-        else {
+        } else {
             ut->failure( msgPrefix + "getJacobianParameters (should return NULL for now)" );
         }
 

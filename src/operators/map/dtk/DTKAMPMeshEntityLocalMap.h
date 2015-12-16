@@ -16,7 +16,8 @@ namespace Operator {
   * AMP Mesh element implementation for DTK EntityLocalMap interface. The
   * interface is currently only implemented for hex-8 elements.
 */
-class AMPMeshEntityLocalMap : public DataTransferKit::EntityLocalMap {
+class AMPMeshEntityLocalMap : public DataTransferKit::EntityLocalMap
+{
 public:
     /**
      * Constructor.

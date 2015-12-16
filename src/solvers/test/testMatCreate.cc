@@ -55,8 +55,7 @@ void myTest( AMP::UnitTest *ut, std::string input_file )
     AMP::LinearAlgebra::Matrix::shared_ptr mat1 = AMP::LinearAlgebra::createMatrix( inVec, outVec );
     if ( mat1.get() != NULL ) {
         ut->passes( "Able to create a non-square matrices" );
-    }
-    else {
+    } else {
         ut->failure( "Unable to create a non-square matrices" );
     }
 
@@ -74,8 +73,7 @@ void myTest( AMP::UnitTest *ut, std::string input_file )
         AMP::LinearAlgebra::createMatrix( multiVarVec, multiVarVec );
     if ( mat2.get() != NULL ) {
         ut->passes( "Able to create a mutli-var matrices" );
-    }
-    else {
+    } else {
         ut->failure( "Unable to create a multi-var matrices" );
     }
 }
@@ -88,12 +86,10 @@ int main( int argc, char *argv[] )
 
     try {
         myTest( &ut, "input_testLinearFlow-1" );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

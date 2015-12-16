@@ -21,7 +21,8 @@ namespace Operator {
  *  the 1D location by interpolation. The 3D mesh is the d_MeshAdapter from the
  *  Operator class.
  */
-class Map3Dto1D : public MapOperator {
+class Map3Dto1D : public MapOperator
+{
 public:
     //!  Constructor
     explicit Map3Dto1D( const AMP::shared_ptr<OperatorParameters> &params );

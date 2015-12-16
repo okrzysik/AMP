@@ -63,8 +63,7 @@ void myGetRow3( void *object,
     size_t firstMatNumGlobalColumns = firstMat->numGlobalColumns();
     if ( row < (int) firstMatNumGlobalRows ) {
         firstMat->getRowByGlobalID( row, cols, values );
-    }
-    else {
+    } else {
         secondMat->getRowByGlobalID( row - firstMatNumGlobalRows, cols, values );
         for ( size_t j = 0; j < cols.size(); ++j ) {
             cols[j] += firstMatNumGlobalColumns;
@@ -125,8 +124,7 @@ int myGetRow( ML_Operator *data,
                 cnt++;
             }
             row_lengths[i] = cols.size();
-        }
-        else {
+        } else {
             return 0;
         }
     }
@@ -523,8 +521,7 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
     trilinosMatrixShellOperator->setNodalDofMap( dofManager );
     if ( !useTwoMeshes ) {
         trilinosMatrixShellOperator->setGetRow( &myGetRow2 );
-    }
-    else {
+    } else {
         trilinosMatrixShellOperator->setGetRow( &myGetRow3 );
     } // end if
     trilinosMatrixShellOperator->setOperator( fusedColumnOperator );
@@ -574,8 +571,7 @@ int main( int argc, char *argv[] )
 
     if ( argc == 1 ) {
         exeNames.push_back( "testMatrixFreeML-1" );
-    }
-    else {
+    } else {
         for ( int i = 1; i < argc; i++ ) {
             char inpName[100];
             sprintf( inpName, "testMatrixFreeML-%s", argv[i] );
@@ -586,12 +582,10 @@ int main( int argc, char *argv[] )
     for ( size_t i = 0; i < exeNames.size(); i++ ) {
         try {
             loopMyTest( &ut, exeNames[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing" );

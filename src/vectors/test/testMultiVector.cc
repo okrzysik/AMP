@@ -86,8 +86,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             ut->passes( "Sub Vector is the right size" );
         else
             ut->failure( "Sub Vector is the right size" );
-    }
-    else {
+    } else {
         ut->failure( "Sub Vector is not NULL" );
     }
 

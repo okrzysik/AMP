@@ -22,7 +22,8 @@ namespace Discretization {
  *    and will create the unknowns on the faces.  Two faces are neighbors if they
  *    share an element.
  */
-class structuredFaceDOFManager : public DOFManager {
+class structuredFaceDOFManager : public DOFManager
+{
 public:
     using DOFManager::getDOFs;
     using DOFManager::subset;

@@ -18,7 +18,8 @@ namespace LinearAlgebra {
   *  use to any but Backplane developers.  Also, since SundialsVector
   *  is almost trivial, so is the parameters class.
   */
-class SundialsVectorParameters {
+class SundialsVectorParameters
+{
 };
 
 /**
@@ -47,7 +48,8 @@ class SundialsVectorParameters {
   */
 
 
-class SundialsVector {
+class SundialsVector
+{
 protected:
     /**
       *  \brief  Sundials NVector wrapping the data in the Vector

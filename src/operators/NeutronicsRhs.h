@@ -26,7 +26,8 @@ namespace Operator {
  */
 //===========================================================================//
 
-class NeutronicsRhs : public Operator {
+class NeutronicsRhs : public Operator
+{
 
 public:
     // typedef AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>

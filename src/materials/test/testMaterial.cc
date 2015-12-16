@@ -44,7 +44,8 @@ static const size_t NARGEVAL = 2;
 static const size_t NVECTOR  = 6;
 static const size_t NTENSOR  = 6;
 
-class PropTestResult {
+class PropTestResult
+{
 public:
     PropTestResult()
         : range( false ),
@@ -54,10 +55,14 @@ public:
           isVector( false ),
           isTensor( false )
     {
-        for ( size_t i = 0; i < NSUCCESS; i++ ) success[i] = false;
-        for ( size_t i = 0; i < NARGEVAL; i++ ) nargeval[i] = false;
-        for ( size_t i = 0; i < NVECTOR; i++ ) vector[i] = false;
-        for ( size_t i = 0; i < NTENSOR; i++ ) tensor[i] = false;
+        for ( size_t i = 0; i < NSUCCESS; i++ )
+            success[i] = false;
+        for ( size_t i  = 0; i < NARGEVAL; i++ )
+            nargeval[i] = false;
+        for ( size_t i = 0; i < NVECTOR; i++ )
+            vector[i]  = false;
+        for ( size_t i = 0; i < NTENSOR; i++ )
+            tensor[i]  = false;
     }
     bool range;
     bool success[NSUCCESS];
@@ -71,7 +76,8 @@ public:
     bool isTensor;
 };
 
-class MatTestResult {
+class MatTestResult
+{
 public:
     MatTestResult() : undefined( false ), unknown( false ), creationGood( false ), name( "none" ) {}
     bool undefined;
@@ -91,22 +97,18 @@ MatTestResult testMaterial( string &name )
     try {
         mat = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
         results.creationGood = true;
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         results.creationGood = false;
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         results.unknown = true;
     }
 
     // check for undefined property
     try {
         mat->property( "RiDiCuLoUs#!$^&*Name" );
-    }
-    catch ( std::exception & ) {
+    } catch ( std::exception & ) {
         results.undefined = true;
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         results.undefined = false;
         results.unknown   = true;
     }
@@ -135,15 +137,12 @@ MatTestResult testMaterial( string &name )
                     results.propResults[type].params = true;
                 else
                     results.propResults[type].params = false;
-            }
-            else {
+            } else {
                 results.propResults[type].params = true;
             }
-        }
-        catch ( std::exception & ) {
+        } catch ( std::exception & ) {
             results.propResults[type].params = false;
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             results.propResults[type].params  = false;
             results.propResults[type].unknown = true;
         }
@@ -268,24 +267,24 @@ MatTestResult testMaterial( string &name )
             good = good && !property->in_range( argnames[i], *toosmallVec[i] );
             good = good && !property->in_range( argnames[i], *toobigVec[i] );
         }
-        if ( good ) results.propResults[type].range = true;
+        if ( good )
+            results.propResults[type].range = true;
 
         // test defaults get and set
         try {
             PropertyPtr prop = property;
             vector<double> defin( nargs );
-            for ( size_t i = 0; i < nargs; i++ ) defin[i] = justright[i][0];
+            for ( size_t i = 0; i < nargs; i++ )
+                defin[i]   = justright[i][0];
             prop->set_defaults( defin );
             vector<double> defaults( prop->get_defaults() );
             if ( defaults == defin )
                 results.propResults[type].nargeval[0] = true;
             else
                 results.propResults[type].nargeval[0] = false;
-        }
-        catch ( std::exception & ) {
+        } catch ( std::exception & ) {
             results.propResults[type].nargeval[0] = false;
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             results.propResults[type].nargeval[0] = false;
             results.propResults[type].unknown     = true;
         }
@@ -300,11 +299,9 @@ MatTestResult testMaterial( string &name )
                 property->evalv( value, args );
                 nominal                              = value;
                 results.propResults[type].success[0] = true;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].success[0] = false;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].success[0] = false;
                 results.propResults[type].unknown    = true;
             }
@@ -316,17 +313,14 @@ MatTestResult testMaterial( string &name )
                     property->evalv( value, args );
                     args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
                     results.propResults[type].success[1]              = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[1]              = true;
                     args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[1] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[1] = true;
             }
 
@@ -337,17 +331,14 @@ MatTestResult testMaterial( string &name )
                     property->evalv( value, args );
                     args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
                     results.propResults[type].success[2]              = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[2]              = true;
                     args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[2] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[2] = true;
             }
 
@@ -356,11 +347,9 @@ MatTestResult testMaterial( string &name )
                 property->evalv( valueVec, argsVec );
                 nominalVec->copyVector( valueVec );
                 results.propResults[type].success[4] = true;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].success[4] = false;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].success[4] = false;
                 results.propResults[type].unknown    = true;
             }
@@ -372,17 +361,14 @@ MatTestResult testMaterial( string &name )
                     property->evalv( valueVec, argsVec );
                     argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
                     results.propResults[type].success[5] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[5] = true;
                     argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[5] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[5] = true;
             }
 
@@ -393,17 +379,14 @@ MatTestResult testMaterial( string &name )
                     property->evalv( valueVec, argsVec );
                     argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
                     results.propResults[type].success[6] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[6] = true;
                     argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[6] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[6] = true;
             }
 
@@ -419,16 +402,13 @@ MatTestResult testMaterial( string &name )
                 try {
                     testMap                              = property->make_map( argsMultiVec );
                     results.propResults[type].success[7] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     xlateGood = true;
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[7] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 xlateGood = true;
             }
             property->set_translator( xlator );
@@ -461,11 +441,9 @@ MatTestResult testMaterial( string &name )
                     results.propResults[type].success[8] = true;
                 else
                     results.propResults[type].success[8] = false;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].success[8] = false;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].success[8] = false;
                 results.propResults[type].unknown    = true;
             }
@@ -475,11 +453,9 @@ MatTestResult testMaterial( string &name )
                 property->evalv( valueVec, argsMultiVec );
                 nominalMultiVec->copyVector( valueVec );
                 results.propResults[type].success[9] = true;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].success[9] = false;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].success[9] = false;
                 results.propResults[type].unknown    = true;
             }
@@ -493,18 +469,15 @@ MatTestResult testMaterial( string &name )
                     argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
                         ->setValueByLocalID( 5, justright[0][5] );
                     results.propResults[type].success[10] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[10] = true;
                     argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
                         ->setValueByLocalID( 5, justright[0][5] );
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[10] = false;
                     results.propResults[type].unknown     = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[10] = true;
             }
 
@@ -517,18 +490,15 @@ MatTestResult testMaterial( string &name )
                     argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
                         ->setValueByLocalID( 5, justright[0][5] );
                     results.propResults[type].success[11] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[11] = true;
                     argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
                         ->setValueByLocalID( 5, justright[0][5] );
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[11] = false;
                     results.propResults[type].unknown     = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[11] = true;
             }
 
@@ -542,9 +512,9 @@ MatTestResult testMaterial( string &name )
                     double vMultiVec = nominalMultiVec->getValueByLocalID( i );
                     good             = good && ( vstd == vVec && vVec == vMultiVec );
                 }
-                if ( good ) results.propResults[type].success[3] = true;
-            }
-            else {
+                if ( good )
+                    results.propResults[type].success[3] = true;
+            } else {
                 results.propResults[type].success[3] = false;
             }
 
@@ -561,16 +531,13 @@ MatTestResult testMaterial( string &name )
                 try {
                     property->evalv( value, argsm );
                     results.propResults[type].nargeval[1] = true;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].nargeval[1] = false;
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].nargeval[1] = false;
                     results.propResults[type].unknown     = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].nargeval[1] = false;
             }
 
@@ -578,8 +545,7 @@ MatTestResult testMaterial( string &name )
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Vector Property
             /////////////////////////////////////////////////////////////////////////////////////////////
-        }
-        else if ( property->isVector() ) {
+        } else if ( property->isVector() ) {
 
             results.propResults[type].isVector = true;
 
@@ -589,8 +555,7 @@ MatTestResult testMaterial( string &name )
             // check that scalar nature is not signaled
             if ( vectorProperty->isScalar() ) {
                 results.propResults[type].vector[2] = false;
-            }
-            else {
+            } else {
                 results.propResults[type].vector[2] = true;
             }
 
@@ -598,11 +563,9 @@ MatTestResult testMaterial( string &name )
             try {
                 vectorProperty->evalv( value, args );
                 results.propResults[type].vector[3] = false;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].vector[3] = true;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].vector[3] = false;
                 results.propResults[type].unknown   = true;
             }
@@ -611,11 +574,9 @@ MatTestResult testMaterial( string &name )
             try {
                 vectorProperty->evalv( valueVec, argsVec );
                 results.propResults[type].vector[4] = false;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].vector[4] = true;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].vector[4] = false;
                 results.propResults[type].unknown   = true;
             }
@@ -632,16 +593,13 @@ MatTestResult testMaterial( string &name )
                 try {
                     testMap                              = vectorProperty->make_map( argsMultiVec );
                     results.propResults[type].success[7] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     xlateGood = true;
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[7] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 xlateGood = true;
             }
             vectorProperty->set_translator( xlator );
@@ -674,11 +632,9 @@ MatTestResult testMaterial( string &name )
                     results.propResults[type].success[8] = true;
                 else
                     results.propResults[type].success[8] = false;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].success[8] = false;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].success[8] = false;
                 results.propResults[type].unknown    = true;
             }
@@ -687,11 +643,9 @@ MatTestResult testMaterial( string &name )
             try {
                 vectorProperty->evalv( valueVec, argsMultiVec );
                 results.propResults[type].vector[5] = false;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].vector[5] = true;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].vector[5] = false;
                 results.propResults[type].unknown   = true;
             }
@@ -701,11 +655,9 @@ MatTestResult testMaterial( string &name )
             try {
                 nvec                                = vectorProperty->get_dimension();
                 results.propResults[type].vector[0] = true;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].vector[0] = false;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].vector[0] = false;
                 results.propResults[type].unknown   = true;
             }
@@ -721,8 +673,7 @@ MatTestResult testMaterial( string &name )
             // check that number of components is positive
             if ( results.propResults[type].vector[0] && nvec > 0 ) {
                 results.propResults[type].vector[1] = true;
-            }
-            else {
+            } else {
                 results.propResults[type].vector[1] = false;
             }
 
@@ -731,11 +682,9 @@ MatTestResult testMaterial( string &name )
                 vectorProperty->evalv( stdEval, args );
                 nominalEval                          = stdEval;
                 results.propResults[type].success[0] = true;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].success[0] = false;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].success[0] = false;
                 results.propResults[type].unknown    = true;
             }
@@ -747,17 +696,14 @@ MatTestResult testMaterial( string &name )
                     vectorProperty->evalv( stdEval, args );
                     args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
                     results.propResults[type].success[1]              = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[1]              = true;
                     args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[1] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[1] = true;
             }
 
@@ -768,17 +714,14 @@ MatTestResult testMaterial( string &name )
                     vectorProperty->evalv( stdEval, args );
                     args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
                     results.propResults[type].success[2]              = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[2]              = true;
                     args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[2] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[2] = true;
             }
 
@@ -808,13 +751,12 @@ MatTestResult testMaterial( string &name )
             // all in range, AMP::Vector
             try {
                 vectorProperty->evalv( ampEval, argsVec );
-                for ( size_t i = 0; i < nvec; i++ ) nominalAmpEval[i]->copyVector( ampEval[i] );
+                for ( size_t i = 0; i < nvec; i++ )
+                    nominalAmpEval[i]->copyVector( ampEval[i] );
                 results.propResults[type].success[4] = true;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].success[4] = false;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].success[4] = false;
                 results.propResults[type].unknown    = true;
             }
@@ -826,17 +768,14 @@ MatTestResult testMaterial( string &name )
                     vectorProperty->evalv( ampEval, argsVec );
                     argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
                     results.propResults[type].success[5] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[5] = true;
                     argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[5] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[5] = true;
             }
 
@@ -847,30 +786,26 @@ MatTestResult testMaterial( string &name )
                     vectorProperty->evalv( ampEval, argsVec );
                     argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
                     results.propResults[type].success[6] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[6] = true;
                     argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[6] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[6] = true;
             }
 
             // all in range, AMP::MultiVector
             try {
                 vectorProperty->evalv( ampEval, argsMultiVec );
-                for ( size_t i = 0; i < nvec; i++ ) nominalMultiEval[i]->copyVector( ampEval[i] );
+                for ( size_t i = 0; i < nvec; i++ )
+                    nominalMultiEval[i]->copyVector( ampEval[i] );
                 results.propResults[type].success[9] = true;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].success[9] = false;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].success[9] = false;
                 results.propResults[type].unknown    = true;
             }
@@ -884,18 +819,15 @@ MatTestResult testMaterial( string &name )
                     argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
                         ->setValueByLocalID( 5, justright[0][5] );
                     results.propResults[type].success[10] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[10] = true;
                     argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
                         ->setValueByLocalID( 5, justright[0][5] );
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[10] = false;
                     results.propResults[type].unknown     = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[10] = true;
             }
 
@@ -908,18 +840,15 @@ MatTestResult testMaterial( string &name )
                     argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
                         ->setValueByLocalID( 5, justright[0][5] );
                     results.propResults[type].success[11] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[11] = true;
                     argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
                         ->setValueByLocalID( 5, justright[0][5] );
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[11] = false;
                     results.propResults[type].unknown     = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[11] = true;
             }
 
@@ -935,9 +864,9 @@ MatTestResult testMaterial( string &name )
                         good             = good && ( vstd == vVec && vVec == vMultiVec );
                     }
                 }
-                if ( good ) results.propResults[type].success[3] = true;
-            }
-            else {
+                if ( good )
+                    results.propResults[type].success[3] = true;
+            } else {
                 results.propResults[type].success[3] = false;
             }
 
@@ -954,24 +883,20 @@ MatTestResult testMaterial( string &name )
                 try {
                     vectorProperty->evalv( stdEval, argsm );
                     results.propResults[type].nargeval[1] = true;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].nargeval[1] = false;
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].nargeval[1] = false;
                     results.propResults[type].unknown     = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].nargeval[1] = false;
             }
 
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Tensor Property
             /////////////////////////////////////////////////////////////////////////////////////////////
-        }
-        else if ( property->isTensor() ) {
+        } else if ( property->isTensor() ) {
 
             results.propResults[type].isTensor = true;
 
@@ -981,8 +906,7 @@ MatTestResult testMaterial( string &name )
             // check that scalar nature is not signaled
             if ( tensorProperty->isScalar() ) {
                 results.propResults[type].tensor[2] = false;
-            }
-            else {
+            } else {
                 results.propResults[type].tensor[2] = true;
             }
 
@@ -990,11 +914,9 @@ MatTestResult testMaterial( string &name )
             try {
                 tensorProperty->evalv( value, args );
                 results.propResults[type].tensor[3] = false;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].tensor[3] = true;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].tensor[3] = false;
                 results.propResults[type].unknown   = true;
             }
@@ -1003,11 +925,9 @@ MatTestResult testMaterial( string &name )
             try {
                 tensorProperty->evalv( valueVec, argsVec );
                 results.propResults[type].tensor[4] = false;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].tensor[4] = true;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].tensor[4] = false;
                 results.propResults[type].unknown   = true;
             }
@@ -1024,16 +944,13 @@ MatTestResult testMaterial( string &name )
                 try {
                     testMap                              = tensorProperty->make_map( argsMultiVec );
                     results.propResults[type].success[7] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     xlateGood = true;
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[7] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 xlateGood = true;
             }
             tensorProperty->set_translator( xlator );
@@ -1066,11 +983,9 @@ MatTestResult testMaterial( string &name )
                     results.propResults[type].success[8] = true;
                 else
                     results.propResults[type].success[8] = false;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].success[8] = false;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].success[8] = false;
                 results.propResults[type].unknown    = true;
             }
@@ -1079,11 +994,9 @@ MatTestResult testMaterial( string &name )
             try {
                 tensorProperty->evalv( valueVec, argsMultiVec );
                 results.propResults[type].tensor[5] = false;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].tensor[5] = true;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].tensor[5] = false;
                 results.propResults[type].unknown   = true;
             }
@@ -1093,11 +1006,9 @@ MatTestResult testMaterial( string &name )
             try {
                 nvecs                               = tensorProperty->get_dimensions();
                 results.propResults[type].tensor[0] = true;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].tensor[0] = false;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].tensor[0] = false;
                 results.propResults[type].unknown   = true;
             }
@@ -1117,8 +1028,7 @@ MatTestResult testMaterial( string &name )
             if ( results.propResults[type].tensor[0] && nvecs[0] > 0 && nvecs[1] > 0 &&
                  nvecs.size() == 2 ) {
                 results.propResults[type].tensor[1] = true;
-            }
-            else {
+            } else {
                 results.propResults[type].tensor[1] = false;
             }
 
@@ -1127,11 +1037,9 @@ MatTestResult testMaterial( string &name )
                 tensorProperty->evalv( stdEval, args );
                 nominalEval                          = stdEval;
                 results.propResults[type].success[0] = true;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].success[0] = false;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].success[0] = false;
                 results.propResults[type].unknown    = true;
             }
@@ -1143,17 +1051,14 @@ MatTestResult testMaterial( string &name )
                     tensorProperty->evalv( stdEval, args );
                     args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
                     results.propResults[type].success[1]              = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[1]              = true;
                     args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[1] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[1] = true;
             }
 
@@ -1164,17 +1069,14 @@ MatTestResult testMaterial( string &name )
                     tensorProperty->evalv( stdEval, args );
                     args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
                     results.propResults[type].success[2]              = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[2]              = true;
                     args.find( argnames[0] )->second->operator[]( 5 ) = justright[0][5];
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[2] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[2] = true;
             }
 
@@ -1216,11 +1118,9 @@ MatTestResult testMaterial( string &name )
                     for ( size_t j = 0; j < nvecs[1]; j++ )
                         nominalAmpEval[i][j]->copyVector( ampEval[i][j] );
                 results.propResults[type].success[4] = true;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].success[4] = false;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].success[4] = false;
                 results.propResults[type].unknown    = true;
             }
@@ -1232,17 +1132,14 @@ MatTestResult testMaterial( string &name )
                     tensorProperty->evalv( ampEval, argsVec );
                     argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
                     results.propResults[type].success[5] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[5] = true;
                     argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[5] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[5] = true;
             }
 
@@ -1253,17 +1150,14 @@ MatTestResult testMaterial( string &name )
                     tensorProperty->evalv( ampEval, argsVec );
                     argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
                     results.propResults[type].success[6] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[6] = true;
                     argsVec.find( argnames[0] )->second->setValueByLocalID( 5, justright[0][5] );
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[6] = false;
                     results.propResults[type].unknown    = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[6] = true;
             }
 
@@ -1274,11 +1168,9 @@ MatTestResult testMaterial( string &name )
                     for ( size_t j = 0; j < nvecs[1]; j++ )
                         nominalMultiEval[i][j]->copyVector( ampEval[i][j] );
                 results.propResults[type].success[9] = true;
-            }
-            catch ( std::exception & ) {
+            } catch ( std::exception & ) {
                 results.propResults[type].success[9] = false;
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 results.propResults[type].success[9] = false;
                 results.propResults[type].unknown    = true;
             }
@@ -1292,18 +1184,15 @@ MatTestResult testMaterial( string &name )
                     argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
                         ->setValueByLocalID( 5, justright[0][5] );
                     results.propResults[type].success[10] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[10] = true;
                     argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
                         ->setValueByLocalID( 5, justright[0][5] );
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[10] = false;
                     results.propResults[type].unknown     = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[10] = true;
             }
 
@@ -1316,18 +1205,15 @@ MatTestResult testMaterial( string &name )
                     argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
                         ->setValueByLocalID( 5, justright[0][5] );
                     results.propResults[type].success[11] = false;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].success[11] = true;
                     argsMultiVec->subsetVectorForVariable( justrightVec[0]->getVariable() )
                         ->setValueByLocalID( 5, justright[0][5] );
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].success[11] = false;
                     results.propResults[type].unknown     = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].success[11] = true;
             }
 
@@ -1345,9 +1231,9 @@ MatTestResult testMaterial( string &name )
                         }
                     }
                 }
-                if ( good ) results.propResults[type].success[3] = true;
-            }
-            else {
+                if ( good )
+                    results.propResults[type].success[3] = true;
+            } else {
                 results.propResults[type].success[3] = false;
             }
 
@@ -1364,16 +1250,13 @@ MatTestResult testMaterial( string &name )
                 try {
                     tensorProperty->evalv( stdEval, argsm );
                     results.propResults[type].nargeval[1] = true;
-                }
-                catch ( std::exception & ) {
+                } catch ( std::exception & ) {
                     results.propResults[type].nargeval[1] = false;
-                }
-                catch ( ... ) {
+                } catch ( ... ) {
                     results.propResults[type].nargeval[1] = false;
                     results.propResults[type].unknown     = true;
                 }
-            }
-            else {
+            } else {
                 results.propResults[type].nargeval[1] = false;
             }
         }
@@ -1415,7 +1298,8 @@ int main( int argc, char **argv )
              << "unknown:   yes=an unknown error occurred during property tests\n\n\n";
         cout << "number of materials = " << matlist.size() << endl;
         cout << "materials = ";
-        for ( size_t i = 0; i < matlist.size(); ++i ) cout << matlist[i] << " ";
+        for ( size_t i = 0; i < matlist.size(); ++i )
+            cout << matlist[i] << " ";
         cout << endl;
         for ( size_t i = 0; i < matlist.size(); i++ ) {
             MatTestResult score = testMaterial( matlist[i] );
@@ -1442,21 +1326,25 @@ int main( int argc, char **argv )
                 cout << xlate( j->params ) << "    ";
                 unsigned int nsuccess = 0, nargeval = 0;
                 for ( size_t k = 0; k < NSUCCESS; k++ )
-                    if ( j->success[k] ) nsuccess++;
+                    if ( j->success[k] )
+                        nsuccess++;
                 cout << nsuccess << "/" << NSUCCESS << "    ";
                 for ( size_t k = 0; k < NARGEVAL; k++ )
-                    if ( j->nargeval[k] ) nargeval++;
+                    if ( j->nargeval[k] )
+                        nargeval++;
                 cout << nargeval << "/" << NARGEVAL << "      ";
                 if ( j->isVector ) {
                     unsigned int nvector = 0;
                     for ( size_t k = 0; k < NVECTOR; k++ )
-                        if ( j->vector[k] ) nvector++;
+                        if ( j->vector[k] )
+                            nvector++;
                     cout << nvector << "/" << NVECTOR << "      ";
                 }
                 if ( j->isTensor ) {
                     unsigned int ntensor = 0;
                     for ( size_t k = 0; k < NTENSOR; k++ )
-                        if ( j->tensor[k] ) ntensor++;
+                        if ( j->tensor[k] )
+                            ntensor++;
                     cout << ntensor << "/" << NTENSOR << "      ";
                 }
                 cout << xlate( j->unknown ) << "     ";
@@ -1606,9 +1494,9 @@ int main( int argc, char **argv )
             string name( "flubber" );
             Material::shared_ptr mat =
                 AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
-            if ( mat != NULL ) maxpassed += 1;
-        }
-        catch ( std::exception &err ) {
+            if ( mat != NULL )
+                maxpassed += 1;
+        } catch ( std::exception &err ) {
             string msg = err.what();
             bool check = ( msg == "Unregistered creator" );
             good       = good && check;
@@ -1623,12 +1511,10 @@ int main( int argc, char **argv )
         cout << "number of tests passed = " << ut.NumPassLocal() << "/" << maxpassed << " possible"
              << endl;
         cout << endl << endl << endl;
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown" << endl;
         ut.failure( "ERROR: While testing" );
     }

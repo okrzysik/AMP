@@ -52,7 +52,8 @@ namespace AMP {
  * output files from flex and bison.
  */
 
-class Parser {
+class Parser
+{
 public:
     typedef AMP::shared_ptr<Parser> shared_ptr;
 

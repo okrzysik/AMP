@@ -28,8 +28,7 @@ bool areEqual( double result, double known, std::string quantity )
         AMP::pout << quantity << " result did not match known value.";
         AMP::pout << " Result = " << result << ", and Known = " << known << ".\n";
         passed = false;
-    }
-    else {
+    } else {
         passed = true;
     }
     return passed;
@@ -63,8 +62,7 @@ void nonlinearTest( AMP::UnitTest *ut, std::string exeName )
 
     if ( subchannelPhysicsModel.get() ) {
         ut->passes( exeName + ": creation" );
-    }
-    else {
+    } else {
         ut->failure( exeName + ": creation" );
     }
 
@@ -263,12 +261,10 @@ int main( int argc, char *argv[] )
     for ( int i = 0; i < NUMFILES; i++ ) {
         try {
             nonlinearTest( &ut, files[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing: " + files[i] );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing: " + files[i] );

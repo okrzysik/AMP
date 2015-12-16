@@ -17,7 +17,8 @@ namespace Operator {
 /**
   * AMP Mesh manager for DTK.
 */
-class DTKAMPMeshManager {
+class DTKAMPMeshManager
+{
 public:
     /**
      * Constructor.

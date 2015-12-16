@@ -8,7 +8,8 @@ namespace Operator {
 
 
 //  An abstract base class for representing a linear operator.
-class BoundaryOperator : public Operator {
+class BoundaryOperator : public Operator
+{
 
 public:
     explicit BoundaryOperator( const AMP::shared_ptr<OperatorParameters> &params )

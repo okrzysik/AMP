@@ -13,7 +13,8 @@
 namespace AMP {
 namespace Operator {
 
-class PelletContactConductanceModel : public RobinPhysicsModel {
+class PelletContactConductanceModel : public RobinPhysicsModel
+{
 public:
     explicit PelletContactConductanceModel(
         const AMP::shared_ptr<RobinPhysicsModelParameters> &params );

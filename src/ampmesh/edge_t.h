@@ -4,7 +4,8 @@
 
 #include <vector>
 
-class edge_t {
+class edge_t
+{
 public:
     edge_t( double const *A, double const *B, double const *ABC );
     void set_support_points( double const *A, double const *B );

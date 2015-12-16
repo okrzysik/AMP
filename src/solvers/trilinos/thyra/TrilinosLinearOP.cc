@@ -57,7 +57,8 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
     if ( x0 != NULL )
         const_cast<AMP::LinearAlgebra::Vector *>( x0.get() )
             ->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    if ( y0 != NULL ) y0->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    if ( y0 != NULL )
+        y0->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> x;
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> y;
     if ( x0->getVariable()->getName() == "ThyraMultiVec" ||
@@ -78,8 +79,7 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
             x.push_back( x1->getVector( i ) );
             y.push_back( y1->getVector( i ) );
         }
-    }
-    else {
+    } else {
         x.push_back( x0 );
         y.push_back( y0 );
     }
@@ -88,8 +88,7 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
             // Apply the AMP::Operator to compute the residual
             AMP::LinearAlgebra::Vector::shared_ptr f = y[i]->cloneVector();
             d_operator->apply( f, x[i], y[i], alpha, beta );
-        }
-        else {
+        } else {
             // Apply the AMP::Solver
             d_solver->solve( x[i], y[i] );
         }

@@ -8,7 +8,8 @@
 namespace AMP {
 namespace Operator {
 
-class LinearBoundaryOperatorParameters : public OperatorParameters {
+class LinearBoundaryOperatorParameters : public OperatorParameters
+{
 public:
     explicit LinearBoundaryOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
         : OperatorParameters( db )

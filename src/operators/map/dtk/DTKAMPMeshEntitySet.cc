@@ -92,11 +92,21 @@ AMPMeshEntitySet::getGeomTypeFromEntityType( const DataTransferKit::EntityType e
 {
     AMP::Mesh::GeomType type_id = AMP::Mesh::Vertex;
     switch ( entity_type ) {
-    case DataTransferKit::ENTITY_TYPE_NODE: type_id   = AMP::Mesh::Vertex; break;
-    case DataTransferKit::ENTITY_TYPE_EDGE: type_id   = AMP::Mesh::Edge; break;
-    case DataTransferKit::ENTITY_TYPE_FACE: type_id   = AMP::Mesh::Face; break;
-    case DataTransferKit::ENTITY_TYPE_VOLUME: type_id = AMP::Mesh::Volume; break;
-    default: type_id                                  = AMP::Mesh::null; break;
+    case DataTransferKit::ENTITY_TYPE_NODE:
+        type_id = AMP::Mesh::Vertex;
+        break;
+    case DataTransferKit::ENTITY_TYPE_EDGE:
+        type_id = AMP::Mesh::Edge;
+        break;
+    case DataTransferKit::ENTITY_TYPE_FACE:
+        type_id = AMP::Mesh::Face;
+        break;
+    case DataTransferKit::ENTITY_TYPE_VOLUME:
+        type_id = AMP::Mesh::Volume;
+        break;
+    default:
+        type_id = AMP::Mesh::null;
+        break;
     }
     return type_id;
 }

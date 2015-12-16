@@ -23,7 +23,8 @@ namespace Operator {
   This can also be used to easily form a RHS vector corresponding to point forces (Dirac delta
   functions).
   */
-class DirichletVectorCorrection : public BoundaryOperator {
+class DirichletVectorCorrection : public BoundaryOperator
+{
 public:
     /**
       Constructor

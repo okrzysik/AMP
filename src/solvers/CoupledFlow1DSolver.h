@@ -11,7 +11,8 @@
 namespace AMP {
 namespace Solver {
 
-class CoupledFlow1DSolver : public SolverStrategy {
+class CoupledFlow1DSolver : public SolverStrategy
+{
 public:
     explicit CoupledFlow1DSolver( AMP::shared_ptr<SolverStrategyParameters> parameters );
 

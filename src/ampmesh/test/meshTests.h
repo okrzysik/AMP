@@ -37,7 +37,8 @@ std::map<AMP::Mesh::MeshID, std::vector<int>> createRankMap( AMP::Mesh::Mesh::sh
         }
         int N = mesh->getComm().allGather( &map, N_send, &tmp[0] );
         std::vector<int> rank( N );
-        for ( int j = 0; j < N; j++ ) rank[tmp[j].first] = tmp[j].second;
+        for ( int j            = 0; j < N; j++ )
+            rank[tmp[j].first] = tmp[j].second;
         proc_map.insert( std::pair<AMP::Mesh::MeshID, std::vector<int>>( meshIDs[i], rank ) );
     }
     return proc_map;
@@ -146,34 +147,41 @@ void ElementIteratorTest( AMP::UnitTest *ut,
         ids.push_back( it->globalID() );
         AMP::Mesh::MeshElement element = *it;
         // Get the current id
-        AMP::Mesh::MeshElementID id         = element.globalID();
-        if ( id != it->globalID() ) id_pass = false;
+        AMP::Mesh::MeshElementID id = element.globalID();
+        if ( id != it->globalID() )
+            id_pass = false;
         // Get the owner rank
         AMP::Mesh::MeshID meshID    = id.meshID();
         const std::vector<int> &map = proc_map.find( meshID )->second;
         int ownerRank               = map[id.owner_rank()];
         // Perform some simple checks
-        if ( element.elementType() != type ) type_pass = false;
+        if ( element.elementType() != type )
+            type_pass = false;
         if ( type == AMP::Mesh::Vertex ) {
-            std::vector<double> coord                        = element.coord();
-            if ( coord.size() != mesh->getDim() ) coord_pass = false;
-        }
-        else {
-            if ( element.volume() <= 0.0 ) volume_pass = false;
+            std::vector<double> coord = element.coord();
+            if ( coord.size() != mesh->getDim() )
+                coord_pass = false;
+        } else {
+            if ( element.volume() <= 0.0 )
+                volume_pass = false;
         }
         if ( id.type() == AMP::Mesh::Volume ) {
             bool in_a_block = false;
             for ( size_t i = 0; i < blockIds.size(); i++ ) {
-                if ( element.isInBlock( blockIds[i] ) ) in_a_block = true;
+                if ( element.isInBlock( blockIds[i] ) )
+                    in_a_block = true;
             }
-            if ( !in_a_block ) block_pass = false;
+            if ( !in_a_block )
+                block_pass = false;
         }
-        std::vector<double> centroid                           = element.centroid();
-        if ( centroid.size() != mesh->getDim() ) centroid_pass = false;
+        std::vector<double> centroid = element.centroid();
+        if ( centroid.size() != mesh->getDim() )
+            centroid_pass = false;
         if ( type == AMP::Mesh::Vertex ) {
             std::vector<double> coord = element.coord();
             for ( size_t i = 0; i < centroid.size(); i++ ) {
-                if ( centroid[i] != coord[i] ) centroid_pass = false;
+                if ( centroid[i] != coord[i] )
+                    centroid_pass = false;
             }
         }
         if ( id.is_local() ) {
@@ -181,7 +189,8 @@ void ElementIteratorTest( AMP::UnitTest *ut,
                 const AMP::Mesh::GeomType type2            = (AMP::Mesh::GeomType) i;
                 std::vector<AMP::Mesh::MeshElement> pieces = element.getElements( type2 );
                 ids.resize( pieces.size() );
-                for ( size_t j = 0; j < pieces.size(); j++ ) ids[j] = pieces[j].globalID();
+                for ( size_t j = 0; j < pieces.size(); j++ )
+                    ids[j]     = pieces[j].globalID();
                 AMP::Utilities::unique( ids );
                 if ( pieces.empty() || pieces.size() != ids.size() ) {
                     pieces        = element.getElements( type2 );
@@ -196,37 +205,45 @@ void ElementIteratorTest( AMP::UnitTest *ut,
                 else if ( neighbor_pass == 1 )
                     neighbor_pass = 2; // Neighbors of other element types are not always supported
             }
-            if ( ownerRank != myRank ) id_pass = false;
-        }
-        else {
-            if ( ownerRank > maxRank || ownerRank < 0 || ownerRank == myRank ) id_pass = false;
+            if ( ownerRank != myRank )
+                id_pass = false;
+        } else {
+            if ( ownerRank > maxRank || ownerRank < 0 || ownerRank == myRank )
+                id_pass = false;
         }
     }
     if ( id_pass && type_pass && volume_pass && coord_pass && elements_pass && neighbor_pass == 1 &&
          block_pass ) {
         ut->passes( "elements passed" );
-    }
-    else {
-        if ( !id_pass ) ut->failure( "elements failed id test" );
-        if ( !type_pass ) ut->failure( "elements failed type test" );
-        if ( !volume_pass ) ut->failure( "elements failed volume test" );
-        if ( !coord_pass ) ut->failure( "elements failed coord test" );
-        if ( !centroid_pass ) ut->failure( "elements failed centroid test" );
-        if ( !elements_pass ) ut->failure( "elements failed getElements test" );
+    } else {
+        if ( !id_pass )
+            ut->failure( "elements failed id test" );
+        if ( !type_pass )
+            ut->failure( "elements failed type test" );
+        if ( !volume_pass )
+            ut->failure( "elements failed volume test" );
+        if ( !coord_pass )
+            ut->failure( "elements failed coord test" );
+        if ( !centroid_pass )
+            ut->failure( "elements failed centroid test" );
+        if ( !elements_pass )
+            ut->failure( "elements failed getElements test" );
         if ( neighbor_pass == 0 )
             ut->failure( "elements failed getNeighbors test" );
         else if ( neighbor_pass == 2 )
             ut->expected_failure( "elements failed getNeighbors test" );
-        if ( !block_pass ) ut->failure( "Element is not in a block" );
+        if ( !block_pass )
+            ut->failure( "Element is not in a block" );
     }
     // Check that we can get the element from the global id for all elements
     it                = iterator.begin();
     bool getElem_pass = true;
     for ( size_t i = 0; i < it.size(); i++, ++it ) {
-        AMP::Mesh::MeshElementID id1   = it->globalID();
-        AMP::Mesh::MeshElement elem    = mesh->getElement( id1 );
-        AMP::Mesh::MeshElementID id2   = elem.globalID();
-        if ( id1 != id2 ) getElem_pass = false;
+        AMP::Mesh::MeshElementID id1 = it->globalID();
+        AMP::Mesh::MeshElement elem  = mesh->getElement( id1 );
+        AMP::Mesh::MeshElementID id2 = elem.globalID();
+        if ( id1 != id2 )
+            getElem_pass = false;
     }
     if ( getElem_pass )
         ut->passes( "Got elements from element ids" );
@@ -255,18 +272,15 @@ void MeshIteratorTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh 
                 iterator = mesh->getIterator( type, gcw );
                 sprintf( message, "Element iterator created (gcw=%i)", gcw );
                 ut->passes( message );
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 iterator_created = false;
                 if ( i == 0 ) {
                     sprintf( message, "Node iterator failed (gcw=%i)", gcw );
                     ut->failure( message );
-                }
-                else if ( type == mesh->getGeomType() ) {
+                } else if ( type == mesh->getGeomType() ) {
                     sprintf( message, "Geometric element iterator failed (gcw=%i)", gcw );
                     ut->failure( message );
-                }
-                else {
+                } else {
                     sprintf( message, "Intermediate element iterator failed (gcw=%i)", gcw );
                     ut->expected_failure( message );
                 }
@@ -439,7 +453,8 @@ void MeshBasicTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
     mesh->getComm().bcast( &box2[0], (int) box1.size(), 0 );
     bool box_match = true;
     for ( size_t i = 0; i < box1.size(); i++ ) {
-        if ( box1[i] != box2[i] ) box_match = false;
+        if ( box1[i] != box2[i] )
+            box_match = false;
     }
     if ( box_match )
         ut->passes( "mesh->getBoundingBox returns global bounding box" );
@@ -468,7 +483,8 @@ void VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh 
         }
         // Broadcast the list of ghost ids to everybody
         size_t N_ghost_global = mesh->getComm().sumReduce( ghost.size() );
-        if ( N_ghost_global == 0 ) continue;
+        if ( N_ghost_global == 0 )
+            continue;
         std::vector<AMP::Mesh::MeshElementID> ghost_global( N_ghost_global );
         AMP::Mesh::MeshElementID *send_data = NULL;
         if ( !ghost.empty() ) {
@@ -488,23 +504,28 @@ void VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh 
             if ( ghost_global[i].meshID() != my_mesh_id ) {
                 my_mesh_id = ghost_global[i].meshID();
                 my_mesh    = mesh->Subset( my_mesh_id );
-                if ( my_mesh.get() == NULL ) continue;
+                if ( my_mesh.get() == NULL )
+                    continue;
                 my_rank = my_mesh->getComm().getRank();
             }
             // Check if we are the owning rank
-            if ( my_mesh.get() == NULL ) continue;
-            if ( ghost_global[i].owner_rank() != my_rank ) continue;
+            if ( my_mesh.get() == NULL )
+                continue;
+            if ( ghost_global[i].owner_rank() != my_rank )
+                continue;
             // Check if we have the element
             size_t index = AMP::Utilities::findfirst( owned, ghost_global[i] );
             if ( index == owned.size() ) {
                 index--;
             }
-            if ( owned[index] == ghost_global[i] ) found[i] = 1;
+            if ( owned[index] == ghost_global[i] )
+                found[i] = 1;
         }
         mesh->getComm().maxReduce( &found[0], (int) found.size() );
         bool all_found = true;
         for ( size_t i = 0; i < found.size(); i++ ) {
-            if ( found[i] == 0 ) all_found = false;
+            if ( found[i] == 0 )
+                all_found = false;
         }
         if ( all_found )
             utils->passes( "All ghosts are owned by somebody" );
@@ -530,11 +551,13 @@ void VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared
             std::set<AMP::Mesh::MeshElementID> node_ids;
             while ( curNode != endNode ) {
                 node_ids.insert( curNode->globalID() );
-                if ( !curNode->isOnBoundary( bid ) ) testPassed = false;
+                if ( !curNode->isOnBoundary( bid ) )
+                    testPassed = false;
                 curNode++;
             }
-            size_t total_size                 = mesh->getComm().sumReduce( node_ids.size() );
-            if ( total_size == 0 ) testPassed = false;
+            size_t total_size = mesh->getComm().sumReduce( node_ids.size() );
+            if ( total_size == 0 )
+                testPassed = false;
             // Verify that all nodes were found
             size_t numFound                  = 0;
             AMP::Mesh::MeshIterator curMNode = mesh->getIterator( AMP::Mesh::Vertex, gcw );
@@ -547,7 +570,8 @@ void VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared
                 }
                 curMNode++;
             }
-            if ( numFound != node_ids.size() ) testPassed = false;
+            if ( numFound != node_ids.size() )
+                testPassed = false;
             if ( testPassed )
                 utils->passes( "Found all boundary nodes" );
             else
@@ -610,18 +634,22 @@ void testID( AMP::UnitTest *utils )
          id0.owner_rank() != 0 || id0.local_id() != 0xFFFFFFFF )
         utils->failure( "MeshElementID test defaults" );
     // Test == and != operators
-    if ( !( id1 == id1 ) || !( id1 == id2 ) ) utils->failure( "MeshElementID test ==" );
-    if ( ( id1 != id1 ) || ( id1 != id2 ) ) utils->failure( "MeshElementID test !=" );
+    if ( !( id1 == id1 ) || !( id1 == id2 ) )
+        utils->failure( "MeshElementID test ==" );
+    if ( ( id1 != id1 ) || ( id1 != id2 ) )
+        utils->failure( "MeshElementID test !=" );
     if ( id1 == id3 || id1 == id4 || id1 == id5 || id1 == id6 )
         utils->failure( "MeshElementID test == (2)" );
     // Test that the basic properties were assigned correctly
-    if ( id1.is_local() || !id2.is_local() ) utils->failure( "MeshElementID test is_local" );
+    if ( id1.is_local() || !id2.is_local() )
+        utils->failure( "MeshElementID test is_local" );
     if ( id1.type() != AMP::Mesh::Vertex || id1.local_id() != 2 || id1.owner_rank() != 1 ||
          id1.meshID() != 103 )
         utils->failure( "MeshElementID test values" );
     id1.set_is_local( true );
     id2.set_is_local( false );
-    if ( !id1.is_local() || id2.is_local() ) utils->failure( "MeshElementID test is_local (2)" );
+    if ( !id1.is_local() || id2.is_local() )
+        utils->failure( "MeshElementID test is_local (2)" );
     // test greater than and less than operators
     if ( !( id1 <= id2 ) || !( id1 >= id2 ) || id1 > id2 || id1 < id2 )
         utils->failure( "MeshElementID test <,> (1)" );
@@ -664,7 +692,8 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
         // Store the neighbor list
         neighbors.resize( 0 );
         for ( size_t j = 0; j < elements.size(); j++ ) {
-            if ( elements[j].get() != NULL ) neighbors.push_back( elements[j]->globalID() );
+            if ( elements[j].get() != NULL )
+                neighbors.push_back( elements[j]->globalID() );
         }
         // Sort the neighbor list for easy searching
         AMP::Utilities::quicksort( neighbors );
@@ -683,9 +712,11 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
         for ( iterator = neighbor_list.begin(); iterator != neighbor_list.end(); ++iterator ) {
             std::vector<AMP::Mesh::MeshElementID> neighbors = iterator->second;
             for ( size_t i = 0; i < neighbors.size(); i++ ) {
-                if ( neighbors[i] == iterator->first ) contains_self = true;
+                if ( neighbors[i] == iterator->first )
+                    contains_self = true;
                 for ( size_t j = 0; j < i; j++ ) {
-                    if ( neighbors[j] == neighbors[i] ) contains_duplicate = true;
+                    if ( neighbors[j] == neighbors[i] )
+                        contains_duplicate = true;
                 }
             }
         }
@@ -706,7 +737,8 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
         for ( iterator = neighbor_list.begin(); iterator != neighbor_list.end(); ++iterator ) {
             std::vector<AMP::Mesh::MeshElementID> neighbors = iterator->second;
             for ( size_t i = 0; i < neighbors.size(); i++ ) {
-                if ( !neighbors[i].is_local() ) ghost_neighbors = true;
+                if ( !neighbors[i].is_local() )
+                    ghost_neighbors = true;
             }
         }
         if ( ghost_neighbors )
@@ -722,7 +754,8 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
         std::vector<AMP::Mesh::MeshElement> nodes =
             elementIterator->getElements( AMP::Mesh::Vertex );
         for ( size_t j = 0; j < nodes.size(); j++ ) {
-            if ( !nodes[j].globalID().is_local() ) continue; // Node is not owned, move on
+            if ( !nodes[j].globalID().is_local() )
+                continue; // Node is not owned, move on
             std::map<AMP::Mesh::MeshElementID, std::vector<AMP::Mesh::MeshElementID>>::iterator
                 iterator;
             iterator = neighbor_list.find( nodes[j].globalID() );
@@ -736,9 +769,11 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
                 break;
             }
             for ( size_t k = 0; k < nodes.size(); k++ ) {
-                if ( k == j ) continue;
+                if ( k == j )
+                    continue;
                 size_t index = AMP::Utilities::findfirst( neighbors, nodes[k].globalID() );
-                if ( index == neighbors.size() ) passed = false;
+                if ( index == neighbors.size() )
+                    passed = false;
             }
         }
         ++elementIterator;
@@ -761,14 +796,16 @@ void DisplaceMesh( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
     mesh->displaceMesh( displacement );
     std::vector<double> box2 = mesh->getBoundingBox();
     double volume            = 1.0;
-    for ( int i = 0; i < mesh->getDim(); i++ ) volume *= box1[2 * i + 1] - box1[2 * i + 0];
+    for ( int i = 0; i < mesh->getDim(); i++ )
+        volume *= box1[2 * i + 1] - box1[2 * i + 0];
     if ( volume > 0.0 )
         utils->passes( "non-zero bounding box" );
     else
         utils->failure( "non-zero bounding box" );
     bool passes = true;
     for ( size_t i = 0; i < box1.size(); i++ ) {
-        if ( fabs( box2[i] - box1[i] - 1.0 ) > 1e-12 ) passes = false;
+        if ( fabs( box2[i] - box1[i] - 1.0 ) > 1e-12 )
+            passes = false;
     }
     if ( passes )
         utils->passes( "scalar displacement test" );
@@ -803,7 +840,8 @@ void DisplaceMesh( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
     bool volume_passed = true;
     cur_elem           = mesh->getIterator( mesh->getGeomType(), 0 );
     double vol_ratio   = 1.0;
-    for ( int i = 0; i < mesh->getDim(); i++ ) vol_ratio *= 1.001;
+    for ( int i = 0; i < mesh->getDim(); i++ )
+        vol_ratio *= 1.001;
     for ( size_t i = 0; i < numElements; i++ ) {
         double ratio = cur_elem->volume() / orig_vol[i];
         if ( !AMP::Utilities::approx_equal(
@@ -833,15 +871,18 @@ void getParents( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
                 std::vector<AMP::Mesh::MeshElement> elements =
                     it->getElements( (AMP::Mesh::GeomType) type2 );
                 for ( size_t i = 0; i < elements.size(); i++ ) {
-                    if ( !elements[i].globalID().is_local() ) continue;
+                    if ( !elements[i].globalID().is_local() )
+                        continue;
                     std::vector<AMP::Mesh::MeshElement> parents =
                         mesh->getElementParents( elements[i], (AMP::Mesh::GeomType) type1 );
                     // Check that the current parent was found (find all parents)
                     bool found = false;
                     for ( size_t j = 0; j < parents.size(); j++ ) {
-                        if ( parents[j] == *it ) found = true;
+                        if ( parents[j] == *it )
+                            found = true;
                     }
-                    if ( !found ) pass = false;
+                    if ( !found )
+                        pass = false;
                     // Check that all parents do have the current element as a child (no extra
                     // parents found)
                     for ( size_t j = 0; j < parents.size(); j++ ) {
@@ -849,9 +890,11 @@ void getParents( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
                             parents[j].getElements( (AMP::Mesh::GeomType) type2 );
                         found = false;
                         for ( size_t m = 0; m < children.size(); m++ ) {
-                            if ( children[m] == elements[i] ) found = true;
+                            if ( children[m] == elements[i] )
+                                found = true;
                         }
-                        if ( !found ) pass = false;
+                        if ( !found )
+                            pass = false;
                     }
                 }
             }

@@ -31,11 +31,13 @@ createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
               AMP::LinearAlgebra::Variable::shared_ptr variable,
               bool split )
 {
-    if ( DOFs.get() == NULL ) return AMP::LinearAlgebra::Vector::shared_ptr();
+    if ( DOFs.get() == NULL )
+        return AMP::LinearAlgebra::Vector::shared_ptr();
     AMP_ASSERT( variable.get() != NULL );
     // Check if we are dealing with a multiDOFManager
     AMP::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF;
-    if ( split ) multiDOF = AMP::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>( DOFs );
+    if ( split )
+        multiDOF = AMP::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>( DOFs );
     // Check if we are dealing with a multiVariable
     AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> multiVariable =
         AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( variable );
@@ -73,8 +75,7 @@ createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
             AMP::LinearAlgebra::MultiVector::create( variable, comm );
         multiVector->addVector( vectors );
         return multiVector;
-    }
-    else if ( multiDOF.get() != NULL ) {
+    } else if ( multiDOF.get() != NULL ) {
         // We are dealing with a multiDOFManager and want to split the vector based on the DOF
         // managers
         std::vector<AMP::Discretization::DOFManager::shared_ptr> subDOFs =
@@ -91,8 +92,7 @@ createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
             AMP::LinearAlgebra::MultiVector::create( variable, comm );
         multiVector->addVector( vectors );
         return multiVector;
-    }
-    else {
+    } else {
         // We are ready to create a single vector
         // Create the communication list
         AMP_MPI comm = DOFs->getComm();
@@ -105,8 +105,7 @@ createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
             // No need for a communication list
             comm_list = AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(),
                                                                             DOFs->getComm() );
-        }
-        else {
+        } else {
             // Construct the communication list
             AMP::LinearAlgebra::CommunicationListParameters::shared_ptr params(
                 new AMP::LinearAlgebra::CommunicationListParameters );

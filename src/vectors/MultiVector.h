@@ -15,7 +15,8 @@ namespace LinearAlgebra {
   *    Given a set of vectors, they can be collected into a singlevector.  This class
   *    accomplishes this task.
   */
-class MultiVector : public Vector, public VectorEngine, public DataChangePassThrough {
+class MultiVector : public Vector, public VectorEngine, public DataChangePassThrough
+{
 public:
     //!  Iterator typedef
     typedef std::vector<Vector::shared_ptr>::iterator vector_iterator;

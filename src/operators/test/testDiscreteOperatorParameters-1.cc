@@ -21,7 +21,8 @@
 #include "../OperatorParameters.h"
 
 
-class TestParameters : public AMP::Operator::OperatorParameters {
+class TestParameters : public AMP::Operator::OperatorParameters
+{
 public:
     explicit TestParameters( const AMP::shared_ptr<AMP::Database> &db )
         : AMP::Operator::OperatorParameters( db )
@@ -46,15 +47,13 @@ void runTest( AMP::UnitTest *ut )
 
     if ( ( test_db.get() ) == NULL ) {
         ut->failure( "Testing getDatabase" );
-    }
-    else {
+    } else {
         ut->passes( "Testing getDatabase" );
     }
 
     if ( test_db->keyExists( "print_info_level" ) ) {
         ut->passes( "Testing keyExists" );
-    }
-    else {
+    } else {
         ut->failure( "Testing keyExists" );
     }
 
@@ -63,22 +62,19 @@ void runTest( AMP::UnitTest *ut )
 
     if ( ( discreteOpParams.get() ) == NULL ) {
         ut->failure( "Testing OperatorParameters' Constructor" );
-    }
-    else {
+    } else {
         ut->passes( "Testing OperatorParameters' Constructor" );
     }
 
     if ( ( ( discreteOpParams->d_db ).get() ) != ( test_db.get() ) ) {
         ut->failure( "Testing OperatorParameters::d_db" );
-    }
-    else {
+    } else {
         ut->passes( "Testing OperatorParameters::d_db" );
     }
 
     if ( ( discreteOpParams->d_db )->keyExists( "print_info_level" ) ) {
         ut->passes( "Testing OperatorParameters::d_db keyExists" );
-    }
-    else {
+    } else {
         ut->failure( "Testing OperatorParameters::d_db keyExists" );
     }
 
@@ -86,22 +82,19 @@ void runTest( AMP::UnitTest *ut )
 
     if ( ( testParams.get() ) == NULL ) {
         ut->failure( "Testing TestParameters' Constructor" );
-    }
-    else {
+    } else {
         ut->passes( "Testing TestParameters' Constructor" );
     }
 
     if ( ( ( testParams->d_db ).get() ) != ( test_db.get() ) ) {
         ut->failure( "Testing TestParameters::d_db" );
-    }
-    else {
+    } else {
         ut->passes( "Testing TestParameters::d_db" );
     }
 
     if ( ( testParams->d_db )->keyExists( "print_info_level" ) ) {
         ut->passes( "Testing TestParameters::d_db keyExists" );
-    }
-    else {
+    } else {
         ut->failure( "Testing TestParameters::d_db keyExists" );
     }
 
@@ -109,22 +102,19 @@ void runTest( AMP::UnitTest *ut )
 
     if ( ( testParamCopy.get() ) == NULL ) {
         ut->failure( "Testing Copy-1" );
-    }
-    else {
+    } else {
         ut->passes( "Testing Copy-1" );
     }
 
     if ( ( ( testParamCopy->d_db ).get() ) != ( test_db.get() ) ) {
         ut->failure( "Testing Copy-2" );
-    }
-    else {
+    } else {
         ut->passes( "Testing Copy-2" );
     }
 
     if ( ( testParamCopy->d_db )->keyExists( "print_info_level" ) ) {
         ut->passes( "Testing Copy-3" );
-    }
-    else {
+    } else {
         ut->failure( "Testing Copy-3" );
     }
 
@@ -134,22 +124,19 @@ void runTest( AMP::UnitTest *ut )
 
     if ( ( secondTestParam.get() ) == NULL ) {
         ut->failure( "Testing Dynamic Cast-1" );
-    }
-    else {
+    } else {
         ut->passes( "Testing Dynamic Cast-1" );
     }
 
     if ( ( ( secondTestParam->d_db ).get() ) != ( test_db.get() ) ) {
         ut->failure( "Testing Dynamic Cast-2" );
-    }
-    else {
+    } else {
         ut->passes( "Testing Dynamic Cast-2" );
     }
 
     if ( ( secondTestParam->d_db )->keyExists( "print_info_level" ) ) {
         ut->passes( "Testing Dynamic Cast-3" );
-    }
-    else {
+    } else {
         ut->failure( "Testing Dynamic Cast-3" );
     }
 
@@ -162,12 +149,10 @@ int main( int argc, char **argv )
     AMP::UnitTest ut;
     try {
         runTest( &ut );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

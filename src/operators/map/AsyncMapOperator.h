@@ -15,7 +15,8 @@ namespace Operator {
  * Note: Maps may impose a serial thread or even deadlock in parallel if
  * implemented synchronously without great care.
  */
-class AsyncMapOperator : public AsynchronousOperator {
+class AsyncMapOperator : public AsynchronousOperator
+{
 public:
     //! Constructor
     explicit AsyncMapOperator( const AMP::shared_ptr<OperatorParameters> & );

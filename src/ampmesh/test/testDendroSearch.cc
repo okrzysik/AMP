@@ -33,8 +33,7 @@ void draw_hex8_element_revisited( hex8_element_t *e_ptr,
     for ( unsigned int f = 0; f < 6; ++f ) {
         if ( compute_scalar_product( point_of_view, t_ptr[2 * f]->get_normal() ) > 0.0 ) {
             options[f] += "fill=none";
-        }
-        else {
+        } else {
             options[f] += "fill=none,dotted";
         } // end if
         draw_face( e_ptr, f, options[f], os );
@@ -246,8 +245,7 @@ void run( const std::string &meshFileName,
         meshArray_db->putDoubleArray( "x_offset", x_offset );
         meshArray_db->putDoubleArray( "y_offset", y_offset );
         meshArray_db->putDoubleArray( "z_offset", z_offset );
-    }
-    else {
+    } else {
         // WEAK SCALING
         numRandomPts *= static_cast<size_t>( npes );
 
@@ -269,38 +267,32 @@ void run( const std::string &meshFileName,
         if ( npes == 1 ) {
             size.push_back( size_radius );
             size.push_back( size_height );
-        }
-        else if ( npes == 2 ) {
+        } else if ( npes == 2 ) {
             size.push_back( size_radius + 5 );
             size.push_back( size_height + 6 );
             //    size.push_back(size_radius);
             //    size.push_back(size_height*2);
-        }
-        else if ( npes == 4 ) {
+        } else if ( npes == 4 ) {
             size.push_back( size_radius + 9 );
             size.push_back( size_height + 24 );
             //    size.push_back(size_radius*2);
             //    size.push_back(size_height);
-        }
-        else if ( npes == 8 ) {
+        } else if ( npes == 8 ) {
             size.push_back( size_radius + 16 );
             size.push_back( size_height + 38 );
             //    size.push_back(size_radius*2);
             //    size.push_back(size_height*2);
-        }
-        else if ( npes == 16 ) {
+        } else if ( npes == 16 ) {
             size.push_back( size_radius + 29 );
             size.push_back( size_height + 39 );
             //    size.push_back(size_radius*2);
             //    size.push_back(size_height*4);
-        }
-        else if ( npes == 32 ) {
+        } else if ( npes == 32 ) {
             size.push_back( size_radius + 48 );
             size.push_back( size_height + 38 );
             //    size.push_back(size_radius*4);
             //    size.push_back(size_height*2);
-        }
-        else {
+        } else {
             AMP_ASSERT( false );
         }
         std::vector<double> range;
@@ -574,12 +566,10 @@ int main( int argc, char *argv[] )
 
     try {
         myTest( &ut, exeName );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

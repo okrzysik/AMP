@@ -276,7 +276,8 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     } // end for node
     errorNorm = errorVec->L2Norm();
     AMP::pout << whatAmIChecking << " error = " << errorNorm << "\n";
-    if ( errorNorm > tolerance ) ut->failure( whatAmIChecking );
+    if ( errorNorm > tolerance )
+        ut->failure( whatAmIChecking );
 
     // SECOND
     node     = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 2, 0 );
@@ -296,7 +297,8 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     } // end for node
     errorNorm = errorVec->L2Norm();
     AMP::pout << whatAmIChecking << " error = " << errorNorm << "\n";
-    if ( errorNorm > tolerance ) ut->failure( whatAmIChecking );
+    if ( errorNorm > tolerance )
+        ut->failure( whatAmIChecking );
 
     // THIRD
     node     = anodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
@@ -316,7 +318,8 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     } // end for node
     errorNorm = errorVec->L2Norm();
     AMP::pout << whatAmIChecking << " error = " << errorNorm << "\n";
-    if ( errorNorm > tolerance ) ut->failure( whatAmIChecking );
+    if ( errorNorm > tolerance )
+        ut->failure( whatAmIChecking );
 
     // FOURTH
     node     = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
@@ -336,7 +339,8 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     } // end for node
     errorNorm = errorVec->L2Norm();
     AMP::pout << whatAmIChecking << " error = " << errorNorm << "\n";
-    if ( errorNorm > tolerance ) ut->failure( whatAmIChecking );
+    if ( errorNorm > tolerance )
+        ut->failure( whatAmIChecking );
 
 
     siloWriter->writeFile( logFile, 4 );

@@ -7,7 +7,8 @@
 namespace AMP {
 namespace Operator {
 
-class SecondOperator : public OnePointOperator {
+class SecondOperator : public OnePointOperator
+{
 public:
     SecondOperator( const AMP::shared_ptr<OperatorParameters> &params ) : OnePointOperator( params )
     {

@@ -39,7 +39,8 @@ void fillWithPseudoLaplacian( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
 
 
 template <typename FACTORY>
-class InstantiateMatrix {
+class InstantiateMatrix
+{
 public:
     static const char *get_test_name() { return "instantiate matrix"; }
 
@@ -57,7 +58,8 @@ public:
 
 
 template <typename FACTORY>
-class VerifyGetLeftRightVector {
+class VerifyGetLeftRightVector
+{
 public:
     static const char *get_test_name() { return "verify getRightVector"; }
 
@@ -71,8 +73,7 @@ public:
         if ( global_cached_matrix->isA<AMP::LinearAlgebra::ManagedPetscMatrix>() ) {
             testManagedVector<PETScInterfaceRightVectorFactory>( utils );
             testManagedVector<PETScInterfaceLeftVectorFactory>( utils );
-        }
-        else {
+        } else {
             utils->expected_failure(
                 "PetscMatrix::createView is not ready for arbitrary matricies" );
         }
@@ -84,7 +85,8 @@ public:
 
 
 template <typename FACTORY>
-class VerifyGetSetValuesMatrix {
+class VerifyGetSetValuesMatrix
+{
 public:
     static const char *get_test_name() { return "verify get and set"; }
 
@@ -117,7 +119,8 @@ public:
 
 
 template <typename FACTORY>
-class VerifyAXPYMatrix {
+class VerifyAXPYMatrix
+{
 public:
     static const char *get_test_name() { return "verify AXPY"; }
 
@@ -160,11 +163,9 @@ public:
         try {
             matrix2->axpy( -2., smallMat ); // matrix2 = -matrix1
             utils->failure( "axpy did not crash with different sized matrices" );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             utils->passes( "axpy correctly fails with different sized matrices" );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             utils->failure( "axpy fails with different sized matrices (unknown failure)" );
         }
         PROFILE_STOP( "VerifyAXPYMatrix" );
@@ -173,7 +174,8 @@ public:
 
 
 template <typename FACTORY>
-class VerifyScaleMatrix {
+class VerifyScaleMatrix
+{
 public:
     static const char *get_test_name() { return "verify scale"; }
 
@@ -216,7 +218,8 @@ public:
 
 
 template <typename FACTORY>
-class VerifyExtractDiagonal {
+class VerifyExtractDiagonal
+{
 public:
     static const char *get_test_name() { return "Verify extractDiagonal"; }
 
@@ -229,7 +232,8 @@ public:
         size_t maxCols  = matrix->numGlobalColumns();
         for ( size_t i = 0; i != vector->getCommunicationList()->numLocalRows(); i++ ) {
             int row = static_cast<int>( i + firstRow );
-            if ( row >= static_cast<int>( maxCols ) ) break;
+            if ( row >= static_cast<int>( maxCols ) )
+                break;
             matrix->setValueByGlobalID( row, row, static_cast<double>( row + 1 ) );
         }
         AMP::LinearAlgebra::Vector::shared_ptr diag = matrix->extractDiagonal();
@@ -248,7 +252,8 @@ public:
 
 
 template <typename FACTORY>
-class VerifyMultMatrix {
+class VerifyMultMatrix
+{
 public:
     static const char *get_test_name() { return "verify mult"; }
 
@@ -307,7 +312,8 @@ public:
 
 // Test matrix-matrix multiplication (this tests takes a long time for large matrices)
 template <typename FACTORY>
-class VerifyMatMultMatrix {
+class VerifyMatMultMatrix
+{
 public:
     static const char *get_test_name() { return "verify mult"; }
 
@@ -377,7 +383,8 @@ public:
 
 
 template <typename FACTORY>
-class VerifyAddElementNode {
+class VerifyAddElementNode
+{
 public:
     static const char *get_test_name() { return "verify set nodes by element"; }
 
@@ -400,12 +407,14 @@ public:
             for ( size_t i = 0; i < nodes.size(); i++ ) {
                 std::vector<size_t> dofsNode;
                 dofmap->getDOFs( nodes[i].globalID(), dofsNode );
-                for ( size_t j = 0; j < dofsNode.size(); j++ ) dofs.push_back( dofsNode[j] );
+                for ( size_t j = 0; j < dofsNode.size(); j++ )
+                    dofs.push_back( dofsNode[j] );
             }
             for ( size_t r = 0; r < dofs.size(); r++ ) {
                 for ( size_t c = 0; c < dofs.size(); c++ ) {
-                    double val        = -1.0;
-                    if ( r == c ) val = dofs.size() - 1;
+                    double val = -1.0;
+                    if ( r == c )
+                        val = dofs.size() - 1;
                     matrix->addValueByGlobalID( dofs[r], dofs[c], val );
                 }
             }
@@ -435,8 +444,10 @@ public:
             for ( size_t i = 0; i < dofs.size(); i++ ) {
                 matrix->getRowByGlobalID( dofs[i], cols, values );
                 double sum = 0.0;
-                for ( size_t j = 0; j < values.size(); j++ ) sum += values[j];
-                if ( fabs( sum ) > 1e-14 || cols.empty() ) pass = false;
+                for ( size_t j = 0; j < values.size(); j++ )
+                    sum += values[j];
+                if ( fabs( sum ) > 1e-14 || cols.empty() )
+                    pass = false;
             }
             ++it;
         }

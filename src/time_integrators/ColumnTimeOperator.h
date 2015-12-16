@@ -21,7 +21,8 @@ namespace TimeIntegrator {
  @see TimeOperator
  */
 
-class ColumnTimeOperator : public AMP::Operator::ColumnOperator {
+class ColumnTimeOperator : public AMP::Operator::ColumnOperator
+{
 public:
     /**
      * Main constructor for users. Expects a TimeOperatorParameters object.

@@ -20,7 +20,8 @@ namespace Solver {
   * The TrilinosThyraModelEvaluator is a wrapper for a Thyra ModelEvaluator to
   * wrap AMP::Operators for use with Trilinos NOX solvers.
   */
-class TrilinosThyraModelEvaluator : public ::Thyra::StateFuncModelEvaluatorBase<double> {
+class TrilinosThyraModelEvaluator : public ::Thyra::StateFuncModelEvaluatorBase<double>
+{
 public:
     //! Default constructor
     explicit TrilinosThyraModelEvaluator(

@@ -8,7 +8,8 @@
 // Define the material
 namespace AMP {
 namespace Materials {
-class WaterLibrary : public Material {
+class WaterLibrary : public Material
+{
 public:
     WaterLibrary();
 };

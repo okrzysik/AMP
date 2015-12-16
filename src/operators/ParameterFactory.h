@@ -9,7 +9,8 @@
 namespace AMP {
 namespace Operator {
 
-class ParameterFactory {
+class ParameterFactory
+{
 
 public:
     ParameterFactory() {}

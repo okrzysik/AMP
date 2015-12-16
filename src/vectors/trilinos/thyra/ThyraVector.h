@@ -37,7 +37,8 @@ namespace LinearAlgebra {
   *  ThyraVector::view or ThyraVector::constView
   *  to create the Thyra Vector if it doesn't already exist, give or take some edge cases.
   */
-class ThyraVector : public DataChangePassThrough {
+class ThyraVector : public DataChangePassThrough
+{
 public:
     //!  Destructor
     virtual ~ThyraVector();

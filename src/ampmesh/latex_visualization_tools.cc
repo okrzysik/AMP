@@ -120,8 +120,7 @@ void draw_bounding_polyhedron( hex8_element_t *e_ptr,
             if ( compute_scalar_product( point_of_view, t_ptr[2 * f + t]->get_normal() ) > 0.0 ) {
                 options[2 * f + t] += "fill=" + rubiks_cube_color_arrangement[f];
                 //        options[2*f+t] += "fill=none";
-            }
-            else {
+            } else {
                 options[2 * f + t] += "fill=none,dotted";
             } // end if
             draw_triangle( *( t_ptr + 2 * f + t ), options[2 * f + t], os );
@@ -138,8 +137,7 @@ void draw_hex8_element( hex8_element_t *e_ptr, double const *point_of_view, std:
         if ( compute_scalar_product( point_of_view, t_ptr[2 * f]->get_normal() ) > 0.0 ) {
             options[f] += "fill=" + rubiks_cube_color_arrangement[f];
             //      options[f] += "fill=none";
-        }
-        else {
+        } else {
             options[f] += "fill=none,dotted";
         } // end if
         draw_face( e_ptr, f, options[f], os );

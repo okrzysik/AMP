@@ -85,59 +85,41 @@ int Lapack<double>::run_test( const char *routine, int N, double &error )
     int N_errors = 0;
     if ( name == "dcopy" ) {
         N_errors += test_copy<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dscal" ) {
+    } else if ( name == "dscal" ) {
         N_errors += test_scal<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dnrm2" ) {
+    } else if ( name == "dnrm2" ) {
         N_errors += test_nrm2<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "daxpy" ) {
+    } else if ( name == "daxpy" ) {
         N_errors += test_axpy<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dgemv" ) {
+    } else if ( name == "dgemv" ) {
         N_errors += test_gemv<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dgemm" ) {
+    } else if ( name == "dgemm" ) {
         N_errors += test_gemm<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dasum" ) {
+    } else if ( name == "dasum" ) {
         N_errors += test_asum<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "ddot" ) {
+    } else if ( name == "ddot" ) {
         N_errors += test_dot<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dgesv" ) {
+    } else if ( name == "dgesv" ) {
         N_errors += test_gesv<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dgtsv" ) {
+    } else if ( name == "dgtsv" ) {
         N_errors += test_gtsv<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dgbsv" ) {
+    } else if ( name == "dgbsv" ) {
         N_errors += test_gbsv<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dgetrf" ) {
+    } else if ( name == "dgetrf" ) {
         N_errors += test_getrf<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dgttrf" ) {
+    } else if ( name == "dgttrf" ) {
         N_errors += test_gttrf<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dgbtrf" ) {
+    } else if ( name == "dgbtrf" ) {
         N_errors += test_gbtrf<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dgetrs" ) {
+    } else if ( name == "dgetrs" ) {
         N_errors += test_getrs<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dgttrs" ) {
+    } else if ( name == "dgttrs" ) {
         N_errors += test_gttrs<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dgbtrs" ) {
+    } else if ( name == "dgbtrs" ) {
         N_errors += test_gbtrs<double>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "dgetri" ) {
+    } else if ( name == "dgetri" ) {
         N_errors += test_getri<double>( N, error ) ? 1 : 0;
-    }
-    else {
+    } else {
         std::cerr << "Unknown test\n";
         return -1;
     }
@@ -153,59 +135,41 @@ int Lapack<float>::run_test( const char *routine, int N, float &error )
     int N_errors = 0;
     if ( name == "scopy" ) {
         N_errors += test_copy<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sscal" ) {
+    } else if ( name == "sscal" ) {
         N_errors += test_scal<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "snrm2" ) {
+    } else if ( name == "snrm2" ) {
         N_errors += test_nrm2<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "saxpy" ) {
+    } else if ( name == "saxpy" ) {
         N_errors += test_axpy<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sgemv" ) {
+    } else if ( name == "sgemv" ) {
         N_errors += test_gemv<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sgemm" ) {
+    } else if ( name == "sgemm" ) {
         N_errors += test_gemm<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sasum" ) {
+    } else if ( name == "sasum" ) {
         N_errors += test_asum<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sdot" ) {
+    } else if ( name == "sdot" ) {
         N_errors += test_dot<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sgesv" ) {
+    } else if ( name == "sgesv" ) {
         N_errors += test_gesv<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sgtsv" ) {
+    } else if ( name == "sgtsv" ) {
         N_errors += test_gtsv<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sgbsv" ) {
+    } else if ( name == "sgbsv" ) {
         N_errors += test_gbsv<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sgetrf" ) {
+    } else if ( name == "sgetrf" ) {
         N_errors += test_getrf<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sgttrf" ) {
+    } else if ( name == "sgttrf" ) {
         N_errors += test_gttrf<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sgbtrf" ) {
+    } else if ( name == "sgbtrf" ) {
         N_errors += test_gbtrf<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sgetrs" ) {
+    } else if ( name == "sgetrs" ) {
         N_errors += test_getrs<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sgttrs" ) {
+    } else if ( name == "sgttrs" ) {
         N_errors += test_gttrs<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sgbtrs" ) {
+    } else if ( name == "sgbtrs" ) {
         N_errors += test_gbtrs<float>( N, error ) ? 1 : 0;
-    }
-    else if ( name == "sgetri" ) {
+    } else if ( name == "sgetri" ) {
         N_errors += test_getri<float>( N, error ) ? 1 : 0;
-    }
-    else {
+    } else {
         std::cerr << "Unknown test\n";
         return -1;
     }
@@ -323,7 +287,8 @@ template <typename T>
 static inline T L2Norm( int N, const T *x )
 {
     T norm = 0.0;
-    for ( int i = 0; i < N; i++ ) norm += x[i] * x[i];
+    for ( int i = 0; i < N; i++ )
+        norm += x[i] * x[i];
     return sqrt( norm );
 }
 
@@ -333,7 +298,8 @@ template <typename T>
 static inline T L2Error( int N, const T *x1, const T *x2 )
 {
     T norm = 0.0;
-    for ( int i = 0; i < N; i++ ) norm += ( x1[i] - x2[i] ) * ( x1[i] - x2[i] );
+    for ( int i = 0; i < N; i++ )
+        norm += ( x1[i] - x2[i] ) * ( x1[i] - x2[i] );
     return sqrt( norm );
 }
 
@@ -351,7 +317,8 @@ static bool test_copy( int N, T &error )
     for ( int i = 0; i < N; i++ ) {
         memset( x2, 0xB6, K * sizeof( T ) );
         Lapack<T>::copy( K, x1, 1, x2, 1 );
-        if ( !approx_equal( K, x1, x2 ) ) N_errors++;
+        if ( !approx_equal( K, x1, x2 ) )
+            N_errors++;
     }
     delete[] x1;
     delete[] x2;
@@ -368,13 +335,15 @@ static bool test_scal( int N, T &error )
     T *x2       = new T[K];
     random( K, x0 );
     const T pi = 3.141592653589793;
-    for ( int j = 0; j < K; j++ ) x1[j] = pi * x0[j];
-    int N_errors                        = 0;
-    error                               = 0;
+    for ( int j  = 0; j < K; j++ )
+        x1[j]    = pi * x0[j];
+    int N_errors = 0;
+    error        = 0;
     for ( int i = 0; i < N; i++ ) {
         memcpy( x2, x1, K * sizeof( T ) );
         Lapack<T>::scal( K, pi, x0, 1 );
-        if ( !approx_equal( K, x1, x2, 10 * std::numeric_limits<T>::epsilon() ) ) N_errors++;
+        if ( !approx_equal( K, x1, x2, 10 * std::numeric_limits<T>::epsilon() ) )
+            N_errors++;
     }
     delete[] x0;
     delete[] x1;
@@ -390,14 +359,16 @@ static bool test_nrm2( int N, T &error )
     T *x        = new T[K];
     random( K, x );
     T ans1 = 0.0;
-    for ( int j  = 0; j < K; j++ ) ans1 += x[j] * x[j];
+    for ( int j = 0; j < K; j++ )
+        ans1 += x[j] * x[j];
     ans1         = sqrt( ans1 );
     int N_errors = 0;
     error        = 0;
     for ( int i = 0; i < N; i++ ) {
         T ans2 = Lapack<T>::nrm2( K, x, 1 );
         error  = std::max( error, std::abs( ans1 - ans2 ) );
-        if ( std::abs( ans1 - ans2 ) > K * std::numeric_limits<T>::epsilon() ) N_errors++;
+        if ( std::abs( ans1 - ans2 ) > K * std::numeric_limits<T>::epsilon() )
+            N_errors++;
     }
     delete[] x;
     return N_errors > 0;
@@ -416,14 +387,16 @@ static bool test_asum( int N, T &error )
     T *x = new T[K];
     random( K, x );
     T ans1 = 0;
-    for ( int j = 0; j < K; j++ ) ans1 += std::abs( x[j] );
+    for ( int j = 0; j < K; j++ )
+        ans1 += std::abs( x[j] );
     // Check dasum
     int N_errors = 0;
     error        = 0;
     for ( int i = 0; i < N; i++ ) {
         T ans2 = Lapack<T>::asum( K, x, 1 );
         error  = std::max( error, std::abs( ( ans1 - ans2 ) / K ) );
-        if ( std::abs( ans1 - ans2 ) > max_error ) N_errors++;
+        if ( std::abs( ans1 - ans2 ) > max_error )
+            N_errors++;
     }
     delete[] x;
     return N_errors > 0;
@@ -439,13 +412,15 @@ static bool test_dot( int N, T &error )
     random( K, x1 );
     random( K, x2 );
     T ans1 = 0.0;
-    for ( int j  = 0; j < K; j++ ) ans1 += x1[j] * x2[j];
+    for ( int j = 0; j < K; j++ )
+        ans1 += x1[j] * x2[j];
     int N_errors = 0;
     error        = 0;
     for ( int i = 0; i < N; i++ ) {
         T ans2 = Lapack<T>::dot( K, x1, 1, x2, 1 );
         error  = std::max( error, std::abs( ans1 - ans2 ) / K );
-        if ( std::abs( ans1 - ans2 ) > 10 * K * std::numeric_limits<T>::epsilon() ) N_errors++;
+        if ( std::abs( ans1 - ans2 ) > 10 * K * std::numeric_limits<T>::epsilon() )
+            N_errors++;
     }
     delete[] x1;
     delete[] x2;
@@ -464,8 +439,9 @@ static bool test_axpy( int N, T &error )
     random( K, x );
     random( K, y0 );
     const T pi = 3.141592653589793;
-    for ( int j = 0; j < K; j++ ) y1[j] = y0[j] + pi * x[j];
-    error                               = 0;
+    for ( int j = 0; j < K; j++ )
+        y1[j]   = y0[j] + pi * x[j];
+    error       = 0;
     for ( int i = 0; i < N; i++ ) {
         memcpy( y2, y0, K * sizeof( T ) );
         Lapack<T>::axpy( K, pi, x, 1, y2, 1 );
@@ -498,7 +474,8 @@ static bool test_gemv( int N, T &error )
     const T beta  = 1.414213562373095;
     for ( int j = 0; j < K; j++ ) {
         y1[j] = beta * y[j];
-        for ( int k = 0; k < K; k++ ) y1[j] += alpha * A[j + k * K] * x[k];
+        for ( int k = 0; k < K; k++ )
+            y1[j] += alpha * A[j + k * K] * x[k];
     }
     int N_errors = 0;
     error        = 0;
@@ -507,7 +484,8 @@ static bool test_gemv( int N, T &error )
         memcpy( y2, y, K * sizeof( T ) );
         Lapack<T>::gemv( 'N', K, K, alpha, A, K, x, 1, beta, y2, 1 );
         error = std::max( error, L2Error( K, y1, y2 ) / norm );
-        if ( !approx_equal( K, y1, y2, K * std::numeric_limits<T>::epsilon() ) ) N_errors++;
+        if ( !approx_equal( K, y1, y2, K * std::numeric_limits<T>::epsilon() ) )
+            N_errors++;
     }
     delete[] A;
     delete[] x;
@@ -535,7 +513,8 @@ static bool test_gemm( int N, T &error )
     for ( int i = 0; i < K; i++ ) {
         for ( int j = 0; j < K; j++ ) {
             C1[i + j * K] = beta * C[i + j * K];
-            for ( int k = 0; k < K; k++ ) C1[i + j * K] += alpha * A[i + k * K] * B[k + j * K];
+            for ( int k = 0; k < K; k++ )
+                C1[i + j * K] += alpha * A[i + k * K] * B[k + j * K];
         }
     }
     int N_errors = 0;
@@ -583,7 +562,8 @@ static bool test_gesv( int N, T &error )
         Lapack<T>::gesv( K, 1, A, K, IPIV, x2, K, err );
         N_errors += err == 0 ? 0 : 1;
         error = std::max( error, L2Error( K, x1, x2 ) / norm );
-        if ( !approx_equal( K, x1, x2, K * 10 * std::numeric_limits<T>::epsilon() ) ) N_errors++;
+        if ( !approx_equal( K, x1, x2, K * 10 * std::numeric_limits<T>::epsilon() ) )
+            N_errors++;
     }
     delete[] A;
     delete[] x1;
@@ -699,7 +679,8 @@ static bool test_gbsv( int N, T &error )
         N_errors += err == 0 ? 0 : 1;
         T norm = L2Norm( K, x1 );
         T err2 = L2Error( K, x1, x2 );
-        if ( err2 > 1000.0 * norm * std::numeric_limits<T>::epsilon() ) N_errors++;
+        if ( err2 > 1000.0 * norm * std::numeric_limits<T>::epsilon() )
+            N_errors++;
         error = std::max( error, err2 / norm );
     }
     delete[] A;
@@ -740,7 +721,8 @@ static bool test_getrf( int N, T &error )
     Lapack<T>::getrs( 'N', K, 1, A2, K, IPIV, x2, K, err );
     T norm = L2Norm( K, x1 );
     T err2 = L2Error( K, x1, x2 );
-    if ( err2 > 10.0 * norm * std::numeric_limits<T>::epsilon() ) N_errors++;
+    if ( err2 > 10.0 * norm * std::numeric_limits<T>::epsilon() )
+        N_errors++;
     error = err2 / norm;
     delete[] A;
     delete[] A2;
@@ -790,7 +772,8 @@ static bool test_gttrf( int N, T &error )
     Lapack<T>::gttrs( 'N', K, 1, DL2, D2, DU2, DU3, IPIV, x2, K, err );
     T norm = L2Norm( K, x1 );
     T err2 = L2Error( K, x1, x2 );
-    if ( err2 > 10.0 * norm * std::numeric_limits<T>::epsilon() ) N_errors++;
+    if ( err2 > 10.0 * norm * std::numeric_limits<T>::epsilon() )
+        N_errors++;
     error = err2 / norm;
     delete[] D;
     delete[] D2;
@@ -837,7 +820,8 @@ static bool test_gbtrf( int N, T &error )
     Lapack<T>::gbtrs( 'N', K, KL, KU, 1, AB2, K2, IPIV, x2, K, err );
     T norm = L2Norm( K, x1 );
     T err2 = L2Error( K, x1, x2 );
-    if ( err2 > 10.0 * norm * std::numeric_limits<T>::epsilon() ) N_errors++;
+    if ( err2 > 10.0 * norm * std::numeric_limits<T>::epsilon() )
+        N_errors++;
     error = err2 / norm;
     delete[] AB;
     delete[] AB2;
@@ -875,7 +859,8 @@ static bool test_getrs( int N, T &error )
         N_errors += err == 0 ? 0 : 1;
         T norm = L2Norm( K, x1 );
         T err2 = L2Error( K, x1, x2 );
-        if ( err > 10.0 * norm * std::numeric_limits<T>::epsilon() ) N_errors++;
+        if ( err > 10.0 * norm * std::numeric_limits<T>::epsilon() )
+            N_errors++;
         error = std::max( error, err2 / norm );
     }
     delete[] A;
@@ -927,7 +912,8 @@ static bool test_gttrs( int N, T &error )
         N_errors += err == 0 ? 0 : 1;
         T norm = L2Norm( K, x1 );
         T err2 = L2Error( K, x1, x2 );
-        if ( err2 > 10.0 * norm * std::numeric_limits<T>::epsilon() ) N_errors++;
+        if ( err2 > 10.0 * norm * std::numeric_limits<T>::epsilon() )
+            N_errors++;
         error = std::max( error, err2 / norm );
     }
     delete[] D;
@@ -975,7 +961,8 @@ static bool test_gbtrs( int N, T &error )
         N_errors += err == 0 ? 0 : 1;
         T norm = L2Norm( K, x1 );
         T err2 = L2Error( K, x1, x2 );
-        if ( err2 > 10.0 * norm * std::numeric_limits<T>::epsilon() ) N_errors++;
+        if ( err2 > 10.0 * norm * std::numeric_limits<T>::epsilon() )
+            N_errors++;
         error = std::max( error, err2 / norm );
     }
     delete[] AB;
@@ -1021,7 +1008,8 @@ static bool test_getri( int N, T &error )
         // Check the result
         T norm = L2Norm( K, x1 );
         T err2 = L2Error( K, x1, x2 );
-        if ( err2 > 100 * norm * std::numeric_limits<T>::epsilon() ) N_errors++;
+        if ( err2 > 100 * norm * std::numeric_limits<T>::epsilon() )
+            N_errors++;
         error = std::max( error, err2 / norm );
     }
     delete[] A;
@@ -1078,7 +1066,8 @@ template <typename T>
 void Lapack<T>::get_lock()
 {
     int error = pthread_mutex_lock( &LapackWrappers_lock_queue );
-    if ( error == -1 ) printf( "Error locking mutex" );
+    if ( error == -1 )
+        printf( "Error locking mutex" );
 }
 #else
 #error Not programmed
@@ -1088,14 +1077,16 @@ template <typename T>
 void Lapack<T>::release_lock()
 {
     bool success = ReleaseMutex( LapackWrappers_lock_queue ) != 0;
-    if ( !success ) printf( "Error unlocking mutex" );
+    if ( !success )
+        printf( "Error unlocking mutex" );
 }
 #elif defined( LINUX )
 template <typename T>
 void Lapack<T>::release_lock()
 {
     int error = pthread_mutex_unlock( &LapackWrappers_lock_queue );
-    if ( error == -1 ) printf( "Error unlocking mutex" );
+    if ( error == -1 )
+        printf( "Error unlocking mutex" );
 }
 #else
 #error Not programmed

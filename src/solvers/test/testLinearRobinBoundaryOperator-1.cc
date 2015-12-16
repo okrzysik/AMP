@@ -176,28 +176,23 @@ void linearRobinTest( AMP::UnitTest *ut, std::string exeName )
             val = __INIT_dTdz__( px, py, pz, 1.0 );
             val = val + __INIT_T0__( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
-        }
-        else if ( fabs( pz + 1.0 ) <= 1.0e-12 ) {
+        } else if ( fabs( pz + 1.0 ) <= 1.0e-12 ) {
             val = __INIT_dTdz__( px, py, pz, -1.0 );
             val = val + __INIT_T0__( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
-        }
-        else if ( fabs( px - 1.0 ) <= 1.0e-12 ) {
+        } else if ( fabs( px - 1.0 ) <= 1.0e-12 ) {
             val = __INIT_dTdx__( px, py, pz, 1.0 );
             val = val + __INIT_T0__( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
-        }
-        else if ( fabs( px + 1.0 ) <= 1.0e-12 ) {
+        } else if ( fabs( px + 1.0 ) <= 1.0e-12 ) {
             val = __INIT_dTdx__( px, py, pz, -1.0 );
             val = val + __INIT_T0__( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
-        }
-        else if ( fabs( py - 1.0 ) <= 1.0e-12 ) {
+        } else if ( fabs( py - 1.0 ) <= 1.0e-12 ) {
             val = __INIT_dTdy__( px, py, pz, 1.0 );
             val = val + __INIT_T0__( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
-        }
-        else if ( fabs( py + 1.0 ) <= 1.0e-12 ) {
+        } else if ( fabs( py + 1.0 ) <= 1.0e-12 ) {
             val = __INIT_dTdy__( px, py, pz, -1.0 );
             val = val + __INIT_T0__( px, py, pz, 1.0 );
             variableFluxVec->setValueByGlobalID( gid[0], val );
@@ -312,8 +307,7 @@ void linearRobinTest( AMP::UnitTest *ut, std::string exeName )
 
     if ( errorNorm > 1.0 ) {
         ut->failure( "linear robin boundary operator verification test-1." );
-    }
-    else {
+    } else {
         ut->passes( "linear robin boundary operator verification test-1." );
     }
 

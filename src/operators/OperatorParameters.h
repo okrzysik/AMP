@@ -18,7 +18,8 @@ namespace Operator {
  * operators. It is an abstract base class.
  */
 
-class OperatorParameters : public ParameterBase {
+class OperatorParameters : public ParameterBase
+{
 public:
     /**
      * Construct and initialize a parameter list according to input

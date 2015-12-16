@@ -83,8 +83,7 @@ void NonlinearKrylovAccelerator::getFromInput( const AMP::shared_ptr<AMP::Databa
 {
     if ( db->keyExists( "max_vectors" ) ) {
         d_iMaximumNumberOfVectors = db->getInteger( "max_vectors" );
-    }
-    else {
+    } else {
         AMP_ERROR( "NonlinearKrylovAccelerator"
                    << " -- Key data `max_vectors'"
                    << " missing in input." );
@@ -92,8 +91,7 @@ void NonlinearKrylovAccelerator::getFromInput( const AMP::shared_ptr<AMP::Databa
 
     if ( db->keyExists( "angle_tolerance" ) ) {
         d_dVectorAngleDropTolerance = db->getDouble( "angle_tolerance" );
-    }
-    else {
+    } else {
         AMP_ERROR( "NonlinearKrylovAccelerator"
                    << " -- Key data `angle_tolerance'"
                    << " missing in input." );
@@ -236,7 +234,8 @@ void NonlinearKrylovAccelerator::correction( AMP::shared_ptr<AMP::LinearAlgebra:
             for ( j = d_iFirstVectorIndex; j != k; j = d_piNext[j] ) {
                 hj         = d_ppdFunctionDifferenceInnerProducts[j]; /* row j of H */
                 double hkj = hj[k];
-                for ( i = d_iFirstVectorIndex; i != j; i = d_piNext[i] ) hkj -= hk[i] * hj[i];
+                for ( i = d_iFirstVectorIndex; i != j; i = d_piNext[i] )
+                    hkj -= hk[i] * hj[i];
                 hkj /= hj[j];
                 hk[j] = hkj;
                 hkk -= hkj * hkj;
@@ -244,8 +243,7 @@ void NonlinearKrylovAccelerator::correction( AMP::shared_ptr<AMP::LinearAlgebra:
 
             if ( hkk > pow( d_dVectorAngleDropTolerance, 2 ) ) {
                 hk[k] = sqrt( hkk );
-            }
-            else {
+            } else {
                 /* The current w nearly lies in the span of the previous vectors: */
                 /* Drop this vector, */
                 AMP_INSIST( d_piPrevious[k] != EOL, "The previous vector index equal to EOL" );
@@ -322,8 +320,7 @@ void NonlinearKrylovAccelerator::correction( AMP::shared_ptr<AMP::LinearAlgebra:
 
     if ( d_iFirstVectorIndex == EOL ) {
         d_iLastVectorIndex = new_loc;
-    }
-    else {
+    } else {
         d_piPrevious[d_iFirstVectorIndex] = new_loc;
     }
 
@@ -453,8 +450,7 @@ void NonlinearKrylovAccelerator::relax( void )
         d_iFirstVectorIndex = d_piNext[d_iFirstVectorIndex];
         if ( d_iFirstVectorIndex == EOL ) {
             d_iLastVectorIndex = EOL;
-        }
-        else {
+        } else {
             d_piPrevious[d_iFirstVectorIndex] = EOL;
         }
 

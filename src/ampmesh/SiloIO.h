@@ -31,7 +31,8 @@ namespace Mesh {
  * \details  This class provides routines for reading, accessing and writing meshes and vectors
  * using silo.
  */
-class SiloIO : public AMP::Utilities::Writer {
+class SiloIO : public AMP::Utilities::Writer
+{
 public:
     //!  Default constructor
     SiloIO();

@@ -36,7 +36,8 @@ void setBoundary( int id,
                   AMP::LinearAlgebra::Vector::shared_ptr &v1,
                   AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    if ( mesh.get() == NULL ) return;
+    if ( mesh.get() == NULL )
+        return;
 
     AMP::Discretization::DOFManager::shared_ptr d1 = v1->getDOFManager();
 
@@ -56,7 +57,8 @@ void setGpBoundary( int id,
                     AMP::LinearAlgebra::Vector::shared_ptr &v1,
                     AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    if ( mesh.get() == NULL ) return;
+    if ( mesh.get() == NULL )
+        return;
 
     libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
@@ -131,8 +133,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
             mesh, map_db );
         gapmaps.reset();
         ut->passes( "Created / Destroyed ScalarN2GZAxisMap" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         ut->failure( "Created / Destroyed ScalarN2GZAxisMap" );
     }
 
@@ -167,8 +168,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
         if ( mesh1.size() == N_maps ) {
             meshname1 = mesh1[i];
             meshname2 = mesh2[i];
-        }
-        else {
+        } else {
             meshname1 = mesh1[0];
             meshname2 = mesh2[0];
         }
@@ -176,8 +176,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
         if ( surface1.size() == N_maps ) {
             surface_id1 = surface1[i];
             surface_id2 = surface2[i];
-        }
-        else {
+        } else {
             surface_id1 = surface1[0];
             surface_id2 = surface2[0];
         }

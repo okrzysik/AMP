@@ -11,7 +11,8 @@ namespace Operator {
 
 /** A class encapsulating all the parameters that the material model
  * requires to evaluate the stress and/or tangent  */
-class MechanicsModelParameters : public ElementPhysicsModelParameters {
+class MechanicsModelParameters : public ElementPhysicsModelParameters
+{
 public:
     /** Constructor */
     explicit MechanicsModelParameters( const AMP::shared_ptr<AMP::Database> &db )

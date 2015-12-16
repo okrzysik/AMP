@@ -15,7 +15,8 @@ namespace Mesh {
  * \details  This structure provides info that can be used to simulate loading
  *   a mesh, and checking the resulting load balance
  */
-class LoadBalance {
+class LoadBalance
+{
 public:
     /**
      * \brief    Default constructor

@@ -11,7 +11,8 @@
 namespace AMP {
 namespace Operator {
 
-class MultiDofDTKMapOperatorParameters : public OperatorParameters {
+class MultiDofDTKMapOperatorParameters : public OperatorParameters
+{
 public:
     // Constructor.
     explicit MultiDofDTKMapOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
@@ -35,7 +36,8 @@ public:
 };
 
 
-class MultiDofDTKMapOperator : public Operator {
+class MultiDofDTKMapOperator : public Operator
+{
 public:
     explicit MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorParameters> &params );
 

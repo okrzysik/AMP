@@ -8,7 +8,8 @@
 namespace AMP {
 namespace Operator {
 
-class LinearFEOperatorParameters : public FEOperatorParameters {
+class LinearFEOperatorParameters : public FEOperatorParameters
+{
 public:
     /**
       Constructor.

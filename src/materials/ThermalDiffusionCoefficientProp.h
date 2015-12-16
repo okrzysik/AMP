@@ -20,7 +20,8 @@
 
 //=================== Classes =======================================================
 
-class ThermalDiffusionCoefficientProp : public AMP::Materials::Property<double> {
+class ThermalDiffusionCoefficientProp : public AMP::Materials::Property<double>
+{
 public:
     ThermalDiffusionCoefficientProp()
         : AMP::Materials::Property<double>(
@@ -41,8 +42,10 @@ public:
         std::valarray<double> soretParams = d_SoretProp.get_parameters();
         AMP_ASSERT( nparams == fickParams.size() + soretParams.size() );
         size_t nfick = fickParams.size(), nsoret = soretParams.size();
-        for ( size_t i = 0; i < nfick; i++ ) fickParams[i] = params[i];
-        for ( size_t i = 0; i < nsoret; i++ ) soretParams[i] = params[nfick + i];
+        for ( size_t i    = 0; i < nfick; i++ )
+            fickParams[i] = params[i];
+        for ( size_t i     = 0; i < nsoret; i++ )
+            soretParams[i] = params[nfick + i];
         d_FickProp.set_parameters( &fickParams[0], nfick );
         d_SoretProp.set_parameters( &soretParams[0], nsoret );
     }
@@ -66,7 +69,8 @@ private:
 // derivatives of Fick and Soret coefficients.
 #ifdef THERMAL_DIFFUSION_DERIVATIVE
 
-class DxThermalDiffusionCoefficientProp : public AMP::Materials::Property<double> {
+class DxThermalDiffusionCoefficientProp : public AMP::Materials::Property<double>
+{
 public:
     DxThermalDiffusionCoefficientProp()
         : AMP::Materials::Property<double>(
@@ -87,8 +91,10 @@ public:
         std::valarray<double> soretParams = d_SoretProp.get_parameters();
         AMP_ASSERT( nparams == fickParams.size() + soretParams.size() );
         size_t nfick = fickParams.size(), nsoret = soretParams.size();
-        for ( size_t i = 0; i < nfick; i++ ) fickParams[i] = params[i];
-        for ( size_t i = 0; i < nsoret; i++ ) soretParams[i] = params[nfick + i];
+        for ( size_t i    = 0; i < nfick; i++ )
+            fickParams[i] = params[i];
+        for ( size_t i     = 0; i < nsoret; i++ )
+            soretParams[i] = params[nfick + i];
         d_FickProp.set_parameters( &fickParams[0], nfick );
         d_SoretProp.set_parameters( &soretParams[0], nsoret );
     }
@@ -112,7 +118,8 @@ private:
     std::vector<double> d_ExtraParams;
 };
 
-class DTThermalDiffusionCoefficientProp : public AMP::Materials::Property<double> {
+class DTThermalDiffusionCoefficientProp : public AMP::Materials::Property<double>
+{
 public:
     DTThermalDiffusionCoefficientProp()
         : AMP::Materials::Property<double>(
@@ -133,8 +140,10 @@ public:
         std::valarray<double> soretParams = d_SoretProp.get_parameters();
         AMP_ASSERT( nparams == fickParams.size() + soretParams.size() );
         size_t nfick = fickParams.size(), nsoret = soretParams.size();
-        for ( size_t i = 0; i < nfick; i++ ) fickParams[i] = params[i];
-        for ( size_t i = 0; i < nsoret; i++ ) soretParams[i] = params[nfick + i];
+        for ( size_t i    = 0; i < nfick; i++ )
+            fickParams[i] = params[i];
+        for ( size_t i     = 0; i < nsoret; i++ )
+            soretParams[i] = params[nfick + i];
         d_FickProp.set_parameters( &fickParams[0], nfick );
         d_SoretProp.set_parameters( &soretParams[0], nsoret );
     }

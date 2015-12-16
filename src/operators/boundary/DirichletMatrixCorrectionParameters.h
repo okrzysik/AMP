@@ -7,7 +7,8 @@
 namespace AMP {
 namespace Operator {
 
-class DirichletMatrixCorrectionParameters : public LinearBoundaryOperatorParameters {
+class DirichletMatrixCorrectionParameters : public LinearBoundaryOperatorParameters
+{
 public:
     explicit DirichletMatrixCorrectionParameters( const AMP::shared_ptr<AMP::Database> &db )
         : LinearBoundaryOperatorParameters( db )

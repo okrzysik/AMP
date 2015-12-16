@@ -95,7 +95,8 @@ MeshIterator &structuredMeshIterator::operator++()
 {
     // Prefix increment (increment and return this)
     d_pos++;
-    if ( d_pos > d_elements->size() ) d_pos = d_elements->size();
+    if ( d_pos > d_elements->size() )
+        d_pos = d_elements->size();
     return *this;
 }
 MeshIterator structuredMeshIterator::operator++( int )
@@ -108,7 +109,8 @@ MeshIterator structuredMeshIterator::operator++( int )
 MeshIterator &structuredMeshIterator::operator--()
 {
     // Prefix decrement (increment and return this)
-    if ( d_pos != 0 ) d_pos--;
+    if ( d_pos != 0 )
+        d_pos--;
     return *this;
 }
 MeshIterator structuredMeshIterator::operator--( int )
@@ -133,12 +135,13 @@ MeshIterator &structuredMeshIterator::operator+=( int n )
 {
     if ( n >= 0 ) { // increment *this
         size_t n2 = static_cast<size_t>( n );
-        if ( d_pos + n2 > d_elements->size() ) AMP_ERROR( "Iterated past end of iterator" );
+        if ( d_pos + n2 > d_elements->size() )
+            AMP_ERROR( "Iterated past end of iterator" );
         d_pos += n2;
-    }
-    else { // decrement *this
+    } else { // decrement *this
         size_t n2 = static_cast<size_t>( -n );
-        if ( n2 > d_pos ) AMP_ERROR( "Iterated past beginning of iterator" );
+        if ( n2 > d_pos )
+            AMP_ERROR( "Iterated past beginning of iterator" );
         d_pos -= n2;
     }
     return *this;
@@ -156,21 +159,23 @@ bool structuredMeshIterator::operator==( const MeshIterator &rhs ) const
                                          // access the base class members
     if ( typeid( rhs ) == typeid( structuredMeshIterator ) ) {
         rhs2 = tmp; // We can safely cast rhs to a structuredMeshIterator
-    }
-    else if ( tmp->typeID == structuredMeshIteratorTypeID ) {
+    } else if ( tmp->typeID == structuredMeshIteratorTypeID ) {
         rhs2 = tmp; // We can safely cast rhs.iterator to a structuredMeshIterator
-    }
-    else if ( ( (structuredMeshIterator *) tmp->iterator )->typeID ==
-              structuredMeshIteratorTypeID ) {
+    } else if ( ( (structuredMeshIterator *) tmp->iterator )->typeID ==
+                structuredMeshIteratorTypeID ) {
         rhs2 = (structuredMeshIterator *) tmp->iterator;
     }
     // Perform direct comparisions if we are dealing with two structuredMeshIterators
     if ( rhs2 != NULL ) {
-        if ( d_pos != rhs2->d_pos ) return false;
-        if ( d_elements->size() != rhs2->d_elements->size() ) return false;
-        if ( d_elements.get() == d_elements.get() ) return true;
+        if ( d_pos != rhs2->d_pos )
+            return false;
+        if ( d_elements->size() != rhs2->d_elements->size() )
+            return false;
+        if ( d_elements.get() == d_elements.get() )
+            return true;
         for ( size_t i = 0; i < d_elements->size(); i++ ) {
-            if ( d_elements->operator[]( i ) != rhs2->d_elements->operator[]( i ) ) return false;
+            if ( d_elements->operator[]( i ) != rhs2->d_elements->operator[]( i ) )
+                return false;
         }
         return true;
     }
@@ -179,16 +184,20 @@ bool structuredMeshIterator::operator==( const MeshIterator &rhs ) const
      * over the same elements in the same order
      */
     // Check the size
-    if ( this->size() != rhs.size() ) return false;
+    if ( this->size() != rhs.size() )
+        return false;
     // Check the current position
-    if ( this->position() != rhs.position() ) return false;
+    if ( this->position() != rhs.position() )
+        return false;
     // Check that the elements match
     AMP::Mesh::MeshIterator iterator = rhs.begin();
     for ( size_t i = 0; i < d_elements->size(); i++ ) {
         structuredMeshElement *elem =
             dynamic_cast<structuredMeshElement *>( iterator->getRawElement() );
-        if ( elem == NULL ) return false;
-        if ( elem->d_index != d_elements->operator[]( i ) ) return false;
+        if ( elem == NULL )
+            return false;
+        if ( elem->d_index != d_elements->operator[]( i ) )
+            return false;
         ++iterator;
     }
     return true;

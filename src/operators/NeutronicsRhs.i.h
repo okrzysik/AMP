@@ -16,24 +16,21 @@ inline void NeutronicsRhs::setTimeInSeconds( double setSeconds )
             seconds += d_timeStepsInDays[i] * d_secondsPerDay;
             if ( setSeconds > seconds ) {
                 timeStep = i + 1;
-            }
-            else {
+            } else {
                 AMP_ASSERT( timeStep < d_numTimeSteps );
                 d_timeStep          = timeStep;
                 d_timeStepInSeconds = seconds - d_timeStepsInDays[d_timeStep];
                 return;
             }
         }
-    }
-    else {
+    } else {
         seconds  = 0.;
         timeStep = 0;
         for ( int i = 0; i < d_numTimeSteps; i++ ) {
             seconds += d_timeStepsInDays[i] * d_secondsPerDay;
             if ( setSeconds > seconds ) {
                 timeStep = i + 1;
-            }
-            else {
+            } else {
                 AMP_ASSERT( timeStep < d_numTimeSteps );
                 d_timeStep          = timeStep;
                 d_timeStepInSeconds = seconds - d_timeStepsInDays[d_timeStep] * d_secondsPerDay;

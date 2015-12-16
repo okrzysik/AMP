@@ -157,8 +157,7 @@ void PIO::logOnlyNodeZero( const std::string &filename )
             delete s_filestream;
             s_filestream = NULL;
             perr << "PIO: Could not open log file ``" << filename.c_str() << "''\n";
-        }
-        else {
+        } else {
             pout_buffer.setOutputStream2( s_filestream );
             perr_buffer.setOutputStream2( s_filestream );
             plog_buffer.setOutputStream1( s_filestream );
@@ -196,8 +195,7 @@ void PIO::logAllNodes( const std::string &filename )
         delete s_filestream;
         s_filestream = NULL;
         perr << "PIO: Could not open log file ``" << full_filename << "''\n";
-    }
-    else {
+    } else {
         pout_buffer.setOutputStream2( s_filestream );
         perr_buffer.setOutputStream2( s_filestream );
         plog_buffer.setOutputStream1( s_filestream );

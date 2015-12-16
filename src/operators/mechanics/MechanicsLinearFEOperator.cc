@@ -19,8 +19,7 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
             AMP::dynamic_pointer_cast<MechanicsLinearUpdatedLagrangianElement>( d_elemOp );
         AMP_INSIST( ( ( d_mechLinULElem.get() ) != NULL ),
                     "d_elemOp is not of type MechanicsLinearUpdatedLagrangianElement" );
-    }
-    else {
+    } else {
         d_mechLinElem = AMP::dynamic_pointer_cast<MechanicsLinearElement>( d_elemOp );
         AMP_INSIST( ( ( d_mechLinElem.get() ) != NULL ),
                     "d_elemOp is not of type MechanicsLinearElement" );
@@ -77,16 +76,14 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
             params->d_db->getBoolWithDefault( "isNonlinearOperatorInitialized", false );
         if ( isNonlinearOperatorInitialized ) {
             reset( params );
-        }
-        else {
+        } else {
             AMP::LinearAlgebra::Vector::shared_ptr tmpInVec =
                 AMP::LinearAlgebra::createVector( d_inDofMap, d_inpVariable, true );
             AMP::LinearAlgebra::Vector::shared_ptr tmpOutVec =
                 AMP::LinearAlgebra::createVector( d_outDofMap, d_outVariable, true );
             d_matrix = AMP::LinearAlgebra::createMatrix( tmpInVec, tmpOutVec );
         }
-    }
-    else {
+    } else {
         reset( params );
     }
 }
@@ -115,8 +112,7 @@ void MechanicsLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
             if ( params->d_dispVec != NULL ) {
                 d_dispVec->copyVector( params->d_dispVec );
                 d_dispVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-            }
-            else {
+            } else {
                 d_dispVec.reset();
             }
         }
@@ -154,8 +150,7 @@ void MechanicsLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
                 if ( d_dispVec != NULL ) {
                     elementInputVectors[Mechanics::DISPLACEMENT][( 3 * r ) + d] =
                         d_dispVec->getValueByGlobalID( d_dofIndices[r][d] );
-                }
-                else {
+                } else {
                     elementInputVectors[Mechanics::DISPLACEMENT][( 3 * r ) + d] = 0.0;
                 }
                 elementRefXYZ[( 3 * r ) + d] = d_refXYZ->getValueByGlobalID( d_dofIndices[r][d] );
@@ -165,8 +160,7 @@ void MechanicsLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
         d_mechLinULElem->setElementVectors( elementInputVectors );
         d_mechLinULElem->setElementStiffnessMatrix( d_elementStiffnessMatrix );
         d_mechLinULElem->assignReferenceXYZ( elementRefXYZ );
-    }
-    else {
+    } else {
         d_mechLinElem->initializeForCurrentElement( d_currElemPtr, d_materialModel );
         d_mechLinElem->setElementStiffnessMatrix( d_elementStiffnessMatrix );
     }

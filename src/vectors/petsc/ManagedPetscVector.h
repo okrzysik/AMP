@@ -32,7 +32,8 @@ typedef ManagedVectorParameters ManagedPetscVectorParameters;
  *
  * \see PetscVector
  */
-class ManagedPetscVector : public ManagedVector, public PetscVector {
+class ManagedPetscVector : public ManagedVector, public PetscVector
+{
 private:
     bool d_bMadeWithPetscDuplicate;
 

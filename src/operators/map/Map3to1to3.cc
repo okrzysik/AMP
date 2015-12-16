@@ -11,7 +11,8 @@ namespace Operator {
 template <class T>
 static T *getPtr( std::vector<T> &x )
 {
-    if ( x.size() == 0 ) return NULL;
+    if ( x.size() == 0 )
+        return NULL;
     return &x[0];
 }
 
@@ -49,12 +50,14 @@ Map3to1to3::Map3to1to3( const AMP::shared_ptr<OperatorParameters> &params_in )
     size_t numToSend = 0;
     if ( d_mesh1.get() != NULL ) {
         for ( size_t i = 0; i < d_own_mesh2.size(); i++ ) {
-            if ( d_own_mesh2[i] == 1 ) numToSend++;
+            if ( d_own_mesh2[i] == 1 )
+                numToSend++;
         }
     }
     if ( d_mesh2.get() != NULL ) {
         for ( size_t i = 0; i < d_own_mesh1.size(); i++ ) {
-            if ( d_own_mesh1[i] == 1 ) numToSend++;
+            if ( d_own_mesh1[i] == 1 )
+                numToSend++;
         }
     }
     reserveRequests( numToSend );
@@ -78,7 +81,8 @@ void Map3to1to3::addTo1DMap( std::multimap<double, double> &map,
                              const std::vector<double> &z,
                              const std::vector<double> &val )
 {
-    for ( size_t i = 0; i < z.size(); i++ ) map.insert( std::pair<double, double>( z[i], val[i] ) );
+    for ( size_t i = 0; i < z.size(); i++ )
+        map.insert( std::pair<double, double>( z[i], val[i] ) );
 }
 
 
@@ -173,7 +177,8 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     std::vector<MPI_Request>::iterator curReq = beginRequests();
     if ( d_mesh1.get() != NULL ) {
         for ( size_t i = 0; i < d_own_mesh2.size(); i++ ) {
-            if ( i == myRank ) continue; // Don't communicate local data
+            if ( i == myRank )
+                continue; // Don't communicate local data
             if ( d_own_mesh2[i] ) {
                 *curReq =
                     d_MapComm.Isend( getPtr( d_SendBuf1 ), d_SendBuf1.size(), i, d_commTag + 0 );
@@ -183,7 +188,8 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     }
     if ( d_mesh2.get() != NULL ) {
         for ( size_t i = 0; i < d_own_mesh1.size(); i++ ) {
-            if ( i == myRank ) continue; // Don't communicate local data
+            if ( i == myRank )
+                continue; // Don't communicate local data
             if ( d_own_mesh1[i] ) {
                 *curReq =
                     d_MapComm.Isend( getPtr( d_SendBuf2 ), d_SendBuf2.size(), i, d_commTag + 1 );
@@ -211,10 +217,12 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     std::vector<comm_data> recvBuf;
     if ( d_mesh1.get() != NULL ) {
         // First get any local data
-        if ( d_own_mesh2[myRank] ) unpackBuffer( d_SendBuf2, map1 );
+        if ( d_own_mesh2[myRank] )
+            unpackBuffer( d_SendBuf2, map1 );
         // Recieve all remote data
         for ( size_t i = 0; i < d_own_mesh2.size(); i++ ) {
-            if ( i == myRank ) continue; // We already copied the local data
+            if ( i == myRank )
+                continue; // We already copied the local data
             if ( d_own_mesh2[i] ) {
                 // Get the recieved data
                 int inSize = d_MapComm.probe( i, d_commTag + 1 ) / sizeof( comm_data );
@@ -227,10 +235,12 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     }
     if ( d_mesh2.get() != NULL ) {
         // First get any local data
-        if ( d_own_mesh1[myRank] ) unpackBuffer( d_SendBuf1, map2 );
+        if ( d_own_mesh1[myRank] )
+            unpackBuffer( d_SendBuf1, map2 );
         // Recieve all remote data
         for ( size_t i = 0; i < d_own_mesh1.size(); i++ ) {
-            if ( i == myRank ) continue; // We already copied the local data
+            if ( i == myRank )
+                continue; // We already copied the local data
             if ( d_own_mesh1[i] ) {
                 // Get the recieved data
                 int inSize = d_MapComm.probe( i, d_commTag + 0 ) / sizeof( comm_data );
@@ -260,8 +270,10 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     }
 
     // Build the return vector
-    if ( d_mesh1.get() != NULL ) buildReturn( d_ResultVector, d_mesh1, d_dstIterator1, final_map1 );
-    if ( d_mesh2.get() != NULL ) buildReturn( d_ResultVector, d_mesh2, d_dstIterator2, final_map2 );
+    if ( d_mesh1.get() != NULL )
+        buildReturn( d_ResultVector, d_mesh1, d_dstIterator1, final_map1 );
+    if ( d_mesh2.get() != NULL )
+        buildReturn( d_ResultVector, d_mesh2, d_dstIterator2, final_map2 );
 
     // Apply make consistent
     PROFILE_START( "makeConsistent" );
@@ -289,9 +301,11 @@ void Map3to1to3::unpackBuffer( const std::vector<comm_data> &buffer,
             }
             it2 = it1;
             it3 = it1;
-            if ( it1 != map.begin() ) --it1;
+            if ( it1 != map.begin() )
+                --it1;
             ++it3;
-            if ( it3 == map.end() ) it3 = it2;
+            if ( it3 == map.end() )
+                it3 = it2;
             if ( fabs( it1->first - buffer[j].z ) < tol )
                 iterator = it1;
             else if ( fabs( it2->first - buffer[j].z ) < tol )
@@ -302,8 +316,7 @@ void Map3to1to3::unpackBuffer( const std::vector<comm_data> &buffer,
         if ( iterator == map.end() ) {
             std::pair<int, double> tmp( buffer[j].N, buffer[j].sum );
             map.insert( std::pair<double, std::pair<int, double>>( buffer[j].z, tmp ) );
-        }
-        else {
+        } else {
             iterator->second.first += buffer[j].N;
             iterator->second.second += buffer[j].sum;
         }

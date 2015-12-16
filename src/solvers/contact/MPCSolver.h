@@ -9,7 +9,8 @@ namespace Solver {
 
 typedef SolverStrategyParameters MPCSolverParameters;
 
-class MPCSolver : public SolverStrategy {
+class MPCSolver : public SolverStrategy
+{
 public:
     explicit MPCSolver( AMP::shared_ptr<MPCSolverParameters> params ) : SolverStrategy( params ) {}
 

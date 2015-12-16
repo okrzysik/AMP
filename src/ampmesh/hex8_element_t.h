@@ -19,7 +19,8 @@ void compute_constitutive_matrix( double const youngs_modulus,
                                   double *constitutive_matrix );
 double compute_von_mises_stress( double const *stress_tensor );
 
-class hex8_element_t {
+class hex8_element_t
+{
 public:
     hex8_element_t( double const *p );
     ~hex8_element_t();

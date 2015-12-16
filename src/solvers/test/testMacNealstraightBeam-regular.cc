@@ -163,8 +163,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
 
     if ( finalResidualNorm > ( 1e-10 * initResidualNorm ) ) {
         ut->failure( exeName );
-    }
-    else {
+    } else {
         ut->passes( exeName );
     }
 
@@ -211,8 +210,7 @@ int main( int argc, char *argv[] )
         exeNames.push_back( "testMacNealstraightBeam-regular-Y-reduced-mesh2" );
         exeNames.push_back( "testMacNealstraightBeam-regular-Z-normal-mesh2" );
         exeNames.push_back( "testMacNealstraightBeam-regular-Z-reduced-mesh2" );
-    }
-    else {
+    } else {
         for ( int i = 1; i < argc; i += 3 ) {
             char inpName[100];
             sprintf( inpName,
@@ -228,11 +226,9 @@ int main( int argc, char *argv[] )
         try {
             linearElasticTest( &ut, exeNames[i], i );
             AMP::pout << exeNames[i] << " had " << ut.NumFailGlobal() << " failures." << std::endl;
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             AMP::pout << "ERROR: " << err.what() << std::endl;
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             AMP::pout << "ERROR: "
                       << "An unknown exception was thrown." << std::endl;
         }

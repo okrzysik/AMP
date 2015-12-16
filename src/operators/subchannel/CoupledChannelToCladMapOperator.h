@@ -11,7 +11,8 @@
 namespace AMP {
 namespace Operator {
 
-class CoupledChannelToCladMapOperator : public Operator {
+class CoupledChannelToCladMapOperator : public Operator
+{
 public:
     explicit CoupledChannelToCladMapOperator(
         const AMP::shared_ptr<CoupledChannelToCladMapOperatorParameters> &params );

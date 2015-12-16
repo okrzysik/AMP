@@ -21,7 +21,8 @@ namespace Discretization {
  *    over the entire Mesh.  Note: this class will be replaced by a more complete
  *    Discretization interface.
  */
-class simpleDOFManager : public DOFManager {
+class simpleDOFManager : public DOFManager
+{
 public:
     using DOFManager::getDOFs;
     using DOFManager::subset;

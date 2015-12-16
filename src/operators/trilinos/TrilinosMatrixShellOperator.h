@@ -10,7 +10,8 @@ namespace AMP {
 namespace Operator {
 
 
-class TrilinosMatrixShellOperator : public LinearOperator {
+class TrilinosMatrixShellOperator : public LinearOperator
+{
 public:
     explicit TrilinosMatrixShellOperator( const AMP::shared_ptr<OperatorParameters> &params );
 

@@ -37,7 +37,8 @@ namespace LinearAlgebra {
   * This class will pass along a dataChanged() callback to all registered listeners.
   */
 
-class DataChangePassThrough : public DataChangeFirer, public DataChangeListener {
+class DataChangePassThrough : public DataChangeFirer, public DataChangeListener
+{
 public:
     /** \brief Construct the object
       * \details  This is an empty function

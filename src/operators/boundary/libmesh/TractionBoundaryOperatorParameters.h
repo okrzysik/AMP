@@ -7,7 +7,8 @@
 namespace AMP {
 namespace Operator {
 
-class TractionBoundaryOperatorParameters : public OperatorParameters {
+class TractionBoundaryOperatorParameters : public OperatorParameters
+{
 public:
     explicit TractionBoundaryOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
         : OperatorParameters( db )

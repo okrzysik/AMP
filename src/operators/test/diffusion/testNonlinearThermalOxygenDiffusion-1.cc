@@ -105,7 +105,8 @@ void thermalOxygenDiffusionTest( AMP::UnitTest *ut, std::string exeName )
         AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
             volumeOperator->getInputVariable() );
     for ( size_t i = 0; i < tmp->numVariables(); i++ ) {
-        if ( tmp->getVariable( i ).get() != NULL ) inputVariable->add( tmp->getVariable( i ) );
+        if ( tmp->getVariable( i ).get() != NULL )
+            inputVariable->add( tmp->getVariable( i ) );
     }
 
     // initialize the output multi-variable
@@ -236,12 +237,10 @@ int main( int argc, char *argv[] )
     for ( unsigned int i = 0; i < exeNames.size(); i++ ) {
         try {
             thermalOxygenDiffusionTest( &ut, exeNames[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing" );

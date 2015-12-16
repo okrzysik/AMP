@@ -15,7 +15,8 @@ typedef SolverStrategyParameters ColumnSolverParameters;
  * The main intention of this class is to provide block diagonal or block triangular
  * preconditioners of Gauss-Seidel or Jacobi type
  */
-class ColumnSolver : public SolverStrategy {
+class ColumnSolver : public SolverStrategy
+{
 public:
     /**
      * default empty constructor

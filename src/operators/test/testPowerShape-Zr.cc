@@ -102,8 +102,7 @@ void test_with_shape( AMP::UnitTest *ut )
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         try {
             shape->apply( SpecificPowerMagnitudeVec, SpecificPowerShapeVec );
-        }
-        catch ( std::exception const &a ) {
+        } catch ( std::exception const &a ) {
             std::cout << a.what() << std::endl;
             ut->failure( "error" );
         }
@@ -163,8 +162,7 @@ void test_with_shape( AMP::UnitTest *ut )
             AMP::LinearAlgebra::Vector::shared_ptr nullVec;
             try {
                 shape->apply( SpecificPowerMagnitudeVec, SpecificPowerShapeVec );
-            }
-            catch ( std::exception const &a ) {
+            } catch ( std::exception const &a ) {
                 std::cout << a.what() << std::endl;
                 ut->failure( "PowerShape error" );
             }
@@ -199,12 +197,10 @@ int main( int argc, char *argv[] )
 
     try {
         test_with_shape( &ut );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

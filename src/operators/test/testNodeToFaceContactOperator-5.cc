@@ -236,8 +236,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> bottomPelletSolver(
                 new AMP::Solver::PetscKrylovSolver( bottomPelletSolverParams ) );
             columnPreconditioner->append( bottomPelletSolver );
-        }
-        else {
+        } else {
             AMP::shared_ptr<AMP::Database> bottomPelletSolver_db =
                 columnPreconditioner_db->getDatabase( "MLSolver" );
             AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> bottomPelletSolverParams(
@@ -271,8 +270,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> topPelletSolver(
                 new AMP::Solver::PetscKrylovSolver( topPelletSolverParams ) );
             columnPreconditioner->append( topPelletSolver );
-        }
-        else {
+        } else {
             AMP::shared_ptr<AMP::Database> topPelletSolver_db =
                 columnPreconditioner_db->getDatabase( "MLSolver" );
             AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> topPelletSolverParams(
@@ -303,8 +301,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> cladSolver(
                 new AMP::Solver::TrilinosMLSolver( cladSolverParams ) );
             columnPreconditioner->append( cladSolver );
-        }
-        else {
+        } else {
             AMP::shared_ptr<AMP::Database> cladSolver_db =
                 columnPreconditioner_db->getDatabase( "DummySolver" );
             AMP::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> cladSolverParams(
@@ -574,8 +571,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         }
         bottomPelletTopPelletContactOperator->updateActiveSetWithALittleHelp( columnSolVec );
         columnSolVec->zero();
-    }
-    else {
+    } else {
         bool skipDisplaceMesh = true;
         bottomPelletTopPelletContactOperator->updateActiveSet( nullVec, skipDisplaceMesh );
     } // end if
@@ -604,8 +600,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         }
         bottomPelletCladContactOperator->updateActiveSetWithALittleHelp( columnSolVec );
         columnSolVec->zero();
-    }
-    else {
+    } else {
         bool skipDisplaceMesh = true;
         bottomPelletCladContactOperator->updateActiveSet( nullVec, skipDisplaceMesh );
         topPelletCladContactOperator->updateActiveSet( nullVec, skipDisplaceMesh );
@@ -785,8 +780,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
                                                    bottomPelletMeshAdapter,
                                                    bottomPelletConstraints,
                                                    bottomPelletMat );
-                }
-                else {
+                } else {
                     applyCustomDirichletCondition( bottomPelletRhs,
                                                    bottomPelletCor,
                                                    bottomPelletMeshAdapter,
@@ -806,8 +800,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
                                                    topPelletMeshAdapter,
                                                    topPelletConstraints,
                                                    topPelletMat );
-                }
-                else {
+                } else {
                     applyCustomDirichletCondition( topPelletRhs,
                                                    topPelletCor,
                                                    topPelletMeshAdapter,
@@ -823,8 +816,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
                     cladCor = cladRhs->cloneVector();
                     applyCustomDirichletCondition(
                         cladRhs, cladCor, cladMeshAdapter, cladConstraints, cladMat );
-                }
-                else {
+                } else {
                     applyCustomDirichletCondition( cladRhs,
                                                    cladCor,
                                                    cladMeshAdapter,
@@ -1010,8 +1002,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
                 meshAdapter->displaceMesh( columnSolVec );
                 if ( scaleSolution != 1.0 ) {
                     columnSolVec->scale( -1.0 / scaleSolution );
-                }
-                else {
+                } else {
                     columnSolVec->scale( -1.0 );
                 }
             }
@@ -1191,8 +1182,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             meshAdapter->displaceMesh( columnSolVec );
             if ( scaleSolution != 1.0 ) {
                 columnSolVec->scale( -1.0 / scaleSolution );
-            }
-            else {
+            } else {
                 columnSolVec->scale( -1.0 );
             }
 #endif
@@ -1235,12 +1225,10 @@ int main( int argc, char *argv[] )
         for ( size_t i = 0; i < exeNames.size(); ++i ) {
             myTest( &ut, exeNames[i] );
         } // end for
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

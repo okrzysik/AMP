@@ -56,7 +56,8 @@ namespace AMP {
  *
  */
 
-class InputManager {
+class InputManager
+{
 public:
     typedef AMP::shared_ptr<InputManager> shared_ptr;
 

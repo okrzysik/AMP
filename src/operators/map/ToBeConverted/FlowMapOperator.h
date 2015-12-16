@@ -6,7 +6,8 @@
 namespace AMP {
 namespace Operator {
 
-class FlowMapOperator : public Map3to1to3 {
+class FlowMapOperator : public Map3to1to3
+{
 public:
     // Overload applyStart
     virtual void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr f,

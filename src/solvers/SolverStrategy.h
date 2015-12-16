@@ -19,7 +19,8 @@ namespace Solver {
  * or linear operator.
  */
 
-class SolverStrategy {
+class SolverStrategy
+{
 public:
     typedef AMP::shared_ptr<AMP::Solver::SolverStrategy> shared_ptr;
 

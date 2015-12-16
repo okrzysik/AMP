@@ -167,8 +167,7 @@ void testMap( AMP::UnitTest *ut, std::string exeName )
         if ( 1 ) {
             testPassed = true;
             break;
-        }
-        else {
+        } else {
             std::cout << "Norm of the change in sol for iteration " << cnt << "is -->" << std::endl;
         }
         std::cout << std::endl;
@@ -200,12 +199,10 @@ int main( int argc, char *argv[] )
 
     try {
         testMap( &ut, "testMapOperator" );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

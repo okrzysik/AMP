@@ -11,7 +11,8 @@
 namespace AMP {
 namespace Operator {
 
-class PericElastoViscoPlasticModel : public MechanicsMaterialModel {
+class PericElastoViscoPlasticModel : public MechanicsMaterialModel
+{
 public:
     explicit PericElastoViscoPlasticModel(
         const AMP::shared_ptr<MechanicsMaterialModelParameters> & );

@@ -123,8 +123,7 @@ void linearElasticTest( AMP::UnitTest *ut )
 
     if ( finalResidualNorm > ( 1e-10 * initResidualNorm ) ) {
         ut->failure( "TrilinosMLSolver successfully solves a linear elasticity problem" );
-    }
-    else {
+    } else {
         ut->passes( "TrilinosMLSolver successfully solves a linear elasticity problem" );
     }
 
@@ -138,12 +137,10 @@ int main( int argc, char *argv[] )
 
     try {
         linearElasticTest( &ut );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

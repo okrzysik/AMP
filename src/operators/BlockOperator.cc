@@ -85,8 +85,7 @@ bool BlockOperator::supportsMatrixFunctions()
                 if ( matOp == NULL ) {
                     return false;
                 }
-            }
-            else {
+            } else {
                 if ( !( blockOp->supportsMatrixFunctions() ) ) {
                     return false;
                 }
@@ -156,12 +155,10 @@ int BlockOperator::getNumRowsForBlock( int id )
             AMP::dynamic_pointer_cast<LinearOperator>( d_blocks[id][0] );
         if ( matOp == NULL ) {
             AMP_ERROR( "This is not supported." );
-        }
-        else {
+        } else {
             result = ( ( matOp->getMatrix() )->numGlobalRows() );
         }
-    }
-    else {
+    } else {
         result = ( blockOp->getNumRows() );
     }
     return result;
@@ -177,12 +174,10 @@ int BlockOperator::getNumColumnsForBlock( int id )
             AMP::dynamic_pointer_cast<LinearOperator>( d_blocks[0][id] );
         if ( matOp == NULL ) {
             AMP_ERROR( "This is not supported." );
-        }
-        else {
+        } else {
             result = ( ( matOp->getMatrix() )->numGlobalColumns() );
         }
-    }
-    else {
+    } else {
         result = ( blockOp->getNumColumns() );
     }
     return result;
@@ -204,11 +199,9 @@ void BlockOperator::getRow( void *object,
     int blkRowId = -1;
     if ( blkPtr == myObject->d_firstRowId.end() ) {
         blkRowId = myObject->d_iNumRowBlocks - 1;
-    }
-    else if ( ( *blkPtr ) > row ) {
+    } else if ( ( *blkPtr ) > row ) {
         blkRowId = blkPtr - myObject->d_firstRowId.begin() - 1;
-    }
-    else {
+    } else {
         AMP_ASSERT( ( *blkPtr ) == row );
         blkRowId = blkPtr - myObject->d_firstRowId.begin();
     }
@@ -248,18 +241,15 @@ void BlockOperator::getRowForBlock( int locRow,
             AMP::dynamic_pointer_cast<LinearOperator>( d_blocks[blkRowId][blkColId] );
         if ( matOp == NULL ) {
             AMP_ERROR( "This is not supported." );
-        }
-        else {
+        } else {
             AMP::LinearAlgebra::Matrix::shared_ptr mat = matOp->getMatrix();
             if ( mat == NULL ) {
                 AMP_ERROR( "Matrix is NULL" );
-            }
-            else {
+            } else {
                 mat->getRowByGlobalID( locRow, locCols, values );
             }
         }
-    }
-    else {
+    } else {
         getRow( blockOp.get(), locRow, locCols, values );
     }
 }

@@ -15,7 +15,8 @@ namespace TimeIntegrator {
  * Class RK2TimeIntegrator is a concrete time integrator
  * that implements the explicit Runge-Kutta second order (RK2) method.
  */
-class RK2TimeIntegrator : public TimeIntegrator {
+class RK2TimeIntegrator : public TimeIntegrator
+{
 public:
     /**
      * Constructor that accepts parameter list.

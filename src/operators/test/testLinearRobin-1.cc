@@ -55,8 +55,7 @@ void bcTests( AMP::UnitTest *ut,
         bcOperator->reset( dummyParameters );
 
         ut->failure( "Test" );
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
 
         ut->passes( msgPrefix + ": catches when prefactor alpha is set to zero " );
     }
@@ -81,16 +80,14 @@ void bcTests( AMP::UnitTest *ut,
         ut->passes( msgPrefix + ": Robin returns a rhs correction vector " );
 
         // ut.failure(msgPrefix+": BoundaryOperators have changed and this needs to be updated.");
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
 
         ut->failure( "Exception" );
     }
 
     if ( passed ) {
         ut->passes( msgPrefix + ": Robin Matrix Correction for Linear Operator  " );
-    }
-    else {
+    } else {
         ut->failure( msgPrefix + ": Robin Matrix Correction for Linear Operator  " );
     }
 
@@ -173,13 +170,12 @@ int main( int argc, char *argv[] )
     std::string files[NUMFILES] = { "LinearOp-Robin-1" };
 
     try {
-        for ( int i = 0; i < NUMFILES; i++ ) linearRobinTest( &ut, files[i] );
-    }
-    catch ( std::exception &err ) {
+        for ( int i = 0; i < NUMFILES; i++ )
+            linearRobinTest( &ut, files[i] );
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

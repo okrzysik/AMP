@@ -19,7 +19,8 @@ namespace Operator {
 A class for representing the element level computation performed within a
 nonlinear updated lagrangian finite element operator for modelling solid mechanics.
 */
-class MechanicsNonlinearUpdatedLagrangianElement : public MechanicsElement {
+class MechanicsNonlinearUpdatedLagrangianElement : public MechanicsElement
+{
 public:
     /**
       This is primarily for use with the updateMaterialModel() function.
@@ -70,8 +71,7 @@ public:
     {
         if ( d_useReducedIntegration ) {
             apply_Reduced();
-        }
-        else {
+        } else {
             apply_Normal();
         }
     }
@@ -207,13 +207,14 @@ protected:
                   the Gauss points in the current element. */
 
     const std::vector<std::vector<Real>> *d_phi; /**< Shape functions at
-                                                     the Gauss points in the current element. */
+                                                        the Gauss points in the current element. */
 
     const std::vector<Point> *d_xyz; /**< Locations of the Gauss points in the current element. */
 
-    std::vector<std::vector<double>> d_elementInputVectors; /**< Element input vectors
-                                                                  (Displacement, temperature, burnup
-                                                                  etc). */
+    std::vector<std::vector<double>>
+        d_elementInputVectors; /**< Element input vectors
+                                      (Displacement, temperature, burnup
+                                      etc). */
 
     std::vector<std::vector<double>>
         d_elementInputVectors_pre; /**< Element input vectors at the previous time step
@@ -645,8 +646,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::updateMaterialModel(
 
         if ( d_useJaumannRate == true ) {
             materialModelNonlinearGaussPointOperation<type>( fieldsAtGaussPt, spin_np1, Identity );
-        }
-        else {
+        } else {
             materialModelNonlinearGaussPointOperation<type>( fieldsAtGaussPt, R_n, R_np1 );
         }
 

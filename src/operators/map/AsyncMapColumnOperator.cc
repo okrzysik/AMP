@@ -34,8 +34,7 @@ void AsyncMapColumnOperator::append( AMP::shared_ptr<Operator> op )
             append( *curOp );
             ++curOp;
         }
-    }
-    else {
+    } else {
         AMP::shared_ptr<AsyncMapOperator> mapOp = AMP::dynamic_pointer_cast<AsyncMapOperator>( op );
         AMP_INSIST( mapOp, "Attempt to add a non-AsyncMapOperator to a AsyncMapColumnOperator" );
         AsynchronousColumnOperator::append( mapOp );
@@ -104,8 +103,7 @@ static void copyKey( AMP::shared_ptr<AMP::Database> &database1,
         AMP_INSIST( (int) data.size() == size, "Array size does not match key size" );
         if ( N == size ) {
             database2->putChar( key, data[i] );
-        }
-        else {
+        } else {
             // We need to try a search and replace
             database2->putCharArray( key, data );
         }
@@ -159,7 +157,8 @@ static void copyKey( AMP::shared_ptr<AMP::Database> &database1,
         // Copy a box
         AMP_ERROR( "Not programmed for boxes yet" );
     } break;
-    default: AMP_ERROR( "Unknown key type" );
+    default:
+        AMP_ERROR( "Unknown key type" );
     }
 }
 
@@ -182,8 +181,7 @@ AsyncMapColumnOperator::createDatabases( AMP::shared_ptr<AMP::Database> database
         for ( size_t k = 0; k < keys.size(); k++ ) {
             if ( keys[k].compare( "N_maps" ) == 0 ) {
                 // These keys are used by the builder and should not be in the sub database
-            }
-            else {
+            } else {
                 // We need to copy the key
                 copyKey( database1, database2, keys[k], N_maps, i );
             }

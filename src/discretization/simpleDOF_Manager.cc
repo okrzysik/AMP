@@ -19,7 +19,8 @@ DOFManager::shared_ptr simpleDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh
                                                  int DOFsPerObject,
                                                  bool split )
 {
-    if ( mesh.get() == NULL ) return DOFManager::shared_ptr();
+    if ( mesh.get() == NULL )
+        return DOFManager::shared_ptr();
     if ( split && AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh ).get() != NULL ) {
         // We want to split the DOFs by the mesh
         std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getLocalBaseMeshIDs();
@@ -120,8 +121,7 @@ void simpleDOFManager::initialize()
         std::set<AMP::Mesh::MeshID> set( d_baseMeshIDs.begin(), d_baseMeshIDs.end() );
         d_comm.setGather( set );
         d_baseMeshIDs = std::vector<AMP::Mesh::MeshID>( set.begin(), set.end() );
-    }
-    else {
+    } else {
         d_meshID     = AMP::Mesh::MeshID();
         d_isBaseMesh = false;
         d_baseMeshIDs.clear();
@@ -138,8 +138,7 @@ void simpleDOFManager::initialize()
         if ( id.is_local() ) {
             d_local_id[i] = id;
             i++;
-        }
-        else {
+        } else {
             d_remote_id[j] = id;
             j++;
         }
@@ -172,12 +171,10 @@ AMP::shared_ptr<DOFManager> simpleDOFManager::subset( const AMP::Mesh::Mesh::sha
     if ( mesh->meshID() == d_meshID ) {
         // The mesh IDs match
         return shared_from_this();
-    }
-    else if ( mesh->isBaseMesh() && d_isBaseMesh ) {
+    } else if ( mesh->isBaseMesh() && d_isBaseMesh ) {
         // Both meshes are base meshes and the ids do not match
         return AMP::shared_ptr<DOFManager>();
-    }
-    else if ( d_baseMeshIDs.size() == 1 && mesh->isBaseMesh() ) {
+    } else if ( d_baseMeshIDs.size() == 1 && mesh->isBaseMesh() ) {
         // The subsetting mesh is a base mesh and we only contain one mesh
         if ( d_baseMeshIDs[0] == mesh->meshID() )
             return shared_from_this();
@@ -192,18 +189,19 @@ AMP::shared_ptr<DOFManager> simpleDOFManager::subset( const AMP::Mesh::Mesh::sha
         AMP::shared_ptr<DOFManager> subset_DOFs;
         bool found_local = false;
         for ( size_t i = 0; i < list.size(); i++ ) {
-            if ( d_meshID == list[i]->meshID() ) found_local = true;
+            if ( d_meshID == list[i]->meshID() )
+                found_local = true;
         }
         AMP_MPI comm( AMP_COMM_NULL );
         if ( useMeshComm ) {
             comm = AMP_MPI::intersect( d_comm, mesh->getComm() );
-        }
-        else {
+        } else {
             comm = d_comm;
         }
         found_local = comm.allReduce( found_local );
         comm.reset();
-        if ( found_local ) return shared_from_this();
+        if ( found_local )
+            return shared_from_this();
     }
     // We were not able to use an efficient subset, use the generic base function
     return DOFManager::subset( mesh, useMeshComm );
@@ -225,7 +223,8 @@ void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
     if ( id == d_local_id[index] ) {
         // The id was found
         dofs.resize( DOFsPerElement );
-        for ( int j = 0; j < DOFsPerElement; j++ ) dofs[j] = index * DOFsPerElement + d_begin + j;
+        for ( int j = 0; j < DOFsPerElement; j++ )
+            dofs[j] = index * DOFsPerElement + d_begin + j;
         return;
     }
     // Search for the dof in the remote list
@@ -285,28 +284,27 @@ std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
             if ( neighbor_elements[i].get() != NULL )
                 ids.push_back( neighbor_elements[i]->globalID() );
         }
-    }
-    else if ( objType == d_type ) {
+    } else if ( objType == d_type ) {
         // We need to use the mesh to get the connectivity of the elements of the same type
         std::vector<AMP::Mesh::MeshElement> parents = d_mesh->getElementParents( obj, meshType );
         for ( size_t i = 0; i < parents.size(); i++ ) {
             std::vector<AMP::Mesh::MeshElement> children = parents[i].getElements( objType );
             ids.reserve( ids.size() + children.size() );
-            for ( size_t j = 0; j < children.size(); j++ ) ids.push_back( children[j].globalID() );
+            for ( size_t j = 0; j < children.size(); j++ )
+                ids.push_back( children[j].globalID() );
         }
         AMP::Utilities::unique( ids );
-    }
-    else if ( objType > d_type ) {
+    } else if ( objType > d_type ) {
         // The desired element type is < the current element type, use getElements
         std::vector<AMP::Mesh::MeshElement> children = obj.getElements( d_type );
-        for ( size_t i = 0; i < children.size(); i++ ) ids.push_back( children[i].globalID() );
-    }
-    else if ( objType < d_type ) {
+        for ( size_t i = 0; i < children.size(); i++ )
+            ids.push_back( children[i].globalID() );
+    } else if ( objType < d_type ) {
         // The desired element type is < the current element type, use getElementParents
         std::vector<AMP::Mesh::MeshElement> parents = d_mesh->getElementParents( obj, meshType );
-        for ( size_t i = 0; i < parents.size(); i++ ) ids.push_back( parents[i].globalID() );
-    }
-    else {
+        for ( size_t i = 0; i < parents.size(); i++ )
+            ids.push_back( parents[i].globalID() );
+    } else {
         AMP_ERROR( "Internal error" );
     }
     // Get all dofs for each element id
@@ -315,7 +313,8 @@ std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
     std::vector<size_t> dofs2( DOFsPerElement );
     for ( size_t i = 0; i < ids.size(); i++ ) {
         getDOFs( ids[i], dofs2 );
-        for ( size_t j = 0; j < dofs2.size(); j++ ) dofs.push_back( dofs2[j] );
+        for ( size_t j = 0; j < dofs2.size(); j++ )
+            dofs.push_back( dofs2[j] );
     }
     // Sort the row dofs
     AMP::Utilities::quicksort( dofs );
@@ -331,24 +330,28 @@ std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
 std::vector<size_t>
 simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids ) const
 {
-    if ( d_comm.getSize() == 1 ) return std::vector<size_t>(); // There are no remote DOFs
+    if ( d_comm.getSize() == 1 )
+        return std::vector<size_t>(); // There are no remote DOFs
     // Get the set of mesh ids (must match on all processors)
     AMP_MPI comm = d_mesh->getComm();
     std::set<AMP::Mesh::MeshID> meshIDs;
-    for ( size_t i = 0; i < remote_ids.size(); i++ ) meshIDs.insert( remote_ids[i].meshID() );
+    for ( size_t i = 0; i < remote_ids.size(); i++ )
+        meshIDs.insert( remote_ids[i].meshID() );
     std::vector<AMP::Mesh::MeshID> tmpLocalIDs( meshIDs.begin(), meshIDs.end() );
     int N = (int) comm.sumReduce<size_t>( tmpLocalIDs.size() );
     if ( N == 0 ) {
         // Nobody has any remote ids to identify
         return std::vector<size_t>();
     }
-    AMP::Mesh::MeshID *send_ptr          = NULL;
-    if ( !tmpLocalIDs.empty() ) send_ptr = &tmpLocalIDs[0];
+    AMP::Mesh::MeshID *send_ptr = NULL;
+    if ( !tmpLocalIDs.empty() )
+        send_ptr = &tmpLocalIDs[0];
     std::vector<AMP::Mesh::MeshID> tmpGlobalIDs( N );
     int N_recv =
         comm.allGather<AMP::Mesh::MeshID>( send_ptr, tmpLocalIDs.size(), &tmpGlobalIDs[0] );
     AMP_ASSERT( N_recv == N );
-    for ( size_t i = 0; i < tmpGlobalIDs.size(); i++ ) meshIDs.insert( tmpGlobalIDs[i] );
+    for ( size_t i = 0; i < tmpGlobalIDs.size(); i++ )
+        meshIDs.insert( tmpGlobalIDs[i] );
     // Get the rank that will own each MeshElement on the current communicator
     std::vector<int> owner_rank( remote_ids.size(), -1 );
     for ( std::set<AMP::Mesh::MeshID>::iterator it = meshIDs.begin(); it != meshIDs.end(); ++it ) {
@@ -373,7 +376,8 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
         comm.allGather( rank_submesh, &subrank[0] );
         std::vector<int> rank_map( subcommSize, -1 );
         for ( size_t i = 0; i < subrank.size(); i++ ) {
-            if ( subrank[i] != -1 ) rank_map[subrank[i]] = i;
+            if ( subrank[i] != -1 )
+                rank_map[subrank[i]] = i;
         }
         // Get the rank of the proccessor that will own each meshElement
         for ( size_t i = 0; i < remote_ids.size(); i++ ) {
@@ -400,12 +404,10 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
     while ( index < owner_rank.size() ) {
         if ( owner_rank[index] < rank ) {
             AMP_ERROR( "This should not occur" );
-        }
-        else if ( owner_rank[index] == rank ) {
+        } else if ( owner_rank[index] == rank ) {
             // Move to the next element
             index++;
-        }
-        else {
+        } else {
             // Store the number of elements with the given rank, and move to the next rank
             send_disp[rank] = start;
             send_cnt[rank]  = index - start;
@@ -426,9 +428,10 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
         recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
     }
     std::vector<AMP::Mesh::MeshElementID> recv_id( tot_size + 1 );
-    AMP::Mesh::MeshElementID *send_buffer   = NULL;
-    if ( !remote_ids2.empty() ) send_buffer = &remote_ids2[0];
-    N                                       = comm.allToAll<AMP::Mesh::MeshElementID>(
+    AMP::Mesh::MeshElementID *send_buffer = NULL;
+    if ( !remote_ids2.empty() )
+        send_buffer = &remote_ids2[0];
+    N               = comm.allToAll<AMP::Mesh::MeshElementID>(
         send_buffer, &send_cnt[0], &send_disp[0], &recv_id[0], &recv_cnt[0], &recv_disp[0], true );
     AMP_INSIST( N == (int) tot_size, "Unexpected recieve size" );
     recv_id.resize( tot_size );
@@ -442,9 +445,10 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
     // Send the DOFs back to the original processor
     std::vector<size_t> remote_dof;
     remote_dof.resize( remote_ids2.size() + 1, static_cast<size_t>( -1 ) );
-    size_t *send_buffer_DOFs             = NULL;
-    if ( tot_size > 0 ) send_buffer_DOFs = &recieved_DOF[0];
-    N                                    = comm.allToAll<size_t>( send_buffer_DOFs,
+    size_t *send_buffer_DOFs = NULL;
+    if ( tot_size > 0 )
+        send_buffer_DOFs = &recieved_DOF[0];
+    N                    = comm.allToAll<size_t>( send_buffer_DOFs,
                                &recv_cnt[0],
                                &recv_disp[0],
                                &remote_dof[0],
@@ -455,7 +459,8 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
     remote_dof.resize( remote_ids2.size() );
     // Sort the dofs back to the original order for the remote_ids
     AMP::Utilities::quicksort( remote_ids2, remote_dof );
-    for ( size_t i = 0; i < remote_ids.size(); i++ ) AMP_ASSERT( remote_ids[i] == remote_ids2[i] );
+    for ( size_t i = 0; i < remote_ids.size(); i++ )
+        AMP_ASSERT( remote_ids[i] == remote_ids2[i] );
     return remote_dof;
 }
 }

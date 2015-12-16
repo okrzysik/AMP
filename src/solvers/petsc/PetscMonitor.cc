@@ -23,7 +23,8 @@ PetscMonitor::~PetscMonitor() {}
 std::string PetscMonitor::removeMonitor( std::string options )
 {
     size_t i2 = options.find( "monitor" );
-    if ( i2 == std::string::npos ) return options;
+    if ( i2 == std::string::npos )
+        return options;
     size_t i1            = options.find_last_of( "-", i2 );
     std::string options2 = options;
     options2.erase( i1, i2 - i1 + 1 );
@@ -51,7 +52,8 @@ void PetscMonitor::printKSPStatus( KSP ksp, int iteration, double L2norm )
 {
     if ( d_comm.getRank() == 0 ) {
         std::string indent = "  ";
-        for ( int i = 0; i < ( (PetscObject) ksp )->tablevel; i++ ) indent += "  ";
+        for ( int i = 0; i < ( (PetscObject) ksp )->tablevel; i++ )
+            indent += "  ";
         std::cout << indent << iteration << " KSP Residual norm " << std::scientific
                   << std::setprecision( 12 ) << L2norm << std::endl;
     }
@@ -60,7 +62,8 @@ void PetscMonitor::printSNESStatus( SNES snes, int iteration, double L2norm )
 {
     if ( d_comm.getRank() == 0 ) {
         std::string indent = "  ";
-        for ( int i = 0; i < ( (PetscObject) snes )->tablevel; i++ ) indent += "  ";
+        for ( int i = 0; i < ( (PetscObject) snes )->tablevel; i++ )
+            indent += "  ";
         std::cout << indent << iteration << " SNES Function norm " << std::scientific
                   << std::setprecision( 12 ) << L2norm << std::endl;
     }

@@ -43,7 +43,8 @@ static const std::string *arguments = NULL;
 
 //  =================== Classes =======================================================
 
-class ThermalConductivityProp : public Property<double> {
+class ThermalConductivityProp : public Property<double>
+{
 public:
     ThermalConductivityProp()
         : Property<double>( name_base + "_" + "ThermalConductivity", // Name string
@@ -58,7 +59,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class FickCoefficientProp : public Property<double> {
+class FickCoefficientProp : public Property<double>
+{
 public:
     FickCoefficientProp()
         : Property<double>( name_base + "_" + "FickCoefficient", // Name string
@@ -73,7 +75,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class SoretCoefficientProp : public Property<double> {
+class SoretCoefficientProp : public Property<double>
+{
 public:
     SoretCoefficientProp()
         : Property<double>( name_base + "_" + "SoretCoefficient", // Name string
@@ -88,7 +91,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class DensityProp : public Property<double> {
+class DensityProp : public Property<double>
+{
 public:
     DensityProp()
         : Property<double>( name_base + "_" + "Density", // Name string
@@ -103,7 +107,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class ThermalExpansionProp : public Property<double> {
+class ThermalExpansionProp : public Property<double>
+{
 public:
     ThermalExpansionProp()
         : Property<double>( name_base + "_" + "ThermalExpansion", // Name string
@@ -118,7 +123,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class HeatCapacityPressureProp : public Property<double> {
+class HeatCapacityPressureProp : public Property<double>
+{
 public:
     HeatCapacityPressureProp()
         : Property<double>( name_base + "_" + "HeatCapacityPressure", // Name string
@@ -133,7 +139,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class YoungsModulusProp : public Property<double> {
+class YoungsModulusProp : public Property<double>
+{
 public:
     YoungsModulusProp()
         : Property<double>( name_base + "_" + "YoungsModulus", // Name string
@@ -148,7 +155,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class PoissonRatioProp : public Property<double> {
+class PoissonRatioProp : public Property<double>
+{
 public:
     PoissonRatioProp()
         : Property<double>( name_base + "_" + "PoissonRatio", // Name string
@@ -163,7 +171,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class DTThermalConductivityProp : public Property<double> {
+class DTThermalConductivityProp : public Property<double>
+{
 public:
     DTThermalConductivityProp()
         : Property<double>( name_base + "_" + "DTThermalConductivity", // Name string
@@ -178,7 +187,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class DTFickCoefficientProp : public Property<double> {
+class DTFickCoefficientProp : public Property<double>
+{
 public:
     DTFickCoefficientProp()
         : Property<double>( name_base + "_" + "DTFickCoefficient", // Name string
@@ -193,7 +203,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class DTSoretCoefficientProp : public Property<double> {
+class DTSoretCoefficientProp : public Property<double>
+{
 public:
     DTSoretCoefficientProp()
         : Property<double>( name_base + "_" + "DTSoretCoefficient", // Name string
@@ -208,7 +219,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class DxThermalConductivityProp : public Property<double> {
+class DxThermalConductivityProp : public Property<double>
+{
 public:
     DxThermalConductivityProp()
         : Property<double>( name_base + "_" + "DxThermalConductivity", // Name string
@@ -223,7 +235,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class DxFickCoefficientProp : public Property<double> {
+class DxFickCoefficientProp : public Property<double>
+{
 public:
     DxFickCoefficientProp()
         : Property<double>( name_base + "_" + "DxFickCoefficient", // Name string
@@ -238,7 +251,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class DxSoretCoefficientProp : public Property<double> {
+class DxSoretCoefficientProp : public Property<double>
+{
 public:
     DxSoretCoefficientProp()
         : Property<double>( name_base + "_" + "DxSoretCoefficient", // Name string
@@ -253,7 +267,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class VectorFickCoefficientProp : public VectorProperty<double> {
+class VectorFickCoefficientProp : public VectorProperty<double>
+{
 public:
     explicit VectorFickCoefficientProp( const size_t dim = 1 )
         : VectorProperty<double>( name_base + "_" + "VectorFickCoefficient", // Name string
@@ -280,7 +295,8 @@ public:
     virtual std::vector<double> evalVector( std::vector<double> &args );
 };
 
-class TensorFickCoefficientProp : public TensorProperty<double> {
+class TensorFickCoefficientProp : public TensorProperty<double>
+{
 public:
     explicit TensorFickCoefficientProp( const std::vector<size_t> &dims = std::vector<size_t>( 2,
                                                                                                1 ) )
@@ -357,7 +373,8 @@ inline double PoissonRatioProp::eval( std::vector<double> & ) { return get_param
 std::vector<double> VectorFickCoefficientProp::evalVector( std::vector<double> & )
 {
     std::vector<double> result( d_dimension );
-    for ( size_t i = 0; i < d_dimension; i++ ) result[i] = d_params[i];
+    for ( size_t i = 0; i < d_dimension; i++ )
+        result[i]  = d_params[i];
     return result;
 }
 

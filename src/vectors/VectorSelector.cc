@@ -89,14 +89,16 @@ VS_Mesh::VS_Mesh( AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
 AMP_MPI VS_Mesh::communicator( Vector::const_shared_ptr p ) const
 {
     if ( d_useMeshComm ) {
-        if ( d_mesh ) return AMP_MPI::intersect( p->getComm(), d_mesh->getComm() );
+        if ( d_mesh )
+            return AMP_MPI::intersect( p->getComm(), d_mesh->getComm() );
         return AMP_MPI( AMP_COMM_WORLD );
     }
     return p->getComm();
 }
 Vector::shared_ptr VS_Mesh::subset( Vector::shared_ptr p ) const
 {
-    if ( d_mesh == NULL ) return Vector::shared_ptr();
+    if ( d_mesh == NULL )
+        return Vector::shared_ptr();
     Variable::shared_ptr variable(
         new MeshVariable( p->getVariable()->getName(), d_mesh, d_useMeshComm ) );
     Vector::shared_ptr vector = SubsetVector::view( p, variable );
@@ -104,7 +106,8 @@ Vector::shared_ptr VS_Mesh::subset( Vector::shared_ptr p ) const
 }
 Vector::const_shared_ptr VS_Mesh::subset( Vector::const_shared_ptr p ) const
 {
-    if ( d_mesh == NULL ) return Vector::shared_ptr();
+    if ( d_mesh == NULL )
+        return Vector::shared_ptr();
     Variable::shared_ptr variable(
         new MeshVariable( p->getVariable()->getName(), d_mesh, d_useMeshComm ) );
     Vector::const_shared_ptr vector = SubsetVector::view( p, variable );

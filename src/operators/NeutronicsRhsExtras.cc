@@ -90,8 +90,7 @@ void NeutronicsRhsExtras::getFromInput( SP_Database db )
         if ( db->keyExists( "timeSteps" ) ) {
             std::string tmp = "timeSteps";
             db->getDoubleArray( tmp, &d_timeStepsInDays[0], d_numTimeSteps );
-        }
-        else {
+        } else {
             // default value is only valid if the default number of time steps is used.
             AMP_ASSERT( d_numTimeSteps == 1 );
             d_timeStepsInDays[0] = 100000000000.;
@@ -105,8 +104,7 @@ void NeutronicsRhsExtras::getFromInput( SP_Database db )
         if ( db->keyExists( "fixedValues" ) ) {
             std::string tmp = "fixedValues";
             db->getDoubleArray( tmp, &d_fixedValues[0], d_numTimeSteps );
-        }
-        else {
+        } else {
             // default value is only valid if the default number of time steps is used.
             AMP_ASSERT( d_numTimeSteps == 1 );
             d_fixedValues[0] = 1.;
@@ -190,8 +188,7 @@ void NeutronicsRhsExtras::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     if ( d_useFixedValue ) {
         double value = d_fixedValues[this_step];
         rInternal->setToScalar( value );
-    }
-    else {
+    } else {
         AMP::Mesh::MeshIterator elem      = d_Mesh->getIterator( AMP::Mesh::Volume, 1 );
         AMP::Mesh::MeshIterator end_elems = elem.begin();
 
@@ -218,11 +215,9 @@ NeutronicsRhsExtras::SourceType NeutronicsRhsExtras::str2id( std::string str )
 {
     if ( str == "Isotopes" ) {
         return Isotopes;
-    }
-    else if ( str == "Elements" ) {
+    } else if ( str == "Elements" ) {
         return Elements;
-    }
-    else {
+    } else {
         std::string msg = "str2id could not find the right enumerated ID with string !" + str +
                           "!.  Options are: Isotopes and Elements";
         AMP_INSIST( false, msg );

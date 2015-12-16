@@ -110,13 +110,19 @@ void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel,
             double dP1 = 0.25 * pi * dc;
             double dP2 = ( 1.0 - 0.25 * pi ) * dc;
             size_t i[4];
-            for ( int j = 0; j < 4; j++ ) i[j]       = static_cast<size_t>( -1 );
-            if ( index_x > 0 && index_y > 0 ) i[0]   = index_x - 1 + ( index_y - 1 ) * Nx;
-            if ( index_x < Nx && index_y > 0 ) i[1]  = index_x + ( index_y - 1 ) * Nx;
-            if ( index_x > 0 && index_y < Ny ) i[2]  = index_x - 1 + index_y * Nx;
-            if ( index_x < Nx && index_y < Ny ) i[3] = index_x + index_y * Nx;
+            for ( int j = 0; j < 4; j++ )
+                i[j]    = static_cast<size_t>( -1 );
+            if ( index_x > 0 && index_y > 0 )
+                i[0] = index_x - 1 + ( index_y - 1 ) * Nx;
+            if ( index_x < Nx && index_y > 0 )
+                i[1] = index_x + ( index_y - 1 ) * Nx;
+            if ( index_x > 0 && index_y < Ny )
+                i[2] = index_x - 1 + index_y * Nx;
+            if ( index_x < Nx && index_y < Ny )
+                i[3] = index_x + index_y * Nx;
             for ( int j = 0; j < 4; j++ ) {
-                if ( i[j] == static_cast<size_t>( -1 ) ) continue;
+                if ( i[j] == static_cast<size_t>( -1 ) )
+                    continue;
                 area[i[j]] -= dA;
                 perimeter1[i[j]] += dP1;
                 perimeter2[i[j]] -= dP2;
@@ -124,8 +130,7 @@ void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel,
                 channel_fraction[i[j]] += 0.25;
                 rod_diameter[i[j]] = ( 1.0 - ratio ) * rod_diameter[i[j]] + ratio * dc;
             }
-        }
-        else {
+        } else {
             if ( index_x == Nx ) {
                 index_x--;
             }
@@ -142,8 +147,7 @@ void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel,
                 double R = 1.0 / ( channel_fraction[i] + 1.0 );
                 channel_fraction[i] += 1.0;
                 rod_diameter[i] = ( 1.0 - R ) * rod_diameter[i] + R * dc;
-            }
-            else {
+            } else {
                 AMP_ERROR( "General case not handled yet\n" );
             }
         }
@@ -205,24 +209,25 @@ void getCladProperties( AMP::AMP_MPI comm,
 std::vector<double>
 getHeatFluxGeneration( std::string heatShape, std::vector<double> z, double diameter, double Q_tot )
 {
-    for ( size_t i = 1; i < z.size(); i++ ) AMP_ASSERT( z[i] > z[i - 1] );
-    double height  = z.back() - z.front();
+    for ( size_t i = 1; i < z.size(); i++ )
+        AMP_ASSERT( z[i] > z[i - 1] );
+    double height = z.back() - z.front();
     std::vector<double> dz( z.size() - 1, 0.0 );
-    for ( size_t i = 0; i < dz.size(); i++ ) dz[i] = z[i + 1] - z[i];
-    const double pi                                = 3.1415926535897932;
+    for ( size_t i  = 0; i < dz.size(); i++ )
+        dz[i]       = z[i + 1] - z[i];
+    const double pi = 3.1415926535897932;
     std::vector<double> flux( dz.size(), 0.0 );
     if ( heatShape == "Flat" ) {
         // sinusoidal
-        for ( size_t i = 0; i < dz.size(); i++ ) flux[i] = Q_tot / ( pi * diameter * height );
-    }
-    else if ( heatShape == "Sinusoidal" ) {
+        for ( size_t i = 0; i < dz.size(); i++ )
+            flux[i]    = Q_tot / ( pi * diameter * height );
+    } else if ( heatShape == "Sinusoidal" ) {
         // sinusoidal
         for ( size_t i = 0; i < dz.size(); i++ )
             flux[i] =
                 Q_tot / ( 2.0 * pi * diameter * dz[i] ) *
                 ( cos( pi * ( z[i] - z[0] ) / height ) - cos( pi * ( z[i + 1] - z[0] ) / height ) );
-    }
-    else {
+    } else {
         AMP_ERROR( "Heat shape '" + heatShape + " is invalid" );
     }
     return flux;
@@ -232,24 +237,25 @@ getHeatFluxGeneration( std::string heatShape, std::vector<double> z, double diam
 std::vector<double> getHeatFluxGenerationWithDiscretizationError(
     std::string heatShape, std::vector<double> z, double diameter, double Q_tot )
 {
-    for ( size_t i = 1; i < z.size(); i++ ) AMP_ASSERT( z[i] > z[i - 1] );
-    double height  = z.back() - z.front();
+    for ( size_t i = 1; i < z.size(); i++ )
+        AMP_ASSERT( z[i] > z[i - 1] );
+    double height = z.back() - z.front();
     std::vector<double> dz( z.size() - 1, 0.0 );
-    for ( size_t i = 0; i < dz.size(); i++ ) dz[i] = z[i + 1] - z[i];
-    const double pi                                = 3.1415926535897932;
+    for ( size_t i  = 0; i < dz.size(); i++ )
+        dz[i]       = z[i + 1] - z[i];
+    const double pi = 3.1415926535897932;
     std::vector<double> flux( dz.size(), 0.0 );
     if ( heatShape == "Flat" ) {
         // sinusoidal
-        for ( size_t i = 0; i < dz.size(); i++ ) flux[i] = Q_tot / ( pi * diameter * height );
-    }
-    else if ( heatShape == "Sinusoidal" ) {
+        for ( size_t i = 0; i < dz.size(); i++ )
+            flux[i]    = Q_tot / ( pi * diameter * height );
+    } else if ( heatShape == "Sinusoidal" ) {
         // sinusoidal
         for ( size_t i = 0; i < dz.size(); i++ )
             flux[i] =
                 Q_tot / ( 4.0 * diameter * height ) *
                 ( sin( pi * ( z[i] - z[0] ) / height ) + sin( pi * ( z[i + 1] - z[0] ) / height ) );
-    }
-    else {
+    } else {
         AMP_ERROR( "Heat shape '" + heatShape + " is invalid" );
     }
     return flux;
@@ -268,9 +274,11 @@ std::vector<double> getHeatFluxClad( std::vector<double> z,
                                      AMP::LinearAlgebra::Vector::const_shared_ptr flow,
                                      AMP::LinearAlgebra::Vector::const_shared_ptr clad_temp )
 {
-    for ( size_t i = 1; i < z.size(); i++ ) AMP_ASSERT( z[i] > z[i - 1] );
+    for ( size_t i = 1; i < z.size(); i++ )
+        AMP_ASSERT( z[i] > z[i - 1] );
     std::vector<double> dz( z.size() - 1, 0.0 );
-    for ( size_t i = 0; i < dz.size(); i++ ) dz[i] = z[i + 1] - z[i];
+    for ( size_t i = 0; i < dz.size(); i++ )
+        dz[i]      = z[i + 1] - z[i];
     // const double pi = 3.1415926535897932;
     AMP_ASSERT( face_ids.size() == z.size() );
     AMP_ASSERT( flow != NULL );
@@ -340,8 +348,10 @@ std::vector<double> getHeatFluxClad( std::vector<double> z,
 AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
     AMP::Mesh::Mesh::shared_ptr clad, AMP::Mesh::Mesh::shared_ptr subchannel, AMP::AMP_MPI comm )
 {
-    if ( clad.get() != NULL ) AMP_ASSERT( clad->getComm() <= comm );
-    if ( subchannel.get() != NULL ) AMP_ASSERT( subchannel->getComm() <= comm );
+    if ( clad.get() != NULL )
+        AMP_ASSERT( clad->getComm() <= comm );
+    if ( subchannel.get() != NULL )
+        AMP_ASSERT( subchannel->getComm() <= comm );
     // Get the clad properties
     std::vector<double> clad_x, clad_y, clad_d;
     getCladProperties( comm, clad, clad_x, clad_y, clad_d );
@@ -381,7 +391,8 @@ AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
     comm.bcast( &y[0], N[1], root );
     comm.bcast( &hydraulic_diam[0], N_subchannels, root );
     // Return if we are not on the clad surface
-    if ( clad_surface.get() == NULL ) return AMP::LinearAlgebra::Vector::shared_ptr();
+    if ( clad_surface.get() == NULL )
+        return AMP::LinearAlgebra::Vector::shared_ptr();
     // Create and initialize the vector
     AMP::Discretization::DOFManager::shared_ptr DOF = AMP::Discretization::simpleDOFManager::create(
         clad_surface, AMP::Mesh::Vertex, 1, 1, true );

@@ -88,16 +88,14 @@ FickSoretNonlinearFEOperator::FickSoretNonlinearFEOperator(
     // set the member operators
     if ( fsParams->d_FickOperator.get() != NULL ) {
         d_FickOperator = fsParams->d_FickOperator;
-    }
-    else {
+    } else {
         AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> fickParams(
             new DiffusionNonlinearFEOperatorParameters( fickDb ) );
         d_FickOperator.reset( new DiffusionNonlinearFEOperator( fickParams ) );
     }
     if ( fsParams->d_SoretOperator.get() != NULL ) {
         d_SoretOperator = fsParams->d_SoretOperator;
-    }
-    else {
+    } else {
         AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> soretParams(
             new DiffusionNonlinearFEOperatorParameters( soretDb ) );
         d_SoretOperator.reset( new DiffusionNonlinearFEOperator( soretParams ) );

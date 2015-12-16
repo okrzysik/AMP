@@ -48,7 +48,8 @@ GeneralCladThermalCreepPlasticModel::GeneralCladThermalCreepPlasticModel(
     d_Is_Init_Called = false;
 
     for ( size_t i = 0; i < 6; i++ ) {
-        for ( size_t j = 0; j < 6; j++ ) d_constitutiveMatrix[i][j] = 0.;
+        for ( size_t j                 = 0; j < 6; j++ )
+            d_constitutiveMatrix[i][j] = 0.;
     }
     d_Delta_Time                 = 0.;
     d_gaussPtCnt                 = 0;
@@ -380,8 +381,10 @@ double GeneralCladThermalCreepPlasticModel::help_compute_E1( const double Temp_n
 int GeneralCladThermalCreepPlasticModel::det_sign( double a )
 {
     int i;
-    if ( a >= 0.0 ) i = 1;
-    if ( a < 0.0 ) i  = -1;
+    if ( a >= 0.0 )
+        i = 1;
+    if ( a < 0.0 )
+        i = -1;
     return ( i );
 }
 
@@ -551,8 +554,7 @@ void GeneralCladThermalCreepPlasticModel::computeCreepStrain( const double Temp_
         if ( effective_stress > tol ) {
             deviatoric_stress[i] = ( effective_stress * deviatoric_stress_trial[i] ) /
                                    ( effective_stress + ( 3.0 * G * delta_e ) );
-        }
-        else {
+        } else {
             deviatoric_stress[i] = 0.0;
         }
     }
@@ -560,8 +562,7 @@ void GeneralCladThermalCreepPlasticModel::computeCreepStrain( const double Temp_
     for ( int i = 0; i < 6; i++ ) {
         if ( effective_stress < tol ) {
             delta_creep_strain[i] = 0.0;
-        }
-        else {
+        } else {
             delta_creep_strain[i] = three2 * delta_e * deviatoric_stress[i] / effective_stress;
         }
     }
@@ -587,22 +588,19 @@ void GeneralCladThermalCreepPlasticModel::computeEvalv(
 
         if ( strain[Mechanics::TEMPERATURE].empty() ) {
             tempVec->push_back( default_TEMPERATURE );
-        }
-        else {
+        } else {
             ( *tempVec ) = strain[Mechanics::TEMPERATURE];
         }
 
         if ( strain[Mechanics::BURNUP].empty() ) {
             burnupVec->push_back( default_BURNUP );
-        }
-        else {
+        } else {
             ( *burnupVec ) = strain[Mechanics::BURNUP];
         }
 
         if ( strain[Mechanics::OXYGEN_CONCENTRATION].empty() ) {
             oxygenVec->push_back( default_OXYGEN_CONCENTRATION );
-        }
-        else {
+        } else {
             ( *oxygenVec ) = strain[Mechanics::OXYGEN_CONCENTRATION];
         }
 
@@ -652,8 +650,7 @@ void GeneralCladThermalCreepPlasticModel::getConstitutiveMatrix( double *&consti
         stre_np1         = &( d_tmp1Stress[6 * d_gaussPtCnt] );
         ystre_np1        = d_tmp1YieldStress[d_gaussPtCnt];
         eph_bar_plas_np1 = d_tmp1EffectivePlasticStrain[d_gaussPtCnt];
-    }
-    else {
+    } else {
         stre_np1         = &( d_tmp2Stress[6 * d_gaussPtCnt] );
         ystre_np1        = d_tmp2YieldStress[d_gaussPtCnt];
         eph_bar_plas_np1 = d_tmp2EffectivePlasticStrain[d_gaussPtCnt];
@@ -876,7 +873,8 @@ void GeneralCladThermalCreepPlasticModel::radialReturn( const double *stra_np1,
         double g_prime   = -( twoG + ( two3 * Ep * n * pow( ephbp_np1, ( n - 1.0 ) ) ) );
         double delta_lam = g_np1 / g_prime;
         lam              = lam - delta_lam;
-        if ( fabs( delta_lam / lam ) < tol ) break;
+        if ( fabs( delta_lam / lam ) < tol )
+            break;
         if ( i > 995 ) {
             std::cout << "The radial return did not converge." << std::endl;
             exit( 1 );
@@ -904,8 +902,7 @@ void GeneralCladThermalCreepPlasticModel::postNonlinearAssembly()
 {
     if ( Total_Gauss_Point == 0 ) {
         std::cout << "Total number of gauss points are zero." << std::endl;
-    }
-    else {
+    } else {
         double Plastic_Fraction = ( (double) Plastic_Gauss_Point ) / ( (double) Total_Gauss_Point );
         Plastic_Fraction        = Plastic_Fraction * 100.0;
         if ( d_iDebugPrintInfoLevel > 5 ) {

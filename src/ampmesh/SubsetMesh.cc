@@ -22,8 +22,7 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
     this->d_parent_mesh = mesh;
     if ( isGlobal ) {
         this->d_comm = mesh->getComm();
-    }
-    else {
+    } else {
         for ( AMP::Mesh::MeshIterator it = iterator_in; it != iterator_in.end(); ++it ) {
             if ( !it->globalID().is_local() )
                 AMP_ERROR(
@@ -39,7 +38,8 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
     AMP_ASSERT( d_comm.sumReduce( iterator_in.size() ) );
     MeshIterator iterator = iterator_in.begin();
     for ( size_t i = 0; i < iterator.size(); i++ ) {
-        if ( type == null ) type = iterator->elementType();
+        if ( type == null )
+            type = iterator->elementType();
         if ( type != iterator->elementType() )
             AMP_ERROR( "Subset mesh requires all of the elements to be the same type" );
         ++iterator;
@@ -54,9 +54,11 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
         MeshID id  = iterator->globalID().meshID();
         bool found = false;
         for ( size_t j = 0; j < mesh_ids.size(); j++ ) {
-            if ( id == mesh_ids[j] ) found = true;
+            if ( id == mesh_ids[j] )
+                found = true;
         }
-        if ( !found ) AMP_ERROR( "Iterator contains elements not found in parent meshes" );
+        if ( !found )
+            AMP_ERROR( "Iterator contains elements not found in parent meshes" );
         ++iterator;
     }
     // Create a list of all elements of the desired type
@@ -82,7 +84,8 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
             ++iterator2;
         }
         AMP::Utilities::quicksort( *( d_elements[GeomDim][gcw] ) );
-        if ( iterator1.size() == iterator_in.size() ) break;
+        if ( iterator1.size() == iterator_in.size() )
+            break;
         gcw++;
     }
     // Create a list of all elements that compose the elements of GeomType
@@ -95,9 +98,9 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
                 std::vector<MeshElement> elements = iterator->getElements( (GeomType) t );
                 for ( size_t i = 0; i < elements.size(); i++ ) {
                     if ( gcw == 0 ) {
-                        if ( elements[i].globalID().is_local() ) list.insert( elements[i] );
-                    }
-                    else {
+                        if ( elements[i].globalID().is_local() )
+                            list.insert( elements[i] );
+                    } else {
                         bool found = false;
                         for ( int j = 0; j < gcw; j++ ) {
                             size_t index =
@@ -110,7 +113,8 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
                                 break;
                             }
                         }
-                        if ( !found ) list.insert( elements[i] );
+                        if ( !found )
+                            list.insert( elements[i] );
                     }
                 }
                 ++iterator;
@@ -127,12 +131,14 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
             ghost_local.reserve( ghost_local.size() + d_elements[t][gcw]->size() );
             for ( size_t i = 0; i < d_elements[t][gcw]->size(); i++ ) {
                 MeshElementID id = ( *d_elements[t][gcw] )[i].globalID();
-                if ( !id.is_local() ) ghost_local.push_back( id );
+                if ( !id.is_local() )
+                    ghost_local.push_back( id );
             }
         }
         size_t N_ghost_local  = ghost_local.size();
         size_t N_ghost_global = d_comm.sumReduce( N_ghost_local );
-        if ( N_ghost_global == 0 ) continue;
+        if ( N_ghost_global == 0 )
+            continue;
         std::vector<MeshElementID> ghost_global( N_ghost_global );
         MeshElementID *send_ptr = NULL;
         if ( N_ghost_local > 0 ) {
@@ -166,13 +172,16 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
                 }
             }
         }
-        if ( changed ) AMP::Utilities::quicksort( *d_elements[t][0] );
+        if ( changed )
+            AMP::Utilities::quicksort( *d_elements[t][0] );
     }
     // Count the number of elements of each type
     N_global = std::vector<size_t>( (int) GeomDim + 1 );
-    for ( int i = 0; i <= (int) GeomDim; i++ ) N_global[i] = d_elements[i][0]->size();
+    for ( int i     = 0; i <= (int) GeomDim; i++ )
+        N_global[i] = d_elements[i][0]->size();
     d_comm.sumReduce( &N_global[0], (int) N_global.size() );
-    for ( int i = 0; i <= (int) GeomDim; i++ ) AMP_ASSERT( N_global[i] > 0 );
+    for ( int i = 0; i <= (int) GeomDim; i++ )
+        AMP_ASSERT( N_global[i] > 0 );
     // Create the bounding box
     d_box = std::vector<double>( 2 * PhysicalDim );
     for ( int j = 0; j < PhysicalDim; j++ ) {
@@ -183,8 +192,10 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
     for ( size_t i = 0; i < iterator.size(); i++ ) {
         std::vector<double> coord = iterator->coord();
         for ( int j = 0; j < PhysicalDim; j++ ) {
-            if ( coord[j] < d_box[2 * j + 0] ) d_box[2 * j + 0] = coord[j];
-            if ( coord[j] > d_box[2 * j + 1] ) d_box[2 * j + 1] = coord[j];
+            if ( coord[j] < d_box[2 * j + 0] )
+                d_box[2 * j + 0] = coord[j];
+            if ( coord[j] > d_box[2 * j + 1] )
+                d_box[2 * j + 1] = coord[j];
         }
         ++iterator;
     }
@@ -209,11 +220,9 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
                 if ( iterator.size() == 0 ) {
                     elements = AMP::shared_ptr<std::vector<MeshElement>>(
                         new std::vector<MeshElement>( 0 ) );
-                }
-                else if ( iterator.size() == iterator1.size() ) {
+                } else if ( iterator.size() == iterator1.size() ) {
                     elements = d_elements[t][gcw];
-                }
-                else {
+                } else {
                     elements = AMP::shared_ptr<std::vector<MeshElement>>(
                         new std::vector<MeshElement>( iterator.size() ) );
                     for ( size_t j = 0; j < iterator.size(); j++ ) {
@@ -223,7 +232,8 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
                 }
                 if ( gcw == 0 ) {
                     size_t global_size = d_comm.sumReduce( elements->size() );
-                    if ( global_size == 0 ) break;
+                    if ( global_size == 0 )
+                        break;
                 }
                 map_id_struct map_id;
                 map_id.id   = boundary_ids[i];
@@ -238,12 +248,14 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
     }
     d_boundaryIdSets = std::vector<int>( new_boundary_ids.begin(), new_boundary_ids.end() );
     int *send_ptr    = NULL;
-    if ( d_boundaryIdSets.size() > 0 ) send_ptr = &d_boundaryIdSets[0];
-    size_t recv_size                            = d_comm.sumReduce( d_boundaryIdSets.size() );
+    if ( d_boundaryIdSets.size() > 0 )
+        send_ptr     = &d_boundaryIdSets[0];
+    size_t recv_size = d_comm.sumReduce( d_boundaryIdSets.size() );
     if ( recv_size > 0 ) {
         std::vector<int> recv_list( recv_size, 0 );
         d_comm.allGather( &send_ptr[0], (int) d_boundaryIdSets.size(), &recv_list[0] );
-        for ( size_t i   = 0; i < recv_list.size(); i++ ) new_boundary_ids.insert( recv_list[i] );
+        for ( size_t i = 0; i < recv_list.size(); i++ )
+            new_boundary_ids.insert( recv_list[i] );
         d_boundaryIdSets = std::vector<int>( new_boundary_ids.begin(), new_boundary_ids.end() );
     }
     // Create the surface sets
@@ -259,11 +271,9 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
             if ( iterator.size() == 0 ) {
                 elements =
                     AMP::shared_ptr<std::vector<MeshElement>>( new std::vector<MeshElement>( 0 ) );
-            }
-            else if ( iterator.size() == iterator1.size() ) {
+            } else if ( iterator.size() == iterator1.size() ) {
                 elements = d_elements[t][gcw];
-            }
-            else {
+            } else {
                 elements = AMP::shared_ptr<std::vector<MeshElement>>(
                     new std::vector<MeshElement>( iterator.size() ) );
                 for ( size_t j = 0; j < iterator.size(); j++ ) {
@@ -282,19 +292,22 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
         iterator = getIterator( GeomDim, 0 );
         for ( size_t i = 0; i < iterator.size(); i++ ) {
             for ( size_t j = 0; j < block_ids.size(); j++ ) {
-                if ( iterator->isInBlock( block_ids[j] ) ) new_block_ids.insert( block_ids[j] );
+                if ( iterator->isInBlock( block_ids[j] ) )
+                    new_block_ids.insert( block_ids[j] );
             }
             ++iterator;
         }
         d_blockIdSets = std::vector<int>( new_block_ids.begin(), new_block_ids.end() );
         send_ptr      = NULL;
-        if ( d_boundaryIdSets.size() > 0 ) send_ptr = &d_boundaryIdSets[0];
-        recv_size                                   = d_comm.sumReduce( d_blockIdSets.size() );
+        if ( d_boundaryIdSets.size() > 0 )
+            send_ptr = &d_boundaryIdSets[0];
+        recv_size    = d_comm.sumReduce( d_blockIdSets.size() );
         if ( recv_size > 0 ) {
             std::vector<int> recv_list( recv_size, 0 );
             d_comm.allGather( &send_ptr[0], (int) d_blockIdSets.size(), &recv_list[0] );
-            for ( size_t i = 0; i < recv_list.size(); i++ ) new_block_ids.insert( recv_list[i] );
-            d_blockIdSets  = std::vector<int>( new_block_ids.begin(), new_block_ids.end() );
+            for ( size_t i = 0; i < recv_list.size(); i++ )
+                new_block_ids.insert( recv_list[i] );
+            d_blockIdSets = std::vector<int>( new_block_ids.begin(), new_block_ids.end() );
         }
     }
 }
@@ -369,9 +382,11 @@ AMP::shared_ptr<Mesh> SubsetMesh::Subset( std::string name ) const
 ********************************************************/
 MeshIterator SubsetMesh::getIterator( const GeomType type, const int gcw ) const
 {
-    int gcw2                                          = gcw;
-    if ( gcw2 >= (int) d_elements[type].size() ) gcw2 = (int) d_elements[type].size() - 1;
-    if ( gcw2 == 0 ) return MultiVectorIterator( d_elements[type][0], 0 );
+    int gcw2 = gcw;
+    if ( gcw2 >= (int) d_elements[type].size() )
+        gcw2 = (int) d_elements[type].size() - 1;
+    if ( gcw2 == 0 )
+        return MultiVectorIterator( d_elements[type][0], 0 );
     std::vector<AMP::shared_ptr<MeshIterator>> iterators( gcw2 + 1 );
     for ( int i = 0; i <= gcw2; i++ )
         iterators[i] =
@@ -380,8 +395,10 @@ MeshIterator SubsetMesh::getIterator( const GeomType type, const int gcw ) const
 }
 MeshIterator SubsetMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
-    if ( gcw == 0 ) return MultiVectorIterator( d_surface[type][0], 0 );
-    if ( gcw >= (int) d_surface[type].size() ) AMP_ERROR( "Maximum ghost width exceeded" );
+    if ( gcw == 0 )
+        return MultiVectorIterator( d_surface[type][0], 0 );
+    if ( gcw >= (int) d_surface[type].size() )
+        AMP_ERROR( "Maximum ghost width exceeded" );
     std::vector<AMP::shared_ptr<MeshIterator>> iterators( gcw + 1 );
     for ( int i = 0; i <= gcw; i++ )
         iterators[i] =
@@ -401,12 +418,15 @@ SubsetMesh::getBoundaryIDIterator( const GeomType type, const int id, const int 
         map_id.gcw  = i;
         std::map<map_id_struct, AMP::shared_ptr<std::vector<MeshElement>>>::const_iterator map_it =
             d_boundarySets.find( map_id );
-        if ( map_it == d_boundarySets.end() ) continue;
+        if ( map_it == d_boundarySets.end() )
+            continue;
         iterators.push_back(
             AMP::shared_ptr<MeshIterator>( new MultiVectorIterator( map_it->second, 0 ) ) );
     }
-    if ( iterators.empty() ) return MeshIterator();
-    if ( iterators.size() == 1 ) return *iterators[0];
+    if ( iterators.empty() )
+        return MeshIterator();
+    if ( iterators.size() == 1 )
+        return *iterators[0];
     return MultiIterator( iterators, 0 );
 }
 std::vector<int> SubsetMesh::getBlockIDs() const { return d_blockIdSets; }
@@ -422,14 +442,18 @@ MeshIterator SubsetMesh::getBlockIDIterator( const GeomType, const int, const in
 ********************************************************/
 bool SubsetMesh::isMember( const MeshElementID &id ) const
 {
-    if ( !d_parent_mesh->isMember( id ) ) return false;
+    if ( !d_parent_mesh->isMember( id ) )
+        return false;
     int type = static_cast<int>( id.type() );
-    if ( type >= static_cast<int>( d_elements.size() ) ) return false;
+    if ( type >= static_cast<int>( d_elements.size() ) )
+        return false;
     for ( size_t gcw = 0; gcw < d_elements[type].size(); gcw++ ) {
-        if ( d_elements[type][gcw] == NULL ) continue;
+        if ( d_elements[type][gcw] == NULL )
+            continue;
         const std::vector<MeshElement> &elements = *( d_elements[type][gcw].get() );
         for ( size_t i = 0; i < elements.size(); i++ ) {
-            if ( elements[i] == id ) return true;
+            if ( elements[i] == id )
+                return true;
         }
     }
     return false;
@@ -466,8 +490,10 @@ size_t SubsetMesh::numGlobalElements( const GeomType type ) const { return N_glo
 size_t SubsetMesh::numGhostElements( const GeomType type, int gcw ) const
 {
     AMP_ASSERT( type <= GeomDim );
-    if ( gcw == 0 ) return 0;
-    if ( gcw >= (int) d_elements[type].size() ) AMP_ERROR( "Maximum ghost width exceeded" );
+    if ( gcw == 0 )
+        return 0;
+    if ( gcw >= (int) d_elements[type].size() )
+        AMP_ERROR( "Maximum ghost width exceeded" );
     return d_elements[type][gcw]->size();
 }
 void SubsetMesh::displaceMesh( const std::vector<double> & )

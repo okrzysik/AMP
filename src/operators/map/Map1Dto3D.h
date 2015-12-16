@@ -23,7 +23,8 @@ namespace Operator {
   by the nodal points on the 2D surface. The 2D surface has to be on the
   d_MapAdapater from the MapOperator class.
  */
-class Map1Dto3D : public MapOperator {
+class Map1Dto3D : public MapOperator
+{
 public:
     //! Default Constructor
     explicit Map1Dto3D( const AMP::shared_ptr<OperatorParameters> &params );

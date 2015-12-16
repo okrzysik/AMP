@@ -33,7 +33,8 @@ ThyraVectorWrapper::ThyraVectorWrapper(
     const std::vector<AMP::LinearAlgebra::Vector::shared_ptr> &vecs )
 {
     std::vector<size_t> cols( vecs.size() );
-    for ( size_t i = 0; i < vecs.size(); i++ ) cols[i] = i;
+    for ( size_t i = 0; i < vecs.size(); i++ )
+        cols[i]    = i;
     this->initialize( vecs, cols, vecs.size() );
 }
 ThyraVectorWrapper::ThyraVectorWrapper(
@@ -62,8 +63,10 @@ void ThyraVectorWrapper::initialize(
     AMP::Discretization::DOFManager::shared_ptr dofs1 = vecs[0]->getDOFManager();
     for ( size_t i = 1; i < vecs.size(); i++ ) {
         AMP::Discretization::DOFManager::shared_ptr dofs2 = vecs[i]->getDOFManager();
-        if ( dofs1 == dofs2 ) continue;
-        if ( *dofs1 != *dofs2 ) AMP_ERROR( "The DOFManagers for all copies must match" );
+        if ( dofs1 == dofs2 )
+            continue;
+        if ( *dofs1 != *dofs2 )
+            AMP_ERROR( "The DOFManagers for all copies must match" );
     }
     d_vecs   = vecs;
     d_cols   = cols;
@@ -146,7 +149,8 @@ Teuchos::RCP<Thyra::MultiVectorBase<double>> ThyraVectorWrapper::clone_mv() cons
 Teuchos::RCP<Thyra::VectorBase<double>> ThyraVectorWrapper::clone_v() const
 {
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vecs( d_vecs.size() );
-    for ( size_t i = 0; i < d_vecs.size(); i++ ) vecs[i] = d_vecs[i]->cloneVector();
+    for ( size_t i = 0; i < d_vecs.size(); i++ )
+        vecs[i]    = d_vecs[i]->cloneVector();
     return Teuchos::RCP<Thyra::VectorBase<double>>(
         new ThyraVectorWrapper( vecs, d_cols, d_N_cols ) );
 }
@@ -193,8 +197,7 @@ void ThyraVectorWrapper::applyImpl( const Thyra::EOpTransp M_trans,
             // Perform the final axpby
             y->d_vecs[i]->axpby( alpha, beta, tmp );
         }
-    }
-    else if ( M_trans == Thyra::TRANS || M_trans == Thyra::CONJTRANS ) {
+    } else if ( M_trans == Thyra::TRANS || M_trans == Thyra::CONJTRANS ) {
         // We are computing: Y = alpha*transpose(M)*X + beta*Y
         AMP_ASSERT( M_dim[0] == X_dim[0] && M_dim[1] == Y_dim[0] && X_dim[1] == Y_dim[1] );
         if ( dynamic_cast<const ThyraVectorWrapper *>( &X ) != NULL ) {
@@ -208,18 +211,17 @@ void ThyraVectorWrapper::applyImpl( const Thyra::EOpTransp M_trans,
                 size_t N2 = static_cast<size_t>( Y2->space()->dim() );
                 AMP_ASSERT( d_cols.size() == N2 );
                 for ( size_t j = 0; j < N; j++ ) {
-                    double dot           = d_vecs[j]->dot( x->d_vecs[i] );
-                    double y             = 0.0;
-                    if ( beta != 0.0 ) y = beta * Thyra::get_ele( *Y2, d_cols[j] );
+                    double dot = d_vecs[j]->dot( x->d_vecs[i] );
+                    double y   = 0.0;
+                    if ( beta != 0.0 )
+                        y = beta * Thyra::get_ele( *Y2, d_cols[j] );
                     Thyra::set_ele( d_cols[j], alpha * dot + y, Y2.ptr() );
                 }
             }
-        }
-        else {
+        } else {
             AMP_ERROR( "Not finished" );
         }
-    }
-    else {
+    } else {
         AMP_ERROR( "Unknown case" );
     }
 }
@@ -320,7 +322,8 @@ void ThyraVectorWrapper::acquireDetachedVectorViewImpl(
     double *ptr = new double[size];
     Teuchos::ArrayRCP<double> array( ptr, rng.lbound(), rng.lbound() + size, true );
     size_t *indices = new size_t[size];
-    for ( size_t i = 0; i < size; i++ ) indices[i] = lower + i;
+    for ( size_t i = 0; i < size; i++ )
+        indices[i] = lower + i;
     vec->getValuesByLocalID( size, indices, ptr );
     delete[] indices;
     sub_vec = new RTOpPack::ConstSubVectorView<double>( array );
@@ -342,7 +345,8 @@ void ThyraVectorWrapper::acquireNonconstDetachedVectorViewImpl(
     double *ptr = new double[size];
     Teuchos::ArrayRCP<double> array( ptr, rng.lbound(), rng.lbound() + size, true );
     size_t *indices = new size_t[size];
-    for ( size_t i = 0; i < size; i++ ) indices[i] = lower + i;
+    for ( size_t i = 0; i < size; i++ )
+        indices[i] = lower + i;
     vec->getValuesByLocalID( size, indices, ptr );
     delete[] indices;
     sub_vec = new RTOpPack::SubVectorView<double>( array );
@@ -358,7 +362,8 @@ void ThyraVectorWrapper::commitNonconstDetachedVectorViewImpl(
     AMP_ASSERT( upper > lower && upper <= vec->getLocalSize() );
     size_t size     = upper - lower;
     size_t *indices = new size_t[size];
-    for ( size_t i = 0; i < size; i++ ) indices[i] = lower + i;
+    for ( size_t i = 0; i < size; i++ )
+        indices[i] = lower + i;
     vec->setValuesByLocalID( size, indices, array.get() );
     delete[] indices;
 }
@@ -380,7 +385,8 @@ void ThyraVectorWrapper::applyOpImpl(
 {
     size_t n_blocks = d_vecs[0]->numberOfDataBlocks();
     std::vector<size_t> block_size( n_blocks, 0 );
-    for ( size_t i = 0; i < n_blocks; i++ ) block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
+    for ( size_t i    = 0; i < n_blocks; i++ )
+        block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
     // Check that all vectors are compatible and get the pointers
     std::vector<const ThyraVectorWrapper *> vecs_ptr = getConstPtr( block_size, vecs );
     std::vector<ThyraVectorWrapper *> targ_vecs_ptr  = getPtr( block_size, targ_vecs );
@@ -440,7 +446,8 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
     AMP_INSIST( primary_global_offset == 0, "Not programmed for a global offset yet" );
     size_t n_blocks = d_vecs[0]->numberOfDataBlocks();
     std::vector<size_t> block_size( n_blocks, 0 );
-    for ( size_t i = 0; i < n_blocks; i++ ) block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
+    for ( size_t i    = 0; i < n_blocks; i++ )
+        block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
     // Check that all vectors are compatible and get the pointers
     std::vector<const ThyraVectorWrapper *> vecs_ptr = getConstPtr( block_size, multi_vecs );
     std::vector<ThyraVectorWrapper *> targ_vecs_ptr  = getPtr( block_size, targ_multi_vecs );
@@ -476,8 +483,7 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
     // Reduce the result
     if ( reduct_objs.size() == 0 ) {
         // The reduce object does not exist
-    }
-    else if ( reduct_objs.size() == (int) d_cols.size() ) {
+    } else if ( reduct_objs.size() == (int) d_cols.size() ) {
         // We have one reduce object per column
         for ( size_t i = 0; i < reduct_obj2.size(); i++ ) {
             RTOpPack::SPMD_all_reduce<double>(
@@ -487,8 +493,7 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
                 Teuchos::tuple<const RTOpPack::ReductTarget *>( &*reduct_obj2[i] ).getRawPtr(),
                 Teuchos::tuple<RTOpPack::ReductTarget *>( &*reduct_objs[i] ).getRawPtr() );
         }
-    }
-    else if ( reduct_objs.size() == (int) d_N_cols ) {
+    } else if ( reduct_objs.size() == (int) d_N_cols ) {
         // We have one reduce object per column
         for ( size_t i = 0; i < reduct_obj2.size(); i++ ) {
             RTOpPack::SPMD_all_reduce<double>(
@@ -498,8 +503,7 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
                 Teuchos::tuple<const RTOpPack::ReductTarget *>( &*reduct_obj2[i] ).getRawPtr(),
                 Teuchos::tuple<RTOpPack::ReductTarget *>( &*reduct_objs[d_cols[i]] ).getRawPtr() );
         }
-    }
-    else {
+    } else {
         AMP_ERROR( "Not programmed yet" );
     }
     // Change the vector state targ_vecs
@@ -522,7 +526,8 @@ void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
 {
     size_t n_blocks = d_vecs[0]->numberOfDataBlocks();
     std::vector<size_t> block_size( n_blocks, 0 );
-    for ( size_t i = 0; i < n_blocks; i++ ) block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
+    for ( size_t i    = 0; i < n_blocks; i++ )
+        block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
     // Check that all vectors are compatible and get the pointers
     std::vector<const ThyraVectorWrapper *> vecs_ptr = getConstPtr( block_size, multi_vecs );
     std::vector<ThyraVectorWrapper *> targ_vecs_ptr  = getPtr( block_size, targ_multi_vecs );

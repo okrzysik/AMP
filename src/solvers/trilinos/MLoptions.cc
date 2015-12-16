@@ -127,8 +127,7 @@ void MLoptions::addDefaults( const std::string &problemType,
         if ( !( db->keyExists( "null_space_add_default_vectors" ) ) ) {
             db->putBool( "null_space_add_default_vectors", false );
         }
-    }
-    else if ( problemType == "NSSA" ) {
+    } else if ( problemType == "NSSA" ) {
         if ( !( db->keyExists( "max_levels" ) ) ) {
             db->putInteger( "max_levels", 10 );
         }
@@ -203,8 +202,7 @@ void MLoptions::addDefaults( const std::string &problemType,
         if ( !( db->keyExists( "null_space_add_default_vectors" ) ) ) {
             db->putBool( "null_space_add_default_vectors", false );
         }
-    }
-    else {
+    } else {
         AMP_ERROR( "The option, problem_type = \"" << problemType << "\" , is not supported." );
     }
 }

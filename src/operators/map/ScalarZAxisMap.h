@@ -20,7 +20,8 @@ typedef AMP::Operator::Map3to1to3Parameters ScalarZAxisMapParameters;
  *    value for each point along the z-axis, creating a 1D function of z, then transfering that
  *    solution.  To behave correctly, the different nodes must be aligned in the z-direction.
  */
-class ScalarZAxisMap : public AMP::Operator::Map3to1to3 {
+class ScalarZAxisMap : public AMP::Operator::Map3to1to3
+{
 public:
     /** \brief  Returns true if MapType = "ScalarZAxis"
      * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db

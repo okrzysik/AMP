@@ -84,8 +84,7 @@ void test_project_point( triangle_t *t_ptr, unsigned int n_random_candidate_poin
                 for ( unsigned int k = 0; k < 3; ++k ) {
                     projection_error[k] = projection[k] - edge_center[k];
                 }
-            }
-            else {
+            } else {
                 for ( unsigned int k = 0; k < 3; ++k ) {
                     projection_error[k] =
                         projection[k] - edge_center[k] -
@@ -120,8 +119,7 @@ void test_project_point( triangle_t *t_ptr, unsigned int n_random_candidate_poin
                 for ( unsigned int k = 0; k < 3; ++k ) {
                     projection_error[k] = projection[k] - triangle_support_point[k];
                 }
-            }
-            else {
+            } else {
                 for ( unsigned int k = 0; k < 3; ++k ) {
                     projection_error[k] =
                         projection[k] - triangle_support_point[k] -
@@ -230,12 +228,10 @@ int main( int argc, char *argv[] )
 
     try {
         myTest( &ut, exeName );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

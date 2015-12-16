@@ -225,7 +225,8 @@ static const double EnthalpyRanges[2][2] = { { EnthalpyTminVal, EnthalpyTmaxVal 
 
 //=================== Classes =======================================================
 
-class TemperatureProp : public Property<double> {
+class TemperatureProp : public Property<double>
+{
 public:
     TemperatureProp()
         : Property<double>( name_base + "_" + "Temperature", // Name string
@@ -241,7 +242,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class SaturatedLiquidEnthalpyProp : public Property<double> {
+class SaturatedLiquidEnthalpyProp : public Property<double>
+{
 public:
     SaturatedLiquidEnthalpyProp()
         : Property<double>( name_base + "_" + "SaturatedLiquidEnthalpy", // Name string
@@ -257,7 +259,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class SaturatedVaporEnthalpyProp : public Property<double> {
+class SaturatedVaporEnthalpyProp : public Property<double>
+{
 public:
     SaturatedVaporEnthalpyProp()
         : Property<double>( name_base + "_" + "SaturatedVaporEnthalpy", // Name string
@@ -273,7 +276,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class SpecificVolumeProp : public Property<double> {
+class SpecificVolumeProp : public Property<double>
+{
 public:
     SpecificVolumeProp()
         : Property<double>( name_base + "_" + "SpecificVolume", // Name string
@@ -289,7 +293,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class ThermalConductivityProp : public Property<double> {
+class ThermalConductivityProp : public Property<double>
+{
 public:
     ThermalConductivityProp()
         : Property<double>( name_base + "_" + "ThermalConductivity", // Name string
@@ -305,7 +310,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class ConvectiveHeatProp : public Property<double> {
+class ConvectiveHeatProp : public Property<double>
+{
 public:
     ConvectiveHeatProp()
         : Property<double>( name_base + "_" + "ConvectiveHeat", // Name string
@@ -321,7 +327,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class DynamicViscosityProp : public Property<double> {
+class DynamicViscosityProp : public Property<double>
+{
 public:
     DynamicViscosityProp()
         : Property<double>( name_base + "_" + "DynamicViscosity", // Name string
@@ -337,7 +344,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class EnthalpyProp : public Property<double> {
+class EnthalpyProp : public Property<double>
+{
 public:
     EnthalpyProp()
         : Property<double>( name_base + "_" + "Enthalpy", // Name string
@@ -383,27 +391,33 @@ inline double TemperatureProp::eval( std::vector<double> &args )
     const double P_crit = 3208.2; // critical pressure [psi]
     const double H_crit = 906;    // specific enthalpy at critical pressure [Btu/lbm]
 
-    if ( P < 0.1 ) AMP_ERROR( "Liquid water temperature called with pressure below 0.1 psi." );
-    if ( H <= 0 ) AMP_ERROR( "Liquid water temperature called with enthalpy below 0 Btu/lbm." );
+    if ( P < 0.1 )
+        AMP_ERROR( "Liquid water temperature called with pressure below 0.1 psi." );
+    if ( H <= 0 )
+        AMP_ERROR( "Liquid water temperature called with enthalpy below 0 Btu/lbm." );
 
     // extract parameters from parameter array
     std::valarray<double> Param = get_parameters();
     double ct1[2][4], ct2[5][5], ct3[5][5], ct4[5][5];
     int offset = 0;
     for ( int i = 0; i < 2; i++ )
-        for ( int j = 0; j < 4; j++ ) ct1[i][j] = Param[offset + 4 * i + j];
+        for ( int j   = 0; j < 4; j++ )
+            ct1[i][j] = Param[offset + 4 * i + j];
 
     offset += 4 * 2;
     for ( int i = 0; i < 5; i++ )
-        for ( int j = 0; j < 5; j++ ) ct2[i][j] = Param[offset + 5 * i + j];
+        for ( int j   = 0; j < 5; j++ )
+            ct2[i][j] = Param[offset + 5 * i + j];
 
     offset += 5 * 5;
     for ( int i = 0; i < 5; i++ )
-        for ( int j = 0; j < 5; j++ ) ct3[i][j] = Param[offset + 5 * i + j];
+        for ( int j   = 0; j < 5; j++ )
+            ct3[i][j] = Param[offset + 5 * i + j];
 
     offset += 5 * 5;
     for ( int i = 0; i < 5; i++ )
-        for ( int j = 0; j < 5; j++ ) ct4[i][j] = Param[offset + 5 * i + j];
+        for ( int j   = 0; j < 5; j++ )
+            ct4[i][j] = Param[offset + 5 * i + j];
 
     // calculate temperature
     T = 0;
@@ -414,15 +428,13 @@ inline double TemperatureProp::eval( std::vector<double> &args )
             for ( int i = 0; i < 5; i++ )
                 for ( int j = 0; j < 5; j++ )
                     T = T + ct2[i][j] * pow( P, (double) i ) * pow( H, (double) j );
-        }
-        else {
+        } else {
             // Eq. III.1-6d
             for ( int i = 0; i < 5; i++ )
                 for ( int j = 0; j < 5; j++ )
                     T = T + ct4[i][j] * pow( P, (double) i ) * pow( H, (double) j );
         }
-    }
-    else {
+    } else {
         // Evaluate saturated liquid/vapor properties
         SaturatedLiquidEnthalpyProp hf_obj;
         std::vector<double> PVec( 1, P / PaToPsi ); // convert back to Pa
@@ -438,14 +450,12 @@ inline double TemperatureProp::eval( std::vector<double> &args )
             for ( int i = 0; i < 2; i++ )
                 for ( int j = 0; j < 4; j++ )
                     T = T + ct1[i][j] * pow( P, (double) i ) * pow( H, (double) j );
-        }
-        else if ( H <= Hg ) {
+        } else if ( H <= Hg ) {
             // Eq. III.1-6a with H=Hf
             for ( int i = 0; i < 2; i++ )
                 for ( int j = 0; j < 4; j++ )
                     T = T + ct1[i][j] * pow( P, (double) i ) * pow( Hf, (double) j );
-        }
-        else {
+        } else {
             // Eq. III.1-6c
             for ( int i = 0; i < 5; i++ )
                 for ( int j = 0; j < 5; j++ )
@@ -487,18 +497,17 @@ inline double SaturatedLiquidEnthalpyProp::eval( std::vector<double> &args )
     if ( P >= Pmin && P < 900 ) // liquid region
     {
         // Eq. III.1-4a
-        for ( int i = 0; i < 9; i++ ) Hf = Hf + a[i] * pow( log( P ), (double) i );
-    }
-    else if ( P >= 900 && P < 2450 ) {
+        for ( int i = 0; i < 9; i++ )
+            Hf = Hf + a[i] * pow( log( P ), (double) i );
+    } else if ( P >= 900 && P < 2450 ) {
         // Eq. III.1-4b
-        for ( int i = 0; i < 9; i++ ) Hf = Hf + b[i] * pow( log( P ), (double) i );
-    }
-    else if ( P >= 2450 && P < P_crit ) {
+        for ( int i = 0; i < 9; i++ )
+            Hf = Hf + b[i] * pow( log( P ), (double) i );
+    } else if ( P >= 2450 && P < P_crit ) {
         // Eq. III.1-4c
         for ( int i = 0; i < 9; i++ )
             Hf = Hf + c[i] * pow( pow( ( P_crit - P ), 0.41 ), (double) i );
-    }
-    else {
+    } else {
         AMP_ERROR( "Saturated Liquid Enthalpy: Pressure out of range of correlation." );
     }
 
@@ -539,18 +548,17 @@ inline double SaturatedVaporEnthalpyProp::eval( std::vector<double> &args )
     if ( P >= Pmin && P < 1300 ) // liquid region
     {
         // Eq. III.1-5a
-        for ( int i = 0; i < 12; i++ ) Hf = Hf + a[i] * pow( log( P ), (double) i );
-    }
-    else if ( P >= 1300 && P < 2600 ) {
+        for ( int i = 0; i < 12; i++ )
+            Hf = Hf + a[i] * pow( log( P ), (double) i );
+    } else if ( P >= 1300 && P < 2600 ) {
         // Eq. III.1-5b
-        for ( int i = 0; i < 9; i++ ) Hf = Hf + b[i] * pow( log( P ), (double) i );
-    }
-    else if ( P >= 2600 && P < P_crit ) {
+        for ( int i = 0; i < 9; i++ )
+            Hf = Hf + b[i] * pow( log( P ), (double) i );
+    } else if ( P >= 2600 && P < P_crit ) {
         // Eq. III.1-5c
         for ( int i = 0; i < 7; i++ )
             Hf = Hf + c[i] * pow( pow( ( P_crit - P ), 0.41 ), (double) i );
-    }
-    else {
+    } else {
         AMP_ERROR( "Saturated Vapor Enthalpy: Pressure out of range of correlation." );
     }
 
@@ -585,31 +593,39 @@ inline double SpecificVolumeProp::eval( std::vector<double> &args )
     double cn0[3][3], cn1[3][5], cn2[4][3], cn3[4][4], cp[3], cx[4], ct[3], cj[4], d;
     int offset = 0;
     for ( int i = 0; i < 3; i++ )
-        for ( int j = 0; j < 3; j++ ) cn0[i][j] = Param[offset + 3 * i + j];
+        for ( int j   = 0; j < 3; j++ )
+            cn0[i][j] = Param[offset + 3 * i + j];
 
     offset += 3 * 3;
     for ( int i = 0; i < 3; i++ )
-        for ( int j = 0; j < 5; j++ ) cn1[i][j] = Param[offset + 5 * i + j];
+        for ( int j   = 0; j < 5; j++ )
+            cn1[i][j] = Param[offset + 5 * i + j];
 
     offset += 3 * 5;
     for ( int i = 0; i < 4; i++ )
-        for ( int j = 0; j < 3; j++ ) cn2[i][j] = Param[offset + 3 * i + j];
+        for ( int j   = 0; j < 3; j++ )
+            cn2[i][j] = Param[offset + 3 * i + j];
 
     offset += 4 * 3;
     for ( int i = 0; i < 4; i++ )
-        for ( int j = 0; j < 4; j++ ) cn3[i][j] = Param[offset + 4 * i + j];
+        for ( int j   = 0; j < 4; j++ )
+            cn3[i][j] = Param[offset + 4 * i + j];
 
     offset += 4 * 4;
-    for ( int i = 0; i < 3; i++ ) cp[i] = Param[offset + i];
+    for ( int i = 0; i < 3; i++ )
+        cp[i]   = Param[offset + i];
 
     offset += 3;
-    for ( int i = 0; i < 4; i++ ) cx[i] = Param[offset + i];
+    for ( int i = 0; i < 4; i++ )
+        cx[i]   = Param[offset + i];
 
     offset += 4;
-    for ( int i = 0; i < 3; i++ ) ct[i] = Param[offset + i];
+    for ( int i = 0; i < 3; i++ )
+        ct[i]   = Param[offset + i];
 
     offset += 3;
-    for ( int i = 0; i < 4; i++ ) cj[i] = Param[offset + i];
+    for ( int i = 0; i < 4; i++ )
+        cj[i]   = Param[offset + i];
 
     offset += 4;
     d = Param[offset];
@@ -646,8 +662,7 @@ inline double SpecificVolumeProp::eval( std::vector<double> &args )
                 }
             }
             V = exp( ExpSum );
-        }
-        else if ( H <= 1050 ) {
+        } else if ( H <= 1050 ) {
             // Eq. III.1-8d
 
             // pre-compute C values
@@ -675,8 +690,7 @@ inline double SpecificVolumeProp::eval( std::vector<double> &args )
                 }
                 V += pow( H, (double) i ) * d * tmpSum;
             }
-        }
-        else {
+        } else {
             // Eq. III.1-8c
             for ( int i = -1; i < 3; ++i ) {
                 for ( int j = 0; j < 3; ++j ) {
@@ -684,8 +698,7 @@ inline double SpecificVolumeProp::eval( std::vector<double> &args )
                 }
             }
         }
-    }
-    else {
+    } else {
         // Evaluate saturated liquid/vapor properties
         SaturatedLiquidEnthalpyProp hf_obj;
         std::vector<double> PVec( 1, P / PaToPsi ); // convert back to Pa
@@ -783,8 +796,10 @@ inline double ThermalConductivityProp::eval( std::vector<double> &args )
     double k;             // thermal conductivity in W/(K-m)
 
     // check bounds of inputs
-    if ( rho <= 0 ) AMP_ERROR( "Thermal ocnductivity called with density <= 0 kg/m3." );
-    if ( T <= 0 ) AMP_ERROR( "Thermal conductivity called with temperature <= 0 K." );
+    if ( rho <= 0 )
+        AMP_ERROR( "Thermal ocnductivity called with density <= 0 kg/m3." );
+    if ( T <= 0 )
+        AMP_ERROR( "Thermal conductivity called with temperature <= 0 K." );
 
     // declare parameters
     double Tstar   = 647.3;                                               // [K]
@@ -847,10 +862,14 @@ inline double ConvectiveHeatProp::eval( std::vector<double> &args )
     double h;             // Convective heat transfer Coefficient in W/(K-m2)
 
     // check bounds of inputs
-    if ( rho <= 0 ) AMP_ERROR( "Convective Heat called with density <= 0 kg/m3." );
-    if ( T <= 0 ) AMP_ERROR( "Convective Heat called with temperature <= 0 K." );
-    if ( D <= 0 ) AMP_ERROR( "Convective Heat called with hydaulic diameter <= 0 m." );
-    if ( rey <= 0 ) AMP_ERROR( "Convective Heat called with reynolds # <= 0." );
+    if ( rho <= 0 )
+        AMP_ERROR( "Convective Heat called with density <= 0 kg/m3." );
+    if ( T <= 0 )
+        AMP_ERROR( "Convective Heat called with temperature <= 0 K." );
+    if ( D <= 0 )
+        AMP_ERROR( "Convective Heat called with hydaulic diameter <= 0 m." );
+    if ( rey <= 0 )
+        AMP_ERROR( "Convective Heat called with reynolds # <= 0." );
 
     // get thermal conductivity
     ThermalConductivityProp tCond;
@@ -861,14 +880,16 @@ inline double ConvectiveHeatProp::eval( std::vector<double> &args )
 
     // Get the Nusselt number
     double Nu = 0.023 * pow( rey, 0.8 ) * pow( prt, 0.4 ); // Dittus-Boelter correlation
-    if ( Nu < 8.0 ) AMP_WARNING( "Convective Heat should take into account laminar heat transfer" );
+    if ( Nu < 8.0 )
+        AMP_WARNING( "Convective Heat should take into account laminar heat transfer" );
 
     // Compute the heat transfer coefficient for flow
     h = Nu * k / D;
 
     // If the Nusselt number is small, we should account for thermal conduction
     // This may require using a different distance than the hydraulic diameter D/2
-    if ( Nu < 4.0 ) AMP_WARNING( "Convective Heat should take into account conduction" );
+    if ( Nu < 4.0 )
+        AMP_WARNING( "Convective Heat should take into account conduction" );
 
     return h;
 }
@@ -880,22 +901,27 @@ inline double DynamicViscosityProp::eval( std::vector<double> &args )
     double u;             // dynamic viscosity in Pa-s
 
     // check bounds of inputs
-    if ( rho <= 0 ) AMP_ERROR( "Dynamic viscosity called with density <= 0 kg/m3." );
-    if ( T <= 0 ) AMP_ERROR( "Dynamic viscosity called with temperature <= 0 K." );
+    if ( rho <= 0 )
+        AMP_ERROR( "Dynamic viscosity called with density <= 0 kg/m3." );
+    if ( T <= 0 )
+        AMP_ERROR( "Dynamic viscosity called with temperature <= 0 K." );
 
     // extract parameters from parameter array
     std::valarray<double> Param = get_parameters();
     double a[4], b[5][6];
-    for ( size_t i = 0; i < 4; i++ ) a[i] = Param[i];
+    for ( size_t i = 0; i < 4; i++ )
+        a[i]       = Param[i];
     for ( size_t i = 0; i < 5; i++ )
-        for ( size_t j = 0; j < 6; j++ ) b[i][j] = Param[4 + 6 * i + j];
+        for ( size_t j = 0; j < 6; j++ )
+            b[i][j]    = Param[4 + 6 * i + j];
 
     double Tstar   = 647.27;  // [K]
     double rhostar = 317.763; // [kg/m3]
 
     double sum = 0;
-    for ( size_t k = 0; k < 4; k++ ) sum = sum + a[k] * pow( Tstar / T, (double) k );
-    double u0                            = 1e-6 * pow( T / Tstar, 0.5 ) * pow( sum, -1.0 );
+    for ( size_t k = 0; k < 4; k++ )
+        sum   = sum + a[k] * pow( Tstar / T, (double) k );
+    double u0 = 1e-6 * pow( T / Tstar, 0.5 ) * pow( sum, -1.0 );
 
     double expsum = 0;
     for ( size_t i = 0; i < 5; i++ )
@@ -968,7 +994,8 @@ inline double EnthalpyProp::MfpSolve( double hmin, double hmax, double T, double
             l  = m;
             fl = fm;
         }
-        if ( std::abs( fm ) < Mfp_ftol ) break;
+        if ( std::abs( fm ) < Mfp_ftol )
+            break;
         if ( iter >= Mfp_maxIter ) {
             AMP_ERROR( "MFP solve failed to converge for property function evaluation." );
         }

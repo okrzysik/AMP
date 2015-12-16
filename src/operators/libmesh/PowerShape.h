@@ -43,7 +43,8 @@ namespace Operator {
  */
 //===========================================================================//
 
-class PowerShape : public Operator {
+class PowerShape : public Operator
+{
 
 public:
     // typedef AMP::LinearAlgebra::VectorVariable<AMP::Mesh::IntegrationPointVariable, 8>

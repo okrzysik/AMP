@@ -79,7 +79,8 @@ int main( int argc, char *argv[] )
 
     // help message
     if ( argc == 2 && string( argv[1] ) == "-h" ) {
-        for ( size_t i = 0; i < nhelp; i++ ) cout << helpmsg[i] << endl;
+        for ( size_t i = 0; i < nhelp; i++ )
+            cout << helpmsg[i] << endl;
         exit( 0 );
     }
 
@@ -139,22 +140,19 @@ int main( int argc, char *argv[] )
             if ( haveBoth ) {
                 lowarg[iarg] = inDb->getDouble( string( "Low_" ) + names[iarg] );
                 hiarg[iarg]  = inDb->getDouble( string( "High_" ) + names[iarg] );
-            }
-            else {
+            } else {
                 lowarg[iarg] = ranges[iarg][0];
                 hiarg[iarg]  = ranges[iarg][1];
             }
             args[iarg].resize( narg[iarg] );
             if ( narg[iarg] == 1 ) {
                 args[iarg][0] = .5 * ( lowarg[iarg] + hiarg[iarg] );
-            }
-            else {
+            } else {
                 for ( size_t i = 0; i < narg[iarg]; i++ )
                     args[iarg][i] =
                         lowarg[iarg] + i * ( hiarg[iarg] - lowarg[iarg] ) / ( narg[iarg] - 1 );
             }
-        }
-        else {
+        } else {
             AMP_INSIST( inDb->keyExists( "Grid_" + names[iarg] ),
                         string( "must specify a Grid for " ) + names[iarg] );
             args[iarg] = inDb->getDoubleArray( "Grid_" + names[iarg] );
@@ -172,15 +170,19 @@ int main( int argc, char *argv[] )
 
     // output section, arbitrary dimension loop
     string separator;
-    if ( format == "TSV" ) separator         = " ";
-    if ( format == "CSV" ) separator         = ",";
-    if ( format == "Mathematica" ) separator = ",";
+    if ( format == "TSV" )
+        separator = " ";
+    if ( format == "CSV" )
+        separator = ",";
+    if ( format == "Mathematica" )
+        separator = ",";
     if ( format == "Mathematica" ) {
         cout << "(* material = " << matname << ", property = " << propname << " *)" << endl;
         cout << "sizes={";
         for ( size_t i = 0; i < nargs; i++ ) {
             cout << narg[i];
-            if ( i < nargs - 1 ) cout << ",";
+            if ( i < nargs - 1 )
+                cout << ",";
         }
         cout << "};" << endl << endl;
         cout << "values={" << endl;
@@ -195,8 +197,10 @@ int main( int argc, char *argv[] )
         }
         std::vector<double> value( 1 );
         material->property( propname )->evalv( value, argMap );
-        if ( format == "Mathematica" ) cout << "{";
-        for ( size_t i = 0; i < nargs; i++ ) cout << args[i][indices[i]] << separator;
+        if ( format == "Mathematica" )
+            cout << "{";
+        for ( size_t i = 0; i < nargs; i++ )
+            cout << args[i][indices[i]] << separator;
         cout << value[0];
         if ( format == "Mathematica" ) {
             cout << "}";
@@ -207,7 +211,8 @@ int main( int argc, char *argv[] )
         }
         cout << endl;
     }
-    if ( format == "Mathematica" ) cout << "};" << endl;
+    if ( format == "Mathematica" )
+        cout << "};" << endl;
 
     AMP::AMPManager::shutdown();
 }

@@ -71,8 +71,7 @@ int main( int argc, char *argv[] )
             ut.failure( "Failed allocation succeeded???" );
 #endif
             AMP_ASSERT( M.length() == N * N * N );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             ut.passes( "Caught failed allocation" );
         }
         // Test math operators
@@ -168,7 +167,8 @@ int main( int argc, char *argv[] )
     // Finished
     ut.report();
     int num_failed = static_cast<int>( ut.NumFailGlobal() );
-    if ( num_failed == 0 ) AMP::pout << "All tests passed\n";
+    if ( num_failed == 0 )
+        AMP::pout << "All tests passed\n";
     AMP::AMPManager::shutdown();
     return num_failed;
 }

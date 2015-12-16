@@ -12,7 +12,8 @@ namespace AMP {
       BLAS and LAPACK routines.
 */
 template <typename T>
-class Lapack {
+class Lapack
+{
 public:
     /*!
      * \brief   copy

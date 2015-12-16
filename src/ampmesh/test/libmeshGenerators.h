@@ -19,7 +19,8 @@ namespace unit_test {
 
 // Class to create a cube in Libmesh
 template <int SIZE>
-class LibMeshCubeGenerator : public MeshGenerator {
+class LibMeshCubeGenerator : public MeshGenerator
+{
 public:
     virtual void build_mesh()
     {
@@ -44,7 +45,8 @@ public:
 
 // Class to read in a default exodus file
 template <int FILE = 1>
-class ExodusReaderGenerator : public MeshGenerator {
+class ExodusReaderGenerator : public MeshGenerator
+{
 public:
     virtual void build_mesh()
     {
@@ -54,14 +56,11 @@ public:
         database->putString( "MeshName", "exodus reader mesh" );
         if ( FILE == 1 ) {
             database->putString( "FileName", "clad_1x_1pellet.e" );
-        }
-        else if ( FILE == 2 ) {
+        } else if ( FILE == 2 ) {
             database->putString( "FileName", "multiElementMesh.e" );
-        }
-        else if ( FILE == 3 ) {
+        } else if ( FILE == 3 ) {
             database->putString( "FileName", "pellet_1x.e" );
-        }
-        else {
+        } else {
             AMP_ERROR( "Bad file for generator" );
         }
         AMP::shared_ptr<AMP::Mesh::MeshParameters> params(
@@ -76,7 +75,8 @@ public:
 
 
 // MulitMesh generator
-class MultiMeshGenerator : public MeshGenerator {
+class MultiMeshGenerator : public MeshGenerator
+{
 public:
     virtual void build_mesh()
     {
@@ -92,7 +92,8 @@ public:
         meshArrayDatabase->putInteger( "N", N_meshes );
         meshArrayDatabase->putString( "iterator", "%i" );
         std::vector<int> indexArray( N_meshes );
-        for ( int i = 0; i < N_meshes; i++ ) indexArray[i] = i + 1;
+        for ( int i       = 0; i < N_meshes; i++ )
+            indexArray[i] = i + 1;
         meshArrayDatabase->putIntegerArray( "indicies", indexArray );
         meshArrayDatabase->putString( "MeshName", "pellet_%i" );
 #ifdef USE_EXT_LIBMESH
@@ -115,7 +116,8 @@ public:
         meshArrayDatabase->putDouble( "x_offset", 0.0 );
         meshArrayDatabase->putDouble( "y_offset", 0.0 );
         std::vector<double> offsetArray( N_meshes );
-        for ( int i = 0; i < N_meshes; i++ ) offsetArray[i] = ( (double) i ) * 0.0105;
+        for ( int i        = 0; i < N_meshes; i++ )
+            offsetArray[i] = ( (double) i ) * 0.0105;
         meshArrayDatabase->putDoubleArray( "z_offset", offsetArray );
         // Create the parameter object
         AMP::shared_ptr<AMP::Mesh::MeshParameters> params(
@@ -129,7 +131,8 @@ public:
 
 
 // libMeshThreeElement generator
-class libMeshThreeElementGenerator : public MeshGenerator {
+class libMeshThreeElementGenerator : public MeshGenerator
+{
 public:
     static std::string name() { return "libMeshThreeElementGenerator"; }
 

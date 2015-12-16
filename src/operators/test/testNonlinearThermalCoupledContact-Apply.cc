@@ -90,14 +90,12 @@ void applyTest( AMP::UnitTest *ut,
             adjust( solVec, workVec );
             testOperator->apply( rhsVec, solVec, resVec, 1.0, -1.0 );
         } // end for j
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         passed = false;
     }
     if ( passed ) {
         ut.passes( msgPrefix + " : apply with random f, u, r, a=1, b=-1.0" );
-    }
-    else {
+    } else {
         ut.numFails++;
         ut.failure( msgPrefix + " : apply with random f, u, r, a=1, b=-1.0" );
     }
@@ -112,14 +110,12 @@ void applyTest( AMP::UnitTest *ut,
             adjust( solVec, workVec );
             testOperator->apply( fVec, solVec, resVec, 1.0, -1.0 );
         } // end for j
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         passed = false;
     }
     if ( passed ) {
         ut.passes( msgPrefix + " : apply with f NULL, random u, r, a=1, b=-1.0" );
-    }
-    else {
+    } else {
         ut.numFails++;
         ut.failure( msgPrefix + " : apply with f NULL, random u, r, a=1, b=-1.0" );
     }
@@ -135,15 +131,13 @@ void applyTest( AMP::UnitTest *ut,
             resVec->setRandomValues();
             testOperator->apply( rhsVec, uVec, resVec, 1.0, -1.0 );
         } // end for j
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         passed = true;
     }
     if ( passed ) {
         ut.passes( msgPrefix +
                    " : apply with u NULL, random values in the vectors f,r, a=1, b=-1.0" );
-    }
-    else {
+    } else {
         ut.numFails++;
         ut.failure( msgPrefix +
                     " : apply with u NULL, random values in the vectors f,r, a=1, b=-1.0" );
@@ -159,15 +153,13 @@ void applyTest( AMP::UnitTest *ut,
             adjust( solVec, workVec );
             testOperator->apply( rhsVec, solVec, rVec, 1.0, -1.0 );
         } // end for j
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         passed = true;
     }
     if ( passed ) {
         ut.passes( msgPrefix +
                    " : apply with r NULL, random values in the vectors f,u, a=1, b=-1.0" );
-    }
-    else {
+    } else {
         ut.numFails++;
         ut.failure( msgPrefix +
                     " : apply with r NULL, random values in the vectors f,u, a=1, b=-1.0" );
@@ -182,15 +174,13 @@ void applyTest( AMP::UnitTest *ut,
             resVec->setRandomValues();
             testOperator->apply( fVec, uVec, resVec, 1.0, -1.0 );
         } // end for j
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         passed = true;
     }
     if ( passed ) {
         ut.passes( msgPrefix +
                    " : apply with f NULL, u NULL random values in the vector r, a=1, b=-1.0" );
-    }
-    else {
+    } else {
         ut.numFails++;
         ut.failure( msgPrefix +
                     " : apply with f NULL, u NULL random values in the vector r, a=1, b=-1.0" );
@@ -205,15 +195,13 @@ void applyTest( AMP::UnitTest *ut,
             rhsVec->setRandomValues();
             testOperator->apply( rhsVec, uVec, rVec, 1.0, -1.0 );
         } // end for j
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         passed = true;
     }
     if ( passed ) {
         ut.passes( msgPrefix +
                    " : apply with u NULL, r NULL, random values in the vector f, a=1, b=-1.0" );
-    }
-    else {
+    } else {
         ut.numFails++;
         ut.failure( msgPrefix +
                     " : apply with u NULL, r NULL, random values in the vector f, a=1, b=-1.0" );
@@ -229,15 +217,13 @@ void applyTest( AMP::UnitTest *ut,
             adjust( solVec, workVec );
             testOperator->apply( fVec, solVec, rVec, 1.0, -1.0 );
         } // end for j
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         passed = true;
     }
     if ( passed ) {
         ut.passes( msgPrefix +
                    " : apply with f, r NULL, random values in the vector u, a=1, b=-1.0" );
-    }
-    else {
+    } else {
         ut.numFails++;
         ut.failure( msgPrefix +
                     " : apply with f, r NULL, random values in the vector u, a=1, b=-1.0" );
@@ -252,14 +238,12 @@ void applyTest( AMP::UnitTest *ut,
             AMP::LinearAlgebra::Vector::shared_ptr uVec;
             testOperator->apply( fVec, uVec, rVec, 1.0, -1.0 );
         } // end for j
-    }
-    catch ( std::exception ) {
+    } catch ( std::exception ) {
         passed = true;
     }
     if ( passed ) {
         ut.passes( msgPrefix + " : apply with f, u, r NULL, a=1, b=-1.0" );
-    }
-    else {
+    } else {
         ut.numFails++;
         ut.failure( msgPrefix + " : apply with f, u, r NULL, a=1, b=-1.0" );
     }
@@ -273,8 +257,7 @@ void applyTest( AMP::UnitTest *ut,
     rhsVec->subtract( rhsVec, resVec );
     if ( AMP::Utilities::approx_equal( rhsVec->L2Norm(), 0.0 ) ) {
         ut.passes( msgPrefix + " : apply with random values in the vectors f,u,r, a=0.0, b=1.0" );
-    }
-    else {
+    } else {
         ut.numFails++;
         ut.failure( msgPrefix + " : apply with random values in the vectors f,u,r, a=0.0, b=1.0" );
     }
@@ -290,8 +273,7 @@ void applyTest( AMP::UnitTest *ut,
         ut.passes(
             msgPrefix +
             " : apply with random values in the vectors f,u,r, a=0.0, b=-1.0 (test scaling of f)" );
-    }
-    else {
+    } else {
         ut.numFails++;
         ut.failure(
             msgPrefix +
@@ -635,8 +617,7 @@ void thermalContactApplyTest( AMP::UnitTest *ut, std::string exeName )
 
     if ( testPassed ) {
         ut.passes( "Coupled Composite Nonlinear Operator Apply tests ." );
-    }
-    else {
+    } else {
         ITFAILS;
     }
 
@@ -657,12 +638,10 @@ int main( int argc, char *argv[] )
 
     try {
         thermalContactApplyTest( ut, "testNonlinearThermalCoupledContact-Apply" );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

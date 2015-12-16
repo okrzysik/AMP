@@ -181,8 +181,7 @@ void linearThermalTest( AMP::UnitTest *ut )
 
     if ( finalResidualNorm > 10.0 ) {
         ITFAILS;
-    }
-    else {
+    } else {
         ut.passes( "TrilinosMLSolver successfully solves a linear thermal problem with a nuclear "
                    "source term." );
     }
@@ -221,7 +220,8 @@ void linearThermalTest( AMP::UnitTest *ut )
             ITFAILS;
         }
     }
-    if ( passes ) ut.passes( "The linear thermal solve is verified." );
+    if ( passes )
+        ut.passes( "The linear thermal solve is verified." );
 
     // Plot the results
     if ( AMP::AMP_MPI::getNodes() == 1 ) {
@@ -266,12 +266,10 @@ int main( int argc, char *argv[] )
         gpass += ut.numPasses;
         gfail += ut.numFails;
         ut.reset();
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: " << err.what() << std::endl;
         ut.numFails++;
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: "
                   << "An unknown exception was thrown." << std::endl;
         ut.numFails++;

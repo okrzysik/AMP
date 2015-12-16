@@ -49,7 +49,8 @@ namespace AMP {
  * manner.  Thus, all error messages are output to pout instead of perr.
  */
 
-class MemoryDatabase : public Database {
+class MemoryDatabase : public Database
+{
 public:
     /**
      * The memory database constructor creates an empty database with the

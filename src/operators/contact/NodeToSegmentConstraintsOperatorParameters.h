@@ -8,7 +8,8 @@
 namespace AMP {
 namespace Operator {
 
-class NodeToSegmentConstraintsOperatorParameters : public OperatorParameters {
+class NodeToSegmentConstraintsOperatorParameters : public OperatorParameters
+{
 public:
     NodeToSegmentConstraintsOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
         : OperatorParameters( db )

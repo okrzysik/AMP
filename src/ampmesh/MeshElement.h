@@ -17,7 +17,8 @@ namespace Mesh {
  * A mesh element can be thought of as the smallest unit of a mesh.  It is of a type
  * of GeomType.  It contains the composing pieces of the element
  */
-class MeshElement {
+class MeshElement
+{
 public:
     /**
      *\typedef shared_ptr

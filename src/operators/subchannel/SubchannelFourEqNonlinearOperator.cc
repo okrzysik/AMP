@@ -77,8 +77,7 @@ void SubchannelFourEqNonlinearOperator::reset( const AMP::shared_ptr<OperatorPar
     d_frictionModel = getStringParameter( myparams, "Friction_Model", "Constant" );
     if ( d_frictionModel == "Constant" ) {
         d_friction = getDoubleParameter( myparams, "Friction_Factor", 0.001 );
-    }
-    else if ( d_frictionModel == "Selander" ) {
+    } else if ( d_frictionModel == "Selander" ) {
         d_roughness = getDoubleParameter( myparams, "Surface_Roughness", 0.0015e-3 );
     }
 
@@ -126,7 +125,8 @@ void SubchannelFourEqNonlinearOperator::reset( const AMP::shared_ptr<OperatorPar
     AMP_ASSERT( d_channelArea.size() == d_numSubchannels );
     // compute total area
     double total_area = 0.0;
-    for ( size_t i = 0; i < d_numSubchannels; i++ ) total_area += d_channelArea[i];
+    for ( size_t i = 0; i < d_numSubchannels; i++ )
+        total_area += d_channelArea[i];
     // inlet mass flow rate for each subchannel
     d_channelMass.resize( d_numSubchannels, 0.0 );
     for ( size_t i       = 0; i < d_numSubchannels; i++ )
@@ -149,7 +149,8 @@ void SubchannelFourEqNonlinearOperator::reset( const AMP::shared_ptr<OperatorPar
     d_subchannelFace = std::vector<std::vector<AMP::Mesh::MeshElement>>(
         d_numSubchannels, std::vector<AMP::Mesh::MeshElement>( 0 ) );
     for ( size_t i = 0; i < d_numSubchannels; i++ ) {
-        if ( !d_ownSubChannel[i] ) continue;
+        if ( !d_ownSubChannel[i] )
+            continue;
         AMP::Mesh::MeshIterator localSubchannelIt =
             AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
         AMP::Mesh::Mesh::shared_ptr localSubchannel = d_Mesh->Subset( localSubchannelIt, false );
@@ -173,8 +174,7 @@ double SubchannelFourEqNonlinearOperator::getDoubleParameter(
     bool keyExists = ( myparams->d_db )->keyExists( paramString );
     if ( keyExists ) {
         return ( myparams->d_db )->getDouble( paramString );
-    }
-    else {
+    } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
                      << defaultValue
                      << "\n" );
@@ -191,8 +191,7 @@ int SubchannelFourEqNonlinearOperator::getIntegerParameter(
     bool keyExists = ( myparams->d_db )->keyExists( paramString );
     if ( keyExists ) {
         return ( myparams->d_db )->getInteger( paramString );
-    }
-    else {
+    } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
                      << defaultValue
                      << "\n" );
@@ -209,8 +208,7 @@ std::string SubchannelFourEqNonlinearOperator::getStringParameter(
     bool keyExists = ( myparams->d_db )->keyExists( paramString );
     if ( keyExists ) {
         return ( myparams->d_db )->getString( paramString );
-    }
-    else {
+    } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
                      << defaultValue
                      << "\n" );
@@ -227,8 +225,7 @@ bool SubchannelFourEqNonlinearOperator::getBoolParameter(
     bool keyExists = ( myparams->d_db )->keyExists( paramString );
     if ( keyExists ) {
         return ( myparams->d_db )->getBool( paramString );
-    }
-    else {
+    } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
                      << defaultValue
                      << "\n" );
@@ -277,8 +274,7 @@ void SubchannelFourEqNonlinearOperator::getLateralFaces(
                 // insert face into map with centroid
                 interiorLateralFaceMap.insert(
                     std::pair<std::vector<double>, AMP::Mesh::MeshElement>( faceCentroid, *face ) );
-            }
-            else {
+            } else {
                 // insert face into exterior lateral face map with centroid
                 exteriorLateralFaceMap.insert(
                     std::pair<std::vector<double>, AMP::Mesh::MeshElement>( faceCentroid, *face ) );
@@ -337,8 +333,7 @@ SubchannelFourEqNonlinearOperator::getGapWidths( AMP::Mesh::Mesh::shared_ptr mes
                                                  0.5 ) +
                                        correction;
                             break;
-                        }
-                        else { // first top vertex has been found
+                        } else { // first top vertex has been found
                             x1 = vertexCoord[0];
                             y1 = vertexCoord[1];
                             // check for clad centered at this vertex
@@ -388,8 +383,7 @@ void SubchannelFourEqNonlinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::sha
     while ( it != x.end() ) {
         if ( Utilities::approx_equal( last, *it, 1e-12 ) ) {
             x.erase( it++ ); // increments before erasing
-        }
-        else {
+        } else {
             last = *it;
             ++it;
         }
@@ -400,8 +394,7 @@ void SubchannelFourEqNonlinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::sha
     while ( it != y.end() ) {
         if ( Utilities::approx_equal( last, *it, 1e-12 ) ) {
             y.erase( it++ ); // increments before erasing
-        }
-        else {
+        } else {
             last = *it;
             ++it;
         }
@@ -412,8 +405,7 @@ void SubchannelFourEqNonlinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::sha
     while ( it != z.end() ) {
         if ( Utilities::approx_equal( last, *it, 1e-12 ) ) {
             z.erase( it++ ); // increments before erasing
-        }
-        else {
+        } else {
             last = *it;
             ++it;
         }
@@ -443,8 +435,7 @@ int SubchannelFourEqNonlinearOperator::getSubchannelIndex( double x, double y )
         size_t Nx = d_x.size() - 1;
         size_t Ny = d_y.size() - 1;
         return ( ix - 1 ) + ( ( Ny - 1 ) - ( iy - 1 ) ) * Nx;
-    }
-    else {
+    } else {
         AMP_ERROR( "Invalid indices found for getSubchannelIndex()" );
     }
     return 0;
@@ -457,7 +448,8 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
     PROFILE_START( "apply" );
 
     // Check that the operator has been initialized
-    if ( !d_initialized ) reset( d_params );
+    if ( !d_initialized )
+        reset( d_params );
 
     // ensure that solution and residual vectors aren't NULL
     AMP_INSIST( ( ( r.get() ) != NULL ), "NULL Residual Vector" );
@@ -499,7 +491,8 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
 
     // create vector of the mid points of each axial interval
     std::vector<double> zMid( d_z.size() - 1 );
-    for ( size_t j = 0; j < d_z.size() - 1; ++j ) zMid[j] = d_z[j] + 0.5 * ( d_z[j + 1] - d_z[j] );
+    for ( size_t j = 0; j < d_z.size() - 1; ++j )
+        zMid[j]    = d_z[j] + 0.5 * ( d_z[j + 1] - d_z[j] );
 
     AMP::Mesh::MeshIterator cell =
         d_Mesh->getIterator( AMP::Mesh::Volume, 0 ); // iterator for cells of mesh
@@ -522,7 +515,8 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
 
     // for each subchannel,
     for ( size_t isub = 0; isub < d_numSubchannels; ++isub ) {
-        if ( !d_ownSubChannel[isub] ) continue;
+        if ( !d_ownSubChannel[isub] )
+            continue;
 
         // extract subchannel cells from d_elem[isub]
         AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement>> subchannelElements(
@@ -561,24 +555,22 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                                                 d_subchannelPhysicsModel,
                                                 inputVec,
                                                 d_cladTemperature );
-        }
-        else if ( d_source == "averageHeatFlux" ) {
+        } else if ( d_source == "averageHeatFlux" ) {
             AMP_ERROR( "Heat source type 'averageHeatFlux' not yet implemented." );
-        }
-        else if ( d_source == "totalHeatGeneration" ) {
+        } else if ( d_source == "totalHeatGeneration" ) {
             AMP_ASSERT( d_QFraction.size() == d_numSubchannels );
             flux = Subchannel::getHeatFluxGeneration( d_heatShape, d_z, d_rodDiameter[isub], d_Q );
             // multiply by power fraction
-            for ( size_t i = 0; i < flux.size(); i++ ) flux[i] = flux[i] * d_QFraction[isub];
-        }
-        else if ( d_source == "totalHeatGenerationWithDiscretizationError" ) {
+            for ( size_t i = 0; i < flux.size(); i++ )
+                flux[i]    = flux[i] * d_QFraction[isub];
+        } else if ( d_source == "totalHeatGenerationWithDiscretizationError" ) {
             AMP_ASSERT( d_QFraction.size() == d_numSubchannels );
             flux = Subchannel::getHeatFluxGenerationWithDiscretizationError(
                 d_heatShape, d_z, d_rodDiameter[isub], d_Q );
             // multiply by power fraction
-            for ( size_t i = 0; i < flux.size(); i++ ) flux[i] = flux[i] * d_QFraction[isub];
-        }
-        else {
+            for ( size_t i = 0; i < flux.size(); i++ )
+                flux[i]    = flux[i] * d_QFraction[isub];
+        } else {
             AMP_ERROR( "Heat source type '" + d_source + "' is invalid" );
         }
 
@@ -623,8 +615,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
             if ( m_mid >= 0.0 ) {
                 vol_axialDonor = vol_minus;
                 h_axialDonor   = h_minus;
-            }
-            else {
+            } else {
                 vol_axialDonor = vol_plus;
                 h_axialDonor   = h_minus;
             }
@@ -657,30 +648,25 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
             double fric;                   // friction factor
             if ( d_frictionModel == "Constant" ) {
                 fric = d_friction;
-            }
-            else {
+            } else {
                 double ft     = 0.; // turbulent friction factor evaluated from computed Re
                 double ft4000 = 0.; // turbulent friction factor evaluated from Re = 4000
                 if ( d_frictionModel == "Blasius" ) {
                     ft     = 0.316 * std::pow( Re_mid, -0.25 );
                     ft4000 = 0.316 * std::pow( 4000.0, -0.25 );
-                }
-                else if ( d_frictionModel == "Drew" ) {
+                } else if ( d_frictionModel == "Drew" ) {
                     ft     = 0.0056 + 0.5 * std::pow( Re_mid, -0.32 );
                     ft4000 = 0.0056 + 0.5 * std::pow( 4000.0, -0.32 );
-                }
-                else if ( d_frictionModel == "Filonenko" ) {
+                } else if ( d_frictionModel == "Filonenko" ) {
                     ft     = std::pow( 1.82 * std::log( Re_mid ) - 1.64, -2 );
                     ft4000 = std::pow( 1.82 * std::log( 4000.0 ) - 1.64, -2 );
-                }
-                else if ( d_frictionModel == "Selander" ) {
+                } else if ( d_frictionModel == "Selander" ) {
                     ft = 4.0 *
                          std::pow( 3.8 * std::log( 10.0 / Re_mid + 0.2 * d_roughness / D ), -2 );
                     ft4000 =
                         4.0 *
                         std::pow( 3.8 * std::log( 10.0 / 4000.0 + 0.2 * d_roughness / D ), -2 );
-                }
-                else {
+                } else {
                     AMP_ERROR( "Invalid choice for Friction_Model." );
                 }
                 if ( Re_mid < 4000.0 )
@@ -701,27 +687,21 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                     double overlap = 0.0;
                     if ( zMin_grid >= z_plus ) {
                         overlap = 0.0;
-                    }
-                    else if ( zMin_grid > z_minus && zMin_grid < z_plus ) {
+                    } else if ( zMin_grid > z_minus && zMin_grid < z_plus ) {
                         overlap = z_plus - zMin_grid;
-                    }
-                    else if ( zMin_grid <= z_minus ) {
+                    } else if ( zMin_grid <= z_minus ) {
                         overlap = z_plus - z_minus;
-                    }
-                    else {
+                    } else {
                         AMP_ERROR( "Unexpected position comparison for zMin_grid" );
                     }
                     K += overlap * K_perLength;
-                }
-                else if ( zMax_grid < z_plus && zMax_grid > z_minus ) {
+                } else if ( zMax_grid < z_plus && zMax_grid > z_minus ) {
                     double overlap = 0.0;
                     if ( zMin_grid > z_minus ) {
                         overlap = zMax_grid - zMin_grid;
-                    }
-                    else if ( zMin_grid <= z_minus ) {
+                    } else if ( zMin_grid <= z_minus ) {
                         overlap = zMax_grid - z_minus;
-                    }
-                    else {
+                    } else {
                         AMP_ERROR( "Unexpected position comparison for zMin_grid" );
                     }
                     K += overlap * K_perLength;
@@ -775,12 +755,10 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                                     "Adjacent cells have the same subchannel index." );
                         neighborSubchannelIndex = subchannelIndex2;
                         neighborCell            = adjacentCells[1];
-                    }
-                    else if ( subchannelIndex2 == currentSubchannelIndex ) {
+                    } else if ( subchannelIndex2 == currentSubchannelIndex ) {
                         neighborSubchannelIndex = subchannelIndex1;
                         neighborCell            = adjacentCells[0];
-                    }
-                    else {
+                    } else {
                         AMP_ERROR( "Neither of adjacent cells had the same index as the current "
                                    "subchannel." );
                     }
@@ -788,11 +766,9 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                     double crossflowSign = 0.;
                     if ( currentSubchannelIndex < neighborSubchannelIndex ) {
                         crossflowSign = 1.0;
-                    }
-                    else if ( currentSubchannelIndex > neighborSubchannelIndex ) {
+                    } else if ( currentSubchannelIndex > neighborSubchannelIndex ) {
                         crossflowSign = -1.0;
-                    }
-                    else {
+                    } else {
                         AMP_ERROR( "Adjacent cells have the same subchannel index." );
                     }
                     // get upper and lower axial faces of neighbor cell
@@ -842,8 +818,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                     if ( m_mid_neighbor >= 0.0 ) {
                         h_axialDonor_neighbor   = h_minus_neighbor;
                         vol_axialDonor_neighbor = vol_minus_neighbor;
-                    }
-                    else {
+                    } else {
                         h_axialDonor_neighbor   = h_plus_neighbor;
                         vol_axialDonor_neighbor = vol_plus_neighbor;
                     }
@@ -856,8 +831,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                     if ( crossflowSign * w >= 0.0 ) {
                         h_lateralDonor = h_axialDonor;
                         u_lateralDonor = u_mid;
-                    }
-                    else {
+                    } else {
                         h_lateralDonor = h_axialDonor_neighbor;
                         u_lateralDonor = u_mid_neighbor;
                     }
@@ -919,14 +893,18 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
             }     // end loop over gap faces
 
             // force terms to zero if requested
-            double force_factor_conduction                      = 1.0;
-            double force_factor_turbulence                      = 1.0;
-            double force_factor_heat_source                     = 1.0;
-            double force_factor_friction                        = 1.0;
-            if ( d_forceNoConduction ) force_factor_conduction  = 0.0;
-            if ( d_forceNoTurbulence ) force_factor_turbulence  = 0.0;
-            if ( d_forceNoHeatSource ) force_factor_heat_source = 0.0;
-            if ( d_forceNoFriction ) force_factor_friction      = 0.0;
+            double force_factor_conduction  = 1.0;
+            double force_factor_turbulence  = 1.0;
+            double force_factor_heat_source = 1.0;
+            double force_factor_friction    = 1.0;
+            if ( d_forceNoConduction )
+                force_factor_conduction = 0.0;
+            if ( d_forceNoTurbulence )
+                force_factor_turbulence = 0.0;
+            if ( d_forceNoHeatSource )
+                force_factor_heat_source = 0.0;
+            if ( d_forceNoFriction )
+                force_factor_friction = 0.0;
 
             // calculate residuals for current cell
             // ------------------------------------
@@ -1014,8 +992,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                 // implement fixed lateral mass flow rates inlet boundary condition
                 outputVec->setValueByGlobalID( gapDofs[0],
                                                Subchannel::scaleLateralMassFlowRate * w_mid );
-            }
-            else {
+            } else {
                 // get cells below bottom faces
                 // get adjacent cells
                 std::vector<AMP::Mesh::MeshElement> cell1MinusFaceAdjacentCells =
@@ -1046,8 +1023,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                                 "Both adjacent cells are below axial face parent" );
                     bottomCell1 = &axialCell11;
                     // bottomCell1Centroid = &axialCell11Centroid;
-                }
-                else {
+                } else {
                     // axialCell12 is bottom cell
                     // ensure that axialCell11 is above
                     AMP_INSIST( axialCell11Centroid[2] > cell1MinusFaceCentroid[2],
@@ -1062,8 +1038,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                                 "Both adjacent cells are below axial face parent" );
                     bottomCell2 = &axialCell21;
                     // bottomCell2Centroid = &axialCell21Centroid;
-                }
-                else {
+                } else {
                     // axialCell22 is bottom cell
                     // ensure that axialCell21 is above
                     AMP_INSIST( axialCell21Centroid[2] > cell2MinusFaceCentroid[2],
@@ -1170,8 +1145,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                              cell1PlusFaceCentroid[2], height, 1.0e-6 ) ) {
                         // cell is in the uppermost axial interval
                         w_axialDonor_plus = w_mid;
-                    }
-                    else {
+                    } else {
                         std::vector<AMP::Mesh::MeshElement> cell1PlusFaceAdjacentCells =
                             d_Mesh->getElementParents( cell1PlusFace, AMP::Mesh::Volume );
                         AMP_INSIST( cell1PlusFaceAdjacentCells.size() == 2,
@@ -1190,8 +1164,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                                         "Both adjacent cells are above axial face parent" );
                             topCell         = &axialCell1;
                             topCellCentroid = &axialCell1Centroid;
-                        }
-                        else {
+                        } else {
                             // axialCell2 is top cell
                             // ensure that axialCell1 is above
                             AMP_INSIST( axialCell1Centroid[2] < cell1PlusFaceCentroid[2],
@@ -1240,8 +1213,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                 outputVec->setValueByGlobalID( gapDofs[0],
                                                Subchannel::scaleLateralMassFlowRate * R_w );
             }
-        }
-        else {
+        } else {
             // determine if face is an external gap face; in this case, a zero must by set
             // to the nonlinear residual entry for this DOF, i.e., a zero Dirichlet BC
             // is applied to exterior gap face lateral mass flow rates
@@ -1289,8 +1261,7 @@ SubchannelFourEqNonlinearOperator::subsetInputVector( AMP::LinearAlgebra::Vector
         AMP::LinearAlgebra::Vector::shared_ptr commVec =
             vec->select( commSelector, var->getName() );
         return commVec->subsetVectorForVariable( var );
-    }
-    else {
+    } else {
         return vec->subsetVectorForVariable( var );
     }
 }
@@ -1306,8 +1277,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
             vec->constSelect( commSelector, var->getName() );
         return commVec->constSubsetVectorForVariable( var );
-    }
-    else {
+    } else {
         return vec->constSubsetVectorForVariable( var );
     }
 }
@@ -1323,8 +1293,7 @@ SubchannelFourEqNonlinearOperator::subsetOutputVector( AMP::LinearAlgebra::Vecto
         AMP::LinearAlgebra::Vector::shared_ptr commVec =
             vec->select( commSelector, var->getName() );
         return commVec->subsetVectorForVariable( var );
-    }
-    else {
+    } else {
         return vec->subsetVectorForVariable( var );
     }
 }
@@ -1340,8 +1309,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
             vec->constSelect( commSelector, var->getName() );
         return commVec->constSubsetVectorForVariable( var );
-    }
-    else {
+    } else {
         return vec->constSubsetVectorForVariable( var );
     }
 }

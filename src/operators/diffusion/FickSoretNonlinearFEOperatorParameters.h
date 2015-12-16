@@ -18,7 +18,8 @@ namespace Operator {
 
 class FickSoretNonlinearFEOperator;
 
-class FickSoretNonlinearFEOperatorParameters : public OperatorParameters {
+class FickSoretNonlinearFEOperatorParameters : public OperatorParameters
+{
 public:
     explicit FickSoretNonlinearFEOperatorParameters( AMP::shared_ptr<Database> &db )
         : OperatorParameters( db )

@@ -15,7 +15,8 @@ namespace TimeIntegrator {
  * Class ExplicitEuler is a concrete time integrator
  * that implements the explicit Runge-Kutta second order (RK2) method.
  */
-class ExplicitEuler : public TimeIntegrator {
+class ExplicitEuler : public TimeIntegrator
+{
 public:
     /**
      * Constructor that accepts parameter list.

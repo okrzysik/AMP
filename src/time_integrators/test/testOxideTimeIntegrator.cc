@@ -97,7 +97,8 @@ void OxideTest( AMP::UnitTest *ut, std::string input_file )
 #endif
         // Check the solution
         if ( input_db->keyExists( "oxide" ) && input_db->keyExists( "alpha" ) ) {
-            if ( times[i] == 0.0 ) continue;
+            if ( times[i] == 0.0 )
+                continue;
             std::vector<double> oxide_solution = input_db->getDoubleArray( "oxide" );
             std::vector<double> alpha_solution = input_db->getDoubleArray( "alpha" );
             double err_oxide                   = oxide->min() - oxide_solution[i];

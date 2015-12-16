@@ -15,7 +15,8 @@
 namespace AMP {
 namespace Operator {
 
-class MechanicsModel : public ElementPhysicsModel {
+class MechanicsModel : public ElementPhysicsModel
+{
 public:
     /** Constructor */
     explicit MechanicsModel( const AMP::shared_ptr<MechanicsModelParameters> &params )

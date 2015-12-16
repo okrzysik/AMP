@@ -8,7 +8,8 @@
 namespace AMP {
 namespace Operator {
 
-class FlowFrapconOperatorParameters : public OperatorParameters {
+class FlowFrapconOperatorParameters : public OperatorParameters
+{
 public:
     explicit FlowFrapconOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
         : OperatorParameters( db )

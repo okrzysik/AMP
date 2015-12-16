@@ -16,7 +16,8 @@ namespace LinearAlgebra {
 
 /** \brief Parameters used to instantiate a VectorEntryMap
   */
-class VectorEntryMapParameters {
+class VectorEntryMapParameters
+{
 public:
     /** \brief Convenince typedef
       */
@@ -50,7 +51,8 @@ public:
   * are on the first core, \f$[n_1\ldots n_2-1]\f$ are on the second core, etc.
   */
 template <bool AFFINE_MAP>
-class VectorEntryMap : public Castable {
+class VectorEntryMap : public Castable
+{
 protected:
     /** \brief The CommunicationList for this mapping
       */

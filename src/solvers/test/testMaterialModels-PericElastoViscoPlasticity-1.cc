@@ -40,7 +40,8 @@
 
 #define ITFAILS ut.failure( __LINE__ );
 #define UNIT_TEST( a ) \
-    if ( !( a ) ) ut.failure( __LINE__ );
+    if ( !( a ) )      \
+        ut.failure( __LINE__ );
 
 void myTest( AMP::UnitTest *ut, std::string exeName )
 {
@@ -114,20 +115,16 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         if ( i <= 70 ) {
             epsilon_dot     = 0.1;
             time_multiplier = 0.001;
-        }
-        else if ( i <= 350 ) {
+        } else if ( i <= 350 ) {
             epsilon_dot     = 0.01;
             time_multiplier = 0.001;
-        }
-        else if ( i <= 450 ) {
+        } else if ( i <= 450 ) {
             epsilon_dot     = 0.1;
             time_multiplier = 0.001;
-        }
-        else if ( i <= 700 ) {
+        } else if ( i <= 700 ) {
             epsilon_dot     = 0.01;
             time_multiplier = 0.001;
-        }
-        else if ( i <= 850 ) {
+        } else if ( i <= 850 ) {
             epsilon_dot     = 0.1;
             time_multiplier = 0.001;
         }
@@ -157,8 +154,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         if ( i == 0 ) {
             slope[0]   = 0.0;
             slope_p[0] = 0.0;
-        }
-        else {
+        } else {
             slope[i]   = ( sig11[i] - sig11[i - 1] ) / ( eph11[i] - eph11[i - 1] );
             slope_p[i] = ( sig11p[i] - sig11p[i - 1] ) / ( eph11p[i] - eph11p[i - 1] );
         }
@@ -228,12 +224,10 @@ int main( int argc, char *argv[] )
     for ( size_t i = 0; i < exeNames.size(); i++ ) {
         try {
             myTest( &ut, exeNames[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             AMP::pout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             AMP::pout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing" );

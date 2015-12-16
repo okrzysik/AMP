@@ -8,7 +8,8 @@
 #include <cassert>
 
 
-class soft_equal_to {
+class soft_equal_to
+{
 public:
     explicit soft_equal_to( double const tol = 1.0e-15 ) : tolerance( tol ){};
     inline bool operator()( double const x, double const y )
@@ -205,8 +206,7 @@ void draw_tetrahedron( unsigned int f, hex8_element_t *volume_element )
         assert( t[1].above_point( t[3].get_centroid() ) );
         b[0] = true;
         b[1] = true;
-    }
-    else {
+    } else {
         assert( t[2].above_point( t[0].get_centroid() ) );
         assert( t[2].above_point( t[1].get_centroid() ) );
         assert( t[3].above_point( t[0].get_centroid() ) );
@@ -367,12 +367,10 @@ int main( int argc, char *argv[] )
 
     try {
         myTest( &ut, exeName );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

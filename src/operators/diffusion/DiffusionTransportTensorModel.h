@@ -10,7 +10,8 @@ namespace Operator {
 
 typedef ElementPhysicsModelParameters DiffusionTransportTensorModelParameters;
 
-class DiffusionTransportTensorModel : public DiffusionTransportModel {
+class DiffusionTransportTensorModel : public DiffusionTransportModel
+{
 public:
     explicit DiffusionTransportTensorModel(
         const AMP::shared_ptr<DiffusionTransportTensorModelParameters> params );

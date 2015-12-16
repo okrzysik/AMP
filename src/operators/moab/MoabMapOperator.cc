@@ -34,11 +34,9 @@ MoabMapOperator::MoabMapOperator( const SP_MoabMapParams &params )
     // Interpolate to nodes or Gauss points?
     if ( params->d_db->getString( "InterpolateToType" ).compare( "Vertex" ) == 0 ) {
         d_interpType = NODES;
-    }
-    else if ( params->d_db->getString( "InterpolateToType" ).compare( "GaussPoint" ) == 0 ) {
+    } else if ( params->d_db->getString( "InterpolateToType" ).compare( "GaussPoint" ) == 0 ) {
         d_interpType = GAUSS_POINTS;
-    }
-    else
+    } else
         AMP_ERROR( "InterpolateToType must be Vertex or GaussPoint" );
 }
 
@@ -76,7 +74,8 @@ void MoabMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     for ( size_t meshIndex = 0; meshIndex < meshIDs.size(); meshIndex++ ) {
         // this is an accessor to all the mesh info.
         AMP::Mesh::Mesh::shared_ptr currentMesh = d_meshMgr->Subset( meshIDs[meshIndex] );
-        if ( currentMesh.get() == NULL ) continue;
+        if ( currentMesh.get() == NULL )
+            continue;
 
         std::vector<double> theseCoords;
         switch ( d_interpType ) {

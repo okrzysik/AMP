@@ -9,7 +9,8 @@
 namespace AMP {
 namespace Operator {
 
-class RobinMatrixCorrectionParameters : public LinearBoundaryOperatorParameters {
+class RobinMatrixCorrectionParameters : public LinearBoundaryOperatorParameters
+{
 public:
     explicit RobinMatrixCorrectionParameters( const AMP::shared_ptr<AMP::Database> &db )
         : LinearBoundaryOperatorParameters( db )

@@ -9,7 +9,8 @@ namespace Solver {
 
 typedef SolverStrategyParameters ConstraintsEliminationSolverParameters;
 
-class ConstraintsEliminationSolver : public SolverStrategy {
+class ConstraintsEliminationSolver : public SolverStrategy
+{
 public:
     explicit ConstraintsEliminationSolver(
         AMP::shared_ptr<ConstraintsEliminationSolverParameters> params );

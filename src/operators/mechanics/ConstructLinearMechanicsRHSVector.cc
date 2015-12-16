@@ -49,8 +49,7 @@ void computeTemperatureRhsVector(
     libMeshEnums::Order qruleOrder;
     if ( qruleOrderName == "DEFAULT" ) {
         qruleOrder = feType->default_quadrature_order();
-    }
-    else {
+    } else {
         qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 
@@ -196,7 +195,8 @@ void computeTemperatureRhsVector(
             for ( unsigned int i = 0; i < 6; i++ ) {
                 d_thermalStrain[i] = 0.0;
                 d_thermalStress[i] = 0.0;
-                for ( unsigned int j = 0; j < 6; j++ ) d_constitutiveMatrix[i][j] = 0.0;
+                for ( unsigned int j           = 0; j < 6; j++ )
+                    d_constitutiveMatrix[i][j] = 0.0;
             }
 
             double E  = youngsModulus;
@@ -204,9 +204,11 @@ void computeTemperatureRhsVector(
             double K  = E / ( 3.0 * ( 1.0 - ( 2.0 * nu ) ) );
             double G  = E / ( 2.0 * ( 1.0 + nu ) );
 
-            for ( unsigned int i = 0; i < 3; i++ ) d_constitutiveMatrix[i][i] += ( 2.0 * G );
+            for ( unsigned int i = 0; i < 3; i++ )
+                d_constitutiveMatrix[i][i] += ( 2.0 * G );
 
-            for ( unsigned int i = 3; i < 6; i++ ) d_constitutiveMatrix[i][i] += G;
+            for ( unsigned int i = 3; i < 6; i++ )
+                d_constitutiveMatrix[i][i] += G;
 
             for ( unsigned int i = 0; i < 3; i++ ) {
                 for ( unsigned int j = 0; j < 3; j++ ) {

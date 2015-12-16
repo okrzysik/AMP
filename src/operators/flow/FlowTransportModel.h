@@ -15,7 +15,8 @@ namespace Operator {
 
 typedef ElementPhysicsModelParameters FlowTransportModelParameters;
 
-class FlowTransportModel : public ElementPhysicsModel {
+class FlowTransportModel : public ElementPhysicsModel
+{
 public:
     explicit FlowTransportModel( const AMP::shared_ptr<FlowTransportModelParameters> &params )
         : ElementPhysicsModel( params )
@@ -28,8 +29,7 @@ public:
             std::string matname = params->d_db->getString( "Material" );
             d_coolant =
                 AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
-        }
-        else {
+        } else {
             d_density = ( params->d_db )->getDoubleWithDefault( "DENSITY", 1 );
             d_fmu     = ( params->d_db )->getDoubleWithDefault( "VISCOSITY", 1.0 );
             d_Re      = ( params->d_db )->getDoubleWithDefault( "ReynoldsNumber", 1.0 );

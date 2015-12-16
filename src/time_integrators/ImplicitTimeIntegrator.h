@@ -65,7 +65,8 @@ namespace TimeIntegrator {
   @see Operator
   @see SolverStrategy
  */
-class ImplicitTimeIntegrator : public TimeIntegrator {
+class ImplicitTimeIntegrator : public TimeIntegrator
+{
 public:
     /**
      * The constructor for ImplicitTimeIntegrator initializes the

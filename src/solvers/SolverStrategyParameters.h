@@ -31,7 +31,8 @@ namespace Solver {
  * SolverStrategy objects
  */
 
-class SolverStrategyParameters : public ParameterBase {
+class SolverStrategyParameters : public ParameterBase
+{
 public:
     /**
      * Empty constructor.

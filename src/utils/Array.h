@@ -44,7 +44,8 @@ namespace AMP {
  * Class Array is a multi-dimensional array class written by Mark Berrill
  */
 template <class TYPE>
-class Array {
+class Array
+{
 public:
     /*!
      * Create a new empty Array

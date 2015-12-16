@@ -36,8 +36,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int callLinReset )
     if ( callLinReset ) {
         log_file = log_file + "-1";
         msgName  = msgName + "-1";
-    }
-    else {
+    } else {
         log_file = log_file + "-0";
         msgName  = msgName + "-0";
     }
@@ -213,12 +212,10 @@ int main( int argc, char *argv[] )
         for ( size_t i = 0; i < exeNames.size(); i++ ) {
             try {
                 myTest( &ut, exeNames[i], j );
-            }
-            catch ( std::exception &err ) {
+            } catch ( std::exception &err ) {
                 AMP::pout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
                 ut.failure( "ERROR: While testing" );
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 AMP::pout << "ERROR: While testing " << argv[0]
                           << "An unknown exception was thrown." << std::endl;
                 ut.failure( "ERROR: While testing" );

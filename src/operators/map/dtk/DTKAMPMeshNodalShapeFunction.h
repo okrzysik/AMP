@@ -16,7 +16,8 @@ namespace Operator {
   * AMP Mesh nodal shape function implementation for DTK EntityShapeFunction
   * interface. For now this API is only for Hex-8 elements and nodes.
 */
-class AMPMeshNodalShapeFunction : public DataTransferKit::EntityShapeFunction {
+class AMPMeshNodalShapeFunction : public DataTransferKit::EntityShapeFunction
+{
 public:
     /**
      * Constructor.

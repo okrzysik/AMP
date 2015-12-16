@@ -13,7 +13,8 @@
 namespace AMP {
 namespace Operator {
 
-class CoupledFlowFrapconOperator : public ColumnOperator {
+class CoupledFlowFrapconOperator : public ColumnOperator
+{
 public:
     explicit CoupledFlowFrapconOperator( const AMP::shared_ptr<OperatorParameters> &params );
 

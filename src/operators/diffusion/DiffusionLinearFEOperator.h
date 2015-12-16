@@ -19,7 +19,8 @@ namespace AMP {
 namespace Operator {
 
 
-class DiffusionLinearFEOperator : public LinearFEOperator {
+class DiffusionLinearFEOperator : public LinearFEOperator
+{
 public:
     explicit DiffusionLinearFEOperator(
         const AMP::shared_ptr<DiffusionLinearFEOperatorParameters> &params );

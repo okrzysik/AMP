@@ -21,7 +21,8 @@ namespace Operator {
   thermal expansion, creep and plastic deformation of the clad can be captured using this model as
   well.
   */
-class GeneralCladThermalCreepPlasticModel : public MechanicsMaterialModel {
+class GeneralCladThermalCreepPlasticModel : public MechanicsMaterialModel
+{
 public:
     /**
       Constructor. This reads the values of some parameters from the database object contained in

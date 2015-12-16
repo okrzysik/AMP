@@ -45,7 +45,8 @@ static const double ranges[1][2] = { { TminVal, TmaxVal } };
 
 //=================== Classes =======================================================
 
-class ThermalConductivityProp : public Property<double> {
+class ThermalConductivityProp : public Property<double>
+{
 public:
     ThermalConductivityProp()
         : Property<double>( name_base + "_" + "ThermalConductivity", // Name string
@@ -61,7 +62,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class DensityProp : public Property<double> {
+class DensityProp : public Property<double>
+{
 public:
     DensityProp()
         : Property<double>( name_base + "_" + "Density", // Name string
@@ -77,7 +79,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class ThermalExpansionProp : public Property<double> {
+class ThermalExpansionProp : public Property<double>
+{
 public:
     ThermalExpansionProp()
         : Property<double>( name_base + "_" + "ThermalExpansion", // Name string
@@ -93,7 +96,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class HeatCapacityPressureProp : public Property<double> {
+class HeatCapacityPressureProp : public Property<double>
+{
 public:
     HeatCapacityPressureProp()
         : Property<double>( name_base + "_" + "HeatCapacityPressure", // Name string
@@ -109,7 +113,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class YoungsModulusProp : public Property<double> {
+class YoungsModulusProp : public Property<double>
+{
 public:
     YoungsModulusProp()
         : Property<double>( name_base + "_" + "YoungsModulus", // Name string
@@ -125,7 +130,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class PoissonRatioProp : public Property<double> {
+class PoissonRatioProp : public Property<double>
+{
 public:
     PoissonRatioProp()
         : Property<double>( name_base + "_" + "PoissonRatio", // Name string

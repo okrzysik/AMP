@@ -7,7 +7,8 @@ namespace AMP {
 namespace Materials {
 
 template <class Number>
-class VectorProperty : public Property<Number> {
+class VectorProperty : public Property<Number>
+{
 public:
     /**
      * Constructor

@@ -10,7 +10,8 @@
 namespace AMP {
 namespace Operator {
 
-class VectorCopyOperatorParameters : public OperatorParameters {
+class VectorCopyOperatorParameters : public OperatorParameters
+{
 public:
     VectorCopyOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
         : OperatorParameters( db )

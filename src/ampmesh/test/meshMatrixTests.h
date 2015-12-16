@@ -130,12 +130,14 @@ void GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
                         for ( size_t i1 = 0; i1 < cols.size(); i1++ ) {
                             for ( size_t i2 = 0; i2 < localDOFs.size(); i2++ ) {
                                 if ( cols[i1] == localDOFs[i2] ) {
-                                    if ( values[i1] != proc ) passes = false;
+                                    if ( values[i1] != proc )
+                                        passes = false;
                                 }
                             }
                             for ( size_t i2 = 0; i2 < neighborDOFs.size(); i2++ ) {
                                 if ( cols[i1] == neighborDOFs[i2] ) {
-                                    if ( values[i1] != proc ) passes = false;
+                                    if ( values[i1] != proc )
+                                        passes = false;
                                 }
                             }
                         }
@@ -146,8 +148,7 @@ void GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
                     utils->passes( "Able to write to ghost entries in matrix" );
                 else
                     utils->failure( "Able to write to ghost entries in matrix" );
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 utils->failure( "Able to write to ghost entries in matrix (exception)" );
             }
         }

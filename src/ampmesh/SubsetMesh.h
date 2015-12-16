@@ -16,7 +16,8 @@ namespace Mesh {
  * \brief A class used to handle a subset mesh
  * \details  This class provides routines for using subset meshes.
  */
-class SubsetMesh : public Mesh {
+class SubsetMesh : public Mesh
+{
 public:
     //! Default constructor
     SubsetMesh( AMP::shared_ptr<const Mesh> mesh,

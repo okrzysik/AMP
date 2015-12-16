@@ -7,7 +7,8 @@
 
 
 template <typename T>
-class StridedVectorFactory {
+class StridedVectorFactory
+{
 public:
     static AMP::LinearAlgebra::Variable::shared_ptr getVariable()
     {

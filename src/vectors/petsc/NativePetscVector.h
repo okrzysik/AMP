@@ -23,7 +23,8 @@ namespace LinearAlgebra {
 /** \class NativePetscVectorParameters
   * \brief Parameters to set when creating a NativePetscVector
   */
-class NativePetscVectorParameters : public NativeVectorParameters {
+class NativePetscVectorParameters : public NativeVectorParameters
+{
 public:
     //!  The vector to wrap
     Vec d_InVec;
@@ -61,7 +62,8 @@ public:
   * \see PetscVector
   * \see ManagedPetscVector
   */
-class NativePetscVector : public NativeVector, public PetscVector, public VectorEngine {
+class NativePetscVector : public NativeVector, public PetscVector, public VectorEngine
+{
 public:
     //! Conveninece typedef
     typedef NativeVector::parameters_ptr parameters_ptr;

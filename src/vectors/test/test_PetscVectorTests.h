@@ -23,7 +23,8 @@ void checkPetscError( AMP::UnitTest *utils, PetscErrorCode i )
 
 
 template <typename VECTOR_FACTORY>
-class InstantiatePetscVectors {
+class InstantiatePetscVectors
+{
 public:
     static const char *get_test_name() { return "instantiate vectors"; }
 
@@ -45,7 +46,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class Bug_612 {
+class Bug_612
+{
 public:
     static const char *get_test_name() { return "Bug 612"; }
 
@@ -89,14 +91,16 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class DuplicatePetscVector {
+class DuplicatePetscVector
+{
 public:
     static const char *get_test_name() { return "Duplicate Petsc vector"; }
 
     static void run_test( AMP::UnitTest *utils )
     {
         AMP::LinearAlgebra::Vector::shared_ptr vectora( VECTOR_FACTORY::getManagedVector() );
-        if ( vectora->isA<AMP::LinearAlgebra::NativePetscVector>() ) return;
+        if ( vectora->isA<AMP::LinearAlgebra::NativePetscVector>() )
+            return;
 
         vectora->setVariable( AMP::LinearAlgebra::Variable::shared_ptr(
             new AMP::LinearAlgebra::Variable( "dummy_variable" ) ) );
@@ -144,7 +148,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class StaticDuplicatePetscVector {
+class StaticDuplicatePetscVector
+{
 public:
     static const char *get_test_name() { return "NativePetscVector::getManagedVectorDuplicate()"; }
 
@@ -173,7 +178,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class StaticCopyPetscVector {
+class StaticCopyPetscVector
+{
 public:
     static const char *get_test_name() { return "NativePetscVector::getManagedVectorCopy()"; }
 
@@ -203,7 +209,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class CopyPetscVector {
+class CopyPetscVector
+{
 public:
     static const char *get_test_name() { return "native petsc copy"; }
 
@@ -224,7 +231,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyPointwiseMaxAbsPetscVector {
+class VerifyPointwiseMaxAbsPetscVector
+{
 public:
     static const char *get_test_name() { return "VecPointwiseMaxAbs test"; }
 
@@ -265,7 +273,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyPointwiseMaxPetscVector {
+class VerifyPointwiseMaxPetscVector
+{
 public:
     static const char *get_test_name() { return "VecPointwiseMax test"; }
 
@@ -306,7 +315,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyPointwiseMinPetscVector {
+class VerifyPointwiseMinPetscVector
+{
 public:
     static const char *get_test_name() { return "VecPointwiseMin test"; }
 
@@ -347,7 +357,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyAXPBYPCZPetscVector {
+class VerifyAXPBYPCZPetscVector
+{
 public:
     static const char *get_test_name() { return "VecAXPBYPCZ test"; }
 
@@ -392,7 +403,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyAYPXPetscVector {
+class VerifyAYPXPetscVector
+{
 public:
     static const char *get_test_name() { return "VecAYPX test"; }
 
@@ -429,7 +441,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyExpPetscVector {
+class VerifyExpPetscVector
+{
 public:
     static const char *get_test_name() { return "VecExp test"; }
 
@@ -460,7 +473,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyLogPetscVector {
+class VerifyLogPetscVector
+{
 public:
     static const char *get_test_name() { return "VecLog test"; }
 
@@ -491,7 +505,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyNormsPetscVector {
+class VerifyNormsPetscVector
+{
 public:
     static const char *get_test_name() { return "PETSc norm versus managed norm"; }
 
@@ -613,7 +628,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyAXPBYPetscVector {
+class VerifyAXPBYPetscVector
+{
 public:
     static const char *get_test_name() { return "PETSc AXPBY versus managed"; }
 
@@ -665,7 +681,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifySwapPetscVector {
+class VerifySwapPetscVector
+{
 public:
     static const char *get_test_name() { return "PETSc swap vector versus managed"; }
 
@@ -736,7 +753,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyGetSizePetscVector {
+class VerifyGetSizePetscVector
+{
 public:
     static const char *get_test_name() { return "PETSC GetSize versus managed"; }
 
@@ -763,13 +781,15 @@ public:
             utils->passes( "Managed PETSc: Native interface matches AMP interface" );
         else
             utils->failure( "Managed PETSc: Native interface does not match AMP interface" );
-        if ( sizea1 == sizeb1 ) utils->passes( "Managed PETSc matches native PETSc" );
+        if ( sizea1 == sizeb1 )
+            utils->passes( "Managed PETSc matches native PETSc" );
     }
 };
 
 
 template <typename VECTOR_FACTORY>
-class VerifyMaxPointwiseDividePetscVector {
+class VerifyMaxPointwiseDividePetscVector
+{
 public:
     static const char *get_test_name() { return "PETSC MaxPointwiseDivide versus managed"; }
 
@@ -806,7 +826,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyAbsPetscVector {
+class VerifyAbsPetscVector
+{
 public:
     static const char *get_test_name() { return "PETSC abs versus managed abs"; }
 
@@ -817,7 +838,8 @@ public:
         Vec veca, vecb;
         veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
         vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-        if ( !veca || !vecb ) utils->failure( "PETSC abs create" );
+        if ( !veca || !vecb )
+            utils->failure( "PETSC abs create" );
 
         vectora->setRandomValues();
         vectora->addScalar( vectora, 1. );
@@ -836,7 +858,8 @@ public:
         Vec vecc, vecd;
         vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
         vecd = vectord->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-        if ( !vecc || !vecd ) utils->failure( "PETSC abs create" );
+        if ( !vecc || !vecd )
+            utils->failure( "PETSC abs create" );
 
         vectorc->setRandomValues();
         vectorc->addScalar( vectorc, 1. );
@@ -853,7 +876,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyPointwiseMultPetscVector {
+class VerifyPointwiseMultPetscVector
+{
 public:
     static const char *get_test_name() { return "PointwiseMult in PETSc"; }
 
@@ -911,7 +935,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyPointwiseDividePetscVector {
+class VerifyPointwiseDividePetscVector
+{
 public:
     static const char *get_test_name() { return "PointwiseDivide in PETSc"; }
 
@@ -965,7 +990,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifySqrtPetscVector {
+class VerifySqrtPetscVector
+{
 public:
     static const char *get_test_name() { return "PETSc VecSqrt test"; }
 
@@ -1000,7 +1026,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifySetRandomPetscVector {
+class VerifySetRandomPetscVector
+{
 public:
     static const char *get_test_name() { return "PETSc SetRandom versus managed setValue"; }
 
@@ -1047,7 +1074,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifySetPetscVector {
+class VerifySetPetscVector
+{
 public:
     static const char *get_test_name() { return "PETSc Set versus managed setValue"; }
 
@@ -1090,7 +1118,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyAXPYPetscVector {
+class VerifyAXPYPetscVector
+{
 public:
     static const char *get_test_name() { return "PETSc AXPY versus managed AXPY"; }
 
@@ -1106,7 +1135,8 @@ public:
         veca2     = vectora2->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
         veca_orig = vectora_orig->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
         vecb      = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-        if ( !veca || !vecb || !veca || !veca_orig ) utils->failure( "PETSc AXPY create" );
+        if ( !veca || !vecb || !veca || !veca_orig )
+            utils->failure( "PETSc AXPY create" );
 
         vectora->setRandomValues();
         vectorb->setRandomValues();
@@ -1145,7 +1175,8 @@ public:
         vecd2 = vectord2->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
         checkPetscError<VECTOR_FACTORY>( utils, VecAXPY( vecc, 1.23456, vecd ) );
         vectorc2->axpy( 1.23456, vectord2, vectorc2 );
-        if ( !vecc || !vecd || !vecc2 || !vecd2 ) utils->failure( "PETSC AXPY create" );
+        if ( !vecc || !vecd || !vecc2 || !vecd2 )
+            utils->failure( "PETSC AXPY create" );
 
         if ( fabs( vectorc->L1Norm() - vectorc2->L1Norm() ) < 0.000001 )
             utils->passes( "managed interface passes l1 norm test of axpy" );
@@ -1177,7 +1208,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyScalePetscVector {
+class VerifyScalePetscVector
+{
 public:
     static const char *get_test_name() { return "PETSc scale versus managed scale"; }
 
@@ -1190,7 +1222,8 @@ public:
         veca  = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
         veca2 = vectora2->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
         vecb  = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-        if ( !veca || !veca2 || !vecb ) utils->failure( "PETSc scale create" );
+        if ( !veca || !veca2 || !vecb )
+            utils->failure( "PETSc scale create" );
 
         vectora->setRandomValues();
         vectorb->copyVector( vectora );
@@ -1240,7 +1273,8 @@ public:
 
 
 template <typename VECTOR_FACTORY>
-class VerifyDotPetscVector {
+class VerifyDotPetscVector
+{
 public:
     static const char *get_test_name() { return "PETSc dot product versus managed dot product"; }
 

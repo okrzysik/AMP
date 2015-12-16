@@ -48,9 +48,11 @@ void readInputDatabase( AMP::UnitTest *ut )
 
     if ( number > 0 ) {
         std::vector<int> intArray = tmp_db->getIntegerArray( "intArray" );
-        if ( (int) intArray.size() != number ) ut->failure( "intArray was the wrong size" );
+        if ( (int) intArray.size() != number )
+            ut->failure( "intArray was the wrong size" );
         std::vector<double> doubleArray = tmp_db->getDoubleArray( "doubleArray" );
-        if ( (int) doubleArray.size() != number ) ut->failure( "doubleArray was the wrong size" );
+        if ( (int) doubleArray.size() != number )
+            ut->failure( "doubleArray was the wrong size" );
     }
 
     std::cout << "tmp_db created and destroyed successfully." << std::endl;

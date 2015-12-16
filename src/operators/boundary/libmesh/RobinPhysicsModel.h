@@ -16,7 +16,8 @@ namespace Operator {
 
 typedef ElementPhysicsModelParameters RobinPhysicsModelParameters;
 
-class RobinPhysicsModel : public ElementPhysicsModel {
+class RobinPhysicsModel : public ElementPhysicsModel
+{
 public:
     explicit RobinPhysicsModel( const AMP::shared_ptr<RobinPhysicsModelParameters> &params )
         : ElementPhysicsModel( params ), d_numActiveVariables( 0 )

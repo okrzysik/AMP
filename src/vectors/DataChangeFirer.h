@@ -32,7 +32,8 @@ class DataChangeListener;
   * has changed.
   */
 
-class DataChangeFirer : private std::deque<DataChangeListener *> {
+class DataChangeFirer : private std::deque<DataChangeListener *>
+{
 public:
     /**
       * \brief  Notify all listeners of a data change event

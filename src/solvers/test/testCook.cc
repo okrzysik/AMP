@@ -186,8 +186,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName )
 
     if ( finalResidualNorm > ( 1e-10 * initResidualNorm ) ) {
         ut->failure( exeName );
-    }
-    else {
+    } else {
         ut->passes( exeName );
     }
 }
@@ -209,8 +208,7 @@ int main( int argc, char *argv[] )
 
         exeNames.push_back( "testCook-normal-mesh2" );
         exeNames.push_back( "testCook-reduced-mesh2" );
-    }
-    else {
+    } else {
         for ( int i = 1; i < argc; i += 2 ) {
             char inpName[100];
             sprintf( inpName, "testCook-%s-mesh%d", argv[i], atoi( argv[i + 1] ) );
@@ -221,12 +219,10 @@ int main( int argc, char *argv[] )
     for ( size_t i = 0; i < exeNames.size(); i++ ) {
         try {
             linearElasticTest( &ut, exeNames[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             AMP::pout << "ERROR: " << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             AMP::pout << "ERROR: "
                       << "An unknown exception was thrown." << std::endl;
             ut.failure( "ERROR: While testing" );

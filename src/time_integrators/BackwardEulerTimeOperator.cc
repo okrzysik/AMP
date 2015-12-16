@@ -30,16 +30,14 @@ void BackwardEulerTimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_
             d_pScratchVector->subtract( *u, *d_pPreviousTimeSolution );
             d_pMassOperator->apply( d_pScratchVector, r );
             r->scale( 1.0 / d_dCurrentDt );
-        }
-        else {
+        } else {
             d_pMassOperator->apply( d_pPreviousTimeSolution, d_pScratchVector );
             d_pMassOperator->apply( u, r );
             r->scale( -1.0 );
             r->add( *r, *d_pScratchVector );
             r->scale( 1.0 / d_dCurrentDt );
         }
-    }
-    else {
+    } else {
         r->subtract( *u, *d_pPreviousTimeSolution );
         r->scale( 1.0 / d_dCurrentDt );
     }

@@ -27,8 +27,7 @@ RNG::RNG( RNGParameters::shared_ptr params ) : d_Params( params )
 {
     if ( params->d_WhichSeed == RNGParameters::USE_GLOBAL_SEED ) {
         srand( static_cast<int>( d_Seed ) + params->d_Rank );
-    }
-    else {
+    } else {
         srand( static_cast<int>( params->d_Seed ) + params->d_Rank );
     }
 }

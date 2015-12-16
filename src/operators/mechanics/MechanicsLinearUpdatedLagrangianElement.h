@@ -21,7 +21,8 @@ namespace Operator {
   The linear operator could either be a linear elasticity operator or it could be
   the jacobian of a nonlinear elasticity/elasto-plasticity operator.
  */
-class MechanicsLinearUpdatedLagrangianElement : public MechanicsElement {
+class MechanicsLinearUpdatedLagrangianElement : public MechanicsElement
+{
 public:
     //! Constructor.
     explicit MechanicsLinearUpdatedLagrangianElement(
@@ -54,8 +55,7 @@ public:
     {
         if ( d_useReducedIntegration ) {
             apply_Reduced();
-        }
-        else {
+        } else {
             apply_Normal();
         }
     }
@@ -133,9 +133,10 @@ protected:
 
     std::vector<std::vector<double>> *d_elementStiffnessMatrix; /**< Element stiffness matrix. */
 
-    std::vector<std::vector<double>> d_elementInputVectors; /**< Element input vectors
-                                                                  (Displacement, temperature, burnup
-                                                                  etc). */
+    std::vector<std::vector<double>>
+        d_elementInputVectors; /**< Element input vectors
+                                      (Displacement, temperature, burnup
+                                      etc). */
 
     bool d_onePointShearIntegration;
 

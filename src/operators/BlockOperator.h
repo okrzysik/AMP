@@ -9,7 +9,8 @@
 namespace AMP {
 namespace Operator {
 
-class BlockOperator : public Operator {
+class BlockOperator : public Operator
+{
 public:
     BlockOperator();
 

@@ -54,8 +54,7 @@ void DiffusionCylindricalTransportModel::getTensorTransport(
     std::vector<double> radialCoefficient( coordinates.size() );
     if ( args.find( d_RadiusArgument ) != args.end() ) {
         AMP_INSIST( args[d_RadiusArgument]->size() == coordinates.size(), "radial size mismatch" );
-    }
-    else {
+    } else {
         args.insert( std::make_pair( d_RadiusArgument,
                                      AMP::shared_ptr<std::vector<double>>(
                                          new std::vector<double>( coordinates.size() ) ) ) );
@@ -93,7 +92,8 @@ void DiffusionCylindricalTransportModel::getTensorTransport(
             AMP_INSIST( result[i][j]->size() == coordinates.size(),
                         "result tensor components must be same size as coordinates" );
             if ( i == 2 or j == 2 )
-                for ( size_t k = 0; k < coordinates.size(); k++ ) ( *result[i][j] )[k] = 0.;
+                for ( size_t k           = 0; k < coordinates.size(); k++ )
+                    ( *result[i][j] )[k] = 0.;
         }
     }
     for ( size_t k = 0; k < coordinates.size(); k++ ) {

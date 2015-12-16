@@ -14,7 +14,8 @@ namespace Operator {
   performed within a finite element operator. Concrete implementations
   must implement the apply() function.
   */
-class ElementOperation {
+class ElementOperation
+{
 public:
     /**
       Constructor.

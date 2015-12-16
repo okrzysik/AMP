@@ -259,17 +259,14 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
         AMP::shared_ptr<AMP::Solver::TrilinosMLSolver> linearFlowPreconditioner(
             new AMP::Solver::TrilinosMLSolver( PreconditionerParams ) );
         linearSolver->setPreconditioner( linearFlowPreconditioner );
-    }
-    else if ( preconditioner == "Banded" ) {
+    } else if ( preconditioner == "Banded" ) {
         Preconditioner_db->putInteger( "KL", 3 );
         Preconditioner_db->putInteger( "KU", 3 );
         AMP::shared_ptr<AMP::Solver::BandedSolver> linearFlowPreconditioner(
             new AMP::Solver::BandedSolver( PreconditionerParams ) );
         linearSolver->setPreconditioner( linearFlowPreconditioner );
-    }
-    else if ( preconditioner == "None" ) {
-    }
-    else {
+    } else if ( preconditioner == "None" ) {
+    } else {
         AMP_ERROR( "Invalid preconditioner type" );
     }
 
@@ -315,10 +312,12 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
         std::vector<double> enthalpyResult( 1 );
         subchannelPhysicsModel->getProperty( "Enthalpy", enthalpyResult, enthalpyArgMap );
         double h2 = enthalpyResult[0];
-        if ( !AMP::Utilities::approx_equal( h, h2, 1e-7 ) ) pass = false;
+        if ( !AMP::Utilities::approx_equal( h, h2, 1e-7 ) )
+            pass = false;
         ++face;
     }
-    if ( !pass ) ut->failure( "failed to recover h" );
+    if ( !pass )
+        ut->failure( "failed to recover h" );
 
     // Print the Inlet/Outlet properties
     std::cout << std::endl << std::endl;
@@ -354,8 +353,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     double tol = input_db->getDoubleWithDefault( "TOLERANCE", 1e-6 );
     if ( relErrorNorm <= tol && fabs( Tin - TinSol ) < tol ) {
         ut->passes( exeName + ": manufactured solution test" );
-    }
-    else {
+    } else {
         ut->failure( exeName + ": manufactured solution test" );
     }
 
@@ -424,15 +422,16 @@ int main( int argc, char *argv[] )
     std::vector<std::string> files;
     if ( argc >= 2 ) {
         files.resize( argc - 1 );
-        for ( int i = 0; i < argc - 1; i++ ) files[i] = std::string( argv[i + 1] );
-    }
-    else {
+        for ( int i  = 0; i < argc - 1; i++ )
+            files[i] = std::string( argv[i + 1] );
+    } else {
         files.resize( 2 );
         files[0] = "testSubchannelSolution-1";
         files[1] = "testSubchannelSolution-2";
     }
 
-    for ( size_t i = 0; i < files.size(); i++ ) flowTest( &ut, files[i] );
+    for ( size_t i = 0; i < files.size(); i++ )
+        flowTest( &ut, files[i] );
 
     ut.report();
 

@@ -31,7 +31,8 @@ namespace Utilities {
  *    and matrices using a simple ASCII format.
  *    Note: this format only supports a decomposition of 1, and will write all data using rank0
  */
-class AsciiWriter : public AMP::Utilities::Writer {
+class AsciiWriter : public AMP::Utilities::Writer
+{
 public:
     //!  Default constructor
     AsciiWriter();

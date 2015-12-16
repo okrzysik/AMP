@@ -84,8 +84,7 @@ void MassMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &par
                     if ( d_dofIds[k][j] == i ) {
                         inputMatrix->setValueByGlobalID(
                             bndGlobalIds[j], bndGlobalIds[j], diagVal );
-                    }
-                    else {
+                    } else {
                         inputMatrix->setValueByGlobalID(
                             bndGlobalIds[d_dofIds[k][j]], bndGlobalIds[i], 0.0 );
                         inputMatrix->setValueByGlobalID(

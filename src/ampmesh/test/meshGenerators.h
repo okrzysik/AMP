@@ -11,14 +11,16 @@ namespace unit_test {
 
 
 // Base class for Mesh Generators
-class MeshGenerator {
+class MeshGenerator
+{
 public:
     // Routine to build the mesh
     virtual void build_mesh() { AMP_ERROR( "ERROR" ); }
     // Routine to get the pointer to the mesh
     virtual AMP::Mesh::Mesh::shared_ptr getMesh()
     {
-        if ( mesh.get() == NULL ) this->build_mesh();
+        if ( mesh.get() == NULL )
+            this->build_mesh();
         return mesh;
     }
     virtual ~MeshGenerator(){};
@@ -30,7 +32,8 @@ protected:
 
 // Class to create a cube
 template <int SIZE_X, int SIZE_Y, int SIZE_Z>
-class AMPCubeGenerator3 : public MeshGenerator {
+class AMPCubeGenerator3 : public MeshGenerator
+{
 public:
     virtual void build_mesh()
     {
@@ -58,7 +61,8 @@ public:
     }
 };
 template <int SIZE>
-class AMPCubeGenerator : public MeshGenerator {
+class AMPCubeGenerator : public MeshGenerator
+{
 public:
     virtual void build_mesh()
     {
@@ -76,7 +80,8 @@ public:
 
 
 // Class to create a cylinder
-class AMPCylinderGenerator : public MeshGenerator {
+class AMPCylinderGenerator : public MeshGenerator
+{
 public:
     virtual void build_mesh()
     {
@@ -106,7 +111,8 @@ public:
 
 
 // Class to create a tube
-class AMPTubeGenerator : public MeshGenerator {
+class AMPTubeGenerator : public MeshGenerator
+{
 public:
     virtual void build_mesh()
     {
@@ -138,7 +144,8 @@ public:
 
 
 // MulitMesh generator
-class AMPMultiMeshGenerator : public MeshGenerator {
+class AMPMultiMeshGenerator : public MeshGenerator
+{
 public:
     virtual void build_mesh()
     {
@@ -177,7 +184,8 @@ private:
         meshArrayDatabase->putInteger( "N", N_pellet );
         meshArrayDatabase->putString( "iterator", "%i" );
         std::vector<int> indexArray( N_pellet );
-        for ( int i = 0; i < N_pellet; i++ ) indexArray[i] = i + 1;
+        for ( int i       = 0; i < N_pellet; i++ )
+            indexArray[i] = i + 1;
         meshArrayDatabase->putIntegerArray( "indicies", indexArray );
         meshArrayDatabase->putString( "MeshName", "pellet_%i" );
         std::vector<int> size( 2 );
@@ -195,7 +203,8 @@ private:
         meshArrayDatabase->putDouble( "x_offset", 0.0 );
         meshArrayDatabase->putDouble( "y_offset", 0.0 );
         std::vector<double> offsetArray( N_pellet );
-        for ( int i = 0; i < N_pellet; i++ ) offsetArray[i] = ( (double) i ) * 0.0105;
+        for ( int i        = 0; i < N_pellet; i++ )
+            offsetArray[i] = ( (double) i ) * 0.0105;
         meshArrayDatabase->putDoubleArray( "z_offset", offsetArray );
     }
 
@@ -224,7 +233,8 @@ private:
 
 // Surface subset generator
 template <class GENERATOR, int GCW>
-class SurfaceSubsetGenerator : public MeshGenerator {
+class SurfaceSubsetGenerator : public MeshGenerator
+{
 public:
     virtual void build_mesh()
     {

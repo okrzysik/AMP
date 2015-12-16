@@ -169,7 +169,8 @@ void nekPipe( AMP::UnitTest *ut )
     bool nonZero = false;
     for ( int i = 0; i < numCoords; ++i ) {
         AMP::plog << "Pressure " << i << " is " << interpPress[i] << std::endl;
-        if ( interpPress[i] != 0.0 ) nonZero = true;
+        if ( interpPress[i] != 0.0 )
+            nonZero = true;
     }
 
     // Make sure something is non-zero
@@ -230,7 +231,8 @@ void nekPipe( AMP::UnitTest *ut )
     ut->passes( "Nek was not used." );
 #endif
 
-    if ( ut->NumPassGlobal() == 0 ) ut->failure( "if it doesn't pass, it must have failed." );
+    if ( ut->NumPassGlobal() == 0 )
+        ut->failure( "if it doesn't pass, it must have failed." );
 }
 
 
@@ -242,12 +244,10 @@ int main( int argc, char *argv[] )
     try {
         nekPipe( &ut );
         ut.passes( "Nek ran pipe to completion." );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

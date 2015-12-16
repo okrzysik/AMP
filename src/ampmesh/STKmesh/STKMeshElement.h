@@ -19,7 +19,8 @@ namespace Mesh {
  * A mesh element can be thought of as the smallest unit of a mesh.  It is of a type
  * of GeomType.  This class is derived to store a STKMesh element.
  */
-class STKMeshElement : public MeshElement {
+class STKMeshElement : public MeshElement
+{
 public:
     //! Empty constructor for a MeshElement
     STKMeshElement();

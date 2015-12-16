@@ -68,7 +68,8 @@ SubchannelToCladGPMap::~SubchannelToCladGPMap() {}
 ************************************************************************/
 bool SubchannelToCladGPMap::validMapType( const std::string &t )
 {
-    if ( t == "SubchannelToCladGPMap" ) return true;
+    if ( t == "SubchannelToCladGPMap" )
+        return true;
     return false;
 }
 
@@ -91,7 +92,8 @@ void SubchannelToCladGPMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared
     for ( size_t i = 0; i < ids.size(); i++ ) {
         DOF->getDOFs( ids[i], dofs );
         AMP_ASSERT( dofs.size() == 4 );
-        for ( int j = 0; j < 4; j++ ) vals[j] = interp_linear( z, f, z_gauss[i].z[j] );
+        for ( int j = 0; j < 4; j++ )
+            vals[j] = interp_linear( z, f, z_gauss[i].z[j] );
         vec->setLocalValuesByGlobalID( 4, &dofs[0], &vals[0] );
     }
     PROFILE_STOP( "fillReturnVector" );
@@ -122,7 +124,8 @@ SubchannelToCladGPMap::getGaussPoints( AMP::Mesh::Mesh::shared_ptr,
         // Get the current position and DOF
         std::vector<Point> coordinates = d_fe->get_xyz();
         AMP_ASSERT( coordinates.size() == 4 );
-        for ( unsigned int qp = 0; qp < 4; qp++ ) z_pos[i].z[qp] = coordinates[qp]( 2 );
+        for ( unsigned int qp = 0; qp < 4; qp++ )
+            z_pos[i].z[qp]    = coordinates[qp]( 2 );
     }
     return z_pos;
 }

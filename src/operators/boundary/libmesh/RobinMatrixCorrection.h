@@ -34,7 +34,8 @@ namespace Operator {
   1) Imposing a Neumann Flux condition on the RHS Vector
   2) Make appropriate matrix corrections on the boundary nodes.
   */
-class RobinMatrixCorrection : public BoundaryOperator {
+class RobinMatrixCorrection : public BoundaryOperator
+{
 public:
     /**
        Constructor. This function reads all the parameters required for surface elements.

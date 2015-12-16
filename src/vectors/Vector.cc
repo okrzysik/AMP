@@ -95,7 +95,8 @@ Vector::shared_ptr Vector::select( const VectorSelector &s, const std::string &v
 {
     if ( dynamic_cast<const VS_ByVariableName *>( &s ) ) {
         std::string name = dynamic_cast<const VS_ByVariableName *>( &s )->getName();
-        if ( name == this->getVariable()->getName() ) return shared_from_this();
+        if ( name == this->getVariable()->getName() )
+            return shared_from_this();
     }
     Vector::shared_ptr retVal = this->selectInto( s );
     if ( retVal != NULL ) {
@@ -111,7 +112,8 @@ Vector::const_shared_ptr Vector::constSelect( const VectorSelector &s,
 {
     if ( dynamic_cast<const VS_ByVariableName *>( &s ) ) {
         std::string name = dynamic_cast<const VS_ByVariableName *>( &s )->getName();
-        if ( name == this->getVariable()->getName() ) return shared_from_this();
+        if ( name == this->getVariable()->getName() )
+            return shared_from_this();
     }
     Vector::const_shared_ptr retVal = this->selectInto( s );
     if ( retVal != NULL ) {
@@ -125,14 +127,16 @@ Vector::const_shared_ptr Vector::constSelect( const VectorSelector &s,
 void Vector::registerView( Vector::shared_ptr v ) const
 {
     for ( size_t i = 0; i != d_Views->size(); i++ )
-        if ( ( *d_Views )[i].lock() == v ) return;
+        if ( ( *d_Views )[i].lock() == v )
+            return;
     ( *d_Views ).push_back( v );
 }
 Vector::shared_ptr Vector::subsetVectorForVariable( const Variable::shared_ptr &name )
 {
     Vector::shared_ptr retVal;
     if ( d_pVariable ) { // If there is a variable...
-        if ( *d_pVariable == *name ) retVal = shared_from_this();
+        if ( *d_pVariable == *name )
+            retVal = shared_from_this();
     }
     return retVal;
 }
@@ -141,7 +145,8 @@ Vector::constSubsetVectorForVariable( const Variable::shared_ptr &name ) const
 {
     Vector::const_shared_ptr retVal;
     if ( d_pVariable ) { // If there is a variable...
-        if ( *d_pVariable == *name ) retVal = shared_from_this();
+        if ( *d_pVariable == *name )
+            retVal = shared_from_this();
     }
     return retVal;
 }
@@ -150,8 +155,7 @@ Vector::shared_ptr Vector::cloneVector( const std::string &name ) const
     Vector::shared_ptr retVal;
     if ( getVariable() ) {
         retVal = cloneVector( getVariable()->cloneVariable( name ) );
-    }
-    else {
+    } else {
         retVal = cloneVector( Variable::shared_ptr( new Variable( name ) ) );
     }
     return retVal;
@@ -170,8 +174,7 @@ void Vector::setValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
         if ( ( ndx[i] < getLocalStartID() ) ||
              ( ndx[i] >= ( getLocalStartID() + getLocalMaxID() ) ) ) {
             ( *d_Ghosts )[d_CommList->getLocalGhostID( ndx[i] )] = vals[i];
-        }
-        else {
+        } else {
             setLocalValuesByGlobalID( 1, ndx + i, vals + i );
         }
     }
@@ -185,8 +188,7 @@ void Vector::setGhostValuesByGlobalID( int numVals, size_t *ndx, const double *v
         if ( ( ndx[i] < getLocalStartID() ) ||
              ( ndx[i] >= ( getLocalStartID() + getLocalMaxID() ) ) ) {
             ( *d_Ghosts )[d_CommList->getLocalGhostID( ndx[i] )] = vals[i];
-        }
-        else {
+        } else {
             AMP_ERROR( "Non ghost index" );
         }
     }
@@ -200,8 +202,7 @@ void Vector::addValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
         if ( ( ndx[i] < getLocalStartID() ) ||
              ( ndx[i] >= ( getLocalStartID() + getLocalMaxID() ) ) ) {
             ( *d_AddBuffer )[d_CommList->getLocalGhostID( ndx[i] )] += vals[i];
-        }
-        else {
+        } else {
             addLocalValuesByGlobalID( 1, ndx + i, vals + i );
         }
     }
@@ -229,8 +230,7 @@ void Vector::getValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
         if ( ( ndx[i] < getLocalStartID() ) ||
              ( ndx[i] >= ( getLocalStartID() + getLocalMaxID() ) ) ) {
             getGhostValuesByGlobalID( 1, ndx + i, vals + i );
-        }
-        else {
+        } else {
             getLocalValuesByGlobalID( 1, ndx + i, vals + i );
         }
     }
@@ -243,8 +243,7 @@ void Vector::getGhostValuesByGlobalID( int numVals, size_t *ndx, double *vals ) 
              ( ndx[i] >= ( getLocalStartID() + getLocalMaxID() ) ) ) {
             vals[i] = ( *d_Ghosts )[d_CommList->getLocalGhostID( ndx[i] )] +
                       ( *d_AddBuffer )[d_CommList->getLocalGhostID( ndx[i] )];
-        }
-        else {
+        } else {
             AMP_ERROR( "Tried to get a non-ghost ghost value" );
         }
     }
@@ -256,8 +255,7 @@ void Vector::getGhostAddValuesByGlobalID( int numVals, size_t *ndx, double *vals
         if ( ( ndx[i] < getLocalStartID() ) ||
              ( ndx[i] >= ( getLocalStartID() + getLocalMaxID() ) ) ) {
             vals[i] = ( *d_AddBuffer )[d_CommList->getLocalGhostID( ndx[i] )];
-        }
-        else {
+        } else {
             AMP_ERROR( "Tried to get a non-ghost ghost value" );
         }
     }
@@ -270,7 +268,8 @@ void Vector::getGhostAddValuesByGlobalID( int numVals, size_t *ndx, double *vals
 void Vector::zero()
 {
     setToScalar( 0.0 );
-    for ( size_t i = 0; i != d_Ghosts->size(); i++ ) ( *d_Ghosts )[i] = 0.0;
+    for ( size_t i       = 0; i != d_Ghosts->size(); i++ )
+        ( *d_Ghosts )[i] = 0.0;
 }
 void Vector::setToScalar( double alpha )
 {
@@ -281,8 +280,9 @@ void Vector::setToScalar( double alpha )
         ++curMe;
     }
     dataChanged();
-    for ( size_t i = 0; i != d_Ghosts->size(); i++ ) ( *d_Ghosts )[i] = alpha;
-    ( *getUpdateStatusPtr() )                                         = UNCHANGED;
+    for ( size_t i            = 0; i != d_Ghosts->size(); i++ )
+        ( *d_Ghosts )[i]      = alpha;
+    ( *getUpdateStatusPtr() ) = UNCHANGED;
 }
 void Vector::setRandomValues()
 {
@@ -326,7 +326,8 @@ void Vector::copyVector( Vector::const_shared_ptr rhs )
         ++cur1;
         ++cur2;
     }
-    if ( isA<DataChangeFirer>() ) castTo<DataChangeFirer>().fireDataChange();
+    if ( isA<DataChangeFirer>() )
+        castTo<DataChangeFirer>().fireDataChange();
     copyGhostValues( rhs );
     // Copy the consistency state from the rhs
     *d_UpdateState = *( rhs->getUpdateStatusPtr() );
@@ -516,39 +517,45 @@ void Vector::abs( const VectorOperations &x )
 ****************************************************************/
 double Vector::min() const
 {
-    double ans                        = localMin();
-    if ( getCommunicationList() ) ans = getComm().minReduce( ans );
+    double ans = localMin();
+    if ( getCommunicationList() )
+        ans = getComm().minReduce( ans );
     return ans;
 }
 double Vector::max() const
 {
-    double ans                        = localMax();
-    if ( getCommunicationList() ) ans = getComm().maxReduce( ans );
+    double ans = localMax();
+    if ( getCommunicationList() )
+        ans = getComm().maxReduce( ans );
     return ans;
 }
 double Vector::dot( const VectorOperations &x ) const
 {
     AMP::shared_ptr<const Vector> vec = x.castTo<const Vector>().shared_from_this();
     double ans                        = localDot( vec );
-    if ( getCommunicationList() ) ans = getComm().sumReduce( ans );
+    if ( getCommunicationList() )
+        ans = getComm().sumReduce( ans );
     return ans;
 }
 double Vector::L1Norm( void ) const
 {
-    double ans                        = localL1Norm();
-    if ( getCommunicationList() ) ans = getComm().sumReduce( ans );
+    double ans = localL1Norm();
+    if ( getCommunicationList() )
+        ans = getComm().sumReduce( ans );
     return ans;
 }
 double Vector::maxNorm( void ) const
 {
-    double ans                        = localMaxNorm();
-    if ( getCommunicationList() ) ans = getComm().maxReduce( ans );
+    double ans = localMaxNorm();
+    if ( getCommunicationList() )
+        ans = getComm().maxReduce( ans );
     return ans;
 }
 double Vector::L2Norm( void ) const
 {
-    double ans                        = localL2Norm();
-    if ( getCommunicationList() ) ans = sqrt( getComm().sumReduce( ans * ans ) );
+    double ans = localL2Norm();
+    if ( getCommunicationList() )
+        ans = sqrt( getComm().sumReduce( ans * ans ) );
     return ans;
 }
 double Vector::localMin( void ) const
@@ -558,7 +565,8 @@ double Vector::localMin( void ) const
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size        = sizeOfDataBlock( i );
         const double *data = getRawDataBlock<double>( i );
-        for ( size_t j = 0; j < size; j++ ) ans = std::min( data[j], ans );
+        for ( size_t j = 0; j < size; j++ )
+            ans = std::min( data[j], ans );
     }
     return ans;
 }
@@ -569,7 +577,8 @@ double Vector::localMax( void ) const
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size        = sizeOfDataBlock( i );
         const double *data = getRawDataBlock<double>( i );
-        for ( size_t j = 0; j < size; j++ ) ans = std::max( data[j], ans );
+        for ( size_t j = 0; j < size; j++ )
+            ans = std::max( data[j], ans );
     }
     return ans;
 }
@@ -580,7 +589,8 @@ double Vector::localL1Norm( void ) const
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size        = sizeOfDataBlock( i );
         const double *data = getRawDataBlock<double>( i );
-        for ( size_t j = 0; j < size; j++ ) ans += fabs( data[j] );
+        for ( size_t j = 0; j < size; j++ )
+            ans += fabs( data[j] );
     }
     return ans;
 }
@@ -591,7 +601,8 @@ double Vector::localL2Norm( void ) const
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size        = sizeOfDataBlock( i );
         const double *data = getRawDataBlock<double>( i );
-        for ( size_t j = 0; j < size; j++ ) ans += data[j] * data[j];
+        for ( size_t j = 0; j < size; j++ )
+            ans += data[j] * data[j];
     }
     return sqrt( ans );
 }
@@ -602,7 +613,8 @@ double Vector::localMaxNorm( void ) const
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size        = sizeOfDataBlock( i );
         const double *data = getRawDataBlock<double>( i );
-        for ( size_t j = 0; j < size; j++ ) ans = std::max( fabs( data[j] ), ans );
+        for ( size_t j = 0; j < size; j++ )
+            ans = std::max( fabs( data[j] ), ans );
     }
     return ans;
 }
@@ -662,8 +674,7 @@ bool Vector::equals( Vector const &rhs, double tol ) const
     int ans;
     if ( d_CommList ) {
         ans = d_CommList->getComm().minReduce( RetVal );
-    }
-    else {
+    } else {
         ans = RetVal;
     }
 
@@ -681,7 +692,8 @@ double Vector::minQuotient( const VectorOperations &x, const VectorOperations &y
     Vector::const_iterator cury = y_vec.begin();
     Vector::const_iterator endx = x_vec.end();
     while ( curx != endx ) {
-        if ( *cury != 0.0 ) break;
+        if ( *cury != 0.0 )
+            break;
         ++curx;
         ++cury;
     }
@@ -772,8 +784,7 @@ void Vector::copyGhostValues( const AMP::shared_ptr<const Vector> &rhs )
 {
     if ( getGhostSize() == 0 ) {
         // No ghosts to fill, we don't need to do anything
-    }
-    else if ( getGhostSize() == rhs->getGhostSize() ) {
+    } else if ( getGhostSize() == rhs->getGhostSize() ) {
         // The ghosts in the src vector match the current vector
         // Copy the ghosts from the rhs
         std::vector<size_t> ghostIDs = getCommunicationList()->getGhostIDList();
@@ -782,8 +793,7 @@ void Vector::copyGhostValues( const AMP::shared_ptr<const Vector> &rhs )
         this->setGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
         // Copy the consistency state from the rhs
         *d_UpdateState = *( rhs->getUpdateStatusPtr() );
-    }
-    else {
+    } else {
         // We can't copy the ghosts from the rhs
         // Use makeConsistent to fill the ghosts
         // Note: this will incure global communication
@@ -796,7 +806,8 @@ void Vector::dumpOwnedData( std::ostream &out, size_t GIDoffset, size_t LIDoffse
 {
     const_iterator curElement = begin();
     size_t gid                = GIDoffset;
-    if ( getCommunicationList() ) gid += getCommunicationList()->getStartGID();
+    if ( getCommunicationList() )
+        gid += getCommunicationList()->getStartGID();
     size_t lid = LIDoffset;
     while ( curElement != end() ) {
         out << "  GID: " << gid << "  LID: " << lid << "  Value: " << *curElement << "\n";
@@ -809,7 +820,8 @@ void Vector::dumpOwnedData( std::ostream &out, size_t GIDoffset, size_t LIDoffse
 
 void Vector::dumpGhostedData( std::ostream &out, size_t offset ) const
 {
-    if ( !getCommunicationList() ) return;
+    if ( !getCommunicationList() )
+        return;
     const std::vector<size_t> &ghosts    = getCommunicationList()->getGhostIDList();
     std::vector<double>::iterator curVal = d_Ghosts->begin();
     for ( size_t i = 0; i < ghosts.size(); i++ ) {

@@ -16,7 +16,8 @@ typedef VectorParameters NativeVectorParameters;
   * it is a NativeVector.
   */
 
-class NativeVector : public Vector {
+class NativeVector : public Vector
+{
 public:
     //! Convenience typedef
     typedef AMP::shared_ptr<NativeVectorParameters> parameters_ptr;

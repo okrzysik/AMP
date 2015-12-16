@@ -15,7 +15,8 @@ namespace Operator {
 /**
   * AMP Mesh element implementation for DTK EntityExtraData interface.
 */
-class AMPMeshEntityExtraData : public DataTransferKit::EntityExtraData {
+class AMPMeshEntityExtraData : public DataTransferKit::EntityExtraData
+{
 public:
     /**
      * Constructor.

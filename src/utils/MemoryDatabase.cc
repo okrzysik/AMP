@@ -149,8 +149,7 @@ enum Database::DataType MemoryDatabase::getArrayType( const std::string &key )
 
     if ( keydata ) {
         return keydata->d_type;
-    }
-    else {
+    } else {
         return Database::AMP_INVALID;
     }
 }
@@ -169,8 +168,7 @@ int MemoryDatabase::getArraySize( const std::string &key )
     KeyData *keydata = findKeyData( key );
     if ( keydata && keydata->d_type != Database::AMP_DATABASE ) {
         return keydata->d_array_size;
-    }
-    else {
+    } else {
         return 0;
     }
 }
@@ -271,7 +269,8 @@ bool MemoryDatabase::getBool( const std::string &key )
 bool MemoryDatabase::getBoolWithDefault( const std::string &key, const bool &defaultvalue )
 {
     KeyData *keydata = findKeyData( key );
-    if ( keydata ) return ( this->getBool( key ) );
+    if ( keydata )
+        return ( this->getBool( key ) );
     putBool( key, defaultvalue );
     d_keyvalues.back().d_from_default = true;
     return ( defaultvalue );
@@ -363,7 +362,8 @@ DatabaseBox MemoryDatabase::getDatabaseBoxWithDefault( const std::string &key,
                                                        const DatabaseBox &defaultvalue )
 {
     KeyData *keydata = findKeyData( key );
-    if ( keydata ) return ( this->getDatabaseBox( key ) );
+    if ( keydata )
+        return ( this->getDatabaseBox( key ) );
     putDatabaseBox( key, defaultvalue );
     d_keyvalues.back().d_from_default = true;
     return ( defaultvalue );
@@ -455,7 +455,8 @@ char MemoryDatabase::getChar( const std::string &key )
 char MemoryDatabase::getCharWithDefault( const std::string &key, const char &defaultvalue )
 {
     KeyData *keydata = findKeyData( key );
-    if ( keydata ) return ( this->getChar( key ) );
+    if ( keydata )
+        return ( this->getChar( key ) );
     putChar( key, defaultvalue );
     d_keyvalues.back().d_from_default = true;
     return ( defaultvalue );
@@ -554,9 +555,14 @@ std::complex<double> MemoryDatabase::getComplex( const std::string &key )
     case Database::AMP_FLOAT:
         value = std::complex<double>( (double) keydata->d_float[0], 0.0 );
         break;
-    case Database::AMP_DOUBLE: value  = std::complex<double>( keydata->d_double[0], 0.0 ); break;
-    case Database::AMP_COMPLEX: value = keydata->d_complex[0]; break;
-    default: MEMORY_DB_ERROR( "Key=" << key << " is not a single complex..." );
+    case Database::AMP_DOUBLE:
+        value = std::complex<double>( keydata->d_double[0], 0.0 );
+        break;
+    case Database::AMP_COMPLEX:
+        value = keydata->d_complex[0];
+        break;
+    default:
+        MEMORY_DB_ERROR( "Key=" << key << " is not a single complex..." );
     }
 
     keydata->d_accessed = true;
@@ -568,7 +574,8 @@ MemoryDatabase::getComplexWithDefault( const std::string &key,
                                        const std::complex<double> &defaultvalue )
 {
     KeyData *keydata = findKeyData( key );
-    if ( keydata ) return ( this->getComplex( key ) );
+    if ( keydata )
+        return ( this->getComplex( key ) );
     putComplex( key, defaultvalue );
     d_keyvalues.back().d_from_default = true;
     return ( defaultvalue );
@@ -600,8 +607,11 @@ std::vector<std::complex<double>> MemoryDatabase::getComplexArray( const std::st
         }
         break;
     }
-    case Database::AMP_COMPLEX: array = keydata->d_complex; break;
-    default: MEMORY_DB_ERROR( "Key=" << key << " is not a complex..." );
+    case Database::AMP_COMPLEX:
+        array = keydata->d_complex;
+        break;
+    default:
+        MEMORY_DB_ERROR( "Key=" << key << " is not a complex..." );
     }
     keydata->d_accessed = true;
     return ( array );
@@ -683,10 +693,17 @@ double MemoryDatabase::getDouble( const std::string &key )
     }
 
     switch ( keydata->d_type ) {
-    case Database::AMP_INT: value    = (double) keydata->d_integer[0]; break;
-    case Database::AMP_FLOAT: value  = (double) keydata->d_float[0]; break;
-    case Database::AMP_DOUBLE: value = keydata->d_double[0]; break;
-    default: MEMORY_DB_ERROR( "Key=" << key << " is not a single double..." );
+    case Database::AMP_INT:
+        value = (double) keydata->d_integer[0];
+        break;
+    case Database::AMP_FLOAT:
+        value = (double) keydata->d_float[0];
+        break;
+    case Database::AMP_DOUBLE:
+        value = keydata->d_double[0];
+        break;
+    default:
+        MEMORY_DB_ERROR( "Key=" << key << " is not a single double..." );
     }
 
     keydata->d_accessed = true;
@@ -696,7 +713,8 @@ double MemoryDatabase::getDouble( const std::string &key )
 double MemoryDatabase::getDoubleWithDefault( const std::string &key, const double &defaultvalue )
 {
     KeyData *keydata = findKeyData( key );
-    if ( keydata ) return ( this->getDouble( key ) );
+    if ( keydata )
+        return ( this->getDouble( key ) );
     putDouble( key, defaultvalue );
     d_keyvalues.back().d_from_default = true;
     return ( defaultvalue );
@@ -725,7 +743,8 @@ std::vector<double> MemoryDatabase::getDoubleArray( const std::string &key )
         array = keydata->d_double;
         break;
     }
-    default: MEMORY_DB_ERROR( "Key=" << key << " is not a double..." );
+    default:
+        MEMORY_DB_ERROR( "Key=" << key << " is not a double..." );
     }
     keydata->d_accessed = true;
     return ( array );
@@ -812,10 +831,17 @@ float MemoryDatabase::getFloat( const std::string &key )
     }
 
     switch ( keydata->d_type ) {
-    case Database::AMP_INT: value    = static_cast<float>( keydata->d_integer[0] ); break;
-    case Database::AMP_FLOAT: value  = keydata->d_float[0]; break;
-    case Database::AMP_DOUBLE: value = static_cast<float>( keydata->d_double[0] ); break;
-    default: MEMORY_DB_ERROR( "Key=" << key << " is not a single float..." );
+    case Database::AMP_INT:
+        value = static_cast<float>( keydata->d_integer[0] );
+        break;
+    case Database::AMP_FLOAT:
+        value = keydata->d_float[0];
+        break;
+    case Database::AMP_DOUBLE:
+        value = static_cast<float>( keydata->d_double[0] );
+        break;
+    default:
+        MEMORY_DB_ERROR( "Key=" << key << " is not a single float..." );
     }
 
     keydata->d_accessed = true;
@@ -825,7 +851,8 @@ float MemoryDatabase::getFloat( const std::string &key )
 float MemoryDatabase::getFloatWithDefault( const std::string &key, const float &defaultvalue )
 {
     KeyData *keydata = findKeyData( key );
-    if ( keydata ) return ( this->getFloat( key ) );
+    if ( keydata )
+        return ( this->getFloat( key ) );
     putFloat( key, defaultvalue );
     d_keyvalues.back().d_from_default = true;
     return ( defaultvalue );
@@ -843,7 +870,9 @@ std::vector<float> MemoryDatabase::getFloatArray( const std::string &key )
         }
         break;
     }
-    case Database::AMP_FLOAT: array = keydata->d_float; break;
+    case Database::AMP_FLOAT:
+        array = keydata->d_float;
+        break;
     case Database::AMP_DOUBLE: {
         array = std::vector<float>( keydata->d_double.size() );
         for ( unsigned int i = 0; i < keydata->d_double.size(); i++ ) {
@@ -851,7 +880,8 @@ std::vector<float> MemoryDatabase::getFloatArray( const std::string &key )
         }
         break;
     }
-    default: MEMORY_DB_ERROR( "Key=" << key << " is not a float..." );
+    default:
+        MEMORY_DB_ERROR( "Key=" << key << " is not a float..." );
     }
     keydata->d_accessed = true;
     return ( array );
@@ -931,7 +961,8 @@ int MemoryDatabase::getInteger( const std::string &key )
 int MemoryDatabase::getIntegerWithDefault( const std::string &key, const int &defaultvalue )
 {
     KeyData *keydata = findKeyData( key );
-    if ( keydata ) return ( this->getInteger( key ) );
+    if ( keydata )
+        return ( this->getInteger( key ) );
     putInteger( key, defaultvalue );
     d_keyvalues.back().d_from_default = true;
     return ( defaultvalue );
@@ -1022,7 +1053,8 @@ std::string MemoryDatabase::getStringWithDefault( const std::string &key,
                                                   const std::string &defaultvalue )
 {
     KeyData *keydata = findKeyData( key );
-    if ( keydata ) return ( this->getString( key ) );
+    if ( keydata )
+        return ( this->getString( key ) );
     putString( key, defaultvalue );
     d_keyvalues.back().d_from_default = true;
     return ( defaultvalue );
@@ -1092,7 +1124,8 @@ bool MemoryDatabase::deleteKeyIfFound( const std::string &key )
 MemoryDatabase::KeyData *MemoryDatabase::findKeyData( const std::string &key )
 {
     for ( std::list<KeyData>::iterator i = d_keyvalues.begin(); i != d_keyvalues.end(); i++ ) {
-        if ( key == ( *i ).d_key ) return ( &( *i ) );
+        if ( key == ( *i ).d_key )
+            return ( &( *i ) );
     }
     return ( NULL );
 }
@@ -1110,7 +1143,8 @@ MemoryDatabase::KeyData *MemoryDatabase::findKeyData( const std::string &key )
 MemoryDatabase::KeyData *MemoryDatabase::findKeyDataOrExit( const std::string &key )
 {
     for ( std::list<KeyData>::iterator i = d_keyvalues.begin(); i != d_keyvalues.end(); i++ ) {
-        if ( key == ( *i ).d_key ) return ( &( *i ) );
+        if ( key == ( *i ).d_key )
+            return ( &( *i ) );
     }
     MEMORY_DB_ERROR( "Key ``" << key << "'' does not exist in the database..." );
     return ( NULL );

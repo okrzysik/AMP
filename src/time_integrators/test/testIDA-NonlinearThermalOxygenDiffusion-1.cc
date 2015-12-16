@@ -305,8 +305,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
         new AMP::Solver::SolverStrategyParameters( columnPreconditioner_db ) );
     if ( columnPreconditionerParams.get() == NULL ) {
         ut->failure( "Testing SolverStrategyParameters's constructor: FAIL" );
-    }
-    else {
+    } else {
         ut->passes( "Testing SolverStrategyParameters's constructor: PASS" );
     }
 
@@ -334,8 +333,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     if ( columnPreconditioner.get() == NULL ) {
         ut->failure( "Testing column preconditioner's constructor: FAIL" );
-    }
-    else {
+    } else {
         ut->passes( "Testing column preconditioner's constructor: PASS" );
     }
 
@@ -346,8 +344,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     if ( ( time_Params.get() ) == NULL ) {
         ut->failure( "Testing IDATimeIntegratorParameters' Constructor" );
-    }
-    else {
+    } else {
         ut->passes( "Testing IDATimeIntegratorParameters' Constructor" );
     }
 
@@ -367,8 +364,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     if ( pIDATimeIntegrator.get() == NULL ) {
         ut->failure( "Testing IDATimeIntegrator's constructor" );
-    }
-    else {
+    } else {
         ut->passes( "Tested IDATimeIntegrator's constructor" );
     }
 
@@ -392,8 +388,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
         std::cout << j++ << "-th timestep" << std::endl;
         if ( retval == 0 ) {
             ut->passes( "Testing IDATimeIntegrator's advanceSolution. PASS!!" );
-        }
-        else {
+        } else {
             ut->failure( "Tested IDATimeIntegrator's advanceSolution. FAIL!!" );
         }
 
@@ -435,12 +430,10 @@ int main( int argc, char *argv[] )
 
     try {
         IDATimeIntegratorTest( &ut );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

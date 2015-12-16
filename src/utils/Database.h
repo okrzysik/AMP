@@ -47,7 +47,8 @@ namespace AMP {
  * version of getTYPE() works in a similar fashion.
  */
 
-class Database {
+class Database
+{
 public:
     typedef AMP::shared_ptr<Database> shared_ptr;
 

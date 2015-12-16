@@ -26,8 +26,7 @@ getInitialGuess( AMP::LinearAlgebra::Vector::shared_ptr solution,
 
     if ( useConstantInitialGuess ) {
         solution->setToScalar( 1 );
-    }
-    else {
+    } else {
         solution->setToScalar( 0 );
 
         const int numFreq = input_db->getInteger( "numFrequencies" );

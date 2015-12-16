@@ -27,7 +27,8 @@ class ConstVectorDataIterator;
   * uses the DataBlock interface in vectors to access data.  As a result,
   * for some non-AMP managed vectors, this class may not be the most efficient.
   */
-class VectorDataIterator {
+class VectorDataIterator
+{
 private:
     Vector *d_Vec;
     double *d_Block;
@@ -219,7 +220,8 @@ public:
   * for some non-AMP managed vectors, this class may not be the most efficient.
   */
 
-class ConstVectorDataIterator {
+class ConstVectorDataIterator
+{
 private:
     const Vector *d_Vec;
     const double *d_Block;

@@ -18,7 +18,8 @@ namespace Operator {
  * \details  This class provides routines for creating operators.
  *  This is a helper class that simplifies operator creation in tests.
  */
-class OperatorBuilder {
+class OperatorBuilder
+{
 public:
     /**
      * \brief Create operator from parameters

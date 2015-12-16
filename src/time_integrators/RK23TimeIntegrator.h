@@ -19,7 +19,8 @@ namespace TimeIntegrator {
  * Class RK23TimeIntegrator is a concrete time integrator
  * that implements the explicit Bogacki-Shampine adaptive Runge-Kutta (Matlab ode23) method.
  */
-class RK23TimeIntegrator : public TimeIntegrator {
+class RK23TimeIntegrator : public TimeIntegrator
+{
 public:
     /**
      * Constructor that accepts parameter list.

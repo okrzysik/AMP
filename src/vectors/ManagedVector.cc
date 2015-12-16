@@ -43,8 +43,10 @@ ManagedVector::ManagedVector( shared_ptr alias )
 Vector::shared_ptr ManagedVector::subsetVectorForVariable( const Variable::shared_ptr &name )
 {
     Vector::shared_ptr retVal;
-    if ( !d_vBuffer ) retVal = d_Engine->castTo<Vector>().subsetVectorForVariable( name );
-    if ( !retVal ) retVal    = Vector::subsetVectorForVariable( name );
+    if ( !d_vBuffer )
+        retVal = d_Engine->castTo<Vector>().subsetVectorForVariable( name );
+    if ( !retVal )
+        retVal = Vector::subsetVectorForVariable( name );
     return retVal;
 }
 Vector::const_shared_ptr
@@ -52,8 +54,9 @@ ManagedVector::constSubsetVectorForVariable( const Variable::shared_ptr &name ) 
 {
     Vector::const_shared_ptr retVal;
     if ( !d_vBuffer )
-        retVal            = d_Engine->castTo<const Vector>().constSubsetVectorForVariable( name );
-    if ( !retVal ) retVal = Vector::constSubsetVectorForVariable( name );
+        retVal = d_Engine->castTo<const Vector>().constSubsetVectorForVariable( name );
+    if ( !retVal )
+        retVal = Vector::constSubsetVectorForVariable( name );
     return retVal;
 }
 
@@ -79,7 +82,8 @@ void ManagedVector::copyVector( Vector::const_shared_ptr other )
     AMP::shared_ptr<const Vector> vec2;
     if ( rhs_managed.get() != NULL ) {
         // We are dealing with two managed vectors, check if they both have data engines
-        if ( d_Engine.get() != NULL ) vec1 = AMP::dynamic_pointer_cast<Vector>( d_Engine );
+        if ( d_Engine.get() != NULL )
+            vec1 = AMP::dynamic_pointer_cast<Vector>( d_Engine );
         if ( rhs_managed->d_Engine.get() != NULL )
             vec2 = AMP::dynamic_pointer_cast<const Vector>( rhs_managed->d_Engine );
     }
@@ -120,22 +124,17 @@ Vector::UpdateState ManagedVector::getUpdateStatus() const
         Vector::UpdateState sub_state = vec->getUpdateStatus();
         if ( sub_state == UNCHANGED ) {
             // No change in state
-        }
-        else if ( sub_state == LOCAL_CHANGED && state == UNCHANGED ) {
+        } else if ( sub_state == LOCAL_CHANGED && state == UNCHANGED ) {
             state = LOCAL_CHANGED;
-        }
-        else if ( sub_state == LOCAL_CHANGED ) {
+        } else if ( sub_state == LOCAL_CHANGED ) {
             // No change in state
-        }
-        else if ( sub_state == ADDING &&
-                  ( state == UNCHANGED || state == LOCAL_CHANGED || state == ADDING ) ) {
+        } else if ( sub_state == ADDING &&
+                    ( state == UNCHANGED || state == LOCAL_CHANGED || state == ADDING ) ) {
             state = ADDING;
-        }
-        else if ( sub_state == SETTING &&
-                  ( state == UNCHANGED || state == LOCAL_CHANGED || state == SETTING ) ) {
+        } else if ( sub_state == SETTING &&
+                    ( state == UNCHANGED || state == LOCAL_CHANGED || state == SETTING ) ) {
             state = SETTING;
-        }
-        else {
+        } else {
             state = MIXED;
         }
     }
@@ -147,8 +146,10 @@ void ManagedVector::setUpdateStatus( UpdateState state )
 {
     *d_UpdateState = state;
     AMP::shared_ptr<Vector> vec;
-    if ( d_Engine.get() != NULL ) vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
-    if ( vec.get() != NULL ) vec->setUpdateStatus( state );
+    if ( d_Engine.get() != NULL )
+        vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
+    if ( vec.get() != NULL )
+        vec->setUpdateStatus( state );
 }
 
 
@@ -174,8 +175,7 @@ void ManagedVector::getValuesByGlobalID( int numVals, size_t *ndx, double *vals 
     Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec.get() == NULL ) {
         Vector::getValuesByGlobalID( numVals, ndx, vals );
-    }
-    else {
+    } else {
         vec->getValuesByGlobalID( numVals, ndx, vals );
     }
 }
@@ -186,8 +186,7 @@ void ManagedVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *
     if ( d_vBuffer ) {
         for ( int i = 0; i != numVals; i++ )
             vals[i] = ( *d_vBuffer )[ndx[i] - d_CommList->getStartGID()];
-    }
-    else {
+    } else {
         Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
         vec->getLocalValuesByGlobalID( numVals, ndx, vals );
     }
@@ -199,8 +198,7 @@ void ManagedVector::getGhostValuesByGlobalID( int numVals, size_t *ndx, double *
     Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec.get() == NULL ) {
         Vector::getGhostValuesByGlobalID( numVals, ndx, vals );
-    }
-    else {
+    } else {
         vec->getGhostValuesByGlobalID( numVals, ndx, vals );
     }
 }
@@ -209,7 +207,8 @@ void ManagedVector::setValuesByLocalID( int i, size_t *id, const double *val )
 {
     INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( *d_UpdateState != ADDING );
-    if ( *d_UpdateState == UNCHANGED ) *d_UpdateState = LOCAL_CHANGED;
+    if ( *d_UpdateState == UNCHANGED )
+        *d_UpdateState = LOCAL_CHANGED;
     d_Engine->setValuesByLocalID( i, id, val );
     fireDataChange();
 }
@@ -218,7 +217,8 @@ void ManagedVector::setLocalValuesByGlobalID( int numVals, size_t *ndx, const do
 {
     INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( *d_UpdateState != ADDING );
-    if ( *d_UpdateState == UNCHANGED ) *d_UpdateState = LOCAL_CHANGED;
+    if ( *d_UpdateState == UNCHANGED )
+        *d_UpdateState = LOCAL_CHANGED;
     d_Engine->setLocalValuesByGlobalID( numVals, ndx, vals );
     fireDataChange();
 }
@@ -229,8 +229,7 @@ void ManagedVector::setGhostValuesByGlobalID( int numVals, size_t *ndx, const do
     Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec.get() == NULL ) {
         Vector::setGhostValuesByGlobalID( numVals, ndx, vals );
-    }
-    else {
+    } else {
         vec->setGhostValuesByGlobalID( numVals, ndx, vals );
     }
 }
@@ -245,8 +244,7 @@ void ManagedVector::setValuesByGlobalID( int numVals, size_t *ndx, const double 
         Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
         vec->setValuesByGlobalID( numVals, ndx, vals );
         fireDataChange();
-    }
-    else {
+    } else {
         std::vector<size_t> local_ndx;
         local_ndx.reserve( numVals );
         std::vector<double> local_val;
@@ -260,8 +258,7 @@ void ManagedVector::setValuesByGlobalID( int numVals, size_t *ndx, const double 
                  ( ndx[i] >= ( getLocalStartID() + getLocalMaxID() ) ) ) {
                 ghost_ndx.push_back( ndx[i] );
                 ghost_val.push_back( vals[i] );
-            }
-            else {
+            } else {
                 local_ndx.push_back( ndx[i] );
                 local_val.push_back( vals[i] );
             }
@@ -277,7 +274,8 @@ void ManagedVector::addValuesByLocalID( int i, size_t *id, const double *val )
 {
     INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( *d_UpdateState != SETTING );
-    if ( *d_UpdateState == UNCHANGED ) *d_UpdateState = LOCAL_CHANGED;
+    if ( *d_UpdateState == UNCHANGED )
+        *d_UpdateState = LOCAL_CHANGED;
     d_Engine->addValuesByLocalID( i, id, val );
     fireDataChange();
 }
@@ -286,7 +284,8 @@ void ManagedVector::addLocalValuesByGlobalID( int i, size_t *id, const double *v
 {
     INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( *d_UpdateState != SETTING );
-    if ( *d_UpdateState == UNCHANGED ) *d_UpdateState = LOCAL_CHANGED;
+    if ( *d_UpdateState == UNCHANGED )
+        *d_UpdateState = LOCAL_CHANGED;
     d_Engine->addLocalValuesByGlobalID( i, id, val );
     fireDataChange();
 }

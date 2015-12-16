@@ -46,7 +46,8 @@ enum SetOP { Union, Intersection, Complement };
  * decomposition (relative to
  * 1.0)
  */
-class Mesh : public AMP::enable_shared_from_this<AMP::Mesh::Mesh> {
+class Mesh : public AMP::enable_shared_from_this<AMP::Mesh::Mesh>
+{
 public:
     /**
      *\typedef shared_ptr

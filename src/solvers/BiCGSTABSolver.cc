@@ -105,8 +105,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
         res->copyVector( f );
-    }
-    else {
+    } else {
         d_pOperator->residual( f, u, res );
     }
 
@@ -159,8 +158,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         if ( iter == 1 ) {
 
             p->copyVector( res );
-        }
-        else {
+        } else {
 
             beta = ( rho[1] / rho[0] ) * ( alpha / omega );
             p->axpy( -omega, v, p );
@@ -172,8 +170,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // apply the preconditioner if it exists
         if ( d_bUsesPreconditioner ) {
             d_pPreconditioner->solve( p, p_hat );
-        }
-        else {
+        } else {
             p_hat->copyVector( p );
         }
 
@@ -200,8 +197,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // apply the preconditioner if it exists
         if ( d_bUsesPreconditioner ) {
             d_pPreconditioner->solve( s, s_hat );
-        }
-        else {
+        } else {
             s_hat->copyVector( s );
         }
 

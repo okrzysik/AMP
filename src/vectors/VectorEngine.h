@@ -17,7 +17,8 @@ namespace LinearAlgebra {
  * engine...yet
 */
 
-class VectorEngineParameters : public Castable {
+class VectorEngineParameters : public Castable
+{
 public:
     typedef AMP::shared_ptr<VectorEngineParameters> shared_ptr;
 
@@ -67,7 +68,8 @@ protected:
  * and access while this class will completely encapsulate dense kernels on
  * the data.
 */
-class VectorEngine : virtual public VectorOperations {
+class VectorEngine : virtual public VectorOperations
+{
 protected:
     VectorEngineParameters::shared_ptr d_Params;
 

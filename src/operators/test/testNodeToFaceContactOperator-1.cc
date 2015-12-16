@@ -67,8 +67,7 @@ void myGetRow( void *object, int row, std::vector<unsigned int> &cols, std::vect
 
     if ( row < static_cast<int>( masterMatrixNumberGlobalRows ) ) {
         masterMatrix->getRowByGlobalID( row, cols, values );
-    }
-    else {
+    } else {
         //    cols.push_back(row);
         //    values.push_back(1.0);
         slaveMatrix->getRowByGlobalID( row - masterMatrixNumberGlobalRows, cols, values );
@@ -375,8 +374,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> masterSolver(
                 new AMP::Solver::PetscKrylovSolver( masterSolverParams ) );
             columnPreconditioner->append( masterSolver );
-        }
-        else if ( !matrixFree ) {
+        } else if ( !matrixFree ) {
             AMP::shared_ptr<AMP::Database> masterSolver_db =
                 columnPreconditioner_db->getDatabase( "MLSolver" );
             AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> masterSolverParams(
@@ -431,8 +429,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> slaveSolver(
                 new AMP::Solver::PetscKrylovSolver( slaveSolverParams ) );
             columnPreconditioner->append( slaveSolver );
-        }
-        else if ( !matrixFree ) {
+        } else if ( !matrixFree ) {
             AMP::shared_ptr<AMP::Database> slaveSolver_db =
                 columnPreconditioner_db->getDatabase( "MLSolver" );
             AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> slaveSolverParams(
@@ -875,12 +872,10 @@ int main( int argc, char *argv[] )
         for ( size_t i = 0; i < exeNames.size(); ++i ) {
             myTest( &ut, exeNames[i] );
         } // end for
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

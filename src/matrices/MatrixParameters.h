@@ -11,7 +11,8 @@ namespace LinearAlgebra {
 /** \class MatrixParameters
   * \brief  A class used to hold basic parameters for a matrix
   */
-class MatrixParameters {
+class MatrixParameters
+{
 public:
     //! Convenience typedef
     typedef AMP::shared_ptr<MatrixParameters> shared_ptr;

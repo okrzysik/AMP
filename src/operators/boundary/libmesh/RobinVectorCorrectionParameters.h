@@ -7,7 +7,8 @@
 namespace AMP {
 namespace Operator {
 
-class RobinVectorCorrectionParameters : public OperatorParameters {
+class RobinVectorCorrectionParameters : public OperatorParameters
+{
 public:
     explicit RobinVectorCorrectionParameters( const AMP::shared_ptr<AMP::Database> &db )
         : OperatorParameters( db )

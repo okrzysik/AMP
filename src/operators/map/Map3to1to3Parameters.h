@@ -8,7 +8,8 @@ namespace AMP {
 namespace Operator {
 
 
-class Map3to1to3Parameters : public AsyncMapOperatorParameters {
+class Map3to1to3Parameters : public AsyncMapOperatorParameters
+{
 public:
     int d_MasterValue;
     int d_NumToSend;

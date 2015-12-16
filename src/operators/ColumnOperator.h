@@ -15,7 +15,8 @@ namespace Operator {
   where each of F1,.., Fk are operators themselves. The user is expected to have
   created and initialized the operators F1,.., Fk
   */
-class ColumnOperator : public Operator {
+class ColumnOperator : public Operator
+{
 
 public:
     // the parameter object for the column operator is intentionally meant not to do

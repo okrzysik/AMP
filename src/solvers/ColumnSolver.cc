@@ -23,11 +23,9 @@ void ColumnSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     if ( d_IterationType == "GaussSeidel" ) {
         GaussSeidel( f, u );
-    }
-    else if ( d_IterationType == "SymmetricGaussSeidel" ) {
+    } else if ( d_IterationType == "SymmetricGaussSeidel" ) {
         SymmetricGaussSeidel( f, u );
-    }
-    else {
+    } else {
         AMP::pout << "ERROR: Invalid iteration type specified " << std::endl;
     }
 }
@@ -113,8 +111,7 @@ void ColumnSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorP
         for ( unsigned int i = 0; i < d_Solvers.size(); i++ ) {
             d_Solvers[i]->reset( solverParams );
         }
-    }
-    else {
+    } else {
         AMP::shared_ptr<AMP::Operator::ColumnOperatorParameters> columnParams =
             AMP::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>( params );
         AMP_INSIST( columnParams.get() != NULL, "Dynamic cast failed!" );

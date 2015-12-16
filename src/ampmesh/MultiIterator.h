@@ -16,7 +16,8 @@ namespace Mesh {
  *  specifically, this class combines multiple iterators into one.  This
  *  is primarily needed for MultiMesh, but may be used for other applicaitons.
  */
-class MultiIterator : public MeshIterator {
+class MultiIterator : public MeshIterator
+{
 public:
     //! Empty MultiIterator constructor
     MultiIterator();

@@ -27,7 +27,8 @@ namespace Operator {
 template <class T>
 static T *getPtr( std::vector<T> &x )
 {
-    if ( x.size() == 0 ) return NULL;
+    if ( x.size() == 0 )
+        return NULL;
     return &x[0];
 }
 
@@ -66,8 +67,7 @@ void Map1Dto3D::reset( const AMP::shared_ptr<OperatorParameters> &params )
 
     if ( d_useGaussVec ) {
         computeZGaussLocations();
-    }
-    else {
+    } else {
         computeZNodeLocations();
     }
 
@@ -199,7 +199,8 @@ void Map1Dto3D::setZLocations( const std::vector<double> &z )
 {
     const double TOL = 1e-12;
     d_zLocations     = z;
-    if ( d_zLocations.size() <= 1 ) return;
+    if ( d_zLocations.size() <= 1 )
+        return;
     // Sort the entires
     AMP::Utilities::quicksort( d_zLocations );
     // Remove any duplicate entries
@@ -219,8 +220,7 @@ void Map1Dto3D::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 {
     if ( d_useGaussVec ) {
         apply_Gauss( u, f );
-    }
-    else {
+    } else {
         apply_Nodal( u, f );
     }
 }
@@ -229,7 +229,8 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                              AMP::LinearAlgebra::Vector::shared_ptr )
 {
 
-    if ( d_MapMesh.get() == NULL ) return;
+    if ( d_MapMesh.get() == NULL )
+        return;
 
     AMP_ASSERT( u != NULL );
 
@@ -322,7 +323,8 @@ void Map1Dto3D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                              AMP::LinearAlgebra::Vector::shared_ptr )
 {
 
-    if ( d_MapMesh.get() == NULL ) return;
+    if ( d_MapMesh.get() == NULL )
+        return;
 
     AMP_ASSERT( u != NULL );
 

@@ -51,8 +51,10 @@ void testit( AMP::UnitTest *ut,
 
     std::valarray<double> out( 10 ), in( nc ), param( na );
 
-    for ( size_t i = 0; i < na; i++ ) param[i] = i;
-    for ( size_t i = 0; i < nc; i++ ) in[i] = i + 1;
+    for ( size_t i = 0; i < na; i++ )
+        param[i]   = i;
+    for ( size_t i = 0; i < nc; i++ )
+        in[i]      = i + 1;
     ms.setTricubicParams( in, param );
     ms.evaluate( out, x, y, z );
 
@@ -78,18 +80,15 @@ int main( int argc, char **argv )
             testit( &ut, "CylindricalRod", "Cubic", "None", 55., 4.2, 700. );
             testit( &ut, "CylindricalRod", "Cubic", "Dirichlet-2-z", 55., 4.2, 700. );
             testit( &ut, "CylindricalShell", "Quadratic", "Neumann", 55., 4.2, 700. );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << ", " << err.what() << std::endl;
             ut.failure( "Manufactured Solutions" );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << ", "
                       << "An unknown exception was thrown" << std::endl;
             ut.failure( "Manufactured Solutions" );
         }
-    }
-    else {
+    } else {
         ut.expected_failure( "Manufactured Solutions only apply to scalar tests." );
     }
 

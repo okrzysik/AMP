@@ -21,7 +21,8 @@ namespace AMP {
  *
  * Builds a new MemoryDatabase.
  */
-class MemoryDatabaseFactory : public DatabaseFactory {
+class MemoryDatabaseFactory : public DatabaseFactory
+{
     /**
      * Build a new Database object.
      */

@@ -17,7 +17,8 @@ namespace Mesh {
  *   in the x-y-z planes.  Most of the functions require the underlying mesh to have it's
  *   nodes aligned in the x, y, and z directions.
  */
-class StructuredMeshHelper {
+class StructuredMeshHelper
+{
 public:
     /**
      * \brief Get the x, y, z, coordinates of a cube mesh

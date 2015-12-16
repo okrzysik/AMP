@@ -47,15 +47,13 @@ libMeshElement::libMeshElement( int dim,
         local_id     = node->id();
         owner_rank   = node->processor_id();
         is_local     = owner_rank == d_rank;
-    }
-    else if ( type == (GeomType) dim ) {
+    } else if ( type == (GeomType) dim ) {
         ::Elem *elem = (::Elem *) ptr_element;
         AMP_ASSERT( elem->n_neighbors() < 100 );
         local_id   = elem->id();
         owner_rank = elem->processor_id();
         is_local   = owner_rank == d_rank;
-    }
-    else {
+    } else {
         AMP_ERROR( "Unreconized element" );
     }
     d_globalID = MeshElementID( is_local, type, local_id, owner_rank, meshID );
@@ -85,8 +83,7 @@ libMeshElement::libMeshElement( int dim,
         local_id     = node->id();
         owner_rank   = node->processor_id();
         is_local     = owner_rank == d_rank;
-    }
-    else {
+    } else {
         ::Elem *elem = (::Elem *) ptr_element;
         local_id     = elem->id();
         owner_rank   = elem->processor_id();
@@ -150,28 +147,24 @@ std::vector<MeshElement> libMeshElement::getElements( const GeomType type ) cons
             AMP_ERROR( "A vertex is the base element and cannot have and sub-elements" );
         children.resize( 1 );
         children[0] = *this;
-    }
-    else if ( type == d_globalID.type() ) {
+    } else if ( type == d_globalID.type() ) {
         // Return the children of the current element
         if ( elem->has_children() ) {
             children.resize( elem->n_children() );
             for ( unsigned int i = 0; i < children.size(); i++ )
                 children[i]      = libMeshElement(
                     d_dim, type, (void *) elem->child( i ), d_rank, d_meshID, d_mesh );
-        }
-        else {
+        } else {
             children.resize( 1 );
             children[0] = *this;
         }
-    }
-    else if ( type == Vertex ) {
+    } else if ( type == Vertex ) {
         // Return the nodes of the current element
         children.resize( elem->n_nodes() );
         for ( unsigned int i = 0; i < children.size(); i++ )
             children[i]      = libMeshElement(
                 d_dim, type, (void *) elem->get_node( i ), d_rank, d_meshID, d_mesh );
-    }
-    else {
+    } else {
         // Return the children
         if ( type == Edge )
             children.resize( elem->n_edges() );
@@ -226,8 +219,7 @@ std::vector<MeshElement::shared_ptr> libMeshElement::getNeighbors() const
                 d_dim, Vertex, (void *) neighbor_nodes[i], d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;
         }
-    }
-    else if ( (int) d_globalID.type() == d_dim ) {
+    } else if ( (int) d_globalID.type() == d_dim ) {
         // Return the neighbors of the current element
         ::Elem *elem = (::Elem *) ptr_element;
         // if ( elem->n_neighbors()==0 )
@@ -241,8 +233,7 @@ std::vector<MeshElement::shared_ptr> libMeshElement::getNeighbors() const
                     d_dim, d_globalID.type(), neighbor_elem, d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;
         }
-    }
-    else {
+    } else {
         // We constructed a temporary libmesh object and do not have access to the neighbor info
     }
     return neighbors;
@@ -254,31 +245,37 @@ std::vector<MeshElement::shared_ptr> libMeshElement::getNeighbors() const
 ****************************************************************/
 double libMeshElement::volume() const
 {
-    if ( d_globalID.type() == Vertex ) AMP_ERROR( "volume is is not defined Nodes" );
+    if ( d_globalID.type() == Vertex )
+        AMP_ERROR( "volume is is not defined Nodes" );
     ::Elem *elem = (::Elem *) ptr_element;
     return elem->volume();
 }
 std::vector<double> libMeshElement::coord() const
 {
-    if ( d_globalID.type() != Vertex ) AMP_ERROR( "coord is only defined for Nodes" );
+    if ( d_globalID.type() != Vertex )
+        AMP_ERROR( "coord is only defined for Nodes" );
     ::Node *node = (::Node *) ptr_element;
     std::vector<double> x( d_dim, 0.0 );
-    for ( int i = 0; i < d_dim; i++ ) x[i] = ( *node )( i );
+    for ( int i = 0; i < d_dim; i++ )
+        x[i]    = ( *node )( i );
     return x;
 }
 double libMeshElement::coord( int i ) const
 {
-    if ( d_globalID.type() != Vertex ) AMP_ERROR( "coord is only defined for Nodes" );
+    if ( d_globalID.type() != Vertex )
+        AMP_ERROR( "coord is only defined for Nodes" );
     ::Node *node = (::Node *) ptr_element;
     return ( *node )( i );
 }
 std::vector<double> libMeshElement::centroid() const
 {
-    if ( d_globalID.type() == Vertex ) return coord();
+    if ( d_globalID.type() == Vertex )
+        return coord();
     ::Elem *elem   = (::Elem *) ptr_element;
     ::Point center = elem->centroid();
     std::vector<double> x( d_dim, 0.0 );
-    for ( int i = 0; i < d_dim; i++ ) x[i] = center( i );
+    for ( int i = 0; i < d_dim; i++ )
+        x[i]    = center( i );
     return x;
 }
 bool libMeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
@@ -301,17 +298,18 @@ bool libMeshElement::isOnSurface() const
     MeshElement search = MeshElement( *this );
     if ( d_globalID.is_local() ) {
         const std::vector<MeshElement> &data = *( d_mesh->d_localSurfaceElements[type] );
-        if ( data.empty() ) return false; // There are no elements on the surface for this processor
+        if ( data.empty() )
+            return false; // There are no elements on the surface for this processor
         size_t index = AMP::Utilities::findfirst( data, search );
         if ( index < data.size() ) {
             if ( d_mesh->d_localSurfaceElements[type]->operator[]( index ).globalID() ==
                  d_globalID )
                 return true;
         }
-    }
-    else {
+    } else {
         const std::vector<MeshElement> &data = *( d_mesh->d_ghostSurfaceElements[type] );
-        if ( data.empty() ) return false; // There are no elements on the surface for this processor
+        if ( data.empty() )
+            return false; // There are no elements on the surface for this processor
         size_t index = AMP::Utilities::findfirst( data, search );
         if ( index < data.size() ) {
             if ( d_mesh->d_ghostSurfaceElements[type]->operator[]( index ).globalID() ==
@@ -331,16 +329,16 @@ bool libMeshElement::isOnBoundary( int id ) const
         ::Node *node                = (::Node *) ptr_element;
         std::vector<short int> bids = d_libMesh->boundary_info->boundary_ids( node );
         for ( size_t i = 0; i < bids.size(); i++ ) {
-            if ( bids[i] == id ) on_boundary = true;
+            if ( bids[i] == id )
+                on_boundary = true;
         }
-    }
-    else if ( (int) type == d_dim ) {
+    } else if ( (int) type == d_dim ) {
         // Entity is a libmesh node
         ::Elem *elem      = (::Elem *) ptr_element;
         unsigned int side = d_libMesh->boundary_info->side_with_boundary_id( elem, id );
-        if ( side != static_cast<unsigned int>( -1 ) ) on_boundary = true;
-    }
-    else {
+        if ( side != static_cast<unsigned int>( -1 ) )
+            on_boundary = true;
+    } else {
         // All other entities are on the boundary iff all of their verticies are on the surface
         std::vector<MeshElement> nodes = this->getElements( Vertex );
         on_boundary                    = true;
@@ -356,13 +354,11 @@ bool libMeshElement::isInBlock( int id ) const
     if ( type == Vertex ) {
         // Entity is a libmesh node
         AMP_ERROR( "isInBlock is not currently implimented for anything but elements" );
-    }
-    else if ( (int) type == d_dim ) {
+    } else if ( (int) type == d_dim ) {
         // Entity is a libmesh node
         ::Elem *elem = (::Elem *) ptr_element;
         in_block     = (int) elem->subdomain_id() == id;
-    }
-    else {
+    } else {
         // All other entities are on the boundary iff all of their verticies are on the surface
         AMP_ERROR( "isInBlock is not currently implimented for anything but elements" );
     }
@@ -390,8 +386,9 @@ unsigned int generate_id( const std::vector<unsigned int> &ids )
 {
     unsigned int id0 = ids[0];
     unsigned int id_diff[100];
-    for ( size_t i = 1; i < ids.size(); i++ ) id_diff[i - 1] = ids[i] - ids[i - 1];
-    unsigned int tmp                                         = 0;
+    for ( size_t i     = 1; i < ids.size(); i++ )
+        id_diff[i - 1] = ids[i] - ids[i - 1];
+    unsigned int tmp   = 0;
     for ( size_t i = 0; i < ids.size() - 1; i++ ) {
         unsigned int shift = ( 7 * i ) % 13;
         tmp                = tmp ^ ( id_diff[i] << shift );

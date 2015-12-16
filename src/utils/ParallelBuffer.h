@@ -28,7 +28,8 @@ namespace AMP {
  * ostream class.
  */
 
-class ParallelBuffer : public std::streambuf {
+class ParallelBuffer : public std::streambuf
+{
 public:
     /**
      * Create a parallel buffer class.  The object will require further

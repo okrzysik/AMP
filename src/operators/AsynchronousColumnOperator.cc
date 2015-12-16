@@ -42,8 +42,7 @@ void AsynchronousColumnOperator::append( AMP::shared_ptr<Operator> op )
 {
     if ( AMP::dynamic_pointer_cast<AsynchronousOperator>( op ) ) {
         ColumnOperator::append( op );
-    }
-    else if ( AMP::dynamic_pointer_cast<AsynchronousColumnOperator>( op ) ) {
+    } else if ( AMP::dynamic_pointer_cast<AsynchronousColumnOperator>( op ) ) {
         AMP::shared_ptr<AsynchronousColumnOperator> aco =
             AMP::dynamic_pointer_cast<AsynchronousColumnOperator>( op );
         for ( size_t i = 0; i != aco->getNumberOfOperators(); i++ ) {

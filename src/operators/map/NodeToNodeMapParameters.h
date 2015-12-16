@@ -7,7 +7,8 @@
 namespace AMP {
 namespace Operator {
 
-class NodeToNodeMapParameters : public AMP::Operator::AsyncMapOperatorParameters {
+class NodeToNodeMapParameters : public AMP::Operator::AsyncMapOperatorParameters
+{
 public:
     std::vector<AMP::Mesh::MeshElementID> d_ids;
     std::vector<double> d_disps;

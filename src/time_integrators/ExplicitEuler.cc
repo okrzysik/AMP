@@ -88,8 +88,7 @@ int ExplicitEuler::advanceSolution( const double dt, const bool first_step )
 
     if ( first_step ) {
         d_current_dt = d_initial_dt;
-    }
-    else {
+    } else {
         d_current_dt = dt;
     }
 
@@ -140,8 +139,7 @@ void ExplicitEuler::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 {
     if ( input_db->keyExists( "initial_timestep" ) ) {
         d_initial_dt = input_db->getDouble( "initial_timestep" );
-    }
-    else {
+    } else {
         AMP_ERROR( d_object_name << " -- Key data `initial_timestep'"
                                  << " missing in input." );
     }

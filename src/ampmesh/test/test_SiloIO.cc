@@ -193,8 +193,9 @@ int main( int argc, char **argv )
     PROFILE_ENABLE();
 
 #ifdef USE_EXT_SILO
-    std::string filename      = "input_SiloIO-1";
-    if ( argc == 2 ) filename = argv[1];
+    std::string filename = "input_SiloIO-1";
+    if ( argc == 2 )
+        filename = argv[1];
     test_Silo( &ut, filename );
 #else
     ut.expected_failure( "AMP was not configured with silo" );

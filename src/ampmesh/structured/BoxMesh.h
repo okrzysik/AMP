@@ -69,14 +69,16 @@ class structuredMeshIterator;
    z_offset - Offset in z-direction (optional)
 \endverbatim
  */
-class BoxMesh : public AMP::Mesh::Mesh {
+class BoxMesh : public AMP::Mesh::Mesh
+{
 public:
     /**
      * \class Box
      * \brief Structure to identify a logical box
      * \details  This class contains a logical box
      */
-    class Box {
+    class Box
+    {
     public:
         /**
          * \brief   Default constructor
@@ -102,7 +104,8 @@ public:
      * \details  This class help convert between logical coordinates and the mesh element of
      * interest
      */
-    class MeshElementIndex {
+    class MeshElementIndex
+    {
     public:
         //! Empty constructor
         inline MeshElementIndex();

@@ -8,7 +8,8 @@
 // Define the material
 namespace AMP {
 namespace Materials {
-class Independent : public Material {
+class Independent : public Material
+{
 public:
     Independent();
 };

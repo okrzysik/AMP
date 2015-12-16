@@ -7,7 +7,8 @@
 namespace AMP {
 namespace Operator {
 
-class MoveMeshOperator : public Operator {
+class MoveMeshOperator : public Operator
+{
 public:
     explicit MoveMeshOperator( const AMP::shared_ptr<OperatorParameters> &params );
 

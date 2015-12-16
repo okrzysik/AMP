@@ -11,7 +11,8 @@ namespace LinearAlgebra {
 /**  \class  EpetraVectorParameters
   *  \brief  Parameters class to construct an EpetraVector
   */
-class EpetraVectorParameters : public VectorParameters {
+class EpetraVectorParameters : public VectorParameters
+{
 };
 
 
@@ -39,7 +40,8 @@ class EpetraVectorParameters : public VectorParameters {
   *  in a contiguous block.  If the vector does not contain a contiuous block of data, then
   *  an Epetra_Vector cannot be created.
   */
-class EpetraVector {
+class EpetraVector
+{
 protected:
     /**  \brief Constructor
       */

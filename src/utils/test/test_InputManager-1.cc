@@ -42,7 +42,8 @@ void mytest( AMP::UnitTest *ut )
     AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
 
-    if ( !input_db->getBool( "filename" ) ) ut->failure( "InputManager-1" );
+    if ( !input_db->getBool( "filename" ) )
+        ut->failure( "InputManager-1" );
 
     input_db.reset();
 
@@ -59,12 +60,10 @@ int main( int argc, char *argv[] )
 
     try {
         mytest( &ut );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing test_InputManager-1, " << err.what() << std::endl;
         ut.failure( "test_InputManager-1" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing test_InputManager-1, An unknown exception was thrown."
                   << std::endl;
         ut.failure( "test_InputManager-1" );

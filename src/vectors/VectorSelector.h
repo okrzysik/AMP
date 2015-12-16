@@ -22,7 +22,8 @@ namespace LinearAlgebra {
   * meant to be used solely in Vector::selectInto ().  Subclasses of Vector
   * are encouraged to call Vector::selectInto () rather than use these methods.
   */
-class VectorSelector {
+class VectorSelector
+{
 public:
     /** \brief Virtual destructor */
     virtual ~VectorSelector();
@@ -69,7 +70,8 @@ public:
        data->select ( VS_ByBariableName ( "Displacement" ) , results );
        \endcode
   */
-class VS_ByVariableName : public VectorSelector {
+class VS_ByVariableName : public VectorSelector
+{
 protected:
     std::string d_VecName;
 
@@ -88,7 +90,8 @@ public:
 /** \brief  Create a subset based on a stride in the vector
   * \details  This will pick every \f$b\f$th element starting at \f$a\f$ in an vector
   */
-class VS_Stride : public VectorSelector {
+class VS_Stride : public VectorSelector
+{
 public:
     /** \brief Constructor
       * \param[in]  a  The offset to stride
@@ -123,7 +126,8 @@ protected:
   *  Any parts of the original vector that were on processor that are not in
   *  in the new comm will be ignored.
   */
-class VS_Comm : public VectorSelector {
+class VS_Comm : public VectorSelector
+{
 public:
     /** \brief Constructor
       * \param[in]  comm  The new comm to use
@@ -160,7 +164,8 @@ protected:
 /** \brief  Create a subset based on a mesh
   * \details  This will select the portion of a vector that is on the given mesh
   */
-class VS_Mesh : public VectorSelector {
+class VS_Mesh : public VectorSelector
+{
 public:
     /** \brief Constructor
       * \param[in]  mesh            The desired mesh
@@ -198,7 +203,8 @@ protected:
 /** \brief  Create a subset based on a mesh iterator
   * \details  This will select the portion of a vector that is on the given mesh iterator
   */
-class VS_MeshIterator : public VectorSelector {
+class VS_MeshIterator : public VectorSelector
+{
 public:
     /** \brief Constructor
       * \param[in]  iterator    The mesh iterator to use

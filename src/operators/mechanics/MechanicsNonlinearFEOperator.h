@@ -25,7 +25,8 @@ namespace Operator {
   solid body. This class only deals with the volume integration,
   the boundary conditions are handled separately by the boundary operators.
   */
-class MechanicsNonlinearFEOperator : public NonlinearFEOperator {
+class MechanicsNonlinearFEOperator : public NonlinearFEOperator
+{
 public:
     /**
       Constructor. This reads the values for the following keys from the database object contained

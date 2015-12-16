@@ -73,36 +73,31 @@ AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
     if ( MeshType == std::string( "Multimesh" ) ) {
         // The mesh is a multimesh
         mesh = AMP::shared_ptr<AMP::Mesh::MultiMesh>( new AMP::Mesh::MultiMesh( params ) );
-    }
-    else if ( MeshType == std::string( "AMP" ) ) {
+    } else if ( MeshType == std::string( "AMP" ) ) {
         // The mesh is a AMP mesh
         mesh = AMP::shared_ptr<AMP::Mesh::BoxMesh>( new AMP::Mesh::BoxMesh( params ) );
-    }
-    else if ( MeshType == std::string( "libMesh" ) ) {
+    } else if ( MeshType == std::string( "libMesh" ) ) {
 // The mesh is a libmesh mesh
 #ifdef USE_EXT_LIBMESH
         mesh = AMP::shared_ptr<AMP::Mesh::libMesh>( new AMP::Mesh::libMesh( params ) );
 #else
         AMP_ERROR( "AMP was compiled without support for libMesh" );
 #endif
-    }
-    else if ( MeshType == std::string( "STKMesh" ) ) {
+    } else if ( MeshType == std::string( "STKMesh" ) ) {
 // The mesh is a libmesh mesh
 #ifdef USE_TRILINOS_STKMESH
         mesh = AMP::shared_ptr<AMP::Mesh::STKMesh>( new AMP::Mesh::STKMesh( params ) );
 #else
         AMP_ERROR( "AMP was compiled without support for STKMesh" );
 #endif
-    }
-    else if ( MeshType == std::string( "moab" ) || MeshType == std::string( "MOAB" ) ) {
+    } else if ( MeshType == std::string( "moab" ) || MeshType == std::string( "MOAB" ) ) {
 // The mesh is a MOAB mesh
 #ifdef USE_EXT_MOAB
         mesh = AMP::shared_ptr<AMP::Mesh::moabMesh>( new AMP::Mesh::moabMesh( params ) );
 #else
         AMP_ERROR( "AMP was compiled without support for MOAB" );
 #endif
-    }
-    else {
+    } else {
         // Unknown mesh type
         AMP_ERROR( std::string( "Unknown mesh type (" ) + MeshType + std::string( ")" ) );
     }
@@ -136,32 +131,27 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     if ( MeshType == std::string( "Multimesh" ) ) {
         // The mesh is a multimesh
         meshSize = AMP::Mesh::MultiMesh::estimateMeshSize( params );
-    }
-    else if ( MeshType == std::string( "AMP" ) ) {
+    } else if ( MeshType == std::string( "AMP" ) ) {
         // The mesh is a AMP mesh
         meshSize = AMP::Mesh::BoxMesh::estimateMeshSize( params );
-    }
-    else if ( MeshType == std::string( "libMesh" ) ) {
+    } else if ( MeshType == std::string( "libMesh" ) ) {
 // The mesh is a libmesh mesh
 #ifdef USE_EXT_LIBMESH
         meshSize = AMP::Mesh::libMesh::estimateMeshSize( params );
 #else
         AMP_ERROR( "AMP was compiled without support for libMesh" );
 #endif
-    }
-    else if ( MeshType == std::string( "STKMesh" ) ) {
+    } else if ( MeshType == std::string( "STKMesh" ) ) {
 // The mesh is a stkMesh mesh
 #ifdef USE_TRILINOS_STKMESH
         meshSize = AMP::Mesh::STKMesh::estimateMeshSize( params );
 #else
         AMP_ERROR( "AMP was compiled without support for STKMesh" );
 #endif
-    }
-    else if ( database->keyExists( "NumberOfElements" ) ) {
+    } else if ( database->keyExists( "NumberOfElements" ) ) {
         int NumberOfElements = database->getInteger( "NumberOfElements" );
         meshSize             = NumberOfElements;
-    }
-    else {
+    } else {
         // Unknown mesh type
         AMP_ERROR( "Unknown mesh type and NumberOfElements does not exist in database" );
     }
@@ -184,28 +174,24 @@ size_t Mesh::maxProcs( const MeshParameters::shared_ptr &params )
     if ( MeshType == std::string( "Multimesh" ) ) {
         // The mesh is a multimesh
         maxSize = AMP::Mesh::MultiMesh::maxProcs( params );
-    }
-    else if ( MeshType == std::string( "AMP" ) ) {
+    } else if ( MeshType == std::string( "AMP" ) ) {
         // The mesh is a AMP mesh
         maxSize = AMP::Mesh::BoxMesh::maxProcs( params );
-    }
-    else if ( MeshType == std::string( "libMesh" ) ) {
+    } else if ( MeshType == std::string( "libMesh" ) ) {
 // The mesh is a libmesh mesh
 #ifdef USE_EXT_LIBMESH
         maxSize = AMP::Mesh::libMesh::maxProcs( params );
 #else
         AMP_ERROR( "AMP was compiled without support for libMesh" );
 #endif
-    }
-    else if ( MeshType == std::string( "STKMesh" ) ) {
+    } else if ( MeshType == std::string( "STKMesh" ) ) {
 // The mesh is a stkMesh mesh
 #ifdef USE_TRILINOS_STKMESH
         maxSize = AMP::Mesh::STKMesh::maxProcs( params );
 #else
         AMP_ERROR( "AMP was compiled without support for STKMesh" );
 #endif
-    }
-    else {
+    } else {
         // Unknown mesh type
         AMP_ERROR( "Unknown mesh type and NumberOfElements does not exist in database" );
     }
@@ -286,7 +272,8 @@ MeshElement Mesh::getElement( const MeshElementID &elem_id ) const
     AMP_INSIST( mesh_id == d_meshID, "mesh id must match the mesh id of the element" );
     MeshIterator iterator = getIterator( elem_id.type() );
     for ( size_t i = 0; i < iterator.size(); i++ ) {
-        if ( iterator->globalID() == elem_id ) return *iterator;
+        if ( iterator->globalID() == elem_id )
+            return *iterator;
         ++iterator;
     }
     return MeshElement();
@@ -425,11 +412,9 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         // Create the iterator
         if ( union_ids.size() == A.size() ) {
             return MeshIterator( A.begin() );
-        }
-        else if ( union_ids.size() == B.size() ) {
+        } else if ( union_ids.size() == B.size() ) {
             return MeshIterator( B.begin() );
-        }
-        else {
+        } else {
             AMP::shared_ptr<std::vector<MeshElement>> elements(
                 new std::vector<MeshElement>( union_ids.size() ) );
             curA = A.begin();
@@ -439,7 +424,8 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
                 if ( index == union_ids.size() ) {
                     index--;
                 }
-                if ( union_ids[index] == idA ) ( *elements )[index] = *curA;
+                if ( union_ids[index] == idA )
+                    ( *elements )[index] = *curA;
                 ++curA;
             }
             curB = B.begin();
@@ -449,16 +435,17 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
                 if ( index == union_ids.size() ) {
                     index--;
                 }
-                if ( union_ids[index] == idB ) ( *elements )[index] = *curB;
+                if ( union_ids[index] == idB )
+                    ( *elements )[index] = *curB;
                 ++curB;
             }
             return MultiVectorIterator( elements, 0 );
         }
-    }
-    else if ( OP == Intersection ) {
+    } else if ( OP == Intersection ) {
         // Perform a intersection: A n B
         // Get the intersection using the mesh IDs
-        if ( A.size() == 0 || B.size() == 0 ) return MeshIterator();
+        if ( A.size() == 0 || B.size() == 0 )
+            return MeshIterator();
         std::vector<MeshElementID> idA( A.size() );
         MeshIterator curA = A.begin();
         for ( size_t i = 0; i < A.size(); i++ ) {
@@ -475,10 +462,12 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
             if ( index == idA.size() ) {
                 index--;
             }
-            if ( idA[index] == idB ) intersection.push_back( idB );
+            if ( idA[index] == idB )
+                intersection.push_back( idB );
             ++curB;
         }
-        if ( intersection.empty() ) return MeshIterator();
+        if ( intersection.empty() )
+            return MeshIterator();
         // Sort the intersection and check for duplicates
         Utilities::quicksort( intersection );
         for ( size_t i = 1; i < intersection.size(); i++ )
@@ -486,11 +475,9 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         // Create the iterator
         if ( intersection.size() == A.size() ) {
             return MeshIterator( A.begin() );
-        }
-        else if ( intersection.size() == B.size() ) {
+        } else if ( intersection.size() == B.size() ) {
             return MeshIterator( B.begin() );
-        }
-        else {
+        } else {
             AMP::shared_ptr<std::vector<MeshElement>> elements(
                 new std::vector<MeshElement>( intersection.size() ) );
             curB = B.begin();
@@ -500,13 +487,13 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
                 if ( index == intersection.size() ) {
                     index--;
                 }
-                if ( intersection[index] == idB ) ( *elements )[index] = *curB;
+                if ( intersection[index] == idB )
+                    ( *elements )[index] = *curB;
                 ++curB;
             }
             return MultiVectorIterator( elements, 0 );
         }
-    }
-    else if ( OP == Complement ) {
+    } else if ( OP == Complement ) {
         // Perform a Complement:  A - B
         // Get the compliment using the mesh IDs
         std::set<MeshElementID> compliment_set;
@@ -521,12 +508,12 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
             ++curB;
         }
         std::vector<MeshElementID> compliment( compliment_set.begin(), compliment_set.end() );
-        if ( compliment.empty() ) return MeshIterator();
+        if ( compliment.empty() )
+            return MeshIterator();
         // Create the iterator
         if ( compliment.size() == A.size() ) {
             return MeshIterator( A.begin() );
-        }
-        else {
+        } else {
             AMP::shared_ptr<std::vector<MeshElement>> elements(
                 new std::vector<MeshElement>( compliment.size() ) );
             curA = A.begin();
@@ -536,13 +523,13 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
                 if ( index == compliment.size() ) {
                     index--;
                 }
-                if ( compliment[index] == idA ) ( *elements )[index] = *curA;
+                if ( compliment[index] == idA )
+                    ( *elements )[index] = *curA;
                 ++curA;
             }
             return MultiVectorIterator( elements, 0 );
         }
-    }
-    else {
+    } else {
         AMP_ERROR( "Unknown set operation" );
     }
     return MeshIterator();

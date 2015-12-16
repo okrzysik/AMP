@@ -155,21 +155,19 @@ void AMPManager::terminate_AMP( std::string message )
         msg << text;
         std::vector<std::string> stack = AMP::Utilities::getCallStack();
         msg << "Stack Trace:\n";
-        for ( size_t i = 0; i < stack.size(); i++ ) msg << "   " << stack[i] << std::endl;
+        for ( size_t i = 0; i < stack.size(); i++ )
+            msg << "   " << stack[i] << std::endl;
         perr << msg.str();
     }
     if ( force_exit > 1 ) {
         exit( -1 );
-    }
-    else if ( AMP::AMPManager::use_MPI_Abort == true ) {
+    } else if ( AMP::AMPManager::use_MPI_Abort == true ) {
         // Use MPI_abort (will terminate all processes)
         force_exit = 2;
         AMP_MPI( AMP_COMM_WORLD ).abort();
-    }
-    else if ( force_exit > 0 ) {
+    } else if ( force_exit > 0 ) {
         exit( -1 );
-    }
-    else {
+    } else {
         // Throw and standard exception (allows the use of try, catch)
         // std::stringstream  stream;
         // stream << message << std::endl << "  " << filename << ":  " << line;
@@ -195,12 +193,10 @@ void term_func()
             throw;
         }
         // No active exception
-    }
-    catch ( const std::exception &err ) {
+    } catch ( const std::exception &err ) {
         // Caught a std::runtime_error
         last_message = err.what();
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         // Caught an unknown exception
         last_message = "unknown exception occurred.";
     }
@@ -225,7 +221,8 @@ static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
     std::stringstream msg;
     char message[1000];
     MPI_Error_string( *err, message, &msg_len );
-    if ( msg_len <= 0 ) AMP_ERROR( "Unkown error in MPI" );
+    if ( msg_len <= 0 )
+        AMP_ERROR( "Unkown error in MPI" );
     msg << "Error calling MPI routine:\n" + std::string( message ) << std::endl;
     AMPManager::terminate_AMP( msg.str() );
 }
@@ -298,15 +295,16 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     double petsc_start_time = time();
     if ( PetscInitializeCalled ) {
         called_PetscInitialize = false;
-    }
-    else {
+    } else {
         std::vector<char *> petscArgs = getPetscArgs();
         int n_args                    = static_cast<int>( petscArgs.size() );
         char **args                   = NULL;
-        if ( n_args > 0 ) args        = &petscArgs[0];
+        if ( n_args > 0 )
+            args = &petscArgs[0];
         PetscInitialize( &n_args, &( args ), PETSC_NULL, PETSC_NULL );
         called_PetscInitialize = true;
-        for ( size_t i = 0; i < petscArgs.size(); i++ ) delete[] petscArgs[i];
+        for ( size_t i = 0; i < petscArgs.size(); i++ )
+            delete[] petscArgs[i];
     }
     // Set our error handler
     PetscPopSignalHandler();
@@ -321,11 +319,11 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     if ( flag ) {
         called_MPI_Init = false;
         MPI_time        = 0;
-    }
-    else {
+    } else {
         double MPI_start_time = time();
         int result            = MPI_Init( &argc, &argv );
-        if ( result != MPI_SUCCESS ) AMP_ERROR( "AMP was unable to initialize MPI" );
+        if ( result != MPI_SUCCESS )
+            AMP_ERROR( "AMP was unable to initialize MPI" );
         called_MPI_Init = true;
         MPI_time        = time() - MPI_start_time;
     }
@@ -353,8 +351,10 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     startup_time = time() - start_time;
     if ( print_times && comm_world.getRank() == 0 ) {
         printf( "startup time = %0.3f s\n", startup_time );
-        if ( petsc_time != 0 ) printf( " PETSc startup time = %0.3f s\n", petsc_time );
-        if ( MPI_time != 0 ) printf( " MPI startup time = %0.3f s\n", MPI_time );
+        if ( petsc_time != 0 )
+            printf( " PETSc startup time = %0.3f s\n", petsc_time );
+        if ( MPI_time != 0 )
+            printf( " MPI startup time = %0.3f s\n", MPI_time );
     }
 }
 
@@ -414,8 +414,10 @@ void AMPManager::shutdown()
     shutdown_time = time() - start_time;
     if ( print_times && rank == 0 ) {
         printf( "shutdown time = %0.3f s\n", shutdown_time );
-        if ( petsc_time != 0 ) printf( " PETSc shutdown time = %0.3f s\n", petsc_time );
-        if ( MPI_time != 0 ) printf( " MPI shutdown time = %0.3f s\n", MPI_time );
+        if ( petsc_time != 0 )
+            printf( " PETSc shutdown time = %0.3f s\n", petsc_time );
+        if ( MPI_time != 0 )
+            printf( " MPI shutdown time = %0.3f s\n", MPI_time );
     }
     // Print any AMP_MPI leaks
     if ( AMP_MPI::MPI_Comm_created() != AMP_MPI::MPI_Comm_destroyed() ) {
@@ -429,7 +431,8 @@ void AMPManager::shutdown()
 // Print memory leaks on rank 0
 #ifdef USE_TIMER
     MemoryApp::MemoryStats memory = MemoryApp::getMemoryStats();
-    if ( rank == 0 && memory.N_new > memory.N_delete ) MemoryApp::print( std::cout );
+    if ( rank == 0 && memory.N_new > memory.N_delete )
+        MemoryApp::print( std::cout );
 #endif
     // Wait 50 milli-seconds for all processors to finish
     Sleep( 50 );
@@ -474,7 +477,8 @@ void AMPManager::setMPIErrorHandler()
 void AMPManager::clearMPIErrorHandler()
 {
 #ifdef USE_EXT_MPI
-    if ( mpierr.get() != NULL ) MPI_Errhandler_free( mpierr.get() ); // Delete the error handler
+    if ( mpierr.get() != NULL )
+        MPI_Errhandler_free( mpierr.get() ); // Delete the error handler
     mpierr.reset();
     MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );
     MPI_Comm_set_errhandler( MPI_COMM_WORLD, MPI_ERRORS_ARE_FATAL );

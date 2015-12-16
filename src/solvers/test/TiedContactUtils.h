@@ -4,7 +4,8 @@
 
 #include <vector>
 
-class MeshAndNodeId {
+class MeshAndNodeId
+{
 public:
     unsigned int d_meshId;
     unsigned int d_nodeId;
@@ -18,8 +19,7 @@ public:
     {
         if ( d_meshId == other.d_meshId ) {
             return ( d_nodeId < other.d_nodeId );
-        }
-        else {
+        } else {
             return ( d_meshId < other.d_meshId );
         }
         return false;
@@ -58,7 +58,8 @@ public:
     }
 };
 
-class PointAndId {
+class PointAndId
+{
 public:
     double d_pt[3];
     unsigned int d_id;

@@ -12,7 +12,8 @@ namespace LinearAlgebra {
   * \see SubsetVector
   * \see StridedIndexer
   */
-class StridedVariable : public SubsetVariable {
+class StridedVariable : public SubsetVariable
+{
 public:
     /** \brief Constructor
       * \param[in] name  The name of the new variable

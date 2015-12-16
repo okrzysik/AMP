@@ -15,7 +15,8 @@ namespace Operator {
  MechanicsLinearFEOperator.
  @see MechanicsLinearFEOperator
  */
-class MechanicsLinearFEOperatorParameters : public LinearFEOperatorParameters {
+class MechanicsLinearFEOperatorParameters : public LinearFEOperatorParameters
+{
 public:
     /**
       Constructor.

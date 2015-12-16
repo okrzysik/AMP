@@ -108,7 +108,8 @@ MeshElement *structuredMeshElement::clone() const { return new structuredMeshEle
 std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type ) const
 {
     AMP_ASSERT( type <= d_dim );
-    if ( type == d_globalID.type() ) return std::vector<MeshElement>( 1, MeshElement( *this ) );
+    if ( type == d_globalID.type() )
+        return std::vector<MeshElement>( 1, MeshElement( *this ) );
     std::vector<BoxMesh::MeshElementIndex> index;
     if ( type == Vertex ) {
         // We want to get the verticies composing the elements
@@ -118,8 +119,7 @@ std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type
                 index.resize( 2 );
                 index[0] = BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0] );
                 index[1] = BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0] + 1 );
-            }
-            else if ( d_dim == 2 ) {
+            } else if ( d_dim == 2 ) {
                 index.resize( 4 );
                 index[0] =
                     BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0], d_index.index[1] );
@@ -129,8 +129,7 @@ std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type
                     Vertex, 0, d_index.index[0] + 1, d_index.index[1] + 1 );
                 index[3] =
                     BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0], d_index.index[1] + 1 );
-            }
-            else if ( d_dim == 3 ) {
+            } else if ( d_dim == 3 ) {
                 index.resize( 8 );
                 index[0] = BoxMesh::MeshElementIndex(
                     Vertex, 0, d_index.index[0], d_index.index[1], d_index.index[2] );
@@ -148,12 +147,10 @@ std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type
                     Vertex, 0, d_index.index[0] + 1, d_index.index[1] + 1, d_index.index[2] + 1 );
                 index[7] = BoxMesh::MeshElementIndex(
                     Vertex, 0, d_index.index[0], d_index.index[1] + 1, d_index.index[2] + 1 );
-            }
-            else {
+            } else {
                 AMP_ERROR( "Dimension not supported yet" );
             }
-        }
-        else if ( d_globalID.type() == Edge ) {
+        } else if ( d_globalID.type() == Edge ) {
             index.resize( 2, d_index );
             index[0].type                = 0;
             index[1].type                = 0;
@@ -161,8 +158,7 @@ std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type
             index[1].side                = 0;
             index[0].index[d_index.side] = d_index.index[d_index.side];
             index[1].index[d_index.side] = d_index.index[d_index.side] + 1;
-        }
-        else if ( d_globalID.type() == Face ) {
+        } else if ( d_globalID.type() == Face ) {
             index.resize( 4, d_index );
             if ( d_index.side == 0 ) {
                 index[0] = BoxMesh::MeshElementIndex(
@@ -173,8 +169,7 @@ std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type
                     Vertex, 0, d_index.index[0], d_index.index[1] + 1, d_index.index[2] + 1 );
                 index[3] = BoxMesh::MeshElementIndex(
                     Vertex, 0, d_index.index[0], d_index.index[1], d_index.index[2] + 1 );
-            }
-            else if ( d_index.side == 1 ) {
+            } else if ( d_index.side == 1 ) {
                 index[0] = BoxMesh::MeshElementIndex(
                     Vertex, 0, d_index.index[0], d_index.index[1], d_index.index[2] );
                 index[1] = BoxMesh::MeshElementIndex(
@@ -183,8 +178,7 @@ std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type
                     Vertex, 0, d_index.index[0] + 1, d_index.index[1], d_index.index[2] + 1 );
                 index[3] = BoxMesh::MeshElementIndex(
                     Vertex, 0, d_index.index[0], d_index.index[1], d_index.index[2] + 1 );
-            }
-            else if ( d_index.side == 2 ) {
+            } else if ( d_index.side == 2 ) {
                 index[0] = BoxMesh::MeshElementIndex(
                     Vertex, 0, d_index.index[0], d_index.index[1], d_index.index[2] );
                 index[1] = BoxMesh::MeshElementIndex(
@@ -193,19 +187,15 @@ std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type
                     Vertex, 0, d_index.index[0] + 1, d_index.index[1] + 1, d_index.index[2] );
                 index[3] = BoxMesh::MeshElementIndex(
                     Vertex, 0, d_index.index[0], d_index.index[1] + 1, d_index.index[2] );
-            }
-            else {
+            } else {
                 AMP_ERROR( "Internal error" );
             }
-        }
-        else if ( d_globalID.type() == Volume ) {
+        } else if ( d_globalID.type() == Volume ) {
             AMP_ERROR( "Not ready for dimensions > 3" );
-        }
-        else {
+        } else {
             AMP_ERROR( "Not finsihed" );
         }
-    }
-    else if ( type == Edge ) {
+    } else if ( type == Edge ) {
         if ( d_globalID.type() == Face ) {
             index.resize( 4, d_index );
             if ( d_index.side == 0 ) {
@@ -218,8 +208,7 @@ std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type
                     Edge, 1, d_index.index[0], d_index.index[1], d_index.index[2] + 1 );
                 index[3] = BoxMesh::MeshElementIndex(
                     Edge, 2, d_index.index[0], d_index.index[1], d_index.index[2] );
-            }
-            else if ( d_index.side == 1 ) {
+            } else if ( d_index.side == 1 ) {
                 // We are dealing with an y-face
                 index[0] = BoxMesh::MeshElementIndex(
                     Edge, 0, d_index.index[0], d_index.index[1], d_index.index[2] );
@@ -229,8 +218,7 @@ std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type
                     Edge, 0, d_index.index[0], d_index.index[1], d_index.index[2] + 1 );
                 index[3] = BoxMesh::MeshElementIndex(
                     Edge, 2, d_index.index[0], d_index.index[1], d_index.index[2] );
-            }
-            else if ( d_index.side == 2 ) {
+            } else if ( d_index.side == 2 ) {
                 // We are dealing with an z-face
                 index[0] = BoxMesh::MeshElementIndex(
                     Edge, 0, d_index.index[0], d_index.index[1], d_index.index[2] );
@@ -240,12 +228,10 @@ std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type
                     Edge, 0, d_index.index[0], d_index.index[1] + 1, d_index.index[2] );
                 index[3] = BoxMesh::MeshElementIndex(
                     Edge, 1, d_index.index[0], d_index.index[1], d_index.index[2] );
-            }
-            else {
+            } else {
                 AMP_ERROR( "Internal error" );
             }
-        }
-        else if ( d_globalID.type() == Volume ) {
+        } else if ( d_globalID.type() == Volume ) {
             AMP_ASSERT( d_index.side == 0 );
             index.resize( 12, d_index );
             index[0] = BoxMesh::MeshElementIndex(
@@ -272,12 +258,10 @@ std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type
                 Edge, 0, d_index.index[0], d_index.index[1] + 1, d_index.index[2] + 1 );
             index[11] = BoxMesh::MeshElementIndex(
                 Edge, 1, d_index.index[0], d_index.index[1], d_index.index[2] + 1 );
-        }
-        else {
+        } else {
             AMP_ERROR( "Dimensions > 3 are not supported yet" );
         }
-    }
-    else if ( type == Face ) {
+    } else if ( type == Face ) {
         if ( d_globalID.type() == Volume ) {
             index.resize( 6, d_index );
             index[0] = BoxMesh::MeshElementIndex(
@@ -292,15 +276,12 @@ std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type
                 Face, 2, d_index.index[0], d_index.index[1], d_index.index[2] );
             index[5] = BoxMesh::MeshElementIndex(
                 Face, 2, d_index.index[0], d_index.index[1], d_index.index[2] + 1 );
-        }
-        else {
+        } else {
             AMP_ERROR( "Dimensions > 3 are not supported yet" );
         }
-    }
-    else if ( type == Volume ) {
+    } else if ( type == Volume ) {
         AMP_ERROR( "Dimensions > 3 are not supported yet" );
-    }
-    else {
+    } else {
         AMP_ERROR( "Not finished" );
     }
     // Fix any elements that are beyond a periodic boundary
@@ -336,8 +317,7 @@ std::vector<MeshElement::shared_ptr> structuredMeshElement::getNeighbors() const
         if ( d_dim == 1 ) {
             index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0] - 1 ) );
             index.push_back( BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0] + 1 ) );
-        }
-        else if ( d_dim == 2 ) {
+        } else if ( d_dim == 2 ) {
             index.push_back( BoxMesh::MeshElementIndex(
                 Vertex, 0, d_index.index[0] - 1, d_index.index[1] - 1 ) );
             index.push_back(
@@ -354,12 +334,12 @@ std::vector<MeshElement::shared_ptr> structuredMeshElement::getNeighbors() const
                 BoxMesh::MeshElementIndex( Vertex, 0, d_index.index[0], d_index.index[1] + 1 ) );
             index.push_back( BoxMesh::MeshElementIndex(
                 Vertex, 0, d_index.index[0] + 1, d_index.index[1] + 1 ) );
-        }
-        else if ( d_dim == 3 ) {
+        } else if ( d_dim == 3 ) {
             for ( int k = -1; k <= 1; k++ ) {
                 for ( int j = -1; j <= 1; j++ ) {
                     for ( int i = -1; i <= 1; i++ ) {
-                        if ( i == 0 && j == 0 && k == 0 ) continue;
+                        if ( i == 0 && j == 0 && k == 0 )
+                            continue;
                         index.push_back( BoxMesh::MeshElementIndex( Vertex,
                                                                     0,
                                                                     d_index.index[0] + i,
@@ -368,21 +348,17 @@ std::vector<MeshElement::shared_ptr> structuredMeshElement::getNeighbors() const
                     }
                 }
             }
-        }
-        else {
+        } else {
             AMP_ERROR( "Dimension not supported yet" );
         }
-    }
-    else if ( d_globalID.type() == Edge ) {
+    } else if ( d_globalID.type() == Edge ) {
         if ( d_dim == 1 ) {
             index.push_back( BoxMesh::MeshElementIndex( Edge, 0, d_index.index[0] - 1 ) );
             index.push_back( BoxMesh::MeshElementIndex( Edge, 0, d_index.index[0] + 1 ) );
-        }
-        else {
+        } else {
             // Edge neighbors in dimensions > 1 are not supported yet
         }
-    }
-    else if ( d_globalID.type() == Face ) {
+    } else if ( d_globalID.type() == Face ) {
         if ( d_dim == 2 ) {
             index.push_back(
                 BoxMesh::MeshElementIndex( Face, 0, d_index.index[0], d_index.index[1] - 1 ) );
@@ -392,12 +368,10 @@ std::vector<MeshElement::shared_ptr> structuredMeshElement::getNeighbors() const
                 BoxMesh::MeshElementIndex( Face, 0, d_index.index[0], d_index.index[1] + 1 ) );
             index.push_back(
                 BoxMesh::MeshElementIndex( Face, 0, d_index.index[0] - 1, d_index.index[1] ) );
-        }
-        else {
+        } else {
             // Face neighbors in dimensions > 2 are not supported yet
         }
-    }
-    else if ( d_globalID.type() == Volume ) {
+    } else if ( d_globalID.type() == Volume ) {
         if ( d_dim == 3 ) {
             index.push_back( BoxMesh::MeshElementIndex(
                 Volume, 0, d_index.index[0], d_index.index[1] - 1, d_index.index[2] ) );
@@ -411,12 +385,10 @@ std::vector<MeshElement::shared_ptr> structuredMeshElement::getNeighbors() const
                 Volume, 0, d_index.index[0], d_index.index[1], d_index.index[2] - 1 ) );
             index.push_back( BoxMesh::MeshElementIndex(
                 Volume, 0, d_index.index[0], d_index.index[1], d_index.index[2] + 1 ) );
-        }
-        else {
+        } else {
             // Volume neighbors in dimensions > 3 are not supported yet
         }
-    }
-    else {
+    } else {
         AMP_ERROR( "Unknown entity type" );
     }
     // Get the neighbor elements
@@ -432,16 +404,19 @@ std::vector<MeshElement::shared_ptr> structuredMeshElement::getNeighbors() const
         bool in_mesh = true;
         for ( int d = 0; d < d_dim; d++ ) {
             if ( periodic[d] ) {
-                if ( index[i].index[d] < 0 ) index[i].index[d] += size[d];
-                if ( index[i].index[d] >= size[d] ) index[i].index[d] -= size[d];
-            }
-            else {
-                if ( index[i].index[d] < 0 ) in_mesh = false;
+                if ( index[i].index[d] < 0 )
+                    index[i].index[d] += size[d];
+                if ( index[i].index[d] >= size[d] )
+                    index[i].index[d] -= size[d];
+            } else {
+                if ( index[i].index[d] < 0 )
+                    in_mesh = false;
                 if ( d_globalID.type() == d_dim ) {
-                    if ( index[i].index[d] >= size[d] ) in_mesh = false;
-                }
-                else {
-                    if ( index[i].index[d] > size[d] ) in_mesh = false;
+                    if ( index[i].index[d] >= size[d] )
+                        in_mesh = false;
+                } else {
+                    if ( index[i].index[d] > size[d] )
+                        in_mesh = false;
                 }
             }
         }
@@ -466,8 +441,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
     if ( d_index.type == type ) {
         // We are looking for the current element
         return std::vector<MeshElement>( 1, MeshElement( *this ) );
-    }
-    else if ( type == d_index.type + 1 && type == d_mesh->getGeomType() ) {
+    } else if ( type == d_index.type + 1 && type == d_mesh->getGeomType() ) {
         // We have an entity that is the geometric type-1 and we want to get the parents of the
         // geometric type of the
         // mesh
@@ -476,8 +450,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
         index_list.push_back( index );
         index.index[d_index.side]--;
         index_list.push_back( index );
-    }
-    else if ( d_index.type == Vertex ) {
+    } else if ( d_index.type == Vertex ) {
         // We want to get the parents of a vertex
         AMP_ASSERT( d_dim <= 3 );
         if ( type == d_mesh->getGeomType() ) {
@@ -488,8 +461,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
                     }
                 }
             }
-        }
-        else if ( type == Edge ) {
+        } else if ( type == Edge ) {
             for ( int d = 0; d < d_dim; d++ ) {
                 BoxMesh::MeshElementIndex index(
                     type, d, d_index.index[0], d_index.index[1], d_index.index[2] );
@@ -497,8 +469,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
                 index.index[d]--;
                 index_list.push_back( index );
             }
-        }
-        else if ( type == Face && d_mesh->getGeomType() == Volume ) {
+        } else if ( type == Face && d_mesh->getGeomType() == Volume ) {
             for ( int j = d_index.index[1] - 1; j <= d_index.index[1]; j++ ) {
                 for ( int k = d_index.index[2] - 1; k <= d_index.index[2]; k++ )
                     index_list.push_back(
@@ -514,8 +485,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
                     index_list.push_back(
                         BoxMesh::MeshElementIndex( type, 2, i, j, d_index.index[2] ) );
             }
-        }
-        else {
+        } else {
             char text[100];
             sprintf( text,
                      "Unknown type: dim=%i, elem_type=%i, type=%i",
@@ -524,8 +494,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
                      (int) type );
             AMP_ERROR( std::string( text ) );
         }
-    }
-    else if ( d_index.type == Edge ) {
+    } else if ( d_index.type == Edge ) {
         // We want to get the parents of an edge
         AMP_ASSERT( d_dim <= 3 );
         int i = d_index.index[0];
@@ -537,47 +506,39 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 2, i, j, k ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 1, i, j, k - 1 ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 1, i, j, k ) );
-            }
-            else if ( d_index.side == 1 ) {
+            } else if ( d_index.side == 1 ) {
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 2, i - 1, j, k ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 2, i, j, k ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i, j, k - 1 ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i, j, k ) );
-            }
-            else if ( d_index.side == 2 ) {
+            } else if ( d_index.side == 2 ) {
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 1, i - 1, j, k ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 1, i, j, k ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i, j - 1, k ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i, j, k ) );
-            }
-            else {
+            } else {
                 AMP_ERROR( "Internal error" );
             }
-        }
-        else if ( type == Volume && d_mesh->getGeomType() == Volume ) {
+        } else if ( type == Volume && d_mesh->getGeomType() == Volume ) {
             if ( d_index.side == 0 ) {
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i, j - 1, k - 1 ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i, j, k - 1 ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i, j - 1, k ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i, j, k ) );
-            }
-            else if ( d_index.side == 1 ) {
+            } else if ( d_index.side == 1 ) {
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i - 1, j, k - 1 ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i, j, k - 1 ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i - 1, j, k ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i, j, k ) );
-            }
-            else if ( d_index.side == 2 ) {
+            } else if ( d_index.side == 2 ) {
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i - 1, j - 1, k ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i, j - 1, k ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i - 1, j, k ) );
                 index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i, j, k ) );
-            }
-            else {
+            } else {
                 AMP_ERROR( "Internal error" );
             }
-        }
-        else {
+        } else {
             char text[100];
             sprintf( text,
                      "Unknown type: dim=%i, elem_type=%i, type=%i",
@@ -586,8 +547,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
                      (int) type );
             AMP_ERROR( std::string( text ) );
         }
-    }
-    else {
+    } else {
         char text[100];
         sprintf( text,
                  "Case not programmed yet: dim=%i, elem_type=%i, type=%i",
@@ -599,32 +559,37 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
     // Get some basic properties from the mesh
     int meshGeomDim  = (int) d_mesh->getGeomType();
     bool periodic[3] = { false, false, false };
-    for ( int d = 0; d < meshGeomDim; d++ ) periodic[d] = d_mesh->d_isPeriodic[d];
-    int size[3]                                         = { 1, 1, 1 };
-    for ( int d = 0; d < meshGeomDim; d++ ) size[d] = d_mesh->d_size[d];
+    for ( int d     = 0; d < meshGeomDim; d++ )
+        periodic[d] = d_mesh->d_isPeriodic[d];
+    int size[3]     = { 1, 1, 1 };
+    for ( int d = 0; d < meshGeomDim; d++ )
+        size[d] = d_mesh->d_size[d];
     // Remove any elements that are outside the physical domain
     size_t k = 0;
     for ( size_t i = 0; i < index_list.size(); i++ ) {
-        bool erase                                            = false;
-        if ( d_dim < 2 && index_list[i].index[1] != 0 ) erase = true;
-        if ( d_dim < 3 && index_list[i].index[2] != 0 ) erase = true;
+        bool erase = false;
+        if ( d_dim < 2 && index_list[i].index[1] != 0 )
+            erase = true;
+        if ( d_dim < 3 && index_list[i].index[2] != 0 )
+            erase = true;
         for ( int d = 0; d < meshGeomDim; d++ ) {
-            if ( periodic[d] ) continue;
+            if ( periodic[d] )
+                continue;
             int i_max = size[d];
             if ( (int) type == meshGeomDim ) {
                 // The geometric type of the mesh must be within the domain
-            }
-            else if ( type == Vertex ) {
+            } else if ( type == Vertex ) {
                 // Verticies can exist on all faces
                 i_max++;
+            } else if ( (int) type == meshGeomDim - 1 ) {
+                if ( index_list[i].side == d )
+                    i_max++;
+            } else {
+                if ( index_list[i].side != d )
+                    i_max++;
             }
-            else if ( (int) type == meshGeomDim - 1 ) {
-                if ( index_list[i].side == d ) i_max++;
-            }
-            else {
-                if ( index_list[i].side != d ) i_max++;
-            }
-            if ( index_list[i].index[d] < 0 || index_list[i].index[d] >= i_max ) erase = true;
+            if ( index_list[i].index[d] < 0 || index_list[i].index[d] >= i_max )
+                erase = true;
         }
         if ( !erase ) {
             index_list[k] = index_list[i];
@@ -667,10 +632,10 @@ double structuredMeshElement::volume() const
         std::vector<double> x1 = nodes[0].coord();
         std::vector<double> x2 = nodes[1].coord();
         double dist2           = 0.0;
-        for ( int i = 0; i < d_dim; i++ ) dist2 += ( x1[i] - x2[i] ) * ( x1[i] - x2[i] );
+        for ( int i = 0; i < d_dim; i++ )
+            dist2 += ( x1[i] - x2[i] ) * ( x1[i] - x2[i] );
         return sqrt( dist2 );
-    }
-    else if ( d_globalID.type() == Face ) {
+    } else if ( d_globalID.type() == Face ) {
         // Use 2x2 quadrature to approximate the surface area. See for example,
         // Y. Zhang, C. Bajaj, G. Xu. Surface Smoothing and Quality Improvement
         // of Quadrilateral/Hexahedral Meshes with Geometric Flow. The special
@@ -692,8 +657,7 @@ double structuredMeshElement::volume() const
         if ( AC_AB_AD[0] == 0 && AC_AB_AD[1] == 0 && AC_AB_AD[2] == 0 ) {
             // The points are co-planar
             return cross3magnitude( AB, AD );
-        }
-        else {
+        } else {
             const double q[2] = { 0.5 - std::sqrt( 3.0 ) / 6.0, 0.5 + std::sqrt( 3.0 ) / 6.0 };
             double vol        = 0.0;
             double v1[3], v2[3];
@@ -710,8 +674,7 @@ double structuredMeshElement::volume() const
             }
             return 0.25 * vol;
         }
-    }
-    else if ( d_globalID.type() == Volume ) {
+    } else if ( d_globalID.type() == Volume ) {
         // Compute the volume of the tri-linear hex by splitting it
         // into 6 sub-pyramids and applying the formula in:
         // "Calculation of the Volume of a General Hexahedron
@@ -724,13 +687,15 @@ double structuredMeshElement::volume() const
         // for the apex of all the pyramids.
         std::vector<double> R = this->centroid();
         std::vector<std::vector<double>> points( 8 );
-        for ( int i = 0; i < 8; i++ ) points[i] = nodes[i].coord();
+        for ( int i   = 0; i < 8; i++ )
+            points[i] = nodes[i].coord();
         int pyr_base[4];
         double vol = 0.0;
         // Compute the volume using 6 sub-pyramids
         for ( unsigned int n = 0; n < 6; ++n ) {
             // Set the nodes of the pyramid base
-            for ( unsigned int i = 0; i < 4; ++i ) pyr_base[i] = sub_pyr[n][i];
+            for ( unsigned int i = 0; i < 4; ++i )
+                pyr_base[i]      = sub_pyr[n][i];
             // Compute diff vectors
             double a[3], b[3], c[3], d[3], e[3];
             for ( int i = 0; i < 3; i++ ) {
@@ -762,7 +727,8 @@ std::vector<double> structuredMeshElement::coord() const
     size_t pos = AMP::Utilities::findfirst( d_mesh->d_index, d_index );
     AMP_ASSERT( d_mesh->d_index[pos] == d_index );
     std::vector<double> coord( (size_t) d_dim, 0.0 );
-    for ( int i = 0; i < d_dim; i++ ) coord[i] = d_mesh->d_coord[i][pos];
+    for ( int i  = 0; i < d_dim; i++ )
+        coord[i] = d_mesh->d_coord[i][pos];
     return coord;
 }
 double structuredMeshElement::coord( int i ) const
@@ -785,27 +751,26 @@ bool structuredMeshElement::isOnSurface() const
 {
     bool on_surface = false;
     for ( int d = 0; d < d_dim; d++ ) {
-        if ( d_mesh->d_isPeriodic[d] ) continue;
+        if ( d_mesh->d_isPeriodic[d] )
+            continue;
         int size = (int) d_mesh->d_size[d];
         if ( d_globalID.type() == d_mesh->GeomDim ) {
             // We are dealing with the highest level geometric entity
-            if ( d_index.index[d] == 0 || d_index.index[d] == size - 1 ) on_surface = true;
-        }
-        else if ( d_globalID.type() == Vertex ) {
+            if ( d_index.index[d] == 0 || d_index.index[d] == size - 1 )
+                on_surface = true;
+        } else if ( d_globalID.type() == Vertex ) {
             // We are dealing with a vertex
-            if ( d_index.index[d] == 0 || d_index.index[d] == size ) on_surface = true;
-        }
-        else if ( d_globalID.type() == Edge ) {
+            if ( d_index.index[d] == 0 || d_index.index[d] == size )
+                on_surface = true;
+        } else if ( d_globalID.type() == Edge ) {
             // We are dealing with a vertex
             if ( ( d_index.index[d] == 0 || d_index.index[d] == size ) && d_index.side != d )
                 on_surface = true;
-        }
-        else if ( d_globalID.type() == Face ) {
+        } else if ( d_globalID.type() == Face ) {
             // We are dealing with a vertex
             if ( ( d_index.index[d] == 0 || d_index.index[d] == size ) && d_index.side == d )
                 on_surface = true;
-        }
-        else {
+        } else {
             AMP_ERROR( "Internal error (dim>3?)" );
         }
     }
@@ -816,20 +781,24 @@ bool structuredMeshElement::isOnBoundary( int id ) const
     std::map<std::pair<int, GeomType>, std::vector<BoxMesh::ElementIndexList>>::const_iterator
         iterator;
     iterator = d_mesh->d_id_list.find( std::pair<int, GeomType>( id, (GeomType) d_index.type ) );
-    if ( iterator == d_mesh->d_id_list.end() ) return false;
+    if ( iterator == d_mesh->d_id_list.end() )
+        return false;
     for ( size_t i = 0; i < iterator->second.size(); i++ ) {
-        if ( iterator->second[i]->size() == 0 ) continue;
+        if ( iterator->second[i]->size() == 0 )
+            continue;
         size_t j = AMP::Utilities::findfirst( *( iterator->second[i] ), d_index );
         if ( j == iterator->second[i]->size() ) {
             j--;
         }
-        if ( iterator->second[i]->operator[]( j ) == d_index ) return true;
+        if ( iterator->second[i]->operator[]( j ) == d_index )
+            return true;
     }
     return false;
 }
 bool structuredMeshElement::isInBlock( int id ) const
 {
-    if ( id == 0 ) return true;
+    if ( id == 0 )
+        return true;
     return false;
 }
 

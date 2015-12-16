@@ -10,7 +10,8 @@ namespace Solver {
 typedef SolverStrategyParameters Flow1DSolverParameters;
 
 
-class Flow1DSolver : public SolverStrategy {
+class Flow1DSolver : public SolverStrategy
+{
 public:
     explicit Flow1DSolver( AMP::shared_ptr<Flow1DSolverParameters> parameters );
 

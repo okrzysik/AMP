@@ -147,7 +147,8 @@ void forwardTest1( AMP::UnitTest *ut, std::string exeName )
             int rank                      = globalComm.getRank();
             int nranks                    = globalComm.getSize();
             std::ios_base::openmode omode = std::ios_base::out;
-            if ( rank > 0 ) omode |= std::ios_base::app;
+            if ( rank > 0 )
+                omode |= std::ios_base::app;
             std::ofstream file( filename.c_str(), omode );
             if ( rank == 0 ) {
                 file << "(* x y z solution solution fe-source fe-operator error *)" << std::endl;
@@ -156,7 +157,8 @@ void forwardTest1( AMP::UnitTest *ut, std::string exeName )
 
             iterator        = iterator.begin();
             size_t numNodes = 0;
-            for ( ; iterator != iterator.end(); iterator++ ) numNodes++;
+            for ( ; iterator != iterator.end(); iterator++ )
+                numNodes++;
 
             iterator     = iterator.begin();
             size_t iNode = 0;
@@ -180,7 +182,8 @@ void forwardTest1( AMP::UnitTest *ut, std::string exeName )
 
                 file << "{" << x << "," << y << "," << z << "," << val << "," << sol << "," << src
                      << "," << res + src << "," << err << "}";
-                if ( iNode < numNodes - 1 ) file << "," << std::endl;
+                if ( iNode < numNodes - 1 )
+                    file << "," << std::endl;
 
                 l2err += ( res * res );
                 iNode++;
@@ -228,8 +231,7 @@ int main( int argc, char *argv[] )
             else
                 files.push_back( arguments[i] ); // Store this as a file
         }
-    }
-    else {
+    } else {
         std::cout
             << "No input files are currently hardcoded. Files must be given as an argument.\n";
         exit( 0 );
@@ -240,12 +242,10 @@ int main( int argc, char *argv[] )
         for ( size_t i = 0; i < files.size(); i++ ) {
             forwardTest1( &ut, files[i] );
         }
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

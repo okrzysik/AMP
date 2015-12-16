@@ -397,10 +397,12 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
         }
 
         for ( int i = 0; i < 6; i++ )
-            for ( int j = 0; j < 24; j++ ) materialStiffnessTemp[i][j] = 0.0;
+            for ( int j                     = 0; j < 24; j++ )
+                materialStiffnessTemp[i][j] = 0.0;
 
         for ( int i = 0; i < 24; i++ )
-            for ( int j = 0; j < 24; j++ ) materialStiffness[i][j] = 0.0;
+            for ( int j                 = 0; j < 24; j++ )
+                materialStiffness[i][j] = 0.0;
 
         for ( int i = 0; i < 6; i++ ) {
             for ( int j = 0; j < 24; j++ ) {
@@ -647,12 +649,12 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
             if ( d_useFlanaganTaylorElem == false ) {
                 double U_np1[3][3];
                 polarDecompositionFeqRU_Simo( F_np1, R_np1, U_np1 );
-            }
-            else {
+            } else {
                 for ( int i = 0; i < 3; i++ ) {
                     for ( int j = 0; j < 3; j++ ) {
-                        R_np1[i][j]               = 0.0;
-                        if ( i == j ) R_np1[i][j] = 1.0;
+                        R_np1[i][j] = 0.0;
+                        if ( i == j )
+                            R_np1[i][j] = 1.0;
                     }
                 }
             }
@@ -707,10 +709,12 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
         }
 
         for ( int i = 0; i < 6; i++ )
-            for ( int j = 0; j < 24; j++ ) materialStiffnessTemp[i][j] = 0.0;
+            for ( int j                     = 0; j < 24; j++ )
+                materialStiffnessTemp[i][j] = 0.0;
 
         for ( int i = 0; i < 24; i++ )
-            for ( int j = 0; j < 24; j++ ) materialStiffness[i][j] = 0.0;
+            for ( int j                 = 0; j < 24; j++ )
+                materialStiffness[i][j] = 0.0;
 
         for ( int i = 0; i < 6; i++ ) {
             for ( int j = 0; j < 24; j++ ) {

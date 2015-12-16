@@ -140,12 +140,10 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName )
 
         if ( finalResidualNorm > ( 1e-10 * initResidualNorm ) ) {
             ut->failure( exeName );
-        }
-        else {
+        } else {
             ut->passes( exeName );
         }
-    }
-    else {
+    } else {
         AMP::pout << "WARNING: This is a single processor test!" << std::endl;
         ut->passes( exeName );
     }
@@ -166,12 +164,10 @@ int main( int argc, char *argv[] )
     for ( size_t i = 0; i < exeNames.size(); i++ ) {
         try {
             linearElasticTest( &ut, exeNames[i] );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             AMP::pout << "ERROR: " << err.what() << std::endl;
             ut.failure( "ERROR" );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             AMP::pout << "ERROR: "
                       << "An unknown exception was thrown." << std::endl;
             ut.failure( "ERROR" );

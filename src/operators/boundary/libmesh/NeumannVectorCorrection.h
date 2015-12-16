@@ -32,7 +32,8 @@ namespace Operator {
   the weak formulation, a natural condition is assumed.
   This class is also a base class for the Robin Boundary Operator.
   */
-class NeumannVectorCorrection : public BoundaryOperator {
+class NeumannVectorCorrection : public BoundaryOperator
+{
 public:
     //! Constructor. This function reads all the parameters required for surface elements.
     explicit NeumannVectorCorrection(

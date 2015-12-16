@@ -9,7 +9,8 @@
 namespace AMP {
 namespace Solver {
 
-class OnePointSolver : public SolverStrategy {
+class OnePointSolver : public SolverStrategy
+{
 public:
     OnePointSolver( AMP::shared_ptr<SolverStrategyParameters> params ) : SolverStrategy( params )
     {

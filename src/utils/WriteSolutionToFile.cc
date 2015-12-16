@@ -21,7 +21,8 @@ void printSolution( AMP::Mesh::Mesh::shared_ptr mesh,
     std::vector<size_t> dofs;
     for ( ; nd != end_nd; ++nd ) {
         std::vector<double> x = nd->coord();
-        for ( size_t i = 0; i < x.size(); i++ ) fprintf( fp, "%lf, ", x[i] );
+        for ( size_t i = 0; i < x.size(); i++ )
+            fprintf( fp, "%lf, ", x[i] );
         fprintf( fp, ",    " );
         dof_map->getDOFs( nd->globalID(), dofs );
         for ( size_t i = 0; i < dofs.size(); i++ ) {

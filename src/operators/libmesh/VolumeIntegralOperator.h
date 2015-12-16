@@ -19,7 +19,8 @@ namespace Operator {
   evaluation of the functional at quadrature points and volume integration are its key
   basic operations.
   */
-class VolumeIntegralOperator : public NonlinearFEOperator {
+class VolumeIntegralOperator : public NonlinearFEOperator
+{
 public:
     /**
       Constructor. This reads the values for the following keys from the database object contained

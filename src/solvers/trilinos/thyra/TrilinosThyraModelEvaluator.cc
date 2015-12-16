@@ -88,16 +88,16 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
         bool exact                                                                = true;
         if ( eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_EXACT ) {
             exact = true;
-        }
-        else if ( eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_APPROX_DERIV ) {
+        } else if ( eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_APPROX_DERIV ) {
+            exact = false;
+        } else if ( eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_VERY_APPROX_DERIV ) {
             exact = false;
         }
-        else if ( eval.getType() == ::Thyra::ModelEvaluatorBase::EVAL_TYPE_VERY_APPROX_DERIV ) {
-            exact = false;
-        }
-        if ( d_prePostOperator != NULL ) d_prePostOperator->runPreApply( x, f_out, exact );
+        if ( d_prePostOperator != NULL )
+            d_prePostOperator->runPreApply( x, f_out, exact );
         d_nonlinearOp->apply( d_rhs, x, f_out, 1.0, -1.0 );
-        if ( d_prePostOperator != NULL ) d_prePostOperator->runPostApply( x, f_out, exact );
+        if ( d_prePostOperator != NULL )
+            d_prePostOperator->runPostApply( x, f_out, exact );
     }
 
     if ( outArgs.supports(::Thyra::ModelEvaluatorBase::OUT_ARG_W_op ) ) {
@@ -191,7 +191,8 @@ static void nullDeleter( T * ){};
 AMP::shared_ptr<AMP::Solver::TrilinosLinearOP>
 TrilinosThyraModelEvaluator::view( Teuchos::RCP<Thyra::LinearOpBase<double>> op )
 {
-    if ( op.is_null() ) return AMP::shared_ptr<AMP::Solver::TrilinosLinearOP>();
+    if ( op.is_null() )
+        return AMP::shared_ptr<AMP::Solver::TrilinosLinearOP>();
     AMP::Solver::TrilinosLinearOP *tmp = dynamic_cast<AMP::Solver::TrilinosLinearOP *>( op.get() );
     AMP_ASSERT( tmp != NULL );
     return AMP::shared_ptr<AMP::Solver::TrilinosLinearOP>(

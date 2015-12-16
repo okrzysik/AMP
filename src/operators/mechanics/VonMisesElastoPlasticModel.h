@@ -12,7 +12,8 @@ namespace AMP {
 namespace Operator {
 
 
-class VonMisesElastoPlasticModel : public MechanicsMaterialModel {
+class VonMisesElastoPlasticModel : public MechanicsMaterialModel
+{
 public:
     explicit VonMisesElastoPlasticModel(
         const AMP::shared_ptr<MechanicsMaterialModelParameters> & );

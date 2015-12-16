@@ -22,7 +22,8 @@ namespace LinearAlgebra {
   * \details  This allows us to safely wrap an AMP vector
   *   in a thyra vector for use within Trilinos.
   */
-class ThyraVectorWrapper : public Thyra::VectorBase<double> {
+class ThyraVectorWrapper : public Thyra::VectorBase<double>
+{
 public:
     // Default constructor
     explicit ThyraVectorWrapper( const std::vector<AMP::LinearAlgebra::Vector::shared_ptr> &vecs );

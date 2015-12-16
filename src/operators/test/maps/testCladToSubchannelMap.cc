@@ -33,7 +33,8 @@ AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel
         bool is_valid                             = true;
         for ( size_t j = 0; j < nodes.size(); ++j ) {
             std::vector<double> coord = nodes[j].coord();
-            if ( !AMP::Utilities::approx_equal( coord[2], center[2], 1e-6 ) ) is_valid = false;
+            if ( !AMP::Utilities::approx_equal( coord[2], center[2], 1e-6 ) )
+                is_valid = false;
         }
         if ( is_valid ) {
             xyFace.insert( std::pair<double, AMP::Mesh::MeshElement>( center[2], *iterator ) );
@@ -125,8 +126,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
             manager, map_db );
         map.reset();
         ut->passes( "Created / Destroyed CladToSubchannelMap" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         ut->failure( "Created / Destroyed CladToSubchannelMap" );
     }
 

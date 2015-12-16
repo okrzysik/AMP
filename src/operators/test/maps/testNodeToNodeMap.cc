@@ -22,7 +22,8 @@ void setBoundary( int id,
                   AMP::LinearAlgebra::Vector::shared_ptr &v1,
                   AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    if ( mesh.get() == NULL ) return;
+    if ( mesh.get() == NULL )
+        return;
 
     AMP::Discretization::DOFManager::shared_ptr d1 = v1->getDOFManager();
 
@@ -76,8 +77,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
             mesh, map_db );
         n2nmaps.reset();
         ut->passes( "Created / Destroyed NodeToNodeMap (" + fname + ")" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         ut->failure( "Created / Destroyed NodeToNodeMap (" + fname + ")" );
     }
 
@@ -114,8 +114,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
         if ( mesh1.size() == N_maps ) {
             meshname1 = mesh1[i];
             meshname2 = mesh2[i];
-        }
-        else {
+        } else {
             meshname1 = mesh1[0];
             meshname2 = mesh2[0];
         }
@@ -123,8 +122,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
         if ( surface1.size() == N_maps ) {
             surface_id1 = surface1[i];
             surface_id2 = surface2[i];
-        }
-        else {
+        } else {
             surface_id1 = surface1[0];
             surface_id2 = surface2[0];
         }
@@ -155,8 +153,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     v1->subtract( v1, v2 );
     if ( v1->maxNorm() < 1.e-12 ) {
         ut->passes( "Node to node map test (" + fname + ")" );
-    }
-    else {
+    } else {
         ut->failure( "Node to node map test (" + fname + ")" );
     }
     std::cout << v1->maxNorm() << std::endl;
@@ -171,8 +168,7 @@ int main( int argc, char *argv[] )
 
     if ( argc <= 1 ) {
         ut.failure( "No input files specified" );
-    }
-    else {
+    } else {
         for ( int i = 1; i < argc; i++ ) {
             std::cout << "Running test with input file: " << argv[i] << std::endl;
             runTest( argv[i], &ut );

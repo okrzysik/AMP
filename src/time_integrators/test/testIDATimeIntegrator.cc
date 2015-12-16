@@ -121,8 +121,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
             new AMP::TimeIntegrator::IDATimeIntegrator( time_Params ) );
         if ( pIDATimeIntegrator.get() == NULL ) {
             ut->failure( "Testing IDATimeIntegrator's constructor" );
-        }
-        else {
+        } else {
             ut->passes( "Tested IDATimeIntegrator's constructor" );
         }
     }
@@ -143,12 +142,10 @@ int main( int argc, char *argv[] )
 
     try {
         IDATimeIntegratorTest( &ut );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

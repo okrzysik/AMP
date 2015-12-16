@@ -14,7 +14,8 @@ namespace Operator {
   Lnear operator class for the 4-equation formulation of the subchannel equations:
   see /AMPFuel-Docs/technicalInfo/flow/SubchannelFlow.pdf for details
   */
-class SubchannelFourEqLinearOperator : public LinearOperator {
+class SubchannelFourEqLinearOperator : public LinearOperator
+{
 public:
     //! Constructor
     explicit SubchannelFourEqLinearOperator(

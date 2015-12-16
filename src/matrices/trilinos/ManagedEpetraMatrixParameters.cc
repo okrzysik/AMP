@@ -17,7 +17,8 @@ namespace LinearAlgebra {
 template <class T>
 static inline T *getPtr( std::vector<T> &x )
 {
-    if ( !x.empty() ) return &x[0];
+    if ( !x.empty() )
+        return &x[0];
     return NULL;
 }
 
@@ -86,7 +87,8 @@ Epetra_Map *ManagedEpetraMatrixParameters::getEpetraColMap()
 
 void ManagedEpetraMatrixParameters::addColumns( int a, int *b )
 {
-    for ( int i = 0; i != a; i++ ) d_sColumns.insert( b[i] );
+    for ( int i = 0; i != a; i++ )
+        d_sColumns.insert( b[i] );
 }
 
 

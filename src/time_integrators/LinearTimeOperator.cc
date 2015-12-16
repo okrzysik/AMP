@@ -64,8 +64,7 @@ void LinearTimeOperator::reset(
     if ( d_bModifyRhsOperatorMatrix ) {
         AMP_INSIST( pMatrix.get() != NULL, "ERROR: NULL matrix pointer" );
         setMatrix( pMatrix );
-    }
-    else {
+    } else {
         // if it's not okay to modify the rhs matrix then copy it over
         if ( d_matrix.get() == NULL ) {
             AMP_INSIST( pMatrix.get() != NULL, "ERROR: NULL matrix pointer" );

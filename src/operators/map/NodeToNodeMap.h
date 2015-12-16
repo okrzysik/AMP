@@ -22,7 +22,8 @@ namespace Operator {
  * nodes are aligned.  This routine is bi-directional.  It will exchange data
  * for the aligned nodes.
  */
-class NodeToNodeMap : public AMP::Operator::AsyncMapOperator {
+class NodeToNodeMap : public AMP::Operator::AsyncMapOperator
+{
 public:
     //! brief  Typedef to identify the parameters class of this operator
     typedef NodeToNodeMapParameters Parameters;
@@ -57,7 +58,8 @@ public:
 
 
 private:
-    class Point {
+    class Point
+    {
     public:
         AMP::Mesh::MeshElementID id;
         double pos[3];

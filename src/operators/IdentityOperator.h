@@ -12,7 +12,8 @@ namespace Operator {
 /**
  * Class IdentityOperator is the identity operator A(u) = u
  */
-class IdentityOperator : public LinearOperator {
+class IdentityOperator : public LinearOperator
+{
 public:
     //! Constructor. This resets the matrix shared pointer.
     IdentityOperator();

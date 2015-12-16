@@ -25,7 +25,8 @@ namespace Operator {
  *\brief Class defining parameters used by MoabBased operators.
  */
 //---------------------------------------------------------------------------//
-class MoabBasedOperatorParameters : public AMP::Operator::OperatorParameters {
+class MoabBasedOperatorParameters : public AMP::Operator::OperatorParameters
+{
 public:
     // Typedefs
     typedef AMP::shared_ptr<AMP::Database> SP_Database;

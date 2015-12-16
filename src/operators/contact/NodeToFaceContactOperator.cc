@@ -305,8 +305,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
                     d_MasterFacesLocalIndices.erase( masterFacesLocalIndicesIterator );
                 slaveVerticesNormalVectorIterator = d_SlaveVerticesNormalVector.erase(
                     slaveVerticesNormalVectorIterator, slaveVerticesNormalVectorIterator + 3 );
-            }
-            else {
+            } else {
                 d_fout << "\n";
                 ++activeSetIterator;
                 std::advance( slaveVerticesShiftIterator, 3 );
@@ -406,8 +405,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
             ++masterVolumesGlobalIDsIterator;
             *masterFacesLocalIndicesIterator = tmpMasterFacesLocalIndices[i];
             ++masterFacesLocalIndicesIterator;
-        }
-        else {
+        } else {
             if ( flags[i] == AMP::Mesh::DendroSearch::FoundNotOnBoundary ) {
                 // check what master elements the slave vertices where found in before throwing an
                 // error
@@ -525,8 +523,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
         if ( !skipDisplaceMesh ) {
             displacementFieldVector->getValuesByGlobalID(
                 24, &( displacementIndices[0] ), &( displacementValues[0] ) );
-        }
-        else {
+        } else {
             std::fill( displacementValues, displacementValues + 24, 0.0 );
         } // end if
         double basis_functions_values_on_face[4];
@@ -614,8 +611,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
                 3,
                 &( activatedSlaveVertexDisplacementIndices[0] ),
                 activatedSlaveVertexDisplacementValues );
-        }
-        else {
+        } else {
             std::fill( activatedSlaveVertexDisplacementValues,
                        activatedSlaveVertexDisplacementValues + 3,
                        0.0 );
@@ -909,8 +905,7 @@ void NodeToFaceContactOperator::setSlaveToZero( AMP::LinearAlgebra::Vector::shar
         } // end for i
         u->setLocalValuesByGlobalID(
             d_SlaveIndices.size(), &( d_SlaveIndices[0] ), &( slaveValues[0] ) );
-    }
-    else {
+    } else {
         this->ConstraintsEliminationOperator::setSlaveToZero( u );
     } // end if
 }
@@ -929,8 +924,7 @@ void NodeToFaceContactOperator::addShiftToSlave( AMP::LinearAlgebra::Vector::sha
         } // end for i
         u->addLocalValuesByGlobalID(
             d_SlaveIndices.size(), &( d_SlaveIndices[0] ), &( addToSlaveValues[0] ) );
-    }
-    else {
+    } else {
         this->ConstraintsEliminationOperator::addShiftToSlave( u );
     } // end if
 }

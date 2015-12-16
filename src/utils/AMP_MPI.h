@@ -44,7 +44,8 @@ namespace AMP {
  * succeed provided that the size of the data type object is a fixed size on
  * all processors.  sizeof(type) must be the same for all elements and processors.
  */
-class AMP_MPI {
+class AMP_MPI
+{
 public:
     /**
      *\brief  Empty constructor

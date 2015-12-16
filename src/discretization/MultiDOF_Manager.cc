@@ -69,13 +69,13 @@ multiDOFManager::~multiDOFManager() {}
 void multiDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const
 {
     dofs.resize( 0 );
-    if ( d_managers.empty() ) return;
+    if ( d_managers.empty() )
+        return;
     if ( d_managers[0]->numGlobalDOF() == this->d_global ) {
         // We are dealing with a multiDOFManager with only 1 sub DOF (this happens with
         // multivectors)
         d_managers[0]->getDOFs( id, dofs );
-    }
-    else {
+    } else {
         std::vector<size_t> local_dofs;
         for ( size_t i = 0; i < d_managers.size(); i++ ) {
             d_managers[i]->getDOFs( id, local_dofs );
@@ -105,7 +105,8 @@ AMP::Mesh::MeshIterator multiDOFManager::getIterator() const
             new AMP::Mesh::MeshIterator( d_managers[i]->getIterator() ) );
     // Get the list of unique elements
     size_t N_tot = 0;
-    for ( size_t i = 0; i < iterators.size(); i++ ) N_tot += iterators[i]->size();
+    for ( size_t i = 0; i < iterators.size(); i++ )
+        N_tot += iterators[i]->size();
     AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elements(
         new std::vector<AMP::Mesh::MeshElement>( 0 ) );
     elements->reserve( N_tot );
@@ -193,7 +194,8 @@ std::vector<size_t> multiDOFManager::getSubDOF( const int i, std::vector<size_t>
     }
     size_t neg_one = ~( (size_t) 0 );
     std::vector<size_t> subDOFs( globalDOFs.size(), neg_one );
-    for ( size_t j = 0; j < globalDOFs.size(); j++ ) subDOFs[j] = neg_one;
+    for ( size_t j = 0; j < globalDOFs.size(); j++ )
+        subDOFs[j] = neg_one;
     subDOF_struct search( 0, neg_one, neg_one, neg_one );
     for ( size_t j = 0; j < globalDOFs.size(); j++ ) {
         search.DOF1_begin = globalDOFs[j];
@@ -222,19 +224,22 @@ std::vector<DOFManager::shared_ptr> multiDOFManager::getDOFManagers() const { re
 AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP_MPI &comm_in )
 {
     // Check if we are dealing with a compatible comm
-    if ( comm_in.compare( d_comm ) != 0 ) return shared_from_this();
+    if ( comm_in.compare( d_comm ) != 0 )
+        return shared_from_this();
     // Get the comm for the new DOFManager
     AMP_MPI comm = AMP_MPI::intersect( comm_in, d_comm );
     // Subset all of the DOFManagers within this DOFManager
     std::vector<DOFManager::shared_ptr> sub_managers;
     for ( size_t i = 0; i < d_managers.size(); i++ ) {
         DOFManager::shared_ptr subset = d_managers[i]->subset( comm );
-        if ( subset != NULL ) sub_managers.push_back( subset );
+        if ( subset != NULL )
+            sub_managers.push_back( subset );
     }
     // Check that we have a valid DOF manager somewhere
     bool valid_DOF = !sub_managers.empty();
     valid_DOF      = comm.anyReduce( valid_DOF );
-    if ( !valid_DOF ) return AMP::shared_ptr<DOFManager>();
+    if ( !valid_DOF )
+        return AMP::shared_ptr<DOFManager>();
     // Create the new multiDOFManager
     return AMP::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
 }
@@ -244,29 +249,34 @@ AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::Mesh::shar
     // Get the comm for the new DOFManager
     AMP_MPI comm( AMP_COMM_NULL );
     if ( useMeshComm ) {
-        if ( mesh.get() != NULL ) comm = mesh->getComm();
-    }
-    else {
+        if ( mesh.get() != NULL )
+            comm = mesh->getComm();
+    } else {
         comm = d_comm;
     }
-    if ( comm.isNull() ) return AMP::shared_ptr<DOFManager>();
+    if ( comm.isNull() )
+        return AMP::shared_ptr<DOFManager>();
     // Subset all of the DOFManagers within this DOFManager
     bool changed = false;
     std::vector<DOFManager::shared_ptr> sub_managers;
     for ( size_t i = 0; i < d_managers.size(); i++ ) {
         DOFManager::shared_ptr subset = d_managers[i]->subset( mesh, useMeshComm );
-        if ( subset.get() != d_managers[i].get() ) changed = true;
-        if ( subset != NULL ) sub_managers.push_back( subset );
+        if ( subset.get() != d_managers[i].get() )
+            changed = true;
+        if ( subset != NULL )
+            sub_managers.push_back( subset );
     }
     // Check if the DOF manager changed and the comms are compatible
     if ( comm.compare( d_comm ) != 0 ) {
         changed = comm.anyReduce( changed );
-        if ( !changed ) return shared_from_this();
+        if ( !changed )
+            return shared_from_this();
     }
     // Check that we have a valid DOF manager somewhere
     bool valid_DOF = !sub_managers.empty();
     valid_DOF      = comm.anyReduce( valid_DOF );
-    if ( !valid_DOF ) return AMP::shared_ptr<DOFManager>();
+    if ( !valid_DOF )
+        return AMP::shared_ptr<DOFManager>();
     // Create the new multiDOFManager
     return AMP::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
 }
@@ -280,18 +290,22 @@ AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::MeshIterat
     std::vector<DOFManager::shared_ptr> sub_managers;
     for ( size_t i = 0; i < d_managers.size(); i++ ) {
         DOFManager::shared_ptr subset = d_managers[i]->subset( iterator, comm );
-        if ( subset.get() != d_managers[i].get() ) changed = true;
-        if ( subset != NULL ) sub_managers.push_back( subset );
+        if ( subset.get() != d_managers[i].get() )
+            changed = true;
+        if ( subset != NULL )
+            sub_managers.push_back( subset );
     }
     // Check if the DOF manager changed and the comms are compatible
     if ( comm.compare( d_comm ) != 0 ) {
         changed = comm.anyReduce( changed );
-        if ( !changed ) return shared_from_this();
+        if ( !changed )
+            return shared_from_this();
     }
     // Check that we have a valid DOF manager somewhere
     bool valid_DOF = !sub_managers.empty();
     valid_DOF      = comm.anyReduce( valid_DOF );
-    if ( !valid_DOF ) return AMP::shared_ptr<DOFManager>();
+    if ( !valid_DOF )
+        return AMP::shared_ptr<DOFManager>();
     // Create the new multiDOFManager
     return AMP::shared_ptr<DOFManager>( new multiDOFManager( comm, sub_managers ) );
 }

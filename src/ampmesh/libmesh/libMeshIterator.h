@@ -11,7 +11,8 @@ namespace AMP {
 namespace Mesh {
 
 
-class libMeshIterator : public MeshIterator {
+class libMeshIterator : public MeshIterator
+{
 public:
     //! Empty MeshIterator constructor
     libMeshIterator();

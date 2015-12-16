@@ -26,7 +26,8 @@ typedef AMP::shared_ptr<Property<double>> PropertyPtr;
  * Material base class.
  * Loose organizer to collect a group of properties.
  */
-class Material {
+class Material
+{
 public:
     Material() : d_propertyMap( NULL ) {}
 

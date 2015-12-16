@@ -224,8 +224,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     if ( finalResidualNorm > 10.0 ) {
         ut->failure( "TrilinosMLSolver successfully solves a linear thermal problem with a nuclear "
                      "source term." );
-    }
-    else {
+    } else {
         ut->passes( "TrilinosMLSolver successfully solves a linear thermal problem with a nuclear "
                     "source term." );
     }

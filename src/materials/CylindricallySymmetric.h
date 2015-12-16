@@ -8,7 +8,8 @@
 // Define the material
 namespace AMP {
 namespace Materials {
-class CylindricallySymmetric : public AMP::Materials::Material {
+class CylindricallySymmetric : public AMP::Materials::Material
+{
 public:
     CylindricallySymmetric();
 };

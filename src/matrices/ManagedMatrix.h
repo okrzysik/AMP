@@ -17,7 +17,8 @@ typedef MatrixParameters ManagedMatrixParameters;
   * it indicates AMP manages the memory in some fashion.  ManagedMatrix
   * will provide an interface sufficient to implement a CRS matrix.
   */
-class ManagedMatrix : virtual public Matrix {
+class ManagedMatrix : virtual public Matrix
+{
 protected:
     ManagedMatrix();
 

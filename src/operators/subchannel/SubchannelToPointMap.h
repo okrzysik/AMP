@@ -17,7 +17,8 @@ namespace Operator {
  * \details  This class provides routines for mapping the subchannel flow
  *     properties (Density, Temperature) to a set of points provided.
  */
-class SubchannelToPointMap : public AMP::Operator::Operator {
+class SubchannelToPointMap : public AMP::Operator::Operator
+{
 public:
     //! Default constructor
     explicit SubchannelToPointMap( const AMP::shared_ptr<SubchannelToPointMapParameters> &params );

@@ -112,8 +112,7 @@ TimeOperator::getParameters( const std::string &type,
     // the parameter object
     if ( d_bLinearRhsOperator ) {
         timeOperatorParameters->d_pRhsOperator = d_pRhsOperator;
-    }
-    else {
+    } else {
         timeOperatorParameters->d_pRhsOperatorParameters =
             d_pRhsOperator->getParameters( type, u, params );
     }
@@ -124,8 +123,7 @@ TimeOperator::getParameters( const std::string &type,
         // object
         if ( d_bLinearMassOperator ) {
             timeOperatorParameters->d_pMassOperator = d_pMassOperator;
-        }
-        else {
+        } else {
             timeOperatorParameters->d_pMassOperatorParameters =
                 d_pMassOperator->getParameters( type, u, params );
         }

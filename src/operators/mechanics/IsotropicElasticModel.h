@@ -9,7 +9,8 @@
 namespace AMP {
 namespace Operator {
 
-class IsotropicElasticModel : public MechanicsMaterialModel {
+class IsotropicElasticModel : public MechanicsMaterialModel
+{
 public:
     explicit IsotropicElasticModel( const AMP::shared_ptr<MechanicsMaterialModelParameters> & );
 
@@ -66,8 +67,7 @@ public:
     {
         if ( d_E.empty() ) {
             return default_E;
-        }
-        else {
+        } else {
             return d_E[d_gaussPtCnt];
         }
     }
@@ -76,8 +76,7 @@ public:
     {
         if ( d_Nu.empty() ) {
             return default_Nu;
-        }
-        else {
+        } else {
             return d_Nu[d_gaussPtCnt];
         }
     }

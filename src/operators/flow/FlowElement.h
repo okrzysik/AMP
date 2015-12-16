@@ -19,7 +19,8 @@
 namespace AMP {
 namespace Operator {
 
-class FlowElement : public ElementOperation {
+class FlowElement : public ElementOperation
+{
 public:
     explicit FlowElement( const AMP::shared_ptr<ElementOperationParameters> &params );
 

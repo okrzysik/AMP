@@ -8,7 +8,8 @@
 namespace AMP {
 namespace Operator {
 
-class MassLinearFEOperatorParameters : public LinearFEOperatorParameters {
+class MassLinearFEOperatorParameters : public LinearFEOperatorParameters
+{
 public:
     explicit MassLinearFEOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
         : LinearFEOperatorParameters( db )

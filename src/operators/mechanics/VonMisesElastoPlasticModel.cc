@@ -51,7 +51,8 @@ VonMisesElastoPlasticModel::VonMisesElastoPlasticModel(
         params->d_db->getDoubleWithDefault( "Default_Oxygen_Concentration", 0.0 );
 
     for ( size_t i = 0; i < 6; i++ ) {
-        for ( size_t j = 0; j < 6; j++ ) d_constitutiveMatrix[i][j] = 0.;
+        for ( size_t j                 = 0; j < 6; j++ )
+            d_constitutiveMatrix[i][j] = 0.;
     }
     d_gaussPtCnt                 = 0;
     Total_Gauss_Point            = 0;
@@ -97,8 +98,7 @@ void VonMisesElastoPlasticModel::nonlinearInitGaussPointOperation( double )
     if ( d_useMaterialsLibrary == false ) {
         d_E.push_back( default_E );
         d_Nu.push_back( default_Nu );
-    }
-    else {
+    } else {
         d_E.push_back( 0.0 );
         d_Nu.push_back( 0.0 );
     }
@@ -316,7 +316,8 @@ void VonMisesElastoPlasticModel::getInternalStress_UL(
     d_detULF[d_gaussPtCnt] = detF;
 
     if ( d_useJaumannRate == true ) {
-        for ( int i = 0; i < 6; i++ ) stress[i] /= detF;
+        for ( int i = 0; i < 6; i++ )
+            stress[i] /= detF;
     }
 }
 
@@ -402,8 +403,7 @@ void VonMisesElastoPlasticModel::constructConstitutiveMatrix()
         stre_np1  = &( d_tmp1Stress[6 * d_gaussPtCnt] );
         ystre_np1 = d_tmp1YieldStress[d_gaussPtCnt];
         // eph_bar_plas_np1 = d_tmp1EffectivePlasticStrain[d_gaussPtCnt];
-    }
-    else {
+    } else {
         stre_np1  = &( d_tmp2Stress[6 * d_gaussPtCnt] );
         ystre_np1 = d_tmp2YieldStress[d_gaussPtCnt];
         // eph_bar_plas_np1 = d_tmp2EffectivePlasticStrain[d_gaussPtCnt];
@@ -448,7 +448,8 @@ void VonMisesElastoPlasticModel::constructConstitutiveMatrix()
 
         // this if block has identical components.
         // if(d_useUpdatedLagrangian == true) {
-        for ( int i = 3; i < 6; i++ ) d_constitutiveMatrix[i][i] += ( 1.0 * G );
+        for ( int i = 3; i < 6; i++ )
+            d_constitutiveMatrix[i][i] += ( 1.0 * G );
         //} else {
         //  for(int i = 3; i < 6; i++)
         //    d_constitutiveMatrix[i][i] += (1.0 * G);
@@ -548,8 +549,7 @@ void VonMisesElastoPlasticModel::constructConstitutiveMatrix()
                 d_constitutiveMatrix[i][j] -= ( term2 * n_dir[i] * n_dir[j] );
             }
         }
-    }
-    else {
+    } else {
         for ( int i = 0; i < 3; i++ ) {
             for ( int j = 0; j < 3; j++ ) {
                 d_constitutiveMatrix[i][j] += ( K - ( one3 * 2.0 * G ) );
@@ -560,8 +560,7 @@ void VonMisesElastoPlasticModel::constructConstitutiveMatrix()
             d_constitutiveMatrix[i][i] += ( 2.0 * G );
             if ( d_useUpdatedLagrangian == true ) {
                 d_constitutiveMatrix[i + 3][i + 3] += G;
-            }
-            else {
+            } else {
                 d_constitutiveMatrix[i + 3][i + 3] += ( 1.0 * G );
             }
         }
@@ -600,22 +599,19 @@ void VonMisesElastoPlasticModel::radialReturn( const double *stra_np1,
 
         if ( strain[Mechanics::TEMPERATURE].empty() ) {
             tempVec->push_back( default_TEMPERATURE );
-        }
-        else {
+        } else {
             ( *tempVec ) = strain[Mechanics::TEMPERATURE];
         }
 
         if ( strain[Mechanics::BURNUP].empty() ) {
             burnupVec->push_back( default_BURNUP );
-        }
-        else {
+        } else {
             ( *burnupVec ) = strain[Mechanics::BURNUP];
         }
 
         if ( strain[Mechanics::OXYGEN_CONCENTRATION].empty() ) {
             oxygenVec->push_back( default_OXYGEN_CONCENTRATION );
-        }
-        else {
+        } else {
             ( *oxygenVec ) = strain[Mechanics::OXYGEN_CONCENTRATION];
         }
 
@@ -741,8 +737,7 @@ void VonMisesElastoPlasticModel::radialReturn( const double *stra_np1,
             dstra[i]     = stra_np1[i] - stra_n[i];
             dstra[i + 3] = one2 * ( stra_np1[i + 3] - stra_n[i + 3] );
         }
-    }
-    else {
+    } else {
         for ( int i = 0; i < 3; i++ ) {
             dstra[i]     = stra_np1[i];
             dstra[i + 3] = one2 * stra_np1[i + 3];
@@ -830,8 +825,7 @@ void VonMisesElastoPlasticModel::radialReturn( const double *stra_np1,
                 stre_np1[3] = 0.5 * ( Sr[1][2] + Sr[2][1] );
                 stre_np1[4] = 0.5 * ( Sr[0][2] + Sr[2][0] );
                 stre_np1[5] = 0.5 * ( Sr[0][1] + Sr[1][0] );
-            }
-            else {
+            } else {
                 stre_np1[0] += S[0][0];
                 stre_np1[1] += S[1][1];
                 stre_np1[2] += S[2][2];
@@ -918,8 +912,7 @@ void VonMisesElastoPlasticModel::radialReturn( const double *stra_np1,
             stre_np1[3] = 0.5 * ( Sr[1][2] + Sr[2][1] );
             stre_np1[4] = 0.5 * ( Sr[0][2] + Sr[2][0] );
             stre_np1[5] = 0.5 * ( Sr[0][1] + Sr[1][0] );
-        }
-        else {
+        } else {
             stre_np1[0] += S[0][0];
             stre_np1[1] += S[1][1];
             stre_np1[2] += S[2][2];
@@ -952,8 +945,7 @@ void VonMisesElastoPlasticModel::postNonlinearAssembly()
 {
     if ( Total_Gauss_Point == 0 ) {
         std::cout << "Total number of gauss points are zero." << std::endl;
-    }
-    else {
+    } else {
         double Plastic_Fraction = ( (double) Plastic_Gauss_Point ) / ( (double) Total_Gauss_Point );
         Plastic_Fraction        = Plastic_Fraction * 100.0;
         if ( d_iDebugPrintInfoLevel > 1 ) {

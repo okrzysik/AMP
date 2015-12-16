@@ -25,7 +25,8 @@ namespace AMP {
  *   The default convergence monitoring by petsc does not properly cleanup
  *   until PetscFinialize and creates problems when used on sub-communicators.
  */
-class PetscMonitor {
+class PetscMonitor
+{
 public:
     /**
      *\brief  Default constructor

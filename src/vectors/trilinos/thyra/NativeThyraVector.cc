@@ -61,7 +61,8 @@ void NativeThyraVector::putRawData( const double *in )
     size_t i = 0;
     for ( size_t b = 0; b < numberOfDataBlocks(); b++ ) {
         double *data = reinterpret_cast<double *>( getRawDataBlockAsVoid( b ) );
-        for ( size_t j = 0; j < sizeOfDataBlock( b ); j++, i++ ) data[j] = in[i];
+        for ( size_t j = 0; j < sizeOfDataBlock( b ); j++, i++ )
+            data[j]    = in[i];
     }
 }
 
@@ -71,7 +72,8 @@ void NativeThyraVector::copyOutRawData( double *out ) const
     size_t i = 0;
     for ( size_t b = 0; b < numberOfDataBlocks(); b++ ) {
         const double *data = reinterpret_cast<const double *>( getRawDataBlockAsVoid( b ) );
-        for ( size_t j = 0; j < sizeOfDataBlock( b ); j++, i++ ) out[i] = data[j];
+        for ( size_t j = 0; j < sizeOfDataBlock( b ); j++, i++ )
+            out[i]     = data[j];
     }
 }
 
@@ -82,7 +84,8 @@ void *NativeThyraVector::getRawDataBlockAsVoid( size_t i )
     Thyra::DefaultSpmdVector<double> *spmdVector =
         dynamic_cast<Thyra::DefaultSpmdVector<double> *>( ptr );
     if ( spmdVector != NULL ) {
-        if ( i != 0 ) AMP_ERROR( "Invalid block" );
+        if ( i != 0 )
+            AMP_ERROR( "Invalid block" );
         return spmdVector->getPtr();
     }
     ThyraVectorWrapper *wrapperVector = dynamic_cast<ThyraVectorWrapper *>( ptr );
@@ -102,7 +105,8 @@ const void *NativeThyraVector::getRawDataBlockAsVoid( size_t i ) const
     const Thyra::DefaultSpmdVector<double> *spmdVector =
         dynamic_cast<const Thyra::DefaultSpmdVector<double> *>( ptr );
     if ( spmdVector != NULL ) {
-        if ( i != 0 ) AMP_ERROR( "Invalid block" );
+        if ( i != 0 )
+            AMP_ERROR( "Invalid block" );
         return spmdVector->getPtr();
     }
     const ThyraVectorWrapper *wrapperVector = dynamic_cast<const ThyraVectorWrapper *>( ptr );
@@ -118,9 +122,11 @@ const void *NativeThyraVector::getRawDataBlockAsVoid( size_t i ) const
 size_t NativeThyraVector::numberOfDataBlocks() const
 {
     const Thyra::VectorBase<double> *ptr = d_thyraVec.get();
-    if ( dynamic_cast<const Thyra::DefaultSpmdVector<double> *>( ptr ) != NULL ) return 1;
+    if ( dynamic_cast<const Thyra::DefaultSpmdVector<double> *>( ptr ) != NULL )
+        return 1;
     const ThyraVectorWrapper *wrapperVector = dynamic_cast<const ThyraVectorWrapper *>( ptr );
-    if ( wrapperVector != NULL ) return wrapperVector->getVec( 0 )->numberOfDataBlocks();
+    if ( wrapperVector != NULL )
+        return wrapperVector->getVec( 0 )->numberOfDataBlocks();
     AMP_ERROR( "not finished" );
     return 1;
 }
@@ -131,7 +137,8 @@ size_t NativeThyraVector::sizeOfDataBlock( size_t i ) const
     const Thyra::VectorBase<double> *ptr = d_thyraVec.get();
     const Thyra::DefaultSpmdVector<double> *spmdVector =
         dynamic_cast<const Thyra::DefaultSpmdVector<double> *>( ptr );
-    if ( spmdVector != NULL ) return d_local;
+    if ( spmdVector != NULL )
+        return d_local;
     const ThyraVectorWrapper *wrapperVector = dynamic_cast<const ThyraVectorWrapper *>( ptr );
     if ( wrapperVector != NULL ) {
         AMP_INSIST( wrapperVector->numVecs() == 1,

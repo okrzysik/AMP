@@ -53,8 +53,7 @@ void Database::putBoolArray( const std::string &key, const std::vector<unsigned 
     AMP_ASSERT( !key.empty() );
     if ( static_cast<int>( data.size() ) > 0 ) {
         putBoolArray( key, &( data[0] ), static_cast<int>( data.size() ) );
-    }
-    else {
+    } else {
         AMP_ERROR( "Database::putBoolArray() error in database "
                    << getName()
                    << "\n    Attempt to put zero-length array with key = "
@@ -93,8 +92,7 @@ bool Database::getBoolWithDefault( const std::string &key, const bool &defaultva
         std::vector<unsigned char> local_bool = getBoolArray( key );
         bool *locptr                          = (bool *) &( local_bool[0] );
         return ( locptr == NULL ? defaultvalue : *locptr );
-    }
-    else {
+    } else {
         return defaultvalue;
     }
 }
@@ -163,8 +161,7 @@ void Database::putDatabaseBoxArray( const std::string &key, const std::vector<Da
     AMP_ASSERT( !key.empty() );
     if ( static_cast<int>( data.size() ) > 0 ) {
         putDatabaseBoxArray( key, &( data[0] ), static_cast<int>( data.size() ) );
-    }
-    else {
+    } else {
         AMP_ERROR( "Database::putDatabaseBoxArray() error in database "
                    << getName()
                    << "\n    Attempt to put zero-length array with key = "
@@ -212,8 +209,7 @@ DatabaseBox Database::getDatabaseBoxWithDefault( const std::string &key,
         std::vector<DatabaseBox> local_box = getDatabaseBoxArray( key );
         DatabaseBox *locptr                = &( local_box[0] );
         return ( locptr == NULL ? defaultvalue : *locptr );
-    }
-    else {
+    } else {
         return defaultvalue;
     }
 }
@@ -275,8 +271,7 @@ void Database::putCharArray( const std::string &key, const std::vector<char> &da
     AMP_ASSERT( !key.empty() );
     if ( static_cast<int>( data.size() ) > 0 ) {
         putCharArray( key, &( data[0] ), static_cast<int>( data.size() ) );
-    }
-    else {
+    } else {
         AMP_ERROR( "Database::putCharArray() error in database "
                    << getName()
                    << "\n    Attempt to put zero-length array with key = "
@@ -323,8 +318,7 @@ char Database::getCharWithDefault( const std::string &key, const char &defaultva
         std::vector<char> local_char = getCharArray( key );
         char *locptr                 = &( local_char[0] );
         return ( locptr == NULL ? defaultvalue : *locptr );
-    }
-    else {
+    } else {
         return defaultvalue;
     }
 }
@@ -400,8 +394,7 @@ void Database::putComplexArray( const std::string &key,
     AMP_ASSERT( !key.empty() );
     if ( static_cast<int>( data.size() ) > 0 ) {
         putComplexArray( key, &( data[0] ), static_cast<int>( data.size() ) );
-    }
-    else {
+    } else {
         AMP_ERROR( "Database::putComplexArray() error in database "
                    << getName()
                    << "\n    Attempt to put zero-length array with key = "
@@ -449,8 +442,7 @@ std::complex<double> Database::getComplexWithDefault( const std::string &key,
         std::vector<std::complex<double>> local_complex = getComplexArray( key );
         std::complex<double> *locptr                    = &( local_complex[0] );
         return ( locptr == NULL ? defaultvalue : *locptr );
-    }
-    else {
+    } else {
         return defaultvalue;
     }
 }
@@ -534,8 +526,7 @@ void Database::putFloatArray( const std::string &key, const std::vector<float> &
     AMP_ASSERT( !key.empty() );
     if ( static_cast<int>( data.size() ) > 0 ) {
         putFloatArray( key, &( data[0] ), static_cast<int>( data.size() ) );
-    }
-    else {
+    } else {
         AMP_ERROR( "Database::putFloatArray() error in database "
                    << getName()
                    << "\n    Attempt to put zero-length array with key = "
@@ -582,8 +573,7 @@ float Database::getFloatWithDefault( const std::string &key, const float &defaul
         std::vector<float> local_float = getFloatArray( key );
         float *locptr                  = &( local_float[0] );
         return ( locptr == NULL ? defaultvalue : *locptr );
-    }
-    else {
+    } else {
         return defaultvalue;
     }
 }
@@ -659,8 +649,7 @@ void Database::putDoubleArray( const std::string &key, const std::vector<double>
     AMP_ASSERT( !key.empty() );
     if ( static_cast<int>( data.size() ) > 0 ) {
         putDoubleArray( key, &( data[0] ), static_cast<int>( data.size() ) );
-    }
-    else {
+    } else {
         AMP_ERROR( "Database::putDoubleArray() error in database "
                    << getName()
                    << "\n    Attempt to put zero-length array with key = "
@@ -707,8 +696,7 @@ double Database::getDoubleWithDefault( const std::string &key, const double &def
         std::vector<double> local_double = getDoubleArray( key );
         double *locptr                   = &( local_double[0] );
         return ( locptr == NULL ? defaultvalue : *locptr );
-    }
-    else {
+    } else {
         return defaultvalue;
     }
 }
@@ -787,8 +775,7 @@ void Database::putIntegerArray( const std::string &key, const std::vector<int> &
     AMP_ASSERT( !key.empty() );
     if ( static_cast<int>( data.size() ) > 0 ) {
         putIntegerArray( key, &( data[0] ), static_cast<int>( data.size() ) );
-    }
-    else {
+    } else {
         AMP_ERROR( "Database::putIntegerArray() error in database "
                    << getName()
                    << "\n    Attempt to put zero-length array with key = "
@@ -836,8 +823,7 @@ int Database::getIntegerWithDefault( const std::string &key, const int &defaultv
         std::vector<int> local_int = getIntegerArray( key );
         int *locptr                = &( local_int[0] );
         return ( locptr == NULL ? defaultvalue : *locptr );
-    }
-    else {
+    } else {
         return defaultvalue;
     }
 }
@@ -912,8 +898,7 @@ void Database::putStringArray( const std::string &key, const std::vector<std::st
     AMP_ASSERT( !key.empty() );
     if ( static_cast<int>( data.size() ) > 0 ) {
         putStringArray( key, &( data[0] ), static_cast<int>( data.size() ) );
-    }
-    else {
+    } else {
         AMP_ERROR( "Database::putStringArray() error in database "
                    << getName()
                    << "\n    Attempt to put zero-length array with key = "
@@ -961,8 +946,7 @@ std::string Database::getStringWithDefault( const std::string &key,
         std::vector<std::string> local_string = getStringArray( key );
         std::string *locptr                   = &( local_string[0] );
         return ( locptr == NULL ? defaultvalue : *locptr );
-    }
-    else {
+    } else {
         return defaultvalue;
     }
 }

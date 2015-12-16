@@ -16,7 +16,8 @@ namespace Solver {
  * \class ThermalPrePostOperator
  * \brief A class used to interact with the NOX solver for the MulitPelletThermalSolver
  */
-class PrePostOperator : public NOX::Abstract::PrePostOperator {
+class PrePostOperator : public NOX::Abstract::PrePostOperator
+{
 public:
     /**
      *\typedef shared_ptr

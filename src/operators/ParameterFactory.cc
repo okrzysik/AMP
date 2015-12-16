@@ -8,9 +8,10 @@
 #endif
 
 
-#define resetParameters( NAME )                                                       \
-    do {                                                                              \
-        if ( name == #NAME ) retParameters.reset( new NAME##Parameters( input_db ) ); \
+#define resetParameters( NAME )                                      \
+    do {                                                             \
+        if ( name == #NAME )                                         \
+            retParameters.reset( new NAME##Parameters( input_db ) ); \
     } while ( 0 )
 
 

@@ -16,7 +16,8 @@ namespace Mesh {
  * \details  This class provides routines for iterating over a set
  * of mesh elments that are in a std::vector.
  */
-class MultiVectorIterator : public MeshIterator {
+class MultiVectorIterator : public MeshIterator
+{
 public:
     //! Empty MultiVectorIterator constructor
     MultiVectorIterator();

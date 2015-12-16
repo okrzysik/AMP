@@ -33,20 +33,25 @@ ThyraVectorSpaceWrapper::~ThyraVectorSpaceWrapper() {}
 ****************************************************************/
 Teuchos::Ordinal ThyraVectorSpaceWrapper::dim() const
 {
-    if ( !d_is_range ) return static_cast<Teuchos::Ordinal>( d_thyra_vec->numColumns() );
+    if ( !d_is_range )
+        return static_cast<Teuchos::Ordinal>( d_thyra_vec->numColumns() );
     return d_thyra_vec->numRows();
 }
 bool ThyraVectorSpaceWrapper::isCompatible( const Thyra::VectorSpaceBase<double> &vecSpc ) const
 {
     const ThyraVectorSpaceWrapper *vecSpaceWrapper =
         dynamic_cast<const ThyraVectorSpaceWrapper *>( &vecSpc );
-    if ( vecSpaceWrapper == NULL ) return false;
-    if ( this == vecSpaceWrapper ) return true;
+    if ( vecSpaceWrapper == NULL )
+        return false;
+    if ( this == vecSpaceWrapper )
+        return true;
     AMP::Discretization::DOFManager::const_shared_ptr dofs1 = d_thyra_vec->getDOFManager();
     AMP::Discretization::DOFManager::const_shared_ptr dofs2 =
         vecSpaceWrapper->d_thyra_vec->getDOFManager();
-    if ( dofs1 == dofs2 ) return true;
-    if ( *dofs1 == *dofs2 ) return true;
+    if ( dofs1 == dofs2 )
+        return true;
+    if ( *dofs1 == *dofs2 )
+        return true;
     return false;
 }
 Teuchos::RCP<const Thyra::VectorSpaceFactoryBase<double>>
@@ -73,7 +78,8 @@ ThyraVectorSpaceWrapper::createMembers( int numMembers ) const
 {
     AMP_ASSERT( d_is_range );
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vecs( numMembers );
-    for ( int i = 0; i < numMembers; i++ ) vecs[i] = d_thyra_vec->getVec( 0 )->cloneVector();
+    for ( int i = 0; i < numMembers; i++ )
+        vecs[i] = d_thyra_vec->getVec( 0 )->cloneVector();
     return Teuchos::RCP<Thyra::VectorBase<double>>( new ThyraVectorWrapper( vecs ) );
 }
 Teuchos::RCP<Thyra::VectorBase<double>>

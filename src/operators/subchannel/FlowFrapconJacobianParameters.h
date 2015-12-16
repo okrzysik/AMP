@@ -7,7 +7,8 @@
 namespace AMP {
 namespace Operator {
 
-class FlowFrapconJacobianParameters : public OperatorParameters {
+class FlowFrapconJacobianParameters : public OperatorParameters
+{
 public:
     explicit FlowFrapconJacobianParameters( const AMP::shared_ptr<AMP::Database> &db )
         : OperatorParameters( db )

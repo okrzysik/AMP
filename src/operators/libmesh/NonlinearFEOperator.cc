@@ -53,7 +53,8 @@ void NonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     if ( d_iDebugPrintInfoLevel > 2 )
         AMP::pout << "L2 norm of result of NonlinearFEOperator::apply is: " << rInternal->L2Norm()
                   << std::endl;
-    if ( d_iDebugPrintInfoLevel > 5 ) std::cout << rInternal << std::endl;
+    if ( d_iDebugPrintInfoLevel > 5 )
+        std::cout << rInternal << std::endl;
 
     PROFILE_STOP( "apply" );
 }

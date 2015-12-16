@@ -18,7 +18,8 @@ namespace Operator {
 /**
   * AMP Mesh element implementation for DTK EntityIterator interface.
 */
-class AMPMeshEntityIterator : public DataTransferKit::EntityIterator {
+class AMPMeshEntityIterator : public DataTransferKit::EntityIterator
+{
 public:
     /*!
      * \brief Default constructor.

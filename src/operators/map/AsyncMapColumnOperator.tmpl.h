@@ -59,14 +59,16 @@ AMP::shared_ptr<AsyncMapColumnOperator> AsyncMapColumnOperator::build(
         AMP::shared_ptr<AMP::Mesh::Mesh> mesh1 = manager->Subset( meshName1 );
         AMP::shared_ptr<AMP::Mesh::Mesh> mesh2 = manager->Subset( meshName2 );
         int inComm                             = -1;
-        if ( mesh1 || mesh2 ) inComm           = 1;
+        if ( mesh1 || mesh2 )
+            inComm = 1;
 
         // Increment the global tag offset by 2
         globalMapTagOffset = manager->getComm().maxReduce( globalMapTagOffset + 2 );
 
         // Create a comm spanning the meshes
         AMP_MPI mapComm = managerComm.split( inComm );
-        if ( inComm == -1 ) continue;
+        if ( inComm == -1 )
+            continue;
 
         // Create the map parameters
         AMP::shared_ptr<AsyncMapOperatorParameters> mapParams(

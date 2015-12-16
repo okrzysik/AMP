@@ -27,14 +27,14 @@ MassDensityModel::MassDensityModel( const AMP::shared_ptr<MassDensityModelParame
         if ( params->d_db->keyExists( "Parameters" ) ) {
             d_Parameters = params->d_db->getDoubleArray( "Parameters" );
         }
-    }
-    else {
+    } else {
         d_PropertyName = "unspecified";
     }
 
     AMP_INSIST( ( params->d_db->keyExists( "Equation" ) ), "Mass Key ''Equation'' is missing!" );
-    std::string eqnname                      = params->d_db->getString( "Equation" );
-    if ( eqnname == "Mechanics" ) d_equation = Mechanics;
+    std::string eqnname = params->d_db->getString( "Equation" );
+    if ( eqnname == "Mechanics" )
+        d_equation = Mechanics;
     // The mechanics mass matrix is multiplied by the density of the material.
     else if ( eqnname == "ThermalSource" )
         d_equation = Mechanics;
@@ -59,8 +59,7 @@ MassDensityModel::MassDensityModel( const AMP::shared_ptr<MassDensityModelParame
         if ( d_equation == Thermal ) {
             d_BilogRange =
                 d_material->property( "ThermalConductivity" )->get_arg_range( "temperature" );
-        }
-        else if ( d_equation == Chemical ) {
+        } else if ( d_equation == Chemical ) {
             d_BilogRange =
                 d_material->property( "FickCoefficient" )->get_arg_range( "concentration" );
         }
@@ -70,8 +69,7 @@ MassDensityModel::MassDensityModel( const AMP::shared_ptr<MassDensityModelParame
         std::vector<std::string> names;
         if ( d_equation == Thermal ) {
             names = d_material->property( "ThermalConductivity" )->get_arguments();
-        }
-        else if ( d_equation == Chemical ) {
+        } else if ( d_equation == Chemical ) {
             names = d_material->property( "FickCoefficient" )->get_arguments();
         }
         d_BilogIndex = 999999;
@@ -213,7 +211,8 @@ void MassDensityModel::getDensityThermal( std::vector<double> &result,
         "burnup", AMP::shared_ptr<std::vector<double>>( new std::vector<double>( B ) ) ) );
     d_material->property( "Density" )->evalv( density, args );
     d_material->property( "HeatCapacityPressure" )->evalv( specificheat, args );
-    for ( unsigned int i = 0; i < n; i++ ) result[i] = density[i] * specificheat[i];
+    for ( unsigned int i = 0; i < n; i++ )
+        result[i]        = density[i] * specificheat[i];
 
     if ( d_UseBilogScaling ) {
         DiffusionTransportModel::bilogScale( result, d_BilogRange[0], d_BilogRange[1] );
@@ -228,7 +227,8 @@ void MassDensityModel::getDensityChemical( std::vector<double> &result,
     AMP_ASSERT( ( T.size() == U.size() ) && ( U.size() == result.size() ) &&
                 ( B.size() == U.size() ) );
 
-    for ( size_t i = 0; i < result.size(); i++ ) result[i] = 1.;
+    for ( size_t i = 0; i < result.size(); i++ )
+        result[i]  = 1.;
 
     if ( d_UseBilogScaling ) {
         DiffusionTransportModel::bilogScale( result, d_BilogRange[0], d_BilogRange[1] );
@@ -264,8 +264,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
                 dSourceProp = d_material->property( "DTThermalConductivity" );
                 needD       = true;
             }
-        }
-        else if ( d_ManufacturedEquation == FickSrc ) {
+        } else if ( d_ManufacturedEquation == FickSrc ) {
             sourceProp = d_material->property( "FickCoefficient" );
             if ( d_ManufacturedUseConc ) {
                 dSourceProp = d_material->property( "DxFickCoefficient" );
@@ -275,8 +274,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
                 dSourceProp = d_material->property( "DTFickCoefficient" );
                 needD       = true;
             }
-        }
-        else if ( d_ManufacturedEquation == SoretSrc ) {
+        } else if ( d_ManufacturedEquation == SoretSrc ) {
             sourceProp = d_material->property( "ThermalDiffusionCoefficient" );
             if ( d_ManufacturedUseConc ) {
                 dSourceProp = d_material->property( "DxThermalDiffusionCoefficient" );
@@ -286,17 +284,14 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
                 dSourceProp = d_material->property( "DTThermalDiffusionCoefficient" );
                 needD       = true;
             }
-        }
-        else if ( d_ManufacturedEquation == FickSoretSrc ) {
+        } else if ( d_ManufacturedEquation == FickSoretSrc ) {
             AMP_INSIST( false, "cannot do Fick-Soret yet" );
         }
-    }
-    else {
+    } else {
         sourceProp = d_material->property( d_PropertyName );
         if ( d_Parameters.size() > 0 and sourceProp->variable_number_parameters() ) {
             sourceProp->set_parameters_and_number( &d_Parameters[0], d_Parameters.size() );
-        }
-        else if ( d_Parameters.size() > 0 ) {
+        } else if ( d_Parameters.size() > 0 ) {
             sourceProp->set_parameters( &d_Parameters[0], d_Parameters.size() );
         }
     }
@@ -358,8 +353,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
                     result[k] += ( *coeff[i][j] )[k] * soln[xlate[i][j]];
                 }
         }
-    }
-    else if ( sourceProp->isTensor() and isCylindrical ) {
+    } else if ( sourceProp->isTensor() and isCylindrical ) {
         // check dimensions, set up temporary storage
         AMP::shared_ptr<Materials::TensorProperty<double>> sourceTensorProp =
             AMP::dynamic_pointer_cast<Materials::TensorProperty<double>>( sourceProp );
@@ -405,10 +399,11 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         for ( size_t k = 0; k < neval; k++ ) {
             double x = xyz[k]( 0 ), y = xyz[k]( 1 ), z = xyz[k]( 2 );
             double r = sqrt( x * x + y * y ), th = acos( x / r );
-            if ( y < 0 ) th = 2 * Pi - th;
-            radius[k]       = r;
-            theta[k]        = th;
-            zee[k]          = z;
+            if ( y < 0 )
+                th    = 2 * Pi - th;
+            radius[k] = r;
+            theta[k]  = th;
+            zee[k]    = z;
         }
 
         // evaluate various derivatives of diffusion coefficient tensor

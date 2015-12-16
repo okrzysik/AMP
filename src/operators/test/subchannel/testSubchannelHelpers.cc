@@ -46,8 +46,10 @@ void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
     // std::vector<double> box = cladMesh->getBoundingBox();
     bool pass = true;
     for ( size_t i = 0; i < clad_x.size(); i++ ) {
-        if ( !AMP::Utilities::approx_equal( clad_d[i], clad_d[0] ) ) pass    = false;
-        if ( !AMP::Utilities::approx_equal( clad_d[0], 2 * 0.004705 ) ) pass = false;
+        if ( !AMP::Utilities::approx_equal( clad_d[i], clad_d[0] ) )
+            pass = false;
+        if ( !AMP::Utilities::approx_equal( clad_d[0], 2 * 0.004705 ) )
+            pass = false;
     }
     if ( pass )
         ut->passes( "Get clad properties passes basic sanity check" );
@@ -71,9 +73,12 @@ void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
     AMP_ASSERT( area.size() == N_subchannels );
     pass = true;
     for ( size_t i = 0; i < N_subchannels; i++ ) {
-        if ( subchannel_diam[i] == 0 ) pass   = false;
-        if ( channel_fraction[i] > 1.0 ) pass = false;
-        if ( !AMP::Utilities::approx_equal( rod_diameter[i], clad_d[0] ) ) pass = false;
+        if ( subchannel_diam[i] == 0 )
+            pass = false;
+        if ( channel_fraction[i] > 1.0 )
+            pass = false;
+        if ( !AMP::Utilities::approx_equal( rod_diameter[i], clad_d[0] ) )
+            pass = false;
     }
     if ( pass )
         ut->passes( "Get subchannel properties passes basic sanity check" );
@@ -83,9 +88,10 @@ void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
     // First test getHeatFluxGeneration
     size_t N = z.size() - 1;
     std::vector<double> dz( N );
-    for ( size_t i = 0; i < N; i++ ) dz[i] = z[i + 1] - z[i];
-    double diam                            = 0.00822;
-    double Q_tot                           = 66.5e3;
+    for ( size_t i = 0; i < N; i++ )
+        dz[i]      = z[i + 1] - z[i];
+    double diam    = 0.00822;
+    double Q_tot   = 66.5e3;
     std::vector<double> flux1 =
         AMP::Operator::Subchannel::getHeatFluxGeneration( "Sinusoidal", z, diam, Q_tot );
     std::vector<double> flux2 =
@@ -97,10 +103,13 @@ void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
     for ( size_t i = 0; i < N; i++ ) {
         Q_tot1 += flux1[i] * pi * diam * dz[i];
         Q_tot2 += flux2[i] * pi * diam * dz[i];
-        if ( flux2[i] != flux2[0] ) pass_flat = false;
+        if ( flux2[i] != flux2[0] )
+            pass_flat = false;
     }
-    if ( !AMP::Utilities::approx_equal( Q_tot, Q_tot1 ) ) pass_sine = false;
-    if ( !AMP::Utilities::approx_equal( Q_tot, Q_tot2 ) ) pass_flat = false;
+    if ( !AMP::Utilities::approx_equal( Q_tot, Q_tot1 ) )
+        pass_sine = false;
+    if ( !AMP::Utilities::approx_equal( Q_tot, Q_tot2 ) )
+        pass_flat = false;
     if ( pass_sine )
         ut->passes( "Sinusoidal shape gives correct flux" );
     else
@@ -178,8 +187,10 @@ void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
                                                         flowVec,
                                                         cladTemp );
         AMP_ASSERT( flux3.size() == N );
-        for ( size_t i = 0; i < N; i++ ) Q_tot3 += flux3[i] * pi * diam * dz[i];
-        if ( fabs( Q_tot3 - Q_tot ) / Q_tot > 0.2 ) pass = false;
+        for ( size_t i = 0; i < N; i++ )
+            Q_tot3 += flux3[i] * pi * diam * dz[i];
+        if ( fabs( Q_tot3 - Q_tot ) / Q_tot > 0.2 )
+            pass = false;
     }
     if ( pass )
         ut->passes( "Clad shape gives ~ correct flux" );

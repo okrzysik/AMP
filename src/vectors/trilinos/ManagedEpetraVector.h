@@ -26,7 +26,8 @@ namespace LinearAlgebra {
   */
 
 
-class ManagedEpetraVector : public ManagedVector, public EpetraVector {
+class ManagedEpetraVector : public ManagedVector, public EpetraVector
+{
 public:
     /** \brief Create a ManagedEpetraVector from a set of parameters
       * \param[in] params  A VectorParameters class used to construct this vector

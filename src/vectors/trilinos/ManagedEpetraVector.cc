@@ -24,8 +24,7 @@ void ManagedEpetraVector::copyVector( Vector::const_shared_ptr vec )
         double scale = 1.0;
         getEpetra_Vector().Scale( scale, vec->castTo<EpetraVector>().getEpetra_Vector() );
         copyGhostValues( vec );
-    }
-    else {
+    } else {
         Vector::copyVector( vec );
     }
 }

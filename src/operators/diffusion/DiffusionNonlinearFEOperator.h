@@ -14,7 +14,8 @@
 namespace AMP {
 namespace Operator {
 
-class DiffusionNonlinearFEOperator : public NonlinearFEOperator {
+class DiffusionNonlinearFEOperator : public NonlinearFEOperator
+{
 public:
     typedef AMP::shared_ptr<DiffusionNonlinearFEOperator> shared_ptr;
 

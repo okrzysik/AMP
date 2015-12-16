@@ -15,7 +15,8 @@ typedef SubchannelToCladMapParameters SubchannelToCladGPMapParameters;
  * \class  SubchannelToCladGPMap
  * \brief  A gauss-point version of SubchannelToCladMap
  */
-class SubchannelToCladGPMap : public SubchannelToCladMap {
+class SubchannelToCladGPMap : public SubchannelToCladMap
+{
 public:
     /** \brief  Returns true if MapType = "SubchannelToCladGPMap"
      * \param[in] s  A string extracted from the MapType line in a MeshToMeshMap db

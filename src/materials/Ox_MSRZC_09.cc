@@ -44,7 +44,8 @@ static const double ranges[2][2] = { { TminVal, TmaxVal }, { uminVal, umaxVal } 
 
 //=================== Classes =======================================================
 
-class FickCoefficientProp : public Property<double> {
+class FickCoefficientProp : public Property<double>
+{
 public:
     FickCoefficientProp()
         : Property<double>( name_base + "_" + "FickCoefficient", // Name string
@@ -60,7 +61,8 @@ public:
     virtual double eval( std::vector<double> &args );
 };
 
-class SoretCoefficientProp : public Property<double> {
+class SoretCoefficientProp : public Property<double>
+{
 public:
     SoretCoefficientProp()
         : Property<double>( name_base + "_" + "SoretCoefficient", // Name string
@@ -87,8 +89,9 @@ inline double FickCoefficientProp::eval( std::vector<double> &args )
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
-    double x           = u;
-    if ( x < 0.001 ) x = 0.001;
+    double x = u;
+    if ( x < 0.001 )
+        x = 0.001;
 
     double expDC = p[0] + p[1] / T + p[2] * T * x + p[3] * T * log10( ( 2 + x ) / x );
     double fick  = exp( expDC * log( 10.0 ) );
@@ -104,8 +107,9 @@ inline double SoretCoefficientProp::eval( std::vector<double> &args )
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
-    double x           = u;
-    if ( x < 0.001 ) x = 0.001;
+    double x = u;
+    if ( x < 0.001 )
+        x = 0.001;
 
     double Q_star = p[4] + p[5] * exp( -x / p[6] );
     double F_SC   = ( 2 + x ) / ( 2 * ( 1 - 3 * x ) * ( 1 - 2 * x ) );

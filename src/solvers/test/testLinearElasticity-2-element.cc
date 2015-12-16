@@ -47,8 +47,7 @@ void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_file )
     if ( reduced ) {
         exeName    = "testLinearElasticity-reduced-" + mesh_file;
         input_file = "input_testLinearElasticity-reduced-mesh2elem";
-    }
-    else {
+    } else {
         exeName    = "testLinearElasticity-normal-" + mesh_file;
         input_file = "input_testLinearElasticity-normal-mesh2elem";
     }
@@ -153,12 +152,10 @@ void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_file )
 
         if ( finalResidualNorm > ( 1e-10 * initResidualNorm ) ) {
             ut->failure( exeName );
-        }
-        else {
+        } else {
             ut->passes( exeName );
         }
-    }
-    else {
+    } else {
         AMP::pout << "WARNING: This is a single processor test!" << std::endl;
         ut->passes( exeName );
     }
@@ -180,8 +177,7 @@ int main( int argc, char *argv[] )
             sprintf( name, "mesh2elem-%d", i );
             mesh_files.push_back( name );
         } // end for i
-    }
-    else {
+    } else {
         for ( int i = 1; i < argc; i++ ) {
             char name[100];
             sprintf( name, "mesh2elem-%d", atoi( argv[i] ) );
@@ -193,12 +189,10 @@ int main( int argc, char *argv[] )
         for ( int reduced = 0; reduced < 2; reduced++ ) {
             try {
                 linearElasticTest( &ut, reduced, mesh_files[i] );
-            }
-            catch ( std::exception &err ) {
+            } catch ( std::exception &err ) {
                 AMP::pout << "ERROR: " << err.what() << std::endl;
                 ut.failure( "ERROR" );
-            }
-            catch ( ... ) {
+            } catch ( ... ) {
                 AMP::pout << "ERROR: "
                           << "An unknown exception was thrown." << std::endl;
                 ut.failure( "ERROR" );

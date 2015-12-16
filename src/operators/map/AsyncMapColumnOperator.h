@@ -23,7 +23,8 @@ typedef AsynchronousColumnOperatorParameters AsyncMapColumnOperatorParameters;
   *
   * \see AsyncMapOperator
   */
-class AsyncMapColumnOperator : public AsynchronousColumnOperator {
+class AsyncMapColumnOperator : public AsynchronousColumnOperator
+{
 public:
     //! Constructor
     explicit AsyncMapColumnOperator( const AMP::shared_ptr<OperatorParameters> &params );

@@ -8,7 +8,8 @@
 namespace AMP {
 namespace Operator {
 
-class EpetraMatrixOperator : public LinearOperator {
+class EpetraMatrixOperator : public LinearOperator
+{
 private:
     AMP::LinearAlgebra::Variable::shared_ptr d_Input, d_Output;
 

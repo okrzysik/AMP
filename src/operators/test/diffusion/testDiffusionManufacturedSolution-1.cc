@@ -169,7 +169,8 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName )
             int rank                      = globalComm.getRank();
             int nranks                    = globalComm.getSize();
             std::ios_base::openmode omode = std::ios_base::out;
-            if ( rank > 0 ) omode |= std::ios_base::app;
+            if ( rank > 0 )
+                omode |= std::ios_base::app;
             std::ofstream file( filename.c_str(), omode );
             if ( rank == 0 ) {
                 file << "(* x y z solution solution fe-source fe-operator error *)" << std::endl;
@@ -178,7 +179,8 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName )
 
             AMP::Mesh::MeshIterator urIterator = iterator.begin();
             size_t numNodes                    = 0;
-            for ( ; urIterator != iterator.end(); urIterator++ ) numNodes++;
+            for ( ; urIterator != iterator.end(); urIterator++ )
+                numNodes++;
 
             size_t iNode                       = 0;
             double l2err                       = 0.;
@@ -202,7 +204,8 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName )
 
                 file << "{" << x << "," << y << "," << z << "," << val << "," << sol << "," << src
                      << "," << res + src << "," << err << "}";
-                if ( iNode < numNodes - 1 ) file << "," << std::endl;
+                if ( iNode < numNodes - 1 )
+                    file << "," << std::endl;
 
                 l2err += ( res * res );
                 iNode++;
@@ -247,13 +250,12 @@ int main( int argc, char *argv[] )
     // files.push_back("Diffusion-Fick-OxMSRZC09-MMS-1");
 
     try {
-        for ( size_t i = 0; i < files.size(); i++ ) bvpTest1( &ut, files[i] );
-    }
-    catch ( std::exception &err ) {
+        for ( size_t i = 0; i < files.size(); i++ )
+            bvpTest1( &ut, files[i] );
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

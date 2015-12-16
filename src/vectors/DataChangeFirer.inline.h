@@ -9,7 +9,8 @@ inline DataChangeFirer::DataChangeFirer() {}
 
 inline DataChangeFirer::~DataChangeFirer()
 {
-    for ( iterator cur = begin(); cur != end(); ++cur ) ( *cur )->deregisterFromFirer( this );
+    for ( iterator cur = begin(); cur != end(); ++cur )
+        ( *cur )->deregisterFromFirer( this );
 }
 
 inline void DataChangeFirer::registerListener( DataChangeListener *listener )
@@ -30,7 +31,8 @@ inline void DataChangeFirer::deregisterListener( DataChangeListener *listener )
 
 inline void DataChangeFirer::fireDataChange()
 {
-    for ( iterator cur = begin(); cur != end(); ++cur ) ( *cur )->dataChanged();
+    for ( iterator cur = begin(); cur != end(); ++cur )
+        ( *cur )->dataChanged();
 }
 }
 }

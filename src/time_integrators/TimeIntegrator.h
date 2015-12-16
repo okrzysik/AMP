@@ -24,7 +24,8 @@ namespace TimeIntegrator {
   a TimeIntegratorParameters object
 
  */
-class TimeIntegrator {
+class TimeIntegrator
+{
 public:
     //! Convience typedef
     typedef AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegrator> shared_ptr;

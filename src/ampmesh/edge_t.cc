@@ -153,8 +153,7 @@ int edge_t::project_point( double const *point_in_containing_plane,
                 projection[i] = support_points_ptr[0][i];
             }
             return 0;
-        }
-        else if ( position_on_containing_line > 1.0 - tolerance ) {
+        } else if ( position_on_containing_line > 1.0 - tolerance ) {
             for ( unsigned int i = 0; i < 3; ++i ) {
                 projection[i] = support_points_ptr[1][i];
             }

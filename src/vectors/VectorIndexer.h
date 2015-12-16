@@ -20,7 +20,8 @@ class Vector;
   * between global ids.
   * \see SubsetVector
   */
-class VectorIndexer : public Castable {
+class VectorIndexer : public Castable
+{
 public:
     typedef AMP::shared_ptr<VectorIndexer> shared_ptr;
 

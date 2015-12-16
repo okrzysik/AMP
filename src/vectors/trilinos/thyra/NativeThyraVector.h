@@ -12,7 +12,8 @@ namespace LinearAlgebra {
 /** \class NativeThyraVectorParameters
   * \brief Parameters to set when creating a NativeThyraVector
   */
-class NativeThyraVectorParameters : public NativeVectorParameters {
+class NativeThyraVectorParameters : public NativeVectorParameters
+{
 public:
     //! The vector to wrap
     Teuchos::RCP<Thyra::VectorBase<double>> d_InVec;
@@ -39,7 +40,8 @@ public:
   * \see ThyraVector
   * \see ManagedThyraVector
   */
-class NativeThyraVector : public NativeVector, public ThyraVector, public VectorEngine {
+class NativeThyraVector : public NativeVector, public ThyraVector, public VectorEngine
+{
 public:
     //! Conveninece typedef
     typedef NativeVector::parameters_ptr parameters_ptr;

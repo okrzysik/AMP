@@ -25,7 +25,8 @@ typedef ElementPhysicsModelParameters MechanicsMaterialModelParameters;
  * implement the function getInternalStress. Linear material models that
  use an implicit method must implement the getInternalStress function too.
  */
-class MechanicsMaterialModel : public ElementPhysicsModel {
+class MechanicsMaterialModel : public ElementPhysicsModel
+{
 public:
     /**
      *  Constructor. This reads the value for the key USE_MATERIALS_LIBRARY (false by default)

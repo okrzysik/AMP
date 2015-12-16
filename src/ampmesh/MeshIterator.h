@@ -18,7 +18,8 @@ namespace Mesh {
  *   the random access iterators, but does so using the increment/decrement routines.
  *   Derived classes may (or may not) override these routines for performance optimizations.
  */
-class MeshIterator : public std::iterator<std::random_access_iterator_tag, AMP::Mesh::MeshElement> {
+class MeshIterator : public std::iterator<std::random_access_iterator_tag, AMP::Mesh::MeshElement>
+{
 
 public:
     /**

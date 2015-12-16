@@ -6,7 +6,8 @@
 namespace AMP {
 namespace TimeIntegrator {
 
-class BackwardEulerTimeOperator : public TimeOperator {
+class BackwardEulerTimeOperator : public TimeOperator
+{
 public:
     explicit BackwardEulerTimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParameters> params );
 

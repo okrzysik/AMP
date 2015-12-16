@@ -19,7 +19,8 @@ typedef AMP::Operator::Map3to1to3Parameters ScalarZAxisMapParameters;
  *    functionality from ScalarZAxis except that the you need to do a subset
  *    and stride to pass the correct vector to the base class.
  */
-class StridedZAxisMap : public AMP::Operator::ScalarZAxisMap {
+class StridedZAxisMap : public AMP::Operator::ScalarZAxisMap
+{
 public:
     /** \brief   Standard constructor
      * \param[in] params  Input parameters

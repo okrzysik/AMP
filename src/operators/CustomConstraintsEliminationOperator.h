@@ -7,7 +7,8 @@
 namespace AMP {
 namespace Operator {
 
-class CustomConstraintsEliminationOperator : public ConstraintsEliminationOperator {
+class CustomConstraintsEliminationOperator : public ConstraintsEliminationOperator
+{
 
 public:
     CustomConstraintsEliminationOperator( const AMP::shared_ptr<OperatorParameters> &params );

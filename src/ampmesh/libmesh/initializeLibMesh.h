@@ -13,7 +13,8 @@ namespace Mesh {
  * \details  This class provides routines for initializing and finalizing libmesh.
  *    Note: this class is not thread safe yet.
  */
-class initializeLibMesh {
+class initializeLibMesh
+{
 public:
     /*!
      *  Constructor that inializes libmesh on the given communicator.

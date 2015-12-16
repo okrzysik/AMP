@@ -179,8 +179,7 @@ void NodeToSegmentConstraintsOperator::reset( const AMP::shared_ptr<OperatorPara
                 ++tmpMasterVerticesGlobalIDsConstIterator;
                 ++masterVerticesOwnerRanksIterator;
             } // end for v
-        }
-        else {
+        } else {
             for ( size_t d = 0; d < 2; ++d ) {
                 ++tmpSlaveVerticesLocalCoordOnFacePointerToConst;
             }

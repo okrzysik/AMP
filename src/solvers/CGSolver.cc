@@ -82,7 +82,8 @@ void CGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     const double f_norm = f->L2Norm();
 
     // enhance with convergence reason, number of iterations etc
-    if ( f_norm == 0.0 ) return;
+    if ( f_norm == 0.0 )
+        return;
 
     const double terminate_tol = d_dRelativeTolerance * f_norm;
 
@@ -107,8 +108,7 @@ void CGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
         r->copyVector( f );
-    }
-    else {
+    } else {
         d_pOperator->residual( f, u, r );
     }
     // compute the current residual norm
@@ -126,8 +126,7 @@ void CGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // apply the preconditioner if it exists
     if ( d_bUsesPreconditioner ) {
         d_pPreconditioner->solve( r, z );
-    }
-    else {
+    } else {
         z->copyVector( r );
     }
 
@@ -172,8 +171,7 @@ void CGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // apply the preconditioner if it exists
         if ( d_bUsesPreconditioner ) {
             d_pPreconditioner->solve( r, z );
-        }
-        else {
+        } else {
             z->copyVector( r );
         }
 

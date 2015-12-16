@@ -197,8 +197,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
 
     if ( finalResidualNorm > ( 1e-10 * initResidualNorm ) ) {
         ut->failure( exeName );
-    }
-    else {
+    } else {
         ut->passes( exeName );
     }
 
@@ -227,8 +226,7 @@ int main( int argc, char *argv[] )
     if ( argc == 1 ) {
         exeNames.push_back( "testLinearMechanics-PressureBoundary-1" );
         exeNames.push_back( "testLinearMechanics-PressureBoundary-HaldenPellet" );
-    }
-    else {
+    } else {
         for ( int i = 1; i < argc; ++i ) {
             char inpName[100];
             sprintf( inpName, "testLinearMechanics-PressureBoundary-%s", argv[i] );

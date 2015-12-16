@@ -67,15 +67,14 @@ initializeLibMesh::initializeLibMesh( AMP_MPI comm )
             // Add 1 to the count and return
             N_copies++;
             return;
-        }
-        else {
+        } else {
             // We can't initialize libmesh
             AMP_ERROR( "libmesh was previously initialized with a different (incompatible) comm" );
         }
-    }
-    else {
+    } else {
         // libmesh is not initialized
-        if ( lminit != NULL ) AMP_ERROR( "Internal error" );
+        if ( lminit != NULL )
+            AMP_ERROR( "Internal error" );
         // Use a barrier to ensure all processors are at the same point
         N_copies = 1;
         d_comm   = comm.dup(); // Create a seperate duplicate comm for libmesh
@@ -97,7 +96,8 @@ initializeLibMesh::initializeLibMesh( AMP_MPI comm )
 #else
         lminit = new LibMeshInit( argc_libmesh, argv_libmesh );
 #endif
-        for ( int i = 0; i < argc_libmesh; i++ ) delete[] argv_libmesh[i];
+        for ( int i = 0; i < argc_libmesh; i++ )
+            delete[] argv_libmesh[i];
         delete[] argv_libmesh;
         // Initialize libmesh MPI types so we can safely free them
         // type_hilbert.reset( new libMeshWrapperType<Hilbert::HilbertIndices>() );
@@ -110,12 +110,14 @@ initializeLibMesh::initializeLibMesh( AMP_MPI comm )
 ************************************************************/
 initializeLibMesh::~initializeLibMesh()
 {
-    if ( N_copies <= 0 ) AMP_ERROR( "Internal error" );
+    if ( N_copies <= 0 )
+        AMP_ERROR( "Internal error" );
     // Use a barrier to ensure all processors are at the same point
     d_comm.barrier();
     if ( N_copies == 1 ) {
         // Shutdown libmesh
-        if ( lminit == NULL ) AMP_ERROR( "Internal error" );
+        if ( lminit == NULL )
+            AMP_ERROR( "Internal error" );
         // Free libmesh MPI types
         // type_hilbert.reset();
         // Delete libmesh
@@ -123,8 +125,7 @@ initializeLibMesh::~initializeLibMesh()
         lminit   = NULL;
         d_comm   = AMP_MPI( AMP_COMM_NULL );
         N_copies = 0;
-    }
-    else {
+    } else {
         N_copies--;
     }
 }
@@ -135,9 +136,12 @@ initializeLibMesh::~initializeLibMesh()
 ************************************************************/
 bool initializeLibMesh::canBeInitialized( AMP_MPI comm )
 {
-    if ( N_copies == 0 ) return true;
-    if ( comm == d_comm ) return true;
-    if ( d_comm.compare( comm ) != 0 ) return true;
+    if ( N_copies == 0 )
+        return true;
+    if ( comm == d_comm )
+        return true;
+    if ( d_comm.compare( comm ) != 0 )
+        return true;
     return false;
 }
 

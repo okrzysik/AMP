@@ -29,7 +29,8 @@ namespace Operator {
   * mapped from Operator's meshAdapter.
   */
 
-class MapOperator : public Operator {
+class MapOperator : public Operator
+{
 public:
     /**
       Constructor calls the reset member which reads the information about the boundary.

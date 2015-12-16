@@ -13,7 +13,8 @@ namespace LinearAlgebra {
   * \details  As opposed to ManagedPetscMatrix, this is a
   *    thin wrapper around a PETSc Mat.
   */
-class NativePetscMatrix : public PetscMatrix {
+class NativePetscMatrix : public PetscMatrix
+{
 protected:
     /** \brief Unused default constructor
       */

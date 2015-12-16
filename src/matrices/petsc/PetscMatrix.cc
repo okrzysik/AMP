@@ -8,7 +8,8 @@ namespace LinearAlgebra {
 
 Matrix::shared_ptr PetscMatrix::createView( shared_ptr in_matrix )
 {
-    if ( in_matrix->isA<ManagedPetscMatrix>() ) return in_matrix;
+    if ( in_matrix->isA<ManagedPetscMatrix>() )
+        return in_matrix;
 
     AMP_ERROR( "Managed memory matrix is not well defined" );
     return Matrix::shared_ptr();

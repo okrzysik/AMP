@@ -20,8 +20,7 @@ DiffusionNonlinearFEOperator::createInputVariable( const std::string &name, int 
 {
     if ( varId == -1 ) {
         return d_inpVariables->cloneVariable( name );
-    }
-    else {
+    } else {
         return ( d_inpVariables->getVariable( varId ) )->cloneVariable( name );
     }
 }
@@ -63,7 +62,8 @@ std::vector<unsigned int> DiffusionNonlinearFEOperator::getNonPrincipalVariableI
 {
     std::vector<unsigned int> ids;
     for ( size_t i = 0; i < Diffusion::NUMBER_VARIABLES; i++ ) {
-        if ( i != d_PrincipalVariable and d_isActive[i] ) ids.push_back( i );
+        if ( i != d_PrincipalVariable and d_isActive[i] )
+            ids.push_back( i );
     }
     return ids;
 }
@@ -128,8 +128,10 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
     d_numberActive = 0;
     d_numberFrozen = 0;
     for ( unsigned int i = 0; i < Diffusion::NUMBER_VARIABLES; i++ ) {
-        if ( d_isActive[i] ) d_numberActive++;
-        if ( d_isFrozen[i] ) d_numberFrozen++;
+        if ( d_isActive[i] )
+            d_numberActive++;
+        if ( d_isFrozen[i] )
+            d_numberFrozen++;
     }
 
     AMP_INSIST( params->d_db->keyExists( "PrincipalVariable" ), "must specify PrincipalVariable" );
@@ -162,8 +164,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
                     AMP_ASSERT( d_inVec[var]->getUpdateStatus() ==
                                 AMP::LinearAlgebra::Vector::UNCHANGED );
             }
-        }
-        else {
+        } else {
             AMP::LinearAlgebra::Variable::shared_ptr dummyVar;
             d_inpVariables->add( dummyVar );
         }
@@ -193,8 +194,7 @@ void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
             if ( d_isFrozen[var] ) {
                 d_Frozen[var]->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
                 d_inVec[var] = d_Frozen[var];
-            }
-            else {
+            } else {
                 AMP::LinearAlgebra::Variable::shared_ptr tvar = d_inpVariables->getVariable( var );
                 d_inVec[var] = u_meshVec->constSubsetVectorForVariable( tvar );
                 AMP_ASSERT( d_inVec[var] );
@@ -245,7 +245,8 @@ void DiffusionNonlinearFEOperator::preElementOperation(
 
     d_currNodes = elem.getElements( AMP::Mesh::Vertex );
     std::vector<AMP::Mesh::MeshElementID> ids( d_currNodes.size() );
-    for ( size_t i = 0; i < d_currNodes.size(); i++ ) ids[i] = d_currNodes[i].globalID();
+    for ( size_t i = 0; i < d_currNodes.size(); i++ )
+        ids[i]     = d_currNodes[i].globalID();
 
     std::vector<size_t> dofs( d_currNodes.size() );
     for ( unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
@@ -260,7 +261,8 @@ void DiffusionNonlinearFEOperator::preElementOperation(
     }
 
     d_elementOutputVector.resize( d_currNodes.size() );
-    for ( unsigned int i = 0; i < d_currNodes.size(); i++ ) d_elementOutputVector[i] = 0.0;
+    for ( unsigned int i         = 0; i < d_currNodes.size(); i++ )
+        d_elementOutputVector[i] = 0.0;
 
     d_diffNonlinElem->setElementVectors( elementInputVectors, d_elementOutputVector );
 
@@ -281,7 +283,8 @@ void DiffusionNonlinearFEOperator::postElementOperation()
         AMP::pout << "DiffusionNonlinearFEOperator::postElementOperation, entering" << std::endl;
 
     std::vector<AMP::Mesh::MeshElementID> ids( d_currNodes.size() );
-    for ( size_t i = 0; i < d_currNodes.size(); i++ ) ids[i] = d_currNodes[i].globalID();
+    for ( size_t i = 0; i < d_currNodes.size(); i++ )
+        ids[i]     = d_currNodes[i].globalID();
 
     AMP::Discretization::DOFManager::shared_ptr DOF = d_outVec->getDOFManager();
     std::vector<size_t> dofs( d_currNodes.size() );
@@ -384,8 +387,7 @@ AMP::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
     if ( d_isActive[Diffusion::TEMPERATURE] ) {
         if ( d_isFrozen[Diffusion::TEMPERATURE] ) {
             outParams->d_temperature = d_Frozen[Diffusion::TEMPERATURE];
-        }
-        else {
+        } else {
             auto tvar        = d_inpVariables->getVariable( Diffusion::TEMPERATURE );
             auto temperature = u_meshVec->constSubsetVectorForVariable( tvar );
             outParams->d_temperature =
@@ -397,8 +399,7 @@ AMP::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
     if ( d_isActive[Diffusion::CONCENTRATION] ) {
         if ( d_isFrozen[Diffusion::CONCENTRATION] ) {
             outParams->d_concentration = d_Frozen[Diffusion::CONCENTRATION];
-        }
-        else {
+        } else {
             auto cvar          = d_inpVariables->getVariable( Diffusion::CONCENTRATION );
             auto concentration = u_meshVec->constSubsetVectorForVariable( cvar );
             outParams->d_concentration =
@@ -411,8 +412,7 @@ AMP::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
     if ( d_isActive[Diffusion::BURNUP] ) {
         if ( d_isFrozen[Diffusion::BURNUP] ) {
             outParams->d_burnup = d_Frozen[Diffusion::BURNUP];
-        }
-        else {
+        } else {
             auto bvar           = d_inpVariables->getVariable( Diffusion::BURNUP );
             auto burnup         = u_meshVec->constSubsetVectorForVariable( bvar );
             outParams->d_burnup = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( burnup );
@@ -430,9 +430,12 @@ void DiffusionNonlinearFEOperator::resetFrozen(
     using namespace Diffusion;
     for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
         if ( d_isActive[var] and d_isFrozen[var] ) {
-            if ( var == TEMPERATURE ) d_Frozen[var]   = params->d_FrozenTemperature;
-            if ( var == CONCENTRATION ) d_Frozen[var] = params->d_FrozenConcentration;
-            if ( var == BURNUP ) d_Frozen[var]        = params->d_FrozenBurnup;
+            if ( var == TEMPERATURE )
+                d_Frozen[var] = params->d_FrozenTemperature;
+            if ( var == CONCENTRATION )
+                d_Frozen[var] = params->d_FrozenConcentration;
+            if ( var == BURNUP )
+                d_Frozen[var] = params->d_FrozenBurnup;
         }
     }
 }

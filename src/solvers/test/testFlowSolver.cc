@@ -249,8 +249,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     double norm = resVec->L2Norm();
     if ( norm > 0.01 ) {
         ut->failure( "Manufactured Solution verification test for 1D flow operator." );
-    }
-    else {
+    } else {
         ut->passes( "Manufactured Solution verification test for 1D flow operator." );
     }
 
@@ -268,12 +267,10 @@ int main( int argc, char *argv[] )
 
     try {
         flowTest( &ut, "testFlowSolver" );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

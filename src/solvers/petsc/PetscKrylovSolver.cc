@@ -102,8 +102,7 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
             // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
             assert( d_pPreconditioner.get() == NULL );
             PCSetType( pc, d_sPcType.c_str() );
-        }
-        else {
+        } else {
             // for a shell preconditioner the user context is set to an instance of this class
             // and the setup and apply preconditioner functions for the PCSHELL
             // are set to static member functions of this class. By doing this we do not need to
@@ -122,8 +121,7 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
 #else
 #error Not programmed for this version yet
 #endif
-    }
-    else {
+    } else {
         checkErr( PCSetType( pc, PCNONE ) );
     }
 
@@ -187,26 +185,21 @@ void PetscKrylovSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
     if ( d_bUsesPreconditioner ) {
         if ( db->keyExists( "pc_type" ) ) {
             d_sPcType = db->getStringWithDefault( "pc_type", "none" );
-        }
-        else {
+        } else {
             // call error here
             AMP_ERROR( "pc_type does not exist" );
         }
         std::string pc_side = db->getStringWithDefault( "pc_side", "RIGHT" );
         if ( pc_side == "RIGHT" ) {
             d_PcSide = PC_RIGHT;
-        }
-        else if ( pc_side == "LEFT" ) {
+        } else if ( pc_side == "LEFT" ) {
             d_PcSide = PC_LEFT;
-        }
-        else if ( pc_side == "SYMMETRIC" ) {
+        } else if ( pc_side == "SYMMETRIC" ) {
             d_PcSide = PC_SYMMETRIC;
-        }
-        else {
+        } else {
             AMP_ERROR( "Unknown value for pc_type" );
         }
-    }
-    else {
+    } else {
         d_sPcType = "none";
     }
 }
@@ -262,8 +255,7 @@ void PetscKrylovSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
             // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
             assert( d_pPreconditioner.get() == NULL );
             PCSetType( pc, d_sPcType.c_str() );
-        }
-        else {
+        } else {
             // for a shell preconditioner the user context is set to an instance of this class
             // and the setup and apply preconditioner functions for the PCSHELL
             // are set to static member functions of this class. By doing this we do not need to
@@ -282,8 +274,7 @@ void PetscKrylovSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
 #else
 #error Not programmed for this version yet
 #endif
-    }
-    else {
+    } else {
         checkErr( PCSetType( pc, PCNONE ) );
     }
     if ( d_pOperator.get() != NULL ) {
@@ -448,8 +439,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
         ( (PetscKrylovSolver *) ctx )->getPreconditioner();
     if ( preconditioner != NULL ) {
         preconditioner->solve( sp_r, sp_z );
-    }
-    else {
+    } else {
         // Use the identity preconditioner
         sp_z->copyVector( sp_r );
     }

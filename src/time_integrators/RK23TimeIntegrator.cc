@@ -99,8 +99,7 @@ int RK23TimeIntegrator::advanceSolution( const double dt, const bool first_step 
     if ( first_step ) {
         // k1 = f(tn,un)
         d_operator->apply( d_solution, d_k1_vec );
-    }
-    else {
+    } else {
         d_current_dt = dt;
         d_k1_vec->swapVectors( *d_k4_vec );
     }
@@ -185,8 +184,7 @@ void RK23TimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
     if ( input_db->keyExists( "initial_timestep" ) ) {
         d_initial_dt = input_db->getDouble( "initial_timestep" );
         d_current_dt = d_initial_dt;
-    }
-    else {
+    } else {
         AMP_ERROR( d_object_name << " -- Key data `initial_timestep'"
                                  << " missing in input." );
     }
@@ -206,13 +204,16 @@ double RK23TimeIntegrator::getNextDt( const bool )
         d_safety_factor * d_current_dt * pow( ( d_atol / l2NormOfEstimatedError ), 1.0 / 3.0 );
 
     // check to make sure the timestep is not too small
-    if ( d_next_dt < d_min_dt ) d_next_dt = d_min_dt;
+    if ( d_next_dt < d_min_dt )
+        d_next_dt = d_min_dt;
 
     // check to make sure the timestep is not too large
-    if ( d_next_dt > d_max_dt ) d_next_dt = d_max_dt;
+    if ( d_next_dt > d_max_dt )
+        d_next_dt = d_max_dt;
 
     // check to make sure the time step does not result in stepping beyond final time
-    if ( d_current_time + d_next_dt > d_final_time ) d_next_dt = d_final_time - d_current_time;
+    if ( d_current_time + d_next_dt > d_final_time )
+        d_next_dt = d_final_time - d_current_time;
 
     return d_next_dt;
 }

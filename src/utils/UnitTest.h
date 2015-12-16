@@ -43,7 +43,8 @@ void tstOne(AMP::UnitTest *ut)
  * \endcode
 
  */
-class UnitTest {
+class UnitTest
+{
 public:
     //! Constructor
     UnitTest();

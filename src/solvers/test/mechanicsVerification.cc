@@ -215,8 +215,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
         bool binaryMeshes = inputDatabase->getBool( "BinaryMeshes" );
         if ( binaryMeshes ) {
             AMP::readBinaryTestMesh( mesh_file, myMesh );
-        }
-        else {
+        } else {
             AMP::readTestMesh( mesh_file, myMesh );
         }
 
@@ -225,8 +224,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
         myMesh->prepare_for_use( false );
 
         meshAdapter = AMP::Mesh::Mesh::shared_ptr( new AMP::Mesh::libMesh( myMesh, "myMesh" ) );
-    }
-    else {
+    } else {
         //--------------------------------------------------
         //   Create the Mesh.
         //--------------------------------------------------
@@ -241,11 +239,9 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
         /** Reading the mesh */
         if ( exeName == "mechanicsVerification-Cylinder" ) {
             meshAdapter = manager->Subset( "cylinder" );
-        }
-        else if ( exeName == "mechanicsVerification-HaldenPellet" ) {
+        } else if ( exeName == "mechanicsVerification-HaldenPellet" ) {
             meshAdapter = manager->Subset( "pellet" );
-        }
-        else {
+        } else {
             meshAdapter = manager->Subset( "brick" );
         }
     }
@@ -295,8 +291,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
         manufacturedSolution->set_byx( 0.0 );
         // u_z = 0
         manufacturedSolution->set_bzx( 0.0 );
-    }
-    else if ( typeCoeffAB == "random" ) {
+    } else if ( typeCoeffAB == "random" ) {
         // all coeffs aij and bij are random numbers taken between min and max
         srand( time( NULL ) );
         double randMin = -1.0;
@@ -341,8 +336,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
             randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
         manufacturedSolution->set_bzz(
             randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-    }
-    else {
+    } else {
         abort();
     } // end if typeCoeffAB
     // TODO: I'll move this later to the MMSBuiler
@@ -534,16 +528,13 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
     if ( manufacturedSolution->getName() == "Linear" ) {
         if ( scaleFactor * exactErrVec->L2Norm() < 1.0e-12 ) {
             ut->passes( exeName );
-        }
-        else {
+        } else {
             ut->failure( exeName );
         }
-    }
-    else if ( manufacturedSolution->getName() == "Trigonometric" ) {
+    } else if ( manufacturedSolution->getName() == "Trigonometric" ) {
         // this need to be changed...
         ut->passes( exeName );
-    }
-    else {
+    } else {
         // need to define test requirements for new mms
         abort();
     }
@@ -576,8 +567,7 @@ int main( int argc, char *argv[] )
     if ( argc == 1 ) {
         exeNames.push_back( "mechanicsVerification-Linear" );
         //    exeNames.push_back("mechanicsVerification-HaldenPellet");
-    }
-    else {
+    } else {
         for ( int i = 1; i < argc; i++ ) {
             char inpName[100];
             sprintf( inpName, "mechanicsVerification-%s", argv[i] );
@@ -588,12 +578,10 @@ int main( int argc, char *argv[] )
     for ( unsigned int i = 0; i < exeNames.size(); i++ ) {
         try {
             linearElasticTest( &ut, exeNames[i], i );
-        }
-        catch ( std::exception &err ) {
+        } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );
-        }
-        catch ( ... ) {
+        } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
             ut.failure( "ERROR: While testing" );

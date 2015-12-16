@@ -7,7 +7,8 @@
 namespace AMP {
 namespace Operator {
 
-class DiffusionLinearFEOperatorParameters : public LinearFEOperatorParameters {
+class DiffusionLinearFEOperatorParameters : public LinearFEOperatorParameters
+{
 public:
     DiffusionLinearFEOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
         : LinearFEOperatorParameters( db )

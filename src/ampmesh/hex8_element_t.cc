@@ -232,8 +232,7 @@ void hex8_element_t::build_bounding_polyhedron()
             bounding_polyhedron.push_back( tmp_triangles_ptr[1] );
             tmp_triangles_ptr[0] = NULL;
             tmp_triangles_ptr[1] = NULL;
-        }
-        else {
+        } else {
             /*
                assert(!tmp_triangles[0].above_point(tmp_triangles[3].get_centroid()));
                assert(!tmp_triangles[1].above_point(tmp_triangles[2].get_centroid()));
@@ -301,8 +300,7 @@ bool hex8_element_t::contains_point( double const *coordinates,
         }
         std::copy( &( coordinates[0] ), &( coordinates[0] ) + 3, &( point_candidate[0] ) );
         solve_newton( &( local_coordinates[0] ) );
-    }
-    else {
+    } else {
         std::copy( &( coordinates[0] ), &( coordinates[0] ) + 3, &( local_coordinates[0] ) );
     } // end if
     for ( unsigned int i = 0; i < 3; ++i ) {
@@ -593,8 +591,7 @@ void hex8_element_t::compute_normal_to_face( unsigned int f,
         if ( perturbated_local_coordinates_on_face[d] > 0.0 ) {
             perturbated_local_coordinates_on_face[d] -= perturbation;
             direction *= -1.0;
-        }
-        else {
+        } else {
             perturbated_local_coordinates_on_face[d] += perturbation;
         } // end if
         map_face_to_local(
@@ -610,8 +607,7 @@ void hex8_element_t::compute_normal_to_face( unsigned int f,
                         normal_vector + 3,
                         normal_vector,
                         std::bind1st( std::multiplies<double>(), direction ) );
-    }
-    else {
+    } else {
         AMP_CHECK_ASSERT( direction == 1.0 );
     }
 }
@@ -625,33 +621,27 @@ void hex8_element_t::map_face_to_local( unsigned int f,
         local_coordinates[0] = local_coordinates_on_face[1];
         local_coordinates[1] = local_coordinates_on_face[0];
         local_coordinates[2] = -1.0;
-    }
-    else if ( f == 1 ) {
+    } else if ( f == 1 ) {
         local_coordinates[0] = local_coordinates_on_face[0];
         local_coordinates[1] = -1.0;
         local_coordinates[2] = local_coordinates_on_face[1];
-    }
-    else if ( f == 2 ) {
+    } else if ( f == 2 ) {
         local_coordinates[0] = 1.0;
         local_coordinates[1] = local_coordinates_on_face[0];
         local_coordinates[2] = local_coordinates_on_face[1];
-    }
-    else if ( f == 3 ) {
+    } else if ( f == 3 ) {
         local_coordinates[0] = -local_coordinates_on_face[0];
         local_coordinates[1] = 1.0;
         local_coordinates[2] = local_coordinates_on_face[1];
-    }
-    else if ( f == 4 ) {
+    } else if ( f == 4 ) {
         local_coordinates[0] = -1.0;
         local_coordinates[1] = -local_coordinates_on_face[0];
         local_coordinates[2] = local_coordinates_on_face[1];
-    }
-    else if ( f == 5 ) {
+    } else if ( f == 5 ) {
         local_coordinates[0] = local_coordinates_on_face[0];
         local_coordinates[1] = local_coordinates_on_face[1];
         local_coordinates[2] = 1.0;
-    }
-    else {
+    } else {
         std::cerr << "comment en es-tu arrive la tres cher?" << std::endl;
         assert( false );
     } // end if
@@ -675,28 +665,22 @@ void hex8_element_t::map_local_to_face( unsigned int f,
     if ( f == 0 ) {
         local_coordinates_on_face[0] = local_coordinates[1];
         local_coordinates_on_face[1] = local_coordinates[0];
-    }
-    else if ( f == 1 ) {
+    } else if ( f == 1 ) {
         local_coordinates_on_face[0] = local_coordinates[0];
         local_coordinates_on_face[1] = local_coordinates[2];
-    }
-    else if ( f == 2 ) {
+    } else if ( f == 2 ) {
         local_coordinates_on_face[0] = local_coordinates[1];
         local_coordinates_on_face[1] = local_coordinates[2];
-    }
-    else if ( f == 3 ) {
+    } else if ( f == 3 ) {
         local_coordinates_on_face[0] = -local_coordinates[0];
         local_coordinates_on_face[1] = local_coordinates[2];
-    }
-    else if ( f == 4 ) {
+    } else if ( f == 4 ) {
         local_coordinates_on_face[0] = -local_coordinates[1];
         local_coordinates_on_face[1] = local_coordinates[2];
-    }
-    else if ( f == 5 ) {
+    } else if ( f == 5 ) {
         local_coordinates_on_face[0] = local_coordinates[0];
         local_coordinates_on_face[1] = local_coordinates[1];
-    }
-    else {
+    } else {
         std::cerr << "comment en es-tu arrive la tres cher?" << std::endl;
         assert( false );
     } // end if
@@ -741,8 +725,7 @@ void hex8_element_t::get_normal_to_face( double const **support_points_ptr,
         if ( perturbated_local_coordinates_on_face[d] > 0.0 ) {
             perturbated_local_coordinates_on_face[d] -= perturbation;
             direction *= -1.0;
-        }
-        else {
+        } else {
             perturbated_local_coordinates_on_face[d] += perturbation;
         } // end if
         get_basis_functions_values_on_face( perturbated_local_coordinates_on_face,
@@ -791,8 +774,7 @@ void hex8_element_t::compute_normal_to_face( unsigned int f,
         if ( perturbated_local_coordinates_on_face[d] > 0.0 ) {
             perturbated_local_coordinates_on_face[d] -= perturbation;
             direction *= -1.0;
-        }
-        else {
+        } else {
             perturbated_local_coordinates_on_face[d] += perturbation;
         } // end if
         get_basis_functions_values_on_face( perturbated_local_coordinates_on_face,

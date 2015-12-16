@@ -192,8 +192,7 @@ FlowFrapconJacobian::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr 
         AMP::LinearAlgebra::Vector::shared_ptr commVec =
             vec->select( commSelector, var->getName() );
         return commVec->subsetVectorForVariable( var );
-    }
-    else {
+    } else {
         return vec->subsetVectorForVariable( var );
     }
 }
@@ -210,8 +209,7 @@ FlowFrapconJacobian::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr v
         AMP::LinearAlgebra::Vector::shared_ptr commVec =
             vec->select( commSelector, var->getName() );
         return commVec->subsetVectorForVariable( var );
-    }
-    else {
+    } else {
         return vec->subsetVectorForVariable( var );
     }
 }
@@ -228,8 +226,7 @@ FlowFrapconJacobian::subsetOutputVector( AMP::LinearAlgebra::Vector::const_share
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
             vec->constSelect( commSelector, var->getName() );
         return commVec->constSubsetVectorForVariable( var );
-    }
-    else {
+    } else {
         return vec->constSubsetVectorForVariable( var );
     }
 }
@@ -246,8 +243,7 @@ FlowFrapconJacobian::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
             vec->constSelect( commSelector, var->getName() );
         return commVec->constSubsetVectorForVariable( var );
-    }
-    else {
+    } else {
         return vec->constSubsetVectorForVariable( var );
     }
 }

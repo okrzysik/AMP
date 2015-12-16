@@ -15,7 +15,8 @@ namespace Operator {
 /**
   * AMP Vector helpers for DTK.
 */
-class DTKAMPVectorHelpers {
+class DTKAMPVectorHelpers
+{
 public:
     /**
      * Constructor.

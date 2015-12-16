@@ -104,7 +104,8 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshName )
     AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> solVar(
         new AMP::LinearAlgebra::MultiVariable( tmp->getName() ) );
     for ( size_t i = 0; i < tmp->numVariables(); i++ ) {
-        if ( tmp->getVariable( i ).get() != NULL ) solVar->add( tmp->getVariable( i ) );
+        if ( tmp->getVariable( i ).get() != NULL )
+            solVar->add( tmp->getVariable( i ) );
     }
     AMP::LinearAlgebra::Variable::shared_ptr rhsVar    = nlinOp->getOutputVariable();
     AMP::LinearAlgebra::Variable::shared_ptr resVar    = nlinOp->getOutputVariable();
@@ -163,16 +164,16 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshName )
             r         = sqrt( x * x + y * y );
             double Pi = 3.1415926535898;
             if ( r > 0 ) {
-                th               = acos( x / r );
-                if ( y < 0. ) th = 2 * Pi - th;
+                th = acos( x / r );
+                if ( y < 0. )
+                    th = 2 * Pi - th;
             }
             mfgSolution->evaluate( poly, r, th, z );
             std::vector<size_t> gid;
             nodalDofMap->getDOFs( iterator->globalID(), gid );
             solVec->setValueByGlobalID( gid[0], poly[0] );
         }
-    }
-    else {
+    } else {
         for ( ; iterator != iterator.end(); iterator++ ) {
             double x, y, z;
             std::valarray<double> poly( 10 );
@@ -202,7 +203,8 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshName )
             int rank                      = globalComm.getRank();
             int nranks                    = globalComm.getSize();
             std::ios_base::openmode omode = std::ios_base::out;
-            if ( rank > 0 ) omode |= std::ios_base::app;
+            if ( rank > 0 )
+                omode |= std::ios_base::app;
             std::ofstream file( filename.c_str(), omode );
             if ( rank == 0 ) {
                 file << "(* x y z solution solution fe-source fe-operator error *)" << std::endl;
@@ -211,7 +213,8 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshName )
 
             iterator        = iterator.begin();
             size_t numNodes = 0;
-            for ( ; iterator != iterator.end(); iterator++ ) numNodes++;
+            for ( ; iterator != iterator.end(); iterator++ )
+                numNodes++;
 
             iterator     = iterator.begin();
             size_t iNode = 0;
@@ -233,12 +236,12 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshName )
                     double r = sqrt( x * x + y * y ), th = 0.;
                     double Pi = 3.1415926535898;
                     if ( r > 0 ) {
-                        th               = acos( x / r );
-                        if ( y < 0. ) th = 2. * Pi - th;
+                        th = acos( x / r );
+                        if ( y < 0. )
+                            th = 2. * Pi - th;
                     }
                     mfgSolution->evaluate( poly, r, th, z );
-                }
-                else {
+                } else {
                     mfgSolution->evaluate( poly, x, y, z );
                 }
                 val = poly[0];
@@ -246,7 +249,8 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshName )
 
                 file << "{" << x << "," << y << "," << z << "," << val << "," << sol << "," << src
                      << "," << res + src << "," << err << "}";
-                if ( iNode < numNodes - 1 ) file << "," << std::endl;
+                if ( iNode < numNodes - 1 )
+                    file << "," << std::endl;
 
                 l2err += ( res * res );
                 iNode++;
@@ -291,13 +295,12 @@ int main( int argc, char *argv[] )
     // files.push_back("Diffusion-Fick-OxMSRZC09-MMS-1");
 
     try {
-        for ( size_t i = 0; i < files.size(); i++ ) bvpTest1( &ut, files[i], meshes[i] );
-    }
-    catch ( std::exception &err ) {
+        for ( size_t i = 0; i < files.size(); i++ )
+            bvpTest1( &ut, files[i], meshes[i] );
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

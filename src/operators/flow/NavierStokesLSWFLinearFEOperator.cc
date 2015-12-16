@@ -52,16 +52,14 @@ NavierStokesLSWFLinearFEOperator::NavierStokesLSWFLinearFEOperator(
             params->d_db->getBoolWithDefault( "isNonlinearOperatorInitialized", false );
         if ( isNonlinearOperatorInitialized ) {
             reset( params );
-        }
-        else {
+        } else {
             AMP::LinearAlgebra::Vector::shared_ptr tmpInVec =
                 AMP::LinearAlgebra::createVector( d_inDofMap, d_inpVariables, true );
             AMP::LinearAlgebra::Vector::shared_ptr tmpOutVec =
                 AMP::LinearAlgebra::createVector( d_outDofMap, d_outVariables, true );
             d_matrix = AMP::LinearAlgebra::createMatrix( tmpInVec, tmpOutVec );
         }
-    }
-    else {
+    } else {
         reset( params );
     }
 }
@@ -118,8 +116,7 @@ void NavierStokesLSWFLinearFEOperator::preElementOperation( const AMP::Mesh::Mes
             if ( d_inVec != NULL ) {
                 elementInputVectors[( 10 * r ) + d] =
                     d_inVec->getValueByGlobalID( d_type0DofIndices[r][d] );
-            }
-            else {
+            } else {
                 elementInputVectors[( 10 * r ) + d] = 0.0;
             }
         } // end d
@@ -203,8 +200,7 @@ NavierStokesLSWFLinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::sh
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
             vec->select( meshSelector, var->getName() );
         return meshSubsetVec->subsetVectorForVariable( var );
-    }
-    else {
+    } else {
         return vec->subsetVectorForVariable( var );
     }
 }

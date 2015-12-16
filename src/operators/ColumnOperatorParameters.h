@@ -18,7 +18,8 @@ namespace Operator {
   the composite Operator operator.
   @see ColumnOperator
   */
-class ColumnOperatorParameters : public OperatorParameters {
+class ColumnOperatorParameters : public OperatorParameters
+{
 public:
     explicit ColumnOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
         : OperatorParameters( db )

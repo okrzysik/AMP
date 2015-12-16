@@ -143,8 +143,7 @@ void TimeIntegrator::getFromInput( const AMP::shared_ptr<AMP::Database> db )
 
     if ( db->keyExists( "initial_time" ) ) {
         d_initial_time = db->getDouble( "initial_time" );
-    }
-    else {
+    } else {
         AMP_ERROR( d_object_name << " -- Key data `initial_time'"
                                  << " missing in input." );
     }
@@ -155,8 +154,7 @@ void TimeIntegrator::getFromInput( const AMP::shared_ptr<AMP::Database> db )
             AMP_ERROR( d_object_name << " -- Error in input data "
                                      << "final_time < initial_time." );
         }
-    }
-    else {
+    } else {
         AMP_ERROR( d_object_name << " -- Key data `final_time'"
                                  << " missing in input." );
     }
@@ -167,8 +165,7 @@ void TimeIntegrator::getFromInput( const AMP::shared_ptr<AMP::Database> db )
             AMP_ERROR( d_object_name << " -- Error in input data "
                                      << "max_integrator_steps < 0." );
         }
-    }
-    else {
+    } else {
         AMP_ERROR( d_object_name << " -- Key data `max_integrator_steps'"
                                  << " missing in input." );
     }
@@ -180,8 +177,7 @@ void TimeIntegrator::getFromInput( const AMP::shared_ptr<AMP::Database> db )
             AMP_ERROR( d_object_name << " -- Error in input data "
                                      << "max_dt < 0." );
         }
-    }
-    else {
+    } else {
         AMP_ERROR( d_object_name << " -- Key data `max_dt'"
                                  << " missing in input." );
     }
@@ -193,8 +189,7 @@ void TimeIntegrator::getFromInput( const AMP::shared_ptr<AMP::Database> db )
             AMP_ERROR( d_object_name << " -- Error in input data "
                                      << "min_dt < 0." );
         }
-    }
-    else {
+    } else {
         AMP_ERROR( d_object_name << " -- Key data `min_dt'"
                                  << " missing in input." );
     }

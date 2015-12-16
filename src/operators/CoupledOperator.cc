@@ -32,8 +32,7 @@ void CoupledOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     if ( d_Operators[1] ) {
         if ( d_Operators[0] ) {
             d_Operators[1]->apply( d_frozenGaussPointVector, r );
-        }
-        else {
+        } else {
             d_Operators[1]->apply( u, r );
         }
     }
@@ -59,8 +58,7 @@ void CoupledOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     if ( f.get() != NULL ) {
         AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetOutputVector( f );
         rInternal->subtract( fInternal, rInternal );
-    }
-    else {
+    } else {
         rInternal->scale( -1.0 );
     }
 

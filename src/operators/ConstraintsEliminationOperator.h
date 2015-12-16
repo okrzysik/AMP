@@ -13,7 +13,8 @@ namespace Operator {
 /**
   u^s = C u^m + d
   */
-class ConstraintsEliminationOperator : public Operator {
+class ConstraintsEliminationOperator : public Operator
+{
 
 public:
     /**

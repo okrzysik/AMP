@@ -42,8 +42,7 @@ NeumannVectorCorrection::NeumannVectorCorrection(
     d_qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
     if ( qruleOrderName == "DEFAULT" ) {
         d_qruleOrder = d_type->default_quadrature_order();
-    }
-    else {
+    } else {
         d_qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( qruleOrderName );
     }
 
@@ -98,8 +97,7 @@ void NeumannVectorCorrection::reset( const AMP::shared_ptr<OperatorParameters> &
                 sprintf( key, "value_%d_%d", j, i );
                 AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
                 d_neumannValues[j][i] = ( myparams->d_db )->getDouble( key );
-            }
-            else {
+            } else {
                 d_variableFlux = myparams->d_variableFlux;
             }
         } // end for i
@@ -189,13 +187,11 @@ void NeumannVectorCorrection::addRHScorrection(
                     for ( size_t qp = 0; qp < numGaussPts; qp++ ) {
                         if ( d_isConstantFlux ) {
                             temp[0].push_back( d_neumannValues[j][k] );
-                        }
-                        else {
+                        } else {
                             if ( d_isFluxGaussPtVector ) {
                                 temp[0].push_back(
                                     d_variableFlux->getValueByGlobalID( fluxDofs[qp] ) );
-                            }
-                            else {
+                            } else {
                                 Real Tqp = 0.0;
                                 for ( size_t n = 0; n < dofIndices.size(); n++ ) {
                                     Tqp +=
@@ -269,8 +265,7 @@ AMP::shared_ptr<OperatorParameters>
             if ( d_isConstantFlux ) {
                 sprintf( key, "value_%d_%d", j, i );
                 tmp_db->putInteger( key, d_neumannValues[j][i] );
-            }
-            else {
+            } else {
                 // d_variableFlux ??
             }
         }
@@ -290,7 +285,8 @@ void NeumannVectorCorrection::setFrozenVector( AMP::LinearAlgebra::Vector::share
     AMP::LinearAlgebra::Vector::shared_ptr f2 = f;
     if ( d_Mesh.get() != NULL )
         f2 = f->select( AMP::LinearAlgebra::VS_Mesh( d_Mesh ), f->getVariable()->getName() );
-    if ( f2 == NULL ) return;
+    if ( f2 == NULL )
+        return;
     if ( d_Frozen == NULL )
         d_Frozen = AMP::LinearAlgebra::MultiVector::create( "frozenMultiVec", d_Mesh->getComm() );
     d_Frozen->castTo<AMP::LinearAlgebra::MultiVector>().addVector( f2 );
@@ -304,8 +300,7 @@ void NeumannVectorCorrection::setVariableFlux( const AMP::LinearAlgebra::Vector:
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
             flux->select( meshSelector, d_variable->getName() );
         d_variableFlux = meshSubsetVec->subsetVectorForVariable( d_variable );
-    }
-    else {
+    } else {
         d_variableFlux = flux->subsetVectorForVariable( d_variable );
     }
 }

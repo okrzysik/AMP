@@ -11,7 +11,8 @@ namespace TimeIntegrator {
 /*!
   @brief This class contains the parmeters to create the problem for the oxide growth
  */
-class OxideTimeIntegratorParameters : public TimeIntegratorParameters {
+class OxideTimeIntegratorParameters : public TimeIntegratorParameters
+{
 public:
     explicit OxideTimeIntegratorParameters( const AMP::shared_ptr<AMP::Database> db );
 

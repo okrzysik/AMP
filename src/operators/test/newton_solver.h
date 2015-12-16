@@ -11,17 +11,13 @@ std::ostream &operator<<( std::ostream &os, status_t const &status )
 {
     if ( status == CONV_RTOL ) {
         os << "CONV_RTOL";
-    }
-    else if ( status == CONV_ATOL ) {
+    } else if ( status == CONV_ATOL ) {
         os << "CONV_ATOL";
-    }
-    else if ( status == DIV_MAXIT ) {
+    } else if ( status == DIV_MAXIT ) {
         os << "DIV_MAXIT";
-    }
-    else if ( status == DIV_TOL ) {
+    } else if ( status == DIV_TOL ) {
         os << "DIV_TOL";
-    }
-    else {
+    } else {
         assert( false );
     } // end if
     return os;
@@ -37,7 +33,8 @@ struct solve_status_t {
 };
 
 template <typename vector_t>
-class newton_solver_t {
+class newton_solver_t
+{
 public:
     newton_solver_t() : _atol( 1.0e-16 ), _rtol( 1.0e-12 ), _dtol( 1.0e3 ), _maxit( 30 )
     {
@@ -87,11 +84,9 @@ solve_status_t newton_solver_t<vector_t>::solve( vector_t &solution, void *param
         norm_residual = compute_norm( residual );
         if ( norm_residual < _atol ) {
             return solve_status_t( CONV_ATOL, i, norm_residual );
-        }
-        else if ( norm_residual < _rtol * initial_residual_norm ) {
+        } else if ( norm_residual < _rtol * initial_residual_norm ) {
             return solve_status_t( CONV_RTOL, i, norm_residual );
-        }
-        else if ( norm_residual > _dtol * initial_residual_norm ) {
+        } else if ( norm_residual > _dtol * initial_residual_norm ) {
             return solve_status_t( DIV_TOL, i, norm_residual );
         } // end if
     }     // end for i

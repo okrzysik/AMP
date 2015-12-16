@@ -73,12 +73,10 @@ void DiffusionLinearElement::apply()
         }
         if ( not d_transportModel->isaTensor() ) {
             d_transportModel->getTransport( conductivity, args, q_point );
-        }
-        else {
+        } else {
             d_transportTensorModel->getTensorTransport( conductivityTensor, args, q_point );
         }
-    }
-    else {
+    } else {
         std::vector<double> &temperature( *new std::vector<double>( d_LocalTemperature ) );
         std::vector<double> &concentration( *new std::vector<double>( d_LocalConcentration ) );
         std::vector<double> &burnup( *new std::vector<double>( d_LocalBurnup ) );
@@ -94,8 +92,7 @@ void DiffusionLinearElement::apply()
             3, std::vector<AMP::shared_ptr<std::vector<double>>>( 3 ) );
         if ( not d_transportModel->isaTensor() ) {
             d_transportModel->getTransport( nodalConductivity, args, q_point );
-        }
-        else {
+        } else {
             for ( int i = 0; i < 3; i++ )
                 for ( int j = 0; j < 3; j++ ) {
                     std::vector<double> *vec( new std::vector<double>( num_local_dofs ) );
@@ -110,8 +107,7 @@ void DiffusionLinearElement::apply()
                 for ( unsigned int n = 0; n < num_local_dofs; n++ ) {
                     conductivity[qp] += nodalConductivity[n] * phi[n][qp];
                 } // end for n
-            }
-            else {
+            } else {
                 for ( unsigned int n = 0; n < num_local_dofs; n++ ) {
                     for ( int i = 0; i < 3; i++ )
                         for ( int j = 0; j < 3; j++ ) {
@@ -133,8 +129,7 @@ void DiffusionLinearElement::apply()
                         ( JxW[qp] * conductivity[qp] * ( dphi[n][qp] * dphi[k][qp] ) );
                 } // end for k
             }     // end for n
-        }
-        else {
+        } else {
             for ( unsigned int n = 0; n < num_local_dofs; n++ ) {
                 for ( unsigned int k = 0; k < num_local_dofs; k++ ) {
                     for ( int i = 0; i < 3; i++ )

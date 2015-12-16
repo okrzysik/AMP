@@ -34,7 +34,8 @@
 
 #define ITFAILS ut.failure( __LINE__ );
 #define UNIT_TEST( a ) \
-    if ( !( a ) ) ut.failure( __LINE__ );
+    if ( !( a ) )      \
+        ut.failure( __LINE__ );
 
 void linearThermalTest( AMP::UnitTest *ut )
 {
@@ -198,8 +199,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     if ( finalResidualNorm > 10.0 ) {
         ut->failure( "TrilinosMLSolver successfully solves a linear thermal problem with a nuclear "
                      "source term." );
-    }
-    else {
+    } else {
         ut->passes( "TrilinosMLSolver successfully solves a linear thermal problem with a nuclear "
                     "source term." );
     }
@@ -229,7 +229,8 @@ void linearThermalTest( AMP::UnitTest *ut )
             int rank                      = globalComm.getRank();
             int nranks                    = globalComm.getSize();
             std::ios_base::openmode omode = std::ios_base::out;
-            if ( rank > 0 ) omode |= std::ios_base::app;
+            if ( rank > 0 )
+                omode |= std::ios_base::app;
             std::ofstream file( filename.c_str(), omode );
             if ( rank == 0 ) {
                 file << "(* x y z analytic calculated relative-error *)" << std::endl;
@@ -240,7 +241,8 @@ void linearThermalTest( AMP::UnitTest *ut )
 
             iterator        = iterator.begin();
             size_t numNodes = 0, iNode = 0;
-            for ( ; iterator != iterator.end(); iterator++ ) numNodes++;
+            for ( ; iterator != iterator.end(); iterator++ )
+                numNodes++;
 
             iterator   = iterator.end();
             double mse = 0.0;
@@ -259,7 +261,8 @@ void linearThermalTest( AMP::UnitTest *ut )
                 mse += ( sol - cal ) * ( sol - cal );
                 file << "{" << x << "," << y << "," << z << "," << sol << "," << cal << "," << err
                      << "}";
-                if ( iNode < numNodes - 1 ) file << "," << std::endl;
+                if ( iNode < numNodes - 1 )
+                    file << "," << std::endl;
                 if ( fabs( cal - sol ) > cal * 1e-3 ) {
                     passes = 0;
                     ut->failure( "Error" );
@@ -277,7 +280,8 @@ void linearThermalTest( AMP::UnitTest *ut )
         }
         globalComm.barrier();
     }
-    if ( passes ) ut->passes( "The linear thermal solve is verified." );
+    if ( passes )
+        ut->passes( "The linear thermal solve is verified." );
 
 // Plot the results
 #ifdef USE_EXT_SILO
@@ -305,12 +309,10 @@ int main( int argc, char *argv[] )
 
     try {
         linearThermalTest( &ut );
-    }
-    catch ( std::exception &err ) {
+    } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                   << std::endl;
         ut.failure( "ERROR: While testing" );

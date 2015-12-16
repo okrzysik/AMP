@@ -11,7 +11,8 @@
 namespace AMP {
 namespace Operator {
 
-class DiffusionLinearElement : public DiffusionElement {
+class DiffusionLinearElement : public DiffusionElement
+{
 public:
     explicit DiffusionLinearElement( const AMP::shared_ptr<ElementOperationParameters> &params )
         : DiffusionElement( params ), d_elementStiffnessMatrix( NULL )

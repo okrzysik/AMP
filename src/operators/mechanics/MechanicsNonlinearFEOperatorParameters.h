@@ -16,7 +16,8 @@ namespace Operator {
  MechanicsNonlinearFEOperator.
  @see MechanicsNonlinearFEOperator
  */
-class MechanicsNonlinearFEOperatorParameters : public FEOperatorParameters {
+class MechanicsNonlinearFEOperatorParameters : public FEOperatorParameters
+{
 public:
     /**
       Constructor.

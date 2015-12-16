@@ -66,8 +66,7 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
     if ( leftComm == rightComm ) {
         int rank = leftComm.getRank();
         out << "Processor: " << rank << "\n";
-    }
-    else {
+    } else {
         int leftRank  = leftComm.getRank();
         int rightRank = rightComm.getRank();
         out << "Processor (left comm):  " << leftRank << "\n";

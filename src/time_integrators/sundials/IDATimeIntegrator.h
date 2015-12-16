@@ -50,7 +50,8 @@ typedef AMP::Operator::MassLinearFEOperator MassOperator;
  @see TimeIntegrator
 
  */
-class IDATimeIntegrator : public TimeIntegrator {
+class IDATimeIntegrator : public TimeIntegrator
+{
 public:
     /**
      * Main constructor that accepts parameters object. The parameter object must be

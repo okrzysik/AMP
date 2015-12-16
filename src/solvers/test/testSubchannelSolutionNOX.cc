@@ -273,10 +273,12 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
         std::vector<double> enthalpyResult( 1 );
         subchannelPhysicsModel->getProperty( "Enthalpy", enthalpyResult, enthalpyArgMap );
         double h2 = enthalpyResult[0];
-        if ( !AMP::Utilities::approx_equal( h, h2, 1e-7 ) ) pass = false;
+        if ( !AMP::Utilities::approx_equal( h, h2, 1e-7 ) )
+            pass = false;
         ++face;
     }
-    if ( !pass ) ut->failure( "failed to recover h" );
+    if ( !pass )
+        ut->failure( "failed to recover h" );
 
     // Print the Inlet/Outlet properties
     std::cout << std::endl << std::endl;
@@ -320,8 +322,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     double tol = input_db->getDoubleWithDefault( "TOLERANCE", 1e-6 );
     if ( relErrorNorm <= tol && fabs( Tin - TinSol ) < tol ) {
         ut->passes( exeName + ": manufactured solution test" );
-    }
-    else {
+    } else {
         ut->failure( exeName + ": manufactured solution test" );
     }
 
@@ -389,7 +390,8 @@ int main( int argc, char *argv[] )
     files[0] = "testSubchannelSolution-1";
     files[1] = "testSubchannelSolution-2";
 
-    for ( size_t i = 0; i < files.size(); i++ ) flowTest( &ut, files[i] );
+    for ( size_t i = 0; i < files.size(); i++ )
+        flowTest( &ut, files[i] );
 
     ut.report();
 

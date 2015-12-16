@@ -30,7 +30,8 @@ namespace TimeIntegrator {
 
  */
 
-class TimeIntegratorParameters : public ParameterBase {
+class TimeIntegratorParameters : public ParameterBase
+{
 public:
     //! Convience typedef
     typedef AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> shared_ptr;

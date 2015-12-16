@@ -6,7 +6,8 @@
 namespace AMP {
 namespace Operator {
 
-class AsynchronousColumnOperatorParameters : public OperatorParameters {
+class AsynchronousColumnOperatorParameters : public OperatorParameters
+{
 public:
     AsynchronousColumnOperatorParameters( const AMP::shared_ptr<AMP::Database> &db )
         : OperatorParameters( db )

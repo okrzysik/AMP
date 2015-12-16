@@ -22,7 +22,8 @@ class VectorEntryMap;
  * \class CommunicationListParameters
  * \brief Parameters class encapsulating the data necessary to instantiate a communication list.
  */
-class CommunicationListParameters : public ParameterBase {
+class CommunicationListParameters : public ParameterBase
+{
 public:
     //! Short hand name for the shared pointer for a communication list
     typedef AMP::shared_ptr<CommunicationListParameters> shared_ptr;
@@ -53,7 +54,8 @@ public:
  * computation.  This class tracks which local data need to be communicated with other cores
  * and which data should be received from those cores.
  */
-class CommunicationList {
+class CommunicationList
+{
 public:
     //! Short hand for shared point to CommunicationList
     typedef AMP::shared_ptr<CommunicationList> shared_ptr;

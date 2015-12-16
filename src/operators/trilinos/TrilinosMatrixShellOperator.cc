@@ -117,8 +117,7 @@ int TrilinosMatrixShellOperator::getRow( ML_Operator *data,
                 cnt++;
             }
             row_lengths[i] = cols.size();
-        }
-        else {
+        } else {
             return 0;
         }
     }

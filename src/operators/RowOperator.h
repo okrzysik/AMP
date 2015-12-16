@@ -13,7 +13,8 @@
 namespace AMP {
 namespace Operator {
 
-class RowOperator : public Operator {
+class RowOperator : public Operator
+{
 public:
     typedef AMP::shared_ptr<RowOperator> shared_ptr;
 
@@ -91,8 +92,7 @@ protected:
                 }
 
                 rtParameters = AMP::dynamic_pointer_cast<OperatorParameters>( opParameters );
-            }
-            else {
+            } else {
                 ( opParameters->d_OperatorParameters ).resize( d_paramsize );
 
                 for ( int i = 0; i < d_paramsize; i++ ) {
@@ -103,8 +103,7 @@ protected:
                 rtParameters = AMP::dynamic_pointer_cast<OperatorParameters>( opParameters );
                 // rtParameters = (d_Operators[0]->getJacobianParameters(u));
             }
-        }
-        else {
+        } else {
             AMP_ERROR( "Unknown type requested" );
         }
 
