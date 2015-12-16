@@ -138,12 +138,12 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     position->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     id_vec->setToScalar( -1 );
     std::vector<int> ids = submesh->getBoundaryIDs();
-    for ( size_t i = 0; i < ids.size(); i++ ) {
-        AMP::Mesh::MeshIterator it = submesh->getBoundaryIDIterator( AMP::Mesh::Face, ids[i], 0 );
+    for ( auto &id : ids ) {
+        AMP::Mesh::MeshIterator it = submesh->getBoundaryIDIterator( AMP::Mesh::Face, id, 0 );
         for ( size_t j = 0; j < it.size(); j++ ) {
             DOF_surface->getDOFs( it->globalID(), dofs );
             AMP_ASSERT( dofs.size() == 1 );
-            id_vec->setValueByGlobalID( dofs[0], ids[i] );
+            id_vec->setValueByGlobalID( dofs[0], id );
             ++it;
         }
     }

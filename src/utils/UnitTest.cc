@@ -148,8 +148,8 @@ void UnitTest::report( const int level0 ) const
                 AMP_ASSERT( (int) pass_messages_rank[i].size() == N_pass[i] );
                 if ( N_pass[i] > 0 ) {
                     std::cout << "     Proccessor " << i << ":" << std::endl;
-                    for ( unsigned int j = 0; j < pass_messages_rank[i].size(); j++ )
-                        std::cout << "        " << pass_messages_rank[i][j] << std::endl;
+                    for ( auto &elem : pass_messages_rank[i] )
+                        std::cout << "        " << elem << std::endl;
                 }
             }
         }
@@ -174,8 +174,8 @@ void UnitTest::report( const int level0 ) const
                 AMP_ASSERT( (int) fail_messages_rank[i].size() == N_fail[i] );
                 if ( N_fail[i] > 0 ) {
                     std::cout << "     Processor " << i << ":" << std::endl;
-                    for ( unsigned int j = 0; j < fail_messages_rank[i].size(); j++ )
-                        std::cout << "        " << fail_messages_rank[i][j] << std::endl;
+                    for ( auto &elem : fail_messages_rank[i] )
+                        std::cout << "        " << elem << std::endl;
                 }
             }
         }
@@ -201,8 +201,8 @@ void UnitTest::report( const int level0 ) const
                 AMP_ASSERT( (int) expected_fail_rank[i].size() == N_expected_fail[i] );
                 if ( N_expected_fail[i] > 0 ) {
                     std::cout << "     Processor " << i << ":" << std::endl;
-                    for ( unsigned int j = 0; j < expected_fail_rank[i].size(); j++ )
-                        std::cout << "        " << expected_fail_rank[i][j] << std::endl;
+                    for ( auto &elem : expected_fail_rank[i] )
+                        std::cout << "        " << elem << std::endl;
                 }
             }
         }

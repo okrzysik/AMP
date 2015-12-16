@@ -66,14 +66,14 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 #endif
     if ( globalComm.getSize() == 1 )
         types.push_back( 2 );
-    for ( size_t i = 0; i < types.size(); i++ ) {
+    for ( auto &type : types ) {
         char tmp[100];
-        sprintf( tmp, "%s: %i", exeName.c_str(), types[i] );
+        sprintf( tmp, "%s: %i", exeName.c_str(), type );
         // create four matrices
         AMP::LinearAlgebra::Matrix::shared_ptr firstMat =
-            AMP::LinearAlgebra::createMatrix( firstVec, secondVec, types[i] ); // mxn
+            AMP::LinearAlgebra::createMatrix( firstVec, secondVec, type ); // mxn
         AMP::LinearAlgebra::Matrix::shared_ptr secondMat =
-            AMP::LinearAlgebra::createMatrix( secondVec, firstVec, types[i] ); // nxm
+            AMP::LinearAlgebra::createMatrix( secondVec, firstVec, type ); // nxm
         AMP_ASSERT( firstMat->numGlobalRows() == m && firstMat->numGlobalColumns() == n );
         firstMat->setScalar( 1.0 );
         secondMat->setScalar( 2.0 );

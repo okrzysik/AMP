@@ -45,9 +45,8 @@ void LinearBVPOperator::reset( const AMP::shared_ptr<OperatorParameters> &params
 
         AMP_ASSERT( columnBoundaryParams != nullptr );
 
-        for ( unsigned int i = 0; i < columnBoundaryParams->d_OperatorParameters.size(); i++ ) {
-            AMP::shared_ptr<OperatorParameters> cparams =
-                columnBoundaryParams->d_OperatorParameters[i];
+        for ( auto cparams : columnBoundaryParams->d_OperatorParameters ) {
+
             AMP::shared_ptr<LinearBoundaryOperatorParameters> linearBoundaryParams =
                 AMP::dynamic_pointer_cast<LinearBoundaryOperatorParameters>( cparams );
             if ( linearBoundaryParams != nullptr ) {

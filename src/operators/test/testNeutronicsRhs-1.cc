@@ -118,8 +118,8 @@ int main( int argc, char *argv[] )
                                     "testNeutronicsRhs-4" };
 
     try {
-        for ( int i = 0; i < NUMFILES; i++ ) {
-            sourceTest( &ut, files[i] );
+        for ( auto &file : files ) {
+            sourceTest( &ut, file );
         }
     } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;

@@ -233,8 +233,8 @@ void Utilities::abort( const std::string &message, const std::string &filename, 
         printf( "Bytes used = %llu\n", N_bytes );
         std::vector<std::string> stack = getCallStack();
         printf( "Stack Trace:\n" );
-        for ( size_t i = 0; i < stack.size(); i++ )
-            printf( "   %s\n", stack[i].c_str() );
+        for ( auto &elem : stack )
+            printf( "   %s\n", elem.c_str() );
         printf( "\n" );
         // Log the abort message
         Logger::getInstance()->logAbort( message, filename, line );

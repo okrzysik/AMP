@@ -101,9 +101,9 @@ void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr v
     AMP_ASSERT( map.size() > 1 );
     std::vector<double> z( map.size() ), f( map.size() );
     size_t i = 0;
-    for ( std::map<double, double>::const_iterator it = map.begin(); it != map.end(); ++it ) {
-        z[i] = it->first;
-        f[i] = it->second;
+    for ( const auto &elem : map ) {
+        z[i] = elem.first;
+        f[i] = elem.second;
         i++;
     }
     for ( size_t i = 1; i < z.size(); i++ )

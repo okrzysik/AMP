@@ -89,21 +89,21 @@ void eigenVectors( double A[3][3], double val[3], double vec[3][3] )
         }     // end for i
     } else {
         int vecColCnt = 0;
-        for ( size_t i = 0; i < uniqVals.size(); i++ ) {
+        for ( auto &uniqVal : uniqVals ) {
             double B[3][3];
             matCopy( A, B );
 
             for ( int j = 0; j < 3; j++ ) {
-                B[j][j] = B[j][j] - uniqVals[i];
+                B[j][j] = B[j][j] - uniqVal;
             } // end for j
 
             std::vector<std::vector<double>> sols;
             solveEquation( B, sols );
 
-            for ( size_t k = 0; k < sols.size(); k++ ) {
+            for ( auto &sol : sols ) {
                 assert( vecColCnt < 3 );
                 for ( int j = 0; j < 3; j++ ) {
-                    vec[j][vecColCnt] = sols[k][j];
+                    vec[j][vecColCnt] = sol[j];
                 } // end for j
                 vecColCnt++;
             } // end for k
@@ -334,18 +334,18 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
 void orthonormalize( std::vector<std::vector<double>> &vecs )
 {
     std::vector<std::vector<double>> res;
-    for ( size_t i = 0; i < vecs.size(); i++ ) {
+    for ( auto &vec : vecs ) {
         double tmp[] = { 0, 0, 0 };
-        for ( size_t j = 0; j < res.size(); j++ ) {
-            double dot1 = vecDot( vecs[i], res[j] );
+        for ( auto &re : res ) {
+            double dot1 = vecDot( vec, re );
             for ( int k = 0; k < 3; k++ ) {
-                tmp[k] += ( dot1 * res[j][k] );
+                tmp[k] += ( dot1 * re[k] );
             } // end for k
         }     // end for j
 
         std::vector<double> newVec( 3 );
         for ( int k = 0; k < 3; k++ ) {
-            newVec[k] = vecs[i][k] - tmp[k];
+            newVec[k] = vec[k] - tmp[k];
         } // end for k
 
         double dot2 = vecDot( newVec, newVec );
@@ -751,9 +751,9 @@ void polarDecompositionFeqRU_Simo(
         for ( int j  = 0; j < 3; j++ )
             Ft[j][i] = F[i][j];
 
-    for ( int i = 0; i < 3; i++ )
+    for ( auto &elem : I )
         for ( int j = 0; j < 3; j++ )
-            I[i][j] = 0.0;
+            elem[j] = 0.0;
 
     I[0][0] = I[1][1] = I[2][2] = 1.0;
 
@@ -772,8 +772,8 @@ void polarDecompositionFeqRU_Simo(
             c = fabs( c );
         AMP_INSIST( ( c >= 0.0 ),
                     "Error in the polar decomposition (Simo), value of c is less than zero." );
-        for ( int i = 0; i < 3; i++ )
-            x[i]    = -pow( c, ( 1.0 / 3.0 ) );
+        for ( auto &elem : x )
+            elem = -pow( c, ( 1.0 / 3.0 ) );
     } else {
         AMP_INSIST( ( b <= 0.0 ),
                     "Error in the polar decomposition (Simo), value of b is greater than zero." );

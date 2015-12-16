@@ -140,11 +140,11 @@ unsigned int hex8_element_t::faces[24] = { 0, 3, 2, 1, 0, 1, 5, 4, 1, 2, 6, 5,
 
 void hex8_element_t::clear_triangles_ptr( std::vector<triangle_t *> &triangles_ptr )
 {
-    for ( unsigned int i = 0; i < triangles_ptr.size(); ++i ) {
-        if ( triangles_ptr[i] != nullptr ) {
-            delete triangles_ptr[i];
+    for ( auto &elem : triangles_ptr ) {
+        if ( elem != nullptr ) {
+            delete elem;
         }
-        triangles_ptr[i] = nullptr;
+        elem = nullptr;
     } // end for i
     triangles_ptr.clear();
 }

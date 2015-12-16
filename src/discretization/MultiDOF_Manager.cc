@@ -105,13 +105,13 @@ AMP::Mesh::MeshIterator multiDOFManager::getIterator() const
             new AMP::Mesh::MeshIterator( d_managers[i]->getIterator() ) );
     // Get the list of unique elements
     size_t N_tot = 0;
-    for ( size_t i = 0; i < iterators.size(); i++ )
-        N_tot += iterators[i]->size();
+    for ( auto &iterator : iterators )
+        N_tot += iterator->size();
     AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elements(
         new std::vector<AMP::Mesh::MeshElement>( 0 ) );
     elements->reserve( N_tot );
-    for ( size_t i = 0; i < iterators.size(); i++ ) {
-        AMP::Mesh::MeshIterator it2 = iterators[i]->begin();
+    for ( auto &iterator : iterators ) {
+        AMP::Mesh::MeshIterator it2 = iterator->begin();
         for ( size_t j = 0; j < it2.size(); j++ ) {
             elements->push_back( *it2 );
             ++it2;
@@ -230,8 +230,8 @@ AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP_MPI &comm_in )
     AMP_MPI comm = AMP_MPI::intersect( comm_in, d_comm );
     // Subset all of the DOFManagers within this DOFManager
     std::vector<DOFManager::shared_ptr> sub_managers;
-    for ( size_t i = 0; i < d_managers.size(); i++ ) {
-        DOFManager::shared_ptr subset = d_managers[i]->subset( comm );
+    for ( auto &elem : d_managers ) {
+        DOFManager::shared_ptr subset = elem->subset( comm );
         if ( subset != nullptr )
             sub_managers.push_back( subset );
     }
@@ -259,9 +259,9 @@ AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::Mesh::shar
     // Subset all of the DOFManagers within this DOFManager
     bool changed = false;
     std::vector<DOFManager::shared_ptr> sub_managers;
-    for ( size_t i = 0; i < d_managers.size(); i++ ) {
-        DOFManager::shared_ptr subset = d_managers[i]->subset( mesh, useMeshComm );
-        if ( subset.get() != d_managers[i].get() )
+    for ( auto &elem : d_managers ) {
+        DOFManager::shared_ptr subset = elem->subset( mesh, useMeshComm );
+        if ( subset.get() != elem.get() )
             changed = true;
         if ( subset != nullptr )
             sub_managers.push_back( subset );
@@ -288,9 +288,9 @@ AMP::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::MeshIterat
     // Subset all of the DOFManagers within this DOFManager
     bool changed = false;
     std::vector<DOFManager::shared_ptr> sub_managers;
-    for ( size_t i = 0; i < d_managers.size(); i++ ) {
-        DOFManager::shared_ptr subset = d_managers[i]->subset( iterator, comm );
-        if ( subset.get() != d_managers[i].get() )
+    for ( auto &elem : d_managers ) {
+        DOFManager::shared_ptr subset = elem->subset( iterator, comm );
+        if ( subset.get() != elem.get() )
             changed = true;
         if ( subset != nullptr )
             sub_managers.push_back( subset );

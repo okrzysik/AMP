@@ -763,10 +763,8 @@ void Vector::makeConsistent( ScatterType t )
         d_CommList->packReceiveBuffer( send_vec_add, *this );
         d_CommList->scatter_add( send_vec_add, recv_vec_add );
         d_CommList->unpackSendBufferAdd( recv_vec_add, *this );
-        for ( std::vector<double>::iterator curAdd = d_AddBuffer->begin();
-              curAdd != d_AddBuffer->end();
-              ++curAdd ) {
-            *curAdd = 0.0;
+        for ( auto &elem : *d_AddBuffer ) {
+            elem = 0.0;
         }
     }
     *d_UpdateState = SETTING;
@@ -824,8 +822,8 @@ void Vector::dumpGhostedData( std::ostream &out, size_t offset ) const
         return;
     const std::vector<size_t> &ghosts    = getCommunicationList()->getGhostIDList();
     std::vector<double>::iterator curVal = d_Ghosts->begin();
-    for ( size_t i = 0; i < ghosts.size(); i++ ) {
-        out << "  GID: " << ( ghosts[i] + offset ) << "  Value: " << ( *curVal ) << "\n";
+    for ( auto &ghost : ghosts ) {
+        out << "  GID: " << ( ghost + offset ) << "  Value: " << ( *curVal ) << "\n";
         ++curVal;
     }
 }

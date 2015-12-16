@@ -202,8 +202,8 @@ int main( int argc, char *argv[] )
     const int NUMFILES          = 2;
     std::string files[NUMFILES] = { "FickSoret-BVP-TUI-1", "FickSoret-BVP-UO2MSRZC09-1" };
 
-    for ( int i = 0; i < NUMFILES; i++ )
-        bvpTest1( &ut, files[i] );
+    for ( auto &file : files )
+        bvpTest1( &ut, file );
 
 
     ut.report();

@@ -216,9 +216,9 @@ int main( int argc, char *argv[] )
         } // end for i
     }
 
-    for ( size_t i = 0; i < exeNames.size(); i++ ) {
+    for ( auto &exeName : exeNames ) {
         try {
-            linearElasticTest( &ut, exeNames[i] );
+            linearElasticTest( &ut, exeName );
         } catch ( std::exception &err ) {
             AMP::pout << "ERROR: " << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );

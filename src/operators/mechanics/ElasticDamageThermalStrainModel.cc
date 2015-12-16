@@ -19,9 +19,9 @@ ElasticDamageThermalStrainModel::ElasticDamageThermalStrainModel(
 
     d_Is_Source = ( params->d_db )->getBoolWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
 
-    for ( size_t i = 0; i < 6; i++ ) {
-        for ( size_t j                 = 0; j < 6; j++ )
-            d_constitutiveMatrix[i][j] = 0.;
+    for ( auto &elem : d_constitutiveMatrix ) {
+        for ( size_t j = 0; j < 6; j++ )
+            elem[j]    = 0.;
     }
 
     if ( d_useMaterialsLibrary == false ) {
@@ -337,9 +337,9 @@ void ElasticDamageThermalStrainModel::constructConstitutiveMatrix( const double 
     double G = E / ( 2.0 * ( 1.0 + Nu ) );
     double K = E / ( 3.0 * ( 1.0 - ( 2.0 * Nu ) ) );
 
-    for ( int i = 0; i < 6; i++ ) {
+    for ( auto &elem : d_constitutiveMatrix ) {
         for ( int j = 0; j < 6; j++ ) {
-            d_constitutiveMatrix[i][j] = 0.0;
+            elem[j] = 0.0;
         }
     }
 

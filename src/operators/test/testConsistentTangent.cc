@@ -218,9 +218,9 @@ int main( int argc, char *argv[] )
     exeNames.push_back( "testConsistentTangent-4-cookMesh1-reduced" );
 
     for ( int j = 0; j < 2; j++ ) {
-        for ( size_t i = 0; i < exeNames.size(); i++ ) {
+        for ( auto &exeName : exeNames ) {
             try {
-                myTest( &ut, exeNames[i], j );
+                myTest( &ut, exeName, j );
             } catch ( std::exception &err ) {
                 AMP::pout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
                 ut.failure( "ERROR: While testing" );

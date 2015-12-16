@@ -113,8 +113,8 @@ int main( int argc, char *argv[] )
 
     std::vector<std::string> exeNames;
     exeNames.push_back( "testMultiVector" );
-    for ( size_t i = 0; i < exeNames.size(); i++ ) {
-        myTest( &ut, exeNames[i] );
+    for ( auto &exeName : exeNames ) {
+        myTest( &ut, exeName );
     }
 
     ut.report();

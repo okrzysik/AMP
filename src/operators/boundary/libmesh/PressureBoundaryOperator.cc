@@ -49,12 +49,12 @@ PressureBoundaryOperator::PressureBoundaryOperator(
                 AMP::Mesh::MeshElementID sideId              = sides[s].globalID();
                 unsigned int owner                           = sideId.owner_rank();
                 std::vector<AMP::Mesh::MeshElement> vertices = el->getElements( AMP::Mesh::Vertex );
-                for ( size_t j = 0; j < vertices.size(); ++j ) {
-                    std::vector<double> pt = vertices[j].coord();
-                    for ( size_t k = 0; k < pt.size(); ++k ) {
-                        volElemMap[owner].push_back( pt[k] );
+                for ( auto &vertice : vertices ) {
+                    std::vector<double> pt = vertice.coord();
+                    for ( auto &elem : pt ) {
+                        volElemMap[owner].push_back( elem );
                     } // end k
-                    AMP::Mesh::MeshElementID nodeId = vertices[j].globalID();
+                    AMP::Mesh::MeshElementID nodeId = vertice.globalID();
                     idMap[owner].push_back( nodeId );
                 } // end for j
                 sideMap[owner].push_back( s );

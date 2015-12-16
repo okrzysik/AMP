@@ -107,8 +107,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     AMP_ASSERT( perform_battery_of_tests( &volume_element, my_function ) == 0 );
     AMP_ASSERT( perform_battery_of_tests( &volume_element, my_function_no_cross_terms ) == 0 );
 
-    for ( unsigned int i = 0; i < 24; ++i ) {
-        points[i] += -0.1 + 0.2 * rand() / RAND_MAX;
+    for ( auto &point : points ) {
+        point += -0.1 + 0.2 * rand() / RAND_MAX;
     }
     volume_element.set_support_points( points );
     AMP_ASSERT( perform_battery_of_tests( &volume_element, my_function ) > 0 );

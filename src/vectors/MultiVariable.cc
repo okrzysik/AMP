@@ -135,14 +135,14 @@ void MultiVariable::removeDuplicateVariables()
     // this requires the < operator to be overloaded for the base class
     std::vector<Variable::shared_ptr> unique_list;
     unique_list.reserve( d_vVariables.size() );
-    for ( size_t i = 0; i < d_vVariables.size(); i++ ) {
+    for ( auto &elem : d_vVariables ) {
         bool found = false;
-        for ( size_t j = 0; j < unique_list.size(); j++ ) {
-            if ( d_vVariables[i]->operator==( *( unique_list[j] ) ) )
+        for ( auto &unique_list_j : unique_list ) {
+            if ( elem->operator==( *( unique_list_j ) ) )
                 found = true;
         }
         if ( !found )
-            unique_list.push_back( d_vVariables[i] );
+            unique_list.push_back( elem );
     }
     d_vVariables = unique_list;
 }

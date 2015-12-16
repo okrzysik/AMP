@@ -246,8 +246,8 @@ void MechanicsNonlinearFEOperator::preElementOperation( const AMP::Mesh::MeshEle
     } // end r
 
     d_elementOutputVector.resize( 3 * numNodesInCurrElem );
-    for ( size_t i = 0; i < d_elementOutputVector.size(); ++i ) {
-        d_elementOutputVector[i] = 0.0;
+    for ( auto &elem : d_elementOutputVector ) {
+        elem = 0.0;
     } // end i
 
     if ( d_useUpdatedLagrangian ) {

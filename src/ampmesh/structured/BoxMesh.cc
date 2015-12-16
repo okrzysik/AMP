@@ -50,8 +50,8 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     std::string generator = d_db->getString( "Generator" );
     std::vector<int> size = d_db->getIntegerArray( "Size" );
     d_max_gcw             = d_db->getIntegerWithDefault( "GCW", 2 );
-    for ( size_t d = 0; d < size.size(); d++ )
-        AMP_INSIST( size[d] > 0, "All dimensions must have a size > 0" );
+    for ( auto &elem : size )
+        AMP_INSIST( elem > 0, "All dimensions must have a size > 0" );
     // Create the logical mesh
     std::vector<int> meshSize;
     std::vector<bool> isPeriodic;
@@ -257,8 +257,8 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     }
     // Check that all points are valid
     for ( int d = 0; d < PhysicalDim; d++ ) {
-        for ( size_t i = 0; i < d_coord[d].size(); i++ ) {
-            if ( d_coord[d][i] != d_coord[d][i] )
+        for ( double x : d_coord[d] ) {
+            if ( x != x )
                 AMP_ERROR( "NaNs detected" );
         }
     }
@@ -290,8 +290,8 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     if ( d_db->keyExists( "z_offset" ) && PhysicalDim >= 3 )
         displacement[2] = d_db->getDouble( "z_offset" );
     bool test           = false;
-    for ( size_t i = 0; i < displacement.size(); i++ ) {
-        if ( displacement[i] != 0.0 )
+    for ( auto &elem : displacement ) {
+        if ( elem != 0.0 )
             test = true;
     }
     if ( test )
@@ -602,8 +602,8 @@ void BoxMesh::initialize()
                 // Get the elements of the given type that compose the current element
                 std::vector<MeshElement> elements = iterator->getElements( (GeomType) d );
                 // Loop through the current elements
-                for ( size_t j = 0; j < elements.size(); j++ ) {
-                    elem = dynamic_cast<structuredMeshElement *>( elements[j].getRawElement() );
+                for ( auto &element : elements ) {
+                    elem = dynamic_cast<structuredMeshElement *>( element.getRawElement() );
                     AMP_ASSERT( elem != nullptr );
                     index = elem->d_index;
                     // Check if the current element exists in the list of elements so far
@@ -757,8 +757,8 @@ size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         std::vector<int> minSize;
         BoxMesh::createLogicalMesh( db, meshSize, isPeriodic, minSize );
         N_elements = 1;
-        for ( size_t i = 0; i < meshSize.size(); i++ )
-            N_elements *= meshSize[i];
+        for ( auto &elem : meshSize )
+            N_elements *= elem;
     }
     // Adjust the number of elements by a weight if desired
     if ( db->keyExists( "Weight" ) ) {
@@ -1240,16 +1240,16 @@ void BoxMesh::createLogicalMesh( AMP::shared_ptr<AMP::Database> db,
     GeomType GeomDim          = (GeomType) PhysicalDim;
     std::string generator     = db->getString( "Generator" );
     std::vector<int> size     = db->getIntegerArray( "Size" );
-    for ( size_t d = 0; d < size.size(); d++ )
-        AMP_INSIST( size[d] > 0, "All dimensions must have a size > 0" );
+    for ( auto &elem : size )
+        AMP_INSIST( elem > 0, "All dimensions must have a size > 0" );
     AMP_INSIST( PhysicalDim <= 3, "DIM>3 not programmed yet" );
     minSize.clear();
     if ( db->keyExists( "LoadBalanceMinSize" ) ) {
         minSize = db->getIntegerArray( "LoadBalanceMinSize" );
         AMP_ASSERT( minSize.size() == size.size() );
-        for ( size_t i = 0; i < minSize.size(); i++ ) {
-            if ( minSize[i] == 0 )
-                minSize[i] = 1;
+        for ( auto &elem : minSize ) {
+            if ( elem == 0 )
+                elem = 1;
         }
     }
     // Create the logical mesh

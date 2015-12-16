@@ -74,8 +74,8 @@ void MassMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &par
 
             std::vector<AMP::Mesh::MeshElement::shared_ptr> neighbors = bnd->getNeighbors();
 
-            for ( size_t i = 0; i < neighbors.size(); ++i ) {
-                AMP_ASSERT( ( *( neighbors[i] ) ) != ( *bnd ) );
+            for ( auto &neighbor : neighbors ) {
+                AMP_ASSERT( ( *( neighbor ) ) != ( *bnd ) );
             } // end for el
 
             for ( unsigned int j = 0; j < d_dofIds[k].size(); ++j ) {
@@ -91,14 +91,14 @@ void MassMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &par
                             bndGlobalIds[i], bndGlobalIds[d_dofIds[k][j]], 0.0 );
                     }
                 } // end for i
-                for ( size_t n = 0; n < neighbors.size(); ++n ) {
+                for ( auto &neighbor : neighbors ) {
                     std::vector<size_t> nhDofIds;
-                    dof_map->getDOFs( neighbors[n]->globalID(), nhDofIds );
-                    for ( unsigned int i = 0; i < nhDofIds.size(); ++i ) {
+                    dof_map->getDOFs( neighbor->globalID(), nhDofIds );
+                    for ( auto &nhDofId : nhDofIds ) {
                         inputMatrix->setValueByGlobalID(
-                            bndGlobalIds[d_dofIds[k][j]], nhDofIds[i], 0.0 );
+                            bndGlobalIds[d_dofIds[k][j]], nhDofId, 0.0 );
                         inputMatrix->setValueByGlobalID(
-                            nhDofIds[i], bndGlobalIds[d_dofIds[k][j]], 0.0 );
+                            nhDofId, bndGlobalIds[d_dofIds[k][j]], 0.0 );
                     } // end for i
                 }     // end for n
             }         // end for j

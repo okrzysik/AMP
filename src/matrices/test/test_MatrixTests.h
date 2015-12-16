@@ -404,11 +404,11 @@ public:
         while ( it != end ) {
             std::vector<AMP::Mesh::MeshElement> nodes = it->getElements( AMP::Mesh::Vertex );
             dofs.clear();
-            for ( size_t i = 0; i < nodes.size(); i++ ) {
+            for ( auto &node : nodes ) {
                 std::vector<size_t> dofsNode;
-                dofmap->getDOFs( nodes[i].globalID(), dofsNode );
-                for ( size_t j = 0; j < dofsNode.size(); j++ )
-                    dofs.push_back( dofsNode[j] );
+                dofmap->getDOFs( node.globalID(), dofsNode );
+                for ( auto &elem : dofsNode )
+                    dofs.push_back( elem );
             }
             for ( size_t r = 0; r < dofs.size(); r++ ) {
                 for ( size_t c = 0; c < dofs.size(); c++ ) {
@@ -441,11 +441,11 @@ public:
         std::vector<double> values;
         while ( it != end ) {
             dofmap->getDOFs( it->globalID(), dofs );
-            for ( size_t i = 0; i < dofs.size(); i++ ) {
-                matrix->getRowByGlobalID( dofs[i], cols, values );
+            for ( auto &dof : dofs ) {
+                matrix->getRowByGlobalID( dof, cols, values );
                 double sum = 0.0;
-                for ( size_t j = 0; j < values.size(); j++ )
-                    sum += values[j];
+                for ( auto &value : values )
+                    sum += value;
                 if ( fabs( sum ) > 1e-14 || cols.empty() )
                     pass = false;
             }

@@ -40,17 +40,17 @@ void StructuredMeshHelper::getXYZCoordinates( AMP::Mesh::Mesh::shared_ptr mesh,
     x_out.push_back( *( x.begin() ) );
     y_out.push_back( *( y.begin() ) );
     z_out.push_back( *( z.begin() ) );
-    for ( std::set<double>::iterator it = x.begin(); it != x.end(); ++it ) {
-        if ( !Utilities::approx_equal( x_out.back(), *it, 1e-12 ) )
-            x_out.push_back( *it );
+    for ( const auto &elem : x ) {
+        if ( !Utilities::approx_equal( x_out.back(), elem, 1e-12 ) )
+            x_out.push_back( elem );
     }
-    for ( std::set<double>::iterator it = y.begin(); it != y.end(); ++it ) {
-        if ( !Utilities::approx_equal( y_out.back(), *it, 1e-12 ) )
-            y_out.push_back( *it );
+    for ( const auto &elem : y ) {
+        if ( !Utilities::approx_equal( y_out.back(), elem, 1e-12 ) )
+            y_out.push_back( elem );
     }
-    for ( std::set<double>::iterator it = z.begin(); it != z.end(); ++it ) {
-        if ( !Utilities::approx_equal( z_out.back(), *it, 1e-12 ) )
-            z_out.push_back( *it );
+    for ( const auto &elem : z ) {
+        if ( !Utilities::approx_equal( z_out.back(), elem, 1e-12 ) )
+            z_out.push_back( elem );
     }
     size_t Nx = x.size() - 1;
     size_t Ny = y.size() - 1;
@@ -162,8 +162,8 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
             std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::Vertex );
             std::vector<double> center                = iterator->centroid();
             bool is_valid                             = true;
-            for ( size_t j = 0; j < nodes.size(); ++j ) {
-                std::vector<double> coord = nodes[j].coord();
+            for ( auto &node : nodes ) {
+                std::vector<double> coord = node.coord();
                 if ( !AMP::Utilities::approx_equal( coord[direction], center[direction], 1e-12 ) )
                     is_valid = false;
             }

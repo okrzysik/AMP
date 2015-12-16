@@ -116,8 +116,8 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double> &result,
             for ( size_t i = 0; i < tempVec.size(); i++ )
                 tempVec[i] = InputVec[0][i];
         } else {
-            for ( size_t i = 0; i < tempVec.size(); i++ )
-                tempVec[i] = d_DefaultTemperature;
+            for ( auto &elem : tempVec )
+                elem = d_DefaultTemperature;
         }
 
         tmp->getTransport( result, d_inputMaterialParameters, Coordinates );

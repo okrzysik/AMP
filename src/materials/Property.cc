@@ -27,11 +27,9 @@ Property<double>::make_map( const AMP::shared_ptr<AMP::LinearAlgebra::MultiVecto
               ++vec ) {
             std::string name = ( *vec )->getVariable()->getName();
 
-            for ( std::map<std::string, std::string>::iterator pair = d_translator.begin();
-                  pair != d_translator.end();
-                  ++pair ) {
-                std::string key = pair->first;
-                if ( pair->second == name ) {
+            for ( auto &elem : d_translator ) {
+                std::string key = elem.first;
+                if ( elem.second == name ) {
                     result.insert( std::make_pair( key, *vec ) );
                 }
             }

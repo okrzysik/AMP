@@ -57,8 +57,8 @@ void triangle_t::compute_centroid()
     }
     for ( unsigned int i = 0; i < 3; ++i ) {
         centroid[i] = 0.0;
-        for ( unsigned int j = 0; j < 3; ++j ) {
-            centroid[i] += support_points_ptr[j][i];
+        for ( auto &elem : support_points_ptr ) {
+            centroid[i] += elem[i];
         } // end for j
         centroid[i] /= 3.0;
     } // end for i
@@ -116,11 +116,11 @@ edge_t *triangle_t::get_edge( unsigned int i )
 
 void triangle_t::clear_edges()
 {
-    for ( unsigned int i = 0; i < 3; ++i ) {
-        if ( edges_ptr[i] != nullptr ) {
-            delete edges_ptr[i];
+    for ( auto &elem : edges_ptr ) {
+        if ( elem != nullptr ) {
+            delete elem;
         }
-        edges_ptr[i] = nullptr;
+        elem = nullptr;
     } // end for i
 }
 
@@ -142,8 +142,8 @@ bool triangle_t::contains_point( double const *point, double tolerance )
     if ( !edges_updated ) {
         build_edges();
     }
-    for ( unsigned int i = 0; i < 3; ++i ) {
-        if ( !edges_ptr[i]->above_point( point, tolerance ) ) {
+    for ( auto &elem : edges_ptr ) {
+        if ( !elem->above_point( point, tolerance ) ) {
             return false;
         } // end if
     }     // end for i

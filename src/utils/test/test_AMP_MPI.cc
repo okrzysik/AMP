@@ -1453,13 +1453,13 @@ int main( int argc, char *argv[] )
         globalComm.allGather<std::string>( localName, &globalStrings[0] );
         nodeComm.allGather<std::string>( localName, &nodeStrings[0] );
         int N_local = 0;
-        for ( size_t i = 0; i < nodeStrings.size(); i++ ) {
-            if ( nodeStrings[i] == localName )
+        for ( auto &nodeString : nodeStrings ) {
+            if ( nodeString == localName )
                 N_local++;
         }
         int N_global = 0;
-        for ( size_t i = 0; i < globalStrings.size(); i++ ) {
-            if ( globalStrings[i] == localName )
+        for ( auto &globalString : globalStrings ) {
+            if ( globalString == localName )
                 N_global++;
         }
         if ( !nodeComm.isNull() && N_local == nodeComm.getSize() && N_local == N_global )

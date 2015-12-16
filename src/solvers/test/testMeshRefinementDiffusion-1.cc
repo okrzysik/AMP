@@ -133,11 +133,11 @@ void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
         std::vector<size_t> d_gaussPtIndices;
         gaussPointDOF->getDOFs( el->globalID(), d_gaussPtIndices );
 
-        for ( unsigned int qp = 0; qp < d_gaussPtIndices.size(); qp++ ) {
+        for ( auto &d_gaussPtIndice : d_gaussPtIndices ) {
             double manufacturedAtGauss1;
             manufacturedAtGauss1 = __FsnK__();
 
-            manufacturedRHS->setValueByGlobalID( d_gaussPtIndices[qp], manufacturedAtGauss1 );
+            manufacturedRHS->setValueByGlobalID( d_gaussPtIndice, manufacturedAtGauss1 );
         }
     }
 
@@ -600,22 +600,12 @@ int main( int argc, char *argv[] )
     std::vector<std::string> exeNames;
     exeNames.push_back( "testMeshRefinementDiffusion-1" );
 
-    for ( unsigned int i = 0; i < exeNames.size(); i++ ) {
-        try {
-            multiMeshLoop( &ut, exeNames[i] );
-        } catch ( std::exception &err ) {
-            std::cout << "ERROR:While testing " << argv[0] << err.what() << std::endl;
-            ut.failure( "ERROR: While testing" );
-        } catch ( ... ) {
-            std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
-                      << std::endl;
-            ut.failure( "ERROR: While testing" );
-        }
+    for ( auto name : exeNames )
+        multiMeshLoop( &ut, name );
 
-        ut.report();
+    ut.report();
+    int num_failed = ut.NumFailGlobal();
 
-        int num_failed = ut.NumFailGlobal();
-        AMP::AMPManager::shutdown();
-        return num_failed;
-    }
+    AMP::AMPManager::shutdown();
+    return num_failed;
 }

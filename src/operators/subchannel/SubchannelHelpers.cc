@@ -110,8 +110,8 @@ void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel,
             double dP1 = 0.25 * pi * dc;
             double dP2 = ( 1.0 - 0.25 * pi ) * dc;
             size_t i[4];
-            for ( int j = 0; j < 4; j++ )
-                i[j]    = static_cast<size_t>( -1 );
+            for ( auto &elem : i )
+                elem = static_cast<size_t>( -1 );
             if ( index_x > 0 && index_y > 0 )
                 i[0] = index_x - 1 + ( index_y - 1 ) * Nx;
             if ( index_x < Nx && index_y > 0 )
@@ -120,15 +120,15 @@ void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel,
                 i[2] = index_x - 1 + index_y * Nx;
             if ( index_x < Nx && index_y < Ny )
                 i[3] = index_x + index_y * Nx;
-            for ( int j = 0; j < 4; j++ ) {
-                if ( i[j] == static_cast<size_t>( -1 ) )
+            for ( auto &elem : i ) {
+                if ( elem == static_cast<size_t>( -1 ) )
                     continue;
-                area[i[j]] -= dA;
-                perimeter1[i[j]] += dP1;
-                perimeter2[i[j]] -= dP2;
-                double ratio = 1.0 / ( channel_fraction[i[j]] + 1.0 );
-                channel_fraction[i[j]] += 0.25;
-                rod_diameter[i[j]] = ( 1.0 - ratio ) * rod_diameter[i[j]] + ratio * dc;
+                area[elem] -= dA;
+                perimeter1[elem] += dP1;
+                perimeter2[elem] -= dP2;
+                double ratio = 1.0 / ( channel_fraction[elem] + 1.0 );
+                channel_fraction[elem] += 0.25;
+                rod_diameter[elem] = ( 1.0 - ratio ) * rod_diameter[elem] + ratio * dc;
             }
         } else {
             if ( index_x == Nx ) {
@@ -171,8 +171,8 @@ void getCladProperties( AMP::AMP_MPI comm,
     if ( clad != nullptr ) {
         AMP_ASSERT( clad->getComm() <= comm );
         std::vector<AMP::Mesh::MeshID> ids = clad->getLocalBaseMeshIDs();
-        for ( size_t i = 0; i < ids.size(); i++ ) {
-            AMP::Mesh::Mesh::shared_ptr mesh = clad->Subset( ids[i] );
+        for ( auto &id : ids ) {
+            AMP::Mesh::Mesh::shared_ptr mesh = clad->Subset( id );
             std::vector<double> box          = mesh->getBoundingBox();
             AMP::Utilities::triplet<double, double, double> tmp;
             tmp.first  = 0.5 * ( box[0] + box[1] );

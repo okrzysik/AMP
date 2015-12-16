@@ -220,8 +220,8 @@ void BlockOperator::getRow( void *object,
         std::vector<unsigned int> tmpCols;
         std::vector<double> tmpVals;
         myObject->getRowForBlock( locRow, blkRowId, blkColId, tmpCols, tmpVals );
-        for ( size_t i = 0; i < tmpCols.size(); i++ ) {
-            tmpCols[i] += myObject->d_firstColumnId[blkColId];
+        for ( auto &tmpCol : tmpCols ) {
+            tmpCol += myObject->d_firstColumnId[blkColId];
         }
         cols.insert( cols.end(), tmpCols.begin(), tmpCols.end() );
         values.insert( values.end(), tmpVals.begin(), tmpVals.end() );

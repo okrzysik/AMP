@@ -8,8 +8,8 @@ namespace Operator {
 void ColumnBoundaryOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                     AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
-        d_Operators[i]->apply( u, r );
+    for ( auto &elem : d_Operators ) {
+        elem->apply( u, r );
     }
 }
 
@@ -61,23 +61,23 @@ void ColumnBoundaryOperator::append( AMP::shared_ptr<BoundaryOperator> op )
 
 void ColumnBoundaryOperator::addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs )
 {
-    for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
-        d_Operators[i]->addRHScorrection( rhs );
+    for ( auto &elem : d_Operators ) {
+        elem->addRHScorrection( rhs );
     } // end for i
 }
 
 void ColumnBoundaryOperator::setRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs )
 {
-    for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
-        d_Operators[i]->setRHScorrection( rhs );
+    for ( auto &elem : d_Operators ) {
+        elem->setRHScorrection( rhs );
     } // end for i
 }
 
 void ColumnBoundaryOperator::modifyInitialSolutionVector(
     AMP::LinearAlgebra::Vector::shared_ptr sol )
 {
-    for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
-        d_Operators[i]->modifyInitialSolutionVector( sol );
+    for ( auto &elem : d_Operators ) {
+        elem->modifyInitialSolutionVector( sol );
     } // end for i
 }
 }

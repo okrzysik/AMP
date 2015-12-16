@@ -137,8 +137,8 @@ void MultiVector::addVector( Vector::shared_ptr v )
 void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
 {
     // Add the vectors
-    for ( size_t i = 0; i < v.size(); i++ )
-        addVectorHelper( v[i] );
+    for ( auto &elem : v )
+        addVectorHelper( elem );
     // Create a new multiDOFManager for the multivector
     std::vector<AMP::Discretization::DOFManager::shared_ptr> managers( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ ) {
@@ -408,32 +408,32 @@ void MultiVector::add( const VectorOperations &x, const VectorOperations &y )
 double MultiVector::min( void ) const
 {
     double ans = 1e300;
-    for ( size_t i = 0; i < d_vVectors.size(); i++ )
-        ans = std::min( ans, d_vVectors[i]->localMin() );
+    for ( auto &elem : d_vVectors )
+        ans = std::min( ans, elem->localMin() );
     ans     = getComm().minReduce( ans );
     return ans;
 }
 double MultiVector::max( void ) const
 {
     double ans = -1e300;
-    for ( size_t i = 0; i < d_vVectors.size(); i++ )
-        ans = std::max( ans, d_vVectors[i]->localMax() );
+    for ( auto &elem : d_vVectors )
+        ans = std::max( ans, elem->localMax() );
     ans     = getComm().maxReduce( ans );
     return ans;
 }
 double MultiVector::L1Norm() const
 {
     double ans = 0.0;
-    for ( size_t i = 0; i < d_vVectors.size(); i++ )
-        ans += d_vVectors[i]->localL1Norm();
+    for ( auto &elem : d_vVectors )
+        ans += elem->localL1Norm();
     ans = getComm().sumReduce( ans );
     return ans;
 }
 double MultiVector::L2Norm() const
 {
     double ans = 0.0;
-    for ( size_t i = 0; i < d_vVectors.size(); i++ ) {
-        double tmp = d_vVectors[i]->localL2Norm();
+    for ( auto vec : d_vVectors ) {
+        double tmp = vec->localL2Norm();
         ans += tmp * tmp;
     }
     ans = getComm().sumReduce( ans );
@@ -442,8 +442,8 @@ double MultiVector::L2Norm() const
 double MultiVector::maxNorm() const
 {
     double ans = 0.0;
-    for ( size_t i = 0; i < d_vVectors.size(); i++ )
-        ans = std::max( ans, d_vVectors[i]->localMaxNorm() );
+    for ( auto &elem : d_vVectors )
+        ans = std::max( ans, elem->localMaxNorm() );
     ans     = getComm().maxReduce( ans );
     return ans;
 }
@@ -982,8 +982,8 @@ void MultiVector::partitionGlobalValues( const int num,
         AMP_ASSERT( d_vVectors[i]->getDOFManager() == DOFManagers[i] );
         std::vector<size_t> subDOFs = manager->getSubDOF( i, globalDOFs );
         size_t count                = 0;
-        for ( size_t j = 0; j < subDOFs.size(); j++ ) {
-            if ( subDOFs[j] != neg_one )
+        for ( auto &subDOF : subDOFs ) {
+            if ( subDOF != neg_one )
                 count++;
         }
         out_indices[i] = std::vector<size_t>( count, neg_one );
@@ -1035,10 +1035,10 @@ void MultiVector::partitionLocalValues( const int num,
             continue;
         begin_DOF = d_vVectors[i]->getDOFManager()->beginDOF();
         end_DOF   = d_vVectors[i]->getDOFManager()->endDOF();
-        for ( size_t j = 0; j < out_indices[i].size(); j++ ) {
-            AMP_ASSERT( out_indices[i][j] != neg_one );
-            out_indices[i][j] -= begin_DOF;
-            AMP_ASSERT( out_indices[i][j] < end_DOF );
+        for ( auto &elem : out_indices[i] ) {
+            AMP_ASSERT( elem != neg_one );
+            elem -= begin_DOF;
+            AMP_ASSERT( elem < end_DOF );
         }
     }
     PROFILE_STOP( "partitionLocalValues", 2 );

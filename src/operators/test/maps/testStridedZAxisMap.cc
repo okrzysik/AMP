@@ -196,8 +196,8 @@ int main( int argc, char *argv[] )
     exeNames.push_back( "testStridedZAxisMap" );
 
     try {
-        for ( size_t i = 0; i < exeNames.size(); ++i ) {
-            myTest( &ut, exeNames[i] );
+        for ( auto &exeName : exeNames ) {
+            myTest( &ut, exeName );
         } // end for
     } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;

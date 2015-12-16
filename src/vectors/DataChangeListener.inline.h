@@ -8,8 +8,8 @@ inline DataChangeListener::DataChangeListener() {}
 
 inline DataChangeListener::~DataChangeListener()
 {
-    for ( iterator cur = begin(); cur != end(); ++cur )
-        ( *cur )->deregisterListener( this );
+    for ( auto &elem : *this )
+        ( elem )->deregisterListener( this );
 }
 
 inline void DataChangeListener::registerWithFirer( DataChangeFirer *firer )

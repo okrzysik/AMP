@@ -155,8 +155,8 @@ void AMPManager::terminate_AMP( std::string message )
         msg << text;
         std::vector<std::string> stack = AMP::Utilities::getCallStack();
         msg << "Stack Trace:\n";
-        for ( size_t i = 0; i < stack.size(); i++ )
-            msg << "   " << stack[i] << std::endl;
+        for ( auto &elem : stack )
+            msg << "   " << elem << std::endl;
         perr << msg.str();
     }
     if ( force_exit > 1 ) {
@@ -303,8 +303,8 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
             args = &petscArgs[0];
         PetscInitialize( &n_args, &( args ), PETSC_NULL, PETSC_NULL );
         called_PetscInitialize = true;
-        for ( size_t i = 0; i < petscArgs.size(); i++ )
-            delete[] petscArgs[i];
+        for ( auto &petscArg : petscArgs )
+            delete[] petscArg;
     }
     // Set our error handler
     PetscPopSignalHandler();

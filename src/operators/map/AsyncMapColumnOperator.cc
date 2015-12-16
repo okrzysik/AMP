@@ -18,8 +18,8 @@ AsyncMapColumnOperator::AsyncMapColumnOperator( const AMP::shared_ptr<OperatorPa
 void AsyncMapColumnOperator::setVector( AMP::LinearAlgebra::Vector::shared_ptr p )
 {
     d_OutputVector = p;
-    for ( size_t i = 0; i < d_Operators.size(); i++ )
-        AMP::dynamic_pointer_cast<AsyncMapOperator>( d_Operators[i] )->setVector( d_OutputVector );
+    for ( auto &elem : d_Operators )
+        AMP::dynamic_pointer_cast<AsyncMapOperator>( elem )->setVector( d_OutputVector );
 }
 
 
@@ -59,10 +59,9 @@ void AsyncMapColumnOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
 bool AsyncMapColumnOperator::requiresMakeConsistentSet()
 {
     bool test = false;
-    for ( size_t i = 0; i < d_Operators.size(); i++ )
-        test = test |
-               AMP::dynamic_pointer_cast<AsyncMapOperator>( d_Operators[i] )
-                   ->requiresMakeConsistentSet();
+    for ( auto &elem : d_Operators )
+        test =
+            test | AMP::dynamic_pointer_cast<AsyncMapOperator>( elem )->requiresMakeConsistentSet();
     return test;
 }
 
@@ -178,12 +177,12 @@ AsyncMapColumnOperator::createDatabases( AMP::shared_ptr<AMP::Database> database
         // Create a new database from the existing database
         AMP::shared_ptr<AMP::Database> database2( new AMP::MemoryDatabase( "MapDatabase" ) );
         std::vector<std::string> keys = database1->getAllKeys();
-        for ( size_t k = 0; k < keys.size(); k++ ) {
-            if ( keys[k].compare( "N_maps" ) == 0 ) {
+        for ( auto &key : keys ) {
+            if ( key.compare( "N_maps" ) == 0 ) {
                 // These keys are used by the builder and should not be in the sub database
             } else {
                 // We need to copy the key
-                copyKey( database1, database2, keys[k], N_maps, i );
+                copyKey( database1, database2, key, N_maps, i );
             }
         }
         meshDatabases.push_back( database2 );

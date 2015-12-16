@@ -184,11 +184,11 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
         double val = __INIT_FN__( px, py, pz, 0 );
 
-        for ( unsigned int i = 0; i < bndGlobalIds.size(); i++ ) {
-            initialCondition->setValueByGlobalID( bndGlobalIds[i], val );
+        for ( auto &bndGlobalId : bndGlobalIds ) {
+            initialCondition->setValueByGlobalID( bndGlobalId, val );
             // ** please do not set the time derivative to be non-zero!!
             // ** as this causes trouble with the boundary - BP, 07/16/2010
-            initialConditionPrime->setValueByGlobalID( bndGlobalIds[i], 0.0 );
+            initialConditionPrime->setValueByGlobalID( bndGlobalId, 0.0 );
 
         } // end for i
     }     // end for node

@@ -345,14 +345,12 @@ bool libMeshIterator::operator==( const MeshIterator &rhs ) const
     if ( this->position() != rhs.position() )
         return false;
     // Check that the elements match
-    MeshIterator iterator1 = this->begin();
-    MeshIterator iterator2 = rhs.begin();
-    bool elements_match    = true;
-    for ( size_t i = 0; i < this->size(); i++ ) {
-        if ( iterator1->globalID() != iterator2->globalID() )
+    MeshIterator it1    = this->begin();
+    MeshIterator it2    = rhs.begin();
+    bool elements_match = true;
+    for ( size_t i = 0; i < it1.size(); ++i, ++it1, ++it2 ) {
+        if ( it1->globalID() != it2->globalID() )
             elements_match = false;
-        ++iterator1;
-        ++iterator2;
     }
     return elements_match;
 }

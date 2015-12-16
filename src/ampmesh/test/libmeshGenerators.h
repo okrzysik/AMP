@@ -225,11 +225,10 @@ public:
             }
         }
 
-        const short int boundaryId              = 1;
-        std::vector<unsigned int> bndDofIndices = getBndDofIndices();
-        for ( size_t i = 0; i < bndDofIndices.size(); i++ )
-            local_mesh->boundary_info->add_node( local_mesh->node_ptr( bndDofIndices[i] ),
-                                                 boundaryId );
+        const short int boundaryId = 1;
+        for ( auto &bndDofIndice : getBndDofIndices() ) {
+            local_mesh->boundary_info->add_node( local_mesh->node_ptr( bndDofIndice ), boundaryId );
+        }
 
         local_mesh->prepare_for_use( true );
         mesh = AMP::Mesh::Mesh::shared_ptr( new AMP::Mesh::libMesh( local_mesh, "3 Element" ) );

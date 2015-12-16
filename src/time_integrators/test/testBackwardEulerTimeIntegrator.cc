@@ -157,8 +157,8 @@ void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
         double pz = ( node->coord() )[2];
 
         double val = __INIT_FN__( px, py, pz, 0 );
-        for ( unsigned int i = 0; i < gid.size(); i++ ) {
-            initialCondition->setValueByGlobalID( gid[i], val );
+        for ( auto &elem : gid ) {
+            initialCondition->setValueByGlobalID( elem, val );
         } // end for i
     }     // end for node
 

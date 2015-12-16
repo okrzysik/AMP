@@ -49,14 +49,14 @@ Map3to1to3::Map3to1to3( const AMP::shared_ptr<OperatorParameters> &params_in )
     }
     size_t numToSend = 0;
     if ( d_mesh1.get() != nullptr ) {
-        for ( size_t i = 0; i < d_own_mesh2.size(); i++ ) {
-            if ( d_own_mesh2[i] == 1 )
+        for ( const auto &elem : d_own_mesh2 ) {
+            if ( elem == 1 )
                 numToSend++;
         }
     }
     if ( d_mesh2.get() != nullptr ) {
-        for ( size_t i = 0; i < d_own_mesh1.size(); i++ ) {
-            if ( d_own_mesh1[i] == 1 )
+        for ( const auto &elem : d_own_mesh1 ) {
+            if ( elem == 1 )
                 numToSend++;
         }
     }
@@ -292,10 +292,10 @@ void Map3to1to3::unpackBuffer( const std::vector<comm_data> &buffer,
 {
     const double tol = 1e-8;
     std::map<double, std::pair<int, double>>::iterator iterator, it1, it2, it3;
-    for ( size_t j = 0; j < buffer.size(); j++ ) {
+    for ( auto &elem : buffer ) {
         iterator = map.end();
         if ( !map.empty() ) {
-            it1 = map.lower_bound( buffer[j].z );
+            it1 = map.lower_bound( elem.z );
             if ( it1 == map.end() ) {
                 --it1;
             }
@@ -306,19 +306,19 @@ void Map3to1to3::unpackBuffer( const std::vector<comm_data> &buffer,
             ++it3;
             if ( it3 == map.end() )
                 it3 = it2;
-            if ( fabs( it1->first - buffer[j].z ) < tol )
+            if ( fabs( it1->first - elem.z ) < tol )
                 iterator = it1;
-            else if ( fabs( it2->first - buffer[j].z ) < tol )
+            else if ( fabs( it2->first - elem.z ) < tol )
                 iterator = it2;
-            else if ( fabs( it3->first - buffer[j].z ) < tol )
+            else if ( fabs( it3->first - elem.z ) < tol )
                 iterator = it3;
         }
         if ( iterator == map.end() ) {
-            std::pair<int, double> tmp( buffer[j].N, buffer[j].sum );
-            map.insert( std::pair<double, std::pair<int, double>>( buffer[j].z, tmp ) );
+            std::pair<int, double> tmp( elem.N, elem.sum );
+            map.insert( std::pair<double, std::pair<int, double>>( elem.z, tmp ) );
         } else {
-            iterator->second.first += buffer[j].N;
-            iterator->second.second += buffer[j].sum;
+            iterator->second.first += elem.N;
+            iterator->second.second += elem.sum;
         }
     }
 }

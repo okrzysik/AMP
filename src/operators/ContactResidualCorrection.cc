@@ -18,11 +18,11 @@ void ContactResidualCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_
         std::vector<size_t> slaveGlobalIds;
         master_dof_map->getDOFs( d_masterNodes[i], masterGlobalIds );
         slave_dof_map->getDOFs( d_slaveNodes[i], slaveGlobalIds );
-        for ( size_t j = 0; j < d_dofs[i].size(); j++ ) {
-            double slaveVal = rSlave->getLocalValueByGlobalID( slaveGlobalIds[d_dofs[i][j]] );
-            rMaster->addLocalValueByGlobalID( masterGlobalIds[d_dofs[i][j]], slaveVal );
-            rSlave->setLocalValueByGlobalID( slaveGlobalIds[d_dofs[i][j]], 0.0 );
-            slaveVal = rSlave->getLocalValueByGlobalID( slaveGlobalIds[d_dofs[i][j]] );
+        for ( auto &elem : d_dofs[i] ) {
+            double slaveVal = rSlave->getLocalValueByGlobalID( slaveGlobalIds[elem] );
+            rMaster->addLocalValueByGlobalID( masterGlobalIds[elem], slaveVal );
+            rSlave->setLocalValueByGlobalID( slaveGlobalIds[elem], 0.0 );
+            slaveVal = rSlave->getLocalValueByGlobalID( slaveGlobalIds[elem] );
         } // end for j
     }     // end for i
 }

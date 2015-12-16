@@ -237,10 +237,10 @@ int main( int argc, char *argv[] )
     std::vector<std::string> exeNames;
     exeNames.push_back( "nonlinearBVP-Mechanics-ThermalStrain-Thermal-UO2MSRZC09-1" );
 
-    for ( unsigned int i = 0; i < exeNames.size(); i++ ) {
+    for ( auto &exeName : exeNames ) {
         try {
             // ut.failure("this tests hangs in parallel, so i'm shutting it off for now.");
-            thermoMechanicsTest( &ut, exeNames[i] );
+            thermoMechanicsTest( &ut, exeName );
         } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );

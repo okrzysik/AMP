@@ -21,13 +21,12 @@ void printSolution( AMP::Mesh::Mesh::shared_ptr mesh,
     std::vector<size_t> dofs;
     for ( ; nd != end_nd; ++nd ) {
         std::vector<double> x = nd->coord();
-        for ( size_t i = 0; i < x.size(); i++ )
-            fprintf( fp, "%lf, ", x[i] );
+        for ( auto &elem : x )
+            fprintf( fp, "%lf, ", elem );
         fprintf( fp, ",    " );
         dof_map->getDOFs( nd->globalID(), dofs );
-        for ( size_t i = 0; i < dofs.size(); i++ ) {
-            double val = solVec->getLocalValueByGlobalID( dofs[i] );
-            fprintf( fp, "%.13lf, ", val );
+        for ( auto val : dofs ) {
+            fprintf( fp, "%.13lf, ", static_cast<double>( val ) );
         } // end for i
         fprintf( fp, " \n" );
     } // end for nd

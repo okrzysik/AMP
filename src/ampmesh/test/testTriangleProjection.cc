@@ -18,13 +18,13 @@ void test_above_point( triangle_t *t_ptr, unsigned int n_random_candidate_points
         t_ptr->get_support_point_ptr( 1 ), t_ptr->get_support_point_ptr( 2 ), edges + 3 );
     make_vector_from_two_points(
         t_ptr->get_support_point_ptr( 2 ), t_ptr->get_support_point_ptr( 0 ), edges + 6 );
-    double random_candidate_point[3], random_motion_along_edges[3];
+    double random_candidate_point[3]={0,0,0}, random_motion_along_edges[3]={0,0,0};
     double random_motion_along_normal;
     bool triangle_above_random_candidate_point;
     double tolerance = 1.0e-12;
     for ( unsigned int i = 0; i < n_random_candidate_points; ++i ) {
-        for ( unsigned int j = 0; j < 3; ++j ) {
-            random_motion_along_edges[j] = -1.0 + 2.0 * rand() / RAND_MAX;
+        for ( auto &random_motion_along_edge : random_motion_along_edges ) {
+            random_motion_along_edge = -1.0 + 2.0 * rand() / RAND_MAX;
         }
         random_motion_along_normal            = -1.0 + 2.0 * rand() / RAND_MAX;
         triangle_above_random_candidate_point = !( random_motion_along_normal > tolerance );
@@ -202,8 +202,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     rotate_points( 0, 0.75 * pi, 3, points );
 
     srand( 0 );
-    for ( unsigned int i = 0; i < 9; ++i ) {
-        points[i] += -0.1 + 0.2 * rand() / RAND_MAX;
+    for ( auto &point : points ) {
+        point += -0.1 + 0.2 * rand() / RAND_MAX;
     }
 
     triangle_t triangle( points, points + 3, points + 6 );

@@ -548,8 +548,8 @@ int main( int argc, char *argv[] )
         files[1] = "testSubchannelFourEqMMS-2";
     }
 
-    for ( size_t i = 0; i < files.size(); i++ )
-        flowTest( &ut, files[i] );
+    for ( auto &file : files )
+        flowTest( &ut, file );
 
     ut.report();
 

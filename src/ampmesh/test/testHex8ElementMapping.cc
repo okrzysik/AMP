@@ -34,8 +34,8 @@ unsigned int test_mapping_global_to_local( hex8_element_t *volume_element,
         error_vector[3];
     unsigned int count_tests_failing = 0;
     for ( unsigned int i = 0; i < n_random_candidate_points; ++i ) {
-        for ( unsigned int j = 0; j < 3; ++j ) {
-            local_coordinates[j] = -1.0 + 2.0 * rand() / RAND_MAX;
+        for ( auto &local_coordinate : local_coordinates ) {
+            local_coordinate = -1.0 + 2.0 * rand() / RAND_MAX;
         }
         volume_element->map_local_to_global( local_coordinates, global_coordinates );
         volume_element->map_global_to_local( global_coordinates, computed_local_coordinates );
@@ -80,8 +80,8 @@ void test_basis_functions_values_on_face( hex8_element_t *volume_element,
         basis_functions_values[8];
     unsigned int const *face_ordering;
     for ( unsigned int i = 0; i < n_random_candidate_points; ++i ) {
-        for ( unsigned int j = 0; j < 2; ++j ) {
-            local_coordinates_on_face[j] = -1.0 + 2.0 * rand() / RAND_MAX;
+        for ( auto &elem : local_coordinates_on_face ) {
+            elem = -1.0 + 2.0 * rand() / RAND_MAX;
         }
         for ( unsigned int f = 0; f < 6; ++f ) {
             face_ordering = hex8_element_t::get_face( f );
@@ -104,8 +104,8 @@ void test_mapping_basis_functions_values_to_local_coordinates_on_face(
     double local_coordinates_on_face[2], basis_functions_values_on_face[4],
         computed_local_coordinates_on_face[2];
     for ( unsigned int i = 0; i < n_random_candidate_points; ++i ) {
-        for ( unsigned int j = 0; j < 2; ++j ) {
-            local_coordinates_on_face[j] = -1.0 + 2.0 * rand() / RAND_MAX;
+        for ( auto &elem : local_coordinates_on_face ) {
+            elem = -1.0 + 2.0 * rand() / RAND_MAX;
         }
         hex8_element_t::get_basis_functions_values_on_face( local_coordinates_on_face,
                                                             basis_functions_values_on_face );
@@ -285,8 +285,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     //  labels_num[i]); }
 
     // shifting the points from [-1, 1]^3 to [0, 1]^3
-    for ( unsigned int i = 0; i < 24; ++i ) {
-        points[i] = 0.5 * ( points[i] + 1.0 );
+    for ( auto &point : points ) {
+        point = 0.5 * ( point + 1.0 );
     }
 
     volume_element.set_support_points( points );
@@ -319,8 +319,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     AMP_ASSERT( test_mapping_global_to_local( &volume_element ) == 0 );
 
     srand( 0 );
-    for ( unsigned int i = 0; i < 24; ++i ) {
-        points[i] += -0.1 + 0.8 * rand() / RAND_MAX;
+    for ( auto &point : points ) {
+        point += -0.1 + 0.8 * rand() / RAND_MAX;
     }
 
     volume_element.set_support_points( points );

@@ -130,9 +130,9 @@ void computeTemperatureRhsVector(
         for ( unsigned int qp = 0; qp < qrule->n_points(); ++qp ) {
             double Bl_np1[6][24];
 
-            for ( int i = 0; i < 6; ++i ) {
+            for ( auto &elem : Bl_np1 ) {
                 for ( size_t j = 0; j < ( 3 * numNodesInCurrElem ); ++j ) {
-                    Bl_np1[i][j] = 0.0;
+                    elem[j] = 0.0;
                 } // end j
             }     // end i
 

@@ -47,9 +47,9 @@ GeneralCladThermalCreepPlasticModel::GeneralCladThermalCreepPlasticModel(
 
     d_Is_Init_Called = false;
 
-    for ( size_t i = 0; i < 6; i++ ) {
-        for ( size_t j                 = 0; j < 6; j++ )
-            d_constitutiveMatrix[i][j] = 0.;
+    for ( auto &elem : d_constitutiveMatrix ) {
+        for ( size_t j = 0; j < 6; j++ )
+            elem[j]    = 0.;
     }
     d_Delta_Time                 = 0.;
     d_gaussPtCnt                 = 0;
@@ -678,9 +678,9 @@ void GeneralCladThermalCreepPlasticModel::getConstitutiveMatrix( double *&consti
         K = E / ( 3.0 * ( 1.0 - ( 2.0 * Nu ) ) );
 
         // Initializing the tangent matrix as zero.
-        for ( int i = 0; i < 6; i++ ) {
+        for ( auto &elem : d_constitutiveMatrix ) {
             for ( int j = 0; j < 6; j++ ) {
-                d_constitutiveMatrix[i][j] = 0.0;
+                elem[j] = 0.0;
             }
         }
 
@@ -738,9 +738,9 @@ void GeneralCladThermalCreepPlasticModel::getConstitutiveMatrix( double *&consti
     term2              = 2.0 * G * gamma_bar;
 
     // Initiaization of the constitutive matrix.
-    for ( int i = 0; i < 6; i++ ) {
+    for ( auto &elem : d_constitutiveMatrix ) {
         for ( int j = 0; j < 6; j++ ) {
-            d_constitutiveMatrix[i][j] = 0.0;
+            elem[j] = 0.0;
         }
     }
 

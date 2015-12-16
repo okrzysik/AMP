@@ -59,8 +59,8 @@ NodeToNodeMap::NodeToNodeMap( const AMP::shared_ptr<AMP::Operator::OperatorParam
 
     // Determine the number of pair-wise communications
     size_t numPartners = 0;
-    for ( size_t i = 0; i < d_count.size(); i++ ) {
-        if ( d_count[i] > 0 )
+    for ( auto &elem : d_count ) {
+        if ( elem > 0 )
             numPartners++;
     }
     reserveRequests( 2 * numPartners );
@@ -202,12 +202,12 @@ void NodeToNodeMap::buildSendRecvList()
     int commSize = d_MapComm.getSize();
     d_count      = std::vector<int>( commSize, 0 );
     d_displ      = std::vector<int>( commSize, 0 );
-    for ( size_t i = 0; i < d_localPairsMesh1.size(); i++ ) {
-        int rank = d_localPairsMesh1[i].second.proc;
+    for ( auto &elem : d_localPairsMesh1 ) {
+        int rank = elem.second.proc;
         d_count[rank]++;
     }
-    for ( size_t i = 0; i < d_localPairsMesh2.size(); i++ ) {
-        int rank = d_localPairsMesh2[i].second.proc;
+    for ( auto &elem : d_localPairsMesh2 ) {
+        int rank = elem.second.proc;
         d_count[rank]++;
     }
     d_displ = std::vector<int>( commSize, 0 );
@@ -223,17 +223,17 @@ void NodeToNodeMap::buildSendRecvList()
         recv_elements[i].reserve( d_count[i] );
         remote_elements[i].reserve( d_count[i] );
     }
-    for ( size_t i = 0; i < d_localPairsMesh1.size(); i++ ) {
-        int rank = d_localPairsMesh1[i].second.proc;
-        send_elements[rank].push_back( d_localPairsMesh1[i].first.id );
-        recv_elements[rank].push_back( d_localPairsMesh1[i].first.id );
-        remote_elements[rank].push_back( d_localPairsMesh1[i].second.id );
+    for ( auto &elem : d_localPairsMesh1 ) {
+        int rank = elem.second.proc;
+        send_elements[rank].push_back( elem.first.id );
+        recv_elements[rank].push_back( elem.first.id );
+        remote_elements[rank].push_back( elem.second.id );
     }
-    for ( size_t i = 0; i < d_localPairsMesh2.size(); i++ ) {
-        int rank = d_localPairsMesh2[i].second.proc;
-        send_elements[rank].push_back( d_localPairsMesh2[i].first.id );
-        recv_elements[rank].push_back( d_localPairsMesh2[i].first.id );
-        remote_elements[rank].push_back( d_localPairsMesh2[i].second.id );
+    for ( auto &elem : d_localPairsMesh2 ) {
+        int rank = elem.second.proc;
+        send_elements[rank].push_back( elem.first.id );
+        recv_elements[rank].push_back( elem.first.id );
+        remote_elements[rank].push_back( elem.second.id );
     }
     // Sort the send/recv lists by the sending processor's MeshElementID
     for ( int i = 0; i < commSize; i++ ) {
@@ -291,19 +291,19 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
 
     // Find the points in mesh1 that align with the points owned by the current processor on mesh2
     d_localPairsMesh2.reserve( ownedPointsMesh2.size() );
-    for ( size_t i = 0; i < ownedPointsMesh2.size(); i++ ) {
+    for ( auto &elem : ownedPointsMesh2 ) {
         // Search for the point
-        int index = AMP::Utilities::findfirst( surfacePts, ownedPointsMesh2[i] );
+        int index = AMP::Utilities::findfirst( surfacePts, elem );
         // Check if the point was found
         bool found = index >= 0 && index < (int) surfacePts.size();
         if ( found ) {
-            if ( surfacePts[index] != ownedPointsMesh2[i] ) {
+            if ( surfacePts[index] != elem ) {
                 found = false;
             }
         }
         // Add the pair to the list
         if ( found ) {
-            std::pair<Point, Point> pair( ownedPointsMesh2[i], surfacePts[index] );
+            std::pair<Point, Point> pair( elem, surfacePts[index] );
             d_localPairsMesh2.push_back( pair );
         } else if ( requireAllPaired ) {
             AMP_ERROR( "All points are required to be paired, and some points were not found" );
@@ -327,19 +327,19 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
 
     // Find the points in mesh1 that align with the points owned by the current processor on mesh2
     d_localPairsMesh1.reserve( ownedPointsMesh1.size() );
-    for ( size_t i = 0; i < ownedPointsMesh1.size(); i++ ) {
+    for ( auto &elem : ownedPointsMesh1 ) {
         // Search for the point
-        int index = AMP::Utilities::findfirst( surfacePts, ownedPointsMesh1[i] );
+        int index = AMP::Utilities::findfirst( surfacePts, elem );
         // Check if the point was found
         bool found = index >= 0 && index < (int) surfacePts.size();
         if ( found ) {
-            if ( surfacePts[index] != ownedPointsMesh1[i] ) {
+            if ( surfacePts[index] != elem ) {
                 found = false;
             }
         }
         // Add the pair to the list
         if ( found ) {
-            std::pair<Point, Point> pair( ownedPointsMesh1[i], surfacePts[index] );
+            std::pair<Point, Point> pair( elem, surfacePts[index] );
             d_localPairsMesh1.push_back( pair );
         } else if ( requireAllPaired ) {
             AMP_ERROR( "All points are required to be paired, and some points were not found" );
@@ -361,9 +361,9 @@ NodeToNodeMap::createOwnedPoints( AMP::Mesh::MeshIterator iterator )
 {
     // Create the list of points for each node
     std::vector<Point> surfacePts( iterator.size() );
-    AMP::Mesh::MeshIterator cur = iterator.begin();
-    int rank                    = d_MapComm.getRank();
-    for ( size_t i = 0; i < surfacePts.size(); i++ ) {
+    int rank = d_MapComm.getRank();
+    auto cur = iterator.begin();
+    for ( size_t i = 0; i < surfacePts.size(); ++i, ++cur ) {
         // Get the properties of the current element
         AMP::Mesh::MeshElementID id = cur->globalID();
         std::vector<double> pos     = cur->centroid();
@@ -376,7 +376,6 @@ NodeToNodeMap::createOwnedPoints( AMP::Mesh::MeshIterator iterator )
             temp.pos[j] = pos[j];
         temp.proc       = rank;
         surfacePts[i]   = temp;
-        ++cur;
     }
     // Sort the points
     AMP::Utilities::quicksort( surfacePts );

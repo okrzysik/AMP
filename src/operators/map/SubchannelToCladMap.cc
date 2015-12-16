@@ -162,8 +162,8 @@ SubchannelToCladMap::getSubchannelIterator( AMP::Mesh::Mesh::shared_ptr mesh )
         std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::Vertex );
         std::vector<double> center                = iterator->centroid();
         bool is_valid                             = true;
-        for ( size_t j = 0; j < nodes.size(); ++j ) {
-            std::vector<double> coord = nodes[j].coord();
+        for ( auto &node : nodes ) {
+            std::vector<double> coord = node.coord();
             if ( !AMP::Utilities::approx_equal( coord[2], center[2], 1e-6 ) )
                 is_valid = false;
         }
@@ -175,10 +175,8 @@ SubchannelToCladMap::getSubchannelIterator( AMP::Mesh::Mesh::shared_ptr mesh )
     AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elements(
         new std::vector<AMP::Mesh::MeshElement>() );
     elements->reserve( xyFace.size() );
-    for ( std::multimap<double, AMP::Mesh::MeshElement>::iterator it = xyFace.begin();
-          it != xyFace.end();
-          ++it )
-        elements->push_back( it->second );
+    for ( auto &elem : xyFace )
+        elements->push_back( elem.second );
     return AMP::Mesh::MultiVectorIterator( elements );
 }
 
@@ -316,10 +314,10 @@ void SubchannelToCladMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_p
     PROFILE_START( "fillReturnVector" );
     AMP::Discretization::DOFManager::shared_ptr DOF = vec->getDOFManager();
     std::vector<size_t> dofs( 1 );
-    for ( size_t j = 0; j < ids.size(); j++ ) {
-        DOF->getDOFs( ids[j], dofs );
+    for ( auto &id : ids ) {
+        DOF->getDOFs( id, dofs );
         AMP_ASSERT( dofs.size() == 1 );
-        std::vector<double> pos = mesh->getElement( ids[j] ).coord();
+        std::vector<double> pos = mesh->getElement( id ).coord();
         double val              = interp_linear( z, f, pos[2] );
         vec->setLocalValueByGlobalID( dofs[0], val );
     }

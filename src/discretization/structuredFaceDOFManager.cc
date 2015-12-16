@@ -198,34 +198,34 @@ std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshE
     size_t p_size = parents.size();
     for ( size_t i = 0; i < p_size; i++ ) {
         std::vector<AMP::Mesh::MeshElement::shared_ptr> neighbors = parents[i].getNeighbors();
-        for ( size_t j = 0; j < neighbors.size(); j++ ) {
-            if ( neighbors[j] != nullptr )
-                parents.push_back( *neighbors[j] );
+        for ( auto &neighbor : neighbors ) {
+            if ( neighbor != nullptr )
+                parents.push_back( *neighbor );
         }
     }
     AMP::Utilities::unique( parents );
     // Get the face ids of interest
     std::vector<AMP::Mesh::MeshElementID> ids;
     ids.reserve( 6 * parents.size() );
-    for ( size_t i = 0; i < parents.size(); i++ ) {
-        std::vector<AMP::Mesh::MeshElement> children = parents[i].getElements( AMP::Mesh::Face );
+    for ( auto &parent : parents ) {
+        std::vector<AMP::Mesh::MeshElement> children = parent.getElements( AMP::Mesh::Face );
         AMP_ASSERT( children.size() == 6 );
-        for ( size_t j = 0; j < children.size(); j++ )
-            ids.push_back( children[j].globalID() );
+        for ( auto &elem : children )
+            ids.push_back( elem.globalID() );
     }
     AMP::Utilities::unique( ids );
     // AMP_ASSERT(ids.size()==6||ids.size()==11);
     // Get all dofs for each element id
     int maxDOFsPerFace = 0;
-    for ( int i = 0; i < 3; i++ )
-        maxDOFsPerFace = std::max( maxDOFsPerFace, d_DOFsPerFace[i] );
+    for ( auto &elem : d_DOFsPerFace )
+        maxDOFsPerFace = std::max( maxDOFsPerFace, elem );
     std::vector<size_t> dofs;
     dofs.reserve( ids.size() * maxDOFsPerFace );
     std::vector<size_t> dofs2( maxDOFsPerFace );
-    for ( size_t i = 0; i < ids.size(); i++ ) {
-        getDOFs( ids[i], dofs2 );
-        for ( size_t j = 0; j < dofs2.size(); j++ )
-            dofs.push_back( dofs2[j] );
+    for ( auto &id : ids ) {
+        getDOFs( id, dofs2 );
+        for ( auto &elem : dofs2 )
+            dofs.push_back( elem );
     }
     // Sort the row dofs
     AMP::Utilities::quicksort( dofs );
@@ -247,9 +247,9 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
     std::vector<AMP::Mesh::MeshID> meshIDs = d_mesh->getBaseMeshIDs();
     // Get the rank that will own each MeshElement on the current communicator
     std::vector<int> owner_rank( remote_ids.size(), -1 );
-    for ( size_t it = 0; it < meshIDs.size(); it++ ) {
+    for ( auto meshID : meshIDs ) {
         // Get the mesh with the given meshID
-        AMP::Mesh::MeshID meshID            = meshIDs[it];
+
         AMP::Mesh::Mesh::shared_ptr submesh = d_mesh->Subset( meshID );
         // Create a map from the rank of the submesh to the current mesh
         int rank_submesh = -1;

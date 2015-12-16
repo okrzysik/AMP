@@ -250,8 +250,8 @@ int main( int argc, char *argv[] )
     // files.push_back("Diffusion-Fick-OxMSRZC09-MMS-1");
 
     try {
-        for ( size_t i = 0; i < files.size(); i++ )
-            bvpTest1( &ut, files[i] );
+        for ( auto &file : files )
+            bvpTest1( &ut, file );
     } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );

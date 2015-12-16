@@ -108,8 +108,8 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
         if ( d_db->keyExists( "z_offset" ) )
             displacement[2] = d_db->getDouble( "z_offset" );
         bool test           = false;
-        for ( size_t i = 0; i < displacement.size(); i++ ) {
-            if ( displacement[i] != 0.0 )
+        for ( auto &elem : displacement ) {
+            if ( elem != 0.0 )
                 test = true;
         }
         if ( test )
@@ -298,16 +298,15 @@ void libMesh::initialize()
         MeshIterator it = getIterator( GeomDim, 1 );
         for ( size_t j = 0; j < it.size(); j++ ) {
             std::vector<MeshElement> tmp = it->getElements( type );
-            for ( size_t k = 0; k < tmp.size(); k++ )
-                element_list.insert( tmp[k] );
+            for ( auto &elem : tmp )
+                element_list.insert( elem );
             ++it;
         }
         // Split the new elements into the local and ghost lists
         size_t N_local = 0;
         size_t N_ghost = 0;
-        for ( std::set<MeshElement>::iterator it2 = element_list.begin(); it2 != element_list.end();
-              ++it2 ) {
-            MeshElementID id = it2->globalID();
+        for ( auto elem : element_list ) {
+            MeshElementID id = elem.globalID();
             if ( id.is_local() )
                 N_local++;
             else
@@ -321,14 +320,13 @@ void libMesh::initialize()
             new std::vector<MeshElement>( N_ghost ) );
         N_local = 0;
         N_ghost = 0;
-        for ( std::set<MeshElement>::iterator it2 = element_list.begin(); it2 != element_list.end();
-              ++it2 ) {
-            MeshElementID id = it2->globalID();
+        for ( const auto &elem : element_list ) {
+            MeshElementID id = elem.globalID();
             if ( id.is_local() ) {
-                local_elements->operator[]( N_local ) = *it2;
+                local_elements->operator[]( N_local ) = elem;
                 N_local++;
             } else {
-                ghost_elements->operator[]( N_ghost ) = *it2;
+                ghost_elements->operator[]( N_ghost ) = elem;
                 N_ghost++;
             }
         }
@@ -436,8 +434,8 @@ void libMesh::initialize()
             std::vector<MeshElement> nodes = it->getElements( Vertex );
             AMP_ASSERT( !nodes.empty() );
             bool on_boundary = true;
-            for ( size_t j = 0; j < nodes.size(); j++ ) {
-                if ( !nodes[j].isOnSurface() )
+            for ( auto &node : nodes ) {
+                if ( !node.isOnSurface() )
                     on_boundary = false;
             }
             if ( on_boundary ) {
@@ -483,8 +481,8 @@ void libMesh::initialize()
     for ( int type2 = 0; type2 <= (int) GeomDim; type2++ ) {
         GeomType type         = (GeomType) type2;
         MeshIterator iterator = getIterator( type, 0 );
-        for ( size_t i = 0; i < bids.size(); i++ ) {
-            int id = (int) bids[i];
+        for ( auto &bid : bids ) {
+            int id = (int) bid;
             // Count the number of elements on the given boundary
             MeshIterator curElem = iterator.begin();
             MeshIterator endElem = iterator.end();
@@ -527,8 +525,8 @@ void libMesh::initialize()
     size_t recv_size = d_comm.sumReduce( send_list.size() );
     std::vector<int> recv_list( recv_size, 0 );
     d_comm.allGather( &send_list[0], send_list.size(), &recv_list[0] );
-    for ( size_t i = 0; i < recv_list.size(); i++ )
-        block_ids.insert( recv_list[i] );
+    for ( auto &elem : recv_list )
+        block_ids.insert( elem );
     d_block_ids = std::vector<int>( block_ids.begin(), block_ids.end() );
     PROFILE_STOP( "initialize" );
 }
@@ -568,8 +566,8 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
                         "Variable 'size' must be set in the database" );
             std::vector<int> size = database->getIntegerArray( "size" );
             NumberOfElements      = 1;
-            for ( size_t i = 0; i < size.size(); i++ )
-                NumberOfElements *= size[i];
+            for ( auto &elem : size )
+                NumberOfElements *= elem;
         } else {
             AMP_ERROR( std::string( "Unknown libmesh generator: " ) + generator );
         }
@@ -719,8 +717,8 @@ std::vector<int> libMesh::getBoundaryIDs() const
     const std::set<short int> libmesh_bids = d_libMesh->boundary_info->get_boundary_ids();
     std::vector<int> bids( libmesh_bids.size(), 0 );
     std::set<short int>::iterator it = libmesh_bids.begin();
-    for ( size_t i = 0; i < bids.size(); i++ ) {
-        bids[i] = *it;
+    for ( auto &bid : bids ) {
+        bid = *it;
         ++it;
     }
     return bids;

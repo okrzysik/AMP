@@ -159,8 +159,8 @@ void SetToScalarVector( AMP::UnitTest *utils )
         utils->failure( "Failed to set scalar to 5" );
     std::vector<size_t> remoteDofs = vector->getDOFManager()->getRemoteDOFs();
     fail                           = false;
-    for ( size_t i = 0; i < remoteDofs.size(); i++ ) {
-        if ( vector->getValueByGlobalID( remoteDofs[i] ) != 5. )
+    for ( auto &remoteDof : remoteDofs ) {
+        if ( vector->getValueByGlobalID( remoteDof ) != 5. )
             fail = true;
     }
     if ( !fail )

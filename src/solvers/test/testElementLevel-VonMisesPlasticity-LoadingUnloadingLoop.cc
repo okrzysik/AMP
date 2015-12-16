@@ -266,18 +266,18 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         if ( ExtractData ) {
             FILE *fin;
             fin = fopen( fname.c_str(), "r" );
-            double coord[3], stress1[6], strain1[6];
+            double coord[3]={0,0,0}, stress1[6]={0,0,0}, strain1[6]={0,0,0};
             for ( int ijk = 0; ijk < 8; ijk++ ) {
-                for ( int klm = 0; klm < 3; klm++ ) {
-                    int ret = fscanf( fin, "%lf", &coord[klm] );
+                for ( auto &elem : coord ) {
+                    int ret = fscanf( fin, "%lf", &elem );
                     NULL_USE( ret );
                 }
-                for ( int klm = 0; klm < 6; klm++ ) {
-                    int ret = fscanf( fin, "%lf", &stress1[klm] );
+                for ( auto &elem : stress1 ) {
+                    int ret = fscanf( fin, "%lf", &elem );
                     NULL_USE( ret );
                 }
-                for ( int klm = 0; klm < 6; klm++ ) {
-                    int ret = fscanf( fin, "%lf", &strain1[klm] );
+                for ( auto &elem : strain1 ) {
+                    int ret = fscanf( fin, "%lf", &elem );
                     NULL_USE( ret );
                 }
                 if ( ijk == 7 ) {
@@ -312,9 +312,9 @@ int main( int argc, char *argv[] )
     // exeNames.push_back("testElementLevel-VonMisesIsotropicHardeningPlasticity");
     exeNames.push_back( "testElementLevel-VonMisesKinematicHardeningPlasticity" );
 
-    for ( unsigned int i = 0; i < exeNames.size(); i++ ) {
+    for ( auto &exeName : exeNames ) {
         try {
-            myTest( &ut, exeNames[i] );
+            myTest( &ut, exeName );
         } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );

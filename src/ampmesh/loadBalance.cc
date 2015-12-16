@@ -97,8 +97,8 @@ LoadBalance::LoadBalance( AMP::shared_ptr<MeshParameters> params,
     cache_valid  = false;
     d_N_elements = 0;
     d_max_ranks  = ~static_cast<size_t>( 0 );
-    for ( size_t i = 0; i < d_submeshes.size(); i++ )
-        d_N_elements += d_submeshes[i].d_N_elements;
+    for ( auto &elem : d_submeshes )
+        d_N_elements += elem.d_N_elements;
     if ( d_ranks.size() == 1 ) {
         d_min       = d_N_elements;
         d_max       = d_N_elements;
@@ -168,8 +168,8 @@ size_t LoadBalance::avg() { return divide_double( d_N_elements, d_ranks.size() )
 void LoadBalance::print( unsigned char detail, unsigned char indent_N )
 {
     int N_procs = 0;
-    for ( size_t i = 0; i < d_ranks.size(); i++ )
-        N_procs = std::max( N_procs, d_ranks[i] + 1 );
+    for ( auto &elem : d_ranks )
+        N_procs = std::max( N_procs, elem + 1 );
     char indent[257];
     memset( indent, 0, 257 );
     memset( indent, 0x20, indent_N );
@@ -192,8 +192,8 @@ void LoadBalance::print( unsigned char detail, unsigned char indent_N )
     }
     if ( detail & 0x2 ) {
         std::cout << indent << d_name << ": " << d_ranks.size() << std::endl;
-        for ( size_t i = 0; i < d_submeshes.size(); i++ )
-            d_submeshes[i].print( 2, indent_N + 3 );
+        for ( auto &elem : d_submeshes )
+            elem.print( 2, indent_N + 3 );
     }
 }
 
@@ -218,8 +218,8 @@ void LoadBalance::countElements( const LoadBalance &mesh, std::vector<size_t> &N
         for ( size_t i = 0; i < mesh.d_ranks.size(); i++ )
             N_elements[mesh.d_ranks[i]] += mesh.d_N_elements / mesh.d_ranks.size();
     } else {
-        for ( size_t i = 0; i < mesh.d_submeshes.size(); i++ )
-            countElements( mesh.d_submeshes[i], N_elements );
+        for ( auto &elem : mesh.d_submeshes )
+            countElements( elem, N_elements );
     }
 }
 void LoadBalance::updateCache()
@@ -232,29 +232,29 @@ void LoadBalance::updateCache()
     if ( d_decomp == 0 ) {
         // General case
         int N_procs = 0;
-        for ( size_t i = 0; i < d_ranks.size(); i++ )
-            N_procs = std::max( N_procs, d_ranks[i] + 1 );
+        for ( auto &elem : d_ranks )
+            N_procs = std::max( N_procs, elem + 1 );
         std::vector<size_t> N_elements( N_procs, 0 );
         countElements( *this, N_elements );
         d_min = d_N_elements;
         d_max = 0;
-        for ( size_t i = 0; i < d_ranks.size(); i++ ) {
-            d_min = std::min( d_min, N_elements[d_ranks[i]] );
-            d_max = std::max( d_max, N_elements[d_ranks[i]] );
+        for ( auto &elem : d_ranks ) {
+            d_min = std::min( d_min, N_elements[elem] );
+            d_max = std::max( d_max, N_elements[elem] );
         }
     } else if ( d_decomp == 1 ) {
         // Special case where no two submeshes share a processor
         d_min = d_N_elements;
         d_max = 0;
-        for ( size_t i = 0; i < d_submeshes.size(); i++ ) {
-            if ( d_submeshes[i].cache_valid ) {
-                if ( d_submeshes[i].d_min < d_min )
-                    d_min = d_submeshes[i].d_min;
-                if ( d_submeshes[i].d_max > d_max )
-                    d_max = d_submeshes[i].d_max;
+        for ( auto &elem : d_submeshes ) {
+            if ( elem.cache_valid ) {
+                if ( elem.d_min < d_min )
+                    d_min = elem.d_min;
+                if ( elem.d_max > d_max )
+                    d_max = elem.d_max;
             } else {
-                d_min = std::min( d_min, d_submeshes[i].min() );
-                d_max = std::max( d_max, d_submeshes[i].max() );
+                d_min = std::min( d_min, elem.min() );
+                d_max = std::max( d_max, elem.max() );
             }
         }
     } else {

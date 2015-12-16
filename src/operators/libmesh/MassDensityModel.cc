@@ -144,13 +144,11 @@ MassDensityModel::MassDensityModel( const AMP::shared_ptr<MassDensityModelParame
             // if the defaults block is the right size, use it, else ignor it.
             if ( defaultkeys.size() == property->get_number_arguments() ) {
                 std::vector<std::string> argnames = property->get_arguments();
-                for ( std::vector<std::string>::iterator key = defaultkeys.begin();
-                      key != defaultkeys.end();
-                      ++key ) {
+                for ( auto &defaultkey : defaultkeys ) {
                     std::vector<std::string>::iterator hit =
-                        std::find( argnames.begin(), argnames.end(), *key );
+                        std::find( argnames.begin(), argnames.end(), defaultkey );
                     AMP_INSIST( hit != argnames.end(),
-                                std::string( "Argument name " ) + *key +
+                                std::string( "Argument name " ) + defaultkey +
                                     std::string( " is invalid" ) );
                 }
 
@@ -227,8 +225,8 @@ void MassDensityModel::getDensityChemical( std::vector<double> &result,
     AMP_ASSERT( ( T.size() == U.size() ) && ( U.size() == result.size() ) &&
                 ( B.size() == U.size() ) );
 
-    for ( size_t i = 0; i < result.size(); i++ )
-        result[i]  = 1.;
+    for ( auto &elem : result )
+        elem = 1.;
 
     if ( d_UseBilogScaling ) {
         DiffusionTransportModel::bilogScale( result, d_BilogRange[0], d_BilogRange[1] );

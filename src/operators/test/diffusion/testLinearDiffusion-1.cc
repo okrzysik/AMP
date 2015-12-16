@@ -311,8 +311,8 @@ int main( int argc, char *argv[] )
                                     "Diffusion-TUI-TensorFick-1",  "Diffusion-CylindricalFick-1" };
 
     try {
-        for ( int i = 0; i < NUMFILES; i++ ) {
-            linearTest1( &ut, files[i] );
+        for ( auto &file : files ) {
+            linearTest1( &ut, file );
         }
     } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;

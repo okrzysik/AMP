@@ -328,8 +328,8 @@ bool libMeshElement::isOnBoundary( int id ) const
         // Entity is a libmesh node
         ::Node *node                = (::Node *) ptr_element;
         std::vector<short int> bids = d_libMesh->boundary_info->boundary_ids( node );
-        for ( size_t i = 0; i < bids.size(); i++ ) {
-            if ( bids[i] == id )
+        for ( auto &bid : bids ) {
+            if ( bid == id )
                 on_boundary = true;
         }
     } else if ( (int) type == d_dim ) {
@@ -342,8 +342,8 @@ bool libMeshElement::isOnBoundary( int id ) const
         // All other entities are on the boundary iff all of their verticies are on the surface
         std::vector<MeshElement> nodes = this->getElements( Vertex );
         on_boundary                    = true;
-        for ( size_t i = 0; i < nodes.size(); i++ )
-            on_boundary = on_boundary && nodes[i].isOnBoundary( id );
+        for ( auto &node : nodes )
+            on_boundary = on_boundary && node.isOnBoundary( id );
     }
     return on_boundary;
 }

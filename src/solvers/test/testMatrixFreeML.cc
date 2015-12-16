@@ -65,8 +65,8 @@ void myGetRow3( void *object,
         firstMat->getRowByGlobalID( row, cols, values );
     } else {
         secondMat->getRowByGlobalID( row - firstMatNumGlobalRows, cols, values );
-        for ( size_t j = 0; j < cols.size(); ++j ) {
-            cols[j] += firstMatNumGlobalColumns;
+        for ( auto &col : cols ) {
+            col += firstMatNumGlobalColumns;
         } // end for j
     }     // end if
 }
@@ -579,9 +579,9 @@ int main( int argc, char *argv[] )
         } // end for i
     }
 
-    for ( size_t i = 0; i < exeNames.size(); i++ ) {
+    for ( auto &exeName : exeNames ) {
         try {
-            loopMyTest( &ut, exeNames[i] );
+            loopMyTest( &ut, exeName );
         } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );

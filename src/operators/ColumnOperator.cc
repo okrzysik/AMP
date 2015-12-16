@@ -9,8 +9,8 @@ namespace Operator {
 void ColumnOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                             AMP::LinearAlgebra::Vector::shared_ptr f )
 {
-    for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
-        d_Operators[i]->apply( u, f );
+    for ( auto &elem : d_Operators ) {
+        elem->apply( u, f );
     }
 }
 
@@ -18,10 +18,9 @@ void ColumnOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
                                AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
-        AMP_INSIST( ( d_Operators[i].get() != nullptr ),
-                    "ColumnOperator::operator component is NULL" );
-        d_Operators[i]->residual( f, u, r );
+    for ( auto &elem : d_Operators ) {
+        AMP_INSIST( ( elem.get() != nullptr ), "ColumnOperator::operator component is NULL" );
+        elem->residual( f, u, r );
     }
 }
 
@@ -72,8 +71,8 @@ AMP::LinearAlgebra::Variable::shared_ptr ColumnOperator::getInputVariable()
     AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
         new AMP::LinearAlgebra::MultiVariable( "ColumnVariable" ) );
 
-    for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
-        AMP::LinearAlgebra::Variable::shared_ptr opVar = d_Operators[i]->getInputVariable();
+    for ( auto &elem : d_Operators ) {
+        AMP::LinearAlgebra::Variable::shared_ptr opVar = elem->getInputVariable();
         if ( opVar.get() != nullptr ) {
             retVariable->add( opVar );
         }
@@ -88,8 +87,8 @@ AMP::LinearAlgebra::Variable::shared_ptr ColumnOperator::getOutputVariable()
     AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
         new AMP::LinearAlgebra::MultiVariable( "ColumnVariable" ) );
 
-    for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
-        AMP::LinearAlgebra::Variable::shared_ptr opVar = d_Operators[i]->getOutputVariable();
+    for ( auto &elem : d_Operators ) {
+        AMP::LinearAlgebra::Variable::shared_ptr opVar = elem->getOutputVariable();
         if ( opVar.get() != nullptr ) {
             retVariable->add( opVar );
         }
@@ -103,8 +102,8 @@ bool ColumnOperator::isValidInput( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &
 {
     bool bRetVal = true;
 
-    for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
-        bRetVal = bRetVal && d_Operators[i]->isValidInput( u );
+    for ( auto &elem : d_Operators ) {
+        bRetVal = bRetVal && elem->isValidInput( u );
     }
 
     return bRetVal;

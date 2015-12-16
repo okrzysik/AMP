@@ -77,10 +77,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
         std::vector<AMP::Mesh::MeshElement> nodes = bnd->getElements( AMP::Mesh::Vertex );
         std::vector<size_t> bndGlobalIds;
-        for ( size_t i = 0; i < nodes.size(); i++ ) {
-            nodalScalarDOF->getDOFs( nodes[i].globalID(), dofs );
-            for ( size_t j = 0; j < dofs.size(); j++ )
-                bndGlobalIds.push_back( dofs[j] );
+        for ( auto &node : nodes ) {
+            nodalScalarDOF->getDOFs( node.globalID(), dofs );
+            for ( auto &dof : dofs )
+                bndGlobalIds.push_back( dof );
         }
 
         // Some basic checks

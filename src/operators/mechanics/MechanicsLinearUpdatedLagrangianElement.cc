@@ -243,9 +243,9 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
     // std::cout<<"sum_detJ="<<sum_detJ<<std::endl;
 
     double one3TimesSumDetJ = 1.0 / ( 3.0 * sum_detJ );
-    for ( unsigned int i = 0; i < 6; i++ ) {
+    for ( auto &elem : Bl_np1_bar ) {
         for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ ) {
-            Bl_np1_bar[i][j] = Bl_np1_bar[i][j] * one3TimesSumDetJ;
+            elem[j] = elem[j] * one3TimesSumDetJ;
             // std::cout<<"Bl_np1_bar["<<i<<"]["<<j<<"]="<<Bl_np1_bar[i][j]<<std::endl;
         }
     }
@@ -279,9 +279,9 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
             }
         }
 
-        for ( int i = 0; i < 9; i++ ) {
+        for ( auto &elem : Bnl_np1 ) {
             for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ ) {
-                Bnl_np1[i][j] = 0.0;
+                elem[j] = 0.0;
             }
         }
 
@@ -366,9 +366,9 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
         stressMatrix[0][2] = stressMatrix[2][0] = currentStress[4];
         stressMatrix[0][1] = stressMatrix[1][0] = currentStress[5];
 
-        for ( int i = 0; i < 9; i++ ) {
+        for ( auto &elem : bigStressMatrix ) {
             for ( int j = 0; j < 9; j++ ) {
-                bigStressMatrix[i][j] = 0.0;
+                elem[j] = 0.0;
             }
         }
 
@@ -396,13 +396,13 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
             materialMatrix[4][5] = materialMatrix[5][4] -= ( 0.5 * currentStress[3] );
         }
 
-        for ( int i = 0; i < 6; i++ )
-            for ( int j                     = 0; j < 24; j++ )
-                materialStiffnessTemp[i][j] = 0.0;
+        for ( auto &elem : materialStiffnessTemp )
+            for ( int j = 0; j < 24; j++ )
+                elem[j] = 0.0;
 
-        for ( int i = 0; i < 24; i++ )
-            for ( int j                 = 0; j < 24; j++ )
-                materialStiffness[i][j] = 0.0;
+        for ( auto &materialStiffnes : materialStiffness )
+            for ( int j             = 0; j < 24; j++ )
+                materialStiffnes[j] = 0.0;
 
         for ( int i = 0; i < 6; i++ ) {
             for ( int j = 0; j < 24; j++ ) {
@@ -575,15 +575,15 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
                 }
               }
         */
-        for ( unsigned int i = 0; i < 9; i++ ) {
+        for ( auto &elem : Bnl_np1 ) {
             for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ ) {
-                Bnl_np1[i][j] = 0.0;
+                elem[j] = 0.0;
             }
         }
 
-        for ( unsigned int i = 0; i < 6; i++ ) {
+        for ( auto &elem : Bl_np1 ) {
             for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ ) {
-                Bl_np1[i][j] = 0.0;
+                elem[j] = 0.0;
             }
         }
 
@@ -708,13 +708,13 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
             materialMatrix[4][5] = materialMatrix[5][4] -= ( 0.5 * currentStress[3] );
         }
 
-        for ( int i = 0; i < 6; i++ )
-            for ( int j                     = 0; j < 24; j++ )
-                materialStiffnessTemp[i][j] = 0.0;
+        for ( auto &elem : materialStiffnessTemp )
+            for ( int j = 0; j < 24; j++ )
+                elem[j] = 0.0;
 
-        for ( int i = 0; i < 24; i++ )
-            for ( int j                 = 0; j < 24; j++ )
-                materialStiffness[i][j] = 0.0;
+        for ( auto &materialStiffnes : materialStiffness )
+            for ( int j             = 0; j < 24; j++ )
+                materialStiffnes[j] = 0.0;
 
         for ( int i = 0; i < 6; i++ ) {
             for ( int j = 0; j < 24; j++ ) {
@@ -731,9 +731,9 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
             }
         }
 
-        for ( int i = 0; i < 9; i++ ) {
+        for ( auto &elem : bigStressMatrix ) {
             for ( int j = 0; j < 9; j++ ) {
-                bigStressMatrix[i][j] = 0.0;
+                elem[j] = 0.0;
             }
         }
 

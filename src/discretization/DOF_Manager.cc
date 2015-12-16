@@ -43,12 +43,12 @@ void DOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
     dofs.resize( 0 );
     dofs.reserve( 2 );
     std::vector<size_t> local_dofs;
-    for ( size_t i = 0; i < ids.size(); i++ ) {
-        getDOFs( ids[i], local_dofs );
+    for ( auto &id : ids ) {
+        getDOFs( id, local_dofs );
         if ( local_dofs.size() + dofs.size() > dofs.capacity() )
             dofs.reserve( 2 * dofs.capacity() );
-        for ( size_t j = 0; j < local_dofs.size(); j++ )
-            dofs.push_back( local_dofs[j] );
+        for ( auto &local_dof : local_dofs )
+            dofs.push_back( local_dof );
     }
 }
 
@@ -165,8 +165,8 @@ AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::Mesh::shared_pt
     getDOFs( id_list, dofs );
     // Sort and check the DOFs for errors
     AMP::Utilities::quicksort( dofs );
-    for ( size_t i = 0; i < dofs.size(); i++ ) {
-        if ( dofs[i] < d_begin || dofs[i] >= d_end )
+    for ( auto &dof : dofs ) {
+        if ( dof < d_begin || dof >= d_end )
             AMP_ERROR( "Internal error subsetting DOF manager (out of range)" );
     }
     for ( size_t i = 1; i < dofs.size(); i++ ) {
@@ -204,8 +204,8 @@ AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::MeshIterator &i
     getDOFs( element_list, dofs );
     // Sort and check the DOFs for errors
     AMP::Utilities::quicksort( dofs );
-    for ( size_t i = 0; i < dofs.size(); i++ ) {
-        if ( dofs[i] < d_begin || dofs[i] >= d_end )
+    for ( auto &dof : dofs ) {
+        if ( dof < d_begin || dof >= d_end )
             AMP_ERROR( "Internal error subsetting DOF manager (out of range)" );
     }
     for ( size_t i = 1; i < dofs.size(); i++ ) {

@@ -88,9 +88,9 @@ CladToSubchannelMap::CladToSubchannelMap(
 ************************************************************************/
 CladToSubchannelMap::~CladToSubchannelMap()
 {
-    for ( size_t i = 0; i < d_sendBuffer.size(); i++ ) {
-        delete[] d_sendBuffer[i];
-        d_sendBuffer[i] = nullptr;
+    for ( auto &elem : d_sendBuffer ) {
+        delete[] elem;
+        elem = nullptr;
     }
     d_sendBuffer.resize( 0 );
     d_x.resize( 0 );
@@ -174,8 +174,8 @@ CladToSubchannelMap::getSubchannelIterator( AMP::Mesh::Mesh::shared_ptr mesh )
         std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::Vertex );
         std::vector<double> center                = iterator->centroid();
         bool is_valid                             = true;
-        for ( size_t j = 0; j < nodes.size(); ++j ) {
-            std::vector<double> coord = nodes[j].coord();
+        for ( auto &node : nodes ) {
+            std::vector<double> coord = node.coord();
             if ( !AMP::Utilities::approx_equal( coord[2], center[2], 1e-6 ) )
                 is_valid = false;
         }
@@ -187,10 +187,8 @@ CladToSubchannelMap::getSubchannelIterator( AMP::Mesh::Mesh::shared_ptr mesh )
     AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elements(
         new std::vector<AMP::Mesh::MeshElement>() );
     elements->reserve( xyFace.size() );
-    for ( std::multimap<double, AMP::Mesh::MeshElement>::iterator it = xyFace.begin();
-          it != xyFace.end();
-          ++it )
-        elements->push_back( it->second );
+    for ( auto &elem : xyFace )
+        elements->push_back( elem.second );
     return AMP::Mesh::MultiVectorIterator( elements );
 }
 
@@ -267,9 +265,9 @@ void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
         if ( d_ownSubChannel[i] ) {
             int tag = (int) i; // We have an independent comm
             mapData.resize( 0 );
-            for ( size_t j = 0; j < d_subchannelSend[i].size(); j++ ) {
+            for ( auto &elem : d_subchannelSend[i] ) {
                 int length = 2 * d_sendMaxBufferSize;
-                d_MapComm.recv( tmp_data, length, d_subchannelSend[i][j], true, tag );
+                d_MapComm.recv( tmp_data, length, elem, true, tag );
                 AMP_ASSERT( length % 2 == 0 );
                 mapData.reserve( mapData.size() + length / 2 );
                 for ( int k = 0; k < length / 2; k++ )

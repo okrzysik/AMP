@@ -105,8 +105,8 @@ void DirichletVectorCorrection::applyZeroValues( AMP::LinearAlgebra::Vector::sha
         for ( ; bnd != end_bnd; ++bnd ) {
             std::vector<size_t> bndGlobalIds;
             dof_map->getDOFs( bnd->globalID(), bndGlobalIds );
-            for ( size_t i = 0; i < d_dofIds[j].size(); i++ ) {
-                rInternal->setLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]], 0.0 );
+            for ( auto &elem : d_dofIds[j] ) {
+                rInternal->setLocalValueByGlobalID( bndGlobalIds[elem], 0.0 );
             } // end for i
         }     // end for bnd
     }         // end for j

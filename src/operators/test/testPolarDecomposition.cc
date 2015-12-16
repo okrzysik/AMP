@@ -45,8 +45,8 @@ void myTest( AMP::UnitTest *ut )
 
     double eVal[3];
     AMP::Operator::eigenValues( U, eVal );
-    for ( int i = 0; i < 3; i++ ) {
-        if ( eVal[i] <= 0 ) {
+    for ( auto &elem : eVal ) {
+        if ( elem <= 0 ) {
             ut->failure( "U is not positive definite." );
         }
     }

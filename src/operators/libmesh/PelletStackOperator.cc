@@ -82,9 +82,9 @@ void PelletStackOperator::applyUnscaling( AMP::LinearAlgebra::Vector::shared_ptr
     for ( ; bnd != end_bnd; ++bnd ) {
         std::vector<size_t> bndGlobalIds;
         dof_map->getDOFs( bnd->globalID(), bndGlobalIds );
-        for ( size_t j = 0; j < bndGlobalIds.size(); ++j ) {
-            double val = subF->getLocalValueByGlobalID( bndGlobalIds[j] );
-            subF->setLocalValueByGlobalID( bndGlobalIds[j], val / d_scalingFactor );
+        for ( auto &bndGlobalId : bndGlobalIds ) {
+            double val = subF->getLocalValueByGlobalID( bndGlobalId );
+            subF->setLocalValueByGlobalID( bndGlobalId, val / d_scalingFactor );
         } // end for j
     }     // end for bnd
 }
@@ -148,9 +148,9 @@ void PelletStackOperator::applyXYZcorrection( AMP::LinearAlgebra::Vector::const_
     for ( ; bnd != end_bnd; ++bnd ) {
         std::vector<size_t> bndGlobalIds;
         dof_map->getDOFs( bnd->globalID(), bndGlobalIds );
-        for ( unsigned int j = 0; j < bndGlobalIds.size(); j++ ) {
-            double val = subU->getLocalValueByGlobalID( bndGlobalIds[j] );
-            subR->addLocalValueByGlobalID( bndGlobalIds[j], val );
+        for ( auto &bndGlobalId : bndGlobalIds ) {
+            double val = subU->getLocalValueByGlobalID( bndGlobalId );
+            subR->addLocalValueByGlobalID( bndGlobalId, val );
         } // end for j
     }     // end for bnd
     std::vector<double> finalMaxZdispsList;
@@ -242,9 +242,9 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
         for ( ; bnd != end_bnd; ++bnd ) {
             std::vector<size_t> bndGlobalIds;
             dof_map->getDOFs( bnd->globalID(), bndGlobalIds );
-            for ( size_t j = 0; j < bndGlobalIds.size(); ++j ) {
-                double val = subU->getLocalValueByGlobalID( bndGlobalIds[j] );
-                subR->addLocalValueByGlobalID( bndGlobalIds[j], val );
+            for ( auto &bndGlobalId : bndGlobalIds ) {
+                double val = subU->getLocalValueByGlobalID( bndGlobalId );
+                subR->addLocalValueByGlobalID( bndGlobalId, val );
             } // end for j
         }     // end for bnd
     }

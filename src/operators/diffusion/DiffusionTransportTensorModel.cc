@@ -65,9 +65,9 @@ void DiffusionTransportTensorModel::getTensorTransport(
         }
 
         if ( d_BilogScaleCoefficient ) {
-            for ( size_t i = 0; i < result.size(); i++ )
-                for ( size_t j = 0; j < result[i].size(); j++ ) {
-                    bilogScale( *result[i][j], lower, upper );
+            for ( auto &elem : result )
+                for ( size_t j = 0; j < elem.size(); j++ ) {
+                    bilogScale( *elem[j], lower, upper );
                 }
         }
     }

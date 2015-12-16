@@ -239,8 +239,8 @@ int main( int argc, char *argv[] )
     }
 
     try {
-        for ( size_t i = 0; i < files.size(); i++ ) {
-            forwardTest1( &ut, files[i] );
+        for ( auto &file : files ) {
+            forwardTest1( &ut, file );
         }
     } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;

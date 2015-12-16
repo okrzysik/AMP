@@ -334,8 +334,8 @@ int main( int argc, char *argv[] )
     exeNames.push_back( "testLinearRobinBoundaryOperator-1" );
     // exeNames.push_back("testLinearRobinBoundaryOperator-2");
 
-    for ( unsigned int i = 0; i < exeNames.size(); i++ ) {
-        linearRobinTest( &ut, exeNames[i] );
+    for ( auto &exeName : exeNames ) {
+        linearRobinTest( &ut, exeName );
     }
 
     ut.report();

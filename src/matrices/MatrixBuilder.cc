@@ -49,8 +49,8 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr operandVec,
     AMP::Mesh::MeshIterator cur_elem = resultDOF->getIterator();
     AMP::Mesh::MeshIterator end_elem = cur_elem.end();
     int columns[1000]; // Preallocate for the columns for speed
-    for ( size_t i = 0; i < 1000; i++ ) {
-        columns[i] = 0.0;
+    for ( auto &column : columns ) {
+        column = 0.0;
     }
     while ( cur_elem != end_elem ) {
         AMP::Mesh::MeshElement obj = *cur_elem;
@@ -64,9 +64,9 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr operandVec,
         for ( size_t i = 0; i < row.size(); i++ )
             columns[i] = (int) row[i];
         // Add the rows
-        for ( size_t i = 0; i < ids.size(); i++ ) {
-            int globalRowID = ids[i];
-            int localRowID  = globalRowID - resultDOF->beginDOF();
+        for ( auto globalRowID : ids ) {
+
+            int localRowID = globalRowID - resultDOF->beginDOF();
             params->setEntriesInRow( localRowID, nnz );
         }
         // Add the columns
@@ -88,8 +88,8 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr operandVec,
     cur_elem = resultDOF->getIterator();
     end_elem = cur_elem.end();
     double values[1000];
-    for ( size_t i = 0; i < 1000; i++ ) {
-        values[i] = 0.0;
+    for ( auto &value : values ) {
+        value = 0.0;
     }
     while ( cur_elem != end_elem ) {
         AMP::Mesh::MeshElement obj = *cur_elem;
@@ -102,8 +102,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr operandVec,
         for ( size_t i = 0; i < row.size(); i++ )
             columns[i] = (int) row[i];
         // Add the rows
-        for ( size_t i = 0; i < ids.size(); i++ ) {
-            int globalRowID = ids[i];
+        for ( int globalRowID : ids ) {
             newMatrix->createValuesByGlobalID( 1, nnz, &globalRowID, columns, values );
         }
         ++cur_elem;

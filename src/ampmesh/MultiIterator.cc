@@ -32,11 +32,11 @@ MultiIterator::MultiIterator( std::vector<AMP::shared_ptr<MeshIterator>> iterato
     typeID   = MultiIteratorTypeID;
     iterator = nullptr;
     d_iterators.resize( 0 );
-    for ( size_t i = 0; i < iterators.size(); i++ ) {
-        if ( iterators[i] == nullptr )
+    for ( auto &iterator : iterators ) {
+        if ( iterator == nullptr )
             continue;
-        if ( iterators[i]->size() > 0 )
-            d_iterators.push_back( iterators[i] );
+        if ( iterator->size() > 0 )
+            d_iterators.push_back( iterator );
     }
     d_iteratorSize = std::vector<size_t>( d_iterators.size(), 0 );
     d_globalSize   = 0;
@@ -308,18 +308,16 @@ bool MultiIterator::operator==( const MeshIterator &rhs ) const
     if ( this->position() != rhs.position() )
         return false;
     // Check that the elements match
-    MeshIterator iterator1 = this->begin();
-    MeshIterator iterator2 = rhs.begin();
-    bool elements_match    = true;
-    for ( size_t i = 0; i < this->size(); i++ ) {
-        if ( iterator1->globalID() != iterator2->globalID() )
+    MeshIterator it1    = this->begin();
+    MeshIterator it2    = rhs.begin();
+    bool elements_match = true;
+    for ( size_t i = 0; i < it1.size(); ++i, ++it1, ++it2 ) {
+        if ( it1->globalID() != it2->globalID() )
             elements_match = false;
-        ++iterator1;
-        ++iterator2;
     }
     return elements_match;
 }
-bool MultiIterator::operator!=( const MeshIterator &rhs ) const { return !( ( *this ) == rhs ); }
+bool MultiIterator::operator!=( const MeshIterator &rhs ) const { return !operator==( rhs ); }
 
 
 /********************************************************
@@ -328,13 +326,13 @@ bool MultiIterator::operator!=( const MeshIterator &rhs ) const { return !( ( *t
 MeshElement &MultiIterator::operator*()
 {
     if ( d_globalPos >= d_globalSize )
-        AMP_ERROR( "Invalid dereference (iterator is out of range" );
+        AMP_ERROR( "Invalid dereference (iterator is out of range)" );
     return cur_iterator.operator*();
 }
 MeshElement *MultiIterator::operator->()
 {
     if ( d_globalPos >= d_globalSize )
-        AMP_ERROR( "Invalid dereference (iterator is out of range" );
+        AMP_ERROR( "Invalid dereference (iterator is out of range)" );
     return cur_iterator.operator->();
 }
 

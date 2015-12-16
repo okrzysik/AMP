@@ -206,8 +206,9 @@ protected:
         *d_dphi; /**< Spatial Derivatives of the shape functions at
                   the Gauss points in the current element. */
 
-    const std::vector<std::vector<Real>> *d_phi; /**< Shape functions at
-                                                         the Gauss points in the current element. */
+    const std::vector<std::vector<Real>>
+        *d_phi; /**< Shape functions at
+                         the Gauss points in the current element. */
 
     const std::vector<Point> *d_xyz; /**< Locations of the Gauss points in the current element. */
 
@@ -420,9 +421,9 @@ void MechanicsNonlinearUpdatedLagrangianElement::updateMaterialModel(
 
         // std::cout<<"sum_detJ="<<sum_detJ<<std::endl;
         double one3TimesSumDetJ = 1.0 / ( 3.0 * sum_detJ );
-        for ( unsigned int i = 0; i < 6; i++ ) {
+        for ( auto &elem : Bl_np1_bar ) {
             for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ ) {
-                Bl_np1_bar[i][j] = Bl_np1_bar[i][j] * one3TimesSumDetJ;
+                elem[j] = elem[j] * one3TimesSumDetJ;
                 // std::cout<<"Bl_np1_bar["<<i<<"]["<<j<<"]="<<Bl_np1_bar[i][j]<<std::endl;
             }
         }

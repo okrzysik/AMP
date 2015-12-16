@@ -129,8 +129,8 @@ std::vector<std::string> MemoryDatabase::getAllKeys()
     std::vector<std::string> keys( n );
 
     int k = 0;
-    for ( std::list<KeyData>::iterator i = d_keyvalues.begin(); i != d_keyvalues.end(); i++ ) {
-        keys[k++] = ( *i ).d_key;
+    for ( auto &elem : d_keyvalues ) {
+        keys[k++] = ( elem ).d_key;
     }
 
     return ( keys );
@@ -1123,9 +1123,9 @@ bool MemoryDatabase::deleteKeyIfFound( const std::string &key )
 
 MemoryDatabase::KeyData *MemoryDatabase::findKeyData( const std::string &key )
 {
-    for ( std::list<KeyData>::iterator i = d_keyvalues.begin(); i != d_keyvalues.end(); i++ ) {
-        if ( key == ( *i ).d_key )
-            return ( &( *i ) );
+    for ( auto &elem : d_keyvalues ) {
+        if ( key == ( elem ).d_key )
+            return ( &( elem ) );
     }
     return ( nullptr );
 }
@@ -1142,9 +1142,9 @@ MemoryDatabase::KeyData *MemoryDatabase::findKeyData( const std::string &key )
 
 MemoryDatabase::KeyData *MemoryDatabase::findKeyDataOrExit( const std::string &key )
 {
-    for ( std::list<KeyData>::iterator i = d_keyvalues.begin(); i != d_keyvalues.end(); i++ ) {
-        if ( key == ( *i ).d_key )
-            return ( &( *i ) );
+    for ( auto &elem : d_keyvalues ) {
+        if ( key == ( elem ).d_key )
+            return ( &( elem ) );
     }
     MEMORY_DB_ERROR( "Key ``" << key << "'' does not exist in the database..." );
     return ( nullptr );

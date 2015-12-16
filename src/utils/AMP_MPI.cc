@@ -317,8 +317,8 @@ void MPI_CLASS::setProcessAffinity( std::vector<int> procs )
 #ifdef USE_LINUX
     cpu_set_t mask;
     CPU_ZERO( &mask );
-    for ( size_t i = 0; i < procs.size(); i++ )
-        CPU_SET( procs[i], &mask );
+    for ( auto cpu : procs )
+        CPU_SET( cpu, &mask );
     int error = sched_setaffinity( getpid(), sizeof( cpu_set_t ), &mask );
     if ( error != 0 )
         MPI_ERROR( "Error setting process affinity" );
@@ -3507,8 +3507,8 @@ std::vector<int> MPI_CLASS::commRanks( const std::vector<int> &ranks ) const
     char *data2 = new char[comm_size];
     memset( data1, 0, comm_size );
     memset( data2, 0, comm_size );
-    for ( size_t i      = 0; i < ranks.size(); i++ )
-        data1[ranks[i]] = 1;
+    for ( auto &rank : ranks )
+        data1[rank] = 1;
     MPI_Alltoall( data1, 1, MPI_CHAR, data2, 1, MPI_CHAR, communicator );
     int N = 0;
     for ( int i = 0; i < comm_size; i++ )

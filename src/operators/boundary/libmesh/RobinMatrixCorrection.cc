@@ -118,9 +118,9 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
     if ( !skipMatrixCorrection ) {
         // Create the libmesh elements
         AMP::Mesh::MeshIterator iterator;
-        for ( unsigned int j = 0; j < d_boundaryIds.size(); j++ ) {
+        for ( auto &elem : d_boundaryIds ) {
             AMP::Mesh::MeshIterator iterator2 =
-                d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[j], 0 );
+                d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, elem, 0 );
             iterator = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, iterator, iterator2 );
         }
         libmeshElements.reinit( iterator );

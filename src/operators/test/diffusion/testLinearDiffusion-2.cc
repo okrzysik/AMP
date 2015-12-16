@@ -233,8 +233,8 @@ int main( int argc, char *argv[] )
     };
 
     try {
-        for ( int i = 0; i < NUMFILES; i++ ) {
-            linearTest( &ut, files[i], x_linear );
+        for ( auto &file : files ) {
+            linearTest( &ut, file, x_linear );
         }
     } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;

@@ -250,8 +250,8 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             AMP_ASSERT( nodes.size() == 4 );
 
             std::vector<double> zcoords;
-            for ( size_t i = 0; i < nodes.size(); i++ ) {
-                std::vector<double> coord = nodes[i].coord();
+            for ( auto &node : nodes ) {
+                std::vector<double> coord = node.coord();
                 zcoords.push_back( coord[2] );
             }
 

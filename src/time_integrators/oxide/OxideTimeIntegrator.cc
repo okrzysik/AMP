@@ -77,8 +77,8 @@ void OxideTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> 
     N_layer[1]  = 20; // Number of zones in the alpha layer
     N_layer[2]  = 5;  // Number of zones in the zirconium layer
     int N_total = 0;
-    for ( size_t i = 0; i < N_layer.size(); i++ )
-        N_total += N_layer[i];
+    for ( auto &elem : N_layer )
+        N_total += elem;
     AMP::Discretization::DOFManager::shared_ptr DOF_d =
         AMP::Discretization::simpleDOFManager::create(
             d_mesh, AMP::Mesh::Vertex, 0, N_layer.size(), true );
@@ -165,8 +165,8 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
     AMP::Discretization::DOFManager::shared_ptr DOF_alpha = d_alpha->getDOFManager();
     // Allocate memory for the solve
     int N_total = 0;
-    for ( size_t i = 0; i < N_layer.size(); i++ )
-        N_total += N_layer[i];
+    for ( auto &elem : N_layer )
+        N_total += elem;
     double *C0[10], *C1[10], D[10], Cb[20], x0[11], x1[11], v1[11],
         depth2[10]; // Allocate enough space for 10 layers
     C0[0] = new double[N_total];

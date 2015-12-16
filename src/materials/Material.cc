@@ -36,13 +36,10 @@ PropertyPtr Material::property( std::string type )
 std::vector<std::string> Material::list()
 {
     std::vector<std::string> result;
-    for ( std::map<std::string, PropertyPtr>::iterator it = d_propertyMap->begin();
-          it != d_propertyMap->end();
-          ++it ) {
-        std::string name        = it->second->get_name();
+    for ( auto it : *d_propertyMap ) {
+        std::string name        = it.second->get_name();
         size_t usIndex          = name.rfind( "_" );
         std::string nameReduced = name.substr( usIndex + 1 );
-
         result.push_back( nameReduced );
     }
     return result;

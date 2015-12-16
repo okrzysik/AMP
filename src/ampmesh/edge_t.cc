@@ -93,8 +93,8 @@ void edge_t::compute_center()
     }
     for ( unsigned int i = 0; i < 3; ++i ) {
         center[i] = 0.0;
-        for ( unsigned int j = 0; j < 2; ++j ) {
-            center[i] += support_points_ptr[j][i];
+        for ( auto &elem : support_points_ptr ) {
+            center[i] += elem[i];
         } // end for j
         center[i] /= 2.0;
     } // end for i

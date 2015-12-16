@@ -202,9 +202,9 @@ void IsotropicElasticModel::getConstitutiveMatrixUpdatedLagrangian( double const
     constructConstitutiveMatrixUpdatedLagrangian( pass_E, pass_Nu );
 
     if ( d_useJaumannRate == true ) {
-        for ( int i = 0; i < 6; i++ ) {
+        for ( auto &elem : d_constitutiveMatrix_UL ) {
             for ( int j = 0; j < 6; j++ ) {
-                d_constitutiveMatrix_UL[i][j] /= d_detULF[d_gaussPtCnt];
+                elem[j] /= d_detULF[d_gaussPtCnt];
             }
         }
     }
@@ -272,9 +272,9 @@ void IsotropicElasticModel::constructConstitutiveMatrix( const double E, const d
     double a = 2.0 * c * ( 1.0 - Nu ) / ( 1.0 - ( 2.0 * Nu ) );
     double b = 2.0 * c * Nu / ( 1.0 - ( 2.0 * Nu ) );
 
-    for ( int i = 0; i < 6; i++ ) {
+    for ( auto &elem : d_constitutiveMatrix ) {
         for ( int j = 0; j < 6; j++ ) {
-            d_constitutiveMatrix[i][j] = 0.0;
+            elem[j] = 0.0;
         } // end for j
     }     // end for i
 
@@ -322,9 +322,9 @@ void IsotropicElasticModel::constructConstitutiveMatrixUpdatedLagrangian( const 
     double K          = E / ( 3.0 * ( 1.0 - ( 2.0 * Nu ) ) );
     double twoG_three = 2.0 * G / 3.0;
 
-    for ( int i = 0; i < 6; i++ ) {
+    for ( auto &elem : d_constitutiveMatrix_UL ) {
         for ( int j = 0; j < 6; j++ ) {
-            d_constitutiveMatrix_UL[i][j] = 0.0;
+            elem[j] = 0.0;
         } // end for j
     }     // end for i
 

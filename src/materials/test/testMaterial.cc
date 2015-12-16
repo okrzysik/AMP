@@ -55,14 +55,14 @@ public:
           isVector( false ),
           isTensor( false )
     {
-        for ( size_t i = 0; i < NSUCCESS; i++ )
-            success[i] = false;
-        for ( size_t i  = 0; i < NARGEVAL; i++ )
-            nargeval[i] = false;
-        for ( size_t i = 0; i < NVECTOR; i++ )
-            vector[i]  = false;
-        for ( size_t i = 0; i < NTENSOR; i++ )
-            tensor[i]  = false;
+        for ( auto &elem : success )
+            elem = false;
+        for ( auto &elem : nargeval )
+            elem = false;
+        for ( auto &elem : vector )
+            elem = false;
+        for ( auto &elem : tensor )
+            elem = false;
     }
     bool range;
     bool success[NSUCCESS];
@@ -1298,14 +1298,14 @@ int main( int argc, char **argv )
              << "unknown:   yes=an unknown error occurred during property tests\n\n\n";
         cout << "number of materials = " << matlist.size() << endl;
         cout << "materials = ";
-        for ( size_t i = 0; i < matlist.size(); ++i )
-            cout << matlist[i] << " ";
+        for ( auto &elem : matlist )
+            cout << elem << " ";
         cout << endl;
-        for ( size_t i = 0; i < matlist.size(); i++ ) {
-            MatTestResult score = testMaterial( matlist[i] );
-            score.name          = matlist[i];
+        for ( auto &elem : matlist ) {
+            MatTestResult score = testMaterial( elem );
+            score.name          = elem;
             scoreCard.push_back( score );
-            cout << "for material " << matlist[i] << ": ";
+            cout << "for material " << elem << ": ";
             cout << "creation=" << xlate( score.creationGood ) << " ";
             cout << "undefined=" << xlate( score.undefined ) << " ";
             cout << "unknown=" << xlate( score.unknown ) << " ";
@@ -1313,50 +1313,48 @@ int main( int argc, char **argv )
             cout << "    property name                           range params nevalv nargsize "
                     "unknown"
                  << endl;
-            for ( vector<PropTestResult>::iterator j = score.propResults.begin();
-                  j != score.propResults.end();
-                  ++j ) {
+            for ( auto &_j : score.propResults ) {
                 cout << "    ";
                 unsigned int osize = cout.width();
                 cout.width( 29 );
-                cout << j->name << " ";
+                cout << _j.name << " ";
                 cout.width( osize );
                 cout << "          ";
-                cout << xlate( j->range ) << "   ";
-                cout << xlate( j->params ) << "    ";
+                cout << xlate( _j.range ) << "   ";
+                cout << xlate( _j.params ) << "    ";
                 unsigned int nsuccess = 0, nargeval = 0;
                 for ( size_t k = 0; k < NSUCCESS; k++ )
-                    if ( j->success[k] )
+                    if ( _j.success[k] )
                         nsuccess++;
                 cout << nsuccess << "/" << NSUCCESS << "    ";
                 for ( size_t k = 0; k < NARGEVAL; k++ )
-                    if ( j->nargeval[k] )
+                    if ( _j.nargeval[k] )
                         nargeval++;
                 cout << nargeval << "/" << NARGEVAL << "      ";
-                if ( j->isVector ) {
+                if ( _j.isVector ) {
                     unsigned int nvector = 0;
                     for ( size_t k = 0; k < NVECTOR; k++ )
-                        if ( j->vector[k] )
+                        if ( _j.vector[k] )
                             nvector++;
                     cout << nvector << "/" << NVECTOR << "      ";
                 }
-                if ( j->isTensor ) {
+                if ( _j.isTensor ) {
                     unsigned int ntensor = 0;
                     for ( size_t k = 0; k < NTENSOR; k++ )
-                        if ( j->tensor[k] )
+                        if ( _j.tensor[k] )
                             ntensor++;
                     cout << ntensor << "/" << NTENSOR << "      ";
                 }
-                cout << xlate( j->unknown ) << "     ";
+                cout << xlate( _j.unknown ) << "     ";
                 cout << endl;
             }
             cout << endl << endl << endl;
         }
 
         size_t maxpassed = 0;
-        for ( size_t i = 0; i < scoreCard.size(); i++ ) {
-            MatTestResult score = scoreCard[i];
-            string msg          = "material " + score.name + " ";
+        for ( auto score : scoreCard ) {
+
+            string msg = "material " + score.name + " ";
             if ( score.creationGood )
                 ut.passes( msg + "created" );
             else

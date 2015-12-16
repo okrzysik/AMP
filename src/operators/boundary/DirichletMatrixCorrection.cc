@@ -147,36 +147,32 @@ void DirichletMatrixCorrection::applyMatrixCorrection()
             // Get neighbors also returns remote neighbors
             // The calling node (bnd) must be owned locally.
             std::vector<AMP::Mesh::MeshElement::shared_ptr> neighbors = bnd->getNeighbors();
-            for ( unsigned int i = 0; i < neighbors.size(); ++i ) {
-                AMP_ASSERT( ( *( neighbors[i] ) ) != ( *bnd ) );
+            for ( auto &neighbor : neighbors ) {
+                AMP_ASSERT( ( *( neighbor ) ) != ( *bnd ) );
             } // end for i
 
-            for ( unsigned int j = 0; j < d_dofIds[k].size(); ++j ) {
+            for ( auto &elem : d_dofIds[k] ) {
                 for ( unsigned int i = 0; i < bndDofIds.size(); ++i ) {
-                    if ( d_dofIds[k][j] == i ) {
+                    if ( elem == i ) {
                         if ( d_zeroDirichletBlock ) {
                             d_inputMatrix->setValueByGlobalID( bndDofIds[i], bndDofIds[i], 0.0 );
                         } else {
                             d_inputMatrix->setValueByGlobalID( bndDofIds[i], bndDofIds[i], 1.0 );
                         }
                     } else {
-                        d_inputMatrix->setValueByGlobalID(
-                            bndDofIds[d_dofIds[k][j]], bndDofIds[i], 0.0 );
+                        d_inputMatrix->setValueByGlobalID( bndDofIds[elem], bndDofIds[i], 0.0 );
                         if ( d_symmetricCorrection ) {
-                            d_inputMatrix->setValueByGlobalID(
-                                bndDofIds[i], bndDofIds[d_dofIds[k][j]], 0.0 );
+                            d_inputMatrix->setValueByGlobalID( bndDofIds[i], bndDofIds[elem], 0.0 );
                         }
                     }
                 } // end for i
-                for ( size_t n = 0; n < neighbors.size(); ++n ) {
+                for ( auto &neighbor : neighbors ) {
                     std::vector<size_t> nhDofIds;
-                    dof_map->getDOFs( neighbors[n]->globalID(), nhDofIds );
-                    for ( unsigned int i = 0; i < nhDofIds.size(); ++i ) {
-                        d_inputMatrix->setValueByGlobalID(
-                            bndDofIds[d_dofIds[k][j]], nhDofIds[i], 0.0 );
+                    dof_map->getDOFs( neighbor->globalID(), nhDofIds );
+                    for ( auto &nhDofId : nhDofIds ) {
+                        d_inputMatrix->setValueByGlobalID( bndDofIds[elem], nhDofId, 0.0 );
                         if ( d_symmetricCorrection ) {
-                            d_inputMatrix->setValueByGlobalID(
-                                nhDofIds[i], bndDofIds[d_dofIds[k][j]], 0.0 );
+                            d_inputMatrix->setValueByGlobalID( nhDofId, bndDofIds[elem], 0.0 );
                         }
                     } // end for i
                 }     // end for n

@@ -61,23 +61,23 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
 {
     PROFILE_START( "reinit" );
     // Destroy the existing libmesh elements
-    for ( size_t i = 0; i < d_base_element.size(); i++ ) {
-        delete d_base_element[i];
-        d_base_element[i] = nullptr;
+    for ( auto &elem : d_base_element ) {
+        delete elem;
+        elem = nullptr;
     }
     d_base_element.resize( 0 );
-    for ( size_t i = 0; i < d_rule_element.size(); i++ ) {
-        delete d_rule_element[i];
-        d_rule_element[i] = nullptr;
+    for ( auto &elem : d_rule_element ) {
+        delete elem;
+        elem = nullptr;
     }
     d_rule_element.resize( 0 );
-    for ( size_t i = 0; i < d_elements.size(); i++ ) {
-        for ( size_t j = 0; j < d_elements[i]->n_nodes(); j++ ) {
-            delete d_elements[i]->get_node( j );
-            d_elements[i]->set_node( j ) = nullptr;
+    for ( auto &elem : d_elements ) {
+        for ( size_t j = 0; j < elem->n_nodes(); j++ ) {
+            delete elem->get_node( j );
+            elem->set_node( j ) = nullptr;
         }
-        delete d_elements[i];
-        d_elements[i] = nullptr;
+        delete elem;
+        elem = nullptr;
     }
     d_ids.resize( 0 );
     d_index.resize( 0 );

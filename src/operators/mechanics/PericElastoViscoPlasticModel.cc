@@ -55,9 +55,9 @@ PericElastoViscoPlasticModel::PericElastoViscoPlasticModel(
     default_OXYGEN_CONCENTRATION =
         params->d_db->getDoubleWithDefault( "Default_Oxygen_Concentration", 0.0 );
 
-    for ( size_t i = 0; i < 6; i++ ) {
-        for ( size_t j                 = 0; j < 6; j++ )
-            d_constitutiveMatrix[i][j] = 0.;
+    for ( auto &elem : d_constitutiveMatrix ) {
+        for ( size_t j = 0; j < 6; j++ )
+            elem[j]    = 0.;
     }
     d_Delta_Time                 = 0.;
     d_gaussPtCnt                 = 0;
@@ -367,9 +367,9 @@ void PericElastoViscoPlasticModel::getConstitutiveMatrixUpdatedLagrangian(
     constructConstitutiveMatrix();
 
     if ( d_useJaumannRate == true ) {
-        for ( int i = 0; i < 6; i++ ) {
+        for ( auto &elem : d_constitutiveMatrix ) {
             for ( int j = 0; j < 6; j++ ) {
-                d_constitutiveMatrix[i][j] /= d_detULF[d_gaussPtCnt];
+                elem[j] /= d_detULF[d_gaussPtCnt];
             }
         }
 
@@ -451,9 +451,9 @@ void PericElastoViscoPlasticModel::constructConstitutiveMatrix()
         K = E / ( 3.0 * ( 1.0 - ( 2.0 * Nu ) ) );
 
         // Initializing the tangent matrix as zero.
-        for ( int i = 0; i < 6; i++ ) {
+        for ( auto &elem : d_constitutiveMatrix ) {
             for ( int j = 0; j < 6; j++ ) {
-                d_constitutiveMatrix[i][j] = 0.0;
+                elem[j] = 0.0;
             }
         }
 
@@ -539,9 +539,9 @@ void PericElastoViscoPlasticModel::constructConstitutiveMatrix()
     term6 = 6.0 * G * G * ( ( lam / q_trial ) - dlam_dqtr );
 
     // Initiaization of the constitutive matrix.
-    for ( int i = 0; i < 6; i++ ) {
+    for ( auto &elem : d_constitutiveMatrix ) {
         for ( int j = 0; j < 6; j++ ) {
-            d_constitutiveMatrix[i][j] = 0.0;
+            elem[j] = 0.0;
         }
     }
 

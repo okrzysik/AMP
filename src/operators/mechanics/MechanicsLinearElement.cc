@@ -209,9 +209,9 @@ void MechanicsLinearElement::apply_Reduced()
         double Bl_np1[6][24], materialMatrix[6][6];
         double materialStiffness[24][24], materialStiffnessTemp[6][24];
 
-        for ( int i = 0; i < 6; i++ ) {
+        for ( auto &elem : Bl_np1 ) {
             for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ ) {
-                Bl_np1[i][j] = 0.0;
+                elem[j] = 0.0;
             }
         }
 
@@ -237,17 +237,17 @@ void MechanicsLinearElement::apply_Reduced()
             Bl_np1[5][( 3 * i ) + 1] = dphi[i][qp]( 0 );
         }
 
-        for ( int i = 0; i < 6; i++ )
-            for ( unsigned int j            = 0; j < ( 3 * num_nodes ); j++ )
-                materialStiffnessTemp[i][j] = 0.0;
+        for ( auto &elem : materialStiffnessTemp )
+            for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ )
+                elem[j]          = 0.0;
 
         for ( unsigned int i = 0; i < ( 3 * num_nodes ); i++ )
             for ( unsigned int j        = 0; j < ( 3 * num_nodes ); j++ )
                 materialStiffness[i][j] = 0.0;
 
-        for ( int i = 0; i < 6; i++ )
-            for ( int j              = 0; j < 6; j++ )
-                materialMatrix[i][j] = 0.0;
+        for ( auto &elem : materialMatrix )
+            for ( int j = 0; j < 6; j++ )
+                elem[j] = 0.0;
 
         d_materialModel->getConstitutiveMatrix( constitutiveMatrix );
 
@@ -415,9 +415,9 @@ void MechanicsLinearElement::apply_Normal()
         double Bl_np1[6][24], materialMatrix[6][6];
         double materialStiffness[24][24], materialStiffnessTemp[6][24];
 
-        for ( int i = 0; i < 6; i++ ) {
+        for ( auto &elem : Bl_np1 ) {
             for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ ) {
-                Bl_np1[i][j] = 0.0;
+                elem[j] = 0.0;
             }
         }
 
@@ -433,17 +433,17 @@ void MechanicsLinearElement::apply_Normal()
             Bl_np1[5][( 3 * i ) + 1] = dphi[i][qp]( 0 );
         }
 
-        for ( int i = 0; i < 6; i++ )
-            for ( unsigned int j            = 0; j < ( 3 * num_nodes ); j++ )
-                materialStiffnessTemp[i][j] = 0.0;
+        for ( auto &elem : materialStiffnessTemp )
+            for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ )
+                elem[j]          = 0.0;
 
         for ( unsigned int i = 0; i < ( 3 * num_nodes ); i++ )
             for ( unsigned int j        = 0; j < ( 3 * num_nodes ); j++ )
                 materialStiffness[i][j] = 0.0;
 
-        for ( int i = 0; i < 6; i++ )
-            for ( int j              = 0; j < 6; j++ )
-                materialMatrix[i][j] = 0.0;
+        for ( auto &elem : materialMatrix )
+            for ( int j = 0; j < 6; j++ )
+                elem[j] = 0.0;
 
         d_materialModel->getConstitutiveMatrix( constitutiveMatrix );
 

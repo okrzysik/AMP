@@ -52,13 +52,12 @@ DiffusionTransportModel::DiffusionTransportModel(
         AMP_INSIST( defaultkeys.size() == d_property->get_number_arguments(),
                     "Incorrect number of defaults supplied." );
         std::vector<std::string> argnames = d_property->get_arguments();
-        for ( std::vector<std::string>::iterator key = defaultkeys.begin();
-              key != defaultkeys.end();
-              ++key ) {
+        for ( auto &defaultkey : defaultkeys ) {
             std::vector<std::string>::iterator hit =
-                std::find( argnames.begin(), argnames.end(), *key );
+                std::find( argnames.begin(), argnames.end(), defaultkey );
             AMP_INSIST( hit != argnames.end(),
-                        std::string( "Argument name " ) + *key + std::string( " is invalid" ) );
+                        std::string( "Argument name " ) + defaultkey +
+                            std::string( " is invalid" ) );
         }
 
         // load defaults into the material property, checking range validity
@@ -134,11 +133,11 @@ AMP::shared_ptr<std::vector<double>> DiffusionTransportModel::bilogTransform(
 
 void DiffusionTransportModel::bilogScale( std::vector<double> &v, const double a, const double b )
 {
-    for ( size_t i = 0; i < v.size(); i++ ) {
-        double ev     = std::exp( v[i] );
+    for ( auto &elem : v ) {
+        double ev     = std::exp( elem );
         double temp   = ( 1.0 + ev );
         double factor = ( b - a ) * ev / ( temp * temp );
-        v[i] *= factor;
+        elem *= factor;
     }
 }
 

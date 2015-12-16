@@ -200,8 +200,8 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
         std::vector<AMP::Mesh::MeshID> pinMeshIDs = pinMesh->getBaseMeshIDs();
 
         // CREATE OPERATORS
-        for ( size_t meshIndex = 0; meshIndex < pinMeshIDs.size(); meshIndex++ ) {
-            AMP::Mesh::Mesh::shared_ptr adapter = manager->Subset( pinMeshIDs[meshIndex] );
+        for ( auto &pinMeshID : pinMeshIDs ) {
+            AMP::Mesh::Mesh::shared_ptr adapter = manager->Subset( pinMeshID );
             if ( adapter.get() == nullptr )
                 continue;
 
@@ -299,8 +299,8 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
     if ( subchannelMesh.get() != nullptr ) {
         std::vector<AMP::Mesh::MeshID> subChannelMeshIDs = subchannelMesh->getBaseMeshIDs();
 
-        for ( size_t meshIndex = 0; meshIndex < subChannelMeshIDs.size(); meshIndex++ ) {
-            AMP::Mesh::Mesh::shared_ptr adapter = manager->Subset( subChannelMeshIDs[meshIndex] );
+        for ( auto &subChannelMeshID : subChannelMeshIDs ) {
+            AMP::Mesh::Mesh::shared_ptr adapter = manager->Subset( subChannelMeshID );
             if ( adapter.get() == nullptr )
                 continue;
 
@@ -376,18 +376,18 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
         std::vector<AMP::Mesh::Mesh::shared_ptr> pins =
             AMP::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( pinMesh )->getMeshes();
 
-        for ( size_t i = 0; i < pins.size(); i++ ) {
+        for ( auto &pin : pins ) {
             if ( global_input_db->keyExists( "ThermalNodeToNodeMaps" ) ) {
                 AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> map =
                     AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::NodeToNodeMap>(
-                        pins[i], global_input_db->getDatabase( "ThermalNodeToNodeMaps" ) );
+                        pin, global_input_db->getDatabase( "ThermalNodeToNodeMaps" ) );
                 for ( size_t j = 0; j < map->getNumberOfOperators(); j++ )
                     n2nColumn->append( map->getOperator( j ) );
             }
             if ( global_input_db->keyExists( "ThermalScalarZAxisMaps" ) ) {
                 AMP::shared_ptr<AMP::Operator::AsyncMapColumnOperator> sza =
                     AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::ScalarZAxisMap>(
-                        pins[i], global_input_db->getDatabase( "ThermalScalarZAxisMaps" ) );
+                        pin, global_input_db->getDatabase( "ThermalScalarZAxisMaps" ) );
                 for ( size_t j = 0; j < sza->getNumberOfOperators(); j++ )
                     szaColumn->append( sza->getOperator( j ) );
             }
@@ -401,8 +401,8 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
         szaColumn->setVector( thermalMapVec );
 
         int curOperator = 0;
-        for ( size_t meshIndex = 0; meshIndex < pinMeshIDs.size(); meshIndex++ ) {
-            AMP::Mesh::Mesh::shared_ptr adapter = manager->Subset( pinMeshIDs[meshIndex] );
+        for ( auto &pinMeshID : pinMeshIDs ) {
+            AMP::Mesh::Mesh::shared_ptr adapter = manager->Subset( pinMeshID );
             if ( adapter.get() == nullptr )
                 continue;
 
@@ -676,8 +676,8 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
             gaussPtDOFManager->getDOFs( it->globalID(), dofs );
-            for ( size_t j = 0; j < dofs.size(); j++ ) {
-                specificPowerGpVec->setValueByGlobalID( dofs[j],
+            for ( auto &dof : dofs ) {
+                specificPowerGpVec->setValueByGlobalID( dof,
                                                         getPower( range, P, V, it->centroid() ) );
             }
             ++it;

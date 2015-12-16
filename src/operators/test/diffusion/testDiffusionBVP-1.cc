@@ -185,16 +185,16 @@ int main( int argc, char *argv[] )
         //"Diffusion-TUI-Fick-3", "Diffusion-UO2MSRZC09-Fick-3"
     };
 
-    for ( int i = 0; i < NUMFILES; i++ ) {
+    for ( auto &file : files ) {
         try {
-            bvpTest1( &ut, files[i] );
+            bvpTest1( &ut, file );
         } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
-            ut.failure( "ERROR: While testing: " + files[i] );
+            ut.failure( "ERROR: While testing: " + file );
         } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
-            ut.failure( "ERROR: While testing: " + files[i] );
+            ut.failure( "ERROR: While testing: " + file );
         }
     }
 

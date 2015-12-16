@@ -398,16 +398,10 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         // Perform a union: A U B
         // Get the union using the mesh IDs
         std::set<MeshElementID> union_set;
-        MeshIterator curA = A.begin();
-        for ( size_t i = 0; i < A.size(); i++ ) {
-            union_set.insert( curA->globalID() );
-            ++curA;
-        }
-        MeshIterator curB = B.begin();
-        for ( size_t i = 0; i < B.size(); i++ ) {
-            union_set.insert( curB->globalID() );
-            ++curB;
-        }
+        for ( auto &elem : A )
+            union_set.insert( elem.globalID() );
+        for ( auto &elem : B )
+            union_set.insert( elem.globalID() );
         std::vector<MeshElementID> union_ids( union_set.begin(), union_set.end() );
         // Create the iterator
         if ( union_ids.size() == A.size() ) {
@@ -417,27 +411,23 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         } else {
             AMP::shared_ptr<std::vector<MeshElement>> elements(
                 new std::vector<MeshElement>( union_ids.size() ) );
-            curA = A.begin();
-            for ( size_t i = 0; i < A.size(); i++ ) {
-                MeshElementID idA = curA->globalID();
+            for ( auto &elem : A ) {
+                MeshElementID idA = elem.globalID();
                 size_t index      = Utilities::findfirst( union_ids, idA );
                 if ( index == union_ids.size() ) {
                     index--;
                 }
                 if ( union_ids[index] == idA )
-                    ( *elements )[index] = *curA;
-                ++curA;
+                    ( *elements )[index] = elem;
             }
-            curB = B.begin();
-            for ( size_t i = 0; i < B.size(); i++ ) {
-                MeshElementID idB = curB->globalID();
+            for ( auto &elem : B ) {
+                MeshElementID idB = elem.globalID();
                 size_t index      = Utilities::findfirst( union_ids, idB );
                 if ( index == union_ids.size() ) {
                     index--;
                 }
                 if ( union_ids[index] == idB )
-                    ( *elements )[index] = *curB;
-                ++curB;
+                    ( *elements )[index] = elem;
             }
             return MultiVectorIterator( elements, 0 );
         }
@@ -447,24 +437,20 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         if ( A.size() == 0 || B.size() == 0 )
             return MeshIterator();
         std::vector<MeshElementID> idA( A.size() );
-        MeshIterator curA = A.begin();
-        for ( size_t i = 0; i < A.size(); i++ ) {
-            idA[i] = curA->globalID();
-            ++curA;
-        }
+        auto it = A.begin();
+        for ( size_t i = 0; i < A.size(); ++i, ++it )
+            idA[i]     = it->globalID();
         Utilities::quicksort( idA );
         std::vector<MeshElementID> intersection;
         intersection.reserve( B.size() );
-        MeshIterator curB = B.begin();
-        for ( size_t i = 0; i < B.size(); i++ ) {
-            MeshElementID idB = curB->globalID();
+        for ( auto &elem : B ) {
+            MeshElementID idB = elem.globalID();
             size_t index      = Utilities::findfirst( idA, idB );
             if ( index == idA.size() ) {
                 index--;
             }
             if ( idA[index] == idB )
                 intersection.push_back( idB );
-            ++curB;
         }
         if ( intersection.empty() )
             return MeshIterator();
@@ -480,16 +466,14 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         } else {
             AMP::shared_ptr<std::vector<MeshElement>> elements(
                 new std::vector<MeshElement>( intersection.size() ) );
-            curB = B.begin();
-            for ( size_t i = 0; i < B.size(); i++ ) {
-                MeshElementID idB = curB->globalID();
+            for ( auto &elem : B ) {
+                MeshElementID idB = elem.globalID();
                 size_t index      = Utilities::findfirst( intersection, idB );
                 if ( index == intersection.size() ) {
                     index--;
                 }
                 if ( intersection[index] == idB )
-                    ( *elements )[index] = *curB;
-                ++curB;
+                    ( *elements )[index] = elem;
             }
             return MultiVectorIterator( elements, 0 );
         }
@@ -497,16 +481,10 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         // Perform a Complement:  A - B
         // Get the compliment using the mesh IDs
         std::set<MeshElementID> compliment_set;
-        MeshIterator curA = A.begin();
-        for ( size_t i = 0; i < A.size(); i++ ) {
-            compliment_set.insert( curA->globalID() );
-            ++curA;
-        }
-        MeshIterator curB = B.begin();
-        for ( size_t i = 0; i < B.size(); i++ ) {
-            compliment_set.erase( curB->globalID() );
-            ++curB;
-        }
+        for ( auto &elem : A )
+            compliment_set.insert( elem.globalID() );
+        for ( auto &elem : B )
+            compliment_set.erase( elem.globalID() );
         std::vector<MeshElementID> compliment( compliment_set.begin(), compliment_set.end() );
         if ( compliment.empty() )
             return MeshIterator();
@@ -516,16 +494,14 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         } else {
             AMP::shared_ptr<std::vector<MeshElement>> elements(
                 new std::vector<MeshElement>( compliment.size() ) );
-            curA = A.begin();
-            for ( size_t i = 0; i < A.size(); i++ ) {
-                MeshElementID idA = curA->globalID();
+            for ( auto &elem : A ) {
+                MeshElementID idA = elem.globalID();
                 size_t index      = Utilities::findfirst( compliment, idA );
                 if ( index == compliment.size() ) {
                     index--;
                 }
                 if ( compliment[index] == idA )
-                    ( *elements )[index] = *curA;
-                ++curA;
+                    ( *elements )[index] = elem;
             }
             return MultiVectorIterator( elements, 0 );
         }

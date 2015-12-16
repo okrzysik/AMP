@@ -667,16 +667,16 @@ int main( int argc, char *argv[] )
     const int NUMFILES          = 1;
     std::string files[NUMFILES] = { "testSubchannelTwoEqLinearOperator" };
 
-    for ( int i = 0; i < NUMFILES; i++ ) {
+    for ( auto &file : files ) {
         try {
-            Test( &ut, files[i] );
+            Test( &ut, file );
         } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
-            ut.failure( "ERROR: While testing: " + files[i] );
+            ut.failure( "ERROR: While testing: " + file );
         } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
-            ut.failure( "ERROR: While testing: " + files[i] );
+            ut.failure( "ERROR: While testing: " + file );
         }
     }
 

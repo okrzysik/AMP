@@ -279,15 +279,16 @@ void Array<TYPE>::reshape( const std::vector<size_t> &N )
         AMP_ERROR( "reshape is not allowed to change the array size" );
     d_ndim = N.size();
     for ( size_t i = 0; i < ARRAY_NDIM_MAX; i++ )
-        d_N[i]     = 1;
+        d_N[i] = 1;
     for ( size_t i = 0; i < N.size(); i++ )
-        d_N[i]     = N[i];
+        d_N[i] = N[i];
 }
 
 
 /********************************************************
 *  Subset the array                                     *
 ********************************************************/
+// clang-format off
 // Helper function to check subset indices
 template <class TYPE>
 inline void Array<TYPE>::checkSubsetIndex( const std::vector<size_t> &index ) const
@@ -300,14 +301,14 @@ inline void Array<TYPE>::checkSubsetIndex( const std::vector<size_t> &index ) co
 }
 // Helper function to return dimensions as a std::array for hard coded loops
 template <class TYPE>
-inline std::array<size_t, 5> Array<TYPE>::getDimArray() const
+inline std::array<size_t,5> Array<TYPE>::getDimArray() const
 {
-#if ARRAY_NDIM_MAX > 5
-#error Function programmed for more than 5 dimensions
-#endif
-    std::array<size_t, 5> N{ { 1, 1, 1, 1, 1 } };
+    #if ARRAY_NDIM_MAX > 5
+        #error Function programmed for more than 5 dimensions
+    #endif
+    std::array<size_t,5> N{ { 1, 1, 1, 1, 1 } };
     for ( int d = 0; d < d_ndim; d++ )
-        N[d]    = d_N[d];
+        N[d] = d_N[d];
     return N;
 }
 // Helper function to return dimensions for the subset array
@@ -317,10 +318,9 @@ inline void Array<TYPE>::getSubsetArrays( const std::vector<size_t> &index,
                                           std::array<size_t, 5> &last,
                                           std::array<size_t, 5> &N )
 {
-// Compute the index range
-#if ARRAY_NDIM_MAX > 5
-#error Function programmed for more than 5 dimensions
-#endif
+    #if ARRAY_NDIM_MAX > 5
+        #error Function programmed for more than 5 dimensions
+    #endif
     size_t ndim = index.size() / 2;
     for ( size_t d = 0; d < ndim; d++ ) {
         first[d] = index[2 * d + 0];
@@ -338,29 +338,25 @@ Array<TYPE> Array<TYPE>::subset( const std::vector<size_t> &index ) const
 {
     // Get the subset indicies
     checkSubsetIndex( index );
-    std::array<size_t, 5> first, last, N1;
+    std::array<size_t,5> first, last, N1;
     getSubsetArrays( index, first, last, N1 );
-    std::array<size_t, 5> N2 = getDimArray();
+    std::array<size_t,5> N2 = getDimArray();
     // Create the new array
     std::vector<size_t> dim( ARRAY_NDIM_MAX );
     for ( int d = 0; d < ARRAY_NDIM_MAX; d++ )
         dim[d]  = last[d] - first[d] + 1;
     Array<TYPE> subset( dim );
-// Fill the new array
-#if ARRAY_NDIM_MAX > 5
-#error Function programmed for more than 5 dimensions
-#endif
-    for ( size_t i4 = first[4]; i4 <= last[4]; i4++ ) {
-        for ( size_t i3 = first[3]; i3 <= last[3]; i3++ ) {
-            for ( size_t i2 = first[2]; i2 <= last[2]; i2++ ) {
-                for ( size_t i1 = first[1]; i1 <= last[1]; i1++ ) {
-                    for ( size_t i0 = first[0]; i0 <= last[0]; i0++ ) {
-                        size_t k1 = GET_ARRAY_INDEX5D( N1,
-                                                       i0 - first[0],
-                                                       i1 - first[1],
-                                                       i2 - first[2],
-                                                       i3 - first[3],
-                                                       i4 - first[4] );
+    // Fill the new array
+    #if ARRAY_NDIM_MAX > 5
+        #error Function programmed for more than 5 dimensions
+    #endif
+    for (size_t i4=first[4]; i4<=last[4]; i4++) {
+        for (size_t i3=first[3]; i3<=last[3]; i3++) {
+            for (size_t i2=first[2]; i2<=last[2]; i2++) {
+                for (size_t i1=first[1]; i1<=last[1]; i1++) {
+                    for (size_t i0=first[0]; i0<=last[0]; i0++) {
+                        size_t k1 = GET_ARRAY_INDEX5D( N1, i0-first[0], 
+                            i1-first[1], i2-first[2], i3-first[3], i4-first[4] );
                         size_t k2         = GET_ARRAY_INDEX5D( N2, i0, i1, i2, i3, i4 );
                         subset.d_data[k1] = d_data[k2];
                     }
@@ -375,24 +371,20 @@ void Array<TYPE>::copySubset( const std::vector<size_t> &index, const Array<TYPE
 {
     // Get the subset indices
     checkSubsetIndex( index );
-    std::array<size_t, 5> first, last, N1;
+    std::array<size_t,5> first, last, N1;
     getSubsetArrays( index, first, last, N1 );
-    std::array<size_t, 5> N2 = getDimArray();
-// Copy the sub-array
-#if ARRAY_NDIM_MAX > 5
-#error Function programmed for more than 5 dimensions
-#endif
-    for ( size_t i4 = first[4]; i4 <= last[4]; i4++ ) {
-        for ( size_t i3 = first[3]; i3 <= last[3]; i3++ ) {
-            for ( size_t i2 = first[2]; i2 <= last[2]; i2++ ) {
-                for ( size_t i1 = first[1]; i1 <= last[1]; i1++ ) {
-                    for ( size_t i0 = first[0]; i0 <= last[0]; i0++ ) {
-                        size_t k1 = GET_ARRAY_INDEX5D( N1,
-                                                       i0 - first[0],
-                                                       i1 - first[1],
-                                                       i2 - first[2],
-                                                       i3 - first[3],
-                                                       i4 - first[4] );
+    std::array<size_t,5> N2 = getDimArray();
+    // Copy the sub-array
+    #if ARRAY_NDIM_MAX > 5
+        #error Function programmed for more than 5 dimensions
+    #endif
+    for (size_t i4=first[4]; i4<=last[4]; i4++) {
+        for (size_t i3=first[3]; i3<=last[3]; i3++) {
+            for (size_t i2=first[2]; i2<=last[2]; i2++) {
+                for (size_t i1=first[1]; i1<=last[1]; i1++) {
+                    for (size_t i0=first[0]; i0<=last[0]; i0++) {
+                        size_t k1 = GET_ARRAY_INDEX5D( N1, i0-first[0], 
+                            i1-first[1], i2-first[2], i3-first[3], i4-first[4] );
                         size_t k2  = GET_ARRAY_INDEX5D( N2, i0, i1, i2, i3, i4 );
                         d_data[k2] = subset.d_data[k1];
                     }
@@ -401,6 +393,7 @@ void Array<TYPE>::copySubset( const std::vector<size_t> &index, const Array<TYPE
         }
     }
 }
+// clang-format on
 
 
 /********************************************************
@@ -662,8 +655,8 @@ Array<TYPE> Array<TYPE>::min( int dir ) const
     for ( int d = dir + 1; d < std::min( d_ndim, ARRAY_NDIM_MAX ); d++ )
         N3 *= d_N[d];
     TYPE *data2 = ans.d_data;
-    for ( int i3 = 0; i3 < N3; i3++ ) {
-        for ( int i1 = 0; i1 < N1; i1++ ) {
+    for ( size_t i3 = 0; i3 < N3; i3++ ) {
+        for ( size_t i1 = 0; i1 < N1; i1++ ) {
             TYPE x = d_data[i1 + i3 * N1 * N2];
             for ( size_t i2 = 0; i2 < N2; i2++ )
                 x               = std::min( x, d_data[i1 + i2 * N1 + i3 * N1 * N2] );
@@ -685,8 +678,8 @@ Array<TYPE> Array<TYPE>::max( int dir ) const
     for ( int d = dir + 1; d < std::min( d_ndim, ARRAY_NDIM_MAX ); d++ )
         N3 *= d_N[d];
     TYPE *data2 = ans.d_data;
-    for ( int i3 = 0; i3 < N3; i3++ ) {
-        for ( int i1 = 0; i1 < N1; i1++ ) {
+    for ( size_t i3 = 0; i3 < N3; i3++ ) {
+        for ( size_t i1 = 0; i1 < N1; i1++ ) {
             TYPE x = d_data[i1 + i3 * N1 * N2];
             for ( size_t i2 = 0; i2 < N2; i2++ )
                 x               = std::max( x, d_data[i1 + i2 * N1 + i3 * N1 * N2] );
@@ -730,9 +723,7 @@ TYPE Array<TYPE>::min( const std::vector<size_t> &index ) const
 #if ARRAY_NDIM_MAX > 5
 #error Function programmed for more than 5 dimensions
 #endif
-
     TYPE x = std::numeric_limits<TYPE>::max();
-
     for ( size_t i4 = first[4]; i4 <= last[4]; i4++ ) {
         for ( size_t i3 = first[3]; i3 <= last[3]; i3++ ) {
             for ( size_t i2 = first[2]; i2 <= last[2]; i2++ ) {
@@ -760,9 +751,7 @@ TYPE Array<TYPE>::max( const std::vector<size_t> &index ) const
 #if ARRAY_NDIM_MAX > 5
 #error Function programmed for more than 5 dimensions
 #endif
-
     TYPE x = std::numeric_limits<TYPE>::min();
-
     for ( size_t i4 = first[4]; i4 <= last[4]; i4++ ) {
         for ( size_t i3 = first[3]; i3 <= last[3]; i3++ ) {
             for ( size_t i2 = first[2]; i2 <= last[2]; i2++ ) {
@@ -788,9 +777,7 @@ TYPE Array<TYPE>::sum( const std::vector<size_t> &index ) const
 #if ARRAY_NDIM_MAX > 5
 #error Function programmed for more than 5 dimensions
 #endif
-
     TYPE x = 0;
-
     for ( size_t i4 = first[4]; i4 <= last[4]; i4++ ) {
         for ( size_t i3 = first[3]; i3 <= last[3]; i3++ ) {
             for ( size_t i2 = first[2]; i2 <= last[2]; i2++ ) {
@@ -815,13 +802,10 @@ TYPE Array<TYPE>::mean( const std::vector<size_t> &index ) const
 #if ARRAY_NDIM_MAX > 5
 #error Function programmed for more than 5 dimensions
 #endif
-
     size_t n = 1;
     for ( auto &d : N1 )
         n *= d;
-
     TYPE x = sum( index ) / n;
-
     return x;
 }
 

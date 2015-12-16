@@ -415,8 +415,8 @@ int main( int argc, char *argv[] )
         std::vector<std::string> call_stack = get_call_stack();
         if ( globalComm.getRank() == 0 ) {
             std::cout << "Call stack:" << std::endl;
-            for ( size_t i = 0; i < call_stack.size(); i++ )
-                std::cout << "   " << call_stack[i];
+            for ( auto &elem : call_stack )
+                std::cout << "   " << elem;
         }
         if ( !call_stack.empty() ) {
             ut.passes( "non empty call stack" );

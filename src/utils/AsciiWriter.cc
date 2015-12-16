@@ -76,14 +76,14 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
 // Get the ids for the vectors and save the data
 #ifdef USE_AMP_VECTORS
     std::set<global_id> vec_ids = getKeys( d_vectors, d_comm );
-    for ( std::set<global_id>::const_iterator it = vec_ids.begin(); it != vec_ids.end(); ++it ) {
+    for ( const auto &vec_id : vec_ids ) {
         // Send the data to rank 0
         d_comm.barrier();
         AMP::LinearAlgebra::Vector::shared_ptr src_vec;
-        if ( d_vectors.find( *it ) != d_vectors.end() )
-            src_vec = d_vectors[*it];
+        if ( d_vectors.find( vec_id ) != d_vectors.end() )
+            src_vec = d_vectors[vec_id];
         AMP::LinearAlgebra::Vector::const_shared_ptr dst_vec =
-            sendVecToRoot( src_vec, it->first, d_comm );
+            sendVecToRoot( src_vec, vec_id.first, d_comm );
         // Write the data
         if ( d_comm.getRank() == 0 ) {
             fprintf( fid,
@@ -99,12 +99,12 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
 // Get the ids for the matricies and save the data
 #ifdef USE_AMP_MATRICES
     std::set<global_id> mat_ids = getKeys( d_matrices, d_comm );
-    for ( std::set<global_id>::const_iterator it = mat_ids.begin(); it != mat_ids.end(); ++it ) {
+    for ( const auto &mat_id : mat_ids ) {
         // Send the header data to rank 0
         d_comm.barrier();
         AMP::LinearAlgebra::Matrix::shared_ptr mat;
-        if ( d_matrices.find( *it ) != d_matrices.end() )
-            mat = d_matrices[*it];
+        if ( d_matrices.find( mat_id ) != d_matrices.end() )
+            mat = d_matrices[mat_id];
         std::string name;
         size_t size[2] = { 0, 0 };
         if ( mat != nullptr ) {
@@ -113,9 +113,9 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
             size[0] = mat->getLeftVector()->getGlobalSize();
             size[1] = mat->getRightVector()->getGlobalSize();
         }
-        name    = d_comm.bcast( name, it->first );
-        size[0] = d_comm.bcast( size[0], it->first );
-        size[1] = d_comm.bcast( size[1], it->first );
+        name    = d_comm.bcast( name, mat_id.first );
+        size[0] = d_comm.bcast( size[0], mat_id.first );
+        size[1] = d_comm.bcast( size[1], mat_id.first );
         // Write the data
         if ( d_comm.getRank() == 0 ) {
             fprintf( fid,

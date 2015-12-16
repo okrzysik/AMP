@@ -158,10 +158,10 @@ void Map1Dto3D::computeZGaussLocations()
             // Get the current position and DOF
             std::vector<Point> coordinates = d_fe->get_xyz();
 
-            for ( unsigned int qp = 0; qp < coordinates.size(); qp++ ) {
-                t_zLocations.push_back( coordinates[qp]( 2 ) );
-                Xx = coordinates[qp]( 0 );
-                Yy = coordinates[qp]( 1 );
+            for ( auto &coordinate : coordinates ) {
+                t_zLocations.push_back( coordinate( 2 ) );
+                Xx = coordinate( 0 );
+                Yy = coordinate( 1 );
             }
             bnd++;
         }
@@ -174,10 +174,10 @@ void Map1Dto3D::computeZGaussLocations()
             d_fe->reinit( libmeshElements.getElement( bnd->globalID() ) );
 
             std::vector<Point> x = d_fe->get_xyz();
-            for ( unsigned int qp = 0; qp < x.size(); qp++ ) {
-                if ( ( fabs( Xx - x[qp]( 0 ) ) <= 1.e-12 ) &&
-                     ( fabs( Yy - x[qp]( 1 ) ) <= 1.e-12 ) ) {
-                    t_zLocations.push_back( x[qp]( 2 ) );
+            for ( auto &elem : x ) {
+                if ( ( fabs( Xx - elem( 0 ) ) <= 1.e-12 ) &&
+                     ( fabs( Yy - elem( 1 ) ) <= 1.e-12 ) ) {
+                    t_zLocations.push_back( elem( 2 ) );
                 }
             }
         }

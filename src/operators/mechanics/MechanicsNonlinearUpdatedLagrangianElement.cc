@@ -536,12 +536,12 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
                 matInverse( tempMat, invTempMat );
 
                 matVecMultiply( invTempMat, z, tempVec );
-                for ( int i    = 0; i < 3; i++ )
-                    tempVec[i] = 1.0 * tempVec[i];
+                for ( auto &elem : tempVec )
+                    elem = 1.0 * elem;
 
                 vecVecAddition( w, tempVec, omega );
-                for ( int i  = 0; i < 3; i++ )
-                    omega[i] = 1.0 * omega[i];
+                for ( auto &elem : omega )
+                    elem = 1.0 * elem;
 
                 if ( d_iDebugPrintInfoLevel > 11 ) {
                     for ( int i = 0; i < 3; i++ ) {
@@ -667,9 +667,9 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
         // currEta[qp],
         // currZeta[qp], detJ);
 
-        for ( int i = 0; i < 6; i++ ) {
+        for ( auto &elem : Bl_np1 ) {
             for ( int j = 0; j < 24; j++ ) {
-                Bl_np1[i][j] = 0.0;
+                elem[j] = 0.0;
             }
         }
 
@@ -694,8 +694,8 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
                 }
             }
 
-            for ( int i = 0; i < 6; i++ ) {
-                el_np1[i] = 0.0;
+            for ( auto &elem : el_np1 ) {
+                elem = 0.0;
             }
 
             for ( int i = 0; i < 6; i++ ) {
@@ -948,9 +948,9 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Reduced()
 
     double ebar_np1o2[3][3], avg_dil_strain = 0.0;
     if ( d_useJaumannRate == false ) {
-        for ( int i = 0; i < 3; i++ ) {
+        for ( auto &elem : ebar_np1o2 ) {
             for ( int j = 0; j < 3; j++ ) {
-                ebar_np1o2[i][j] = 0.0;
+                elem[j] = 0.0;
             }
         }
 

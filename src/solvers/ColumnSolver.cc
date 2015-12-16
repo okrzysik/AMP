@@ -34,8 +34,8 @@ void ColumnSolver::GaussSeidel( AMP::shared_ptr<const AMP::LinearAlgebra::Vector
                                 AMP::shared_ptr<AMP::LinearAlgebra::Vector> &u )
 {
     for ( int it = 0; it < d_iMaxIterations; it++ ) {
-        for ( unsigned int i = 0; i < d_Solvers.size(); i++ ) {
-            AMP::shared_ptr<AMP::Operator::Operator> op = d_Solvers[i]->getOperator();
+        for ( auto &elem : d_Solvers ) {
+            AMP::shared_ptr<AMP::Operator::Operator> op = elem->getOperator();
             AMP_INSIST( op.get() != nullptr,
                         "EROR: NULL Operator returned by SolverStrategy::getOperator" );
 
@@ -46,7 +46,7 @@ void ColumnSolver::GaussSeidel( AMP::shared_ptr<const AMP::LinearAlgebra::Vector
             AMP_INSIST( su.get() != nullptr,
                         "ERROR: subset on solution u yields NULL vector in ColumnSolver::solve" );
 
-            d_Solvers[i]->solve( sf, su );
+            elem->solve( sf, su );
         }
     }
 }
@@ -55,8 +55,8 @@ void ColumnSolver::SymmetricGaussSeidel( AMP::shared_ptr<const AMP::LinearAlgebr
                                          AMP::shared_ptr<AMP::LinearAlgebra::Vector> &u )
 {
     for ( int it = 0; it < d_iMaxIterations; it++ ) {
-        for ( unsigned int i = 0; i < d_Solvers.size(); i++ ) {
-            AMP::shared_ptr<AMP::Operator::Operator> op = d_Solvers[i]->getOperator();
+        for ( auto &elem : d_Solvers ) {
+            AMP::shared_ptr<AMP::Operator::Operator> op = elem->getOperator();
             AMP_INSIST( op.get() != nullptr,
                         "EROR: NULL Operator returned by SolverStrategy::getOperator" );
 
@@ -67,7 +67,7 @@ void ColumnSolver::SymmetricGaussSeidel( AMP::shared_ptr<const AMP::LinearAlgebr
             AMP_INSIST( su.get() != nullptr,
                         "ERROR: subset on solution u yields NULL vector in ColumnSolver::solve" );
 
-            d_Solvers[i]->solve( sf, su );
+            elem->solve( sf, su );
         }
 
         for ( int i = (int) d_Solvers.size() - 1; i >= 0; i-- ) {
@@ -89,8 +89,8 @@ void ColumnSolver::SymmetricGaussSeidel( AMP::shared_ptr<const AMP::LinearAlgebr
 
 void ColumnSolver::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess )
 {
-    for ( unsigned int i = 0; i < d_Solvers.size(); i++ ) {
-        d_Solvers[i]->setInitialGuess( initialGuess );
+    for ( auto &elem : d_Solvers ) {
+        elem->setInitialGuess( initialGuess );
     }
 }
 
@@ -108,8 +108,8 @@ void ColumnSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorP
 
         AMP::shared_ptr<SolverStrategyParameters> solverParams;
 
-        for ( unsigned int i = 0; i < d_Solvers.size(); i++ ) {
-            d_Solvers[i]->reset( solverParams );
+        for ( auto &elem : d_Solvers ) {
+            elem->reset( solverParams );
         }
     } else {
         AMP::shared_ptr<AMP::Operator::ColumnOperatorParameters> columnParams =

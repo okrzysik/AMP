@@ -170,8 +170,8 @@ int main( int argc, char *argv[] )
     std::string files[NUMFILES] = { "LinearOp-Robin-1" };
 
     try {
-        for ( int i = 0; i < NUMFILES; i++ )
-            linearRobinTest( &ut, files[i] );
+        for ( auto &file : files )
+            linearRobinTest( &ut, file );
     } catch ( std::exception &err ) {
         std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
         ut.failure( "ERROR: While testing" );

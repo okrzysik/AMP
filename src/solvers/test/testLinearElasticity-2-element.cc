@@ -185,10 +185,10 @@ int main( int argc, char *argv[] )
         } // end for i
     }
 
-    for ( size_t i = 0; i < mesh_files.size(); i++ ) {
+    for ( auto &mesh_file : mesh_files ) {
         for ( int reduced = 0; reduced < 2; reduced++ ) {
             try {
-                linearElasticTest( &ut, reduced, mesh_files[i] );
+                linearElasticTest( &ut, reduced, mesh_file );
             } catch ( std::exception &err ) {
                 AMP::pout << "ERROR: " << err.what() << std::endl;
                 ut.failure( "ERROR" );

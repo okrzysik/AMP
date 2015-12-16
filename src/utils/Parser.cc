@@ -134,8 +134,8 @@ void Parser::advanceCursor( const std::string &token )
 {
     Parser::ParseData &pd = d_parse_stack.front();
     pd.d_cursor           = pd.d_nextcursor;
-    for ( std::string::const_iterator i = token.begin(); i != token.end(); i++ ) {
-        if ( *i == '\t' ) {
+    for ( const auto &elem : token ) {
+        if ( elem == '\t' ) {
             pd.d_nextcursor = ( ( pd.d_nextcursor + 7 ) & ( ~7 ) ) + 1;
         } else {
             pd.d_nextcursor++;

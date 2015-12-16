@@ -146,8 +146,8 @@ void GaussPointToGaussPointMap::createIdxMap(
     AMP::LinearAlgebra::Vector::shared_ptr outVec = inVec->cloneVector();
 
     std::vector<size_t> localDofs( dofsPerElem );
-    for ( size_t i = 0; i < d_sendList.size(); ++i ) {
-        AMP::Mesh::MeshElement el = multiMesh->getElement( d_sendList[i] );
+    for ( auto &_i : d_sendList ) {
+        AMP::Mesh::MeshElement el = multiMesh->getElement( _i );
 
         std::vector<AMP::Mesh::MeshElement> currNodes = el.getElements( AMP::Mesh::Vertex );
 
@@ -163,7 +163,7 @@ void GaussPointToGaussPointMap::createIdxMap(
 
         const std::vector<::Point> &xyz = fe->get_xyz();
 
-        dofMap->getDOFs( d_sendList[i], localDofs );
+        dofMap->getDOFs( _i, localDofs );
 
         for ( unsigned int j = 0; j < numGaussPtsPerElem; ++j ) {
             for ( int k = 0; k < dim; ++k ) {
@@ -189,8 +189,8 @@ void GaussPointToGaussPointMap::createIdxMap(
     n2nMap->apply( inVec, nullVec );
 
     d_idxMap.clear();
-    for ( size_t i = 0; i < d_recvList.size(); ++i ) {
-        AMP::Mesh::MeshElement el = multiMesh->getElement( d_recvList[i] );
+    for ( auto &_i : d_recvList ) {
+        AMP::Mesh::MeshElement el = multiMesh->getElement( _i );
 
         std::vector<AMP::Mesh::MeshElement> currNodes = el.getElements( AMP::Mesh::Vertex );
 
@@ -206,7 +206,7 @@ void GaussPointToGaussPointMap::createIdxMap(
 
         const std::vector<::Point> &xyz = fe->get_xyz();
 
-        dofMap->getDOFs( d_recvList[i], localDofs );
+        dofMap->getDOFs( _i, localDofs );
 
         std::vector<double> vals( dofsPerElem );
         for ( unsigned int j = 0; j < dofsPerElem; ++j ) {

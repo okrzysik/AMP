@@ -101,11 +101,8 @@ template <class INPUT_VTYPE>
 bool Property<Number>::in_range( const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>> &values )
 {
     bool result = true;
-    for ( typename std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>>::const_iterator it =
-              values.begin();
-          it != values.end();
-          it++ ) {
-        result = result && in_range( it->first, *( it->second ) );
+    for ( const auto &value : values ) {
+        result = result && in_range( value.first, *( value.second ) );
     }
     return result;
 }
@@ -204,19 +201,16 @@ void Property<Number>::evalv(
     const std::map<std::string, AMP::shared_ptr<std::vector<Number>>> &args )
 {
     if ( !in_range( args ) ) {
-        for ( typename std::map<std::string, AMP::shared_ptr<std::vector<Number>>>::const_iterator
-                  it = args.begin();
-              it != args.end();
-              it++ ) {
-            if ( !in_range( it->first, *( it->second ) ) ) {
-                std::vector<Number> range   = get_arg_range( it->first );
-                std::vector<Number> &values = *( it->second );
+        for ( const auto &arg : args ) {
+            if ( !in_range( arg.first, *( arg.second ) ) ) {
+                std::vector<Number> range   = get_arg_range( arg.first );
+                std::vector<Number> &values = *( arg.second );
                 std::stringstream ss;
-                ss << "Property '" + it->first + "' out of range in function '" + d_name + "'."
+                ss << "Property '" + arg.first + "' out of range in function '" + d_name + "'."
                    << std::endl;
                 ss << "Values are ";
-                for ( size_t i = 0; i < values.size(); ++i )
-                    ss << values[i] << " ";
+                for ( auto &value : values )
+                    ss << value << " ";
                 ss << std::endl;
                 ss << "Valid range is [" << range[0] << "," << range[1] << "]" << std::endl;
                 AMP_ERROR( ss.str() );

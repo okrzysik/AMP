@@ -77,13 +77,13 @@ void NonlinearFEOperator::createLibMeshElementList()
 
 void NonlinearFEOperator::destroyLibMeshElementList()
 {
-    for ( size_t i = 0; i < d_currElemPtrs.size(); ++i ) {
-        for ( size_t j = 0; j < d_currElemPtrs[i]->n_nodes(); ++j ) {
-            delete ( d_currElemPtrs[i]->get_node( j ) );
-            d_currElemPtrs[i]->set_node( j ) = nullptr;
+    for ( auto &elem : d_currElemPtrs ) {
+        for ( size_t j = 0; j < elem->n_nodes(); ++j ) {
+            delete ( elem->get_node( j ) );
+            elem->set_node( j ) = nullptr;
         } // end for j
-        delete ( d_currElemPtrs[i] );
-        d_currElemPtrs[i] = nullptr;
+        delete ( elem );
+        elem = nullptr;
     } // end for i
     d_currElemPtrs.clear();
 }

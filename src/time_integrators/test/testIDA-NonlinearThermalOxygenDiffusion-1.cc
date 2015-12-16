@@ -271,9 +271,9 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
         std::cout << "oval = " << oval << std::endl;
 
         std::cout << "counter = " << counter << "bndGlobalIds.size() = " << gid.size() << std::endl;
-        for ( unsigned int i = 0; i < gid.size(); i++ ) {
-            thermalIC->setValueByGlobalID( gid[i], tval );
-            oxygenIC->setValueByGlobalID( gid[i], oval );
+        for ( auto &elem : gid ) {
+            thermalIC->setValueByGlobalID( elem, tval );
+            oxygenIC->setValueByGlobalID( elem, oval );
         } // end for i
     }     // end for node
 

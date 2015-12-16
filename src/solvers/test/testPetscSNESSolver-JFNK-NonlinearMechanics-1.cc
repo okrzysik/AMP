@@ -188,9 +188,9 @@ int main( int argc, char *argv[] )
     std::vector<std::string> exeNames;
     exeNames.push_back( "testPetscSNESSolver-JFNK-ML-NonlinearMechanics-1-normal" );
 
-    for ( size_t i = 0; i < exeNames.size(); i++ ) {
+    for ( auto &exeName : exeNames ) {
         try {
-            myTest( &ut, exeNames[i] );
+            myTest( &ut, exeName );
         } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );

@@ -201,9 +201,9 @@ getLateralFaces( AMP::Mesh::Mesh::shared_ptr mesh, bool )
         bool perpindicular_to_x = true; // is the current face perpindicular to x-axis?
         bool perpindicular_to_y = true; // is the current face perpindicular to y-axis?
         // loop over vertices of current face
-        for ( size_t j = 0; j < vertices.size(); ++j ) {
+        for ( auto &vertice : vertices ) {
             // get coordinates of current vertex
-            std::vector<double> vertexCoord = vertices[j].coord();
+            std::vector<double> vertexCoord = vertice.coord();
             // if any vertex does not have the same x-coordinate as the face centroid,
             if ( !AMP::Utilities::approx_equal( vertexCoord[0], faceCentroid[0], 1.0e-6 ) )
                 // then the face is not perpindicular to x-axis
@@ -21487,16 +21487,16 @@ int main( int argc, char *argv[] )
     std::string files[NUMFILES] = { "testSubchannelFourEqLinearOperator" };
 
     // execute unit test for each input file
-    for ( int i = 0; i < NUMFILES; i++ ) {
+    for ( auto &file : files ) {
         try {
-            Test( &ut, files[i] );
+            Test( &ut, file );
         } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
-            ut.failure( "ERROR: While testing: " + files[i] );
+            ut.failure( "ERROR: While testing: " + file );
         } catch ( ... ) {
             std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
                       << std::endl;
-            ut.failure( "ERROR: While testing: " + files[i] );
+            ut.failure( "ERROR: While testing: " + file );
         }
     }
 

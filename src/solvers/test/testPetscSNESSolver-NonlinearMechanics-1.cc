@@ -228,9 +228,9 @@ int main( int argc, char *argv[] )
     exeNames.push_back( "testPetscSNESSolver-LU-NonlinearMechanics-1-reduced" );
     exeNames.push_back( "testPetscSNESSolver-ML-NonlinearMechanics-1-reduced" );
 
-    for ( size_t i = 0; i < exeNames.size(); i++ ) {
+    for ( auto &exeName : exeNames ) {
         try {
-            myTest( &ut, exeNames[i] );
+            myTest( &ut, exeName );
         } catch ( std::exception &err ) {
             std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
             ut.failure( "ERROR: While testing" );

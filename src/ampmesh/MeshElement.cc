@@ -110,8 +110,8 @@ std::vector<double> MeshElement::centroid() const
         for ( size_t j = 0; j < center.size(); j++ )
             center[j] += coord[j];
     }
-    for ( size_t j = 0; j < center.size(); j++ )
-        center[j] /= nodes.size();
+    for ( auto &elem : center )
+        elem /= nodes.size();
     return center;
 }
 

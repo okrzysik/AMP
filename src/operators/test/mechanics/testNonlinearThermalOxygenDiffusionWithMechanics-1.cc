@@ -301,9 +301,9 @@ int main( int argc, char *argv[] )
     exeNames.push_back( "nonlinearBVP-Mechanics-ThermalStrain-Thermal-Oxygen-UO2MSRZC09-1" );
     //  exeNames.push_back("testNonlinearMechanics-1-reduced");
 
-    for ( unsigned int i = 0; i < exeNames.size(); i++ ) {
+    for ( auto &exeName : exeNames ) {
         //  try {
-        thermoMechanicsTest( &ut, exeNames[i] );
+        thermoMechanicsTest( &ut, exeName );
         //} catch (std::exception &err) {
         //      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
         //      ut.failure("ERROR: While testing");

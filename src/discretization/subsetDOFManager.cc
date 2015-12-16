@@ -35,9 +35,9 @@ DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManage
     subsetDOF->d_localDOFs.reserve( dofs.size() );
     size_t begin_dof = parentDOFManager->beginDOF();
     size_t end_dof   = parentDOFManager->endDOF();
-    for ( size_t i = 0; i < dofs.size(); i++ ) {
-        if ( dofs[i] >= begin_dof && dofs[i] < end_dof )
-            subsetDOF->d_localDOFs.push_back( dofs[i] );
+    for ( auto &dof : dofs ) {
+        if ( dof >= begin_dof && dof < end_dof )
+            subsetDOF->d_localDOFs.push_back( dof );
     }
     AMP::Utilities::unique( subsetDOF->d_localDOFs );
     // Get the begin and global DOFs for the subset
@@ -76,13 +76,13 @@ DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManage
     subsetDOF->d_remoteParentDOFs.reserve( remoteDOFs.size() );
     subsetDOF->d_remoteSubsetDOFs.reserve( remoteDOFs.size() );
     size_t k = 0;
-    for ( size_t i = 0; i < remoteDOFs.size(); i++ ) {
-        size_t index = AMP::Utilities::findfirst( recv_data, remoteDOFs[i] );
+    for ( auto &remoteDOF : remoteDOFs ) {
+        size_t index = AMP::Utilities::findfirst( recv_data, remoteDOF );
         if ( index == recv_data.size() ) {
             index--;
         }
-        if ( recv_data[index] == remoteDOFs[i] ) {
-            subsetDOF->d_remoteParentDOFs.push_back( remoteDOFs[i] );
+        if ( recv_data[index] == remoteDOF ) {
+            subsetDOF->d_remoteParentDOFs.push_back( remoteDOF );
             subsetDOF->d_remoteSubsetDOFs.push_back( index );
             k++;
         }

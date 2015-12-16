@@ -288,11 +288,11 @@ std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type
     for ( int d = 0; d < d_dim; d++ ) {
         if ( d_mesh->d_isPeriodic[d] ) {
             int size = d_mesh->d_size[d];
-            for ( size_t i = 0; i < index.size(); i++ ) {
-                if ( index[i].index[d] < 0 )
-                    index[i].index[d] += size;
-                else if ( index[i].index[d] >= size )
-                    index[i].index[d] -= size;
+            for ( auto &elem : index ) {
+                if ( elem.index[d] < 0 )
+                    elem.index[d] += size;
+                else if ( elem.index[d] >= size )
+                    elem.index[d] -= size;
             }
         }
     }
@@ -400,29 +400,29 @@ std::vector<MeshElement::shared_ptr> structuredMeshElement::getNeighbors() const
         periodic[d] = d_mesh->d_isPeriodic[d];
         size[d]     = d_mesh->d_size[d];
     }
-    for ( size_t i = 0; i < index.size(); i++ ) {
+    for ( auto &elem : index ) {
         bool in_mesh = true;
         for ( int d = 0; d < d_dim; d++ ) {
             if ( periodic[d] ) {
-                if ( index[i].index[d] < 0 )
-                    index[i].index[d] += size[d];
-                if ( index[i].index[d] >= size[d] )
-                    index[i].index[d] -= size[d];
+                if ( elem.index[d] < 0 )
+                    elem.index[d] += size[d];
+                if ( elem.index[d] >= size[d] )
+                    elem.index[d] -= size[d];
             } else {
-                if ( index[i].index[d] < 0 )
+                if ( elem.index[d] < 0 )
                     in_mesh = false;
                 if ( d_globalID.type() == d_dim ) {
-                    if ( index[i].index[d] >= size[d] )
+                    if ( elem.index[d] >= size[d] )
                         in_mesh = false;
                 } else {
-                    if ( index[i].index[d] > size[d] )
+                    if ( elem.index[d] > size[d] )
                         in_mesh = false;
                 }
             }
         }
         if ( in_mesh )
             neighbors.push_back(
-                MeshElement::shared_ptr( new structuredMeshElement( index[i], d_mesh ) ) );
+                MeshElement::shared_ptr( new structuredMeshElement( elem, d_mesh ) ) );
         else if ( d_globalID.type() != Vertex )
             neighbors.push_back( MeshElement::shared_ptr() );
     }
@@ -601,11 +601,11 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
     for ( int d = 0; d < d_dim; d++ ) {
         if ( d_mesh->d_isPeriodic[d] ) {
             int size = d_mesh->d_size[d];
-            for ( size_t i = 0; i < index_list.size(); i++ ) {
-                if ( index_list[i].index[d] < 0 )
-                    index_list[i].index[d] += size;
-                else if ( index_list[i].index[d] >= size )
-                    index_list[i].index[d] -= size;
+            for ( auto &elem : index_list ) {
+                if ( elem.index[d] < 0 )
+                    elem.index[d] += size;
+                else if ( elem.index[d] >= size )
+                    elem.index[d] -= size;
             }
         }
     }
@@ -661,14 +661,14 @@ double structuredMeshElement::volume() const
             const double q[2] = { 0.5 - std::sqrt( 3.0 ) / 6.0, 0.5 + std::sqrt( 3.0 ) / 6.0 };
             double vol        = 0.0;
             double v1[3], v2[3];
-            for ( unsigned int i = 0; i < 2; ++i ) {
-                for ( unsigned int j = 0; j < 2; ++j ) {
-                    v1[0] = AB[0] + q[i] * AC_AB_AD[0];
-                    v1[1] = AB[1] + q[i] * AC_AB_AD[1];
-                    v1[2] = AB[2] + q[i] * AC_AB_AD[2];
-                    v2[0] = AD[0] + q[j] * AC_AB_AD[0];
-                    v2[1] = AD[1] + q[j] * AC_AB_AD[1];
-                    v2[2] = AD[2] + q[j] * AC_AB_AD[2];
+            for ( auto &elem : q ) {
+                for ( auto &q_j : q ) {
+                    v1[0] = AB[0] + elem * AC_AB_AD[0];
+                    v1[1] = AB[1] + elem * AC_AB_AD[1];
+                    v1[2] = AB[2] + elem * AC_AB_AD[2];
+                    v2[0] = AD[0] + q_j * AC_AB_AD[0];
+                    v2[1] = AD[1] + q_j * AC_AB_AD[1];
+                    v2[2] = AD[2] + q_j * AC_AB_AD[2];
                     vol += cross3magnitude( v1, v2 );
                 }
             }
@@ -692,10 +692,10 @@ double structuredMeshElement::volume() const
         int pyr_base[4];
         double vol = 0.0;
         // Compute the volume using 6 sub-pyramids
-        for ( unsigned int n = 0; n < 6; ++n ) {
+        for ( auto &elem : sub_pyr ) {
             // Set the nodes of the pyramid base
             for ( unsigned int i = 0; i < 4; ++i )
-                pyr_base[i]      = sub_pyr[n][i];
+                pyr_base[i]      = elem[i];
             // Compute diff vectors
             double a[3], b[3], c[3], d[3], e[3];
             for ( int i = 0; i < 3; i++ ) {
@@ -783,14 +783,14 @@ bool structuredMeshElement::isOnBoundary( int id ) const
     iterator = d_mesh->d_id_list.find( std::pair<int, GeomType>( id, (GeomType) d_index.type ) );
     if ( iterator == d_mesh->d_id_list.end() )
         return false;
-    for ( size_t i = 0; i < iterator->second.size(); i++ ) {
-        if ( iterator->second[i]->size() == 0 )
+    for ( auto &elem : iterator->second ) {
+        if ( elem->size() == 0 )
             continue;
-        size_t j = AMP::Utilities::findfirst( *( iterator->second[i] ), d_index );
-        if ( j == iterator->second[i]->size() ) {
+        size_t j = AMP::Utilities::findfirst( *( elem ), d_index );
+        if ( j == elem->size() ) {
             j--;
         }
-        if ( iterator->second[i]->operator[]( j ) == d_index )
+        if ( elem->operator[]( j ) == d_index )
             return true;
     }
     return false;
