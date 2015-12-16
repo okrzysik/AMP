@@ -28,7 +28,7 @@ public:
 
     bool useScaling();
 
-    void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
 
     void applyUnscaling( AMP::LinearAlgebra::Vector::shared_ptr f );
 

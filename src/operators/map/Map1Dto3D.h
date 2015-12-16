@@ -36,7 +36,7 @@ public:
       This function reads the entries of the database for the operator
       and can also be used to change the parameters if required.
      */
-    void reset( const AMP::shared_ptr<OperatorParameters> & );
+    void reset( const AMP::shared_ptr<OperatorParameters> & ) override;
 
     /**
       For this operator the apply function would map the solution by injunction from
@@ -53,10 +53,10 @@ public:
     void apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                       AMP::LinearAlgebra::Vector::shared_ptr f );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_inpVariable; }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inpVariable; }
 
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outVariable; }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outVariable; }
 
 
     //!  This function is used to compute 1D locations from the output vector.

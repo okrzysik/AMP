@@ -45,7 +45,7 @@ public:
      * \details  Set a frozen vector for results of the apply operation.
      * \param result    The results vector
      */
-    virtual void setVector( AMP::LinearAlgebra::Vector::shared_ptr result );
+    virtual void setVector( AMP::LinearAlgebra::Vector::shared_ptr result ) override;
 
     /** \brief   Start a communicative apply operation.
      * \details  Start a communicative apply operation.
@@ -79,17 +79,18 @@ protected:
     AMP::Mesh::MeshIterator d_iterator2;
 
 private:
-    // The grid of the subchannel mesh
-    void fillSubchannelGrid(
-        AMP::Mesh::Mesh::shared_ptr ); // Function to fill the subchannel data for all processors
-    size_t N_subchannels;              // The total number of subchannels
-    std::vector<double> d_x, d_y, d_z; // The x, y, z grid for the subchannel
-    std::vector<bool>
-        d_ownSubChannel; // Which subchannels do I own (multple procs my own a subchannel)
-    std::vector<std::vector<int>>
-        d_subchannelRanks; // The processors that own each x-y point in the subchannel
-    std::vector<std::vector<int>>
-        d_subchannelRecv; // The processors that are recieving data from each subchannel
+    // Function to fill the subchannel data for all processors
+    void fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr );
+    // The total number of subchannels
+    size_t N_subchannels;
+    // The x, y, z grid for the subchannel
+    std::vector<double> d_x, d_y, d_z;
+    // Which subchannels do I own (multple procs my own a subchannel)
+    std::vector<bool> d_ownSubChannel;
+    // The processors that own each x-y point in the subchannel
+    std::vector<std::vector<int>> d_subchannelRanks;
+    // The processors that are recieving data from each subchannel
+    std::vector<std::vector<int>> d_subchannelRecv;
 
     // Function to get the iterator for the subchannel mesh
     static AMP::Mesh::MeshIterator getSubchannelIterator( AMP::Mesh::Mesh::shared_ptr );

@@ -167,8 +167,8 @@ public:
     }
 
 protected:
-    void *getRawDataBlockAsVoid( size_t i );
-    const void *getRawDataBlockAsVoid( size_t i ) const;
+    virtual void *getRawDataBlockAsVoid( size_t i ) override;
+    virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
 
     void resetArray();
     void resetArray() const;

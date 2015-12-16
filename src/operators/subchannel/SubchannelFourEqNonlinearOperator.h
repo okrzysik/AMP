@@ -33,21 +33,21 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_inpVariable; }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inpVariable; }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outVariable; }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr
-    subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec );
-    virtual AMP::LinearAlgebra::Vector::const_shared_ptr
-    subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec );
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outVariable; }
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr
-    subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec );
+    subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
     virtual AMP::LinearAlgebra::Vector::const_shared_ptr
-    subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec );
+    subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec ) override;
+
+    virtual AMP::LinearAlgebra::Vector::shared_ptr
+    subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
+    virtual AMP::LinearAlgebra::Vector::const_shared_ptr
+    subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec ) override;
 
     void setVector( AMP::LinearAlgebra::Vector::shared_ptr frozenVec )
     {

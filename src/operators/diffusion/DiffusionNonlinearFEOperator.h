@@ -24,7 +24,7 @@ public:
 
     virtual ~DiffusionNonlinearFEOperator() {}
 
-    void reset( const AMP::shared_ptr<OperatorParameters> & );
+    void reset( const AMP::shared_ptr<OperatorParameters> & ) override;
 
     void setInputVariableName( const std::string &name, int varId = -1 );
 
@@ -36,9 +36,9 @@ public:
     AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable( const std::string &name,
                                                                    int varId = -1 );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 
     unsigned int numberOfDOFMaps();
 
@@ -65,20 +65,20 @@ public:
     /**
      * checks input to apply operator for satisfaction of range conditions
      */
-    bool isValidInput( AMP::LinearAlgebra::Vector::shared_ptr &u );
+    bool isValidInput( AMP::LinearAlgebra::Vector::shared_ptr &u ) override;
 
 protected:
     AMP::shared_ptr<OperatorParameters>
     getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
 
     void preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                      AMP::LinearAlgebra::Vector::shared_ptr r );
+                      AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
-    void postAssembly();
+    void postAssembly() override;
 
-    void preElementOperation( const AMP::Mesh::MeshElement & );
+    void preElementOperation( const AMP::Mesh::MeshElement & ) override;
 
-    void postElementOperation();
+    void postElementOperation() override;
 
     void init( const AMP::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params );
 

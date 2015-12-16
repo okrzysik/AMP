@@ -24,9 +24,9 @@ public:
         out->scale( d_constant, in );
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_var; }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_var; }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_var; }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_var; }
 
 protected:
     AMP::LinearAlgebra::Variable::shared_ptr d_var;

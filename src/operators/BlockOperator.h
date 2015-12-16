@@ -28,14 +28,14 @@ public:
 
     void setBlock( int row, int col, AMP::shared_ptr<Operator> op );
 
-    void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
     void computeFirstIndices();
 

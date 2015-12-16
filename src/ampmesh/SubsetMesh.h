@@ -274,7 +274,13 @@ protected:
         }
         inline bool operator>( const map_id_struct &rhs ) const
         {
-            return operator>( rhs ) && operator!=( rhs );
+            if ( id != rhs.id ) {
+                return id > rhs.id;
+            }
+            if ( type != rhs.type ) {
+                return type > rhs.type;
+            }
+            return gcw > rhs.gcw;
         }
         inline bool operator<( const map_id_struct &rhs ) const { return !operator>=( rhs ); }
         inline bool operator<=( const map_id_struct &rhs ) const { return !operator>( rhs ); }

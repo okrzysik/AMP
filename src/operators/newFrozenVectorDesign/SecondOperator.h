@@ -30,7 +30,7 @@ public:
         out->linearSum( d_constant, inP, 1.0, inS );
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable()
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
     {
         AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
             new AMP::LinearAlgebra::MultiVariable( "MultiVariable" ) );
@@ -39,7 +39,7 @@ public:
         return retVariable;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_primaryVar; }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_primaryVar; }
 
 protected:
     AMP::LinearAlgebra::Variable::shared_ptr d_primaryVar;

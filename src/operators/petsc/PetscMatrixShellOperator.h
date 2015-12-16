@@ -57,11 +57,11 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
 private:
     AMP::shared_ptr<Operator> d_operator;

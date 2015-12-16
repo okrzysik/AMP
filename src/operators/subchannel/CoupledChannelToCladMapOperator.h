@@ -17,9 +17,9 @@ public:
     explicit CoupledChannelToCladMapOperator(
         const AMP::shared_ptr<CoupledChannelToCladMapOperatorParameters> &params );
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_flowVariable; }
+    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_flowVariable; }
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable()
+    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
     {
         return d_thermalMapOperator->getOutputVariable();
     }

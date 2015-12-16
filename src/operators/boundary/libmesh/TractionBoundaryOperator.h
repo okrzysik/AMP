@@ -19,7 +19,7 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs );
+    void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs ) override;
 
 protected:
     AMP::LinearAlgebra::Vector::shared_ptr

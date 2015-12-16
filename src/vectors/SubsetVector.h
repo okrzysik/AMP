@@ -77,8 +77,8 @@ private:
     SubsetVector() {}
     void computeIDMap();
 
-    void *getRawDataBlockAsVoid( size_t i );
-    const void *getRawDataBlockAsVoid( size_t i ) const;
+    virtual void *getRawDataBlockAsVoid( size_t i ) override;
+    virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
 
     // Internal data
     Vector::shared_ptr d_ViewVector;                   // Vector we subsetted for the view

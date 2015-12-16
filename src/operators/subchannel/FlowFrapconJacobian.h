@@ -46,7 +46,7 @@ public:
       This function reads the entries of the database for the flow operator
       and can also be used to change the parameters if required.
       */
-    void reset( const AMP::shared_ptr<OperatorParameters> &params );
+    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
 
     /*
           static bool sort_nodes_in_z ( const ::Node *one , const ::Node *two ) {
@@ -59,25 +59,25 @@ public:
     AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable( const std::string &name,
                                                                    int varId = -1 );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 
     void setInputVariableName( const std::string &name, int varId = -1 );
 
     void setOutputVariableName( const std::string &name, int varId = -1 );
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr
-    subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec );
+    subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr
-    subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec );
+    subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
 
     virtual AMP::LinearAlgebra::Vector::const_shared_ptr
-    subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec );
+    subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec ) override;
 
     virtual AMP::LinearAlgebra::Vector::const_shared_ptr
-    subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec );
+    subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec ) override;
 
     /**
       @param [in] zloc is the location vector in z direction.

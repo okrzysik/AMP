@@ -81,8 +81,8 @@ public:
     virtual size_t getGlobalSize() const override;
     virtual size_t getGhostSize() const override;
 
-    virtual size_t numberOfDataBlocks() const;
-    virtual size_t sizeOfDataBlock( size_t ) const;
+    virtual size_t numberOfDataBlocks() const override;
+    virtual size_t sizeOfDataBlock( size_t ) const override;
 
     virtual uint64_t getDataID() const override { return 0; }
 

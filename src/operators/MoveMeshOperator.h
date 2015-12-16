@@ -16,7 +16,7 @@ public:
 
     void setVariable( AMP::LinearAlgebra::Variable::shared_ptr var );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr f ) override;

@@ -22,7 +22,7 @@ public:
         r->scale( -1.0 );
     }
 
-    void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs )
+    void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs ) override
     {
         d_tractionOp->addRHScorrection( rhs );
     }
