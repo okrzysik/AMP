@@ -19,20 +19,19 @@ public:
 
     virtual ~ElasticDamageThermalStrainModel() {}
 
-    void getConstitutiveMatrix(double *&) override;
+    void getConstitutiveMatrix( double *& ) override;
 
-    void getExternalStress(double *&) override;
+    void getExternalStress( double *& ) override;
 
-    void getInternalStress(const std::vector<std::vector<double>> &,
-                           double *&) override;
+    void getInternalStress( const std::vector<std::vector<double>> &, double *& ) override;
 
     void preLinearAssembly() override { d_gaussPtCnt = 0; }
 
     void postLinearGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void preNonlinearInit(bool, bool) override;
+    void preNonlinearInit( bool, bool ) override;
 
-    void nonlinearInitGaussPointOperation(double) override;
+    void nonlinearInitGaussPointOperation( double ) override;
 
     void preNonlinearAssembly() override { d_gaussPtCnt = 0; }
 
@@ -42,8 +41,7 @@ public:
 
     void postNonlinearResetGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void nonlinearResetGaussPointOperation(
-        const std::vector<std::vector<double>> &) override;
+    void nonlinearResetGaussPointOperation( const std::vector<std::vector<double>> & ) override;
 
     void globalReset() override;
 
@@ -53,8 +51,7 @@ public:
 
     void postNonlinearJacobianGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void nonlinearJacobianGaussPointOperation(
-        const std::vector<std::vector<double>> &) override;
+    void nonlinearJacobianGaussPointOperation( const std::vector<std::vector<double>> & ) override;
 
     std::vector<double> d_EquilibriumDamage;
 

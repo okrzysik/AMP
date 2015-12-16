@@ -67,12 +67,13 @@ public:
     /**
       Element residual vector computation.
      */
-    void apply() override {
-      if (d_useReducedIntegration) {
-        apply_Reduced();
-      } else {
-        apply_Normal();
-      }
+    void apply() override
+    {
+        if ( d_useReducedIntegration ) {
+            apply_Reduced();
+        } else {
+            apply_Normal();
+        }
     }
 
     /**
@@ -206,7 +207,7 @@ protected:
                   the Gauss points in the current element. */
 
     const std::vector<std::vector<Real>> *d_phi; /**< Shape functions at
-                                                        the Gauss points in the current element. */
+                                                         the Gauss points in the current element. */
 
     const std::vector<Point> *d_xyz; /**< Locations of the Gauss points in the current element. */
 

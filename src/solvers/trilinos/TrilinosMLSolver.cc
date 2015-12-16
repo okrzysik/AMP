@@ -154,8 +154,11 @@ void TrilinosMLSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Op
 
         if ( ( d_mlOptions->d_increasingDecreasing ) == "increasing" ) {
             ML_Init_Amatrix( d_ml, 0, matSize, matSize, d_pOperator.get() );
-            ML_Set_Amatrix_Getrow(
-                d_ml, 0, &( AMP::Operator::TrilinosMatrixShellOperator::getRow ), nullptr, matSize );
+            ML_Set_Amatrix_Getrow( d_ml,
+                                   0,
+                                   &( AMP::Operator::TrilinosMatrixShellOperator::getRow ),
+                                   nullptr,
+                                   matSize );
             ML_Set_Amatrix_Matvec(
                 d_ml, 0, &( AMP::Operator::TrilinosMatrixShellOperator::matVec ) );
         } else {

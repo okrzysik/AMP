@@ -37,7 +37,7 @@ public:
     //!  Returns the frozen vector
     virtual AMP::LinearAlgebra::Vector::shared_ptr getFrozenVector() { return d_OutputVector; }
 
-    virtual void append(AMP::shared_ptr<Operator> op) override;
+    virtual void append( AMP::shared_ptr<Operator> op ) override;
 
     // Overload the apply operator to include makeConsistent
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,

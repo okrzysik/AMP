@@ -35,15 +35,14 @@ public:
     /**
      * Initialize from parameter list.
      */
-    void
-    initialize(AMP::shared_ptr<TimeIntegratorParameters> parameters) override;
+    void initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
     /**
     * Resets the internal state of the time integrator as needed.
     * A parameter argument is passed to allow for general flexibility
     * in determining what needs to be reset Typically used after a regrid.
     */
-    void reset(AMP::shared_ptr<TimeIntegratorParameters> parameters) override;
+    void reset( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
     /**
      * Specify initial time step.
@@ -53,21 +52,21 @@ public:
     /**
      * Specify next time step to use.
      */
-    double getNextDt(const bool good_solution) override;
+    double getNextDt( const bool good_solution ) override;
 
     /**
     * Determine whether time advanced solution is satisfactory.
      */
-    bool checkNewSolution(void) const override;
+    bool checkNewSolution( void ) const override;
 
     /**
     * Update state of the solution.
     */
-    void updateSolution(void) override;
+    void updateSolution( void ) override;
 
-    int advanceSolution(const double dt, const bool first_step) override;
+    int advanceSolution( const double dt, const bool first_step ) override;
 
-  private:
+private:
     /**
      * Constructor.
      */

@@ -70,7 +70,7 @@ public:
     /**
       This is used to update the operator between successive solves with the operator.
       */
-    void reset(const AMP::shared_ptr<OperatorParameters> &) override;
+    void reset( const AMP::shared_ptr<OperatorParameters> & ) override;
 
     /**
       This function is used to set the reference temperature when using temperature dependent
@@ -94,16 +94,12 @@ public:
       it
       returns the multivariable for the entire vector.
       */
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override {
-      return d_inpVariables;
-    }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inpVariables; }
 
     /**
       @return The variable for the output vector
       */
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override {
-      return d_outVariable;
-    }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outVariable; }
 
     /**
       Writes the stress and strain at each Gauss point to a file.
@@ -139,8 +135,9 @@ protected:
       @param [in] u  input vector
       @param [out] r output vector
       */
-    void preAssembly(AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                     AMP::shared_ptr<AMP::LinearAlgebra::Vector> r) override;
+    void preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                      AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                          r ) override;
 
     /**
       This function is called at the end of the FE assembly.
@@ -154,7 +151,7 @@ protected:
       input vector that is relevant for the computation in the current element is extracted
       and passed to MechanicsNonlinearElement.
       */
-    void preElementOperation(const AMP::Mesh::MeshElement &) override;
+    void preElementOperation( const AMP::Mesh::MeshElement & ) override;
 
     /**
       This function is called at the end of the element computation. The entries of the

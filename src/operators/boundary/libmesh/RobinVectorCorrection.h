@@ -61,9 +61,9 @@ public:
       This function can be used to change the Robin boundary conditions i.e., change the
       RHS flux values.
       */
-    void reset(const AMP::shared_ptr<OperatorParameters> &params) override;
+    void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
 
-  protected:
+protected:
     /**
       This function returns a parameter object that can be used to reset the corresponding
       RobinMatrixCorrection operator.

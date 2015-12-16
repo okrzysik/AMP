@@ -255,8 +255,8 @@ struct yy_buffer_state {
 #endif /* !YY_STRUCT_YY_BUFFER_STATE */
 
 /* Stack of input buffers. */
-static size_t yy_buffer_stack_top       = 0; /**< index of top of stack. */
-static size_t yy_buffer_stack_max       = 0; /**< capacity of stack. */
+static size_t yy_buffer_stack_top       = 0;       /**< index of top of stack. */
+static size_t yy_buffer_stack_max       = 0;       /**< capacity of stack. */
 static YY_BUFFER_STATE *yy_buffer_stack = nullptr; /**< Stack as an array. */
 
 /* We provide macros for accessing buffer states in case in the
@@ -1496,7 +1496,7 @@ void yy_delete_buffer( YY_BUFFER_STATE b )
         return;
 
     if ( b == YY_CURRENT_BUFFER ) /* Not sure if we should pop here. */
-        YY_CURRENT_BUFFER_LVALUE = (YY_BUFFER_STATE) nullptr;
+        YY_CURRENT_BUFFER_LVALUE = ( YY_BUFFER_STATE ) nullptr;
 
     if ( b->yy_is_our_buffer )
         yyfree( (void *) b->yy_ch_buf );

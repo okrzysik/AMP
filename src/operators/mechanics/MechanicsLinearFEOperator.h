@@ -58,8 +58,7 @@ public:
     /**
       This is called at the start of the FE assembly. The matrix is set to 0.
       */
-    void
-    preAssembly(const AMP::shared_ptr<OperatorParameters> &params) override;
+    void preAssembly( const AMP::shared_ptr<OperatorParameters> &params ) override;
 
     /**
       This is called at the end of the FE assembly. The entries of the matrix corresponding
@@ -73,7 +72,7 @@ public:
       the global mesh objects (DOFMap, global vectors and matrices) and
       passes them to the element operation.
       */
-    void preElementOperation(const AMP::Mesh::MeshElement &) override;
+    void preElementOperation( const AMP::Mesh::MeshElement & ) override;
 
     /**
       This function will be called once for each element, just after performing the element

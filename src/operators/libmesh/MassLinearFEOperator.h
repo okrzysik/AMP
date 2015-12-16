@@ -23,12 +23,11 @@ public:
 
     virtual ~MassLinearFEOperator() {}
 
-    void preAssembly(
-        const AMP::shared_ptr<AMP::Operator::OperatorParameters> &) override;
+    void preAssembly( const AMP::shared_ptr<AMP::Operator::OperatorParameters> & ) override;
 
     void postAssembly() override;
 
-    void preElementOperation(const AMP::Mesh::MeshElement &) override;
+    void preElementOperation( const AMP::Mesh::MeshElement & ) override;
 
     void postElementOperation() override;
 

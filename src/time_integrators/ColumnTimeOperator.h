@@ -88,8 +88,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    virtual void reset(const AMP::shared_ptr<AMP::Operator::OperatorParameters>
-                           &params) override;
+    virtual void reset( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &params ) override;
 
     /**
      * The apply routine for the column operator calls apply on each of the component operators
@@ -101,7 +100,7 @@ public:
      * \param op
      *            shared pointer to an operator to append to the existing column of operators
      */
-    virtual void append(AMP::shared_ptr<AMP::Operator::Operator> op) override;
+    virtual void append( AMP::shared_ptr<AMP::Operator::Operator> op ) override;
 
     /**
      * This function registers a rhs operator with the TimeOperator class

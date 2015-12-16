@@ -44,15 +44,14 @@ public:
     virtual std::string type() const override;
 
     using Vector::cloneVector;
-    virtual Vector::shared_ptr
-    cloneVector(const Variable::shared_ptr var) const override;
-    virtual void copyVector(Vector::const_shared_ptr vec) override;
+    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr var ) const override;
+    virtual void copyVector( Vector::const_shared_ptr vec ) override;
 
     Epetra_Vector &getEpetra_Vector() override;
     const Epetra_Vector &getEpetra_Vector() const override;
     virtual void assemble() override;
 
-  protected:
+protected:
     virtual ManagedVector *getNewRawPtr() const override;
 };
 }

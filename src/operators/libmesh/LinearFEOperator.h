@@ -67,9 +67,9 @@ public:
       This function creates the stiffness matrix and uses virtual
       function calls for setting values into the matrix.
       */
-    void reset(const AMP::shared_ptr<OperatorParameters> &) override;
+    void reset( const AMP::shared_ptr<OperatorParameters> & ) override;
 
-  protected:
+protected:
     void createCurrentLibMeshElement();
 
     void destroyCurrentLibMeshElement();

@@ -27,12 +27,11 @@ public:
 
     virtual ~DiffusionLinearFEOperator() {}
 
-    void
-    preAssembly(const AMP::shared_ptr<OperatorParameters> &params) override;
+    void preAssembly( const AMP::shared_ptr<OperatorParameters> &params ) override;
 
     void postAssembly() override;
 
-    void preElementOperation(const AMP::Mesh::MeshElement &) override;
+    void preElementOperation( const AMP::Mesh::MeshElement & ) override;
 
     void postElementOperation() override;
 

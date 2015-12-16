@@ -1,7 +1,7 @@
 # To run clang tools:
 #   cd to AMP directory (source dir)
 # To update format only:
-#   find src -name "*.cpp" -or -name "*.cc" -or src -name "*.h" -or -name "*.hpp" -or -name "*.I" | xargs -I{} clang-format -i {}
+#   find src -name "*.cpp" -or -name "*.cc" -or -name "*.h" -or -name "*.hpp" -or -name "*.I" | xargs -I{} clang-format -i {}
 # To run modernize
 #   find src -name "*.cpp" -or -name "*.cc" | xargs -I{} clang-modernize -p=/projects/AMP/build/debug/AMP -include=/projects/AMP/AMP/src -use-nullptr -add-override {}
 

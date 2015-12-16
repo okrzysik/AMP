@@ -110,9 +110,9 @@ void MPI_CLASS::call_sumReduce<std::complex<double>>( const std::complex<double>
 template <class type>
 void MPI_CLASS::call_sumReduce( const type *x, type *y, const int n ) const
 {
-    NULL_USE(x);
-    NULL_USE(y);
-    NULL_USE(n);
+    NULL_USE( x );
+    NULL_USE( y );
+    NULL_USE( n );
     char message[200];
     sprintf( message,
              "Default instantion of sumReduce in parallel is not supported (%s)",

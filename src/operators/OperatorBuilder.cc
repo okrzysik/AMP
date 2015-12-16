@@ -71,7 +71,8 @@ OperatorBuilder::createOperator( AMP::shared_ptr<OperatorParameters> in_params )
 {
     AMP::shared_ptr<Operator> retOperator;
 
-    AMP_INSIST( in_params.get() != nullptr, "ERROR: OperatorBuilder::createOperator has NULL input" );
+    AMP_INSIST( in_params.get() != nullptr,
+                "ERROR: OperatorBuilder::createOperator has NULL input" );
     AMP_INSIST( in_params->d_db.get() != nullptr,
                 "ERROR: OperatorBuilder::createOperator has NULL database pointer in in_params" );
 

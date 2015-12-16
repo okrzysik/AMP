@@ -25,7 +25,7 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    void reset(const AMP::shared_ptr<OperatorParameters> &) override {}
+    void reset( const AMP::shared_ptr<OperatorParameters> & ) override {}
 
     void setMasterVariable( const AMP::LinearAlgebra::Variable::shared_ptr &var )
     {
@@ -47,20 +47,22 @@ public:
 
     void setDofs( const std::vector<std::vector<unsigned int>> &vec ) { d_dofs = vec; }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override {
-      AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
-          new AMP::LinearAlgebra::MultiVariable("ContactVariable"));
-      retVariable->add(d_masterVariable);
-      retVariable->add(d_slaveVariable);
-      return retVariable;
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    {
+        AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
+            new AMP::LinearAlgebra::MultiVariable( "ContactVariable" ) );
+        retVariable->add( d_masterVariable );
+        retVariable->add( d_slaveVariable );
+        return retVariable;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override {
-      AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
-          new AMP::LinearAlgebra::MultiVariable("ContactVariable"));
-      retVariable->add(d_masterVariable);
-      retVariable->add(d_slaveVariable);
-      return retVariable;
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
+    {
+        AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
+            new AMP::LinearAlgebra::MultiVariable( "ContactVariable" ) );
+        retVariable->add( d_masterVariable );
+        retVariable->add( d_slaveVariable );
+        return retVariable;
     }
 
     AMP::LinearAlgebra::Variable::shared_ptr getMasterVariable() { return d_masterVariable; }

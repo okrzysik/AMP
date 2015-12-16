@@ -48,8 +48,7 @@ public:
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                    AMP::shared_ptr<OperatorParameters> params = nullptr ) override;
 
-    virtual void
-    reset(const AMP::shared_ptr<OperatorParameters> &params) override;
+    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
 
     /**
      * \param op
@@ -61,14 +60,13 @@ public:
 
     size_t numberOfBoundaryOperators() { return d_Operators.size(); }
 
-    void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr) override;
+    void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr ) override;
 
-    void setRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr) override;
+    void setRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr ) override;
 
-    void modifyInitialSolutionVector(
-        AMP::LinearAlgebra::Vector::shared_ptr) override;
+    void modifyInitialSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr ) override;
 
-  protected:
+protected:
     std::vector<AMP::shared_ptr<BoundaryOperator>> d_Operators;
 
 private:

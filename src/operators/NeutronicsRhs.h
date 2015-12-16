@@ -76,7 +76,7 @@ public:
     /**
       A function to reinitialize this object.
       */
-    void reset(const SP_OperatorParameters &parameters) override;
+    void reset( const SP_OperatorParameters &parameters ) override;
 
     // static SP_HexGaussPointVariable createOutputVariable (const std::string & name, int varId =
     // -1);

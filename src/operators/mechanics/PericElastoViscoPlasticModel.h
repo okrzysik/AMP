@@ -19,38 +19,38 @@ public:
 
     virtual ~PericElastoViscoPlasticModel() {}
 
-    void getConstitutiveMatrix(double *&) override;
+    void getConstitutiveMatrix( double *& ) override;
 
-    void getConstitutiveMatrixUpdatedLagrangian(double[6][6],
-                                                double[3][3]) override;
+    void getConstitutiveMatrixUpdatedLagrangian( double[6][6], double[3][3] ) override;
 
-    void getStressForUpdatedLagrangian(double currentStress[6]) override {
-      for (int i = 0; i < 6; i++) {
-        currentStress[i] = d_tmp1Stress[(6 * d_gaussPtCnt) + i];
-      }
+    void getStressForUpdatedLagrangian( double currentStress[6] ) override
+    {
+        for ( int i = 0; i < 6; i++ ) {
+            currentStress[i] = d_tmp1Stress[( 6 * d_gaussPtCnt ) + i];
+        }
     }
 
-    void getInternalStress(const std::vector<std::vector<double>> &,
-                           double *&) override;
+    void getInternalStress( const std::vector<std::vector<double>> &, double *& ) override;
 
     void getInternalStress(
         const std::vector<std::vector<double>> &, double *&, double[3][3], double[3][3], double );
 
-    void getEffectiveStress(double *&) override;
+    void getEffectiveStress( double *& ) override;
 
-    void getEquivalentStrain(double *&) override;
+    void getEquivalentStrain( double *& ) override;
 
     void preLinearAssembly() override { d_gaussPtCnt = 0; }
 
     void postLinearGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void preNonlinearInit(bool, bool) override;
+    void preNonlinearInit( bool, bool ) override;
 
-    void nonlinearInitGaussPointOperation(double) override;
+    void nonlinearInitGaussPointOperation( double ) override;
 
-    void preNonlinearAssembly() override {
-      Plastic_Gauss_Point = 0;
-      d_gaussPtCnt = 0;
+    void preNonlinearAssembly() override
+    {
+        Plastic_Gauss_Point = 0;
+        d_gaussPtCnt        = 0;
     }
 
     void postNonlinearAssembly() override;
@@ -61,8 +61,7 @@ public:
 
     void postNonlinearResetGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void nonlinearResetGaussPointOperation(
-        const std::vector<std::vector<double>> &) override;
+    void nonlinearResetGaussPointOperation( const std::vector<std::vector<double>> & ) override;
 
     void nonlinearResetGaussPointOperation( const std::vector<std::vector<double>> &,
                                             double[3][3],
@@ -76,8 +75,7 @@ public:
 
     void postNonlinearJacobianGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void nonlinearJacobianGaussPointOperation(
-        const std::vector<std::vector<double>> &) override;
+    void nonlinearJacobianGaussPointOperation( const std::vector<std::vector<double>> & ) override;
 
     void nonlinearJacobianGaussPointOperation( const std::vector<std::vector<double>> &,
                                                double[3][3],

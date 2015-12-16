@@ -61,13 +61,12 @@ public:
     /**
       This function reads parameters related to boundary Ids
       */
-    virtual void
-    reset(const AMP::shared_ptr<OperatorParameters> &params) override;
+    virtual void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
 
     /**
       Adds a vector to the RHS vector.
       */
-    void addRHScorrection(AMP::LinearAlgebra::Vector::shared_ptr rhs) override;
+    void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs ) override;
 
     /**
      * get a pointer to the cached parameters that were used to create this
@@ -85,15 +84,11 @@ public:
 
     std::vector<std::vector<unsigned int>> getDofIds() const { return d_dofIds; }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override {
-      return d_variable;
-    }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_variable; }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override {
-      return d_variable;
-    }
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_variable; }
 
-  protected:
+protected:
     /**
       This function returns a parameter object that can be used to reset the corresponding
       NeumannVectorCorrection operator.

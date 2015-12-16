@@ -34,7 +34,7 @@ void test_matrix_loop( AMP::UnitTest *ut )
 template <typename FACTORY>
 void test_petsc_matrix_loop( AMP::UnitTest *ut )
 {
-    NULL_USE(ut);
+    NULL_USE( ut );
 }
 
 

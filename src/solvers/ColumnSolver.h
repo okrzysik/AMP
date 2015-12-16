@@ -44,15 +44,15 @@ public:
      @param [in] f shared pointer to right hand side
      @param [out] u shared pointer to computed approximate solution
      */
-    void solve(AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-               AMP::shared_ptr<AMP::LinearAlgebra::Vector> u) override;
+    void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
+                    u ) override;
 
     /**
      * sets the initial guess
      @param [in] initialGuess shared pointer to initialGuess vector
      */
-    void setInitialGuess(
-        AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess) override;
+    void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override;
 
     /**
      * @param [in] solver
@@ -73,10 +73,9 @@ public:
      * @param params
      *        OperatorParameters object that is NULL by default
      */
-    void resetOperator(const AMP::shared_ptr<AMP::Operator::OperatorParameters>
-                           params) override;
+    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
 
-  protected:
+protected:
     void GaussSeidel( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> &f,
                       AMP::shared_ptr<AMP::LinearAlgebra::Vector> &u );
 

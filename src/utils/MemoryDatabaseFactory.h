@@ -26,8 +26,7 @@ class MemoryDatabaseFactory : public DatabaseFactory
     /**
      * Build a new Database object.
      */
-    virtual AMP::shared_ptr<Database>
-    allocate(const std::string &name) override;
+    virtual AMP::shared_ptr<Database> allocate( const std::string &name ) override;
 };
 }
 

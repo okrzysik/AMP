@@ -239,7 +239,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval(std::vector<double> &args) override;
+    virtual double eval( std::vector<double> &args ) override;
 };
 
 class SaturatedLiquidEnthalpyProp : public Property<double>
@@ -256,7 +256,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval(std::vector<double> &args) override;
+    virtual double eval( std::vector<double> &args ) override;
 };
 
 class SaturatedVaporEnthalpyProp : public Property<double>
@@ -273,7 +273,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval(std::vector<double> &args) override;
+    virtual double eval( std::vector<double> &args ) override;
 };
 
 class SpecificVolumeProp : public Property<double>
@@ -290,7 +290,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval(std::vector<double> &args) override;
+    virtual double eval( std::vector<double> &args ) override;
 };
 
 class ThermalConductivityProp : public Property<double>
@@ -307,7 +307,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval(std::vector<double> &args) override;
+    virtual double eval( std::vector<double> &args ) override;
 };
 
 class ConvectiveHeatProp : public Property<double>
@@ -324,7 +324,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval(std::vector<double> &args) override;
+    virtual double eval( std::vector<double> &args ) override;
 };
 
 class DynamicViscosityProp : public Property<double>
@@ -341,7 +341,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval(std::vector<double> &args) override;
+    virtual double eval( std::vector<double> &args ) override;
 };
 
 class EnthalpyProp : public Property<double>
@@ -358,9 +358,9 @@ public:
     {
     } // Range of variables
 
-    virtual double eval(std::vector<double> &args) override;
+    virtual double eval( std::vector<double> &args ) override;
 
-  private:
+private:
     double MfpSolve( double, double, double, double );
     double Residual( double, double, double );
     static const double Mfp_atol;          // absolute tolerance for MFP solve

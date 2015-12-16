@@ -18,17 +18,17 @@ public:
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr
-    getOutputVariable() override {
-      return d_GaussPtVariable;
+    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    {
+        return d_GaussPtVariable;
     }
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr
-    getInputVariable() override {
-      return d_NodalVariable;
+    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
+    {
+        return d_NodalVariable;
     }
 
-  protected:
+protected:
     bool d_UseSurfaceElements;
     int d_dim;
     AMP::LinearAlgebra::Variable::shared_ptr d_NodalVariable;

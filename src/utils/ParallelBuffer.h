@@ -99,15 +99,14 @@ public:
      * Write the specified number of characters into the output stream (called
      * from streambuf).
      */
-    virtual std::streamsize xsputn(const char *text,
-                                   std::streamsize n) override;
+    virtual std::streamsize xsputn( const char *text, std::streamsize n ) override;
 #endif
 
     /**
      * Write an overflow character into the parallel buffer (called from
      * streambuf).
      */
-    virtual int overflow(int ch) override;
+    virtual int overflow( int ch ) override;
 
 #ifdef _MSC_VER
 

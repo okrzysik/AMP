@@ -102,15 +102,14 @@ public:
       Calculates the linearized elasto-plastic stress-strain constitutive matrix at each gauss
       point which enters the computation of the jacobian for the element.
       */
-    void getConstitutiveMatrix(double *&) override;
+    void getConstitutiveMatrix( double *& ) override;
 
     /**
       Given a certain strain, this function calculates the corresponding stress taking into
       consideration the
       thermal swelling and creep effects. Creep is modeled in an implicit fashion.
       */
-    void getInternalStress(const std::vector<std::vector<double>> &,
-                           double *&) override;
+    void getInternalStress( const std::vector<std::vector<double>> &, double *& ) override;
 
     /**
       This function is called just before the linear assembly.
@@ -126,22 +125,23 @@ public:
       This function is called before the NonlinearInit is invoked. Here the memory
       assigned to all the gauss point vectors are cleared.
       */
-    void preNonlinearInit(bool, bool) override;
+    void preNonlinearInit( bool, bool ) override;
 
     /**
       This function initializes all the gauss point vectors with the default values.
       */
-    void nonlinearInitGaussPointOperation(double) override;
+    void nonlinearInitGaussPointOperation( double ) override;
 
     /**
       This is called before every non-linear assembly. Here the gauss point count and the total
       number of gauss points which have reached plasticity, are initialized to zero.
       */
-    void preNonlinearAssembly() override {
+    void preNonlinearAssembly() override
+    {
 
-      Plastic_Gauss_Point = 0;
+        Plastic_Gauss_Point = 0;
 
-      d_gaussPtCnt = 0;
+        d_gaussPtCnt = 0;
     }
 
     /**
@@ -168,8 +168,7 @@ public:
     /**
       At each gauss point the "radialReturn" function is called from this function.
       */
-    void nonlinearResetGaussPointOperation(
-        const std::vector<std::vector<double>> &) override;
+    void nonlinearResetGaussPointOperation( const std::vector<std::vector<double>> & ) override;
 
     /**
       This function updates the old equilibrium values with the new one under certain conditions.
@@ -196,10 +195,9 @@ public:
       This function updates all the material parameters and calls the radialReturn before
       calculating the jacobian.
       */
-    void nonlinearJacobianGaussPointOperation(
-        const std::vector<std::vector<double>> &) override;
+    void nonlinearJacobianGaussPointOperation( const std::vector<std::vector<double>> & ) override;
 
-  protected:
+protected:
     /**
       This function calls the evalv functions in the materials library and updates the material
       parameters, such as,

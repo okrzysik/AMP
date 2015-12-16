@@ -19,33 +19,34 @@ public:
 
     virtual ~ThermalStrainMaterialModel() {}
 
-    void getConstitutiveMatrix(double *&) override;
+    void getConstitutiveMatrix( double *& ) override;
 
-    void getConstitutiveMatrixUpdatedLagrangian(double[6][6],
-                                                double[3][3]) override;
+    void getConstitutiveMatrixUpdatedLagrangian( double[6][6], double[3][3] ) override;
 
-    void getStressForUpdatedLagrangian(double currentStress[6]) override {
-      for (int i = 0; i < 6; i++) {
-        currentStress[i] = d_tmp1Stress[(6 * d_gaussPtCnt) + i];
-      }
+    void getStressForUpdatedLagrangian( double currentStress[6] ) override
+    {
+        for ( int i = 0; i < 6; i++ ) {
+            currentStress[i] = d_tmp1Stress[( 6 * d_gaussPtCnt ) + i];
+        }
     }
 
-    void getExternalStress(double *&) override;
+    void getExternalStress( double *& ) override;
 
-    void getInternalStress(const std::vector<std::vector<double>> &,
-                           double *&) override;
+    void getInternalStress( const std::vector<std::vector<double>> &, double *& ) override;
 
-    void getInternalStress_UL(const std::vector<std::vector<double>> &,
-                              double *&, double[3][3], double[3][3],
-                              double) override;
+    void getInternalStress_UL( const std::vector<std::vector<double>> &,
+                               double *&,
+                               double[3][3],
+                               double[3][3],
+                               double ) override;
 
     void preLinearAssembly() override { d_gaussPtCnt = 0; }
 
     void postLinearGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void preNonlinearInit(bool, bool) override;
+    void preNonlinearInit( bool, bool ) override;
 
-    void nonlinearInitGaussPointOperation(double) override;
+    void nonlinearInitGaussPointOperation( double ) override;
 
     void preNonlinearAssembly() override { d_gaussPtCnt = 0; }
 
@@ -55,12 +56,11 @@ public:
 
     void postNonlinearResetGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void nonlinearResetGaussPointOperation(
-        const std::vector<std::vector<double>> &) override;
+    void nonlinearResetGaussPointOperation( const std::vector<std::vector<double>> & ) override;
 
-    void nonlinearResetGaussPointOperation_UL(
-        const std::vector<std::vector<double>> &, double[3][3],
-        double[3][3]) override;
+    void nonlinearResetGaussPointOperation_UL( const std::vector<std::vector<double>> &,
+                                               double[3][3],
+                                               double[3][3] ) override;
 
     void globalReset() override;
 
@@ -70,14 +70,13 @@ public:
 
     void postNonlinearJacobianGaussPointOperation() override { d_gaussPtCnt++; }
 
-    void nonlinearJacobianGaussPointOperation(
-        const std::vector<std::vector<double>> &) override;
+    void nonlinearJacobianGaussPointOperation( const std::vector<std::vector<double>> & ) override;
 
-    void nonlinearJacobianGaussPointOperation_UL(
-        const std::vector<std::vector<double>> &, double[3][3],
-        double[3][3]) override;
+    void nonlinearJacobianGaussPointOperation_UL( const std::vector<std::vector<double>> &,
+                                                  double[3][3],
+                                                  double[3][3] ) override;
 
-  protected:
+protected:
     void Thermal_Strain_Gauss_Point( const double *stra_np1,
                                      const double Temp,
                                      double *stre_np1,

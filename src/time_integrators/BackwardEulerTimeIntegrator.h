@@ -31,15 +31,14 @@ public:
     /**
      * Initialize from parameter list.
      */
-    void
-    initialize(AMP::shared_ptr<TimeIntegratorParameters> parameters) override;
+    void initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
     /**
     * Resets the internal state of the time integrator as needed.
     * A parameter argument is passed to allow for general flexibility
     * in determining what needs to be reset Typically used after a regrid.
     */
-    void reset(AMP::shared_ptr<TimeIntegratorParameters> parameters) override;
+    void reset( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
     /**
      * Specify initial time step.
@@ -49,18 +48,20 @@ public:
     /**
      * Specify next time step to use.
      */
-    double getNextDt(const bool good_solution) override;
+    double getNextDt( const bool good_solution ) override;
 
     /**
     * Set an initial guess for the time advanced solution.
     */
-    void setInitialGuess(const bool first_step, const double current_time,
-                         const double current_dt, const double old_dt) override;
+    void setInitialGuess( const bool first_step,
+                          const double current_time,
+                          const double current_dt,
+                          const double old_dt ) override;
 
     /**
     * Update state of the solution.
     */
-    void updateSolution(void) override;
+    void updateSolution( void ) override;
 
     /**
      * Check time advanced solution to determine whether it is acceptable.
@@ -70,13 +71,12 @@ public:
      * on the particular nonlinear solver in use and must be intepreted
      * properly by the user-supplied solution checking routine.
      */
-    bool checkNewSolution(void) const override;
+    bool checkNewSolution( void ) const override;
 
-  protected:
-    void initializeTimeOperator(
-        AMP::shared_ptr<TimeIntegratorParameters> parameters) override;
+protected:
+    void initializeTimeOperator( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
-  private:
+private:
     /**
      * Constructor.
      */

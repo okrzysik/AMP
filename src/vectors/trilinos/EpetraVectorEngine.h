@@ -93,58 +93,49 @@ public:
     const Epetra_Vector &getEpetra_Vector() const;
 
     AMP_MPI getComm() const override;
-    virtual void *getDataBlock(size_t i) override;
-    virtual const void *getDataBlock(size_t i) const override;
+    virtual void *getDataBlock( size_t i ) override;
+    virtual const void *getDataBlock( size_t i ) const override;
     virtual size_t getLocalSize() const override;
     virtual size_t getGlobalSize() const override;
     virtual BufferPtr getNewBuffer() override;
-    virtual bool sameEngine(VectorEngine &e) const override;
-    virtual shared_ptr cloneEngine(BufferPtr p) const override;
-    virtual void swapEngines(shared_ptr) override;
+    virtual bool sameEngine( VectorEngine &e ) const override;
+    virtual shared_ptr cloneEngine( BufferPtr p ) const override;
+    virtual void swapEngines( shared_ptr ) override;
     virtual size_t numberOfDataBlocks() const override;
-    virtual size_t sizeOfDataBlock(size_t i) const override;
+    virtual size_t sizeOfDataBlock( size_t i ) const override;
 
     //    virtual void addScalar ( const VectorOperations & , double );
-    virtual void setToScalar(double alpha) override;
-    virtual void scale(double alpha, const VectorOperations &x) override;
-    virtual void scale(double alpha) override;
-    virtual void add(const VectorOperations &x,
-                     const VectorOperations &y) override;
-    virtual void subtract(const VectorOperations &x,
-                          const VectorOperations &y) override;
-    virtual void multiply(const VectorOperations &x,
-                          const VectorOperations &y) override;
-    virtual void divide(const VectorOperations &x,
-                        const VectorOperations &y) override;
-    virtual void reciprocal(const VectorOperations &x) override;
-    virtual void linearSum(double alpha, const VectorOperations &x, double beta,
-                           const VectorOperations &y) override;
-    virtual void axpy(double alpha, const VectorOperations &x,
-                      const VectorOperations &y) override;
-    virtual void axpby(double alpha, double beta,
-                       const VectorOperations &x) override;
-    virtual void abs(const VectorOperations &x) override;
-    virtual double min(void) const override;
-    virtual double max(void) const override;
-    virtual void setRandomValues(void) override;
-    virtual void setValuesByLocalID(int i, size_t *,
-                                    const double *val) override;
-    virtual void setLocalValuesByGlobalID(int i, size_t *,
-                                          const double *val) override;
-    virtual void addValuesByLocalID(int i, size_t *,
-                                    const double *val) override;
-    virtual void addLocalValuesByGlobalID(int i, size_t *,
-                                          const double *val) override;
-    virtual void getValuesByLocalID(int i, size_t *,
-                                    double *val) const override;
-    virtual void getLocalValuesByGlobalID(int i, size_t *,
-                                          double *val) const override;
-    double L1Norm(void) const override;
-    double L2Norm(void) const override;
-    double maxNorm(void) const override;
-    double dot(const VectorOperations &x) const override;
-    void putRawData(const double *in) override;
-    void copyOutRawData(double *out) const override;
+    virtual void setToScalar( double alpha ) override;
+    virtual void scale( double alpha, const VectorOperations &x ) override;
+    virtual void scale( double alpha ) override;
+    virtual void add( const VectorOperations &x, const VectorOperations &y ) override;
+    virtual void subtract( const VectorOperations &x, const VectorOperations &y ) override;
+    virtual void multiply( const VectorOperations &x, const VectorOperations &y ) override;
+    virtual void divide( const VectorOperations &x, const VectorOperations &y ) override;
+    virtual void reciprocal( const VectorOperations &x ) override;
+    virtual void linearSum( double alpha,
+                            const VectorOperations &x,
+                            double beta,
+                            const VectorOperations &y ) override;
+    virtual void
+    axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
+    virtual void axpby( double alpha, double beta, const VectorOperations &x ) override;
+    virtual void abs( const VectorOperations &x ) override;
+    virtual double min( void ) const override;
+    virtual double max( void ) const override;
+    virtual void setRandomValues( void ) override;
+    virtual void setValuesByLocalID( int i, size_t *, const double *val ) override;
+    virtual void setLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
+    virtual void addValuesByLocalID( int i, size_t *, const double *val ) override;
+    virtual void addLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
+    virtual void getValuesByLocalID( int i, size_t *, double *val ) const override;
+    virtual void getLocalValuesByGlobalID( int i, size_t *, double *val ) const override;
+    double L1Norm( void ) const override;
+    double L2Norm( void ) const override;
+    double maxNorm( void ) const override;
+    double dot( const VectorOperations &x ) const override;
+    void putRawData( const double *in ) override;
+    void copyOutRawData( double *out ) const override;
 };
 }
 }

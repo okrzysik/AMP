@@ -52,9 +52,9 @@ public:
       in order to impose Dirichlet boundary conditions. This function can also be used
       to change the Dirichlet boundary conditions, if required.
      */
-    void reset(const AMP::shared_ptr<OperatorParameters> &) override;
+    void reset( const AMP::shared_ptr<OperatorParameters> & ) override;
 
-  protected:
+protected:
     // This must be a simple variable not a dual or multivariable
     AMP::LinearAlgebra::Variable::shared_ptr d_variable;
 

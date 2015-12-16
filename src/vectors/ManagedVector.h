@@ -134,11 +134,11 @@ public:
     virtual void addLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
     virtual void putRawData( const double *in ) override;
     virtual void copyOutRawData( double *in ) const override;
-    double L1Norm(void) const override;
-    double L2Norm(void) const override;
-    double maxNorm(void) const override;
+    double L1Norm( void ) const override;
+    double L2Norm( void ) const override;
+    double maxNorm( void ) const override;
     using Vector::dot;
-    double dot(const VectorOperations &x) const override;
+    double dot( const VectorOperations &x ) const override;
     virtual UpdateState getUpdateStatus() const override;
     virtual void setUpdateStatus( UpdateState state ) override;
     virtual uint64_t getDataID() const override
@@ -147,33 +147,31 @@ public:
     }
 
 protected:
-  virtual Vector::shared_ptr selectInto(const VectorSelector &) override;
-  virtual Vector::const_shared_ptr
-  selectInto(const VectorSelector &) const override;
+    virtual Vector::shared_ptr selectInto( const VectorSelector & ) override;
+    virtual Vector::const_shared_ptr selectInto( const VectorSelector & ) const override;
 
-  /**\brief  A method that is called whenever data changes.  This fires
-       triggers that may have been registered with DataChangeFirer
-       */
-  virtual void dataChanged() override;
+    /**\brief  A method that is called whenever data changes.  This fires
+         triggers that may have been registered with DataChangeFirer
+         */
+    virtual void dataChanged() override;
 
-  /**\brief  The buffer used to store data
-   */
-  VectorEngine::BufferPtr d_vBuffer;
-  /**\brief  The engine to act on the buffer
-   */
-  VectorEngine::shared_ptr d_Engine;
-  /**\brief  The parameters used to create this vector
-   */
-  AMP::shared_ptr<ManagedVectorParameters> d_pParameters;
+    /**\brief  The buffer used to store data
+     */
+    VectorEngine::BufferPtr d_vBuffer;
+    /**\brief  The engine to act on the buffer
+     */
+    VectorEngine::shared_ptr d_Engine;
+    /**\brief  The parameters used to create this vector
+     */
+    AMP::shared_ptr<ManagedVectorParameters> d_pParameters;
 
-  /**\brief  Function that returns a pointer to a managed vector
-   */
-  virtual ManagedVector *getNewRawPtr() const = 0;
-  virtual void *getRawDataBlockAsVoid(size_t i) override;
-  virtual const void *getRawDataBlockAsVoid(size_t i) const override;
+    /**\brief  Function that returns a pointer to a managed vector
+     */
+    virtual ManagedVector *getNewRawPtr() const = 0;
+    virtual void *getRawDataBlockAsVoid( size_t i ) override;
+    virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
 
-  virtual void
-  addCommunicationListToParameters(CommunicationList::shared_ptr comm) override;
+    virtual void addCommunicationListToParameters( CommunicationList::shared_ptr comm ) override;
 
 private:
     ManagedVector();

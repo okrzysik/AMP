@@ -22,12 +22,12 @@ Logger *Logger::s_instance = nullptr;
 class AbortAppender : public Logger::Appender
 {
 
-  void logMessage(const std::string &message, const std::string &filename,
-                  const int line) override {
-    perr << "Program abort called in file ``" << filename << "'' at line "
-         << line << std::endl;
-    perr << "ERROR MESSAGE: " << std::endl << message.c_str() << std::endl;
-    perr << std::flush;
+    void
+    logMessage( const std::string &message, const std::string &filename, const int line ) override
+    {
+        perr << "Program abort called in file ``" << filename << "'' at line " << line << std::endl;
+        perr << "ERROR MESSAGE: " << std::endl << message.c_str() << std::endl;
+        perr << std::flush;
     }
 };
 
@@ -38,12 +38,12 @@ class AbortAppender : public Logger::Appender
 class WarningAppender : public Logger::Appender
 {
 
-  void logMessage(const std::string &message, const std::string &filename,
-                  const int line) override {
-    plog << "Warning in file ``" << filename << "'' at line " << line
-         << std::endl;
-    plog << "WARNING MESSAGE: " << std::endl << message.c_str() << std::endl;
-    plog << std::flush;
+    void
+    logMessage( const std::string &message, const std::string &filename, const int line ) override
+    {
+        plog << "Warning in file ``" << filename << "'' at line " << line << std::endl;
+        plog << "WARNING MESSAGE: " << std::endl << message.c_str() << std::endl;
+        plog << std::flush;
     }
 };
 
@@ -54,12 +54,12 @@ class WarningAppender : public Logger::Appender
 class DebugAppender : public Logger::Appender
 {
 
-  void logMessage(const std::string &message, const std::string &filename,
-                  const int line) override {
-    plog << "Debug in file ``" << filename << "'' at line " << line
-         << std::endl;
-    plog << "DEBUG MESSAGE: " << std::endl << message.c_str() << std::endl;
-    plog << std::flush;
+    void
+    logMessage( const std::string &message, const std::string &filename, const int line ) override
+    {
+        plog << "Debug in file ``" << filename << "'' at line " << line << std::endl;
+        plog << "DEBUG MESSAGE: " << std::endl << message.c_str() << std::endl;
+        plog << std::flush;
     }
 };
 

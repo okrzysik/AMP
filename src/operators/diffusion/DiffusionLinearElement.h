@@ -41,7 +41,7 @@ public:
 
     void apply() override;
 
-  protected:
+protected:
     std::vector<std::vector<double>> *d_elementStiffnessMatrix;
 
     bool d_transportAtGauss;
