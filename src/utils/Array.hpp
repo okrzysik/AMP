@@ -406,6 +406,10 @@ bool Array<TYPE>::operator==( const Array &rhs ) const
         return true;
     if ( d_length != rhs.d_length )
         return false;
+    if ( d_ndim != rhs.d_ndim )
+        return false;
+   if ( d_N != rhs.d_N )
+        return false;
     bool match = true;
     for ( size_t i = 0; i < d_length; i++ )
         match = match && d_data[i] == rhs.d_data[i];
