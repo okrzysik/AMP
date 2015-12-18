@@ -121,7 +121,7 @@ public:
     /** \brief Resize this vector
       * \param[in] i The new size
       */
-    void resize( size_t i );
+    virtual void resize( size_t i );
 
     //! return a const reference to the internal data container
     const std::vector<T> &getData( void ) const { return d_Data; }

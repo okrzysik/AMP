@@ -61,9 +61,13 @@ Vector::shared_ptr ArrayVector<T>::create( const std::vector<size_t> &localSize,
     for ( auto s : localSize )
         N *= s;
     retVal->resize( N );
+
     // extract pointers to the internal vector and array
-    auto internalArray = retVal->getArray();
-    auto internalVec   = retVal->getData();
+    // do not use 'auto' in place of AMP::Array<T> &
+    // and std::vector<T> & as these result in the
+    // copy constructor being called!!
+    AMP::Array<T> &internalArray = retVal->getArray();
+    std::vector<T> &internalVec   = const_cast<std::vector<T> &>(retVal->getData());
     // set the data pointer for the array to point to the std:vector data
     internalArray.viewRaw( localSize, internalVec.data() );
 
@@ -112,6 +116,7 @@ inline Vector::shared_ptr ArrayVector<T>::cloneVector( const Variable::shared_pt
 template <typename T>
 void ArrayVector<T>::swapVectors( Vector &rhs )
 {
+    AMP_ERROR( "This routine has copy constructor errors that need to be fixed first" );
     // get information on array dimensions
     auto internalArray = this->getArray();
     auto internalVec   = this->getData();
@@ -135,5 +140,20 @@ void ArrayVector<T>::aliasVector( Vector & )
 {
     AMP_ERROR( "Not implemented" );
 }
+
+template <typename T>
+void ArrayVector<T>::resize( const std::vector<size_t> &localDims )
+{
+    size_t N = 1;
+    for ( auto s : localDims )
+        N *= s;
+    
+    std::vector<T> &internalVec   = const_cast<std::vector<T> &>(this->getData());
+    internalVec.resize( N );
+    // set the data pointer for the array to point to the std:vector data
+    d_array.viewRaw( localDims, internalVec.data() );
+    
+}
+
 }
 }

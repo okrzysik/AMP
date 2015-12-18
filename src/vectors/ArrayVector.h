@@ -63,6 +63,13 @@ public:
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector &other ) override;
 
+    //! the resize function is overriden so that the base class version is not called on ArrayVector
+    // as it is dangerous
+    void resize( size_t i ) override { AMP_ERROR("resize of ArrayVector with size_t argument not allowed!!"); }
+
+    //! resize the ArrayVector and reset the internal data structures
+    void resize( const std::vector<size_t> &localDims );
+
     //! return a non-const reference to the internal data container
     Array<T> &getArray( void ) { return d_array; }
 

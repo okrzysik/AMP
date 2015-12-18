@@ -41,11 +41,11 @@ int main( int argc, char **argv )
     AMP::UnitTest ut;
 
     // Run the vector selector tests on different vectors
-    test_vector_selector_loop<SimpleVectorFactory<15, false>>( &ut );
-    test_vector_selector_loop<SimpleVectorFactory<45, true>>( &ut );
+    test_vector_selector_loop<SimpleVectorFactory<15, false,double>>( &ut );
+    test_vector_selector_loop<SimpleVectorFactory<45, true,double>>( &ut );
 
-    test_vector_selector_loop<ArrayVectorFactory<4, 15, false>>( &ut );
-    test_vector_selector_loop<ArrayVectorFactory<4, 45, true>>( &ut );
+    test_vector_selector_loop<ArrayVectorFactory<4, 10, false,double>>( &ut );
+    test_vector_selector_loop<ArrayVectorFactory<4, 10, true,double>>( &ut );
 
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
     test_vector_selector_loop<SNPVFactory>( &ut );
