@@ -28,8 +28,11 @@ Vector::shared_ptr ArrayVector<T>::create( const std::vector<size_t> &localSize,
         N *= s;
     retVal->resize( N );
     // extract pointers to the internal vector and array
-    auto internalArray = retVal->getArray();
-    auto internalVec   = retVal->getData();
+    // do not use 'auto' in place of AMP::Array<T> &
+    // and std::vector<T> & as these result in the
+    // copy constructor being called!!
+    AMP::Array<T> &internalArray = retVal->getArray();
+    std::vector<T> &internalVec   = const_cast<std::vector<T> &>(retVal->getData());
     // set the data pointer for the array to point to the std:vector data
     internalArray.viewRaw( localSize, internalVec.data() );
     AMP_ASSERT(internalArray.size()==localSize);

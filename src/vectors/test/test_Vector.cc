@@ -58,7 +58,7 @@ int main( int argc, char **argv )
     testBasicVector<ArrayVectorFactory<4, 10, false, double>>( &ut );
     testBasicVector<ArrayVectorFactory<4, 10, true, double>>( &ut );
     std::vector<size_t> dims{3,3,3,3};
-    testArrayVectorDimensions<double>(dims);
+    testArrayVectorDimensions<double>(dims, ut);
     AMP::pout << std::endl;
     globalComm.barrier();
 
