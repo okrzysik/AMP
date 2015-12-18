@@ -14,6 +14,7 @@
 #include "vectors/trilinos/ManagedEpetraVector.h"
 #endif
 
+#include "test_ArrayVector.h"
 
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
 typedef AMP::unit_test::SimplePetscNativeFactory<AMP::LinearAlgebra::NativePetscVector> SNPVFactory;
@@ -56,6 +57,8 @@ int main( int argc, char **argv )
     AMP::pout << "Testing ArrayVector" << std::endl;
     testBasicVector<ArrayVectorFactory<4, 10, false, double>>( &ut );
     testBasicVector<ArrayVectorFactory<4, 10, true, double>>( &ut );
+    std::vector<size_t> dims{3,3,3,3};
+    testArrayVectorDimensions<double>(dims);
     AMP::pout << std::endl;
     globalComm.barrier();
 

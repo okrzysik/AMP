@@ -92,7 +92,7 @@ public:
 };
 
 
- template <int D, int I, bool GLOBAL, typename T>
+template <int D, int I, bool GLOBAL, typename T>
 class ArrayVectorFactory
 {
 public:
