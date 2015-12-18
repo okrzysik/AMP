@@ -65,11 +65,11 @@ public:
 };
 
 
-template <int I, bool GLOBAL>
+template <int I, bool GLOBAL, typename T>
 class SimpleVectorFactory
 {
 public:
-    typedef AMP::LinearAlgebra::SimpleVector<double> vector;
+    typedef AMP::LinearAlgebra::SimpleVector<T> vector;
 
     static AMP::LinearAlgebra::Variable::shared_ptr getVariable()
     {
@@ -81,10 +81,10 @@ public:
     {
         AMP::LinearAlgebra::Vector::shared_ptr vec;
         if ( GLOBAL )
-            vec = AMP::LinearAlgebra::SimpleVector<double>::create(
+            vec = AMP::LinearAlgebra::SimpleVector<T>::create(
                 I, getVariable(), AMP_MPI( AMP_COMM_WORLD ) );
         else
-            vec = AMP::LinearAlgebra::SimpleVector<double>::create( I, getVariable() );
+            vec = AMP::LinearAlgebra::SimpleVector<T>::create( I, getVariable() );
         return vec;
     }
 
@@ -92,11 +92,11 @@ public:
 };
 
 
-template <int D, int I, bool GLOBAL>
+ template <int D, int I, bool GLOBAL, typename T>
 class ArrayVectorFactory
 {
 public:
-    typedef AMP::LinearAlgebra::ArrayVector<double> vector;
+    typedef AMP::LinearAlgebra::ArrayVector<T> vector;
 
     static AMP::LinearAlgebra::Variable::shared_ptr getVariable()
     {
@@ -108,10 +108,10 @@ public:
     {
         AMP::LinearAlgebra::Vector::shared_ptr vec;
         if ( GLOBAL )
-            vec = AMP::LinearAlgebra::ArrayVector<double>::create(
+            vec = AMP::LinearAlgebra::ArrayVector<T>::create(
                 std::vector<size_t>( D, I ), getVariable(), AMP_MPI( AMP_COMM_WORLD ) );
         else
-            vec = AMP::LinearAlgebra::ArrayVector<double>::create( std::vector<size_t>( D, I ),
+            vec = AMP::LinearAlgebra::ArrayVector<T>::create( std::vector<size_t>( D, I ),
                                                                    getVariable() );
         return vec;
     }

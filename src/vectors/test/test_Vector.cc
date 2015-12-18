@@ -48,14 +48,14 @@ int main( int argc, char **argv )
     testNullVector( &ut );
 
     AMP::pout << "Testing SimpleVector" << std::endl;
-    testBasicVector<SimpleVectorFactory<15, false>>( &ut );
-    testBasicVector<SimpleVectorFactory<45, true>>( &ut );
+    testBasicVector<SimpleVectorFactory<15, false, double>>( &ut );
+    testBasicVector<SimpleVectorFactory<45, true, double>>( &ut );
     AMP::pout << std::endl;
     globalComm.barrier();
 
     AMP::pout << "Testing ArrayVector" << std::endl;
-    testBasicVector<ArrayVectorFactory<4, 10, false>>( &ut );
-    testBasicVector<ArrayVectorFactory<4, 10, true>>( &ut );
+    testBasicVector<ArrayVectorFactory<4, 10, false, double>>( &ut );
+    testBasicVector<ArrayVectorFactory<4, 10, true, double>>( &ut );
     AMP::pout << std::endl;
     globalComm.barrier();
 
