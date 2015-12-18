@@ -442,6 +442,7 @@ public:
     }
 
     //! Check if two matrices are equal
+    // Equality means the dimensions and data have to be identical
     bool operator==( const Array &rhs ) const;
 
     //! Check if two matrices are not equal

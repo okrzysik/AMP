@@ -26,7 +26,8 @@ Vector::shared_ptr ArrayVector<T>::create( const std::vector<size_t> &localSize,
     size_t N = 1;
     for ( auto s : localSize )
         N *= s;
-    retVal->resize( N );
+    
+    retVal->d_Data.resize(N);
     // extract pointers to the internal vector and array
     // do not use 'auto' in place of AMP::Array<T> &
     // and std::vector<T> & as these result in the
@@ -60,7 +61,7 @@ Vector::shared_ptr ArrayVector<T>::create( const std::vector<size_t> &localSize,
     size_t N = 1;
     for ( auto s : localSize )
         N *= s;
-    retVal->resize( N );
+    retVal->d_Data.resize(N);
 
     // extract pointers to the internal vector and array
     // do not use 'auto' in place of AMP::Array<T> &
@@ -90,7 +91,12 @@ ArrayVector<T>::create( Variable::shared_ptr var,
     AMP::shared_ptr<ArrayVector<T>> retVal( new ArrayVector<T> );
     retVal->d_startIndex = DOFs->beginDOF();
     retVal->setVariable( var );
-    retVal->resize( DOFs->numLocalDOF() );
+    size_t localSize = DOFs->numLocalDOF();
+    retVal->d_Data.resize( localSize );
+    AMP::Array<T> &internalArray = retVal->getArray();
+    std::vector<T> &internalVec   = const_cast<std::vector<T> &>(retVal->getData());
+    // set the data pointer for the array to point to the std:vector data
+    internalArray.viewRaw( {localSize}, internalVec.data() );
     retVal->d_DOFManager = DOFs;
     retVal->setCommunicationList( commlist );
     retVal->d_comm       = DOFs->getComm();
