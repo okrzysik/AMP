@@ -81,8 +81,9 @@ MultiMesh::MultiMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( para
             onComm[i] = 1;
     }
     d_comm.maxReduce( &onComm[0], (int) onComm.size() );
-    for ( auto &elem : onComm )
+    for ( auto &elem : onComm ) {
         AMP_ASSERT( elem == 1 );
+    }
     // Create the meshes
     d_meshes = std::vector<AMP::Mesh::Mesh::shared_ptr>( 0 );
     for ( size_t i = 0; i < comms.size(); i++ ) {
@@ -1079,8 +1080,9 @@ MultiMesh::loadBalancer( int N_procs,
             }
             myStartRank += group.N_procs;
         }
-        for ( auto &commGroup : commGroups )
+        for ( auto &commGroup : commGroups ) {
             AMP_ASSERT( commGroup.size() > 0 );
+        }
         return commGroups;
     } else if ( method == 2 ) {
         // We want to use all processors for all meshes

@@ -50,8 +50,9 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     std::string generator = d_db->getString( "Generator" );
     std::vector<int> size = d_db->getIntegerArray( "Size" );
     d_max_gcw             = d_db->getIntegerWithDefault( "GCW", 2 );
-    for ( auto &elem : size )
-        AMP_INSIST( elem > 0, "All dimensions must have a size > 0" );
+    for ( int s : size ) {
+        AMP_INSIST( s > 0, "All dimensions must have a size > 0" );
+    }
     // Create the logical mesh
     std::vector<int> meshSize;
     std::vector<bool> isPeriodic;
@@ -1239,8 +1240,9 @@ void BoxMesh::createLogicalMesh( AMP::shared_ptr<AMP::Database> db,
     GeomType GeomDim          = (GeomType) PhysicalDim;
     std::string generator     = db->getString( "Generator" );
     std::vector<int> size     = db->getIntegerArray( "Size" );
-    for ( auto &elem : size )
+    for ( auto &elem : size ) {
         AMP_INSIST( elem > 0, "All dimensions must have a size > 0" );
+    }
     AMP_INSIST( PhysicalDim <= 3, "DIM>3 not programmed yet" );
     minSize.clear();
     if ( db->keyExists( "LoadBalanceMinSize" ) ) {
