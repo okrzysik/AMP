@@ -342,8 +342,8 @@ Array<TYPE> Array<TYPE>::subset( const std::vector<size_t> &index ) const
     getSubsetArrays( index, first, last, N1 );
     std::array<size_t,5> N2 = getDimArray();
     // Create the new array
-    std::vector<size_t> dim( ARRAY_NDIM_MAX );
-    for ( int d = 0; d < ARRAY_NDIM_MAX; d++ )
+    std::vector<size_t> dim( d_ndim );
+    for ( int d = 0; d < d_ndim; d++ )
         dim[d]  = last[d] - first[d] + 1;
     Array<TYPE> subset( dim );
     // Fill the new array
@@ -408,8 +408,10 @@ bool Array<TYPE>::operator==( const Array &rhs ) const
         return false;
     if ( d_ndim != rhs.d_ndim )
         return false;
-   if ( d_N != rhs.d_N )
-        return false;
+    for (int d=0; d<d_ndim; d++) {
+        if ( d_N[d] != rhs.d_N[d] )
+            return false;
+    }
     bool match = true;
     for ( size_t i = 0; i < d_length; i++ )
         match = match && d_data[i] == rhs.d_data[i];
