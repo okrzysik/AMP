@@ -1,17 +1,13 @@
 #ifndef included_LinearTimeOperator
 #define included_LinearTimeOperator
 
-#ifndef included_AMP_config
-
-#endif
-
 #include "operators/LinearOperator.h"
-
 #include "operators/OperatorParameters.h"
 #include "operators/libmesh/VolumeIntegralOperator.h"
 #include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
 #include "vectors/Vector.h"
+
 
 namespace AMP {
 namespace TimeIntegrator {

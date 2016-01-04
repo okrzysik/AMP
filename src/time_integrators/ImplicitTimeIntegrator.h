@@ -1,29 +1,12 @@
 #ifndef included_ImplicitTimeIntegrator
 #define included_ImplicitTimeIntegrator
 
-#ifndef included_AMP_config
-
-#endif
-#ifndef included_AMP_Vector
 #include "vectors/Vector.h"
-#endif
-#ifndef included_tbox_InputDatabase
 #include "utils/InputDatabase.h"
-#endif
-#ifndef included_tbox_Pointer
 #include "utils/shared_ptr.h"
-#endif
-#ifndef included_TimeIntegrator
 #include "TimeIntegrator.h"
-#endif
-
-#ifndef included_SolverStrategy
 #include "solvers/SolverStrategy.h"
-#endif
-
 #include "TimeOperatorParameters.h"
-
-/*Design-By-Contract Macros*/
 #include "utils/Utilities.h"
 
 #include <ostream>

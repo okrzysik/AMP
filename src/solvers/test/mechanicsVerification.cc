@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <string>
 
@@ -27,7 +26,6 @@
 /* AMP files */
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
-#include "utils/AMP_config.h"
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"

@@ -1,25 +1,11 @@
 #ifndef included_ImplicitTimeIntegratorParameters
 #define included_ImplicitTimeIntegratorParameters
 
-#ifndef included_AMP_config
-
-#endif
-
-#ifndef included_tbox_Pointer
 #include "utils/shared_ptr.h"
-#endif
-
-#ifndef included_tbox_InputDatabase
 #include "utils/InputDatabase.h"
-#endif
-
-#ifndef included_SolverStrategy
 #include "solvers/SolverStrategy.h"
-#endif
-
-#ifndef included_TimeIntegratorParameters
 #include "TimeIntegratorParameters.h"
-#endif
+
 
 namespace AMP {
 namespace TimeIntegrator {

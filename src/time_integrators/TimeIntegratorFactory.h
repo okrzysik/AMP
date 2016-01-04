@@ -19,17 +19,8 @@ responsibility for the use of this software.
 #ifndef included_TimeIntegratorFactory
 #define included_TimeIntegratorFactory
 
-#ifndef included_AMP_config
-
-#endif
-
-#ifndef included_TimeIntegratorParameters
 #include "TimeIntegratorParameters.h"
-#endif
-
-#ifndef included_TimeIntegrator
 #include "TimeIntegrator.h"
-#endif
 
 #include <memory>
 

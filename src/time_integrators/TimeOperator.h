@@ -1,32 +1,12 @@
 #ifndef included_TimeOperator
 #define included_TimeOperator
 
-#ifndef included_AMP_config
-
-#endif
-
-#ifndef included_AMP_Operator
 #include "operators/Operator.h"
-#endif
-
-#ifndef included_Pointer
 #include "utils/shared_ptr.h"
-#endif
-
-#ifndef included_AMP_Vector
 #include "vectors/Vector.h"
-#endif
-
 #include "utils/Utilities.h"
-
-#ifndef included_AMP_OperatorParameters
 #include "operators/OperatorParameters.h"
-#endif
 
-// BP the following two lines are probably unnecessary, not removing
-// prior to Jan, 2011 code camp.
-// JL
-#include "operators/libmesh/VolumeIntegralOperator.h"
 
 namespace AMP {
 namespace TimeIntegrator {
