@@ -1,6 +1,8 @@
-#ifdef DEBUG_NO_INLINE
-#define inline
-#endif
+#ifndef included_TimeIntegrator_INLINE
+#define included_TimeIntegrator_INLINE
+
+#include "TimeIntegrator.h"
+
 namespace AMP {
 namespace TimeIntegrator {
 
@@ -21,8 +23,8 @@ inline int TimeIntegrator::getIntegratorStep() const { return ( d_integrator_ste
 
 inline int TimeIntegrator::getMaxIntegratorSteps() const { return ( d_max_integrator_steps ); }
 
-#ifdef DEBUG_NO_INLINE
-#undef inline
+}
+}
+
 #endif
-}
-}
+

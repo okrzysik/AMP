@@ -10,10 +10,6 @@
 
 #include "Database.h"
 
-#ifdef DEBUG_NO_INLINE
-#include "Database.I"
-#endif
-
 #include "Utilities.h"
 
 namespace AMP {

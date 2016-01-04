@@ -749,7 +749,7 @@ private:
 }
 
 
-#ifndef DEBUG_NO_INLINE
+#endif
+
 #include "MemoryDatabase.I"
-#endif
-#endif
+

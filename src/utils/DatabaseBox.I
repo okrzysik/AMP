@@ -1,3 +1,6 @@
+#ifndef included_DatabaseBox_INLINE
+#define included_DatabaseBox_INLINE
+
 //
 // File:	$URL:
 // file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/database/DatabaseBox.I $
@@ -9,10 +12,6 @@
 //
 
 #include "Utilities.h"
-
-#ifdef DEBUG_NO_INLINE
-#define inline
-#endif
 
 namespace AMP {
 
@@ -82,7 +81,7 @@ inline int DatabaseBox::upper( const int i ) const
     return ( d_data.d_hi[i] );
 }
 
-#ifdef DEBUG_NO_INLINE
-#undef inline
-#endif
 }
+
+#endif
+

@@ -21,9 +21,6 @@
 #include <complex>
 #include <stdlib.h>
 
-#ifdef DEBUG_NO_INLINE
-#include "MemoryDatabase.I"
-#endif
 
 #define PRINT_DEFAULT ( 1 )
 #define PRINT_INPUT ( 2 )
@@ -42,24 +39,29 @@
 namespace AMP {
 
 
-/*
-*************************************************************************
- *									*
- * The virtual destructor deallocates database data.			*
- *									*
-*************************************************************************
-*/
+/************************************************************************
+*  Constructors/destructors                                             *
+************************************************************************/
+inline MemoryDatabase::MemoryDatabase( const std::string &name )
+    : d_database_name( name ), comm( AMP_COMM_WORLD )
+{
+}
+
+
+/************************************************************************
+ *									                                    *
+ * The virtual destructor deallocates database data.			        *
+ *									                                    *
+************************************************************************/
 
 MemoryDatabase::~MemoryDatabase() {}
 
 
-/*
-*************************************************************************
+/************************************************************************
  *                                                                       *
  * Create memory data file specified by name.                            *
  *                                                                       *
-*************************************************************************
-*/
+************************************************************************/
 
 bool MemoryDatabase::create( const std::string &name )
 {
@@ -70,13 +72,11 @@ bool MemoryDatabase::create( const std::string &name )
 }
 
 
-/*
-*************************************************************************
- *                                                                       *
- * Open memory data file specified by name                               *
- *                                                                       *
-*************************************************************************
-*/
+/************************************************************************
+ *                                                                      *
+ * Open memory data file specified by name                              *
+ *                                                                      *
+************************************************************************/
 
 bool MemoryDatabase::open( const std::string &name )
 {
@@ -86,13 +86,11 @@ bool MemoryDatabase::open( const std::string &name )
     return true;
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *                                                                       *
  * Close the open data file.                                             *
  *                                                                       *
-*************************************************************************
-*/
+************************************************************************/
 
 bool MemoryDatabase::close()
 {
@@ -102,26 +100,22 @@ bool MemoryDatabase::close()
     return true;
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Return whether the key exists in the database.			*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 bool MemoryDatabase::keyExists( const std::string &key )
 {
     return ( findKeyData( key ) ? true : false );
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Return all of the keys in the database.				*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 std::vector<std::string> MemoryDatabase::getAllKeys()
 {
@@ -136,13 +130,11 @@ std::vector<std::string> MemoryDatabase::getAllKeys()
     return ( keys );
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Get the type of the array entry associated with the specified key	*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 enum Database::DataType MemoryDatabase::getArrayType( const std::string &key )
 {
     KeyData *keydata = findKeyData( key );
@@ -154,14 +146,12 @@ enum Database::DataType MemoryDatabase::getArrayType( const std::string &key )
     }
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Get the size of the array entry associated with the specified key;	*
  * return 0 if the key does not exist.					*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 int MemoryDatabase::getArraySize( const std::string &key )
 {
@@ -173,13 +163,11 @@ int MemoryDatabase::getArraySize( const std::string &key )
     }
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Member functions that manage the database values within the database.	*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 bool MemoryDatabase::isDatabase( const std::string &key )
 {
@@ -211,13 +199,11 @@ AMP::shared_ptr<Database> MemoryDatabase::getDatabase( const std::string &key )
     return ( keydata->d_database );
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Member functions that manage boolean values within the database.	*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 bool MemoryDatabase::isBool( const std::string &key )
 {
@@ -303,13 +289,11 @@ void MemoryDatabase::getBoolArray( const std::string &key, bool *data, const int
     }
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Member functions that manage box values within the database.		*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 bool MemoryDatabase::isDatabaseBox( const std::string &key )
 {
@@ -398,13 +382,11 @@ void MemoryDatabase::getDatabaseBoxArray( const std::string &key,
     }
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Member functions that manage character values within the database.	*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 bool MemoryDatabase::isChar( const std::string &key )
 {
@@ -489,15 +471,13 @@ void MemoryDatabase::getCharArray( const std::string &key, char *data, const int
     }
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Member functions that manage complex values within the database.	*
  * Note that complex numbers may be promoted from integers, floats,	*
  * and doubles.								*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 bool MemoryDatabase::isComplex( const std::string &key )
 {
@@ -636,14 +616,12 @@ void MemoryDatabase::getComplexArray( const std::string &key,
     }
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Member functions that manage double values within the database.	*
  * Note that doubles may be promoted from integers or floats.		*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 bool MemoryDatabase::isDouble( const std::string &key )
 {
@@ -767,15 +745,13 @@ void MemoryDatabase::getDoubleArray( const std::string &key, double *data, const
     }
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Member functions that manage float values within the database.	*
  * Note that floats may be promoted from integers or truncated from	*
  * doubles (without a warning).						*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 bool MemoryDatabase::isFloat( const std::string &key )
 {
@@ -904,13 +880,11 @@ void MemoryDatabase::getFloatArray( const std::string &key, float *data, const i
     }
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Member functions that manage integer values within the database.	*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 bool MemoryDatabase::isInteger( const std::string &key )
 {
@@ -995,13 +969,11 @@ void MemoryDatabase::getIntegerArray( const std::string &key, int *data, const i
     }
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Member functions that manage string values within the database.	*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 bool MemoryDatabase::isString( const std::string &key )
 {
@@ -1091,15 +1063,13 @@ void MemoryDatabase::getStringArray( const std::string &key,
 
 std::string MemoryDatabase::getName( void ) { return d_database_name; }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Search the current database for a matching key.  If found, delete	*
  * that key and return true.  If the key does not exist, then return	*
  * false.								*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 bool MemoryDatabase::deleteKeyIfFound( const std::string &key )
 {
@@ -1112,14 +1082,12 @@ bool MemoryDatabase::deleteKeyIfFound( const std::string &key )
     return ( false );
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Find the key data associated with the specified key and return a	*
  * pointer to the record.  If no such key data exists, then return NULL.	*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 MemoryDatabase::KeyData *MemoryDatabase::findKeyData( const std::string &key )
 {
@@ -1130,15 +1098,13 @@ MemoryDatabase::KeyData *MemoryDatabase::findKeyData( const std::string &key )
     return ( nullptr );
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Find the key data associated with the specified key and return a	*
  * pointer to the record.  If no such key data exists, then exit with	*
  * an error message.							*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 MemoryDatabase::KeyData *MemoryDatabase::findKeyDataOrExit( const std::string &key )
 {
@@ -1150,52 +1116,44 @@ MemoryDatabase::KeyData *MemoryDatabase::findKeyDataOrExit( const std::string &k
     return ( nullptr );
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Print the entire database to the specified output stream.	        *
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 void MemoryDatabase::printClassData( std::ostream &os )
 {
     printDatabase( os, 0, PRINT_DEFAULT | PRINT_INPUT | PRINT_UNUSED );
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Print unused database keys to the specified output stream.	        *
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 void MemoryDatabase::printUnusedKeys( std::ostream &os ) const
 {
     printDatabase( os, 0, PRINT_UNUSED );
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Print default database keys to the specified output stream.     	*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 void MemoryDatabase::printDefaultKeys( std::ostream &os ) const
 {
     printDatabase( os, 0, PRINT_DEFAULT );
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Indent the output stream by the specified indentation factor.		*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 void MemoryDatabase::indentStream( std::ostream &os, const int indent )
 {
@@ -1204,13 +1162,11 @@ void MemoryDatabase::indentStream( std::ostream &os, const int indent )
     }
 }
 
-/*
-*************************************************************************
+/************************************************************************
  *									*
  * Print database data to the specified output stream.			*
  *									*
-*************************************************************************
-*/
+************************************************************************/
 
 void MemoryDatabase::printDatabase( std::ostream &, const int, const int ) const
 {

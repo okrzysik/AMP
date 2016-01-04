@@ -136,7 +136,7 @@ public:
 };
 }
 
-#ifndef DEBUG_NO_INLINE
+#endif
+
 #include "DatabaseBox.I"
-#endif
-#endif
+

@@ -13,9 +13,6 @@
 #define NULL ( 0 )
 #endif
 
-#ifdef DEBUG_NO_INLINE
-#include "TimeIntegrator.I"
-#endif
 
 #ifndef included_TimeIntegratorParameters
 #include "TimeIntegratorParameters.h"
@@ -27,16 +24,14 @@
 namespace AMP {
 namespace TimeIntegrator {
 
-/*
-*************************************************************************
+/************************************************************************
 *                                                                       *
-* Constructor and destructor for TimeIntegrator.  The         *
+* Constructor and destructor for TimeIntegrator.  The                   *
 * constructor sets default values for data members, then overrides      *
 * them with values read from input or restart.  The destructor does     *
 * nothing interesting.                                                  *
 *                                                                       *
-*************************************************************************
-*/
+************************************************************************/
 
 TimeIntegrator::TimeIntegrator(
     AMP::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters )

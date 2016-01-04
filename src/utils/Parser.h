@@ -211,7 +211,8 @@ private:
 };
 }
 
-#ifndef DEBUG_NO_INLINE
+
+#endif
+
 #include "Parser.I"
-#endif
-#endif
+

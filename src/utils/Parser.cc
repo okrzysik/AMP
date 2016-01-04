@@ -12,10 +12,6 @@
 #include "Parser.h"
 #include "PIO.h"
 
-#ifdef DEBUG_NO_INLINE
-#include "Parser.I"
-#endif
-
 #ifndef NULL
 #define NULL ( 0 )
 #endif

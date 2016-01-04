@@ -10,9 +10,6 @@
 
 #include "DatabaseBox.h"
 
-#ifdef DEBUG_NO_INLINE
-#include "DatabaseBox.I"
-#endif
 
 namespace AMP {
 

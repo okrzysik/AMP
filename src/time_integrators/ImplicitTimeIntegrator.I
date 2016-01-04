@@ -1,9 +1,11 @@
+#ifndef included_ImplicitTimeIntegrator_INLINE
+#define included_ImplicitTimeIntegrator_INLINE
 
-#ifdef DEBUG_NO_INLINE
-#define inline
-#endif
+#include "ImplicitTimeIntegrator.h"
+
 namespace AMP {
 namespace TimeIntegrator {
+
 
 template <int DIM>
 inline double ImplicitTimeIntegrator<DIM>::getCurrentDt() const
@@ -47,8 +49,9 @@ inline int ImplicitTimeIntegrator<DIM>::getMaxIntegratorSteps() const
     return ( d_max_integrator_steps );
 }
 
-#ifdef DEBUG_NO_INLINE
-#undef inline
+
+}
+}
+
 #endif
-}
-}
+

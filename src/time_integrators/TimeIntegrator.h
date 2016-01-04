@@ -315,11 +315,7 @@ private:
 }
 }
 
-#ifndef DEBUG_NO_INLINE
-#include "TimeIntegrator.I"
-#endif
 #endif
 
-#ifdef INCLUDE_TEMPLATE_IMPLEMENTATION
-#include "TimeIntegrator.C"
-#endif
+#include "TimeIntegrator.I"
+

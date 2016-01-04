@@ -1,3 +1,6 @@
+#ifndef included_MemoryDatabase_INLINE
+#define included_MemoryDatabase_INLINE
+
 //
 // File:	$URL:
 // file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/database/MemoryDatabase.I $
@@ -8,17 +11,9 @@
 // Description:	An memomory database structure that stores (key,value) pairs in memory
 //
 
-#ifdef DEBUG_NO_INLINE
-#define inline
-#endif
 
 namespace AMP {
 
-
-inline MemoryDatabase::MemoryDatabase( const std::string &name )
-    : d_database_name( name ), comm( AMP_COMM_WORLD )
-{
-}
 
 inline std::string MemoryDatabase::getName() const { return ( d_database_name ); }
 
@@ -28,7 +23,8 @@ inline bool MemoryDatabase::keyAccessed( const std::string &key )
     return ( keydata ? keydata->d_accessed : false );
 }
 
-#ifdef DEBUG_NO_INLINE
-#undef inline
-#endif
+
 }
+
+
+#endif
