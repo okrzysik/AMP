@@ -1,3 +1,6 @@
+// Supress false warnings
+noConstructor:*/utils/RNG.h
+
 // Suppress unmatched suppressions
 unmatchedSuppression
 
@@ -5,6 +8,7 @@ unmatchedSuppression
 missingInclude
 
 // Suppress unusedFunction messages (functions may be used by subsequent packages)
+unusedPrivateFunction:*/materials/Property.h
 unusedFunction
 
 // Supress redundantAssignment/Copy, they can be better practice in many instances
@@ -35,6 +39,7 @@ memleak:*/utils/test/test_AMPManager.cc
 toomanyconfigs:*/utils/Scanner.cc
 unusedStructMember:*/utils/Scanner.cc
 ConfigurationNotChecked:*/utils/Scanner.cc
+nullPointer:*/utils/Scanner.cc
 passedByValue:*/utils/Database.cc
 passedByValue:*/utils/Database.h
 stlSize:*/utils/Database.cc
@@ -63,6 +68,8 @@ variableScope:*/test/diffusion/test*
 variableScope:*/test/maps/dtk/test*
 unreadVariable:*/test/test*
 unusedVariable:*/test/maps/dtk/test*
+knownConditionTrueFalse:*/utils/test/test_AMP_MPI.cc
+noExplicitConstructor:*/utils/test/test_AMP_MPI.cc
 
 // Supress warnings for usleep
 obsoleteFunctionsusleep
