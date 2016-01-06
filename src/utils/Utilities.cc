@@ -5,6 +5,7 @@
 #include "utils/AMP_MPI.h"
 #include "utils/Logger.h"
 #include "utils/PIO.h"
+#include "utils/StackTrace.h"
 
 #include <algorithm>
 #include <fstream>
@@ -231,10 +232,10 @@ void Utilities::abort( const std::string &message, const std::string &filename, 
         // Print the call stack and memory usage
         long long unsigned int N_bytes = getMemoryUsage();
         printf( "Bytes used = %llu\n", N_bytes );
-        std::vector<std::string> stack = getCallStack();
+        auto stack = StackTrace::getCallStack();
         printf( "Stack Trace:\n" );
         for ( auto &elem : stack )
-            printf( "   %s\n", elem.c_str() );
+            printf( "   %s\n", elem.print().c_str() );
         printf( "\n" );
         // Log the abort message
         Logger::getInstance()->logAbort( message, filename, line );
@@ -319,231 +320,6 @@ size_t Utilities::getMemoryUsage()
     return N_bytes;
 }
 
-
-/****************************************************************************
-*  Function to get the current call stack                                   *
-****************************************************************************/
-struct global_symbols_struct {
-    bool loaded;
-    std::vector<void *> address;
-    std::vector<std::string> obj;
-    global_symbols_struct() : loaded( false ) {}
-} global_symbols;
-std::string print_address( void *address )
-{
-    char tmp[20];
-    unsigned long long int address2 = reinterpret_cast<size_t>( address );
-    sprintf( tmp, "0x%016llx", address2 );
-    return std::string( tmp );
-}
-std::string remove_path( const std::string &var )
-{
-    const char *tmp = std::max( strrchr( var.c_str(), 47 ), strrchr( var.c_str(), 92 ) );
-    if ( tmp == nullptr )
-        tmp = var.c_str();
-    else
-        tmp++;
-    return std::string( tmp );
-}
-std::vector<std::string> Utilities::getCallStack()
-{
-    std::vector<std::string> stack_list;
-#if defined( USE_LINUX ) || defined( USE_MAC )
-    void *trace[100];
-    memset( trace, 0, 100 * sizeof( void * ) );
-    Dl_info dlinfo;
-    const char *symname;
-    char *demangled = nullptr;
-    int trace_size  = backtrace( trace, 100 );
-    char **names    = backtrace_symbols( trace, 100 );
-    for ( int i = 0; i < trace_size; ++i ) {
-        if ( !dladdr( trace[i], &dlinfo ) )
-            continue;
-        symname = dlinfo.dli_sname;
-#if defined( USE_ABI )
-        int status = 0;
-        demangled  = abi::__cxa_demangle( symname, nullptr, nullptr, &status );
-        if ( status == 0 && demangled )
-            symname = demangled;
-#endif
-        std::string object   = std::string( dlinfo.dli_fname );
-        std::string function = "";
-        if ( symname != nullptr )
-            function = std::string( symname );
-        // Create the stack item
-        object                 = remove_path( object );
-        std::string stack_item = print_address( trace[i] ) + ":   " + object + ":   ";
-        while ( stack_item.size() < 40 )
-            stack_item.push_back( ' ' );
-        stack_item += function;
-        stack_list.push_back( stack_item );
-        if ( demangled != nullptr ) {
-            free( demangled );
-            demangled = nullptr;
-        }
-    }
-    free( names );
-    if ( stack_list.empty() ) {
-        // Try to load the global symbols and use them
-        if ( !global_symbols.loaded ) {
-            global_symbols.loaded = true;
-            std::vector<char> type;
-            Utilities::get_symbols( global_symbols.address, type, global_symbols.obj );
-        }
-        if ( !global_symbols.address.empty() ) {
-            for ( int i = 0; i < trace_size; ++i ) {
-                // Search through the global symbols to find the address
-                size_t index = findfirst( global_symbols.address, trace[i] ) - 1;
-                std::string stack_item =
-                    print_address( trace[i] ) + ":   " + global_symbols.obj[index];
-                stack_list.push_back( stack_item );
-            }
-        }
-    }
-    if ( stack_list.empty() ) {
-        // We don't have access to the symbols, print the addresses
-        // We can then use nm or some other method to convert the addresses to the function
-        for ( int i = 0; i < trace_size; ++i ) {
-            std::string stack_item = print_address( trace[i] );
-            stack_list.push_back( stack_item );
-        }
-    }
-#elif defined( USE_WINDOWS )
-#ifdef DBGHELP
-    ::CONTEXT lContext;
-    ::ZeroMemory( &lContext, sizeof(::CONTEXT ) );
-    ::RtlCaptureContext( &lContext );
-    ::STACKFRAME64 lFrameStack;
-    ::ZeroMemory( &lFrameStack, sizeof(::STACKFRAME64 ) );
-    lFrameStack.AddrPC.Offset    = lContext.Rip;
-    lFrameStack.AddrFrame.Offset = lContext.Rbp;
-    lFrameStack.AddrStack.Offset = lContext.Rsp;
-    lFrameStack.AddrPC.Mode = lFrameStack.AddrFrame.Mode = lFrameStack.AddrStack.Mode =
-        AddrModeFlat;
-#ifdef _M_IX86
-    DWORD MachineType = IMAGE_FILE_MACHINE_I386;
-#endif
-#ifdef _M_X64
-    DWORD MachineType = IMAGE_FILE_MACHINE_AMD64;
-#endif
-#ifdef _M_IA64
-    DWORD MachineType = IMAGE_FILE_MACHINE_IA64;
-#endif
-    while ( 1 ) {
-        int rtn = ::StackWalk64( MachineType,
-                                 ::GetCurrentProcess(),
-                                 ::GetCurrentThread(),
-                                 &lFrameStack,
-                                 MachineType == IMAGE_FILE_MACHINE_I386 ? 0 : &lContext,
-                                 NULL,
-                                 &::SymFunctionTableAccess64,
-                                 &::SymGetModuleBase64,
-                                 NULL );
-        if ( !rtn )
-            break;
-        if ( lFrameStack.AddrPC.Offset == 0 )
-            break;
-        ::MEMORY_BASIC_INFORMATION lInfoMemory;
-        ::VirtualQuery( (::PVOID) lFrameStack.AddrPC.Offset, &lInfoMemory, sizeof( lInfoMemory ) );
-        if ( lInfoMemory.Type == MEM_PRIVATE )
-            continue;
-        ::DWORD64 lBaseAllocation = reinterpret_cast<::DWORD64>( lInfoMemory.AllocationBase );
-        ::TCHAR lNameModule[1024];
-        ::HMODULE hBaseAllocation = reinterpret_cast<::HMODULE>( lBaseAllocation );
-        ::GetModuleFileName( hBaseAllocation, lNameModule, 1024 );
-        PIMAGE_DOS_HEADER lHeaderDOS = reinterpret_cast<PIMAGE_DOS_HEADER>( lBaseAllocation );
-        if ( lHeaderDOS == NULL )
-            continue;
-        PIMAGE_NT_HEADERS lHeaderNT =
-            reinterpret_cast<PIMAGE_NT_HEADERS>( lBaseAllocation + lHeaderDOS->e_lfanew );
-        PIMAGE_SECTION_HEADER lHeaderSection = IMAGE_FIRST_SECTION( lHeaderNT );
-        ::DWORD64 lRVA                       = lFrameStack.AddrPC.Offset - lBaseAllocation;
-        ::DWORD64 lNumberSection             = ::DWORD64();
-        ::DWORD64 lOffsetSection             = ::DWORD64();
-        for ( int lCnt = ::DWORD64(); lCnt < lHeaderNT->FileHeader.NumberOfSections;
-              lCnt++, lHeaderSection++ ) {
-            ::DWORD64 lSectionBase = lHeaderSection->VirtualAddress;
-            ::DWORD64 lSectionEnd  = lSectionBase + std::max( lHeaderSection->SizeOfRawData,
-                                                             lHeaderSection->Misc.VirtualSize );
-            if ( ( lRVA >= lSectionBase ) && ( lRVA <= lSectionEnd ) ) {
-                lNumberSection = lCnt + 1;
-                lOffsetSection = lRVA - lSectionBase;
-                // break;
-            }
-        }
-        std::stringstream stream;
-        stream << lNameModule << " : 000" << lNumberSection << " : "
-               << reinterpret_cast<void *>( lOffsetSection );
-        stack_list.push_back( stream.str() );
-    }
-#endif
-#else
-#warning Stack trace is not supported on this compiler/OS
-#endif
-    return stack_list;
-}
-
-
-/****************************************************************************
-*  Function to get symbols for the executable from nm (if availible)        *
-****************************************************************************/
-int Utilities::get_symbols( std::vector<void *> &address,
-                            std::vector<char> &type,
-                            std::vector<std::string> &obj )
-{
-    address.clear();
-    type.clear();
-    obj.clear();
-#ifdef USE_NM
-    char *buf = new char[0x100000];
-    try {
-        int len = ::readlink( "/proc/self/exe", buf, 900 );
-        if ( len == -1 )
-            return -2;
-        buf[len] = '\0';
-        char cmd[1024];
-        sprintf( cmd, "nm --demangle --numeric-sort %s", buf );
-        FILE *in = popen( cmd, "r" );
-        if ( in == nullptr ) {
-            delete[] buf;
-            return -2;
-        }
-        while ( fgets( buf, 0xFFFFF, in ) != nullptr ) {
-            if ( buf[0] == ' ' || buf == nullptr )
-                continue;
-            char *a = buf;
-            char *b = strchr( a, ' ' );
-            if ( b == nullptr ) {
-                continue;
-            }
-            b[0] = 0;
-            b++;
-            char *c = strchr( b, ' ' );
-            if ( c == nullptr ) {
-                continue;
-            }
-            c[0] = 0;
-            c++;
-            char *d = strchr( c, '\n' );
-            if ( d ) {
-                d[0] = 0;
-            }
-            size_t add = strtoul( a, nullptr, 16 );
-            address.push_back( reinterpret_cast<void *>( add ) );
-            type.push_back( b[0] );
-            obj.push_back( std::string( c ) );
-        }
-        pclose( in );
-    } catch ( ... ) {
-        delete[] buf;
-        return -3;
-    }
-    delete[] buf;
-    return 0;
-#else
-    return -1;
-#endif
-}
 
 /****************************************************************************
 *  Functions to get the time and timer resolution                           *

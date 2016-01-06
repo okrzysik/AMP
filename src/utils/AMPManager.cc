@@ -3,7 +3,8 @@
 #include "ProfilerApp.h"
 #include "RNG.h"
 #include "ShutdownRegistry.h"
-#include "Utilities.h"
+#include "utils/Utilities.h"
+#include "utils/StackTrace.h"
 #include "utils/AMP_MPI.h"
 
 #ifdef USE_EXT_PETSC
@@ -153,10 +154,10 @@ void AMPManager::terminate_AMP( std::string message )
         long long unsigned int N_bytes = AMP::Utilities::getMemoryUsage();
         sprintf( text, "Bytes used = %llu\n", N_bytes );
         msg << text;
-        std::vector<std::string> stack = AMP::Utilities::getCallStack();
+        auto stack = AMP::StackTrace::getCallStack();
         msg << "Stack Trace:\n";
         for ( auto &elem : stack )
-            msg << "   " << elem << std::endl;
+            msg << "   " << elem.print() << std::endl;
         perr << msg.str();
     }
     if ( force_exit > 1 ) {

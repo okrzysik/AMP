@@ -14,6 +14,7 @@
 #include "utils/AMP_MPI.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
+#include "utils/StackTrace.h"
 #include "utils/enable_shared_from_this.h"
 #include "utils/shared_ptr.h"
 
@@ -102,7 +103,7 @@ void testApproxEqual( AMP::UnitTest *ut )
 
 
 // Function to return the call stack
-std::vector<std::string> get_call_stack() { return AMP::Utilities::getCallStack(); }
+std::vector<AMP::StackTrace::stack_info> get_call_stack() { return AMP::StackTrace::getCallStack(); }
 
 
 // Function to test the interpolants
@@ -412,17 +413,17 @@ int main( int argc, char *argv[] )
         }
 
         // Test getting the current call stack
-        std::vector<std::string> call_stack = get_call_stack();
+        auto call_stack = get_call_stack();
         if ( globalComm.getRank() == 0 ) {
             std::cout << "Call stack:" << std::endl;
             for ( auto &elem : call_stack )
-                std::cout << "   " << elem;
+                std::cout << "   " << elem.print() << std::endl;
         }
         if ( !call_stack.empty() ) {
             ut.passes( "non empty call stack" );
             bool pass = false;
             if ( call_stack.size() > 1 ) {
-                if ( call_stack[1].find( "get_call_stack()" ) != std::string::npos )
+                if ( call_stack[1].print().find( "get_call_stack()" ) != std::string::npos )
                     pass = true;
             }
             if ( pass )
@@ -437,7 +438,7 @@ int main( int argc, char *argv[] )
         std::vector<void *> address;
         std::vector<char> type;
         std::vector<std::string> obj;
-        int rtn = AMP::Utilities::get_symbols( address, type, obj );
+        int rtn = AMP::StackTrace::getSymbols( address, type, obj );
         if ( rtn == 0 && !address.empty() )
             ut.passes( "Read symbols from executable" );
 
