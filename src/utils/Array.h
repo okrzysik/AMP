@@ -56,14 +56,14 @@ public:
      * Create a new 1D Array with the given number of elements
      * @param N             Number of elements in the array
      */
-    Array( size_t N );
+    explicit Array( size_t N );
 
     /*!
      * Create a new 2D Array with the given number of rows and columns
      * @param N_rows        Number of rows
      * @param N_columns     Number of columns
      */
-    Array( size_t N_rows, size_t N_columns );
+    explicit Array( size_t N_rows, size_t N_columns );
 
     /*!
      * Create a new 3D Array with the given number of rows and columns
@@ -71,14 +71,14 @@ public:
      * @param N2            Number of columns
      * @param N3            Number of elements in the third dimension
      */
-    Array( size_t N1, size_t N2, size_t N3 );
+    explicit Array( size_t N1, size_t N2, size_t N3 );
 
     /*!
      * Create a multi-dimensional Array with the given number of elements
      * @param N             Number of elements in each dimension
      * @param data          Optional raw array to copy the src data
      */
-    Array( const std::vector<size_t> &N, const TYPE *data = NULL );
+    explicit Array( const std::vector<size_t> &N, const TYPE *data = NULL );
 
     /*!
      * Copy constructor

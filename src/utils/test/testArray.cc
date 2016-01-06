@@ -45,9 +45,9 @@ int main( int argc, char *argv[] )
         AMP::Array<double> M5 = M1;
         M5( 0, 0 ) = -1;
         if ( M1 == M2 && M1 == M3 && M1 == M4 && M1 != M5 )
-            ut.passes( "AMP::Array constructors" );
+            ut.passes( "Array constructors" );
         else
-            ut.failure( "AMP::Array constructors" );
+            ut.failure( "Array constructors" );
         // Test std::string
         bool pass = true;
         AMP::Array<std::string> S;

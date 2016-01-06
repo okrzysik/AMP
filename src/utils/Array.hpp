@@ -645,7 +645,6 @@ template <class TYPE>
 TYPE Array<TYPE>::mean( void ) const
 {
     TYPE x = sum() / d_length;
-
     return x;
 }
 template <class TYPE>
@@ -717,7 +716,6 @@ Array<TYPE> Array<TYPE>::sum( int dir ) const
     }
     return ans;
 }
-
 template <class TYPE>
 TYPE Array<TYPE>::min( const std::vector<size_t> &index ) const
 {
@@ -745,7 +743,6 @@ TYPE Array<TYPE>::min( const std::vector<size_t> &index ) const
 
     return x;
 }
-
 template <class TYPE>
 TYPE Array<TYPE>::max( const std::vector<size_t> &index ) const
 {
