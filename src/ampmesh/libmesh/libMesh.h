@@ -2,11 +2,14 @@
 #define included_AMP_LibMesh
 
 #include "ampmesh/Mesh.h"
+#include "utils/UtilityMacros.h"
 #include "ampmesh/libmesh/initializeLibMesh.h"
 
 // LibMesh include
+DISABLE_WARNINGS
 #include "libmesh/mesh.h"
 #include "libmesh/mesh_data.h"
+ENABLE_WARNINGS
 
 
 namespace AMP {

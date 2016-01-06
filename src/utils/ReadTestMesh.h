@@ -3,10 +3,12 @@
 #define included_AMP_ReadTestMesh
 
 #include "utils/shared_ptr.h"
-
-#include "libmesh/mesh.h"
-
 #include "utils/InputDatabase.h"
+#include "utils/UtilityMacros.h"
+
+DISABLE_WARNINGS
+#include "libmesh/mesh.h"
+ENABLE_WARNINGS
 
 #include <cstring>
 

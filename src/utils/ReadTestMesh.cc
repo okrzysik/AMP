@@ -1,9 +1,13 @@
 #if defined( USE_AMP_MESH ) && defined( USE_EXT_LIBMESH )
 #include "ReadTestMesh.h"
 
+// LibMesh include
+DISABLE_WARNINGS
+#include "libmesh/mesh.h"
 #include "libmesh/boundary_info.h"
 #include "libmesh/cell_hex8.h"
 #include "libmesh/elem.h"
+ENABLE_WARNINGS
 
 #include <cstdio>
 
