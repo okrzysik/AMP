@@ -22,8 +22,6 @@ inline bool MemoryDatabase::keyAccessed( const std::string &key )
     KeyData *keydata = findKeyData( key );
     return ( keydata ? keydata->d_accessed : false );
 }
-
-
 }
 
 

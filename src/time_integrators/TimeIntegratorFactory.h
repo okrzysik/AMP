@@ -19,8 +19,8 @@ responsibility for the use of this software.
 #ifndef included_TimeIntegratorFactory
 #define included_TimeIntegratorFactory
 
-#include "TimeIntegratorParameters.h"
 #include "TimeIntegrator.h"
+#include "TimeIntegratorParameters.h"
 
 #include <memory>
 

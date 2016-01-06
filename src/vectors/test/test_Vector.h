@@ -112,7 +112,7 @@ public:
                 std::vector<size_t>( D, I ), getVariable(), AMP_MPI( AMP_COMM_WORLD ) );
         else
             vec = AMP::LinearAlgebra::ArrayVector<T>::create( std::vector<size_t>( D, I ),
-                                                                   getVariable() );
+                                                              getVariable() );
         return vec;
     }
 

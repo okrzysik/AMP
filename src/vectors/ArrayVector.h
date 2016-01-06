@@ -65,7 +65,10 @@ public:
 
     //! the resize function is overriden so that the base class version is not called on ArrayVector
     // as it is dangerous
-    void resize( size_t ) override { AMP_ERROR("resize of ArrayVector with size_t argument not allowed!!"); }
+    void resize( size_t ) override
+    {
+        AMP_ERROR( "resize of ArrayVector with size_t argument not allowed!!" );
+    }
 
     using SimpleVector<T>::resize;
 

@@ -139,4 +139,3 @@ public:
 #endif
 
 #include "DatabaseBox.I"
-

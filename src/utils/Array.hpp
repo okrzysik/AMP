@@ -408,7 +408,7 @@ bool Array<TYPE>::operator==( const Array &rhs ) const
         return false;
     if ( d_ndim != rhs.d_ndim )
         return false;
-    for (int d=0; d<d_ndim; d++) {
+    for ( int d = 0; d < d_ndim; d++ ) {
         if ( d_N[d] != rhs.d_N[d] )
             return false;
     }

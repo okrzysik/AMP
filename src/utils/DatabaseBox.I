@@ -80,8 +80,6 @@ inline int DatabaseBox::upper( const int i ) const
     AMP_ASSERT( ( i >= 0 ) && ( i < d_data.d_dimension ) );
     return ( d_data.d_hi[i] );
 }
-
 }
 
 #endif
-

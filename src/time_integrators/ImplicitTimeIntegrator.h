@@ -1,13 +1,13 @@
 #ifndef included_ImplicitTimeIntegrator
 #define included_ImplicitTimeIntegrator
 
-#include "vectors/Vector.h"
-#include "utils/InputDatabase.h"
-#include "utils/shared_ptr.h"
 #include "TimeIntegrator.h"
-#include "solvers/SolverStrategy.h"
 #include "TimeOperatorParameters.h"
+#include "solvers/SolverStrategy.h"
+#include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
+#include "utils/shared_ptr.h"
+#include "vectors/Vector.h"
 
 #include <ostream>
 #include <string>

@@ -225,27 +225,27 @@
  */
 /*! \def ENABLE_WARNINGS
  *  \brief Supress all warnings
- *  \details This will start to supress all compile warnings. 
+ *  \details This will start to supress all compile warnings.
  *      Be sure to follow with ENABLE_WARNINGS
  */
-#if defined(USING_MSVC)
-    #define DISABLE_WARNINGS  __pragma(warning( push, 0 ))
-    #define ENABLE_WARNINGS   __pragma(warning( pop ))
-#elif defined(USING_CLANG)
-    #define DISABLE_WARNINGS  _Pragma("clang diagnostic push")      \
-        _Pragma("clang diagnostic ignored \"-Wall\"")               \
-        _Pragma("clang diagnostic ignored \"-Wextra\"")             \
-        _Pragma("clang diagnostic ignored \"-Wunused-private-field\"")
-    #define ENABLE_WARNINGS   _Pragma("clang diagnostic pop")
-#elif defined(USING_GCC)
-    #define DISABLE_WARNINGS  _Pragma("GCC diagnostic push")        \
-        _Pragma("GCC diagnostic ignored \"-Wall\"")                 \
-        _Pragma("GCC diagnostic ignored \"-Wextra\"")               \
-        _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")
-    #define ENABLE_WARNINGS   _Pragma("GCC diagnostic pop")
+#if defined( USING_MSVC )
+#define DISABLE_WARNINGS __pragma( warning( push, 0 ) )
+#define ENABLE_WARNINGS __pragma( warning( pop ) )
+#elif defined( USING_CLANG )
+#define DISABLE_WARNINGS                                                               \
+    _Pragma( "clang diagnostic push" ) _Pragma( "clang diagnostic ignored \"-Wall\"" ) \
+        _Pragma( "clang diagnostic ignored \"-Wextra\"" )                              \
+            _Pragma( "clang diagnostic ignored \"-Wunused-private-field\"" )
+#define ENABLE_WARNINGS _Pragma( "clang diagnostic pop" )
+#elif defined( USING_GCC )
+#define DISABLE_WARNINGS                                                           \
+    _Pragma( "GCC diagnostic push" ) _Pragma( "GCC diagnostic ignored \"-Wall\"" ) \
+        _Pragma( "GCC diagnostic ignored \"-Wextra\"" )                            \
+            _Pragma( "GCC diagnostic ignored \"-Wunused-parameter\"" )
+#define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
 #else
-    #define DISABLE_WARNINGS
-    #define ENABLE_WARNINGS
+#define DISABLE_WARNINGS
+#define ENABLE_WARNINGS
 #endif
 
 

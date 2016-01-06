@@ -3,10 +3,10 @@
 
 // LibMesh include
 DISABLE_WARNINGS
-#include "libmesh/mesh.h"
 #include "libmesh/boundary_info.h"
 #include "libmesh/cell_hex8.h"
 #include "libmesh/elem.h"
+#include "libmesh/mesh.h"
 ENABLE_WARNINGS
 
 #include <cstdio>

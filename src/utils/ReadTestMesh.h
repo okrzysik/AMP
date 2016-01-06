@@ -2,9 +2,9 @@
 #ifndef included_AMP_ReadTestMesh
 #define included_AMP_ReadTestMesh
 
-#include "utils/shared_ptr.h"
 #include "utils/InputDatabase.h"
 #include "utils/UtilityMacros.h"
+#include "utils/shared_ptr.h"
 
 DISABLE_WARNINGS
 #include "libmesh/mesh.h"

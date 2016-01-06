@@ -26,18 +26,18 @@ Vector::shared_ptr ArrayVector<T>::create( const std::vector<size_t> &localSize,
     size_t N = 1;
     for ( auto s : localSize )
         N *= s;
-    
-    retVal->d_Data.resize(N);
+
+    retVal->d_Data.resize( N );
     // extract pointers to the internal vector and array
     // do not use 'auto' in place of AMP::Array<T> &
     // and std::vector<T> & as these result in the
     // copy constructor being called!!
     AMP::Array<T> &internalArray = retVal->getArray();
-    std::vector<T> &internalVec   = const_cast<std::vector<T> &>(retVal->getData());
+    std::vector<T> &internalVec  = const_cast<std::vector<T> &>( retVal->getData() );
     // set the data pointer for the array to point to the std:vector data
     internalArray.viewRaw( localSize, internalVec.data() );
-    AMP_ASSERT(internalArray.size()==localSize);
-    AMP_ASSERT(internalArray.ndim()==localSize.size());
+    AMP_ASSERT( internalArray.size() == localSize );
+    AMP_ASSERT( internalArray.ndim() == localSize.size() );
 
     AMP_MPI comm( AMP_COMM_SELF );
     AMP::Discretization::DOFManager::shared_ptr DOFs(
@@ -61,14 +61,14 @@ Vector::shared_ptr ArrayVector<T>::create( const std::vector<size_t> &localSize,
     size_t N = 1;
     for ( auto s : localSize )
         N *= s;
-    retVal->d_Data.resize(N);
+    retVal->d_Data.resize( N );
 
     // extract pointers to the internal vector and array
     // do not use 'auto' in place of AMP::Array<T> &
     // and std::vector<T> & as these result in the
     // copy constructor being called!!
     AMP::Array<T> &internalArray = retVal->getArray();
-    std::vector<T> &internalVec   = const_cast<std::vector<T> &>(retVal->getData());
+    std::vector<T> &internalVec  = const_cast<std::vector<T> &>( retVal->getData() );
     // set the data pointer for the array to point to the std:vector data
     internalArray.viewRaw( localSize, internalVec.data() );
 
@@ -94,9 +94,9 @@ ArrayVector<T>::create( Variable::shared_ptr var,
     size_t localSize = DOFs->numLocalDOF();
     retVal->d_Data.resize( localSize );
     AMP::Array<T> &internalArray = retVal->getArray();
-    std::vector<T> &internalVec   = const_cast<std::vector<T> &>(retVal->getData());
+    std::vector<T> &internalVec  = const_cast<std::vector<T> &>( retVal->getData() );
     // set the data pointer for the array to point to the std:vector data
-    internalArray.viewRaw( {localSize}, internalVec.data() );
+    internalArray.viewRaw( { localSize }, internalVec.data() );
     retVal->d_DOFManager = DOFs;
     retVal->setCommunicationList( commlist );
     retVal->d_comm       = DOFs->getComm();
@@ -153,13 +153,11 @@ void ArrayVector<T>::resize( const std::vector<size_t> &localDims )
     size_t N = 1;
     for ( auto s : localDims )
         N *= s;
-    
-    std::vector<T> &internalVec   = const_cast<std::vector<T> &>(this->getData());
+
+    std::vector<T> &internalVec = const_cast<std::vector<T> &>( this->getData() );
     internalVec.resize( N );
     // set the data pointer for the array to point to the std:vector data
     d_array.viewRaw( localDims, internalVec.data() );
-    
 }
-
 }
 }

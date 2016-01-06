@@ -752,4 +752,3 @@ private:
 #endif
 
 #include "MemoryDatabase.I"
-

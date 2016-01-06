@@ -334,7 +334,7 @@ static bool test_scal( int N, T &error )
     T *x1       = new T[K];
     T *x2       = new T[K];
     random( K, x0 );
-    const T pi = static_cast<T>(3.141592653589793);
+    const T pi = static_cast<T>( 3.141592653589793 );
     for ( int j  = 0; j < K; j++ )
         x1[j]    = pi * x0[j];
     int N_errors = 0;
@@ -438,7 +438,7 @@ static bool test_axpy( int N, T &error )
     T *y2       = new T[K];
     random( K, x );
     random( K, y0 );
-    const T pi = static_cast<T>(3.141592653589793);
+    const T pi = static_cast<T>( 3.141592653589793 );
     for ( int j = 0; j < K; j++ )
         y1[j]   = y0[j] + pi * x[j];
     error       = 0;
@@ -470,8 +470,8 @@ static bool test_gemv( int N, T &error )
     random( K * K, A );
     random( K, x );
     random( K, y );
-    const T alpha = static_cast<T>(3.141592653589793);
-    const T beta  = static_cast<T>(1.414213562373095);
+    const T alpha = static_cast<T>( 3.141592653589793 );
+    const T beta  = static_cast<T>( 1.414213562373095 );
     for ( int j = 0; j < K; j++ ) {
         y1[j] = beta * y[j];
         for ( int k = 0; k < K; k++ )
@@ -508,8 +508,8 @@ static bool test_gemm( int N, T &error )
     random( K * K, A );
     random( K * K, B );
     random( K * K, C );
-    const T alpha = static_cast<T>(3.141592653589793);
-    const T beta  = static_cast<T>(1.414213562373095);
+    const T alpha = static_cast<T>( 3.141592653589793 );
+    const T beta  = static_cast<T>( 1.414213562373095 );
     for ( int i = 0; i < K; i++ ) {
         for ( int j = 0; j < K; j++ ) {
             C1[i + j * K] = beta * C[i + j * K];
@@ -616,7 +616,7 @@ static bool test_gtsv( int N, T &error )
         T norm = L2Norm( N, x1 );
         error  = std::max( error, err2 / norm );
     }
-    const T tol = static_cast<T>(2e4) * std::numeric_limits<T>::epsilon();
+    const T tol = static_cast<T>( 2e4 ) * std::numeric_limits<T>::epsilon();
     if ( error > tol ) {
         printf( "test_gtsv error (%e) exceeded tolerance (%e)\n", error, tol );
         N_errors++;

@@ -48,10 +48,7 @@ inline int ImplicitTimeIntegrator<DIM>::getMaxIntegratorSteps() const
 {
     return ( d_max_integrator_steps );
 }
-
-
 }
 }
 
 #endif
-

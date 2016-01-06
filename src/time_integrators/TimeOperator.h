@@ -2,10 +2,10 @@
 #define included_TimeOperator
 
 #include "operators/Operator.h"
+#include "operators/OperatorParameters.h"
+#include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
 #include "vectors/Vector.h"
-#include "utils/Utilities.h"
-#include "operators/OperatorParameters.h"
 
 
 namespace AMP {
