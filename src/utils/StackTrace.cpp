@@ -272,7 +272,7 @@ int StackTrace::getSymbols(
 ****************************************************************************/
 static void getFileAndLine( StackTrace::stack_info &info )
 {
-#if defined( USE_LINUX ) || defined( USE_MAC )
+#if defined( USE_LINUX )
     void *address = info.address;
     if ( info.object.find( ".so" ) != std::string::npos )
         address = info.address2;
@@ -299,6 +299,33 @@ static void getFileAndLine( StackTrace::stack_info &info )
         info.line     = atoi( &buf[i + 1] );
     }
     pclose( f );
+#elif defined(USE_MAC) && 0
+    /*void *address = info.address;
+    if ( info.object.find( ".so" ) != std::string::npos )
+        address = info.address2;
+    char buf[4096];
+    sprintf( buf, "atos -o %s %lx 2> /dev/null", info.object.c_str(),
+        reinterpret_cast<unsigned long int>( address ) );
+    FILE *f = popen( buf, "r" );
+    if ( f == nullptr )
+        return;
+    buf[4095] = 0;
+    // get function name
+    char *rtn = fgets( buf, 4095, f );
+    if ( info.function.empty() && rtn == buf ) {
+        info.function = std::string( buf );
+        info.function.resize( std::max<size_t>( info.function.size(), 1 ) - 1 );
+    }
+    // get file and line
+    rtn = fgets( buf, 4095, f );
+    if ( buf[0] != '?' && buf[0] != 0 && rtn == buf ) {
+        size_t i = 0;
+        for ( i = 0; i < 4095 && buf[i] != ':'; i++ ) {
+        }
+        info.filename = std::string( buf, i );
+        info.line     = atoi( &buf[i + 1] );
+    }
+    pclose( f );*/
 #endif
 }
 
@@ -319,7 +346,7 @@ StackTrace::stack_info StackTrace::getStackInfo( void *address )
 {
     StackTrace::stack_info info;
     info.address = address;
-    #ifdef _GNU_SOURCE
+    #if defined(_GNU_SOURCE) || defined(USE_MAC)
         Dl_info dlinfo;
         if ( !dladdr( address, &dlinfo ) ) {
             getDataFromGlobalSymbols( info );
