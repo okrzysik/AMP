@@ -443,7 +443,12 @@ int main( int argc, char *argv[] )
             ut.passes( "Read symbols from executable" );
 
         // Test getting the executable
-        std::cout << AMP::StackTrace::getExecutable() << std::endl;
+        std::string exe = AMP::StackTrace::getExecutable();
+        std::cout << "Executable: " << exe << std::endl;
+        if ( exe.find( "test_Utilities" ) != std::string::npos )
+            ut.passes( "getExecutable" );
+        else
+            ut.failure( "getExecutable" );
 
         // Test deleting and checking if a file exists
         if ( globalComm.getRank() == 0 ) {
