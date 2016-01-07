@@ -12,16 +12,15 @@
 // Detect the OS and include system dependent headers
 #if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || \
     defined( _MSC_VER )
-// Note: windows has not been testeds
 #define USE_WINDOWS
 #define NOMINMAX
+#include <windows.h>
 #include <DbgHelp.h>
 #include <iostream>
 #include <process.h>
 #include <psapi.h>
 #include <stdio.h>
 #include <tchar.h>
-#include <windows.h>
 //#pragma comment(lib, psapi.lib) //added
 //#pragma comment(linker, /DEFAULTLIB:psapi.lib)
 #elif defined( __APPLE__ )
