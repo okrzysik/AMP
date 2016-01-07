@@ -165,7 +165,7 @@ struct global_symbols_struct {
     std::vector<std::string> obj;
     int error;
 } global_symbols;
-static std::string get_executable()
+std::string StackTrace::getExecutable()
 {
     std::string exe;
     try {
@@ -182,7 +182,7 @@ static std::string get_executable()
     }
     return exe;
 }
-std::string global_exe_name = get_executable();
+std::string global_exe_name = StackTrace::getExecutable();
 static const global_symbols_struct &getSymbols2()
 {
     static bool loaded = false;

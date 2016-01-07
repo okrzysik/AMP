@@ -43,6 +43,13 @@ int getSymbols(
     std::vector<void *> &address, std::vector<char> &type, std::vector<std::string> &obj );
 
 
+/*!
+ * Return the name of the executable
+ * @return      Returns the name of the executable (usually the full path)
+ */
+std::string getExecutable();
+
+
 } // namespace StackTrace
 } // namespace AMP
 

@@ -442,6 +442,9 @@ int main( int argc, char *argv[] )
         if ( rtn == 0 && !address.empty() )
             ut.passes( "Read symbols from executable" );
 
+        // Test getting the executable
+        std::cout << AMP::StackTrace::getExecutable() << std::endl;
+
         // Test deleting and checking if a file exists
         if ( globalComm.getRank() == 0 ) {
             FILE *fid = fopen( "testDeleteFile.txt", "w" );
