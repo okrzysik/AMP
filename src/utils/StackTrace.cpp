@@ -186,6 +186,14 @@ std::string StackTrace::getExecutable()
         if ( _NSGetExecutablePath(buf,&size)==0 )
             exe = std::string( buf );
         delete[] buf;
+#elif defined(USE_WINDOWS)
+        DWORD size = 0x10000;
+        char *buf = new char[size];
+        memset(buf,0,size);
+        GetModuleFileName(NULL,buf,size);printf("1\n");
+
+        exe = std::string( buf );
+        delete[] buf;
 #endif
     } catch ( ... ) {
     }
@@ -218,25 +226,22 @@ static const global_symbols_struct &getSymbols2()
                 }
                 char *buf = new char[0x100000];
                 while ( fgets( buf, 0xFFFFF, in ) != nullptr ) {
-                    if ( buf[0] == ' ' || buf == nullptr )
+                    if ( buf[0] == ' ' )
                         continue;
                     char *a = buf;
                     char *b = strchr( a, ' ' );
-                    if ( b == nullptr ) {
+                    if ( b == nullptr )
                         continue;
-                    }
                     b[0] = 0;
                     b++;
                     char *c = strchr( b, ' ' );
-                    if ( c == nullptr ) {
+                    if ( c == nullptr )
                         continue;
-                    }
                     c[0] = 0;
                     c++;
                     char *d = strchr( c, '\n' );
-                    if ( d ) {
+                    if ( d )
                         d[0] = 0;
-                    }
                     size_t add = strtoul( a, nullptr, 16 );
                     data.address.push_back( reinterpret_cast<void *>( add ) );
                     data.type.push_back( b[0] );
@@ -410,7 +415,7 @@ std::vector<StackTrace::stack_info> StackTrace::getCallStack()
                 int rtn = ::StackWalk64( MachineType, ::GetCurrentProcess(), ::GetCurrentThread(),
                     &lFrameStack, MachineType == IMAGE_FILE_MACHINE_I386 ? 0 : &lContext, NULL,
                     &::SymFunctionTableAccess64, &::SymGetModuleBase64, NULL );
-                if ( !rtn )
+                if ( rtn==0 )
                     break;
                 if ( lFrameStack.AddrPC.Offset == 0 )
                     break;

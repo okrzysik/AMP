@@ -141,9 +141,10 @@ void abort( const std::string &message, const std::string &filename, const int l
 template <class T>
 inline bool approx_equal( const T &v1, const T &v2, const T tol = type_default_tol<T>() )
 {
-    T tol2 = tol * std::max( fabs( (double) ( v1 ) ),
-                             fabs( (double) ( v2 ) ) ); // Compute the absolute tolerance
-    return fabs( (double) ( v1 - v2 ) ) <= tol2; // Check if the two value are less than tolerance
+    // Compute the absolute tolerance
+    T tol2 = static_cast<T>( tol * std::max( fabs( (double) ( v1 ) ), fabs( (double) ( v2 ) ) ) );
+    // Check if the two value are less than tolerance
+    return fabs( (double) ( v1 - v2 ) ) <= tol2;
 }
 
 /*!

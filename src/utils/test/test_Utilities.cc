@@ -62,8 +62,8 @@ void testApproxEqual( AMP::UnitTest *ut )
     std::string type_name( typeid( T ).name() );
 
     T mine      = 1.0;
-    T close_rel = mine * ( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
-    T wrong_rel = mine * ( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
+    T close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
+    T wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
     T close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
     T wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
     if ( AMP::Utilities::approx_equal( mine, close_rel ) &&
@@ -74,9 +74,9 @@ void testApproxEqual( AMP::UnitTest *ut )
     else
         ut->failure( type_name + " passes simple check near 1" );
 
-    mine      = 1e-6;
-    close_rel = mine * ( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
-    wrong_rel = mine * ( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
+    mine      = static_cast<T>( 1e-6 );
+    close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
+    wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
     close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
     wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
     if ( AMP::Utilities::approx_equal( mine, close_rel ) &&
@@ -87,9 +87,9 @@ void testApproxEqual( AMP::UnitTest *ut )
     else
         ut->failure( type_name + " passes simple check near 1e-6" );
 
-    mine      = -1e-32;
-    close_rel = mine * ( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
-    wrong_rel = mine * ( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
+    mine      = static_cast<T>( -1e-32 );
+    close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
+    wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
     close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
     wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
     if ( AMP::Utilities::approx_equal( mine, close_rel ) &&
@@ -268,7 +268,7 @@ int main( int argc, char *argv[] )
         // Test quicksort performance
         size_t N = 10000;
         std::vector<int> data1( N );
-        srand( time( nullptr ) );
+        srand( static_cast<unsigned int>( time( nullptr ) ) );
         for ( size_t i         = 0; i < N; i++ )
             data1[i]           = rand();
         std::vector<int> data2 = data1;
