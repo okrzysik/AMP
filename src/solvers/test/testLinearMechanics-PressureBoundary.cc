@@ -4,18 +4,6 @@
 #include <iostream>
 #include <string>
 
-/* libMesh files */
-#include "libmesh/boundary_info.h"
-#include "libmesh/cell_hex8.h"
-#include "libmesh/elem.h"
-#include "libmesh/enum_fe_family.h"
-#include "libmesh/enum_quadrature_type.h"
-#include "libmesh/fe_base.h"
-#include "libmesh/mesh.h"
-#include "libmesh/mesh_communication.h"
-#include "libmesh/mesh_generation.h"
-#include "libmesh/quadrature.h"
-#include "libmesh/string_to_enum.h"
 
 /* AMP files */
 #include "utils/AMPManager.h"

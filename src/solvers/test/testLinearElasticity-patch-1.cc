@@ -7,14 +7,6 @@
 #include <iostream>
 #include <string>
 
-/* libMesh files */
-#include "libmesh/boundary_info.h"
-#include "libmesh/cell_hex8.h"
-#include "libmesh/elem.h"
-#include "libmesh/mesh.h"
-#include "libmesh/mesh_communication.h"
-#include "libmesh/mesh_generation.h"
-
 /* AMP files */
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"

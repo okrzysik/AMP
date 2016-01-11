@@ -32,7 +32,6 @@
 #include "solvers/petsc/PetscSNESSolverParameters.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
-#include "libmesh/mesh_communication.h"
 #include "utils/ReadTestMesh.h"
 
 #include <iostream>

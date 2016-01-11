@@ -7,10 +7,11 @@
 
 #include <sys/stat.h>
 
-/* Boost files */
 #include "utils/shared_ptr.h"
+#include "utils/Utilities.h"
 
 /* libMesh files */
+DISABLE_WARNINGS
 #include "libmesh/boundary_info.h"
 #include "libmesh/cell_hex8.h"
 #include "libmesh/elem.h"
@@ -22,6 +23,7 @@
 #include "libmesh/mesh_generation.h"
 #include "libmesh/quadrature.h"
 #include "libmesh/string_to_enum.h"
+ENABLE_WARNINGS
 
 /* AMP files */
 #include "utils/AMPManager.h"

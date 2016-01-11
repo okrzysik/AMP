@@ -34,7 +34,6 @@
 
 #include "utils/Writer.h"
 
-#include "libmesh/mesh_communication.h"
 #include "utils/ReadTestMesh.h"
 
 #include <iostream>

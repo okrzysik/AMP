@@ -6,7 +6,9 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
+DISABLE_WARNINGS
 #include "libmesh/mesh_communication.h"
+ENABLE_WARNINGS
 
 #include "mpi.h"
 
