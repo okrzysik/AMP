@@ -150,7 +150,7 @@ void ColumnTimeOperator::getFromInput( const AMP::shared_ptr<AMP::Database> &db 
 void ColumnTimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr /* u */,
                                 AMP::LinearAlgebra::Vector::shared_ptr /* f */ )
 {
-    abort();
+    AMP_ERROR( "Not Finished" );
 }
 
 void ColumnTimeOperator::append( AMP::shared_ptr<Operator> /* op */ )

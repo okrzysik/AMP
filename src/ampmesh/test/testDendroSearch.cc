@@ -70,13 +70,13 @@ void buildOctant( double const *space,
                   size_t max_depth,
                   double *octant )
 {
-    assert( level <= max_depth );
-    assert( x < static_cast<size_t>( 1u << max_depth ) );
-    assert( x % static_cast<size_t>( 1u << ( max_depth - level ) ) == 0 );
-    assert( y < static_cast<size_t>( 1u << max_depth ) );
-    assert( y % static_cast<size_t>( 1u << ( max_depth - level ) ) == 0 );
-    assert( z < static_cast<size_t>( 1u << max_depth ) );
-    assert( z % static_cast<size_t>( 1u << ( max_depth - level ) ) == 0 );
+    AMP_ASSERT( level <= max_depth );
+    AMP_ASSERT( x < static_cast<size_t>( 1u << max_depth ) );
+    AMP_ASSERT( x % static_cast<size_t>( 1u << ( max_depth - level ) ) == 0 );
+    AMP_ASSERT( y < static_cast<size_t>( 1u << max_depth ) );
+    AMP_ASSERT( y % static_cast<size_t>( 1u << ( max_depth - level ) ) == 0 );
+    AMP_ASSERT( z < static_cast<size_t>( 1u << max_depth ) );
+    AMP_ASSERT( z % static_cast<size_t>( 1u << ( max_depth - level ) ) == 0 );
     octant[0] =
         space[0] +
         ( space[1] - space[0] ) * static_cast<double>( x ) / static_cast<double>( 2 * max_depth );

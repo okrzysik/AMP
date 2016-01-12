@@ -3,7 +3,7 @@
 #include <ampmesh/triangle_t.h>
 #include <utils/Utilities.h>
 
-#include <cassert>
+
 #include <iostream>
 
 triangle_t::triangle_t( double const *A, double const *B, double const *C )
@@ -191,7 +191,7 @@ int triangle_t::project_point( double const *point, double *projection, double t
             // just making sure nothing unexpected happened
         } else {
             std::cerr << "how did you end up here in the first place?" << std::endl;
-            assert( false );
+            AMP_ASSERT( false );
         } // end if
     }     // end for i
 

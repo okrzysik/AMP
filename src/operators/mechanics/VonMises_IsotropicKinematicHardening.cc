@@ -819,8 +819,7 @@ void VonMises_IsotropicKinematicHardening::radialReturn(
     }
 
     if ( ( counter == 99 ) || ( counter == 100 ) ) {
-        std::cout << "The lambda value did not converge." << std::endl;
-        exit( 1 );
+        AMP_ERROR( "The lambda value did not converge" );
     }
 
     // std::cout << "Code converged with i = " << counter+1 << std::endl;

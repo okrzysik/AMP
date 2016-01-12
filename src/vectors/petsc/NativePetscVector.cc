@@ -1,9 +1,5 @@
 #include "vectors/petsc/NativePetscVector.h"
 
-extern "C" {
-#include "assert.h"
-}
-
 
 namespace AMP {
 namespace LinearAlgebra {

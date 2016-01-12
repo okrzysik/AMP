@@ -12,9 +12,9 @@
 
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
+#include "utils/StackTrace.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "utils/StackTrace.h"
 #include "utils/enable_shared_from_this.h"
 #include "utils/shared_ptr.h"
 
@@ -103,7 +103,10 @@ void testApproxEqual( AMP::UnitTest *ut )
 
 
 // Function to return the call stack
-std::vector<AMP::StackTrace::stack_info> get_call_stack() { return AMP::StackTrace::getCallStack(); }
+std::vector<AMP::StackTrace::stack_info> get_call_stack()
+{
+    return AMP::StackTrace::getCallStack();
+}
 
 
 // Function to test the interpolants

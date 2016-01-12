@@ -21,7 +21,7 @@
 #include "libmesh/string_to_enum.h"
 
 #include <algorithm>
-#include <cassert>
+
 #include <cmath>
 #include <iostream>
 #include <string>

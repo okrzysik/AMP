@@ -60,7 +60,7 @@ void RK2TimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> paramet
 {
     AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) nullptr );
 
-    abort();
+    AMP_ERROR( "Not Finished" );
 }
 
 void RK2TimeIntegrator::setupVectors( void )

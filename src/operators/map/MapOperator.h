@@ -15,7 +15,7 @@
 #include <string>
 
 #ifdef DEBUG_CHECK_ASSERTIONS
-#include <cassert>
+
 #endif
 
 

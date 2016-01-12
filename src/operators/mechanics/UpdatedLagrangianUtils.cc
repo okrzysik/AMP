@@ -1,7 +1,7 @@
 
 #include "UpdatedLagrangianUtils.h"
 #include <algorithm>
-#include <cassert>
+
 #include <cmath>
 
 #include "utils/Utilities.h"
@@ -101,14 +101,14 @@ void eigenVectors( double A[3][3], double val[3], double vec[3][3] )
             solveEquation( B, sols );
 
             for ( auto &sol : sols ) {
-                assert( vecColCnt < 3 );
+                AMP_ASSERT( vecColCnt < 3 );
                 for ( int j = 0; j < 3; j++ ) {
                     vec[j][vecColCnt] = sol[j];
                 } // end for j
                 vecColCnt++;
             } // end for k
         }     // end for i
-        assert( vecColCnt == 3 );
+        AMP_ASSERT( vecColCnt == 3 );
     }
 }
 
@@ -364,7 +364,7 @@ void cubicRoots( double a, double b, double c, double d, double &r1, double &r2,
     // next two lines seem to be unused, leads to compiler warning
     //    double delta = (18.0*a*b*c*d) - (4.0*b*b*b*d) + (b*b*c*c) - (4.0*a*c*c*c) -
     //    (27.0*a*a*d*d);
-    //    assert(delta >= 0.0);
+    //    AMP_ASSERT(delta >= 0.0);
 
     firstCubicRoot( a, b, c, d, r1 );
 
@@ -374,16 +374,16 @@ void cubicRoots( double a, double b, double c, double d, double &r1, double &r2,
 
     quadraticRoots( A, B, C, r2, r3 );
 
-    assert( softEquals( ( ( a * r1 * r1 * r1 ) + ( b * r1 * r1 ) + ( c * r1 ) + d ), 0 ) );
-    assert( softEquals( ( ( a * r2 * r2 * r2 ) + ( b * r2 * r2 ) + ( c * r2 ) + d ), 0 ) );
-    assert( softEquals( ( ( a * r3 * r3 * r3 ) + ( b * r3 * r3 ) + ( c * r3 ) + d ), 0 ) );
+    AMP_ASSERT( softEquals( ( ( a * r1 * r1 * r1 ) + ( b * r1 * r1 ) + ( c * r1 ) + d ), 0 ) );
+    AMP_ASSERT( softEquals( ( ( a * r2 * r2 * r2 ) + ( b * r2 * r2 ) + ( c * r2 ) + d ), 0 ) );
+    AMP_ASSERT( softEquals( ( ( a * r3 * r3 * r3 ) + ( b * r3 * r3 ) + ( c * r3 ) + d ), 0 ) );
 }
 
 void quadraticRoots( double a, double b, double c, double &r1, double &r2 )
 {
     double delta = ( ( b * b ) - ( 4.0 * a * c ) );
-    assert( delta >= 0.0 );
-    assert( !softEquals( a, 0 ) );
+    AMP_ASSERT( delta >= 0.0 );
+    AMP_ASSERT( !softEquals( a, 0 ) );
 
     r1 = ( -b + sqrt( delta ) ) / ( 2.0 * a );
     r2 = ( -b - sqrt( delta ) ) / ( 2.0 * a );
@@ -391,7 +391,7 @@ void quadraticRoots( double a, double b, double c, double &r1, double &r2 )
 
 void firstCubicRoot( double a, double b, double c, double d, double &r1 )
 {
-    assert( !softEquals( a, 0 ) );
+    AMP_ASSERT( !softEquals( a, 0 ) );
     double p = ( ( 3.0 * a * c ) - ( b * b ) ) / ( 3.0 * a * a );
     double q =
         ( ( 2.0 * b * b * b ) - ( 9.0 * a * b * c ) + ( 27.0 * a * a * d ) ) / ( 27.0 * a * a * a );
@@ -453,7 +453,7 @@ void matInverse( double A[3][3], double B[3][3] )
 {
     double det = matDeterminant( A );
 
-    assert( !softEquals( det, 0 ) );
+    AMP_ASSERT( !softEquals( det, 0 ) );
 
     B[0][0] = ( ( A[2][2] * A[1][1] ) - ( A[2][1] * A[1][2] ) );
     B[0][1] = -( ( A[2][2] * A[0][1] ) - ( A[2][1] * A[0][2] ) );

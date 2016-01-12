@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include <cassert>
+
 #include <fstream>
 
 #include <sys/stat.h>

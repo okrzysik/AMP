@@ -3,28 +3,28 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "utils/shared_ptr.h"
 #include "utils/ReadTestMesh.h"
+#include "utils/shared_ptr.h"
 
 // Libmesh files
 DISABLE_WARNINGS
+#include "libmesh/auto_ptr.h"
 #include "libmesh/boundary_info.h"
 #include "libmesh/dof_map.h"
 #include "libmesh/elem.h"
-#include "libmesh/equation_systems.h"
-#include "libmesh/fe.h"
-#include "libmesh/linear_implicit_system.h"
-#include "libmesh/mesh.h"
-#include "libmesh/mesh_communication.h"
-#include "libmesh/quadrature_gauss.h"
 #include "libmesh/elem.h"
-#include "libmesh/fe_base.h"
-#include "libmesh/fe_type.h"
-#include "libmesh/quadrature.h"
-#include "libmesh/auto_ptr.h"
 #include "libmesh/enum_fe_family.h"
 #include "libmesh/enum_order.h"
 #include "libmesh/enum_quadrature_type.h"
+#include "libmesh/equation_systems.h"
+#include "libmesh/fe.h"
+#include "libmesh/fe_base.h"
+#include "libmesh/fe_type.h"
+#include "libmesh/linear_implicit_system.h"
+#include "libmesh/mesh.h"
+#include "libmesh/mesh_communication.h"
+#include "libmesh/quadrature.h"
+#include "libmesh/quadrature_gauss.h"
 #include "libmesh/string_to_enum.h"
 ENABLE_WARNINGS
 

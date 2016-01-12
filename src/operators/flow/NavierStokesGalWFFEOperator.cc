@@ -108,7 +108,7 @@ namespace Operator {
                                            break;
                                          }
         default:
-                                         assert(false);
+                                         AMP_ASSERT(false);
       }
       return inpVar;
     }

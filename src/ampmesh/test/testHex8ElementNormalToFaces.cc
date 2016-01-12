@@ -4,7 +4,7 @@
 #include <ampmesh/euclidean_geometry_tools.h>
 #include <ampmesh/hex8_element_t.h>
 
-#include <cassert>
+
 #include <iostream>
 
 
@@ -66,7 +66,7 @@ void test_recovering_local_coordinates_on_face_from_basis_functions_values(
         } // end for j
         hex8_element_t::get_basis_functions_values_on_face( x, phi );
         hex8_element_t::get_local_coordinates_on_face( phi, x_prime );
-        assert( std::equal( x, x + 2, x_prime, soft_equal_to ) );
+        AMP_ASSERT( std::equal( x, x + 2, x_prime, soft_equal_to ) );
     } // end for i
 }
 

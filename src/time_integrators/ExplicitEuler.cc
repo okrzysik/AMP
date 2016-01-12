@@ -60,7 +60,7 @@ void ExplicitEuler::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters 
 {
     AMP_ASSERT( parameters.get() != nullptr );
 
-    abort();
+    AMP_ERROR( "Not Finished" );
 }
 
 void ExplicitEuler::setupVectors( void )

@@ -1,7 +1,7 @@
 #ifndef NEWTON_SOLVER_H
 #define NEWTON_SOLVER_H
 
-#include <cassert>
+
 #include <cmath>
 #include <iostream>
 
@@ -18,7 +18,7 @@ std::ostream &operator<<( std::ostream &os, status_t const &status )
     } else if ( status == DIV_TOL ) {
         os << "DIV_TOL";
     } else {
-        assert( false );
+        AMP_ASSERT( false );
     } // end if
     return os;
 }

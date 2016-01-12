@@ -2,7 +2,7 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include <cassert>
+
 #include <fstream>
 #include <iostream>
 #include <string>

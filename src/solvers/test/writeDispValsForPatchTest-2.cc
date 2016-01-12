@@ -8,7 +8,7 @@ int main( int argc, char **argv )
 
     if ( argc == 1 ) {
         std::cout << "Usage: argv[0] output_file " << std::endl;
-        exit( 0 );
+        return 1;
     }
 
     double xarr[8] = { 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0 };

@@ -10,7 +10,7 @@ int main( int argc, char **argv )
 
     if ( argc == 1 ) {
         std::cout << "Usage: argv[0] a ny nz Lx Ly Lz output_file " << std::endl;
-        exit( 0 );
+        return 1;
     }
 
     double a = atof( argv[1] );

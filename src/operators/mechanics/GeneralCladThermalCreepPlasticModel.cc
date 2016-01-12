@@ -511,8 +511,7 @@ void GeneralCladThermalCreepPlasticModel::computeCreepStrain( const double Temp_
                                        ( 1.0 + ( ( 3.0 * G * delta_e_2 ) / effective_stress_2 ) ) );
 
             if ( det_sign( E1_1 ) == det_sign( E1_2 ) ) {
-                std::cout << "Condition did not satisfy." << std::endl;
-                exit( 1 );
+                AMP_ERROR( "Condition did not satisfy" );
             }
 
             effective_stress = ( effective_stress_1 + effective_stress_2 ) / 2.0;
@@ -539,9 +538,7 @@ void GeneralCladThermalCreepPlasticModel::computeCreepStrain( const double Temp_
     }
 
     if ( ( bisection_converged == 0 ) && ( newton_converged == 0 ) ) {
-        std::cout << "Creep code did not converge for both newton and bisection iterations."
-                  << std::endl;
-        exit( 1 );
+        AMP_ERROR( "Creep code did not converge for both newton and bisection iterations" );
     }
 
     double delta_e = help_compute_E1( Temp_np1, effective_stress );
@@ -876,8 +873,7 @@ void GeneralCladThermalCreepPlasticModel::radialReturn( const double *stra_np1,
         if ( fabs( delta_lam / lam ) < tol )
             break;
         if ( i > 995 ) {
-            std::cout << "The radial return did not converge." << std::endl;
-            exit( 1 );
+            AMP_ERROR( "The radial return did not converge" );
         }
     }
     ephbp_np1 = ephbp_n + ( sq23 * lam );

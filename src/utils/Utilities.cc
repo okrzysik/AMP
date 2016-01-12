@@ -29,11 +29,11 @@
 // Note: windows has not been testeds
 #define USE_WINDOWS
 #define NOMINMAX
-#include <windows.h>
 #include <process.h>
 #include <psapi.h>
 #include <stdio.h>
 #include <tchar.h>
+#include <windows.h>
 #define mkdir( path, mode ) _mkdir( path )
 //#pragma comment(lib, psapi.lib) //added
 //#pragma comment(linker, /DEFAULTLIB:psapi.lib)

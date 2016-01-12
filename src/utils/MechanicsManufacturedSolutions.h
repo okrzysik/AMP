@@ -242,49 +242,49 @@ public:
     }
     double getExactSolutionX( const std::vector<double> &xyz ) const
     {
-        assert( xyz.size() != 3 );
+        AMP_ASSERT( xyz.size() != 3 );
         return getExactSolutionX( xyz[0], xyz[1], xyz[2] );
     }
     double getExactSolutionY( const std::vector<double> &xyz ) const
     {
-        assert( xyz.size() != 3 );
+        AMP_ASSERT( xyz.size() != 3 );
         return getExactSolutionY( xyz[0], xyz[1], xyz[2] );
     }
     double getExactSolutionZ( const std::vector<double> &xyz ) const
     {
-        assert( xyz.size() != 3 );
+        AMP_ASSERT( xyz.size() != 3 );
         return getExactSolutionZ( xyz[0], xyz[1], xyz[2] );
     }
     double getForcingTermX( const std::vector<double> &xyz ) const
     {
-        assert( xyz.size() != 3 );
+        AMP_ASSERT( xyz.size() != 3 );
         return getForcingTermX( xyz[0], xyz[1], xyz[2] );
     }
     double getForcingTermY( const std::vector<double> &xyz ) const
     {
-        assert( xyz.size() != 3 );
+        AMP_ASSERT( xyz.size() != 3 );
         return getForcingTermY( xyz[0], xyz[1], xyz[2] );
     }
     double getForcingTermZ( const std::vector<double> &xyz ) const
     {
-        assert( xyz.size() != 3 );
+        AMP_ASSERT( xyz.size() != 3 );
         return getForcingTermZ( xyz[0], xyz[1], xyz[2] );
     }
     // std::vector<double> getGradientX(const std::vector<double>& xyz) const {
-    // assert(xyz.size()!=3); return
+    // AMP_ASSERT(xyz.size()!=3); return
     // getGradientX(xyz[0], xyz[1], xyz[2]); }
     // std::vector<double> getGradientY(const std::vector<double>& xyz) const {
-    // assert(xyz.size()!=3); return
+    // AMP_ASSERT(xyz.size()!=3); return
     // getGradientY(xyz[0], xyz[1], xyz[2]); }
     // std::vector<double> getGradientZ(const std::vector<double>& xyz) const {
-    // assert(xyz.size()!=3); return
+    // AMP_ASSERT(xyz.size()!=3); return
     // getGradientZ(xyz[0], xyz[1], xyz[2]); }
     // std::vector<double> getStrainTensor(const std::vector<double>& xyz) const {
-    // assert(xyz.size()!=3); return
+    // AMP_ASSERT(xyz.size()!=3); return
     // getStrainTensor(xyz[0], xyz[1], xyz[2]); }
     std::vector<double> getStressTensor( const std::vector<double> &xyz ) const
     {
-        assert( xyz.size() != 3 );
+        AMP_ASSERT( xyz.size() != 3 );
         return getStressTensor( xyz[0], xyz[1], xyz[2] );
     }
 
@@ -779,7 +779,7 @@ public:
         } else {
             std::cerr << "Error: AMP::MechanicsManufacturedSolution::MMS" << name
                       << " is not defined" << std::endl;
-            assert( false );
+            AMP_ASSERT( false );
         }
         if ( mmsDatabase->keyExists( "scale_x" ) ) {
             mms->scaleX( mmsDatabase->getDouble( "scale_x" ) );

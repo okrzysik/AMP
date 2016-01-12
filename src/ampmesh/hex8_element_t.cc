@@ -4,7 +4,6 @@
 #include <utils/Utilities.h>
 
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <functional>
 #include <iostream>
@@ -217,34 +216,34 @@ void hex8_element_t::build_bounding_polyhedron()
         tolerance *= 0.25e-12;
         if ( tmp_triangles_ptr[0]->above_point( tmp_triangles_ptr[2]->get_centroid(),
                                                 tolerance ) ) {
-            assert( tmp_triangles_ptr[0]->above_point( tmp_triangles_ptr[3]->get_centroid(),
-                                                       tolerance ) );
-            assert( tmp_triangles_ptr[1]->above_point( tmp_triangles_ptr[2]->get_centroid(),
-                                                       tolerance ) );
-            assert( tmp_triangles_ptr[1]->above_point( tmp_triangles_ptr[3]->get_centroid(),
-                                                       tolerance ) );
+            AMP_ASSERT( tmp_triangles_ptr[0]->above_point( tmp_triangles_ptr[3]->get_centroid(),
+                                                           tolerance ) );
+            AMP_ASSERT( tmp_triangles_ptr[1]->above_point( tmp_triangles_ptr[2]->get_centroid(),
+                                                           tolerance ) );
+            AMP_ASSERT( tmp_triangles_ptr[1]->above_point( tmp_triangles_ptr[3]->get_centroid(),
+                                                           tolerance ) );
             // will fail if the four points are coplanar
-            /*      assert(!tmp_triangles[2].above_point(tmp_triangles[0].get_centroid()));
-                    assert(!tmp_triangles[2].above_point(tmp_triangles[1].get_centroid()));
-                    assert(!tmp_triangles[3].above_point(tmp_triangles[0].get_centroid()));
-                    assert(!tmp_triangles[3].above_point(tmp_triangles[1].get_centroid()));*/
+            /*      AMP_ASSERT(!tmp_triangles[2].above_point(tmp_triangles[0].get_centroid()));
+                    AMP_ASSERT(!tmp_triangles[2].above_point(tmp_triangles[1].get_centroid()));
+                    AMP_ASSERT(!tmp_triangles[3].above_point(tmp_triangles[0].get_centroid()));
+                    AMP_ASSERT(!tmp_triangles[3].above_point(tmp_triangles[1].get_centroid()));*/
             bounding_polyhedron.push_back( tmp_triangles_ptr[0] );
             bounding_polyhedron.push_back( tmp_triangles_ptr[1] );
             tmp_triangles_ptr[0] = nullptr;
             tmp_triangles_ptr[1] = nullptr;
         } else {
             /*
-               assert(!tmp_triangles[0].above_point(tmp_triangles[3].get_centroid()));
-               assert(!tmp_triangles[1].above_point(tmp_triangles[2].get_centroid()));
-               assert(!tmp_triangles[1].above_point(tmp_triangles[3].get_centroid()));*/
-            assert( tmp_triangles_ptr[2]->above_point( tmp_triangles_ptr[0]->get_centroid(),
-                                                       tolerance ) );
-            assert( tmp_triangles_ptr[2]->above_point( tmp_triangles_ptr[1]->get_centroid(),
-                                                       tolerance ) );
-            assert( tmp_triangles_ptr[3]->above_point( tmp_triangles_ptr[0]->get_centroid(),
-                                                       tolerance ) );
-            assert( tmp_triangles_ptr[3]->above_point( tmp_triangles_ptr[1]->get_centroid(),
-                                                       tolerance ) );
+               AMP_ASSERT(!tmp_triangles[0].above_point(tmp_triangles[3].get_centroid()));
+               AMP_ASSERT(!tmp_triangles[1].above_point(tmp_triangles[2].get_centroid()));
+               AMP_ASSERT(!tmp_triangles[1].above_point(tmp_triangles[3].get_centroid()));*/
+            AMP_ASSERT( tmp_triangles_ptr[2]->above_point( tmp_triangles_ptr[0]->get_centroid(),
+                                                           tolerance ) );
+            AMP_ASSERT( tmp_triangles_ptr[2]->above_point( tmp_triangles_ptr[1]->get_centroid(),
+                                                           tolerance ) );
+            AMP_ASSERT( tmp_triangles_ptr[3]->above_point( tmp_triangles_ptr[0]->get_centroid(),
+                                                           tolerance ) );
+            AMP_ASSERT( tmp_triangles_ptr[3]->above_point( tmp_triangles_ptr[1]->get_centroid(),
+                                                           tolerance ) );
             bounding_polyhedron.push_back( tmp_triangles_ptr[2] );
             bounding_polyhedron.push_back( tmp_triangles_ptr[3] );
             tmp_triangles_ptr[2] = nullptr;
@@ -490,7 +489,8 @@ double hex8_element_t::solve_newton(
     for ( unsigned int i = 0; i < 1000; ++i ) {
         std::cerr << std::flush;
     }
-    abort();
+    AMP_ERROR( "Not Finished" );
+    return 0.0;
 }
 
 void hex8_element_t::get_basis_functions_values( double const *x, double *basis_functions_values )
@@ -556,8 +556,7 @@ void hex8_element_t::project_on_face( unsigned int f,
       } else if (f == 5) {
         projection_local_coordinates[2] = 1.0;
       } else {
-        std::cerr<<"comment en es-tu arrive la tres cher?"<<std::endl;
-        assert(false);
+        AMP_ERROR("comment en es-tu arrive la tres cher?");
       } // end if*/
     map_local_to_face( f, local_coordinates, local_coordinates_on_face );
     map_face_to_local( f, local_coordinates_on_face, &( projection_local_coordinates[0] ) );
@@ -643,7 +642,7 @@ void hex8_element_t::map_face_to_local( unsigned int f,
         local_coordinates[2] = 1.0;
     } else {
         std::cerr << "comment en es-tu arrive la tres cher?" << std::endl;
-        assert( false );
+        AMP_ASSERT( false );
     } // end if
 }
 
@@ -682,7 +681,7 @@ void hex8_element_t::map_local_to_face( unsigned int f,
         local_coordinates_on_face[1] = local_coordinates[1];
     } else {
         std::cerr << "comment en es-tu arrive la tres cher?" << std::endl;
-        assert( false );
+        AMP_ASSERT( false );
     } // end if
 }
 

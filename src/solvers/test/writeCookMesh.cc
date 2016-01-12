@@ -11,7 +11,7 @@ int main( int argc, char **argv )
 
     if ( argc == 1 ) {
         std::cout << "Usage: " << argv[0] << " nx ny nz output_file " << std::endl;
-        exit( 0 );
+        return 1;
     }
 
     int nx = atoi( argv[1] );

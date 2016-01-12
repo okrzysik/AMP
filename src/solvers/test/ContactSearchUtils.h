@@ -42,6 +42,6 @@ void computeSlave2MasterNodes( const double precision,
 
 bool myContainsPoint(::Elem *e, const ::Point &p, double tol );
 
-#include "ContactSearchUtils.hxx"
+#include "ContactSearchUtils.hpp"
 
 #endif

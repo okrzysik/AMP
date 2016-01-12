@@ -2,9 +2,6 @@
 #include "ProfilerApp.h"
 #include "operators/LinearOperator.h"
 
-extern "C" {
-#include "assert.h"
-}
 
 #include <cmath>
 #include <limits>
@@ -20,7 +17,7 @@ BiCGSTABSolver::BiCGSTABSolver() : d_restarts( 0 ) {}
 BiCGSTABSolver::BiCGSTABSolver( AMP::shared_ptr<KrylovSolverParameters> parameters )
     : SolverStrategy( parameters ), d_restarts( 0 )
 {
-    assert( parameters.get() != nullptr );
+    AMP_ASSERT( parameters.get() != nullptr );
 
     // Initialize
     initialize( parameters );
@@ -113,7 +110,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     double res_norm     = res->L2Norm();
     double r_tilde_norm = res_norm;
 
-    // exit if the residual is already low enough
+    // return if the residual is already low enough
     if ( res_norm < terminate_tol ) {
         // provide a convergence reason
         // provide history (iterations, conv history etc)
@@ -215,7 +212,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // compute the current residual norm
         res_norm = res->L2Norm();
 
-        // exit if the residual is already low enough
+        // break if the residual is already low enough
         if ( res_norm < terminate_tol ) {
             // provide a convergence reason
             // provide history (iterations, conv history etc)
@@ -243,13 +240,13 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 ****************************************************************/
 void BiCGSTABSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
 {
-    assert( op.get() != nullptr );
+    AMP_ASSERT( op.get() != nullptr );
 
     d_pOperator = op;
 
     AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
-    assert( linearOperator.get() != nullptr );
+    AMP_ASSERT( linearOperator.get() != nullptr );
 }
 void BiCGSTABSolver::resetOperator(
     const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )

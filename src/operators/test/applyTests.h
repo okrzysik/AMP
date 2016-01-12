@@ -43,6 +43,6 @@ void applyTests( AMP::UnitTest *ut,
                  const double *scale,
                  const size_t nshift );
 
-#include "applyTests.hxx"
+#include "applyTests.hpp"
 
 #endif /* APPLY_TESTS_H_ */

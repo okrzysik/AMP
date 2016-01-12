@@ -1,7 +1,8 @@
 #include <ampmesh/euclidean_geometry_tools.h>
 #include <ampmesh/latex_visualization_tools.h>
+#include <utils/Utilities.h>
 
-#include <cassert>
+
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -55,7 +56,7 @@ void draw_line( unsigned int n, double const *l, const std::string &option, std:
 
 void draw_face( hex8_element_t *e_ptr, unsigned int f, const std::string &option, std::ostream &os )
 {
-    assert( f < 6 );
+    AMP_ASSERT( f < 6 );
     std::vector<double const *> sp_ptr( 4 );
     unsigned int const *f_ptr = e_ptr->get_face( f );
     for ( unsigned int p = 0; p < 4; ++p ) {

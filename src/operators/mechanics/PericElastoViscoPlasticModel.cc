@@ -939,7 +939,7 @@ void PericElastoViscoPlasticModel::radialReturn( const double *stra_np1,
             AMP::pout << "lam = " << lam << "d_lam = " << d_lam << std::endl;
         }
         if ( i >= 99 ) {
-            exit( 1 );
+            AMP_ERROR( "Maximum iteration exceeded" );
         }
     }
     ephbp_np1 = ephbp_n + lam;

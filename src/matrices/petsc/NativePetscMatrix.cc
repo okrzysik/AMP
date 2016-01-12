@@ -9,7 +9,7 @@
 #include "vectors/Vector.h"
 #include "vectors/petsc/NativePetscVector.h"
 
-#include <cassert>
+
 
 
 namespace AMP {

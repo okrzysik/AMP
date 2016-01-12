@@ -153,6 +153,6 @@ void createMasterSlaveMap( AMP::Mesh::MeshManager::Adapter::shared_ptr masterMes
                            std::vector<unsigned int> &masterVolumeNodes,
                            std::vector<unsigned int> &slaveVolumeNodes );
 
-#include "TiedContactUtils.hxx"
+#include "TiedContactUtils.hpp"
 
 #endif

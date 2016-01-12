@@ -52,7 +52,7 @@ IDATimeIntegrator::~IDATimeIntegrator()
 void IDATimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
 #ifdef DEBUG_CHECK_ASSERTIONS
-    assert( parameters.get() != NULL );
+    AMP_ASSERT( parameters.get() != NULL );
 #endif
     getFromInput( parameters->d_db );
 
@@ -205,7 +205,7 @@ void IDATimeIntegrator::initializeIDA()
 void IDATimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
-    abort();
+    AMP_ERROR( "Not Finished" );
 }
 
 

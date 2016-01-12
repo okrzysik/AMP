@@ -57,7 +57,7 @@ void BackwardEulerTimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameter
 {
     AMP_ASSERT( parameters.get() != nullptr );
 
-    abort();
+    AMP_ERROR( "Not Finished" );
 }
 
 

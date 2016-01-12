@@ -5,7 +5,7 @@
 #include <ampmesh/hex8_element_t.h>
 #include <ampmesh/latex_visualization_tools.h>
 
-#include <cassert>
+
 
 
 class soft_equal_to
@@ -111,10 +111,10 @@ void test_mapping_basis_functions_values_to_local_coordinates_on_face(
                                                             basis_functions_values_on_face );
         hex8_element_t::get_local_coordinates_on_face( basis_functions_values_on_face,
                                                        computed_local_coordinates_on_face );
-        assert( std::equal( local_coordinates_on_face,
-                            local_coordinates_on_face + 2,
-                            computed_local_coordinates_on_face,
-                            soft_equal_to() ) );
+        AMP_ASSERT( std::equal( local_coordinates_on_face,
+                                local_coordinates_on_face + 2,
+                                computed_local_coordinates_on_face,
+                                soft_equal_to() ) );
     } // end for i
 }
 
@@ -201,16 +201,16 @@ void draw_tetrahedron( unsigned int f, hex8_element_t *volume_element )
     std::string option;
     std::vector<bool> b( 4, false );
     if ( t[0].above_point( t[2].get_centroid() ) ) {
-        assert( t[0].above_point( t[3].get_centroid() ) );
-        assert( t[1].above_point( t[2].get_centroid() ) );
-        assert( t[1].above_point( t[3].get_centroid() ) );
+        AMP_ASSERT( t[0].above_point( t[3].get_centroid() ) );
+        AMP_ASSERT( t[1].above_point( t[2].get_centroid() ) );
+        AMP_ASSERT( t[1].above_point( t[3].get_centroid() ) );
         b[0] = true;
         b[1] = true;
     } else {
-        assert( t[2].above_point( t[0].get_centroid() ) );
-        assert( t[2].above_point( t[1].get_centroid() ) );
-        assert( t[3].above_point( t[0].get_centroid() ) );
-        assert( t[3].above_point( t[1].get_centroid() ) );
+        AMP_ASSERT( t[2].above_point( t[0].get_centroid() ) );
+        AMP_ASSERT( t[2].above_point( t[1].get_centroid() ) );
+        AMP_ASSERT( t[3].above_point( t[0].get_centroid() ) );
+        AMP_ASSERT( t[3].above_point( t[1].get_centroid() ) );
         b[2] = true;
         b[3] = true;
     } // end if

@@ -3,13 +3,6 @@
 #include "utils/Utilities.h"
 
 
-#ifdef DEBUG_CHECK_ASSERTIONS
-extern "C" {
-#include "assert.h"
-}
-#endif
-
-
 namespace AMP {
 namespace Solver {
 

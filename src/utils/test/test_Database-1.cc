@@ -11,8 +11,6 @@
 
 #include <string>
 
-#include <assert.h>
-
 #include <fstream>
 
 #include "utils/AMPManager.h"

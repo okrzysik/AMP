@@ -27,7 +27,7 @@ TrilinosMLSolver::TrilinosMLSolver( AMP::shared_ptr<SolverStrategyParameters> pa
 {
     d_ml          = nullptr;
     d_mlAggregate = nullptr;
-    assert( parameters.get() != nullptr );
+    AMP_ASSERT( parameters.get() != nullptr );
     initialize( parameters );
 }
 TrilinosMLSolver::~TrilinosMLSolver()

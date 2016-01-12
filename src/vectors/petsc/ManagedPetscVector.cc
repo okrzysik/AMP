@@ -5,9 +5,6 @@
 #include "vectors/trilinos/EpetraVectorEngine.h"
 #endif
 
-extern "C" {
-#include "assert.h"
-}
 
 #include "petscsys.h"
 

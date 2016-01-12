@@ -81,7 +81,7 @@ int main( int argc, char *argv[] )
     if ( argc == 2 && string( argv[1] ) == "-h" ) {
         for ( size_t i = 0; i < nhelp; i++ )
             cout << helpmsg[i] << endl;
-        exit( 0 );
+        return 1;
     }
 
     // input section

@@ -12,7 +12,7 @@ int main( int argc, char **argv )
 
     if ( argc < 10 ) {
         std::cout << "Usage: exe le me ne pe a b c r output_file" << std::endl;
-        exit( 0 );
+        return 1;
     }
 
     int const le = atoi( argv[1] );

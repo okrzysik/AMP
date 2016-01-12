@@ -2,9 +2,6 @@
 #include "ProfilerApp.h"
 #include "operators/LinearOperator.h"
 
-extern "C" {
-#include "assert.h"
-}
 
 #include <cmath>
 #include <limits>
@@ -20,7 +17,7 @@ GMRESSolver::GMRESSolver() : d_restarts( 0 ) {}
 GMRESSolver::GMRESSolver( AMP::shared_ptr<KrylovSolverParameters> parameters )
     : SolverStrategy( parameters ), d_restarts( 0 )
 {
-    assert( parameters.get() != nullptr );
+    AMP_ASSERT( parameters.get() != nullptr );
 
     // Initialize
     initialize( parameters );
@@ -126,7 +123,7 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // compute the current residual norm
     const double beta = res->L2Norm();
 
-    // exit if the residual is already low enough
+    // return if the residual is already low enough
     if ( beta < terminate_tol ) {
         // provide a convergence reason
         // provide history (iterations, conv history etc)
@@ -311,13 +308,13 @@ void GMRESSolver::backwardSolve( void )
 ****************************************************************/
 void GMRESSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
 {
-    assert( op.get() != nullptr );
+    AMP_ASSERT( op.get() != nullptr );
 
     d_pOperator = op;
 
     AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
-    assert( linearOperator.get() != nullptr );
+    AMP_ASSERT( linearOperator.get() != nullptr );
 }
 void GMRESSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
 {

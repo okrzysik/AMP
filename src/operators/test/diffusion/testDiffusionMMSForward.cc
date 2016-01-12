@@ -234,8 +234,7 @@ int main( int argc, char *argv[] )
     } else {
         std::cout
             << "No input files are currently hardcoded. Files must be given as an argument.\n";
-        exit( 0 );
-        // files.push_back(""); // Currently there are no test files in this directory
+        return 1;
     }
 
     try {

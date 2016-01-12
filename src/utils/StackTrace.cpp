@@ -14,13 +14,13 @@
     defined( _MSC_VER )
 #define USE_WINDOWS
 #define NOMINMAX
-#include <windows.h>
 #include <DbgHelp.h>
 #include <iostream>
 #include <process.h>
 #include <psapi.h>
 #include <stdio.h>
 #include <tchar.h>
+#include <windows.h>
 //#pragma comment(lib, psapi.lib) //added
 //#pragma comment(linker, /DEFAULTLIB:psapi.lib)
 #elif defined( __APPLE__ )
@@ -28,6 +28,7 @@
 #define USE_NM
 #include <dlfcn.h>
 #include <execinfo.h>
+#include <mach-o/dyld.h>
 #include <mach/mach.h>
 #include <sched.h>
 #include <signal.h>
@@ -36,7 +37,6 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <mach-o/dyld.h>
 #elif defined( __linux ) || defined( __unix ) || defined( __posix )
 #define USE_LINUX
 #define USE_NM
@@ -179,18 +179,19 @@ std::string StackTrace::getExecutable()
             exe      = std::string( buf );
         }
         delete[] buf;
-#elif defined(USE_MAC)
+#elif defined( USE_MAC )
         uint32_t size = 0x10000;
-        char *buf = new char[size];
-        memset(buf,0,size);
-        if ( _NSGetExecutablePath(buf,&size)==0 )
+        char *buf     = new char[size];
+        memset( buf, 0, size );
+        if ( _NSGetExecutablePath( buf, &size ) == 0 )
             exe = std::string( buf );
         delete[] buf;
-#elif defined(USE_WINDOWS)
+#elif defined( USE_WINDOWS )
         DWORD size = 0x10000;
-        char *buf = new char[size];
-        memset(buf,0,size);
-        GetModuleFileName(NULL,buf,size);printf("1\n");
+        char *buf  = new char[size];
+        memset( buf, 0, size );
+        GetModuleFileName( NULL, buf, size );
+        printf( "1\n" );
 
         exe = std::string( buf );
         delete[] buf;
@@ -214,7 +215,7 @@ static const global_symbols_struct &getSymbols2()
                 char cmd[1024];
 #ifdef USE_LINUX
                 sprintf( cmd, "nm -n --demangle %s", global_exe_name.c_str() );
-#elif defined(USE_MAC)
+#elif defined( USE_MAC )
                 sprintf( cmd, "nm -n %s | c++filt", global_exe_name.c_str() );
 #else
 #error Unknown OS using nm
@@ -241,7 +242,7 @@ static const global_symbols_struct &getSymbols2()
                     c++;
                     char *d = strchr( c, '\n' );
                     if ( d )
-                        d[0] = 0;
+                        d[0]   = 0;
                     size_t add = strtoul( a, nullptr, 16 );
                     data.address.push_back( reinterpret_cast<void *>( add ) );
                     data.type.push_back( b[0] );
@@ -261,8 +262,9 @@ static const global_symbols_struct &getSymbols2()
     }
     return data;
 }
-int StackTrace::getSymbols(
-    std::vector<void *> &address, std::vector<char> &type, std::vector<std::string> &obj )
+int StackTrace::getSymbols( std::vector<void *> &address,
+                            std::vector<char> &type,
+                            std::vector<std::string> &obj )
 {
     const global_symbols_struct &data = getSymbols2();
     address                           = data.address;
@@ -282,8 +284,10 @@ static void getFileAndLine( StackTrace::stack_info &info )
     if ( info.object.find( ".so" ) != std::string::npos )
         address = info.address2;
     char buf[4096];
-    sprintf( buf, "addr2line -C -e %s -f -i %lx 2> /dev/null", info.object.c_str(),
-        reinterpret_cast<unsigned long int>( address ) );
+    sprintf( buf,
+             "addr2line -C -e %s -f -i %lx 2> /dev/null",
+             info.object.c_str(),
+             reinterpret_cast<unsigned long int>( address ) );
     FILE *f = popen( buf, "r" );
     if ( f == nullptr )
         return;
@@ -304,33 +308,33 @@ static void getFileAndLine( StackTrace::stack_info &info )
         info.line     = atoi( &buf[i + 1] );
     }
     pclose( f );
-#elif defined(USE_MAC) && 0
-    /*void *address = info.address;
-    if ( info.object.find( ".so" ) != std::string::npos )
-        address = info.address2;
-    char buf[4096];
-    sprintf( buf, "atos -o %s %lx 2> /dev/null", info.object.c_str(),
-        reinterpret_cast<unsigned long int>( address ) );
-    FILE *f = popen( buf, "r" );
-    if ( f == nullptr )
-        return;
-    buf[4095] = 0;
-    // get function name
-    char *rtn = fgets( buf, 4095, f );
-    if ( info.function.empty() && rtn == buf ) {
-        info.function = std::string( buf );
-        info.function.resize( std::max<size_t>( info.function.size(), 1 ) - 1 );
+#elif defined( USE_MAC ) && 0
+/*void *address = info.address;
+if ( info.object.find( ".so" ) != std::string::npos )
+    address = info.address2;
+char buf[4096];
+sprintf( buf, "atos -o %s %lx 2> /dev/null", info.object.c_str(),
+    reinterpret_cast<unsigned long int>( address ) );
+FILE *f = popen( buf, "r" );
+if ( f == nullptr )
+    return;
+buf[4095] = 0;
+// get function name
+char *rtn = fgets( buf, 4095, f );
+if ( info.function.empty() && rtn == buf ) {
+    info.function = std::string( buf );
+    info.function.resize( std::max<size_t>( info.function.size(), 1 ) - 1 );
+}
+// get file and line
+rtn = fgets( buf, 4095, f );
+if ( buf[0] != '?' && buf[0] != 0 && rtn == buf ) {
+    size_t i = 0;
+    for ( i = 0; i < 4095 && buf[i] != ':'; i++ ) {
     }
-    // get file and line
-    rtn = fgets( buf, 4095, f );
-    if ( buf[0] != '?' && buf[0] != 0 && rtn == buf ) {
-        size_t i = 0;
-        for ( i = 0; i < 4095 && buf[i] != ':'; i++ ) {
-        }
-        info.filename = std::string( buf, i );
-        info.line     = atoi( &buf[i + 1] );
-    }
-    pclose( f );*/
+    info.filename = std::string( buf, i );
+    info.line     = atoi( &buf[i + 1] );
+}
+pclose( f );*/
 #endif
 }
 

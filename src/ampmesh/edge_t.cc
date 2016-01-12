@@ -3,7 +3,7 @@
 #include <ampmesh/euclidean_geometry_tools.h>
 #include <utils/Utilities.h>
 
-#include <cassert>
+
 #include <cmath>
 #include <vector>
 
@@ -69,7 +69,7 @@ void edge_t::compute_normal()
         compute_direction();
     }
     compute_cross_product( &( direction[0] ), containing_plane_ptr, &( normal[0] ) );
-    assert( fabs( compute_vector_norm( &( normal[0] ) ) - 1.0 ) < 1.0e-14 );
+    AMP_ASSERT( fabs( compute_vector_norm( &( normal[0] ) ) - 1.0 ) < 1.0e-14 );
     //  normalize_vector(&(normal[0]));
     normal_updated = true;
 }
@@ -136,7 +136,7 @@ int edge_t::project_point( double const *point_in_containing_plane,
 
     // ensure that point was already projected onto containing plane
     make_vector_from_two_points( &( center[0] ), point_in_containing_plane, &( tmp[0] ) );
-    assert( compute_scalar_product( &( tmp[0] ), containing_plane_ptr ) < tolerance );
+    AMP_ASSERT( compute_scalar_product( &( tmp[0] ), containing_plane_ptr ) < tolerance );
 
     if ( distance_to_containing_line + tolerance > 0.0 ) {
         for ( unsigned int i = 0; i < 3; ++i ) {

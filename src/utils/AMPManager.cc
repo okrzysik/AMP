@@ -3,9 +3,9 @@
 #include "ProfilerApp.h"
 #include "RNG.h"
 #include "ShutdownRegistry.h"
-#include "utils/Utilities.h"
-#include "utils/StackTrace.h"
 #include "utils/AMP_MPI.h"
+#include "utils/StackTrace.h"
+#include "utils/Utilities.h"
 
 #ifdef USE_EXT_PETSC
 #include "petsc.h"
@@ -435,13 +435,13 @@ void AMPManager::shutdown()
     if ( rank == 0 && memory.N_new > memory.N_delete )
         MemoryApp::print( std::cout );
 #endif
-    // Wait 50 milli-seconds for all processors to finish
+// Wait 50 milli-seconds for all processors to finish
 #ifdef USE_EXT_MPI
     int MPI_initialized, MPI_finialized;
     MPI_Initialized( &MPI_initialized );
     MPI_Finalized( &MPI_finialized );
-    if ( MPI_initialized!=0 && MPI_finialized==0 )
-        MPI_Barrier(MPI_COMM_WORLD);
+    if ( MPI_initialized != 0 && MPI_finialized == 0 )
+        MPI_Barrier( MPI_COMM_WORLD );
 #endif
     Sleep( 50 );
 }

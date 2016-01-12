@@ -131,7 +131,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
             sendRowToRoot( mat, d_comm, row, col, data );
             if ( d_comm.getRank() == 0 ) {
                 for ( size_t i = 0; i < col.size(); i++ )
-                    fprintf( fid, "   %4i %4i  %0.14e\n", row, col[i], data[i] );
+                    fprintf( fid, "   %4i %4u  %0.14e\n", row, col[i], data[i] );
             }
         }
         if ( d_comm.getRank() == 0 ) {

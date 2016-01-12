@@ -85,7 +85,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
         // Some basic checks
         AMP_ASSERT( bndGlobalIds.size() == 4 );
-        // assert((bnd->getElem()).default_order() == feTypeOrder);
+        // AMP_ASSERT((bnd->getElem()).default_order() == feTypeOrder);
         AMP_ASSERT( bnd->elementType() == AMP::Mesh::Face );
 
         // Create the libmesh element

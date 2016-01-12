@@ -6,7 +6,6 @@
 #include "vectors/petsc/ManagedPetscVector.h"
 
 extern "C" {
-#include "assert.h"
 #include "petscpc.h"
 }
 
@@ -40,7 +39,7 @@ PetscKrylovSolver::PetscKrylovSolver()
 PetscKrylovSolver::PetscKrylovSolver( AMP::shared_ptr<PetscKrylovSolverParameters> parameters )
     : SolverStrategy( parameters )
 {
-    assert( parameters.get() != nullptr );
+    AMP_ASSERT( parameters.get() != nullptr );
 
     // Create a default KrylovSolver
     d_bKSPCreatedInternally = true;
@@ -100,7 +99,7 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
     if ( d_bUsesPreconditioner ) {
         if ( d_sPcType != "shell" ) {
             // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
-            assert( d_pPreconditioner.get() == nullptr );
+            AMP_ASSERT( d_pPreconditioner.get() == nullptr );
             PCSetType( pc, d_sPcType.c_str() );
         } else {
             // for a shell preconditioner the user context is set to an instance of this class
@@ -253,7 +252,7 @@ void PetscKrylovSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
     if ( d_bUsesPreconditioner ) {
         if ( d_sPcType != "shell" ) {
             // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
-            assert( d_pPreconditioner.get() == nullptr );
+            AMP_ASSERT( d_pPreconditioner.get() == nullptr );
             PCSetType( pc, d_sPcType.c_str() );
         } else {
             // for a shell preconditioner the user context is set to an instance of this class
@@ -322,17 +321,17 @@ void PetscKrylovSolver::setKrylovSolver( KSP *ksp )
 void PetscKrylovSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
 {
     // in this case we make the assumption we can access a PetscMat for now
-    assert( op.get() != nullptr );
+    AMP_ASSERT( op.get() != nullptr );
 
     d_pOperator = op;
 
     AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
-    assert( linearOperator.get() != nullptr );
+    AMP_ASSERT( linearOperator.get() != nullptr );
 
     AMP::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix =
         AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>( linearOperator->getMatrix() );
-    assert( pMatrix.get() != nullptr );
+    AMP_ASSERT( pMatrix.get() != nullptr );
 
     Mat mat;
     mat = pMatrix->getMat();
@@ -346,12 +345,12 @@ void PetscKrylovSolver::resetOperator(
         d_pOperator->reset( params );
         AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
             AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-        assert( linearOperator.get() != nullptr );
+        AMP_ASSERT( linearOperator.get() != nullptr );
 
         AMP::shared_ptr<AMP::LinearAlgebra::PetscMatrix> pMatrix =
             AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscMatrix>(
                 linearOperator->getMatrix() );
-        assert( pMatrix.get() != nullptr );
+        AMP_ASSERT( pMatrix.get() != nullptr );
 
         Mat mat;
         mat = pMatrix->getMat();

@@ -65,11 +65,9 @@ AMP::shared_ptr<TimeIntegrator> TimeIntegratorFactory::createTimeIntegrator(
     } else if ( timeIntegratorName == "BackwardEuler" ) {
         timeIntegrator.reset( new BackwardEulerTimeIntegrator( timeIntegratorParameters ) );
     } else {
-        AMP::pout << "ERROR::"
-                  << "TimeIntegratorFactory"
-                  << " does not currently create timeIntegrator " << timeIntegratorName
-                  << std::endl;
-        abort();
+        AMP_ERROR(
+            std::string( "TimeIntegratorFactory does not currently create timeIntegrator " ) +
+            timeIntegratorName );
     }
 
     return timeIntegrator;

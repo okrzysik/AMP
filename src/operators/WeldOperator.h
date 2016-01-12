@@ -14,7 +14,7 @@
 #include <string>
 
 #ifdef DEBUG_CHECK_ASSERTIONS
-#include <cassert>
+
 #endif
 
 namespace AMP {
@@ -55,7 +55,7 @@ public:
             val = inVec->getLocalValueByGlobalID( bndGlobalIds[0] );
             cnt++;
         } // end for bnd
-        assert( ( cnt == 0 ) or ( cnt == 1 ) );
+        AMP_ASSERT( ( cnt == 0 ) or ( cnt == 1 ) );
         // d_comm is constructed so that rank 0 has the input boundary
         //          MPI_Bcast(&val, 1, MPI_DOUBLE, 0, d_comm);
         val = d_comm.bcast( val, 0 );

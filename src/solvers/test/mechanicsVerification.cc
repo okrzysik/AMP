@@ -1,14 +1,14 @@
 #include <iostream>
 #include <string>
 
-#include <cassert>
+
 #include <fstream>
 #include <limits>
 
 #include <sys/stat.h>
 
-#include "utils/shared_ptr.h"
 #include "utils/Utilities.h"
+#include "utils/shared_ptr.h"
 
 /* libMesh files */
 DISABLE_WARNINGS
@@ -64,9 +64,6 @@ ENABLE_WARNINGS
 #include "solvers/petsc/PetscKrylovSolverParameters.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
 
-extern "C" {
-#include "petsc.h"
-}
 
 void computeForcingTerms(
     AMP::Mesh::Mesh::shared_ptr /* meshAdapter */,
@@ -102,7 +99,7 @@ void computeForcingTerms(
    AMP::Mesh::DOFMap::shared_ptr gaussPtDofMap =
  meshAdapter->getDOFMap(volumeOp->getVariableForDOFMap(0));
    gaussPtDofMap->getDOFs (*el, globalIDs, empty);
-   assert(globalIDs.size() == n_quadraturePoints);
+   AMP_ASSERT(globalIDs.size() == n_quadraturePoints);
    // Loop over all integration points of the element
    for (unsigned int i = 0; i < n_quadraturePoints; ++i) {
      double x = quadraturePoints[i](0);
@@ -337,7 +334,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
         manufacturedSolution->set_bzz(
             randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
     } else {
-        abort();
+        AMP_ERROR( "Unknown value for typeCoeffAB" );
     } // end if typeCoeffAB
     // TODO: I'll move this later to the MMSBuiler
 
@@ -536,7 +533,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
         ut->passes( exeName );
     } else {
         // need to define test requirements for new mms
-        abort();
+        AMP_ERROR( "Unknown value for manufacturedSolution->getName()" );
     }
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
