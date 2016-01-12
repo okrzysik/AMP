@@ -436,6 +436,13 @@ void AMPManager::shutdown()
         MemoryApp::print( std::cout );
 #endif
     // Wait 50 milli-seconds for all processors to finish
+#ifdef USE_EXT_MPI
+    int MPI_initialized, MPI_finialized;
+    MPI_Initialized( &MPI_initialized );
+    MPI_Finalized( &MPI_finialized );
+    if ( MPI_initialized!=0 && MPI_finialized==0 )
+        MPI_Barrier(MPI_COMM_WORLD);
+#endif
     Sleep( 50 );
 }
 

@@ -78,7 +78,7 @@ int main( int argc, char *argv[] )
     // Test a reinitialization of AMP
     try {
         AMP::AMPManager::startup( argc, argv, startup_properties );
-        AMP_ERROR( "Catch this" );
+        std::cout << "AMP re-initialized (this is invalid)\n";
         return -1;
     } catch ( ... ) {
         // This is correct
