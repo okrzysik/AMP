@@ -465,4 +465,4 @@ std::vector<StackTrace::stack_info> StackTrace::getCallStack()
 // clang-format on
 
 
-} // AtomicModel namespace
+} // AMP namespace
