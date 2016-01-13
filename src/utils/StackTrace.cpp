@@ -14,13 +14,13 @@
     defined( _MSC_VER )
 #define USE_WINDOWS
 #define NOMINMAX
+#include <windows.h>
 #include <DbgHelp.h>
 #include <iostream>
 #include <process.h>
 #include <psapi.h>
 #include <stdio.h>
 #include <tchar.h>
-#include <windows.h>
 //#pragma comment(lib, psapi.lib) //added
 //#pragma comment(linker, /DEFAULTLIB:psapi.lib)
 #elif defined( __APPLE__ )
