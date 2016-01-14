@@ -295,7 +295,12 @@ void thermoMechanicsTest( AMP::UnitTest *ut, std::string exeName )
     linearThermalOxygenDiffusionMechanicsOperator->reset( resetParams );
 
     ut->passes( exeName + " : Linear::reset" );
+
+    AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
+    if ( rank==0 )
+        std::cout << "Finished tests: " << exeName << std::endl;
 }
+
 
 int main( int argc, char *argv[] )
 {
@@ -306,19 +311,10 @@ int main( int argc, char *argv[] )
 
     std::vector<std::string> exeNames;
     exeNames.push_back( "nonlinearBVP-Mechanics-ThermalStrain-Thermal-Oxygen-UO2MSRZC09-1" );
-    //  exeNames.push_back("testNonlinearMechanics-1-reduced");
+    // exeNames.push_back("testNonlinearMechanics-1-reduced");
 
     for ( auto &exeName : exeNames ) {
-        //  try {
         thermoMechanicsTest( &ut, exeName );
-        //} catch (std::exception &err) {
-        //      std::cout << "ERROR: While testing "<<argv[0] << err.what() << std::endl;
-        //      ut.failure("ERROR: While testing");
-        //    } catch( ... ) {
-        //      std::cout << "ERROR: While testing "<<argv[0] << "An unknown exception was thrown."
-        //      << std::endl;
-        //      ut.failure("ERROR: While testing");
-        //    }
     }
 
     ut.report();
