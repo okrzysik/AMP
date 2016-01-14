@@ -12,7 +12,7 @@ namespace Solver {
 /****************************************************************
 *  Constructors                                                 *
 ****************************************************************/
-GMRESSolver::GMRESSolver() : d_restarts( 0 ) {}
+    GMRESSolver::GMRESSolver() : d_restarts( 0 ) { NULL_USE(d_restarts); }
 
 GMRESSolver::GMRESSolver( AMP::shared_ptr<KrylovSolverParameters> parameters )
     : SolverStrategy( parameters ), d_restarts( 0 )

@@ -129,8 +129,7 @@ private:
     int d_iMaxKrylovDimension; //! maximum dimension of the Krylov subspace before a restart or
                                //! termination happens
 
-    // will uncomment when this is implemented
-    //    int d_restarts; //! logs number of times the solver is restarted
+    int d_restarts; //! logs number of times the solver is restarted
 
     int d_nr; // dimension of the least squares system
 
