@@ -447,7 +447,8 @@ int main( int argc, char *argv[] )
 
         // Test getting the executable
         std::string exe = AMP::StackTrace::getExecutable();
-        std::cout << "Executable: " << exe << std::endl;
+        if ( globalComm.getRank() == 0 )
+            std::cout << "Executable: " << exe << std::endl;
         if ( exe.find( "test_Utilities" ) != std::string::npos )
             ut.passes( "getExecutable" );
         else

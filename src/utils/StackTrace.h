@@ -51,6 +51,13 @@ int getSymbols( std::vector<void *> &address,
 std::string getExecutable();
 
 
+/*!
+ * Return the search path for the symbols
+ * @return      Returns the search path for the symbols
+ */
+std::string getSymPaths();
+
+
 } // namespace StackTrace
 } // namespace AMP
 
