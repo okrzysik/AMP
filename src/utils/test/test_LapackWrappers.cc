@@ -21,18 +21,20 @@ int main( int, char *[] )
 
     // Run the basic tests
     printf( "\nRunning double precision basic tests\n" );
-    N_errors += Lapack<double>::run_all_test();
-    if ( N_errors == 0 ) {
+    int err = Lapack<double>::run_all_test();
+    if ( err == 0 ) {
         printf( "  passed dp tests\n" );
     } else {
-        printf( "failed %d dp tests\n", N_errors );
+        printf( "  failed %d dp tests\n", err );
+        N_errors += err;
     }
     printf( "\nRunning single precision basic tests\n" );
-    N_errors += Lapack<float>::run_all_test();
-    if ( N_errors == 0 ) {
+    err = Lapack<float>::run_all_test();
+    if ( err == 0 ) {
         printf( "  passed sp tests\n" );
     } else {
-        printf( "failed %d sp tests \n", N_errors );
+        printf( "  failed %d sp tests \n", err );
+        N_errors += err;
     }
 
     // Get the times for the tests
@@ -42,6 +44,7 @@ int main( int, char *[] )
                               "dgttrf", "dgbtrf", "dgetrs", "dgttrs", "dgbtrs", "dgetri" };
     const int dpN[] = { 500, 500, 500, 500, 500, 100, 100, 100, 100,
                         500, 500, 100, 500, 500, 100, 500, 500, 100 };
+    int N_err = 0;
     for ( size_t i = 0; i < sizeof( dptests ) / sizeof( char * ); i++ ) {
         double t1    = Utilities::time();
         double error = 0;
@@ -50,12 +53,13 @@ int main( int, char *[] )
         int us       = static_cast<int>( 1e6 * ( t2 - t1 ) / dpN[i] );
         printf(
             "%7s:  %s:  %5i us  (%e)\n", dptests[i], err == 0 ? "passed" : "failed", us, error );
-        N_errors += err;
+        N_err += err;
     }
-    if ( N_errors == 0 ) {
+    if ( N_err == 0 ) {
         printf( "  passed dp timing tests\n" );
     } else {
-        printf( "failed %d dp timing tests\n", N_errors );
+        printf( "  failed %d dp timing tests\n", N_err );
+        N_errors += N_err;
     }
 
     printf( "\nGetting single precision test times\n" );
@@ -64,6 +68,7 @@ int main( int, char *[] )
                               "sgttrf", "sgbtrf", "sgetrs", "sgttrs", "sgbtrs", "sgetri" };
     const int spN[] = { 500, 500, 500, 500, 500, 100, 100, 100, 100,
                         500, 500, 100, 500, 500, 100, 500, 500, 100 };
+    N_err = 0;
     for ( size_t i = 0; i < sizeof( sptests ) / sizeof( char * ); i++ ) {
         double t1   = Utilities::time();
         float error = 0;
@@ -72,12 +77,13 @@ int main( int, char *[] )
         int us      = static_cast<int>( 1e6 * ( t2 - t1 ) / spN[i] );
         printf(
             "%7s:  %s:  %5i us  (%e)\n", sptests[i], err == 0 ? "passed" : "failed", us, error );
-        N_errors += err;
+        N_err += err;
     }
-    if ( N_errors == 0 ) {
+    if ( N_err == 0 ) {
         printf( "  passed sp timing tests\n" );
     } else {
-        printf( "failed %d sp timing tests\n", N_errors );
+        printf( "  failed %d sp timing tests\n", N_err );
+        N_errors += N_err;
     }
 
     // Finished
