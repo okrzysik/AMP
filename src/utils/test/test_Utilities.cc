@@ -426,7 +426,7 @@ int main( int argc, char *argv[] )
             ut.passes( "non empty call stack" );
             bool pass = false;
             if ( call_stack.size() > 1 ) {
-                if ( call_stack[1].print().find( "get_call_stack()" ) != std::string::npos )
+                if ( call_stack[1].print().find( "get_call_stack" ) != std::string::npos )
                     pass = true;
             }
             if ( pass )

@@ -1,7 +1,5 @@
 #include "utils/StackTrace.h"
 
-using namespace AMP;
-
 #include <algorithm>
 #include <cstring>
 #include <iostream>
@@ -71,6 +69,9 @@ using namespace AMP;
         }                                    \
     } while ( 0 )
 #endif
+
+
+namespace AMP {
 
 
 // Utility to strip the path from a filename
@@ -764,3 +765,5 @@ BOOL StackTrace::GetModuleListPSAPI( HANDLE hProcess )
     return cnt != 0;
 }
 #endif
+
+} // namespace AMP
