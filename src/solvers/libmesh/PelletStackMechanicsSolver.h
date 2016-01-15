@@ -3,8 +3,8 @@
 
 #include "operators/libmesh/PelletStackOperator.h"
 #include "solvers/ColumnSolver.h"
-#include "solvers/libmesh/PelletStackMechanicsSolverParameters.h"
 #include "solvers/SolverStrategy.h"
+#include "solvers/libmesh/PelletStackMechanicsSolverParameters.h"
 
 namespace AMP {
 namespace Solver {

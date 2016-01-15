@@ -6,8 +6,6 @@
 #include <ampmesh/latex_visualization_tools.h>
 
 
-
-
 class soft_equal_to
 {
 public:

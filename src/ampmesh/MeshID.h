@@ -73,10 +73,10 @@ public:
                                       // and local_id to -1
     }
     explicit MeshElementID( bool isLocal,
-                   GeomType type_id,
-                   unsigned int local_ID,
-                   unsigned int owner_rank_id,
-                   MeshID mesh_ID )
+                            GeomType type_id,
+                            unsigned int local_ID,
+                            unsigned int owner_rank_id,
+                            MeshID mesh_ID )
     {
         // Copy the meshID
         data[0] = mesh_ID.data;

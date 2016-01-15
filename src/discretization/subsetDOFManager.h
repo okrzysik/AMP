@@ -92,7 +92,7 @@ public:
 
 protected:
     // The constructor is protected
-    subsetDOFManager(): d_parentBegin(0), d_parentEnd(0), d_parentGlobal(0) {}
+    subsetDOFManager() : d_parentBegin( 0 ), d_parentEnd( 0 ), d_parentGlobal( 0 ) {}
 
 private:
     //! The parent DOF Manager

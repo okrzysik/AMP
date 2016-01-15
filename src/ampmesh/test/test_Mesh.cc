@@ -290,7 +290,7 @@ void testSubsetMesh( AMP::UnitTest *ut )
 // MeshVectorTestLoop( ut, mesh );
 // MeshMatrixTestLoop( ut, mesh );
 #else
-    NULL_USE(ut);
+    NULL_USE( ut );
 #endif
     PROFILE_STOP( "testSubsetMesh" );
 }

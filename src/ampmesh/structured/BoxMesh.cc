@@ -1047,7 +1047,7 @@ std::vector<int> BoxMesh::getLocalBlock( unsigned int rank ) const
 * Helper function to return the indices and rank of the owning  *
 * block for a given MeshElementIndex                            *
 ****************************************************************/
-void BoxMesh::getOwnerBlock( const MeshElementIndex& index, unsigned int &rank, int *range ) const
+void BoxMesh::getOwnerBlock( const MeshElementIndex &index, unsigned int &rank, int *range ) const
 {
     int myBoxIndex[3] = { 1, 1, 1 };
     for ( int d = 0; d < PhysicalDim; d++ ) {

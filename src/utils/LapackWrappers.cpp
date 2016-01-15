@@ -613,7 +613,7 @@ static bool test_gtsv( int N, T &error )
         Lapack<T>::gtsv( K, 1, DL2, D2, DU2, x2, K, err );
         N_errors += err == 0 ? 0 : 1;
         if ( err != 0 )
-            printf("Error calling gtsv (%i)\n",err);
+            printf( "Error calling gtsv (%i)\n", err );
         T err2 = L2Error( N, x1, x2 );
         T norm = L2Norm( N, x1 );
         error  = std::max( error, err2 / norm );
@@ -681,7 +681,7 @@ static bool test_gbsv( int N, T &error )
         N_errors += err == 0 ? 0 : 1;
         T norm = L2Norm( K, x1 );
         T err2 = L2Error( K, x1, x2 );
-        error = std::max( error, err2 / norm );
+        error  = std::max( error, err2 / norm );
     }
     const double tol = 2000.0 * std::numeric_limits<T>::epsilon();
     if ( error > tol ) {

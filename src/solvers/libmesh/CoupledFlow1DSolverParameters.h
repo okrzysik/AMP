@@ -1,9 +1,9 @@
 #ifndef included_AMP_CoupledFlowFrapconParameters
 #define included_AMP_CoupledFlowFrapconParameters
 
+#include "operators/subchannel/CoupledFlowFrapconOperator.h"
 #include "solvers/SolverStrategy.h"
 #include "solvers/SolverStrategyParameters.h"
-#include "operators/subchannel/CoupledFlowFrapconOperator.h"
 #include "utils/Database.h"
 #include "utils/shared_ptr.h"
 

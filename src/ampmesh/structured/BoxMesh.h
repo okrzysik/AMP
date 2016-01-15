@@ -118,7 +118,8 @@ public:
          * \param y     Logical coordinate of the element
          * \param x     Logical coordinate of the element
          */
-        inline explicit MeshElementIndex( GeomType type, unsigned char side, int x, int y = 0, int z = 0 );
+        inline explicit MeshElementIndex(
+            GeomType type, unsigned char side, int x, int y = 0, int z = 0 );
         inline bool operator==( const MeshElementIndex &rhs ) const; //!< Operator ==
         inline bool operator!=( const MeshElementIndex &rhs ) const; //!< Operator !=
         inline bool operator>( const MeshElementIndex &rhs ) const;  //!< Operator >
@@ -206,7 +207,8 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const override;
+    virtual MeshIterator getSurfaceIterator( const GeomType type,
+                                             const int gcw = 0 ) const override;
 
 
     /**
@@ -342,7 +344,7 @@ protected:
     std::vector<int> getLocalBlock( unsigned int rank ) const;
 
     // Helper function to return the block and owning rank of the given MeshElementIndex
-    void getOwnerBlock( const MeshElementIndex& index, unsigned int &rank, int *range ) const;
+    void getOwnerBlock( const MeshElementIndex &index, unsigned int &rank, int *range ) const;
 
     // Helper function to fill the node data for a uniform cartesian mesh
     static void fillCartesianNodes( int dim,

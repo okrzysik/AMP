@@ -47,7 +47,7 @@ void thermoMechanicsTest( AMP::UnitTest *ut, std::string exeName )
     AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
     input_db->printClassData( AMP::plog );
-    
+
     const int rank = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
 
     //--------------------------------------------------
@@ -278,11 +278,11 @@ void thermoMechanicsTest( AMP::UnitTest *ut, std::string exeName )
     AMP::shared_ptr<AMP::Operator::Operator> testOperator =
         AMP::dynamic_pointer_cast<AMP::Operator::Operator>(
             nonlinearThermalOxygenDiffusionMechanicsOperator );
-    if ( rank==0 )
+    if ( rank == 0 )
         std::cout << "Running apply tests" << std::endl;
     applyTests( ut, msgPrefix, testOperator, rhsVec, solVec, resVec, shift, scale, 3 );
     AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
-    if ( rank==0 )
+    if ( rank == 0 )
         std::cout << "Finished apply tests" << std::endl;
 
     ut->passes( msgPrefix );
@@ -297,7 +297,7 @@ void thermoMechanicsTest( AMP::UnitTest *ut, std::string exeName )
     ut->passes( exeName + " : Linear::reset" );
 
     AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
-    if ( rank==0 )
+    if ( rank == 0 )
         std::cout << "Finished tests: " << exeName << std::endl;
 }
 

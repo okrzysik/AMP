@@ -113,8 +113,8 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr operandVec,
 
     return newMatrix;
 #else
-    NULL_USE(operandVec);
-    NULL_USE(resultVec);
+    NULL_USE( operandVec );
+    NULL_USE( resultVec );
     AMP_ERROR( "Unable to build a ManagedMatrix without TRILINOS" );
     return AMP::LinearAlgebra::Matrix::shared_ptr();
 #endif

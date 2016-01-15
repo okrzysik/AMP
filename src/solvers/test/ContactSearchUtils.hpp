@@ -51,7 +51,8 @@ void computeSlave2MasterNodes( const double precision,
                 ::FEType fe_type( elPtr->default_order() );
                 ::Point ref_point =
                     ::FEInterface::inverse_map( elPtr->dim(), fe_type, elPtr, pt, precision, true );
-                AMP_ASSERT( ::FEInterface::on_reference_element( ref_point, elPtr->type(), precision ) );
+                AMP_ASSERT(
+                    ::FEInterface::on_reference_element( ref_point, elPtr->type(), precision ) );
                 switch ( bndSideId ) {
                 case 0: {
                     ref_point( 2 ) = -1;
@@ -278,9 +279,9 @@ void computeRG2ElemMap( const double precision,
                     unsigned int rgId = ( zi * rgDim * rgDim ) + ( yi * rgDim ) + xi;
                     rg2ElemMap[rgId].push_back( el->globalID() );
                 } // end for xi
-            } // end for yi
-        } // end for zi
-    } // end for el
+            }     // end for yi
+        }         // end for zi
+    }             // end for el
 
     size_t maxElemsPerCell = 0;
     for ( size_t i = 0; i < rg2ElemMap.size(); i++ ) {

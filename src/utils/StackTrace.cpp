@@ -97,18 +97,21 @@ inline void *subtractAddress( void *a, void *b )
 
 
 #ifdef USE_WINDOWS
-static BOOL __stdcall readProcMem( HANDLE hProcess, DWORD64 qwBaseAddress, PVOID lpBuffer,
-    DWORD nSize, LPDWORD lpNumberOfBytesRead )
+static BOOL __stdcall readProcMem( HANDLE hProcess,
+                                   DWORD64 qwBaseAddress,
+                                   PVOID lpBuffer,
+                                   DWORD nSize,
+                                   LPDWORD lpNumberOfBytesRead )
 {
     SIZE_T st;
     BOOL bRet = ReadProcessMemory( hProcess, (LPVOID) qwBaseAddress, lpBuffer, nSize, &st );
     *lpNumberOfBytesRead = (DWORD) st;
     return bRet;
 }
-static inline std::string getCurrentDirectory( )
+static inline std::string getCurrentDirectory()
 {
-    char temp[1024]={0};
-    GetCurrentDirectoryA( sizeof(temp), temp );
+    char temp[1024] = { 0 };
+    GetCurrentDirectoryA( sizeof( temp ), temp );
     return temp;
 }
 namespace StackTrace {
@@ -117,7 +120,6 @@ BOOL GetModuleListPSAPI( HANDLE hProcess );
 DWORD LoadModule( HANDLE hProcess, LPCSTR img, LPCSTR mod, DWORD64 baseAddr, DWORD size );
 };
 #endif
-
 
 
 /****************************************************************************
@@ -267,7 +269,7 @@ static const global_symbols_struct &getSymbols2()
                     c++;
                     char *d = strchr( c, '\n' );
                     if ( d )
-                        d[0] = 0;
+                        d[0]   = 0;
                     size_t add = strtoul( a, nullptr, 16 );
                     data.address.push_back( reinterpret_cast<void *>( add ) );
                     data.type.push_back( b[0] );
@@ -564,23 +566,22 @@ std::vector<StackTrace::stack_info> StackTrace::getCallStack()
 // clang-format on
 
 
-
 /****************************************************************************
 *  Function to get system search paths                                      *
 ****************************************************************************/
-std::string StackTrace::getSymPaths( )
+std::string StackTrace::getSymPaths()
 {
     std::string paths;
 #ifdef USE_WINDOWS
     // Create the path list (seperated by ';' )
-    paths = std::string(".;");
+    paths = std::string( ".;" );
     paths.reserve( 1000 );
     // Add the current directory
     paths += getCurrentDirectory() + ";";
     // Now add the path for the main-module:
     char temp[1024];
-    memset(temp,0,sizeof(temp));
-    if ( GetModuleFileNameA( NULL, temp, sizeof(temp)-1 ) > 0 ) {
+    memset( temp, 0, sizeof( temp ) );
+    if ( GetModuleFileNameA( NULL, temp, sizeof( temp ) - 1 ) > 0 ) {
         for ( char *p = ( temp + strlen( temp ) - 1 ); p >= temp; --p ) {
             // locate the rightmost path separator
             if ( ( *p == '\\' ) || ( *p == '/' ) || ( *p == ':' ) ) {
@@ -593,35 +594,34 @@ std::string StackTrace::getSymPaths( )
             paths += ";";
         }
     }
-    memset(temp,0,sizeof(temp));
-    if ( GetEnvironmentVariableA( "_NT_SYMBOL_PATH", temp, sizeof(temp)-1 ) > 0 ) {
+    memset( temp, 0, sizeof( temp ) );
+    if ( GetEnvironmentVariableA( "_NT_SYMBOL_PATH", temp, sizeof( temp ) - 1 ) > 0 ) {
         paths += temp;
         paths += ";";
     }
-    memset(temp,0,sizeof(temp));
-    if ( GetEnvironmentVariableA( "_NT_ALTERNATE_SYMBOL_PATH", temp, sizeof(temp)-1 ) > 0 ) {
+    memset( temp, 0, sizeof( temp ) );
+    if ( GetEnvironmentVariableA( "_NT_ALTERNATE_SYMBOL_PATH", temp, sizeof( temp ) - 1 ) > 0 ) {
         paths += temp;
         paths += ";";
     }
-    memset(temp,0,sizeof(temp));
-    if ( GetEnvironmentVariableA( "SYSTEMROOT", temp, sizeof(temp)-1 ) > 0 ) {
+    memset( temp, 0, sizeof( temp ) );
+    if ( GetEnvironmentVariableA( "SYSTEMROOT", temp, sizeof( temp ) - 1 ) > 0 ) {
         paths += temp;
         paths += ";";
         // also add the "system32"-directory:
         paths += temp;
         paths += "\\system32;";
     }
-    memset(temp,0,sizeof(temp));
-    if ( GetEnvironmentVariableA( "SYSTEMDRIVE", temp, sizeof(temp)-1 ) > 0 ) {
+    memset( temp, 0, sizeof( temp ) );
+    if ( GetEnvironmentVariableA( "SYSTEMDRIVE", temp, sizeof( temp ) - 1 ) > 0 ) {
         paths += "SRV*;" + std::string( temp ) +
                  "\\websymbols*http://msdl.microsoft.com/download/symbols;";
     } else {
         paths += "SRV*c:\\websymbols*http://msdl.microsoft.com/download/symbols;";
     }
 #endif
-    return paths;    
+    return paths;
 }
-
 
 
 /****************************************************************************
@@ -671,7 +671,7 @@ BOOL StackTrace::GetModuleListTH32( HANDLE hProcess, DWORD pid )
     }
 
     bool keepGoing = !!pM32F( hSnap, &me );
-    int cnt   = 0;
+    int cnt        = 0;
     while ( keepGoing ) {
         LoadModule( hProcess, me.szExePath, me.szModule, (DWORD64) me.modBaseAddr, me.modBaseSize );
         cnt++;

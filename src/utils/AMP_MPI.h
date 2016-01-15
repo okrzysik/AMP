@@ -139,7 +139,7 @@ public:
      * processors).
      *
      */
-    static void balanceProcesses( const AMP_MPI& comm           = AMP_MPI( AMP_COMM_WORLD ),
+    static void balanceProcesses( const AMP_MPI &comm           = AMP_MPI( AMP_COMM_WORLD ),
                                   const int method              = 1,
                                   const std::vector<int> &procs = std::vector<int>(),
                                   const int N_min               = 1,
