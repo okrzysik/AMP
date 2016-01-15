@@ -45,8 +45,8 @@ DOFManager::shared_ptr simpleDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh
     return rtn;
 }
 DOFManager::shared_ptr simpleDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                                 const AMP::Mesh::MeshIterator it1,
-                                                 const AMP::Mesh::MeshIterator it2,
+                                                 const AMP::Mesh::MeshIterator &it1,
+                                                 const AMP::Mesh::MeshIterator &it2,
                                                  int DOFsPerElement )
 {
     // Check the iterators
@@ -77,7 +77,7 @@ DOFManager::shared_ptr simpleDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh
     rtn->initialize();
     return rtn;
 }
-DOFManager::shared_ptr simpleDOFManager::create( const AMP::Mesh::MeshIterator it,
+DOFManager::shared_ptr simpleDOFManager::create( const AMP::Mesh::MeshIterator &it,
                                                  int DOFsPerElement )
 {
     // Check the iterator

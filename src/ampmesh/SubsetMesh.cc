@@ -16,7 +16,7 @@ namespace Mesh {
 * Constructors                                          *
 ********************************************************/
 SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
-                        const AMP::Mesh::MeshIterator iterator_in,
+                        const AMP::Mesh::MeshIterator& iterator_in,
                         bool isGlobal )
 {
     this->d_parent_mesh = mesh;

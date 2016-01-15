@@ -25,7 +25,7 @@ public:
     DOFManagerParameters();
 
     //! Default constructor for a DOF manager object
-    DOFManagerParameters( AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+    explicit DOFManagerParameters( AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     //! Return the mesh
     AMP::shared_ptr<AMP::Mesh::Mesh> getMesh() { return mesh; }

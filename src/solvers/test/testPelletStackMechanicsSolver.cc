@@ -8,7 +8,7 @@
 
 #include "mpi.h"
 
-#include "solvers/PelletStackHelpers.h"
+#include "solvers/libmesh/PelletStackHelpers.h"
 
 #include "utils/AMPManager.h"
 #include "utils/InputManager.h"

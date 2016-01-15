@@ -54,7 +54,7 @@
 #include "operators/map/MapOperatorParameters.h"
 
 #include "solvers/ColumnSolver.h"
-#include "solvers/Flow1DSolver.h"
+#include "solvers/libmesh/Flow1DSolver.h"
 #include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/petsc/PetscKrylovSolverParameters.h"
 #include "solvers/petsc/PetscSNESSolver.h"

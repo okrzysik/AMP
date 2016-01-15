@@ -769,9 +769,7 @@ inline void MPI_CLASS::mapGather( std::map<KEY, DATA> &map ) const
     std::vector<DATA> send_data;
     send_id.reserve( map.size() );
     send_data.reserve( map.size() );
-    std::map<KEY, DATA> map2;
-    typename std::map<KEY, DATA>::iterator it;
-    for ( it = map.begin(); it != map.end(); ++it ) {
+    for ( auto it = map.begin(); it != map.end(); ++it ) {
         send_id.push_back( it->first );
         send_data.push_back( it->second );
     }

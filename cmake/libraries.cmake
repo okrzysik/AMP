@@ -838,7 +838,7 @@ MACRO ( CONFIGURE_AMP )
             MESSAGE( "Disabling AMP Operators" )
         ENDIF()
         # Check if we are using solvers
-        IF ( (NOT USE_AMP_OPERATORS) OR (NOT USE_EXT_LIBMESH) )
+        IF ( (NOT USE_AMP_OPERATORS) )
             SET ( USE_AMP_SOLVERS 0 )
         ENDIF()
         IF ( NOT USE_AMP_SOLVERS )

@@ -2,13 +2,15 @@
 
 Mesh{
     MeshName = "clad"
-    MeshType = "libMesh"
-    FileName = "clad_lo_res_4pellet.e"
+    MeshType = "AMP"
     dim = 3
+    Generator = "tube"
+    Size = 3, 10, 15
+    Range = 0.00411, 0.00475, 0, 0.042
     x_offset = 0.0
     y_offset = 0.0
     z_offset = 0.0
-    NumberOfElements = 450
+    Weight = 1.0
 }
 
 // The times to use in days

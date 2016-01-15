@@ -71,7 +71,7 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params  Parameters for constructing a mesh from an input database
      */
-    Mesh( const MeshParameters::shared_ptr &params );
+    explicit Mesh( const MeshParameters::shared_ptr &params );
 
 
     /**
@@ -450,7 +450,7 @@ protected:
     void setMeshID();
 
     // Private copy constructor
-    Mesh( const Mesh::shared_ptr &old_mesh );
+    explicit Mesh( const Mesh::shared_ptr &old_mesh );
 };
 
 } // Mesh namespace

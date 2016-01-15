@@ -150,16 +150,15 @@ MeshIterator &MultiVectorIterator::operator+=( int n )
 ********************************************************/
 bool MultiVectorIterator::operator==( const MeshIterator &rhs ) const
 {
-    MultiVectorIterator *rhs2 = nullptr;
-    MultiVectorIterator *tmp  = (MultiVectorIterator *) &rhs; // Convert rhs to a
-                                                              // MultiVectorIterator* so we can
-                                                              // access the base class members
+    const MultiVectorIterator *rhs2 = nullptr;
+    // Convert rhs to a MultiVectorIterator* so we can access the base class members
+    const MultiVectorIterator *tmp  = reinterpret_cast<const MultiVectorIterator*>(&rhs); 
     if ( typeid( rhs ) == typeid( MultiVectorIterator ) ) {
         rhs2 = tmp; // We can safely cast rhs to a MultiVectorIterator
     } else if ( tmp->typeID == MultiVectorIteratorTypeID ) {
         rhs2 = tmp; // We can safely cast rhs.iterator to a MultiVectorIterator
-    } else if ( ( (MultiVectorIterator *) tmp->iterator )->typeID == MultiVectorIteratorTypeID ) {
-        rhs2 = (MultiVectorIterator *) tmp->iterator;
+    } else if ( ( reinterpret_cast<MultiVectorIterator*>(tmp->iterator) )->typeID == MultiVectorIteratorTypeID ) {
+        rhs2 = reinterpret_cast<MultiVectorIterator*>(tmp->iterator);
     }
     // Perform direct comparisions if we are dealing with two MultiVectorIterators
     if ( rhs2 != nullptr ) {

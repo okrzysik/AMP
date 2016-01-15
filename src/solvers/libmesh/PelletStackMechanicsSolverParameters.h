@@ -1,4 +1,3 @@
-
 #ifndef included_AMP_PelletStackMechanicsSolverParameters
 #define included_AMP_PelletStackMechanicsSolverParameters
 

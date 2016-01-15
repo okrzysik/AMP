@@ -1,4 +1,4 @@
-#include "solvers/PelletStackHelpers.h"
+#include "solvers/libmesh/PelletStackHelpers.h"
 #ifdef USE_EXT_PETSC
 #include "solvers/petsc/PetscKrylovSolver.h"
 #endif

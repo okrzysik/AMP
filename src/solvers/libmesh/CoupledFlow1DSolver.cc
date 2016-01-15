@@ -2,8 +2,8 @@
 #include "operators/map/Map1Dto3D.h"
 #include "operators/map/Map3Dto1D.h"
 #include "operators/subchannel/FlowFrapconJacobian.h"
-#include "solvers/CoupledFlow1DSolver.h"
-#include "solvers/Flow1DSolver.h"
+#include "solvers/libmesh/CoupledFlow1DSolver.h"
+#include "solvers/libmesh/Flow1DSolver.h"
 #include "utils/InputDatabase.h"
 #include "vectors/MultiVector.h"
 

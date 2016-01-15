@@ -18,8 +18,9 @@
 #include "vectors/VectorBuilder.h"
 
 #include "solvers/ColumnSolver.h"
-#include "solvers/PelletStackMechanicsSolver.h"
+#include "solvers/libmesh/PelletStackMechanicsSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
+
 
 void helperCreateStackOperatorForPelletMechanics(
     AMP::Mesh::Mesh::shared_ptr manager,

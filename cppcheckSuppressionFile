@@ -69,6 +69,7 @@ variableScope:*/test/maps/dtk/test*
 unreadVariable:*/test/test*
 unusedVariable:*/test/maps/dtk/test*
 knownConditionTrueFalse:*/utils/test/test_AMP_MPI.cc
+noExplicitConstructor:*/utils/AMP_MPI.h
 noExplicitConstructor:*/utils/test/test_AMP_MPI.cc
 
 // Supress warnings for usleep

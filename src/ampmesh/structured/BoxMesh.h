@@ -52,7 +52,7 @@ class structuredMeshIterator;
           cube (3d) - [ x-min, x-max, y-min, y-max               ]
           circle    - [ r                                        ]
           cylinder  - [ r,     z                                 ]
-          tube      - [ r_min, r_max, z                          ]
+          tube      - [ r_min, r_max, z_min, z_max               ]
           sphere    - [ r                                        ]
           shell     - [ r_min, r_max                             ]
    Periodic - Are any dimensions periodic (optional)
@@ -90,7 +90,7 @@ public:
          * \param kfirst  First z-coordinate
          * \param klast   Last z-coordinate
          */
-        inline Box(
+        inline explicit Box(
             int ifirst, int ilast, int jfirst = 0, int jlast = 0, int kfirst = 0, int klast = 0 );
         inline Box(); //!< Empty constructor
         int first[3]; //!< Starting element
@@ -118,7 +118,7 @@ public:
          * \param y     Logical coordinate of the element
          * \param x     Logical coordinate of the element
          */
-        inline MeshElementIndex( GeomType type, unsigned char side, int x, int y = 0, int z = 0 );
+        inline explicit MeshElementIndex( GeomType type, unsigned char side, int x, int y = 0, int z = 0 );
         inline bool operator==( const MeshElementIndex &rhs ) const; //!< Operator ==
         inline bool operator!=( const MeshElementIndex &rhs ) const; //!< Operator !=
         inline bool operator>( const MeshElementIndex &rhs ) const;  //!< Operator >
@@ -141,11 +141,11 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params  Parameters for constructing a mesh from an input database
      */
-    BoxMesh( const MeshParameters::shared_ptr &params );
+    explicit BoxMesh( const MeshParameters::shared_ptr &params );
 
 
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
-    virtual AMP::shared_ptr<Mesh> copy() const;
+    virtual AMP::shared_ptr<Mesh> copy() const override;
 
 
     /**
@@ -175,20 +175,20 @@ public:
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */
-    virtual size_t numLocalElements( const GeomType type ) const;
+    virtual size_t numLocalElements( const GeomType type ) const override;
 
 
     /* Return the global number of elements of the given type
      * Note: depending on the mesh this routine may require global communication across the mesh.
      * \param type   Geometric type
      */
-    virtual size_t numGlobalElements( const GeomType type ) const;
+    virtual size_t numGlobalElements( const GeomType type ) const override;
 
 
     /* Return the number of ghost elements of the given type on the current processor
      * \param type   Geometric type
      */
-    virtual size_t numGhostElements( const GeomType type, const int gcw ) const;
+    virtual size_t numGhostElements( const GeomType type, const int gcw ) const override;
 
 
     /**
@@ -197,7 +197,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const;
+    virtual MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const override;
 
 
     /**
@@ -206,7 +206,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const;
+    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const override;
 
 
     /**
@@ -214,7 +214,7 @@ public:
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBoundaryIDs() const;
+    virtual std::vector<int> getBoundaryIDs() const override;
 
 
     /**
@@ -227,14 +227,14 @@ public:
      * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator
-    getBoundaryIDIterator( const GeomType type, const int id, const int gcw = 0 ) const;
+    getBoundaryIDIterator( const GeomType type, const int id, const int gcw = 0 ) const override;
 
     /**
      * \brief    Return the list of all boundary ID sets in the mesh
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBlockIDs() const;
+    virtual std::vector<int> getBlockIDs() const override;
 
 
     /**
@@ -245,7 +245,7 @@ public:
      * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator
-    getBlockIDIterator( const GeomType type, const int id, const int gcw = 0 ) const;
+    getBlockIDIterator( const GeomType type, const int id, const int gcw = 0 ) const override;
 
 
     /**
@@ -272,7 +272,7 @@ public:
      *    uses mesh iterators and requires O(N) time on the number of elements in the mesh.
      * \param id    Mesh element id we are requesting.
      */
-    virtual MeshElement getElement( const MeshElementID &id ) const;
+    virtual MeshElement getElement( const MeshElementID &id ) const override;
 
 
     /**
@@ -283,7 +283,7 @@ public:
      * \param type  Element type of the parents requested
      */
     virtual std::vector<MeshElement> getElementParents( const MeshElement &elem,
-                                                        const GeomType type ) const;
+                                                        const GeomType type ) const override;
 
 
     /**
@@ -294,7 +294,7 @@ public:
      *   size of the physical dimension.
      * \param x  Displacement vector
      */
-    virtual void displaceMesh( const std::vector<double> &x );
+    virtual void displaceMesh( const std::vector<double> &x ) override;
 
 
 #ifdef USE_AMP_VECTORS
@@ -306,7 +306,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x );
+    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 #endif
 
 
@@ -342,7 +342,7 @@ protected:
     std::vector<int> getLocalBlock( unsigned int rank ) const;
 
     // Helper function to return the block and owning rank of the given MeshElementIndex
-    void getOwnerBlock( const MeshElementIndex index, unsigned int &rank, int *range ) const;
+    void getOwnerBlock( const MeshElementIndex& index, unsigned int &rank, int *range ) const;
 
     // Helper function to fill the node data for a uniform cartesian mesh
     static void fillCartesianNodes( int dim,

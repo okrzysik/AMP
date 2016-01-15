@@ -21,7 +21,7 @@ class SubsetMesh : public Mesh
 public:
     //! Default constructor
     SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
-                const AMP::Mesh::MeshIterator iterator,
+                const AMP::Mesh::MeshIterator& iterator,
                 bool isGlobal );
 
 

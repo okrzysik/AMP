@@ -28,7 +28,6 @@ INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
 #
 
 ADD_AMP_TEST_1_2_4 ( testTimeIntegratorParameters )
-ADD_AMP_PROVISIONAL_TEST ( testBackwardEulerTimeIntegrator )
 ADD_AMP_TEST_1_2_4 ( testOxideTimeIntegrator )
 
 COPY_TEST_FILE( input_testBackwardEulerTimeIntegrator )
@@ -36,7 +35,11 @@ COPY_TEST_FILE( input_testOxideTimeIntegrator-1 )
 
 COPY_MESH_FILE ( unitCubeDirichlet.e )
 COPY_MESH_FILE ( simple_linear_thermomech.e )
-COPY_MESH_FILE ( clad_lo_res_4pellet.e )
+
+IF ( USE_EXT_LIBMESH )
+    ADD_AMP_PROVISIONAL_TEST( testBackwardEulerTimeIntegrator )    
+ENDIF()
+
 
 # Sundials tests
 IF ( USE_EXT_SUNDIALS )

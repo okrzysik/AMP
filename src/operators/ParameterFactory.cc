@@ -40,8 +40,8 @@ ParameterFactory::createParameter( AMP::shared_ptr<AMP::Database> input_db,
     resetParameters( MechanicsNonlinearFEOperator );
     resetParameters( NeutronicsRhs );
     AMP_ASSERT( retParameters != nullptr );
-    retParameters->d_Mesh = mesh;
 #endif
+    retParameters->d_Mesh = mesh;
 
     return retParameters;
 }

@@ -54,8 +54,8 @@ public:
      * \param DOFsPerElement The desired number of DOFs pere element
      */
     static DOFManager::shared_ptr create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                          const AMP::Mesh::MeshIterator it1,
-                                          const AMP::Mesh::MeshIterator it2,
+                                          const AMP::Mesh::MeshIterator &it1,
+                                          const AMP::Mesh::MeshIterator &it2,
                                           int DOFsPerElement );
 
 
@@ -66,10 +66,10 @@ public:
      * \param it             The iterator over the elements (no ghost cells)
      * \param DOFsPerElement The desired number of DOFs pere element
      */
-    static DOFManager::shared_ptr create( const AMP::Mesh::MeshIterator it, int DOFsPerElement );
+    static DOFManager::shared_ptr create( const AMP::Mesh::MeshIterator &it, int DOFsPerElement );
 
 
-    //! Deconstructor
+    //! Destructor
     virtual ~simpleDOFManager();
 
 
@@ -118,6 +118,9 @@ public:
 
 
 private:
+    // Private constructor
+    simpleDOFManager(): d_isBaseMesh(false), DOFsPerElement(0) {}
+
     // Function to find the remote DOF given a set of mesh element IDs
     std::vector<size_t> getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids ) const;
 

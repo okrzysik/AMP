@@ -340,7 +340,7 @@ void MPI_CLASS::setProcessAffinity( std::vector<int> procs )
 /************************************************************************
 *  Function to perform a load balance of the given processes            *
 ************************************************************************/
-void MPI_CLASS::balanceProcesses( const MPI_CLASS globalComm,
+void MPI_CLASS::balanceProcesses( const MPI_CLASS& globalComm,
                                   const int method,
                                   const std::vector<int> &procs,
                                   const int N_min_in,

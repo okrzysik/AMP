@@ -1,6 +1,6 @@
 #include "utils/Utilities.h"
 #include "operators/subchannel/FlowFrapconJacobian.h"
-#include "solvers/Flow1DSolver.h"
+#include "solvers/libmesh/Flow1DSolver.h"
 #include "vectors/MultiVector.h"
 
 namespace AMP {

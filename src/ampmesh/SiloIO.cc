@@ -1145,7 +1145,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, std::string )
     AMP_ERROR( "SILO not configured" );
 }
 #ifdef USE_AMP_VECTORS
-void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
+void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr,
                              AMP::Mesh::Mesh::shared_ptr,
                              AMP::Mesh::GeomType,
                              const std::string & )

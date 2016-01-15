@@ -29,19 +29,19 @@ struct MeshID {
 
 public:
     // Constructors used to initialize key values
-    MeshID()
+    inline MeshID()
     {
         data = 0xFFFFFFFFFFFFFFFF; // set the mesh id to -1
     }
-    MeshID( unsigned int root, unsigned int local_id )
+    inline MeshID( unsigned int root, unsigned int local_id )
     {
         // Use the first 32-bits for the rank of the root processor and the second 32-bits for the
         // local id
         data = root;
         data = ( data << 32 ) + local_id;
     }
-    MeshID( uint64 id ) { data = id; }
-    uint64 getData() const { return data; }
+    inline MeshID( uint64 id ) { data = id; }
+    inline uint64 getData() const { return data; }
     // Overload key operators
     inline bool operator==( const MeshID &rhs ) const { return data == rhs.data; }
     inline bool operator!=( const MeshID &rhs ) const { return data != rhs.data; }
@@ -66,13 +66,13 @@ struct MeshElementID {
 
 public:
     // Constructors used to initialize key values
-    MeshElementID()
+    inline MeshElementID()
     {
         data[0] = 0xFFFFFFFFFFFFFFFF; // set the mesh id to -1
         data[1] = 0x000000FFFFFFFFFF; // set is_local to false, type_id to 0xFF, owner_rank to 0,
                                       // and local_id to -1
     }
-    MeshElementID( bool isLocal,
+    explicit MeshElementID( bool isLocal,
                    GeomType type_id,
                    unsigned int local_ID,
                    unsigned int owner_rank_id,

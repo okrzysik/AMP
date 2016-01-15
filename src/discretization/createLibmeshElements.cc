@@ -149,10 +149,10 @@ libMesh::Elem *createLibmeshElements::createElement( const AMP::Mesh::MeshElemen
         // We are dealing with a hex27 element
         element = new libMesh::Hex27;
     } else if ( dim == 2 && nodes.size() == 4 ) {
-        // We are dealing with a hex8 element
+        // We are dealing with a quad4 element
         element = new libMesh::Quad4;
-    } else if ( dim == 2 && nodes.size() == 4 ) {
-        // We are dealing with a hex8 element
+    } else if ( dim == 2 && nodes.size() == 9 ) {
+        // We are dealing with a quad9 element
         element = new libMesh::Quad9;
     } else {
         AMP_ERROR( "Unknown element type" );
