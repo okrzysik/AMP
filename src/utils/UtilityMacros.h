@@ -2,7 +2,7 @@
 #ifndef included_AMP_UtilityMacros
 #define included_AMP_UtilityMacros
 
-#include "Utilities.h"
+#include "utils/Utilities.h"
 
 
 /*! \defgroup Macros Set of utility macro functions used in AMP
