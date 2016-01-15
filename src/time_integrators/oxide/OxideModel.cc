@@ -2,6 +2,8 @@
 #include "OxideModel.h"
 #include "utils/Utilities.h"
 
+#include <algorithm>
+
 
 namespace AMP {
 namespace TimeIntegrator {
