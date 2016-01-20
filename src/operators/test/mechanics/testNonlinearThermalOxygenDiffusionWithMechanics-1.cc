@@ -42,7 +42,7 @@ void thermoMechanicsTest( AMP::UnitTest *ut, std::string exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::PIO::logAllNodes( log_file );
 
     AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
     AMP::InputManager::getManager()->parseInputFile( input_file, input_db );
@@ -308,6 +308,7 @@ int main( int argc, char *argv[] )
     startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup( argc, argv, startup_properties );
     AMP::UnitTest ut;
+    ut.verbose();
 
     std::vector<std::string> exeNames;
     exeNames.push_back( "nonlinearBVP-Mechanics-ThermalStrain-Thermal-Oxygen-UO2MSRZC09-1" );

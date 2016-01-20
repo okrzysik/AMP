@@ -19,10 +19,9 @@
 #include "utils/shared_ptr.h"
 
 
-// Detect the OS and include system dependent headers
+// Detect the OS (defines which tests we allow to fail)
 #if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || \
     defined( _MSC_VER )
-// Note: windows has not been testeds
 #define USE_WINDOWS
 #elif defined( __APPLE__ )
 #define USE_MAC

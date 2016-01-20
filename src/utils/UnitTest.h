@@ -53,34 +53,43 @@ public:
     ~UnitTest();
 
     //! Indicate a passed test
-    virtual void passes( const std::string &in ) { pass_messages.push_back( in ); }
+    inline void passes( const std::string &in )
+    {
+        pass_messages.push_back( in );
+        printUpdate( "passes", in );
+    }
 
     //! Indicate a failed test
-    virtual void failure( const std::string &in ) { fail_messages.push_back( in ); }
+    inline void failure( const std::string &in )
+    {
+        fail_messages.push_back( in );
+        printUpdate( "failure", in );
+    }
 
     //! Indicate an expected failed test
-    virtual void expected_failure( const std::string &in )
+    inline void expected_failure( const std::string &in )
     {
         expected_fail_messages.push_back( in );
+        printUpdate( "expected_failure", in );
     }
 
     //! Return the number of passed tests locally
-    virtual size_t NumPassLocal() const { return pass_messages.size(); }
+    size_t NumPassLocal() const { return pass_messages.size(); }
 
     //! Return the number of failed tests locally
-    virtual size_t NumFailLocal() const { return fail_messages.size(); }
+    size_t NumFailLocal() const { return fail_messages.size(); }
 
     //! Return the number of expected failed tests locally
-    virtual size_t NumExpectedFailLocal() const { return expected_fail_messages.size(); }
+    size_t NumExpectedFailLocal() const { return expected_fail_messages.size(); }
 
     //! Return the number of passed tests locally
-    virtual size_t NumPassGlobal() const;
+    size_t NumPassGlobal() const;
 
     //! Return the number of failed tests locally
-    virtual size_t NumFailGlobal() const;
+    size_t NumFailGlobal() const;
 
     //! Return the number of expected failed tests locally
-    virtual size_t NumExpectedFailGlobal() const;
+    size_t NumExpectedFailGlobal() const;
 
     //! Return the rank of the current processor
     int rank() const;
@@ -102,16 +111,20 @@ public:
      * otherwise.
      *                  2: Report all passed, failed, and expected failed tests.
      */
-    virtual void report( const int level = 1 ) const;
+    void report( const int level = 1 ) const;
 
     //! Clear the messages
     void reset();
 
-protected:
+    //! Make the unit test operator verbose?
+    void verbose( bool verbose=true ) { d_verbose = verbose; }
+
+private:
     std::vector<std::string> pass_messages;
     std::vector<std::string> fail_messages;
     std::vector<std::string> expected_fail_messages;
     AMP_MPI comm;
+    bool d_verbose;
 
 private:
     // Make the copy constructor private
@@ -126,6 +139,14 @@ private:
     // Function to unpack the messages from a single data stream
     // Note: This function does not return until the message stream has been received
     std::vector<std::string> unpack_message_stream( const int rank, const int tag ) const;
+
+    // Print a status update if we are running in verbose mode
+    inline void printUpdate( const char *operation, const std::string& msg ) const
+    {
+        if ( d_verbose ) {
+            printf("UnitTest: %i %s: %s\n",comm.getRank(),operation,msg.c_str());
+        }
+    }
 };
 }
 
