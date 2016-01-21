@@ -18,6 +18,7 @@ void ColumnOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
                                AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                AMP::LinearAlgebra::Vector::shared_ptr r )
 {
+    int i = 0;
     for ( auto &elem : d_Operators ) {
         AMP_INSIST( ( elem.get() != nullptr ), "ColumnOperator::operator component is NULL" );
         elem->residual( f, u, r );

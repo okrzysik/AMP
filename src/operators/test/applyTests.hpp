@@ -72,9 +72,10 @@ void applyTests( AMP::UnitTest *ut,
             adjust( solVec, shift, scale, nshift );
             testOperator->residual( rhsVec, solVec, resVec );
         } // end for j
-    } catch ( std::exception ) {
+    } catch ( std::exception ) {        
         passed = false;
-    }
+    } 
+
     if ( passed ) {
         ut->passes( msgPrefix + " : apply with random f, u, r, a=1, b=-1.0" );
     } else {
@@ -83,23 +84,14 @@ void applyTests( AMP::UnitTest *ut,
 
     // second test for apply - f NULL, u, r, random values
     AMP::pout << "ApplyTest #2" << std::endl;
-    passed = true;
-    try {
-        for ( int j = 0; j < 3; j++ ) {
-            AMP::LinearAlgebra::Vector::shared_ptr fVec;
-            solVec->setRandomValues();
-            resVec->setRandomValues();
-            adjust( solVec, shift, scale, nshift );
-            testOperator->residual( fVec, solVec, resVec );
-        } // end for j
-    } catch ( std::exception ) {
-        passed = false;
+    for ( int j = 0; j < 3; j++ ) {
+        AMP::LinearAlgebra::Vector::shared_ptr fVec;
+        solVec->setRandomValues();
+        resVec->setRandomValues();
+        adjust( solVec, shift, scale, nshift );
+        testOperator->residual( fVec, solVec, resVec );
     }
-    if ( passed ) {
-        ut->passes( msgPrefix + " : apply with f NULL, random u, r, a=1, b=-1.0" );
-    } else {
-        ut->failure( msgPrefix + " : apply with f NULL, random u, r, a=1, b=-1.0" );
-    }
+    ut->passes( msgPrefix + " : apply with f NULL, random u, r, a=1, b=-1.0" );
 
     // R.S.: u is allowed to be NULL for some operators. For example, operators
     // with an in-place apply. However, this test is not meant to be used with those operators.
