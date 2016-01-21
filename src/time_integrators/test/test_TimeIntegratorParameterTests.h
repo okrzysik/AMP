@@ -1,8 +1,6 @@
 #include "../../utils/InputDatabase.h"
 #include "../TimeIntegratorParameters.h"
 
-namespace AMP {
-namespace unit_test {
 
 class InstantiateTimeIntegratorParameter
 {
@@ -17,5 +15,3 @@ public:
         utils->passes( "instantiate TimeIntegratorParameters" );
     }
 };
-}
-}

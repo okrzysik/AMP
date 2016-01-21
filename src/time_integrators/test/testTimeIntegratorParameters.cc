@@ -2,17 +2,14 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include "test_TimeIntegratorParameters.h"
-
-
-using namespace AMP::unit_test;
+#include "test_TimeIntegratorParameterTests.h"
 
 int main( int argc, char **argv )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    TimeIntegratorParameterTest<InstantiateTimeIntegratorParameter>::run( &ut );
+    InstantiateTimeIntegratorParameter::run_test( &ut );
 
     ut.report();
 

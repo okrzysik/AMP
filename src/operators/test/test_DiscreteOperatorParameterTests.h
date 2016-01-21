@@ -1,8 +1,6 @@
 #include "../../utils/InputDatabase.h"
 #include "../OperatorParameters.h"
 
-namespace AMP {
-namespace unit_test {
 
 class InstantiateOperatorParameter
 {
@@ -17,5 +15,3 @@ public:
         utils->passes( "instantiate OperatorParameters" );
     }
 };
-}
-}

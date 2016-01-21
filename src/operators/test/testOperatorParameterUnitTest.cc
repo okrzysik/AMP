@@ -2,17 +2,15 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include "test_DiscreteOperatorParameters.h"
+#include "test_DiscreteOperatorParameterTests.h"
 
-
-using namespace AMP::unit_test;
 
 int main( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    OperatorParameterTest<InstantiateOperatorParameter>::run( &ut );
+    InstantiateOperatorParameter::run_test( &ut );
 
     ut.report();
 
