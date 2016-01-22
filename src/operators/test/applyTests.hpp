@@ -64,23 +64,16 @@ void applyTests( AMP::UnitTest *ut,
     // first test for apply - random values in all three input vectors
     AMP::pout << "ApplyTest #1" << std::endl;
     bool passed = true;
-    try {
-        for ( int j = 0; j < 3; j++ ) {
-            solVec->setRandomValues();
-            rhsVec->setRandomValues();
-            resVec->setRandomValues();
-            adjust( solVec, shift, scale, nshift );
-            testOperator->residual( rhsVec, solVec, resVec );
-        } // end for j
-    } catch ( std::exception ) {        
-        passed = false;
-    } 
 
-    if ( passed ) {
-        ut->passes( msgPrefix + " : apply with random f, u, r, a=1, b=-1.0" );
-    } else {
-        ut->failure( msgPrefix + " : apply with random f, u, r, a=1, b=-1.0" );
-    }
+    for ( int j = 0; j < 3; j++ ) {
+        solVec->setRandomValues();
+        rhsVec->setRandomValues();
+        resVec->setRandomValues();
+        adjust( solVec, shift, scale, nshift );
+        testOperator->residual( rhsVec, solVec, resVec );
+    } // end for j
+
+    ut->passes( msgPrefix + " : apply test 1 with random f, u, r, a=1, b=-1.0" );
 
     // second test for apply - f NULL, u, r, random values
     AMP::pout << "ApplyTest #2" << std::endl;
@@ -91,7 +84,7 @@ void applyTests( AMP::UnitTest *ut,
         adjust( solVec, shift, scale, nshift );
         testOperator->residual( fVec, solVec, resVec );
     }
-    ut->passes( msgPrefix + " : apply with f NULL, random u, r, a=1, b=-1.0" );
+    ut->passes( msgPrefix + " : apply test 2 with f NULL, random u, r, a=1, b=-1.0" );
 
     // R.S.: u is allowed to be NULL for some operators. For example, operators
     // with an in-place apply. However, this test is not meant to be used with those operators.
@@ -110,10 +103,10 @@ void applyTests( AMP::UnitTest *ut,
     }
     if ( passed ) {
         ut->passes( msgPrefix +
-                    " : apply with u NULL, random values in the vectors f,r, a=1, b=-1.0" );
+                    " : apply test 3 with u NULL, random values in the vectors f,r, a=1, b=-1.0" );
     } else {
         ut->failure( msgPrefix +
-                     " : apply with u NULL, random values in the vectors f,r, a=1, b=-1.0" );
+                     " : apply test 3 with u NULL, random values in the vectors f,r, a=1, b=-1.0" );
     }
 
     // fourth test for apply - r NULL, f, u, random values
@@ -132,10 +125,10 @@ void applyTests( AMP::UnitTest *ut,
     }
     if ( passed ) {
         ut->passes( msgPrefix +
-                    " : apply with r NULL, random values in the vectors f,u, a=1, b=-1.0" );
+                    " : apply test 4 with r NULL, random values in the vectors f,u, a=1, b=-1.0" );
     } else {
         ut->failure( msgPrefix +
-                     " : apply with r NULL, random values in the vectors f,u, a=1, b=-1.0" );
+                     " : apply test 4 with r NULL, random values in the vectors f,u, a=1, b=-1.0" );
     }
 
     // fifth test for apply - f NULL, u NULL, r, random values
@@ -153,10 +146,10 @@ void applyTests( AMP::UnitTest *ut,
     }
     if ( passed ) {
         ut->passes( msgPrefix +
-                    " : apply with f NULL, u NULL random values in the vector r, a=1, b=-1.0" );
+                    " : apply test 5 with f NULL, u NULL random values in the vector r, a=1, b=-1.0" );
     } else {
         ut->failure( msgPrefix +
-                     " : apply with f NULL, u NULL random values in the vector r, a=1, b=-1.0" );
+                     " : apply test 5 with f NULL, u NULL random values in the vector r, a=1, b=-1.0" );
     }
 
     // sixth test for apply - u NULL, r NULL, f, random values
@@ -174,10 +167,10 @@ void applyTests( AMP::UnitTest *ut,
     }
     if ( passed ) {
         ut->passes( msgPrefix +
-                    " : apply with u NULL, r NULL, random values in the vector f, a=1, b=-1.0" );
+                    " : apply test 6 with u NULL, r NULL, random values in the vector f, a=1, b=-1.0" );
     } else {
         ut->failure( msgPrefix +
-                     " : apply with u NULL, r NULL, random values in the vector f, a=1, b=-1.0" );
+                     " : apply test 6 with u NULL, r NULL, random values in the vector f, a=1, b=-1.0" );
     }
 
     // seventh test for apply - r NULL, f NULL, u random values
@@ -196,10 +189,10 @@ void applyTests( AMP::UnitTest *ut,
     }
     if ( passed ) {
         ut->passes( msgPrefix +
-                    " : apply with f, r NULL, random values in the vector u, a=1, b=-1.0" );
+                    " : apply test 7 with f, r NULL, random values in the vector u, a=1, b=-1.0" );
     } else {
         ut->failure( msgPrefix +
-                     " : apply with f, r NULL, random values in the vector u, a=1, b=-1.0" );
+                     " : apply test 7 with f, r NULL, random values in the vector u, a=1, b=-1.0" );
     }
 
     // eighth test for apply - r NULL, f NULL, u NULL
@@ -216,9 +209,9 @@ void applyTests( AMP::UnitTest *ut,
         passed = true;
     }
     if ( passed ) {
-        ut->passes( msgPrefix + " : apply with f, u, r NULL, a=1, b=-1.0" );
+        ut->passes( msgPrefix + " : apply test 8 with f, u, r NULL, a=1, b=-1.0" );
     } else {
-        ut->failure( msgPrefix + " : apply with f, u, r NULL, a=1, b=-1.0" );
+        ut->failure( msgPrefix + " : apply test 8 with f, u, r NULL, a=1, b=-1.0" );
     }
 
 #if 0
@@ -232,9 +225,9 @@ void applyTests( AMP::UnitTest *ut,
   rhsVec->subtract(rhsVec, resVec);
   double norm = rhsVec->subsetVectorForVariable(testOperatorVariable)->L2Norm();
   if (AMP::Utilities::approx_equal(norm, 0.0)) {
-    ut->passes(msgPrefix + " : apply with random values in the vectors f,u,r, a=0.0, b=1.0");
+    ut->passes(msgPrefix + " : apply test 9 with random values in the vectors f,u,r, a=0.0, b=1.0");
   } else {
-    ut->failure(msgPrefix + " : apply with random values in the vectors f,u,r, a=0.0, b=1.0");
+    ut->failure(msgPrefix + " : apply test 9 with random values in the vectors f,u,r, a=0.0, b=1.0");
   }
 
   // tenth test for apply - random values in all three input vectors, a=0, b=-1, to test scaling
@@ -247,9 +240,9 @@ void applyTests( AMP::UnitTest *ut,
   rhsVec->add(rhsVec, resVec);
   norm = rhsVec->subsetVectorForVariable(testOperatorVariable)->L2Norm();
   if (AMP::Utilities::approx_equal(norm, 0.0)) {
-    ut->passes(msgPrefix + " : apply with random values in the vectors f,u,r, a=0.0, b=-1.0 (test scaling of f)");
+    ut->passes(msgPrefix + " : apply test 10 with random values in the vectors f,u,r, a=0.0, b=-1.0 (test scaling of f)");
   } else {
-    ut->failure(msgPrefix + " : apply with random values in the vectors f,u,r, a=0.0, b=-1.0 (test scaling of f)");
+    ut->failure(msgPrefix + " : apply test 10 with random values in the vectors f,u,r, a=0.0, b=-1.0 (test scaling of f)");
   }
 #endif
 
@@ -284,13 +277,13 @@ void applyTests( AMP::UnitTest *ut,
         } catch ( ... ) {
             ut->expected_failure(
                 msgPrefix +
-                " : apply with random negative values in u, random positive f,r, a=1, b=-1.0" );
+                " : apply test 11 with random negative values in u, random positive f,r, a=1, b=-1.0" );
             passed = true;
         }
         if ( not passed ) {
             ut->failure(
                 msgPrefix +
-                " : apply with random negative values in u, random positive f,r, a=1, b=-1.0" );
+                " : apply test 11 with random negative values in u, random positive f,r, a=1, b=-1.0" );
         }
     }
 }
