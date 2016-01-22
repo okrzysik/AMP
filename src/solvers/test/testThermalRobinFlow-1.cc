@@ -470,16 +470,7 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    try {
-        flowTest( &ut, "testThermalRobinFlow-1" );
-    } catch ( std::exception &err ) {
-        std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
-        ut.failure( "ERROR: While testing" );
-    } catch ( ... ) {
-        std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
-                  << std::endl;
-        ut.failure( "ERROR: While testing" );
-    }
+    flowTest( &ut, "testThermalRobinFlow-1" );
 
     ut.report();
 

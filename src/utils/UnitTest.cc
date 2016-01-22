@@ -30,7 +30,7 @@ namespace AMP {
 /********************************************************************
 *  Constructor/Destructor                                           *
 ********************************************************************/
-UnitTest::UnitTest(): d_verbose(false)
+UnitTest::UnitTest() : d_verbose( false )
 {
     if ( !AMP::AMPManager::isInitialized() )
         AMP_ERROR( "AMPManager must be initialized first" );

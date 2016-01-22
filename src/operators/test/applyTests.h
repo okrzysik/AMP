@@ -8,7 +8,7 @@
 #ifndef APPLY_TESTS_H_
 #define APPLY_TESTS_H_
 
-#include "../Operator.h"
+#include "operators/Operator.h"
 #include "utils/UnitTest.h"
 #include "vectors/Vector.h"
 #include <string>

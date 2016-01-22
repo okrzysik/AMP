@@ -43,6 +43,7 @@ ADD_AMP_TEST( testArray )
 COPY_TEST_FILE( input_InputManager-1 )
 COPY_TEST_FILE( input_Database-1 )
 
-
+ADD_AMP_TEST( test_crash )
+SET_TESTS_PROPERTIES( test_crash PROPERTIES PASS_REGULAR_EXPRESSION "Stack Trace" FAIL_REGULAR_EXPRESSION "FAILED" )  
 
 

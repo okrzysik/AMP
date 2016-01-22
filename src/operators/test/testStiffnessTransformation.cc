@@ -125,16 +125,7 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    try {
-        myTest( &ut );
-    } catch ( std::exception &err ) {
-        AMP::pout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
-        ut.failure( "ERROR: While testing" );
-    } catch ( ... ) {
-        AMP::pout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
-                  << std::endl;
-        ut.failure( "ERROR: While testing" );
-    }
+    myTest( &ut );
 
     ut.report();
 

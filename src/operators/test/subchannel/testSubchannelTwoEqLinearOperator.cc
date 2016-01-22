@@ -191,63 +191,63 @@ void Test( AMP::UnitTest *ut, std::string exeName )
         faceDOFManager->getDOFs( face->globalID(), dofs );
         FrozenVec->setValueByGlobalID( dofs[0], h_scale * 700.0e3 );
         FrozenVec->setValueByGlobalID( dofs[1], P_scale * 12.4e6 );
-        ;
+
         SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
         SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
         FrozenVec->setValueByGlobalID( dofs[0], h_scale * 900.0e3 );
         FrozenVec->setValueByGlobalID( dofs[1], P_scale * 12.3e6 );
-        ;
+
         SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
         SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
         FrozenVec->setValueByGlobalID( dofs[0], h_scale * 800.0e3 );
         FrozenVec->setValueByGlobalID( dofs[1], P_scale * 16.2e6 );
-        ;
+
         SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
         SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
         FrozenVec->setValueByGlobalID( dofs[0], h_scale * 650.0e3 );
         FrozenVec->setValueByGlobalID( dofs[1], P_scale * 14.1e5 );
-        ;
+
         SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
         SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
         FrozenVec->setValueByGlobalID( dofs[0], h_scale * 367.4e3 );
         FrozenVec->setValueByGlobalID( dofs[1], P_scale * 31.5e5 );
-        ;
+
         SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
         SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
         FrozenVec->setValueByGlobalID( dofs[0], h_scale * 657.2e3 );
         FrozenVec->setValueByGlobalID( dofs[1], P_scale * 12.5e6 );
-        ;
+
         SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
         SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
         FrozenVec->setValueByGlobalID( dofs[0], h_scale * 788.5e3 );
         FrozenVec->setValueByGlobalID( dofs[1], P_scale * 12.7e6 );
-        ;
+
         SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
         SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
         FrozenVec->setValueByGlobalID( dofs[0], h_scale * 235.7e2 );
         FrozenVec->setValueByGlobalID( dofs[1], P_scale * 17.8e6 );
-        ;
+
         SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
         SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
         ++face;
         faceDOFManager->getDOFs( face->globalID(), dofs );
         FrozenVec->setValueByGlobalID( dofs[0], h_scale * 673.1e3 );
         FrozenVec->setValueByGlobalID( dofs[1], P_scale * 13.6e6 );
-        ;
+
         SolVec->setValueByGlobalID( dofs[0], h_scale * 1.0 );
         SolVec->setValueByGlobalID( dofs[1], P_scale * 1.0 );
         ++face;
@@ -264,390 +264,31 @@ void Test( AMP::UnitTest *ut, std::string exeName )
 
         // get the matrix
         AMP::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian = subchannelOperator->getMatrix();
-
+        // clang-format off
         double knownJacobian[num_dofs][num_dofs] = {
-            { 0.99999999749821,
-              0.000778407237773775,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0 },
-            { -3.35541872265853e-07,
-              -8.78766222791986e-05,
-              3.2990887838029e-07,
-              8.78766284349374e-05,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0 },
-            { -0.767213114757281,
-              0,
-              0.767213115083247,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0 },
-            { 0,
-              0,
-              -3.51799478071037e-07,
-              -8.78765679184489e-05,
-              3.45890251361492e-07,
-              8.78765921713374e-05,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0 },
-            { 0,
-              0,
-              -0.767213115083247,
-              0,
-              0.767213116091066,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0 },
-            { 0,
-              0,
-              0,
-              0,
-              -3.12341330405279e-07,
-              -8.78767302051646e-05,
-              3.15095630760153e-07,
-              8.78765973055314e-05,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0 },
-            { 0,
-              0,
-              0,
-              0,
-              -0.767213115515851,
-              0,
-              0.767213114998425,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0 },
-            { 0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              -2.96651446897112e-07,
-              -8.78767082179109e-05,
-              1.91141714652964e-07,
-              8.78771187267925e-05,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0 },
-            { 0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              -0.767213114998425,
-              0,
-              0.767213113877773,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0 },
-            { 0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              -1.91535569085153e-07,
-              -8.7877166661357e-05,
-              2.91551133926647e-07,
-              8.78767591853259e-05,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0 },
-            { 0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              -0.767213116382785,
-              0,
-              0.767213115308738,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0 },
-            { 0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              -2.75318671573501e-07,
-              -8.78768536463993e-05,
-              3.41860441331691e-07,
-              8.787656753596e-05,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0 },
-            { 0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              -0.767213116008937,
-              0,
-              0.767213114510477,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0 },
-            { 0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              -3.25732837135205e-07,
-              -8.78766789006946e-05,
-              1.85314096485698e-08,
-              8.78772557339642e-05,
-              0,
-              0,
-              0,
-              0 },
-            { 0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              -0.767213114510477,
-              0,
-              0.767213005345743,
-              0,
-              0,
-              0,
-              0,
-              0 },
-            { 0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              -4.64429155390083e-08,
-              -8.7877285625751e-05,
-              2.86792534131204e-07,
-              8.78767567742423e-05,
-              0,
-              0 },
-            { 0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              -0.767213083436951,
-              0,
-              0.767213116597182,
-              0,
-              0,
-              0 },
-            { 0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              -3.35566038867217e-07,
-              -8.78766570500576e-05,
-              1.54853676092429e-07,
-              8.78772425610155e-05 },
-            { 0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              -0.767213116597182,
-              0,
-              0.767213114375646,
-              0 },
+            { 0.99999999749821, 0.000778407237773775, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { -3.35541872265853e-07, -8.78766222791986e-05, 3.2990887838029e-07, 8.78766284349374e-05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { -0.767213114757281, 0, 0.767213115083247, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, -3.51799478071037e-07, -8.78765679184489e-05, 3.45890251361492e-07, 8.78765921713374e-05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, -0.767213115083247, 0, 0.767213116091066, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, -3.12341330405279e-07, -8.78767302051646e-05, 3.15095630760153e-07, 8.78765973055314e-05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, -0.767213115515851, 0, 0.767213114998425, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, -2.96651446897112e-07, -8.78767082179109e-05, 1.91141714652964e-07, 8.78771187267925e-05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, -0.767213114998425, 0, 0.767213113877773, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0, -1.91535569085153e-07, -8.7877166661357e-05, 2.91551133926647e-07, 8.78767591853259e-05, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0, -0.767213116382785, 0, 0.767213115308738, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2.75318671573501e-07, -8.78768536463993e-05, 3.41860441331691e-07, 8.787656753596e-05, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.767213116008937, 0, 0.767213114510477, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -3.25732837135205e-07, -8.78766789006946e-05, 1.85314096485698e-08, 8.78772557339642e-05, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.767213114510477, 0, 0.767213005345743, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -4.64429155390083e-08, -8.7877285625751e-05, 2.86792534131204e-07, 8.78767567742423e-05, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.767213083436951, 0, 0.767213116597182, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -3.35566038867217e-07, -8.78766570500576e-05, 1.54853676092429e-07, 8.78772425610155e-05 },
+            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.767213116597182, 0, 0.767213114375646, 0 },
             { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.999999998997306 }
         };
+        // clang-format on
+
         bool passedJacobianTest = JacobianIsCorrect( testJacobian, knownJacobian );
         if ( passedJacobianTest )
             ut->passes( exeName + ": apply: known Jacobian value test" );
@@ -667,18 +308,8 @@ int main( int argc, char *argv[] )
     const int NUMFILES          = 1;
     std::string files[NUMFILES] = { "testSubchannelTwoEqLinearOperator" };
 
-    for ( auto &file : files ) {
-        try {
-            Test( &ut, file );
-        } catch ( std::exception &err ) {
-            std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
-            ut.failure( "ERROR: While testing: " + file );
-        } catch ( ... ) {
-            std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
-                      << std::endl;
-            ut.failure( "ERROR: While testing: " + file );
-        }
-    }
+    for ( auto &file : files )
+        Test( &ut, file );
 
     ut.report();
 

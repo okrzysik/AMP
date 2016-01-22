@@ -223,18 +223,8 @@ int main( int argc, char *argv[] )
     const int NUMFILES          = 2;
     std::string files[NUMFILES] = { "FickSoret-TUI-1", "FickSoret-UO2MSRZC09-1" };
 
-    for ( auto &file : files ) {
-        try {
-            nonlinearTest( &ut, file );
-        } catch ( std::exception &err ) {
-            std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
-            ut.failure( "ERROR: While testing:" + file );
-        } catch ( ... ) {
-            std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
-                      << std::endl;
-            ut.failure( "ERROR: While testing:" + file );
-        }
-    }
+    for ( auto &file : files )
+        nonlinearTest( &ut, file );
 
     ut.report();
 

@@ -280,16 +280,7 @@ int main( int argc, char *argv[] )
 
     AMP::UnitTest ut;
 
-    try {
-        flowTest( &ut );
-    } catch ( std::exception &err ) {
-        std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
-        ut.failure( "ERROR: While testing" );
-    } catch ( ... ) {
-        std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
-                  << std::endl;
-        ut.failure( "ERROR: While testing" );
-    }
+    flowTest( &ut );
 
     ut.report();
 
