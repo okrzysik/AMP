@@ -9,7 +9,7 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include <string>lo
+#include <string>
 
 #include <fstream>
 
