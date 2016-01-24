@@ -6,7 +6,13 @@
 #include <sstream>
 
 
-void crash() { raise( SIGSEGV ); }
+void crash()
+{
+    AMP::AMP_MPI comm(AMP_COMM_WORLD);
+    if ( comm.getRank() == 0 )
+        raise( SIGSEGV );
+    comm.barrier();
+}
 
 
 int main( int argc, char *argv[] )

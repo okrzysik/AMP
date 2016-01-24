@@ -103,6 +103,7 @@ private:
 
     // Static variables
     static int initialized;
+    static int rank;
     static bool called_MPI_Init;
     static bool called_PetscInitialize;
     static bool use_MPI_Abort;
@@ -127,6 +128,7 @@ private:
     //! Functions to initialize/destroy the mpi error handler
     static void setMPIErrorHandler();
     static void clearMPIErrorHandler();
+    static void exitFun();
 };
 }
 
