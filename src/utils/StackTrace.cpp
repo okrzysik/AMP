@@ -4,9 +4,8 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
-#if __cplusplus > 199711L
+#include <csignal>
 #include <mutex>
-#endif
 
 
 // Detect the OS and include system dependent headers
@@ -136,10 +135,10 @@ std::string StackTrace::stack_info::print() const
     stack.resize( std::max<size_t>( stack.size(), 38 ), ' ' );
     stack += "  " + function;
     if ( !filename.empty() && line > 0 ) {
-        stack.resize( std::max<size_t>( stack.size(), 70 ), ' ' );
+        stack.resize( std::max<size_t>( stack.size(), 72 ), ' ' );
         stack += "  " + stripPath( filename ) + ":" + line_str;
     } else if ( !filename.empty() ) {
-        stack.resize( std::max<size_t>( stack.size(), 70 ), ' ' );
+        stack.resize( std::max<size_t>( stack.size(), 72 ), ' ' );
         stack += "  " + stripPath( filename );
     } else if ( line > 0 ) {
         stack += " : " + line_str;
@@ -179,17 +178,7 @@ inline size_t findfirst( const std::vector<TYPE> &X, TYPE Y )
 *    exccessive calls to nm.  This function also uses a lock to ensure      *
 *    thread safety.                                                         *
 ****************************************************************************/
-#if __cplusplus <= 199711L
-class mutex_class
-{
-public:
-    void lock() {}
-    void unlock() {}
-};
-mutex_class getSymbols_mutex;
-#else
 std::mutex getSymbols_mutex;
-#endif
 struct global_symbols_struct {
     std::vector<void *> address;
     std::vector<char> type;
@@ -765,5 +754,63 @@ BOOL StackTrace::GetModuleListPSAPI( HANDLE hProcess )
     return cnt != 0;
 }
 #endif
+
+
+/****************************************************************************
+*  Set the signal handlers                                                  *
+****************************************************************************/
+static std::function<void(std::string,StackTrace::terminateType)> abort_fun;
+static void term_func_abort( int signal )
+{
+    std::string msg("Caught signal ");
+    if ( signal == SIGABRT )
+        msg += "SIGABRT";
+    else if ( signal == SIGFPE )
+        msg += "SIGFPE";
+    else if ( signal == SIGILL )
+        msg += "SIGILL";
+    else if ( signal == SIGINT )
+        msg += "SIGINT";
+    else if ( signal == SIGSEGV )
+        msg += "SIGSEGV";
+    else if ( signal == SIGTERM )
+        msg += "SIGTERM";
+    abort_fun( msg, StackTrace::terminateType::signal );
+}
+static void term_func()
+{
+    // Try to re-throw the last error to get the last message
+    std::string last_message;
+#ifdef USE_LINUX
+    try {
+        static int tried_throw = 0;
+        if ( tried_throw == 0 ) {
+            tried_throw = 1;
+            throw;
+        }
+        // No active exception
+    } catch ( const std::exception &err ) {
+        // Caught a std::runtime_error
+        last_message = err.what();
+    } catch ( ... ) {
+        // Caught an unknown exception
+        last_message = "unknown exception occurred.";
+    }
+#endif
+    abort_fun( "Unhandled exception:\n" + last_message, StackTrace::terminateType::signal );
+}
+void StackTrace::setErrorHandlers( std::function<void(std::string,StackTrace::terminateType)> abort )
+{
+    abort_fun = abort;
+    std::set_terminate( term_func );
+    signal( SIGABRT, &term_func_abort );
+    signal( SIGFPE,  &term_func_abort );
+    signal( SIGILL,  &term_func_abort );
+    signal( SIGINT,  &term_func_abort );
+    signal( SIGSEGV, &term_func_abort );
+    signal( SIGTERM, &term_func_abort );
+    std::set_unexpected( term_func );
+}
+
 
 } // namespace AMP

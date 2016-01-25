@@ -7,6 +7,7 @@
 #include "vectors/VectorBuilder.h"
 
 #include <math.h>
+#include <tuple>
 
 namespace AMP {
 namespace Operator {
@@ -167,29 +168,27 @@ void getCladProperties( AMP::AMP_MPI comm,
                         std::vector<double> &diam )
 {
     // Get the center of each local clad
-    std::set<AMP::Utilities::triplet<double, double, double>> center;
+    std::set<std::tuple<double, double, double>> center;
     if ( clad != nullptr ) {
         AMP_ASSERT( clad->getComm() <= comm );
         std::vector<AMP::Mesh::MeshID> ids = clad->getLocalBaseMeshIDs();
         for ( auto &id : ids ) {
             AMP::Mesh::Mesh::shared_ptr mesh = clad->Subset( id );
             std::vector<double> box          = mesh->getBoundingBox();
-            AMP::Utilities::triplet<double, double, double> tmp;
-            tmp.first  = 0.5 * ( box[0] + box[1] );
-            tmp.second = 0.5 * ( box[2] + box[3] );
-            tmp.third  = std::max( std::max( tmp.first - box[0], box[1] - tmp.first ),
-                                  std::max( tmp.second - box[2], box[3] - tmp.second ) );
-            center.insert( tmp );
+            double t1  = 0.5 * ( box[0] + box[1] );
+            double t2 = 0.5 * ( box[2] + box[3] );
+            double t3  = std::max( std::max( t1 - box[0], box[1] - t1 ),
+                                   std::max( t2 - box[2], box[3] - t2 ) );
+            center.insert( std::make_tuple( t1, t2, t3 ) );
         }
     }
     // Get the global set and check that there are no duplicates
     comm.setGather( center );
-    std::vector<AMP::Utilities::triplet<double, double, double>> center2( center.begin(),
-                                                                          center.end() );
+    std::vector<std::tuple<double, double, double>> center2( center.begin(), center.end() );
     for ( size_t i = 0; i < center2.size(); i++ ) {
         for ( size_t j = i + 1; j < center2.size(); j++ ) {
-            if ( AMP::Utilities::approx_equal( center2[i].first, center2[j].first ) &&
-                 AMP::Utilities::approx_equal( center2[i].second, center2[j].second ) ) {
+            if ( AMP::Utilities::approx_equal( std::get<0>(center2[i]), std::get<0>(center2[j]) ) &&
+                 AMP::Utilities::approx_equal( std::get<1>(center2[i]), std::get<1>(center2[j]) ) ) {
                 AMP_ERROR( "Duplicate clads detected" );
             }
         }
@@ -198,9 +197,9 @@ void getCladProperties( AMP::AMP_MPI comm,
     y.resize( center2.size() );
     diam.resize( center2.size() );
     for ( size_t i = 0; i < center2.size(); i++ ) {
-        x[i]    = center2[i].first;
-        y[i]    = center2[i].second;
-        diam[i] = 2.0 * center2[i].third;
+        x[i]    = std::get<0>( center2[i] );
+        y[i]    = std::get<1>( center2[i] );
+        diam[i] = 2.0 * std::get<2>( center2[i] );
     }
 }
 

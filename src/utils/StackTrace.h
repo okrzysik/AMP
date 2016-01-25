@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <functional>
 
 
 namespace AMP {
@@ -56,6 +57,16 @@ std::string getExecutable();
  * @return      Returns the search path for the symbols
  */
 std::string getSymPaths();
+
+
+//!< Terminate type
+enum class terminateType { signal, exception };
+
+/*!
+ * Set the error handlers
+ * @param[in]   Function to terminate the program: abort(msg,type)
+ */
+void setErrorHandlers( std::function<void(std::string,terminateType)> abort );
 
 
 } // namespace StackTrace

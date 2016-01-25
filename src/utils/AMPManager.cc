@@ -12,78 +12,9 @@
 #include "petscerror.h"
 #include "petscsys.h"
 #endif
+
 #ifdef USE_TIMER
 #include "MemoryApp.h"
-#endif
-
-
-#ifdef USE_EXT_LIBMESH
-//#include "ampmesh/libmesh/initializeLibMesh.h"
-/*#include "libmesh/enum_elem_quality.h"
-#include "libmesh/elem.h"
-#include "libmesh/enum_eigen_solver_type.h"
-#include "libmesh/enum_elem_type.h"
-#include "libmesh/enum_fe_family.h"
-#include "libmesh/enum_inf_map_type.h"
-#include "libmesh/enum_io_package.h"
-#include "libmesh/enum_norm_type.h"
-#include "libmesh/enum_order.h"
-#include "libmesh/enum_parallel_type.h"
-#include "libmesh/enum_point_locator_type.h"
-#include "libmesh/enum_preconditioner_type.h"
-#include "libmesh/enum_quadrature_type.h"
-#include "libmesh/enum_solver_package.h"
-#include "libmesh/enum_solver_type.h"
-#include "libmesh/enum_subset_solve_mode.h"
-#include "libmesh/enum_xdr_mode.h"
-#define define_libmesh_enum_map( TYPE, NAME )           \
-    extern std::map<TYPE,std::string> enum_to_##NAME;   \
-    extern std::map<std::string,TYPE> NAME##_to_enum;
-#define clear_libmesh_enum_map( TYPE, NAME )            \
-    libMesh::enum_to_##NAME.clear();           \
-    libMesh::NAME##_to_enum.clear();
-#include <map>
-#include <string>
-namespace libMesh {
-    namespace {
-        define_libmesh_enum_map(::ElemType,elem_type)
-        define_libmesh_enum_map(::Order,order)
-        define_libmesh_enum_map(::FEFamily,fefamily)
-        define_libmesh_enum_map(::InfMapType,inf_map_type)
-        define_libmesh_enum_map(::QuadratureType,quadrature_type)
-        define_libmesh_enum_map(::PreconditionerType,preconditioner_type)
-        define_libmesh_enum_map(::Elem::RefinementState,refinementstate_type)
-        define_libmesh_enum_map(::EigenSolverType,eigensolvertype)
-        define_libmesh_enum_map(::SolverType,solvertype)
-        define_libmesh_enum_map(::ElemQuality,elemquality)
-        define_libmesh_enum_map(::IOPackage,iopackage)
-        define_libmesh_enum_map(::FEMNormType,norm_type)
-        define_libmesh_enum_map(::ParallelType,parallel_type)
-        define_libmesh_enum_map(::PointLocatorType,point_locator_type)
-        define_libmesh_enum_map(::SolverPackage,solverpackage_type)
-        define_libmesh_enum_map(::SubsetSolveMode,subset_solve_mode)
-        define_libmesh_enum_map(::XdrMODE,xdr_mode)
-    }
-}
-void clear_libmesh_enums() {
-    clear_libmesh_enum_map(::ElemType,elem_type)
-    clear_libmesh_enum_map(::Order,order)
-    clear_libmesh_enum_map(::FEFamily,fefamily)
-    clear_libmesh_enum_map(::InfMapType,inf_map_type)
-    clear_libmesh_enum_map(::QuadratureType,quadrature_type)
-    clear_libmesh_enum_map(::PreconditionerType,preconditioner_type)
-    clear_libmesh_enum_map(::Elem::RefinementState,refinementstate_type)
-    clear_libmesh_enum_map(::EigenSolverType,eigensolvertype)
-    clear_libmesh_enum_map(::SolverType,solvertype)
-    clear_libmesh_enum_map(::ElemQuality,elemquality)
-    clear_libmesh_enum_map(::IOPackage,iopackage)
-    clear_libmesh_enum_map(::FEMNormType,norm_type)
-    clear_libmesh_enum_map(::ParallelType,parallel_type)
-    clear_libmesh_enum_map(::PointLocatorType,point_locator_type)
-    clear_libmesh_enum_map(::SolverPackage,solverpackage_type)
-    clear_libmesh_enum_map(::SubsetSolveMode,subset_solve_mode)
-    clear_libmesh_enum_map(::XdrMODE,xdr_mode)
-}*/
 #endif
 
 #include <iostream>
@@ -94,6 +25,7 @@ void clear_libmesh_enums() {
 #include <signal.h>
 #include <stdexcept>
 #include <stdio.h>
+#include <algorithm>
 
 
 namespace AMP {
@@ -101,6 +33,7 @@ namespace AMP {
 
 // Initialize static member variables
 int AMPManager::initialized                 = 0;
+int AMPManager::rank                        = 0;
 bool AMPManager::called_MPI_Init            = false;
 bool AMPManager::called_PetscInitialize     = false;
 bool AMPManager::use_MPI_Abort              = true;
@@ -124,6 +57,19 @@ double time()
     double time = ( (double) end.QuadPart ) / ( (double) f.QuadPart );
     return time;
 }
+#elif defined( __APPLE__ )
+#define USE_MAC
+#include <sys/time.h>
+#include <unistd.h>
+// usleep is defined in microseconds, create a Sleep command
+#define Sleep( x ) usleep( x * 1000 )
+double time()
+{
+    timeval current_time;
+    gettimeofday( &current_time, nullptr );
+    double time = ( (double) current_time.tv_sec ) + 1e-6 * ( (double) current_time.tv_usec );
+    return time;
+}
 #else
 #define USE_LINUX
 #include <sys/time.h>
@@ -140,70 +86,61 @@ double time()
 #endif
 
 
+
 /****************************************************************************
 *  Function to terminate AMP with a message for exceptions                  *
 ****************************************************************************/
 static int force_exit = 0;
+static bool printed_stack = false;
+static void abort_fun( std::string msg, StackTrace::terminateType type )
+{
+    if ( type == StackTrace::terminateType::exception )
+        force_exit = std::max(force_exit,1);
+    AMPManager::terminate_AMP( msg );
+}
 void AMPManager::terminate_AMP( std::string message )
 {
+    AMP_MPI comm( AMP_COMM_WORLD );
     if ( AMP::AMPManager::use_MPI_Abort == true || force_exit > 0 ) {
         // Print the call stack and memory usage
-        char text[100];
         std::stringstream msg;
         msg << message << std::endl;
-        long long unsigned int N_bytes = AMP::Utilities::getMemoryUsage();
-        sprintf( text, "Bytes used = %llu\n", N_bytes );
-        msg << text;
+        msg << "Bytes used = " << AMP::Utilities::getMemoryUsage() << std::endl;
         auto stack = AMP::StackTrace::getCallStack();
         msg << "Stack Trace:\n";
         for ( auto &elem : stack )
-            msg << "   " << elem.print() << std::endl;
+            msg << "   " << elem.print() << std::endl;        
+        // Add a rank dependent wait to hopefully print the stack trace cleanly
+        Sleep((100*comm.getRank())/comm.getSize());
         perr << msg.str();
+        printed_stack = true;
     }
     if ( force_exit > 1 ) {
         exit( -1 );
     } else if ( AMP::AMPManager::use_MPI_Abort == true ) {
         // Use MPI_abort (will terminate all processes)
         force_exit = 2;
-        AMP_MPI( AMP_COMM_WORLD ).abort();
+        comm.abort();
     } else if ( force_exit > 0 ) {
         exit( -1 );
     } else {
         // Throw and standard exception (allows the use of try, catch)
-        // std::stringstream  stream;
-        // stream << message << std::endl << "  " << filename << ":  " << line;
-        // std::cout << stream.str() << std::endl;
+        force_exit = 1;
         throw std::logic_error( message );
     }
 }
-
-
-/****************************************************************************
-*  Function to terminate AMP if an unhandled exception is caught            *
-****************************************************************************/
-void term_func_abort( int ) { AMPManager::terminate_AMP( "" ); }
-static int tried_throw = 0;
-void term_func()
+void AMPManager::exitFun()
 {
-    // Try to re-throw the last error to get the last message
-    std::string last_message;
-#ifdef USE_LINUX
-    try {
-        if ( tried_throw == 0 ) {
-            tried_throw = 1;
-            throw;
-        }
-        // No active exception
-    } catch ( const std::exception &err ) {
-        // Caught a std::runtime_error
-        last_message = err.what();
-    } catch ( ... ) {
-        // Caught an unknown exception
-        last_message = "unknown exception occurred.";
-    }
-#endif
-    force_exit = 1;
-    AMPManager::terminate_AMP( "Unhandled exception:\n" + last_message );
+    if ( initialized!=1 || printed_stack )
+        return;
+    std::stringstream msg;
+    msg << "Calling exit without calling shutdown\n";
+    msg << "Bytes used = " << AMP::Utilities::getMemoryUsage() << std::endl;
+    auto stack = AMP::StackTrace::getCallStack();
+    msg << "Stack Trace:\n";
+    for ( auto &elem : stack )
+        msg << "   " << elem.print() << std::endl;
+    perr << msg.str();
 }
 
 
@@ -219,13 +156,12 @@ static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
         exit( -1 );
     }
     int msg_len = 0;
-    std::stringstream msg;
     char message[1000];
     MPI_Error_string( *err, message, &msg_len );
     if ( msg_len <= 0 )
         AMP_ERROR( "Unkown error in MPI" );
-    msg << "Error calling MPI routine:\n" + std::string( message ) << std::endl;
-    AMPManager::terminate_AMP( msg.str() );
+    std::string msg = "Error calling MPI routine:\n" + std::string(message) + "\n";
+    AMPManager::terminate_AMP( msg );
 }
 #endif
 
@@ -307,17 +243,12 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
         for ( auto &petscArg : petscArgs )
             delete[] petscArg;
     }
-    // Set our error handler
-    PetscPopSignalHandler();
-    PetscPushErrorHandler( &petsc_err_handler, PETSC_NULL );
     petsc_time = time() - petsc_start_time;
 #endif
     // Initialize MPI
     AMP::AMP_MPI::changeProfileLevel( properties.profile_MPI_level );
 #ifdef USE_EXT_MPI
-    int flag;
-    MPI_Initialized( &flag );
-    if ( flag ) {
+    if ( MPI_Active() ) {
         called_MPI_Init = false;
         MPI_time        = 0;
     } else {
@@ -329,7 +260,6 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
         MPI_time        = time() - MPI_start_time;
     }
 #endif
-    setMPIErrorHandler();
     // Initialize AMP's MPI
     if ( properties.COMM_WORLD == AMP_COMM_WORLD )
 #ifdef USE_EXT_MPI
@@ -342,13 +272,11 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     PIO::initialize();
     // Initialize the random number generator
     AMP::RNG::initialize( 123 );
-    // Set the terminate routine for runtime errors
-    std::set_terminate( term_func );
-    signal( SIGABRT, &term_func_abort );
-    signal( SIGSEGV, &term_func_abort );
-    // std::set_unexpected( term_func );
+    // Set the signal/terminate handlers
+    setHandlers();
     // Initialization finished
     initialized  = 1;
+    rank         = comm_world.getRank();
     startup_time = time() - start_time;
     if ( print_times && comm_world.getRank() == 0 ) {
         printf( "startup time = %0.3f s\n", startup_time );
@@ -377,6 +305,7 @@ void AMPManager::shutdown()
     if ( initialized == -1 )
         AMP_ERROR(
             "AMP has been initialized and shutdown.  Calling shutdown more than once is invalid" );
+    initialized = -1;
     // Syncronize all processors
     comm_world.barrier();
     ShutdownRegistry::callRegisteredShutdowns();
@@ -391,10 +320,10 @@ void AMPManager::shutdown()
 // clear_libmesh_enums();
 #endif
     // Shutdown MPI
-    comm_world.barrier();
+    comm_world.barrier();       // Sync all processes
+    clearMPIErrorHandler();     // Clear MPI error handler before deleting comms
     AMPManager::use_MPI_Abort = false;
     comm_world                = AMP_MPI( AMP_COMM_NULL ); // Delete comm world
-    clearMPIErrorHandler();
     if ( called_MPI_Init ) {
         double MPI_start_time = time();
 #ifdef USE_EXT_MPI
@@ -437,10 +366,7 @@ void AMPManager::shutdown()
 #endif
 // Wait 50 milli-seconds for all processors to finish
 #ifdef USE_EXT_MPI
-    int MPI_initialized, MPI_finialized;
-    MPI_Initialized( &MPI_initialized );
-    MPI_Finalized( &MPI_finialized );
-    if ( MPI_initialized != 0 && MPI_finialized == 0 )
+    if ( MPI_Active() )
         MPI_Barrier( MPI_COMM_WORLD );
 #endif
     Sleep( 50 );
@@ -466,30 +392,53 @@ std::vector<char *> AMPManager::getPetscArgs()
 
 
 /****************************************************************************
-* Functions to set/clear the MPI error handler                              *
+* Functions to set/clear the error handlers                                 *
 ****************************************************************************/
+void AMPManager::setHandlers()
+{
+    // Set the MPI error handler for comm_world
+    setMPIErrorHandler();
+    // Set the error handlers for petsc
+    PetscPopSignalHandler();
+    PetscPushErrorHandler( &petsc_err_handler, PETSC_NULL );
+    // Set the terminate routine for runtime errors
+    StackTrace::setErrorHandlers( abort_fun );
+    // Set atexit function
+    std::atexit(exitFun);
+#ifdef USE_LINUX
+    std::at_quick_exit(exitFun);
+#endif
+}
 #ifdef USE_EXT_MPI
 AMP::shared_ptr<MPI_Errhandler> AMPManager::mpierr;
 #endif
 void AMPManager::setMPIErrorHandler()
 {
 #ifdef USE_EXT_MPI
-    if ( mpierr.get() == nullptr ) {
-        mpierr = AMP::shared_ptr<MPI_Errhandler>( new MPI_Errhandler );
-        MPI_Comm_create_errhandler( MPI_error_handler_fun, mpierr.get() );
+    if ( MPI_Active() ) {
+        if ( mpierr.get()==nullptr ) {
+            mpierr = AMP::shared_ptr<MPI_Errhandler>( new MPI_Errhandler );
+            MPI_Comm_create_errhandler( MPI_error_handler_fun, mpierr.get() );
+        }
+        MPI_Comm_set_errhandler( MPI_COMM_SELF, *mpierr );
+        MPI_Comm_set_errhandler( MPI_COMM_WORLD, *mpierr );
+        if ( comm_world.getCommunicator() != MPI_COMM_WORLD )
+            MPI_Comm_set_errhandler( comm_world.getCommunicator(), *mpierr );
     }
-    MPI_Comm_set_errhandler( MPI_COMM_SELF, *mpierr );
-    MPI_Comm_set_errhandler( MPI_COMM_WORLD, *mpierr );
 #endif
 }
 void AMPManager::clearMPIErrorHandler()
 {
 #ifdef USE_EXT_MPI
-    if ( mpierr.get() != nullptr )
-        MPI_Errhandler_free( mpierr.get() ); // Delete the error handler
-    mpierr.reset();
-    MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );
-    MPI_Comm_set_errhandler( MPI_COMM_WORLD, MPI_ERRORS_ARE_FATAL );
+    if ( MPI_Active() ) {
+        if ( mpierr.get() != nullptr )
+            MPI_Errhandler_free( mpierr.get() ); // Delete the error handler
+        mpierr.reset();
+        MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );
+        MPI_Comm_set_errhandler( MPI_COMM_WORLD, MPI_ERRORS_ARE_FATAL );
+        if ( comm_world.getCommunicator() != MPI_COMM_WORLD )
+            MPI_Comm_set_errhandler( comm_world.getCommunicator(), MPI_ERRORS_ARE_FATAL );
+    }
 #endif
 }
 
@@ -524,4 +473,16 @@ AMPManagerProperties AMPManager::getAMPManagerProperties()
     AMP_INSIST( initialized, "AMP has not been initialized" );
     return properties;
 }
+bool AMPManager::MPI_Active()
+{
+#ifdef USE_EXT_MPI
+    int MPI_initialized, MPI_finialized;
+    MPI_Initialized( &MPI_initialized );
+    MPI_Finalized( &MPI_finialized );
+    return MPI_initialized!=0 && MPI_finialized==0;
+#else
+    return false;
+#endif
+}
+
 }

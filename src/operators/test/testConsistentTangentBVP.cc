@@ -209,18 +209,8 @@ int main( int argc, char *argv[] )
     exeNames.push_back( "testConsistentTangentBVP-4-mesh1-reduced" );
 
     for ( int j = 0; j < 2; j++ ) {
-        for ( auto &exeName : exeNames ) {
-            try {
-                myTest( &ut, exeName, j );
-            } catch ( std::exception &err ) {
-                AMP::pout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
-                ut.failure( "ERROR: While testing" );
-            } catch ( ... ) {
-                AMP::pout << "ERROR: While testing " << argv[0]
-                          << "An unknown exception was thrown." << std::endl;
-                ut.failure( "ERROR: While testing" );
-            }
-        } // end for i
+        for ( auto &exeName : exeNames )
+            myTest( &ut, exeName, j );
     }
 
 

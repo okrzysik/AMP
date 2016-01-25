@@ -1281,241 +1281,232 @@ int main( int argc, char **argv )
 
     bool good = true;
 
-    try {
-        using namespace AMP::Materials;
+    using namespace AMP::Materials;
 
-        // test all materials and all properties and print report
-        vector<string> matlist =
-            AMP::voodoo::Factory<AMP::Materials::Material>::instance().getKeys();
-        vector<MatTestResult> scoreCard;
-        cout << "In the following output the labels have the following meaning:\n"
-             << "creation:  yes = material was created successfully\n"
-             << "undefined: undefined material create was correctly detected\n"
-             << "range:     yes=material range functions were successfully tested\n"
-             << "params:    yes=get and set property parameters successful\n"
-             << "nevalv:     # errors reported/max #, for calls to evalv\n"
-             << "nargsize:  # errors reported/max #, for incorrect number of arguments to evalv\n"
-             << "unknown:   yes=an unknown error occurred during property tests\n\n\n";
-        cout << "number of materials = " << matlist.size() << endl;
-        cout << "materials = ";
-        for ( auto &elem : matlist )
-            cout << elem << " ";
+    // test all materials and all properties and print report
+    vector<string> matlist = AMP::voodoo::Factory<AMP::Materials::Material>::instance().getKeys();
+    vector<MatTestResult> scoreCard;
+    cout << "In the following output the labels have the following meaning:\n"
+         << "creation:  yes = material was created successfully\n"
+         << "undefined: undefined material create was correctly detected\n"
+         << "range:     yes=material range functions were successfully tested\n"
+         << "params:    yes=get and set property parameters successful\n"
+         << "nevalv:     # errors reported/max #, for calls to evalv\n"
+         << "nargsize:  # errors reported/max #, for incorrect number of arguments to evalv\n"
+         << "unknown:   yes=an unknown error occurred during property tests\n\n\n";
+    cout << "number of materials = " << matlist.size() << endl;
+    cout << "materials = ";
+    for ( auto &elem : matlist )
+        cout << elem << " ";
+    cout << endl;
+    for ( auto &elem : matlist ) {
+        MatTestResult score = testMaterial( elem );
+        score.name          = elem;
+        scoreCard.push_back( score );
+        cout << "for material " << elem << ": ";
+        cout << "creation=" << xlate( score.creationGood ) << " ";
+        cout << "undefined=" << xlate( score.undefined ) << " ";
+        cout << "unknown=" << xlate( score.unknown ) << " ";
         cout << endl;
-        for ( auto &elem : matlist ) {
-            MatTestResult score = testMaterial( elem );
-            score.name          = elem;
-            scoreCard.push_back( score );
-            cout << "for material " << elem << ": ";
-            cout << "creation=" << xlate( score.creationGood ) << " ";
-            cout << "undefined=" << xlate( score.undefined ) << " ";
-            cout << "unknown=" << xlate( score.unknown ) << " ";
-            cout << endl;
-            cout << "    property name                           range params nevalv nargsize "
-                    "unknown"
-                 << endl;
-            for ( auto &_j : score.propResults ) {
-                cout << "    ";
-                unsigned int osize = cout.width();
-                cout.width( 29 );
-                cout << _j.name << " ";
-                cout.width( osize );
-                cout << "          ";
-                cout << xlate( _j.range ) << "   ";
-                cout << xlate( _j.params ) << "    ";
-                unsigned int nsuccess = 0, nargeval = 0;
-                for ( size_t k = 0; k < NSUCCESS; k++ )
-                    if ( _j.success[k] )
-                        nsuccess++;
-                cout << nsuccess << "/" << NSUCCESS << "    ";
-                for ( size_t k = 0; k < NARGEVAL; k++ )
-                    if ( _j.nargeval[k] )
-                        nargeval++;
-                cout << nargeval << "/" << NARGEVAL << "      ";
-                if ( _j.isVector ) {
-                    unsigned int nvector = 0;
-                    for ( size_t k = 0; k < NVECTOR; k++ )
-                        if ( _j.vector[k] )
-                            nvector++;
-                    cout << nvector << "/" << NVECTOR << "      ";
-                }
-                if ( _j.isTensor ) {
-                    unsigned int ntensor = 0;
-                    for ( size_t k = 0; k < NTENSOR; k++ )
-                        if ( _j.tensor[k] )
-                            ntensor++;
-                    cout << ntensor << "/" << NTENSOR << "      ";
-                }
-                cout << xlate( _j.unknown ) << "     ";
-                cout << endl;
-            }
-            cout << endl << endl << endl;
-        }
-
-        size_t maxpassed = 0;
-        for ( auto score : scoreCard ) {
-
-            string msg = "material " + score.name + " ";
-            if ( score.creationGood )
-                ut.passes( msg + "created" );
-            else
-                ut.failure( msg + "created" );
-            maxpassed += 1;
-            for ( vector<PropTestResult>::iterator j = score.propResults.begin();
-                  j != score.propResults.end();
-                  ++j ) {
-                msg = "material " + score.name + " property" + " " + j->name + " ";
-                if ( j->params )
-                    ut.passes( msg + "get/set parameters" );
-                else
-                    ut.failure( msg + "get/set parameters" );
-
-                if ( !j->unknown )
-                    ut.passes( msg + "unknown error" );
-                else
-                    ut.failure( msg + "unknown error" );
-
-                if ( j->range )
-                    ut.passes( msg + "in_range std::vector" );
-                else
-                    ut.failure( msg + "in_range std::vector" );
-
-                if ( j->success[0] )
-                    ut.passes( msg + "evalv std::vector" );
-                else
-                    ut.failure( msg + "evalv std::vector" );
-
-                if ( j->success[1] )
-                    ut.passes( msg + "evalv std::vector out of range lo 1" );
-                else
-                    ut.failure( msg + "evalv std::vector out of range lo 1" );
-
-                if ( j->success[2] )
-                    ut.passes( msg + "evalv std::vector out of range hi 1" );
-                else
-                    ut.failure( msg + "evalv std::vector out of range hi 1" );
-
-                if ( j->success[4] )
-                    ut.passes( msg + "evalv AMP::Vector" );
-                else
-                    ut.failure( msg + "evalv AMP::Vector" );
-
-                if ( j->success[5] )
-                    ut.passes( msg + "evalv AMP::Vector out of range lo 1" );
-                else
-                    ut.failure( msg + "evalv AMP::Vector out of range lo 1" );
-
-                if ( j->success[6] )
-                    ut.passes( msg + "evalv AMP::Vector out of range hi 1" );
-                else
-                    ut.failure( msg + "evalv AMP::Vector out of range hi 1" );
-
-                if ( j->success[7] )
-                    ut.passes( msg + "AMP::Multivector translator" );
-                else
-                    ut.failure( msg + "AMP::Multivector translator" );
-
-                if ( j->success[8] )
-                    ut.passes( msg + "make_map" );
-                else
-                    ut.failure( msg + "make_map" );
-
-                if ( j->success[9] )
-                    ut.passes( msg + "evalv AMP::MultiVector" );
-                else
-                    ut.failure( msg + "evalv AMP::MultiVector" );
-
-                if ( j->success[10] )
-                    ut.passes( msg + "evalv AMP::MultiVector out of range lo 1" );
-                else
-                    ut.failure( msg + "evalv AMP::MultiVector out of range lo 1" );
-
-                if ( j->success[11] )
-                    ut.passes( msg + "evalv AMP::MultiVector out of range hi 1" );
-                else
-                    ut.failure( msg + "evalv AMP::MultiVector out of range hi 1" );
-
-                if ( j->success[3] )
-                    ut.passes( msg + "evalv agrees std::vector, AMP::Vector, AMP::MultiVector" );
-                else
-                    ut.failure( msg + "evalv agrees std::vector, AMP::Vector, AMP::MultiVector" );
-
-                if ( j->nargeval[0] )
-                    ut.passes( msg + "set/get defaults" );
-                else
-                    ut.failure( msg + "set/get defaults" );
-
-                if ( j->nargeval[1] )
-                    ut.passes( msg + "evalv with missing arguments" );
-                else
-                    ut.failure( msg + "evalv with missing arguments" );
-                maxpassed += 17;
-
-                if ( j->isVector ) {
-                    if ( j->vector[0] )
-                        ut.passes( msg + "get_dimension() ok" );
-                    else
-                        ut.failure( msg + "get_dimension() ok" );
-
-                    if ( j->vector[1] )
-                        ut.passes( msg + "number of components positive" );
-                    else
-                        ut.failure( msg + "number of components positive" );
-
-                    if ( j->vector[2] )
-                        ut.passes( msg + "not a scalar" );
-                    else
-                        ut.failure( msg + "not a scalar" );
-
-                    if ( j->vector[3] )
-                        ut.passes( msg + "scalar evaluator std::vector disabled" );
-                    else
-                        ut.failure( msg + "scalar evaluator std::vector disabled" );
-
-                    if ( j->vector[4] )
-                        ut.passes( msg + "scalar evaluator AMP::Vector disabled" );
-                    else
-                        ut.failure( msg + "scalar evaluator AMP::Vector disabled" );
-
-                    if ( j->vector[5] )
-                        ut.passes( msg + "scalar evaluator AMP::Multivector disabled" );
-                    else
-                        ut.failure( msg + "scalar evaluator AMP::Multivector disabled" );
-
-                    maxpassed += 6;
-                }
-            }
-        }
-        cout << endl << endl << endl;
-
-        // check that undefined material name is caught
-        try {
-            string name( "flubber" );
-            Material::shared_ptr mat =
-                AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
-            if ( mat != nullptr )
-                maxpassed += 1;
-        } catch ( std::exception &err ) {
-            string msg = err.what();
-            bool check = ( msg == "Unregistered creator" );
-            good       = good && check;
-            if ( good )
-                ut.passes( "detected undefined material" );
-            else
-                ut.failure( "did not detect undefined material" );
-            maxpassed += 1;
-        }
-
-        cout << endl << endl << endl;
-        cout << "number of tests passed = " << ut.NumPassLocal() << "/" << maxpassed << " possible"
+        cout << "    property name                           range params nevalv nargsize "
+                "unknown"
              << endl;
+        for ( auto &_j : score.propResults ) {
+            cout << "    ";
+            unsigned int osize = cout.width();
+            cout.width( 29 );
+            cout << _j.name << " ";
+            cout.width( osize );
+            cout << "          ";
+            cout << xlate( _j.range ) << "   ";
+            cout << xlate( _j.params ) << "    ";
+            unsigned int nsuccess = 0, nargeval = 0;
+            for ( size_t k = 0; k < NSUCCESS; k++ )
+                if ( _j.success[k] )
+                    nsuccess++;
+            cout << nsuccess << "/" << NSUCCESS << "    ";
+            for ( size_t k = 0; k < NARGEVAL; k++ )
+                if ( _j.nargeval[k] )
+                    nargeval++;
+            cout << nargeval << "/" << NARGEVAL << "      ";
+            if ( _j.isVector ) {
+                unsigned int nvector = 0;
+                for ( size_t k = 0; k < NVECTOR; k++ )
+                    if ( _j.vector[k] )
+                        nvector++;
+                cout << nvector << "/" << NVECTOR << "      ";
+            }
+            if ( _j.isTensor ) {
+                unsigned int ntensor = 0;
+                for ( size_t k = 0; k < NTENSOR; k++ )
+                    if ( _j.tensor[k] )
+                        ntensor++;
+                cout << ntensor << "/" << NTENSOR << "      ";
+            }
+            cout << xlate( _j.unknown ) << "     ";
+            cout << endl;
+        }
         cout << endl << endl << endl;
-    } catch ( std::exception &err ) {
-        cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
-        ut.failure( "ERROR: While testing" );
-    } catch ( ... ) {
-        cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown" << endl;
-        ut.failure( "ERROR: While testing" );
     }
+
+    size_t maxpassed = 0;
+    for ( auto score : scoreCard ) {
+
+        string msg = "material " + score.name + " ";
+        if ( score.creationGood )
+            ut.passes( msg + "created" );
+        else
+            ut.failure( msg + "created" );
+        maxpassed += 1;
+        for ( vector<PropTestResult>::iterator j = score.propResults.begin();
+              j != score.propResults.end();
+              ++j ) {
+            msg = "material " + score.name + " property" + " " + j->name + " ";
+            if ( j->params )
+                ut.passes( msg + "get/set parameters" );
+            else
+                ut.failure( msg + "get/set parameters" );
+
+            if ( !j->unknown )
+                ut.passes( msg + "unknown error" );
+            else
+                ut.failure( msg + "unknown error" );
+
+            if ( j->range )
+                ut.passes( msg + "in_range std::vector" );
+            else
+                ut.failure( msg + "in_range std::vector" );
+
+            if ( j->success[0] )
+                ut.passes( msg + "evalv std::vector" );
+            else
+                ut.failure( msg + "evalv std::vector" );
+
+            if ( j->success[1] )
+                ut.passes( msg + "evalv std::vector out of range lo 1" );
+            else
+                ut.failure( msg + "evalv std::vector out of range lo 1" );
+
+            if ( j->success[2] )
+                ut.passes( msg + "evalv std::vector out of range hi 1" );
+            else
+                ut.failure( msg + "evalv std::vector out of range hi 1" );
+
+            if ( j->success[4] )
+                ut.passes( msg + "evalv AMP::Vector" );
+            else
+                ut.failure( msg + "evalv AMP::Vector" );
+
+            if ( j->success[5] )
+                ut.passes( msg + "evalv AMP::Vector out of range lo 1" );
+            else
+                ut.failure( msg + "evalv AMP::Vector out of range lo 1" );
+
+            if ( j->success[6] )
+                ut.passes( msg + "evalv AMP::Vector out of range hi 1" );
+            else
+                ut.failure( msg + "evalv AMP::Vector out of range hi 1" );
+
+            if ( j->success[7] )
+                ut.passes( msg + "AMP::Multivector translator" );
+            else
+                ut.failure( msg + "AMP::Multivector translator" );
+
+            if ( j->success[8] )
+                ut.passes( msg + "make_map" );
+            else
+                ut.failure( msg + "make_map" );
+
+            if ( j->success[9] )
+                ut.passes( msg + "evalv AMP::MultiVector" );
+            else
+                ut.failure( msg + "evalv AMP::MultiVector" );
+
+            if ( j->success[10] )
+                ut.passes( msg + "evalv AMP::MultiVector out of range lo 1" );
+            else
+                ut.failure( msg + "evalv AMP::MultiVector out of range lo 1" );
+
+            if ( j->success[11] )
+                ut.passes( msg + "evalv AMP::MultiVector out of range hi 1" );
+            else
+                ut.failure( msg + "evalv AMP::MultiVector out of range hi 1" );
+
+            if ( j->success[3] )
+                ut.passes( msg + "evalv agrees std::vector, AMP::Vector, AMP::MultiVector" );
+            else
+                ut.failure( msg + "evalv agrees std::vector, AMP::Vector, AMP::MultiVector" );
+
+            if ( j->nargeval[0] )
+                ut.passes( msg + "set/get defaults" );
+            else
+                ut.failure( msg + "set/get defaults" );
+
+            if ( j->nargeval[1] )
+                ut.passes( msg + "evalv with missing arguments" );
+            else
+                ut.failure( msg + "evalv with missing arguments" );
+            maxpassed += 17;
+
+            if ( j->isVector ) {
+                if ( j->vector[0] )
+                    ut.passes( msg + "get_dimension() ok" );
+                else
+                    ut.failure( msg + "get_dimension() ok" );
+
+                if ( j->vector[1] )
+                    ut.passes( msg + "number of components positive" );
+                else
+                    ut.failure( msg + "number of components positive" );
+
+                if ( j->vector[2] )
+                    ut.passes( msg + "not a scalar" );
+                else
+                    ut.failure( msg + "not a scalar" );
+
+                if ( j->vector[3] )
+                    ut.passes( msg + "scalar evaluator std::vector disabled" );
+                else
+                    ut.failure( msg + "scalar evaluator std::vector disabled" );
+
+                if ( j->vector[4] )
+                    ut.passes( msg + "scalar evaluator AMP::Vector disabled" );
+                else
+                    ut.failure( msg + "scalar evaluator AMP::Vector disabled" );
+
+                if ( j->vector[5] )
+                    ut.passes( msg + "scalar evaluator AMP::Multivector disabled" );
+                else
+                    ut.failure( msg + "scalar evaluator AMP::Multivector disabled" );
+
+                maxpassed += 6;
+            }
+        }
+    }
+    cout << endl << endl << endl;
+
+    // check that undefined material name is caught
+    try {
+        string name( "flubber" );
+        Material::shared_ptr mat =
+            AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
+        if ( mat != nullptr )
+            maxpassed += 1;
+    } catch ( std::exception &err ) {
+        string msg = err.what();
+        bool check = ( msg == "Unregistered creator" );
+        good       = good && check;
+        if ( good )
+            ut.passes( "detected undefined material" );
+        else
+            ut.failure( "did not detect undefined material" );
+        maxpassed += 1;
+    }
+
+    cout << endl << endl << endl;
+    cout << "number of tests passed = " << ut.NumPassLocal() << "/" << maxpassed << " possible"
+         << endl;
+    cout << endl << endl << endl;
 
     ut.report( 2 );
 

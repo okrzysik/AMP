@@ -217,18 +217,8 @@ int main( int argc, char *argv[] )
         } // end for i
     }
 
-    for ( auto &exeName : exeNames ) {
-        try {
-            linearElasticTest( &ut, exeName );
-        } catch ( std::exception &err ) {
-            AMP::pout << "ERROR: " << err.what() << std::endl;
-            ut.failure( "ERROR: While testing" );
-        } catch ( ... ) {
-            AMP::pout << "ERROR: "
-                      << "An unknown exception was thrown." << std::endl;
-            ut.failure( "ERROR: While testing" );
-        }
-    } // end for i
+    for ( auto &exeName : exeNames )
+        linearElasticTest( &ut, exeName );
 
     ut.report();
 

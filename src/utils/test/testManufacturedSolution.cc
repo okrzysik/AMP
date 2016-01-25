@@ -70,24 +70,15 @@ int main( int argc, char **argv )
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
 
     if ( globalComm.getRank() == 0 ) {
-        try {
-            testit( &ut, "Brick", "Quadratic", "Neumann", 5., 60., 700. );
-            testit( &ut, "Brick", "Quadratic", "Dirichlet-1", 5., 60., 700. );
-            testit( &ut, "Brick", "Quadratic", "Dirichlet-2", 5., 60., 700. );
-            testit( &ut, "Brick", "Cubic", "Neumann", 5., 60., 700. );
-            testit( &ut, "Brick", "Cubic", "Dirichlet-1", 5., 60., 700. );
-            testit( &ut, "Brick", "Cubic", "Dirichlet-2", 5., 60., 700. );
-            testit( &ut, "CylindricalRod", "Cubic", "None", 55., 4.2, 700. );
-            testit( &ut, "CylindricalRod", "Cubic", "Dirichlet-2-z", 55., 4.2, 700. );
-            testit( &ut, "CylindricalShell", "Quadratic", "Neumann", 55., 4.2, 700. );
-        } catch ( std::exception &err ) {
-            std::cout << "ERROR: While testing " << argv[0] << ", " << err.what() << std::endl;
-            ut.failure( "Manufactured Solutions" );
-        } catch ( ... ) {
-            std::cout << "ERROR: While testing " << argv[0] << ", "
-                      << "An unknown exception was thrown" << std::endl;
-            ut.failure( "Manufactured Solutions" );
-        }
+        testit( &ut, "Brick", "Quadratic", "Neumann", 5., 60., 700. );
+        testit( &ut, "Brick", "Quadratic", "Dirichlet-1", 5., 60., 700. );
+        testit( &ut, "Brick", "Quadratic", "Dirichlet-2", 5., 60., 700. );
+        testit( &ut, "Brick", "Cubic", "Neumann", 5., 60., 700. );
+        testit( &ut, "Brick", "Cubic", "Dirichlet-1", 5., 60., 700. );
+        testit( &ut, "Brick", "Cubic", "Dirichlet-2", 5., 60., 700. );
+        testit( &ut, "CylindricalRod", "Cubic", "None", 55., 4.2, 700. );
+        testit( &ut, "CylindricalRod", "Cubic", "Dirichlet-2-z", 55., 4.2, 700. );
+        testit( &ut, "CylindricalShell", "Quadratic", "Neumann", 55., 4.2, 700. );
     } else {
         ut.expected_failure( "Manufactured Solutions only apply to scalar tests." );
     }

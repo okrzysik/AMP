@@ -393,53 +393,42 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    try {
-        std::vector<double> fickOnly, fickSoretOff, fickSoretZero, fickOnlyReal, fickSoretOffReal;
+    std::vector<double> fickOnly, fickSoretOff, fickSoretZero, fickOnlyReal, fickSoretOffReal;
 
-        fickTest( &ut, "testPetscSNESSolver-NonlinearFick-cylinder-TUI-1", fickOnly );
-        fickSoretTest( &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-1", fickSoretOff );
-        fickSoretTest(
-            &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-2", fickSoretZero );
-        fickTest( &ut, "testPetscSNESSolver-NonlinearFick-cylinder-TUI-2", fickOnlyReal );
-        fickSoretTest(
-            &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-3", fickSoretOffReal );
-        AMP_INSIST( fickOnly.size() == fickSoretOff.size() and
-                        fickSoretOff.size() == fickSoretZero.size() and
-                        fickOnlyReal.size() == fickSoretOffReal.size(),
-                    "sizes of results do not match" );
+    fickTest( &ut, "testPetscSNESSolver-NonlinearFick-cylinder-TUI-1", fickOnly );
+    fickSoretTest( &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-1", fickSoretOff );
+    fickSoretTest( &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-2", fickSoretZero );
+    fickTest( &ut, "testPetscSNESSolver-NonlinearFick-cylinder-TUI-2", fickOnlyReal );
+    fickSoretTest( &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-3", fickSoretOffReal );
+    AMP_INSIST( fickOnly.size() == fickSoretOff.size() and
+                    fickSoretOff.size() == fickSoretZero.size() and
+                    fickOnlyReal.size() == fickSoretOffReal.size(),
+                "sizes of results do not match" );
 
-        double l2err1 = 0., l2err2 = 0.;
-        for ( size_t i = 0; i < fickOnly.size(); i++ ) {
-            double err = fickOnly[i] - fickSoretOff[i];
-            l2err1 += err * err;
-            err = fickSoretOff[i] - fickSoretZero[i];
-            l2err2 += err * err;
-        }
-        l2err1 = sqrt( l2err1 );
-        l2err2 = sqrt( l2err2 );
+    double l2err1 = 0., l2err2 = 0.;
+    for ( size_t i = 0; i < fickOnly.size(); i++ ) {
+        double err = fickOnly[i] - fickSoretOff[i];
+        l2err1 += err * err;
+        err = fickSoretOff[i] - fickSoretZero[i];
+        l2err2 += err * err;
+    }
+    l2err1 = sqrt( l2err1 );
+    l2err2 = sqrt( l2err2 );
 
-        std::cout << "fick/soretOff err = " << l2err1 << "  soretOff/soretZero err = " << l2err2
-                  << std::endl;
+    std::cout << "fick/soretOff err = " << l2err1 << "  soretOff/soretZero err = " << l2err2
+              << std::endl;
 
-        double l2err3 = 0.;
-        for ( size_t i = 0; i < fickOnlyReal.size(); i++ ) {
-            double err = fickOnlyReal[i] - fickSoretOffReal[i];
-            l2err3 += err * err;
-        }
-        l2err3 = sqrt( l2err3 );
+    double l2err3 = 0.;
+    for ( size_t i = 0; i < fickOnlyReal.size(); i++ ) {
+        double err = fickOnlyReal[i] - fickSoretOffReal[i];
+        l2err3 += err * err;
+    }
+    l2err3 = sqrt( l2err3 );
 
-        std::cout << "fick/soretOff real err = " << l2err3 << std::endl;
+    std::cout << "fick/soretOff real err = " << l2err3 << std::endl;
 
-        if ( l2err1 < 1.e-6 and l2err2 < 1.e-6 and l2err3 < 1.e-6 ) {
-            ut.passes( "fick, fick-soret/off, and fick-soret/zero all agree" );
-        }
-    } catch ( std::exception &err ) {
-        std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
-        ut.failure( "ERROR: While testing" );
-    } catch ( ... ) {
-        std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
-                  << std::endl;
-        ut.failure( "ERROR: While testing" );
+    if ( l2err1 < 1.e-6 and l2err2 < 1.e-6 and l2err3 < 1.e-6 ) {
+        ut.passes( "fick, fick-soret/off, and fick-soret/zero all agree" );
     }
 
     ut.report();

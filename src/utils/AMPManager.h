@@ -97,12 +97,19 @@ public:
     //! Static function to terminate AMP
     static void terminate_AMP( std::string message );
 
+    //! Set the signal/terminate handlers (called on startup)
+    static void setHandlers();
+
+    //! Check if MPI is active
+    static bool MPI_Active();
+
 private:
     // Private constructor (we do not actually want to create an object)
     AMPManager() {}
 
     // Static variables
     static int initialized;
+    static int rank;
     static bool called_MPI_Init;
     static bool called_PetscInitialize;
     static bool use_MPI_Abort;
@@ -127,6 +134,7 @@ private:
     //! Functions to initialize/destroy the mpi error handler
     static void setMPIErrorHandler();
     static void clearMPIErrorHandler();
+    static void exitFun();
 };
 }
 

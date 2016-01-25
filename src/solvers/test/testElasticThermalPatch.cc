@@ -191,18 +191,8 @@ int main( int argc, char *argv[] )
     mesh_files.push_back( "testElasticThermalPatch-3" );
     mesh_files.push_back( "testElasticThermalPatch-4" );
 
-    for ( auto &mesh_file : mesh_files ) {
-        try {
-            myTest( &ut, mesh_file );
-        } catch ( std::exception &err ) {
-            std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
-            ut.failure( "ERROR: While testing" );
-        } catch ( ... ) {
-            std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
-                      << std::endl;
-            ut.failure( "ERROR: While testing" );
-        }
-    }
+    for ( auto &mesh_file : mesh_files )
+        myTest( &ut, mesh_file );
 
     ut.report();
 

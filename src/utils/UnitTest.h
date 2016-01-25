@@ -117,7 +117,7 @@ public:
     void reset();
 
     //! Make the unit test operator verbose?
-    void verbose( bool verbose=true ) { d_verbose = verbose; }
+    void verbose( bool verbose = true ) { d_verbose = verbose; }
 
 private:
     std::vector<std::string> pass_messages;
@@ -141,10 +141,10 @@ private:
     std::vector<std::string> unpack_message_stream( const int rank, const int tag ) const;
 
     // Print a status update if we are running in verbose mode
-    inline void printUpdate( const char *operation, const std::string& msg ) const
+    inline void printUpdate( const char *operation, const std::string &msg ) const
     {
         if ( d_verbose ) {
-            printf("UnitTest: %i %s: %s\n",comm.getRank(),operation,msg.c_str());
+            printf( "UnitTest: %i %s: %s\n", comm.getRank(), operation, msg.c_str() );
         }
     }
 };

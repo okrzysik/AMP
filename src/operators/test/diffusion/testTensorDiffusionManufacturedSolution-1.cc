@@ -294,18 +294,8 @@ int main( int argc, char *argv[] )
     meshes.push_back( "Mesh" );
     // files.push_back("Diffusion-Fick-OxMSRZC09-MMS-1");
 
-    try {
-        for ( size_t i = 0; i < files.size(); i++ )
-            bvpTest1( &ut, files[i], meshes[i] );
-    } catch ( std::exception &err ) {
-        std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
-        ut.failure( "ERROR: While testing" );
-    } catch ( ... ) {
-        std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
-                  << std::endl;
-        ut.failure( "ERROR: While testing" );
-    }
-
+    for ( size_t i = 0; i < files.size(); i++ )
+        bvpTest1( &ut, files[i], meshes[i] );
     ut.report();
 
     int num_failed = ut.NumFailGlobal();

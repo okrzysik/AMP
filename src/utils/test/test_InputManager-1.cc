@@ -56,16 +56,7 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    try {
-        mytest( &ut );
-    } catch ( std::exception &err ) {
-        std::cout << "ERROR: While testing test_InputManager-1, " << err.what() << std::endl;
-        ut.failure( "test_InputManager-1" );
-    } catch ( ... ) {
-        std::cout << "ERROR: While testing test_InputManager-1, An unknown exception was thrown."
-                  << std::endl;
-        ut.failure( "test_InputManager-1" );
-    }
+    mytest( &ut );
     ut.report();
 
     int num_failed = ut.NumFailGlobal();

@@ -99,17 +99,7 @@ int main( int argc, char *argv[] )
 
     std::string exeName = "test_RectangularMatricesMultiplication";
 
-    try {
-        myTest( &ut, exeName );
-        ut.passes( exeName );
-    } catch ( std::exception &err ) {
-        std::cout << "ERROR: While testing " << argv[0] << err.what() << std::endl;
-        ut.failure( "ERROR: While testing" );
-    } catch ( ... ) {
-        std::cout << "ERROR: While testing " << argv[0] << "An unknown exception was thrown."
-                  << std::endl;
-        ut.failure( "ERROR: While testing" );
-    }
+    myTest( &ut, exeName );
 
     ut.report();
 
