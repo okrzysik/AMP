@@ -25,6 +25,7 @@
 #include <signal.h>
 #include <stdexcept>
 #include <stdio.h>
+#include <algorithm>
 
 
 namespace AMP {
@@ -54,6 +55,19 @@ double time()
     QueryPerformanceFrequency( &f );
     QueryPerformanceCounter( &end );
     double time = ( (double) end.QuadPart ) / ( (double) f.QuadPart );
+    return time;
+}
+#elif defined( __APPLE__ )
+#define USE_MAC
+#include <sys/time.h>
+#include <unistd.h>
+// usleep is defined in microseconds, create a Sleep command
+#define Sleep( x ) usleep( x * 1000 )
+double time()
+{
+    timeval current_time;
+    gettimeofday( &current_time, nullptr );
+    double time = ( (double) current_time.tv_sec ) + 1e-6 * ( (double) current_time.tv_usec );
     return time;
 }
 #else
@@ -262,7 +276,9 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     StackTrace::setErrorHandlers( abort_fun );
     // Set atexit function
     std::atexit(exitFun);
+#ifdef USE_LINUX
     std::at_quick_exit(exitFun);
+#endif
     // Initialization finished
     initialized  = 1;
     rank         = comm_world.getRank();
