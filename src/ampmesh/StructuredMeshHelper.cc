@@ -4,6 +4,9 @@
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/structuredMeshIterator.h"
 
+#include <tuple>
+
+
 namespace AMP {
 namespace Mesh {
 
@@ -157,7 +160,8 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
         face_index.reserve( iterator.size() );
         std::vector<double> x, y, z;
         getXYZCoordinates( mesh, x, y, z, false );
-        std::vector<Utilities::triplet<int, int, int>> index;
+        std::vector<std::tuple<int, int, int>> index;
+        index.reserve( iterator.size() );
         for ( size_t i = 0; i < iterator.size(); ++i ) {
             std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::Vertex );
             std::vector<double> center                = iterator->centroid();
@@ -168,24 +172,24 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
                     is_valid = false;
             }
             if ( is_valid ) {
-                Utilities::triplet<int, int, int> tmp( 0, 0, 0 );
+                double t1=0, t2=0, t3=0;
                 if ( direction == 0 && center.size() == 3 ) {
-                    tmp.first  = Utilities::findfirst( z, center[2] - 1e-12 );
-                    tmp.second = Utilities::findfirst( y, center[1] - 1e-12 );
-                    tmp.third  = Utilities::findfirst( x, center[0] - 1e-12 );
+                    t1 = Utilities::findfirst( z, center[2] - 1e-12 );
+                    t2 = Utilities::findfirst( y, center[1] - 1e-12 );
+                    t3 = Utilities::findfirst( x, center[0] - 1e-12 );
                 } else if ( direction == 1 && center.size() == 3 ) {
-                    tmp.first  = Utilities::findfirst( z, center[2] - 1e-12 );
-                    tmp.second = Utilities::findfirst( x, center[0] - 1e-12 );
-                    tmp.third  = Utilities::findfirst( y, center[1] - 1e-12 );
+                    t1 = Utilities::findfirst( z, center[2] - 1e-12 );
+                    t2 = Utilities::findfirst( x, center[0] - 1e-12 );
+                    t3 = Utilities::findfirst( y, center[1] - 1e-12 );
                 } else if ( direction == 2 && center.size() == 3 ) {
-                    tmp.first  = Utilities::findfirst( y, center[1] - 1e-12 );
-                    tmp.second = Utilities::findfirst( x, center[0] - 1e-12 );
-                    tmp.third  = Utilities::findfirst( z, center[2] - 1e-12 );
+                    t1 = Utilities::findfirst( y, center[1] - 1e-12 );
+                    t2 = Utilities::findfirst( x, center[0] - 1e-12 );
+                    t3 = Utilities::findfirst( z, center[2] - 1e-12 );
                 } else {
                     AMP_ERROR( "Not finished" );
                 }
                 face_list.push_back( *iterator );
-                index.push_back( tmp );
+                index.push_back( std::make_tuple( t1, t2, t3 ) );
             }
             ++iterator;
         }
