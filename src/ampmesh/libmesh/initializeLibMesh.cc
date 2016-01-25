@@ -101,6 +101,8 @@ initializeLibMesh::initializeLibMesh( AMP_MPI comm )
         delete[] argv_libmesh;
         // Initialize libmesh MPI types so we can safely free them
         // type_hilbert.reset( new libMeshWrapperType<Hilbert::HilbertIndices>() );
+        // Reset the error handlers
+        AMP::AMPManager::setHandlers();
     }
 }
 

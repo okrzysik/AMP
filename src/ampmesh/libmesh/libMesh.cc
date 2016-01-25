@@ -548,7 +548,7 @@ size_t libMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
         std::string fname = database->getString( "FileName" );
         if ( fname.rfind( ".exd" ) < fname.size() || fname.rfind( ".e" ) < fname.size() ) {
             ::Parallel::Communicator comm;
-            ::ExodusII_IO_Helper exio_helper( comm );
+            ::ExodusII_IO_Helper exio_helper( comm, false, true );
             exio_helper.open( fname.c_str(), true ); // Open the exodus file, if possible
             exio_helper.read_header();               // Read the header
             exio_helper.close();                     // Close the file
