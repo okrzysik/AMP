@@ -424,7 +424,7 @@ void AMPManager::setMPIErrorHandler()
         MPI_Comm_set_errhandler( MPI_COMM_SELF, *mpierr );
         MPI_Comm_set_errhandler( MPI_COMM_WORLD, *mpierr );
         if ( comm_world.getCommunicator() != MPI_COMM_WORLD )
-            MPI_Comm_set_errhandler( AMP_COMM_WORLD, *mpierr );
+            MPI_Comm_set_errhandler( comm_world.getCommunicator(), *mpierr );
     }
 #endif
 }
@@ -438,7 +438,7 @@ void AMPManager::clearMPIErrorHandler()
         MPI_Comm_set_errhandler( MPI_COMM_SELF, MPI_ERRORS_ARE_FATAL );
         MPI_Comm_set_errhandler( MPI_COMM_WORLD, MPI_ERRORS_ARE_FATAL );
         if ( comm_world.getCommunicator() != MPI_COMM_WORLD )
-            MPI_Comm_set_errhandler( AMP_COMM_WORLD, MPI_ERRORS_ARE_FATAL );
+            MPI_Comm_set_errhandler( comm_world.getCommunicator(), MPI_ERRORS_ARE_FATAL );
     }
 #endif
 }
