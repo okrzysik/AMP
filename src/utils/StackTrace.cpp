@@ -760,7 +760,6 @@ BOOL StackTrace::GetModuleListPSAPI( HANDLE hProcess )
 *  Set the signal handlers                                                  *
 ****************************************************************************/
 static std::function<void(std::string,StackTrace::terminateType)> abort_fun;
-static int tried_throw = 0;
 static void term_func_abort( int signal )
 {
     std::string msg("Caught signal ");
@@ -784,6 +783,7 @@ static void term_func()
     std::string last_message;
 #ifdef USE_LINUX
     try {
+        static int tried_throw = 0;
         if ( tried_throw == 0 ) {
             tried_throw = 1;
             throw;

@@ -92,7 +92,6 @@ double time()
 ****************************************************************************/
 static int force_exit = 0;
 static bool printed_stack = false;
-void term_func_abort( int ) { AMPManager::terminate_AMP( "" ); }
 static void abort_fun( std::string msg, StackTrace::terminateType type )
 {
     if ( type == StackTrace::terminateType::exception )
@@ -101,6 +100,7 @@ static void abort_fun( std::string msg, StackTrace::terminateType type )
 }
 void AMPManager::terminate_AMP( std::string message )
 {
+    AMP_MPI comm( AMP_COMM_WORLD );
     if ( AMP::AMPManager::use_MPI_Abort == true || force_exit > 0 ) {
         // Print the call stack and memory usage
         std::stringstream msg;
@@ -109,7 +109,9 @@ void AMPManager::terminate_AMP( std::string message )
         auto stack = AMP::StackTrace::getCallStack();
         msg << "Stack Trace:\n";
         for ( auto &elem : stack )
-            msg << "   " << elem.print() << std::endl;
+            msg << "   " << elem.print() << std::endl;        
+        // Add a rank dependent wait to hopefully print the stack trace cleanly
+        Sleep((100*comm.getRank())/comm.getSize());
         perr << msg.str();
         printed_stack = true;
     }
@@ -118,14 +120,11 @@ void AMPManager::terminate_AMP( std::string message )
     } else if ( AMP::AMPManager::use_MPI_Abort == true ) {
         // Use MPI_abort (will terminate all processes)
         force_exit = 2;
-        AMP_MPI( AMP_COMM_WORLD ).abort();
+        comm.abort();
     } else if ( force_exit > 0 ) {
         exit( -1 );
     } else {
         // Throw and standard exception (allows the use of try, catch)
-        // std::stringstream  stream;
-        // stream << message << std::endl << "  " << filename << ":  " << line;
-        // std::cout << stream.str() << std::endl;
         force_exit = 1;
         throw std::logic_error( message );
     }
