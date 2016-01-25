@@ -172,7 +172,7 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
                     is_valid = false;
             }
             if ( is_valid ) {
-                double t1=0, t2=0, t3=0;
+                int t1=0, t2=0, t3=0;
                 if ( direction == 0 && center.size() == 3 ) {
                     t1 = Utilities::findfirst( z, center[2] - 1e-12 );
                     t2 = Utilities::findfirst( y, center[1] - 1e-12 );
