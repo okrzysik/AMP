@@ -90,6 +90,7 @@ double time()
 *  Function to terminate AMP with a message for exceptions                  *
 ****************************************************************************/
 static int force_exit = 0;
+static bool printed_stack = false;
 void term_func_abort( int ) { AMPManager::terminate_AMP( "" ); }
 static void abort_fun( std::string msg, StackTrace::terminateType type )
 {
@@ -104,14 +105,14 @@ void AMPManager::terminate_AMP( std::string message )
         char text[100];
         std::stringstream msg;
         msg << message << std::endl;
-        long long unsigned int N_bytes = AMP::Utilities::getMemoryUsage();
-        sprintf( text, "Bytes used = %llu\n", N_bytes );
+        msg << "Bytes used = " << AMP::Utilities::getMemoryUsage() << std::endl;
         msg << text;
         auto stack = AMP::StackTrace::getCallStack();
         msg << "Stack Trace:\n";
         for ( auto &elem : stack )
             msg << "   " << elem.print() << std::endl;
         perr << msg.str();
+        printed_stack = true;
     }
     if ( force_exit > 1 ) {
         exit( -1 );
@@ -132,9 +133,16 @@ void AMPManager::terminate_AMP( std::string message )
 }
 void AMPManager::exitFun()
 {
-    if ( initialized == 1 ) {
-        printf("%5i: Exiting\n",rank);
-    }
+    if ( initialized!=1 || printed_stack )
+        return;
+    std::stringstream msg;
+    msg << "Calling exit without calling shutdown\n";
+    msg << "Bytes used = " << AMP::Utilities::getMemoryUsage() << std::endl;
+    auto stack = AMP::StackTrace::getCallStack();
+    msg << "Stack Trace:\n";
+    for ( auto &elem : stack )
+        msg << "   " << elem.print() << std::endl;
+    perr << msg.str();
 }
 
 
