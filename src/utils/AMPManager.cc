@@ -399,8 +399,10 @@ void AMPManager::setHandlers()
     // Set the MPI error handler for comm_world
     setMPIErrorHandler();
     // Set the error handlers for petsc
+#ifdef USE_EXT_PETSC
     PetscPopSignalHandler();
     PetscPushErrorHandler( &petsc_err_handler, PETSC_NULL );
+#endif
     // Set the terminate routine for runtime errors
     StackTrace::setErrorHandlers( abort_fun );
     // Set atexit function

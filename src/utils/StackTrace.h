@@ -32,8 +32,16 @@ struct stack_info {
 std::vector<stack_info> getCallStack();
 
 
+//! Function to return the current call stack
+std::vector<void*> backtrace();
+
+
 //! Function to return the stack info for a given address
 stack_info getStackInfo( void *address );
+
+
+//! Function to return the stack info for a given address
+std::vector<stack_info> getStackInfo( const std::vector<void*>& address );
 
 
 /*!

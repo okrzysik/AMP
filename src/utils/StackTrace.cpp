@@ -6,6 +6,8 @@
 #include <sstream>
 #include <csignal>
 #include <mutex>
+#include <map>
+#include <stdexcept>
 
 
 // Detect the OS and include system dependent headers
@@ -39,6 +41,8 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <mach/mach_types.h>
+#include <mach-o/getsect.h>
 #elif defined( __linux ) || defined( __unix ) || defined( __posix )
 #define USE_LINUX
 #define USE_NM
@@ -117,6 +121,7 @@ namespace StackTrace {
 BOOL GetModuleListTH32( HANDLE hProcess, DWORD pid );
 BOOL GetModuleListPSAPI( HANDLE hProcess );
 DWORD LoadModule( HANDLE hProcess, LPCSTR img, LPCSTR mod, DWORD64 baseAddr, DWORD size );
+void LoadModules( );
 };
 #endif
 
@@ -293,67 +298,126 @@ int StackTrace::getSymbols( std::vector<void *> &address,
 /****************************************************************************
 *  Function to get the current call stack                                   *
 ****************************************************************************/
+#ifdef USE_MAC
+static void *loadAddress( const std::string& object )
+{
+    static std::map<std::string,void*> obj_map;
+    if ( obj_map.empty() ) {
+        uint32_t numImages = _dyld_image_count();
+        for (uint32_t i = 0; i < numImages; i++) {
+            const struct mach_header *header = _dyld_get_image_header(i);
+            const char *name = _dyld_get_image_name(i);
+            const char *p = strrchr(name, '/');
+            struct mach_header *address = const_cast<struct mach_header*>(header);
+            obj_map.insert( std::pair<std::string,void*>( p+1, address ) );
+            //printf("   module=%s, address=%p\n", p + 1, header);
+        }
+    }
+    auto it = obj_map.find( object );
+    void *address = 0;
+    if ( it != obj_map.end() ) {
+        address = it->second;
+    } else {
+        it = obj_map.find( stripPath( object ) );
+        if ( it != obj_map.end() )
+            address = it->second;
+    }
+    //printf("%s: 0x%016llx\n",object.c_str(),address);
+    return address;
+}
+static std::tuple<std::string,std::string,std::string,int> split_atos( const std::string& buf )
+{
+    if ( buf.empty() )
+        return std::tuple<std::string,std::string,std::string,int>();
+    // Get the function
+    size_t index = buf.find( " (in " );
+    if ( index == std::string::npos )
+        return std::make_tuple(buf.substr(0,buf.length()-1),std::string(),std::string(),0);
+    std::string fun = buf.substr( 0, index );
+    std::string tmp = buf.substr( index+5 );
+    // Get the object
+    index = tmp.find( ')' );
+    std::string obj = tmp.substr( 0, index );
+    tmp = tmp.substr( index+1 );
+    // Get the filename and line number
+    size_t p1 = tmp.find( '(' );
+    size_t p2 = tmp.find( ')' );
+    tmp = tmp.substr( p1+1, p2-p1-1 );
+    index = tmp.find( ':' );
+    std::string file;
+    int line = 0;
+    if ( index!=std::string::npos ) {
+        file = tmp.substr( 0, index );
+        line = std::stoi( tmp.substr( index+1 ) );
+    } else if ( p1!=std::string::npos ) {
+        file = tmp;
+    }
+    return std::make_tuple(fun,obj,file,line);
+}
+#endif
+// clang-format off
 static void getFileAndLine( StackTrace::stack_info &info )
 {
-#if defined( USE_LINUX )
-    void *address = info.address;
-    if ( info.object.find( ".so" ) != std::string::npos )
-        address = info.address2;
-    char buf[4096];
-    sprintf( buf,
-             "addr2line -C -e %s -f -i %lx 2> /dev/null",
-             info.object.c_str(),
-             reinterpret_cast<unsigned long int>( address ) );
-    FILE *f = popen( buf, "r" );
-    if ( f == nullptr )
-        return;
-    buf[4095] = 0;
-    // get function name
-    char *rtn = fgets( buf, 4095, f );
-    if ( info.function.empty() && rtn == buf ) {
-        info.function = std::string( buf );
-        info.function.resize( std::max<size_t>( info.function.size(), 1 ) - 1 );
-    }
-    // get file and line
-    rtn = fgets( buf, 4095, f );
-    if ( buf[0] != '?' && buf[0] != 0 && rtn == buf ) {
-        size_t i = 0;
-        for ( i = 0; i < 4095 && buf[i] != ':'; i++ ) {
+    // Note: we could improve performance by combining multiple calls with the same object
+    #if defined( USE_LINUX )
+        void *address = info.address;
+        if ( info.object.find( ".so" ) != std::string::npos )
+            address = info.address2;
+        char buf[4096];
+        sprintf( buf,
+                 "addr2line -C -e %s -f -i %lx 2> /dev/null",
+                 info.object.c_str(),
+                 reinterpret_cast<unsigned long int>( address ) );
+        FILE *f = popen( buf, "r" );
+        if ( f == nullptr )
+            return;
+        buf[4095] = 0;
+        // get function name
+        char *rtn = fgets( buf, 4095, f );
+        if ( info.function.empty() && rtn == buf ) {
+            info.function = std::string( buf );
+            info.function.resize( std::max<size_t>( info.function.size(), 1 ) - 1 );
         }
-        info.filename = std::string( buf, i );
-        info.line     = atoi( &buf[i + 1] );
-    }
-    pclose( f );
-#elif defined( USE_MAC ) && 0
-/*void *address = info.address;
-if ( info.object.find( ".so" ) != std::string::npos )
-    address = info.address2;
-char buf[4096];
-sprintf( buf, "atos -o %s %lx 2> /dev/null", info.object.c_str(),
-    reinterpret_cast<unsigned long int>( address ) );
-FILE *f = popen( buf, "r" );
-if ( f == nullptr )
-    return;
-buf[4095] = 0;
-// get function name
-char *rtn = fgets( buf, 4095, f );
-if ( info.function.empty() && rtn == buf ) {
-    info.function = std::string( buf );
-    info.function.resize( std::max<size_t>( info.function.size(), 1 ) - 1 );
+        // get file and line
+        rtn = fgets( buf, 4095, f );
+        if ( buf[0] != '?' && buf[0] != 0 && rtn == buf ) {
+            size_t i = 0;
+            for ( i = 0; i < 4095 && buf[i] != ':'; i++ ) {
+            }
+            info.filename = std::string( buf, i );
+            info.line     = atoi( &buf[i + 1] );
+        }
+        pclose( f );
+    #elif defined( USE_MAC )
+        void *load_address = loadAddress( info.object );
+        if ( load_address==0 )
+            return;
+        // Call atos to get the object info
+        char buf[4096];
+        sprintf( buf, "atos -o %s -l %lx %lx 2> /dev/null", info.object.c_str(),
+            reinterpret_cast<unsigned long int>( load_address ),
+            reinterpret_cast<unsigned long int>( info.address ) );
+        FILE *f = popen( buf, "r" );
+        if ( f == nullptr )
+            return;
+        memset( buf, 0, sizeof(buf) );
+        fgets( buf, 4095, f );
+        //printf("%0x%016llx-output: %s",info.address,buf);
+        // Parse the output for function, file and line info
+        auto data = split_atos( buf );
+        //printf("%0x%016llx-parsed: %s - %s - %s - %i\n",info.address,std::get<0>(data).c_str(),
+        //    std::get<1>(data).c_str(),std::get<2>(data).c_str(),std::get<3>(data));
+        if ( info.function.empty() )
+            info.function = std::get<0>(data);
+        if ( info.object.empty() )
+            info.object = std::get<1>(data);
+        if ( info.filename.empty() )
+            info.filename = std::get<2>(data);
+        if ( info.line==0 )
+            info.line = std::get<3>(data);
+        pclose( f );
+    #endif
 }
-// get file and line
-rtn = fgets( buf, 4095, f );
-if ( buf[0] != '?' && buf[0] != 0 && rtn == buf ) {
-    size_t i = 0;
-    for ( i = 0; i < 4095 && buf[i] != ':'; i++ ) {
-    }
-    info.filename = std::string( buf, i );
-    info.line     = atoi( &buf[i + 1] );
-}
-pclose( f );*/
-#endif
-}
-
 // Try to use the global symbols to decode info about the stack
 static void getDataFromGlobalSymbols( StackTrace::stack_info &info )
 {
@@ -366,84 +430,129 @@ static void getDataFromGlobalSymbols( StackTrace::stack_info &info )
             info.object = global_exe_name;
     }
 }
-// clang-format off
+static void signal_handler( int sig )
+{
+    printf("Signal caught acquiring stack (%i)\n",sig);
+    StackTrace::setErrorHandlers( [](std::string,StackTrace::terminateType) { exit( -1 ); } );
+}
 StackTrace::stack_info StackTrace::getStackInfo( void *address )
 {
-    StackTrace::stack_info info;
-    info.address = address;
-    #if defined(_GNU_SOURCE) || defined(USE_MAC)
-        Dl_info dlinfo;
-        if ( !dladdr( address, &dlinfo ) ) {
-            getDataFromGlobalSymbols( info );
-            getFileAndLine( info );
-            return info;
-        }
-        info.address2 = subtractAddress( info.address, dlinfo.dli_fbase );
-        info.object   = std::string( dlinfo.dli_fname );
-        #if defined( USE_ABI )
-            int status;
-            char *demangled = abi::__cxa_demangle( dlinfo.dli_sname, nullptr, nullptr, &status );
-            if ( status == 0 && demangled != nullptr ) {
-                info.function = std::string( demangled );
-            } else if ( dlinfo.dli_sname != nullptr ) {
-                info.function = std::string( dlinfo.dli_sname );
+    return getStackInfo( std::vector<void*>(1,address) )[0];
+}
+std::vector<StackTrace::stack_info> StackTrace::getStackInfo( const std::vector<void*>& address )
+{
+    // Temporarily handle signals to prevent recursion on the stack
+    auto prev_handler = signal( SIGINT, signal_handler );
+    // Get the detailed stack info
+    std::vector<StackTrace::stack_info> info(address.size());
+    try {
+        #ifdef USE_WINDOWS
+            IMAGEHLP_SYMBOL64 pSym[1024];
+            memset( pSym, 0, sizeof( pSym ) );
+            pSym->SizeOfStruct  = sizeof( IMAGEHLP_SYMBOL64 );
+            pSym->MaxNameLength = 1024;
+
+            IMAGEHLP_MODULE64 Module;
+            memset( &Module, 0, sizeof( Module ) );
+            Module.SizeOfStruct = sizeof( Module );
+
+            HANDLE pid = GetCurrentProcess();
+
+            for (size_t i=0; i<address.size(); i++) {
+                info[i].address = address[i];
+                DWORD64 address2 = reinterpret_cast<DWORD64>( address[i] );
+                DWORD64 offsetFromSmybol;
+                if ( SymGetSymFromAddr( pid, address2, &offsetFromSmybol, pSym ) != FALSE ) {
+                    char name[8192]={0};
+                    DWORD rtn = UnDecorateSymbolName( pSym->Name, name, sizeof(name)-1, UNDNAME_COMPLETE );
+                    if ( rtn == 0 )
+                        info[i].function = std::string(pSym->Name);
+                    else
+                        info[i].function = std::string(name);
+                } else {
+                    printf( "ERROR: SymGetSymFromAddr (%d,%p)\n", GetLastError(), address2 );
+                }
+
+                // Get line number
+                IMAGEHLP_LINE64 Line;
+                memset( &Line, 0, sizeof( Line ) );
+                Line.SizeOfStruct = sizeof( Line );
+                DWORD offsetFromLine;
+                if ( SymGetLineFromAddr64( pid, address2, &offsetFromLine, &Line ) != FALSE ) {
+                    info[i].line     = Line.LineNumber;
+                    info[i].filename = std::string( Line.FileName );
+                } else {
+                    info[i].line     = 0;
+                    info[i].filename = std::string();
+                }
+
+                // Get the object
+                if ( SymGetModuleInfo64( pid, address2, &Module ) != FALSE ) {
+                    //info[i].object = std::string( Module.ModuleName );
+                    info[i].object = std::string( Module.LoadedImageName );
+                    //info[i].baseOfImage = Module.BaseOfImage;
+                }
             }
-            free( demangled );
         #else
-            if ( dlinfo.dli_sname != NULL )
-                info.function = std::string( dlinfo.dli_sname );
+            for (size_t i=0; i<address.size(); i++) {
+                info[i].address = address[i];
+                #if defined(_GNU_SOURCE) || defined(USE_MAC)
+                    Dl_info dlinfo;
+                    if ( !dladdr( info[i].address, &dlinfo ) ) {
+                        getDataFromGlobalSymbols( info[i] );
+                        continue;
+                    }
+                    info[i].address2 = subtractAddress( info[i].address, dlinfo.dli_fbase );
+                    info[i].object   = std::string( dlinfo.dli_fname );
+                    #if defined( USE_ABI )
+                        int status;
+                        char *demangled = abi::__cxa_demangle( dlinfo.dli_sname, nullptr, nullptr, &status );
+                        if ( status == 0 && demangled != nullptr ) {
+                            info[i].function = std::string( demangled );
+                        } else if ( dlinfo.dli_sname != nullptr ) {
+                            info[i].function = std::string( dlinfo.dli_sname );
+                        }
+                        free( demangled );
+                    #else
+                        if ( dlinfo.dli_sname != NULL )
+                            info[i].function = std::string( dlinfo.dli_sname );
+                    #endif
+                #else
+                    getDataFromGlobalSymbols( info[i] );
+                #endif
+            }
+            // Get the filename / line number
+            for (size_t i=0; i<address.size(); i++) {
+                getFileAndLine( info[i] );
+            }
         #endif
-    #else
-        getDataFromGlobalSymbols( info );
-    #endif
-    // Get the filename / line number
-    getFileAndLine( info );
+    } catch ( ... ) {
+    }
+    signal( SIGINT, prev_handler ) ;
     return info;
 }
-std::vector<StackTrace::stack_info> StackTrace::getCallStack()
+std::vector<void*> StackTrace::backtrace()
 {
-    std::vector<StackTrace::stack_info> stack_list;
+    std::vector<void*> trace;
     #if defined( USE_LINUX ) || defined( USE_MAC )
         // Get the trace
-        void *trace[100];
-        memset( trace, 0, 100 * sizeof( void * ) );
-        int trace_size = backtrace( trace, 100 );
-        stack_list.reserve( trace_size );
-        for ( int i = 0; i < trace_size; ++i )
-            stack_list.push_back( getStackInfo( trace[i] ) );
+        trace.resize(1000,nullptr);
+        int trace_size = ::backtrace( trace.data(), trace.size() );
+        trace.resize (trace_size );
     #elif defined( USE_WINDOWS )
         #if defined(DBGHELP)
-            // Get the search paths for symbols
-            std::string paths = getSymPaths();
 
-            // Initialize the symbols
-            if ( SymInitialize( GetCurrentProcess(), paths.c_str(), FALSE ) == FALSE )
-                printf( "ERROR: SymInitialize (%d)\n", GetLastError() );
+            // Load the modules for the stack trace
+            LoadModules();
 
-            DWORD symOptions = SymGetOptions();
-            symOptions |= SYMOPT_LOAD_LINES | SYMOPT_FAIL_CRITICAL_ERRORS;
-            symOptions = SymSetOptions( symOptions );
-            char buf[1024] = { 0 };
-            if ( SymGetSearchPath( GetCurrentProcess(), buf, sizeof(buf) ) == FALSE )
-                printf( "ERROR: SymGetSearchPath (%d)\n", GetLastError() );
-
-            // First try to load modules from toolhelp32
-            BOOL loaded = StackTrace::GetModuleListTH32( GetCurrentProcess(), GetCurrentProcessId() );
-
-            // Try to load from Psapi
-            if ( !loaded )
-                loaded = StackTrace::GetModuleListPSAPI( GetCurrentProcess() );
-
+            // Initialize stackframe for first call
             ::CONTEXT context;
             memset( &context, 0, sizeof( context ) );
             context.ContextFlags = CONTEXT_FULL;
             RtlCaptureContext( &context );
-
-            // init STACKFRAME for first call
             STACKFRAME64 frame; // in/out stackframe
             memset( &frame, 0, sizeof( frame ) );
             #ifdef _M_IX86
-                // normally, call ImageNtHeader() and use machine info from PE header
                 DWORD imageType = IMAGE_FILE_MACHINE_I386;
                 frame.AddrPC.Offset    = context.Eip;
                 frame.AddrPC.Mode      = AddrModeFlat;
@@ -473,84 +582,31 @@ std::vector<StackTrace::stack_info> StackTrace::getCallStack()
                 #error "Platform not supported!"
             #endif
 
-            IMAGEHLP_SYMBOL64 pSym[1024];
-            memset( pSym, 0, sizeof( pSym ) );
-            pSym->SizeOfStruct  = sizeof( IMAGEHLP_SYMBOL64 );
-            pSym->MaxNameLength = 1024;
-
-            IMAGEHLP_MODULE64 Module;
-            memset( &Module, 0, sizeof( Module ) );
-            Module.SizeOfStruct = sizeof( Module );
-
-            for ( int frameNum = 0, curRecursionCount = 0; ; ++frameNum ) {
-                // get next stack frame (StackWalk64(), SymFunctionTableAccess64(), SymGetModuleBase64())
-                // if this returns ERROR_INVALID_ADDRESS (487) or ERROR_NOACCESS (998), you can
-                // assume that either you are done, or that the stack is so hosed that the next
-                // deeper frame could not be found.
-                // CONTEXT need not to be suplied if imageTyp is IMAGE_FILE_MACHINE_I386!
-                if ( !StackWalk64( imageType, GetCurrentProcess(), GetCurrentThread(), &frame, &context,
-                         readProcMem, SymFunctionTableAccess, SymGetModuleBase64, NULL ) ) {
+            trace.reserve( 1000 );
+            auto pid = GetCurrentProcess();
+            auto tid = GetCurrentThread();
+            int it = 0;
+            while ( it<1024 && frame.AddrReturn.Offset==0 ) {
+                BOOL rtn = StackWalk64( imageType, pid, tid, &frame, &context, readProcMem,
+                                        SymFunctionTableAccess, SymGetModuleBase64, NULL );
+                if ( !rtn ) {
                     printf( "ERROR: StackWalk64 (%p)\n", frame.AddrPC.Offset );
                     break;
                 }
-
-                StackTrace::stack_info csEntry;
-                csEntry.address = reinterpret_cast<void*>( frame.AddrPC.Offset );
-                if ( frame.AddrPC.Offset == frame.AddrReturn.Offset ) {
-                    if ( curRecursionCount > 1024 ) {
-                        printf( "ERROR: StackWalk64-Endless-Callstack! (%p)\n", frame.AddrPC.Offset );
-                        break;
-                    }
-                    curRecursionCount++;
-                } else
-                    curRecursionCount = 0;
-                if ( frame.AddrPC.Offset != 0 ) {
-                    DWORD64 offsetFromSmybol;
-                    if ( SymGetSymFromAddr( GetCurrentProcess(), frame.AddrPC.Offset, &offsetFromSmybol, pSym ) != FALSE ) {
-                        char name[8192]={0};
-                        DWORD rtn = UnDecorateSymbolName( pSym->Name, name, sizeof(name)-1, UNDNAME_COMPLETE );
-                        if ( rtn == 0 )
-                            csEntry.function = std::string(pSym->Name);
-                        else
-                            csEntry.function = std::string(name);
-                    } else {
-                        printf( "ERROR: SymGetSymFromAddr (%d,%p)\n", GetLastError(), frame.AddrPC.Offset );
-                    }
-
-                    // Get line number
-                    IMAGEHLP_LINE64 Line;
-                    memset( &Line, 0, sizeof( Line ) );
-                    Line.SizeOfStruct = sizeof( Line );
-                    DWORD offsetFromLine;
-                    if ( SymGetLineFromAddr64( GetCurrentProcess(), frame.AddrPC.Offset, &offsetFromLine, &Line ) != FALSE ) {
-                        csEntry.line     = Line.LineNumber;
-                        csEntry.filename = std::string( Line.FileName );
-                    } else {
-                        csEntry.line     = 0;
-                        csEntry.filename = std::string();
-                    }
-
-                    // Get the object
-                    if ( SymGetModuleInfo64( GetCurrentProcess(), frame.AddrPC.Offset, &Module ) != FALSE ) {
-                        //csEntry.object = std::string( Module.ModuleName );
-                        csEntry.object = std::string( Module.LoadedImageName );
-                        //csEntry.baseOfImage = Module.BaseOfImage;
-                    }
-                } // we seem to have a valid PC
-
-                if ( csEntry.address!=0 )
-                    stack_list.push_back(csEntry);
-
-                if ( frame.AddrReturn.Offset == 0 ) {
-                    SetLastError( ERROR_SUCCESS );
-                    break;
-                }
+                if ( frame.AddrPC.Offset != 0 )
+                    trace.push_back( reinterpret_cast<void*>( frame.AddrPC.Offset ) );
+                ++it;
             }
         #endif
     #else
         #warning Stack trace is not supported on this compiler/OS
     #endif
-    return stack_list;
+    return trace;
+}
+std::vector<StackTrace::stack_info> StackTrace::getCallStack()
+{
+    std::vector<void*> trace = StackTrace::backtrace();
+    return getStackInfo(trace);
 }
 // clang-format on
 
@@ -752,6 +808,34 @@ BOOL StackTrace::GetModuleListPSAPI( HANDLE hProcess )
     }
 
     return cnt != 0;
+}
+void StackTrace::LoadModules()
+{
+    static bool modules_loaded = false;
+    if ( !modules_loaded ) {
+        modules_loaded = true;
+
+        // Get the search paths for symbols
+        std::string paths = StackTrace::getSymPaths();
+
+        // Initialize the symbols
+        if ( SymInitialize( GetCurrentProcess(), paths.c_str(), FALSE ) == FALSE )
+            printf( "ERROR: SymInitialize (%d)\n", GetLastError() );
+
+        DWORD symOptions = SymGetOptions();
+        symOptions |= SYMOPT_LOAD_LINES | SYMOPT_FAIL_CRITICAL_ERRORS;
+        symOptions = SymSetOptions( symOptions );
+        char buf[1024] = { 0 };
+        if ( SymGetSearchPath( GetCurrentProcess(), buf, sizeof(buf) ) == FALSE )
+            printf( "ERROR: SymGetSearchPath (%d)\n", GetLastError() );
+
+        // First try to load modules from toolhelp32
+        BOOL loaded = StackTrace::GetModuleListTH32( GetCurrentProcess(), GetCurrentProcessId() );
+
+        // Try to load from Psapi
+        if ( !loaded )
+            loaded = StackTrace::GetModuleListPSAPI( GetCurrentProcess() );
+    }
 }
 #endif
 
