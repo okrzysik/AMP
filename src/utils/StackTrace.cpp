@@ -534,8 +534,8 @@ std::vector<void*> StackTrace::backtrace()
     std::vector<void*> trace;
     #if defined( USE_LINUX ) || defined( USE_MAC )
         // Get the trace
-        trace.resize(1000,nullptr)l
-        int trace_size = backtrace( trace.data(), trace.size() );
+        trace.resize(1000,nullptr);
+        int trace_size = ::backtrace( trace.data(), trace.size() );
         trace.resize (trace_size );
     #elif defined( USE_WINDOWS )
         #if defined(DBGHELP)
