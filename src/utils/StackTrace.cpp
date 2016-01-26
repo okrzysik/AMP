@@ -6,6 +6,8 @@
 #include <sstream>
 #include <csignal>
 #include <mutex>
+#include <map>
+#include <stdexcept>
 
 
 // Detect the OS and include system dependent headers
@@ -39,6 +41,8 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <mach/mach_types.h>
+#include <mach-o/getsect.h>
 #elif defined( __linux ) || defined( __unix ) || defined( __posix )
 #define USE_LINUX
 #define USE_NM
@@ -293,67 +297,125 @@ int StackTrace::getSymbols( std::vector<void *> &address,
 /****************************************************************************
 *  Function to get the current call stack                                   *
 ****************************************************************************/
+#ifdef USE_MAC
+static void *loadAddress( const std::string& object )
+{
+    static std::map<std::string,void*> obj_map;
+    if ( obj_map.empty() ) {
+        uint32_t numImages = _dyld_image_count();
+        for (uint32_t i = 0; i < numImages; i++) {
+            const struct mach_header *header = _dyld_get_image_header(i);
+            const char *name = _dyld_get_image_name(i);
+            const char *p = strrchr(name, '/');
+            struct mach_header *address = const_cast<struct mach_header*>(header);
+            obj_map.insert( std::pair<std::string,void*>( p+1, address ) );
+            //printf("   module=%s, address=%p\n", p + 1, header);
+        }
+    }
+    auto it = obj_map.find( object );
+    void *address = 0;
+    if ( it != obj_map.end() ) {
+        address = it->second;
+    } else {
+        it = obj_map.find( stripPath( object ) );
+        if ( it != obj_map.end() )
+            address = it->second;
+    }
+    //printf("%s: 0x%016llx\n",object.c_str(),address);
+    return address;
+}
+static std::tuple<std::string,std::string,std::string,int> split_atos( const std::string& buf )
+{
+    if ( buf.empty() )
+        return std::tuple<std::string,std::string,std::string,int>();
+    // Get the function
+    size_t index = buf.find( " (in " );
+    if ( index == std::string::npos )
+        return std::make_tuple(buf.substr(0,buf.length()-1),std::string(),std::string(),0);
+    std::string fun = buf.substr( 0, index );
+    std::string tmp = buf.substr( index+5 );
+    // Get the object
+    index = tmp.find( ')' );
+    std::string obj = tmp.substr( 0, index );
+    tmp = tmp.substr( index+1 );
+    // Get the filename and line number
+    size_t p1 = tmp.find( '(' );
+    size_t p2 = tmp.find( ')' );
+    tmp = tmp.substr( p1+1, p2-p1-1 );
+    index = tmp.find( ':' );
+    std::string file;
+    int line = 0;
+    if ( index!=std::string::npos ) {
+        file = tmp.substr( 0, index );
+        line = std::stoi( tmp.substr( index+1 ) );
+    } else if ( p1!=std::string::npos ) {
+        file = tmp;
+    }
+    return std::make_tuple(fun,obj,file,line);
+}
+#endif
+// clang-format off
 static void getFileAndLine( StackTrace::stack_info &info )
 {
-#if defined( USE_LINUX )
-    void *address = info.address;
-    if ( info.object.find( ".so" ) != std::string::npos )
-        address = info.address2;
-    char buf[4096];
-    sprintf( buf,
-             "addr2line -C -e %s -f -i %lx 2> /dev/null",
-             info.object.c_str(),
-             reinterpret_cast<unsigned long int>( address ) );
-    FILE *f = popen( buf, "r" );
-    if ( f == nullptr )
-        return;
-    buf[4095] = 0;
-    // get function name
-    char *rtn = fgets( buf, 4095, f );
-    if ( info.function.empty() && rtn == buf ) {
-        info.function = std::string( buf );
-        info.function.resize( std::max<size_t>( info.function.size(), 1 ) - 1 );
-    }
-    // get file and line
-    rtn = fgets( buf, 4095, f );
-    if ( buf[0] != '?' && buf[0] != 0 && rtn == buf ) {
-        size_t i = 0;
-        for ( i = 0; i < 4095 && buf[i] != ':'; i++ ) {
+    #if defined( USE_LINUX )
+        void *address = info.address;
+        if ( info.object.find( ".so" ) != std::string::npos )
+            address = info.address2;
+        char buf[4096];
+        sprintf( buf,
+                 "addr2line -C -e %s -f -i %lx 2> /dev/null",
+                 info.object.c_str(),
+                 reinterpret_cast<unsigned long int>( address ) );
+        FILE *f = popen( buf, "r" );
+        if ( f == nullptr )
+            return;
+        buf[4095] = 0;
+        // get function name
+        char *rtn = fgets( buf, 4095, f );
+        if ( info.function.empty() && rtn == buf ) {
+            info.function = std::string( buf );
+            info.function.resize( std::max<size_t>( info.function.size(), 1 ) - 1 );
         }
-        info.filename = std::string( buf, i );
-        info.line     = atoi( &buf[i + 1] );
-    }
-    pclose( f );
-#elif defined( USE_MAC ) && 0
-/*void *address = info.address;
-if ( info.object.find( ".so" ) != std::string::npos )
-    address = info.address2;
-char buf[4096];
-sprintf( buf, "atos -o %s %lx 2> /dev/null", info.object.c_str(),
-    reinterpret_cast<unsigned long int>( address ) );
-FILE *f = popen( buf, "r" );
-if ( f == nullptr )
-    return;
-buf[4095] = 0;
-// get function name
-char *rtn = fgets( buf, 4095, f );
-if ( info.function.empty() && rtn == buf ) {
-    info.function = std::string( buf );
-    info.function.resize( std::max<size_t>( info.function.size(), 1 ) - 1 );
+        // get file and line
+        rtn = fgets( buf, 4095, f );
+        if ( buf[0] != '?' && buf[0] != 0 && rtn == buf ) {
+            size_t i = 0;
+            for ( i = 0; i < 4095 && buf[i] != ':'; i++ ) {
+            }
+            info.filename = std::string( buf, i );
+            info.line     = atoi( &buf[i + 1] );
+        }
+        pclose( f );
+    #elif defined( USE_MAC )
+        void *load_address = loadAddress( info.object );
+        if ( load_address==0 )
+            return;
+        // Call atos to get the object info
+        char buf[4096];
+        sprintf( buf, "atos -o %s -l %lx %lx 2> /dev/null", info.object.c_str(),
+            reinterpret_cast<unsigned long int>( load_address ),
+            reinterpret_cast<unsigned long int>( info.address ) );
+        FILE *f = popen( buf, "r" );
+        if ( f == nullptr )
+            return;
+        memset( buf, 0, sizeof(buf) );
+        fgets( buf, 4095, f );
+        //printf("%0x%016llx-output: %s",info.address,buf);
+        // Parse the output for function, file and line info
+        auto data = split_atos( buf );
+        //printf("%0x%016llx-parsed: %s - %s - %s - %i\n",info.address,std::get<0>(data).c_str(),
+        //    std::get<1>(data).c_str(),std::get<2>(data).c_str(),std::get<3>(data));
+        if ( info.function.empty() )
+            info.function = std::get<0>(data);
+        if ( info.object.empty() )
+            info.object = std::get<1>(data);
+        if ( info.filename.empty() )
+            info.filename = std::get<2>(data);
+        if ( info.line==0 )
+            info.line = std::get<3>(data);
+        pclose( f );
+    #endif
 }
-// get file and line
-rtn = fgets( buf, 4095, f );
-if ( buf[0] != '?' && buf[0] != 0 && rtn == buf ) {
-    size_t i = 0;
-    for ( i = 0; i < 4095 && buf[i] != ':'; i++ ) {
-    }
-    info.filename = std::string( buf, i );
-    info.line     = atoi( &buf[i + 1] );
-}
-pclose( f );*/
-#endif
-}
-
 // Try to use the global symbols to decode info about the stack
 static void getDataFromGlobalSymbols( StackTrace::stack_info &info )
 {
@@ -366,38 +428,56 @@ static void getDataFromGlobalSymbols( StackTrace::stack_info &info )
             info.object = global_exe_name;
     }
 }
-// clang-format off
+static void signal_handler( int sig )
+{
+    printf("Signal caught acquiring stack (%i)\n",sig);
+    StackTrace::setErrorHandlers( [](std::string,StackTrace::terminateType) { exit( -1 ); } );
+}
+std::vector<StackTrace::stack_info> StackTrace::getStackInfo( int N, void **address )
+{
+    std::vector<StackTrace::stack_info> info(N);
+    for (int i=0; i<N; i++)
+        info[i] = getStackInfo(address[i]);
+    return info;
+}
 StackTrace::stack_info StackTrace::getStackInfo( void *address )
 {
+    // Temporarily handle signals to prevent recursion on the stack
+    auto prev_handler = signal( SIGINT, signal_handler );
+    // Get the detailed stack info
     StackTrace::stack_info info;
-    info.address = address;
-    #if defined(_GNU_SOURCE) || defined(USE_MAC)
-        Dl_info dlinfo;
-        if ( !dladdr( address, &dlinfo ) ) {
-            getDataFromGlobalSymbols( info );
-            getFileAndLine( info );
-            return info;
-        }
-        info.address2 = subtractAddress( info.address, dlinfo.dli_fbase );
-        info.object   = std::string( dlinfo.dli_fname );
-        #if defined( USE_ABI )
-            int status;
-            char *demangled = abi::__cxa_demangle( dlinfo.dli_sname, nullptr, nullptr, &status );
-            if ( status == 0 && demangled != nullptr ) {
-                info.function = std::string( demangled );
-            } else if ( dlinfo.dli_sname != nullptr ) {
-                info.function = std::string( dlinfo.dli_sname );
+    try {
+        info.address = address;
+        #if defined(_GNU_SOURCE) || defined(USE_MAC)
+            Dl_info dlinfo;
+            if ( !dladdr( info.address, &dlinfo ) ) {
+                getDataFromGlobalSymbols( info );
+                getFileAndLine( info );
+                return info;
             }
-            free( demangled );
+            info.address2 = subtractAddress( info.address, dlinfo.dli_fbase );
+            info.object   = std::string( dlinfo.dli_fname );
+            #if defined( USE_ABI )
+                int status;
+                char *demangled = abi::__cxa_demangle( dlinfo.dli_sname, nullptr, nullptr, &status );
+                if ( status == 0 && demangled != nullptr ) {
+                    info.function = std::string( demangled );
+                } else if ( dlinfo.dli_sname != nullptr ) {
+                    info.function = std::string( dlinfo.dli_sname );
+                }
+                free( demangled );
+            #else
+                if ( dlinfo.dli_sname != NULL )
+                    info.function = std::string( dlinfo.dli_sname );
+            #endif
         #else
-            if ( dlinfo.dli_sname != NULL )
-                info.function = std::string( dlinfo.dli_sname );
+            getDataFromGlobalSymbols( info );
         #endif
-    #else
-        getDataFromGlobalSymbols( info );
-    #endif
-    // Get the filename / line number
-    getFileAndLine( info );
+        // Get the filename / line number
+        getFileAndLine( info );
+    } catch ( ... ) {
+    }
+    signal( SIGINT, prev_handler ) ;
     return info;
 }
 std::vector<StackTrace::stack_info> StackTrace::getCallStack()

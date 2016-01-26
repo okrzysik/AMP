@@ -36,6 +36,10 @@ std::vector<stack_info> getCallStack();
 stack_info getStackInfo( void *address );
 
 
+//! Function to return the stack info for a given address
+std::vector<stack_info> getStackInfo( int N, void **address );
+
+
 /*!
  * Return the symbols from the current executable (not availible for all platforms)
  * @return      Returns 0 if sucessful

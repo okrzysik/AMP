@@ -415,11 +415,14 @@ int main( int argc, char *argv[] )
         }
 
         // Test getting the current call stack
+        double ts1 = AMP::AMP_MPI::time();
         auto call_stack = get_call_stack();
+        double ts2 = AMP::AMP_MPI::time();
         if ( globalComm.getRank() == 0 ) {
             std::cout << "Call stack:" << std::endl;
             for ( auto &elem : call_stack )
                 std::cout << "   " << elem.print() << std::endl;
+            std::cout << "Time to get call stack: " << ts2-ts1 << std::endl;
         }
         if ( !call_stack.empty() ) {
             ut.passes( "non empty call stack" );
