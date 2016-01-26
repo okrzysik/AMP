@@ -585,18 +585,21 @@ std::vector<void*> StackTrace::backtrace()
             trace.reserve( 1000 );
             auto pid = GetCurrentProcess();
             auto tid = GetCurrentThread();
-            int it = 0;
-            while ( it<1024 && frame.AddrReturn.Offset==0 ) {
+            for ( int frameNum = 0; frameNum<1024; ++frameNum ) {
                 BOOL rtn = StackWalk64( imageType, pid, tid, &frame, &context, readProcMem,
                                         SymFunctionTableAccess, SymGetModuleBase64, NULL );
                 if ( !rtn ) {
                     printf( "ERROR: StackWalk64 (%p)\n", frame.AddrPC.Offset );
                     break;
                 }
+
                 if ( frame.AddrPC.Offset != 0 )
                     trace.push_back( reinterpret_cast<void*>( frame.AddrPC.Offset ) );
-                ++it;
+
+                if ( frame.AddrReturn.Offset == 0 )
+                    break;
             }
+            SetLastError( ERROR_SUCCESS );
         #endif
     #else
         #warning Stack trace is not supported on this compiler/OS
