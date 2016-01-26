@@ -434,19 +434,16 @@ static void signal_handler( int sig )
     printf("Signal caught acquiring stack (%i)\n",sig);
     StackTrace::setErrorHandlers( [](std::string,StackTrace::terminateType) { exit( -1 ); } );
 }
-std::vector<StackTrace::stack_info> StackTrace::getStackInfo( const std::vector<void*>& address )
-{
-    std::vector<StackTrace::stack_info> info(address.size());
-    for (size_t i=0; i<address.size(); i++)
-        info[i] = getStackInfo(address[i]);
-    return info;
-}
 StackTrace::stack_info StackTrace::getStackInfo( void *address )
+{
+    return getStackInfo( std::vector<void*>(1,address) )[0];
+}
+std::vector<StackTrace::stack_info> StackTrace::getStackInfo( const std::vector<void*>& address )
 {
     // Temporarily handle signals to prevent recursion on the stack
     auto prev_handler = signal( SIGINT, signal_handler );
     // Get the detailed stack info
-    StackTrace::stack_info info;
+    std::vector<StackTrace::stack_info> info(address.size());
     try {
         #ifdef USE_WINDOWS
             IMAGEHLP_SYMBOL64 pSym[1024];
@@ -460,69 +457,73 @@ StackTrace::stack_info StackTrace::getStackInfo( void *address )
 
             HANDLE pid = GetCurrentProcess();
 
+            for (size_t i=0; i<address.size(); i++) {
+                info[i].address = address[i];
+                DWORD64 address2 = reinterpret_cast<DWORD64>( address[i] );
+                DWORD64 offsetFromSmybol;
+                if ( SymGetSymFromAddr( pid, address2, &offsetFromSmybol, pSym ) != FALSE ) {
+                    char name[8192]={0};
+                    DWORD rtn = UnDecorateSymbolName( pSym->Name, name, sizeof(name)-1, UNDNAME_COMPLETE );
+                    if ( rtn == 0 )
+                        info[i].function = std::string(pSym->Name);
+                    else
+                        info[i].function = std::string(name);
+                } else {
+                    printf( "ERROR: SymGetSymFromAddr (%d,%p)\n", GetLastError(), address2 );
+                }
 
-            info.address = address;
-            DWORD64 address2 = reinterpret_cast<DWORD64>( address );
-            DWORD64 offsetFromSmybol;
-            if ( SymGetSymFromAddr( pid, address2, &offsetFromSmybol, pSym ) != FALSE ) {
-                char name[8192]={0};
-                DWORD rtn = UnDecorateSymbolName( pSym->Name, name, sizeof(name)-1, UNDNAME_COMPLETE );
-                if ( rtn == 0 )
-                    info.function = std::string(pSym->Name);
-                else
-                    info.function = std::string(name);
-            } else {
-                printf( "ERROR: SymGetSymFromAddr (%d,%p)\n", GetLastError(), address2 );
-            }
+                // Get line number
+                IMAGEHLP_LINE64 Line;
+                memset( &Line, 0, sizeof( Line ) );
+                Line.SizeOfStruct = sizeof( Line );
+                DWORD offsetFromLine;
+                if ( SymGetLineFromAddr64( pid, address2, &offsetFromLine, &Line ) != FALSE ) {
+                    info[i].line     = Line.LineNumber;
+                    info[i].filename = std::string( Line.FileName );
+                } else {
+                    info[i].line     = 0;
+                    info[i].filename = std::string();
+                }
 
-            // Get line number
-            IMAGEHLP_LINE64 Line;
-            memset( &Line, 0, sizeof( Line ) );
-            Line.SizeOfStruct = sizeof( Line );
-            DWORD offsetFromLine;
-            if ( SymGetLineFromAddr64( pid, address2, &offsetFromLine, &Line ) != FALSE ) {
-                info.line     = Line.LineNumber;
-                info.filename = std::string( Line.FileName );
-            } else {
-                info.line     = 0;
-                info.filename = std::string();
-            }
-
-            // Get the object
-            if ( SymGetModuleInfo64( pid, address2, &Module ) != FALSE ) {
-                //csEntry.object = std::string( Module.ModuleName );
-                info.object = std::string( Module.LoadedImageName );
-                //csEntry.baseOfImage = Module.BaseOfImage;
+                // Get the object
+                if ( SymGetModuleInfo64( pid, address2, &Module ) != FALSE ) {
+                    //csEntry.object = std::string( Module.ModuleName );
+                    info[i].object = std::string( Module.LoadedImageName );
+                    //csEntry.baseOfImage = Module.BaseOfImage;
+                }
             }
         #else
-            info.address = address;
-            #if defined(_GNU_SOURCE) || defined(USE_MAC)
-                Dl_info dlinfo;
-                if ( !dladdr( info.address, &dlinfo ) ) {
-                    getDataFromGlobalSymbols( info );
-                    getFileAndLine( info );
-                    return info;
-                }
-                info.address2 = subtractAddress( info.address, dlinfo.dli_fbase );
-                info.object   = std::string( dlinfo.dli_fname );
-                #if defined( USE_ABI )
-                    int status;
-                    char *demangled = abi::__cxa_demangle( dlinfo.dli_sname, nullptr, nullptr, &status );
-                    if ( status == 0 && demangled != nullptr ) {
-                        info.function = std::string( demangled );
-                    } else if ( dlinfo.dli_sname != nullptr ) {
-                        info.function = std::string( dlinfo.dli_sname );
+            for (size_t i=0; i<address.size(); i++) {
+                info[i].address = address[i];
+                #if defined(_GNU_SOURCE) || defined(USE_MAC)
+                    Dl_info dlinfo;
+                    if ( !dladdr( info[i].address, &dlinfo ) ) {
+                        getDataFromGlobalSymbols( info[i] );
+                        continue;
                     }
-                    free( demangled );
+                    info[i].address2 = subtractAddress( info[i].address, dlinfo.dli_fbase );
+                    info[i].object   = std::string( dlinfo.dli_fname );
+                    #if defined( USE_ABI )
+                        int status;
+                        char *demangled = abi::__cxa_demangle( dlinfo.dli_sname, nullptr, nullptr, &status );
+                        if ( status == 0 && demangled != nullptr ) {
+                            info[i].function = std::string( demangled );
+                        } else if ( dlinfo.dli_sname != nullptr ) {
+                            info[i].function = std::string( dlinfo.dli_sname );
+                        }
+                        free( demangled );
+                    #else
+                        if ( dlinfo.dli_sname != NULL )
+                            info[i].function = std::string( dlinfo.dli_sname );
+                    #endif
                 #else
-                    if ( dlinfo.dli_sname != NULL )
-                        info.function = std::string( dlinfo.dli_sname );
+                    getDataFromGlobalSymbols( info[i] );
                 #endif
-            #else
-                getDataFromGlobalSymbols( info );
-            #endif
+            }
             // Get the filename / line number
-            getFileAndLine( info );
+            for (size_t i=0; i<address.size(); i++) {
+                getFileAndLine( info[i] );
+            }
         #endif
     } catch ( ... ) {
     }
@@ -552,7 +553,6 @@ std::vector<void*> StackTrace::backtrace()
             STACKFRAME64 frame; // in/out stackframe
             memset( &frame, 0, sizeof( frame ) );
             #ifdef _M_IX86
-                // normally, call ImageNtHeader() and use machine info from PE header
                 DWORD imageType = IMAGE_FILE_MACHINE_I386;
                 frame.AddrPC.Offset    = context.Eip;
                 frame.AddrPC.Mode      = AddrModeFlat;
@@ -583,9 +583,11 @@ std::vector<void*> StackTrace::backtrace()
             #endif
 
             trace.reserve( 1000 );
+            auto pid = GetCurrentProcess();
+            auto tid = GetCurrentThread();
             for ( int frameNum = 0, curRecursionCount = 0; ; ++frameNum ) {
-                if ( !StackWalk64( imageType, GetCurrentProcess(), GetCurrentThread(), &frame, &context,
-                         readProcMem, SymFunctionTableAccess, SymGetModuleBase64, NULL ) ) {
+                if ( !StackWalk64( imageType, pid, tid, &frame, &context, readProcMem,
+                         SymFunctionTableAccess, SymGetModuleBase64, NULL ) ) {
                     printf( "ERROR: StackWalk64 (%p)\n", frame.AddrPC.Offset );
                     break;
                 }
