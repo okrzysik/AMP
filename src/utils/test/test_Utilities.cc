@@ -438,6 +438,10 @@ int main( int argc, char *argv[] )
         } else {
             ut.failure( "non empty call stack" );
         }
+        ts1 = AMP::AMP_MPI::time();
+        auto trace = AMP::StackTrace::backtrace();
+        ts2 = AMP::AMP_MPI::time();
+        std::cout << "Time to get backtrace: " << ts2-ts1 << std::endl;
 
         // Test getting the symbols
         std::vector<void *> address;

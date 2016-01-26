@@ -121,6 +121,7 @@ namespace StackTrace {
 BOOL GetModuleListTH32( HANDLE hProcess, DWORD pid );
 BOOL GetModuleListPSAPI( HANDLE hProcess );
 DWORD LoadModule( HANDLE hProcess, LPCSTR img, LPCSTR mod, DWORD64 baseAddr, DWORD size );
+void LoadModules( );
 };
 #endif
 
@@ -433,10 +434,10 @@ static void signal_handler( int sig )
     printf("Signal caught acquiring stack (%i)\n",sig);
     StackTrace::setErrorHandlers( [](std::string,StackTrace::terminateType) { exit( -1 ); } );
 }
-std::vector<StackTrace::stack_info> StackTrace::getStackInfo( int N, void **address )
+std::vector<StackTrace::stack_info> StackTrace::getStackInfo( const std::vector<void*>& address )
 {
-    std::vector<StackTrace::stack_info> info(N);
-    for (int i=0; i<N; i++)
+    std::vector<StackTrace::stack_info> info(address.size());
+    for (size_t i=0; i<address.size(); i++)
         info[i] = getStackInfo(address[i]);
     return info;
 }
@@ -447,72 +448,100 @@ StackTrace::stack_info StackTrace::getStackInfo( void *address )
     // Get the detailed stack info
     StackTrace::stack_info info;
     try {
-        info.address = address;
-        #if defined(_GNU_SOURCE) || defined(USE_MAC)
-            Dl_info dlinfo;
-            if ( !dladdr( info.address, &dlinfo ) ) {
-                getDataFromGlobalSymbols( info );
-                getFileAndLine( info );
-                return info;
+        #ifdef USE_WINDOWS
+            IMAGEHLP_SYMBOL64 pSym[1024];
+            memset( pSym, 0, sizeof( pSym ) );
+            pSym->SizeOfStruct  = sizeof( IMAGEHLP_SYMBOL64 );
+            pSym->MaxNameLength = 1024;
+
+            IMAGEHLP_MODULE64 Module;
+            memset( &Module, 0, sizeof( Module ) );
+            Module.SizeOfStruct = sizeof( Module );
+
+            HANDLE pid = GetCurrentProcess();
+
+
+            info.address = address;
+            DWORD64 address2 = reinterpret_cast<DWORD64>( address );
+            DWORD64 offsetFromSmybol;
+            if ( SymGetSymFromAddr( pid, address2, &offsetFromSmybol, pSym ) != FALSE ) {
+                char name[8192]={0};
+                DWORD rtn = UnDecorateSymbolName( pSym->Name, name, sizeof(name)-1, UNDNAME_COMPLETE );
+                if ( rtn == 0 )
+                    info.function = std::string(pSym->Name);
+                else
+                    info.function = std::string(name);
+            } else {
+                printf( "ERROR: SymGetSymFromAddr (%d,%p)\n", GetLastError(), address2 );
             }
-            info.address2 = subtractAddress( info.address, dlinfo.dli_fbase );
-            info.object   = std::string( dlinfo.dli_fname );
-            #if defined( USE_ABI )
-                int status;
-                char *demangled = abi::__cxa_demangle( dlinfo.dli_sname, nullptr, nullptr, &status );
-                if ( status == 0 && demangled != nullptr ) {
-                    info.function = std::string( demangled );
-                } else if ( dlinfo.dli_sname != nullptr ) {
-                    info.function = std::string( dlinfo.dli_sname );
-                }
-                free( demangled );
-            #else
-                if ( dlinfo.dli_sname != NULL )
-                    info.function = std::string( dlinfo.dli_sname );
-            #endif
+
+            // Get line number
+            IMAGEHLP_LINE64 Line;
+            memset( &Line, 0, sizeof( Line ) );
+            Line.SizeOfStruct = sizeof( Line );
+            DWORD offsetFromLine;
+            if ( SymGetLineFromAddr64( pid, address2, &offsetFromLine, &Line ) != FALSE ) {
+                info.line     = Line.LineNumber;
+                info.filename = std::string( Line.FileName );
+            } else {
+                info.line     = 0;
+                info.filename = std::string();
+            }
+
+            // Get the object
+            if ( SymGetModuleInfo64( pid, address2, &Module ) != FALSE ) {
+                //csEntry.object = std::string( Module.ModuleName );
+                info.object = std::string( Module.LoadedImageName );
+                //csEntry.baseOfImage = Module.BaseOfImage;
+            }
         #else
-            getDataFromGlobalSymbols( info );
+            info.address = address;
+            #if defined(_GNU_SOURCE) || defined(USE_MAC)
+                Dl_info dlinfo;
+                if ( !dladdr( info.address, &dlinfo ) ) {
+                    getDataFromGlobalSymbols( info );
+                    getFileAndLine( info );
+                    return info;
+                }
+                info.address2 = subtractAddress( info.address, dlinfo.dli_fbase );
+                info.object   = std::string( dlinfo.dli_fname );
+                #if defined( USE_ABI )
+                    int status;
+                    char *demangled = abi::__cxa_demangle( dlinfo.dli_sname, nullptr, nullptr, &status );
+                    if ( status == 0 && demangled != nullptr ) {
+                        info.function = std::string( demangled );
+                    } else if ( dlinfo.dli_sname != nullptr ) {
+                        info.function = std::string( dlinfo.dli_sname );
+                    }
+                    free( demangled );
+                #else
+                    if ( dlinfo.dli_sname != NULL )
+                        info.function = std::string( dlinfo.dli_sname );
+                #endif
+            #else
+                getDataFromGlobalSymbols( info );
+            #endif
+            // Get the filename / line number
+            getFileAndLine( info );
         #endif
-        // Get the filename / line number
-        getFileAndLine( info );
     } catch ( ... ) {
     }
     signal( SIGINT, prev_handler ) ;
     return info;
 }
-std::vector<StackTrace::stack_info> StackTrace::getCallStack()
+std::vector<void*> StackTrace::backtrace()
 {
-    std::vector<StackTrace::stack_info> stack_list;
+    std::vector<void*> trace;
     #if defined( USE_LINUX ) || defined( USE_MAC )
         // Get the trace
-        void *trace[100];
-        memset( trace, 0, 100 * sizeof( void * ) );
-        int trace_size = backtrace( trace, 100 );
-        stack_list.reserve( trace_size );
-        for ( int i = 0; i < trace_size; ++i )
-            stack_list.push_back( getStackInfo( trace[i] ) );
+        trace.resize(1000,nullptr)l
+        int trace_size = backtrace( trace.data(), trace.size() );
+        trace.resize (trace_size );
     #elif defined( USE_WINDOWS )
         #if defined(DBGHELP)
-            // Get the search paths for symbols
-            std::string paths = getSymPaths();
 
-            // Initialize the symbols
-            if ( SymInitialize( GetCurrentProcess(), paths.c_str(), FALSE ) == FALSE )
-                printf( "ERROR: SymInitialize (%d)\n", GetLastError() );
-
-            DWORD symOptions = SymGetOptions();
-            symOptions |= SYMOPT_LOAD_LINES | SYMOPT_FAIL_CRITICAL_ERRORS;
-            symOptions = SymSetOptions( symOptions );
-            char buf[1024] = { 0 };
-            if ( SymGetSearchPath( GetCurrentProcess(), buf, sizeof(buf) ) == FALSE )
-                printf( "ERROR: SymGetSearchPath (%d)\n", GetLastError() );
-
-            // First try to load modules from toolhelp32
-            BOOL loaded = StackTrace::GetModuleListTH32( GetCurrentProcess(), GetCurrentProcessId() );
-
-            // Try to load from Psapi
-            if ( !loaded )
-                loaded = StackTrace::GetModuleListPSAPI( GetCurrentProcess() );
+            // Load the modules for the stack trace
+            LoadModules();
 
             ::CONTEXT context;
             memset( &context, 0, sizeof( context ) );
@@ -553,73 +582,27 @@ std::vector<StackTrace::stack_info> StackTrace::getCallStack()
                 #error "Platform not supported!"
             #endif
 
-            IMAGEHLP_SYMBOL64 pSym[1024];
-            memset( pSym, 0, sizeof( pSym ) );
-            pSym->SizeOfStruct  = sizeof( IMAGEHLP_SYMBOL64 );
-            pSym->MaxNameLength = 1024;
-
-            IMAGEHLP_MODULE64 Module;
-            memset( &Module, 0, sizeof( Module ) );
-            Module.SizeOfStruct = sizeof( Module );
-
+            trace.reserve( 1000 );
             for ( int frameNum = 0, curRecursionCount = 0; ; ++frameNum ) {
-                // get next stack frame (StackWalk64(), SymFunctionTableAccess64(), SymGetModuleBase64())
-                // if this returns ERROR_INVALID_ADDRESS (487) or ERROR_NOACCESS (998), you can
-                // assume that either you are done, or that the stack is so hosed that the next
-                // deeper frame could not be found.
-                // CONTEXT need not to be suplied if imageTyp is IMAGE_FILE_MACHINE_I386!
                 if ( !StackWalk64( imageType, GetCurrentProcess(), GetCurrentThread(), &frame, &context,
                          readProcMem, SymFunctionTableAccess, SymGetModuleBase64, NULL ) ) {
                     printf( "ERROR: StackWalk64 (%p)\n", frame.AddrPC.Offset );
                     break;
                 }
 
-                StackTrace::stack_info csEntry;
-                csEntry.address = reinterpret_cast<void*>( frame.AddrPC.Offset );
                 if ( frame.AddrPC.Offset == frame.AddrReturn.Offset ) {
                     if ( curRecursionCount > 1024 ) {
                         printf( "ERROR: StackWalk64-Endless-Callstack! (%p)\n", frame.AddrPC.Offset );
                         break;
                     }
                     curRecursionCount++;
-                } else
+                } else {
                     curRecursionCount = 0;
+                }
+
                 if ( frame.AddrPC.Offset != 0 ) {
-                    DWORD64 offsetFromSmybol;
-                    if ( SymGetSymFromAddr( GetCurrentProcess(), frame.AddrPC.Offset, &offsetFromSmybol, pSym ) != FALSE ) {
-                        char name[8192]={0};
-                        DWORD rtn = UnDecorateSymbolName( pSym->Name, name, sizeof(name)-1, UNDNAME_COMPLETE );
-                        if ( rtn == 0 )
-                            csEntry.function = std::string(pSym->Name);
-                        else
-                            csEntry.function = std::string(name);
-                    } else {
-                        printf( "ERROR: SymGetSymFromAddr (%d,%p)\n", GetLastError(), frame.AddrPC.Offset );
-                    }
-
-                    // Get line number
-                    IMAGEHLP_LINE64 Line;
-                    memset( &Line, 0, sizeof( Line ) );
-                    Line.SizeOfStruct = sizeof( Line );
-                    DWORD offsetFromLine;
-                    if ( SymGetLineFromAddr64( GetCurrentProcess(), frame.AddrPC.Offset, &offsetFromLine, &Line ) != FALSE ) {
-                        csEntry.line     = Line.LineNumber;
-                        csEntry.filename = std::string( Line.FileName );
-                    } else {
-                        csEntry.line     = 0;
-                        csEntry.filename = std::string();
-                    }
-
-                    // Get the object
-                    if ( SymGetModuleInfo64( GetCurrentProcess(), frame.AddrPC.Offset, &Module ) != FALSE ) {
-                        //csEntry.object = std::string( Module.ModuleName );
-                        csEntry.object = std::string( Module.LoadedImageName );
-                        //csEntry.baseOfImage = Module.BaseOfImage;
-                    }
-                } // we seem to have a valid PC
-
-                if ( csEntry.address!=0 )
-                    stack_list.push_back(csEntry);
+                    trace.push_back( reinterpret_cast<void*>( frame.AddrPC.Offset ) );
+                }
 
                 if ( frame.AddrReturn.Offset == 0 ) {
                     SetLastError( ERROR_SUCCESS );
@@ -630,7 +613,12 @@ std::vector<StackTrace::stack_info> StackTrace::getCallStack()
     #else
         #warning Stack trace is not supported on this compiler/OS
     #endif
-    return stack_list;
+    return trace;
+}
+std::vector<StackTrace::stack_info> StackTrace::getCallStack()
+{
+    std::vector<void*> trace = StackTrace::backtrace();
+    return getStackInfo(trace);
 }
 // clang-format on
 
@@ -832,6 +820,34 @@ BOOL StackTrace::GetModuleListPSAPI( HANDLE hProcess )
     }
 
     return cnt != 0;
+}
+void StackTrace::LoadModules()
+{
+    static bool modules_loaded = false;
+    if ( !modules_loaded ) {
+        modules_loaded = true;
+
+        // Get the search paths for symbols
+        std::string paths = StackTrace::getSymPaths();
+
+        // Initialize the symbols
+        if ( SymInitialize( GetCurrentProcess(), paths.c_str(), FALSE ) == FALSE )
+            printf( "ERROR: SymInitialize (%d)\n", GetLastError() );
+
+        DWORD symOptions = SymGetOptions();
+        symOptions |= SYMOPT_LOAD_LINES | SYMOPT_FAIL_CRITICAL_ERRORS;
+        symOptions = SymSetOptions( symOptions );
+        char buf[1024] = { 0 };
+        if ( SymGetSearchPath( GetCurrentProcess(), buf, sizeof(buf) ) == FALSE )
+            printf( "ERROR: SymGetSearchPath (%d)\n", GetLastError() );
+
+        // First try to load modules from toolhelp32
+        BOOL loaded = StackTrace::GetModuleListTH32( GetCurrentProcess(), GetCurrentProcessId() );
+
+        // Try to load from Psapi
+        if ( !loaded )
+            loaded = StackTrace::GetModuleListPSAPI( GetCurrentProcess() );
+    }
 }
 #endif
 
