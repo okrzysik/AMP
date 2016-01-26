@@ -358,6 +358,7 @@ static std::tuple<std::string,std::string,std::string,int> split_atos( const std
 // clang-format off
 static void getFileAndLine( StackTrace::stack_info &info )
 {
+    // Note: we could improve performance by combining multiple calls with the same object
     #if defined( USE_LINUX )
         void *address = info.address;
         if ( info.object.find( ".so" ) != std::string::npos )
@@ -487,9 +488,9 @@ std::vector<StackTrace::stack_info> StackTrace::getStackInfo( const std::vector<
 
                 // Get the object
                 if ( SymGetModuleInfo64( pid, address2, &Module ) != FALSE ) {
-                    //csEntry.object = std::string( Module.ModuleName );
+                    //info[i].object = std::string( Module.ModuleName );
                     info[i].object = std::string( Module.LoadedImageName );
-                    //csEntry.baseOfImage = Module.BaseOfImage;
+                    //info[i].baseOfImage = Module.BaseOfImage;
                 }
             }
         #else
@@ -544,12 +545,11 @@ std::vector<void*> StackTrace::backtrace()
             // Load the modules for the stack trace
             LoadModules();
 
+            // Initialize stackframe for first call
             ::CONTEXT context;
             memset( &context, 0, sizeof( context ) );
             context.ContextFlags = CONTEXT_FULL;
             RtlCaptureContext( &context );
-
-            // init STACKFRAME for first call
             STACKFRAME64 frame; // in/out stackframe
             memset( &frame, 0, sizeof( frame ) );
             #ifdef _M_IX86
@@ -585,31 +585,17 @@ std::vector<void*> StackTrace::backtrace()
             trace.reserve( 1000 );
             auto pid = GetCurrentProcess();
             auto tid = GetCurrentThread();
-            for ( int frameNum = 0, curRecursionCount = 0; ; ++frameNum ) {
-                if ( !StackWalk64( imageType, pid, tid, &frame, &context, readProcMem,
-                         SymFunctionTableAccess, SymGetModuleBase64, NULL ) ) {
+            int it = 0;
+            while ( it<1024 && frame.AddrReturn.Offset==0 ) {
+                BOOL rtn = StackWalk64( imageType, pid, tid, &frame, &context, readProcMem,
+                                        SymFunctionTableAccess, SymGetModuleBase64, NULL );
+                if ( !rtn ) {
                     printf( "ERROR: StackWalk64 (%p)\n", frame.AddrPC.Offset );
                     break;
                 }
-
-                if ( frame.AddrPC.Offset == frame.AddrReturn.Offset ) {
-                    if ( curRecursionCount > 1024 ) {
-                        printf( "ERROR: StackWalk64-Endless-Callstack! (%p)\n", frame.AddrPC.Offset );
-                        break;
-                    }
-                    curRecursionCount++;
-                } else {
-                    curRecursionCount = 0;
-                }
-
-                if ( frame.AddrPC.Offset != 0 ) {
+                if ( frame.AddrPC.Offset != 0 )
                     trace.push_back( reinterpret_cast<void*>( frame.AddrPC.Offset ) );
-                }
-
-                if ( frame.AddrReturn.Offset == 0 ) {
-                    SetLastError( ERROR_SUCCESS );
-                    break;
-                }
+                ++it;
             }
         #endif
     #else
