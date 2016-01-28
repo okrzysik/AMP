@@ -71,20 +71,20 @@ public:
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */
-    virtual size_t numLocalElements( const GeomType type ) const;
+    virtual size_t numLocalElements( const GeomType type ) const override;
 
 
     /* Return the global number of elements of the given type
      * \param type   Geometric type
      */
-    virtual size_t numGlobalElements( const GeomType type ) const;
+    virtual size_t numGlobalElements( const GeomType type ) const override;
 
 
     /* Return the number of ghost elements of the given type on the current processor
      * \param type   Geometric type
      * \param gcw    Desired ghost cell width
      */
-    virtual size_t numGhostElements( const GeomType type, const int gcw ) const;
+    virtual size_t numGhostElements( const GeomType type, const int gcw ) const override;
 
 
     /**
@@ -93,7 +93,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const;
+    virtual MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const override;
 
 
     /**
@@ -102,14 +102,14 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const;
+    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const override;
 
 
     /**
      * \brief    Return the list of all ID sets in the mesh
      * \details  Return the list of all ID sets in the mesh
      */
-    virtual std::vector<int> getBoundaryIDs() const;
+    virtual std::vector<int> getBoundaryIDs() const override;
 
 
     /**
@@ -120,7 +120,7 @@ public:
      * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator
-    getBoundaryIDIterator( const GeomType type, const int id, const int gcw = 0 ) const;
+    getBoundaryIDIterator( const GeomType type, const int id, const int gcw = 0 ) const override;
 
 
     /**
@@ -131,7 +131,7 @@ public:
      *   size of the physical dimension.
      * \param x  Displacement vector
      */
-    virtual void displaceMesh( std::vector<double> x );
+    virtual void displaceMesh( std::vector<double> x ) override;
 
 
 #ifdef USE_AMP_VECTORS
@@ -143,7 +143,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x );
+    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 #endif
 
 

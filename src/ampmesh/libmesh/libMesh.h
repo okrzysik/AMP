@@ -68,7 +68,7 @@ public:
     virtual ~libMesh();
 
     //! Function to copy the mesh (allows use to proply copy the derived class)
-    virtual AMP::shared_ptr<Mesh> copy() const;
+    virtual AMP::shared_ptr<Mesh> copy() const override;
 
 
     /**
@@ -94,20 +94,20 @@ public:
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */
-    virtual size_t numLocalElements( const GeomType type ) const;
+    virtual size_t numLocalElements( const GeomType type ) const override;
 
 
     /* Return the global number of elements of the given type
      * \param type   Geometric type
      */
-    virtual size_t numGlobalElements( const GeomType type ) const;
+    virtual size_t numGlobalElements( const GeomType type ) const override;
 
 
     /* Return the number of ghost elements of the given type on the current processor
      * \param type   Geometric type
      * \param gcw    Desired ghost cell width
      */
-    virtual size_t numGhostElements( const GeomType type, const int gcw ) const;
+    virtual size_t numGhostElements( const GeomType type, const int gcw ) const override;
 
 
     /**
@@ -116,7 +116,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const;
+    virtual MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const override;
 
 
     /**
@@ -125,7 +125,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const;
+    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const override;
 
 
     /**
@@ -133,7 +133,7 @@ public:
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBoundaryIDs() const;
+    virtual std::vector<int> getBoundaryIDs() const override;
 
 
     /**
@@ -146,14 +146,14 @@ public:
      * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator
-    getBoundaryIDIterator( const GeomType type, const int id, const int gcw = 0 ) const;
+    getBoundaryIDIterator( const GeomType type, const int id, const int gcw = 0 ) const override;
 
     /**
      * \brief    Return the list of all boundary ID sets in the mesh
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBlockIDs() const;
+    virtual std::vector<int> getBlockIDs() const override;
 
 
     /**
@@ -164,7 +164,7 @@ public:
      * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator
-    getBlockIDIterator( const GeomType type, const int id, const int gcw = 0 ) const;
+    getBlockIDIterator( const GeomType type, const int id, const int gcw = 0 ) const override;
 
 
     /**
@@ -175,7 +175,7 @@ public:
      *    elements that were constructed internally.
      * \param id    Mesh element id we are requesting.
      */
-    virtual MeshElement getElement( const MeshElementID &id ) const;
+    virtual MeshElement getElement( const MeshElementID &id ) const override;
 
 
     /**
@@ -186,7 +186,7 @@ public:
      *   size of the physical dimension.
      * \param x  Displacement vector
      */
-    virtual void displaceMesh( const std::vector<double> &x );
+    virtual void displaceMesh( const std::vector<double> &x ) override;
 
 
     //! Return the underlying libMesh object
@@ -202,7 +202,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x );
+    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 #endif
 
 

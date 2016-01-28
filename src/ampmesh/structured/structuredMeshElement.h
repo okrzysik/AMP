@@ -32,16 +32,16 @@ public:
     virtual ~structuredMeshElement();
 
     //! Return the elements composing the current element
-    virtual std::vector<MeshElement> getElements( const GeomType type ) const;
+    virtual std::vector<MeshElement> getElements( const GeomType type ) const override;
 
     //! Return the elements neighboring the current element
-    virtual std::vector<MeshElement::shared_ptr> getNeighbors() const;
+    virtual std::vector<MeshElement::shared_ptr> getNeighbors() const override;
 
     //! Return the volume of the current element (does not apply to verticies)
-    virtual double volume() const;
+    virtual double volume() const override;
 
     //! Return the coordinates of the vertex (only applies to verticies)
-    virtual std::vector<double> coord() const;
+    virtual std::vector<double> coord() const override;
 
     /**
      * \brief     Return the coordinate of the vertex
@@ -50,7 +50,7 @@ public:
      *   Note: This is a faster access for obtaining a single coordinate
      * \param i     The direction requested.  Equivalent to coord()[i]
      */
-    virtual double coord( int i ) const;
+    virtual double coord( int i ) const override;
 
     /**
      * \brief     Return true if the element contains the point
@@ -60,24 +60,24 @@ public:
      * \param pos   The coordinates of the point to check.
      * \param TOL   The tolerance to use for the computation.
      */
-    virtual bool containsPoint( const std::vector<double> &pos, double TOL = 1e-12 ) const;
+    virtual bool containsPoint( const std::vector<double> &pos, double TOL = 1e-12 ) const override;
 
     //! Check if the element is on the surface
-    virtual bool isOnSurface() const;
+    virtual bool isOnSurface() const override;
 
     /**
      * \brief     Check if the current element is on the given boundary
      * \details   Check if the current element is on the boundary specified by the given id
      * \param id  The boundary id to check
      */
-    virtual bool isOnBoundary( int id ) const;
+    virtual bool isOnBoundary( int id ) const override;
 
     /**
      * \brief     Check if the current element is in the given block
      * \details   Check if the current element is in the block specified by the given id
      * \param id  The block id to check
      */
-    virtual bool isInBlock( int id ) const;
+    virtual bool isInBlock( int id ) const override;
 
 
     /**
@@ -100,7 +100,7 @@ protected:
     structuredMeshElement( BoxMesh::MeshElementIndex index, const AMP::Mesh::BoxMesh *mesh );
 
     // Clone the iterator
-    virtual MeshElement *clone() const;
+    virtual MeshElement *clone() const override;
 
     // Internal data
     unsigned char d_dim;

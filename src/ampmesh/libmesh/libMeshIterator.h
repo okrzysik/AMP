@@ -39,10 +39,10 @@ public:
     MeshIterator operator--( int );
 
     // Arithmetic operator+
-    virtual MeshIterator operator+( int ) const;
+    virtual MeshIterator operator+( int ) const override;
 
     // Arithmetic operator+=
-    virtual MeshIterator &operator+=( int N );
+    virtual MeshIterator &operator+=( int N ) override;
 
     // Check if two iterators are equal
     bool operator==( const MeshIterator &rhs ) const;
@@ -63,10 +63,10 @@ public:
     MeshIterator end() const;
 
     // Return the number of elements in the iterator
-    virtual size_t size() const;
+    virtual size_t size() const override;
 
     // Return the current position (from the beginning) in the iterator
-    virtual size_t position() const;
+    virtual size_t position() const override;
 
     using MeshIterator::operator+;
     using MeshIterator::operator+=;
@@ -92,7 +92,7 @@ protected:
                      int pos2 = -1 );
 
     //! Clone the iterator
-    virtual MeshIterator *clone() const;
+    virtual MeshIterator *clone() const override;
 
     friend class AMP::Mesh::libMesh;
 

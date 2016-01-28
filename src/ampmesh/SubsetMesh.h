@@ -37,7 +37,7 @@ public:
      *    matches the meshID of the mesh, and a null pointer otherwise.
      * \param meshID  MeshID of the desired mesh
      */
-    virtual AMP::shared_ptr<Mesh> Subset( MeshID meshID ) const;
+    virtual AMP::shared_ptr<Mesh> Subset( MeshID meshID ) const override;
 
 
     /**
@@ -51,7 +51,7 @@ public:
      *    It is strongly recommended to use the meshID when possible.
      * \param name  Name of the desired mesh
      */
-    virtual AMP::shared_ptr<Mesh> Subset( std::string name ) const;
+    virtual AMP::shared_ptr<Mesh> Subset( std::string name ) const override;
 
 
     //! Function to copy the mesh (allows use to proply copy the derived class)
@@ -61,20 +61,20 @@ public:
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */
-    virtual size_t numLocalElements( const GeomType type ) const;
+    virtual size_t numLocalElements( const GeomType type ) const override;
 
 
     /* Return the global number of elements of the given type
      * Note: depending on the mesh this routine may require global communication across the mesh.
      * \param type   Geometric type
      */
-    virtual size_t numGlobalElements( const GeomType type ) const;
+    virtual size_t numGlobalElements( const GeomType type ) const override;
 
 
     /* Return the number of ghost elements of the given type on the current processor
      * \param type   Geometric type
      */
-    virtual size_t numGhostElements( const GeomType type, const int gcw ) const;
+    virtual size_t numGhostElements( const GeomType type, const int gcw ) const override;
 
 
     /**
@@ -83,7 +83,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const;
+    virtual MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const override;
 
 
     /**
@@ -92,7 +92,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const;
+    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const override;
 
 
     /**
@@ -100,7 +100,7 @@ public:
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBoundaryIDs() const;
+    virtual std::vector<int> getBoundaryIDs() const override;
 
 
     /**
@@ -113,7 +113,7 @@ public:
      * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator
-    getBoundaryIDIterator( const GeomType type, const int id, const int gcw = 0 ) const;
+    getBoundaryIDIterator( const GeomType type, const int id, const int gcw = 0 ) const override;
 
 
     /**
@@ -121,7 +121,7 @@ public:
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBlockIDs() const;
+    virtual std::vector<int> getBlockIDs() const override;
 
 
     /**
@@ -132,7 +132,7 @@ public:
      * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator
-    getBlockIDIterator( const GeomType type, const int id, const int gcw = 0 ) const;
+    getBlockIDIterator( const GeomType type, const int id, const int gcw = 0 ) const override;
 
 
     /**
@@ -141,7 +141,7 @@ public:
      * mesh
      * \param id    Mesh element id we are querying.
      */
-    virtual bool isMember( const MeshElementID &id ) const;
+    virtual bool isMember( const MeshElementID &id ) const override;
 
 
     /**
@@ -153,7 +153,7 @@ public:
      *    uses mesh iterators and requires O(N) time on the number of elements in the mesh.
      * \param id    Mesh element id we are requesting.
      */
-    virtual MeshElement getElement( const MeshElementID &id ) const;
+    virtual MeshElement getElement( const MeshElementID &id ) const override;
 
 
     /**
@@ -164,30 +164,30 @@ public:
      * \param type  Element type of the parents requested
      */
     virtual std::vector<MeshElement> getElementParents( const MeshElement &elem,
-                                                        const GeomType type ) const;
+                                                        const GeomType type ) const override;
 
 
     //! Get the largest geometric type in the mesh
-    virtual GeomType getGeomType() const { return GeomDim; }
+    virtual GeomType getGeomType() const override { return GeomDim; }
 
 
     //! Get the largest geometric type in the mesh
-    virtual AMP_MPI getComm() const { return d_comm; }
+    virtual AMP_MPI getComm() const override { return d_comm; }
 
 
     //! Get the mesh ID
-    virtual inline MeshID meshID() const { return d_meshID; }
+    virtual inline MeshID meshID() const override { return d_meshID; }
 
 
     //! Is the current mesh a base mesh
-    virtual inline bool isBaseMesh() const { return false; }
+    virtual inline bool isBaseMesh() const override { return false; }
 
 
     /**
      *  Get the meshIDs of all meshes that compose the current mesh (including its self)
      *  Note: This function may require global communication depending on the implimentation
      */
-    virtual std::vector<MeshID> getAllMeshIDs() const;
+    virtual std::vector<MeshID> getAllMeshIDs() const override;
 
 
     /**
@@ -195,21 +195,21 @@ public:
      * and subset meshes)
      *  Note: This function may require global communication depending on the implimentation
      */
-    virtual std::vector<MeshID> getBaseMeshIDs() const;
+    virtual std::vector<MeshID> getBaseMeshIDs() const override;
 
 
     /**
      *  Get the meshIDs of all meshes that compose the current mesh (including its self)
      *  on the current processor.
      */
-    virtual std::vector<MeshID> getLocalMeshIDs() const;
+    virtual std::vector<MeshID> getLocalMeshIDs() const override;
 
 
     /**
      *  Get the meshIDs of all the basic meshes that compose the current mesh
      *  (excluding multimeshes and subset meshes) on the current processor.
      */
-    virtual std::vector<MeshID> getLocalBaseMeshIDs() const;
+    virtual std::vector<MeshID> getLocalBaseMeshIDs() const override;
 
 
     /**
@@ -220,7 +220,7 @@ public:
      *   size of the physical dimension.
      * \param x  Displacement vector
      */
-    virtual void displaceMesh( const std::vector<double> &x );
+    virtual void displaceMesh( const std::vector<double> &x ) override;
 
 
 #ifdef USE_AMP_VECTORS
@@ -232,7 +232,7 @@ public:
      * \param x  Displacement vector.  Must have N DOFs per node where N
      *           is the physical dimension of the mesh.
      */
-    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x );
+    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 #endif
 
     // Needed to prevent problems with virtual functions

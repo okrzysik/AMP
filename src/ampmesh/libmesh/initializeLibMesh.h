@@ -13,7 +13,7 @@ namespace Mesh {
  * \details  This class provides routines for initializing and finalizing libmesh.
  *    Note: this class is not thread safe yet.
  */
-class initializeLibMesh
+class initializeLibMesh final
 {
 public:
     /*!
@@ -30,7 +30,7 @@ public:
      *  Deconstructor that finalizes libmesh.  This allows libmesh to be reinitialized on
      *  a new comm, and frees any memory in use by libmesh.
      */
-    virtual ~initializeLibMesh();
+    ~initializeLibMesh();
 
     /*!
      *  Function to check if libmesh can be initialized with the given comm.
