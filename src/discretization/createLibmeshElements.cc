@@ -6,6 +6,7 @@
 #include "ampmesh/MeshElement.h"
 #include "utils/Utilities.h"
 
+DISABLE_WARNINGS
 #include "libmesh/auto_ptr.h"
 #include "libmesh/cell_hex27.h"
 #include "libmesh/cell_hex8.h"
@@ -21,6 +22,7 @@
 #include "libmesh/quadrature.h"
 #include "libmesh/quadrature.h"
 #include "libmesh/string_to_enum.h"
+ENABLE_WARNINGS
 
 
 namespace AMP {

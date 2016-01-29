@@ -4,16 +4,16 @@
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"
 
-/* Libmesh files */
-
+// Libmesh files
+DISABLE_WARNINGS
 #include "libmesh/auto_ptr.h"
 #include "libmesh/enum_fe_family.h"
 #include "libmesh/enum_order.h"
 #include "libmesh/enum_quadrature_type.h"
 #include "libmesh/string_to_enum.h"
-
 #include "libmesh/face_quad4.h"
 #include "libmesh/node.h"
+ENABLE_WARNINGS
 
 #include <string>
 

@@ -2,20 +2,20 @@
 #include "ProfilerApp.h"
 #include "discretization/DOF_Manager.h"
 
-/* Libmesh files */
+// Libmesh files
+DISABLE_WARNINGS
 #include "libmesh/elem.h"
 #include "libmesh/fe_base.h"
 #include "libmesh/fe_type.h"
 #include "libmesh/quadrature.h"
-
 #include "libmesh/auto_ptr.h"
 #include "libmesh/enum_fe_family.h"
 #include "libmesh/enum_order.h"
 #include "libmesh/enum_quadrature_type.h"
 #include "libmesh/string_to_enum.h"
-
 #include "libmesh/face_quad4.h"
 #include "libmesh/node.h"
+ENABLE_WARNINGS
 
 
 namespace AMP {
