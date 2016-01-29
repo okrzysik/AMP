@@ -27,16 +27,16 @@ public:
     libMeshIterator &operator=( const libMeshIterator & );
 
     // Increment
-    MeshIterator &operator++();
+    virtual MeshIterator &operator++() override;
 
     // Increment
-    MeshIterator operator++( int );
+    virtual MeshIterator operator++( int ) override;
 
     // Decrement
-    MeshIterator &operator--();
+    virtual MeshIterator &operator--() override;
 
     // Decrement
-    MeshIterator operator--( int );
+    virtual MeshIterator operator--( int ) override;
 
     // Arithmetic operator+
     virtual MeshIterator operator+( int ) const override;
@@ -45,22 +45,22 @@ public:
     virtual MeshIterator &operator+=( int N ) override;
 
     // Check if two iterators are equal
-    bool operator==( const MeshIterator &rhs ) const;
+    virtual bool operator==( const MeshIterator &rhs ) const override;
 
     // Check if two iterators are not equal
-    bool operator!=( const MeshIterator &rhs ) const;
+    virtual bool operator!=( const MeshIterator &rhs ) const override;
 
     // Dereference the iterator
-    MeshElement &operator*( void );
+    virtual MeshElement &operator*( void ) override;
 
     // Dereference the iterator
-    MeshElement *operator->( void );
+    virtual MeshElement *operator->( void ) override;
 
     // Return an iterator to the begining
-    MeshIterator begin() const;
+    virtual MeshIterator begin() const override;
 
     // Return an iterator to the begining
-    MeshIterator end() const;
+    virtual MeshIterator end() const override;
 
     // Return the number of elements in the iterator
     virtual size_t size() const override;

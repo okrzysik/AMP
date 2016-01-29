@@ -145,7 +145,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const;
+    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const override;
 
 
     /**
@@ -153,7 +153,7 @@ public:
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBoundaryIDs() const;
+    virtual std::vector<int> getBoundaryIDs() const override;
 
 
     /**
