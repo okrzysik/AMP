@@ -574,4 +574,12 @@ double Utilities::trilinear( const std::vector<double> &x,
     double h1  = ( dx * f6 + dx2 * f5 ) * dy2 + ( dx * f8 + dx2 * f7 ) * dy;
     return h0 * dz2 + h1 * dz;
 }
+
+
+// Dummy function to prevent compiler from optimizing away variable
+void Utilities::nullUse( void* data )
+{
+    NULL_USE(data);
+}
+
 }

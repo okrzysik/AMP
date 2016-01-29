@@ -322,7 +322,7 @@ int main( int argc, char *argv[] )
         double time1    = AMP::AMP_MPI::time() - t0;
         double *tmp     = new double[0x100000];
         memset( tmp, 0xAA, 0x100000 * sizeof( uint64_t ) );
-        NULL_USE( tmp );
+        AMP::Utilities::nullUse( tmp );
         t0              = AMP::AMP_MPI::time();
         size_t n_bytes2 = AMP::Utilities::getMemoryUsage();
         double time2    = AMP::AMP_MPI::time() - t0;
@@ -367,6 +367,7 @@ int main( int argc, char *argv[] )
             n_bytes1       = AMP::Utilities::getMemoryUsage();
             uint64_t *tmp2 = new uint64_t[0x10000001]; // Allocate 2^31+8 bytes
             memset( tmp2, 0xAA, 0x10000001 * sizeof( uint64_t ) );
+            AMP::Utilities::nullUse( tmp );
             n_bytes2 = AMP::Utilities::getMemoryUsage();
             for ( int i = 0; i < 10; i++ ) {
                 if ( ( tmp2[rand() % 0x1000000] & 0xFF ) != 0xAA )
@@ -394,6 +395,7 @@ int main( int argc, char *argv[] )
                 ut.expected_failure( "Unable to allocate variable of size 4 GB" );
             } else {
                 memset( tmp2, 0xAA, size * sizeof( uint64_t ) );
+                AMP::Utilities::nullUse( tmp );
                 n_bytes2 = AMP::Utilities::getMemoryUsage();
                 for ( int i = 0; i < 10; i++ ) {
                     if ( ( tmp2[rand() % size] & 0xFF ) != 0xAA )
