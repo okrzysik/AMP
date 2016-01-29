@@ -52,7 +52,7 @@ public:
     virtual ~MultiMesh();
 
     //! Function to copy the mesh (allows use to proply copy the derived class)
-    AMP::shared_ptr<Mesh> copy() const;
+    virtual AMP::shared_ptr<Mesh> copy() const override;
 
     /**
      * \brief   Estimate the number of elements in the mesh
@@ -231,7 +231,7 @@ public:
 
 
     //! Is the current mesh a base mesh
-    virtual inline bool isBaseMesh() const { return false; }
+    virtual inline bool isBaseMesh() const override { return false; }
 
 
     /**

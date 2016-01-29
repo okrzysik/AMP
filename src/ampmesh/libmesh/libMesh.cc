@@ -75,12 +75,12 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
                 AMP_INSIST( d_db->keyExists( "xmin" ),
                             "Variable 'xmin' must be set in the database" );
                 std::vector<double> xmin = d_db->getDoubleArray( "xmin" );
-                AMP_INSIST( size.size() == (size_t) PhysicalDim,
+                AMP_INSIST( xmin.size() == (size_t) PhysicalDim,
                             "Variable 'xmin' must by an integer array of size dim" );
                 AMP_INSIST( d_db->keyExists( "xmax" ),
                             "Variable 'xmax' must be set in the database" );
                 std::vector<double> xmax = d_db->getDoubleArray( "xmax" );
-                AMP_INSIST( size.size() == (size_t) PhysicalDim,
+                AMP_INSIST( xmax.size() == (size_t) PhysicalDim,
                             "Variable 'xmax' must by an integer array of size dim" );
                 MeshTools::Generation::build_cube( *d_libMesh,
                                                    size[0],

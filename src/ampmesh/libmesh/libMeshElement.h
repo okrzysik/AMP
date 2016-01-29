@@ -117,7 +117,7 @@ protected:
                     const libMesh *mesh );
 
     //! Clone the iterator
-    virtual MeshElement *clone() const;
+    virtual MeshElement *clone() const override;
 
     // Internal data
     int d_dim;                    // The dimension of the mesh

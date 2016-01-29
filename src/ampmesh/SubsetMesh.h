@@ -55,7 +55,7 @@ public:
 
 
     //! Function to copy the mesh (allows use to proply copy the derived class)
-    AMP::shared_ptr<Mesh> copy() const;
+    virtual AMP::shared_ptr<Mesh> copy() const override;
 
 
     /* Return the number of local element of the given type
