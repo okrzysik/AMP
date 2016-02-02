@@ -39,7 +39,7 @@ public:
     {
         AMP::shared_ptr<MapOperatorParameters> myparams =
             AMP::dynamic_pointer_cast<MapOperatorParameters>( params );
-
+        d_boundaryId = 0;
         reset( myparams );
     }
 

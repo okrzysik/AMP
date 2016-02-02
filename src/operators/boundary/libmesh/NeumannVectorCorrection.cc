@@ -27,6 +27,9 @@ NeumannVectorCorrection::NeumannVectorCorrection(
     : BoundaryOperator( params )
 {
     d_params = params;
+    d_isConstantFlux = false;
+    d_isFluxGaussPtVector = false;
+    d_numBndIds = 0;
 
     std::string feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "FIRST" );
     std::string feFamilyName    = ( params->d_db )->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );

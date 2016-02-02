@@ -42,12 +42,7 @@ public:
       will be called to read the required parameters.
       */
     explicit RobinVectorCorrection(
-        const AMP::shared_ptr<NeumannVectorCorrectionParameters> &params )
-        : NeumannVectorCorrection( params )
-    {
-        reset( params );
-        d_InstanceID = d_iInstance_id;
-    }
+        const AMP::shared_ptr<NeumannVectorCorrectionParameters> &params );
 
     virtual ~RobinVectorCorrection() {}
 

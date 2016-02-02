@@ -237,9 +237,9 @@ void MechanicsLinearElement::apply_Reduced()
             Bl_np1[5][( 3 * i ) + 1] = dphi[i][qp]( 0 );
         }
 
-        for ( auto &elem : materialStiffnessTemp )
+        for ( int i = 0; i < 6; i++ )
             for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ )
-                elem[j]          = 0.0;
+                materialStiffnessTemp[i][j] = 0.0;
 
         for ( unsigned int i = 0; i < ( 3 * num_nodes ); i++ )
             for ( unsigned int j        = 0; j < ( 3 * num_nodes ); j++ )
@@ -433,9 +433,9 @@ void MechanicsLinearElement::apply_Normal()
             Bl_np1[5][( 3 * i ) + 1] = dphi[i][qp]( 0 );
         }
 
-        for ( auto &elem : materialStiffnessTemp )
+        for ( int i = 0; i < 6; i++ )
             for ( unsigned int j = 0; j < ( 3 * num_nodes ); j++ )
-                elem[j]          = 0.0;
+                materialMatrix[i][j] = 0.0;
 
         for ( unsigned int i = 0; i < ( 3 * num_nodes ); i++ )
             for ( unsigned int j        = 0; j < ( 3 * num_nodes ); j++ )

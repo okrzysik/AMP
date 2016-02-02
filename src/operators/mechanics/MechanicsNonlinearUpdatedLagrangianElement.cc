@@ -1073,7 +1073,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Reduced()
 
         double Bl_np1[6][24], d_np1[3][3], spin_np1[3][3], el_np1[6], Bl_dil[6][24], F_np1o2[3][3];
         double F_n[3][3], R_n[3][3], F_np1[3][3], R_np1[3][3];
-        double d_np1o2[3][3], e_np1o2_tilda_rotated[3][3];
+        double e_np1o2_tilda_rotated[3][3];
         double detF = 1.0;
 
         computeShapeFunctions( N, currXi[qp], currEta[qp], currZeta[qp] );
@@ -1124,6 +1124,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Reduced()
                              delta_w,
                              num_nodes,
                              d_np1o2_temp );
+            double d_np1o2[3][3];
             for ( int i = 0; i < 3; i++ ) {
                 for ( int j = 0; j < 3; j++ ) {
                     d_np1o2[i][j] = 0.5 * ( d_np1o2_temp[i][j] + d_np1o2_temp[j][i] );

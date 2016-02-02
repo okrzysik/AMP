@@ -135,6 +135,9 @@ public:
         // Assign data to tag
         iMesh_setDblArrData(
             mbMesh, nodes, nodes_size, tempTagHandle, &myTemps[0], myTemps.size(), &ierr );
+
+        // Free the comm
+        delete mbComm;
     }
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
