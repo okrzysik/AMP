@@ -79,13 +79,14 @@ FUNCTION( CONFIGURE_BLAS_AND_LAPACK )
         FILE(APPEND "${BLAS_LAPACK_HEADER}" "#define USE_ATLAS\n" )
         SET( BLAS_LAPACK_LIBS ${ATLAS_LIBS} PARENT_SCOPE)
     ELSEIF( USE_VECLIB ) 
-        CONFIGURE_VECLIB()
         SET( USE_BLAS 1 )
         SET( USE_LAPACK 1 )
         FILE(APPEND "${BLAS_LAPACK_HEADER}" "#define USE_BLAS\n" )
         FILE(APPEND "${BLAS_LAPACK_HEADER}" "#define USE_LAPACK\n" )
         FILE(APPEND "${BLAS_LAPACK_HEADER}" "#define USE_VECLIB\n" )
-        SET( BLAS_LAPACK_LIBS ${VECLIB_LIBS} PARENT_SCOPE)
+        FILE(APPEND "${BLAS_LAPACK_HEADER}" "#include <Accelerate/Accelerate.h>\n" )
+        SET( BLAS_LAPACK_LIBS "-framework Accelerate" PARENT_SCOPE)
+        MESSAGE( "Using Accelerate" )
     ELSE()
         IF ( DEFINED USE_EXT_BLAS )
             SET( USE_BLAS ${USE_EXT_BLAS} )
@@ -190,34 +191,6 @@ MACRO( CONFIGURE_ATLAS )
     SET( ATLAS_LIBS ${ATLAS_LAPACK} ${ATLAS_F77BLAS} ${ATLAS_CBLAS} ${ATLAS_ATLAS} )
     MESSAGE( "Using atlas" )
     MESSAGE( "   ${ATLAS_LIBS}" )
-ENDMACRO()
-
-
-# Macro to configure vecLib
-MACRO( CONFIGURE_VECLIB )
-    SET(__veclib_include_suffix "Frameworks/vecLib.framework/Versions/Current/Headers")
-    FIND_PATH(vecLib_INCLUDE_DIR vecLib.h
-          DOC "vecLib include directory"
-          PATHS ${VECLIB_DIRECTORY}
-                /System/Library/${__veclib_include_suffix}
-                /System/Library/Frameworks/Accelerate.framework/Versions/Current/${__veclib_include_suffix}
-                /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.*.sdk/System/Library/Frameworks/Accelerate.framework/Versions/Current/Frameworks/vecLib.framework/Headers )
-    INCLUDE(FindPackageHandleStandardArgs)
-    find_package_handle_standard_args(vecLib DEFAULT_MSG vecLib_INCLUDE_DIR)
-    IF ( VECLIB_FOUND )
-        IF ( vecLib_INCLUDE_DIR MATCHES "^/System/Library/Frameworks/vecLib.framework.*" )
-            set(vecLib_LINKER_LIBS -lcblas "-framework vecLib")
-        ELSE()
-            set(vecLib_LINKER_LIBS -lcblas "-framework Accelerate")
-        ENDIF()
-    ELSE()
-        MESSAGE(FATAL_ERROR "VECLIB not found")
-    ENDIF()
-    FILE(APPEND ${BLAS_LAPACK_HEADER} "#include \"${vecLib_INCLUDE_DIR}/cblas.h\"\n" )
-    FILE(APPEND ${BLAS_LAPACK_HEADER} "#include \"${vecLib_INCLUDE_DIR}/clapack.h\"\n" )
-    SET( VECLIB_LIBS ${vecLib_LINKER_LIBS} )
-    MESSAGE( "Using vecLib" )
-    MESSAGE( "   ${VECLIB_LIBS}" )
 ENDMACRO()
 
 
