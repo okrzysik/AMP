@@ -1,12 +1,14 @@
 #include <algorithm>
 
-#include "ProfilerApp.h"
 #include "discretization/subsetDOFManager.h"
 #include "vectors/MultiVector.h"
 #include "vectors/SubsetVariable.h"
 #include "vectors/SubsetVector.h"
 #include "vectors/VectorBuilder.h"
-#include "vectors/VectorBuilder.h"
+#include "utils/Utilities.h"
+#include "utils/Counter.h"
+
+#include "ProfilerApp.h"
 
 
 namespace AMP {

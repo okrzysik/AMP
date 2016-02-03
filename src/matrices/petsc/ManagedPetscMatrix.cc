@@ -4,6 +4,7 @@
 #include "vectors/Vector.h"
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/trilinos/EpetraVectorEngine.h"
+#include "vectors/ExternalVectorDeleter.h"
 
 #include "matrices/petsc/ManagedPetscMatrix.h"
 #include "matrices/trilinos/ManagedEpetraMatrix.h"

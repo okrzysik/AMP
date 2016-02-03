@@ -1,9 +1,7 @@
 #ifndef included_AMP_ManagedSundialsVector
 #define included_AMP_ManagedSundialsVector
 
-#include "vectors/ExternalVectorDeleter.h"
 #include "vectors/ManagedVector.h"
-#include "vectors/VectorEngine.h"
 #include "vectors/sundials/SundialsVector.h"
 
 

@@ -1,8 +1,10 @@
 #include "ampmesh/StructuredMeshHelper.h"
 #include "ampmesh/MultiIterator.h"
 #include "ampmesh/MultiMesh.h"
+#include "ampmesh/MultiIterator.h"
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/structuredMeshIterator.h"
+#include "ampmesh/MeshElementVectorIterator.h"
 
 #include <tuple>
 

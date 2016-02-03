@@ -2,7 +2,8 @@
 #ifndef included_AMP_NavierStokesGalWFLinearFEOperator
 #define included_AMP_NavierStokesGalWFLinearFEOperator
 
-/* AMP files */
+// AMP files
+#include "vectors/MultiVariable.h"
 #include "operators/flow/NavierStokesConstants.h"
 #include "operators/flow/NavierStokesGalWFLinearElement.h"
 #include "operators/flow/NavierStokesLinearFEOperatorParameters.h"

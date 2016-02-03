@@ -22,6 +22,7 @@
 
 // LibMesh include
 DISABLE_WARNINGS
+#include "libmesh/elem.h"
 #include "libmesh/boundary_info.h"
 #include "libmesh/exodusII_io_helper.h"
 #include "libmesh/mesh.h"

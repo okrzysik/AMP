@@ -1,7 +1,6 @@
 #ifndef included_AMP_RandomSubsetVariable
 #define included_AMP_RandomSubsetVariable
 
-#include "RandomAccessIndexer.h"
 #include "SubsetVariable.h"
 
 

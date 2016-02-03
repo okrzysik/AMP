@@ -1,7 +1,6 @@
 #ifndef included_AMP_STKMeshElement
 #define included_AMP_STKMeshElement
 
-#include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "ampmesh/STKmesh/STKMesh.h"
 #include "ampmesh/STKmesh/STKMeshIterator.h"

@@ -1,4 +1,6 @@
-#include "utils/Counter.h"
+#ifndef included_AMP_Vector_inline
+#define included_AMP_Vector_inline
+
 #include "vectors/VectorDataIterator.h"
 #include <algorithm>
 
@@ -238,3 +240,5 @@ inline std::ostream &operator<<( std::ostream &out, const Vector::shared_ptr p )
 }
 }
 }
+
+#endif

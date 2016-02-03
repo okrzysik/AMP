@@ -1,13 +1,16 @@
-#include "MultiVector.h"
-#include "ManagedVector.h"
-#include <algorithm>
-#include <math.h>
-#include <stdexcept>
-
-#include "ProfilerApp.h"
+#include "vectors/MultiVector.h"
+#include "vectors/ManagedVector.h"
+#include "vectors/MultiVariable.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/MultiDOF_Manager.h"
 #include "utils/Utilities.h"
+#include "utils/Counter.h"
+
+#include "ProfilerApp.h"
+
+#include <algorithm>
+#include <math.h>
+#include <stdexcept>
 
 
 namespace AMP {

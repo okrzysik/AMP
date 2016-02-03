@@ -4,7 +4,6 @@
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "discretization/DOF_Manager.h"
-#include "discretization/DOF_ManagerParameters.h"
 #include "utils/shared_ptr.h"
 
 

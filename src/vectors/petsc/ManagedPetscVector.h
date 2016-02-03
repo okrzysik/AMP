@@ -1,15 +1,8 @@
 #ifndef included_AMP_ManagedPetscVector
 #define included_AMP_ManagedPetscVector
 
-#include "vectors/ExternalVectorDeleter.h"
 #include "vectors/ManagedVector.h"
 #include "vectors/petsc/PetscVector.h"
-
-
-extern "C" {
-#include "petsc.h"
-#include "petscvec.h"
-}
 
 
 namespace AMP {

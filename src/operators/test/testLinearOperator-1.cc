@@ -1,4 +1,3 @@
-
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
@@ -25,9 +24,11 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
+#include "vectors/MultiVariable.h"
 #include "vectors/VectorBuilder.h"
 
 #include "applyTests.h"
+
 
 void myTest( AMP::UnitTest *ut )
 {

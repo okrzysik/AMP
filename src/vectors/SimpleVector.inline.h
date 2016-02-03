@@ -1,7 +1,9 @@
-#include "VectorSelector.h"
+#include "utils/Counter.h"
+
 
 namespace AMP {
 namespace LinearAlgebra {
+
 
 template <typename T>
 inline Vector::shared_ptr SimpleVector<T>::cloneVector( const Variable::shared_ptr name ) const

@@ -1,5 +1,5 @@
-#include "VectorDataIterator.h"
-#include "Vector.h"
+#include "vectors/VectorDataIterator.h"
+#include "vectors/Vector.h"
 
 namespace AMP {
 namespace LinearAlgebra {

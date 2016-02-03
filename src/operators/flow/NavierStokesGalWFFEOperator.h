@@ -2,7 +2,7 @@
 #ifndef included_AMP_NavierStokesGalWFFEOperator
 #define included_AMP_NavierStokesGalWFFEOperator
 
-/* AMP files */
+// AMP files
 #include "ampmesh/MeshElement.h"
 #include "discretization/DOF_Manager.h"
 #include "vectors/MultiVariable.h"

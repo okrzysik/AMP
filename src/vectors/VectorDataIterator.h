@@ -5,13 +5,11 @@
 
 #include "utils/Utilities.h"
 
-#include "VectorIndexer.h"
 
 namespace AMP {
 namespace LinearAlgebra {
 
-class MultiVector;
-class ConstVectorDataIterator;
+class Vector;
 
 
 /**
@@ -206,6 +204,7 @@ public:
     friend class ConstVectorDataIterator;
 };
 
+
 /**
   * \class ConstVectorDataIterator
   * \brief  Iterator for local data in a vector
@@ -219,7 +218,6 @@ public:
   * uses the DataBlock interface in vectors to access data.  As a result,
   * for some non-AMP managed vectors, this class may not be the most efficient.
   */
-
 class ConstVectorDataIterator
 {
 private:

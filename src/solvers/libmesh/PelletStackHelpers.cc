@@ -1,4 +1,18 @@
 #include "solvers/libmesh/PelletStackHelpers.h"
+
+#include "discretization/simpleDOF_Manager.h"
+#include "vectors/VectorBuilder.h"
+#include "matrices/MatrixBuilder.h"
+#include "operators/CoupledOperator.h"
+#include "operators/LinearBVPOperator.h"
+#include "operators/NonlinearBVPOperator.h"
+#include "operators/OperatorBuilder.h"
+#include "operators/boundary/DirichletVectorCorrection.h"
+#include "operators/libmesh/PelletStackOperator.h"
+#include "operators/map/AsyncMapColumnOperator.h"
+#include "operators/map/NodeToNodeMap.h"
+#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
+
 #ifdef USE_EXT_PETSC
 #include "solvers/petsc/PetscKrylovSolver.h"
 #endif

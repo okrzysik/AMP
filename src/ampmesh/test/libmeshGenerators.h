@@ -3,15 +3,14 @@
 #define included_AMP_Unit_test_Libmesh_Generators_h
 
 #include "meshGenerators.h"
+#include "ampmesh/libmesh/libMesh.h"
+#include "ampmesh/libmesh/initializeLibMesh.h"
 
 // LibMesh include
-#include "ampmesh/libmesh/initializeLibMesh.h"
-#include "ampmesh/libmesh/libMesh.h"
-#include "libmesh/boundary_info.h"
+#include "libmesh/point.h"
+#include "libmesh/elem.h"
 #include "libmesh/cell_hex8.h"
-#include "libmesh/mesh.h"
-#include "libmesh/mesh_data.h"
-#include "libmesh/mesh_generation.h"
+
 
 namespace AMP {
 namespace unit_test {
@@ -200,26 +199,26 @@ public:
         local_mesh->reserve_elem( num_elem );
         local_mesh->reserve_nodes( num_nodes );
 
-        local_mesh->add_point(::Point( 0.0, 0.0, 0.0 ), 0 );
-        local_mesh->add_point(::Point( 0.5, 0.0, 0.0 ), 1 );
-        local_mesh->add_point(::Point( 0.5, 0.5, 0.0 ), 2 );
-        local_mesh->add_point(::Point( 0.0, 0.5, 0.0 ), 3 );
-        local_mesh->add_point(::Point( 0.0, 0.0, 0.5 ), 4 );
-        local_mesh->add_point(::Point( 0.5, 0.0, 0.5 ), 5 );
-        local_mesh->add_point(::Point( 0.5, 0.5, 0.5 ), 6 );
-        local_mesh->add_point(::Point( 0.0, 0.5, 0.5 ), 7 );
-        local_mesh->add_point(::Point( 1.0, 0.0, 0.0 ), 8 );
-        local_mesh->add_point(::Point( 1.0, 0.5, 0.0 ), 9 );
-        local_mesh->add_point(::Point( 1.0, 0.0, 0.5 ), 10 );
-        local_mesh->add_point(::Point( 1.0, 0.5, 0.5 ), 11 );
-        local_mesh->add_point(::Point( 1.0, 1.0, 0.0 ), 12 );
-        local_mesh->add_point(::Point( 0.5, 1.0, 0.0 ), 13 );
-        local_mesh->add_point(::Point( 1.0, 1.0, 0.5 ), 14 );
-        local_mesh->add_point(::Point( 0.5, 1.0, 0.5 ), 15 );
+        local_mesh->add_point(::libMesh::Point( 0.0, 0.0, 0.0 ), 0 );
+        local_mesh->add_point(::libMesh::Point( 0.5, 0.0, 0.0 ), 1 );
+        local_mesh->add_point(::libMesh::Point( 0.5, 0.5, 0.0 ), 2 );
+        local_mesh->add_point(::libMesh::Point( 0.0, 0.5, 0.0 ), 3 );
+        local_mesh->add_point(::libMesh::Point( 0.0, 0.0, 0.5 ), 4 );
+        local_mesh->add_point(::libMesh::Point( 0.5, 0.0, 0.5 ), 5 );
+        local_mesh->add_point(::libMesh::Point( 0.5, 0.5, 0.5 ), 6 );
+        local_mesh->add_point(::libMesh::Point( 0.0, 0.5, 0.5 ), 7 );
+        local_mesh->add_point(::libMesh::Point( 1.0, 0.0, 0.0 ), 8 );
+        local_mesh->add_point(::libMesh::Point( 1.0, 0.5, 0.0 ), 9 );
+        local_mesh->add_point(::libMesh::Point( 1.0, 0.0, 0.5 ), 10 );
+        local_mesh->add_point(::libMesh::Point( 1.0, 0.5, 0.5 ), 11 );
+        local_mesh->add_point(::libMesh::Point( 1.0, 1.0, 0.0 ), 12 );
+        local_mesh->add_point(::libMesh::Point( 0.5, 1.0, 0.0 ), 13 );
+        local_mesh->add_point(::libMesh::Point( 1.0, 1.0, 0.5 ), 14 );
+        local_mesh->add_point(::libMesh::Point( 0.5, 1.0, 0.5 ), 15 );
 
         std::vector<std::vector<unsigned int>> elemNodeMap = getElemNodeMap();
         for ( size_t i = 0; i < elemNodeMap.size(); i++ ) {
-            ::Elem *elem = local_mesh->add_elem( new ::Hex8 );
+            ::Elem *elem = local_mesh->add_elem( new ::libMesh::Hex8 );
             for ( int j = 0; j < 8; j++ ) {
                 elem->set_node( j ) = local_mesh->node_ptr( elemNodeMap[i][j] );
             }

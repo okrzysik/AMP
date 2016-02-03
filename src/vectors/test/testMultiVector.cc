@@ -1,27 +1,23 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include <iostream>
-#include <string>
-
 #include "utils/shared_ptr.h"
-
-#include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/PIO.h"
+#include "utils/Writer.h"
 
 #include "ampmesh/Mesh.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
-#include "utils/Utilities.h"
-#include "utils/Writer.h"
 #include "vectors/MultiVariable.h"
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 
+#include <iostream>
+#include <string>
 
 void myTest( AMP::UnitTest *ut, std::string exeName )
 {

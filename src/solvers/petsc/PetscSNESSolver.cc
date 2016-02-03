@@ -8,6 +8,7 @@
 #include "operators/LinearOperator.h"
 #include "vectors/Vector.h"
 #include "vectors/petsc/ManagedPetscVector.h"
+#include "vectors/ExternalVectorDeleter.h"
 
 #include "petscmat.h"
 #include "petscsnes.h"

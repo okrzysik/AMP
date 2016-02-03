@@ -2,9 +2,7 @@
 #ifndef DENDRO_SEARCH
 #define DENDRO_SEARCH
 
-#include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
-#include "utils/PIO.h"
 #include "utils/Utilities.h"
 
 #include "vectors/Vector.h"

@@ -1,4 +1,5 @@
 #include "vectors/sundials/ManagedSundialsVector.h"
+#include "vectors/MultiVector.h"
 
 
 namespace AMP {

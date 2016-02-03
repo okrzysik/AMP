@@ -3,7 +3,7 @@
 #include "vectors/MeshVariable.h"
 #include "vectors/StridedVariable.h"
 #include "vectors/SubsetVector.h"
-#include "vectors/VectorSelector.h"
+
 
 namespace AMP {
 namespace LinearAlgebra {

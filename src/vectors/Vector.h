@@ -2,35 +2,19 @@
 #define included_AMP_Vector
 
 
-#define DEPRECATED( x, y ) std::cout << "Deprecated method: " << x << " use " << y << std::endl;
-
-#ifndef included_iostream
-#define included_iostream
-#include <iostream>
-#endif
-
-#ifndef included_ParameterBase
-#include "utils/ParameterBase.h"
-#endif
-
-#include "utils/PIO.h"
-#include "utils/shared_ptr.h"
 #include <string>
+#include <iostream>
 
-
-#include "CommunicationList.h"
+#include "vectors/CommunicationList.h"
+#include "vectors/Variable.h"
+#include "vectors/VectorOperations.h"
+#include "discretization/DOF_Manager.h"
+#include "utils/ParameterBase.h"
+#include "utils/shared_ptr.h"
 #include "utils/Castable.h"
 #include "utils/RNG.h"
 #include "utils/enable_shared_from_this.h"
 
-#include "Variable.h"
-#include "VectorEngine.h"
-
-#include "discretization/DOF_Manager.h"
-
-#ifndef NULL
-#define NULL ( 0 )
-#endif
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -1207,5 +1191,5 @@ std::ostream &operator<<( std::ostream &out, const Vector & );
 
 #include "Vector.inline.h"
 #include "Vector.tmpl.h"
-#include "VectorDataIterator.h"
+
 #endif
