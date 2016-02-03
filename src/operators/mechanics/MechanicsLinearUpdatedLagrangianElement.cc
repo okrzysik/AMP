@@ -196,6 +196,7 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
     const double currEta[8]  = { -rsq3, -rsq3, rsq3, rsq3, -rsq3, -rsq3, rsq3, rsq3 };
     const double currZeta[8] = { -rsq3, -rsq3, -rsq3, -rsq3, rsq3, rsq3, rsq3, rsq3 };
     double Bl_np1_bar[6][24], sum_detJ, Bl_center[6][24];
+    double materialStiffness[24][24], materialStiffnessTemp[6][24];
     double dNdX[8], dNdY[8], dNdZ[8], refX[8], refY[8], refZ[8], detJ_0[1];
 
     for ( unsigned int ijk = 0; ijk < num_nodes; ijk++ ) {
@@ -395,15 +396,13 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
             materialMatrix[4][5] = materialMatrix[5][4] -= ( 0.5 * currentStress[3] );
         }
 
-        double materialStiffness[24][24], materialStiffnessTemp[6][24];
-
-        for ( int i = 0; i < 6; i++ )
+        for ( auto &elem : materialStiffnessTemp )
             for ( int j = 0; j < 24; j++ )
-                materialStiffnessTemp[i][j] = 0.0;
+                elem[j] = 0.0;
 
-        for ( int i = 0; i < 24; i++ )
-            for ( int j = 0; j < 24; j++ )
-                materialStiffness[i][j] = 0.0;
+        for ( auto &materialStiffnes : materialStiffness )
+            for ( int j             = 0; j < 24; j++ )
+                materialStiffnes[j] = 0.0;
 
         for ( int i = 0; i < 6; i++ ) {
             for ( int j = 0; j < 24; j++ ) {
@@ -493,6 +492,7 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
     const double currXi[8]   = { -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3 };
     const double currEta[8]  = { -rsq3, -rsq3, rsq3, rsq3, -rsq3, -rsq3, rsq3, rsq3 };
     const double currZeta[8] = { -rsq3, -rsq3, -rsq3, -rsq3, rsq3, rsq3, rsq3, rsq3 };
+    double materialStiffness[24][24], materialStiffnessTemp[6][24];
     double dNdX[8], dNdY[8], dNdZ[8], refX[8], refY[8], refZ[8], detJ_0[1];
     // double prevX[8], prevY[8], prevZ[8];
 
@@ -708,15 +708,13 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
             materialMatrix[4][5] = materialMatrix[5][4] -= ( 0.5 * currentStress[3] );
         }
 
-        double materialStiffness[24][24], materialStiffnessTemp[6][24];
-
-        for ( int i = 0; i < 6; i++ )
+        for ( auto &elem : materialStiffnessTemp )
             for ( int j = 0; j < 24; j++ )
-                materialStiffnessTemp[i][j] = 0.0;
+                elem[j] = 0.0;
 
-        for ( int i = 0; i < 24; i++ )
-            for ( int j  = 0; j < 24; j++ )
-                materialStiffness[i][j] = 0.0;
+        for ( auto &materialStiffnes : materialStiffness )
+            for ( int j             = 0; j < 24; j++ )
+                materialStiffnes[j] = 0.0;
 
         for ( int i = 0; i < 6; i++ ) {
             for ( int j = 0; j < 24; j++ ) {

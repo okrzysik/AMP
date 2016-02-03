@@ -265,7 +265,7 @@ double tick();
 //! Print AMP Banner
 void printBanner();
 
-//! Print AMP Banner
+//! Null use function
 void nullUse( void* );
 
 } // Utilities namespace
