@@ -78,8 +78,6 @@ private:
     */
     void setupVectors( void );
 
-    int d_number_regrid_states;
-
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_new_solution;
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_f_vec;
 };

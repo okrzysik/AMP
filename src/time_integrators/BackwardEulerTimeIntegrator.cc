@@ -24,6 +24,7 @@ BackwardEulerTimeIntegrator::BackwardEulerTimeIntegrator(
     AMP::shared_ptr<TimeIntegratorParameters> parameters )
     : ImplicitTimeIntegrator( parameters )
 {
+    d_initial_dt = 0.0;
     initialize( parameters );
 }
 
@@ -40,6 +41,8 @@ BackwardEulerTimeIntegrator::~BackwardEulerTimeIntegrator() {}
 void BackwardEulerTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
+
+    d_initial_dt = 0.0;
 
     /*
      * Initialize data members from input.

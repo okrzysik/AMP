@@ -82,8 +82,6 @@ private:
     */
     void setupVectors( void );
 
-    int d_number_regrid_states;
-
     double d_safety_factor;
     double d_atol;
 
