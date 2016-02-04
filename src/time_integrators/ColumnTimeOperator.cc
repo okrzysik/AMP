@@ -32,6 +32,8 @@ ColumnTimeOperator::ColumnTimeOperator(
     // for now we only allow one algebraic component
     d_iAlgebraicComponent = column_db->getIntegerWithDefault( "algebraicComponent", -1 );
 
+    d_dCurrentDt = column_db->getDoubleWithDefault( "CurrentTime", 0.0 );
+
     if ( d_bCreateLinearTimeOperators ) {
         const int numberOfOperators = d_pRhsOperator->getNumberOfOperators();
 

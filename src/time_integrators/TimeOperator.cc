@@ -13,6 +13,12 @@ TimeOperator::TimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParameters> i
     AMP::shared_ptr<TimeOperatorParameters> params =
         AMP::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
 
+    d_bLinearMassOperator = false;
+    d_bLinearRhsOperator  = false;
+    d_bAlgebraicComponent = false;
+    
+    d_dCurrentDt    = 0.0;
+
     d_pRhsOperator  = params->d_pRhsOperator;
     d_pMassOperator = params->d_pMassOperator;
 

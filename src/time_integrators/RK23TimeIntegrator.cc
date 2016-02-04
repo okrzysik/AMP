@@ -23,6 +23,9 @@ namespace TimeIntegrator {
 RK23TimeIntegrator::RK23TimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters )
     : TimeIntegrator( parameters )
 {
+    d_safety_factor = 0.0;
+    d_atol          = 0.0;
+
     initialize( parameters );
 }
 
