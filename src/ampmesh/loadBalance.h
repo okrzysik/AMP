@@ -1,7 +1,6 @@
 #ifndef included_AMP_LoadBalance
 #define included_AMP_LoadBalance
 
-#include "ampmesh/Mesh.h"
 #include "ampmesh/MeshParameters.h"
 
 

@@ -2,9 +2,9 @@
 #define included_AMP_MultiVector
 
 #include "DataChangePassThrough.h"
-#include "MultiVariable.h"
 #include "Vector.h"
 #include "VectorEngine.h"
+
 
 namespace AMP {
 namespace LinearAlgebra {

@@ -2,7 +2,6 @@
 #define CylindricallySymmetric_H
 
 #include "materials/Material.h"
-#include "utils/Factory.h"
 
 
 // Define the material

@@ -144,6 +144,35 @@ ENDIF()
 INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cppcheck.cmake" )
 
 
+# Add the cppclean tests
+SET( CPPCLEAN_OPTIONS )
+SET( CPPCLEAN_EXCLUDE 
+    libmeshGenerators.h meshGenerators.h meshTests.h
+    DOFManager_tests.h test_Discretization.h
+    Vector.h VectorDataIterator.h PetscVector.h NativePetscVector.inline.h
+    Material.h
+)
+SET( CPPCLEAN_SUPPRESSIONS 
+    ".inline.h' does not need to be #included"
+    "tmpl.h' does not need to be #included"
+    ".I' does not need to be #included"
+    "'ProfilerApp.h' does not need to be #included"
+    "'utils/shared_ptr.h' does not need to be #included"
+    "'utils/Utilities.h' does not need to be #included"
+    "'utils/Counter.h' does not need to be #included"
+)
+SET( CPPCLEAN_UNNECESSARY_INCLUDE 1 )
+SET( CPPCLEAN_EXTRA_INCLUDE 1 )
+SET( CPPCLEAN_SHOULD_INCLUDE 0 )
+SET( CPPCLEAN_INCLUDE_NOT_FOUND 0 )
+SET( CPPCLEAN_FUN_NOT_FOUND 0 )
+SET( CPPCLEAN_DECLARED 0 )
+SET( CPPCLEAN_STATIC 0 )
+SET( CPPCLEAN_UNUSED_VARIABLE 0 )
+SET( CPPCLEAN_UNKNOWN 1 )
+INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cppclean.cmake" )
+
+
 # Install the documentation
 IF ( USE_EXT_DOXYGEN )
     SET(DOXYFILE_LATEX "NO")

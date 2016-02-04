@@ -1,12 +1,16 @@
-/*
- * This is a dummy file to pacify cmake.
- * Material.cc
- *
- *  Created on: Aug 25, 2011
- *      Author: gad
- */
-
 #include "Material.h"
+
+// Include all Material headers (they are responsible for registering themselves with the factory)
+#include "CylindricallySymmetric.h"
+#include "Dr_nonlinear.h"
+#include "FixedClad.h"
+#include "FixedFuel.h"
+#include "Independent.h"
+#include "Ox_MSRZC_09.h"
+#include "Steel316_MSRZC_09.h"
+#include "UO2_MSRZC_09.h"
+#include "WaterLibrary.h"
+
 
 namespace AMP {
 namespace Materials {

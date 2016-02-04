@@ -1,22 +1,11 @@
 #ifndef included_AMP_PelletStackHelpers
 #define included_AMP_PelletStackHelpers
 
+#include "ampmesh/Mesh.h"
+#include "vectors/Vector.h"
 #include "operators/CoupledOperator.h"
-#include "operators/LinearBVPOperator.h"
-#include "operators/NonlinearBVPOperator.h"
-#include "operators/OperatorBuilder.h"
-#include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/libmesh/PelletStackOperator.h"
 #include "operators/map/AsyncMapColumnOperator.h"
-#include "operators/map/NodeToNodeMap.h"
-#include "operators/mechanics/MechanicsNonlinearFEOperator.h"
-
-#include "discretization/simpleDOF_Manager.h"
-
-#include "ampmesh/Mesh.h"
-#include "matrices/MatrixBuilder.h"
-#include "vectors/VectorBuilder.h"
-
 #include "solvers/ColumnSolver.h"
 #include "solvers/libmesh/PelletStackMechanicsSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"

@@ -1,5 +1,3 @@
-#include "ampmesh/Mesh.h"
-#include "ampmesh/SubsetMesh.h"
 #include "meshTests.h"
 #include "meshTests.h"
 #include "string.h"

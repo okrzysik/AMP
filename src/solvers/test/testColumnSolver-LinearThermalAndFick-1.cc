@@ -21,6 +21,7 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "vectors/VectorBuilder.h"
+#include "vectors/MultiVariable.h"
 
 #include "operators/boundary/DirichletVectorCorrection.h"
 

@@ -3,9 +3,7 @@
 
 #include "ampmesh/MeshIterator.h"
 #include "ampmesh/libmesh/libMesh.h"
-#include "utils/shared_ptr.h"
 
-#include "libmesh/mesh.h"
 
 namespace AMP {
 namespace Mesh {

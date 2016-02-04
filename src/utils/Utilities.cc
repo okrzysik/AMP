@@ -17,7 +17,6 @@
 #include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -33,7 +32,6 @@
 #include <windows.h>
 #include <process.h>
 #include <psapi.h>
-#include <stdio.h>
 #include <tchar.h>
 // clang-format on
 #define mkdir( path, mode ) _mkdir( path )
@@ -45,7 +43,6 @@
 #include <dlfcn.h>
 #include <execinfo.h>
 #include <mach/mach.h>
-#include <signal.h>
 #include <stdint.h>
 #include <sys/sysctl.h>
 #include <sys/time.h>

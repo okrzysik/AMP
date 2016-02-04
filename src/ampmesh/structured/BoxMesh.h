@@ -4,7 +4,6 @@
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshID.h"
 #include "ampmesh/MeshIterator.h"
-#include "utils/AMP_MPI.h"
 
 #ifdef USE_AMP_VECTORS
 namespace AMP {

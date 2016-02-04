@@ -1,4 +1,7 @@
+#include "vectors/StridedVariable.h"
 #include "StridedVariable.h"
+#include "discretization/subsetDOFManager.h"
+
 
 namespace AMP {
 namespace LinearAlgebra {

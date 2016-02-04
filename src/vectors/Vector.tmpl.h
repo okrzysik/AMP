@@ -1,3 +1,6 @@
+#ifndef included_AMP_Vector_tmpl
+#define included_AMP_Vector_tmpl
+
 namespace AMP {
 namespace LinearAlgebra {
 
@@ -38,5 +41,9 @@ bool Vector::hasView() const
     }
     return false;
 }
-}
-}
+
+
+} // namespace LinearAlgebra
+} // namespace AMP
+
+#endif

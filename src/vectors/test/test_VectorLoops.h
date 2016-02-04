@@ -13,6 +13,9 @@
 #include "test_PetscVector.h"
 #endif
 
+#include "test_PetscVectorTests.h"
+
+
 /// \cond UNDOCUMENTED
 
 using namespace AMP::unit_test;

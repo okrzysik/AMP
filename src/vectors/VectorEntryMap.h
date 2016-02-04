@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "utils/AMP_MPI.h"
-#include "utils/ParameterBase.h"
 #include "vectors/CommunicationList.h"
 
 #include "ObjectSorter.h"

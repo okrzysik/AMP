@@ -41,6 +41,13 @@ RobinMatrixCorrection::RobinMatrixCorrection(
     d_NeumannParams->d_variableFlux = params->d_variableFlux;
     d_NeumannCorrection.reset( new NeumannVectorCorrection( d_NeumannParams ) );
 
+    d_hef   = 0;
+    d_alpha = 0;
+    d_beta  = 0;
+    d_gamma = 0;
+    d_JxW   = 0;
+    d_phi   = 0;
+
     reset( params );
 }
 

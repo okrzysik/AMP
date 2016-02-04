@@ -1,4 +1,10 @@
 #include "vectors/petsc/NativePetscVector.h"
+#include "vectors/petsc/ManagedPetscVector.h"
+
+extern "C" {
+#include "petsc.h"
+#include "petscvec.h"
+}
 
 
 namespace AMP {

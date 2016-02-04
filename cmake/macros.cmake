@@ -1129,6 +1129,7 @@ MACRO( ADD_DISTCLEAN ${ARGN} )
         #tmp#
         bin
         cmake
+        cppclean
         ${ARGN}
     )
     ADD_CUSTOM_TARGET (distclean @echo cleaning for source distribution)

@@ -3,12 +3,8 @@
 
 #include "utils/AMP_MPI.h"
 #include "vectors/NativeVector.h"
-#include "vectors/petsc/ManagedPetscVector.h"
-
-extern "C" {
-#include "petsc.h"
-#include "petscvec.h"
-}
+#include "vectors/VectorEngine.h"
+#include "vectors/petsc/PetscVector.h"
 
 
 namespace AMP {

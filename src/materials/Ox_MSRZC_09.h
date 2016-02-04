@@ -2,7 +2,6 @@
 #define Ox_MSRZC_09_H
 
 #include "Material.h"
-#include "utils/Factory.h"
 
 
 // Define the material

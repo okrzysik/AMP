@@ -5,6 +5,7 @@
 
 #include "ProfilerApp.h"
 #include "ampmesh/StructuredMeshHelper.h"
+#include "ampmesh/MeshElementVectorIterator.h"
 #include "matrices/MatrixBuilder.h"
 #include "utils/InputDatabase.h"
 #include "utils/Utilities.h"

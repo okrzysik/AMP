@@ -1,15 +1,13 @@
 #ifndef included_AMP_libMeshElement
 #define included_AMP_libMeshElement
 
-#include "ampmesh/Mesh.h"
+
 #include "ampmesh/MeshElement.h"
 #include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/libmesh/libMeshIterator.h"
 #include "utils/shared_ptr.h"
 #include <vector>
 
-// libMesh includes
-#include "libmesh/elem.h"
 
 namespace AMP {
 namespace Mesh {

@@ -206,7 +206,7 @@ double EpetraVectorEngine::max( void ) const
 void EpetraVectorEngine::setRandomValues( void )
 {
     getEpetra_Vector().Random();
-    abs( *this );
+    this->abs( *this );
 }
 
 

@@ -4,7 +4,7 @@
 
 
 // AMP headers
-#include "ampmesh/Mesh.h"
+#include "ampmesh/MeshIterator.h"
 
 
 // Libmesh headers

@@ -1,7 +1,6 @@
 #ifndef included_AMP_MultiVectorIterator
 #define included_AMP_MultiVectorIterator
 
-#include "ampmesh/Mesh.h"
 #include "ampmesh/MeshIterator.h"
 #include "utils/shared_ptr.h"
 #include <iterator>

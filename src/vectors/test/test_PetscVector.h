@@ -1,8 +1,8 @@
 #ifndef included_test_PetscVector
 #define included_test_PetscVector
 
-#include "test_PetscVectorTests.h"
 #include "test_Vector.h"
+
 #include "utils/AMP_MPI.h"
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/petsc/NativePetscVector.h"

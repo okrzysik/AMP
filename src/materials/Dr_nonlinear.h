@@ -2,7 +2,6 @@
 #define Dr_nonlinear_H
 
 #include "Material.h"
-#include "utils/Factory.h"
 
 
 // Define the material

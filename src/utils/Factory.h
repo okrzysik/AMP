@@ -52,6 +52,7 @@ class Factory : public Singleton<Factory<BaseClass, Key, n>>
 template <class BaseClass, typename Key>
 struct RegistrationBase<BaseClass, Key, 0> {
     virtual AMP::shared_ptr<BaseClass> create() const = 0;
+    virtual ~RegistrationBase() {}
 };
 
 

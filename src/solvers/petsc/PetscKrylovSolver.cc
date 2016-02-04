@@ -4,6 +4,7 @@
 #include "matrices/petsc/PetscMatrix.h"
 #include "operators/LinearOperator.h"
 #include "vectors/petsc/ManagedPetscVector.h"
+#include "vectors/ExternalVectorDeleter.h"
 
 extern "C" {
 #include "petscpc.h"

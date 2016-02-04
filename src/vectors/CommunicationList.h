@@ -14,9 +14,6 @@ namespace LinearAlgebra {
 
 class Vector;
 
-template <bool AFFINE_MAP>
-class VectorEntryMap;
-
 
 /**
  * \class CommunicationListParameters

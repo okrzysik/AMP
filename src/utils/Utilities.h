@@ -22,8 +22,6 @@ namespace AMP {
 
 #ifdef _MSC_VER
 #include <direct.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 typedef int mode_t;
 #define S_ISDIR( m ) ( ( (m) &S_IFMT ) == S_IFDIR )
 #define S_IRUSR 0
@@ -265,7 +263,7 @@ double tick();
 //! Print AMP Banner
 void printBanner();
 
-//! Print AMP Banner
+//! Null use function
 void nullUse( void* );
 
 } // Utilities namespace

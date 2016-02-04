@@ -17,6 +17,21 @@
 namespace AMP {
 namespace Operator {
 
+
+RobinVectorCorrection::RobinVectorCorrection(
+    const AMP::shared_ptr<NeumannVectorCorrectionParameters> &params )
+    : NeumannVectorCorrection( params )
+{
+    d_hef = 0;
+    d_alpha = 0;
+    d_beta = 0;
+    d_gamma = 0;
+    d_skipParams = false;
+    reset( params );
+    d_InstanceID = d_iInstance_id;
+}
+
+
 void RobinVectorCorrection::reset( const AMP::shared_ptr<OperatorParameters> &params )
 {
     NeumannVectorCorrection::reset( params );

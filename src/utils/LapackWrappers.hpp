@@ -2,7 +2,6 @@
 #define USE_LAPACK_WRAPPER_HPP
 
 #include "blas_lapack.h"
-#include "utils/LapackWrappers.h"
 
 #include <stdexcept>
 
