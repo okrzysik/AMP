@@ -11,9 +11,8 @@
 #endif
 #ifdef USE_EXT_PETSC
 #include "test_PetscVector.h"
-#endif
-
 #include "test_PetscVectorTests.h"
+#endif
 
 
 /// \cond UNDOCUMENTED

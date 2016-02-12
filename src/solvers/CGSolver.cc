@@ -63,8 +63,7 @@ void CGSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 * TODO: store convergence history, iterations, convergence reason
 ****************************************************************/
 void CGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                      AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                          u )
+                      AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 

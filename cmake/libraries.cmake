@@ -236,7 +236,7 @@ MACRO ( CONFIGURE_SILO )
         MESSAGE( "Using silo" )
         MESSAGE( "   ${SILO_LIB}" )
     ENDIF ()
-ENDMACRO ()
+ENDMACRO()
 
 
 # Macro to find and configure the hdf5 libraries
