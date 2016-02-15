@@ -1026,6 +1026,7 @@ static bool test_getri( int N, T &error )
         for(int j=0; j<LWORK; ++j) {
             WORK[j] = 0;
         }
+        err = 0;
         Lapack<T>::getri( K, A2, K, IPIV, WORK, LWORK, err );
         if( err != 0) {
             printf("Error in getri within test_getri\n");
@@ -1039,7 +1040,7 @@ static bool test_getri( int N, T &error )
         if ( err2 > 100 * norm * eps )
             N_errors++;
         error = std::max( error, err2 / norm );
-        //        printf("Iteration %d, error = %f\n", i, error);
+        //        printf("Iteration %d, error = %f, norm = %f, err2 = %f\n", i, error, norm, err2);
     }
     delete[] A;
     delete[] A2;
