@@ -999,6 +999,7 @@ static bool test_getri( int N, T &error )
     T *b            = new T[K];
     int *IPIV       = new int[K];
     T *WORK         = new T[LWORK];
+    T eps           = std::numeric_limits<T>::epsilon();
     random( K * K, A );
     random( K, b );
     int err = 0;
@@ -1011,13 +1012,20 @@ static bool test_getri( int N, T &error )
         printf("Error in gesv within test_getri\n");
     }
     T norm = L2Norm( K, x1 );
+    // reinitialize IPIV
+    for(int j=0; j<K; ++j) {
+        IPIV[j] = 0;
+    }
     Lapack<T>::getrf( K, K, A, K, IPIV, err );
     if( err != 0) {
         printf("Error in getrf within test_getri\n");
     }
-    for ( int i = 0; i < N; i++ ) {
+    for ( int i = 0; i < N; i++ ) {        
         // Compute the inverse
         memcpy( A2, A, K * K * sizeof( T ) );
+        for(int j=0; j<LWORK; ++j) {
+            WORK[j] = 0;
+        }
         Lapack<T>::getri( K, A2, K, IPIV, WORK, LWORK, err );
         if( err != 0) {
             printf("Error in getri within test_getri\n");
@@ -1028,9 +1036,10 @@ static bool test_getri( int N, T &error )
         Lapack<T>::gemv( 'N', K, K, 1, A2, K, b, 1, 0, x2, 1 );
         // Check the result
         T err2 = L2Error( K, x1, x2 );
-        if ( err2 > 100 * norm * std::numeric_limits<T>::epsilon() )
+        if ( err2 > 100 * norm * eps )
             N_errors++;
         error = std::max( error, err2 / norm );
+        //        printf("Iteration %d, error = %f\n", i, error);
     }
     delete[] A;
     delete[] A2;
