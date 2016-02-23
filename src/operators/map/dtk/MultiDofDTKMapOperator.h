@@ -41,11 +41,8 @@ class MultiDofDTKMapOperator : public Operator
 public:
     explicit MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorParameters> &params );
 
-    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
-                AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                AMP::LinearAlgebra::Vector::shared_ptr r,
-                const double a = -1.0,
-                const double b = 1.0 );
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                AMP::LinearAlgebra::Vector::shared_ptr r);
 
 private:
     AMP::shared_ptr<MultiDofDTKMapOperatorParameters> d_multiDofDTKMapOpParams;

@@ -82,17 +82,21 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     if ( u.get() != nullptr )
         AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
 
-    d_pScratchVector = r->cloneVector();
+    AMP_INSIST( (r != NULL), "NULL Residual/Output Vector" );
+    AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector(r);
+    AMP_INSIST( (rInternal != NULL), "NULL Residual/Output Vector" );
+
+    d_pScratchVector = rInternal->cloneVector();
     d_pScratchVector->zero();
 
-    d_pMassOperator->apply( u, r );
-    r->scale( 1.0 / d_dCurrentDt );
+    d_pMassOperator->apply( u, rInternal );
+    rInternal->scale( 1.0 / d_dCurrentDt );
 
     d_pRhsOperator->apply( u, d_pScratchVector );
 
-    r->add( *r, *d_pScratchVector );
+    rInternal->add(*rInternal, *d_pScratchVector);
 
-    r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    rInternal->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 }
 
 AMP::shared_ptr<AMP::Operator::OperatorParameters>

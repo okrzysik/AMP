@@ -71,11 +71,8 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
         new AMP::Operator::DTKMapOperator( map21Params ) );
 }
 
-void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
-                                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                                    AMP::LinearAlgebra::Vector::shared_ptr r,
-                                    const double a,
-                                    const double b )
+void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                    AMP::LinearAlgebra::Vector::shared_ptr r)
 {
 
     AMP::Mesh::Mesh::shared_ptr mesh1 = d_multiDofDTKMapOpParams->d_Mesh1;
@@ -110,8 +107,8 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     // QUESTION:  should we apply on u rather than on d_SourceVectorMapXY ?
     //            in that case we would have to perform select again
-    d_Map12->apply( nullVec, d_SourceVectorMap12, d_TargetVectorMap12 );
-    d_Map21->apply( nullVec, d_SourceVectorMap21, d_TargetVectorMap21 );
+    d_Map12->apply( d_SourceVectorMap12, d_TargetVectorMap12 );
+    d_Map21->apply( d_SourceVectorMap21, d_TargetVectorMap21 );
 }
 }
 }

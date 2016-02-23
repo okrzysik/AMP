@@ -238,11 +238,11 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     AMP::pout << "----------------------\n";
     siloWriter->writeFile( logFile, 1 );
     AMP::pout << "interface cellSandwich cathodeCC\n";
-    cellSandwichCathodeCCMapOperator->apply( multiRhsVec, multiSolVec, multiResVec );
+    cellSandwichCathodeCCMapOperator->apply( multiSolVec, multiResVec );
     siloWriter->writeFile( logFile, 2 );
     AMP::pout << "interface anodeCC cellSandwich\n";
     anodeCCCellSandwichMapOperator->apply(
-        multiRhsVec, multiSolVec, multiResVec ); // this map doesn't seem to work properly
+        multiSolVec, multiResVec ); // this map doesn't seem to work properly
     siloWriter->writeFile( logFile, 3 );
 
 

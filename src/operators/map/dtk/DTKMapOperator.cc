@@ -62,11 +62,8 @@ DTKMapOperator::DTKMapOperator( const AMP::shared_ptr<OperatorParameters> &param
 
 //---------------------------------------------------------------------------//
 //! Apply function.
-void DTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
-                            AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                            AMP::LinearAlgebra::Vector::shared_ptr r,
-                            const double a,
-                            const double b )
+void DTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                            AMP::LinearAlgebra::Vector::shared_ptr r)
 {
     // Copy the data from the vectors into tpetra vectors.
     Teuchos::RCP<Tpetra::Vector<double, int, std::size_t>> u_tpetra =
