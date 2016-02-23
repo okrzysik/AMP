@@ -1073,7 +1073,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Reduced()
 
         double Bl_np1[6][24], d_np1[3][3], spin_np1[3][3], el_np1[6], Bl_dil[6][24], F_np1o2[3][3];
         double F_n[3][3], R_n[3][3], F_np1[3][3], R_np1[3][3];
-        double d_np1o2[3][3], e_np1o2_tilda_rotated[3][3];
+        double e_np1o2_tilda_rotated[3][3];
         double detF = 1.0;
 
         computeShapeFunctions( N, currXi[qp], currEta[qp], currZeta[qp] );
@@ -1089,7 +1089,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Reduced()
         computeGradient( dNdX, dNdY, dNdZ, x_np1o2, y_np1o2, z_np1o2, num_nodes, F_np1o2 );
 
         if ( d_useJaumannRate == false ) {
-            double R_np1o2[3][3];
+            double R_np1o2[3][3], d_np1o2[3][3];
             if ( d_useFlanaganTaylorElem == false ) {
                 double U_n[3][3], U_np1[3][3], U_np1o2[3][3];
                 // Polar decomposition (F=RU) of the deformation gradient is conducted here.

@@ -262,7 +262,7 @@ MACRO ( CONFIGURE_HDF5 )
         MESSAGE( "Using hdf5" )
         MESSAGE( "   ${HDF5_LIB}" )
     ENDIF()
-ENDMACRO ()
+ENDMACRO()
 
 # Macro to find and configure zlib
 MACRO ( CONFIGURE_ZLIB )
