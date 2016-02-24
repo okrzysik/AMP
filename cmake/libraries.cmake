@@ -127,14 +127,26 @@ MACRO ( CONFIGURE_BOOST )
             VERIFY_PATH ( ${BOOST_DIRECTORY} )
             VERIFY_PATH ( ${BOOST_DIRECTORY}/include )
             SET ( BOOST_INCLUDE ${BOOST_DIRECTORY}/include )
+            FIND_LIBRARY(BOOST_PROGRAM_OPTIONS_LIB NAMES boost_program_options PATHS ${BOOST_DIRECTORY}/lib NO_DEFAULT_PATH)
+            FIND_LIBRARY(BOOST_SYSTEM_LIB          NAMES boost_system          PATHS ${BOOST_DIRECTORY}/lib NO_DEFAULT_PATH)
         ELSE()
             # Check the default path for boost
             VERIFY_PATH ( ${AMP_SOURCE_DIR}/../external/boost/include )
             SET ( BOOST_INCLUDE ${AMP_SOURCE_DIR}/../external/boost/include )
         ENDIF()
         INCLUDE_DIRECTORIES ( ${BOOST_INCLUDE} )
+        SET ( BOOST_LIBS
+            ${BOOST_PROGRAM_OPTIONS_LIB}
+            ${BOOST_SYSTEM_LIB}
+        )
+        SET ( EXTERNAL_LIBS
+            ${EXTERNAL_LIBS}
+            ${BOOST_LIBS}
+        )
         ADD_DEFINITIONS ( "-D USE_EXT_BOOST" )
         MESSAGE( "Using boost" )
+        MESSAGE( "   ${BOOST_LIBS}" )
+
     ENDIF()
 ENDMACRO()
 
