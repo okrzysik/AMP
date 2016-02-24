@@ -118,7 +118,7 @@ void myTest( AMP::UnitTest *ut )
     // apply the map.
     AMP::pout << "Apply dtk operator" << std::endl;
     AMP::LinearAlgebra::Vector::shared_ptr null_vector;
-    dtk_operator->apply( null_vector, sourceVector, targetVector );
+    dtk_operator->apply( sourceVector, targetVector );
 
     // checking the answer
     AMP::pout << "Check answer" << std::endl;
