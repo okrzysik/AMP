@@ -135,14 +135,19 @@ MACRO ( CONFIGURE_BOOST )
             SET ( BOOST_INCLUDE ${AMP_SOURCE_DIR}/../external/boost/include )
         ENDIF()
         INCLUDE_DIRECTORIES ( ${BOOST_INCLUDE} )
-        SET ( BOOST_LIBS
-            ${BOOST_PROGRAM_OPTIONS_LIB}
-            ${BOOST_SYSTEM_LIB}
-        )
-        SET ( EXTERNAL_LIBS
-            ${EXTERNAL_LIBS}
-            ${BOOST_LIBS}
-        )
+        # Check that the components were actually found before adding them to
+        # the linking line
+        IF ( BOOST_PROGRAM_OPTIONS_LIB AND
+           BOOST_SYSTEM_LIB)
+            SET ( BOOST_LIBS
+                ${BOOST_PROGRAM_OPTIONS_LIB}
+                ${BOOST_SYSTEM_LIB}
+            )
+            SET ( EXTERNAL_LIBS
+                ${EXTERNAL_LIBS}
+                ${BOOST_LIBS}
+            )
+        ENDIF()
         ADD_DEFINITIONS ( "-D USE_EXT_BOOST" )
         MESSAGE( "Using boost" )
         MESSAGE( "   ${BOOST_LIBS}" )
