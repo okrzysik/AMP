@@ -135,14 +135,19 @@ MACRO ( CONFIGURE_BOOST )
             SET ( BOOST_INCLUDE ${AMP_SOURCE_DIR}/../external/boost/include )
         ENDIF()
         INCLUDE_DIRECTORIES ( ${BOOST_INCLUDE} )
-        SET ( BOOST_LIBS
-            ${BOOST_PROGRAM_OPTIONS_LIB}
-            ${BOOST_SYSTEM_LIB}
-        )
-        SET ( EXTERNAL_LIBS
-            ${EXTERNAL_LIBS}
-            ${BOOST_LIBS}
-        )
+        # Check that the components were actually found before adding them to
+        # the linking line
+        IF ( BOOST_PROGRAM_OPTIONS_LIB AND
+           BOOST_SYSTEM_LIB)
+            SET ( BOOST_LIBS
+                ${BOOST_PROGRAM_OPTIONS_LIB}
+                ${BOOST_SYSTEM_LIB}
+            )
+            SET ( EXTERNAL_LIBS
+                ${EXTERNAL_LIBS}
+                ${BOOST_LIBS}
+            )
+        ENDIF()
         ADD_DEFINITIONS ( "-D USE_EXT_BOOST" )
         MESSAGE( "Using boost" )
         MESSAGE( "   ${BOOST_LIBS}" )
@@ -287,7 +292,8 @@ MACRO ( CONFIGURE_ZLIB )
             INCLUDE_DIRECTORIES ( ${ZLIB_DIRECTORY}/include )
             SET ( ZLIB_INCLUDE ${ZLIB_DIRECTORY}/include )
             FIND_LIBRARY ( ZLIB_LIB    NAMES z    PATHS ${ZLIB_DIRECTORY}/lib/x86_64-linux-gnu  NO_DEFAULT_PATH )
-            FIND_LIBRARY ( ZLIB_LIB    NAMES z    PATHS ${ZLIB_DIRECTORY}      NO_DEFAULT_PATH )
+            FIND_LIBRARY ( ZLIB_LIB    NAMES z    PATHS ${ZLIB_DIRECTORY}/lib                   NO_DEFAULT_PATH )
+            FIND_LIBRARY ( ZLIB_LIB    NAMES z    PATHS ${ZLIB_DIRECTORY}                       NO_DEFAULT_PATH )
         ELSE()
             FIND_LIBRARY ( ZLIB_LIB    NAMES z ) 
         ENDIF()
