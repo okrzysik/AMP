@@ -27,13 +27,20 @@ public:
     //! Destructor
     ~AMPMeshEntityLocalMap() {}
 
+    /*
+     * \brief Set parameters for mapping.
+     *
+     * \param parameters Parameters for mapping.
+     */
+    void setParameters( const Teuchos::ParameterList& parameters ) override;
+
     /*!
      * \brief Return the entity measure with respect to the parameteric
      * dimension (volume for a 3D entity, area for 2D, and length for 1D).
      * \param entity Compute the measure for this entity.
      * \return The measure of the entity.
      */
-    double measure( const DataTransferKit::Entity &entity ) const;
+    double measure( const DataTransferKit::Entity &entity ) const override;
 
     /*!
      * \brief Return the centroid of the entity.
@@ -41,7 +48,7 @@ public:
      * be allocated. Assign a view of your centroid to this view.
      */
     void centroid( const DataTransferKit::Entity &entity,
-                   const Teuchos::ArrayView<double> &centroid ) const;
+                   const Teuchos::ArrayView<double> &centroid ) const override;
 
     /*!
      * \brief (Reverse Map) Map a point to the reference space of an
@@ -52,15 +59,12 @@ public:
      * the coordinates of the point to map.
      * \param reference_point A view into an array of size physicalDimension()
      * to write the reference coordinates of the mapped point.
-     * \param status A status object indicating the results of the mapping
-     * procedure.
      * \return Return true if the map to reference frame succeeded.
      */
     bool mapToReferenceFrame(
         const DataTransferKit::Entity &entity,
         const Teuchos::ArrayView<const double> &point,
-        const Teuchos::ArrayView<double> &reference_point,
-        const Teuchos::RCP<DataTransferKit::MappingStatus> &status = Teuchos::null ) const;
+        const Teuchos::ArrayView<double> &reference_point ) const override;
 
     /*!
      * \brief Determine if a reference point is in the parameterized space of
@@ -71,8 +75,9 @@ public:
      * containing the reference coordinates of the mapped point.
      * \return True if the point is in the reference space, false if not.
      */
-    bool checkPointInclusion( const DataTransferKit::Entity &entity,
-                              const Teuchos::ArrayView<const double> &reference_point ) const;
+    bool checkPointInclusion( 
+	const DataTransferKit::Entity &entity,
+	const Teuchos::ArrayView<const double> &reference_point ) const override;
 
     /*!
      * \brief (Forward Map) Map a reference point to the physical space of an
@@ -83,9 +88,10 @@ public:
      * \param A view into an array of size physicalDimension() to write
      * the coordinates of physical point.
      */
-    void mapToPhysicalFrame( const DataTransferKit::Entity &entity,
-                             const Teuchos::ArrayView<const double> &reference_point,
-                             const Teuchos::ArrayView<double> &point ) const;
+    void mapToPhysicalFrame( 
+	const DataTransferKit::Entity &entity,
+	const Teuchos::ArrayView<const double> &reference_point,
+	const Teuchos::ArrayView<double> &point ) const override;
 
     /*!
      * \brief Compute the normal on a face (3D) or edge (2D) at a given
@@ -96,16 +102,23 @@ public:
      * \param normal A view into an array of size physicalDimension() to write
      * the normal.
      */
-    void normalAtReferencePoint( const DataTransferKit::Entity &entity,
-                                 const Teuchos::ArrayView<double> &reference_point,
-                                 const Teuchos::ArrayView<double> &normal ) const;
+    void normalAtReferencePoint( 
+	const DataTransferKit::Entity &entity,
+	const DataTransferKit::Entity &parent_entity,
+	const Teuchos::ArrayView<const double> &reference_point,
+	const Teuchos::ArrayView<double> &normal ) const override;
 
-private:
+  private:
     /*!
      * \brief Given an entity, extract the node coordinates in canonical order.
      */
     void getElementNodeCoordinates( const DataTransferKit::Entity &entity,
                                     Intrepid::FieldContainer<double> &entity_coords ) const;
+
+  private:
+
+    // Point inclusion tolerance.
+    double d_inclusion_tol;
 };
 }
 }

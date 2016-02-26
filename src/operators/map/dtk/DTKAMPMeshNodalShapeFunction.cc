@@ -22,13 +22,14 @@ AMPMeshNodalShapeFunction::AMPMeshNodalShapeFunction(
 //---------------------------------------------------------------------------//
 // Given an entity, get the ids of the degrees of freedom in the vector space
 // supporting its shape function.
-void AMPMeshNodalShapeFunction::entityDOFIds( const DataTransferKit::Entity &entity,
-                                              Teuchos::Array<std::size_t> &dof_ids ) const
+void AMPMeshNodalShapeFunction::entitySupportIds( 
+    const DataTransferKit::Entity &entity,
+    Teuchos::Array<DataTransferKit::SupportId> &dof_ids ) const
 {
     AMP::Mesh::MeshElement element =
         Teuchos::rcp_dynamic_cast<AMPMeshEntityExtraData>( entity.extraData() )->d_element;
 
-    std::vector<std::size_t> entity_dofs;
+    std::vector<DataTransferKit::SupportId> entity_dofs;
 
     std::vector<AMP::Mesh::MeshElement> vertices = element.getElements( AMP::Mesh::Vertex );
     int num_nodes                                = vertices.size();

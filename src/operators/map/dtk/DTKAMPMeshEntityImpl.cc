@@ -37,31 +37,31 @@ AMPMeshEntityImpl::AMPMeshEntityImpl( const AMP::Mesh::MeshElement &element )
  * \brief Get the entity type.
  * \return The entity type.
  */
-DataTransferKit::EntityType AMPMeshEntityImpl::entityType() const
+int AMPMeshEntityImpl::topologicalDimension() const
 {
-    DataTransferKit::EntityType entity_type;
+    int entity_dim;
     Mesh::GeomType geom_type = d_extra_data->d_element.elementType();
     switch ( geom_type ) {
     case Mesh::Vertex:
-        entity_type = DataTransferKit::ENTITY_TYPE_NODE;
+        entity_dim = 0;
         break;
     case Mesh::Edge:
-        entity_type = DataTransferKit::ENTITY_TYPE_EDGE;
+        entity_dim = 1;
         break;
     case Mesh::Face:
-        entity_type = DataTransferKit::ENTITY_TYPE_FACE;
+        entity_dim = 2;
         break;
     case Mesh::Volume:
-        entity_type = DataTransferKit::ENTITY_TYPE_VOLUME;
+        entity_dim = 3;
         break;
     default:
         AMP_INSIST( geom_type == Mesh::Vertex || geom_type == Mesh::Edge ||
-                        geom_type == Mesh::Face || geom_type == Mesh::Volume,
+		    geom_type == Mesh::Face || geom_type == Mesh::Volume,
                     "Invalid geometry type!" );
-        entity_type = DataTransferKit::ENTITY_TYPE_NODE;
+        entity_dim = 0;
         break;
     }
-    return entity_type;
+    return entity_dim;
 }
 
 //---------------------------------------------------------------------------//

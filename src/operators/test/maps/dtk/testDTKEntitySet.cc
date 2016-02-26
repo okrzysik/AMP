@@ -56,7 +56,7 @@ void myTest( AMP::UnitTest *ut )
 
     // Check the mesh with an iterator.
     DataTransferKit::EntityIterator dtk_iterator =
-        dtk_entity_set->entityIterator( DataTransferKit::ENTITY_TYPE_VOLUME );
+        dtk_entity_set->entityIterator( 3 );
     AMP_ASSERT( dtk_iterator.size() == mesh_iterator.size() );
     for ( dtk_iterator = dtk_iterator.begin(), mesh_iterator = mesh_iterator.begin();
           dtk_iterator != dtk_iterator.end();
@@ -75,7 +75,7 @@ void myTest( AMP::UnitTest *ut )
             AMP_ASSERT( dtk_iterator->id() == element_id );
 
             // Check the entity.
-            AMP_ASSERT( dtk_iterator->entityType() == DataTransferKit::ENTITY_TYPE_VOLUME );
+            AMP_ASSERT( dtk_iterator->topologicalDimension() == 3 );
             AMP_ASSERT( (unsigned) dtk_iterator->ownerRank() ==
                         mesh_iterator->globalID().owner_rank() );
             AMP_ASSERT( dtk_iterator->physicalDimension() == 3 );
@@ -113,7 +113,7 @@ void myTest( AMP::UnitTest *ut )
             // Check that we get 8 nodes from the adjacency function.
             Teuchos::Array<DataTransferKit::Entity> nodes;
             dtk_entity_set->getAdjacentEntities(
-                *dtk_iterator, DataTransferKit::ENTITY_TYPE_NODE, nodes );
+                *dtk_iterator, 0, nodes );
             AMP_ASSERT( 8 == nodes.size() );
         }
 
@@ -122,7 +122,7 @@ void myTest( AMP::UnitTest *ut )
         {
             DataTransferKit::Entity dtk_entity;
             dtk_entity_set->getEntity(
-                DataTransferKit::ENTITY_TYPE_VOLUME, dtk_iterator->id(), dtk_entity );
+                3, dtk_iterator->id(), dtk_entity );
 
             // Check the id.
             unsigned int tmp = 0x00000000;
@@ -136,7 +136,7 @@ void myTest( AMP::UnitTest *ut )
             AMP_ASSERT( dtk_entity.id() == element_id );
 
             // Check the entity.
-            AMP_ASSERT( dtk_entity.entityType() == DataTransferKit::ENTITY_TYPE_VOLUME );
+            AMP_ASSERT( dtk_entity.topologicalDimension() == 3 );
             AMP_ASSERT( (unsigned) dtk_entity.ownerRank() ==
                         mesh_iterator->globalID().owner_rank() );
             AMP_ASSERT( dtk_entity.physicalDimension() == 3 );

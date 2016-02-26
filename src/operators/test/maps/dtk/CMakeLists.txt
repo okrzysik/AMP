@@ -18,8 +18,8 @@ ADD_AMP_TEST_1_2_4( testDTKNodalShapeFunction )
 COPY_TEST_FILE( input_testDTKAMPMeshManager )
 ADD_AMP_TEST_1_2_4( testDTKAMPMeshManager )
 
-COPY_TEST_FILE( input_testDTKAMPVectorHelpers )
-ADD_AMP_TEST_1_2_4( testDTKAMPVectorHelpers )
+COPY_TEST_FILE( input_testDTKAMPField )
+ADD_AMP_TEST_1_2_4( testDTKAMPField )
 
 COPY_TEST_FILE( input_testDTKMapOperator )
 ADD_AMP_TEST_1_2_4( testDTKMapOperator )

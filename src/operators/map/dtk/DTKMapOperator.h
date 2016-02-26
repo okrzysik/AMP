@@ -10,6 +10,8 @@
 
 #include "vectors/Vector.h"
 
+#include "DTKAMPMeshManager.h"
+
 #include <DTK_MapOperator.hpp>
 
 namespace AMP {
@@ -57,8 +59,15 @@ public:
                 AMP::LinearAlgebra::Vector::shared_ptr r);
 
 private:
+
     // DTK map operator.
-    AMP::shared_ptr<DataTransferKit::MapOperator<double>> d_dtk_operator;
+    AMP::shared_ptr<DataTransferKit::MapOperator> d_dtk_operator;
+
+    // DTK domain mesh.
+    AMP::shared_ptr<DTKAMPMeshManager> d_domain_mesh;
+
+    // DTK range mesh.
+    AMP::shared_ptr<DTKAMPMeshManager> d_range_mesh;
 };
 }
 }

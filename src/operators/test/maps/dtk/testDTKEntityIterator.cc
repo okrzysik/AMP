@@ -67,7 +67,7 @@ void myTest( AMP::UnitTest *ut )
         AMP_ASSERT( dtk_iterator->id() == element_id );
 
         // Check the entity.
-        AMP_ASSERT( dtk_iterator->entityType() == DataTransferKit::ENTITY_TYPE_VOLUME );
+        AMP_ASSERT( dtk_iterator->topologicalDimension() == 3 );
         AMP_ASSERT( (unsigned) dtk_iterator->ownerRank() ==
                     mesh_iterator->globalID().owner_rank() );
         AMP_ASSERT( dtk_iterator->physicalDimension() == 3 );

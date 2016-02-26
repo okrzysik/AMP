@@ -16,6 +16,7 @@
 #include "libmesh/quadrature.h"
 #include "libmesh/string_to_enum.h"
 
+#include <cstring>
 
 namespace AMP {
 namespace Operator {

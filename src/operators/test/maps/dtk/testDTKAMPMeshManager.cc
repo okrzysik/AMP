@@ -64,16 +64,15 @@ void myTest( AMP::UnitTest *ut )
     // Create a mesh manager.
     DataTransferKit::SelectAllPredicate predicate;
     AMP::Operator::DTKAMPMeshManager dtk_mesh_manager(
-        mesh, dofManager, DataTransferKit::ENTITY_TYPE_NODE, predicate.getFunction() );
+        mesh, dofManager, predicate.getFunction() );
 
     // Get the function space.
     Teuchos::RCP<DataTransferKit::FunctionSpace> function_space = dtk_mesh_manager.functionSpace();
 
     // Test the entity set and entity selector by getting an iterator over the nodes.
     AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::Vertex, ghostWidth );
-    DataTransferKit::EntityIterator dtk_node_iterator = function_space->entitySet()->entityIterator(
-        function_space->entitySelector()->entityType(),
-        function_space->entitySelector()->selectFunction() );
+    DataTransferKit::EntityIterator dtk_node_iterator = 
+	function_space->entitySet()->entityIterator( 0, function_space->selectFunction() );
     AMP_ASSERT( dtk_node_iterator.size() == node_iterator.size() );
     AMP_ASSERT( dtk_node_iterator.size() > 0 );
 
@@ -93,7 +92,7 @@ void myTest( AMP::UnitTest *ut )
         AMP_ASSERT( centroid[2] == coords[2] );
 
         // Shape function.
-        function_space->shapeFunction()->entityDOFIds( *dtk_node_iterator, dof_ids );
+        function_space->shapeFunction()->entitySupportIds( *dtk_node_iterator, dof_ids );
         dofManager->getDOFs( node_iterator->globalID(), node_dofs );
         AMP_ASSERT( 1 == dof_ids.size() );
         AMP_ASSERT( 1 == node_dofs.size() );

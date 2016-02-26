@@ -15,7 +15,7 @@
 
 #include <ampmesh/Mesh.h>
 
-#include <operators/map/dtk/DTKAMPVectorHelpers.h>
+#include <operators/map/dtk/DTKAMPField.h>
 
 #include <cstdlib>
 #include <iostream>
@@ -28,7 +28,8 @@ void myTest( AMP::UnitTest *ut )
     std::string log_file = "output_" + exeName;
     std::string msgPrefix;
     AMP::PIO::logOnlyNodeZero( log_file );
-
+    
+    // Load input and build the mesh.
     AMP::pout << "Loading the  mesh" << std::endl;
     AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
@@ -45,6 +46,7 @@ void myTest( AMP::UnitTest *ut )
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
+    // Create a vector.
     bool const split      = true;
     int const ghostWidth  = 0;
     int const dofsPerNode = 1;
@@ -62,26 +64,49 @@ void myTest( AMP::UnitTest *ut )
         ampVector->setLocalValueByGlobalID( dofIndices[0], static_cast<double>( dofIndices[0] ) );
     }
 
-    Teuchos::RCP<Tpetra::Vector<double, int, std::size_t>> tpetraVector =
-        AMP::Operator::DTKAMPVectorHelpers::pullTpetraVectorFromAMPVector( ampVector );
+    // Create a dtk field around the amp vector
+    AMP::Operator::DTKAMPField dtk_field( ampVector );
 
-    Teuchos::ArrayView<const std::size_t> global_ids = tpetraVector->getMap()->getNodeElementList();
-    Teuchos::ArrayView<double> tpetra_data           = tpetraVector->get1dViewNonConst()();
-    int num_val                                      = tpetra_data.size();
-    AMP_ASSERT( tpetra_data.size() == global_ids.size() );
-    AMP_ASSERT( tpetra_data.size() == static_cast<int>( meshIterator.size() ) );
-    for ( int n = 0; n < num_val; ++n ) {
-        AMP_ASSERT( tpetra_data[n] == static_cast<double>( global_ids[n] ) );
-        tpetra_data[n] *= 2.0;
+    // Check the dimension.
+    AMP_ASSERT( 1 == dtk_field.dimension() );
+
+    // Check the support ids.
+    Teuchos::ArrayView<const DataTransferKit::SupportId> support_ids = 
+	dtk_field.getLocalSupportIds();
+    int counter = 0;
+    for ( meshIterator = meshIterator.begin(); 
+	  meshIterator != meshIterator.end();
+          ++meshIterator, ++counter ) 
+    {
+        dofManager->getDOFs( meshIterator->globalID(), dofIndices );
+	AMP_ASSERT( support_ids[counter] == dofIndices[0] );
     }
 
-    double value;
-    AMP::Operator::DTKAMPVectorHelpers::pushTpetraVectorToAMPVector( *tpetraVector, ampVector );
-    for ( meshIterator = meshIterator.begin(); meshIterator != meshIterator.end();
-          ++meshIterator ) {
+    // Check reading data.
+    for ( meshIterator = meshIterator.begin(); 
+	  meshIterator != meshIterator.end();
+          ++meshIterator, ++counter ) 
+    {
         dofManager->getDOFs( meshIterator->globalID(), dofIndices );
-        value = ampVector->getLocalValueByGlobalID( dofIndices[0] );
-        AMP_ASSERT( static_cast<std::size_t>( value ) == ( 2 * dofIndices[0] ) );
+	AMP_ASSERT( dtk_field.readFieldData(dofIndices[0],0) ==
+		    ampVector->getLocalValueByGlobalID(dofIndices[0]) );
+    }
+
+    // Check setting data.
+    for ( meshIterator = meshIterator.begin(); 
+	  meshIterator != meshIterator.end();
+          ++meshIterator, ++counter ) 
+    {
+        dofManager->getDOFs( meshIterator->globalID(), dofIndices );
+	dtk_field.writeFieldData( dofIndices[0], 0, 2.0*dofIndices[0] );
+    }
+    for ( meshIterator = meshIterator.begin(); 
+	  meshIterator != meshIterator.end();
+          ++meshIterator, ++counter ) 
+    {
+        dofManager->getDOFs( meshIterator->globalID(), dofIndices );
+	AMP_ASSERT( 2.0*dofIndices[0] ==
+		    ampVector->getLocalValueByGlobalID(dofIndices[0]) );
     }
 
     ut->passes( exeName );

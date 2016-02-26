@@ -40,13 +40,13 @@ int AMPMeshEntitySet::physicalDimension() const { return d_amp_mesh->getDim(); }
 
 //---------------------------------------------------------------------------//
 // Given an EntityId, get the entity.
-void AMPMeshEntitySet::getEntity( const DataTransferKit::EntityType entity_type,
-                                  const DataTransferKit::EntityId entity_id,
+void AMPMeshEntitySet::getEntity( const DataTransferKit::EntityId entity_id,
+				  const int topological_dimension,
                                   DataTransferKit::Entity &entity ) const
 {
     // We will only access local owned entities through this interface.
     bool is_local               = true;
-    AMP::Mesh::GeomType type_id = getGeomTypeFromEntityType( entity_type );
+    AMP::Mesh::GeomType type_id = getGeomTypeFromEntityType( topological_dimension );
     unsigned int local_id       = entity_id & 0x00000000FFFFFFFF;
     unsigned int owner_rank     = entity_id >> 32;
     owner_rank                  = ( owner_rank >> 8 ) & 0x007FFFFF;
@@ -58,10 +58,10 @@ void AMPMeshEntitySet::getEntity( const DataTransferKit::EntityType entity_type,
 //---------------------------------------------------------------------------//
 // Get a iterator of the given entity type that satisfy the given predicate.
 DataTransferKit::EntityIterator AMPMeshEntitySet::entityIterator(
-    const DataTransferKit::EntityType entity_type,
-    const std::function<bool( DataTransferKit::Entity )> &predicate ) const
+    const int topological_dimension,
+    const DataTransferKit::PredicateFunction& predicate ) const
 {
-    AMP::Mesh::GeomType type_id = getGeomTypeFromEntityType( entity_type );
+    AMP::Mesh::GeomType type_id = getGeomTypeFromEntityType( topological_dimension );
     int gcw                     = 1;
     return AMPMeshEntityIterator( d_amp_mesh->getIterator( type_id, gcw ), predicate );
 }
@@ -71,10 +71,10 @@ DataTransferKit::EntityIterator AMPMeshEntitySet::entityIterator(
 // it.
 void AMPMeshEntitySet::getAdjacentEntities(
     const DataTransferKit::Entity &entity,
-    const DataTransferKit::EntityType entity_type,
+    const int adjacent_dimension,
     Teuchos::Array<DataTransferKit::Entity> &adjacent_entities ) const
 {
-    AMP::Mesh::GeomType type_id = getGeomTypeFromEntityType( entity_type );
+    AMP::Mesh::GeomType type_id = getGeomTypeFromEntityType( adjacent_dimension );
     std::vector<AMP::Mesh::MeshElement> adjacent_elements =
         Teuchos::rcp_dynamic_cast<AMPMeshEntityExtraData>( entity.extraData() )
             ->d_element.getElements( type_id );
@@ -88,25 +88,25 @@ void AMPMeshEntitySet::getAdjacentEntities(
 //---------------------------------------------------------------------------//
 // Given a DTK entity type, get an AMP GeomType.
 AMP::Mesh::GeomType
-AMPMeshEntitySet::getGeomTypeFromEntityType( const DataTransferKit::EntityType entity_type ) const
+AMPMeshEntitySet::getGeomTypeFromEntityType( const int topological_dimension ) const
 {
     AMP::Mesh::GeomType type_id = AMP::Mesh::Vertex;
-    switch ( entity_type ) {
-    case DataTransferKit::ENTITY_TYPE_NODE:
-        type_id = AMP::Mesh::Vertex;
-        break;
-    case DataTransferKit::ENTITY_TYPE_EDGE:
-        type_id = AMP::Mesh::Edge;
-        break;
-    case DataTransferKit::ENTITY_TYPE_FACE:
-        type_id = AMP::Mesh::Face;
-        break;
-    case DataTransferKit::ENTITY_TYPE_VOLUME:
-        type_id = AMP::Mesh::Volume;
-        break;
-    default:
-        type_id = AMP::Mesh::null;
-        break;
+    switch ( topological_dimension ) {
+	case (0):
+	    type_id = AMP::Mesh::Vertex;
+	    break;
+	case (1):
+	    type_id = AMP::Mesh::Edge;
+	    break;
+	case (2):
+	    type_id = AMP::Mesh::Face;
+	    break;
+	case (3):
+	    type_id = AMP::Mesh::Volume;
+	    break;
+	default:
+	    type_id = AMP::Mesh::null;
+	    break;
     }
     return type_id;
 }

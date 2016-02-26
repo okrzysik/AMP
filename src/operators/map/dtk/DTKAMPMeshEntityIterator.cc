@@ -84,7 +84,7 @@ bool AMPMeshEntityIterator::operator==( const DataTransferKit::EntityIterator &r
 {
     const AMPMeshEntityIterator *rhs_it = static_cast<const AMPMeshEntityIterator *>( &rhs );
     const AMPMeshEntityIterator *rhs_it_impl =
-        static_cast<const AMPMeshEntityIterator *>( rhs_it->b_iterator_impl );
+        static_cast<const AMPMeshEntityIterator*>( rhs_it->b_iterator_impl.get() );
     return ( rhs_it_impl->d_amp_iterator == d_amp_iterator );
 }
 
@@ -94,7 +94,7 @@ bool AMPMeshEntityIterator::operator!=( const DataTransferKit::EntityIterator &r
 {
     const AMPMeshEntityIterator *rhs_it = static_cast<const AMPMeshEntityIterator *>( &rhs );
     const AMPMeshEntityIterator *rhs_it_impl =
-        static_cast<const AMPMeshEntityIterator *>( rhs_it->b_iterator_impl );
+        static_cast<const AMPMeshEntityIterator *>( rhs_it->b_iterator_impl.get() );
     return ( rhs_it_impl->d_amp_iterator != d_amp_iterator );
 }
 
@@ -117,9 +117,11 @@ DataTransferKit::EntityIterator AMPMeshEntityIterator::end() const
 //---------------------------------------------------------------------------//
 // Create a clone of the iterator. We need this for the copy constructor
 // and assignment operator to pass along the underlying implementation.
-DataTransferKit::EntityIterator *AMPMeshEntityIterator::clone() const
+std::unique_ptr<DataTransferKit::EntityIterator>
+AMPMeshEntityIterator::clone() const
 {
-    return new AMPMeshEntityIterator( *this );
+    return std::unique_ptr<DataTransferKit::EntityIterator>(
+	new AMPMeshEntityIterator(*this) );
 }
 
 //---------------------------------------------------------------------------//

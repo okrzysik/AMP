@@ -121,7 +121,7 @@ void myTest( AMP::UnitTest *ut )
           dtk_elem_iterator != dtk_elem_iterator.end();
           ++dtk_elem_iterator ) {
         // Check the DOF ids.
-        dtk_shape_function->entityDOFIds( *dtk_elem_iterator, dof_ids );
+        dtk_shape_function->entitySupportIds( *dtk_elem_iterator, dof_ids );
         AMP_ASSERT( 8 == dof_ids.size() );
 
         // Evaluate the value at the centroid.
@@ -277,7 +277,7 @@ void myTest( AMP::UnitTest *ut )
     for ( dtk_node_iterator = dtk_node_iterator.begin(), node_iterator = node_iterator.begin();
           dtk_node_iterator != dtk_node_iterator.end();
           ++dtk_node_iterator, ++node_iterator ) {
-        dtk_shape_function->entityDOFIds( *dtk_node_iterator, dof_ids );
+        dtk_shape_function->entitySupportIds( *dtk_node_iterator, dof_ids );
         dofManager->getDOFs( node_iterator->globalID(), node_dofs );
         AMP_ASSERT( 1 == dof_ids.size() );
         AMP_ASSERT( 1 == node_dofs.size() );

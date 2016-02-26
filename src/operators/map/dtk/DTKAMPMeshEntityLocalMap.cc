@@ -14,7 +14,20 @@ namespace Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor.
-AMPMeshEntityLocalMap::AMPMeshEntityLocalMap() { /* ... */}
+AMPMeshEntityLocalMap::AMPMeshEntityLocalMap()
+    : d_inclusion_tol( 1.0e-6 )
+{ /* ... */}
+
+//---------------------------------------------------------------------------//
+// Set parameters for mapping.
+void AMPMeshEntityLocalMap::setParameters(
+    const Teuchos::ParameterList& parameters )
+{
+    if ( parameters.isParameter("Point Inclusion Tolerance") )
+    {	    
+	d_inclusion_tol = parameters.get<double>("Point Inclusion Tolerance");
+    }
+}
 
 //---------------------------------------------------------------------------//
 // Return the entity measure with respect to the parameteric dimension (volume
@@ -33,7 +46,7 @@ void AMPMeshEntityLocalMap::centroid( const DataTransferKit::Entity &entity,
                                       const Teuchos::ArrayView<double> &centroid ) const
 {
     // If we have a node just return the coordinates.
-    if ( DataTransferKit::ENTITY_TYPE_NODE == entity.entityType() ) {
+    if ( 0 == entity.topologicalDimension() ) {
         std::vector<double> coords =
             Teuchos::rcp_dynamic_cast<AMPMeshEntityExtraData>( entity.extraData() )
                 ->d_element.coord();
@@ -55,8 +68,7 @@ void AMPMeshEntityLocalMap::centroid( const DataTransferKit::Entity &entity,
 bool AMPMeshEntityLocalMap::mapToReferenceFrame(
     const DataTransferKit::Entity &entity,
     const Teuchos::ArrayView<const double> &point,
-    const Teuchos::ArrayView<double> &reference_point,
-    const Teuchos::RCP<DataTransferKit::MappingStatus> &status ) const
+    const Teuchos::ArrayView<double> &reference_point ) const
 {
     Intrepid::FieldContainer<double> entity_coords;
     getElementNodeCoordinates( entity, entity_coords );
@@ -71,19 +83,11 @@ bool AMPMeshEntityLocalMap::checkPointInclusion(
     const DataTransferKit::Entity &entity,
     const Teuchos::ArrayView<const double> &reference_point ) const
 {
-    // Get the test tolerance.
-    double tolerance = 1.0e-6;
-    if ( Teuchos::nonnull( this->b_parameters ) ) {
-        if ( this->b_parameters->isParameter( "Point Inclusion Tolerance" ) ) {
-            tolerance = this->b_parameters->get<double>( "Point Inclusion Tolerance" );
-        }
-    }
-
     Intrepid::FieldContainer<double> entity_coords;
     getElementNodeCoordinates( entity, entity_coords );
     shards::CellTopology entity_topo( shards::getCellTopologyData<shards::Hexahedron<8>>() );
     return DataTransferKit::IntrepidCellLocalMap::checkPointInclusion(
-        entity_topo, reference_point, tolerance );
+        entity_topo, reference_point, d_inclusion_tol );
 }
 
 //---------------------------------------------------------------------------//
@@ -106,7 +110,8 @@ void AMPMeshEntityLocalMap::mapToPhysicalFrame(
 // scheme.
 void AMPMeshEntityLocalMap::normalAtReferencePoint(
     const DataTransferKit::Entity &entity,
-    const Teuchos::ArrayView<double> &reference_point,
+    const DataTransferKit::Entity &parent_entity,
+    const Teuchos::ArrayView<const double> &reference_point,
     const Teuchos::ArrayView<double> &normal ) const
 {
     // Currently not implemented.

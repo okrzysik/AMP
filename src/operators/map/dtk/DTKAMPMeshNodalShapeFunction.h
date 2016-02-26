@@ -25,9 +25,6 @@ public:
     explicit AMPMeshNodalShapeFunction(
         const AMP::shared_ptr<AMP::Discretization::DOFManager> &dof_manager );
 
-    //! Destructor
-    ~AMPMeshNodalShapeFunction() {}
-
     /*!
      * \brief Given an entity, get the ids of the degrees of freedom in the
      * vector space supporting its shape function.
@@ -35,8 +32,9 @@ public:
      * \param dof_ids Return the ids of the degrees of freedom in the parallel
      * vector space supporting the entities.
      */
-    void entityDOFIds( const DataTransferKit::Entity &entity,
-                       Teuchos::Array<std::size_t> &dof_ids ) const;
+    void entitySupportIds( 
+	const DataTransferKit::Entity &entity,
+	Teuchos::Array<DataTransferKit::SupportId> &dof_ids ) const override;
 
     /*!
      * \brief Given an entity and a reference point, evaluate the shape
@@ -49,7 +47,7 @@ public:
      */
     void evaluateValue( const DataTransferKit::Entity &entity,
                         const Teuchos::ArrayView<const double> &reference_point,
-                        Teuchos::Array<double> &values ) const;
+                        Teuchos::Array<double> &values ) const override;
 
     /*!
      * \brief Given an entity and a reference point, evaluate the gradient of
@@ -64,7 +62,7 @@ public:
      */
     void evaluateGradient( const DataTransferKit::Entity &entity,
                            const Teuchos::ArrayView<const double> &reference_point,
-                           Teuchos::Array<Teuchos::Array<double>> &gradients ) const;
+                           Teuchos::Array<Teuchos::Array<double> > &gradients ) const override;
 
 private:
     // DOF manager.
