@@ -71,7 +71,8 @@ class DTKAMPMeshManager : public DataTransferKit::ClientManager
      * \brief Get the field for the given string key.
      */
     Teuchos::RCP<DataTransferKit::Field>
-    field( const std::string& field_name ) const override;
+    field( const std::string& field_name ) const override
+    { return Teuchos::null; }
     //@}
 
 private:
