@@ -6,7 +6,6 @@
 
 #include <stdexcept>
 
-
 // Define macro to handle name mangling
 #ifndef FORTRAN_WRAPPER
 #if defined( USE_ACML )

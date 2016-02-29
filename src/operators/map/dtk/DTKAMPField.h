@@ -26,7 +26,7 @@ class DTKAMPField : public DataTransferKit::Field
     /**
      * Constructor.
      */
-    DTKAMPField( const AMP::LinearAlgebra::Vector::shared_ptr& amp_vector );
+    explicit DTKAMPField( const AMP::LinearAlgebra::Vector::shared_ptr& amp_vector );
 
     /*!
      * \brief Get the dimension of the field.
