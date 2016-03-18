@@ -12,6 +12,7 @@ namespace Operator {
 //---------------------------------------------------------------------------//
 // Constructor
 DTKMapOperator::DTKMapOperator( const AMP::shared_ptr<OperatorParameters> &params )
+: d_dtk_operator(nullptr)
 {
     // Get the operator parameters.
     AMP::shared_ptr<DTKMapOperatorParameters> dtk_op_params =
@@ -58,6 +59,8 @@ void DTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     {
 	// Build the operator.
 	Teuchos::ParameterList dtk_parameters;
+    dtk_parameters.sublist("Search");
+    dtk_parameters.sublist("Consistent Interpolation");
 	d_dtk_operator = AMP::shared_ptr<DataTransferKit::MapOperator>(
 	    new DataTransferKit::ConsistentInterpolationOperator( 
 		u_vector->getMap(), r_vector->getMap(), dtk_parameters ) );
