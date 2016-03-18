@@ -122,7 +122,7 @@ void myTest( AMP::UnitTest *ut )
         {
             DataTransferKit::Entity dtk_entity;
             dtk_entity_set->getEntity(
-                3, dtk_iterator->id(), dtk_entity );
+                dtk_iterator->id(), 3, dtk_entity );
 
             // Check the id.
             unsigned int tmp = 0x00000000;
