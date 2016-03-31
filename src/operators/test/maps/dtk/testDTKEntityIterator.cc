@@ -56,14 +56,13 @@ void myTest( AMP::UnitTest *ut )
           dtk_iterator != dtk_iterator.end();
           ++dtk_iterator, ++mesh_iterator ) {
         // Check the id.
-        unsigned int tmp = 0x00000000;
-        int owner_rank   = mesh_iterator->globalID().owner_rank();
-        tmp += ( 0x007FFFFF & owner_rank ) << 8;
-        AMP::Mesh::GeomType type = mesh_iterator->globalID().type();
-        tmp += ( (unsigned char) type );
+        uint32_t mesh_id = mesh_iterator->globalID().meshID().getData();
+        unsigned int owner_rank = mesh_iterator->globalID().owner_rank();
         unsigned int local_id = mesh_iterator->globalID().local_id();
         DataTransferKit::EntityId element_id =
-            ( ( (AMP::Mesh::uint64) tmp ) << 32 ) + ( (AMP::Mesh::uint64) local_id );
+            ( ( (AMP::Mesh::uint64) mesh_id ) << 50 )
+            + ( ( (AMP::Mesh::uint64) owner_rank) << 32 ) 
+            + ( (AMP::Mesh::uint64) local_id );
         AMP_ASSERT( dtk_iterator->id() == element_id );
 
         // Check the entity.

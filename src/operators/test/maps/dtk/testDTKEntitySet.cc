@@ -64,14 +64,13 @@ void myTest( AMP::UnitTest *ut )
         // Check with the iterator.
         {
             // Check the id.
-            unsigned int tmp = 0x00000000;
-            int owner_rank   = mesh_iterator->globalID().owner_rank();
-            tmp += ( 0x007FFFFF & owner_rank ) << 8;
-            AMP::Mesh::GeomType type = mesh_iterator->globalID().type();
-            tmp += ( (unsigned char) type );
+            uint32_t mesh_id = mesh_iterator->globalID().meshID().getData();
+            unsigned int owner_rank = mesh_iterator->globalID().owner_rank();
             unsigned int local_id = mesh_iterator->globalID().local_id();
             DataTransferKit::EntityId element_id =
-                ( ( (AMP::Mesh::uint64) tmp ) << 32 ) + ( (AMP::Mesh::uint64) local_id );
+                ( ( (AMP::Mesh::uint64) mesh_id ) << 50 )
+                + ( ( (AMP::Mesh::uint64) owner_rank) << 32 ) 
+                + ( (AMP::Mesh::uint64) local_id );
             AMP_ASSERT( dtk_iterator->id() == element_id );
 
             // Check the entity.
@@ -117,60 +116,6 @@ void myTest( AMP::UnitTest *ut )
             AMP_ASSERT( 8 == nodes.size() );
         }
 
-        ///////
-        // Now get the same entity from the mesh and check again.
-        {
-            DataTransferKit::Entity dtk_entity;
-            dtk_entity_set->getEntity(
-                dtk_iterator->id(), 3, dtk_entity );
-
-            // Check the id.
-            unsigned int tmp = 0x00000000;
-            int owner_rank   = mesh_iterator->globalID().owner_rank();
-            tmp += ( 0x007FFFFF & owner_rank ) << 8;
-            AMP::Mesh::GeomType type = mesh_iterator->globalID().type();
-            tmp += ( (unsigned char) type );
-            unsigned int local_id = mesh_iterator->globalID().local_id();
-            DataTransferKit::EntityId element_id =
-                ( ( (AMP::Mesh::uint64) tmp ) << 32 ) + ( (AMP::Mesh::uint64) local_id );
-            AMP_ASSERT( dtk_entity.id() == element_id );
-
-            // Check the entity.
-            AMP_ASSERT( dtk_entity.topologicalDimension() == 3 );
-            AMP_ASSERT( (unsigned) dtk_entity.ownerRank() ==
-                        mesh_iterator->globalID().owner_rank() );
-            AMP_ASSERT( dtk_entity.physicalDimension() == 3 );
-
-            // Check the bounding box.
-            std::vector<AMP::Mesh::MeshElement> vertices =
-                mesh_iterator->getElements( AMP::Mesh::Vertex );
-            AMP_ASSERT( 8 == vertices.size() );
-            std::vector<double> box( 6 );
-            Teuchos::Tuple<double, 6> element_box;
-            dtk_entity.boundingBox( element_box );
-            for ( int i = 0; i < 8; ++i ) {
-                std::vector<double> coords = vertices[i].coord();
-                AMP_ASSERT( coords.size() == 3 );
-                AMP_ASSERT( coords[0] >= element_box[0] );
-                AMP_ASSERT( coords[0] <= element_box[3] );
-                AMP_ASSERT( coords[1] >= element_box[1] );
-                AMP_ASSERT( coords[1] <= element_box[4] );
-                AMP_ASSERT( coords[2] >= element_box[2] );
-                AMP_ASSERT( coords[2] <= element_box[5] );
-            }
-
-            // Check the block/boundary.
-            std::vector<int> block_ids = mesh->getBlockIDs();
-            for ( unsigned i = 0; i < block_ids.size(); ++i ) {
-                AMP_ASSERT( dtk_entity.inBlock( block_ids[i] ) ==
-                            mesh_iterator->isInBlock( block_ids[i] ) );
-            }
-            std::vector<int> boundary_ids = mesh->getBoundaryIDs();
-            for ( unsigned i = 0; i < boundary_ids.size(); ++i ) {
-                AMP_ASSERT( dtk_entity.onBoundary( boundary_ids[i] ) ==
-                            mesh_iterator->isOnBoundary( boundary_ids[i] ) );
-            }
-        }
     }
 
     ut->passes( exeName );

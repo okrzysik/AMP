@@ -14,16 +14,23 @@ AMPMeshEntityImpl::AMPMeshEntityImpl( const AMP::Mesh::MeshElement &element )
     d_extra_data = Teuchos::rcp( new AMPMeshEntityExtraData( element ) );
 
     // Make a unique 64-bit id.
+    // It is a trade-off:
+    // We have 32 bits to pack both the mesh id and the owner rank.
+    // We use 18 bits for the rank and keep 14 for the mesh.
+    uint32_t mesh_id = element.globalID().meshID().getData();
     AMP_INSIST(
-        element.globalID().meshID().getData() <
-            std::numeric_limits<std::uint32_t>::max(),
-        "awwww man" );
-
-    std::uint32_t tmp = element.globalID().meshID().getData();
-
+        mesh_id < 16384,
+        "Large mesh IDs not supported." );
+    unsigned int owner_rank = element.globalID().owner_rank();
+    AMP_INSIST(
+        owner_rank < 262144,
+        "Too many processes to compose unique ids." );
+    
     unsigned int local_id = element.globalID().local_id();
 
-    d_id = ( ( (AMP::Mesh::uint64) tmp ) << 32 ) + ( (AMP::Mesh::uint64) local_id );
+    d_id = ( ( (AMP::Mesh::uint64) mesh_id ) << 50 )
+        + ( ( (AMP::Mesh::uint64) owner_rank ) << 32 )
+        + ( (AMP::Mesh::uint64) local_id );
 }
 
 //---------------------------------------------------------------------------//
