@@ -1,4 +1,5 @@
 #include <limits>
+#include <cstdint>
 
 #include "DTKAMPMeshEntityImpl.h"
 
@@ -13,22 +14,15 @@ AMPMeshEntityImpl::AMPMeshEntityImpl( const AMP::Mesh::MeshElement &element )
     d_extra_data = Teuchos::rcp( new AMPMeshEntityExtraData( element ) );
 
     // Make a unique 64-bit id.
-    // The first 1 bits are 0.
-    // The next 23 bits are the owning processor id
-    // The next  8 bits are the element type
-    // The next 32 bits are the local id
-    unsigned int tmp = 0x00000000;
+    AMP_INSIST(
+        element.globalID().meshID().getData() <
+            std::numeric_limits<std::uint32_t>::max(),
+        "awwww man" );
 
-    // Add the owner rank
-    int owner_rank = element.globalID().owner_rank();
-    tmp += ( 0x007FFFFF & owner_rank ) << 8;
+    std::uint32_t tmp = element.globalID().meshID().getData();
 
-    // Add the type id
-    AMP::Mesh::GeomType type = element.globalID().type();
-    tmp += ( (unsigned char) type );
-
-    // Add the local id
     unsigned int local_id = element.globalID().local_id();
+
     d_id = ( ( (AMP::Mesh::uint64) tmp ) << 32 ) + ( (AMP::Mesh::uint64) local_id );
 }
 
