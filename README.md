@@ -10,7 +10,7 @@ To access the Advanced Multi-Physics (AMP) code:
 * Become a member of the "AMP Team" (email Bobby Philip:philipb@ornl.gov or Mark Berrill: berrillma@ornl.gov) 
 * Clone the AMP repository to your local machine/cluster, e.g.
     * hg clone https://bitbucket.org/AdvancedMultiPhysics/amp
-* Build the prerequisite software following the instructions on the [[Wiki]] at left
+* Build the prerequisite software following the instructions on the Wiki
 # Associated Websites #
 
 The websites associated with the AMP package includes:
