@@ -17,8 +17,6 @@ To access the code itself
     * hg clone https://bitbucket.org/AdvancedMultiPhysics/amp
 * Build the prerequisite software following the instructions at [[AMP Build Instructions]]
 
-[[Troubleshooting]]
-
 # Associated Websites #
 
 The websites associated with the AMP package includes:
