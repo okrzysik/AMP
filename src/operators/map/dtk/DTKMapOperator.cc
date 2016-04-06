@@ -37,24 +37,11 @@ DTKMapOperator::DTKMapOperator( const AMP::shared_ptr<OperatorParameters> &param
   // Create DTK domain mesh objects.
   d_domain_mesh = std::make_shared<DTKAMPMeshManager>(
       dtk_op_params->d_domain_mesh, dtk_op_params->d_domain_dofs, select_all );
-  if(dtk_op_params->d_domain_mesh){    
-    DataTransferKit::LocalEntityPredicate localPre (0);
-    std::cout << "domain num local element "  <<dtk_op_params->d_domain_mesh->numLocalElements(AMP::Mesh::Volume) << std::endl;
-    std::cout << "domain size "<< d_domain_mesh->entitySet()->entityIterator(3, localPre.getFunction() ).size() << " Rank " << d_comm.getRank()  << std::endl;
-  } else{
-    std::cout << "no domain mesh " << std::endl;
-  }
 
   // Create DTK range mesh objects.
   d_range_mesh = std::make_shared<DTKAMPMeshManager>(
       dtk_op_params->d_range_mesh, dtk_op_params->d_range_dofs, select_all );
-  if(dtk_op_params->d_range_mesh){
-    DataTransferKit::LocalEntityPredicate localPre (d_comm.getRank());
-    std::cout << "range num local vertex "  <<dtk_op_params->d_range_mesh->numLocalElements(AMP::Mesh::Vertex) << std::endl;
-    std::cout << "range size "<< d_range_mesh->entitySet()->entityIterator(0, localPre.getFunction() ).size()  << " Rank " << d_comm.getRank() << std::endl;
-  }else{
-    std::cout << "no range mesh " << std::endl;
-  }  
+  
 }
 
 //---------------------------------------------------------------------------//
