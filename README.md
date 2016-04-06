@@ -22,8 +22,6 @@ The websites associated with the AMP package includes:
 * Issue tracker: https://bitbucket.org/AdvancedMultiPhysics/amp/issues?status=new&status=open
 * CDash regression dashboard: /http://oblivion.engr.colostate.edu/CDash/index.php?project=AMP
 
-# Guiding Documentation #
-
 # Team #
 * Bobby Philip (ORNL).
 * Mark Berrill (ORNL).
