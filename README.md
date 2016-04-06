@@ -32,8 +32,8 @@ The websites associated with the AMP package includes:
 # Guiding Documentation #
 
 # Team #
-Bobby Philip (ORNL).
-Mark Berrill (ORNL).
-Kevin Clarno (ORNL).
-Rahul Sampath (ORNL).
-Steven Hamilton (ORNL).
+* Bobby Philip (ORNL).
+* Mark Berrill (ORNL).
+* Kevin Clarno (ORNL).
+* Rahul Sampath (ORNL).
+* Steven Hamilton (ORNL).
