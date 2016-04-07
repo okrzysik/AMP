@@ -26,6 +26,7 @@ public:
     { /* ... */
     }
 
+    AMP_MPI d_globalComm;   
     // Domain mesh. A manager for the mesh that is the data source.
     AMP::shared_ptr<AMP::Mesh::Mesh> d_domain_mesh;
 
@@ -60,6 +61,8 @@ public:
 
 private:
 
+    AMP_MPI d_comm; 
+    Teuchos::RCP<const Teuchos::Comm<int> > d_TeuchosComm;
     // DTK map operator.
     AMP::shared_ptr<DataTransferKit::MapOperator> d_dtk_operator;
 

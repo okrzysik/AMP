@@ -112,6 +112,7 @@ void myTest( AMP::UnitTest *ut )
     dtk_op_params->d_range_mesh  = targetMesh;
     dtk_op_params->d_domain_dofs = sourceDofManager;
     dtk_op_params->d_range_dofs  = targetDofManager;
+    dtk_op_params->d_globalComm  = AMP::AMP_MPI( AMP_COMM_WORLD );
     AMP::shared_ptr<AMP::Operator::Operator> dtk_operator(
         new AMP::Operator::DTKMapOperator( dtk_op_params ) );
 
