@@ -29,8 +29,11 @@ void testMultiMeshSubset( AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // Subset the mesh
-    AMP::Mesh::Mesh::shared_ptr cellSandwichMesh = mesh->Subset( "Mesh_1" );
-}
+    AMP::Mesh::Mesh::shared_ptr fooMesh = mesh->Subset( "Foo" );
+    AMP::Mesh::Mesh::shared_ptr fooBoundaryMesh =
+        mesh->Subset(fooMesh->getBoundaryIDIterator(AMP::Mesh::Volume, 0));
+
+}   
 
 // Main function
 int main( int argc, char **argv )
