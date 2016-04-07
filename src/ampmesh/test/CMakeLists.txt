@@ -74,4 +74,6 @@ IF( USE_EXT_DENDRO AND USE_EXT_PETSC )
     COPY_TEST_FILE( input_testDendroInterpolation  )
     ADD_AMP_TEST_PARALLEL( testDendroSearch 4)
 ENDIF()
+ADD_AMP_TEST( testMultiMeshSubset )
+COPY_TEST_FILE( input_testMultiMeshSubset )
 

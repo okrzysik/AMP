@@ -1,0 +1,32 @@
+Mesh{
+    MeshName = "MainMesh"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+    x_offset = 0.0
+    y_offset = 0.0
+    z_offset = 0.0
+    
+    Mesh_1 {
+        MeshName = "Foo"
+        MeshType = "AMP"
+        dim = 3
+        x_offset = 0.0
+        y_offset = 0.0
+        z_offset = 0.0
+        Generator = "cube"
+        Size = 2, 3, 4
+        Range = 0.0, 1.0, 0.0, 1.0, 0.0, 1.0
+    }
+    Mesh_2 {
+        MeshName = "Bar"
+        MeshType = "AMP"
+        dim = 3
+        x_offset = 0.0
+        y_offset = 0.0
+        z_offset = 1.0
+        Generator = "cube"
+        Size = 2, 3, 4
+        Range = 0.0, 1.0, 0.0, 1.0, 0.0, 1.0
+    }
+}
