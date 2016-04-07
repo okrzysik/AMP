@@ -330,6 +330,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
 
     // FOURTH
     if(cellSandwichMesh){
+      std::cout << "Cell Sandwich Comm size "<< cellSandwichMesh->getComm().getSize() << std::endl;
       node     = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
       end_node = node.end();
       errorVec = ElectrodeMapVec->constSelect(

@@ -14,7 +14,8 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
     d_multiDofDTKMapOpParams =
         AMP::dynamic_pointer_cast<MultiDofDTKMapOperatorParameters>( params );
 
-    ; 
+    std::cout << "In constrcutor Comm b4 Rank "<< multiDofDTKMapOpParams->d_globalComm.getRank()<<" Size "<< multiDofDTKMapOpParams->d_globalComm.getSize() <<std::endl;
+
     AMP::Mesh::Mesh::shared_ptr mesh1 = multiDofDTKMapOpParams->d_Mesh1;
     AMP::Mesh::Mesh::shared_ptr mesh2 = multiDofDTKMapOpParams->d_Mesh2;
     int boundaryID1                   = multiDofDTKMapOpParams->d_BoundaryID1;
@@ -35,20 +36,44 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
     AMP::shared_ptr<AMP::Discretization::DOFManager> targetDofManager12, targetDofManager21;
     AMP::shared_ptr<AMP::Database> nullDatabase;
 
-    if(mesh1.get()!=NULL){
+    if(mesh1){
       boundaryMesh1 = mesh1->Subset( mesh1->getBoundaryIDIterator( AMP::Mesh::Volume, boundaryID1 ) );
     // Build map 1 -> 2
-      d_SourceVectorMap12 = sourceVector->constSelect( AMP::LinearAlgebra::VS_Mesh( boundaryMesh1 ), "var" )
+    }
+    AMP::LinearAlgebra::VS_Comm bndMesh1CommSelect = createCommSelect(multiDofDTKMapOpParams->d_globalComm, (boundaryMesh1!=nullptr));
+    AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetSourceVec =
+        sourceVector->constSelect( bndMesh1CommSelect, variable1 );
+
+    if(boundaryMesh1){
+      d_SourceVectorMap12 = commSubsetSourceVec->constSelect( AMP::LinearAlgebra::VS_Mesh( boundaryMesh1 ), "var" )
         ->constSelect( AMP::LinearAlgebra::VS_ByVariableName( variable1 ), "var" )
         ->constSelect( AMP::LinearAlgebra::VS_Stride( strideOffset1, strideLength1 ), "var" );
       sourceDofManager12 = d_SourceVectorMap12->getDOFManager(); 
     }
-    if(mesh2.get()!=NULL){
-      boundaryMesh2 = mesh2->Subset( mesh2->getBoundaryIDIterator( AMP::Mesh::Volume, boundaryID2 ) );
-      d_TargetVectorMap12 = targetVector->select( AMP::LinearAlgebra::VS_Mesh( boundaryMesh2 ), "var" )
+
+    int rank = multiDofDTKMapOpParams->d_globalComm.getRank();
+    std::fstream fout;
+    std::string fileName = "debug_" + AMP::Utilities::intToString( rank );
+    fout.open( fileName.c_str(), std::fstream::out );
+
+    if(mesh2){
+      fout << "Inside MultiDofDTK with Rank "<< rank<<std::endl;
+      AMP::Mesh::MeshIterator iterator = mesh2->getBoundaryIDIterator( AMP::Mesh::Volume, boundaryID2 );
+      fout << "Inside MultiDofDTKRank iterator size "<< iterator.size() <<std::endl;
+      boundaryMesh2 = mesh2->Subset( iterator  );
+    }
+
+    fout << "Inside MultiDofDTK after with Rank "<< rank<<std::endl;
+
+    AMP::LinearAlgebra::VS_Comm bndMesh2CommSelect = createCommSelect(multiDofDTKMapOpParams->d_globalComm, (boundaryMesh2!=nullptr) );
+    AMP::LinearAlgebra::Vector::shared_ptr commSubsetTargetVec =
+        targetVector->select( bndMesh2CommSelect, variable2 );
+
+    if(boundaryMesh2){
+      d_TargetVectorMap12 = commSubsetTargetVec->select( AMP::LinearAlgebra::VS_Mesh( boundaryMesh2 ), "var" )
         ->select( AMP::LinearAlgebra::VS_ByVariableName( variable2 ), "var" )
         ->select( AMP::LinearAlgebra::VS_Stride( strideOffset2, strideLength2 ), "var" );
-      targetDofManager12 = d_TargetVectorMap12->getDOFManager(); 
+      targetDofManager12 = d_TargetVectorMap12->getDOFManager();
     }
 
     AMP::shared_ptr<AMP::Operator::DTKMapOperatorParameters> map12Params(
@@ -61,15 +86,18 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
     d_Map12                    = AMP::shared_ptr<AMP::Operator::DTKMapOperator>(
         new AMP::Operator::DTKMapOperator( map12Params ) );
 
-    if(mesh2.get()!=NULL){
+    commSubsetSourceVec = sourceVector->constSelect( bndMesh2CommSelect, variable2 );
+    if(boundaryMesh2){
     // Build map 2 -> 1
-      d_SourceVectorMap21 = sourceVector->constSelect( AMP::LinearAlgebra::VS_Mesh( boundaryMesh2 ), "var" )
-        ->constSelect( AMP::LinearAlgebra::VS_ByVariableName( variable2 ), "var" )
-        ->constSelect( AMP::LinearAlgebra::VS_Stride( strideOffset2, strideLength2 ), "var" );
-      sourceDofManager21 = d_SourceVectorMap21->getDOFManager(); 
+    d_SourceVectorMap21 = commSubsetSourceVec->constSelect( AMP::LinearAlgebra::VS_Mesh( boundaryMesh2 ), "var" )
+      ->constSelect( AMP::LinearAlgebra::VS_ByVariableName( variable2 ), "var" )
+      ->constSelect( AMP::LinearAlgebra::VS_Stride( strideOffset2, strideLength2 ), "var" );
+    sourceDofManager21 = d_SourceVectorMap21->getDOFManager(); 
     }
-    if(mesh1.get()!=NULL){
-      d_TargetVectorMap21 = targetVector->select( AMP::LinearAlgebra::VS_Mesh( boundaryMesh1 ), "var" )
+
+    commSubsetTargetVec = targetVector->select( bndMesh1CommSelect, variable1 );
+    if(boundaryMesh1){
+      d_TargetVectorMap21 = commSubsetTargetVec->select( AMP::LinearAlgebra::VS_Mesh( boundaryMesh1 ), "var" )
         ->select( AMP::LinearAlgebra::VS_ByVariableName( variable1 ), "var" )
         ->select( AMP::LinearAlgebra::VS_Stride( strideOffset1, strideLength1 ), "var" );
       targetDofManager21 = d_TargetVectorMap21->getDOFManager(); 
@@ -86,6 +114,14 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
         new AMP::Operator::DTKMapOperator( map21Params ) );
 }
 
+AMP::LinearAlgebra::VS_Comm MultiDofDTKMapOperator::createCommSelect(AMP_MPI globalComm, bool createOnThisRank)
+{
+  int inComm = createOnThisRank?1:0;
+  // Create a comm spanning the meshes
+  AMP::LinearAlgebra::VS_Comm commSelect( AMP_MPI( globalComm.split( inComm )) ) ;
+  return commSelect;
+
+}
 void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                     AMP::LinearAlgebra::Vector::shared_ptr r)
 {
@@ -104,17 +140,28 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
     AMP::Mesh::Mesh::shared_ptr boundaryMesh1;
     AMP::Mesh::Mesh::shared_ptr boundaryMesh2;
     AMP::shared_ptr<AMP::Database> nullDatabase;
-    if(mesh1.get()!=NULL){
+    if(mesh1){
       boundaryMesh1 = mesh1->Subset( mesh1->getBoundaryIDIterator( AMP::Mesh::Volume, boundaryID1 ) );
+    }
+    AMP::LinearAlgebra::VS_Comm bndMesh1CommSelect = createCommSelect(d_multiDofDTKMapOpParams->d_globalComm, (boundaryMesh1!=nullptr) );
+    AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetUVec = u->constSelect( bndMesh1CommSelect, variable1 );
+
+    if(boundaryMesh1){
     // Build map 1 -> 2
-      d_SourceVectorMap12 = u->constSelect( AMP::LinearAlgebra::VS_Mesh( boundaryMesh1 ), "var" )
+      d_SourceVectorMap12 = commSubsetUVec->constSelect( AMP::LinearAlgebra::VS_Mesh( boundaryMesh1 ), "var" )
         ->constSelect( AMP::LinearAlgebra::VS_ByVariableName( variable1 ), "var" )
         ->constSelect( AMP::LinearAlgebra::VS_Stride( strideOffset1, strideLength1 ), "var" );
     }
-    if(mesh2.get()!=NULL){
+
+    if(mesh2){
       boundaryMesh2 = mesh2->Subset( mesh2->getBoundaryIDIterator( AMP::Mesh::Volume, boundaryID2 ) );
+    }
+    AMP::LinearAlgebra::VS_Comm bndMesh2CommSelect = createCommSelect(d_multiDofDTKMapOpParams->d_globalComm, (boundaryMesh2!=nullptr) );
+    commSubsetUVec = u->constSelect( bndMesh2CommSelect, variable2 );
+
+    if(boundaryMesh2){
     // Build map 2 -> 1
-      d_SourceVectorMap21 = u->constSelect( AMP::LinearAlgebra::VS_Mesh( boundaryMesh2 ), "var" )
+      d_SourceVectorMap21 = commSubsetUVec->constSelect( AMP::LinearAlgebra::VS_Mesh( boundaryMesh2 ), "var" )
         ->constSelect( AMP::LinearAlgebra::VS_ByVariableName( variable2 ), "var" )
         ->constSelect( AMP::LinearAlgebra::VS_Stride( strideOffset2, strideLength2 ), "var" );
     }
