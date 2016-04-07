@@ -57,13 +57,9 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
     fout.open( fileName.c_str(), std::fstream::out );
 
     if(mesh2){
-      fout << "Inside MultiDofDTK with Rank "<< rank<<std::endl;
       AMP::Mesh::MeshIterator iterator = mesh2->getBoundaryIDIterator( AMP::Mesh::Volume, boundaryID2 );
-      fout << "Inside MultiDofDTKRank iterator size "<< iterator.size() <<std::endl;
       boundaryMesh2 = mesh2->Subset( iterator  );
     }
-
-    fout << "Inside MultiDofDTK after with Rank "<< rank<<std::endl;
 
     AMP::LinearAlgebra::VS_Comm bndMesh2CommSelect = createCommSelect(multiDofDTKMapOpParams->d_globalComm, (boundaryMesh2!=nullptr) );
     AMP::LinearAlgebra::Vector::shared_ptr commSubsetTargetVec =

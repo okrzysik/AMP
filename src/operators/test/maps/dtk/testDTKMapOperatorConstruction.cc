@@ -49,6 +49,7 @@ void dtkConsruction(AMP::UnitTest *ut, std::string input_file)
   AMP::Mesh::Mesh::shared_ptr Mesh2 = manager->Subset("Mesh2");
 
   AMP::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters> mapOperatorParams(new AMP::Operator::MultiDofDTKMapOperatorParameters(nullDatabase));
+  mapOperatorParams->d_globalComm = AMP_COMM_WORLD;
   mapOperatorParams->d_Mesh1 = Mesh1;
   mapOperatorParams->d_BoundaryID1 = 1;
   mapOperatorParams->d_Variable1 = variable ->getName();
