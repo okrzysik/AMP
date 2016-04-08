@@ -54,6 +54,12 @@ public:
     // Dereference the iterator
     virtual MeshElement *operator->( void ) override;
 
+    // Dereference the iterator
+    virtual const MeshElement &operator*( void ) const override;
+
+    // Dereference the iterator
+    virtual const MeshElement *operator->( void ) const override;
+
     // Return an iterator to the begining
     virtual MeshIterator begin() const override;
 
@@ -107,7 +113,7 @@ private:
     void *d_pos;
     MeshID d_meshID;
     const AMP::Mesh::libMesh *d_mesh;
-    MeshElement d_cur_element;
+    mutable MeshElement d_cur_element;
 };
 }
 }

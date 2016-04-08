@@ -81,7 +81,13 @@ public:
     virtual MeshElement &operator*( void );
 
     //! Dereference the iterator
+    virtual const MeshElement &operator*( void ) const;
+
+    //! Dereference the iterator
     virtual MeshElement *operator->( void );
+
+    //! Dereference the iterator
+    virtual const MeshElement *operator->( void ) const;
 
     //! Return an iterator to the begining
     virtual MeshIterator begin() const;

@@ -329,7 +329,19 @@ MeshElement &MultiIterator::operator*()
         AMP_ERROR( "Invalid dereference (iterator is out of range)" );
     return cur_iterator.operator*();
 }
+const MeshElement &MultiIterator::operator*() const
+{
+    if ( d_globalPos >= d_globalSize )
+        AMP_ERROR( "Invalid dereference (iterator is out of range)" );
+    return cur_iterator.operator*();
+}
 MeshElement *MultiIterator::operator->()
+{
+    if ( d_globalPos >= d_globalSize )
+        AMP_ERROR( "Invalid dereference (iterator is out of range)" );
+    return cur_iterator.operator->();
+}
+const MeshElement *MultiIterator::operator->() const
 {
     if ( d_globalPos >= d_globalSize )
         AMP_ERROR( "Invalid dereference (iterator is out of range)" );

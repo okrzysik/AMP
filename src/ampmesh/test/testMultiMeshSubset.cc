@@ -6,7 +6,7 @@
 #include <utils/PIO.h>
 #include <utils/UnitTest.h>
 
-void testMultiMeshSubset( AMP::UnitTest *ut )
+void testMultiMeshSubset( AMP::UnitTest& ut )
 {
     std::string const exeName = "testMultiMeshSubset";
     std::string const inputFile = "input_" + exeName;
@@ -34,7 +34,17 @@ void testMultiMeshSubset( AMP::UnitTest *ut )
     if ( fooMesh!=nullptr )
         it = fooMesh->getBoundaryIDIterator(AMP::Mesh::Volume,0);
     auto fooBoundaryMesh = mesh->Subset(it);
-}   
+
+    // Check the number of elements in the subset
+    size_t N_local = 0;
+    if ( fooBoundaryMesh!=nullptr )
+        N_local = fooBoundaryMesh->numLocalElements( AMP::Mesh::Volume );
+    size_t N_global = globalComm.sumReduce( N_local );
+    if ( N_global == 12 )
+        ut.passes("Subset worked correctly");
+    else
+        ut.failure("Subset failed");
+}
 
 // Main function
 int main( int argc, char **argv )
@@ -45,7 +55,7 @@ int main( int argc, char **argv )
     AMP::UnitTest ut;
 
     // Run the MultiMesh subest test
-    testMultiMeshSubset( &ut );
+    testMultiMeshSubset( ut );
 
     // Print the results and return
     ut.report();

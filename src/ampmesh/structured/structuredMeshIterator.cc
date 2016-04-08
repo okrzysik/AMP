@@ -216,7 +216,17 @@ MeshElement &structuredMeshIterator::operator*()
     this->operator->(); // Initialize d_cur_element
     return d_cur_element;
 }
+const MeshElement &structuredMeshIterator::operator*() const
+{
+    this->operator->(); // Initialize d_cur_element
+    return d_cur_element;
+}
 MeshElement *structuredMeshIterator::operator->()
+{
+    d_cur_element = structuredMeshElement( d_elements->operator[]( d_pos ), d_mesh );
+    return &d_cur_element;
+}
+const MeshElement *structuredMeshIterator::operator->() const
 {
     d_cur_element = structuredMeshElement( d_elements->operator[]( d_pos ), d_mesh );
     return &d_cur_element;

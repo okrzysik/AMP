@@ -34,46 +34,52 @@ public:
     MultiIterator &operator=( const MultiIterator & );
 
     // Increment
-    MeshIterator &operator++();
+    MeshIterator &operator++() override;
 
     // Increment
-    MeshIterator operator++( int );
+    MeshIterator operator++( int ) override;
 
     // Decrement
-    MeshIterator &operator--();
+    MeshIterator &operator--() override;
 
     // Decrement
-    MeshIterator operator--( int );
+    MeshIterator operator--( int ) override;
 
     // Arithmetic operator+
-    virtual MeshIterator operator+( int ) const;
+    virtual MeshIterator operator+( int ) const override;
 
     // Arithmetic operator+=
-    virtual MeshIterator &operator+=( int N );
+    virtual MeshIterator &operator+=( int N ) override;
 
     //! Check if two iterators are equal
-    bool operator==( const MeshIterator &rhs ) const;
+    bool operator==( const MeshIterator &rhs ) const override;
 
     //! Check if two iterators are not equal
-    bool operator!=( const MeshIterator &rhs ) const;
+    bool operator!=( const MeshIterator &rhs ) const override;
 
     //! Dereference the iterator
-    MeshElement &operator*( void );
+    MeshElement& operator*( void ) override;
 
     //! Dereference the iterator
-    MeshElement *operator->( void );
+    MeshElement* operator->( void ) override;
+
+    //! Dereference the iterator
+    const MeshElement& operator*( void ) const override;
+
+    //! Dereference the iterator
+    const MeshElement* operator->( void ) const override;
 
     //! Return an iterator to the begining
-    MeshIterator begin() const;
+    MeshIterator begin() const override;
 
     //! Return an iterator to the begining
-    MeshIterator end() const;
+    MeshIterator end() const override;
 
     //! Return the number of elements in the iterator
-    virtual size_t size() const;
+    virtual size_t size() const override;
 
     //! Return the current position (from the beginning) in the iterator
-    virtual size_t position() const;
+    virtual size_t position() const override;
 
     using MeshIterator::operator+;
     using MeshIterator::operator+=;

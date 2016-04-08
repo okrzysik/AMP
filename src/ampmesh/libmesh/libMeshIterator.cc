@@ -365,7 +365,30 @@ MeshElement &libMeshIterator::operator*()
     this->operator->(); // Initialize d_cur_element
     return d_cur_element;
 }
+const MeshElement &libMeshIterator::operator*() const
+{
+    this->operator->(); // Initialize d_cur_element
+    return d_cur_element;
+}
 MeshElement *libMeshIterator::operator->()
+{
+    if ( d_type == 0 ) {
+        // Node iterator
+        ::Mesh::node_iterator *it = (::Mesh::node_iterator *) d_pos;
+        ::Node *node              = it->operator*();
+        d_cur_element = libMeshElement( d_dim, Vertex, (void *) node, d_rank, d_meshID, d_mesh );
+    } else if ( d_type == 1 ) {
+        // Element iterator
+        ::Mesh::element_iterator *it = (::Mesh::element_iterator *) d_pos;
+        ::Elem *elem                 = it->operator*();
+        d_cur_element =
+            libMeshElement( d_dim, (GeomType) d_dim, (void *) elem, d_rank, d_meshID, d_mesh );
+    } else {
+        AMP_ERROR( "libMesh does not support iterators over this (unknown) type" );
+    }
+    return &d_cur_element;
+}
+const MeshElement *libMeshIterator::operator->() const
 {
     if ( d_type == 0 ) {
         // Node iterator

@@ -60,6 +60,12 @@ public:
     //! Dereference the iterator
     virtual MeshElement *operator->( void ) override;
 
+    //! Dereference the iterator
+    virtual const MeshElement &operator*( void ) const override;
+
+    //! Dereference the iterator
+    virtual const MeshElement *operator->( void ) const override;
+
     //! Return an iterator to the begining
     virtual MeshIterator begin() const override;
 
@@ -86,7 +92,7 @@ private:
     size_t d_pos;
     AMP::shared_ptr<std::vector<BoxMesh::MeshElementIndex>> d_elements;
     const AMP::Mesh::BoxMesh *d_mesh;
-    structuredMeshElement d_cur_element;
+    mutable structuredMeshElement d_cur_element;
 };
 }
 }
