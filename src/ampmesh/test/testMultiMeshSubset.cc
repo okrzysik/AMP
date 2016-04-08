@@ -8,7 +8,7 @@
 
 void testMultiMeshSubset( AMP::UnitTest *ut )
 {
-    std::string const exeName = "MultiMeshSubset";
+    std::string const exeName = "testMultiMeshSubset";
     std::string const inputFile = "input_" + exeName;
     std::string const logFile   = "output_" + exeName;
 
@@ -30,9 +30,10 @@ void testMultiMeshSubset( AMP::UnitTest *ut )
 
     // Subset the mesh
     AMP::Mesh::Mesh::shared_ptr fooMesh = mesh->Subset( "Foo" );
-    AMP::Mesh::Mesh::shared_ptr fooBoundaryMesh =
-        mesh->Subset(fooMesh->getBoundaryIDIterator(AMP::Mesh::Volume, 0));
-
+    AMP::Mesh::MeshIterator it;
+    if ( fooMesh!=nullptr )
+        it = fooMesh->getBoundaryIDIterator(AMP::Mesh::Volume,0);
+    auto fooBoundaryMesh = mesh->Subset(it);
 }   
 
 // Main function
