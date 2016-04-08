@@ -15,7 +15,7 @@ namespace Mesh {
 
 // Initialize static variables
 namespace {
-unsigned N_copies( const int increment = 0 )
+unsigned N_copies( const unsigned increment = 0 )
 {
     static unsigned copies( 0 );
     if ( copies + increment < 0 )

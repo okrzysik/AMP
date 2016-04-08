@@ -133,6 +133,8 @@ bool MeshIterator::operator!=( const MeshIterator &rhs ) const
 ********************************************************/
 MeshElement &MeshIterator::operator*() { return iterator->operator*(); }
 MeshElement *MeshIterator::operator->() { return iterator->operator->(); }
+const MeshElement &MeshIterator::operator*() const { return iterator->operator*(); }
+const MeshElement *MeshIterator::operator->() const { return iterator->operator->(); }
 MeshElement &MeshIterator::operator[]( int i )
 {
     if ( iterator != nullptr )

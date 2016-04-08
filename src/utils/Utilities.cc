@@ -291,6 +291,8 @@ size_t Utilities::getSystemMemory()
     status.dwLength = sizeof( status );
     GlobalMemoryStatusEx( &status );
     N_bytes = status.ullTotalPhys;
+#else
+#error Unknown OS
 #endif
     return N_bytes;
 }
@@ -314,6 +316,8 @@ size_t Utilities::getMemoryUsage()
     PROCESS_MEMORY_COUNTERS memCounter;
     GetProcessMemoryInfo( GetCurrentProcess(), &memCounter, sizeof( memCounter ) );
     N_bytes = memCounter.WorkingSetSize;
+#else
+#error Unknown OS
 #endif
     return N_bytes;
 }
