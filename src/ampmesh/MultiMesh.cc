@@ -686,39 +686,29 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( MeshID meshID ) const
 ********************************************************/
 AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool isGlobal ) const
 {
-    if ( iterator_in.size() == 0 && !isGlobal )
+    if ( iterator_in.size() == 0 )
         return AMP::shared_ptr<Mesh>();
-//    AMP_ASSERT( iterator_in.size() > 0 );
+    AMP_ASSERT( iterator_in.size() > 0 );
     MeshIterator iterator = iterator_in.begin();
-    GeomType type         ;
-    if ( iterator.size() > 0){ 
-      type         = iterator->elementType();
-      for ( size_t i = 0; i < iterator.size(); i++ ) {
+    GeomType type         = iterator->elementType();
+    for ( size_t i = 0; i < iterator.size(); i++ ) {
         if ( type != iterator->elementType() )
-          AMP_ERROR( "Subset mesh requires all of the elements to be the same type" );
+            AMP_ERROR( "Subset mesh requires all of the elements to be the same type" );
         ++iterator;
-      }
     }
     // Subset for the iterator in each submesh
     std::vector<Mesh::shared_ptr> subset;
     std::set<MeshID> subsetID;
     for ( auto &elem : d_meshes ) {
-
-      if ( iterator_in.size() > 0){ 
-        iterator = Mesh::getIterator( Intersection, iterator_in, elem->getIterator( type, elem->getMaxGhostWidth() ) );
-      }else{
-        iterator = MeshIterator();
-      }
-//        if ( iterator.size() == 0 )
-//            continue;
-      size_t itsz= iterator.size();
-      if(elem->getComm().sumReduce(iterator.size())){ 
+        iterator = Mesh::getIterator(
+            Intersection, iterator_in, elem->getIterator( type, elem->getMaxGhostWidth() ) );
+        if ( iterator.size() == 0 )
+            continue;
         AMP::shared_ptr<Mesh> mesh = elem->Subset( iterator, isGlobal );
         if ( mesh.get() != nullptr ) {
             subset.push_back( mesh );
             subsetID.insert( mesh->meshID() );
         }
-      }
     }
     // Count the number of globally unique sub-meshes
     AMP::AMP_MPI new_comm( AMP_COMM_SELF );

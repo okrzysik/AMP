@@ -52,9 +52,8 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // Subset the mesh
-    AMP::Mesh::Mesh::shared_ptr cellSandwichMesh = mesh->Subset( "CellSandwich_2_1" );
-    AMP::Mesh::Mesh::shared_ptr anodeCCMesh      = mesh->Subset( "AnodeCC_1_1" );
-    AMP::Mesh::Mesh::shared_ptr cathodeCCMesh    = mesh->Subset( "CathodeCC_3_1" );
+    AMP::Mesh::Mesh::shared_ptr cellSandwichMesh = mesh->Subset( "CellSandwich" );
+    AMP::Mesh::Mesh::shared_ptr CCMesh           = mesh->Subset( "CellCurrentCollectors" );
 
     // Distribute degrees of freedom
     int const ghostWidth = 1;
@@ -99,8 +98,8 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     //---------------------------------------------------
 
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( mesh );
-    siloWriter->setDecomposition( 1 );
+//    siloWriter->registerMesh( mesh );
+//    siloWriter->setDecomposition( 1 );
     siloWriter->registerVector( potentialMapVec, mesh, AMP::Mesh::Vertex, "potentialMapVec" );
     siloWriter->registerVector( potentialSolVec, mesh, AMP::Mesh::Vertex, "potentialSolVec" );
     siloWriter->registerVector( ElectrodeMapVec, mesh, AMP::Mesh::Vertex, "batteryMapVec" );
@@ -136,8 +135,8 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     // Filling the vectors
     AMP::Mesh::MeshIterator node;
     AMP::Mesh::MeshIterator end_node;
-    if ( anodeCCMesh ) {
-        node     = anodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
+    if ( CCMesh ) {
+        node     = CCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 3, 0 );
         end_node = node.end();
         for ( ; node != end_node; ++node ) {
             std::vector<size_t> bndGlobalIds;
@@ -149,10 +148,8 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
 
             potentialSolVec->setValueByGlobalID( bndGlobalIds[0], val );
         } // end for node
-    }
 
-    if ( cathodeCCMesh ) {
-        node     = cathodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 3, 0 );
+        node     = CCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 4, 0 );
         end_node = node.end();
         for ( ; node != end_node; ++node ) {
             std::vector<size_t> bndGlobalIds;
@@ -202,13 +199,13 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     AMP::pout << "----------------------------\n";
     AMP::shared_ptr<AMP::Database> nullDatabase;
     // INTERFACE WITH ANODE
-    AMP::pout << "interface anodeCC cellSandwich\n";
+    AMP::pout << "interface CC cellSandwich\n";
     AMP::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters>
         anodeCCCellSandwichMapOperatorParams(
             new AMP::Operator::MultiDofDTKMapOperatorParameters( nullDatabase ) );
     anodeCCCellSandwichMapOperatorParams->d_globalComm    = globalComm;
-    anodeCCCellSandwichMapOperatorParams->d_Mesh1         = anodeCCMesh;
-    anodeCCCellSandwichMapOperatorParams->d_BoundaryID1   = 5;
+    anodeCCCellSandwichMapOperatorParams->d_Mesh1         = CCMesh;
+    anodeCCCellSandwichMapOperatorParams->d_BoundaryID1   = 3;
     anodeCCCellSandwichMapOperatorParams->d_Variable1     = potentialVariable->getName();
     anodeCCCellSandwichMapOperatorParams->d_StrideOffset1 = 0;
     anodeCCCellSandwichMapOperatorParams->d_StrideLength1 = 1;
@@ -233,8 +230,8 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     cellSandwichCathodeCCMapOperatorParams->d_Variable1     = batteryVariables->getName();
     cellSandwichCathodeCCMapOperatorParams->d_StrideOffset1 = 3;
     cellSandwichCathodeCCMapOperatorParams->d_StrideLength1 = 5;
-    cellSandwichCathodeCCMapOperatorParams->d_Mesh2         = cathodeCCMesh;
-    cellSandwichCathodeCCMapOperatorParams->d_BoundaryID2   = 3;
+    cellSandwichCathodeCCMapOperatorParams->d_Mesh2         = CCMesh;
+    cellSandwichCathodeCCMapOperatorParams->d_BoundaryID2   = 4;
     cellSandwichCathodeCCMapOperatorParams->d_Variable2     = potentialVariable->getName();
     cellSandwichCathodeCCMapOperatorParams->d_StrideOffset2 = 0;
     cellSandwichCathodeCCMapOperatorParams->d_StrideLength2 = 1;
@@ -281,7 +278,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetPVec =  potentialMapVec->constSelect(meshSelector, "Potential");
     AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetEVec =  ElectrodeMapVec->constSelect(meshSelector, "V4");
 
-    if( meshName.compare("CathodeCC_3_1")==0 ) {
+    if( meshName.compare("CellCurrentCollectors")==0 ) {
       node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 3, 0 );
       end_node = node.end();
       errorVec = commSubsetPVec->constSelect(
@@ -302,8 +299,8 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
       if ( errorNorm > tolerance )
         ut->failure( whatAmIChecking );
 
-    }else if( meshName.compare("AnodeCC_1_1")==0 ) {
-      node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
+      ////########################################
+      node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 4, 0 );
       end_node = node.end();
       errorVec = commSubsetPVec->constSelect(
           AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
@@ -323,7 +320,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
       if ( errorNorm > tolerance )
         ut->failure( whatAmIChecking );
 
-    }else if( meshName.compare("CellSandwich_2_1")==0 ) {
+    }else if( meshName.compare("CellSandwich")==0 ) {
       node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 2, 0 );
       end_node = node.end();
       errorVec = commSubsetEVec->constSelect(
@@ -381,7 +378,7 @@ int main( int argc, char *argv[] )
 
     AMP::UnitTest ut;
 
-    runTest( "testMultiDofDTKMapOperator-1", &ut );
+    runTest( "testMultiDofDTKMapOperator-2", &ut );
 
     ut.report();
 
