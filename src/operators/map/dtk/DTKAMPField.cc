@@ -20,15 +20,17 @@ DTKAMPField::DTKAMPField(
       // Get the number of degrees of freedom
       AMP::Mesh::MeshIterator meshIterator = dof_manager->getIterator();
       const std::size_t n = meshIterator.size();
-      d_support_ids.resize( n );
+      d_support_ids.reserve(n);
 
       // Iterate over the DOF manager elements and extract their DOF ids.
       std::vector<std::size_t> dofIndices;
       meshIterator = meshIterator.begin();
       for ( std::size_t i = 0; i < n; ++i, ++meshIterator ) {
-        dof_manager->getDOFs( meshIterator->globalID(), dofIndices );
-        AMP_ASSERT( dofIndices.size() == 1 );
-        d_support_ids[i] = dofIndices[0];
+       if(meshIterator->globalID().is_local()){
+         dof_manager->getDOFs( meshIterator->globalID(), dofIndices );
+         AMP_ASSERT( dofIndices.size() == 1 );
+         d_support_ids.push_back(dofIndices[0]);
+        }
       }
       AMP_ASSERT( meshIterator == meshIterator.end() );
     }
@@ -74,6 +76,8 @@ void DTKAMPField::writeFieldData( const DataTransferKit::SupportId support_id,
 void DTKAMPField::finalizeAfterWrite()
 {
     // Do nothing for now.
+    if(d_amp_vector)
+      d_amp_vector->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 }
 
 //---------------------------------------------------------------------------//

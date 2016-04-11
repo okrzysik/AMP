@@ -167,6 +167,8 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
     //            in that case we would have to perform select again
     d_Map12->apply( d_SourceVectorMap12, d_TargetVectorMap12 );
     d_Map21->apply( d_SourceVectorMap21, d_TargetVectorMap21 );
+
+    d_multiDofDTKMapOpParams->d_TargetVector->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
 }
 }
 }
