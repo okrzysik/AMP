@@ -76,4 +76,6 @@ IF( USE_EXT_DENDRO AND USE_EXT_PETSC )
 ENDIF()
 ADD_AMP_TEST_1_2_4( testMultiMeshSubset )
 COPY_TEST_FILE( input_testMultiMeshSubset )
+ADD_AMP_TEST_1_2_4( testMultiMeshOwnerRank )
+COPY_TEST_FILE( input_testMultiMeshOwnerRank )
 
