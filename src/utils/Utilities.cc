@@ -241,7 +241,7 @@ void Utilities::abort( const std::string &message, const std::string &filename, 
         AMP_MPI comm = AMP_MPI( AMP_COMM_WORLD );
         comm.abort();
     } else {
-        // Throw and standard exception (allows the use of try, catch)
+        // Throw a standard exception (allows the use of try, catch)
         // std::stringstream  stream;
         // stream << message << std::endl << "  " << filename << ":  " << line;
         // std::cout << stream.str() << std::endl;

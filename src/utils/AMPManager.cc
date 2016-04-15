@@ -101,7 +101,7 @@ static void abort_fun( std::string msg, StackTrace::terminateType type )
 void AMPManager::terminate_AMP( std::string message )
 {
     AMP_MPI comm( AMP_COMM_WORLD );
-    if ( AMP::AMPManager::use_MPI_Abort == true || force_exit > 0 ) {
+    if ( !printed_stack ) {
         // Print the call stack and memory usage
         std::stringstream msg;
         msg << message << std::endl;
@@ -114,6 +114,7 @@ void AMPManager::terminate_AMP( std::string message )
         Sleep((100*comm.getRank())/comm.getSize());
         perr << msg.str();
         printed_stack = true;
+        force_exit = 1;
     }
     if ( force_exit > 1 ) {
         exit( -1 );
@@ -142,28 +143,6 @@ void AMPManager::exitFun()
         msg << "   " << elem.print() << std::endl;
     perr << msg.str();
 }
-
-
-/****************************************************************************
-*  Function to handle MPI errors                                            *
-****************************************************************************/
-#ifdef USE_EXT_MPI
-static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
-{
-    if ( *err == MPI_ERR_COMM && *comm == MPI_COMM_WORLD ) {
-        // Special error handling for an invalid MPI_COMM_WORLD
-        std::cerr << "Error invalid MPI_COMM_WORLD";
-        exit( -1 );
-    }
-    int msg_len = 0;
-    char message[1000];
-    MPI_Error_string( *err, message, &msg_len );
-    if ( msg_len <= 0 )
-        AMP_ERROR( "Unkown error in MPI" );
-    std::string msg = "Error calling MPI routine:\n" + std::string(message) + "\n";
-    AMPManager::terminate_AMP( msg );
-}
-#endif
 
 
 /****************************************************************************
@@ -413,6 +392,28 @@ void AMPManager::setHandlers()
 }
 #ifdef USE_EXT_MPI
 AMP::shared_ptr<MPI_Errhandler> AMPManager::mpierr;
+#endif
+
+
+/****************************************************************************
+*  Functions to handle MPI errors                                           *
+****************************************************************************/
+#ifdef USE_EXT_MPI
+static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
+{
+    if ( *err == MPI_ERR_COMM && *comm == MPI_COMM_WORLD ) {
+        // Special error handling for an invalid MPI_COMM_WORLD
+        std::cerr << "Error invalid MPI_COMM_WORLD";
+        exit( -1 );
+    }
+    int msg_len = 0;
+    char message[1000];
+    MPI_Error_string( *err, message, &msg_len );
+    if ( msg_len <= 0 )
+        AMP_ERROR( "Unkown error in MPI" );
+    std::string msg = "Error calling MPI routine:\n" + std::string(message) + "\n";
+    throw std::logic_error( msg );
+}
 #endif
 void AMPManager::setMPIErrorHandler()
 {

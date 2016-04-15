@@ -61,13 +61,6 @@ int main( int argc, char *argv[] )
         } catch ( ... ) {
             // This is correct
         }
-        try {
-            AMP::AMPManager::terminate_AMP( "Catch this 2" );
-            std::cout << "Failed to catch terminate_AMP\n";
-            return -1;
-        } catch ( ... ) {
-            // This is correct
-        }
     }
 
     // Shutdown

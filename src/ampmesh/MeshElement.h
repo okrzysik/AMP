@@ -29,31 +29,39 @@ public:
 
 
     //! Empty constructor for a MeshElement
-    MeshElement();
+    inline MeshElement();
 
 
     //! Copy constructor
-    MeshElement( const MeshElement & );
+    inline MeshElement( const MeshElement & );
 
 
     //! Assignment operator
-    MeshElement &operator=( const MeshElement & );
+    inline MeshElement &operator=( const MeshElement & );
 
 
     //! De-constructor for a MeshElement
-    virtual ~MeshElement();
+    virtual inline ~MeshElement();
+
+
+    //! Return the owner rank according to AMP_COMM_WORLD
+    virtual inline unsigned int globalOwnerRank() const;
 
 
     //! Return the element type
-    virtual GeomType elementType() const { return d_globalID.type(); }
+    virtual inline GeomType elementType() const { return d_globalID.type(); }
+
+
+    //! Return the element class
+    virtual inline std::string elementClass() const;
 
 
     //! Return the unique global ID of the element
-    virtual MeshElementID globalID() const { return d_globalID; }
+    virtual inline MeshElementID globalID() const { return d_globalID; }
 
 
     //! Return the elements composing the current element
-    virtual std::vector<MeshElement> getElements( const GeomType type ) const;
+    virtual inline std::vector<MeshElement> getElements( const GeomType type ) const;
 
 
     /**
@@ -63,15 +71,15 @@ public:
      *  For Verticies, a list of all verticies that share an element is returned.
      *  This list is in unsorted order.
      */
-    virtual std::vector<MeshElement::shared_ptr> getNeighbors() const;
+    virtual inline std::vector<MeshElement::shared_ptr> getNeighbors() const;
 
 
     //! Return the volume of the current element (does not apply to verticies)
-    virtual double volume() const;
+    virtual inline double volume() const;
 
 
     //! Return the coordinates of the vertex (only applies to verticies)
-    virtual std::vector<double> coord() const;
+    virtual inline std::vector<double> coord() const;
 
 
     /**
@@ -80,7 +88,7 @@ public:
      *   in the given direction (only applies to verticies).
      * \param i     The direction requested.  Equivalent to coord()[i]
      */
-    virtual double coord( int i ) const;
+    virtual inline double coord( int i ) const;
 
 
     /**
@@ -89,7 +97,7 @@ public:
      *   centroid is defined as the average of the coordinates of the verticies.
      *   The centroid of a vertex is the vertex and will return the same result as coord().
      */
-    virtual std::vector<double> centroid() const;
+    virtual inline std::vector<double> centroid() const;
 
 
     /**
@@ -100,18 +108,18 @@ public:
      * \param pos   The coordinates of the point to check.
      * \param TOL   The tolerance to use for the computation.
      */
-    virtual bool containsPoint( const std::vector<double> &pos, double TOL = 1e-12 ) const;
+    virtual inline bool containsPoint( const std::vector<double> &pos, double TOL = 1e-12 ) const;
 
 
     //! Check if the element is on the surface
-    virtual bool isOnSurface() const;
+    virtual inline bool isOnSurface() const;
 
     /**
      * \brief     Check if the current element is on the given boundary
      * \details   Check if the current element is on the boundary specified by the given id
      * \param id  The boundary id to check
      */
-    virtual bool isOnBoundary( int id ) const;
+    virtual inline bool isOnBoundary( int id ) const;
 
 
     /**
@@ -119,7 +127,7 @@ public:
      * \details   Check if the current element is in the block specified by the given id
      * \param id  The block id to check
      */
-    virtual bool isInBlock( int id ) const;
+    virtual inline bool isInBlock( int id ) const;
 
 
     // Overload operators
@@ -139,11 +147,11 @@ public:
 
     //! Function to get a pointer to the raw mesh element (libMeshElement, structuredMeshElement,
     //! etc.)
-    virtual MeshElement *getRawElement();
+    virtual inline MeshElement *getRawElement();
 
     //! Function to get a pointer to the raw mesh element (libMeshElement, structuredMeshElement,
     //! etc.)
-    virtual const MeshElement *getRawElement() const;
+    virtual inline const MeshElement *getRawElement() const;
 
 
 protected:
@@ -157,9 +165,14 @@ protected:
     MeshElementID d_globalID;
 
     // Clone the iterator
-    virtual MeshElement *clone() const;
+    virtual inline MeshElement *clone() const;
+
 };
 }
 }
 
+#include "MeshElement.inline.h"
+
 #endif
+
+

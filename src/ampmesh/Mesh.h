@@ -295,23 +295,23 @@ public:
 
 
     //! Get the largest geometric type in the mesh
-    virtual GeomType getGeomType() const { return GeomDim; }
+    inline GeomType getGeomType() const { return GeomDim; }
 
 
     //! Get the physical dimension of the mesh
-    virtual unsigned char getDim() const { return PhysicalDim; }
+    inline unsigned char getDim() const { return PhysicalDim; }
 
 
     //! Get the communicator for the mesh
-    virtual AMP_MPI getComm() const { return d_comm; }
+    inline const AMP_MPI& getComm() const { return d_comm; }
 
 
     //! Get the maximum ghost width
-    virtual unsigned char getMaxGhostWidth() const { return d_max_gcw; }
+    inline unsigned char getMaxGhostWidth() const { return d_max_gcw; }
 
 
     //! Get the mesh ID
-    virtual inline MeshID meshID() const { return d_meshID; }
+    inline MeshID meshID() const { return d_meshID; }
 
 
     //! Is the current mesh a base mesh
@@ -326,8 +326,8 @@ public:
 
 
     /**
-     *  Get the meshIDs of all the basic meshes that compose the current mesh (excluding multimeshes
-     * and subset meshes)
+     *  Get the meshIDs of all the basic meshes that compose the current mesh
+     *     (excluding multimeshes and subset meshes)
      *  Note: This function may require global communication depending on the implimentation
      */
     virtual std::vector<MeshID> getBaseMeshIDs() const;

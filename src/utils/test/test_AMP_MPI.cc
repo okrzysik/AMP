@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 
 #include "ProfilerApp.h"
 #include "utils/AMPManager.h"
@@ -23,6 +24,8 @@
 
 #undef MPI_CLASS
 #define MPI_CLASS AMP::AMP_MPI
+#define MPI_ASSERT AMP_ASSERT
+#define COMM_WORLD AMP_COMM_WORLD
 using AMP::UnitTest;
 
 
@@ -756,7 +759,7 @@ int testIsendIrecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
     }
     std::vector<int> finished = MPI_CLASS::waitSome( recvRequest.size(), &( recvRequest[0] ) );
     if ( !recvRequest.empty() ) {
-        AMP_ASSERT( !finished.empty() );
+        MPI_ASSERT( !finished.empty() );
         for ( std::vector<int>::const_reverse_iterator it = finished.rbegin();
               it != finished.rend();
               ++it )
@@ -800,11 +803,18 @@ int testCommRanks( MPI_CLASS comm, UnitTest *ut )
     } else {
         pass = neighbors2.empty();
     }
+    auto ranks = comm.globalRanks();
+    pass = pass && (int) ranks.size() == comm.getSize();
+    for (size_t i=0; i<ranks.size(); i++)
+        pass = pass && ranks[i]>=0;
+    auto ranks2 = ranks;
+    AMP::Utilities::unique( ranks2 );
+    pass = pass && ranks.size() == ranks2.size();
+    comm.barrier();
     if ( pass )
         ut->passes( "commRanks" );
     else
-        ut->failure( "commRanks" );
-    comm.barrier();
+        ut->failure( "commRanks" );   
     return 1; // Return the number of tests
 }
 
@@ -1124,7 +1134,7 @@ void testCommDup( UnitTest *ut )
     // This seems to be a MAC? + Clang + MPICH? issue only
     ut->expected_failure( "testCommDup skipped for this architecture/compiler" );
 #else
-    MPI_CLASS globalComm( AMP_COMM_WORLD );
+    MPI_CLASS globalComm( COMM_WORLD );
     MPI_CLASS dupComm = globalComm.dup();
     if ( globalComm.getCommunicator() != dupComm.getCommunicator() &&
          dupComm.getSize() == globalComm.getSize() && dupComm.getRank() == globalComm.getRank() ) {
@@ -1140,8 +1150,8 @@ void testCommDup( UnitTest *ut )
         for ( size_t i = 0; i < N_comm_try; i++ ) {
             MPI_CLASS tmp_comm = globalComm.dup();
             comms.push_back( tmp_comm );
-            AMP_ASSERT( globalComm.getCommunicator() != comms[i].getCommunicator() );
-            AMP_ASSERT( comms.back().sumReduce<int>( 1 ) ==
+            MPI_ASSERT( globalComm.getCommunicator() != comms[i].getCommunicator() );
+            MPI_ASSERT( comms.back().sumReduce<int>( 1 ) ==
                         globalComm.getSize() ); // We need to communicate as part of the test
         }
         ut->passes( "Created an unlimited number of comms" );
@@ -1165,12 +1175,12 @@ void testCommDup( UnitTest *ut )
         for ( size_t i = 0; i < N_comm_try; i++ ) {
             MPI_CLASS tmp_comm1 = globalComm.dup();
             MPI_CLASS tmp_comm2 = globalComm.dup();
-            AMP_ASSERT( globalComm.getCommunicator() != tmp_comm1.getCommunicator() );
-            AMP_ASSERT( globalComm.getCommunicator() != tmp_comm2.getCommunicator() );
-            AMP_ASSERT( tmp_comm1.getCommunicator() != tmp_comm2.getCommunicator() );
-            AMP_ASSERT( tmp_comm1.sumReduce<int>( 1 ) ==
+            MPI_ASSERT( globalComm.getCommunicator() != tmp_comm1.getCommunicator() );
+            MPI_ASSERT( globalComm.getCommunicator() != tmp_comm2.getCommunicator() );
+            MPI_ASSERT( tmp_comm1.getCommunicator() != tmp_comm2.getCommunicator() );
+            MPI_ASSERT( tmp_comm1.sumReduce<int>( 1 ) ==
                         globalComm.getSize() ); // We need to communicate as part of the test
-            AMP_ASSERT( tmp_comm2.sumReduce<int>( 1 ) ==
+            MPI_ASSERT( tmp_comm2.sumReduce<int>( 1 ) ==
                         globalComm.getSize() ); // We need to communicate as part of the test
             N_dup += 2;
         }
@@ -1361,7 +1371,7 @@ int main( int argc, char *argv[] )
             ut.failure( "split with color=-1 returns NULL communicator" );
         splitComms[3] = splitComms[0]; // Make a copy to ensure there are no memory leaks
         splitComms[3] = splitComms[2]; // Perform assignement to check memory leaks
-        AMP_ASSERT( splitComms[3] == splitComms[2] );
+        MPI_ASSERT( splitComms[3] == splitComms[2] );
         PROFILE_STOP( "Split" );
 
         // Test  <  <=  >  >=

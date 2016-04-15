@@ -1,3 +1,6 @@
+#ifndef included_AMP_MeshElement_inline
+#define included_AMP_MeshElement_inline
+
 #include "ampmesh/MeshElement.h"
 #include "utils/Utilities.h"
 
@@ -15,14 +18,14 @@ static unsigned int MeshElementTypeID = TYPE_HASH( MeshElement );
 MeshElement::MeshElement() : d_globalID()
 {
     typeID  = MeshElementTypeID;
-    element = NULL;
+    element = nullptr;
 }
 MeshElement::MeshElement( const MeshElement &rhs ) : d_globalID()
 {
     typeID  = MeshElementTypeID;
-    element = NULL;
-    if ( rhs.element == NULL && rhs.typeID == MeshElementTypeID ) {
-        element = NULL;
+    element = nullptr;
+    if ( rhs.element == nullptr && rhs.typeID == MeshElementTypeID ) {
+        element = nullptr;
     } else if ( rhs.typeID != MeshElementTypeID ) {
         element = rhs.clone();
     } else {
@@ -34,14 +37,14 @@ MeshElement &MeshElement::operator=( const MeshElement &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    if ( element != NULL ) {
+    if ( element != nullptr ) {
         // Delete the existing element
         delete element;
-        element = NULL;
+        element = nullptr;
     }
     typeID = MeshElementTypeID;
-    if ( rhs.element == NULL && rhs.typeID == MeshElementTypeID ) {
-        element = NULL;
+    if ( rhs.element == nullptr && rhs.typeID == MeshElementTypeID ) {
+        element = nullptr;
     } else if ( rhs.typeID != MeshElementTypeID ) {
         element = rhs.clone();
     } else {
@@ -57,9 +60,9 @@ MeshElement &MeshElement::operator=( const MeshElement &rhs )
 ********************************************************/
 MeshElement::~MeshElement()
 {
-    if ( element != NULL )
+    if ( element != nullptr )
         delete element;
-    element = NULL;
+    element = nullptr;
 }
 
 
@@ -68,11 +71,11 @@ MeshElement::~MeshElement()
 ********************************************************/
 MeshElement *MeshElement::clone() const
 {
-    if ( element == NULL )
+    if ( element == nullptr )
         return new MeshElement();
     else
         AMP_ERROR( "clone must instantiated by the derived class" );
-    return NULL;
+    return nullptr;
 }
 
 
@@ -81,13 +84,13 @@ MeshElement *MeshElement::clone() const
 ********************************************************/
 MeshElement *MeshElement::getRawElement()
 {
-    if ( element == NULL )
+    if ( element == nullptr )
         return this;
     return element->getRawElement();
 }
 const MeshElement *MeshElement::getRawElement() const
 {
-    if ( element == NULL )
+    if ( element == nullptr )
         return this;
     return element->getRawElement();
 }
@@ -98,7 +101,7 @@ const MeshElement *MeshElement::getRawElement() const
 ********************************************************/
 std::vector<double> MeshElement::centroid() const
 {
-    if ( element != NULL )
+    if ( element != nullptr )
         return element->centroid();
     if ( d_globalID.type() == Vertex )
         return coord();
@@ -110,8 +113,8 @@ std::vector<double> MeshElement::centroid() const
         for ( size_t j = 0; j < center.size(); j++ )
             center[j] += coord[j];
     }
-    for ( size_t j = 0; j < center.size(); j++ )
-        center[j] /= nodes.size();
+    for ( auto &elem : center )
+        elem /= nodes.size();
     return center;
 }
 
@@ -121,7 +124,7 @@ std::vector<double> MeshElement::centroid() const
 ********************************************************/
 bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
 {
-    if ( element != NULL )
+    if ( element != nullptr )
         return element->containsPoint( pos, TOL );
     if ( d_globalID.type() == Vertex ) {
         // double dist = 0.0;
@@ -139,55 +142,70 @@ bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) co
 /********************************************************
 * Functions that aren't implimented for the base class  *
 ********************************************************/
+std::string MeshElement::elementClass( ) const
+{
+    if ( element == nullptr )
+        AMP_ERROR( "MeshElement" );
+    return element->elementClass( );
+}
 std::vector<MeshElement> MeshElement::getElements( const GeomType type ) const
 {
-    if ( element == NULL )
-        AMP_ERROR( "getElements is not implimented for the base class" );
+    if ( element == nullptr )
+        AMP_ERROR( "getElements is not implimented for the base class (" + elementClass() +")" );
     return element->getElements( type );
 }
 std::vector<MeshElement::shared_ptr> MeshElement::getNeighbors() const
 {
-    if ( element == NULL )
-        AMP_ERROR( "getNeighbors is not implimented for the base class" );
+    if ( element == nullptr )
+        AMP_ERROR( "getNeighbors is not implimented for the base class (" + elementClass() +")" );
     return element->getNeighbors();
 }
 double MeshElement::volume() const
 {
-    if ( element == NULL )
-        AMP_ERROR( "volume is not implimented for the base class" );
+    if ( element == nullptr )
+        AMP_ERROR( "volume is not implimented for the base class (" + elementClass() +")" );
     return element->volume();
 }
 std::vector<double> MeshElement::coord() const
 {
-    if ( element == NULL )
-        AMP_ERROR( "coord is not implimented for the base class" );
+    if ( element == nullptr )
+        AMP_ERROR( "coord is not implimented for the base class (" + elementClass() +")" );
     return element->coord();
 }
 double MeshElement::coord( int i ) const
 {
-    if ( element == NULL )
-        return element->coord()[i];
+    if ( element == nullptr )
+        return this->coord()[i];
     return element->coord( i );
 }
 bool MeshElement::isOnSurface() const
 {
-    if ( element == NULL )
-        AMP_ERROR( "isOnSurface is not implimented for the base class" );
+    if ( element == nullptr )
+        AMP_ERROR( "isOnSurface is not implimented for the base class (" + elementClass() +")" );
     return element->isOnSurface();
 }
 bool MeshElement::isOnBoundary( int id ) const
 {
-    if ( element == NULL )
-        AMP_ERROR( "isOnBoundary is not implimented for the base class" );
+    if ( element == nullptr )
+        AMP_ERROR( "isOnBoundary is not implimented for the base class (" + elementClass() +")" );
     return element->isOnBoundary( id );
 }
 bool MeshElement::isInBlock( int id ) const
 {
-    if ( element == NULL )
-        AMP_ERROR( "isInBlock is not implimented for the base class" );
+    if ( element == nullptr )
+        AMP_ERROR( "isInBlock is not implimented for the base class (" + elementClass() +")" );
     return element->isInBlock( id );
 }
+unsigned int MeshElement::globalOwnerRank() const
+{
+    if ( element == nullptr )
+        AMP_ERROR( "globalOwnerRank is not implimented for the base class (" + elementClass() +")" );
+    return element->globalOwnerRank( );
+}
+
 
 
 } // Mesh namespace
 } // AMP namespace
+
+#endif

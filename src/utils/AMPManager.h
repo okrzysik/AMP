@@ -97,8 +97,12 @@ public:
     //! Static function to terminate AMP
     static void terminate_AMP( std::string message );
 
-    //! Set the signal/terminate handlers (called on startup)
+    //! Set the default signal/terminate handlers (called on startup)
     static void setHandlers();
+
+    //! Functions to initialize/destroy the mpi error handler
+    static void setMPIErrorHandler();
+    static void clearMPIErrorHandler();
 
     //! Check if MPI is active
     static bool MPI_Active();
@@ -131,9 +135,6 @@ private:
     //! Function to create the arguments to pass to petsc
     static std::vector<char *> getPetscArgs();
 
-    //! Functions to initialize/destroy the mpi error handler
-    static void setMPIErrorHandler();
-    static void clearMPIErrorHandler();
     static void exitFun();
 };
 }

@@ -138,6 +138,7 @@ void ElementIteratorTest( AMP::UnitTest *ut,
     int neighbor_pass         = 1;
     int myRank                = mesh->getComm().getRank();
     int maxRank               = mesh->getComm().getSize() - 1;
+    int myGlobalRank          = AMP::AMP_MPI(AMP_COMM_WORLD).getRank();
     std::vector<int> blockIds = mesh->getBlockIDs();
     std::vector<AMP::Mesh::MeshElementID> ids;
     ids.reserve( iterator.size() );
@@ -153,6 +154,7 @@ void ElementIteratorTest( AMP::UnitTest *ut,
         AMP::Mesh::MeshID meshID    = id.meshID();
         const std::vector<int> &map = proc_map.find( meshID )->second;
         int ownerRank               = map[id.owner_rank()];
+        int globalOwnerRank         = element.globalOwnerRank();
         // Perform some simple checks
         if ( element.elementType() != type )
             type_pass = false;
@@ -206,8 +208,12 @@ void ElementIteratorTest( AMP::UnitTest *ut,
             }
             if ( ownerRank != myRank )
                 id_pass = false;
+            if ( globalOwnerRank != myGlobalRank )
+                id_pass = false;
         } else {
             if ( ownerRank > maxRank || ownerRank < 0 || ownerRank == myRank )
+                id_pass = false;
+            if ( globalOwnerRank < 0 || globalOwnerRank == myGlobalRank )
                 id_pass = false;
         }
     }

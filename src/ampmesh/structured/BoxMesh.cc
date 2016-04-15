@@ -297,6 +297,9 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     }
     if ( test )
         displaceMesh( displacement );
+    // Get the global ranks for the comm to make sure it is set
+    auto globalRanks = getComm().globalRanks();
+    AMP_ASSERT(!globalRanks.empty());
     PROFILE_STOP( "Constructor" );
 }
 

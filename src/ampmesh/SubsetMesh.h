@@ -167,18 +167,6 @@ public:
                                                         const GeomType type ) const override;
 
 
-    //! Get the largest geometric type in the mesh
-    virtual GeomType getGeomType() const override { return GeomDim; }
-
-
-    //! Get the largest geometric type in the mesh
-    virtual AMP_MPI getComm() const override { return d_comm; }
-
-
-    //! Get the mesh ID
-    virtual inline MeshID meshID() const override { return d_meshID; }
-
-
     //! Is the current mesh a base mesh
     virtual inline bool isBaseMesh() const override { return false; }
 

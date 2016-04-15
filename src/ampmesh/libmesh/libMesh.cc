@@ -120,6 +120,9 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     } else {
         AMP_ERROR( "Error: params must contain a database object" );
     }
+    // Get the global ranks for the comm to make sure it is set
+    auto globalRanks = getComm().globalRanks();
+    AMP_ASSERT(!globalRanks.empty());
     PROFILE_STOP( "constructor" );
 }
 libMesh::libMesh( AMP::shared_ptr<::Mesh> mesh, std::string name )
