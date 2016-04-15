@@ -59,6 +59,11 @@ public:
      */
     void boundingBox( Teuchos::Tuple<double, 6> &bounds ) const override;
 
+    /*
+     * \brief Determine if entity is owned by the calling process.
+    */
+    bool isLocallyOwned() const ;
+
     /*!
      * \brief Determine if an entity is in the block with the given id.
      */

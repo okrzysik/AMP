@@ -51,6 +51,7 @@ void thermalTest(AMP::UnitTest *ut, std::string input_file)
   AMP::LinearAlgebra::Vector::shared_ptr  SolutionVec           = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
   AMP::LinearAlgebra::Vector::shared_ptr  RightHandSideVec      = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
   AMP::LinearAlgebra::Vector::shared_ptr  ResidualVec           = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
+  AMP::LinearAlgebra::Vector::shared_ptr  RankVec               = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable );
   
   AMP::LinearAlgebra::Vector::shared_ptr  thermalMapVec         = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable , true);
 
@@ -58,22 +59,24 @@ void thermalTest(AMP::UnitTest *ut, std::string input_file)
   siloWriter->registerMesh( manager );
   siloWriter->registerVector( SolutionVec , manager, AMP::Mesh::Vertex, "SolutionVec" );
   siloWriter->registerVector( thermalMapVec, manager, AMP::Mesh::Vertex, "MapVec" );
+  siloWriter->registerVector( RankVec, manager, AMP::Mesh::Vertex, "RankVec" );
 
   RightHandSideVec->setToScalar(0.0);
 
   std::vector<AMP::Mesh::MeshID> meshIDs = manager->getBaseMeshIDs();
  
-  siloWriter->writeFile( out_file , 0);
-
   AMP::shared_ptr<AMP::Operator::ColumnOperator> thermalMapsColumn;
 
   AMP::Mesh::Mesh::shared_ptr cellSandwichMesh = manager->Subset("CellSandwich");
   AMP::Mesh::Mesh::shared_ptr ccMesh           = manager->Subset("CellCurrentCollectors");
 
   SolutionVec->setToScalar(298.);           
-  thermalMapVec->setToScalar(-1);           
+  thermalMapVec->setToScalar(298);           
+  RankVec->setToScalar(globalComm.getRank());           
   RightHandSideVec->setToScalar(0);           
       
+  siloWriter->writeFile( out_file , 0);
+
 
   AMP::pout<<"----------------------------\n";
   AMP::pout<<"     CREATE MAP OPERATOR    \n";

@@ -181,8 +181,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     //  int npes = globalComm.getSize();
     int rank = globalComm.getRank();
     std::fstream fout;
-    std::string fileName = "debug_driver_" + AMP::Utilities::intToString( rank );
-    fout.open( fileName.c_str(), std::fstream::out );
+    std::string filename = "debug_driver_" + amp::utilities::inttostring( rank );
+    fout.open( filename.c_str(), std::fstream::out );
 
     // Load the input file
     globalComm.barrier();

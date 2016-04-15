@@ -63,6 +63,7 @@ private:
 
     AMP_MPI d_comm; 
     Teuchos::RCP<const Teuchos::Comm<int> > d_TeuchosComm;
+    bool d_mapOnThisProc; 
     // DTK map operator.
     AMP::shared_ptr<DataTransferKit::MapOperator> d_dtk_operator;
 

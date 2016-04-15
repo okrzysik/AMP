@@ -130,6 +130,15 @@ void AMPMeshEntityImpl::boundingBox( Teuchos::Tuple<double, 6> &bounds ) const
 
 //---------------------------------------------------------------------------//
 /*!
+ * \brief Determine if entity is owned by the calling process.
+ */
+bool AMPMeshEntityImpl::isLocallyOwned( ) const
+{
+    return d_extra_data->d_element.globalID().is_local();
+}
+
+//---------------------------------------------------------------------------//
+/*!
  * \brief Determine if an entity is in the block with the given id.
  */
 bool AMPMeshEntityImpl::inBlock( const int block_id ) const
