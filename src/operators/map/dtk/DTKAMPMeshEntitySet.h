@@ -8,6 +8,9 @@
 
 #include <DTK_EntitySet.hpp>
 
+#include <memory>
+#include <unordered_map>
+
 namespace AMP {
 namespace Operator {
 
@@ -82,6 +85,9 @@ private:
 private:
     // AMP mesh.
     AMP::shared_ptr<AMP::Mesh::Mesh> d_amp_mesh;
+
+    // Global rank map.
+    AMP::shared_ptr<std::unordered_map<int,int> > d_rank_map;
 };
 }
 }

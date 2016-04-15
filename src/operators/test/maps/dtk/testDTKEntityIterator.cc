@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 
 #include "utils/shared_ptr.h"
 
@@ -46,8 +47,17 @@ void myTest( AMP::UnitTest *ut )
 
     AMP::Mesh::MeshIterator mesh_iterator = mesh->getIterator( AMP::Mesh::Volume );
 
+    AMP::shared_ptr<std::unordered_map<int,int> > rank_map =
+	std::make_shared<std::unordered_map<int,int> >();    
+    auto global_ranks = mesh->getComm().globalRanks();
+    int size = mesh->getComm().getSize();
+    for ( int n = 0; n < size; ++n )
+    {
+	rank_map->emplace( global_ranks[n], n );
+    }
+    
     DataTransferKit::EntityIterator dtk_iterator =
-        AMP::Operator::AMPMeshEntityIterator( mesh_iterator, selectAll );
+        AMP::Operator::AMPMeshEntityIterator( rank_map, mesh_iterator, selectAll );
 
     // Check the size of the iterator.
     AMP_ASSERT( dtk_iterator.size() == mesh_iterator.size() );

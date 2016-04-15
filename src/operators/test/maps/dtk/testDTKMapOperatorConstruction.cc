@@ -78,6 +78,10 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
+    std::cout << " Enter 0 to continue: " << std::endl;
+    int dummy;
+    std::cin >> dummy;
+    
     std::string inputFile = "input_testDTKConstruction";
     if(argc>1) 
       inputFile = argv[1];

@@ -8,6 +8,8 @@
 
 #include <DTK_Entity.hpp>
 
+#include <unordered_map>
+
 namespace AMP {
 namespace Operator {
 
@@ -21,7 +23,8 @@ public:
     /**
      * Constructor.
      */
-    explicit AMPMeshEntity( const AMP::Mesh::MeshElement &element );
+    explicit AMPMeshEntity( const AMP::Mesh::MeshElement &element,
+			    const std::unordered_map<int,int>& rank_map );
 
     //! Destructor
     ~AMPMeshEntity() {}

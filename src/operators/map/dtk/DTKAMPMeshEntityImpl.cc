@@ -9,10 +9,16 @@ namespace Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor.
-AMPMeshEntityImpl::AMPMeshEntityImpl( const AMP::Mesh::MeshElement &element )
+AMPMeshEntityImpl::AMPMeshEntityImpl( const AMP::Mesh::MeshElement &element,
+				      const std::unordered_map<int,int>& rank_map )
 {
     d_extra_data = Teuchos::rcp( new AMPMeshEntityExtraData( element ) );
 
+    // Get the owner rank from the rank map.
+    int global_rank = element.globalOwnerRank();
+    AMP_INSIST( rank_map.count(global_rank), "Owner rank not mapped." );
+    d_owner_rank = rank_map.find( global_rank )->second;
+    
     // Make a unique 64-bit id.
     // It is a trade-off:
     // We have 32 bits to pack both the mesh id and the owner rank.
@@ -21,7 +27,7 @@ AMPMeshEntityImpl::AMPMeshEntityImpl( const AMP::Mesh::MeshElement &element )
     AMP_INSIST(
         mesh_id < 16384,
         "Large mesh IDs not supported." );
-    unsigned int owner_rank = element.globalID().owner_rank();
+    unsigned int owner_rank = element.globalID().owner_rank();        
     AMP_INSIST(
         owner_rank < 262144,
         "Too many processes to compose unique ids." );
@@ -79,7 +85,7 @@ DataTransferKit::EntityId AMPMeshEntityImpl::id() const { return d_id; }
  */
 int AMPMeshEntityImpl::ownerRank() const
 {
-    return static_cast<int>( d_extra_data->d_element.globalID().owner_rank() );
+    return d_owner_rank;
 }
 
 //---------------------------------------------------------------------------//

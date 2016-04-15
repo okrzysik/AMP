@@ -20,7 +20,15 @@ namespace Operator {
 // Constructor.
 AMPMeshEntitySet::AMPMeshEntitySet( const AMP::shared_ptr<AMP::Mesh::Mesh> &mesh )
     : d_amp_mesh( mesh )
-{ /* ... */
+{
+    // Build the rank map.
+    d_rank_map = std::make_shared<std::unordered_map<int,int> >();    
+    auto global_ranks = d_amp_mesh->getComm().globalRanks();
+    int size = d_amp_mesh->getComm().getSize();
+    for ( int n = 0; n < size; ++n )
+    {
+	d_rank_map->emplace( global_ranks[n], n );
+    }
 }
 
 //---------------------------------------------------------------------------//
@@ -52,7 +60,7 @@ void AMPMeshEntitySet::getEntity( const DataTransferKit::EntityId entity_id,
     owner_rank                  = ( owner_rank >> 8 ) & 0x007FFFFF;
     AMP::Mesh::MeshID mesh_id   = d_amp_mesh->meshID();
     AMP::Mesh::MeshElementID element_id( is_local, type_id, local_id, owner_rank, mesh_id );
-    entity = AMPMeshEntity( d_amp_mesh->getElement( element_id ) );
+    entity = AMPMeshEntity( d_amp_mesh->getElement( element_id ), *d_rank_map );
 }
 
 //---------------------------------------------------------------------------//
@@ -63,7 +71,9 @@ DataTransferKit::EntityIterator AMPMeshEntitySet::entityIterator(
 {
     AMP::Mesh::GeomType type_id = getGeomTypeFromEntityType( topological_dimension );
     int gcw                     = 1;
-    return AMPMeshEntityIterator( d_amp_mesh->getIterator( type_id, gcw ), predicate );
+    return AMPMeshEntityIterator( d_rank_map,
+				  d_amp_mesh->getIterator( type_id, gcw ),
+				  predicate );
 }
 
 //---------------------------------------------------------------------------//
@@ -81,7 +91,8 @@ void AMPMeshEntitySet::getAdjacentEntities(
     int num_entities = adjacent_elements.size();
     adjacent_entities.resize( num_entities );
     for ( int i = 0; i < num_entities; ++i ) {
-        adjacent_entities[i] = AMPMeshEntity( adjacent_elements[i] );
+        adjacent_entities[i] = AMPMeshEntity( adjacent_elements[i],
+					      *d_rank_map );
     }
 }
 
