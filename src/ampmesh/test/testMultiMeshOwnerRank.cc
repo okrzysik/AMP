@@ -6,6 +6,24 @@
 #include <utils/PIO.h>
 #include <utils/UnitTest.h>
 
+#include <unordered_map>
+
+void makeCommRankMap( const AMP::AMP_MPI& comm, std::unordered_map<int,int>& rank_map )
+{
+    auto global_ranks = comm.globalRanks();
+    int size = comm.getSize();
+    for ( int n = 0; n < size; ++n )
+    {
+	rank_map.emplace( global_ranks[n], n );
+    }
+}
+
+int mapElementOwnerRank( const std::unordered_map<int,int>& rank_map,
+			 AMP::Mesh::MeshElement element )
+{
+    return rank_map.find( element.globalOwnerRank() )->second;
+}
+
 void testMultiMeshOwnerRank( AMP::UnitTest& ut )
 {
 //    std::string const exeName = "testDTKConstruction";
@@ -32,15 +50,22 @@ void testMultiMeshOwnerRank( AMP::UnitTest& ut )
     // Subset the mesh boundary on surface 0
     AMP::Mesh::Mesh::shared_ptr arrayMesh = mesh->Subset( "Mesh1" );
     AMP::Mesh::MeshIterator it;
+    AMP::Mesh::Mesh::shared_ptr arrayBoundaryMesh;
     if ( arrayMesh )
+    {
         it = arrayMesh->getBoundaryIDIterator(AMP::Mesh::Vertex,0);
-    auto arrayBoundaryMesh = mesh->Subset(it);
+	arrayBoundaryMesh = arrayMesh->Subset(it);
+    }
 
-    // Iterate through the vertices on the boundaries of array and see if the
-    // ranks are correct.
     bool failure = false;
     if ( arrayBoundaryMesh )
     {
+	// Create the rank mapping.
+	std::unordered_map<int,int> rank_map;
+	makeCommRankMap( arrayBoundaryMesh->getComm(), rank_map );
+	
+	// Iterate through the vertices on the boundaries of array and see if the
+	// ranks are correct.
 	int bnd_comm_rank = arrayBoundaryMesh->getComm().getRank();
 	bool owner_rank_is_comm_rank = true;
 	it = arrayBoundaryMesh->getIterator( AMP::Mesh::Vertex, 0 );
@@ -52,12 +77,12 @@ void testMultiMeshOwnerRank( AMP::UnitTest& ut )
 	    // the boundary mesh that we got the vertex from then it should be
 	    // locally owned.
 	    owner_rank_is_comm_rank =
-		( bnd_comm_rank == it->globalID().owner_rank() );
+		( bnd_comm_rank == mapElementOwnerRank(rank_map,*it) );
 
 	    // If the vertex thinks it is locally owned but its owner rank
 	    // and mesh comm rank dont match then this is a failure.
 	    failure = (owner_rank_is_comm_rank !=
-			   it->globalID().is_local() );
+		       it->globalID().is_local() );
 
 	    // Exit the for loop on failure.
 	    if ( failure ) break;
