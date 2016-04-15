@@ -47,6 +47,15 @@ namespace AMP {
 class AMP_MPI
 {
 public:
+
+
+    /**
+     *\brief  Is MPI active
+     *\details  This returns true if MPI is initailized and not finalized
+     */
+    static bool MPI_active();
+
+
     /**
      *\brief  Empty constructor
      *\details  This creates an empty constructor that does not contain an MPI communicator.
@@ -133,10 +142,8 @@ public:
      *                      ensuring that each process has at least N_min processes.
      * \param procs     An optional list of processors to use.  By default, setting this to an
      *                  empty vector will use all available processors on the given node.
-     * \param N_min     The minimum number of processors for any process (-1 indicates all available
-     * processors).
-     * \param N_max     The maximum number of processors for any process (-1 indicates all available
-     * processors).
+     * \param N_min     The minimum number of processors for any process (-1 indicates all available processors).
+     * \param N_max     The maximum number of processors for any process (-1 indicates all available processors).
      *
      */
     static void balanceProcesses( const AMP_MPI &comm           = AMP_MPI( AMP_COMM_WORLD ),
@@ -156,12 +163,9 @@ public:
      *               Processes with the same color are in the same new communicator .
      *               -1: processor will not be a member of any object (NULL object will be returned)
      * \param key    Control of rank assignment (integer).
-     *               Note that, for a fixed color, the keys need not be unique. The processes will
-     * be sorted
-     *               in ascending order according to this key, then all the processes in a given
-     * color will
-     *               have the relative rank order as they did in their parent group. (See
-     * MPI_Comm_split)
+     *               Note that, for a fixed color, the keys need not be unique. The processes will be sorted
+     *               in ascending order according to this key, then all the processes in a given color will
+     *               have the relative rank order as they did in their parent group. (See MPI_Comm_split)
      */
     AMP_MPI split( int color, int key = -1 ) const;
 
@@ -203,8 +207,7 @@ public:
      *      The communicators are disjoint (a null communicator will be returned on all processors).
      *      One communicator is a sub communicator of another.  This will require communication on
      *          the smaller communicator only.
-     *      The communicators partially overlap.  This will require communication on the first
-     * communicator.
+     *      The communicators partially overlap.  This will require communication on the first communicator.
      */
     static AMP_MPI intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 );
 
@@ -213,6 +216,14 @@ public:
      * Check if the current communicator is NULL
      */
     bool isNull() const { return d_isNull; }
+
+
+    /**
+     * \brief Return the global ranks for the comm
+     * \details  This returns a vector which contains the global ranks for each
+     *   member of the communicator.  The global ranks are defined according to AMP_COMM_WORLD.
+     */
+    const std::vector<int>& globalRanks() const;
 
 
     /**
@@ -961,11 +972,14 @@ private:
     // Do we want to call MPI_abort instead of exit
     bool call_abort_in_serial_instead_of_exit;
 
+    // The level for the profiles of MPI
+    static short profile_level;
+
     // The rank and size of the communicator
     int comm_rank, comm_size;
 
-    // The level for the profiles of MPI
-    static int profile_level;
+    // The ranks of the comm in AMP_COMM_WORLD
+    mutable std::shared_ptr<std::vector<int>> d_ranks;
 
     // Some attributes
     int d_maxTag;

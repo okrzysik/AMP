@@ -57,7 +57,7 @@ public:
 
     //! Apply function.
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                AMP::LinearAlgebra::Vector::shared_ptr r);
+                AMP::LinearAlgebra::Vector::shared_ptr r) override;
 
 private:
 

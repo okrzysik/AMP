@@ -102,6 +102,15 @@ MeshElement *structuredMeshElement::clone() const { return new structuredMeshEle
 
 
 /****************************************************************
+* Return the global rank of the owner rank                      *
+****************************************************************/
+unsigned int structuredMeshElement::globalOwnerRank() const
+{
+    return d_mesh->getComm().globalRanks()[d_globalID.owner_rank()];
+}
+
+
+/****************************************************************
 * Function to get the elements composing the current element    *
 * We use a Canonical numbering system                           *
 ****************************************************************/

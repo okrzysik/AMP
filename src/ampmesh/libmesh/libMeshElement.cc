@@ -136,6 +136,15 @@ MeshElement *libMeshElement::clone() const { return new libMeshElement( *this );
 
 
 /****************************************************************
+* Return the global rank of the owner rank                      *
+****************************************************************/
+unsigned int libMeshElement::globalOwnerRank() const
+{
+    return d_mesh->getComm().globalRanks()[d_globalID.owner_rank()];
+}
+
+
+/****************************************************************
 * Function to get the elements composing the current element    *
 ****************************************************************/
 std::vector<MeshElement> libMeshElement::getElements( const GeomType type ) const

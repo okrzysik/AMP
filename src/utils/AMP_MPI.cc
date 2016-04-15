@@ -98,7 +98,7 @@ struct DoubleIntStruct {
 // Initialized the static member variables
 volatile unsigned int MPI_CLASS::N_MPI_Comm_created   = 0;
 volatile unsigned int MPI_CLASS::N_MPI_Comm_destroyed = 0;
-int MPI_CLASS::profile_level                          = 127;
+short MPI_CLASS::profile_level                        = 127;
 
 
 // Define a type for use with size_t
@@ -338,6 +338,22 @@ void MPI_CLASS::setProcessAffinity( std::vector<int> procs )
 
 
 /************************************************************************
+*  Function to check if MPI is active                                   *
+************************************************************************/
+bool MPI_CLASS::MPI_active()
+{
+    #ifdef USE_MPI
+        int initialized = 0, finalized = 0;
+        MPI_Initialized( &initialized );
+        MPI_Finalized( &finalized );
+        return initialized!=0 && finalized==0;
+    #else
+        return true;
+    #endif
+}
+
+
+/************************************************************************
 *  Function to perform a load balance of the given processes            *
 ************************************************************************/
 void MPI_CLASS::balanceProcesses( const MPI_CLASS &globalComm,
@@ -394,6 +410,7 @@ MPI_CLASS::MPI_CLASS()
     communicator = MPI_CLASS_COMM_NULL;
     d_maxTag     = mpi_max_tag;
 #endif
+    d_ranks.reset( new std::vector<int>(0) );
     d_count                              = nullptr;
     comm_rank                            = 0;
     comm_size                            = 1;
@@ -435,6 +452,7 @@ void MPI_CLASS::reset()
     } else {
         delete[] d_currentTag;
     }
+    d_ranks.reset( new std::vector<int>(0) );
     d_count                              = nullptr;
     comm_rank                            = 0;
     comm_size                            = 1;
@@ -457,6 +475,7 @@ MPI_CLASS::MPI_CLASS( const MPI_CLASS &comm )
     d_isNull     = comm.d_isNull;
     d_maxTag     = comm.d_maxTag;
     d_currentTag = comm.d_currentTag;
+    d_ranks      = comm.d_ranks;
     if ( d_currentTag != nullptr )
         ++d_currentTag[1];
     call_abort_in_serial_instead_of_exit = comm.call_abort_in_serial_instead_of_exit;
@@ -481,6 +500,7 @@ MPI_CLASS &MPI_CLASS::operator=( const MPI_CLASS &comm )
     this->communicator                         = comm.communicator;
     this->comm_rank                            = comm.comm_rank;
     this->comm_size                            = comm.comm_size;
+    this->d_ranks                              = comm.d_ranks;
     this->d_isNull                             = comm.d_isNull;
     this->d_maxTag                             = comm.d_maxTag;
     this->call_abort_in_serial_instead_of_exit = comm.call_abort_in_serial_instead_of_exit;
@@ -559,6 +579,7 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
     if ( d_isNull )
         comm_size = 0;
 #endif
+    d_ranks.reset( new std::vector<int>() );
     if ( d_isNull ) {
         d_currentTag = nullptr;
     } else {
@@ -567,6 +588,36 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
         d_currentTag[1] = 1;
     }
     call_abort_in_serial_instead_of_exit = true;
+}
+
+
+/************************************************************************
+*  Return the ranks of the communicator in MPI_CLASS_COMM_WORLD         *
+************************************************************************/
+#ifdef USE_MPI
+static int myGlobalRank = -1;
+#else
+static int myGlobalRank = 0;
+#endif
+const std::vector<int>& MPI_CLASS::globalRanks() const
+{
+    if ( d_ranks->empty() && communicator!=MPI_COMM_NULL && communicator!=MPI_CLASS_COMM_NULL ) {
+        d_ranks->resize(comm_size,-1);
+        if ( communicator==MPI_CLASS_COMM_WORLD || communicator==AMP::AMPManager::comm_world.communicator ) {
+            for (int i=0; i<comm_size; i++)
+                d_ranks->operator[](i) = i;
+        } else {
+            if ( myGlobalRank==-1 ) {
+#ifdef USE_MPI
+                if ( MPI_active() )
+                    MPI_Comm_rank( AMP::AMPManager::comm_world.communicator, &myGlobalRank );
+#endif
+            }
+            MPI_ASSERT(myGlobalRank!=-1);
+            this->allGather( myGlobalRank, d_ranks->data() );
+        }
+    }
+    return *d_ranks;
 }
 
 
@@ -978,13 +1029,10 @@ void MPI_CLASS::setCallAbortInSerialInsteadOfExit( bool flag )
 void MPI_CLASS::abort() const
 {
 #ifdef USE_MPI
-    int initialized = 0, finalized = 0;
-    MPI_Initialized( &initialized );
-    MPI_Finalized( &finalized );
     MPI_Comm comm = communicator;
     if ( comm == MPI_COMM_NULL )
         comm = MPI_COMM_WORLD;
-    if ( initialized == 0 || finalized != 0 ) {
+    if ( MPI_active() ) {
         // MPI is not availible
         exit( -1 );
     } else if ( comm_size > 1 ) {

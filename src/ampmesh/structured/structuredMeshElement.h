@@ -30,6 +30,9 @@ public:
     //! De-constructor for a MeshElement
     virtual ~structuredMeshElement();
 
+    //! Return the element class
+    virtual inline std::string elementClass() const { return "structuredMeshElement"; }
+
     //! Return the elements composing the current element
     virtual std::vector<MeshElement> getElements( const GeomType type ) const override;
 
@@ -85,6 +88,10 @@ public:
      * \param type  The desired type of the parents to get
      */
     virtual std::vector<MeshElement> getParents( GeomType type ) const;
+
+
+    //! Return the owner rank according to AMP_COMM_WORLD
+    virtual unsigned int globalOwnerRank() const override;
 
 
     //! Return the index of the element

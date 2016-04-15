@@ -33,6 +33,9 @@ public:
     //! De-constructor for a MeshElement
     virtual ~STKMeshElement();
 
+    //! Return the element class
+    virtual inline std::string elementClass() const { return "STKMeshElement"; }
+
     //! Return the elements composing the current element
     virtual std::vector<MeshElement> getElements( const GeomType type ) const override;
 

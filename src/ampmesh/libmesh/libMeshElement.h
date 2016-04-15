@@ -35,6 +35,9 @@ public:
     //! De-constructor for a MeshElement
     virtual ~libMeshElement();
 
+    //! Return the element class
+    virtual inline std::string elementClass() const { return "libMeshElement"; }
+
     //! Return the elements composing the current element
     virtual std::vector<MeshElement> getElements( const GeomType type ) const override;
 
@@ -89,6 +92,9 @@ public:
      * \param id  The block id to check
      */
     virtual bool isInBlock( int id ) const override;
+
+    //! Return the owner rank according to AMP_COMM_WORLD
+    virtual unsigned int globalOwnerRank() const override;
 
 
 protected:
