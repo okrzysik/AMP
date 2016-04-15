@@ -7,7 +7,14 @@ Mesh{
     y_offset = 0.0
     z_offset = 0.0
     // The Module meshes
-    Mesh_1 {
+    Mesh_1{
+           MeshName = "CellCurrentCollectors"
+           MeshType = "libMesh"
+           FileName = "CCtest2wDtk.e"
+           dim = 3
+           NumberOfElements = 10000
+   }
+   Mesh_2 {
             MeshName = "CellSandwich"
             MeshType = "Multimesh"
             MeshDatabasePrefix = "Mesh_"
@@ -20,9 +27,9 @@ Mesh{
               x_offset = 0.0
               y_offset = 0.0
               z_offset = 0.0,682.e-4,1364.e-4
-              MeshName = "CellSandwich_1_%i"
+              MeshName = "CellSandwich_2_%i"
               MeshType = "libMesh"
-              FileName = "Celltest.e"
+              FileName = "CellInvtest.e"
               NumberOfElements = 1000
             }
             MeshArray_2{
@@ -33,19 +40,12 @@ Mesh{
               x_offset = 0.0
               y_offset = 0.0
               z_offset = 0.0,682.e-4,1364.e-4
-              MeshName = "CellSandwich_2_%i"
+              MeshName = "CellSandwich_1_%i"
               MeshType = "libMesh"
-              FileName = "CellInvtest.e"
+              FileName = "Celltest.e"
               NumberOfElements = 1000
             }
     }
-    Mesh_2{
-           MeshName = "CellCurrentCollectors"
-           MeshType = "libMesh"
-           FileName = "CCtest2wDtk.e"
-           dim = 3
-           NumberOfElements = 10000
-   }
 }
 
 
