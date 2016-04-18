@@ -6,7 +6,36 @@
 #include <utils/PIO.h>
 #include <utils/UnitTest.h>
 
+#include <functional>
 #include <unordered_map>
+#include <algorithm>
+
+union id_mask
+{
+    AMP::Mesh::uint64 id_i[2];
+    char id_c[sizeof(AMP::Mesh::uint64[2])];
+};
+
+auto hash_id( AMP::Mesh::MeshElementID id )
+    -> std::hash<std::string>::result_type
+{
+    id_mask m;
+
+    // get the first 64 bits from the mesh id
+    m.id_i[0] = id.meshID().getData();
+
+    // construct the next 64 from the element id.
+    unsigned int tmp = 0x00000000;
+    if ( id.is_local() ) tmp = 0x80000000;
+    tmp += ( 0x007FFFFF & id.owner_rank() ) << 8;
+    char type = (char) id.type();
+    tmp += ( (unsigned char) type );
+    m.id_i[1] = ( ( (AMP::Mesh::uint64) tmp ) << 32 ) + ( (AMP::Mesh::uint64) id.local_id() );
+
+    // hash the id
+    std::hash<std::string> hasher;
+    return hasher( std::string(m.id_c,sizeof(AMP::Mesh::uint64[2])) );
+}
 
 void makeCommRankMap( const AMP::AMP_MPI& comm, std::unordered_map<int,int>& rank_map )
 {
@@ -26,7 +55,6 @@ int mapElementOwnerRank( const std::unordered_map<int,int>& rank_map,
 
 void testMultiMeshOwnerRank( AMP::UnitTest& ut )
 {
-//    std::string const exeName = "testDTKConstruction";
     std::string const exeName = "testMultiMeshOwnerRank";
     std::string const inputFile = "input_" + exeName;
     std::string const logFile   = "output_" + exeName;
@@ -98,6 +126,47 @@ void testMultiMeshOwnerRank( AMP::UnitTest& ut )
     {
 	ut.failure( "Owner ranks failed" );
     }
+
+    // Do a reduction to make sure we only get one instance of locally owned elements.
+    std::vector<unsigned long long> local_ids( 0 );
+    if ( arrayBoundaryMesh )
+    {
+	it = arrayMesh->getBoundaryIDIterator( AMP::Mesh::Volume, 0 );
+	auto volBndMesh = arrayMesh->Subset(it);
+	it = volBndMesh->getIterator( AMP::Mesh::Volume, 0 );
+	auto it_begin = it.begin();
+	auto it_end = it.end();
+	for ( it = it_begin; it != it_end; ++it )
+	{
+	    local_ids.push_back( hash_id(it->globalID()) );
+	}
+    }
+    std::vector<int> num_ids( globalComm.getSize(), -1 );
+    globalComm.allGather( static_cast<int>(local_ids.size()), num_ids.data() );
+    int num_global = 0;
+    for ( auto i : num_ids ) num_global += i;
+    std::vector<unsigned long long> global_ids( num_global );
+    globalComm.allGather( local_ids.data(), local_ids.size(), global_ids.data() );
+    failure = false;
+    for ( auto i : global_ids )
+    {
+	auto count = std::count(global_ids.begin(), global_ids.end(), i);
+	if ( count > 1 )
+	{
+	    failure = true;
+	    break;
+	}
+    }
+
+    // Return pass/fail.
+    if ( !failure )
+    {
+	ut.passes("Global IDs are correct");
+    }
+    else
+    {
+	ut.failure( "Repeated global ids" );
+    }    
 }
 
 // Main function

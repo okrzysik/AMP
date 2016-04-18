@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <unordered_map>
+#include <map>
 
 #include "utils/shared_ptr.h"
 
@@ -45,14 +47,78 @@ void myTest( AMP::UnitTest *ut )
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
-    AMP::Mesh::MeshIterator elem_iterator = mesh->getIterator( AMP::Mesh::Volume );
+    // get the volume iterator
+    AMP::Mesh::MeshIterator vol_iterator = mesh->getIterator( AMP::Mesh::Volume );
+
+    // get the vertex iterator
+    AMP::Mesh::MeshIterator vert_iterator = mesh->getIterator( AMP::Mesh::Vertex );
+    
+    // map the volume ids to dtk ids
+    AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId> > vol_id_map
+	= std::make_shared<std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId> >();
+    {
+	int counter = 0;
+	for ( vol_iterator = vol_iterator.begin();
+	      vol_iterator != vol_iterator.end();
+	      ++vol_iterator, ++counter )
+	{
+	    vol_id_map->emplace( vol_iterator->globalID(), counter );
+	}
+	int comm_rank = globalComm.getRank();    
+	int comm_size = globalComm.getSize();
+	std::vector<std::size_t> offsets( comm_size, 0 );
+	globalComm.allGather( vol_id_map->size(), offsets.data() );
+	for ( int n = 1; n < comm_size; ++n )
+	{
+	    offsets[n] += offsets[n-1];
+	}
+	if ( comm_rank > 0 )
+	{
+	    for ( auto& i : *vol_id_map ) i.second += offsets[comm_rank-1];
+	}
+    }
+
+    // map the vertex ids to dtk ids
+    AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId> > vert_id_map
+	= std::make_shared<std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId> >();
+    {
+	int counter = 0;
+	for ( vert_iterator = vert_iterator.begin();
+	      vert_iterator != vert_iterator.end();
+	      ++vert_iterator, ++counter )
+	{
+	    vert_id_map->emplace( vert_iterator->globalID(), counter );
+	}
+	int comm_rank = globalComm.getRank();    
+	int comm_size = globalComm.getSize();
+	std::vector<std::size_t> offsets( comm_size, 0 );
+	globalComm.allGather( vert_id_map->size(), offsets.data() );
+	for ( int n = 1; n < comm_size; ++n )
+	{
+	    offsets[n] += offsets[n-1];
+	}
+	if ( comm_rank > 0 )
+	{
+	    for ( auto& i : *vert_id_map ) i.second += offsets[comm_rank-1];
+	}
+    }
+    
+    // make the rank map.
+    AMP::shared_ptr<std::unordered_map<int,int> > rank_map =
+	std::make_shared<std::unordered_map<int,int> >();    
+    auto global_ranks = mesh->getComm().globalRanks();
+    int size = mesh->getComm().getSize();
+    for ( int n = 0; n < size; ++n )
+    {
+	rank_map->emplace( global_ranks[n], n );
+    }
+    
+    DataTransferKit::EntityIterator dtk_iterator =
+        AMP::Operator::AMPMeshEntityIterator( rank_map, vol_id_map, vol_iterator, selectAll );
 
     // Create and test a local map.
     AMP::shared_ptr<DataTransferKit::EntityLocalMap> dtk_local_map(
         new AMP::Operator::AMPMeshEntityLocalMap() );
-
-    DataTransferKit::EntityIterator dtk_iterator =
-        AMP::Operator::AMPMeshEntityIterator( elem_iterator, selectAll );
 
     int num_points = 10;
 
@@ -124,7 +190,9 @@ void myTest( AMP::UnitTest *ut )
     AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::Vertex );
     for ( node_iterator = node_iterator.begin(); node_iterator != node_iterator.end();
           ++node_iterator ) {
-        DataTransferKit::Entity dtk_node = AMP::Operator::AMPMeshEntity( *node_iterator );
+        DataTransferKit::Entity dtk_node = AMP::Operator::AMPMeshEntity( *node_iterator,
+									 *rank_map,
+									 *vert_id_map );
         Teuchos::Array<double> centroid( 3 );
         dtk_local_map->centroid( dtk_node, centroid() );
         std::vector<double> coords = node_iterator->coord();

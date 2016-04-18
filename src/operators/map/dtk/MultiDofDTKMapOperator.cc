@@ -14,8 +14,6 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
     d_multiDofDTKMapOpParams =
         AMP::dynamic_pointer_cast<MultiDofDTKMapOperatorParameters>( params );
 
-    std::cout << "In constrcutor Comm b4 Rank "<< multiDofDTKMapOpParams->d_globalComm.getRank()<<" Size "<< multiDofDTKMapOpParams->d_globalComm.getSize() <<std::endl;
-
     AMP::Mesh::Mesh::shared_ptr mesh1 = multiDofDTKMapOpParams->d_Mesh1;
     AMP::Mesh::Mesh::shared_ptr mesh2 = multiDofDTKMapOpParams->d_Mesh2;
     int boundaryID1                   = multiDofDTKMapOpParams->d_BoundaryID1;

@@ -34,7 +34,8 @@ void AMPMeshNodalShapeFunction::entitySupportIds(
     std::vector<AMP::Mesh::MeshElement> vertices = element.getElements( AMP::Mesh::Vertex );
     int num_nodes                                = vertices.size();
     dof_ids.resize( num_nodes );
-    for ( int n = 0; n < num_nodes; ++n ) {
+    for ( int n = 0; n < num_nodes; ++n )
+    {
         d_dof_manager->getDOFs( vertices[n].globalID(), entity_dofs );
         AMP_INSIST( 1 == entity_dofs.size(), "Only 1 DOF id is permitted per node" );
         dof_ids[n] = entity_dofs[0];

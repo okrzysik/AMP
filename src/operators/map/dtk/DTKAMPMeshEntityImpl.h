@@ -9,6 +9,7 @@
 #include "DTKAMPMeshEntityExtraData.h"
 #include <DTK_EntityImpl.hpp>
 
+#include <map>
 #include <unordered_map>
 #include <memory>
 
@@ -21,12 +22,14 @@ namespace Operator {
 */
 class AMPMeshEntityImpl : public DataTransferKit::EntityImpl
 {
-public:
+  public:
     /**
      * Constructor.
      */
-    explicit AMPMeshEntityImpl( const AMP::Mesh::MeshElement &element,
-				const std::unordered_map<int,int>& rank_map );
+    explicit AMPMeshEntityImpl(
+	const AMP::Mesh::MeshElement &element,
+	const std::unordered_map<int,int>& rank_map,
+	const std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId>& id_map );
 
     //! Destructor
     ~AMPMeshEntityImpl() {}
