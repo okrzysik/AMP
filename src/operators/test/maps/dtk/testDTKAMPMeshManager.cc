@@ -52,7 +52,7 @@ void myTest( AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     bool const split      = true;
-    int const ghostWidth  = 1;
+    int const ghostWidth  = 0;
     int const dofsPerNode = 1;
     AMP::Discretization::DOFManager::shared_ptr dofManager =
         AMP::Discretization::simpleDOFManager::create(

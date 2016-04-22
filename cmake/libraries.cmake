@@ -150,8 +150,9 @@ MACRO ( CONFIGURE_BOOST )
         ENDIF()
         ADD_DEFINITIONS ( "-D USE_EXT_BOOST" )
         MESSAGE( "Using boost" )
-        MESSAGE( "   ${BOOST_LIBS}" )
-
+        IF ( BOOST_LIBS )
+            MESSAGE( "   ${BOOST_LIBS}" )
+        ENDIF()
     ENDIF()
 ENDMACRO()
 

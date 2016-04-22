@@ -44,7 +44,7 @@ void myTest( AMP::UnitTest *ut )
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
-    int gcw                               = 1;
+    int gcw                               = 0;
     AMP::Mesh::MeshIterator mesh_iterator = mesh->getIterator( AMP::Mesh::Volume, gcw );
 
     // Make an entity set.
@@ -57,22 +57,13 @@ void myTest( AMP::UnitTest *ut )
     // Check the mesh with an iterator.
     DataTransferKit::EntityIterator dtk_iterator =
         dtk_entity_set->entityIterator( 3 );
+    bool caught_exception = false;
     AMP_ASSERT( dtk_iterator.size() == mesh_iterator.size() );
     for ( dtk_iterator = dtk_iterator.begin(), mesh_iterator = mesh_iterator.begin();
           dtk_iterator != dtk_iterator.end();
           ++dtk_iterator, ++mesh_iterator ) {
         // Check with the iterator.
         {
-            // Check the id.
-            uint32_t mesh_id = mesh_iterator->globalID().meshID().getData();
-            unsigned int owner_rank = mesh_iterator->globalID().owner_rank();
-            unsigned int local_id = mesh_iterator->globalID().local_id();
-            DataTransferKit::EntityId element_id =
-                ( ( (AMP::Mesh::uint64) mesh_id ) << 50 )
-                + ( ( (AMP::Mesh::uint64) owner_rank) << 32 ) 
-                + ( (AMP::Mesh::uint64) local_id );
-            AMP_ASSERT( dtk_iterator->id() == element_id );
-
             // Check the entity.
             AMP_ASSERT( dtk_iterator->topologicalDimension() == 3 );
             AMP_ASSERT( (unsigned) dtk_iterator->ownerRank() ==
@@ -110,14 +101,29 @@ void myTest( AMP::UnitTest *ut )
             }
 
             // Check that we get 8 nodes from the adjacency function.
-            Teuchos::Array<DataTransferKit::Entity> nodes;
-            dtk_entity_set->getAdjacentEntities(
-                *dtk_iterator, 0, nodes );
-            AMP_ASSERT( 8 == nodes.size() );
+	    try
+	    {
+		Teuchos::Array<DataTransferKit::Entity> nodes;
+		dtk_entity_set->getAdjacentEntities(
+		    *dtk_iterator, 0, nodes );
+		AMP_ASSERT( 8 == nodes.size() );
+	    }
+	    catch( std::runtime_error& e )
+	    {
+		caught_exception = true;
+	    }
         }
-
     }
 
+    if ( caught_exception )
+    {
+	ut->expected_failure( "caught getAdjacentEntities exception" );
+    }
+    else
+    {
+	ut->failure( "failed to catch getAdjacentEntities exception" );
+    }
+	
     ut->passes( exeName );
 }
 

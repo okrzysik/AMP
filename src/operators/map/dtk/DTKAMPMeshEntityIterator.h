@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <memory>
+#include <unordered_map>
 
 #include "utils/AMP_MPI.h"
 
@@ -31,6 +32,8 @@ public:
      * Constructor.
      */
     explicit AMPMeshEntityIterator(
+	const AMP::shared_ptr<std::unordered_map<int,int> >& rank_map,
+	const AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId> >& id_map,
         const AMP::Mesh::MeshIterator &iterator,
         const std::function<bool( DataTransferKit::Entity )> &predicate );
 
@@ -80,6 +83,12 @@ private:
 
     // Current AMP entity.
     DataTransferKit::Entity d_current_entity;
+
+    // Global rank map.
+    AMP::shared_ptr<std::unordered_map<int,int> > d_rank_map;
+
+    // Mesh id map.
+    AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId> > d_id_map;
 };
 
 

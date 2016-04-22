@@ -14,8 +14,6 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
     d_multiDofDTKMapOpParams =
         AMP::dynamic_pointer_cast<MultiDofDTKMapOperatorParameters>( params );
 
-    std::cout << "In constrcutor Comm b4 Rank "<< multiDofDTKMapOpParams->d_globalComm.getRank()<<" Size "<< multiDofDTKMapOpParams->d_globalComm.getSize() <<std::endl;
-
     AMP::Mesh::Mesh::shared_ptr mesh1 = multiDofDTKMapOpParams->d_Mesh1;
     AMP::Mesh::Mesh::shared_ptr mesh2 = multiDofDTKMapOpParams->d_Mesh2;
     int boundaryID1                   = multiDofDTKMapOpParams->d_BoundaryID1;
@@ -135,7 +133,7 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
     std::size_t strideOffset2         = d_multiDofDTKMapOpParams->d_StrideOffset2;
     std::size_t strideLength1         = d_multiDofDTKMapOpParams->d_StrideLength1;
     std::size_t strideLength2         = d_multiDofDTKMapOpParams->d_StrideLength2;
-/*
+
     AMP::Mesh::Mesh::shared_ptr boundaryMesh1;
     AMP::Mesh::Mesh::shared_ptr boundaryMesh2;
     AMP::shared_ptr<AMP::Database> nullDatabase;
@@ -164,7 +162,7 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
         ->constSelect( AMP::LinearAlgebra::VS_ByVariableName( variable2 ), "var" )
         ->constSelect( AMP::LinearAlgebra::VS_Stride( strideOffset2, strideLength2 ), "var" );
     }
-*/
+
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     // QUESTION:  should we apply on u rather than on d_SourceVectorMapXY ?
     //            in that case we would have to perform select again

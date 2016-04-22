@@ -8,6 +8,10 @@
 
 #include <DTK_EntitySet.hpp>
 
+#include <memory>
+#include <unordered_map>
+#include <map>
+
 namespace AMP {
 namespace Operator {
 
@@ -74,7 +78,13 @@ public:
 	Teuchos::Array<DataTransferKit::Entity> &adjacent_entities ) const override;
     //@}
 
-private:
+  private:
+
+    // Map the global ids of an iterator to DTK ids.
+    void mapGlobalIds(
+	AMP::Mesh::MeshIterator it,
+	AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId> >& id_map );
+    
     // Given a DTK entity type, get an AMP GeomType.
     AMP::Mesh::GeomType
     getGeomTypeFromEntityType( const int topological_dimension ) const;
@@ -82,6 +92,13 @@ private:
 private:
     // AMP mesh.
     AMP::shared_ptr<AMP::Mesh::Mesh> d_amp_mesh;
+
+    // Global rank map.
+    AMP::shared_ptr<std::unordered_map<int,int> > d_rank_map;
+
+    // Id maps.
+    std::vector<
+	AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId> > > d_id_maps;
 };
 }
 }

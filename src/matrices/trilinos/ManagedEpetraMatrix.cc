@@ -198,15 +198,12 @@ void ManagedEpetraMatrix::zero()
 ********************************************************/
 void ManagedEpetraMatrix::axpy( double alpha, const Matrix &rhs )
 {
-    AMP_ASSERT( rhs.numGlobalRows() == this->numGlobalRows() );
-    AMP_ASSERT( rhs.numGlobalColumns() == this->numGlobalColumns() );
-    int *a, *b;
-    double *values1;
-    double *values2;
-    d_epetraMatrix->ExtractCrsDataPointers( a, b, values1 );
-    rhs.castTo<ManagedEpetraMatrix>().d_epetraMatrix->ExtractCrsDataPointers( a, b, values2 );
-    for ( int i = 0; i != d_epetraMatrix->NumMyNonzeros(); i++ )
-        values1[i] += alpha * values2[i];
+    EpetraExt::MatrixMatrix::Add(
+        *(rhs.castTo<ManagedEpetraMatrix>().d_epetraMatrix),
+        false,
+        alpha,
+        *d_epetraMatrix,
+        1.0);
 }
 
 

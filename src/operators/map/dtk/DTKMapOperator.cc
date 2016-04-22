@@ -93,8 +93,9 @@ void DTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
       // Setup the operator.
       d_dtk_operator->setup(
           d_domain_mesh->functionSpace(), d_range_mesh->functionSpace() );
+
       // get missed range entities
-      std::cout<<" Rank "<<d_comm.getRank()<< " Missed Entities "<<std::dynamic_pointer_cast<DataTransferKit::ConsistentInterpolationOperator>(d_dtk_operator)->getMissedRangeEntityIds()<<std::endl; 
+      // std::cout<<" Rank "<<d_comm.getRank()<< " Missed Entities "<<std::dynamic_pointer_cast<DataTransferKit::ConsistentInterpolationOperator>(d_dtk_operator)->getMissedRangeEntityIds()<<std::endl; 
     }
 
     // Do the apply.

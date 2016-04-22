@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <unordered_map>
+#include <map>
 
 #include "utils/shared_ptr.h"
 
@@ -42,31 +44,61 @@ void myTest( AMP::UnitTest *ut )
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
-    AMP::Mesh::MeshIterator mesh_iterator = mesh->getIterator( AMP::Mesh::Volume );
+    // get iterators
+    AMP::Mesh::MeshIterator vol_iterator = mesh->getIterator( AMP::Mesh::Volume );
 
-    for ( mesh_iterator = mesh_iterator.begin(); mesh_iterator != mesh_iterator.end();
-          ++mesh_iterator ) {
+    // map the volume ids to dtk ids
+    int counter = 0;
+    std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId> vol_id_map;
+    for ( vol_iterator = vol_iterator.begin();
+	  vol_iterator != vol_iterator.end();
+          ++vol_iterator, ++counter )
+    {
+	vol_id_map.emplace( vol_iterator->globalID(), counter );
+    }
+    int comm_rank = globalComm.getRank();    
+    int comm_size = globalComm.getSize();
+    std::vector<std::size_t> offsets( comm_size, 0 );
+    globalComm.allGather( vol_id_map.size(), offsets.data() );
+    for ( int n = 1; n < comm_size; ++n )
+    {
+	offsets[n] += offsets[n-1];
+    }
+    if ( comm_rank > 0 )
+    {
+	for ( auto& i : vol_id_map ) i.second += offsets[comm_rank-1];
+    }
+
+    // build the rank map.
+    std::unordered_map<int,int> rank_map;
+    auto global_ranks = mesh->getComm().globalRanks();
+    for ( int n = 0; n < comm_size; ++n )
+    {
+	rank_map.emplace( global_ranks[n], n );
+    }
+
+    for ( vol_iterator = vol_iterator.begin(); vol_iterator != vol_iterator.end();
+          ++vol_iterator ) {
         // Create a dtk entity.
-        DataTransferKit::Entity dtk_entity = AMP::Operator::AMPMeshEntity( *mesh_iterator );
+        DataTransferKit::Entity dtk_entity =
+	    AMP::Operator::AMPMeshEntity( *vol_iterator, rank_map, vol_id_map );
 
         // Check the id.
-        uint32_t mesh_id = mesh_iterator->globalID().meshID().getData();
-        unsigned int owner_rank = mesh_iterator->globalID().owner_rank();
-        unsigned int local_id = mesh_iterator->globalID().local_id();
+        uint32_t mesh_id = vol_iterator->globalID().meshID().getData();
+        unsigned int owner_rank = vol_iterator->globalID().owner_rank();
+        unsigned int local_id = vol_iterator->globalID().local_id();
         DataTransferKit::EntityId element_id =
-            ( ( (AMP::Mesh::uint64) mesh_id ) << 50 )
-            + ( ( (AMP::Mesh::uint64) owner_rank) << 32 ) 
-            + ( (AMP::Mesh::uint64) local_id );
+	    vol_id_map.find( vol_iterator->globalID() )->second;
         AMP_ASSERT( dtk_entity.id() == element_id );
 
         // Check the entity.
         AMP_ASSERT( dtk_entity.topologicalDimension() == 3 );
-        AMP_ASSERT( (unsigned) dtk_entity.ownerRank() == mesh_iterator->globalID().owner_rank() );
+        AMP_ASSERT( (unsigned) dtk_entity.ownerRank() == vol_iterator->globalID().owner_rank() );
         AMP_ASSERT( dtk_entity.physicalDimension() == 3 );
 
         // Check the bounding box.
         std::vector<AMP::Mesh::MeshElement> vertices =
-            mesh_iterator->getElements( AMP::Mesh::Vertex );
+            vol_iterator->getElements( AMP::Mesh::Vertex );
         AMP_ASSERT( 8 == vertices.size() );
         std::vector<double> box( 6 );
         Teuchos::Tuple<double, 6> element_box;
@@ -86,12 +118,12 @@ void myTest( AMP::UnitTest *ut )
         std::vector<int> block_ids = mesh->getBlockIDs();
         for ( unsigned i = 0; i < block_ids.size(); ++i ) {
             AMP_ASSERT( dtk_entity.inBlock( block_ids[i] ) ==
-                        mesh_iterator->isInBlock( block_ids[i] ) );
+                        vol_iterator->isInBlock( block_ids[i] ) );
         }
         std::vector<int> boundary_ids = mesh->getBoundaryIDs();
         for ( unsigned i = 0; i < boundary_ids.size(); ++i ) {
             AMP_ASSERT( dtk_entity.onBoundary( boundary_ids[i] ) ==
-                        mesh_iterator->isOnBoundary( boundary_ids[i] ) );
+                        vol_iterator->isOnBoundary( boundary_ids[i] ) );
         }
     }
 

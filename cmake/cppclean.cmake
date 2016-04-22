@@ -4,9 +4,9 @@ FIND_PROGRAM( CPPCLEAN
     PATHS "${CPPCLEAN_DIRECTORY}" "C:/Program Files/Cppclean" "C:/Program Files (x86)/Cppclean" 
 )
 IF ( CPPCHECK )
-    MESSAGE(Status "Using cppclean")
+    MESSAGE(STATUS "Using cppclean")
 ELSE()
-    MESSAGE(Status "cppclean not found")
+    MESSAGE(STATUS "cppclean not found")
 ENDIF()
 
 # Set the options for cppcheck
