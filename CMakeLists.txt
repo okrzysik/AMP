@@ -93,7 +93,6 @@ IF ( NOT ONLY_BUILD_DOCS )
     CONFIGURE_SHARED_PTR( "${AMP_INSTALL_DIR}/include/utils" AMP )
 ENDIF()
 
-
 # Configure AMP (all external libraries must be configured first)
 CONFIGURE_AMP()
 
