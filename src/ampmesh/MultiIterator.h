@@ -86,7 +86,7 @@ public:
 
 protected:
     //! Clone the iterator
-    virtual MeshIterator *clone() const;
+    virtual MeshIterator *clone() const override;
 
 private:
     // Data members

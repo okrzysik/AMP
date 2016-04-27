@@ -84,9 +84,6 @@ void myTest( AMP::UnitTest *ut )
 	    AMP::Operator::AMPMeshEntity( *vol_iterator, rank_map, vol_id_map );
 
         // Check the id.
-        uint32_t mesh_id = vol_iterator->globalID().meshID().getData();
-        unsigned int owner_rank = vol_iterator->globalID().owner_rank();
-        unsigned int local_id = vol_iterator->globalID().local_id();
         DataTransferKit::EntityId element_id =
 	    vol_id_map.find( vol_iterator->globalID() )->second;
         AMP_ASSERT( dtk_entity.id() == element_id );

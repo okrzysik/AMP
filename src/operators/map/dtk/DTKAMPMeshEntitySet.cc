@@ -101,6 +101,7 @@ void AMPMeshEntitySet::getAdjacentEntities(
 {
     throw std::runtime_error(
 	"Implementation will not give correct behavior for adjacent entities that are not locally owned" );
+    /*
     AMP::Mesh::GeomType type_id = getGeomTypeFromEntityType( adjacent_dimension );
     std::vector<AMP::Mesh::MeshElement> adjacent_elements =
         Teuchos::rcp_dynamic_cast<AMPMeshEntityExtraData>( entity.extraData() )
@@ -112,6 +113,7 @@ void AMPMeshEntitySet::getAdjacentEntities(
 					      *d_rank_map,
 					      *d_id_maps[adjacent_dimension] );
     }
+    */
 }
 //---------------------------------------------------------------------------//
 // Map the global ids of an iterator to DTK ids.

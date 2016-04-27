@@ -41,8 +41,6 @@ void thermalTest(AMP::UnitTest *ut, std::string input_file)
 
   int DOFsPerNode = 1;
   int nodalGhostWidth = 1;
-  int DOFsPerElement = 8;
-  int gaussPointGhostWidth = 1;
   bool split = true;
   AMP::Discretization::DOFManager::shared_ptr nodalDofMap      = AMP::Discretization::simpleDOFManager::create(manager, AMP::Mesh::Vertex, nodalGhostWidth,      DOFsPerNode,    split);
 
@@ -63,9 +61,7 @@ void thermalTest(AMP::UnitTest *ut, std::string input_file)
 
   RightHandSideVec->setToScalar(0.0);
 
-  std::vector<AMP::Mesh::MeshID> meshIDs = manager->getBaseMeshIDs();
- 
-  AMP::shared_ptr<AMP::Operator::ColumnOperator> thermalMapsColumn;
+ AMP::shared_ptr<AMP::Operator::ColumnOperator> thermalMapsColumn;
 
   AMP::Mesh::Mesh::shared_ptr cellSandwichMesh = manager->Subset("CellSandwich");
   AMP::Mesh::Mesh::shared_ptr ccMesh           = manager->Subset("CellCurrentCollectors");

@@ -12,8 +12,9 @@ namespace Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor
-DTKMapOperator::DTKMapOperator( const AMP::shared_ptr<OperatorParameters> &params )
-: d_dtk_operator(nullptr), d_mapOnThisProc(false) 
+DTKMapOperator::DTKMapOperator(
+    const AMP::shared_ptr<OperatorParameters> &params )
+    : d_mapOnThisProc(false), d_dtk_operator(nullptr)
 {
   // Get the operator parameters.
   AMP::shared_ptr<DTKMapOperatorParameters> dtk_op_params =

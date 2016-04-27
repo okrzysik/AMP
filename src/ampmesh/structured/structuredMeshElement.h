@@ -31,7 +31,7 @@ public:
     virtual ~structuredMeshElement();
 
     //! Return the element class
-    virtual inline std::string elementClass() const { return "structuredMeshElement"; }
+    virtual inline std::string elementClass() const override { return "structuredMeshElement"; }
 
     //! Return the elements composing the current element
     virtual std::vector<MeshElement> getElements( const GeomType type ) const override;
