@@ -22,8 +22,8 @@ The websites associated with the AMP package includes:
 * CDash regression dashboard: /http://oblivion.engr.colostate.edu/CDash/index.php?project=AMP
 
 # Team #
-* Bobby Philip (ORNL).
-* Mark Berrill (ORNL).
-* Kevin Clarno (ORNL).
-* Steven Hamilton (ORNL).
-* Damien Lebrun-Grandie (ORNL).
+* Bobby Philip (ORNL)
+* Mark Berrill (ORNL)
+* Kevin Clarno (ORNL)
+* Steven Hamilton (ORNL)
+* Damien Lebrun-Grandie (ORNL)
