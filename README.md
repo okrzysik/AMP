@@ -19,7 +19,7 @@ The websites associated with the AMP package includes:
 * Doxygen documentation: http://advancedmultiphysics.bitbucket.org/
 * Mercurial repositories:  https://bitbucket.org/AdvancedMultiPhysics/amp
 * Issue tracker: https://bitbucket.org/AdvancedMultiPhysics/amp/issues?status=new&status=open
-* CDash regression dashboard: /http://oblivion.engr.colostate.edu/CDash/index.php?project=AMP
+* CDash regression dashboard: http://vayu.ornl.gov/CDash/index.php?project=AMP
 
 # Team #
 * Bobby Philip (ORNL)
