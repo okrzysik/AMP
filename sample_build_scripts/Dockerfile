@@ -80,3 +80,7 @@ RUN cd ${TPL_ROOT}/build; \
     ${TPL_ROOT}/tpl-builder;
 
 RUN cd ${TPL_ROOT}/build; make -j 24
+
+# remove the build directories to save space 
+RUN rm -rf ${TPL_ROOT}/build
+
