@@ -7,7 +7,9 @@ ENV TPL_WEBPAGE=http://bitbucket.org/AdvancedMultiPhysics/tpl-builder/downloads
 
 RUN yum -y update; yum clean all
 
-RUN yum -yq install gcc \
+RUN yum -yq install make \
+                    automake \
+                    gcc \
                     gcc-g++ \
                     gcc-gfortran \
                     kernel-devel \
