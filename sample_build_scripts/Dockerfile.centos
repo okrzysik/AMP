@@ -19,6 +19,8 @@ RUN yum -y install make \
                     which \ 
                     blas-devel \
                     lapack-devel \                      
+                    blas-static \
+                    lapack-static \
                     openssl-devel \
                     wget \
                     gzip \
