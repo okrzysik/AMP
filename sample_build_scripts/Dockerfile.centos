@@ -6,27 +6,34 @@ ENV TPL_ROOT=/packages
 ENV TPL_WEBPAGE=http://bitbucket.org/AdvancedMultiPhysics/tpl-builder/downloads
 
 RUN yum -y update; yum clean all
+RUN yum -y groupinstall "Development Tools"
 
-RUN yum -yq install make \
+RUN yum -y install make \
                     automake \
+                    environment-modules \
                     gcc \
                     gcc-g++ \
                     gcc-gfortran \
                     kernel-devel \
-                    python \ 
-                    libblas-devel \
-                    liblapack-devel \                      
-                    build-essential \
+                    python \
+                    which \ 
+                    blas-devel \
+                    lapack-devel \                      
                     openssl-devel \
                     wget \
                     gzip \
                     tar \
                     m4 \
                     cmake \
+                    openmpi \
                     openmpi-devel \
                     mercurial \
                     file
 
+# module load for openmpi
+RUN source /etc/profile.d/modules.sh
+#
+#
 # Obtain a recent version of cmake and build it with OpenSSL on so we can download packages
 RUN wget http://www.cmake.org/files/v3.5/cmake-3.5.2.tar.gz; \
     tar xzvf cmake-3.5.2.tar.gz; \
@@ -45,18 +52,16 @@ RUN mkdir -p ${TPL_ROOT}/build
 # clone the TPL builder
 RUN cd ${TPL_ROOT}; hg clone https://bitbucket.org/AdvancedMultiPhysics/tpl-builder
 
-RUN which mpicc
-RUN which mpic++
-RUN which mpif90
-
-RUN cd ${TPL_ROOT}/build; \
+RUN source /etc/profile.d/modules.sh; \
+    module load mpi/openmpi-x86_64; \
+    cd ${TPL_ROOT}/build; \
     /usr/local/bin/cmake                                                         \
     -D CMAKE_BUILD_TYPE=Release                                                  \
     -D CXX_STD=11                                                                \
     -D TPL_INSTALL_DIR:PATH="${TPL_ROOT}"                                        \
-    -D C_COMPILER=mpicc                                                          \
-    -D CXX_COMPILER=mpic++                                                       \
-    -D Fortran_COMPILER=mpif90                                                   \
+    -D C_COMPILER=${MPI_BIN}/mpicc                                                          \
+    -D CXX_COMPILER=${MPI_BIN}/mpic++                                                       \
+    -D Fortran_COMPILER=${MPI_BIN}/mpif90                                                   \
     -D FFLAGS="-fPIC"                                                            \
     -D CFLAGS="-fPIC"                                                            \
     -D CXXFLAGS="-fPIC"                                                          \
@@ -66,7 +71,7 @@ RUN cd ${TPL_ROOT}/build; \
     -D PROCS_INSTALL=4                                                          \
     -D TPL_LIST:STRING="TIMER;LAPACK;SCALAPACK;MUMPS;PETSC;ZLIB;HDF5;HYPRE;SILO;SUNDIALS;TRILINOS;LIBMESH" \
     -D TIMER_URL="${TPL_WEBPAGE}/timerutility.tar.gz"                            \
-    -D LAPACK_INSTALL_DIR=/usr/lib                                               \
+    -D LAPACK_INSTALL_DIR=/usr/lib64                                               \
     -D PETSC_URL="${TPL_WEBPAGE}/petsc-3.2.tar.gz"                               \
     -D ZLIB_URL="http://zlib.net/zlib-1.2.8.tar.gz"                              \
     -D HDF5_URL="${TPL_WEBPAGE}/hdf5-1.8.12.tar.gz"                              \
