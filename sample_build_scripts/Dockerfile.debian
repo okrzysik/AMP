@@ -20,7 +20,8 @@ RUN apt-get -yq install gcc \
                         tar \
                         m4 \
                         cmake \
-                        libopenmpi-dev \
+                        libmpich-dev \
+                        mpich \
                         mercurial \
                         file
 
@@ -60,7 +61,7 @@ RUN cd ${TPL_ROOT}/build; \
     -D LDFLAGS="-lstdc++"                                                        \
     -D ENABLE_STATIC:BOOL=ON                                                     \
     -D ENABLE_SHARED:BOOL=OFF                                                    \
-    -D PROCS_INSTALL=4                                                          \
+    -D PROCS_INSTALL=12                                                          \
     -D TPL_LIST:STRING="TIMER;LAPACK;SCALAPACK;MUMPS;PETSC;ZLIB;HDF5;HYPRE;SILO;SUNDIALS;TRILINOS;LIBMESH" \
     -D TIMER_URL="${TPL_WEBPAGE}/timerutility.tar.gz"                            \
     -D LAPACK_INSTALL_DIR=/usr/lib                                               \
@@ -79,7 +80,7 @@ RUN cd ${TPL_ROOT}/build; \
     -D MUMPS_PARALLEL=1                                                          \
     ${TPL_ROOT}/tpl-builder;
 
-RUN cd ${TPL_ROOT}/build; make -j 8
+RUN cd ${TPL_ROOT}/build; make -j 24
 
 # remove the build directories to save space 
 RUN rm -rf ${TPL_ROOT}/build
