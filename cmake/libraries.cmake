@@ -214,12 +214,13 @@ MACRO ( CONFIGURE_TRILINOS_LIBRARIES )
         # Get the trilinos libraries
         IF (EXISTS "${TRILINOS_DIRECTORY}/lib/cmake/Trilinos/TrilinosConfig.cmake")
             INCLUDE("${TRILINOS_DIRECTORY}/lib/cmake/Trilinos/TrilinosConfig.cmake")
-            SET( TRILINOS_LIBS )
-            FOREACH (value2 ${Trilinos_LIBRARIES})
-                UNSET( value CACHE )
-                FIND_LIBRARY( value  NAMES ${value2}  PATHS ${Trilinos_LIBRARY_DIRS}  NO_DEFAULT_PATH )   
-                SET( TRILINOS_LIBS ${TRILINOS_LIBS} ${value} )
-            ENDFOREACH (value2)           
+            SET( CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} "${Trilinos_SHARED_LIB_RPATH_COMMAND}" )
+            LIST(REMOVE_DUPLICATES Trilinos_LIBRARIES)
+            SET( TRILINOS_COMPONENTS_LIST ${Trilinos_LIBRARIES} )
+            FOREACH( tmp ${TRILINOS_COMPONENTS_LIST} )
+                set_target_properties( ${tmp} PROPERTIES IMPORTED_LOCATION ${Trilinos_LIBRARY_DIRS} )
+            ENDFOREACH()
+            SET( TRILINOS_LIBS ${TRILINOS_COMPONENTS_LIST} )
         ELSE()
             TRILINOS_SET_LIBRARIES()
         ENDIF()
@@ -797,14 +798,6 @@ MACRO ( CONFIGURE_AMP )
     IF ( NOT TEST_MAX_PROCS )
         SET( TEST_MAX_PROCS 32 )
     ENDIF()
-    # Remove extra library links
-    set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
-    set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
-    set(CMAKE_SHARED_LIBRARY_C_FLAGS)         # remove -fPIC
-    set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
-    set(CMAKE_SHARED_LINKER_FLAGS)
-    set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # remove -rdynamic
-    set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
     # Fix LDFLAGS if it is a CMake list
     STRING(REPLACE ";" " " LDFLAGS "${LDFLAGS}")
     # Check the user configure flags
@@ -961,6 +954,10 @@ MACRO ( CONFIGURE_AMP )
     ENDIF()
     # Set the flags
     SET_AMP_PACKAGE_FLAGS()
+    # Set the third party libraries
+    SET( TPL_LIBS ${NEK_LIBS} ${MOAB_LIBS} ${DENDRO_LIBS} ${NETCDF_LIBS}
+        ${LIBMESH_LIBS} ${TRILINOS_LIBS} ${PETSC_LIBS} ${HYPRE_LIBS} ${SILO_LIBS}
+        ${HDF5_LIBS} ${TIMER_LIBS} ${X11_LIBS} ${SUNDIALS_LIBS} ${ZLIB_LIBS} )
 ENDMACRO ()
 
 
