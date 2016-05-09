@@ -216,19 +216,21 @@ MACRO( INSTALL_${PROJ}_TARGET PACKAGE )
         ADD_DEPENDENCIES( copy-${PROJ}-include ${COPY_TARGET} )
     ENDIF()
     # Copy the header files to the include path
-    FILE( GLOB HFILES RELATIVE "${${PROJ}_SOURCE_DIR}/src" ${HEADERS} )
-    FOREACH( HFILE ${HFILES} )
-        SET( SRC_FILE "${${PROJ}_SOURCE_DIR}/src/${HFILE}" )
-        SET( DST_FILE "${${PROJ}_INSTALL_DIR}/include/${HFILE}" )
-        # Only copy the headers if the exisit in the project source directory
-        IF ( EXISTS "${SRC_FILE}" )
-            ADD_CUSTOM_COMMAND(TARGET ${COPY_TARGET} 
-                PRE_BUILD 
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_FILE}" "${DST_FILE}"
-                DEPENDS "${SRC_FILE}"
-            )
-        ENDIF()
-    ENDFOREACH()
+    IF ( HEADERS )
+        FILE( GLOB HFILES RELATIVE "${${PROJ}_SOURCE_DIR}/src" ${HEADERS} )
+        FOREACH( HFILE ${HFILES} )
+            SET( SRC_FILE "${${PROJ}_SOURCE_DIR}/src/${HFILE}" )
+            SET( DST_FILE "${${PROJ}_INSTALL_DIR}/include/${HFILE}" )
+            # Only copy the headers if the exisit in the project source directory
+            IF ( EXISTS "${SRC_FILE}" )
+                ADD_CUSTOM_COMMAND(TARGET ${COPY_TARGET} 
+                    PRE_BUILD 
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_FILE}" "${DST_FILE}"
+                    DEPENDS "${SRC_FILE}"
+                )
+            ENDIF()
+        ENDFOREACH()
+    ENDIF()
     # Add the library and install the package
     IF ( NOT ONLY_BUILD_DOCS AND ( SOURCES OR CUDASOURCES ) )
         IF( USE_CUDA )

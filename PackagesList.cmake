@@ -76,6 +76,7 @@ SET( AMP_PACKAGES_AND_DIRS_AND_CLASSIFICATIONS
     AMP_OPERATORS           src/operators           SS  # Requires utils, ampmesh, discretization, vectors, matrices, materials, libmesh
     AMP_SOLVERS             src/solvers             SS  # Requires utils, ampmesh, discretization, vectors, matrices, materials, operators
     AMP_TIME_INTEGRATORS    src/time_integrators    SS  # Requires utils, ampmesh, discretization, vectors, matrices, materials, operators
+    AMP_GRAPHICS            src/graphics            PS  # Requires utils
 )
 
 
