@@ -8,8 +8,8 @@ public:
   virtual ~TutorialApplication() {} 
 protected:
   virtual void createScene();
-  virtual void createCamera();
-  virtual void createViewports();
+  virtual void createCamera() {}
+  virtual void createViewports() {}
 };
  
 

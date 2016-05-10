@@ -10,13 +10,16 @@ This source file is part of the
 / \_// (_| | | |  __/  \  /\  /| |   <| |
 \___/ \__, |_|  \___|   \/  \/ |_|_|\_\_|
       |___/
-Tutorial Framework (for Ogre 1.10)
+Tutorial Framework (for Ogre 1.9)
 http://www.ogre3d.org/wiki/
 -----------------------------------------------------------------------------
 */
 
 #ifndef __BaseApplication_h_
 #define __BaseApplication_h_
+
+#include "utils/Utilities.h"
+DISABLE_WARNINGS
 
 #include <OgreCamera.h>
 #include <OgreEntity.h>
@@ -26,18 +29,24 @@ http://www.ogre3d.org/wiki/
 #include <OgreSceneManager.h>
 #include <OgreRenderWindow.h>
 #include <OgreConfigFile.h>
-#include <OgreMaterialManager.h>
-#include <OgreTextureManager.h>
-#include <OgreWindowEventUtilities.h>
 
-#include <OISEvents.h>
-#include <OISInputManager.h>
-#include <OISKeyboard.h>
-#include <OISMouse.h>
+#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+#  include <OIS/OISEvents.h>
+#  include <OIS/OISInputManager.h>
+#  include <OIS/OISKeyboard.h>
+#  include <OIS/OISMouse.h>
 
-#include <SdkTrays.h>
-#include <SdkCameraMan.h>
+#  include <OGRE/SdkTrays.h>
+#  include <OGRE/SdkCameraMan.h>
+#else
+#  include <OISEvents.h>
+#  include <OISInputManager.h>
+#  include <OISKeyboard.h>
+#  include <OISMouse.h>
 
+#  include <SdkTrays.h>
+#  include <SdkCameraMan.h>
+#endif
 
 #ifdef OGRE_STATIC_LIB
 #  define OGRE_STATIC_GL
@@ -59,6 +68,9 @@ http://www.ogre3d.org/wiki/
 #  endif
 #  include "OgreStaticPluginLoader.h"
 #endif
+
+ENABLE_WARNINGS
+
 
 //---------------------------------------------------------------------------
 
