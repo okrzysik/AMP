@@ -8,8 +8,8 @@ public:
   virtual ~TutorialApplication() {} 
 protected:
   virtual void createScene();
-  virtual void createCamera() {}
-  virtual void createViewports() {}
+  //virtual void createCamera() {}
+  //virtual void createViewports() {}
 };
  
 
@@ -49,7 +49,10 @@ void TutorialApplication::createScene(void)
     ogreNode4->attachObject(ogreEntity4);
 }
  
- 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int main(int argc, char *argv[])
 {
 	// Create application object
@@ -63,6 +66,7 @@ int main(int argc, char *argv[])
 	}
  
 	return 0;
+}
 }
 
 
