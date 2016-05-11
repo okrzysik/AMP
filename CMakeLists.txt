@@ -30,7 +30,7 @@ ENDIF()
 
 # Set the project name
 PROJECT (AMP)
-
+SET( AMP_LIB amp )
 
 # Check if we are only compiling docs
 CHECK_ENABLE_FLAG( ONLY_BUILD_DOCS 0 )

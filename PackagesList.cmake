@@ -61,6 +61,7 @@ ENDIF()
 
 # Set the AMP source and include the macros
 SET( PROJ AMP )
+SET( AMP_LIB amp )
 INCLUDE("${AMP_SOURCE_DIR}/cmake/macros.cmake")
 INCLUDE("${AMP_SOURCE_DIR}/cmake/libraries.cmake")
 
