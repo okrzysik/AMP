@@ -676,6 +676,26 @@ MACRO( TARGET_LINK_EXTERNAL_LIBRARIES TARGET_NAME )
 ENDMACRO()
 
 
+# Choose the debug or optimized library based on the build type
+FUNCTION( KEEP_BUILD_LIBRARIES VAR )
+    IF ( ${CMAKE_BUILD_TYPE} STREQUAL "Debug" )
+        SET( build_type debug )
+    ELSE()
+        SET( build_type optimized )
+    ENDIF()
+    SET( build ${build_type} )
+    SET( LIBS )
+    FOREACH ( tmp ${${VAR}} )
+        IF ( ( ${tmp} STREQUAL debug ) OR ( ${tmp} STREQUAL optimized ) )
+            SET( build ${tmp} )
+        ELSEIF ( ${build} STREQUAL ${build_type} )
+            SET( LIBS ${LIBS} ${tmp} )
+        ENDIF()
+    ENDFOREACH()
+    SET( ${VAR} ${LIBS} PARENT_SCOPE )
+ENDFUNCTION()
+
+
 # Macro to add the dependencies and libraries to an executable
 MACRO( ADD_PROJ_EXE_DEP EXE )
     # Add the package dependencies
