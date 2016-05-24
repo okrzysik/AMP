@@ -1,0 +1,96 @@
+# create a cmake build on centos with the right openssl flags
+FROM centos
+MAINTAINER Bobby Philip <philipb@ornl.gov>
+ENV HOME /root
+ENV TPL_ROOT=/packages
+ENV TPL_WEBPAGE=http://bitbucket.org/AdvancedMultiPhysics/tpl-builder/downloads
+
+RUN yum -y update; yum clean all
+RUN yum -y groupinstall "Development Tools"
+
+RUN yum -y install make \
+                    automake \
+                    environment-modules \
+                    gcc \
+                    gcc-g++ \
+                    gcc-gfortran \
+                    kernel-devel \
+                    python \
+                    which \ 
+                    blas-devel \
+                    lapack-devel \                      
+                    blas-static \
+                    lapack-static \
+                    openssl-devel \
+                    wget \
+                    gzip \
+                    tar \
+                    m4 \
+                    cmake \
+                    openmpi \
+                    openmpi-devel \
+                    mercurial \
+                    file
+
+# module load for openmpi
+RUN source /etc/profile.d/modules.sh
+#
+#
+# Obtain a recent version of cmake and build it with OpenSSL on so we can download packages
+RUN wget http://www.cmake.org/files/v3.5/cmake-3.5.2.tar.gz; \
+    tar xzvf cmake-3.5.2.tar.gz; \
+    cd cmake-3.5.2; \
+    cmake -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_INSTALL_PREFIX:PATH=/usr/local \
+          -D CMAKE_USE_OPENSSL:BOOL=ON \
+          .; \
+    make -j 8 && make install; \
+    cd ..; \
+    rm -rf cmake-3.5.2
+
+# create the directories to 
+RUN mkdir -p ${TPL_ROOT}/build
+
+# clone the TPL builder
+RUN cd ${TPL_ROOT}; hg clone https://bitbucket.org/AdvancedMultiPhysics/tpl-builder
+
+RUN source /etc/profile.d/modules.sh; \
+    module load mpi/openmpi-x86_64; \
+    cd ${TPL_ROOT}/build; \
+    /usr/local/bin/cmake                                                         \
+    -D CMAKE_BUILD_TYPE=Release                                                  \
+    -D CXX_STD=11                                                                \
+    -D TPL_INSTALL_DIR:PATH="${TPL_ROOT}"                                        \
+    -D C_COMPILER=${MPI_BIN}/mpicc                                                          \
+    -D CXX_COMPILER=${MPI_BIN}/mpic++                                                       \
+    -D Fortran_COMPILER=${MPI_BIN}/mpif90                                                   \
+    -D FFLAGS="-fPIC"                                                            \
+    -D CFLAGS="-fPIC"                                                            \
+    -D CXXFLAGS="-fPIC"                                                          \
+    -D LDFLAGS="-lstdc++"                                                        \
+    -D ENABLE_STATIC:BOOL=ON                                                     \
+    -D ENABLE_SHARED:BOOL=OFF                                                    \
+    -D PROCS_INSTALL=4                                                          \
+    -D TPL_LIST:STRING="TIMER;LAPACK;SCALAPACK;MUMPS;PETSC;ZLIB;HDF5;HYPRE;SILO;SUNDIALS;TRILINOS;LIBMESH" \
+    -D TIMER_URL="${TPL_WEBPAGE}/timerutility.tar.gz"                            \
+    -D LAPACK_INSTALL_DIR=/usr/lib64                                               \
+    -D PETSC_URL="${TPL_WEBPAGE}/petsc-3.2.tar.gz"                               \
+    -D ZLIB_URL="http://zlib.net/zlib-1.2.8.tar.gz"                              \
+    -D HDF5_URL="${TPL_WEBPAGE}/hdf5-1.8.12.tar.gz"                              \
+    -D HYPRE_URL="${TPL_WEBPAGE}/hypre-2.11.0.tar.gz"                            \
+    -D SILO_URL="${TPL_WEBPAGE}/silo-4.10.2.tar.gz"                              \
+    -D SUNDIALS_URL="${TPL_WEBPAGE}/sundials-2.6.2.tar.gz"                       \
+    -D TRILINOS_URL="${TPL_WEBPAGE}/trilinos-12.6.1-Source.tar.gz"               \
+    -D TRILINOS_PACKAGES="Epetra;EpetraExt;Thyra;ML;MueLu;Kokkos"                \
+    -D TRILINOS_EXTRA_FLAGS="-DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF"        \
+    -D LIBMESH_URL="${TPL_WEBPAGE}/libmesh.tar.gz"                               \
+    -D SCALAPACK_URL="${TPL_WEBPAGE}/scalapack-2.0.2.tgz"                        \
+    -D MUMPS_URL="${TPL_WEBPAGE}/MUMPS_5.0.1.tar.gz"                             \
+    -D MUMPS_PARALLEL=1                                                          \
+    ${TPL_ROOT}/tpl-builder;
+
+RUN cd ${TPL_ROOT}/build; make -j 8
+
+# remove the build directories to save space 
+RUN rm -rf ${TPL_ROOT}/build
+

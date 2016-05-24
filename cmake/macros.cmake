@@ -216,31 +216,51 @@ MACRO( INSTALL_${PROJ}_TARGET PACKAGE )
         ADD_DEPENDENCIES( copy-${PROJ}-include ${COPY_TARGET} )
     ENDIF()
     # Copy the header files to the include path
-    FILE( GLOB HFILES RELATIVE "${${PROJ}_SOURCE_DIR}/src" ${HEADERS} )
-    FOREACH( HFILE ${HFILES} )
-        SET( SRC_FILE "${${PROJ}_SOURCE_DIR}/src/${HFILE}" )
-        SET( DST_FILE "${${PROJ}_INSTALL_DIR}/include/${HFILE}" )
-        # Only copy the headers if the exisit in the project source directory
-        IF ( EXISTS "${SRC_FILE}" )
-            ADD_CUSTOM_COMMAND(TARGET ${COPY_TARGET} 
-                PRE_BUILD 
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_FILE}" "${DST_FILE}"
-                DEPENDS "${SRC_FILE}"
-            )
-        ENDIF()
-    ENDFOREACH()
+    IF ( HEADERS )
+        FILE( GLOB HFILES RELATIVE "${${PROJ}_SOURCE_DIR}/src" ${HEADERS} )
+        FOREACH( HFILE ${HFILES} )
+            SET( SRC_FILE "${${PROJ}_SOURCE_DIR}/src/${HFILE}" )
+            SET( DST_FILE "${${PROJ}_INSTALL_DIR}/include/${HFILE}" )
+            # Only copy the headers if the exisit in the project source directory
+            IF ( EXISTS "${SRC_FILE}" )
+                ADD_CUSTOM_COMMAND(TARGET ${COPY_TARGET} 
+                    PRE_BUILD 
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_FILE}" "${DST_FILE}"
+                    DEPENDS "${SRC_FILE}"
+                )
+            ENDIF()
+        ENDFOREACH()
+    ENDIF()
     # Add the library and install the package
     IF ( NOT ONLY_BUILD_DOCS AND ( SOURCES OR CUDASOURCES ) )
         IF( USE_CUDA )
             CUDA_COMPILE( CUBINS ${CUDASOURCES} )
         ENDIF()
-        ADD_LIBRARY( ${PACKAGE} ${LIB_TYPE} ${SOURCES} ${CUBINS} )
-        TARGET_LINK_LIBRARIES( ${PACKAGE} ${SYSTEM_LDFLAGS} )
+        # Set RPATH variables
+        IF ( NOT CMAKE_RPATH_VARIABLES_SET )
+            SET(CMAKE_RPATH_VARIABLES_SET ON)
+            SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+            SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+            SET(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} "${CMAKE_INSTALL_PREFIX}/lib")
+            SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+            SET(MACOSX_RPATH 0)
+            LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+        ENDIF()
+        # Create the library
+        IF ( ${PROJ}_LIB )
+            # We are using a single project library
+            ADD_LIBRARY( ${PACKAGE} OBJECT ${SOURCES} ${CUBINS} )
+        ELSE()
+            # We are creating individual libraries
+            TARGET_LINK_EXTERNAL_LIBRARIES( ${PACKAGE} )
+        ENDIF()
         IF ( TARGET write_repo_version )
             ADD_DEPENDENCIES( ${PACKAGE} write_repo_version )
         ENDIF()
         ADD_DEPENDENCIES ( ${PACKAGE} copy-${PROJ}-include )
-        INSTALL( TARGETS ${PACKAGE} DESTINATION ${${PROJ}_INSTALL_DIR}/lib )
+        IF ( NOT ${PROJ}_LIB )
+            INSTALL( TARGETS ${PACKAGE} DESTINATION ${${PROJ}_INSTALL_DIR}/lib )
+        ENDIF()
     ELSE()
         ADD_CUSTOM_TARGET( ${PACKAGE} ALL )
     ENDIF()
@@ -251,10 +271,23 @@ MACRO( INSTALL_${PROJ}_TARGET PACKAGE )
 ENDMACRO()
 
 
+# Install the project library
+MACRO( INSTALL_PROJ_LIB )
+    SET( tmp_link_list )
+    FOREACH ( tmp ${${PROJ}_LIBS} )
+        SET( tmp_link_list ${tmp_link_list} $<TARGET_OBJECTS:${tmp}> )
+    ENDFOREACH()
+    ADD_LIBRARY( ${${PROJ}_LIB} ${tmp_link_list} )
+    TARGET_LINK_EXTERNAL_LIBRARIES( ${${PROJ}_LIB} LINK_PUBLIC )
+    GET_PROPERTY( PROJ_LIB_LOCATION TARGET ${${PROJ}_LIB} PROPERTY LOCATION )
+    INSTALL( FILES ${PROJ_LIB_LOCATION} DESTINATION ${${PROJ}_INSTALL_DIR}/lib )
+ENDMACRO()
+
+
 # Macro to verify that a variable has been set
 MACRO( VERIFY_VARIABLE VARIABLE_NAME )
     IF ( NOT ${VARIABLE_NAME} )
-        MESSAGE( FATAL_ERROR "PLease set: " ${VARIABLE_NAME} )
+        MESSAGE( FATAL_ERROR "Please set: " ${VARIABLE_NAME} )
     ENDIF()
 ENDMACRO()
 
@@ -275,17 +308,10 @@ MACRO( SET_STATIC_FLAGS )
     # Remove extra library links
     set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
     set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
-    set(CMAKE_SHARED_LIBRARY_C_FLAGS)         # remove -fPIC
-    set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
-    set(CMAKE_SHARED_LINKER_FLAGS)
-    set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # remove -rdynamic
-    set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
     # Add the static flag if necessary
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static") # Add static flag
     SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} -static ") 
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static ")
-    SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-static")                # Add static flag
-    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static")              # Add static flag
 ENDMACRO()
 
 
@@ -333,7 +359,7 @@ MACRO( IDENTIFY_COMPILER )
     ENDIF()
     # SET the Fortran++ compiler
     IF ( CMAKE_Fortran_COMPILER_WORKS )
-        IF( CMAKE_COMPILE_IS_GFORTRAN OR (${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU") )
+        IF( CMAKE_COMPILER_IS_GNUG77 OR (${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU") )
             SET( USING_GFORTRAN TRUE )
             MESSAGE("Using gfortran")
         ELSEIF ( (${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel") ) 
@@ -631,6 +657,46 @@ MACRO( COPY_MESH_FILE MESHNAME )
 ENDMACRO()
 
 
+# Link the libraries to the given target
+MACRO( TARGET_LINK_EXTERNAL_LIBRARIES TARGET_NAME )
+    FOREACH ( tmp ${TPL_LIBS} )
+        TARGET_LINK_LIBRARIES( ${TARGET_NAME} ${ARGN} ${tmp} )
+    ENDFOREACH()
+    FOREACH ( tmp ${EXTERNAL_LIBS} )
+        TARGET_LINK_LIBRARIES( ${TARGET_NAME} ${ARGN} ${tmp} )
+    ENDFOREACH()
+    FOREACH ( tmp ${LAPACK_LIBS} )
+        TARGET_LINK_LIBRARIES( ${TARGET_NAME} ${ARGN} ${tmp} )
+    ENDFOREACH()
+    FOREACH ( tmp ${BLAS_LIBS} )
+        TARGET_LINK_LIBRARIES( ${TARGET_NAME} ${ARGN} ${tmp} )
+    ENDFOREACH()
+    FOREACH ( tmp ${BLAS_LAPACK_LIBS} )
+        TARGET_LINK_LIBRARIES( ${TARGET_NAME} ${ARGN} ${tmp} )
+    ENDFOREACH()
+ENDMACRO()
+
+
+# Choose the debug or optimized library based on the build type
+FUNCTION( KEEP_BUILD_LIBRARIES VAR )
+    IF ( ${CMAKE_BUILD_TYPE} STREQUAL "Debug" )
+        SET( build_type debug )
+    ELSE()
+        SET( build_type optimized )
+    ENDIF()
+    SET( build ${build_type} )
+    SET( LIBS )
+    FOREACH ( tmp ${${VAR}} )
+        IF ( ( ${tmp} STREQUAL debug ) OR ( ${tmp} STREQUAL optimized ) )
+            SET( build ${tmp} )
+        ELSEIF ( ${build} STREQUAL ${build_type} )
+            SET( LIBS ${LIBS} ${tmp} )
+        ENDIF()
+    ENDFOREACH()
+    SET( ${VAR} ${LIBS} PARENT_SCOPE )
+ENDFUNCTION()
+
+
 # Macro to add the dependencies and libraries to an executable
 MACRO( ADD_PROJ_EXE_DEP EXE )
     # Add the package dependencies
@@ -646,24 +712,20 @@ MACRO( ADD_PROJ_EXE_DEP EXE )
         ADD_DEPENDENCIES( ${EXE} copy-${PROJ}-Data )
     ENDIF()
     # Add the project libraries
-    TARGET_LINK_LIBRARIES( ${EXE} ${${PROJ}_LIBS} ${${PROJ}_LIBS} )
+    IF ( ${PROJ}_LIB )
+        TARGET_LINK_LIBRARIES( ${EXE} ${${PROJ}_LIB} )
+    ELSE()
+        TARGET_LINK_LIBRARIES( ${EXE} ${${PROJ}_LIBS} ${${PROJ}_LIBS} )
+    ENDIF()
     TARGET_LINK_LIBRARIES( ${EXE} ${${PROJECT_NAME}_LIBRARIES} )
-    # Add external libraries
+    # Link to external libraries
     SET_TARGET_PROPERTIES( ${EXE} PROPERTIES LINK_FLAGS "${LDFLAGS} ${LDFLAGS_EXTRA}" )
     TARGET_LINK_LIBRARIES( ${EXE} ${LINK_LIBRARIES} )
-    TARGET_LINK_LIBRARIES( ${EXE} ${NEK_LIBS} ${MOAB_LIBS} ${DENDRO_LIBS} ${NETCDF_LIBS} )
-    TARGET_LINK_LIBRARIES( ${EXE} ${LIBMESH_LIBS} ${TRILINOS_LIBS} ${PETSC_LIBS} ${HYPRE_LIBS} )
-    TARGET_LINK_LIBRARIES( ${EXE} ${SILO_LIBS} ${HDF5_LIBS} ${TIMER_LIBS} ${X11_LIBS} )
-    IF ( ${USE_EXT_SUNDIALS} )
-        TARGET_LINK_LIBRARIES( ${EXE} ${SUNDIALS_LIBS} )
-    ENDIF()
-    TARGET_LINK_LIBRARIES( ${EXE} ${ZLIB_LIBS} )
     TARGET_LINK_LIBRARIES( ${EXE} ${CUDA_LIBS} )
-    TARGET_LINK_LIBRARIES( ${EXE} ${EXTERNAL_LIBS} )
+    TARGET_LINK_EXTERNAL_LIBRARIES( ${EXE} )
     IF ( USE_MPI OR USE_EXT_MPI OR HAVE_MPI )
         TARGET_LINK_LIBRARIES( ${EXE} ${MPI_LINK_FLAGS} ${MPI_LIBRARIES} )
     ENDIF()
-    TARGET_LINK_LIBRARIES( ${EXE} ${LAPACK_LIBS} ${BLAS_LIBS} ${BLAS_LAPACK_LIBS} )
     TARGET_LINK_LIBRARIES( ${EXE} ${COVERAGE_LIBS} ${LDLIBS} ${LDLIBS_EXTRA} )
     TARGET_LINK_LIBRARIES( ${EXE} ${SYSTEM_LIBS} ${SYSTEM_LDFLAGS} )
 ENDMACRO()

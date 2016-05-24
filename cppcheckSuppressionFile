@@ -75,5 +75,8 @@ noExplicitConstructor:*/utils/test/test_AMP_MPI.cc
 // Supress warnings for usleep
 obsoleteFunctionsusleep
 
+// Supress graphics for now
+*:/*/graphics/ogre/*
+
 
 

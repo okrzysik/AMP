@@ -36,7 +36,7 @@ public:
     virtual ~libMeshElement();
 
     //! Return the element class
-    virtual inline std::string elementClass() const { return "libMeshElement"; }
+    virtual inline std::string elementClass() const override{ return "libMeshElement"; }
 
     //! Return the elements composing the current element
     virtual std::vector<MeshElement> getElements( const GeomType type ) const override;

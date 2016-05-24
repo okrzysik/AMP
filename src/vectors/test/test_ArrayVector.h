@@ -13,7 +13,7 @@ void testArrayVectorDimensions( std::vector<size_t> &dims, AMP::UnitTest &ut )
     std::shared_ptr<AMP::LinearAlgebra::ArrayVector<T>> arrayVec =
         std::dynamic_pointer_cast<AMP::LinearAlgebra::ArrayVector<T>>( vec );
     AMP_ASSERT( arrayVec.get() != NULL );
-    if ( ( arrayVec->getArray().size() == dims ) && ( arrayVec->getArray().ndim() == dims.size() ) )
+    if ( ( arrayVec->getArray().size() == dims ) && ( arrayVec->getArray().ndim() == (int) dims.size() ) )
         ut.passes( "ArrayVector correctly returns dimensions" );
     else
         ut.failure( "ArrayVector does not correctly returns dimensions" );
