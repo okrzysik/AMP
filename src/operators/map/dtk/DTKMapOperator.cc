@@ -76,6 +76,7 @@ void DTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
       dtk_parameters.sublist("Search");
       dtk_parameters.sublist("Search").set("Track Missed Range Entities", true);
       dtk_parameters.sublist("Consistent Interpolation");
+      dtk_parameters.sublist("Consistent Interpolation").set("Keep Missed Range Data", true);
       d_dtk_operator = AMP::shared_ptr<DataTransferKit::MapOperator>(
           new DataTransferKit::ConsistentInterpolationOperator( 
             u_vector->getMap(), r_vector->getMap(), dtk_parameters ) );
