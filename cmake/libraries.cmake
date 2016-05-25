@@ -356,8 +356,10 @@ MACRO ( CONFIGURE_MPI )
     # Determine if we want to use MPI
     CHECK_ENABLE_FLAG( USE_EXT_MPI 1 )
     IF ( USE_EXT_MPI )
+        MESSAGE("USE_EXT_MPI=${USE_EXT_MPI}")
         # Check if we specified the MPI directory
         IF ( MPI_DIRECTORY )
+            MESSAGE("MPI_DIRECTORY=${MPI_DIRECTORY}")
             # Check the provided MPI directory for include files and the mpi executable
             VERIFY_PATH( "${MPI_DIRECTORY}" )
             IF ( EXISTS "${MPI_DIRECTORY}/include/mpi.h" )
@@ -398,7 +400,7 @@ MACRO ( CONFIGURE_MPI )
             # Set MPI flags
             IF ( NOT MPIEXEC_NUMPROC_FLAG )
                 SET( MPIEXEC_NUMPROC_FLAG "-np" )
-            ENDIF()
+            ENDIF()            
         ELSEIF ( MPI_COMPILER )
             # The mpi compiler should take care of everything
         ELSE()

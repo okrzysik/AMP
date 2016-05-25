@@ -356,6 +356,13 @@ public:
      */
     void copySubset( const std::vector<size_t> &index, const Array<TYPE> &subset );
 
+    /*!
+     * Add data from an array into a subset of this array
+     * @param index         Index of the subset (imin,imax,jmin,jmax,kmin,kmax,...)
+     * @param subset        The subset array to add from
+     */
+    void addSubset( const std::vector<size_t> &index, const Array<TYPE> &subset );
+
 
     /*!
      * Access the desired element
