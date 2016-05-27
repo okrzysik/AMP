@@ -61,71 +61,75 @@ void thermalTest(AMP::UnitTest *ut, std::string input_file)
 
   RightHandSideVec->setToScalar(0.0);
 
- AMP::shared_ptr<AMP::Operator::ColumnOperator> thermalMapsColumn;
 
   AMP::Mesh::Mesh::shared_ptr cellSandwichMesh = manager->Subset("CellSandwich");
   AMP::Mesh::Mesh::shared_ptr ccMesh           = manager->Subset("CellCurrentCollectors");
 
+  double initialMapValue = input_db->getDoubleWithDefault("IMapValue",1.);
   SolutionVec->setToScalar(298.);           
-  thermalMapVec->setToScalar(298);           
+  thermalMapVec->setToScalar(initialMapValue);           
   RankVec->setToScalar(globalComm.getRank());           
   RightHandSideVec->setToScalar(0);           
       
   siloWriter->writeFile( out_file , 0);
 
+  AMP::shared_ptr<AMP::Database>  DTKdb = input_db->getDatabase("DTKMaps");
+  AMP::shared_ptr<AMP::Operator::ColumnOperatorParameters>  mapColParams ( new AMP::Operator::ColumnOperatorParameters ( input_db ) );
+  AMP::shared_ptr<AMP::Operator::ColumnOperator> mapsColumn( new AMP::Operator::ColumnOperator ( mapColParams ) );
+
+  std::vector<int> nmaps  = DTKdb->getIntegerArray( "N_maps" );
+  std::vector<std::string> mesh1 = DTKdb->getStringArray( "Mesh1" );
+  std::vector<std::string> mesh2 = DTKdb->getStringArray( "Mesh2" );
+  std::vector<int> surfaceID1  = DTKdb->getIntegerArray( "Surface1" );
+  std::vector<int> surfaceID2  = DTKdb->getIntegerArray( "Surface2" );
+  std::vector<std::string> var1 = DTKdb->getStringArray( "Variable1" );
+  std::vector<std::string> var2 = DTKdb->getStringArray( "Variable2" );
+  std::vector<int> inputDofsSize = DTKdb->getIntegerArray( "InputDOFsPerObject" );
+  std::vector<int> inputStride = DTKdb->getIntegerArray( "InputStride" );
+  std::vector<int> outputDofsSize = DTKdb->getIntegerArray( "OutputDOFsPerObject" );
+  std::vector<int> outputStride = DTKdb->getIntegerArray( "OutputStride" );
 
   AMP::pout<<"----------------------------\n";
   AMP::pout<<"     CREATE MAP OPERATOR    \n";
   AMP::pout<<"----------------------------\n";
   AMP::shared_ptr<AMP::Database> nullDatabase;
-  // INTERFACE WITH ANODE
-  AMP::pout<<"interface anodeCC cellSandwich\n";
-  AMP::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters> anodeCCCellSandwichMapOperatorParams(new AMP::Operator::MultiDofDTKMapOperatorParameters(nullDatabase));
-  anodeCCCellSandwichMapOperatorParams->d_globalComm    = AMP_COMM_WORLD;
-  anodeCCCellSandwichMapOperatorParams->d_Mesh1 = cellSandwichMesh;
-  anodeCCCellSandwichMapOperatorParams->d_BoundaryID1 = 1;
-  anodeCCCellSandwichMapOperatorParams->d_Variable1 = thermalVariable ->getName();
-  anodeCCCellSandwichMapOperatorParams->d_StrideOffset1 = 0;
-  anodeCCCellSandwichMapOperatorParams->d_StrideLength1 = 1;
-  anodeCCCellSandwichMapOperatorParams->d_Mesh2 = ccMesh;
-  anodeCCCellSandwichMapOperatorParams->d_BoundaryID2 = 3;
-  anodeCCCellSandwichMapOperatorParams->d_Variable2 = thermalVariable ->getName();
-  anodeCCCellSandwichMapOperatorParams->d_StrideOffset2 = 0;
-  anodeCCCellSandwichMapOperatorParams->d_StrideLength2 = 1;
-  anodeCCCellSandwichMapOperatorParams->d_SourceVector = SolutionVec;
-  anodeCCCellSandwichMapOperatorParams->d_TargetVector = thermalMapVec;
-  AMP::shared_ptr<AMP::Operator::Operator> anodeCCCellSandwichMapOperator(new AMP::Operator::MultiDofDTKMapOperator(anodeCCCellSandwichMapOperatorParams));
+  for(size_t i=0 ; i<nmaps.size(); i++ ){
+    AMP::pout<<"interface b/w"<< std::endl;
+    AMP::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters> mapOperatorParams(new AMP::Operator::MultiDofDTKMapOperatorParameters(nullDatabase));
+    mapOperatorParams->d_globalComm    = AMP_COMM_WORLD;
+    mapOperatorParams->d_Mesh1         = manager->Subset(mesh1[i]);
+    mapOperatorParams->d_BoundaryID1   = surfaceID1[i];
+    mapOperatorParams->d_Variable1     = var1[i];
+    mapOperatorParams->d_StrideOffset1 = inputStride[i];
+    mapOperatorParams->d_StrideLength1 = inputDofsSize[i];
+    mapOperatorParams->d_Mesh2         = manager->Subset(mesh2[i]);
+    mapOperatorParams->d_BoundaryID2   = surfaceID2[i];
+    mapOperatorParams->d_Variable2     = var2[i];
+    mapOperatorParams->d_StrideOffset2 = outputStride[i];
+    mapOperatorParams->d_StrideLength2 = outputDofsSize[i];
+    mapOperatorParams->d_SourceVector  = SolutionVec;
+    mapOperatorParams->d_TargetVector  = thermalMapVec;
+    AMP::shared_ptr<AMP::Operator::Operator> mapOperator(new AMP::Operator::MultiDofDTKMapOperator(mapOperatorParams));
 
-  // INTERFACE WITH CATHODE
-  AMP::pout<<"interface cellSandwich cathodeCC\n";
-  AMP::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters> cellSandwichCathodeCCMapOperatorParams(new AMP::Operator::MultiDofDTKMapOperatorParameters(nullDatabase));
-  cellSandwichCathodeCCMapOperatorParams->d_globalComm    = AMP_COMM_WORLD;
-  cellSandwichCathodeCCMapOperatorParams->d_Mesh1 = cellSandwichMesh;
-  cellSandwichCathodeCCMapOperatorParams->d_BoundaryID1 = 2;
-  cellSandwichCathodeCCMapOperatorParams->d_Variable1 = thermalVariable ->getName();
-  cellSandwichCathodeCCMapOperatorParams->d_StrideOffset1 = 0;
-  cellSandwichCathodeCCMapOperatorParams->d_StrideLength1 = 1;
-  cellSandwichCathodeCCMapOperatorParams->d_Mesh2 = ccMesh;
-  cellSandwichCathodeCCMapOperatorParams->d_BoundaryID2 = 4;
-  cellSandwichCathodeCCMapOperatorParams->d_Variable2 = thermalVariable ->getName();
-  cellSandwichCathodeCCMapOperatorParams->d_StrideOffset2 = 0;
-  cellSandwichCathodeCCMapOperatorParams->d_StrideLength2 = 1;
-  cellSandwichCathodeCCMapOperatorParams->d_SourceVector = SolutionVec;
-  cellSandwichCathodeCCMapOperatorParams->d_TargetVector = thermalMapVec;
-  AMP::shared_ptr<AMP::Operator::Operator> cellSandwichCathodeCCMapOperator(new AMP::Operator::MultiDofDTKMapOperator(cellSandwichCathodeCCMapOperatorParams));
-
-
-  AMP::shared_ptr<AMP::Operator::ColumnOperatorParameters>  mapColParams ( new AMP::Operator::ColumnOperatorParameters ( input_db ) );
-  thermalMapsColumn.reset( new AMP::Operator::ColumnOperator ( mapColParams ) );
-  thermalMapsColumn->append( anodeCCCellSandwichMapOperator  );
-  thermalMapsColumn->append( cellSandwichCathodeCCMapOperator);
+    mapsColumn->append( mapOperator);
+  }
 
   AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-  thermalMapsColumn->apply(SolutionVec, ResidualVec);
-  AMP::pout<< " L2Norm of Map Vec " << std::setprecision(17)   << thermalMapVec->L2Norm() << std::endl;
-
   siloWriter->writeFile( out_file , 1);
+  mapsColumn->apply(SolutionVec, ResidualVec);
+  siloWriter->writeFile( out_file , 2);
+
+  AMP::pout<< " L2Norm of Map Vec " << std::setprecision(17)   << thermalMapVec->L2Norm() << std::endl;
+  AMP::pout  << " Thermal Map Vec Max : " << thermalMapVec->max() << " Min " << thermalMapVec->min() <<std::endl;
+
+  if(AMP::Utilities::approx_equal(thermalMapVec->max() , 298.) ){
+    ut->passes( "Mapped Values are consistent" );
+  }else{
+    ut->failure( "Mapped Values are inconsistent" );
+  }
+	
+    ut->passes( input_file );
 }
 
 int main(int argc, char *argv[])
