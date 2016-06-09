@@ -28,4 +28,5 @@ COPY_TEST_FILE( input_testDTKConstruction )
 ADD_AMP_PROVISIONAL_TEST( testDTKMapOperatorConstruction )
 
 COPY_TEST_FILE( input_testDTKMapOperatorApply )
+COPY_TEST_FILE( input_testDTKMapOperatorApply-2 )
 ADD_AMP_PROVISIONAL_TEST( testDTKMapOperatorApply )
