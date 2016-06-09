@@ -49,14 +49,16 @@ Mesh{
 }
 
 
-
-PotentialMaps{
-    VariableName1        = "Battery"
-    VariableName2        = "Potential"
-    DOFsPerObject = 1 // this doesn't make sense
-    InputDOFsPerObject  = 5
-    InputStride         = 3
-    OutputDOFsPerObject = 1
-    OutputStride        = 0
-
+DTKMaps{
+    N_maps = 2 
+    Mesh1 = "CellCurrentCollectors", "CellCurrentCollectors"
+    Surface1 = 3, 4
+    Mesh2 = "CellSandwich", "CellSandwich"
+    Surface2 = 1, 2
+    Variable1           = "Temperature","Temperature"
+    Variable2           = "Temperature","Temperature"
+    InputDOFsPerObject  = 1,1
+    InputStride         = 0,0
+    OutputDOFsPerObject = 1,1
+    OutputStride        = 0,0
 }

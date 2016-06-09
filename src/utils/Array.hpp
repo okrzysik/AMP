@@ -366,6 +366,7 @@ Array<TYPE> Array<TYPE>::subset( const std::vector<size_t> &index ) const
     }
     return subset;
 }
+
 template <class TYPE>
 void Array<TYPE>::copySubset( const std::vector<size_t> &index, const Array<TYPE> &subset )
 {
@@ -387,6 +388,34 @@ void Array<TYPE>::copySubset( const std::vector<size_t> &index, const Array<TYPE
                             i1-first[1], i2-first[2], i3-first[3], i4-first[4] );
                         size_t k2  = GET_ARRAY_INDEX5D( N2, i0, i1, i2, i3, i4 );
                         d_data[k2] = subset.d_data[k1];
+                    }
+                }
+            }
+        }
+    }
+}
+
+template <class TYPE>
+void Array<TYPE>::addSubset( const std::vector<size_t> &index, const Array<TYPE> &subset )
+{
+    // Get the subset indices
+    checkSubsetIndex( index );
+    std::array<size_t,5> first, last, N1;
+    getSubsetArrays( index, first, last, N1 );
+    std::array<size_t,5> N2 = getDimArray();
+    // add the sub-array
+    #if ARRAY_NDIM_MAX > 5
+        #error Function programmed for more than 5 dimensions
+    #endif
+    for (size_t i4=first[4]; i4<=last[4]; i4++) {
+        for (size_t i3=first[3]; i3<=last[3]; i3++) {
+            for (size_t i2=first[2]; i2<=last[2]; i2++) {
+                for (size_t i1=first[1]; i1<=last[1]; i1++) {
+                    for (size_t i0=first[0]; i0<=last[0]; i0++) {
+                        size_t k1 = GET_ARRAY_INDEX5D( N1, i0-first[0], 
+                            i1-first[1], i2-first[2], i3-first[3], i4-first[4] );
+                        size_t k2  = GET_ARRAY_INDEX5D( N2, i0, i1, i2, i3, i4 );
+                        d_data[k2] += subset.d_data[k1];
                     }
                 }
             }
@@ -604,7 +633,17 @@ void Array<TYPE>::scale( const TYPE &value )
     for ( size_t i = 0; i < d_length; i++ )
         d_data[i] *= value;
 }
+template <class TYPE>
+    void Array<TYPE>::pow(const Array<TYPE> &baseArray, const TYPE &exp )
+{
+    // not insisting on the shapes being the same
+    // but insisting on the total size being the same
+    AMP_ASSERT(d_length==baseArray.length());
 
+    const auto base_data = baseArray.data();
+    for ( size_t i = 0; i < d_length; i++ )
+        d_data[i]  = std::pow(base_data[i], exp);
+}
 
 /********************************************************
 *  Simple math operations                               *
@@ -846,7 +885,6 @@ Array<TYPE> &Array<TYPE>::operator-=( const TYPE &rhs )
         d_data[i] -= rhs;
     return *this;
 }
-
 
 /********************************************************
 *  Find all elements that match the given operation     *

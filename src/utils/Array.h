@@ -270,6 +270,12 @@ public:
      */
     void scale( const TYPE &scale );
 
+    /*!
+     * Set the values of this array to pow(base, exp)
+     * @param base        Base array
+     * @param exp         Exponent value
+     */
+    void pow( const Array<TYPE> &baseArray, const TYPE &exp );
 
     //! Destructor
     ~Array();
@@ -355,6 +361,13 @@ public:
      * @param subset        The subset array to copy from
      */
     void copySubset( const std::vector<size_t> &index, const Array<TYPE> &subset );
+
+    /*!
+     * Add data from an array into a subset of this array
+     * @param index         Index of the subset (imin,imax,jmin,jmax,kmin,kmax,...)
+     * @param subset        The subset array to add from
+     */
+    void addSubset( const std::vector<size_t> &index, const Array<TYPE> &subset );
 
 
     /*!
