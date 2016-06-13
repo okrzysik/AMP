@@ -168,15 +168,38 @@ int main( int argc, char *argv[] )
         M3 = M1;
         M3 += M1;
         if ( M1+M1==M2 && M3==M2 )
-            ut.passes( "+" );
+            ut.passes( "operator+(Array&)" );
         else
-            ut.failure( "+" );
+            ut.failure( "operator+(Array&)" );
         M3 = M2;
         M3 -= M1;
         if ( M2-M1==M1 && M3==M1 )
-            ut.passes( "-" );
+            ut.passes( "operator-(Array&)" );
         else
-            ut.failure( "-" );
+            ut.failure( "operator-(Array&)" );
+
+        M1 += 3;
+        pass = true;
+        for ( size_t i = 0; i < M1.size( 0 ); i++ ) {
+            for ( size_t j = 0; j < M1.size( 1 ); j++ )
+                pass = pass && (M1( i, j ) == i + 3 + 10*j );
+        }
+        if ( pass )
+            ut.passes( "operator+(scalar)" );
+        else
+            ut.failure( "operator+(scalar)" );
+
+        M1 -= 3;
+        pass = true;
+        for ( size_t i = 0; i < M1.size( 0 ); i++ ) {
+            for ( size_t j = 0; j < M1.size( 1 ); j++ )
+                pass = pass && (M1( i, j ) == i + 10*j );
+        }
+        if ( pass )
+            ut.passes( "operator-(scalar)" );
+        else
+            ut.failure( "operator-(scalar)" );
+       
     }
 
     // Finished
