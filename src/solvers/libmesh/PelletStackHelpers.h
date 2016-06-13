@@ -2,13 +2,13 @@
 #define included_AMP_PelletStackHelpers
 
 #include "ampmesh/Mesh.h"
-#include "vectors/Vector.h"
 #include "operators/CoupledOperator.h"
 #include "operators/libmesh/PelletStackOperator.h"
 #include "operators/map/AsyncMapColumnOperator.h"
 #include "solvers/ColumnSolver.h"
 #include "solvers/libmesh/PelletStackMechanicsSolver.h"
 #include "solvers/trilinos/TrilinosMLSolver.h"
+#include "vectors/Vector.h"
 
 
 void helperCreateStackOperatorForPelletMechanics(

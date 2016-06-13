@@ -1,12 +1,12 @@
 #include <algorithm>
 
 #include "discretization/subsetDOFManager.h"
+#include "utils/Counter.h"
+#include "utils/Utilities.h"
 #include "vectors/MultiVector.h"
 #include "vectors/SubsetVariable.h"
 #include "vectors/SubsetVector.h"
 #include "vectors/VectorBuilder.h"
-#include "utils/Utilities.h"
-#include "utils/Counter.h"
 
 #include "ProfilerApp.h"
 

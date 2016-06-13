@@ -578,9 +578,5 @@ double Utilities::trilinear( const std::vector<double> &x,
 
 
 // Dummy function to prevent compiler from optimizing away variable
-void Utilities::nullUse( void* data )
-{
-    NULL_USE(data);
-}
-
+void Utilities::nullUse( void *data ) { NULL_USE( data ); }
 }

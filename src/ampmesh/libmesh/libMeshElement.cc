@@ -2,8 +2,8 @@
 #include "utils/Utilities.h"
 
 // libMesh includes
-#include "libmesh/elem.h"
 #include "libmesh/boundary_info.h"
+#include "libmesh/elem.h"
 
 namespace AMP {
 namespace Mesh {

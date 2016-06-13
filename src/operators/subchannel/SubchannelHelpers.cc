@@ -175,10 +175,10 @@ void getCladProperties( AMP::AMP_MPI comm,
         for ( auto &id : ids ) {
             AMP::Mesh::Mesh::shared_ptr mesh = clad->Subset( id );
             std::vector<double> box          = mesh->getBoundingBox();
-            double t1  = 0.5 * ( box[0] + box[1] );
-            double t2 = 0.5 * ( box[2] + box[3] );
-            double t3  = std::max( std::max( t1 - box[0], box[1] - t1 ),
-                                   std::max( t2 - box[2], box[3] - t2 ) );
+            double t1                        = 0.5 * ( box[0] + box[1] );
+            double t2                        = 0.5 * ( box[2] + box[3] );
+            double t3                        = std::max( std::max( t1 - box[0], box[1] - t1 ),
+                                  std::max( t2 - box[2], box[3] - t2 ) );
             center.insert( std::make_tuple( t1, t2, t3 ) );
         }
     }
@@ -187,8 +187,10 @@ void getCladProperties( AMP::AMP_MPI comm,
     std::vector<std::tuple<double, double, double>> center2( center.begin(), center.end() );
     for ( size_t i = 0; i < center2.size(); i++ ) {
         for ( size_t j = i + 1; j < center2.size(); j++ ) {
-            if ( AMP::Utilities::approx_equal( std::get<0>(center2[i]), std::get<0>(center2[j]) ) &&
-                 AMP::Utilities::approx_equal( std::get<1>(center2[i]), std::get<1>(center2[j]) ) ) {
+            if ( AMP::Utilities::approx_equal( std::get<0>( center2[i] ),
+                                               std::get<0>( center2[j] ) ) &&
+                 AMP::Utilities::approx_equal( std::get<1>( center2[i] ),
+                                               std::get<1>( center2[j] ) ) ) {
                 AMP_ERROR( "Duplicate clads detected" );
             }
         }

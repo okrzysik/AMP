@@ -199,11 +199,7 @@ void ManagedEpetraMatrix::zero()
 void ManagedEpetraMatrix::axpy( double alpha, const Matrix &rhs )
 {
     EpetraExt::MatrixMatrix::Add(
-        *(rhs.castTo<ManagedEpetraMatrix>().d_epetraMatrix),
-        false,
-        alpha,
-        *d_epetraMatrix,
-        1.0);
+        *( rhs.castTo<ManagedEpetraMatrix>().d_epetraMatrix ), false, alpha, *d_epetraMatrix, 1.0 );
 }
 
 

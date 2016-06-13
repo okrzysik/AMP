@@ -1,7 +1,6 @@
 #include "solvers/libmesh/PelletStackHelpers.h"
 
 #include "discretization/simpleDOF_Manager.h"
-#include "vectors/VectorBuilder.h"
 #include "matrices/MatrixBuilder.h"
 #include "operators/CoupledOperator.h"
 #include "operators/LinearBVPOperator.h"
@@ -12,6 +11,7 @@
 #include "operators/map/AsyncMapColumnOperator.h"
 #include "operators/map/NodeToNodeMap.h"
 #include "operators/mechanics/MechanicsNonlinearFEOperator.h"
+#include "vectors/VectorBuilder.h"
 
 #ifdef USE_EXT_PETSC
 #include "solvers/petsc/PetscKrylovSolver.h"

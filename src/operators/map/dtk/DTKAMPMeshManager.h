@@ -7,9 +7,9 @@
 
 #include "utils/AMP_MPI.h"
 
+#include <DTK_ClientManager.hpp>
 #include <DTK_FunctionSpace.hpp>
 #include <DTK_Types.hpp>
-#include <DTK_ClientManager.hpp>
 
 namespace AMP {
 namespace Operator {
@@ -20,20 +20,19 @@ namespace Operator {
 */
 class DTKAMPMeshManager : public DataTransferKit::ClientManager
 {
-  public:
+public:
     /**
      * Constructor.
      */
     DTKAMPMeshManager( const AMP::shared_ptr<AMP::Mesh::Mesh> &mesh,
-		       const AMP::shared_ptr<AMP::Discretization::DOFManager> &dof_manager,
-		       const std::function<bool( DataTransferKit::Entity )> &predicate );
+                       const AMP::shared_ptr<AMP::Discretization::DOFManager> &dof_manager,
+                       const std::function<bool( DataTransferKit::Entity )> &predicate );
 
     /*!
      * \brief Get the function space over which the mesh and its fields are
      * defined.
      */
-    Teuchos::RCP<DataTransferKit::FunctionSpace> functionSpace() const
-    { return d_function_space; }
+    Teuchos::RCP<DataTransferKit::FunctionSpace> functionSpace() const { return d_function_space; }
 
     //@{
     //! ClientManager interface implementation.
@@ -41,38 +40,49 @@ class DTKAMPMeshManager : public DataTransferKit::ClientManager
      * \brief Get the entity set over which the fields are defined.
      */
     Teuchos::RCP<DataTransferKit::EntitySet> entitySet() const override
-    { return d_function_space->entitySet(); }
+    {
+        return d_function_space->entitySet();
+    }
 
     /*!
      * \brief Get the local map for entities supporting the function.
      */
     Teuchos::RCP<DataTransferKit::EntityLocalMap> localMap() const override
-    { return d_function_space->localMap(); }
+    {
+        return d_function_space->localMap();
+    }
 
     /*!
      * \brief Get the shape function for entities supporting the function.
      */
     Teuchos::RCP<DataTransferKit::EntityShapeFunction> shapeFunction() const override
-    { return d_function_space->shapeFunction(); }
+    {
+        return d_function_space->shapeFunction();
+    }
 
     /*!
      * \brief Get the integration rule for entities supporting the function.
      */
     Teuchos::RCP<DataTransferKit::EntityIntegrationRule> integrationRule() const override
-    { return d_function_space->integrationRule(); }
+    {
+        return d_function_space->integrationRule();
+    }
 
     /*!
      * \brief Get the selector function.
      */
     DataTransferKit::PredicateFunction selectFunction() const override
-    { return d_function_space->selectFunction(); }
+    {
+        return d_function_space->selectFunction();
+    }
 
     /*!
      * \brief Get the field for the given string key.
      */
-    Teuchos::RCP<DataTransferKit::Field>
-    field( const std::string& field_name ) const override
-    { return Teuchos::null; }
+    Teuchos::RCP<DataTransferKit::Field> field( const std::string &field_name ) const override
+    {
+        return Teuchos::null;
+    }
     //@}
 
 private:

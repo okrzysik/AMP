@@ -1,12 +1,12 @@
 #include "utils/StackTrace.h"
 
 #include <algorithm>
+#include <csignal>
 #include <cstring>
 #include <iostream>
-#include <sstream>
-#include <csignal>
-#include <mutex>
 #include <map>
+#include <mutex>
+#include <sstream>
 #include <stdexcept>
 
 
@@ -121,7 +121,7 @@ namespace StackTrace {
 BOOL GetModuleListTH32( HANDLE hProcess, DWORD pid );
 BOOL GetModuleListPSAPI( HANDLE hProcess );
 DWORD LoadModule( HANDLE hProcess, LPCSTR img, LPCSTR mod, DWORD64 baseAddr, DWORD size );
-void LoadModules( );
+void LoadModules();
 };
 #endif
 
@@ -299,21 +299,21 @@ int StackTrace::getSymbols( std::vector<void *> &address,
 *  Function to get the current call stack                                   *
 ****************************************************************************/
 #ifdef USE_MAC
-static void *loadAddress( const std::string& object )
+static void *loadAddress( const std::string &object )
 {
-    static std::map<std::string,void*> obj_map;
+    static std::map<std::string, void *> obj_map;
     if ( obj_map.empty() ) {
         uint32_t numImages = _dyld_image_count();
-        for (uint32_t i = 0; i < numImages; i++) {
-            const struct mach_header *header = _dyld_get_image_header(i);
-            const char *name = _dyld_get_image_name(i);
-            const char *p = strrchr(name, '/');
-            struct mach_header *address = const_cast<struct mach_header*>(header);
-            obj_map.insert( std::pair<std::string,void*>( p+1, address ) );
-            //printf("   module=%s, address=%p\n", p + 1, header);
+        for ( uint32_t i = 0; i < numImages; i++ ) {
+            const struct mach_header *header = _dyld_get_image_header( i );
+            const char *name                 = _dyld_get_image_name( i );
+            const char *p                    = strrchr( name, '/' );
+            struct mach_header *address      = const_cast<struct mach_header *>( header );
+            obj_map.insert( std::pair<std::string, void *>( p + 1, address ) );
+            // printf("   module=%s, address=%p\n", p + 1, header);
         }
     }
-    auto it = obj_map.find( object );
+    auto it       = obj_map.find( object );
     void *address = 0;
     if ( it != obj_map.end() ) {
         address = it->second;
@@ -322,37 +322,38 @@ static void *loadAddress( const std::string& object )
         if ( it != obj_map.end() )
             address = it->second;
     }
-    //printf("%s: 0x%016llx\n",object.c_str(),address);
+    // printf("%s: 0x%016llx\n",object.c_str(),address);
     return address;
 }
-static std::tuple<std::string,std::string,std::string,int> split_atos( const std::string& buf )
+static std::tuple<std::string, std::string, std::string, int> split_atos( const std::string &buf )
 {
     if ( buf.empty() )
-        return std::tuple<std::string,std::string,std::string,int>();
+        return std::tuple<std::string, std::string, std::string, int>();
     // Get the function
     size_t index = buf.find( " (in " );
     if ( index == std::string::npos )
-        return std::make_tuple(buf.substr(0,buf.length()-1),std::string(),std::string(),0);
+        return std::make_tuple(
+            buf.substr( 0, buf.length() - 1 ), std::string(), std::string(), 0 );
     std::string fun = buf.substr( 0, index );
-    std::string tmp = buf.substr( index+5 );
+    std::string tmp = buf.substr( index + 5 );
     // Get the object
-    index = tmp.find( ')' );
+    index           = tmp.find( ')' );
     std::string obj = tmp.substr( 0, index );
-    tmp = tmp.substr( index+1 );
+    tmp             = tmp.substr( index + 1 );
     // Get the filename and line number
     size_t p1 = tmp.find( '(' );
     size_t p2 = tmp.find( ')' );
-    tmp = tmp.substr( p1+1, p2-p1-1 );
-    index = tmp.find( ':' );
+    tmp       = tmp.substr( p1 + 1, p2 - p1 - 1 );
+    index     = tmp.find( ':' );
     std::string file;
     int line = 0;
-    if ( index!=std::string::npos ) {
+    if ( index != std::string::npos ) {
         file = tmp.substr( 0, index );
-        line = std::stoi( tmp.substr( index+1 ) );
-    } else if ( p1!=std::string::npos ) {
+        line = std::stoi( tmp.substr( index + 1 ) );
+    } else if ( p1 != std::string::npos ) {
         file = tmp;
     }
-    return std::make_tuple(fun,obj,file,line);
+    return std::make_tuple( fun, obj, file, line );
 }
 #endif
 // clang-format off
@@ -827,9 +828,9 @@ void StackTrace::LoadModules()
 
         DWORD symOptions = SymGetOptions();
         symOptions |= SYMOPT_LOAD_LINES | SYMOPT_FAIL_CRITICAL_ERRORS;
-        symOptions = SymSetOptions( symOptions );
+        symOptions     = SymSetOptions( symOptions );
         char buf[1024] = { 0 };
-        if ( SymGetSearchPath( GetCurrentProcess(), buf, sizeof(buf) ) == FALSE )
+        if ( SymGetSearchPath( GetCurrentProcess(), buf, sizeof( buf ) ) == FALSE )
             printf( "ERROR: SymGetSearchPath (%d)\n", GetLastError() );
 
         // First try to load modules from toolhelp32
@@ -846,7 +847,7 @@ void StackTrace::LoadModules()
 /****************************************************************************
 *  Set the signal handlers                                                  *
 ****************************************************************************/
-static std::function<void(std::string,StackTrace::terminateType)> abort_fun;
+static std::function<void( std::string, StackTrace::terminateType )> abort_fun;
 static std::string rethrow()
 {
     std::string last_message;
@@ -870,7 +871,7 @@ static std::string rethrow()
 }
 static void term_func_abort( int signal )
 {
-    std::string msg("Caught signal ");
+    std::string msg( "Caught signal " );
     if ( signal == SIGABRT )
         msg += "SIGABRT";
     else if ( signal == SIGFPE )
@@ -889,21 +890,22 @@ static void term_func()
 {
     std::string last_message = rethrow();
     signal( SIGABRT, SIG_DFL );
-    signal( SIGFPE,  SIG_DFL );
-    signal( SIGILL,  SIG_DFL );
-    signal( SIGINT,  SIG_DFL );
+    signal( SIGFPE, SIG_DFL );
+    signal( SIGILL, SIG_DFL );
+    signal( SIGINT, SIG_DFL );
     signal( SIGSEGV, SIG_DFL );
     signal( SIGTERM, SIG_DFL );
     abort_fun( "Unhandled exception:\n" + last_message, StackTrace::terminateType::signal );
 }
-void StackTrace::setErrorHandlers( std::function<void(std::string,StackTrace::terminateType)> abort )
+void StackTrace::setErrorHandlers(
+    std::function<void( std::string, StackTrace::terminateType )> abort )
 {
     abort_fun = abort;
     std::set_terminate( term_func );
     signal( SIGABRT, &term_func_abort );
-    signal( SIGFPE,  &term_func_abort );
-    signal( SIGILL,  &term_func_abort );
-    signal( SIGINT,  &term_func_abort );
+    signal( SIGFPE, &term_func_abort );
+    signal( SIGILL, &term_func_abort );
+    signal( SIGINT, &term_func_abort );
     signal( SIGSEGV, &term_func_abort );
     signal( SIGTERM, &term_func_abort );
     std::set_unexpected( term_func );

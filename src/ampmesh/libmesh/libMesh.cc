@@ -22,8 +22,8 @@
 
 // LibMesh include
 DISABLE_WARNINGS
-#include "libmesh/elem.h"
 #include "libmesh/boundary_info.h"
+#include "libmesh/elem.h"
 #include "libmesh/exodusII_io_helper.h"
 #include "libmesh/mesh.h"
 #include "libmesh/mesh_data.h"
@@ -122,7 +122,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     }
     // Get the global ranks for the comm to make sure it is set
     auto globalRanks = getComm().globalRanks();
-    AMP_ASSERT(!globalRanks.empty());
+    AMP_ASSERT( !globalRanks.empty() );
     PROFILE_STOP( "constructor" );
 }
 libMesh::libMesh( AMP::shared_ptr<::Mesh> mesh, std::string name )

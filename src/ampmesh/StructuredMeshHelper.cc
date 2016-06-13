@@ -1,10 +1,10 @@
 #include "ampmesh/StructuredMeshHelper.h"
+#include "ampmesh/MeshElementVectorIterator.h"
+#include "ampmesh/MultiIterator.h"
 #include "ampmesh/MultiIterator.h"
 #include "ampmesh/MultiMesh.h"
-#include "ampmesh/MultiIterator.h"
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/structuredMeshIterator.h"
-#include "ampmesh/MeshElementVectorIterator.h"
 
 #include <tuple>
 
@@ -174,7 +174,7 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
                     is_valid = false;
             }
             if ( is_valid ) {
-                int t1=0, t2=0, t3=0;
+                int t1 = 0, t2 = 0, t3 = 0;
                 if ( direction == 0 && center.size() == 3 ) {
                     t1 = Utilities::findfirst( z, center[2] - 1e-12 );
                     t2 = Utilities::findfirst( y, center[1] - 1e-12 );

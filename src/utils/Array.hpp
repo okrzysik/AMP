@@ -634,15 +634,15 @@ void Array<TYPE>::scale( const TYPE &value )
         d_data[i] *= value;
 }
 template <class TYPE>
-    void Array<TYPE>::pow(const Array<TYPE> &baseArray, const TYPE &exp )
+void Array<TYPE>::pow( const Array<TYPE> &baseArray, const TYPE &exp )
 {
     // not insisting on the shapes being the same
     // but insisting on the total size being the same
-    AMP_ASSERT(d_length==baseArray.length());
+    AMP_ASSERT( d_length == baseArray.length() );
 
     const auto base_data = baseArray.data();
     for ( size_t i = 0; i < d_length; i++ )
-        d_data[i]  = std::pow(base_data[i], exp);
+        d_data[i]  = std::pow( base_data[i], exp );
 }
 
 /********************************************************

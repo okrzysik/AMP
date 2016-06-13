@@ -6,9 +6,9 @@
 #include "matrices/petsc/PetscMatrix.h"
 #include "operators/ColumnOperator.h"
 #include "operators/LinearOperator.h"
+#include "vectors/ExternalVectorDeleter.h"
 #include "vectors/Vector.h"
 #include "vectors/petsc/ManagedPetscVector.h"
-#include "vectors/ExternalVectorDeleter.h"
 
 #include "petscmat.h"
 #include "petscsnes.h"

@@ -124,7 +124,8 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const override;
+    virtual MeshIterator getSurfaceIterator( const GeomType type,
+                                             const int gcw = 0 ) const override;
 
 
     /**

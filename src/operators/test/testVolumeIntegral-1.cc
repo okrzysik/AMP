@@ -304,9 +304,9 @@ int main( int argc, char *argv[] )
     startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup( argc, argv, startup_properties );
     PROFILE_ENABLE( 5 );
-    #ifdef USE_TIMER
-        global_profiler.ignore_timer_errors( true );
-    #endif
+#ifdef USE_TIMER
+    global_profiler.ignore_timer_errors( true );
+#endif
     PROFILE_START( "main" );
 
     AMP::UnitTest ut;

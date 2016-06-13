@@ -686,12 +686,12 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( MeshID meshID ) const
 ********************************************************/
 AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool isGlobal ) const
 {
-    if ( !isGlobal && iterator_in.size()==0 )
+    if ( !isGlobal && iterator_in.size() == 0 )
         return AMP::shared_ptr<Mesh>();
     // Check the iterator
     auto type = AMP::Mesh::null;
-    if ( iterator_in.size()>0 ) {
-        type = iterator_in->elementType();
+    if ( iterator_in.size() > 0 ) {
+        type          = iterator_in->elementType();
         auto iterator = iterator_in.begin();
         for ( size_t i = 0; i < iterator.size(); i++ ) {
             if ( type != iterator->elementType() )
@@ -704,7 +704,7 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
     std::set<MeshID> subsetID;
     for ( auto &elem : d_meshes ) {
         MeshIterator iterator;
-        if ( iterator_in.size()>0 ) {
+        if ( iterator_in.size() > 0 ) {
             iterator = Mesh::getIterator(
                 Intersection, iterator_in, elem->getIterator( type, elem->getMaxGhostWidth() ) );
         }

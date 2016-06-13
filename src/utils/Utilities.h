@@ -264,7 +264,7 @@ double tick();
 void printBanner();
 
 //! Null use function
-void nullUse( void* );
+void nullUse( void * );
 
 } // Utilities namespace
 

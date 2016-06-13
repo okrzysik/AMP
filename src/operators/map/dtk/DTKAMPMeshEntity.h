@@ -25,9 +25,9 @@ public:
      * Constructor.
      */
     explicit AMPMeshEntity(
-	const AMP::Mesh::MeshElement &element,
-	const std::unordered_map<int,int>& rank_map,
-	const std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId>& id_map );
+        const AMP::Mesh::MeshElement &element,
+        const std::unordered_map<int, int> &rank_map,
+        const std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId> &id_map );
 
     //! Destructor
     ~AMPMeshEntity() {}

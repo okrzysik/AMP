@@ -32,7 +32,7 @@ public:
      *
      * \param parameters Parameters for mapping.
      */
-    void setParameters( const Teuchos::ParameterList& parameters ) override;
+    void setParameters( const Teuchos::ParameterList &parameters ) override;
 
     /*!
      * \brief Return the entity measure with respect to the parameteric
@@ -61,10 +61,9 @@ public:
      * to write the reference coordinates of the mapped point.
      * \return Return true if the map to reference frame succeeded.
      */
-    bool mapToReferenceFrame(
-        const DataTransferKit::Entity &entity,
-        const Teuchos::ArrayView<const double> &point,
-        const Teuchos::ArrayView<double> &reference_point ) const override;
+    bool mapToReferenceFrame( const DataTransferKit::Entity &entity,
+                              const Teuchos::ArrayView<const double> &point,
+                              const Teuchos::ArrayView<double> &reference_point ) const override;
 
     /*!
      * \brief Determine if a reference point is in the parameterized space of
@@ -75,9 +74,9 @@ public:
      * containing the reference coordinates of the mapped point.
      * \return True if the point is in the reference space, false if not.
      */
-    bool checkPointInclusion( 
-	const DataTransferKit::Entity &entity,
-	const Teuchos::ArrayView<const double> &reference_point ) const override;
+    bool
+    checkPointInclusion( const DataTransferKit::Entity &entity,
+                         const Teuchos::ArrayView<const double> &reference_point ) const override;
 
     /*!
      * \brief (Forward Map) Map a reference point to the physical space of an
@@ -88,10 +87,9 @@ public:
      * \param A view into an array of size physicalDimension() to write
      * the coordinates of physical point.
      */
-    void mapToPhysicalFrame( 
-	const DataTransferKit::Entity &entity,
-	const Teuchos::ArrayView<const double> &reference_point,
-	const Teuchos::ArrayView<double> &point ) const override;
+    void mapToPhysicalFrame( const DataTransferKit::Entity &entity,
+                             const Teuchos::ArrayView<const double> &reference_point,
+                             const Teuchos::ArrayView<double> &point ) const override;
 
     /*!
      * \brief Compute the normal on a face (3D) or edge (2D) at a given
@@ -102,21 +100,19 @@ public:
      * \param normal A view into an array of size physicalDimension() to write
      * the normal.
      */
-    void normalAtReferencePoint( 
-	const DataTransferKit::Entity &entity,
-	const DataTransferKit::Entity &parent_entity,
-	const Teuchos::ArrayView<const double> &reference_point,
-	const Teuchos::ArrayView<double> &normal ) const override;
+    void normalAtReferencePoint( const DataTransferKit::Entity &entity,
+                                 const DataTransferKit::Entity &parent_entity,
+                                 const Teuchos::ArrayView<const double> &reference_point,
+                                 const Teuchos::ArrayView<double> &normal ) const override;
 
-  private:
+private:
     /*!
      * \brief Given an entity, extract the node coordinates in canonical order.
      */
     void getElementNodeCoordinates( const DataTransferKit::Entity &entity,
                                     Intrepid::FieldContainer<double> &entity_coords ) const;
 
-  private:
-
+private:
     // Point inclusion tolerance.
     double d_inclusion_tol;
 };

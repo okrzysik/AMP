@@ -16,13 +16,11 @@ AMPMeshEntityIterator::AMPMeshEntityIterator() { this->b_iterator_impl = NULL; }
  * Constructor.
  */
 AMPMeshEntityIterator::AMPMeshEntityIterator(
-    const AMP::shared_ptr<std::unordered_map<int,int> >& rank_map,
-    const AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId> >& id_map,    
+    const AMP::shared_ptr<std::unordered_map<int, int>> &rank_map,
+    const AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> &id_map,
     const AMP::Mesh::MeshIterator &iterator,
     const std::function<bool( DataTransferKit::Entity )> &predicate )
-    : d_amp_iterator( iterator.begin() )
-    , d_rank_map( rank_map )
-    , d_id_map( id_map )
+    : d_amp_iterator( iterator.begin() ), d_rank_map( rank_map ), d_id_map( id_map )
 {
     this->b_iterator_impl = NULL;
     this->b_predicate     = predicate;
@@ -35,8 +33,8 @@ AMPMeshEntityIterator::AMPMeshEntityIterator(
 AMPMeshEntityIterator::AMPMeshEntityIterator( const AMPMeshEntityIterator &rhs )
     : d_amp_iterator( rhs.d_amp_iterator )
 {
-    this->d_rank_map = rhs.d_rank_map;
-    this->d_id_map = rhs.d_id_map;    
+    this->d_rank_map      = rhs.d_rank_map;
+    this->d_id_map        = rhs.d_id_map;
     this->b_iterator_impl = NULL;
     this->b_predicate     = rhs.b_predicate;
 }
@@ -47,8 +45,8 @@ AMPMeshEntityIterator::AMPMeshEntityIterator( const AMPMeshEntityIterator &rhs )
  */
 AMPMeshEntityIterator &AMPMeshEntityIterator::operator=( const AMPMeshEntityIterator &rhs )
 {
-    this->d_rank_map = rhs.d_rank_map;
-    this->d_id_map = rhs.d_id_map;      
+    this->d_rank_map      = rhs.d_rank_map;
+    this->d_id_map        = rhs.d_id_map;
     this->b_iterator_impl = NULL;
     this->b_predicate     = rhs.b_predicate;
     if ( &rhs == this ) {
@@ -92,7 +90,7 @@ bool AMPMeshEntityIterator::operator==( const DataTransferKit::EntityIterator &r
 {
     const AMPMeshEntityIterator *rhs_it = static_cast<const AMPMeshEntityIterator *>( &rhs );
     const AMPMeshEntityIterator *rhs_it_impl =
-        static_cast<const AMPMeshEntityIterator*>( rhs_it->b_iterator_impl.get() );
+        static_cast<const AMPMeshEntityIterator *>( rhs_it->b_iterator_impl.get() );
     return ( rhs_it_impl->d_amp_iterator == d_amp_iterator );
 }
 
@@ -110,16 +108,14 @@ bool AMPMeshEntityIterator::operator!=( const DataTransferKit::EntityIterator &r
 // An iterator assigned to the first valid element in the iterator.
 DataTransferKit::EntityIterator AMPMeshEntityIterator::begin() const
 {
-    return AMPMeshEntityIterator(
-	d_rank_map, d_id_map, d_amp_iterator, this->b_predicate );
+    return AMPMeshEntityIterator( d_rank_map, d_id_map, d_amp_iterator, this->b_predicate );
 }
 
 //---------------------------------------------------------------------------//
 // An iterator assigned to the end of all elements under the iterator.
 DataTransferKit::EntityIterator AMPMeshEntityIterator::end() const
 {
-    AMPMeshEntityIterator end_it(
-	d_rank_map, d_id_map, d_amp_iterator, this->b_predicate );
+    AMPMeshEntityIterator end_it( d_rank_map, d_id_map, d_amp_iterator, this->b_predicate );
     end_it.d_amp_iterator = d_amp_iterator.end();
     return end_it;
 }
@@ -127,11 +123,9 @@ DataTransferKit::EntityIterator AMPMeshEntityIterator::end() const
 //---------------------------------------------------------------------------//
 // Create a clone of the iterator. We need this for the copy constructor
 // and assignment operator to pass along the underlying implementation.
-std::unique_ptr<DataTransferKit::EntityIterator>
-AMPMeshEntityIterator::clone() const
+std::unique_ptr<DataTransferKit::EntityIterator> AMPMeshEntityIterator::clone() const
 {
-    return std::unique_ptr<DataTransferKit::EntityIterator>(
-	new AMPMeshEntityIterator(*this) );
+    return std::unique_ptr<DataTransferKit::EntityIterator>( new AMPMeshEntityIterator( *this ) );
 }
 
 //---------------------------------------------------------------------------//

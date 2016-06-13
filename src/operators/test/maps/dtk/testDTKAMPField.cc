@@ -28,7 +28,7 @@ void myTest( AMP::UnitTest *ut )
     std::string log_file = "output_" + exeName;
     std::string msgPrefix;
     AMP::PIO::logOnlyNodeZero( log_file );
-    
+
     // Load input and build the mesh.
     AMP::pout << "Loading the  mesh" << std::endl;
     AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
@@ -71,42 +71,33 @@ void myTest( AMP::UnitTest *ut )
     AMP_ASSERT( 1 == dtk_field.dimension() );
 
     // Check the support ids.
-    Teuchos::ArrayView<const DataTransferKit::SupportId> support_ids = 
-	dtk_field.getLocalSupportIds();
+    Teuchos::ArrayView<const DataTransferKit::SupportId> support_ids =
+        dtk_field.getLocalSupportIds();
     int counter = 0;
-    for ( meshIterator = meshIterator.begin(); 
-	  meshIterator != meshIterator.end();
-          ++meshIterator, ++counter ) 
-    {
+    for ( meshIterator = meshIterator.begin(); meshIterator != meshIterator.end();
+          ++meshIterator, ++counter ) {
         dofManager->getDOFs( meshIterator->globalID(), dofIndices );
-	AMP_ASSERT( support_ids[counter] == dofIndices[0] );
+        AMP_ASSERT( support_ids[counter] == dofIndices[0] );
     }
 
     // Check reading data.
-    for ( meshIterator = meshIterator.begin(); 
-	  meshIterator != meshIterator.end();
-          ++meshIterator, ++counter ) 
-    {
+    for ( meshIterator = meshIterator.begin(); meshIterator != meshIterator.end();
+          ++meshIterator, ++counter ) {
         dofManager->getDOFs( meshIterator->globalID(), dofIndices );
-	AMP_ASSERT( dtk_field.readFieldData(dofIndices[0],0) ==
-		    ampVector->getLocalValueByGlobalID(dofIndices[0]) );
+        AMP_ASSERT( dtk_field.readFieldData( dofIndices[0], 0 ) ==
+                    ampVector->getLocalValueByGlobalID( dofIndices[0] ) );
     }
 
     // Check setting data.
-    for ( meshIterator = meshIterator.begin(); 
-	  meshIterator != meshIterator.end();
-          ++meshIterator, ++counter ) 
-    {
+    for ( meshIterator = meshIterator.begin(); meshIterator != meshIterator.end();
+          ++meshIterator, ++counter ) {
         dofManager->getDOFs( meshIterator->globalID(), dofIndices );
-	dtk_field.writeFieldData( dofIndices[0], 0, 2.0*dofIndices[0] );
+        dtk_field.writeFieldData( dofIndices[0], 0, 2.0 * dofIndices[0] );
     }
-    for ( meshIterator = meshIterator.begin(); 
-	  meshIterator != meshIterator.end();
-          ++meshIterator, ++counter ) 
-    {
+    for ( meshIterator = meshIterator.begin(); meshIterator != meshIterator.end();
+          ++meshIterator, ++counter ) {
         dofManager->getDOFs( meshIterator->globalID(), dofIndices );
-	AMP_ASSERT( 2.0*dofIndices[0] ==
-		    ampVector->getLocalValueByGlobalID(dofIndices[0]) );
+        AMP_ASSERT( 2.0 * dofIndices[0] == ampVector->getLocalValueByGlobalID( dofIndices[0] ) );
     }
 
     ut->passes( exeName );

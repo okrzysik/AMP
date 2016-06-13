@@ -26,7 +26,7 @@ public:
     { /* ... */
     }
 
-    AMP_MPI d_globalComm;   
+    AMP_MPI d_globalComm;
     // Domain mesh. A manager for the mesh that is the data source.
     AMP::shared_ptr<AMP::Mesh::Mesh> d_domain_mesh;
 
@@ -57,13 +57,12 @@ public:
 
     //! Apply function.
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                AMP::LinearAlgebra::Vector::shared_ptr r) override;
+                AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
 private:
-
-    AMP_MPI d_comm; 
-    Teuchos::RCP<const Teuchos::Comm<int> > d_TeuchosComm;
-    bool d_mapOnThisProc; 
+    AMP_MPI d_comm;
+    Teuchos::RCP<const Teuchos::Comm<int>> d_TeuchosComm;
+    bool d_mapOnThisProc;
     // DTK map operator.
     AMP::shared_ptr<DataTransferKit::MapOperator> d_dtk_operator;
 

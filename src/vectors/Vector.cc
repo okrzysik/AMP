@@ -1,10 +1,10 @@
 #include "vectors/Vector.h"
+#include "utils/AMP_MPI.h"
+#include "utils/Counter.h"
+#include "utils/Utilities.h"
 #include "vectors/DataChangeFirer.h"
 #include "vectors/MultiVector.h"
 #include "vectors/VectorSelector.h"
-#include "utils/AMP_MPI.h"
-#include "utils/Utilities.h"
-#include "utils/Counter.h"
 
 #include <float.h>
 #include <math.h>

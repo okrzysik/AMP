@@ -51,13 +51,13 @@ void CoupledOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
 {
     this->apply( u, r );
 
-//    AMP::LinearAlgebra::Vector::shared_ptr rInternal = subsetOutputVector( r );
-//    AMP_INSIST( ( rInternal.get() != nullptr ), "rInternal is NULL" );
+    //    AMP::LinearAlgebra::Vector::shared_ptr rInternal = subsetOutputVector( r );
+    //    AMP_INSIST( ( rInternal.get() != nullptr ), "rInternal is NULL" );
 
     // the rhs can be NULL
     if ( f.get() != nullptr ) {
-//        AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetOutputVector( f );
-        r->subtract( f, r);
+        //        AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetOutputVector( f );
+        r->subtract( f, r );
     } else {
         r->scale( -1.0 );
     }

@@ -1,10 +1,10 @@
+#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <algorithm>
 
 #include "ProfilerApp.h"
 #include "utils/AMPManager.h"
@@ -804,9 +804,9 @@ int testCommRanks( MPI_CLASS comm, UnitTest *ut )
         pass = neighbors2.empty();
     }
     auto ranks = comm.globalRanks();
-    pass = pass && (int) ranks.size() == comm.getSize();
-    for (size_t i=0; i<ranks.size(); i++)
-        pass = pass && ranks[i]>=0;
+    pass       = pass && (int) ranks.size() == comm.getSize();
+    for ( size_t i = 0; i < ranks.size(); i++ )
+        pass    = pass && ranks[i] >= 0;
     auto ranks2 = ranks;
     AMP::Utilities::unique( ranks2 );
     pass = pass && ranks.size() == ranks2.size();
@@ -814,7 +814,7 @@ int testCommRanks( MPI_CLASS comm, UnitTest *ut )
     if ( pass )
         ut->passes( "commRanks" );
     else
-        ut->failure( "commRanks" );   
+        ut->failure( "commRanks" );
     return 1; // Return the number of tests
 }
 

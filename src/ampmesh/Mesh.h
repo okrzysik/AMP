@@ -303,7 +303,7 @@ public:
 
 
     //! Get the communicator for the mesh
-    inline const AMP_MPI& getComm() const { return d_comm; }
+    inline const AMP_MPI &getComm() const { return d_comm; }
 
 
     //! Get the maximum ghost width

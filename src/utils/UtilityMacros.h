@@ -238,11 +238,11 @@
             _Pragma( "clang diagnostic ignored \"-Wunused-private-field\"" )
 #define ENABLE_WARNINGS _Pragma( "clang diagnostic pop" )
 #elif defined( USING_GCC )
-#define DISABLE_WARNINGS                                                            \
-    _Pragma( "GCC diagnostic push" ) _Pragma( "GCC diagnostic ignored \"-Wall\"" )  \
-        _Pragma( "GCC diagnostic ignored \"-Wextra\"" )                             \
-            _Pragma( "GCC diagnostic ignored \"-Wunused-local-typedefs\"" )         \
-                _Pragma( "GCC diagnostic ignored \"-Woverloaded-virtual\"" )        \
+#define DISABLE_WARNINGS                                                           \
+    _Pragma( "GCC diagnostic push" ) _Pragma( "GCC diagnostic ignored \"-Wall\"" ) \
+        _Pragma( "GCC diagnostic ignored \"-Wextra\"" )                            \
+            _Pragma( "GCC diagnostic ignored \"-Wunused-local-typedefs\"" )        \
+                _Pragma( "GCC diagnostic ignored \"-Woverloaded-virtual\"" )       \
                     _Pragma( "GCC diagnostic ignored \"-Wunused-parameter\"" )
 
 #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )

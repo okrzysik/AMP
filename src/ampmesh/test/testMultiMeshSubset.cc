@@ -6,15 +6,15 @@
 #include <utils/PIO.h>
 #include <utils/UnitTest.h>
 
-void testMultiMeshSubset( AMP::UnitTest& ut )
+void testMultiMeshSubset( AMP::UnitTest &ut )
 {
-    std::string const exeName = "testMultiMeshSubset";
+    std::string const exeName   = "testMultiMeshSubset";
     std::string const inputFile = "input_" + exeName;
     std::string const logFile   = "output_" + exeName;
 
     AMP::PIO::logAllNodes( logFile );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    
+
     // Parse the input File
     AMP::shared_ptr<AMP::InputDatabase> inputDatabase( new AMP::InputDatabase( "input_db" ) );
     AMP::InputManager::getManager()->parseInputFile( inputFile, inputDatabase );
@@ -31,19 +31,19 @@ void testMultiMeshSubset( AMP::UnitTest& ut )
     // Subset the mesh
     AMP::Mesh::Mesh::shared_ptr fooMesh = mesh->Subset( "Foo" );
     AMP::Mesh::MeshIterator it;
-    if ( fooMesh!=nullptr )
-        it = fooMesh->getBoundaryIDIterator(AMP::Mesh::Volume,0);
-    auto fooBoundaryMesh = mesh->Subset(it);
+    if ( fooMesh != nullptr )
+        it               = fooMesh->getBoundaryIDIterator( AMP::Mesh::Volume, 0 );
+    auto fooBoundaryMesh = mesh->Subset( it );
 
     // Check the number of elements in the subset
     size_t N_local = 0;
-    if ( fooBoundaryMesh!=nullptr )
-        N_local = fooBoundaryMesh->numLocalElements( AMP::Mesh::Volume );
+    if ( fooBoundaryMesh != nullptr )
+        N_local     = fooBoundaryMesh->numLocalElements( AMP::Mesh::Volume );
     size_t N_global = globalComm.sumReduce( N_local );
     if ( N_global == 12 )
-        ut.passes("Subset worked correctly");
+        ut.passes( "Subset worked correctly" );
     else
-        ut.failure("Subset failed");
+        ut.failure( "Subset failed" );
 }
 
 // Main function

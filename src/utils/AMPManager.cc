@@ -22,10 +22,10 @@
 #include <sstream>
 #include <string.h>
 
+#include <algorithm>
 #include <signal.h>
 #include <stdexcept>
 #include <stdio.h>
-#include <algorithm>
 
 
 namespace AMP {
@@ -86,16 +86,15 @@ double time()
 #endif
 
 
-
 /****************************************************************************
 *  Function to terminate AMP with a message for exceptions                  *
 ****************************************************************************/
-static int force_exit = 0;
+static int force_exit     = 0;
 static bool printed_stack = false;
 static void abort_fun( std::string msg, StackTrace::terminateType type )
 {
     if ( type == StackTrace::terminateType::exception )
-        force_exit = std::max(force_exit,1);
+        force_exit = std::max( force_exit, 1 );
     AMPManager::terminate_AMP( msg );
 }
 void AMPManager::terminate_AMP( std::string message )
@@ -109,12 +108,12 @@ void AMPManager::terminate_AMP( std::string message )
         auto stack = AMP::StackTrace::getCallStack();
         msg << "Stack Trace:\n";
         for ( auto &elem : stack )
-            msg << "   " << elem.print() << std::endl;        
+            msg << "   " << elem.print() << std::endl;
         // Add a rank dependent wait to hopefully print the stack trace cleanly
-        Sleep((100*comm.getRank())/comm.getSize());
+        Sleep( ( 100 * comm.getRank() ) / comm.getSize() );
         perr << msg.str();
         printed_stack = true;
-        force_exit = 1;
+        force_exit    = 1;
     }
     if ( force_exit > 1 ) {
         exit( -1 );
@@ -132,7 +131,7 @@ void AMPManager::terminate_AMP( std::string message )
 }
 void AMPManager::exitFun()
 {
-    if ( initialized!=1 || printed_stack )
+    if ( initialized != 1 || printed_stack )
         return;
     std::stringstream msg;
     msg << "Calling exit without calling shutdown\n";
@@ -299,8 +298,8 @@ void AMPManager::shutdown()
 // clear_libmesh_enums();
 #endif
     // Shutdown MPI
-    comm_world.barrier();       // Sync all processes
-    clearMPIErrorHandler();     // Clear MPI error handler before deleting comms
+    comm_world.barrier();   // Sync all processes
+    clearMPIErrorHandler(); // Clear MPI error handler before deleting comms
     AMPManager::use_MPI_Abort = false;
     comm_world                = AMP_MPI( AMP_COMM_NULL ); // Delete comm world
     if ( called_MPI_Init ) {
@@ -377,7 +376,7 @@ void AMPManager::setHandlers()
 {
     // Set the MPI error handler for comm_world
     setMPIErrorHandler();
-    // Set the error handlers for petsc
+// Set the error handlers for petsc
 #ifdef USE_EXT_PETSC
     PetscPopSignalHandler();
     PetscPushErrorHandler( &petsc_err_handler, PETSC_NULL );
@@ -385,9 +384,9 @@ void AMPManager::setHandlers()
     // Set the terminate routine for runtime errors
     StackTrace::setErrorHandlers( abort_fun );
     // Set atexit function
-    std::atexit(exitFun);
+    std::atexit( exitFun );
 #ifdef USE_LINUX
-    std::at_quick_exit(exitFun);
+    std::at_quick_exit( exitFun );
 #endif
 }
 #ifdef USE_EXT_MPI
@@ -411,7 +410,7 @@ static void MPI_error_handler_fun( MPI_Comm *comm, int *err, ... )
     MPI_Error_string( *err, message, &msg_len );
     if ( msg_len <= 0 )
         AMP_ERROR( "Unkown error in MPI" );
-    std::string msg = "Error calling MPI routine:\n" + std::string(message) + "\n";
+    std::string msg = "Error calling MPI routine:\n" + std::string( message ) + "\n";
     throw std::logic_error( msg );
 }
 #endif
@@ -419,7 +418,7 @@ void AMPManager::setMPIErrorHandler()
 {
 #ifdef USE_EXT_MPI
     if ( MPI_Active() ) {
-        if ( mpierr.get()==nullptr ) {
+        if ( mpierr.get() == nullptr ) {
             mpierr = AMP::shared_ptr<MPI_Errhandler>( new MPI_Errhandler );
             MPI_Comm_create_errhandler( MPI_error_handler_fun, mpierr.get() );
         }
@@ -482,10 +481,9 @@ bool AMPManager::MPI_Active()
     int MPI_initialized, MPI_finialized;
     MPI_Initialized( &MPI_initialized );
     MPI_Finalized( &MPI_finialized );
-    return MPI_initialized!=0 && MPI_finialized==0;
+    return MPI_initialized != 0 && MPI_finialized == 0;
 #else
     return false;
 #endif
 }
-
 }

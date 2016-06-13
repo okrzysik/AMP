@@ -33,11 +33,11 @@ public:
         const AMP::shared_ptr<DirichletVectorCorrectionParameters> &params )
         : BoundaryOperator( params )
     {
-        d_variable = params->d_variable;
+        d_variable                   = params->d_variable;
         d_isAttachedToVolumeOperator = false;
-        d_setResidual = false;
-        d_valuesType = 0;
-        d_scalingFactor = 0.0;
+        d_setResidual                = false;
+        d_valuesType                 = 0;
+        d_scalingFactor              = 0.0;
         reset( params );
     }
 

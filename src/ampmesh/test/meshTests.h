@@ -9,10 +9,10 @@
 #include "utils/Utilities.h"
 
 #include "ampmesh/Mesh.h"
-#include "ampmesh/SubsetMesh.h"
 #include "ampmesh/MeshElement.h"
 #include "ampmesh/MeshElementVectorIterator.h"
 #include "ampmesh/MeshIterator.h"
+#include "ampmesh/SubsetMesh.h"
 
 #ifdef USE_AMP_VECTORS
 #include "vectors/Vector.h"
@@ -138,7 +138,7 @@ void ElementIteratorTest( AMP::UnitTest *ut,
     int neighbor_pass         = 1;
     int myRank                = mesh->getComm().getRank();
     int maxRank               = mesh->getComm().getSize() - 1;
-    int myGlobalRank          = AMP::AMP_MPI(AMP_COMM_WORLD).getRank();
+    int myGlobalRank          = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
     std::vector<int> blockIds = mesh->getBlockIDs();
     std::vector<AMP::Mesh::MeshElementID> ids;
     ids.reserve( iterator.size() );

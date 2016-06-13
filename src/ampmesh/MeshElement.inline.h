@@ -142,34 +142,34 @@ bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) co
 /********************************************************
 * Functions that aren't implimented for the base class  *
 ********************************************************/
-std::string MeshElement::elementClass( ) const
+std::string MeshElement::elementClass() const
 {
     if ( element == nullptr )
         AMP_ERROR( "MeshElement" );
-    return element->elementClass( );
+    return element->elementClass();
 }
 std::vector<MeshElement> MeshElement::getElements( const GeomType type ) const
 {
     if ( element == nullptr )
-        AMP_ERROR( "getElements is not implimented for the base class (" + elementClass() +")" );
+        AMP_ERROR( "getElements is not implimented for the base class (" + elementClass() + ")" );
     return element->getElements( type );
 }
 std::vector<MeshElement::shared_ptr> MeshElement::getNeighbors() const
 {
     if ( element == nullptr )
-        AMP_ERROR( "getNeighbors is not implimented for the base class (" + elementClass() +")" );
+        AMP_ERROR( "getNeighbors is not implimented for the base class (" + elementClass() + ")" );
     return element->getNeighbors();
 }
 double MeshElement::volume() const
 {
     if ( element == nullptr )
-        AMP_ERROR( "volume is not implimented for the base class (" + elementClass() +")" );
+        AMP_ERROR( "volume is not implimented for the base class (" + elementClass() + ")" );
     return element->volume();
 }
 std::vector<double> MeshElement::coord() const
 {
     if ( element == nullptr )
-        AMP_ERROR( "coord is not implimented for the base class (" + elementClass() +")" );
+        AMP_ERROR( "coord is not implimented for the base class (" + elementClass() + ")" );
     return element->coord();
 }
 double MeshElement::coord( int i ) const
@@ -181,28 +181,28 @@ double MeshElement::coord( int i ) const
 bool MeshElement::isOnSurface() const
 {
     if ( element == nullptr )
-        AMP_ERROR( "isOnSurface is not implimented for the base class (" + elementClass() +")" );
+        AMP_ERROR( "isOnSurface is not implimented for the base class (" + elementClass() + ")" );
     return element->isOnSurface();
 }
 bool MeshElement::isOnBoundary( int id ) const
 {
     if ( element == nullptr )
-        AMP_ERROR( "isOnBoundary is not implimented for the base class (" + elementClass() +")" );
+        AMP_ERROR( "isOnBoundary is not implimented for the base class (" + elementClass() + ")" );
     return element->isOnBoundary( id );
 }
 bool MeshElement::isInBlock( int id ) const
 {
     if ( element == nullptr )
-        AMP_ERROR( "isInBlock is not implimented for the base class (" + elementClass() +")" );
+        AMP_ERROR( "isInBlock is not implimented for the base class (" + elementClass() + ")" );
     return element->isInBlock( id );
 }
 unsigned int MeshElement::globalOwnerRank() const
 {
     if ( element == nullptr )
-        AMP_ERROR( "globalOwnerRank is not implimented for the base class (" + elementClass() +")" );
-    return element->globalOwnerRank( );
+        AMP_ERROR( "globalOwnerRank is not implimented for the base class (" + elementClass() +
+                   ")" );
+    return element->globalOwnerRank();
 }
-
 
 
 } // Mesh namespace

@@ -6,10 +6,10 @@
 #include "utils/AMP_MPI.h"
 #include "vectors/ArrayVector.h"
 #include "vectors/ManagedVector.h"
+#include "vectors/MultiVariable.h"
 #include "vectors/NullVector.h"
 #include "vectors/SimpleVector.h"
 #include "vectors/Variable.h"
-#include "vectors/MultiVariable.h"
 #ifdef USE_EXT_PETSC
 #include <vectors/petsc/NativePetscVector.h>
 #endif

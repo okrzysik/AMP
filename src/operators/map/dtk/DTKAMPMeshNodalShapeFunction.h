@@ -32,9 +32,8 @@ public:
      * \param dof_ids Return the ids of the degrees of freedom in the parallel
      * vector space supporting the entities.
      */
-    void entitySupportIds( 
-	const DataTransferKit::Entity &entity,
-	Teuchos::Array<DataTransferKit::SupportId> &dof_ids ) const override;
+    void entitySupportIds( const DataTransferKit::Entity &entity,
+                           Teuchos::Array<DataTransferKit::SupportId> &dof_ids ) const override;
 
     /*!
      * \brief Given an entity and a reference point, evaluate the shape
@@ -62,7 +61,7 @@ public:
      */
     void evaluateGradient( const DataTransferKit::Entity &entity,
                            const Teuchos::ArrayView<const double> &reference_point,
-                           Teuchos::Array<Teuchos::Array<double> > &gradients ) const override;
+                           Teuchos::Array<Teuchos::Array<double>> &gradients ) const override;
 
 private:
     // DOF manager.

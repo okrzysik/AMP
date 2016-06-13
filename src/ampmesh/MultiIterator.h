@@ -37,13 +37,13 @@ public:
     MeshIterator &operator++() override;
 
     // Increment
-    MeshIterator operator++( int ) override;
+    MeshIterator operator++(int) override;
 
     // Decrement
     MeshIterator &operator--() override;
 
     // Decrement
-    MeshIterator operator--( int ) override;
+    MeshIterator operator--(int) override;
 
     // Arithmetic operator+
     virtual MeshIterator operator+( int ) const override;
@@ -58,16 +58,16 @@ public:
     bool operator!=( const MeshIterator &rhs ) const override;
 
     //! Dereference the iterator
-    MeshElement& operator*( void ) override;
+    MeshElement &operator*(void) override;
 
     //! Dereference the iterator
-    MeshElement* operator->( void ) override;
+    MeshElement *operator->(void) override;
 
     //! Dereference the iterator
-    const MeshElement& operator*( void ) const override;
+    const MeshElement &operator*( void ) const override;
 
     //! Dereference the iterator
-    const MeshElement* operator->( void ) const override;
+    const MeshElement *operator->( void ) const override;
 
     //! Return an iterator to the begining
     MeshIterator begin() const override;

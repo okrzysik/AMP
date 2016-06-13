@@ -22,9 +22,9 @@
 
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
+#include "vectors/MultiVariable.h"
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
-#include "vectors/MultiVariable.h"
 #include "vectors/VectorBuilder.h"
 
 #include "applyTests.h"

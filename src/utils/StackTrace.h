@@ -3,11 +3,11 @@
 
 #include "utils/PIO.h"
 
+#include <functional>
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-#include <functional>
 
 
 namespace AMP {
@@ -33,7 +33,7 @@ std::vector<stack_info> getCallStack();
 
 
 //! Function to return the current call stack
-std::vector<void*> backtrace();
+std::vector<void *> backtrace();
 
 
 //! Function to return the stack info for a given address
@@ -41,7 +41,7 @@ stack_info getStackInfo( void *address );
 
 
 //! Function to return the stack info for a given address
-std::vector<stack_info> getStackInfo( const std::vector<void*>& address );
+std::vector<stack_info> getStackInfo( const std::vector<void *> &address );
 
 
 /*!
@@ -74,7 +74,7 @@ enum class terminateType { signal, exception };
  * Set the error handlers
  * @param[in]   Function to terminate the program: abort(msg,type)
  */
-void setErrorHandlers( std::function<void(std::string,terminateType)> abort );
+void setErrorHandlers( std::function<void( std::string, terminateType )> abort );
 
 
 } // namespace StackTrace

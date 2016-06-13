@@ -2,18 +2,18 @@
 #define included_AMP_Vector
 
 
-#include <string>
 #include <iostream>
+#include <string>
 
+#include "discretization/DOF_Manager.h"
+#include "utils/Castable.h"
+#include "utils/ParameterBase.h"
+#include "utils/RNG.h"
+#include "utils/enable_shared_from_this.h"
+#include "utils/shared_ptr.h"
 #include "vectors/CommunicationList.h"
 #include "vectors/Variable.h"
 #include "vectors/VectorOperations.h"
-#include "discretization/DOF_Manager.h"
-#include "utils/ParameterBase.h"
-#include "utils/shared_ptr.h"
-#include "utils/Castable.h"
-#include "utils/RNG.h"
-#include "utils/enable_shared_from_this.h"
 
 
 namespace AMP {

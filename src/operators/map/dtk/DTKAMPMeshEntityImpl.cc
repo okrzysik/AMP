@@ -1,5 +1,5 @@
-#include <limits>
 #include <cstdint>
+#include <limits>
 
 #include "DTKAMPMeshEntityImpl.h"
 
@@ -11,16 +11,16 @@ namespace Operator {
 // Constructor.
 AMPMeshEntityImpl::AMPMeshEntityImpl(
     const AMP::Mesh::MeshElement &element,
-    const std::unordered_map<int,int>& rank_map,
-    const std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId>& id_map )
+    const std::unordered_map<int, int> &rank_map,
+    const std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId> &id_map )
 {
     d_extra_data = Teuchos::rcp( new AMPMeshEntityExtraData( element ) );
 
-    AMP_ASSERT( rank_map.count(element.globalOwnerRank()) );
-    d_owner_rank = rank_map.find(element.globalOwnerRank())->second;
+    AMP_ASSERT( rank_map.count( element.globalOwnerRank() ) );
+    d_owner_rank = rank_map.find( element.globalOwnerRank() )->second;
 
-    AMP_ASSERT( id_map.count(element.globalID()) );
-    d_id = id_map.find(element.globalID())->second;
+    AMP_ASSERT( id_map.count( element.globalID() ) );
+    d_id = id_map.find( element.globalID() )->second;
 }
 
 //---------------------------------------------------------------------------//
@@ -47,7 +47,7 @@ int AMPMeshEntityImpl::topologicalDimension() const
         break;
     default:
         AMP_INSIST( geom_type == Mesh::Vertex || geom_type == Mesh::Edge ||
-		    geom_type == Mesh::Face || geom_type == Mesh::Volume,
+                        geom_type == Mesh::Face || geom_type == Mesh::Volume,
                     "Invalid geometry type!" );
         entity_dim = 0;
         break;
@@ -67,10 +67,7 @@ DataTransferKit::EntityId AMPMeshEntityImpl::id() const { return d_id; }
  * \brief Get the parallel rank that owns the entity.
  * \return The parallel rank that owns the entity.
  */
-int AMPMeshEntityImpl::ownerRank() const
-{
-    return d_owner_rank;
-}
+int AMPMeshEntityImpl::ownerRank() const { return d_owner_rank; }
 
 //---------------------------------------------------------------------------//
 /*!
@@ -122,7 +119,7 @@ void AMPMeshEntityImpl::boundingBox( Teuchos::Tuple<double, 6> &bounds ) const
 /*!
  * \brief Determine if entity is owned by the calling process.
  */
-bool AMPMeshEntityImpl::isLocallyOwned( ) const
+bool AMPMeshEntityImpl::isLocallyOwned() const
 {
     return d_extra_data->d_element.globalID().is_local();
 }

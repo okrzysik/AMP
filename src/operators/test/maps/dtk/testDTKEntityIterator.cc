@@ -4,9 +4,9 @@
 #include "utils/Utilities.h"
 #include <cstdlib>
 #include <iostream>
+#include <map>
 #include <string>
 #include <unordered_map>
-#include <map>
 
 #include "utils/shared_ptr.h"
 
@@ -51,37 +51,33 @@ void myTest( AMP::UnitTest *ut )
 
     // map the volume ids to dtk ids
     int counter = 0;
-    AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId> >vol_id_map
-	= std::make_shared<std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId> >();
-    for ( vol_iterator = vol_iterator.begin();
-	  vol_iterator != vol_iterator.end();
-          ++vol_iterator, ++counter )
-    {
-	vol_id_map->emplace( vol_iterator->globalID(), counter );
+    AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> vol_id_map =
+        std::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
+    for ( vol_iterator = vol_iterator.begin(); vol_iterator != vol_iterator.end();
+          ++vol_iterator, ++counter ) {
+        vol_id_map->emplace( vol_iterator->globalID(), counter );
     }
-    int comm_rank = globalComm.getRank();    
+    int comm_rank = globalComm.getRank();
     int comm_size = globalComm.getSize();
     std::vector<std::size_t> offsets( comm_size, 0 );
     globalComm.allGather( vol_id_map->size(), offsets.data() );
-    for ( int n = 1; n < comm_size; ++n )
-    {
-	offsets[n] += offsets[n-1];
+    for ( int n = 1; n < comm_size; ++n ) {
+        offsets[n] += offsets[n - 1];
     }
-    if ( comm_rank > 0 )
-    {
-	for ( auto& i : *vol_id_map ) i.second += offsets[comm_rank-1];
+    if ( comm_rank > 0 ) {
+        for ( auto &i : *vol_id_map )
+            i.second += offsets[comm_rank - 1];
     }
-    
+
     // make the rank map.
-    AMP::shared_ptr<std::unordered_map<int,int> > rank_map =
-	std::make_shared<std::unordered_map<int,int> >();    
+    AMP::shared_ptr<std::unordered_map<int, int>> rank_map =
+        std::make_shared<std::unordered_map<int, int>>();
     auto global_ranks = mesh->getComm().globalRanks();
-    int size = mesh->getComm().getSize();
-    for ( int n = 0; n < size; ++n )
-    {
-	rank_map->emplace( global_ranks[n], n );
+    int size          = mesh->getComm().getSize();
+    for ( int n = 0; n < size; ++n ) {
+        rank_map->emplace( global_ranks[n], n );
     }
-    
+
     DataTransferKit::EntityIterator dtk_iterator =
         AMP::Operator::AMPMeshEntityIterator( rank_map, vol_id_map, vol_iterator, selectAll );
 
@@ -92,14 +88,12 @@ void myTest( AMP::UnitTest *ut )
           dtk_iterator != dtk_iterator.end();
           ++dtk_iterator, ++vol_iterator ) {
         // Check the id.
-        DataTransferKit::EntityId element_id =
-	    vol_id_map->find( vol_iterator->globalID() )->second;	    
+        DataTransferKit::EntityId element_id = vol_id_map->find( vol_iterator->globalID() )->second;
         AMP_ASSERT( dtk_iterator->id() == element_id );
 
         // Check the entity.
         AMP_ASSERT( dtk_iterator->topologicalDimension() == 3 );
-        AMP_ASSERT( (unsigned) dtk_iterator->ownerRank() ==
-                    vol_iterator->globalID().owner_rank() );
+        AMP_ASSERT( (unsigned) dtk_iterator->ownerRank() == vol_iterator->globalID().owner_rank() );
         AMP_ASSERT( dtk_iterator->physicalDimension() == 3 );
 
         // Check the bounding box.

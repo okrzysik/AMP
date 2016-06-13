@@ -20,13 +20,12 @@
 #define __INIT_FN2__( x, y, z ) ( 2 * x + y + z )
 #define __INIT_FN3__( x, y, z ) ( 4 * x + y + z )
 
-AMP::LinearAlgebra::VS_Comm createCommSelect(AMP::AMP_MPI globalComm, bool createOnThisRank)
+AMP::LinearAlgebra::VS_Comm createCommSelect( AMP::AMP_MPI globalComm, bool createOnThisRank )
 {
-  int inComm = createOnThisRank?1:0;
-  // Create a comm spanning the meshes
-  AMP::LinearAlgebra::VS_Comm commSelect( AMP::AMP_MPI( globalComm.split( inComm )) ) ;
-  return commSelect;
-
+    int inComm = createOnThisRank ? 1 : 0;
+    // Create a comm spanning the meshes
+    AMP::LinearAlgebra::VS_Comm commSelect( AMP::AMP_MPI( globalComm.split( inComm ) ) );
+    return commSelect;
 }
 
 int runTest( std::string exeName, AMP::UnitTest *ut )
@@ -252,8 +251,8 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     cellSandwichCathodeCCMapOperator->apply( multiSolVec, multiResVec );
     siloWriter->writeFile( logFile, 2 );
     AMP::pout << "interface anodeCC cellSandwich\n";
-    anodeCCCellSandwichMapOperator->apply(
-        multiSolVec, multiResVec ); // this map doesn't seem to work properly
+    anodeCCCellSandwichMapOperator->apply( multiSolVec,
+                                           multiResVec ); // this map doesn't seem to work properly
     siloWriter->writeFile( logFile, 3 );
 
 
@@ -269,106 +268,106 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     std::string whatAmIChecking;
 
 
-  std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
-  for( size_t meshIndex=0; meshIndex<meshIDs.size(); meshIndex++ )
-  {
-    AMP::Mesh::Mesh::shared_ptr adapter =  mesh->Subset( meshIDs[meshIndex] );
-    if( adapter.get() == NULL ) continue;
-    
-    std::string meshName = adapter->getName();
-    AMP::LinearAlgebra::VS_Mesh meshSelector(adapter);
+    std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
+    for ( size_t meshIndex = 0; meshIndex < meshIDs.size(); meshIndex++ ) {
+        AMP::Mesh::Mesh::shared_ptr adapter = mesh->Subset( meshIDs[meshIndex] );
+        if ( adapter.get() == NULL )
+            continue;
 
-    AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetPVec =  potentialMapVec->constSelect(meshSelector, "Potential");
-    AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetEVec =  ElectrodeMapVec->constSelect(meshSelector, "V4");
+        std::string meshName = adapter->getName();
+        AMP::LinearAlgebra::VS_Mesh meshSelector( adapter );
 
-    if( meshName.compare("CathodeCC_3_1")==0 ) {
-      node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 3, 0 );
-      end_node = node.end();
-      errorVec = commSubsetPVec->constSelect(
-          AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
-      tolerance       = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
-      whatAmIChecking = "interface between cellSandwich and cathodeCC - cathodeCC side";
+        AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetPVec =
+            potentialMapVec->constSelect( meshSelector, "Potential" );
+        AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetEVec =
+            ElectrodeMapVec->constSelect( meshSelector, "V4" );
 
-      for ( ; node != end_node; ++node ) {
-        std::vector<size_t> bndGlobalIds;
-        phiDofMap->getDOFs( node->globalID(), bndGlobalIds );
+        if ( meshName.compare( "CathodeCC_3_1" ) == 0 ) {
+            node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 3, 0 );
+            end_node = node.end();
+            errorVec = commSubsetPVec->constSelect(
+                AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
+            tolerance       = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
+            whatAmIChecking = "interface between cellSandwich and cathodeCC - cathodeCC side";
 
-        std::vector<double> pt = node->coord();
-        double val             = __INIT_FN2__( pt[0], pt[1], pt[2] );
-        potentialMapVec->addValueByGlobalID( bndGlobalIds[0], -val );
-      } // end for node
-      errorNorm = errorVec->L2Norm();
-      std::cout << whatAmIChecking << " error = " << errorNorm << "\n";
-      if ( errorNorm > tolerance )
-        ut->failure( whatAmIChecking );
+            for ( ; node != end_node; ++node ) {
+                std::vector<size_t> bndGlobalIds;
+                phiDofMap->getDOFs( node->globalID(), bndGlobalIds );
 
-    }else if( meshName.compare("AnodeCC_1_1")==0 ) {
-      node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
-      end_node = node.end();
-      errorVec = commSubsetPVec->constSelect(
-          AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
-      tolerance       = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
-      whatAmIChecking = "interface between cellSandwich and anodeCC - anodeCC side";
+                std::vector<double> pt = node->coord();
+                double val             = __INIT_FN2__( pt[0], pt[1], pt[2] );
+                potentialMapVec->addValueByGlobalID( bndGlobalIds[0], -val );
+            } // end for node
+            errorNorm = errorVec->L2Norm();
+            std::cout << whatAmIChecking << " error = " << errorNorm << "\n";
+            if ( errorNorm > tolerance )
+                ut->failure( whatAmIChecking );
 
-      for ( ; node != end_node; ++node ) {
-        std::vector<size_t> bndGlobalIds;
-        phiDofMap->getDOFs( node->globalID(), bndGlobalIds );
+        } else if ( meshName.compare( "AnodeCC_1_1" ) == 0 ) {
+            node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
+            end_node = node.end();
+            errorVec = commSubsetPVec->constSelect(
+                AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
+            tolerance       = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
+            whatAmIChecking = "interface between cellSandwich and anodeCC - anodeCC side";
 
-        std::vector<double> pt = node->coord();
-        double val             = __INIT_FN2__( pt[0], pt[1], pt[2] );
-        potentialMapVec->addValueByGlobalID( bndGlobalIds[0], -val );
-      } // end for node
-      errorNorm = errorVec->L2Norm();
-      std::cout << whatAmIChecking << " error = " << errorNorm << "\n";
-      if ( errorNorm > tolerance )
-        ut->failure( whatAmIChecking );
+            for ( ; node != end_node; ++node ) {
+                std::vector<size_t> bndGlobalIds;
+                phiDofMap->getDOFs( node->globalID(), bndGlobalIds );
 
-    }else if( meshName.compare("CellSandwich_2_1")==0 ) {
-      node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 2, 0 );
-      end_node = node.end();
-      errorVec = commSubsetEVec->constSelect(
-          AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
-      tolerance       = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
-      whatAmIChecking = "interface between cellSandwich and cathodeCC - cellSandwich side";
+                std::vector<double> pt = node->coord();
+                double val             = __INIT_FN2__( pt[0], pt[1], pt[2] );
+                potentialMapVec->addValueByGlobalID( bndGlobalIds[0], -val );
+            } // end for node
+            errorNorm = errorVec->L2Norm();
+            std::cout << whatAmIChecking << " error = " << errorNorm << "\n";
+            if ( errorNorm > tolerance )
+                ut->failure( whatAmIChecking );
 
-      for ( ; node != end_node; ++node ) {
-        std::vector<size_t> bndGlobalIds;
-        eectDofMap->getDOFs( node->globalID(), bndGlobalIds );
+        } else if ( meshName.compare( "CellSandwich_2_1" ) == 0 ) {
+            node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 2, 0 );
+            end_node = node.end();
+            errorVec = commSubsetEVec->constSelect(
+                AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
+            tolerance       = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
+            whatAmIChecking = "interface between cellSandwich and cathodeCC - cellSandwich side";
 
-        std::vector<double> pt = node->coord();
-        double val             = __INIT_FN3__( pt[0], pt[1], pt[2] );
-        BatteryMapVec->addValueByGlobalID( bndGlobalIds[3], -val );
-      } // end for node
-      errorNorm = errorVec->L2Norm();
-      std::cout << whatAmIChecking << " error = " << errorNorm << "\n";
-      if ( errorNorm > tolerance )
-        ut->failure( whatAmIChecking );
-      ////########################################
-      node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
-      end_node = node.end();
-      errorVec = commSubsetEVec->constSelect(
-          AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
-      tolerance       = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
-      whatAmIChecking = "interface between cellSandwich and anodeCC - cellSandwich side";
+            for ( ; node != end_node; ++node ) {
+                std::vector<size_t> bndGlobalIds;
+                eectDofMap->getDOFs( node->globalID(), bndGlobalIds );
 
-      for ( ; node != end_node; ++node ) {
-        std::vector<size_t> bndGlobalIds;
-        eectDofMap->getDOFs( node->globalID(), bndGlobalIds );
+                std::vector<double> pt = node->coord();
+                double val             = __INIT_FN3__( pt[0], pt[1], pt[2] );
+                BatteryMapVec->addValueByGlobalID( bndGlobalIds[3], -val );
+            } // end for node
+            errorNorm = errorVec->L2Norm();
+            std::cout << whatAmIChecking << " error = " << errorNorm << "\n";
+            if ( errorNorm > tolerance )
+                ut->failure( whatAmIChecking );
+            ////########################################
+            node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
+            end_node = node.end();
+            errorVec = commSubsetEVec->constSelect(
+                AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
+            tolerance       = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
+            whatAmIChecking = "interface between cellSandwich and anodeCC - cellSandwich side";
 
-        std::vector<double> pt = node->coord();
-        double val             = __INIT_FN1__( pt[0], pt[1], pt[2] );
-        BatteryMapVec->addValueByGlobalID( bndGlobalIds[3], -val );
-      } // end for node
-      errorNorm = errorVec->L2Norm();
-      std::cout << whatAmIChecking << " error = " << errorNorm << "\n";
-      if ( errorNorm > tolerance )
-        ut->failure( whatAmIChecking );
+            for ( ; node != end_node; ++node ) {
+                std::vector<size_t> bndGlobalIds;
+                eectDofMap->getDOFs( node->globalID(), bndGlobalIds );
 
+                std::vector<double> pt = node->coord();
+                double val             = __INIT_FN1__( pt[0], pt[1], pt[2] );
+                BatteryMapVec->addValueByGlobalID( bndGlobalIds[3], -val );
+            } // end for node
+            errorNorm = errorVec->L2Norm();
+            std::cout << whatAmIChecking << " error = " << errorNorm << "\n";
+            if ( errorNorm > tolerance )
+                ut->failure( whatAmIChecking );
+        }
     }
 
-  }
-
-  siloWriter->writeFile( logFile, 4 );
+    siloWriter->writeFile( logFile, 4 );
 
     return 1;
 }

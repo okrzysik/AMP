@@ -605,7 +605,7 @@ static bool test_gtsv( int N, T &error )
     int err = 0;
     Lapack<T>::gesv( K, 1, A, K, IPIV, x1, K, err );
     int N_errors = 0;
-    error = 0;
+    error        = 0;
     for ( int i = 0; i < N; i++ ) {
         memcpy( x2, b, K * sizeof( T ) );
         memcpy( D2, D, K * sizeof( T ) );
@@ -673,7 +673,7 @@ static bool test_gbsv( int N, T &error )
     }
     memcpy( x1, b, K * sizeof( T ) );
     int err = 0;
-    error = 0;
+    error   = 0;
     Lapack<T>::gesv( K, 1, A, K, IPIV, x1, K, err );
     int N_errors = 0;
     for ( int i = 0; i < N; i++ ) {
@@ -854,7 +854,7 @@ static bool test_getrs( int N, T &error )
     random( K * K, A );
     random( K, b );
     int err = 0;
-    error = 0;
+    error   = 0;
     memcpy( A2, A, K * K * sizeof( T ) );
     memcpy( x1, b, K * sizeof( T ) );
     Lapack<T>::gesv( K, 1, A2, K, IPIV, x1, K, err );
@@ -903,7 +903,7 @@ static bool test_gttrs( int N, T &error )
     random( K - 1, DU );
     random( K, b );
     int err = 0;
-    error = 0;
+    error   = 0;
     memcpy( x1, b, K * sizeof( T ) );
     memcpy( D2, D, K * sizeof( T ) );
     memcpy( DL2, DL, ( K - 1 ) * sizeof( T ) );
@@ -958,7 +958,7 @@ static bool test_gbtrs( int N, T &error )
     random( K * K2, AB );
     random( K, b );
     int err = 0;
-    error = 0;
+    error   = 0;
     memcpy( x1, b, K * sizeof( T ) );
     memcpy( AB2, AB, K * K2 * sizeof( T ) );
     Lapack<T>::gbsv( K, KL, KU, 1, AB2, K2, IPIV, x1, K, err );
@@ -1002,34 +1002,34 @@ static bool test_getri( int N, T &error )
     T eps           = std::numeric_limits<T>::epsilon();
     random( K * K, A );
     random( K, b );
-    int err = 0;
-    error = 0;
+    int err      = 0;
+    error        = 0;
     int N_errors = 0;
     memcpy( A2, A, K * K * sizeof( T ) );
     memcpy( x1, b, K * sizeof( T ) );
     Lapack<T>::gesv( K, 1, A2, K, IPIV, x1, K, err );
-    if( err != 0) {
-        printf("Error in gesv within test_getri\n");
+    if ( err != 0 ) {
+        printf( "Error in gesv within test_getri\n" );
     }
     T norm = L2Norm( K, x1 );
     // reinitialize IPIV
-    for(int j=0; j<K; ++j) {
+    for ( int j = 0; j < K; ++j ) {
         IPIV[j] = 0;
     }
     Lapack<T>::getrf( K, K, A, K, IPIV, err );
-    if( err != 0) {
-        printf("Error in getrf within test_getri\n");
+    if ( err != 0 ) {
+        printf( "Error in getrf within test_getri\n" );
     }
-    for ( int i = 0; i < N; i++ ) {        
+    for ( int i = 0; i < N; i++ ) {
         // Compute the inverse
         memcpy( A2, A, K * K * sizeof( T ) );
-        for(int j=0; j<LWORK; ++j) {
+        for ( int j = 0; j < LWORK; ++j ) {
             WORK[j] = 0;
         }
         err = 0;
         Lapack<T>::getri( K, A2, K, IPIV, WORK, LWORK, err );
-        if( err != 0) {
-            printf("Error in getri within test_getri\n");
+        if ( err != 0 ) {
+            printf( "Error in getri within test_getri\n" );
         }
         N_errors += err == 0 ? 0 : 1;
         // Perform the mat-vec

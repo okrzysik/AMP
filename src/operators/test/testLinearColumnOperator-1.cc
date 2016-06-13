@@ -24,8 +24,8 @@
 #include "ampmesh/Mesh.h"
 #include "discretization/MultiDOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
-#include "vectors/MultiVector.h"
 #include "vectors/MultiVariable.h"
+#include "vectors/MultiVector.h"
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 

@@ -10,9 +10,9 @@ DISABLE_WARNINGS
 #include "libmesh/enum_fe_family.h"
 #include "libmesh/enum_order.h"
 #include "libmesh/enum_quadrature_type.h"
-#include "libmesh/string_to_enum.h"
 #include "libmesh/face_quad4.h"
 #include "libmesh/node.h"
+#include "libmesh/string_to_enum.h"
 ENABLE_WARNINGS
 
 #include <string>
@@ -26,10 +26,10 @@ NeumannVectorCorrection::NeumannVectorCorrection(
     const AMP::shared_ptr<NeumannVectorCorrectionParameters> &params )
     : BoundaryOperator( params )
 {
-    d_params = params;
-    d_isConstantFlux = false;
+    d_params              = params;
+    d_isConstantFlux      = false;
     d_isFluxGaussPtVector = false;
-    d_numBndIds = 0;
+    d_numBndIds           = 0;
 
     std::string feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "FIRST" );
     std::string feFamilyName    = ( params->d_db )->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );

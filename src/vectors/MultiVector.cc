@@ -1,10 +1,10 @@
 #include "vectors/MultiVector.h"
-#include "vectors/ManagedVector.h"
-#include "vectors/MultiVariable.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/MultiDOF_Manager.h"
-#include "utils/Utilities.h"
 #include "utils/Counter.h"
+#include "utils/Utilities.h"
+#include "vectors/ManagedVector.h"
+#include "vectors/MultiVariable.h"
 
 #include "ProfilerApp.h"
 

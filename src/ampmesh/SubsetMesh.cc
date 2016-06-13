@@ -34,7 +34,7 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
     this->PhysicalDim = mesh->getDim();
     this->d_name      = mesh->getName() + "_subset";
     // Check the iterator
-    GeomType type = null;
+    GeomType type         = null;
     MeshIterator iterator = iterator_in.begin();
     for ( size_t i = 0; i < iterator.size(); i++ ) {
         if ( type == null )

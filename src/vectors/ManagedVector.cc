@@ -1,6 +1,6 @@
 #include "vectors/ManagedVector.h"
-#include "utils/Utilities.h"
 #include "utils/Counter.h"
+#include "utils/Utilities.h"
 #include <iostream>
 #include <stdexcept>
 #include <string>

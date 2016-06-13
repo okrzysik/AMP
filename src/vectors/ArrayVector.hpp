@@ -37,7 +37,7 @@ Vector::shared_ptr ArrayVector<T>::create( const std::vector<size_t> &localSize,
     // set the data pointer for the array to point to the std:vector data
     internalArray.viewRaw( localSize, internalVec.data() );
     AMP_ASSERT( internalArray.size() == localSize );
-    AMP_ASSERT( internalArray.ndim() == (int)localSize.size() );
+    AMP_ASSERT( internalArray.ndim() == (int) localSize.size() );
 
     AMP_MPI comm( AMP_COMM_SELF );
     AMP::Discretization::DOFManager::shared_ptr DOFs(

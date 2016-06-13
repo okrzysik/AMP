@@ -701,7 +701,7 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
             materialMatrix[4][5] = materialMatrix[5][4] -= ( 0.5 * currentStress[3] );
         }
 
-        double  materialStiffnessTemp[6][24];
+        double materialStiffnessTemp[6][24];
         for ( int i = 0; i < 6; i++ ) {
             for ( int j = 0; j < 24; j++ ) {
                 materialStiffnessTemp[i][j] = 0.0;

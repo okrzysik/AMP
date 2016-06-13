@@ -63,16 +63,15 @@ void myTest( AMP::UnitTest *ut )
 
     // Create a mesh manager.
     DataTransferKit::SelectAllPredicate predicate;
-    AMP::Operator::DTKAMPMeshManager dtk_mesh_manager(
-        mesh, dofManager, predicate.getFunction() );
+    AMP::Operator::DTKAMPMeshManager dtk_mesh_manager( mesh, dofManager, predicate.getFunction() );
 
     // Get the function space.
     Teuchos::RCP<DataTransferKit::FunctionSpace> function_space = dtk_mesh_manager.functionSpace();
 
     // Test the entity set and entity selector by getting an iterator over the nodes.
     AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::Vertex, ghostWidth );
-    DataTransferKit::EntityIterator dtk_node_iterator = 
-	function_space->entitySet()->entityIterator( 0, function_space->selectFunction() );
+    DataTransferKit::EntityIterator dtk_node_iterator =
+        function_space->entitySet()->entityIterator( 0, function_space->selectFunction() );
     AMP_ASSERT( dtk_node_iterator.size() == node_iterator.size() );
     AMP_ASSERT( dtk_node_iterator.size() > 0 );
 

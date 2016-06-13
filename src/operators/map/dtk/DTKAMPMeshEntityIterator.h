@@ -32,8 +32,9 @@ public:
      * Constructor.
      */
     explicit AMPMeshEntityIterator(
-	const AMP::shared_ptr<std::unordered_map<int,int> >& rank_map,
-	const AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId> >& id_map,
+        const AMP::shared_ptr<std::unordered_map<int, int>> &rank_map,
+        const AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>
+            &id_map,
         const AMP::Mesh::MeshIterator &iterator,
         const std::function<bool( DataTransferKit::Entity )> &predicate );
 
@@ -56,10 +57,10 @@ public:
     DataTransferKit::EntityIterator &operator++() override;
 
     // Dereference operator.
-    DataTransferKit::Entity &operator*( void ) override;
+    DataTransferKit::Entity &operator*(void) override;
 
     // Dereference operator.
-    DataTransferKit::Entity *operator->( void ) override;
+    DataTransferKit::Entity *operator->(void) override;
 
     // Equal comparison operator.
     bool operator==( const DataTransferKit::EntityIterator &rhs ) const override;
@@ -85,10 +86,10 @@ private:
     DataTransferKit::Entity d_current_entity;
 
     // Global rank map.
-    AMP::shared_ptr<std::unordered_map<int,int> > d_rank_map;
+    AMP::shared_ptr<std::unordered_map<int, int>> d_rank_map;
 
     // Mesh id map.
-    AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId> > d_id_map;
+    AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> d_id_map;
 };
 
 

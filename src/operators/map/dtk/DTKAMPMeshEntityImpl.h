@@ -10,8 +10,8 @@
 #include <DTK_EntityImpl.hpp>
 
 #include <map>
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
 
 namespace AMP {
 namespace Operator {
@@ -22,14 +22,14 @@ namespace Operator {
 */
 class AMPMeshEntityImpl : public DataTransferKit::EntityImpl
 {
-  public:
+public:
     /**
      * Constructor.
      */
     explicit AMPMeshEntityImpl(
-	const AMP::Mesh::MeshElement &element,
-	const std::unordered_map<int,int>& rank_map,
-	const std::map<AMP::Mesh::MeshElementID,DataTransferKit::EntityId>& id_map );
+        const AMP::Mesh::MeshElement &element,
+        const std::unordered_map<int, int> &rank_map,
+        const std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId> &id_map );
 
     //! Destructor
     ~AMPMeshEntityImpl() {}
@@ -69,7 +69,7 @@ class AMPMeshEntityImpl : public DataTransferKit::EntityImpl
     /*
      * \brief Determine if entity is owned by the calling process.
     */
-    bool isLocallyOwned() const ;
+    bool isLocallyOwned() const;
 
     /*!
      * \brief Determine if an entity is in the block with the given id.

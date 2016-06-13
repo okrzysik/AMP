@@ -43,11 +43,10 @@ public:
     explicit MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorParameters> &params );
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                AMP::LinearAlgebra::Vector::shared_ptr r);
+                AMP::LinearAlgebra::Vector::shared_ptr r );
 
 private:
-
-    AMP::LinearAlgebra::VS_Comm createCommSelect(AMP_MPI globalComm, bool createOnThisRank); 
+    AMP::LinearAlgebra::VS_Comm createCommSelect( AMP_MPI globalComm, bool createOnThisRank );
 
     AMP::shared_ptr<MultiDofDTKMapOperatorParameters> d_multiDofDTKMapOpParams;
     AMP::shared_ptr<AMP::Operator::DTKMapOperator> d_Map12;

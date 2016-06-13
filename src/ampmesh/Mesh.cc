@@ -261,7 +261,7 @@ AMP::shared_ptr<Mesh> Mesh::Subset( const MeshIterator &iterator, bool isGlobal 
         auto N = d_comm.sumReduce( iterator.size() );
         if ( N == 0 )
             return AMP::shared_ptr<Mesh>();
-    } else if ( !isGlobal && iterator.size()==0 ) {
+    } else if ( !isGlobal && iterator.size() == 0 ) {
         return AMP::shared_ptr<Mesh>();
     }
     AMP::shared_ptr<const Mesh> this_mesh( shared_from_this() );

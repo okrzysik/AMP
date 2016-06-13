@@ -3,8 +3,8 @@
 
 
 #include "DataChangeFirer.h"
-#include "VectorEngine.h"
 #include "Vector.h"
+#include "VectorEngine.h"
 #include <stdexcept>
 #include <vector>
 

@@ -55,9 +55,8 @@ void myTest( AMP::UnitTest *ut )
     AMP_ASSERT( mesh->getComm().getSize() == dtk_entity_set->communicator()->getSize() );
 
     // Check the mesh with an iterator.
-    DataTransferKit::EntityIterator dtk_iterator =
-        dtk_entity_set->entityIterator( 3 );
-    bool caught_exception = false;
+    DataTransferKit::EntityIterator dtk_iterator = dtk_entity_set->entityIterator( 3 );
+    bool caught_exception                        = false;
     AMP_ASSERT( dtk_iterator.size() == mesh_iterator.size() );
     for ( dtk_iterator = dtk_iterator.begin(), mesh_iterator = mesh_iterator.begin();
           dtk_iterator != dtk_iterator.end();
@@ -101,29 +100,22 @@ void myTest( AMP::UnitTest *ut )
             }
 
             // Check that we get 8 nodes from the adjacency function.
-	    try
-	    {
-		Teuchos::Array<DataTransferKit::Entity> nodes;
-		dtk_entity_set->getAdjacentEntities(
-		    *dtk_iterator, 0, nodes );
-		AMP_ASSERT( 8 == nodes.size() );
-	    }
-	    catch( std::runtime_error& e )
-	    {
-		caught_exception = true;
-	    }
+            try {
+                Teuchos::Array<DataTransferKit::Entity> nodes;
+                dtk_entity_set->getAdjacentEntities( *dtk_iterator, 0, nodes );
+                AMP_ASSERT( 8 == nodes.size() );
+            } catch ( std::runtime_error &e ) {
+                caught_exception = true;
+            }
         }
     }
 
-    if ( caught_exception )
-    {
-	ut->expected_failure( "caught getAdjacentEntities exception" );
+    if ( caught_exception ) {
+        ut->expected_failure( "caught getAdjacentEntities exception" );
+    } else {
+        ut->failure( "failed to catch getAdjacentEntities exception" );
     }
-    else
-    {
-	ut->failure( "failed to catch getAdjacentEntities exception" );
-    }
-	
+
     ut->passes( exeName );
 }
 

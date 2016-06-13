@@ -28,13 +28,13 @@ public:
     virtual MeshIterator &operator++() override;
 
     // Increment
-    virtual MeshIterator operator++( int ) override;
+    virtual MeshIterator operator++(int) override;
 
     // Decrement
     virtual MeshIterator &operator--() override;
 
     // Decrement
-    virtual MeshIterator operator--( int ) override;
+    virtual MeshIterator operator--(int) override;
 
     // Arithmetic operator+
     virtual MeshIterator operator+( int ) const override;
@@ -49,10 +49,10 @@ public:
     virtual bool operator!=( const MeshIterator &rhs ) const override;
 
     // Dereference the iterator
-    virtual MeshElement &operator*( void ) override;
+    virtual MeshElement &operator*(void) override;
 
     // Dereference the iterator
-    virtual MeshElement *operator->( void ) override;
+    virtual MeshElement *operator->(void) override;
 
     // Dereference the iterator
     virtual const MeshElement &operator*( void ) const override;

@@ -1,6 +1,6 @@
-#include "vectors/petsc/NativePetscVector.h"
-#include "vectors/petsc/ManagedPetscVector.h"
 #include "utils/Counter.h"
+#include "vectors/petsc/ManagedPetscVector.h"
+#include "vectors/petsc/NativePetscVector.h"
 
 extern "C" {
 #include "petscvec.h"

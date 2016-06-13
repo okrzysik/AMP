@@ -8,7 +8,7 @@
 
 void crash()
 {
-    AMP::AMP_MPI comm(AMP_COMM_WORLD);
+    AMP::AMP_MPI comm( AMP_COMM_WORLD );
     if ( comm.getRank() == 0 )
         raise( SIGSEGV );
     comm.barrier();

@@ -166,7 +166,6 @@ protected:
 
     // Clone the iterator
     virtual inline MeshElement *clone() const;
-
 };
 }
 }
@@ -174,5 +173,3 @@ protected:
 #include "MeshElement.inline.h"
 
 #endif
-
-
