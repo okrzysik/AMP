@@ -3,34 +3,43 @@
 
 #include "shared_ptr.h"
 #include "utils/Utilities.h"
+
 #include <array>
 #include <functional>
 #include <iostream>
+#include <iostream>
 #include <memory>
+#include <vector>
 
 namespace AMP {
 
 #define ARRAY_NDIM_MAX 5 // Maximum number of dimensions supported
 
 
-#define GET_ARRAY_INDEX( i1, i2, i3 ) i1 + d_N[0] * ( i2 + d_N[1] * i3 )
+#define ARRAY_ASSERT AMP_ASSERT
+#define ARRAY_INSIST AMP_INSIST
+#define ARRAY_ERROR AMP_ERROR
+
+
+#define GET_ARRAY_INDEX3D( N, i1, i2, i3 ) i1 + N[0] * ( i2 + N[1] * i3 )
+#define GET_ARRAY_INDEX4D( N, i1, i2, i3, i4 ) i1 + N[0] * ( i2 + N[1] * ( i3 + N[2] * i4 ) )
+#define GET_ARRAY_INDEX5D( N, i1, i2, i3, i4, i5 ) \
+    i1 + N[0] * ( i2 + N[1] * ( i3 + N[2] * ( i4 + N[3] * i5 ) ) )
+
 #if defined( DEBUG ) || defined( _DEBUG )
-#define CHECK_ARRAY_INDEX( i1, i2, i3 )                                                   \
-    if ( GET_ARRAY_INDEX( i1, i2, i3 ) < 0 || GET_ARRAY_INDEX( i1, i2, i3 ) >= d_length ) \
-        AMP_ERROR( "Index exceeds array bounds" );
+#define CHECK_ARRAY_INDEX3D( N, i1, i2, i3 )              \
+    if ( GET_ARRAY_INDEX3D( N, i1, i2, i3 ) < 0 ||        \
+         GET_ARRAY_INDEX3D( N, i1, i2, i3 ) >= d_length ) \
+        ARRAY_ERROR( "Index exceeds array bounds" );
+#define CHECK_ARRAY_INDEX4D( N, i1, i2, i3, i4 )              \
+    if ( GET_ARRAY_INDEX4D( N, i1, i2, i3, i4 ) < 0 ||        \
+         GET_ARRAY_INDEX4D( N, i1, i2, i3, i4 ) >= d_length ) \
+        ARRAY_ERROR( "Index exceeds array bounds" );
 #else
-#define CHECK_ARRAY_INDEX( i1, i2, i3 )
+#define CHECK_ARRAY_INDEX3D( N, i1, i2, i3 )
+#define CHECK_ARRAY_INDEX4D( N, i1, i2, i3, i4 )
 #endif
 
-#define GET_ARRAY_INDEX4D( i1, i2, i3, i4 ) i1 + d_N[0] * ( i2 + d_N[1] * ( i3 + d_N[2] * i4 ) )
-#if defined( DEBUG ) || defined( _DEBUG )
-#define CHECK_ARRAY_INDEX4D( i1, i2, i3, i4 )              \
-    if ( GET_ARRAY_INDEX4D( i1, i2, i3, i4 ) < 0 ||        \
-         GET_ARRAY_INDEX4D( i1, i2, i3, i4 ) >= d_length ) \
-        AMP_ERROR( "Index exceeds array bounds" );
-#else
-#define CHECK_ARRAY_INDEX4D( i1, i2, i3, i4 )
-#endif
 
 #if defined( __CUDA_ARCH__ )
 #include <cuda.h>
@@ -40,16 +49,20 @@ namespace AMP {
 #endif
 
 
+// Forward decleration
+class FunctionTable;
+
+
 /*!
  * Class Array is a multi-dimensional array class written by Mark Berrill
  */
-template <class TYPE>
-class Array
+template <class TYPE, class FUN = FunctionTable>
+class Array final
 {
-public:
-    /*!
-     * Create a new empty Array
-     */
+public: // Constructors / assignment operators
+        /*!
+         * Create a new empty Array
+         */
     Array();
 
     /*!
@@ -111,11 +124,12 @@ public:
     Array &operator=( const std::vector<TYPE> &rhs );
 
 
-    /*!
-     * Create a 1D Array view to a raw block of data
-     * @param N             Number of elements in the array
-     * @param data          Pointer to the data
-     */
+public: // Views/copies/subset
+        /*!
+         * Create a 1D Array view to a raw block of data
+         * @param N             Number of elements in the array
+         * @param data          Pointer to the data
+         */
     static std::shared_ptr<Array> view( size_t N, std::shared_ptr<TYPE> const &data );
 
     /*!
@@ -224,7 +238,7 @@ public:
      * @param array         Input array
      */
     template <class TYPE2>
-    static std::shared_ptr<Array<TYPE2>> convert( std::shared_ptr<Array<TYPE>> array );
+    static std::shared_ptr<Array<TYPE2>> convert( std::shared_ptr<Array<TYPE, FUN>> array );
 
 
     /*!
@@ -232,7 +246,8 @@ public:
      * @param array         Input array
      */
     template <class TYPE2>
-    static std::shared_ptr<const Array<TYPE2>> convert( std::shared_ptr<const Array<TYPE>> array );
+    static std::shared_ptr<const Array<TYPE2>>
+    convert( std::shared_ptr<const Array<TYPE, FUN>> array );
 
 
     /*!
@@ -275,7 +290,7 @@ public:
      * @param base        Base array
      * @param exp         Exponent value
      */
-    void pow( const Array<TYPE> &baseArray, const TYPE &exp );
+    void pow( const Array<TYPE, FUN> &baseArray, const TYPE &exp );
 
     //! Destructor
     ~Array();
@@ -352,31 +367,33 @@ public:
      * Subset the Array (total size of array will not change)
      * @param index         Index to subset (imin,imax,jmin,jmax,kmin,kmax,...)
      */
-    Array<TYPE> subset( const std::vector<size_t> &index ) const;
-
+    template <class TYPE2 = TYPE>
+    Array<TYPE2, FUN> subset( const std::vector<size_t> &index ) const;
 
     /*!
      * Copy data from an array into a subset of this array
      * @param index         Index of the subset (imin,imax,jmin,jmax,kmin,kmax,...)
      * @param subset        The subset array to copy from
      */
-    void copySubset( const std::vector<size_t> &index, const Array<TYPE> &subset );
+    template <class TYPE2>
+    void copySubset( const std::vector<size_t> &index, const Array<TYPE2, FUN> &subset );
 
     /*!
      * Add data from an array into a subset of this array
      * @param index         Index of the subset (imin,imax,jmin,jmax,kmin,kmax,...)
      * @param subset        The subset array to add from
      */
-    void addSubset( const std::vector<size_t> &index, const Array<TYPE> &subset );
+    void addSubset( const std::vector<size_t> &index, const Array<TYPE, FUN> &subset );
 
 
-    /*!
-     * Access the desired element
-     * @param i             The row index
-     */
+public: // Accessors
+        /*!
+         * Access the desired element
+         * @param i             The row index
+         */
     HOST_DEVICE inline TYPE &operator()( size_t i )
     {
-        CHECK_ARRAY_INDEX( i, 0, 0 ) return d_data[i];
+        CHECK_ARRAY_INDEX3D( d_N, i, 0, 0 ) return d_data[i];
     }
 
     /*!
@@ -385,7 +402,7 @@ public:
      */
     HOST_DEVICE inline const TYPE &operator()( size_t i ) const
     {
-        CHECK_ARRAY_INDEX( i, 0, 0 ) return d_data[i];
+        CHECK_ARRAY_INDEX3D( d_N, i, 0, 0 ) return d_data[i];
     }
 
     /*!
@@ -395,7 +412,7 @@ public:
      */
     HOST_DEVICE inline TYPE &operator()( size_t i, size_t j )
     {
-        CHECK_ARRAY_INDEX( i, j, 0 ) return d_data[i + j * d_N[0]];
+        CHECK_ARRAY_INDEX3D( d_N, i, j, 0 ) return d_data[i + j * d_N[0]];
     }
 
     /*!
@@ -405,7 +422,7 @@ public:
      */
     HOST_DEVICE inline const TYPE &operator()( size_t i, size_t j ) const
     {
-        CHECK_ARRAY_INDEX( i, j, 0 ) return d_data[i + j * d_N[0]];
+        CHECK_ARRAY_INDEX3D( d_N, i, j, 0 ) return d_data[i + j * d_N[0]];
     }
 
     /*!
@@ -416,7 +433,7 @@ public:
      */
     HOST_DEVICE inline TYPE &operator()( size_t i, size_t j, size_t k )
     {
-        CHECK_ARRAY_INDEX( i, j, k ) return d_data[GET_ARRAY_INDEX( i, j, k )];
+        CHECK_ARRAY_INDEX3D( d_N, i, j, k ) return d_data[GET_ARRAY_INDEX3D( d_N, i, j, k )];
     }
 
     /*!
@@ -427,7 +444,7 @@ public:
      */
     HOST_DEVICE inline const TYPE &operator()( size_t i, size_t j, size_t k ) const
     {
-        CHECK_ARRAY_INDEX( i, j, k ) return d_data[GET_ARRAY_INDEX( i, j, k )];
+        CHECK_ARRAY_INDEX3D( d_N, i, j, k ) return d_data[GET_ARRAY_INDEX3D( d_N, i, j, k )];
     }
 
     /*!
@@ -439,7 +456,7 @@ public:
      */
     HOST_DEVICE inline TYPE &operator()( size_t i, size_t j, size_t k, size_t l )
     {
-        CHECK_ARRAY_INDEX4D( i, j, k, l ) return d_data[GET_ARRAY_INDEX4D( i, j, k, l )];
+        CHECK_ARRAY_INDEX4D( d_N, i, j, k, l ) return d_data[GET_ARRAY_INDEX4D( d_N, i, j, k, l )];
     }
 
     /*!
@@ -451,16 +468,8 @@ public:
      */
     HOST_DEVICE inline const TYPE &operator()( size_t i, size_t j, size_t k, size_t l ) const
     {
-        CHECK_ARRAY_INDEX4D( i, j, k, l ) return d_data[GET_ARRAY_INDEX4D( i, j, k, l )];
+        CHECK_ARRAY_INDEX4D( d_N, i, j, k, l ) return d_data[GET_ARRAY_INDEX4D( d_N, i, j, k, l )];
     }
-
-    //! Check if two matrices are equal
-    // Equality means the dimensions and data have to be identical
-    bool operator==( const Array &rhs ) const;
-
-    //! Check if two matrices are not equal
-    inline bool operator!=( const Array &rhs ) const { return !this->operator==( rhs ); }
-
 
     //! Return the pointer to the raw data
     inline std::shared_ptr<TYPE> getPtr() { return d_ptr; }
@@ -474,6 +483,31 @@ public:
     //! Return the pointer to the raw data
     HOST_DEVICE inline const TYPE *data() const { return d_data; }
 
+
+public: // Operator overloading
+    //! Check if two matrices are equal
+    // Equality means the dimensions and data have to be identical
+    bool operator==( const Array &rhs ) const;
+
+    //! Check if two matrices are not equal
+    inline bool operator!=( const Array &rhs ) const { return !this->operator==( rhs ); }
+
+    //! Add another array
+    Array &operator+=( const Array &rhs );
+
+    //! Subtract another array
+    Array &operator-=( const Array &rhs );
+
+    //! Add a scalar
+    Array &operator+=( const TYPE &rhs );
+
+    //! Subtract a scalar
+    Array &operator-=( const TYPE &rhs );
+
+
+public: // Math operations
+    //! Initialize the array with random values (defined from the function table)
+    void rand();
 
     //! Return true if NaNs are present
     inline bool NaNs() const;
@@ -491,13 +525,13 @@ public:
     inline TYPE mean() const;
 
     //! Return the min of all elements in a given direction
-    Array<TYPE> min( int dir ) const;
+    Array<TYPE, FUN> min( int dir ) const;
 
     //! Return the max of all elements in a given direction
-    Array<TYPE> max( int dir ) const;
+    Array<TYPE, FUN> max( int dir ) const;
 
     //! Return the sum of all elements in a given direction
-    Array<TYPE> sum( int dir ) const;
+    Array<TYPE, FUN> sum( int dir ) const;
 
     //! Return the smallest value
     inline TYPE min( const std::vector<size_t> &index ) const;
@@ -515,17 +549,49 @@ public:
     std::vector<size_t>
     find( const TYPE &value, std::function<bool( const TYPE &, const TYPE & )> compare ) const;
 
-    //! Add another array
-    Array &operator+=( const Array &rhs );
 
-    //! Subtract another array
-    Array &operator-=( const Array &rhs );
+    //! Print an array
+    void
+    print( std::ostream &os, const std::string &name = "A", const std::string &prefix = "" ) const;
 
-    //! Add a scalar
-    Array &operator+=( const TYPE &rhs );
+    //! Multiply two arrays
+    static Array multiply( const Array &a, const Array &b );
 
-    //! Subtract a scalar
-    Array &operator-=( const TYPE &rhs );
+    //! Transpose an array
+    Array<TYPE, FUN> reverseDim() const;
+
+    //! Coarsen an array using the given filter
+    Array<TYPE, FUN> coarsen( const Array<TYPE, FUN> &filter ) const;
+
+    //! Coarsen an array using the given filter
+    Array<TYPE, FUN> coarsen( const std::vector<size_t> &ratio,
+                              std::function<TYPE( const Array<TYPE, FUN> & )>
+                                  filter ) const;
+
+    /*!
+     * Perform a element-wise operation y = f(x)
+     * @param[in] fun           The function operation
+     * @param[in] x             The input array
+     */
+    static Array transform( std::function<TYPE( const TYPE & )> fun, const Array &x );
+
+    /*!
+     * Perform a element-wise operation z = f(x,y)
+     * @param[in] fun           The function operation
+     * @param[in] x             The first array
+     * @param[in] y             The second array
+     */
+    static Array transform( std::function<TYPE( const TYPE &, const TYPE & )> fun,
+                            const Array &x,
+                            const Array &y );
+
+    /*!
+     * axpby operation: this = alpha*x + beta*this
+     * @param[in] alpha         alpha
+     * @param[in] x             x
+     * @param[in] beta          beta
+     */
+    void axpby( const TYPE &alpha, const Array<TYPE, FUN> &x, const TYPE &beta );
 
 private:
     int d_ndim;                  // Number of dimensions in array
@@ -535,6 +601,10 @@ private:
     std::shared_ptr<TYPE> d_ptr; // Shared pointer to data in array
     void allocate( const std::vector<size_t> &N );
 
+public:
+    template <class TYPE2, class FUN2>
+    inline bool sizeMatch( const Array<TYPE2, FUN2> &rhs ) const;
+
 private:
     inline void checkSubsetIndex( const std::vector<size_t> &index ) const;
     inline std::array<size_t, 5> getDimArray() const;
@@ -543,8 +613,10 @@ private:
                                         std::array<size_t, 5> &last,
                                         std::array<size_t, 5> &N );
 };
-}
 
-#include "Array.hpp"
+
+} // namespace AMP
+#include "utils/Array.hpp"
+#include "utils/FunctionTable.h"
 
 #endif
