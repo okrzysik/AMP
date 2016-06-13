@@ -981,45 +981,45 @@ void Array<TYPE, FUN>::rand()
 template <class TYPE, class FUN>
 Array<TYPE, FUN> &Array<TYPE, FUN>::operator+=( const Array<TYPE, FUN> &rhs )
 {
-    auto fun = []( const TYPE &a, const TYPE &b ) { return a + b; };
-    FUN::transform( rhs, *this, *this );
+    const auto& fun = []( const TYPE &a, const TYPE &b ) { return a + b; };
+    FUN::transform( fun, *this, rhs, *this );
     return *this;
 }
 template <class TYPE, class FUN>
 Array<TYPE, FUN> &Array<TYPE, FUN>::operator-=( const Array<TYPE, FUN> &rhs )
 {
-    auto fun = []( const TYPE &a, const TYPE &b ) { return a - b; };
-    FUN::transform( rhs, *this, *this );
+    const auto& fun = []( const TYPE &a, const TYPE &b ) { return a - b; };
+    FUN::transform( fun, *this, rhs, *this );
     return *this;
 }
 template <class TYPE, class FUN>
 Array<TYPE, FUN> &Array<TYPE, FUN>::operator+=( const TYPE &rhs )
 {
-    auto fun = [rhs]( const TYPE &x ) { return x + rhs; };
-    FUN::transform( *this, *this );
+    const auto& fun = [rhs]( const TYPE &x ) { return x + rhs; };
+    FUN::transform( fun, *this, *this );
     return *this;
 }
 template <class TYPE, class FUN>
 Array<TYPE, FUN> &Array<TYPE, FUN>::operator-=( const TYPE &rhs )
 {
-    auto fun = [rhs]( const TYPE &x ) { return x - rhs; };
-    FUN::transform( *this, *this );
+    const auto& fun = [rhs]( const TYPE &x ) { return x - rhs; };
+    FUN::transform( fun, *this, *this );
     return *this;
 }
 template <class TYPE, class FUN>
 Array<TYPE, FUN> operator+( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b )
 {
     Array<TYPE, FUN> c;
-    auto fun = []( const TYPE &a, const TYPE &b ) { return a + b; };
-    FUN::transform( a, b, c );
+    const auto& fun = []( const TYPE &a, const TYPE &b ) { return a + b; };
+    FUN::transform( fun, a, b, c );
     return c;
 }
 template <class TYPE, class FUN>
 Array<TYPE, FUN> operator-( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b )
 {
     Array<TYPE, FUN> c;
-    auto fun = []( const TYPE &a, const TYPE &b ) { return a - b; };
-    FUN::transform( a, b, c );
+    const auto& fun = []( const TYPE &a, const TYPE &b ) { return a - b; };
+    FUN::transform( fun, a, b, c );
     return c;
 }
 template <class TYPE, class FUN>
@@ -1030,19 +1030,19 @@ Array<TYPE, FUN> operator*( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b
 template <class TYPE, class FUN>
 TYPE Array<TYPE, FUN>::min() const
 {
-    auto fun = []( const TYPE &a, const TYPE &b ) { return a < b ? a : b; };
+    const auto& fun = []( const TYPE &a, const TYPE &b ) { return a < b ? a : b; };
     return FUN::reduce( fun, *this );
 }
 template <class TYPE, class FUN>
 TYPE Array<TYPE, FUN>::max() const
 {
-    auto fun = []( const TYPE &a, const TYPE &b ) { return a > b ? a : b; };
+    const auto& fun = []( const TYPE &a, const TYPE &b ) { return a > b ? a : b; };
     return FUN::reduce( fun, *this );
 }
 template <class TYPE, class FUN>
 TYPE Array<TYPE, FUN>::sum() const
 {
-    auto fun = []( const TYPE &a, const TYPE &b ) { return a + b; };
+    const auto& fun = []( const TYPE &a, const TYPE &b ) { return a + b; };
     return FUN::reduce( fun, *this );
 }
 template <class TYPE, class FUN>
@@ -1055,7 +1055,7 @@ Array<TYPE, FUN> Array<TYPE, FUN>::multiply( const Array<TYPE, FUN> &a, const Ar
 template <class TYPE, class FUN>
 void Array<TYPE, FUN>::axpby( const TYPE &alpha, const Array<TYPE, FUN> &x, const TYPE &beta )
 {
-    auto fun = [alpha, beta]( const TYPE &x, const TYPE &y ) { return alpha * x + beta * y; };
+    const auto& fun = [alpha, beta]( const TYPE &x, const TYPE &y ) { return alpha * x + beta * y; };
     return FUN::transform( fun, x, *this );
 }
 template <class TYPE, class FUN>

@@ -162,6 +162,21 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "view" );
         AMP::pout << "Time to create view: " << ( t2 - t1 ) * 1e9 / 100000 << " ns\n";
+        // Simple tests of +/-
+        M2 = M1;
+        M2.scale(2);
+        M3 = M1;
+        M3 += M1;
+        if ( M1+M1==M2 && M3==M2 )
+            ut.passes( "+" );
+        else
+            ut.failure( "+" );
+        M3 = M2;
+        M3 -= M1;
+        if ( M2-M1==M1 && M3==M1 )
+            ut.passes( "-" );
+        else
+            ut.failure( "-" );
     }
 
     // Finished
