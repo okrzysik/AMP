@@ -123,7 +123,7 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "find" );
         // Test subset
-        M3 = M1.subset( { 0, 9, 0, 4 } );
+        M3 = M1.subset<double>( { 0, 9, 0, 4 } );
         if ( M3 == M1 )
             ut.passes( "full subset" );
         else
@@ -201,6 +201,28 @@ int main( int argc, char *argv[] )
             ut.failure( "operator-(scalar)" );
        
     }
+
+    // Test sum
+    {
+        AMP::Array<double> x( 1000, 100 );
+        x.rand();
+        double t1          = AMP::Utilities::time();
+        double s1          = x.sum();
+        double t2          = AMP::Utilities::time();
+        double s2          = 0;
+        const size_t N     = x.length();
+        const double *data = x.data();
+        for ( size_t i = 0; i < N; i++ )
+            s2 += data[i];
+        double t3 = AMP::Utilities::time();
+        if ( fabs( s1 - s2 ) / s1 < 1e-12 )
+            ut.passes( "sum" );
+        else
+            ut.failure( "sum" );
+        AMP::pout << "Time to perform sum (sum()): " << ( t2 - t1 ) * 1e9 / N << " ns\n";
+        AMP::pout << "Time to perform sum (raw): " << ( t3 - t2 ) * 1e9 / N << " ns\n";
+    }
+
 
     // Finished
     ut.report();
