@@ -56,7 +56,7 @@ class FunctionTable;
 /*!
  * Class Array is a multi-dimensional array class written by Mark Berrill
  */
-template <class TYPE, class FUN = FunctionTable>
+template <class TYPE, class FUN = FunctionTable, class Allocator = std::allocator<TYPE>>
 class Array final
 {
 public: // Constructors / assignment operators
@@ -238,7 +238,8 @@ public: // Views/copies/subset
      * @param array         Input array
      */
     template <class TYPE2>
-    static std::shared_ptr<Array<TYPE2>> convert( std::shared_ptr<Array<TYPE, FUN>> array );
+    static std::shared_ptr<Array<TYPE2, FUN, Allocator>>
+    convert( std::shared_ptr<Array<TYPE, FUN, Allocator>> array );
 
 
     /*!
@@ -246,8 +247,8 @@ public: // Views/copies/subset
      * @param array         Input array
      */
     template <class TYPE2>
-    static std::shared_ptr<const Array<TYPE2>>
-    convert( std::shared_ptr<const Array<TYPE, FUN>> array );
+    static std::shared_ptr<const Array<TYPE2, FUN, Allocator>>
+    convert( std::shared_ptr<const Array<TYPE, FUN, Allocator>> array );
 
 
     /*!
@@ -255,7 +256,7 @@ public: // Views/copies/subset
      * @param array         Source array
      */
     template <class TYPE2>
-    void copy( const Array<TYPE2> &array );
+    void copy( const Array<TYPE2, FUN, Allocator> &array );
 
     /*!
      * Copy and convert data from a raw vector to this array.
@@ -290,7 +291,7 @@ public: // Views/copies/subset
      * @param base        Base array
      * @param exp         Exponent value
      */
-    void pow( const Array<TYPE, FUN> &baseArray, const TYPE &exp );
+    void pow( const Array &baseArray, const TYPE &exp );
 
     //! Destructor
     ~Array();
@@ -368,7 +369,7 @@ public: // Views/copies/subset
      * @param index         Index to subset (imin,imax,jmin,jmax,kmin,kmax,...)
      */
     template <class TYPE2 = TYPE>
-    Array<TYPE2, FUN> subset( const std::vector<size_t> &index ) const;
+    Array<TYPE2, FUN, Allocator> subset( const std::vector<size_t> &index ) const;
 
     /*!
      * Copy data from an array into a subset of this array
@@ -376,14 +377,14 @@ public: // Views/copies/subset
      * @param subset        The subset array to copy from
      */
     template <class TYPE2>
-    void copySubset( const std::vector<size_t> &index, const Array<TYPE2, FUN> &subset );
+    void copySubset( const std::vector<size_t> &index, const Array<TYPE2, FUN, Allocator> &subset );
 
     /*!
      * Add data from an array into a subset of this array
      * @param index         Index of the subset (imin,imax,jmin,jmax,kmin,kmax,...)
      * @param subset        The subset array to add from
      */
-    void addSubset( const std::vector<size_t> &index, const Array<TYPE, FUN> &subset );
+    void addSubset( const std::vector<size_t> &index, const Array<TYPE, FUN, Allocator> &subset );
 
 
 public: // Accessors
@@ -525,13 +526,13 @@ public: // Math operations
     inline TYPE mean() const;
 
     //! Return the min of all elements in a given direction
-    Array<TYPE, FUN> min( int dir ) const;
+    Array min( int dir ) const;
 
     //! Return the max of all elements in a given direction
-    Array<TYPE, FUN> max( int dir ) const;
+    Array max( int dir ) const;
 
     //! Return the sum of all elements in a given direction
-    Array<TYPE, FUN> sum( int dir ) const;
+    Array sum( int dir ) const;
 
     //! Return the smallest value
     inline TYPE min( const std::vector<size_t> &index ) const;
@@ -558,15 +559,14 @@ public: // Math operations
     static Array multiply( const Array &a, const Array &b );
 
     //! Transpose an array
-    Array<TYPE, FUN> reverseDim() const;
+    Array reverseDim() const;
 
     //! Coarsen an array using the given filter
-    Array<TYPE, FUN> coarsen( const Array<TYPE, FUN> &filter ) const;
+    Array coarsen( const Array &filter ) const;
 
     //! Coarsen an array using the given filter
-    Array<TYPE, FUN> coarsen( const std::vector<size_t> &ratio,
-                              std::function<TYPE( const Array<TYPE, FUN> & )>
-                                  filter ) const;
+    Array
+    coarsen( const std::vector<size_t> &ratio, std::function<TYPE( const Array & )> filter ) const;
 
     /*!
      * Perform a element-wise operation y = f(x)
@@ -591,7 +591,7 @@ public: // Math operations
      * @param[in] x             x
      * @param[in] beta          beta
      */
-    void axpby( const TYPE &alpha, const Array<TYPE, FUN> &x, const TYPE &beta );
+    void axpby( const TYPE &alpha, const Array &x, const TYPE &beta );
 
 private:
     int d_ndim;                  // Number of dimensions in array
@@ -602,8 +602,8 @@ private:
     void allocate( const std::vector<size_t> &N );
 
 public:
-    template <class TYPE2, class FUN2>
-    inline bool sizeMatch( const Array<TYPE2, FUN2> &rhs ) const;
+    template <class TYPE2, class FUN2, class Allocator2>
+    inline bool sizeMatch( const Array<TYPE2, FUN2, Allocator2> &rhs ) const;
 
 private:
     inline void checkSubsetIndex( const std::vector<size_t> &index ) const;

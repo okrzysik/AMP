@@ -74,7 +74,7 @@ inline void FunctionTable::transform( LAMBDA &fun, const Array<TYPE, FUN> &x, Ar
 {
     y.resize( x.size() );
     for ( size_t i = 0; i < x.length(); i++ )
-        y(i)       = fun( x(i) );
+        y( i )     = fun( x( i ) );
 }
 template <class TYPE, class FUN, typename LAMBDA>
 inline void FunctionTable::transform( LAMBDA &fun,
@@ -85,7 +85,7 @@ inline void FunctionTable::transform( LAMBDA &fun,
     ARRAY_INSIST( x.sizeMatch( y ), "Sizes of x and y do not match" );
     z.resize( x.size() );
     for ( size_t i = 0; i < x.length(); i++ )
-        z(i)       = fun( x(i), y(i) );
+        z( i )     = fun( x( i ), y( i ) );
 }
 
 

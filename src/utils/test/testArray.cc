@@ -15,6 +15,51 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
+
+class TestAllocateClass
+{
+public:
+    TestAllocateClass()
+    {
+        data = new double[8];
+        N_alloc++;
+    }
+    TestAllocateClass( const TestAllocateClass &rhs )
+    {
+        data = new double[8];
+        N_alloc++;
+    }
+    TestAllocateClass &operator=( const TestAllocateClass &rhs )
+    {
+        data = new double[8];
+        N_alloc++;
+        return *this;
+    }
+    TestAllocateClass( TestAllocateClass &&rhs )
+    {
+        data     = rhs.data;
+        rhs.data = NULL;
+    }
+    TestAllocateClass &operator=( TestAllocateClass &&rhs )
+    {
+        data     = rhs.data;
+        rhs.data = NULL;
+        return *this;
+    }
+    ~TestAllocateClass()
+    {
+        delete[] data;
+        N_alloc--;
+    }
+    static int get_N_alloc() { return N_alloc; }
+private:
+    double *data;
+    static int N_alloc;
+};
+
+int TestAllocateClass::N_alloc = 0;
+
+
 // The main function
 int main( int argc, char *argv[] )
 {
@@ -164,16 +209,16 @@ int main( int argc, char *argv[] )
         AMP::pout << "Time to create view: " << ( t2 - t1 ) * 1e9 / 100000 << " ns\n";
         // Simple tests of +/-
         M2 = M1;
-        M2.scale(2);
+        M2.scale( 2 );
         M3 = M1;
         M3 += M1;
-        if ( M1+M1==M2 && M3==M2 )
+        if ( M1 + M1 == M2 && M3 == M2 )
             ut.passes( "operator+(Array&)" );
         else
             ut.failure( "operator+(Array&)" );
         M3 = M2;
         M3 -= M1;
-        if ( M2-M1==M1 && M3==M1 )
+        if ( M2 - M1 == M1 && M3 == M1 )
             ut.passes( "operator-(Array&)" );
         else
             ut.failure( "operator-(Array&)" );
@@ -182,7 +227,7 @@ int main( int argc, char *argv[] )
         pass = true;
         for ( size_t i = 0; i < M1.size( 0 ); i++ ) {
             for ( size_t j = 0; j < M1.size( 1 ); j++ )
-                pass = pass && (M1( i, j ) == i + 3 + 10*j );
+                pass = pass && ( M1( i, j ) == i + 3 + 10 * j );
         }
         if ( pass )
             ut.passes( "operator+(scalar)" );
@@ -193,15 +238,13 @@ int main( int argc, char *argv[] )
         pass = true;
         for ( size_t i = 0; i < M1.size( 0 ); i++ ) {
             for ( size_t j = 0; j < M1.size( 1 ); j++ )
-                pass = pass && (M1( i, j ) == i + 10*j );
+                pass = pass && ( M1( i, j ) == i + 10 * j );
         }
         if ( pass )
             ut.passes( "operator-(scalar)" );
         else
             ut.failure( "operator-(scalar)" );
-       
     }
-
     // Test sum
     {
         AMP::Array<double> x( 1000, 100 );
@@ -221,6 +264,25 @@ int main( int argc, char *argv[] )
             ut.failure( "sum" );
         AMP::pout << "Time to perform sum (sum()): " << ( t2 - t1 ) * 1e9 / N << " ns\n";
         AMP::pout << "Time to perform sum (raw): " << ( t3 - t2 ) * 1e9 / N << " ns\n";
+    }
+    // Test the allocation of a non-trivial type
+    {
+        bool pass = true;
+        std::shared_ptr<TestAllocateClass> ptr;
+        {
+            AMP::Array<TestAllocateClass> x( 3, 4 );
+            pass = pass && TestAllocateClass::get_N_alloc() == 12;
+            x.resize( 2, 1 );
+            pass = pass && TestAllocateClass::get_N_alloc() == 2;
+            ptr  = x.getPtr();
+        }
+        pass = pass && TestAllocateClass::get_N_alloc() == 2;
+        ptr.reset();
+        pass = pass && TestAllocateClass::get_N_alloc() == 0;
+        if ( pass )
+            ut.passes( "Allocator" );
+        else
+            ut.failure( "Allocator" );
     }
 
 
