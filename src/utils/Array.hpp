@@ -642,7 +642,7 @@ void Array<TYPE, FUN, Allocator>::swap(Array &other)
     // check that dimensions match
     ARRAY_ASSERT( d_length == other.length() );
     ARRAY_ASSERT( d_ndim == other.d_ndim );
-    for ( size_t i = 0; i < d_length; i++ ) {
+    for ( size_t i = 0; i < d_ndim; i++ ) {
         ARRAY_ASSERT(d_N[i]==other.d_N[i]);
     }
     // set the raw data pointers
