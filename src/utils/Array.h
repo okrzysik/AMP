@@ -273,6 +273,8 @@ public: // Views/copies/subset
     template <class TYPE2>
     void copyTo( TYPE2 *array ) const;
 
+    /*! swap the raw data pointers for the Arrays after checking for compatibility */
+    void swap(Array &other);
 
     /*!
      * Fill the array with the given value

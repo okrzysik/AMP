@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <vector>
+#include <cmath>
 
 #include "utils/AMPManager.h"
 #include "utils/Array.h"
@@ -244,6 +245,16 @@ int main( int argc, char *argv[] )
             ut.passes( "operator-(scalar)" );
         else
             ut.failure( "operator-(scalar)" );
+        
+        //swap test
+        auto dA1 = M1.data();
+        auto dA2 = M2.data();
+        M1.swap(M2);
+        pass = ((M1.data()==dA2)&&(M2.data()==dA1));
+        if ( pass )
+            ut.passes( "swap" );
+        else
+            ut.failure( "swap" );
     }
     // Test sum
     {
@@ -284,7 +295,6 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "Allocator" );
     }
-
 
     // Finished
     ut.report();

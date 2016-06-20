@@ -637,6 +637,24 @@ void Array<TYPE, FUN, Allocator>::copyTo( TYPE2 *dst ) const
         dst[i]     = static_cast<TYPE2>( d_data[i] );
 }
 template <class TYPE, class FUN, class Allocator>
+void Array<TYPE, FUN, Allocator>::swap(Array &other)
+{
+    // check that dimensions match
+    ARRAY_ASSERT( d_length == other.length() );
+    ARRAY_ASSERT( d_ndim == other.d_ndim );
+    for ( size_t i = 0; i < d_length; i++ ) {
+        ARRAY_ASSERT(d_N[i]==other.d_N[i]);
+    }
+    // set the raw data pointers
+    TYPE *tmp_data = d_data;
+    d_data = other.d_data;
+    other.d_data = tmp_data;
+    // set the shared pointers
+    auto data_shared_ptr = d_ptr;
+    d_ptr = other.d_ptr;
+    other.d_ptr = data_shared_ptr;
+}
+template <class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::fill( const TYPE &value )
 {
     for ( size_t i = 0; i < d_length; i++ )
