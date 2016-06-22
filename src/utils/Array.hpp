@@ -1085,7 +1085,7 @@ template <class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::sum() const
 {
     const auto &fun = []( const TYPE &a, const TYPE &b ) { return a + b; };
-    return FUN::reduce( fun, *this );
+    return FUN::sum( fun, *this );
 }
 template <class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>
