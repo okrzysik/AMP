@@ -642,7 +642,7 @@ void Array<TYPE, FUN, Allocator>::swap(Array &other)
     // check that dimensions match
     ARRAY_ASSERT( d_length == other.length() );
     ARRAY_ASSERT( d_ndim == other.d_ndim );
-    for ( size_t i = 0; i < d_ndim; i++ ) {
+    for ( int i = 0; i < d_ndim; i++ ) {
         ARRAY_ASSERT(d_N[i]==other.d_N[i]);
     }
     // set the raw data pointers
@@ -1101,10 +1101,10 @@ void Array<TYPE, FUN, Allocator>::axpby( const TYPE &alpha,
                                          const Array<TYPE, FUN, Allocator> &x,
                                          const TYPE &beta )
 {
-    const auto &fun = [alpha, beta]( const TYPE &x, const TYPE &y ) {
-        return alpha * x + beta * y;
+    const auto &fun = [alpha, beta]( const TYPE &xval, const TYPE &yval ) {
+        return alpha * xval + beta * yval;
     };
-    return FUN::transform( fun, x, *this );
+    FUN::transform( fun, x, *this, *this );
 }
 template <class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>
@@ -1124,6 +1124,11 @@ Array<TYPE, FUN, Allocator>::transform( std::function<TYPE( const TYPE &, const 
     Array<TYPE, FUN, Allocator> z;
     FUN::transform( fun, x, y, z );
     return z;
+}
+template <class TYPE, class FUN, class Allocator>
+bool Array<TYPE, FUN, Allocator>::equals( const Array &rhs, TYPE tol ) const
+{
+    return FUN::equals(*this, rhs, tol);
 }
 
 

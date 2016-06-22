@@ -25,4 +25,5 @@ public:
         AMP_ASSERT( N1 / 3 == N2 );
         return vec_select;
     }
+    static std::string name() { return "StridedVectorFactory"; }
 };

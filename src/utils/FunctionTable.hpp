@@ -59,10 +59,36 @@ inline TYPE FunctionTable::reduce( LAMBDA &op, const Array<TYPE, FUN> &A )
     if ( A.length() == 0 )
         return TYPE();
     const TYPE *x = A.data();
-    TYPE y        = x[0];
-    for ( size_t i = 1; i < A.length(); i++ )
+    TYPE y        = x[0];  
+    for ( size_t i = 0; i < A.length(); i++ ) 
         y = op( x[i], y );
     return y;
+}
+template <class TYPE, class FUN, typename LAMBDA>
+inline TYPE FunctionTable::sum( LAMBDA &op, const Array<TYPE, FUN> &A )
+{
+    if ( A.length() == 0 )
+        return TYPE();
+    const TYPE *x = A.data();
+    TYPE y        = 0.0;
+    for ( size_t i = 0; i < A.length(); i++ ) 
+        y = op( x[i], y );
+    return y;
+}
+
+template <class TYPE, class FUN, typename LAMBDA>
+inline TYPE FunctionTable::reduce( LAMBDA &op, const Array<TYPE, FUN> &A, const Array<TYPE, FUN> &B  )
+{
+    ARRAY_ASSERT(A.length()==B.length());
+    if ( A.length() == 0 )
+        return TYPE();
+    const TYPE *x = A.data();
+    const TYPE *y = B.data();
+
+    TYPE z        = 0.0;  // this code is currently buggy as it only works for reduce operations happy with the starting value of 0
+    for ( size_t i = 0; i < A.length(); i++ )
+        z = op( x[i], y[i], z );
+    return z;
 }
 
 
@@ -113,6 +139,15 @@ void FunctionTable::multiply( const Array<TYPE, FUN> &a,
     }
 }
 
+template <class TYPE, class FUN>
+bool FunctionTable::equals( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, TYPE tol )
+{
+    bool pass = true;
+    ARRAY_INSIST( a.sizeMatch( b ), "Sizes of x and y do not match" );
+    for ( size_t i = 0; i < a.length(); i++ )
+        pass  = pass && (std::abs(a(i)-b(i))<tol);
+    return pass;
+}
 
 } // namespace AMP
 

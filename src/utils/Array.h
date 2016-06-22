@@ -595,6 +595,15 @@ public: // Math operations
      */
     void axpby( const TYPE &alpha, const Array &x, const TYPE &beta );
 
+    /**
+      * \fn equals (Array & const rhs, TYPE tol )
+      * \brief  Determine if two Arrays are equal using an absolute tolerance
+      * \param[in] rhs Vector to compare to
+      * \param[in] tol Tolerance of comparison
+      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
+      */
+    bool equals( const Array &rhs, TYPE tol = 0.000001 ) const;
+
 private:
     int d_ndim;                  // Number of dimensions in array
     size_t d_N[ARRAY_NDIM_MAX];  // Size of each dimension

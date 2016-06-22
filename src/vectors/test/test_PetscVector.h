@@ -38,6 +38,7 @@ public:
     {
         return FACTORY::getManagedVector()->cloneVector();
     }
+    static std::string name() { return "PetscCloneFactory"; }
 };
 
 template <typename FACTORY>
@@ -65,6 +66,7 @@ public:
     {
         return AMP::LinearAlgebra::PetscVector::view( FACTORY::getManagedVector() );
     }
+    static std::string name() { return "PetscViewFactory"; }
 };
 
 template <typename MANAGED_FACTORY>
@@ -119,6 +121,7 @@ public:
     {
         return MANAGED_FACTORY::getVector();
     }
+    static std::string name() { return "SimplePetscVectorFactory"; }
 };
 
 

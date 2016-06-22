@@ -43,6 +43,7 @@ public:
         PROFILE_STOP( "AmpInterfaceLeftVectorFactory::getVector" );
         return vector;
     }
+    static std::string name() { return "AmpInterfaceLeftVectorFactory"; }
 };
 
 
@@ -67,6 +68,7 @@ public:
         PROFILE_STOP( "AmpInterfaceRightVectorFactory::getVector" );
         return vector;
     }
+    static std::string name() { return "AmpInterfaceRightVectorFactory"; }
 };
 
 
@@ -109,6 +111,7 @@ public:
         AMP_ASSERT( global_cached_matrix != nullptr );
         return AMP::LinearAlgebra::PetscVector::view( matrix->getLeftVector() );
     }
+    static std::string name() { return "PETScInterfaceLeftVectorFactory"; }
 };
 
 
@@ -149,6 +152,7 @@ public:
         AMP::LinearAlgebra::Matrix::shared_ptr matrix = global_cached_matrix;
         return AMP::LinearAlgebra::PetscVector::view( matrix->getRightVector() );
     }
+    static std::string name() { return "PETScInterfaceRightVectorFactory"; }
 };
 
 #endif

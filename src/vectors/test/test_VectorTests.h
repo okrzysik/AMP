@@ -17,7 +17,6 @@
 #include "vectors/petsc/PetscVector.h"
 #endif
 
-
 /// \cond UNDOCUMENTED
 namespace AMP {
 namespace unit_test {
@@ -25,15 +24,15 @@ namespace unit_test {
 
 static inline int lround( double x ) { return x >= 0 ? floor( x ) : ceil( x ); }
 
-
 template <typename VECTOR_FACTORY>
 void InstantiateVector( AMP::UnitTest *utils )
 {
+
     AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
     if ( vector )
-        utils->passes( "created" );
-    else
-        utils->failure( "created" );
+        utils->passes( "created " + VECTOR_FACTORY::name() );
+    else        
+        utils->failure( "created " + VECTOR_FACTORY::name() );
 }
 
 
@@ -93,9 +92,9 @@ void DeepCloneOfView( AMP::UnitTest *utils )
         pass &= ( vector1->getRawDataBlock<double>( i ) != vector2->getRawDataBlock<double>( i ) );
     }
     if ( pass )
-        utils->passes( "Deep clone succeeded" );
+        utils->passes( "Deep clone succeeded " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "Deep clone failed" );
+        utils->failure( "Deep clone failed " + VECTOR_FACTORY::name() );
 }
 
 
@@ -112,14 +111,14 @@ void Bug_728( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Variable::shared_ptr var2 = var1->cloneVariable( var1->getName() );
 
     if ( vector->subsetVectorForVariable( var1 ) )
-        utils->passes( "Found vector for same variable pointer" );
+        utils->passes( "Found vector for same variable pointer " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "Did not find vector for same variable pointer" );
+        utils->failure( "Did not find vector for same variable pointer " + VECTOR_FACTORY::name() );
 
     if ( vector->subsetVectorForVariable( var2 ) )
-        utils->passes( "Found vector for cloned variable pointer" );
+        utils->passes( "Found vector for cloned variable pointer " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "Did not find vector for cloned variable pointer" );
+        utils->failure( "Did not find vector for cloned variable pointer " + VECTOR_FACTORY::name() );
 }
 
 
@@ -128,7 +127,7 @@ void SetToScalarVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
     vector->setToScalar( 0. );
-    utils->passes( "setToScalar ran to completion" );
+    utils->passes( "setToScalar ran to completion " + VECTOR_FACTORY::name() );
     bool fail                                   = false;
     AMP::LinearAlgebra::Vector::iterator curVec = vector->begin();
     AMP::LinearAlgebra::Vector::iterator endVec = vector->end();
@@ -140,9 +139,9 @@ void SetToScalarVector( AMP::UnitTest *utils )
         ++curVec;
     }
     if ( !fail )
-        utils->passes( "Set data to 0" );
+        utils->passes( "Set data to 0 " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "Failed to set scalar to 0" );
+        utils->failure( "Failed to set scalar to 0 " + VECTOR_FACTORY::name() );
     fail = false;
     vector->setToScalar( 5. );
     AMP::LinearAlgebra::Vector::iterator curVal = vector->begin();
@@ -154,9 +153,9 @@ void SetToScalarVector( AMP::UnitTest *utils )
         ++curVal;
     }
     if ( !fail )
-        utils->passes( "Set data to 5" );
+        utils->passes( "Set data to 5 " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "Failed to set scalar to 5" );
+        utils->failure( "Failed to set scalar to 5 " + VECTOR_FACTORY::name() );
     std::vector<size_t> remoteDofs = vector->getDOFManager()->getRemoteDOFs();
     fail                           = false;
     for ( auto &remoteDof : remoteDofs ) {
@@ -164,9 +163,9 @@ void SetToScalarVector( AMP::UnitTest *utils )
             fail = true;
     }
     if ( !fail )
-        utils->passes( "Set ghost data to 5" );
+        utils->passes( "Set ghost data to 5 " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "Failed to set ghost scalar values to 5" );
+        utils->failure( "Failed to set ghost scalar values to 5 " + VECTOR_FACTORY::name() );
 }
 
 
@@ -176,7 +175,7 @@ void CloneVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr clone = vector->cloneVector( "cloned vector" );
     clone->setToScalar( 0. );
-    utils->passes( "Clone created" );
+    utils->passes( "Clone created " + VECTOR_FACTORY::name() );
     bool pass = true;
     for ( size_t i = 0; i != vector->numberOfDataBlocks(); i++ ) {
         double *clone_ptr  = clone->getRawDataBlock<double>( i );
@@ -185,9 +184,9 @@ void CloneVector( AMP::UnitTest *utils )
             pass = false;
     }
     if ( pass )
-        utils->passes( "New data allocated" );
+        utils->passes( "New data allocated " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "Data not allocated" );
+        utils->failure( "Data not allocated " + VECTOR_FACTORY::name() );
 }
 
 
@@ -198,31 +197,31 @@ void DotProductVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vector2( VECTOR_FACTORY::getVector() );
     vector1->setToScalar( 1. );
     vector2->setToScalar( 2. );
-    double d11, d12, d21, d22;
-    d11 = vector1->dot( vector1 );
-    d12 = vector1->dot( vector2 );
-    d21 = vector2->dot( vector1 );
-    d22 = vector2->dot( vector2 );
+
+    auto d11 = vector1->dot( vector1 );
+    auto d12 = vector1->dot( vector2 );
+    auto d21 = vector2->dot( vector1 );
+    auto d22 = vector2->dot( vector2 );
     if ( 2. * d11 == d12 )
-        utils->passes( "dot product 1" );
+        utils->passes( "dot product 1 " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "dot product 1" );
+        utils->failure( "dot product 1 " + VECTOR_FACTORY::name() );
     if ( 2. * d11 == d21 )
-        utils->passes( "dot product 2" );
+        utils->passes( "dot product 2 " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "dot product 2" );
+        utils->failure( "dot product 2 " + VECTOR_FACTORY::name() );
     if ( 4. * d11 == d22 )
-        utils->passes( "dot product 3" );
+        utils->passes( "dot product 3 " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "dot product 3" );
+        utils->failure( "dot product 3 " + VECTOR_FACTORY::name() );
     if ( d11 == vector1->getGlobalSize() )
-        utils->passes( "dot product 4" );
+        utils->passes( "dot product 4 " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "dot product 4" );
+        utils->failure( "dot product 4 " + VECTOR_FACTORY::name() );
     if ( d21 == d12 )
-        utils->passes( "dot product 5" );
+        utils->passes( "dot product 5 " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "dot product 5" );
+        utils->failure( "dot product 5 " + VECTOR_FACTORY::name() );
 }
 
 
@@ -231,20 +230,20 @@ void L2NormVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
     vector->setToScalar( 1. );
-    double norm, norm2;
-    norm  = vector->L2Norm();
-    norm2 = vector->dot( vector );
+
+    auto norm  = vector->L2Norm();
+    auto norm2 = vector->dot( vector );
     if ( fabs( norm * norm - norm2 ) < 0.000001 )
-        utils->passes( "L2 norm 1" );
+        utils->passes( "L2 norm 1 " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "L2 norm 1" );
+        utils->failure( "L2 norm 1 " + VECTOR_FACTORY::name() );
     vector->setRandomValues();
     norm  = vector->L2Norm();
     norm2 = vector->dot( vector );
     if ( fabs( norm * norm - norm2 ) < 0.000001 )
-        utils->passes( "L2 norm 2" );
+        utils->passes( "L2 norm 2 " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "L2 norm 2" );
+        utils->failure( "L2 norm 2 " + VECTOR_FACTORY::name() );
 }
 
 
@@ -258,9 +257,9 @@ void AbsVector( AMP::UnitTest *utils )
     vec2->scale( -1.0 );
     vec2->abs( vec2 );
     if ( vec1->equals( vec2 ) )
-        utils->passes( "Abs passes" );
+        utils->passes( "Abs passes " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "Abs fails" );
+        utils->failure( "Abs fails " + VECTOR_FACTORY::name() );
 }
 
 
@@ -272,14 +271,13 @@ void L1NormVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vector_abs;
     vector->setRandomValues();
     vector_1->setToScalar( 1. );
-    double norm, norm2;
-    norm = vector->L1Norm();
+    auto norm = vector->L1Norm();
     vector->abs( vector );
-    norm2 = vector->dot( vector_1 );
+    auto norm2 = vector->dot( vector_1 );
     if ( fabs( norm - norm2 ) < 0.000001 )
-        utils->passes( "L1 norm" );
+        utils->passes( "L1 norm "  + VECTOR_FACTORY::name() );
     else
-        utils->failure( "L1 norm" );
+        utils->failure( "L1 norm " + VECTOR_FACTORY::name() );
 }
 
 
@@ -288,7 +286,7 @@ void MaxNormVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
     vector->setRandomValues();
-    double infNorm = vector->maxNorm();
+    auto infNorm = vector->maxNorm();
     vector->abs( vector );
     AMP::LinearAlgebra::Vector::iterator curData = vector->begin();
     AMP::LinearAlgebra::Vector::iterator endData = vector->end();
@@ -299,9 +297,9 @@ void MaxNormVector( AMP::UnitTest *utils )
     }
     double global_ans = vector->getComm().maxReduce( local_ans );
     if ( global_ans == infNorm )
-        utils->passes( "Inf norm" );
+        utils->passes( "Inf norm " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "Inf norm" );
+        utils->failure( "Inf norm " + VECTOR_FACTORY::name() );
 }
 
 
@@ -324,15 +322,15 @@ void ScaleVector( AMP::UnitTest *utils )
         ++curData2;
     }
     if ( pass )
-        utils->passes( "scale vector 1" );
+        utils->passes( "scale vector 1 " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "scale vector 1" );
+        utils->failure( "scale vector 1 " + VECTOR_FACTORY::name() );
     vector2->scale( beta );
     vector1->subtract( vector2, vector1 );
     if ( vector1->maxNorm() < 0.0000001 )
-        utils->passes( "scale vector 2" );
+        utils->passes( "scale vector 2 " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "scale vector 2" );
+        utils->failure( "scale vector 2 " + VECTOR_FACTORY::name() );
 }
 
 
@@ -375,34 +373,34 @@ void Bug_491( AMP::UnitTest *utils )
     VecNormEnd( managed_vec, NORM_INFINITY, &ninf );
 
     if ( fabs( n1 - sp_n1 ) < 0.00000001 * n1 )
-        utils->passes( "L1 norm -- Petsc interface begin/end" );
+        utils->passes( "L1 norm -- Petsc interface begin/end " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "l1 norm -- Petsc interface begin/end" );
+        utils->failure( "l1 norm -- Petsc interface begin/end " + VECTOR_FACTORY::name() );
     if ( fabs( n2 - sp_n2 ) < 0.00000001 * n1 )
-        utils->passes( "L2 norm -- Petsc interface begin/end" );
+        utils->passes( "L2 norm -- Petsc interface begin/end " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "l2 norm -- Petsc interface begin/end" );
+        utils->failure( "l2 norm -- Petsc interface begin/end " + VECTOR_FACTORY::name() );
     if ( fabs( ninf - sp_inf ) < 0.00000001 * n1 )
-        utils->passes( "Linf norm -- Petsc interface begin/end" );
+        utils->passes( "Linf norm -- Petsc interface begin/end " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "Linf norm -- Petsc interface begin/end" );
+        utils->failure( "Linf norm -- Petsc interface begin/end " + VECTOR_FACTORY::name() );
 
     VecNorm( managed_vec, NORM_1, &n1 );
     VecNorm( managed_vec, NORM_2, &n2 );
     VecNorm( managed_vec, NORM_INFINITY, &ninf );
 
     if ( fabs( n1 - vector1->L1Norm() ) < 0.00000001 * n1 )
-        utils->passes( "L1 norm -- Petsc interface begin/end" );
+        utils->passes( "L1 norm -- Petsc interface begin/end " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "l1 norm -- Petsc interface begin/end" );
+        utils->failure( "l1 norm -- Petsc interface begin/end " + VECTOR_FACTORY::name() );
     if ( fabs( n2 - vector1->L2Norm() ) < 0.00000001 * n1 )
-        utils->passes( "L2 norm -- Petsc interface begin/end" );
+        utils->passes( "L2 norm -- Petsc interface begin/end " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "l2 norm -- Petsc interface begin/end" );
+        utils->failure( "l2 norm -- Petsc interface begin/end " + VECTOR_FACTORY::name() );
     if ( fabs( ninf - vector1->maxNorm() ) < 0.00000001 * n1 )
-        utils->passes( "inf norm -- Petsc interface begin/end" );
+        utils->passes( "inf norm -- Petsc interface begin/end " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "inf norm -- Petsc interface begin/end" );
+        utils->failure( "inf norm -- Petsc interface begin/end " + VECTOR_FACTORY::name() );
 }
 #endif
 
@@ -430,9 +428,9 @@ void AddVector( AMP::UnitTest *utils )
     }
 
     if ( pass )
-        utils->passes( "add vector" );
+        utils->passes( "add vector " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "add vector" );
+        utils->failure( "add vector " + VECTOR_FACTORY::name() );
 }
 
 
@@ -459,16 +457,16 @@ void SubtractVector( AMP::UnitTest *utils )
         ++curData3;
     }
     if ( pass )
-        utils->passes( "vector subtract 1" );
+        utils->passes( "vector subtract 1 " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "vector subtract 1" );
+        utils->failure( "vector subtract 1 " + VECTOR_FACTORY::name() );
     vector2->scale( -1. );
     vector4->add( vector1, vector2 );
     vector4->subtract( vector3, vector4 );
     if ( vector4->maxNorm() < 0.0000001 )
-        utils->passes( "vector subtract 2" );
+        utils->passes( "vector subtract 2 " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "vector subtract 2" );
+        utils->failure( "vector subtract 2 " + VECTOR_FACTORY::name() );
 }
 
 
@@ -494,9 +492,9 @@ void MultiplyVector( AMP::UnitTest *utils )
         ++curData3;
     }
     if ( pass )
-        utils->passes( "vector::multiply" );
+        utils->passes( "vector::multiply " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "vector::multiply" );
+        utils->failure( "vector::multiply " + VECTOR_FACTORY::name() );
 }
 
 
@@ -522,9 +520,9 @@ void DivideVector( AMP::UnitTest *utils )
         ++curVal3;
     }
     if ( pass )
-        utils->passes( "vector::divide" );
+        utils->passes( "vector::divide " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "vector::divide" );
+        utils->failure( "vector::divide " + VECTOR_FACTORY::name() );
 
     // if ( utils->rank() == 2 )
     //{
@@ -546,9 +544,9 @@ void VectorIteratorLengthTest( AMP::UnitTest *utils )
     }
     size_t k = vector1->getLocalSize();
     if ( i == k )
-        utils->passes( "Iterated over the correct number of entries" );
+        utils->passes( "Iterated over the correct number of entries " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "Wrong number of entries in iterator" );
+        utils->failure( "Wrong number of entries in iterator " + VECTOR_FACTORY::name() );
 }
 
 template <typename ITERATOR>
@@ -558,14 +556,14 @@ void both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::Un
 
     int kk = p->getLocalSize();
     if ( ( p->end() - p->begin() ) == (int) p->getLocalSize() )
-        utils->passes( "Subtracting begin from end" );
+        utils->passes( "Subtracting begin from end " );
     else
-        utils->failure( "Subtracting begin from end" );
+        utils->failure( "Subtracting begin from end " );
 
     if ( (int) ( p->begin() - p->end() ) == -(int) p->getLocalSize() )
-        utils->passes( "Subtracting end from beginning" );
+        utils->passes( "Subtracting end from beginning " );
     else
-        utils->failure( "Subtracting end from beginning" );
+        utils->failure( "Subtracting end from beginning " );
 
     ITERATOR cur1, cur2;
     cur1 = cur2  = ref.begin();
@@ -581,9 +579,9 @@ void both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::Un
     }
     int tt = ( cur2 - cur1 );
     if ( i == tt )
-        utils->passes( "Subtracting arbitrary iterators" );
+        utils->passes( "Subtracting arbitrary iterators " );
     else
-        utils->failure( "Subtracting arbitrary iterators" );
+        utils->failure( "Subtracting arbitrary iterators " );
 
     p->setToScalar( 5.0 );
     i = 0;
@@ -593,7 +591,7 @@ void both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::Un
         i++;
     }
     if ( i == (int) p->getLocalSize() )
-        utils->passes( "Iterating data access" );
+        utils->passes( "Iterating data access " );
     else
         utils->failure( "Iterating data access" );
 
@@ -658,9 +656,9 @@ void VerifyVectorMin( AMP::UnitTest *utils )
     vec->setRandomValues();
     vec->scale( -1.0 ); // make negative
     if ( fabs( vec->min() + vec->maxNorm() ) < 1.e-10 )
-        utils->passes( "minimum of negative vector == ||.||_infty" );
+        utils->passes( "minimum of negative vector == ||.||_infty " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "minimum of negative vector != ||.||_infty" );
+        utils->failure( "minimum of negative vector != ||.||_infty " + VECTOR_FACTORY::name() );
 }
 
 
@@ -670,9 +668,9 @@ void VerifyVectorMax( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vec( VECTOR_FACTORY::getVector() );
     vec->setRandomValues();
     if ( fabs( vec->max() - vec->maxNorm() ) < 1.e-10 )
-        utils->passes( "maximum of positive vector == ||.||_infty" );
+        utils->passes( "maximum of positive vector == ||.||_infty " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "maximum of positive vector != ||.||_infty" );
+        utils->failure( "maximum of positive vector != ||.||_infty " + VECTOR_FACTORY::name() );
 }
 
 
@@ -685,16 +683,16 @@ void VerifyVectorMaxMin( AMP::UnitTest *utils )
         vec->setRandomValues();
         vec->addScalar( vec, -0.5 );
         vec->scale( 2.0 ); // vec i.i.d [-1,1);
-        double max = vec->max();
-        double min = vec->min();
-        double ans = std::max( fabs( max ), fabs( min ) );
+        auto max = vec->max();
+        auto min = vec->min();
+        auto ans = std::max( fabs( max ), fabs( min ) );
         if ( fabs( ans - vec->maxNorm() ) >= 1.e-20 )
             passes = false;
     }
     if ( passes )
-        utils->passes( "Max and min correctly predict maxNorm()" );
+        utils->passes( "Max and min correctly predict maxNorm() " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "Max and min fail to predict maxNorm()" );
+        utils->failure( "Max and min fail to predict maxNorm() " + VECTOR_FACTORY::name() );
 }
 
 
@@ -707,30 +705,30 @@ public:
     static void verify_vector( AMP::UnitTest *utils, AMP::LinearAlgebra::Vector::shared_ptr v )
     {
         if ( v->min() >= 0 )
-            utils->passes( "Min value >= 0 " );
+            utils->passes( "Min value >= 0 " + VECTOR_FACTORY::name() );
         else
-            utils->failure( "Min value < 0 " );
+            utils->failure( "Min value < 0 " + VECTOR_FACTORY::name() );
         if ( v->max() < 1 )
-            utils->passes( "Max value < 1" );
+            utils->passes( "Max value < 1" + VECTOR_FACTORY::name() );
         else
-            utils->failure( "Max value >= 1" );
+            utils->failure( "Max value >= 1" + VECTOR_FACTORY::name() );
         if ( v->L2Norm() > 0 )
-            utils->passes( "Non-zero vector created" );
+            utils->passes( "Non-zero vector created " + VECTOR_FACTORY::name() );
         else
-            utils->failure( "Zero vector created" );
+            utils->failure( "Zero vector created " + VECTOR_FACTORY::name() );
     }
 
     static void run_test( AMP::UnitTest *utils )
     {
         AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
-        double l2norm1 = -1;
+        auto l2norm1 = -1;
         for ( size_t i = 0; i < 5; i++ ) {
             vector->setRandomValues();
-            double l2norm2 = vector->L2Norm();
+            auto l2norm2 = vector->L2Norm();
             if ( fabs( l2norm1 - l2norm2 ) > 0.000001 )
-                utils->passes( "Distinct vector created" );
+                utils->passes( "Distinct vector created " + VECTOR_FACTORY::name() );
             else
-                utils->failure( "Similar vector created" );
+                utils->failure( "Similar vector created " + VECTOR_FACTORY::name() );
             l2norm1 = l2norm2;
             verify_vector( utils, vector );
         }
@@ -752,9 +750,9 @@ void ReciprocalVector( AMP::UnitTest *utils )
     vectorc->divide( vector1, vectora );
     vectord->subtract( vectorb, vectorc );
     if ( vectord->maxNorm() < 0.0000001 ) {
-        utils->passes( "vector::reciprocal" );
+        utils->passes( "vector::reciprocal " + VECTOR_FACTORY::name() );
     } else {
-        utils->failure( "vector::reciprocal" );
+        utils->failure( "vector::reciprocal " + VECTOR_FACTORY::name() );
     }
 }
 
@@ -845,7 +843,7 @@ public:
         vectorb->linearSum( alpha, vectora, beta, vectorb );
         vectorc->axpby( alpha, beta, vectora );
         vectord->subtract( vectorc, vectorb1 );
-        double maxNorm = vectord->maxNorm();
+        auto maxNorm = vectord->maxNorm();
         if ( maxNorm < 0.0000001 )
             utils->passes( msg );
         else
@@ -890,13 +888,28 @@ public:
 
         vectora->scale( 100. );
         vectorc->subtract( vectora, vectorb );
-        double c_maxNorm = vectorc->maxNorm();
-        double b_maxNorm = vectorb->maxNorm();
+        auto c_maxNorm = vectorc->maxNorm();
+        auto b_maxNorm = vectorb->maxNorm();
         if ( fabs( c_maxNorm - 99 * b_maxNorm ) < 1e-12 * b_maxNorm )
             utils->passes( "copy vector 2" );
         else
             utils->failure( "copy vector 2" );
+    }
+};
 
+template <typename VECTOR_FACTORY>
+class CopyRawDataBlockVector
+{
+public:
+    static const char *get_test_name() { return "vector::copyVector"; }
+
+    static void run_test( AMP::UnitTest *utils )
+    {
+        AMP::LinearAlgebra::Vector::shared_ptr vectora( VECTOR_FACTORY::getVector() );
+        AMP::LinearAlgebra::Vector::shared_ptr vectorb( VECTOR_FACTORY::getVector() );
+        AMP::LinearAlgebra::Vector::shared_ptr vectorc( VECTOR_FACTORY::getVector() );
+
+        vectora->setRandomValues();
         vectorb->zero();
         auto buf = new double[vectora->getLocalSize()];
         vectora->copyOutRawData( buf );
@@ -904,9 +917,9 @@ public:
         delete[] buf;
         vectorc->subtract( vectora, vectorb );
         if ( vectorc->maxNorm() == 0 )
-            utils->passes( "copy vector 3" );
+            utils->passes( "copy raw data block" );
         else
-            utils->failure( "copy vector 3" );
+            utils->failure( "copy raw data block" );
     }
 };
 
@@ -920,11 +933,11 @@ void VerifyVectorGhostCreate( AMP::UnitTest *utils )
     num_ghosts                                    = globalComm.sumReduce( num_ghosts );
 
     if ( utils->size() == 1 )
-        utils->expected_failure( "No ghost cells for single processor" );
+        utils->expected_failure( "No ghost cells for single processor " + VECTOR_FACTORY::name() );
     else if ( num_ghosts > 0 )
-        utils->passes( "verify ghosts created" );
+        utils->passes( "verify ghosts created " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "verify ghosts created" );
+        utils->failure( "verify ghosts created " + VECTOR_FACTORY::name() );
 }
 
 
@@ -934,12 +947,12 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
     AMP::Discretization::DOFManager::shared_ptr dofmap = VECTOR_FACTORY::getDOFMap();
     AMP::LinearAlgebra::Vector::shared_ptr vector      = VECTOR_FACTORY::getVector();
     if ( !vector )
-        utils->failure( "verify makeConsistent () for add" );
+        utils->failure( "verify makeConsistent () for add " + VECTOR_FACTORY::name() );
 
     // Zero the vector
     vector->zero();
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::UNCHANGED )
-        utils->failure( "zero leaves vector in UNCHANGED state" );
+        utils->failure( "zero leaves vector in UNCHANGED state " + VECTOR_FACTORY::name() );
 
     // Set and add local values by global id (this should not interfer with the add)
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
@@ -947,13 +960,13 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
         vector->addLocalValueByGlobalID( i, 0.0 );
     }
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::LOCAL_CHANGED )
-        utils->failure( "local set/add leaves vector in LOCAL_CHANGED state" );
+        utils->failure( "local set/add leaves vector in LOCAL_CHANGED state " + VECTOR_FACTORY::name() );
 
     // Add values by global id
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ )
         vector->addValueByGlobalID( i, (double) i );
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::ADDING )
-        utils->failure( "addValueByGlobalID leaves vector in ADDING state" );
+        utils->failure( "addValueByGlobalID leaves vector in ADDING state " + VECTOR_FACTORY::name() );
 
     double offset = (double) ( 1 << utils->rank() );
     for ( size_t i = 0; i != vector->getGhostSize(); i++ ) {
@@ -964,7 +977,7 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
     // Perform a makeConsistent ADD and check the result
     vector->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::UNCHANGED )
-        utils->failure( "makeConsistent leaves vector in UNCHANGED state" );
+        utils->failure( "makeConsistent leaves vector in UNCHANGED state " + VECTOR_FACTORY::name() );
     std::map<int, std::set<size_t>> ghosted_entities;
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
         double diff_double = fabs( vector->getValueByGlobalID( i ) - (double) i );
@@ -992,7 +1005,7 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
             }
         }
         if ( !found ) {
-            utils->failure( "overly ghosted value" );
+            utils->failure( "overly ghosted value " + VECTOR_FACTORY::name() );
             return;
         }
         ++cur_replicated;
@@ -1001,9 +1014,9 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
     for ( int i = 0; i != utils->size(); i++ )
         last_size += ghosted_entities[i].size();
     if ( last_size == 0 )
-        utils->passes( "all ghosted values accounted for" );
+        utils->passes( "all ghosted values accounted for " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "some ghosted values not set" );
+        utils->failure( "some ghosted values not set " + VECTOR_FACTORY::name() );
 }
 
 
@@ -1016,27 +1029,27 @@ void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
     // Zero the vector
     vector->zero();
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::UNCHANGED )
-        utils->failure( "zero leaves vector in UNCHANGED state" );
+        utils->failure( "zero leaves vector in UNCHANGED state " + VECTOR_FACTORY::name() );
 
-    // Set and add local values by global id (this should not interfer with the add)
+    // Set and add local values by global id (this should not interfere with the add)
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
         vector->setLocalValueByGlobalID( i, 0.0 );
         vector->addLocalValueByGlobalID( i, 0.0 );
     }
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::LOCAL_CHANGED )
-        utils->failure( "local set/add leaves vector in LOCAL_CHANGED state" );
+        utils->failure( "local set/add leaves vector in LOCAL_CHANGED state " + VECTOR_FACTORY::name() );
 
     // Set values by global id
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ )
         vector->setValueByGlobalID( i, (double) i );
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::LOCAL_CHANGED &&
          vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::SETTING )
-        utils->failure( "setValueByGlobalID leaves vector in SETTING or LOCAL_CHANGED state" );
+        utils->failure( "setValueByGlobalID leaves vector in SETTING or LOCAL_CHANGED state " + VECTOR_FACTORY::name() );
 
     // Perform a makeConsistent SET and check the result
     vector->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::Vector::UNCHANGED )
-        utils->failure( "makeConsistent leaves vector in UNCHANGED state" );
+        utils->failure( "makeConsistent leaves vector in UNCHANGED state " + VECTOR_FACTORY::name() );
     if ( vector->getGhostSize() > 0 ) {
         AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list =
             vector->getCommunicationList();
@@ -1050,9 +1063,9 @@ void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
                 testPassed = false;
         }
         if ( testPassed )
-            utils->passes( "ghost set correctly in vector" );
+            utils->passes( "ghost set correctly in vector " + VECTOR_FACTORY::name() );
         else
-            utils->failure( "ghost not set correctly in vector" );
+            utils->failure( "ghost not set correctly in vector " + VECTOR_FACTORY::name() );
     }
     if ( vector->getGhostSize() > 0 ) {
         AMP::LinearAlgebra::CommunicationList::shared_ptr comm_list =
@@ -1066,9 +1079,9 @@ void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
                 testPassed = false;
         }
         if ( testPassed )
-            utils->passes( "ghost set correctly in alias" );
+            utils->passes( "ghost set correctly in alias " + VECTOR_FACTORY::name() );
         else
-            utils->failure( "ghost set correctly in alias" );
+            utils->failure( "ghost set correctly in alias " + VECTOR_FACTORY::name() );
     }
 }
 
@@ -1097,9 +1110,9 @@ void TestMultivectorDuplicate( AMP::UnitTest *utils )
                 dof1->numGlobalDOF() == dof2->numGlobalDOF() &&
                 dof1->beginDOF() == dof2->beginDOF();
     if ( pass )
-        utils->passes( "multivector resolves multiple copies of a vector" );
+        utils->passes( "multivector resolves multiple copies of a vector " + VECTOR_FACTORY::name() );
     else
-        utils->failure( "multivector resolves multiple copies of a vector" );
+        utils->failure( "multivector resolves multiple copies of a vector " + VECTOR_FACTORY::name() );
 }
 }
 }

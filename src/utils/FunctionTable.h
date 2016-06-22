@@ -31,6 +31,7 @@ public:
      * @param[in] op        The function operation
      *                      Note: the operator is a template parameter (as posed to a std::function
      * to improve performance)
+     * Do not use this function for sum like reductions. Instead use the function below
      * @param[in] x         The array to operate on
      * @return              The reduction
      */
@@ -38,11 +39,35 @@ public:
     static inline TYPE reduce( LAMBDA &op, const Array<TYPE, FUN> &A );
 
     /*!
+     * Perform a sum reduce operator y += f(x)
+     * @param[in] op        The function operation (some form of an accumulative sum)
+     *                      Note: the operator is a template parameter (as posed to a std::function
+     * to improve performance)
+     * @param[in] x         The array to operate on
+     * @return              The reduction
+     */
+    template <class TYPE, class FUN, typename LAMBDA>
+    static inline TYPE sum( LAMBDA &op, const Array<TYPE, FUN> &A );
+
+    /*!
+     * Perform a reduce operator z = f(x,y)
+     * @param[in] op        The function operation
+     *                      Note: the operator is a template parameter (as posed to a std::function
+     * to improve performance)
+     * @param[in] x         The first array to operate on
+     * @param[in] y         The second array to operate on
+     * @return              The reduction
+     */
+    template <class TYPE, class FUN, typename LAMBDA>
+    static inline TYPE reduce( LAMBDA &op, const Array<TYPE, FUN> &A, const Array<TYPE, FUN> &B);
+
+    /*!
      * Perform a element-wise operation y = f(x)
      * @param[in] fun       The function operation
      *                      Note: the function is a template parameter (as posed to a std::function
      * to improve performance)
      * @param[in,out] x     The array to operate on
+     * @param[,out] y     The output array
      */
     template <class TYPE, class FUN, typename LAMBDA>
     static inline void transform( LAMBDA &fun, const Array<TYPE, FUN> &x, Array<TYPE, FUN> &y );
@@ -71,6 +96,9 @@ public:
     static void
     multiply( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, Array<TYPE, FUN> &c );
 
+    template <class TYPE, class FUN>
+    static bool
+    equals( const Array<TYPE, FUN> &A, const Array<TYPE, FUN> &B, TYPE tol );
 
 private:
     FunctionTable();

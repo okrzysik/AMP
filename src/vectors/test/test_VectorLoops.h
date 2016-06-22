@@ -76,6 +76,7 @@ void testBasicVector( AMP::UnitTest *ut )
     AxpyVector<FACTORY>::run_test( ut );
     AxpbyVector<FACTORY>::run_test( ut );
     CopyVector<FACTORY>::run_test( ut );
+    CopyRawDataBlockVector<FACTORY>::run_test( ut );
     VerifyVectorMin<FACTORY>( ut );
     VerifyVectorMax<FACTORY>( ut );
     VerifyVectorMaxMin<FACTORY>( ut );
@@ -91,7 +92,6 @@ void testBasicVector( AMP::UnitTest *ut )
     //    VectorIteratorTests<FACTORY>( ut );
     TestMultivectorDuplicate<FACTORY>( ut );
 }
-
 
 #ifdef USE_EXT_SUNDIALS
 template <class FACTORY>

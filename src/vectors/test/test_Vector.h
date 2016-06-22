@@ -121,7 +121,6 @@ public:
     static std::string name() { return "ArrayVectorFactory"; }
 };
 
-
 #ifdef USE_EXT_TRILINOS
 template <typename T>
 class SimpleManagedVectorFactory
