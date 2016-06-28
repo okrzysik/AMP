@@ -249,6 +249,9 @@ MACRO( INSTALL_${PROJ}_TARGET PACKAGE )
             ADD_LIBRARY( ${PACKAGE} OBJECT ${SOURCES} ${CUDASOURCES} )
             IF( USE_CUDA )
                 SET( ${PROJ}_CUDA_SOURCES ${${PROJ}_CUDA_SOURCES} ${CUDASOURCES} CACHE INTERNAL "")
+                SET( tmp ${${PROJ}_CUDA_SOURCES} )
+                LIST( REMOVE_DUPLICATES tmp )
+                SET( ${PROJ}_CUDA_SOURCES ${tmp} CACHE INTERNAL "")
             ENDIF()
         ELSE()
             # We are creating individual libraries
@@ -281,9 +284,10 @@ MACRO( INSTALL_PROJ_LIB )
     FOREACH ( tmp ${${PROJ}_LIBS} )
         SET( tmp_link_list ${tmp_link_list} $<TARGET_OBJECTS:${tmp}> )
     ENDFOREACH()
-    SET( ${PROJ}_CUDA_OBJECTS ${${PROJ}_CUDA_OBJECTS} ${CUBINS} CACHE INTERNAL "")
     IF( USE_CUDA )
-        CUDA_COMPILE( CUBINS utils/cuda/test.cu )
+        SET( ${PROJ}_CUDA_SOURCES ${${PROJ}_CUDA_SOURCES} ${CUDASOURCES} CACHE INTERNAL "")
+        CUDA_COMPILE( CUBINS ${${PROJ}_CUDA_SOURCES} )
+        MESSAGE("CUDA_COMPILE( CUBINS ${${PROJ}_CUDA_SOURCES} )")
         ADD_LIBRARY( ${${PROJ}_LIB} ${tmp_link_list} ${CUBINS} )
     ELSE()
         ADD_LIBRARY( ${${PROJ}_LIB} ${tmp_link_list} )
@@ -316,8 +320,8 @@ ENDMACRO()
 # Macro to tell cmake to use static libraries
 MACRO( SET_STATIC_FLAGS )
     # Remove extra library links
-    set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
-    set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
+    SET(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
+    SET(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
     # Add the static flag if necessary
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static") # Add static flag
     SET(CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} -static ") 
