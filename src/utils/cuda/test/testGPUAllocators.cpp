@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
     std::vector<size_t> v2 = {n,n};
     std::vector<size_t> v3 = {n,n,n};
     std::vector<size_t> v4 = {n,n,n,n};
-    std::vector<size_t> vLarge = {1e16};
+    std::vector<size_t> vLarge = {0xFFFFFFFF};
     std::vector<size_t> vEmpty = {0,0,0,0};
     //allocate a simple array
     A.resize(v1); 

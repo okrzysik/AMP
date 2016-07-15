@@ -16,7 +16,6 @@
 #include "utils/PIO.h"
 
 #include "ampmesh/Mesh.h"
-#include "ampmesh/libmesh/libMesh.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "utils/Writer.h"
@@ -30,7 +29,6 @@
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/boundary/libmesh/PressureBoundaryOperator.h"
 
 #include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/petsc/PetscKrylovSolverParameters.h"

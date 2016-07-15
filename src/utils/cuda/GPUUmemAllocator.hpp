@@ -6,6 +6,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+#include "utils/Utilities.h"
 
 inline void checkError(cudaError_t e){
     if(e != cudaSuccess){
@@ -41,6 +42,7 @@ void GPUUmemAllocator<T>::construct(T* p)
 template <typename T>
 void GPUUmemAllocator<T>::destroy(T* p)
 {
+    NULL_USE(p);
 //    delete(p);
 }
 

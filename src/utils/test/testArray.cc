@@ -25,12 +25,12 @@ public:
         data = new double[8];
         N_alloc++;
     }
-    TestAllocateClass( const TestAllocateClass &rhs )
+    TestAllocateClass( const TestAllocateClass & )
     {
         data = new double[8];
         N_alloc++;
     }
-    TestAllocateClass &operator=( const TestAllocateClass &rhs )
+    TestAllocateClass &operator=( const TestAllocateClass & )
     {
         data = new double[8];
         N_alloc++;

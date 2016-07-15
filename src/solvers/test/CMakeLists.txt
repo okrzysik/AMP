@@ -6,19 +6,19 @@ INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
 #  Adding tests and input files
 #
 #  To add a test in serial:
-#     ADD_AMP_TEST ( exe_name args )
+#     ADD_AMP_TEST( exe_name args )
 #
 #  To add a parallel test:
-#     ADD_AMP_TEST_PARALLEL ( exe_name num_cores args )
+#     ADD_AMP_TEST_PARALLEL( exe_name num_cores args )
 #
 #  To add the AMP 1, 2, and 4 processor test
-#     ADD_AMP_TEST_1_2_4 ( exe_name args )
+#     ADD_AMP_TEST_1_2_4( exe_name args )
 #
 #  To add a build target without placing in the test suite
-#     ADD_AMP_PROVISIONAL_TEST ( exe_name args )
+#     ADD_AMP_PROVISIONAL_TEST( exe_name args )
 #
 #  To add a parallel test for the weekly regression:
-#     ADD_AMP_WEEKLY_TEST ( exe_name num_cores args )
+#     ADD_AMP_WEEKLY_TEST( exe_name num_cores args )
 #
 #  To add an input file from the data/ directory
 #     COPY_TEST_FILE( input_file )
@@ -350,32 +350,43 @@ COPY_TEST_FILE( input_testPelletStackMechanicsSolver-2 )
 COPY_TEST_FILE( input_testLinearFlow-1 )
 
 
-IF ( USE_EXT_LIBMESH )
+IF( USE_EXT_LIBMESH )
+    # Tests that only require libmesh
     ADD_AMP_PROVISIONAL_TEST( testAMGuniform )
-    ADD_AMP_TEST_1_2_4 ( testMatMultiply )
-    ADD_AMP_TEST_1_2_4 ( testMatCreate )
-    ADD_AMP_TEST_1_2_4 ( testMaterialModels_VonMisesPlasticity-1 )
-    ADD_AMP_TEST_1_2_4 ( testMaterialModels_VonMisesPlasticity-2 )
+    ADD_AMP_TEST_1_2_4( testMatMultiply )
+    ADD_AMP_TEST_1_2_4( testMatCreate )
+    ADD_AMP_TEST_1_2_4( testMaterialModels_VonMisesPlasticity-1 )
+    ADD_AMP_TEST_1_2_4( testMaterialModels_VonMisesPlasticity-2 )
 ENDIF()
 
 IF( USE_EXT_PETSC )
-    ADD_AMP_TEST_1_2_4 ( testMechElasticLUvsML )
-    ADD_AMP_PROVISIONAL_TEST ( testPelletStackMechanicsSolver )
-
-    ADD_AMP_TEST_1_2_4 ( testPetscSNESSolver )
+    # Tests that only require petsc
+    ADD_AMP_TEST_1_2_4( testPetscSNESSolver )
     COPY_TEST_FILE( input_testPetscSNESSolver )
+ENDIF()
 
-    ADD_AMP_WEEKLY_TEST ( testBrickPressureBoundary-1 4 )
+
+IF( USE_EXT_TRILINOS )
+    # Tests that only require trilinos
+    IF( USE_TRILINOS_NOX )
+        COPY_TEST_FILE( input_testTrilinosNOXSolver )
+        ADD_AMP_TEST_1_2_4( testTrilinosNOXSolver )
+        ADD_AMP_TEST_1_2_4( testTrilinosNOX-NonlinearThermal-1 )
+        ADD_AMP_WEEKLY_TEST(testSubchannelSolveNOX 8 testSubchannelSolveNOX-1 )
+        COPY_TEST_FILE( input_testSubchannelSolveNOX-1 )
+        ADD_AMP_TEST(testSubchannelSolutionNOX)
+        ADD_AMP_TEST( testUpdatedLagrangianMechanics-eigenValues-1 )
+    ENDIF()
+ENDIF()
+
+IF( USE_EXT_PETSC AND USE_EXT_LIBMESH )
+    # Tests that require libmesh and petsc
     COPY_TEST_FILE( input_testBrickPressureBoundary-1 )
 
-    ADD_AMP_TEST ( testJacobiVsML )
+    ADD_AMP_TEST( testJacobiVsML )
     COPY_TEST_FILE( input_testJacobiVsML )
-
-    ADD_AMP_PROVISIONAL_TEST ( testDiffusionMMSInverse )
-
-    ADD_AMP_PROVISIONAL_TEST ( testPetscSNESSolver-NonlinearMechanics-Cylinder-1 4 )
     
-    ADD_AMP_TEST ( testLinearThermalExpansion )
+    ADD_AMP_TEST( testLinearThermalExpansion )
 
     COPY_TEST_FILE( input_testLinearThermalExpansion )
 
@@ -383,137 +394,128 @@ IF( USE_EXT_PETSC )
     COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearMechanics-PlateWithHole-1 )
     COPY_MESH_FILE( thick_walled_cylinder_ver2.e )
 
-    ADD_AMP_PROVISIONAL_TEST ( testUpdatedLagrangianThermoMechanics-LinearElasticity-1 1 )
+    ADD_AMP_PROVISIONAL_TEST( testUpdatedLagrangianThermoMechanics-LinearElasticity-1 1 )
     COPY_TEST_FILE( input_testUpdatedLagrangianThermoMechanics-LinearElasticity-1 )
 
-    ADD_AMP_TEST ( testUpdatedLagrangianMechanics-eigenValues-1 )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-eigenValues-1 )
 
-    ADD_AMP_PROVISIONAL_TEST ( testPericElastoViscoPlasticity )
+    ADD_AMP_PROVISIONAL_TEST( testPericElastoViscoPlasticity )
     COPY_TEST_FILE( input_testPericElastoViscoPlasticity-1 )
     COPY_TEST_FILE( input_testPericElastoViscoPlasticity-2 )
 
-    ADD_AMP_PROVISIONAL_TEST  ( testUpdatedLagrangianMechanics-NonlinearPlasticity 1 )
+    ADD_AMP_PROVISIONAL_TEST( testUpdatedLagrangianMechanics-NonlinearPlasticity 1 )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-NonlinearPlasticity-1 )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-NonlinearPlasticity-2 )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-NonlinearPlasticity-1a )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-NonlinearPlasticity-2a )
 
-    ADD_AMP_PROVISIONAL_TEST ( testUpdatedLagrangianMechanics-DisplacementPlasticity )
+    ADD_AMP_PROVISIONAL_TEST( testUpdatedLagrangianMechanics-DisplacementPlasticity )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-DisplacementPlasticity-1 )
 
-    ADD_AMP_PROVISIONAL_TEST ( testPericElastoViscoPlasticity-LoadPrescribed )
+    ADD_AMP_PROVISIONAL_TEST( testPericElastoViscoPlasticity-LoadPrescribed )
     COPY_TEST_FILE( input_testPericElastoViscoPlasticity-LoadPrescribed-1 )
     COPY_TEST_FILE( input_testPericElastoViscoPlasticity-LoadPrescribed-2 )
 
-    ADD_AMP_TEST ( testElementLevel-PericElastoViscoPlasticity )
+    ADD_AMP_TEST( testElementLevel-PericElastoViscoPlasticity )
     COPY_TEST_FILE( input_testElementLevel-PericElastoViscoPlasticity-1 )
 
-    ADD_AMP_TEST ( testMaterialModels-PericElastoViscoPlasticity-1 )
+    ADD_AMP_TEST( testMaterialModels-PericElastoViscoPlasticity-1 )
     COPY_TEST_FILE( input_testMaterialModels-PericElastoViscoPlasticity-1 )
 
-    ADD_AMP_WEEKLY_TEST ( testCook 8 )
-    ADD_AMP_WEEKLY_TEST ( testCook 1 )
-    ADD_AMP_WEEKLY_TEST ( testCook_Plastic 8 )
-    ADD_AMP_WEEKLY_TEST ( testCook_Plastic 1 )
+    ADD_AMP_WEEKLY_TEST( testCook 8 )
+    ADD_AMP_WEEKLY_TEST( testCook 1 )
+    ADD_AMP_WEEKLY_TEST( testCook_Plastic 8 )
+    ADD_AMP_WEEKLY_TEST( testCook_Plastic 1 )
 
-    ADD_AMP_WEEKLY_TEST ( testMacNealstraightBeam-regular 2 )
-    ADD_AMP_PROVISIONAL_TEST ( testNonlinearThermalContact-1DFlow 8 )
-    ADD_AMP_TEST_1_2_4 ( testThermalRobinFlow-2 )
-    ADD_AMP_TEST ( testElementLevel-VonMisesPlasticity-LoadingUnloadingLoop )
-    ADD_AMP_WEEKLY_TEST ( testTrilinosMLSolver-LinearThermalOperator-2 8 )
-    ADD_AMP_PROVISIONAL_TEST ( testNonlinearThermalContact-1 8 )
-    ADD_AMP_WEEKLY_TEST ( testElementLevel-VonMisesPlasticity 1 )
+    ADD_AMP_WEEKLY_TEST( testMacNealstraightBeam-regular 2 )
+    ADD_AMP_PROVISIONAL_TEST( testNonlinearThermalContact-1DFlow 8 )
+    ADD_AMP_TEST_1_2_4( testThermalRobinFlow-2 )
+    ADD_AMP_TEST( testElementLevel-VonMisesPlasticity-LoadingUnloadingLoop )
+    ADD_AMP_WEEKLY_TEST( testTrilinosMLSolver-LinearThermalOperator-2 8 )
+    ADD_AMP_PROVISIONAL_TEST( testNonlinearThermalContact-1 8 )
+    ADD_AMP_WEEKLY_TEST( testElementLevel-VonMisesPlasticity 1 )
 
     ADD_AMP_TEST_PARALLEL(testSubchannelSolve 4 testSubchannelSolve-3 )
     ADD_AMP_WEEKLY_TEST(testSubchannelSolve 8 testSubchannelSolve-1 )
     ADD_AMP_TEST(testSubchannelSolution)
     ADD_AMP_PROVISIONAL_TEST( testSubchannelFourEqMMS )
-ENDIF()
 
-IF( USE_EXT_TRILINOS )
-    IF( USE_TRILINOS_NOX )
-        COPY_TEST_FILE( input_testTrilinosNOXSolver )
-        ADD_AMP_TEST_1_2_4 ( testTrilinosNOXSolver )
-        ADD_AMP_TEST_1_2_4 ( testTrilinosNOX-NonlinearThermal-1 )
-        ADD_AMP_WEEKLY_TEST(testSubchannelSolveNOX 8 testSubchannelSolveNOX-1 )
-        COPY_TEST_FILE( input_testSubchannelSolveNOX-1 )
-        ADD_AMP_TEST(testSubchannelSolutionNOX)
-    ENDIF()
-ENDIF()
+    ADD_AMP_TEST_1_2_4( testMechElasticLUvsML )
+    ADD_AMP_WEEKLY_TEST( testBrickPressureBoundary-1 4 )
+    ADD_AMP_PROVISIONAL_TEST( testDiffusionMMSInverse )
+    ADD_AMP_PROVISIONAL_TEST( testPelletStackMechanicsSolver )
+    ADD_AMP_PROVISIONAL_TEST( testPetscSNESSolver-NonlinearMechanics-Cylinder-1 4 )
 
-IF( USE_EXT_PETSC )
+    ADD_AMP_TEST( testElementLevel-VonMisesPlasticity-LoadingUnloading )
 
-    ADD_AMP_TEST ( testElementLevel-VonMisesPlasticity-LoadingUnloading )
+    ADD_AMP_TEST( testElasticThermalPatch )
+    ADD_AMP_TEST( testLinearElasticity-2-element )
+    ADD_AMP_TEST( testLinearElasticity-patch-1 )
+    ADD_AMP_TEST( testLinearElasticity-patch-2 )
 
-    ADD_AMP_TEST ( testElasticThermalPatch )
-    ADD_AMP_TEST ( testLinearElasticity-2-element )
-    ADD_AMP_TEST ( testLinearElasticity-patch-1 )
-    ADD_AMP_TEST ( testLinearElasticity-patch-2 )
-
-    ADD_AMP_WEEKLY_TEST ( testUpdatedLagrangianMechanics-LinearElasticity-1 1 )
+    ADD_AMP_WEEKLY_TEST( testUpdatedLagrangianMechanics-LinearElasticity-1 1 )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-LinearElasticity-1 )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-LinearElasticity-1a )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-LinearElasticity-1b )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-LinearElasticity-1c )
-    ADD_AMP_PROVISIONAL_TEST ( testUpdatedLagrangianMechanics-LinearElasticity-2 1 )
+    ADD_AMP_PROVISIONAL_TEST( testUpdatedLagrangianMechanics-LinearElasticity-2 1 )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-LinearElasticity-2 )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-LinearElasticity-3 )
-    ADD_AMP_PROVISIONAL_TEST ( testSmallStrainMechanics-ThermoMechanics-1 1 )
+    ADD_AMP_PROVISIONAL_TEST( testSmallStrainMechanics-ThermoMechanics-1 1 )
     COPY_TEST_FILE( input_testSmallStrainMechanics-ThermoMechanics-1 )
-    ADD_AMP_TEST ( testUpdatedLagrangianMechanics-FlanaganTaylorElement-1 )
+    ADD_AMP_TEST( testUpdatedLagrangianMechanics-FlanaganTaylorElement-1 )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-FlanaganTaylorElement-1 )
 
-    ADD_AMP_TEST ( testMatrixFreeML )
+    ADD_AMP_TEST( testMatrixFreeML )
     COPY_TEST_FILE( input_testMatrixFreeML-1 )
 
-    ADD_AMP_PROVISIONAL_TEST ( testLinearFlow-1 )
+    ADD_AMP_PROVISIONAL_TEST( testLinearFlow-1 )
 
-    ADD_AMP_PROVISIONAL_TEST ( testMeshRefinementDiffusion-1 )
+    ADD_AMP_PROVISIONAL_TEST( testMeshRefinementDiffusion-1 )
     COPY_TEST_FILE( input_testMeshRefinementDiffusion-1 )
 
-    ADD_AMP_WEEKLY_TEST ( testFixedBeam-ThermalExpansion 1 )
-    ADD_AMP_WEEKLY_TEST ( testFixedBeam-CreepLoading 1 )
-    ADD_AMP_WEEKLY_TEST ( testPetscSNESSolver-NonlinearMechanics-2_COMPARISON 1 )
+    ADD_AMP_WEEKLY_TEST( testFixedBeam-ThermalExpansion 1 )
+    ADD_AMP_WEEKLY_TEST( testFixedBeam-CreepLoading 1 )
+    ADD_AMP_WEEKLY_TEST( testPetscSNESSolver-NonlinearMechanics-2_COMPARISON 1 )
 
-    #ADD_AMP_TEST_1_2_4 ( mechanicsVerification )   # Move to WEEKLY until it is running
-    ADD_AMP_PROVISIONAL_TEST ( mechanicsVerification 1 )
-    ADD_AMP_PROVISIONAL_TEST ( mechanicsVerification 2 )
-    ADD_AMP_PROVISIONAL_TEST ( mechanicsVerification 4 )
+    #ADD_AMP_TEST_1_2_4( mechanicsVerification )   # Move to WEEKLY until it is running
+    ADD_AMP_PROVISIONAL_TEST( mechanicsVerification 1 )
+    ADD_AMP_PROVISIONAL_TEST( mechanicsVerification 2 )
+    ADD_AMP_PROVISIONAL_TEST( mechanicsVerification 4 )
     COPY_TEST_FILE( input_mechanicsVerification-HaldenPellet )
     COPY_TEST_FILE( input_mechanicsVerification-Linear )
 
-    ADD_AMP_TEST_1_2_4 ( testFlowSolver )
-    ADD_AMP_WEEKLY_TEST ( testLinearMechanics-PressureBoundary 1 )
-    ADD_AMP_WEEKLY_TEST ( testLinearMechanics-PressureBoundary 2 )
-    ADD_AMP_TEST_PARALLEL ( testLinearMechanics-PressureBoundary 4 )
-    ADD_AMP_TEST_1_2_4 ( testTrilinosMLSolver-LinearElasticityOperator-1 )
-    ADD_AMP_TEST_1_2_4 ( testLinearRobinBoundaryOperator-1 )
-    #ADD_AMP_TEST_1_2_4 ( testThermalRobinFlow-1 )
-    ADD_AMP_TEST_1_2_4 ( testTrilinosMLSolver-LinearThermalRobin )
-    ADD_AMP_TEST_1_2_4 ( testTrilinosMLSolver-LinearThermalOperator-bar )
-    ADD_AMP_TEST_1_2_4 ( testTrilinosMLSolver-LinearFickOperator-bar )
-    ADD_AMP_TEST_1_2_4 ( testTrilinosMLSolver-LinearThermalOperator-cylinder )
-    ADD_AMP_TEST_1_2_4 ( testColumnSolver-LinearThermalAndFick-1 )
-    ADD_AMP_TEST_1_2_4 ( testFlowSolution-1 )
-    ADD_AMP_PROVISIONAL_TEST ( testFlowSolution-2 1)
-    ADD_AMP_PROVISIONAL_TEST ( testFlowSolution-2 2)
-    ADD_AMP_PROVISIONAL_TEST ( testFlowSolution-2 4)
+    ADD_AMP_TEST_1_2_4( testFlowSolver )
+    ADD_AMP_WEEKLY_TEST( testLinearMechanics-PressureBoundary 1 )
+    ADD_AMP_WEEKLY_TEST( testLinearMechanics-PressureBoundary 2 )
+    ADD_AMP_TEST_PARALLEL( testLinearMechanics-PressureBoundary 4 )
+    ADD_AMP_TEST_1_2_4( testTrilinosMLSolver-LinearElasticityOperator-1 )
+    ADD_AMP_TEST_1_2_4( testLinearRobinBoundaryOperator-1 )
+    #ADD_AMP_TEST_1_2_4( testThermalRobinFlow-1 )
+    ADD_AMP_TEST_1_2_4( testTrilinosMLSolver-LinearThermalRobin )
+    ADD_AMP_TEST_1_2_4( testTrilinosMLSolver-LinearThermalOperator-bar )
+    ADD_AMP_TEST_1_2_4( testTrilinosMLSolver-LinearFickOperator-bar )
+    ADD_AMP_TEST_1_2_4( testTrilinosMLSolver-LinearThermalOperator-cylinder )
+    ADD_AMP_TEST_1_2_4( testColumnSolver-LinearThermalAndFick-1 )
+    ADD_AMP_TEST_1_2_4( testFlowSolution-1 )
+    ADD_AMP_PROVISIONAL_TEST( testFlowSolution-2 1)
+    ADD_AMP_PROVISIONAL_TEST( testFlowSolution-2 2)
+    ADD_AMP_PROVISIONAL_TEST( testFlowSolution-2 4)
 
-    ADD_AMP_PROVISIONAL_TEST ( testPetscSNESSolver-NonlinearThermoMechanics-1 8)
-    ADD_AMP_PROVISIONAL_TEST ( testPetscSNESSolver-NonlinearMechanics-1 1)
-    ADD_AMP_TEST_1_2_4 ( testPetscSNESSolver-JFNK-NonlinearMechanics-1 )
-    ADD_AMP_WEEKLY_TEST ( testPetscSNESSolver-NonlinearMechanics-2 6)
-    ADD_AMP_WEEKLY_TEST ( testPetscSNESSolver-NonlinearMechanics-2 1)
-    ADD_AMP_TEST_1_2_4 ( testPetscSNESSolver-NonlinearThermal-1 )
-    ADD_AMP_WEEKLY_TEST ( testPetscSNESSolver-NonlinearThermal-2 8 )
-    ADD_AMP_WEEKLY_TEST ( testPetscSNESSolver-NonlinearFick-1 8 )
+    ADD_AMP_PROVISIONAL_TEST( testPetscSNESSolver-NonlinearThermoMechanics-1 8)
+    ADD_AMP_PROVISIONAL_TEST( testPetscSNESSolver-NonlinearMechanics-1 1)
+    ADD_AMP_TEST_1_2_4( testPetscSNESSolver-JFNK-NonlinearMechanics-1 )
+    ADD_AMP_WEEKLY_TEST( testPetscSNESSolver-NonlinearMechanics-2 6)
+    ADD_AMP_WEEKLY_TEST( testPetscSNESSolver-NonlinearMechanics-2 1)
+    ADD_AMP_TEST_1_2_4( testPetscSNESSolver-NonlinearThermal-1 )
+    ADD_AMP_WEEKLY_TEST( testPetscSNESSolver-NonlinearThermal-2 8 )
+    ADD_AMP_WEEKLY_TEST( testPetscSNESSolver-NonlinearFick-1 8 )
     ADD_AMP_WEEKLY_TEST( testPetscSNESSolver-NonlinearFickSoret-1 1)
     ADD_AMP_WEEKLY_TEST( testPetscSNESSolver-NonlinearFickSoret-1 2)
     ADD_AMP_TEST_PARALLEL( testPetscSNESSolver-NonlinearFickSoret-1 4 )
-    ADD_AMP_TEST_1_2_4 ( testPetscSNESSolver-NonlinearFickSoret-2 )
+    ADD_AMP_TEST_1_2_4( testPetscSNESSolver-NonlinearFickSoret-2 )
 
-    ADD_AMP_PROVISIONAL_TEST ( testPetscSNESSolver-IncompressibleFlow-1 1)
+    ADD_AMP_PROVISIONAL_TEST( testPetscSNESSolver-IncompressibleFlow-1 1)
 
 ENDIF()
 
