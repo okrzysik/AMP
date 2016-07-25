@@ -54,38 +54,25 @@ inline void FunctionTable::rand<int>( size_t N, int *x )
 *  Reduction                                            *
 ********************************************************/
 template <class TYPE, class FUN, typename LAMBDA>
-inline TYPE FunctionTable::reduce( LAMBDA &op, const Array<TYPE, FUN> &A )
+inline TYPE FunctionTable::reduce( LAMBDA &op, const Array<TYPE, FUN> &A, const TYPE& initialValue )
 {
     if ( A.length() == 0 )
         return TYPE();
     const TYPE *x = A.data();
-    TYPE y        = x[0];  
+    TYPE y        = initialValue;  
     for ( size_t i = 0; i < A.length(); i++ ) 
         y = op( x[i], y );
     return y;
 }
 template <class TYPE, class FUN, typename LAMBDA>
-inline TYPE FunctionTable::sum( LAMBDA &op, const Array<TYPE, FUN> &A )
-{
-    if ( A.length() == 0 )
-        return TYPE();
-    const TYPE *x = A.data();
-    TYPE y        = 0.0;
-    for ( size_t i = 0; i < A.length(); i++ ) 
-        y = op( x[i], y );
-    return y;
-}
-
-template <class TYPE, class FUN, typename LAMBDA>
-inline TYPE FunctionTable::reduce( LAMBDA &op, const Array<TYPE, FUN> &A, const Array<TYPE, FUN> &B  )
+inline TYPE FunctionTable::reduce( LAMBDA &op, const Array<TYPE, FUN> &A, const Array<TYPE, FUN> &B, const TYPE& initialValue )
 {
     ARRAY_ASSERT(A.length()==B.length());
     if ( A.length() == 0 )
         return TYPE();
     const TYPE *x = A.data();
     const TYPE *y = B.data();
-
-    TYPE z        = 0.0;  // this code is currently buggy as it only works for reduce operations happy with the starting value of 0
+    TYPE z        = initialValue;  
     for ( size_t i = 0; i < A.length(); i++ )
         z = op( x[i], y[i], z );
     return z;

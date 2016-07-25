@@ -28,57 +28,43 @@ public:
 
     /*!
      * Perform a reduce operator y = f(x)
-     * @param[in] op        The function operation
-     *                      Note: the operator is a template parameter (as posed to a std::function
-     * to improve performance)
-     * Do not use this function for sum like reductions. Instead use the function below
-     * @param[in] x         The array to operate on
-     * @return              The reduction
+     * @param[in] op            The function operation
+     *                          Note: the operator is a template parameter to improve performance
+     * @param[in] x             The array to operate on
+     * @param[in] initialValue  The initial value for the reduction (0 for sum, +/- inf for min/max, ...)
+     * @return                  The reduction
      */
     template <class TYPE, class FUN, typename LAMBDA>
-    static inline TYPE reduce( LAMBDA &op, const Array<TYPE, FUN> &A );
-
-    /*!
-     * Perform a sum reduce operator y += f(x)
-     * @param[in] op        The function operation (some form of an accumulative sum)
-     *                      Note: the operator is a template parameter (as posed to a std::function
-     * to improve performance)
-     * @param[in] x         The array to operate on
-     * @return              The reduction
-     */
-    template <class TYPE, class FUN, typename LAMBDA>
-    static inline TYPE sum( LAMBDA &op, const Array<TYPE, FUN> &A );
+    static inline TYPE reduce( LAMBDA &op, const Array<TYPE, FUN> &A, const TYPE& initialValue );
 
     /*!
      * Perform a reduce operator z = f(x,y)
-     * @param[in] op        The function operation
-     *                      Note: the operator is a template parameter (as posed to a std::function
-     * to improve performance)
-     * @param[in] x         The first array to operate on
-     * @param[in] y         The second array to operate on
-     * @return              The reduction
+     * @param[in] op            The function operation
+     *                          Note: the operator is a template parameter to improve performance
+     * @param[in] x             The first array to operate on
+     * @param[in] y             The second array to operate on
+     * @param[in] initialValue  The initial value for the reduction (0 for sum, +/- inf for min/max, ...)
+     * @return                  The reduction
      */
     template <class TYPE, class FUN, typename LAMBDA>
-    static inline TYPE reduce( LAMBDA &op, const Array<TYPE, FUN> &A, const Array<TYPE, FUN> &B);
+    static inline TYPE reduce( LAMBDA &op, const Array<TYPE, FUN> &A, const Array<TYPE, FUN> &B, const TYPE& initialValue );
 
     /*!
      * Perform a element-wise operation y = f(x)
-     * @param[in] fun       The function operation
-     *                      Note: the function is a template parameter (as posed to a std::function
-     * to improve performance)
-     * @param[in,out] x     The array to operate on
-     * @param[,out] y     The output array
+     * @param[in] fun           The function operation
+     *                          Note: the function is a template parameter to improve performance
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
      */
     template <class TYPE, class FUN, typename LAMBDA>
     static inline void transform( LAMBDA &fun, const Array<TYPE, FUN> &x, Array<TYPE, FUN> &y );
 
     /*!
      * Perform a element-wise operation z = f(x,y)
-     * @param[in] fun       The function operation
-     *                      Note: the function is a template parameter (as posed to a std::function
-     * to improve performance)
-     * @param[in] x         The first array
-     * @param[in] y         The second array
+     * @param[in] fun           The function operation
+     *                          Note: the function is a template parameter to improve performance
+     * @param[in] x             The first array
+     * @param[in] y             The second array
      */
     template <class TYPE, class FUN, typename LAMBDA>
     static inline void transform( LAMBDA &fun,
@@ -93,12 +79,16 @@ public:
      * @param[out] c            The output array
      */
     template <class TYPE, class FUN>
-    static void
-    multiply( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, Array<TYPE, FUN> &c );
+    static void multiply( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, Array<TYPE, FUN> &c );
 
+    /*!
+     * Check if two arrays are approximately equal
+     * @param[in] a             The first array
+     * @param[in] b             The second array
+     * @param[in] TOL           The tolerance
+     */
     template <class TYPE, class FUN>
-    static bool
-    equals( const Array<TYPE, FUN> &A, const Array<TYPE, FUN> &B, TYPE tol );
+    static bool  equals( const Array<TYPE, FUN> &A, const Array<TYPE, FUN> &B, TYPE tol );
 
 private:
     FunctionTable();

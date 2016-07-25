@@ -368,7 +368,7 @@ double ArrayVector<T, FUN, Allocator>::L1Norm( void ) const
 {
     auto fun = []( const T &xval, T &accum){ return accum+std::abs(xval); };
     auto &array = this->getArray();
-    auto local_norm = FUN::sum(fun, array);
+    auto local_norm = FUN::reduce( fun, array, (T) 0 );
     auto global_norm = d_comm.sumReduce( local_norm );
     return global_norm;
 }
@@ -382,7 +382,7 @@ double ArrayVector<T, FUN, Allocator>::L2Norm( void ) const
 {
     auto fun = []( const T &xval, T &accum){ return accum+xval*xval; };
     auto &array = this->getArray();
-    auto local_norm = FUN::sum(fun, array);
+    auto local_norm = FUN::reduce( fun, array, (T) 0 );
     auto global_norm = d_comm.sumReduce( local_norm );
     return std::sqrt(global_norm);
 }
@@ -396,7 +396,7 @@ double ArrayVector<T, FUN, Allocator>::maxNorm( void ) const
 {
     auto fun = []( const T &xval, T &tmax){ return std::max(std::abs(tmax),std::abs(xval)); };
     auto &array = this->getArray();
-    auto local_norm = FUN::reduce(fun, array);
+    auto local_norm = FUN::reduce( fun, array, array(0) );
     auto global_norm = d_comm.maxReduce( local_norm );
     return global_norm;
 }
@@ -413,7 +413,7 @@ double ArrayVector<T, FUN, Allocator>::dot( const VectorOperations &x ) const
     auto fun = []( const T &xval, const T &yval, T &dotp){ return dotp+xval*yval; };
     auto &array = this->getArray();
     const auto &xarray = xa.getArray();
-    auto local_dotp = FUN::reduce(fun, xarray, array);
+    auto local_dotp = FUN::reduce( fun, xarray, array, (T) 0 );
     auto global_dotp = d_comm.sumReduce( local_dotp );
     return global_dotp;
 }

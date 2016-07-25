@@ -1073,19 +1073,19 @@ template <class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::min() const
 {
     const auto &fun = []( const TYPE &a, const TYPE &b ) { return a < b ? a : b; };
-    return FUN::reduce( fun, *this );
+    return FUN::reduce( fun, *this, d_data[0] );
 }
 template <class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::max() const
 {
     const auto &fun = []( const TYPE &a, const TYPE &b ) { return a > b ? a : b; };
-    return FUN::reduce( fun, *this );
+    return FUN::reduce( fun, *this, d_data[0] );
 }
 template <class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::sum() const
 {
     const auto &fun = []( const TYPE &a, const TYPE &b ) { return a + b; };
-    return FUN::sum( fun, *this );
+    return FUN::reduce( fun, *this, (TYPE) 0 );
 }
 template <class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>
