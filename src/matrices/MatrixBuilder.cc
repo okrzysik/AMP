@@ -5,13 +5,13 @@
 
 #include "discretization/DOF_Manager.h"
 
-#ifdef USE_EXT_PETSC
-#include "matrices/petsc/ManagedPetscMatrix.h"
-#include "vectors/petsc/ManagedPetscVector.h"
-#endif
 #ifdef USE_EXT_TRILINOS
-#include "matrices/trilinos/ManagedEpetraMatrix.h"
-#include "vectors/trilinos/EpetraVectorEngine.h"
+    #include "matrices/trilinos/ManagedEpetraMatrix.h"
+    #include "vectors/trilinos/EpetraVectorEngine.h"
+    #ifdef USE_EXT_PETSC
+        #include "matrices/petsc/ManagedPetscMatrix.h"
+        #include "vectors/petsc/ManagedPetscVector.h"
+    #endif
 #endif
 
 
