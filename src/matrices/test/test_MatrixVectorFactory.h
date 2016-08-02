@@ -6,7 +6,7 @@
 #include "utils/UnitTest.h"
 #include "vectors/Vector.h"
 
-#ifdef USE_EXT_PETSC
+#if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
 #include "matrices/petsc/PetscMatrix.h"
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/petsc/NativePetscVector.h"
@@ -72,7 +72,7 @@ public:
 };
 
 
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_PETSC )
+#if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
 
 class PETScInterfaceLeftVectorFactory
 {

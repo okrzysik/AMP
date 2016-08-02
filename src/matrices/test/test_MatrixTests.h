@@ -8,7 +8,7 @@
 #include "../../vectors/test/test_VectorLoops.h"
 #include "test_MatrixVectorFactory.h"
 
-#ifdef USE_EXT_PETSC
+#if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
 #include "matrices/petsc/ManagedPetscMatrix.h"
 #endif
 
@@ -69,7 +69,7 @@ public:
         global_cached_matrix = FACTORY::getMatrix();
         testManagedVector<AmpInterfaceRightVectorFactory>( utils );
         testManagedVector<AmpInterfaceLeftVectorFactory>( utils );
-#ifdef USE_EXT_PETSC
+#if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
         if ( global_cached_matrix->isA<AMP::LinearAlgebra::ManagedPetscMatrix>() ) {
             testManagedVector<PETScInterfaceRightVectorFactory>( utils );
             testManagedVector<PETScInterfaceLeftVectorFactory>( utils );

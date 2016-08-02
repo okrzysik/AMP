@@ -350,7 +350,7 @@ COPY_TEST_FILE( input_testPelletStackMechanicsSolver-2 )
 COPY_TEST_FILE( input_testLinearFlow-1 )
 
 
-IF( USE_EXT_LIBMESH )
+IF( USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
     # Tests that only require libmesh
     ADD_AMP_PROVISIONAL_TEST( testAMGuniform )
     ADD_AMP_TEST_1_2_4( testMatMultiply )
@@ -359,7 +359,7 @@ IF( USE_EXT_LIBMESH )
     ADD_AMP_TEST_1_2_4( testMaterialModels_VonMisesPlasticity-2 )
 ENDIF()
 
-IF( USE_EXT_PETSC )
+IF( USE_EXT_PETSC AND USE_EXT_TRILINOS )
     # Tests that only require petsc
     ADD_AMP_TEST_1_2_4( testPetscSNESSolver )
     COPY_TEST_FILE( input_testPetscSNESSolver )
@@ -379,7 +379,7 @@ IF( USE_EXT_TRILINOS )
     ENDIF()
 ENDIF()
 
-IF( USE_EXT_PETSC AND USE_EXT_LIBMESH )
+IF( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
     # Tests that require libmesh and petsc
     COPY_TEST_FILE( input_testBrickPressureBoundary-1 )
 

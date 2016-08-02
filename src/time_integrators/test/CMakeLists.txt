@@ -36,13 +36,13 @@ COPY_TEST_FILE( input_testOxideTimeIntegrator-1 )
 COPY_MESH_FILE ( unitCubeDirichlet.e )
 COPY_MESH_FILE ( simple_linear_thermomech.e )
 
-IF ( USE_EXT_LIBMESH )
+IF ( USE_EXT_LIBMESH AND USE_EXT_TRILINOS AND USE_EXT_PETSC )
     ADD_AMP_PROVISIONAL_TEST( testBackwardEulerTimeIntegrator )    
 ENDIF()
 
 
 # Sundials tests
-IF ( USE_EXT_SUNDIALS )
+IF ( USE_EXT_SUNDIALS AND USE_EXT_TRILINOS AND USE_EXT_PETSC )
     ADD_AMP_TEST ( testIDATimeIntegrator )
     ADD_AMP_TEST_1_2_4 ( testIDA-LinearBVPOperator-1 )
     ADD_AMP_TEST_1_2_4 ( testIDA-NonlinearBVPOperator-1 )
