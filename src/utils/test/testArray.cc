@@ -30,10 +30,12 @@ public:
         data = new double[8];
         N_alloc++;
     }
-    TestAllocateClass &operator=( const TestAllocateClass & )
+    TestAllocateClass &operator=( const TestAllocateClass &rhs )
     {
-        data = new double[8];
-        N_alloc++;
+        if ( this != &rhs ) {
+            data = new double[8];
+            N_alloc++;
+        }
         return *this;
     }
     TestAllocateClass( TestAllocateClass &&rhs )
@@ -43,8 +45,10 @@ public:
     }
     TestAllocateClass &operator=( TestAllocateClass &&rhs )
     {
-        data     = rhs.data;
-        rhs.data = NULL;
+        if ( this != &rhs ) {
+            data     = rhs.data;
+            rhs.data = NULL;
+        }
         return *this;
     }
     ~TestAllocateClass()
