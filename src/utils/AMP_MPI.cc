@@ -1034,7 +1034,7 @@ void MPI_CLASS::abort() const
     MPI_Comm comm = communicator;
     if ( comm == MPI_COMM_NULL )
         comm = MPI_COMM_WORLD;
-    if ( MPI_active() ) {
+    if ( !MPI_active() ) {
         // MPI is not availible
         exit( -1 );
     } else if ( comm_size > 1 ) {

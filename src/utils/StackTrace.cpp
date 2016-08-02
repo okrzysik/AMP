@@ -393,6 +393,7 @@ static void getFileAndLine( StackTrace::stack_info &info )
         void *load_address = loadAddress( info.object );
         if ( load_address==0 )
             return;
+#if 0
         // Call atos to get the object info
         char buf[4096];
         sprintf( buf, "atos -o %s -l %lx %lx 2> /dev/null", info.object.c_str(),
@@ -417,6 +418,7 @@ static void getFileAndLine( StackTrace::stack_info &info )
         if ( info.line==0 )
             info.line = std::get<3>(data);
         pclose( f );
+#endif
     #endif
 }
 // Try to use the global symbols to decode info about the stack
