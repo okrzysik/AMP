@@ -103,9 +103,6 @@ IF ( NOT ONLY_BUILD_DOCS )
 ENDIF()
 
 
-
-
-
 # Create the target for documentation
 ADD_CUSTOM_TARGET( doc )
 ADD_CUSTOM_TARGET( latex_docs )
@@ -211,6 +208,7 @@ ENDIF()
 # Save the configuration info for applications 
 IF ( NOT ONLY_BUILD_DOCS )
     INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/save_variables.cmake )
+    CONFIGURE_FILE( cmake/FindAMP.template.cmake "${${PROJ}_INSTALL_DIR}/FindAMP.cmake" @ONLY )
     COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cppcheck.cmake" "${${PROJ}_INSTALL_DIR}/cmake/cppcheck.cmake" )
     COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SharedPtr.cmake" "${${PROJ}_INSTALL_DIR}/cmake/SharedPtr.cmake" )
     COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/WriteRepoVersion.cmake" "${${PROJ}_INSTALL_DIR}/cmake/WriteRepoVersion.cmake" )
