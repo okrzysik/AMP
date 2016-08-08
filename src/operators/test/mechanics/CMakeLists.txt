@@ -1,5 +1,3 @@
-INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
-
 COPY_MESH_FILE( brick.e )
 
 ADD_AMP_TEST_1_2_4 ( testLinearMechanics-reset-1 )

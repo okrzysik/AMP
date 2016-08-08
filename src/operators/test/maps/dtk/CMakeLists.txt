@@ -1,5 +1,3 @@
-INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
-
 COPY_TEST_FILE( input_testDTKEntity )
 ADD_AMP_TEST_1_2_4( testDTKEntity )
 

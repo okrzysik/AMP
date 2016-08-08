@@ -1,8 +1,3 @@
-SET( PROJ AMP )
-INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
-INCLUDE( "${AMP_SOURCE_DIR}/cmake/configureAMP.cmake" )
-SET_AMP_PACKAGE_FLAGS()
-
 BEGIN_PACKAGE_CONFIG( solvers )
 ADD_PACKAGE_SUBDIRECTORY( newFrozenVectorDesign )
 IF ( USE_EXT_DENDRO )
@@ -12,7 +7,6 @@ IF( USE_EXT_PETSC AND USE_EXT_TRILINOS )
     ADD_PACKAGE_SUBDIRECTORY( petsc )
 ELSEIF ( USE_EXT_PETSC )
     # Note: currently petsc matricies require trilinos, this needs to be fixed
-    MESSAGE( STATUS "Disabling PETSc operators without support for PETSc matricies" )
 ENDIF()
 IF ( USE_EXT_TRILINOS )
     ADD_PACKAGE_SUBDIRECTORY( trilinos )

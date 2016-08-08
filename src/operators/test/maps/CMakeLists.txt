@@ -1,6 +1,3 @@
-INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
-
-
 # Add Jacobian map
 ADD_AMP_PROVISIONAL_TEST ( testJacobianMap )
 COPY_MESH_FILE ( distortedElementMesh )

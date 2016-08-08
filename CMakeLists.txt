@@ -12,50 +12,69 @@ MESSAGE ("Configuring AMP")
 MESSAGE ("===============")
 
 
-# Check if we used the TPL builder (required before PROJECT)
+# Set the project name
 SET( PROJ AMP )
-SET( AMP_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-SET( AMP_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}" )
-IF( AMP_INSTALL_DIR )
-    SET( AMP_INSTALL_DIR "${AMP_INSTALL_DIR}" )
-ELSEIF( NOT AMP_INSTALL_DIR )
-    SET( AMP_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/ampdir" )
+SET( AMP_LIB amp )
+
+
+# Initialize the project (should disable langagues that the TPL builder will enable)
+PROJECT( ${PROJ} LANGUAGES )
+
+
+# Prevent users from building in place
+IF ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}" )
+    MESSAGE( FATAL_ERROR "Building code in place is a bad idea" )
 ENDIF()
-INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros.cmake" )
-INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake" )
+
+
+# Set source/install paths
+SET( ${PROJ}_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src" )
+SET( ${PROJ}_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}" )
+IF( ${PROJ}_INSTALL_DIR )
+    SET( ${PROJ}_INSTALL_DIR "${${PROJ}_INSTALL_DIR}" )
+ELSEIF( NOT ${PROJ}_INSTALL_DIR )
+    SET( ${PROJ}_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/ampdir" )
+ENDIF()
+INCLUDE_DIRECTORIES( "${${PROJ}_INSTALL_DIR}/include" )
 IF ( TPL_DIRECTORY )
     INCLUDE( "${TPL_DIRECTORY}/TPLs.cmake" )
 ENDIF()
 
 
-# Set the project name
-PROJECT (AMP)
-SET( AMP_LIB amp )
-
-# Check if we are only compiling docs
-CHECK_ENABLE_FLAG( ONLY_BUILD_DOCS 0 )
-
-
-# Enable the required compilers
-ENABLE_LANGUAGE(C)
-ENABLE_LANGUAGE(CXX)
-
-
-# Re-include TPLs.cmake to fix bug with CMAKE_COMPILE_MODE being reset
-IF ( TPL_DIRECTORY )
-    INCLUDE( ${TPL_DIRECTORY}/TPLs.cmake )
-    CONFIGURE_TPLs()
+# Load the TPL package
+IF ( NOT ONLY_BUILD_DOCS )
+    IF ( NOT TPL_DIRECTORY )
+        MESSAGE( FATAL_ERROR "TPL_DIRECTORY must be specified")
+    ENDIF()
+    SET( CMAKE_MODULE_PATH "${TPL_DIRECTORY}" ${CMAKE_MODULE_PATH} )
+    IF ( NOT DEFINED TPL_LIST_REQUIRED )
+        SET( TPL_LIST_REQUIRED LAPACK )
+    ENDIF()
+    IF ( NOT DEFINED TPL_LIST_OPTIONAL )
+        SET( TPL_LIST_OPTIONAL BOOST ZLIB EIGEN PETSC HDF5 HYPRE TRILINOS SUNDIALS LIBMESH X11 OGRE TIMER )
+    ENDIF()
+    FIND_PACKAGE( TPLs REQUIRED ${TPL_LIST_REQUIRED} OPTIONAL_COMPONENTS ${TPL_LIST_OPTIONAL} )
+    MESSAGE("TPL Found")
+    SET( TPL_LIST_FOUND )
+    FOREACH( tmp ${TPL_LIST} )
+        IF ( TPL_FOUND_${tmp} )
+            SET( TPL_LIST_FOUND ${TPL_LIST_FOUND} ${tmp} )
+            SET( USE_EXT_${tmp} TRUE )
+            ADD_DEFINITIONS( -DUSE_EXT_${tmp} )
+        ENDIF()
+    ENDFOREACH()
+    MESSAGE("  TPLs Required: ${TPL_LIST_REQUIRED}")
+    MESSAGE("  TPLs Supported: ${TPL_LIST_OPTIONAL}")
+    MESSAGE("  TPLs Built: ${TPL_LIST}")
+    MESSAGE("  TPLs Included: ${TPL_LIST_FOUND}")
+    MESSAGE("  Include Paths: ${TPL_INCLUDE_DIRS}")
+    MESSAGE("  Libraries: ${TPL_LIBRARIES}")
 ENDIF()
 
 
-# Call TPLsList to get the TPLs
-INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/TPLsList.cmake" )
-MESSAGE("TPL Location : ${TPL_DIRECTORY}")
-MESSAGE("COMPILE_MODE : ${CMAKE_BUILD_TYPE} " )
-
-
-# Call PackageList to get the packages, configure the directories and compilers, etc
-INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/PackagesList.cmake" )
+# Include the TPL inclde paths and libraries
+INCLUDE_DIRECTORIES( ${TPL_INCLUDE_DIRS} )
+SET( TPL_LIBS ${TPL_LIBRARIES} )
 
 
 # Set testing paramaters
@@ -68,35 +87,23 @@ ENABLE_TESTING()
 INCLUDE( CTest )
 
 
-# Configure external libraries
+# Configure external libraries that are not configured through the TPL builder
 IF ( NOT ONLY_BUILD_DOCS )
-    CONFIGURE_MPI()     # MPI must be before other libraries
-    CONFIGURE_EIGEN_LIBRARIES()
-    CONFIGURE_ARMADILLO_LIBRARIES()
-    CONFIGURE_TRILINOS_LIBRARIES()
-    CONFIGURE_SUNDIALS_LIBRARIES()
-    CONFIGURE_PETSC_LIBRARIES()
-    CONFIGURE_HYPRE_LIBRARIES()
-    CONFIGURE_X11_LIBRARIES()
-    CONFIGURE_BLAS_AND_LAPACK()
-    CONFIGURE_LIBMESH()
-    CONFIGURE_NEK()     # should go before MOAB since it requires MOAB.
-    CONFIGURE_MOAB()
-    CONFIGURE_DENDRO()
-    CONFIGURE_SILO()
-    CONFIGURE_HDF5()
-    CONFIGURE_NETCDF()
-    CONFIGURE_BOOST()
-    CONFIGURE_ZLIB()
-    CONFIGURE_OGRE()
+    INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake" )
+    CONFIGURE_MPI()
     CONFIGURE_CUDA()
-    CHECK_ENABLE_FLAG( USE_EXT_TIMER 1 )
-    CONFIGURE_TIMER( ${USE_EXT_TIMER} "${AMP_INSTALL_DIR}/include" )
-    CONFIGURE_SHARED_PTR( "${AMP_INSTALL_DIR}/include/utils" AMP )
+    IF ( NOT TPL_FOUND_TIMER )
+        INCLUDE( "${TPL_DIRECTORY}/cmake/FindTimer.cmake" )
+        CONFIGURE_TIMER( FALSE "${AMP_INSTALL_DIR}/include" )
+    ENDIF()
+    INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SharedPtr.cmake" )
+    CONFIGURE_SHARED_PTR( "${${PROJ}_INSTALL_DIR}/include/utils" AMP )
+    # Configure AMP (all external libraries must be configured first)
+    CONFIGURE_AMP()
 ENDIF()
 
-# Configure AMP (all external libraries must be configured first)
-CONFIGURE_AMP()
+
+
 
 
 # Create the target for documentation
@@ -104,15 +111,15 @@ ADD_CUSTOM_TARGET( doc )
 ADD_CUSTOM_TARGET( latex_docs )
 CHECK_ENABLE_FLAG( USE_EXT_DOXYGEN 1 )
 CHECK_ENABLE_FLAG( USE_LATEX 1 )
-FILE( MAKE_DIRECTORY "${AMP_INSTALL_DIR}/doc" )
+FILE( MAKE_DIRECTORY "${${PROJ}_INSTALL_DIR}/doc" )
 IF ( USE_EXT_DOXYGEN )
-    SET( DOXYFILE_IN ${AMP_SOURCE_DIR}/doxygen/Doxyfile.in)
-    SET( DOXY_HEADER_FILE ${AMP_SOURCE_DIR}/doxygen/html/header.html )
-    SET( DOXY_FOOTER_FILE ${AMP_SOURCE_DIR}/doxygen/html/footer.html )
-    SET( DOXY_LATEX_HEADER_FILE ${AMP_SOURCE_DIR}/doxygen/header.tex )
-    SET( DOXYFILE_OUTPUT_DIR "${AMP_INSTALL_DIR}/doc" )
-    SET( DOXYFILE_SRC_HTML_DIR "${AMP_SOURCE_DIR}/doxygen/html" )
-    SET( DOXYFILE_SOURCE_DIR "${AMP_SOURCE_DIR}/src" )
+    SET( DOXYFILE_IN "${CMAKE_CURRENT_SOURCE_DIR}/doxygen/Doxyfile.in" )
+    SET( DOXY_HEADER_FILE "${CMAKE_CURRENT_SOURCE_DIR}/doxygen/html/header.html" )
+    SET( DOXY_FOOTER_FILE "${CMAKE_CURRENT_SOURCE_DIR}/doxygen/html/footer.html" )
+    SET( DOXY_LATEX_HEADER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/doxygen/header.tex )
+    SET( DOXYFILE_OUTPUT_DIR "${${PROJ}_INSTALL_DIR}/doc" )
+    SET( DOXYFILE_SRC_HTML_DIR "${CMAKE_CURRENT_SOURCE_DIR}/doxygen/html" )
+    SET( DOXYFILE_SOURCE_DIR "${${PROJ}_SOURCE_DIR}" )
     SET( DOXYFILE_EXTRA_SOURCES CACHE INTERNAL "doxyfile_extra_sources" FORCE )
     SET( REL_PACKAGE_HTML "" )
     SET( DOXYGEN_MACROS "USE_AMP_UTILS USE_AMP_MESH USE_AMP_DISCRETIZATION USE_AMP_VECTORS" )
@@ -121,7 +128,7 @@ IF ( USE_EXT_DOXYGEN )
     SET( DOXYGEN_MACROS "${DOXYGEN_MACROS} USE_EXT_MPI USE_EXT_LAPACK USE_EXT_BLAS USE_EXT_PETSC" )
     SET( DOXYGEN_MACROS "${DOXYGEN_MACROS} USE_EXT_LIBMESH USE_EXT_SUNDIALS USE_EXT_TRILINOS" )
     SET(DOXYFILE_LATEX "NO")
-    INCLUDE( ${AMP_SOURCE_DIR}/cmake/UseDoxygen.cmake )
+    INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/UseDoxygen.cmake )
     IF ( NOT DOXYGEN_FOUND )
         MESSAGE( WARNING "Doxygen not found, disabling documentation.  Set USE_EXT_DOXYGEN=0 to disable this message")
         SET( USE_EXT_DOXYGEN OFF )
@@ -129,6 +136,19 @@ IF ( USE_EXT_DOXYGEN )
         MESSAGE("DOXYGEN_MACROS = ${DOXYGEN_MACROS}")
     ENDIF()
 ENDIF()
+
+
+# Create custom targets for build-test, check, and distclean
+SET( EXCLUDE_TESTS_FROM_ALL 0 )
+ADD_CUSTOM_TARGET( build-test )
+ADD_CUSTOM_TARGET( build-examples )
+ADD_CUSTOM_TARGET( check COMMAND  make test  )
+ADD_DISTCLEAN( src ampdir AMP compile_commands.json )
+MACRO( ADD_AMP_TEST_1_2_4 EXENAME ${ARGN} )
+    ADD_AMP_TEST ( ${EXENAME} ${ARGN} )
+    ADD_AMP_TEST_PARALLEL ( ${EXENAME} 2 ${ARGN} )
+    ADD_AMP_TEST_PARALLEL ( ${EXENAME} 4 ${ARGN} )
+ENDMACRO()
 
 
 # Add the src directory
@@ -191,7 +211,6 @@ ENDIF()
 # Save the configuration info for applications 
 IF ( NOT ONLY_BUILD_DOCS )
     INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/save_variables.cmake )
-    COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros.cmake" "${${PROJ}_INSTALL_DIR}/cmake/macros.cmake" )
     COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cppcheck.cmake" "${${PROJ}_INSTALL_DIR}/cmake/cppcheck.cmake" )
     COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SharedPtr.cmake" "${${PROJ}_INSTALL_DIR}/cmake/SharedPtr.cmake" )
     COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/WriteRepoVersion.cmake" "${${PROJ}_INSTALL_DIR}/cmake/WriteRepoVersion.cmake" )

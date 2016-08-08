@@ -1,5 +1,3 @@
-INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
-
 COPY_MESH_FILE( brick.e )
 
 COPY_TEST_FILE( input_linearDiffusion-TUI-Soret-1 )

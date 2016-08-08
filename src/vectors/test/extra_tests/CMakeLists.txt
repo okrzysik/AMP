@@ -1,6 +1,3 @@
-INCLUDE( "${AMP_SOURCE_DIR}/cmake/macros.cmake" )
-SET_AMP_PACKAGE_FLAGS()
-
 IF ( USE_AMP_MESH ) 
     # Copy some mesh files
     COPY_MESH_FILE ( pellet_1x.e )
