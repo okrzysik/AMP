@@ -90,6 +90,32 @@ public:
     template <class TYPE, class FUN>
     static bool  equals( const Array<TYPE, FUN> &A, const Array<TYPE, FUN> &B, TYPE tol );
 
+    template <class TYPE>
+    static inline void gemmWrapper(char TRANSA, char TRANSB, int M, int N, int K, TYPE alpha, const TYPE* A, int LDA, const TYPE* B, int LDB, TYPE beta, TYPE* C, int LDC);
+
+
+    /* Specialized Functions */
+    template <class TYPE, class FUN, class ALLOC>
+    static void transformReLU(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
+
+    template <class TYPE, class FUN, class ALLOC>
+    static void transformAbs(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
+
+    template <class TYPE, class FUN, class ALLOC>
+    static void transformTanh(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
+
+    template <class TYPE, class FUN, class ALLOC>
+    static void transformHardTanh(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
+
+    template <class TYPE, class FUN, class ALLOC>
+    static void transformSigmoid(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
+
+    template <class TYPE, class FUN, class ALLOC>
+    static void transformSoftPlus(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
+
+    template <class TYPE, class FUN, class ALLOC>
+    static TYPE sum(const Array<TYPE, FUN, ALLOC> &A);
+
 private:
     FunctionTable();
 

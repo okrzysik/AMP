@@ -51,7 +51,7 @@ namespace AMP {
 
 // Forward decleration
 class FunctionTable;
-
+class GPUFunctionTable;
 
 /*!
  * Class Array is a multi-dimensional array class written by Mark Berrill
