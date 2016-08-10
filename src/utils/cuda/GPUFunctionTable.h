@@ -5,48 +5,137 @@
 
 namespace AMP{
 
+/*!
+ * Class GPUFunctionTable is an accelerated function table class that defines
+ *   a series of operations that can be performed on the Array class.
+ *   The class implements the same interface as the serial FunctionTable class
+ *   Meant to be used with a GPU Allocator class.
+ */
 class GPUFunctionTable final
 {
-public:
+public:i
+
+    /*!
+     * Initialize the array with random values
+     * @param[in] x         The array to operate on
+     */
     template <class TYPE, class FUN, class ALLOC>
     static inline void rand(Array<TYPE, FUN, ALLOC> &x);
 
+    /*! NOT IMPLEMENTED
+     * Perform a reduce operator y = f(x)
+     * @param[in] op            The function operation
+     *                          Note: the operator is a template parameter to improve performance
+     * @param[in] x             The array to operate on
+     * @param[in] initialValue  The initial value for the reduction (0 for sum, +/- inf for min/max, ...)
+     * @return                  The reduction
+     */
     template <class TYPE, class FUN, class ALLOC, typename LAMBDA>
-    static inline TYPE reduce(LAMBDA &op, const Array<TYPE, FUN, ALLOC> &A);
+    static inline TYPE reduce(LAMBDA &op, const Array<TYPE, FUN, ALLOC> &A, const TYPE& initialValue );
     
+     /*! NOT IMPLEMENTED
+     * Perform a reduce operator z = f(x,y)
+     * @param[in] op            The function operation
+     *                          Note: the operator is a template parameter to improve performance
+     * @param[in] x             The first array to operate on
+     * @param[in] y             The second array to operate on
+     * @param[in] initialValue  The initial value for the reduction (0 for sum, +/- inf for min/max, ...)
+     * @return                  The reduction
+     */
     template <class TYPE, class FUN, class ALLOC,typename LAMBDA>
-    static inline TYPE reduce( LAMBDA &op, const Array<TYPE, FUN, ALLOC> &A, const Array<TYPE, FUN, ALLOC> &B);
-
+    static inline TYPE reduce( LAMBDA &op, const Array<TYPE, FUN, ALLOC> &A, const Array<TYPE, FUN, ALLOC> &B, const TYPE& initialValue);
+    
+     /*! NOT IMPLEMENTED
+     * Perform a element-wise operation y = f(x)
+     * @param[in] fun           The function operation
+     *                          Note: the function is a template parameter to improve performance
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
+     */
     template <class TYPE, class FUN,class ALLOC, typename LAMBDA>
     static inline void transform( LAMBDA &fun, const Array<TYPE, FUN, ALLOC> &x, Array<TYPE, FUN, ALLOC> &y );
 
+    /*! NOT IMPLEMENTED
+     * Perform a element-wise operation z = f(x,y)
+     * @param[in] fun           The function operation
+     *                          Note: the function is a template parameter to improve performance
+     * @param[in] x             The first array
+     * @param[in] y             The second array
+     * @param[out] z            The output array
+     */
     template <class TYPE, class FUN, class ALLOC, typename LAMBDA>
     static inline void transform( LAMBDA &fun, const Array<TYPE, FUN, ALLOC> &x, const Array<TYPE, FUN, ALLOC> &y, Array<TYPE, FUN, ALLOC> &z );
 
+    /*! NOT IMPLEMENTED
+     * Multiply two arrays
+     * @param[in] a             The first array
+     * @param[in] b             The second array
+     * @param[out] c            The output array
+     */
     template <class TYPE, class FUN, class ALLOC>
     static void multiply( const Array<TYPE, FUN, ALLOC> &a, const Array<TYPE, FUN, ALLOC> &b, Array<TYPE, FUN, ALLOC> &c ); 
  
-template <class TYPE, class FUN, class ALLOC>
+    /*!
+     * Check if two arrays are approximately equal
+     * @param[in] a             The first array
+     * @param[in] b             The second array
+     * @param[in] TOL           The tolerance
+     */
+    template <class TYPE, class FUN, class ALLOC>
     static bool equals( const Array<TYPE, FUN, ALLOC> &A, const Array<TYPE, FUN, ALLOC> &B, TYPE tol );
-
+   
+    /*!
+     * Perform a element-wise operation y = max(x , 0)
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
+     */
     template <class TYPE, class FUN, class ALLOC>
     static void transformReLU(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
-     
+
+    /*!
+     * Perform a element-wise operation y = |x|
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
+     */ 
     template <class TYPE, class FUN, class ALLOC>
     static void transformAbs(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
+    /*!
+     * Perform a element-wise operation y = tanh(x)
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
+     */
     template <class TYPE, class FUN, class ALLOC>
     static void transformTanh(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
+    /*!
+     * Perform a element-wise operation y = max(-1 , min(1 , x) )
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
+     */
     template <class TYPE, class FUN, class ALLOC>
     static void transformHardTanh(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
-    
+
+    /*!
+     * Perform a element-wise operation y = 1 / (1 + exp(-x))
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
+     */
     template <class TYPE, class FUN, class ALLOC>
     static void transformSigmoid(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
+    /*!
+     * Perform a element-wise operation y = log(exp(x) + 1)
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
+     */
     template <class TYPE, class FUN, class ALLOC>
     static void transformSoftPlus(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
+    /*!
+     * Sum the elements of the Array
+     * @param[i] A              The array to sum
+     */
     template <class TYPE, class FUN, class ALLOC>
     static TYPE sum(const Array<TYPE, FUN, ALLOC> &A); 
 
