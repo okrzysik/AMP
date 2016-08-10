@@ -6,6 +6,8 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+//Function for error checking CUDA calls
+//Future Work: Expand to dynamically handle insufficient memory
 inline void checkErrorD(cudaError_t e){
     if(e != cudaSuccess){
         std::cerr<<cudaGetErrorString(e) <<std::endl;
@@ -13,7 +15,7 @@ inline void checkErrorD(cudaError_t e){
     }
 }
 
-
+//Allocate space for n objects of type T on GPU
 template <typename T>
 T* GPUDevAllocator<T>::allocate(size_t n)
 {
@@ -23,6 +25,7 @@ T* GPUDevAllocator<T>::allocate(size_t n)
     
     return d_m;
 }
+
 
 template <typename T>
 void GPUDevAllocator<T>::deallocate(T* p,size_t n)
@@ -42,7 +45,7 @@ void GPUDevAllocator<T>::construct(T* p)
 template <typename T>
 void GPUDevAllocator<T>::destroy(T* p)
 {
-//    delete(p);
+    (void)p;
 }
 
 #endif

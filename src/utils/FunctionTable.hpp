@@ -3,6 +3,7 @@
 
 #include "utils/FunctionTable.h"
 #include "utils/Utilities.h"
+#include "utils/LapackWrappers.h"
 
 #include <algorithm>
 #include <cstring>
@@ -135,6 +136,72 @@ bool FunctionTable::equals( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b
         pass  = pass && (std::abs(a(i)-b(i))<tol);
     return pass;
 }
+
+/********************************************************
+*  Specialized Functions                                *
+********************************************************/
+template <class TYPE, class FUN, class ALLOC>
+void FunctionTable::transformReLU(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B)
+{
+    const auto &fun = [](const TYPE &a) { return std::max(a, static_cast<TYPE>( 0 ) );};
+    transform(fun,A,B); 
+}
+
+template <class TYPE, class FUN, class ALLOC>
+void FunctionTable::transformAbs(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B)
+{
+    B.resize(A.size());
+    const auto &fun = [](const TYPE &a) { return std::abs(a) ;};
+    transform(fun,A,B); 
+}
+template <class TYPE, class FUN, class ALLOC>
+void FunctionTable::transformTanh(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B)
+{
+    B.resize(A.size());
+    const auto &fun = [](const TYPE &a) { return tanh(a);};
+    transform(fun,A,B); 
+}
+
+template <class TYPE, class FUN, class ALLOC>
+void FunctionTable::transformHardTanh(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B)
+{
+    B.resize(A.size());
+    const auto &fun = [](const TYPE &a) { return std::max(-static_cast<TYPE>(1.0),std::min(static_cast<TYPE>(1.0), a));  };
+    transform(fun,A,B); 
+}
+
+template <class TYPE, class FUN, class ALLOC>
+void FunctionTable::transformSigmoid(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B)
+{
+    B.resize(A.size());
+    const auto &fun = [](const TYPE &a) { return 1.0/(1.0 + exp( -a));};
+    transform(fun,A,B); 
+}
+
+template <class TYPE, class FUN, class ALLOC>
+void FunctionTable::transformSoftPlus(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B)
+{
+    B.resize(A.size());
+    const auto &fun = [](const TYPE &a) { return log1p(exp(a));};
+    transform(fun,A,B); 
+}
+
+template <class TYPE, class FUN, class ALLOC>
+TYPE FunctionTable::sum(const Array<TYPE, FUN, ALLOC> &A)
+{
+    const auto &fun = []( const TYPE &a, const TYPE &b ) { return a + b; };
+    return reduce( fun, A, (TYPE) 0 );
+}
+
+template <class TYPE>
+inline void FunctionTable::gemmWrapper(char TRANSA, char TRANSB, int M, int N, int K, TYPE alpha, const TYPE* A, int LDA, const TYPE* B, int LDB, TYPE beta, TYPE* C, int LDC)
+{
+
+    AMP::Lapack<TYPE>::gemm(TRANSA,TRANSB,M,N,K,alpha,A,LDA,B,LDB,beta,C,LDC);
+
+}
+
+
 
 } // namespace AMP
 

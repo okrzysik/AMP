@@ -52,7 +52,6 @@ namespace AMP {
 // Forward decleration
 class FunctionTable;
 
-
 /*!
  * Class Array is a multi-dimensional array class written by Mark Berrill
  */
