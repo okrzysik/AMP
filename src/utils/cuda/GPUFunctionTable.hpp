@@ -217,13 +217,13 @@ inline void GPUFunctionTable::transform(LAMBDA &fun, const Array<TYPE,FUN,ALLOC>
 }
 
 template <class TYPE, class FUN, class ALLOC, typename LAMBDA>
-inline TYPE GPUFunctionTable::reduce(LAMBDA &op, const Array<TYPE,FUN,ALLOC> &A)
+inline TYPE GPUFunctionTable::reduce(LAMBDA &op, const Array<TYPE,FUN,ALLOC> &A, const TYPE& initialValue)
 {
     AMP_ERROR("Not implemented for GPU");
 }
 
 template <class TYPE, class FUN, class ALLOC, typename LAMBDA>
-inline TYPE GPUFunctionTable::reduce(LAMBDA &op, const Array<TYPE,FUN,ALLOC> &A, const Array<TYPE,FUN,ALLOC> &B)
+inline TYPE GPUFunctionTable::reduce(LAMBDA &op, const Array<TYPE,FUN,ALLOC> &A, const Array<TYPE,FUN,ALLOC> &B, const TYPE& initialValue)
 {
     AMP_ERROR("Not implemented for GPU");
 }
