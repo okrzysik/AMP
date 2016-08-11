@@ -95,24 +95,60 @@ public:
 
 
     /* Specialized Functions */
+
+    /*!
+     * Perform a element-wise operation y = max(x , 0)
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
+     */
+
     template <class TYPE, class FUN, class ALLOC>
     static void transformReLU(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
+    /*!
+     * Perform a element-wise operation y = |x|
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
+     */
     template <class TYPE, class FUN, class ALLOC>
     static void transformAbs(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
+    /*!
+     * Perform a element-wise operation y = tanh(x)
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
+     */
     template <class TYPE, class FUN, class ALLOC>
     static void transformTanh(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
+    /*!
+     * Perform a element-wise operation y = max(-1 , min(1 , x) )
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
+     */
     template <class TYPE, class FUN, class ALLOC>
     static void transformHardTanh(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
+    /*!
+     * Perform a element-wise operation y = 1 / (1 + exp(-x))
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
+     */
     template <class TYPE, class FUN, class ALLOC>
     static void transformSigmoid(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
+    /*!
+     * Perform a element-wise operation y = log(exp(x) + 1)
+     * @param[in,out] x         The array to operate on
+     * @param[out] y            The output array
+     */
     template <class TYPE, class FUN, class ALLOC>
     static void transformSoftPlus(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
+    /*!
+     * Sum the elements of the Array
+     * @param[i] A              The array to sum
+     */
     template <class TYPE, class FUN, class ALLOC>
     static TYPE sum(const Array<TYPE, FUN, ALLOC> &A);
 
