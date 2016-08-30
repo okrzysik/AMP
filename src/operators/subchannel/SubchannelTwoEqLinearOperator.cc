@@ -323,10 +323,8 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
                         double overlap = 0.0;
                         if ( zMin_grid > z_minus ) {
                             overlap = zMax_grid - zMin_grid;
-                        } else if ( zMin_grid <= z_minus ) {
-                            overlap = zMax_grid - z_minus;
                         } else {
-                            AMP_ERROR( "Unexpected position comparison for zMin_grid" );
+                            overlap = zMax_grid - z_minus;
                         }
                         K += overlap * K_perLength;
                     }

@@ -260,6 +260,9 @@ double time();
 //! Function to get the resolution of time
 double tick();
 
+//! Sleep for the specified number of ms
+void sleepMs( unsigned int );
+
 //! Print AMP Banner
 void printBanner();
 

@@ -44,48 +44,6 @@ char **AMPManager::argv                     = nullptr;
 AMPManagerProperties AMPManager::properties = AMPManagerProperties();
 
 
-// Function to get the current time (preferably using a hi resolution timer
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
-#define USE_WINDOWS
-#include <windows.h>
-// Sleep is defined in milliseconds
-double time()
-{
-    LARGE_INTEGER end, f;
-    QueryPerformanceFrequency( &f );
-    QueryPerformanceCounter( &end );
-    double time = ( (double) end.QuadPart ) / ( (double) f.QuadPart );
-    return time;
-}
-#elif defined( __APPLE__ )
-#define USE_MAC
-#include <sys/time.h>
-#include <unistd.h>
-// usleep is defined in microseconds, create a Sleep command
-#define Sleep( x ) usleep( x * 1000 )
-double time()
-{
-    timeval current_time;
-    gettimeofday( &current_time, nullptr );
-    double time = ( (double) current_time.tv_sec ) + 1e-6 * ( (double) current_time.tv_usec );
-    return time;
-}
-#else
-#define USE_LINUX
-#include <sys/time.h>
-#include <unistd.h>
-// usleep is defined in microseconds, create a Sleep command
-#define Sleep( x ) usleep( x * 1000 )
-double time()
-{
-    timeval current_time;
-    gettimeofday( &current_time, nullptr );
-    double time = ( (double) current_time.tv_sec ) + 1e-6 * ( (double) current_time.tv_usec );
-    return time;
-}
-#endif
-
-
 /****************************************************************************
 *  Function to terminate AMP with a message for exceptions                  *
 ****************************************************************************/
@@ -110,7 +68,7 @@ void AMPManager::terminate_AMP( std::string message )
         for ( auto &elem : stack )
             msg << "   " << elem.print() << std::endl;
         // Add a rank dependent wait to hopefully print the stack trace cleanly
-        Sleep( ( 100 * comm.getRank() ) / comm.getSize() );
+        Utilities::sleepMs( ( 100 * comm.getRank() ) / comm.getSize() );
         perr << msg.str();
         printed_stack = true;
         force_exit    = 1;
@@ -195,7 +153,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
         AMP_ERROR( "AMP was previously initialized and shutdown.  It cannot be reinitialized" );
     if ( initialized == -1 )
         AMP_ERROR( "AMP was previously initialized and shutdown.  It cannot be reinitialized" );
-    double start_time   = time();
+    double start_time   = Utilities::time();
     double startup_time = 0, petsc_time = 0, MPI_time = 0;
     argc        = argc_in;
     argv        = argv_in;
@@ -207,7 +165,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     AMPManager::use_MPI_Abort = properties.use_MPI_Abort;
 // Initialize PETSc
 #ifdef USE_EXT_PETSC
-    double petsc_start_time = time();
+    double petsc_start_time = Utilities::time();
     if ( PetscInitializeCalled ) {
         called_PetscInitialize = false;
     } else {
@@ -221,7 +179,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
         for ( auto &petscArg : petscArgs )
             delete[] petscArg;
     }
-    petsc_time = time() - petsc_start_time;
+    petsc_time = Utilities::time() - petsc_start_time;
 #endif
     // Initialize MPI
     AMP::AMP_MPI::changeProfileLevel( properties.profile_MPI_level );
@@ -230,12 +188,12 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
         called_MPI_Init = false;
         MPI_time        = 0;
     } else {
-        double MPI_start_time = time();
+        double MPI_start_time = Utilities::time();
         int result            = MPI_Init( &argc, &argv );
         if ( result != MPI_SUCCESS )
             AMP_ERROR( "AMP was unable to initialize MPI" );
         called_MPI_Init = true;
-        MPI_time        = time() - MPI_start_time;
+        MPI_time        = Utilities::time() - MPI_start_time;
     }
 #endif
     // Initialize AMP's MPI
@@ -255,7 +213,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     // Initialization finished
     initialized  = 1;
     rank         = comm_world.getRank();
-    startup_time = time() - start_time;
+    startup_time = Utilities::time() - start_time;
     if ( print_times && comm_world.getRank() == 0 ) {
         printf( "startup time = %0.3f s\n", startup_time );
         if ( petsc_time != 0 )
@@ -274,7 +232,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
 ****************************************************************************/
 void AMPManager::shutdown()
 {
-    double start_time    = time();
+    double start_time    = Utilities::time();
     double shutdown_time = 0, MPI_time = 0;
     int rank = comm_world.getRank();
     if ( initialized == 0 )
@@ -303,23 +261,23 @@ void AMPManager::shutdown()
     AMPManager::use_MPI_Abort = false;
     comm_world                = AMP_MPI( AMP_COMM_NULL ); // Delete comm world
     if ( called_MPI_Init ) {
-        double MPI_start_time = time();
+        double MPI_start_time = Utilities::time();
 #ifdef USE_EXT_MPI
         MPI_Finalize();
 #endif
-        MPI_time = time() - MPI_start_time;
+        MPI_time = Utilities::time() - MPI_start_time;
     }
     // Shudown PETSc
     double petsc_time = 0.0;
 #ifdef USE_EXT_PETSC
     if ( called_PetscInitialize ) {
-        double petsc_start_time = time();
+        double petsc_start_time = Utilities::time();
         PetscFinalize();
-        petsc_time = time() - petsc_start_time;
+        petsc_time = Utilities::time() - petsc_start_time;
     }
 #endif
-    Sleep( 10 );
-    shutdown_time = time() - start_time;
+    Utilities::sleepMs( 10 );
+    shutdown_time = Utilities::time() - start_time;
     if ( print_times && rank == 0 ) {
         printf( "shutdown time = %0.3f s\n", shutdown_time );
         if ( petsc_time != 0 )
@@ -347,7 +305,7 @@ void AMPManager::shutdown()
     if ( MPI_Active() )
         MPI_Barrier( MPI_COMM_WORLD );
 #endif
-    Sleep( 50 );
+    Utilities::sleepMs( 50 );
 }
 
 

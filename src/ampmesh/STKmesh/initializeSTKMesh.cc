@@ -18,8 +18,6 @@ namespace {
 unsigned N_copies( const unsigned increment = 0 )
 {
     static unsigned copies( 0 );
-    if ( copies + increment < 0 )
-        AMP_ERROR( "Internal error" );
     copies += increment;
     return copies;
 }

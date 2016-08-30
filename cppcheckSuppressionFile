@@ -60,6 +60,9 @@ toomanyconfigs:*/ampmesh/test/test_Mesh.cc
 // Supress material warnings
 nullPointer:*/materials/Property.h
 
+// Suppress utils warnings
+usleepCalled:*/utils/Utilities.cc
+
 // Supress common test warnings (example: x==x)
 duplicateExpression:*/test/test*
 uselessCallsCompare:*/test/test*
@@ -68,6 +71,7 @@ variableScope:*/test/diffusion/test*
 variableScope:*/test/maps/dtk/test*
 unreadVariable:*/test/test*
 unusedVariable:*/test/maps/dtk/test*
+knownConditionTrueFalse:*/oxide/OxideModel.cc
 knownConditionTrueFalse:*/utils/test/test_AMP_MPI.cc
 noExplicitConstructor:*/utils/AMP_MPI.h
 noExplicitConstructor:*/utils/test/test_AMP_MPI.cc

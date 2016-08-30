@@ -1,26 +1,11 @@
 #include "UnitTest.h"
+#include "Utilities.h"
 #include "AMPManager.h"
 
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
-
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
-// Windows
-// Sleep is defined in milliseconds
-#include <windows.h>
-#else
-// Linux
-// usleep is defined in microseconds, create a Sleep command
-#include <unistd.h>
-#define Sleep( x )          \
-    {                       \
-        sched_yield();      \
-        usleep( x * 1000 ); \
-        sched_yield();      \
-    }
-#endif
 
 
 namespace AMP {
@@ -54,7 +39,7 @@ void UnitTest::report( const int level0 ) const
     int rank = this->rank();
     // Give all processors a chance to print any remaining messages
     comm.barrier();
-    Sleep( 10 );
+    Utilities::sleepMs( 10 );
     // Broadcast the print level from rank 0
     int level = comm.bcast( level0, 0 );
     if ( level < 0 || level > 2 )
@@ -209,7 +194,7 @@ void UnitTest::report( const int level0 ) const
     }
     // Add a barrier to synchronize all processors (rank 0 is much slower)
     comm.barrier();
-    Sleep( 10 ); // Need a brief pause to allow any printing to finish
+    Utilities::sleepMs( 10 ); // Need a brief pause to allow any printing to finish
 }
 
 

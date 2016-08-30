@@ -342,6 +342,10 @@ double Utilities::tick()
     double resolution = ( (double) 1.0 ) / ( (double) f.QuadPart );
     return resolution;
 }
+void sleepMs( unsigned int N )
+{
+    Sleep( N );
+}
 #elif defined( USE_LINUX ) || defined( USE_MAC )
 double Utilities::time()
 {
@@ -360,6 +364,10 @@ double Utilities::tick()
     double resolution = ( (double) ( end.tv_sec - start.tv_sec ) ) +
                         1e-6 * ( (double) ( end.tv_usec - start.tv_usec ) );
     return resolution;
+}
+void sleepMs( unsigned int N )
+{
+    usleep( N * 1000 );
 }
 #else
 #error Unknown OS
