@@ -163,7 +163,8 @@ ELSEIF ( CXX_STD STREQUAL 11 )
 ELSEIF ( CXX_STD STREQUAL 14 )
     SET( CPPCHECK_OPTIONS ${CPPCHECK_OPTIONS} --std=c11 --std=c++11 --std=posix )
 ENDIF()
-INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cppcheck.cmake" )
+SET( CPPCHECK_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}" )
+FIND_PACKAGE( Cppcheck )
 
 
 # Add the cppclean tests
@@ -192,7 +193,8 @@ SET( CPPCLEAN_DECLARED 0 )
 SET( CPPCLEAN_STATIC 0 )
 SET( CPPCLEAN_UNUSED_VARIABLE 0 )
 SET( CPPCLEAN_UNKNOWN 1 )
-INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cppclean.cmake" )
+SET( CPPCLEAN_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}" )
+FIND_PACKAGE( Cppclean )
 
 
 # Install the documentation
@@ -207,7 +209,6 @@ IF ( NOT ONLY_BUILD_DOCS )
     INCLUDE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/save_variables.cmake )
     CONFIGURE_FILE( cmake/FindAMP.template.cmake "${${PROJ}_INSTALL_DIR}/FindAMP.cmake" @ONLY )
     COPY_DATA_FILE( "${TPL_MACRO_CMAKE}" "${${PROJ}_INSTALL_DIR}/cmake/macros.cmake" )
-    COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cppcheck.cmake" "${${PROJ}_INSTALL_DIR}/cmake/cppcheck.cmake" )
     COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SharedPtr.cmake" "${${PROJ}_INSTALL_DIR}/cmake/SharedPtr.cmake" )
     COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/WriteRepoVersion.cmake" "${${PROJ}_INSTALL_DIR}/cmake/WriteRepoVersion.cmake" )
     SAVE_CMAKE_FLAGS( "${${PROJ}_INSTALL_DIR}/amp.cmake" )
