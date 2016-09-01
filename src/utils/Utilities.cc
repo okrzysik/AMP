@@ -342,7 +342,7 @@ double Utilities::tick()
     double resolution = ( (double) 1.0 ) / ( (double) f.QuadPart );
     return resolution;
 }
-void sleepMs( unsigned int N )
+void Utilities::sleepMs( unsigned int N )
 {
     Sleep( N );
 }
@@ -365,7 +365,7 @@ double Utilities::tick()
                         1e-6 * ( (double) ( end.tv_usec - start.tv_usec ) );
     return resolution;
 }
-void sleepMs( unsigned int N )
+void Utilities::sleepMs( unsigned int N )
 {
     usleep( N * 1000 );
 }
