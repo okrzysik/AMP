@@ -427,7 +427,7 @@ int main( int argc, char *argv[] )
 
     std::cout << "fick/soretOff real err = " << l2err3 << std::endl;
 
-    if ( l2err1 < 1.e-6 and l2err2 < 1.e-6 and l2err3 < 1.e-6 ) {
+    if ( (l2err1 < 1.e-6) && (l2err2 < 1.e-6) && (l2err3 < 1.e-6) ) {
         ut.passes( "fick, fick-soret/off, and fick-soret/zero all agree" );
     }
 

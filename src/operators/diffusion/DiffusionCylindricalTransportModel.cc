@@ -91,7 +91,7 @@ void DiffusionCylindricalTransportModel::getTensorTransport(
             AMP_INSIST( result[i].size() == 3, "result tensor must be 3x3" );
             AMP_INSIST( result[i][j]->size() == coordinates.size(),
                         "result tensor components must be same size as coordinates" );
-            if ( i == 2 or j == 2 )
+            if ( ( i == 2 ) || ( j == 2 ) )
                 for ( size_t k           = 0; k < coordinates.size(); k++ )
                     ( *result[i][j] )[k] = 0.;
         }

@@ -321,7 +321,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
     bool isCylindrical   = propname.find( "CylindricallySymmetric" ) < propname.size() and
                          solnname.find( "Cylindrical" ) < solnname.size();
 
-    if ( sourceProp->isTensor() and not isCylindrical ) {
+    if ( sourceProp->isTensor() && !isCylindrical ) {
         AMP::shared_ptr<Materials::TensorProperty<double>> sourceTensorProp =
             AMP::dynamic_pointer_cast<Materials::TensorProperty<double>>( sourceProp );
         std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
@@ -350,12 +350,12 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
                     result[k] += ( *coeff[i][j] )[k] * soln[xlate[i][j]];
                 }
         }
-    } else if ( sourceProp->isTensor() and isCylindrical ) {
+    } else if ( sourceProp->isTensor() ) {
         // check dimensions, set up temporary storage
         AMP::shared_ptr<Materials::TensorProperty<double>> sourceTensorProp =
             AMP::dynamic_pointer_cast<Materials::TensorProperty<double>>( sourceProp );
         std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
-        AMP_ASSERT( dimensions[0] == 3 and dimensions[1] == 3 );
+        AMP_ASSERT( ( dimensions[0] == 3 ) && ( dimensions[1] == 3 ) );
         std::vector<std::vector<AMP::shared_ptr<std::vector<double>>>> coeff(
             dimensions[0], std::vector<AMP::shared_ptr<std::vector<double>>>( dimensions[1] ) );
         std::vector<std::vector<AMP::shared_ptr<std::vector<double>>>> coeffr(

@@ -3,11 +3,11 @@
 
 namespace AMP {
 
-inline RNGParameters::RNGParameters( RNGOptions o, size_t rank, size_t seed )
+inline RNGParameters::RNGParameters( RNGOptions o, size_t rank, size_t seed ):
+    d_WhichSeed( o )
 {
     d_Seed      = seed;
     d_Rank      = rank;
-    d_WhichSeed = o;
 }
 
 inline void RNG::fillBuffer( void *buf, size_t len )
