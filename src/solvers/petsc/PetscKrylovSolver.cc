@@ -162,7 +162,7 @@ void PetscKrylovSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
         petscOptions = PetscMonitor::removeMonitor( petscOptions );
         d_PetscMonitor.reset( new PetscMonitor( d_comm ) );
     }
-#if PETSC_VERSION_LE(3,2,0)
+#if PETSC_VERSION_LE(3,2,7)
     PetscOptionsInsertString( petscOptions.c_str() );
 #elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
     PetscOptionsInsertString( PETSC_NULL, petscOptions.c_str() );
