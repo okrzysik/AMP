@@ -33,6 +33,12 @@ SET( CMAKE_MODULE_PATH "@TPL_DIRECTORY@" ${CMAKE_MODULE_PATH} )
 FIND_PACKAGE( TPLs REQUIRED @TPL_LIST_FOUND@ OPTIONAL_COMPONENTS )
 
 
+# Set the maximum number of processors for a test
+IF ( NOT TEST_MAX_PROCS )
+    SET( TEST_MAX_PROCS @TEST_MAX_PROCS@ )
+ENDIF()
+
+
 # Set MATLAB variables (eventually needs to be moved to the TPL builder)
 SET( USE_MATLAB @USE_MATLAB@ )
 SET( MATLAB_DIRECTORY @MATLAB_DIRECTORY@ )
