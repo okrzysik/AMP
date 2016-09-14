@@ -168,8 +168,14 @@ private:
 
     static PetscErrorCode apply( SNES snes, Vec x, Vec f, void *ctx );
 
+#if PETSC_VERSION_LE(3,2,0)
     static PetscErrorCode
     setJacobian( SNES snes, Vec x, Mat *A, Mat *B, MatStructure *mstruct, void *ctx );
+#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
+    static PetscErrorCode setJacobian( SNES, Vec x, Mat A, Mat, void *ctx );
+#else
+        #error This version of PETSc is not supported.  Check!!!
+#endif
 
     static bool isVectorValid( AMP::shared_ptr<AMP::Operator::Operator> &op,
                                AMP::LinearAlgebra::Vector::shared_ptr &v,
@@ -178,9 +184,12 @@ private:
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     static PetscErrorCode
     lineSearchPreCheck( SNES snes, Vec x, Vec y, void *checkctx, PetscTruth *changed_y );
-#elif PETSC_VERSION_GE(3,2,0)
+#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
     static PetscErrorCode
-    lineSearchPreCheck( SNES snes, Vec x, Vec y, void *checkctx, PetscBool *changed_y );
+    lineSearchPreCheck( SNES, Vec x, Vec y, void *checkctx, PetscBool *changed_y );
+#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
+    static PetscErrorCode
+    lineSearchPreCheck( SNESLineSearch, Vec x, Vec y, PetscBool *changed_y, void *checkctx );
 #else
 #error Not programmed for this version yet
 #endif
