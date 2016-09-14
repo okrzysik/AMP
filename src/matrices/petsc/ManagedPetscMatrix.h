@@ -2,9 +2,7 @@
 #define included_AMP_ManagedPetscMatrix
 
 // Petsc files
-extern "C" {
 #include "petscmat.h"
-}
 
 // AMP files
 #include "matrices/petsc/PetscMatrix.h"

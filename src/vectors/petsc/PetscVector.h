@@ -2,10 +2,9 @@
 #define included_AMP_PetscVector
 
 #include "vectors/DataChangeListener.h"
+#include "vectors/petsc/PetscVersionHelpers.h"
 
-extern "C" {
 #include "petscvec.h"
-}
 
 
 namespace AMP {
@@ -181,6 +180,12 @@ public:
 
 
     virtual void dataChanged();
+
+    //! Wrapper to VecDestroy
+    static inline PetscErrorCode VecDestroy( Vec *v );
+
+    //! Wrapper to RandomDestroy
+    static inline PetscErrorCode RandomDestroy( PetscRandom *random );
 };
 }
 }

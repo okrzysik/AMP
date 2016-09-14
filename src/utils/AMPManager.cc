@@ -125,6 +125,15 @@ PetscErrorCode petsc_err_handler( MPI_Comm,
                                   PetscErrorType,
                                   const char *buf,
                                   void * )
+#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
+PetscErrorCode petsc_err_handler( MPI_Comm,
+                                  int line,
+                                  const char *dir,
+                                  const char *file,
+                                  PetscErrorCode,
+                                  PetscErrorType,
+                                  const char *buf,
+                                  void * )
 #else
 #error Not programmed for this version of petsc
 #endif

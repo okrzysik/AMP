@@ -42,13 +42,7 @@ inline NativePetscMatrix::NativePetscMatrix() { d_MatCreatedInternally = false; 
 inline NativePetscMatrix::~NativePetscMatrix()
 {
     if ( d_MatCreatedInternally ) {
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-        MatDestroy( d_Mat );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
-        MatDestroy( &d_Mat );
-#else
-#error Not programmed for this version yet
-#endif
+        AMP::LinearAlgebra::PetscMatrix::MatDestroy( &d_Mat );
     }
 }
 

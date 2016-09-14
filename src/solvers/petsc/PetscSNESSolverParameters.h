@@ -7,7 +7,6 @@
 #include "utils/Database.h"
 #include "utils/shared_ptr.h"
 
-extern "C" {
 #ifdef MPICH_SKIP_MPICXX
 #define _FIX_FOR_PETSC_MPI_CXX
 #undef MPICH_SKIP_MPICXX
@@ -31,7 +30,6 @@ extern "C" {
 #define MPICH_SKIP_MPICXX
 #endif
 #endif
-}
 
 
 namespace AMP {

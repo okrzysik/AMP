@@ -6,9 +6,7 @@
 #include "vectors/ExternalVectorDeleter.h"
 #include "vectors/petsc/ManagedPetscVector.h"
 
-extern "C" {
 #include "petscpc.h"
-}
 
 namespace AMP {
 namespace Solver {
@@ -19,7 +17,7 @@ static inline void checkErr( int ierr )
 {
     AMP_INSIST( ierr == 0, "Petsc returned non-zero error code" );
 }
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
 static inline void checkErr( PetscErrorCode ierr )
 {
     AMP_INSIST( ierr == 0, "Petsc returned non-zero error code" );
@@ -59,7 +57,7 @@ PetscKrylovSolver::~PetscKrylovSolver()
     if ( d_bKSPCreatedInternally ) {
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
         KSPDestroy( d_KrylovSolver );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
         KSPDestroy( &d_KrylovSolver );
 #else
 #error Not programmed for this version yet
@@ -116,7 +114,7 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
         }
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
         checkErr( KSPSetPreconditionerSide( d_KrylovSolver, d_PcSide ) );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
         checkErr( KSPSetPCSide( d_KrylovSolver, d_PcSide ) );
 #else
 #error Not programmed for this version yet
@@ -130,7 +128,7 @@ void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> co
 
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     PetscTruth useNonzeroGuess = ( !d_bUseZeroInitialGuess ) ? PETSC_TRUE : PETSC_FALSE;
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
     PetscBool useNonzeroGuess = ( !d_bUseZeroInitialGuess ) ? PETSC_TRUE : PETSC_FALSE;
 #else
 #error Not programmed for this version yet
@@ -164,7 +162,14 @@ void PetscKrylovSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
         petscOptions = PetscMonitor::removeMonitor( petscOptions );
         d_PetscMonitor.reset( new PetscMonitor( d_comm ) );
     }
+#if PETSC_VERSION_LE(3,2,0)
     PetscOptionsInsertString( petscOptions.c_str() );
+#else
+    PetscOptions options;
+    PetscOptionsInsertString( options, petscOptions.c_str() );
+    #error This doesn't seem right. The options aren't used.  Check!!!
+#endif
+
 
     d_sKspType             = db->getStringWithDefault( "ksp_type", "fgmres" );
     d_dRelativeTolerance   = db->getDoubleWithDefault( "relative_tolerance", 1.0e-9 );
@@ -269,7 +274,7 @@ void PetscKrylovSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
         }
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
         checkErr( KSPSetPreconditionerSide( d_KrylovSolver, d_PcSide ) );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
         checkErr( KSPSetPCSide( d_KrylovSolver, d_PcSide ) );
 #else
 #error Not programmed for this version yet
@@ -305,7 +310,7 @@ void PetscKrylovSolver::setKrylovSolver( KSP *ksp )
     if ( d_bKSPCreatedInternally ) {
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
         KSPDestroy( d_KrylovSolver );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
         KSPDestroy( &d_KrylovSolver );
 #else
 #error Not programmed for this version yet
@@ -379,7 +384,7 @@ int PetscKrylovSolver::setupPreconditioner( void * )
     // return( ((PetscKrylovSolver*)ctx)->getPreconditioner()->reset() );
     return ierr;
 }
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
 PetscErrorCode PetscKrylovSolver::setupPreconditioner( PC pc )
 {
     int ierr  = 0;
@@ -397,14 +402,14 @@ PetscErrorCode PetscKrylovSolver::setupPreconditioner( PC pc )
 ****************************************************************/
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
 PetscErrorCode PetscKrylovSolver::applyPreconditioner( void *ctx, Vec r, Vec z )
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
 PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
 #else
 #error Not programmed for this version yet
 #endif
 {
     int ierr = 0;
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#if PETSC_VERSION_GE(3,2,0)
     void *ctx;
     PCShellGetContext( pc, &ctx );
 #endif

@@ -5,8 +5,6 @@
 #include "utils/AMP_MPI.h"
 
 
-extern "C" {
-
 #ifdef MPICH_SKIP_MPICXX
 #define _FIX_FOR_PETSC_MPI_CXX
 #undef MPICH_SKIP_MPICXX
@@ -30,7 +28,6 @@ extern "C" {
 #define OMPI_SKIP_MPICXX
 #endif
 #endif
-}
 
 
 namespace AMP {

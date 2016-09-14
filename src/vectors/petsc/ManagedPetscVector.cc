@@ -1,6 +1,7 @@
 #include "utils/Utilities.h"
 #include "vectors/VectorEngine.h"
 #include "vectors/petsc/ManagedPetscVector.h"
+#include "vectors/petsc/PetscVector.h"
 #ifdef USE_EXT_TRILINOS
 #include "vectors/trilinos/EpetraVectorEngine.h"
 #endif
@@ -81,7 +82,7 @@ PetscErrorCode _AMP_loadintovectornative( PetscViewer, Vec )
     AMP_ERROR( "41 Not implemented" );
     return 0;
 }
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
 PetscErrorCode _AMP_setoption( Vec, VecOption, PetscBool ) { return 0; }
 PetscErrorCode _AMP_load( Vec, PetscViewer )
 {
@@ -440,25 +441,13 @@ PetscErrorCode _AMP_mtdot( Vec v, PetscInt num, const Vec vec[], PetscScalar *an
 }
 
 
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-PetscErrorCode _AMP_destroyvecs( Vec vecArray[], PetscInt num )
-{
-    for ( PetscInt i = 0; i != num; i++ )
-        VecDestroy( vecArray[i] );
-    delete[] vecArray;
-    return 0;
-}
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
 PetscErrorCode _AMP_destroyvecs( PetscInt num, Vec vecArray[] )
 {
     for ( PetscInt i = 0; i != num; i++ )
-        VecDestroy( &vecArray[i] );
+        AMP::LinearAlgebra::PetscVector::VecDestroy( &vecArray[i] );
     delete[] vecArray;
     return 0;
 }
-#else
-#error Not programmed for this version of petsc
-#endif
 
 PetscErrorCode _AMP_axpy( Vec out, PetscScalar alpha, Vec in )
 {
@@ -734,7 +723,7 @@ void ManagedPetscVector::initPetsc()
     PetscMapSetLocalSize( d_petscVec->map, this->getLocalSize() );
     d_petscVec->map->rstart = static_cast<PetscInt>( this->getDOFManager()->beginDOF() );
     d_petscVec->map->rend   = static_cast<PetscInt>( this->getDOFManager()->endDOF() );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
     PetscLayoutSetBlockSize( d_petscVec->map, 1 );
     PetscLayoutSetSize( d_petscVec->map, this->getGlobalSize() );
     PetscLayoutSetLocalSize( d_petscVec->map, this->getLocalSize() );
@@ -783,13 +772,7 @@ ManagedPetscVector::~ManagedPetscVector()
     if ( !d_bMadeWithPetscDuplicate ) {
         if ( refct > 1 )
             AMP_ERROR( "Deleting a vector still held by PETSc" );
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-        VecDestroy( d_petscVec );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
-        VecDestroy( &d_petscVec );
-#else
-#error Not programmed for this version yet
-#endif
+        PetscVector::VecDestroy( &d_petscVec );
     }
 }
 

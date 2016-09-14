@@ -102,13 +102,7 @@ public:
 
     static void destroyNativeVector( AMP::LinearAlgebra::NativePetscVector &rhs )
     {
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-        VecDestroy( rhs.getVec() );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
-        VecDestroy( &rhs.getVec() );
-#else
-#error Not programmed for this version yet
-#endif
+        AMP::LinearAlgebra::PetscVector::VecDestroy( &rhs.getVec() );
     }
 
     static void destroyNativeVector( AMP::LinearAlgebra::Vector::shared_ptr rhs )

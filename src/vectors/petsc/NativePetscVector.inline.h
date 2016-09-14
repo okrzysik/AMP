@@ -2,9 +2,7 @@
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/petsc/NativePetscVector.h"
 
-extern "C" {
 #include "petscvec.h"
-}
 
 
 namespace AMP {

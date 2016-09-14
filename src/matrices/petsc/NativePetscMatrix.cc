@@ -55,7 +55,11 @@ Vector::shared_ptr NativePetscMatrix::extractDiagonal( Vector::shared_ptr v ) co
 Vector::shared_ptr NativePetscMatrix::getRightVector() const
 {
     Vec a;
+#if PETSC_VERSION_LE(3,2,0)
     MatGetVecs( d_Mat, &a, PETSC_NULL );
+#else
+    MatCreateVecs( d_Mat, &a, PETSC_NULL );
+#endif
     AMP::shared_ptr<NativePetscVectorParameters> npvParam(
         new NativePetscVectorParameters( a, true ) );
     return Vector::shared_ptr( new NativePetscVector( npvParam ) );
@@ -63,7 +67,11 @@ Vector::shared_ptr NativePetscMatrix::getRightVector() const
 Vector::shared_ptr NativePetscMatrix::getLeftVector() const
 {
     Vec a;
+#if PETSC_VERSION_LE(3,2,0)
     MatGetVecs( d_Mat, PETSC_NULL, &a );
+#else
+    MatCreateVecs( d_Mat, PETSC_NULL, &a );
+#endif
     AMP::shared_ptr<NativePetscVectorParameters> npvParam(
         new NativePetscVectorParameters( a, true ) );
     return Vector::shared_ptr( new NativePetscVector( npvParam ) );

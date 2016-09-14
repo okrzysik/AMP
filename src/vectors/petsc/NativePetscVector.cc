@@ -1,10 +1,8 @@
 #include "vectors/petsc/NativePetscVector.h"
 #include "vectors/petsc/ManagedPetscVector.h"
 
-extern "C" {
 #include "petsc.h"
 #include "petscvec.h"
-}
 
 
 namespace AMP {
@@ -29,15 +27,8 @@ NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params )
 NativePetscVector::~NativePetscVector()
 {
     resetArray();
-    if ( d_bDeleteMe ) {
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-        VecDestroy( d_petscVec );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
-        VecDestroy( &d_petscVec );
-#else
-#error Not programmed for this version yet
-#endif
-    }
+    if ( d_bDeleteMe )
+        PetscVector::VecDestroy( &d_petscVec );
 }
 
 

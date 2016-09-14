@@ -119,14 +119,7 @@ public:
             utils->passes( "Associated variables are the same" );
         else
             utils->passes( "Associated variables are different" );
-
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-        checkPetscError<VECTOR_FACTORY>( utils, VecDestroy( another_vec ) );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
-        checkPetscError<VECTOR_FACTORY>( utils, VecDestroy( &another_vec ) );
-#else
-#error Not programmed for this version yet
-#endif
+        checkPetscError<VECTOR_FACTORY>( utils, AMP::LinearAlgebra::PetscVector::VecDestroy( &another_vec ) );
         utils->passes( "managed duplicated destroyed" );
 
         if ( vectora->isA<AMP::LinearAlgebra::MultiVector>() ) {
@@ -1010,7 +1003,7 @@ public:
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
         checkPetscError<VECTOR_FACTORY>( utils, VecSqrt( veca ) );
         checkPetscError<VECTOR_FACTORY>( utils, VecSqrt( vecb ) );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
         checkPetscError<VECTOR_FACTORY>( utils, VecSqrtAbs( veca ) );
         checkPetscError<VECTOR_FACTORY>( utils, VecSqrtAbs( vecb ) );
 #else
@@ -1147,7 +1140,7 @@ public:
         vectora2->axpy( 1.23456, vectorb2, vectora2 );
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
         PetscTruth ans;
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
         PetscBool ans;
 #else
 #error Not programmed for this version yet

@@ -1,6 +1,7 @@
 #ifndef included_AMP_PetscSNESSolver
 #define included_AMP_PetscSNESSolver
 
+#include "vectors/petsc/PetscVersionHelpers.h"
 #include "solvers/SolverStrategy.h"
 #include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/petsc/PetscMonitor.h"
@@ -8,8 +9,6 @@
 #include "utils/AMP_MPI.h"
 
 #include <list>
-
-extern "C" {
 
 #ifdef MPICH_SKIP_MPICXX
 #define _FIX_FOR_PETSC_MPI_CXX
@@ -36,7 +35,6 @@ extern "C" {
 #define MPICH_SKIP_MPICXX
 #endif
 #endif
-}
 
 
 namespace AMP {
@@ -180,7 +178,7 @@ private:
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     static PetscErrorCode
     lineSearchPreCheck( SNES snes, Vec x, Vec y, void *checkctx, PetscTruth *changed_y );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
     static PetscErrorCode
     lineSearchPreCheck( SNES snes, Vec x, Vec y, void *checkctx, PetscBool *changed_y );
 #else

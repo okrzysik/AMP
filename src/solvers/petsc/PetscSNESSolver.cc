@@ -23,7 +23,7 @@ static inline void checkErr( int ierr )
 {
     AMP_INSIST( ierr == 0, "Petsc returned non-zero error code" );
 }
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
 static inline void checkErr( PetscErrorCode ierr )
 {
     AMP_INSIST( ierr == 0, "Petsc returned non-zero error code" );
@@ -66,19 +66,13 @@ PetscSNESSolver::~PetscSNESSolver()
 {
     // when we are using Matrix free delete the MF PETSc Jacobian
     if ( ( !d_bUsesJacobian ) && ( d_Jacobian != nullptr ) ) {
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-        MatDestroy( d_Jacobian );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
-        MatDestroy( &d_Jacobian );
-#else
-#error Not programmed for this version yet
-#endif
+        AMP::LinearAlgebra::PetscMatrix::MatDestroy( &d_Jacobian );
         d_Jacobian = nullptr;
     }
     SNESMonitorCancel( d_SNESSolver );
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     SNESDestroy( d_SNESSolver );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
     SNESDestroy( &d_SNESSolver );
 #else
 #error Not programmed for this version yet
@@ -105,7 +99,11 @@ void PetscSNESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> para
     checkErr( SNESCreate( d_comm.getCommunicator(), &d_SNESSolver ) );
 
     // set the type to line search, potentially modify this later to be from input
+#if PETSC_VERSION_LE(3,2,0)
     checkErr( SNESSetType( d_SNESSolver, SNESLS ) );
+#else
+    checkErr( SNESSetType( d_SNESSolver, "ls" ) );
+#endif
     checkErr( SNESSetApplicationContext( d_SNESSolver, this ) );
     checkErr( SNESSetTolerances( d_SNESSolver,
                                  d_dAbsoluteTolerance,
@@ -304,13 +302,7 @@ void PetscSNESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
         // Set the jacobian
         if ( !d_bUsesJacobian ) {
             if ( d_Jacobian != nullptr ) {
-#if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
-                MatDestroy( d_Jacobian );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
-                MatDestroy( &d_Jacobian );
-#else
-#error Not programmed for this version yet
-#endif
+                AMP::LinearAlgebra::PetscMatrix::MatDestroy( &d_Jacobian );
                 d_Jacobian = nullptr;
             }
             checkErr( MatCreateSNESMF( d_SNESSolver, &d_Jacobian ) );
@@ -322,7 +314,7 @@ void PetscSNESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
             }
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
             checkErr( MatMFFDSetFromOptions( d_Jacobian ) );
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
             checkErr( MatSetFromOptions( d_Jacobian ) );
 #else
 #error Not programmed for this version yet
@@ -448,7 +440,7 @@ bool PetscSNESSolver::isVectorValid( AMP::shared_ptr<AMP::Operator::Operator> &o
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
 PetscErrorCode
 PetscSNESSolver::lineSearchPreCheck( SNES, Vec x, Vec y, void *checkctx, PetscTruth *changed_y )
-#elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 2 )
+#elif PETSC_VERSION_GE(3,2,0)
 PetscErrorCode
 PetscSNESSolver::lineSearchPreCheck( SNES, Vec x, Vec y, void *checkctx, PetscBool *changed_y )
 #else

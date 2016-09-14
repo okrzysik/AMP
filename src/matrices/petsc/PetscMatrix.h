@@ -1,8 +1,8 @@
-
 #ifndef included_AMP_PetscMatrix
 #define included_AMP_PetscMatrix
 
-extern "C" {
+#include "vectors/petsc/PetscVersionHelpers.h"
+
 
 #ifdef MPICH_SKIP_MPICXX
 #define _FIX_FOR_PETSC_MPICH_CXX
@@ -13,11 +13,10 @@ extern "C" {
 #define _FIX_FOR_PETSC_OMPI_CXX
 #undef OMPI_SKIP_MPICXX
 #endif
-}
+
 
 #include "petscmat.h"
 
-extern "C" {
 
 #ifdef _FIX_FOR_PETSC_MPICH_CXX
 #ifndef MPICH_SKIP_MPICXX
@@ -30,7 +29,7 @@ extern "C" {
 #define OMPI_SKIP_MPICXX
 #endif
 #endif
-}
+
 
 #include "matrices/Matrix.h"
 
@@ -103,6 +102,9 @@ public:
       * class of PetscMatrix.
       */
     static shared_ptr createView( shared_ptr m );
+
+    //! Wrapper to MatDestroy
+    static inline PetscErrorCode MatDestroy( Mat *mat );
 };
 }
 }
