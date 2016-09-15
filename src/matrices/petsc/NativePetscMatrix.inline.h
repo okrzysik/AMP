@@ -41,9 +41,8 @@ inline NativePetscMatrix::NativePetscMatrix() { d_MatCreatedInternally = false; 
 
 inline NativePetscMatrix::~NativePetscMatrix()
 {
-    if ( d_MatCreatedInternally ) {
-        AMP::LinearAlgebra::PetscMatrix::MatDestroy( &d_Mat );
-    }
+    if ( d_MatCreatedInternally )
+        PETSC::matDestroy( &d_Mat );
 }
 
 

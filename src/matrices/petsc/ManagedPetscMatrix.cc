@@ -225,7 +225,7 @@ void ManagedPetscMatrix::copyFromMat( Mat m )
 
 ManagedPetscMatrix::~ManagedPetscMatrix()
 {
-    AMP::LinearAlgebra::PetscMatrix::MatDestroy( &d_Mat );
+    PETSC::matDestroy( &d_Mat );
 }
 
 

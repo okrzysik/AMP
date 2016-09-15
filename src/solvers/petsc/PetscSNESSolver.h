@@ -1,7 +1,7 @@
 #ifndef included_AMP_PetscSNESSolver
 #define included_AMP_PetscSNESSolver
 
-#include "vectors/petsc/PetscVersionHelpers.h"
+#include "vectors/petsc/PetscHelpers.h"
 #include "solvers/SolverStrategy.h"
 #include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/petsc/PetscMonitor.h"

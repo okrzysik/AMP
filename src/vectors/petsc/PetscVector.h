@@ -2,7 +2,7 @@
 #define included_AMP_PetscVector
 
 #include "vectors/DataChangeListener.h"
-#include "vectors/petsc/PetscVersionHelpers.h"
+#include "vectors/petsc/PetscHelpers.h"
 
 #include "petscvec.h"
 
@@ -181,11 +181,6 @@ public:
 
     virtual void dataChanged();
 
-    //! Wrapper to VecDestroy
-    static inline PetscErrorCode VecDestroy( Vec *v );
-
-    //! Wrapper to RandomDestroy
-    static inline PetscErrorCode RandomDestroy( PetscRandom *random );
 };
 }
 }

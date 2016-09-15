@@ -4,6 +4,7 @@
 #include "test_Vector.h"
 
 #include "utils/AMP_MPI.h"
+#include "vectors/petsc/PetscHelpers.h"
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/petsc/NativePetscVector.h"
 
@@ -102,7 +103,7 @@ public:
 
     static void destroyNativeVector( AMP::LinearAlgebra::NativePetscVector &rhs )
     {
-        AMP::LinearAlgebra::PetscVector::VecDestroy( &rhs.getVec() );
+        PETSC::vecDestroy( &rhs.getVec() );
     }
 
     static void destroyNativeVector( AMP::LinearAlgebra::Vector::shared_ptr rhs )

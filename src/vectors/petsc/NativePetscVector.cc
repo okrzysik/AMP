@@ -28,7 +28,7 @@ NativePetscVector::~NativePetscVector()
 {
     resetArray();
     if ( d_bDeleteMe )
-        PetscVector::VecDestroy( &d_petscVec );
+        PETSC::vecDestroy( &d_petscVec );
 }
 
 

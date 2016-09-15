@@ -1,5 +1,8 @@
 #ifndef included_test_PetscVectorTests
 #define included_test_PetscVectorTests
+
+#include "vectors/petsc/PetscHelpers.h"
+
 #include "string"
 #include <algorithm>
 
@@ -119,7 +122,7 @@ public:
             utils->passes( "Associated variables are the same" );
         else
             utils->passes( "Associated variables are different" );
-        checkPetscError<VECTOR_FACTORY>( utils, AMP::LinearAlgebra::PetscVector::VecDestroy( &another_vec ) );
+        checkPetscError<VECTOR_FACTORY>( utils, PETSC::vecDestroy( &another_vec ) );
         utils->passes( "managed duplicated destroyed" );
 
         if ( vectora->isA<AMP::LinearAlgebra::MultiVector>() ) {
