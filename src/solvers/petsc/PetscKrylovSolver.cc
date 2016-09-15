@@ -162,14 +162,14 @@ void PetscKrylovSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
         petscOptions = PetscMonitor::removeMonitor( petscOptions );
         d_PetscMonitor.reset( new PetscMonitor( d_comm ) );
     }
-#if PETSC_VERSION_LE(3,2,7)
+#if PETSC_VERSION_LE(3,2,0)
     PetscOptionsInsertString( petscOptions.c_str() );
 #elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
     PetscOptionsInsertString( PETSC_NULL, petscOptions.c_str() );
 #else
     PetscOptions options;
     PetscOptionsInsertString( options, petscOptions.c_str() );
-    #error This doesn't seem right. The options aren't used.  Check!!!
+    #error This does not seem right. The options are not used.  Check!!!
 #endif
 
 
