@@ -102,7 +102,7 @@ void PetscSNESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> para
 #if PETSC_VERSION_LE(3,2,0)
     checkErr( SNESSetType( d_SNESSolver, SNESLS ) );
 #else
-    checkErr( SNESSetType( d_SNESSolver, "ls" ) );
+    checkErr( SNESSetType( d_SNESSolver, SNESNEWTONLS ) );
 #endif
     checkErr( SNESSetApplicationContext( d_SNESSolver, this ) );
     checkErr( SNESSetTolerances( d_SNESSolver,
@@ -167,6 +167,7 @@ void PetscSNESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> para
     }
 
     checkErr( SNESSetFromOptions( d_SNESSolver ) );
+
     if ( d_PetscMonitor.get() != nullptr ) {
         // Add the monitor
         SNESMonitorSet( d_SNESSolver, PetscMonitor::monitorSNES, d_PetscMonitor.get(), PETSC_NULL );
@@ -184,6 +185,16 @@ void PetscSNESSolver::getFromInput( const AMP::shared_ptr<AMP::Database> db )
 #if PETSC_VERSION_LE(3,2,0)
     PetscOptionsInsertString( petscOptions.c_str() );
 #elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
+    // if the solver type is specified as 'ls' replace by 'newtonls'
+    // this hack is brittle and will easily fail if the string is
+    // not matched exactly in the input. Temporary fix for now
+    std::string solverTypeStr("-snes_type ls");
+    auto pos = petscOptions.find(solverTypeStr);
+    if(pos!=std::string::npos) {
+        petscOptions.erase(pos, solverTypeStr.length());
+        petscOptions += " -snes_type newtonls";
+    }
+
     PetscOptionsInsertString( PETSC_NULL, petscOptions.c_str() );
 #else
         #error This version of PETSc is not supported.  Check!!!
