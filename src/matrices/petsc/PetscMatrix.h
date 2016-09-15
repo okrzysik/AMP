@@ -1,7 +1,7 @@
 #ifndef included_AMP_PetscMatrix
 #define included_AMP_PetscMatrix
 
-#include "vectors/petsc/PetscVersionHelpers.h"
+#include "vectors/petsc/PetscHelpers.h"
 
 
 #ifdef MPICH_SKIP_MPICXX
@@ -103,8 +103,6 @@ public:
       */
     static shared_ptr createView( shared_ptr m );
 
-    //! Wrapper to MatDestroy
-    static inline PetscErrorCode MatDestroy( Mat *mat );
 };
 }
 }

@@ -444,7 +444,7 @@ PetscErrorCode _AMP_mtdot( Vec v, PetscInt num, const Vec vec[], PetscScalar *an
 PetscErrorCode _AMP_destroyvecs( PetscInt num, Vec vecArray[] )
 {
     for ( PetscInt i = 0; i != num; i++ )
-        AMP::LinearAlgebra::PetscVector::VecDestroy( &vecArray[i] );
+        PETSC::vecDestroy( &vecArray[i] );
     delete[] vecArray;
     return 0;
 }
@@ -772,7 +772,7 @@ ManagedPetscVector::~ManagedPetscVector()
     if ( !d_bMadeWithPetscDuplicate ) {
         if ( refct > 1 )
             AMP_ERROR( "Deleting a vector still held by PETSc" );
-        PetscVector::VecDestroy( &d_petscVec );
+        PETSC::vecDestroy( &d_petscVec );
     }
 }
 

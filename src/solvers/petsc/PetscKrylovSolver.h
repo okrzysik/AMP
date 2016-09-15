@@ -1,7 +1,7 @@
 #ifndef included_AMP_PetscKrylovSolver
 #define included_AMP_PetscKrylovSolver
 
-#include "vectors/petsc/PetscVersionHelpers.h"
+#include "vectors/petsc/PetscHelpers.h"
 #include "solvers/SolverStrategy.h"
 #include "solvers/petsc/PetscKrylovSolverParameters.h"
 #include "solvers/petsc/PetscMonitor.h"

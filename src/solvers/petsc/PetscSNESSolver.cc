@@ -66,7 +66,7 @@ PetscSNESSolver::~PetscSNESSolver()
 {
     // when we are using Matrix free delete the MF PETSc Jacobian
     if ( ( !d_bUsesJacobian ) && ( d_Jacobian != nullptr ) ) {
-        AMP::LinearAlgebra::PetscMatrix::MatDestroy( &d_Jacobian );
+        PETSC::matDestroy( &d_Jacobian );
         d_Jacobian = nullptr;
     }
     SNESMonitorCancel( d_SNESSolver );
@@ -302,7 +302,7 @@ void PetscSNESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
         // Set the jacobian
         if ( !d_bUsesJacobian ) {
             if ( d_Jacobian != nullptr ) {
-                AMP::LinearAlgebra::PetscMatrix::MatDestroy( &d_Jacobian );
+                PETSC::matDestroy( &d_Jacobian );
                 d_Jacobian = nullptr;
             }
             checkErr( MatCreateSNESMF( d_SNESSolver, &d_Jacobian ) );
