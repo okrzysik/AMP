@@ -1,8 +1,7 @@
 
-// extern "C" {
+#define __MPIUNI_H
 #include "petscmat.h"
 #include "petscvec.h"
-//}
 
 #include "matrices/Matrix.h"
 #include "matrices/petsc/NativePetscMatrix.h"

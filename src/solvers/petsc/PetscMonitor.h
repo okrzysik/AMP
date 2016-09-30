@@ -8,6 +8,7 @@
 #include <set>
 
 #ifdef USE_EXT_PETSC
+#define __MPIUNI_H
 #include "petsc.h"
 #include "petscksp.h"
 #include "petscsnes.h"

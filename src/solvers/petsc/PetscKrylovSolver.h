@@ -20,6 +20,7 @@ extern "C" {
 #undef OMPI_SKIP_MPICXX
 #endif
 
+#define __MPIUNI_H
 #include "petsc.h"
 #include "petscksp.h"
 
