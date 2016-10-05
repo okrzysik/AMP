@@ -129,7 +129,7 @@ inline type MPI_CLASS::minReduce( const type value ) const
 {
     if ( comm_size > 1 ) {
         type tmp = value;
-        call_minReduce( &tmp, 1, NULL );
+        call_minReduce( &tmp, 1, nullptr );
         return tmp;
     } else {
         return value;
@@ -141,7 +141,7 @@ inline void MPI_CLASS::minReduce( type *x, const int n, int *rank_of_min ) const
     if ( comm_size > 1 ) {
         call_minReduce( x, n, rank_of_min );
     } else {
-        if ( rank_of_min != NULL ) {
+        if ( rank_of_min != nullptr ) {
             for ( int i        = 0; i < n; i++ )
                 rank_of_min[i] = 0;
         }
@@ -155,7 +155,7 @@ inline void MPI_CLASS::minReduce( const type *x, type *y, const int n, int *rank
     } else {
         for ( int i = 0; i < n; i++ ) {
             y[i] = x[i];
-            if ( rank_of_min != NULL )
+            if ( rank_of_min != nullptr )
                 rank_of_min[i] = 0;
         }
     }
@@ -257,7 +257,7 @@ inline type MPI_CLASS::maxReduce( const type value ) const
 {
     if ( comm_size > 1 ) {
         type tmp = value;
-        call_maxReduce( &tmp, 1, NULL );
+        call_maxReduce( &tmp, 1, nullptr );
         return tmp;
     } else {
         return value;
@@ -269,7 +269,7 @@ inline void MPI_CLASS::maxReduce( type *x, const int n, int *rank_of_max ) const
     if ( comm_size > 1 ) {
         call_maxReduce( x, n, rank_of_max );
     } else {
-        if ( rank_of_max != NULL ) {
+        if ( rank_of_max != nullptr ) {
             for ( int i        = 0; i < n; i++ )
                 rank_of_max[i] = 0;
         }
@@ -283,7 +283,7 @@ inline void MPI_CLASS::maxReduce( const type *x, type *y, const int n, int *rank
     } else {
         for ( int i = 0; i < n; i++ ) {
             y[i] = x[i];
-            if ( rank_of_max != NULL )
+            if ( rank_of_max != nullptr )
                 rank_of_max[i] = 0;
         }
     }
@@ -616,7 +616,7 @@ int MPI_CLASS::allGather( const type *send_data,
                           bool known_recv ) const
 {
     // Check the inputs
-    if ( known_recv && ( recv_cnt == NULL || recv_disp == NULL ) )
+    if ( known_recv && ( recv_cnt == nullptr || recv_disp == nullptr ) )
         MPI_CLASS_ERROR( "Error calling allGather" );
     // Check if we are dealing with a single processor
     if ( comm_size == 1 ) {
@@ -624,9 +624,9 @@ int MPI_CLASS::allGather( const type *send_data,
             // We do not know the recieved sizes
             for ( int i      = 0; i < send_cnt; i++ )
                 recv_data[i] = send_data[i];
-            if ( recv_cnt != NULL )
+            if ( recv_cnt != nullptr )
                 recv_cnt[0] = send_cnt;
-            if ( recv_disp != NULL )
+            if ( recv_disp != nullptr )
                 recv_disp[0] = 0;
         } else {
             // We know the recieved sizes
@@ -639,9 +639,9 @@ int MPI_CLASS::allGather( const type *send_data,
     int *recv_cnt2  = recv_cnt;
     int *recv_disp2 = recv_disp;
     if ( !known_recv ) {
-        if ( recv_cnt == NULL )
+        if ( recv_cnt == nullptr )
             recv_cnt2 = new int[comm_size];
-        if ( recv_disp == NULL )
+        if ( recv_disp == nullptr )
             recv_disp2 = new int[comm_size];
         call_allGather( send_cnt, recv_cnt2 );
         recv_disp2[0] = 0;
@@ -654,9 +654,9 @@ int MPI_CLASS::allGather( const type *send_data,
     // Send/recv the data
     call_allGather( send_data, send_cnt, recv_data, recv_cnt2, recv_disp2 );
     // Delete any temporary memory
-    if ( recv_cnt == NULL )
+    if ( recv_cnt == nullptr )
         delete[] recv_cnt2;
-    if ( recv_disp == NULL )
+    if ( recv_disp == nullptr )
         delete[] recv_disp2;
     return N_recv;
 }
@@ -747,7 +747,7 @@ inline void MPI_CLASS::setGather( std::set<type> &set ) const
     if ( N_recv_tot == 0 )
         return;
     std::vector<type> recv_buf( N_recv_tot );
-    type *send_data = NULL;
+    type *send_data = nullptr;
     if ( send_buf.size() > 0 ) {
         send_data = &send_buf[0];
     }
@@ -786,8 +786,8 @@ inline void MPI_CLASS::mapGather( std::map<KEY, DATA> &map ) const
         return;
     std::vector<KEY> recv_id( N_recv_tot );
     std::vector<DATA> recv_data( N_recv_tot );
-    KEY *send_data1  = NULL;
-    DATA *send_data2 = NULL;
+    KEY *send_data1  = nullptr;
+    DATA *send_data2 = nullptr;
     if ( send_id.size() > 0 ) {
         send_data1 = &send_id[0];
         send_data2 = &send_data[0];
@@ -1013,9 +1013,9 @@ int MPI_CLASS::allToAll( const type *send_data,
             if ( recv_cnt[0] != send_cnt[0] && send_cnt[0] > 0 )
                 MPI_CLASS_ERROR( "Single processor send/recv are different sizes" );
         } else {
-            if ( recv_cnt != NULL )
+            if ( recv_cnt != nullptr )
                 recv_cnt[0] = send_cnt[0];
-            if ( recv_disp != NULL )
+            if ( recv_disp != nullptr )
                 recv_disp[0] = send_disp[0];
         }
         for ( int i                     = 0; i < send_cnt[0]; i++ )
@@ -1023,7 +1023,7 @@ int MPI_CLASS::allToAll( const type *send_data,
         N_recieved                      = send_cnt[0];
     } else if ( known_recv ) {
         // The recieve sizes are known
-        MPI_CLASS_ASSERT( recv_cnt != NULL && recv_disp != NULL );
+        MPI_CLASS_ASSERT( recv_cnt != nullptr && recv_disp != nullptr );
         call_allToAll( send_data, send_cnt, send_disp, recv_data, recv_cnt, recv_disp );
         for ( int i = 0; i < comm_size; i++ )
             N_recieved += recv_cnt[i];
@@ -1031,9 +1031,9 @@ int MPI_CLASS::allToAll( const type *send_data,
         // The recieve sizes are not known, we need to communicate that information first
         int *recv_cnt2  = recv_cnt;
         int *recv_disp2 = recv_disp;
-        if ( recv_cnt == NULL )
+        if ( recv_cnt == nullptr )
             recv_cnt2 = new int[comm_size];
-        if ( recv_disp == NULL )
+        if ( recv_disp == nullptr )
             recv_disp2 = new int[comm_size];
         // Communicate the size we will be recieving from each processor
         allToAll<int>( 1, send_cnt, recv_cnt2 );
@@ -1044,9 +1044,9 @@ int MPI_CLASS::allToAll( const type *send_data,
         call_allToAll( send_data, send_cnt, send_disp, recv_data, recv_cnt2, recv_disp2 );
         for ( int i = 0; i < comm_size; i++ )
             N_recieved += recv_cnt2[i];
-        if ( recv_cnt == NULL )
+        if ( recv_cnt == nullptr )
             delete[] recv_cnt2;
-        if ( recv_disp == NULL )
+        if ( recv_disp == nullptr )
             delete[] recv_disp2;
     }
     return N_recieved;

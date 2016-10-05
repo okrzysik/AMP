@@ -6,10 +6,9 @@
 #include <iostream>
 #include <vector>
 
-#include "mpi.h"
-
 #include "solvers/libmesh/PelletStackHelpers.h"
 
+#include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
 #include "utils/InputManager.h"
 #include "utils/UnitTest.h"

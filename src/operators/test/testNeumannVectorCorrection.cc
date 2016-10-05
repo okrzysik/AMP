@@ -1,10 +1,10 @@
-#include "mpi.h"
 #include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <iostream>
 
 #include "utils/AMPManager.h"
+#include "utils/AMP_MPI.h"
 #include "utils/InputManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"

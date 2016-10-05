@@ -12,7 +12,7 @@
 //! Define MPI objects
 #ifdef USE_EXT_MPI
 #include "mpi.h" // include mpi.h
-#elif defined( USE_EXT_TRILINOS )
+#elif defined( USE_TRILINOS )
 #include "mpi.h" // trilinos serial builds include mpi.h
 #else
 typedef int MPI_Comm;
@@ -66,18 +66,18 @@ public:
 
 
     /**
-     * \brief Constructor from existing AMP_MPI object
-     * \details  This constructor creates a new AMP_MPI object from an existing AMP_MPI object.
+     * \brief Constructor from existing communicator
+     * \details  This constructor creates a new communicator from an existing communicator.
      *   This does not create a new internal MPI_Comm, but uses the existing comm.
-     * \param comm Existing AMP_MPI object
+     * \param comm Existing communicator
      */
     AMP_MPI( const AMP::AMP_MPI &comm );
 
     /**
      * \brief Constructor from existing MPI communicator
-     * \details  This constructor creates a new AMP_MPI object from an existing MPI communicator.
+     * \details  This constructor creates a new communicator from an existing MPI communicator.
      *    This does not create a new internal MPI_Comm, but uses the existing comm.
-     *    Note that by default, AMP_MPI will not free the MPI_Comm object and the user is
+     *    Note that by default, this will not free the MPI_Comm object and the user is
      * responsible
      *      for free'ing the MPI_Comm when it is no longer used.  This behavior is controlled by the
      *      optional manage argument.
@@ -90,7 +90,7 @@ public:
 
     /**
      * \brief Assignment operator
-     * \details  This operator overloads the assignment to correctly copy an AMP_MPI object
+     * \details  This operator overloads the assignment to correctly copy an communicator
      * \param comm Existing MPI object
      */
     AMP_MPI &operator=( const AMP::AMP_MPI &comm );
@@ -155,7 +155,7 @@ public:
 
     /**
      * \brief Split an existing communicator
-     * \details  This creates a new AMP_MPI object by splitting an existing AMP_MPI object.
+     * \details  This creates a new communicator by splitting an existing communicator.
      *   See MPI_Comm_split for information on how the underlying split will occur.
      *   Note: the underlying MPI_Comm object will be free'd automatically when it is no longer
      *   used by any MPI objects.
@@ -175,7 +175,7 @@ public:
 
     /**
      * \brief Split an existing communicator by node
-     * \details  This creates a new AMP_MPI object by splitting an existing AMP_MPI object
+     * \details  This creates a new communicator by splitting an existing communicator
      *   by the node.  This will result in a separate MPI_Comm for each physical node.
      *   Internally this will use MPI_Get_processor_name to identify the nodes.
      *   Note: the underlying MPI_Comm object will be free'd automatically when it is no longer
@@ -192,8 +192,8 @@ public:
 
 
     /**
-     * \brief Duplicate an existing AMP_MPI communicator
-     * \details  This creates a new AMP_MPI object by duplicating an existing AMP_MPI object.
+     * \brief Duplicate an existing communicator
+     * \details  This creates a new communicator by duplicating an existing communicator.
      *   The resulting communicator will exist over the same processes, but have a different
      * context.
      *   Note: the underlying MPI_Comm object will be free'd automatically when it is no longer
@@ -204,7 +204,7 @@ public:
 
     /**
      * \brief Create a communicator from the intersection of two communicators
-     * \details  This creates a new AMP_MPI object by intersecting two existing communicators.
+     * \details  This creates a new communicator by intersecting two existing communicators.
      *   Any processors that do not contain the both communicators will receive a NULL communicator.
      *   There are 3 possible cases:
      *      The communicators are disjoint (a null communicator will be returned on all processors).
@@ -233,10 +233,10 @@ public:
     /**
      *  Get the current MPI communicator.
      *  Note: The underlying MPI_Comm object may be free'd by AMP_MPI when it is no
-     *  longer used by any AMP_MPI objects.  If the user has made a copy using the
+     *  longer used by any communicators.  If the user has made a copy using the
      *  getCommunicator routine, then it may be free'd without user knowledge.  The
      *  user is responsible for checking if the communicator is valid, or keeping a
-     *  copy of the AMP_MPI object that provided the MPI_Communicator.
+     *  copy of the communicator that provided the MPI_Communicator.
      */
     const MPI_Comm &getCommunicator() const { return communicator; }
 
@@ -252,8 +252,8 @@ public:
 
     /**
      * \brief Overload operator !=
-     * \details  Overload operator comm1 != comm2.  Two MPI objects are != if they do not share the
-     * same communicator.
+     * \details  Overload operator comm1 != comm2.  Two MPI objects are != if they
+     *   do not share the same communicator.
      *   Note: this is a local operation.
      */
     bool operator!=( const AMP_MPI & ) const;
@@ -262,18 +262,13 @@ public:
     /**
      * \brief Overload operator <
      * \details  Overload operator comm1 < comm2.  One MPI object is < another iff all the
-     * processors in the first
-     *   object are also in the second.  Additionally, the second object must contain at least one
-     * processor
-     *   that is not in the first object.  This is a collective operation, based on the first
-     * communicator.
-     *   As a result all processors on the first communicator will return the same value, while any
-     * processors that are
-     *   not on the first communicator will return an unknown value.  Additionally, all processors
-     * on the first object
-     * MUST
-     *   call this routine and will be synchronized through this call (there is an internal
-     * allReduce).
+     *   processors in the first object are also in the second.  Additionally, the second
+     *   object must contain at least one processor that is not in the first object.
+     *   This is a collective operation, based on the first communicator.
+     *   As a result all processors on the first communicator will return the same value,
+     *   while any processors that are not on the first communicator will return an unknown value.
+     *   Additionally, all processors on the first object MUST call this routine and will be
+     *   synchronized through this call (there is an internalallReduce).
      */
     bool operator<( const AMP_MPI & ) const;
 
@@ -281,16 +276,12 @@ public:
     /**
      * \brief Overload operator <=
      * \details  Overload operator comm1 <= comm2.  One MPI object is <= another iff all the
-     * processors in the first
-     *   object are also in the second.  This is a collective operation, based on the first
-     * communicator.
-     *   As a result all processors on the first communicator will return the same value, while any
-     * processors that are
-     *   not on the first communicator will return an unknown value.  Additionally, all processors
-     * on the first object
-     * MUST
+     *   processors in the first object are also in the second.  This is a collective operation,
+     *   based on the first communicator.  As a result all processors on the first communicator
+     *   will return the same value, while any processors that are not on the first communicator
+     *   will return an unknown value.  Additionally, all processors on the first object MUST
      *   call this routine and will be synchronized through this call (there is an internal
-     * allReduce).
+     *   allReduce).
      */
     bool operator<=( const AMP_MPI & ) const;
 
@@ -298,18 +289,13 @@ public:
     /**
      * \brief Overload operator >
      * \details  Overload operator comm1 > comm2.  One MPI object is > another iff all the
-     * processors in the second
-     *   object are also in the first.  Additionally, the first object must contain at least one
-     * processor
-     *   that is not in the second object.  This is a collective operation, based on the first
-     * communicator.
-     *   As a result all processors on the first communicator will return the same value, while any
-     * processors that are
-     *   not on the first communicator will return an unknown value.  Additionally, all processors
-     * on the first object
-     * MUST
-     *   call this routine and will be synchronized through this call (there is an internal
-     * allReduce).
+     *   processors in the second object are also in the first.  Additionally, the first object
+     *   must contain at least one processor that is not in the second object.
+     *   This is a collective operation, based on the first communicator.
+     *   As a result all processors on the first communicator will return the same value,
+     *   while any processors that are not on the first communicator will return an unknown value.
+     *   Additionally, all processors on the first object MUST call this routine and will be
+     *   synchronized through this call (there is an internal allReduce).
      */
     bool operator>( const AMP_MPI & ) const;
 
@@ -317,18 +303,13 @@ public:
     /**
      * \brief Overload operator >=
      * \details  Overload operator comm1 >= comm2.  One MPI object is > another iff all the
-     * processors in the second
-     *   object are also in the first.  Additionally, the first object must contain at least one
-     * processor
-     *   that is not in the second object.  This is a collective operation, based on the first
-     * communicator.
+     *   processors in the second object are also in the first.  Additionally, the first object
+     *   must contain at least one processor that is not in the second object.
+     *   This is a collective operation, based on the first communicator.
      *   As a result all processors on the first communicator will return the same value, while any
-     * processors that are
-     *   not on the first communicator will return an unknown value.  Additionally, all processors
-     * on the first object
-     * MUST
-     *   call this routine and will be synchronized through this call (there is an internal
-     * allReduce).
+     *   processors that are not on the first communicator will return an unknown value.
+     *   Additionally, all processors on the first object MUST call this routine and will be
+     *   synchronized through this call (there is an internal allReduce).
      */
     bool operator>=( const AMP_MPI & ) const;
 
@@ -469,7 +450,7 @@ public:
      * minimum value
      */
     template <class type>
-    void minReduce( type *x, const int n = 1, int *rank_of_min = NULL ) const;
+    void minReduce( type *x, const int n = 1, int *rank_of_min = nullptr ) const;
 
 
     /**
@@ -488,7 +469,7 @@ public:
      * minimum value
      */
     template <class type>
-    void minReduce( const type *x, type *y, const int n = 1, int *rank_of_min = NULL ) const;
+    void minReduce( const type *x, type *y, const int n = 1, int *rank_of_min = nullptr ) const;
 
 
     /**
@@ -516,7 +497,7 @@ public:
      * minimum value
      */
     template <class type>
-    void maxReduce( type *x, const int n = 1, int *rank_of_max = NULL ) const;
+    void maxReduce( type *x, const int n = 1, int *rank_of_max = nullptr ) const;
 
 
     /**
@@ -535,7 +516,7 @@ public:
      * minimum value
      */
     template <class type>
-    void maxReduce( const type *x, type *y, const int n = 1, int *rank_of_max = NULL ) const;
+    void maxReduce( const type *x, type *y, const int n = 1, int *rank_of_max = nullptr ) const;
 
 
     /**
@@ -781,8 +762,8 @@ public:
     int allGather( const type *send_data,
                    const int send_cnt,
                    type *recv_data,
-                   int *recv_cnt   = NULL,
-                   int *recv_disp  = NULL,
+                   int *recv_cnt   = nullptr,
+                   int *recv_disp  = nullptr,
                    bool known_recv = false ) const;
 
 
@@ -851,8 +832,8 @@ public:
                   const int send_cnt[],
                   const int send_disp[],
                   type *recv_data,
-                  int *recv_cnt   = NULL,
-                  int *recv_disp  = NULL,
+                  int *recv_cnt   = nullptr,
+                  int *recv_disp  = nullptr,
                   bool known_recv = false ) const;
 
 
@@ -982,7 +963,7 @@ private:
     // The rank and size of the communicator
     int comm_rank, comm_size;
 
-    // The ranks of the comm in AMP_COMM_WORLD
+    // The ranks of the comm in the global comm
     mutable std::shared_ptr<std::vector<int>> d_ranks;
 
     // Some attributes
@@ -991,7 +972,7 @@ private:
 
     /* How many objects share the same underlying MPI communicator.
      * When the count goes to 0, the MPI comm will be free'd (assuming it was created
-     * by an AMP_MPI object).  This may not be perfect, but is likely to be good enough.
+     * by an communicator).  This may not be perfect, but is likely to be good enough.
      * Note that for thread safety, any access to this variable should be blocked for thread safety.
      * The value of count MUST be volatile to ensure the correct value is always used.
      */
@@ -1014,13 +995,13 @@ private:
     template <class type>
     void call_sumReduce( const type *x, type *y, const int n = 1 ) const;
     template <class type>
-    void call_minReduce( type *x, const int n = 1, int *rank_of_min = NULL ) const;
+    void call_minReduce( type *x, const int n = 1, int *rank_of_min = nullptr ) const;
     template <class type>
-    void call_minReduce( const type *x, type *y, const int n = 1, int *rank_of_min = NULL ) const;
+    void call_minReduce( const type *x, type *y, const int n = 1, int *rank_of_min = nullptr ) const;
     template <class type>
-    void call_maxReduce( type *x, const int n = 1, int *rank_of_max = NULL ) const;
+    void call_maxReduce( type *x, const int n = 1, int *rank_of_max = nullptr ) const;
     template <class type>
-    void call_maxReduce( const type *x, type *y, const int n = 1, int *rank_of_max = NULL ) const;
+    void call_maxReduce( const type *x, type *y, const int n = 1, int *rank_of_max = nullptr ) const;
     template <class type>
     void call_bcast( type *x, const int n, const int root ) const;
     template <class type>

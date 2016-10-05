@@ -2,8 +2,7 @@
 #ifndef included_AMP_WeldOperator
 #define included_AMP_WeldOperator
 
-#include "mpi.h"
-
+#include "utils/AMP_MPI.h"
 #include "utils/InputDatabase.h"
 
 #include "utils/shared_ptr.h"

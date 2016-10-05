@@ -4,8 +4,8 @@
  *  -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC flags are set.
  *
  */
+#include "utils/AMP_MPI.h"
 
-#include "mpi.h"
 #include <stdio.h>
 
 #include <Epetra_FECrsMatrix.h>

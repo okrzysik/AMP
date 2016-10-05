@@ -1,6 +1,6 @@
-
 #include <iostream>
 
+#include "utils/AMP_MPI.h"
 #include "utils/AMPManager.h"
 #include "utils/InputManager.h"
 #include "utils/UnitTest.h"
@@ -10,7 +10,6 @@ DISABLE_WARNINGS
 #include "libmesh/mesh_communication.h"
 ENABLE_WARNINGS
 
-#include "mpi.h"
 
 #include "utils/shared_ptr.h"
 

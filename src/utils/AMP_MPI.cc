@@ -1,18 +1,10 @@
 // This file impliments a wrapper class for MPI functions
 
-// Include mpi.h if used
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
-#include "mpi.h"
-#ifndef USE_MPI
-#define USE_MPI
-#endif
-#endif
-
 // Include AMP headers
-#include "ProfilerApp.h"
-#include "Utilities.h"
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
+#include "ProfilerApp.h"
+#include "Utilities.h"
 
 // Include all other headers
 #include <algorithm>
@@ -140,32 +132,33 @@ std::map<MPI_Request, Isendrecv_struct> global_isendrecv_list;
 static MPI_Request getRequest( MPI_Comm comm, int tag )
 {
     MPI_ASSERT( tag >= 0 && tag <= mpi_max_tag );
-    MPI_Request request = 0;
+    uint64_t request = 0;
     if ( sizeof( MPI_Request ) == 4 && sizeof( MPI_Comm ) == 4 ) {
-        MPI_ASSERT( sizeof( unsigned int ) == 4 );
-        unsigned int hash = comm * 0x9E3779B9;           // 2^32*0.5*(sqrt(5)-1)
-        unsigned int key  = ( hash & 0xFFFFFFFF ) >> 22; // Get a key 0-1024
-        request           = (MPI_Request) tag + ( key << 22 );
+        uint32_t hash = comm * 0x9E3779B9;           // 2^32*0.5*(sqrt(5)-1)
+        uint32_t key  = ( hash & 0xFFFFFFFF ) >> 22; // Get a key 0-1024
+        request       = (uint32_t) tag + ( key << 22 );
     } else if ( sizeof( MPI_Request ) == 8 && sizeof( MPI_Comm ) == 4 ) {
-        MPI_ASSERT( sizeof( unsigned long int ) == 8 );
-        request = ( MPI_Request )( (unsigned long) tag + ( ( (unsigned long) comm ) << 32 ) );
+        request       = (uint64_t) tag + ( ( (uint64_t) comm ) << 32 );
     } else if ( sizeof( MPI_Request ) == 4 && sizeof( MPI_Comm ) == 8 ) {
-        MPI_ASSERT( sizeof( unsigned long int ) == 8 );
-        unsigned long int hash = comm * 0x9E3779B97F4A7C15;   // 2^64*0.5*(sqrt(5)-1)
-        unsigned long int key  = ( hash & 0xFFFFFFFF ) >> 22; // Get a key 0-1024
-        request                = ( MPI_Request )( (unsigned int) tag + ( key << 32 ) );
+        uint64_t hash = comm * 0x9E3779B97F4A7C15;   // 2^64*0.5*(sqrt(5)-1)
+        uint64_t key  = ( hash & 0xFFFFFFFF ) >> 22; // Get a key 0-1024
+        request       = (uint32_t) tag + ( key << 32 );
     } else if ( sizeof( MPI_Request ) == 8 && sizeof( MPI_Comm ) == 8 ) {
-        MPI_ASSERT( sizeof( unsigned long int ) == 8 );
-        unsigned long int hash = comm * 0x9E3779B97F4A7C15; // 2^64*0.5*(sqrt(5)-1)
-        unsigned long int key  = ( hash & 0xFFFFFFFF );     // Get a key 0-2^32-1
-        request                = ( MPI_Request )( (unsigned int) tag + ( key << 32 ) );
+        uint64_t hash = comm * 0x9E3779B97F4A7C15; // 2^64*0.5*(sqrt(5)-1)
+        uint64_t key  = ( hash & 0xFFFFFFFF );     // Get a key 0-2^32-1
+        request       = (uint64_t) tag + ( key << 32 );
     } else {
         char text[50];
         sprintf(
             text, "Not Programmed (%i,%i)", (int) sizeof( MPI_Request ), (int) sizeof( MPI_Comm ) );
         MPI_ERROR( std::string( text ) );
     }
-    return request;
+    if ( sizeof( MPI_Request ) == 4 ) {
+        uint32_t tmp = static_cast<uint32_t>(request);
+        return *reinterpret_cast<MPI_Request*>(&tmp);
+    } else {
+        return *reinterpret_cast<MPI_Request*>(&request);
+    }
 }
 #endif
 
@@ -571,13 +564,14 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
     }
 #else
     // We are not using MPI, intialize based on the communicator
+    NULL_USE(manage);
     communicator = comm;
     comm_rank    = 0;
     comm_size    = 1;
     d_maxTag     = mpi_max_tag;
     d_isNull     = communicator == MPI_CLASS_COMM_NULL;
     if ( d_isNull )
-        comm_size       = 0;
+        comm_size = 0;
 #endif
     d_ranks.reset( new std::vector<int>() );
     if ( d_isNull ) {
@@ -663,7 +657,7 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
         // comm1 is null, we can return safely (comm1 is needed for communication)
     } else {
         // The intersection is smaller than comm1 or comm2
-        // Check if the new comm is NULL for all processors
+        // Check if the new comm is nullptr for all processors
         int max_size = 0;
         MPI_Allreduce( &size, &max_size, 1, MPI_INT, MPI_MAX, comm1.communicator );
         if ( max_size == 0 ) {
@@ -672,7 +666,7 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
         } else {
             // Create the new comm
             // Note: OpenMPI crashes if the intersection group is EMPTY for any processors
-            // We will set it to SELF for the EMPTY processors, then create a NULL comm later
+            // We will set it to SELF for the EMPTY processors, then create a nullptr comm later
             if ( group12 == MPI_GROUP_EMPTY ) {
                 MPI_Group_free2( &group12 );
                 MPI_Comm_group( MPI_COMM_SELF, &group12 );
@@ -727,6 +721,7 @@ MPI_CLASS MPI_CLASS::split( int color, int key ) const
     }
 #endif
     // Create the new object
+    NULL_USE(key);
     MPI_CLASS new_comm( new_MPI_comm, true );
     new_comm.call_abort_in_serial_instead_of_exit = call_abort_in_serial_instead_of_exit;
     return new_comm;
@@ -2346,10 +2341,7 @@ void MPI_CLASS::call_bcast<double>( double *x, const int n, const int root ) con
 #else
 // We need a concrete instantiation of bcast<char>(x,n,root);
 template <>
-void MPI_CLASS::call_bcast<char>( char *x, const int n, const int root ) const
-{
-    MPI_ERROR( "Internal error in AMP_MPI (bcast) " );
-}
+void MPI_CLASS::call_bcast<char>( char*, const int, const int ) const { }
 #endif
 
 
@@ -2432,10 +2424,7 @@ void MPI_CLASS::send<double>( const double *buf,
 #else
 // We need a concrete instantiation of send for use without MPI
 template <>
-void MPI_CLASS::send<char>( const char *buf,
-                            const int length,
-                            const int recv_proc_number,
-                            int tag ) const
+void MPI_CLASS::send<char>( const char *buf, const int length, const int, int tag ) const
 {
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
@@ -2520,7 +2509,7 @@ MPI_Request MPI_CLASS::Isend<double>( const double *buf,
 template <>
 MPI_Request MPI_CLASS::Isend<char>( const char *buf,
                                     const int length,
-                                    const int recv_proc,
+                                    const int,
                                     const int tag ) const
 {
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
@@ -2667,7 +2656,7 @@ void MPI_CLASS::recv<double>(
 // We need a concrete instantiation of recv for use without mpi
 template <>
 void MPI_CLASS::recv<char>(
-    char *buf, int &length, const int send_proc_number, const bool get_length, int tag ) const
+    char *buf, int &length, const int, const bool, int tag ) const
 {
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
@@ -2745,7 +2734,7 @@ MPI_CLASS::Irecv<double>( double *buf, const int length, const int send_proc, co
 // We need a concrete instantiation of irecv for use without mpi
 template <>
 MPI_Request
-MPI_CLASS::Irecv<char>( char *buf, const int length, const int send_proc, const int tag ) const
+MPI_CLASS::Irecv<char>( char *buf, const int length, const int, const int tag ) const
 {
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
@@ -2993,8 +2982,7 @@ void MPI_CLASS::call_allGather<double>(
 #else
 // We need a concrete instantiation of call_allGather<char>(x_in,size_in,x_out,size_out)
 template <>
-void MPI_CLASS::call_allGather<char>(
-    const char *x_in, int size_in, char *x_out, int *size_out, int *disp_out ) const
+void MPI_CLASS::call_allGather<char>( const char*, int, char*, int*, int* ) const
 {
     MPI_ERROR( "Internal error in AMP_MPI (allGather) " );
 }
@@ -3249,12 +3237,12 @@ void MPI_CLASS::call_allToAll<double>( const double *send_data,
 #else
 // Default instatiation of unsigned char
 template <>
-void MPI_CLASS::call_allToAll<char>( const char *send_data,
-                                     const int send_cnt[],
-                                     const int send_disp[],
-                                     char *recv_data,
-                                     const int *recv_cnt,
-                                     const int *recv_disp ) const
+void MPI_CLASS::call_allToAll<char>( const char*,
+                                     const int[],
+                                     const int[],
+                                     char*,
+                                     const int*,
+                                     const int* ) const
 {
     MPI_ERROR( "Should not reach this point" );
 }
@@ -3766,12 +3754,12 @@ int MPI_CLASS::probe( int source, int tag ) const
     return count;
 }
 #else
-int MPI_CLASS::Iprobe( int source, int tag ) const
+int MPI_CLASS::Iprobe( int, int ) const
 {
     MPI_ERROR( "Not implimented for serial codes (Iprobe)" );
     return 0;
 }
-int MPI_CLASS::probe( int source, int tag ) const
+int MPI_CLASS::probe( int, int ) const
 {
     MPI_ERROR( "Not implimented for serial codes (probe)" );
     return 0;
@@ -3806,17 +3794,17 @@ double MPI_CLASS::tick()
 double MPI_CLASS::time()
 {
     timeval current_time;
-    gettimeofday( &current_time, NULL );
+    gettimeofday( &current_time, nullptr );
     double time = ( (double) current_time.tv_sec ) + 1e-6 * ( (double) current_time.tv_usec );
     return time;
 }
 double MPI_CLASS::tick()
 {
     timeval start, end;
-    gettimeofday( &start, NULL );
-    gettimeofday( &end, NULL );
+    gettimeofday( &start, nullptr );
+    gettimeofday( &end, nullptr );
     while ( end.tv_sec == start.tv_sec && end.tv_usec == start.tv_usec )
-        gettimeofday( &end, NULL );
+        gettimeofday( &end, nullptr );
     double resolution = ( (double) ( end.tv_sec - start.tv_sec ) ) +
                         1e-6 * ( (double) ( end.tv_usec - start.tv_usec ) );
     return resolution;
