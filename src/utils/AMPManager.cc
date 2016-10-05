@@ -8,7 +8,6 @@
 #include "utils/Utilities.h"
 
 #ifdef USE_EXT_PETSC
-#define __MPIUNI_H
 #include "petsc.h"
 #include "petscerror.h"
 #include "petscsys.h"

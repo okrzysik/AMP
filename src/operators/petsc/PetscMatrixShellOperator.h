@@ -15,7 +15,6 @@
 #undef OMPI_SKIP_MPICXX
 #endif
 
-#define __MPIUNI_H
 #include "petscmat.h"
 
 #ifdef _FIX_FOR_PETSC_MPI_CXX

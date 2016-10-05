@@ -2,7 +2,6 @@
 #define included_AMP_ManagedPetscMatrix
 
 // Petsc files
-#define __MPIUNI_H
 #include "petscmat.h"
 
 // AMP files

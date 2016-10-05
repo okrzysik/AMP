@@ -4,7 +4,6 @@
 #include "vectors/DataChangeListener.h"
 #include "vectors/petsc/PetscHelpers.h"
 
-#define __MPIUNI_H
 #include "petscvec.h"
 
 

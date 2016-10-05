@@ -2,7 +2,6 @@
 #ifndef PETSC_HELPERS
 #define PETSC_HELPERS
 
-#define __MPIUNI_H
 #include "petscvec.h"
 #include "petscmat.h"
 

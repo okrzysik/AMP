@@ -16,7 +16,6 @@
 #undef OMPI_SKIP_MPICXX
 #endif
 
-#define __MPIUNI_H
 #include "petsc.h"
 
 #ifdef _FIX_FOR_PETSC_OMPI_CXX

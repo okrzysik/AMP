@@ -10,7 +10,6 @@
 
 // Petsc include (needed to fix PETSC_COMM_WORLD problem with libmesh)
 #ifdef USE_EXT_PETSC
-#define __MPIUNI_H
 #include "petscsys.h"
 #endif
 

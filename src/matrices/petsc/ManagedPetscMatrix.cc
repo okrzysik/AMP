@@ -1,4 +1,3 @@
-#define __MPIUNI_H
 #include "petscmat.h"
 #include "petscvec.h"
 
