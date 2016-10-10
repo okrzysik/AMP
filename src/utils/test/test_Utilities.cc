@@ -32,31 +32,34 @@
 #endif
 
 
+using namespace AMP;
+
+
 // Subract two size_t numbers, returning the absolute value
 size_t abs_diff( size_t a, size_t b ) { return ( a >= b ) ? a - b : b - a; }
 
 
 // This checks approx_equal
 template <class T>
-void testApproxEqualInt( AMP::UnitTest *ut )
+void testApproxEqualInt( UnitTest *ut )
 {
     std::string type_name( typeid( T ).name() );
-    if ( AMP::Utilities::approx_equal<T>( 100000, 100000 ) &&
-         AMP::Utilities::approx_equal_abs<T>( 100000, 100000 ) &&
-         !AMP::Utilities::approx_equal<T>( 100000, 100001 ) &&
-         !AMP::Utilities::approx_equal_abs<T>( 100000, 100001 ) )
+    if ( Utilities::approx_equal<T>( 100000, 100000 ) &&
+         Utilities::approx_equal_abs<T>( 100000, 100000 ) &&
+         !Utilities::approx_equal<T>( 100000, 100001 ) &&
+         !Utilities::approx_equal_abs<T>( 100000, 100001 ) )
         ut->passes( "Integer (" + type_name + ") passes simple check." );
     else
         ut->failure( "Integer (" + type_name + ") passes simple check." );
 
-    if ( AMP::Utilities::approx_equal_abs<T>( 100001, 100000, 1 ) &&
-         !AMP::Utilities::approx_equal_abs<T>( 100002, 100000, 1 ) )
+    if ( Utilities::approx_equal_abs<T>( 100001, 100000, 1 ) &&
+         !Utilities::approx_equal_abs<T>( 100002, 100000, 1 ) )
         ut->passes( "Integer (" + type_name + ") passes close simple check." );
     else
         ut->failure( "Integer (" + type_name + ") passes close simple check." );
 }
 template <class T>
-void testApproxEqual( AMP::UnitTest *ut )
+void testApproxEqual( UnitTest *ut )
 {
     std::string type_name( typeid( T ).name() );
 
@@ -65,10 +68,10 @@ void testApproxEqual( AMP::UnitTest *ut )
     T wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
     T close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
     T wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
-    if ( AMP::Utilities::approx_equal( mine, close_rel ) &&
-         AMP::Utilities::approx_equal_abs( mine, close_abs ) &&
-         !AMP::Utilities::approx_equal( mine, wrong_rel ) &&
-         !AMP::Utilities::approx_equal_abs( mine, wrong_abs ) )
+    if ( Utilities::approx_equal( mine, close_rel ) &&
+         Utilities::approx_equal_abs( mine, close_abs ) &&
+         !Utilities::approx_equal( mine, wrong_rel ) &&
+         !Utilities::approx_equal_abs( mine, wrong_abs ) )
         ut->passes( type_name + " passes simple check near 1" );
     else
         ut->failure( type_name + " passes simple check near 1" );
@@ -78,10 +81,10 @@ void testApproxEqual( AMP::UnitTest *ut )
     wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
     close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
     wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
-    if ( AMP::Utilities::approx_equal( mine, close_rel ) &&
-         AMP::Utilities::approx_equal_abs( mine, close_abs ) &&
-         !AMP::Utilities::approx_equal( mine, wrong_rel ) &&
-         !AMP::Utilities::approx_equal_abs( mine, wrong_abs ) )
+    if ( Utilities::approx_equal( mine, close_rel ) &&
+         Utilities::approx_equal_abs( mine, close_abs ) &&
+         !Utilities::approx_equal( mine, wrong_rel ) &&
+         !Utilities::approx_equal_abs( mine, wrong_abs ) )
         ut->passes( type_name + " passes simple check near 1e-6" );
     else
         ut->failure( type_name + " passes simple check near 1e-6" );
@@ -91,10 +94,10 @@ void testApproxEqual( AMP::UnitTest *ut )
     wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
     close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
     wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
-    if ( AMP::Utilities::approx_equal( mine, close_rel ) &&
-         AMP::Utilities::approx_equal_abs( mine, close_abs ) &&
-         !AMP::Utilities::approx_equal( mine, wrong_rel ) &&
-         !AMP::Utilities::approx_equal_abs( mine, wrong_abs ) )
+    if ( Utilities::approx_equal( mine, close_rel ) &&
+         Utilities::approx_equal_abs( mine, close_abs ) &&
+         !Utilities::approx_equal( mine, wrong_rel ) &&
+         !Utilities::approx_equal_abs( mine, wrong_abs ) )
         ut->passes( type_name + " passes simple check near -1e-32" );
     else
         ut->failure( type_name + " passes simple check near -1e-32" );
@@ -102,14 +105,14 @@ void testApproxEqual( AMP::UnitTest *ut )
 
 
 // Function to return the call stack
-std::vector<AMP::StackTrace::stack_info> get_call_stack()
+std::vector<StackTrace::stack_info> get_call_stack()
 {
-    return AMP::StackTrace::getCallStack();
+    return StackTrace::getCallStack();
 }
 
 
 // Function to test the interpolants
-void test_interp( AMP::UnitTest *ut )
+void test_interp( UnitTest *ut )
 {
     const double a  = 1.0;
     const double bx = 1.0;
@@ -144,18 +147,18 @@ void test_interp( AMP::UnitTest *ut )
     int Niz             = 50;
     for ( int i = 0; i < Nix; i++ ) {
         double xi = ( (double) i - 2 ) / ( (double) ( Nix - 5 ) );
-        double fi = AMP::Utilities::linear( x, f1, xi );
-        if ( !AMP::Utilities::approx_equal( fi, a + bx * xi, 1e-12 ) )
+        double fi = Utilities::linear( x, f1, xi );
+        if ( !Utilities::approx_equal( fi, a + bx * xi, 1e-12 ) )
             pass_linear = false;
         for ( int j = 0; j < Niy; j++ ) {
             double yi = ( (double) j - 2 ) / ( (double) ( Niy - 5 ) );
-            fi        = AMP::Utilities::bilinear( x, y, f2, xi, yi );
-            if ( !AMP::Utilities::approx_equal( fi, a + bx * xi + by * yi, 1e-12 ) )
+            fi        = Utilities::bilinear( x, y, f2, xi, yi );
+            if ( !Utilities::approx_equal( fi, a + bx * xi + by * yi, 1e-12 ) )
                 pass_bilinear = false;
             for ( int k = 0; k < Niz; k++ ) {
                 double zi = ( (double) k - 2 ) / ( (double) ( Niz - 5 ) );
-                fi        = AMP::Utilities::trilinear( x, y, z, f3, xi, yi, zi );
-                if ( !AMP::Utilities::approx_equal( fi, a + bx * xi + by * yi + bz * zi, 1e-12 ) )
+                fi        = Utilities::trilinear( x, y, z, f3, xi, yi, zi );
+                if ( !Utilities::approx_equal( fi, a + bx * xi + by * yi + bz * zi, 1e-12 ) )
                     pass_trilinear = false;
             }
         }
@@ -176,17 +179,17 @@ void test_interp( AMP::UnitTest *ut )
 
 
 // Test enable_shared_from_this
-class dummy : public AMP::enable_shared_from_this<dummy>
+class dummy : public enable_shared_from_this<dummy>
 {
 public:
-    AMP::shared_ptr<dummy> getPtr() { return shared_from_this(); }
+    shared_ptr<dummy> getPtr() { return shared_from_this(); }
 };
-void test_shared_from_this( AMP::UnitTest *ut )
+void test_shared_from_this( UnitTest *ut )
 {
     bool pass = true;
     try {
-        AMP::shared_ptr<dummy> p1( new dummy );
-        AMP::shared_ptr<dummy> p2 = p1.get()->getPtr();
+        shared_ptr<dummy> p1( new dummy );
+        shared_ptr<dummy> p2 = p1.get()->getPtr();
         int count                 = p2.use_count();
         if ( count != 2 )
             pass = false;
@@ -231,28 +234,28 @@ int main( int argc, char *argv[] )
 {
 
     // Control the behavior of the startup
-    AMP::AMPManagerProperties startup_properties;
+    AMPManagerProperties startup_properties;
 
     // Start AMP
-    AMP::AMPManager::startup( argc, argv, startup_properties );
+    AMPManager::startup( argc, argv, startup_properties );
     int num_failed = 0;
 
     // Limit the scope of variables
     {
-        AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+        AMP_MPI globalComm( AMP_COMM_WORLD );
 
         // Create the unit test
-        AMP::UnitTest ut;
+        UnitTest ut;
 
         // Print the banner
-        AMP::Utilities::printBanner();
+        Utilities::printBanner();
 
         // Test enable_shared_from_this
         test_shared_from_this( &ut );
 
         // Try converting an int to a string
-        if ( AMP::Utilities::intToString( 37, 0 ) == "37" &&
-             AMP::Utilities::intToString( 37, 3 ) == "037" )
+        if ( Utilities::intToString( 37, 0 ) == "37" &&
+             Utilities::intToString( 37, 3 ) == "037" )
             ut.passes( "Convert int to string" );
         else
             ut.failure( "Convert int to string" );
@@ -275,13 +278,13 @@ int main( int argc, char *argv[] )
             data1[i]           = rand();
         std::vector<int> data2 = data1;
         std::vector<int> data3 = data1;
-        double t1              = AMP::AMP_MPI::time();
-        AMP::Utilities::quicksort( data1 );
-        double t2 = AMP::AMP_MPI::time();
+        double t1              = Utilities::time();
+        Utilities::quicksort( data1 );
+        double t2 = Utilities::time();
         std::sort( data2.begin(), data2.end() );
-        double t3 = AMP::AMP_MPI::time();
+        double t3 = Utilities::time();
         std::sort( &data3[0], &data3[0] + data3.size() );
-        double t4 = AMP::AMP_MPI::time();
+        double t4 = Utilities::time();
         bool pass = true;
         for ( size_t i = 0; i < N; i++ ) {
             if ( data1[i] != data2[i] )
@@ -295,21 +298,21 @@ int main( int argc, char *argv[] )
                   << ", std::sort(2) = " << t4 - t3 << std::endl;
 
         // Test the hash key
-        unsigned int key = AMP::Utilities::hash_char( "test" );
+        unsigned int key = Utilities::hash_char( "test" );
         if ( key == 2087956275 )
             ut.passes( "Got the expected hash key" );
         else
             ut.failure( "Got the expected hash key" );
 
         // Test the factor function
-        std::vector<int> factors = AMP::Utilities::factor( 13958 );
+        std::vector<int> factors = Utilities::factor( 13958 );
         if ( factors.size() == 3 && factors[0] == 2 && factors[1] == 7 && factors[2] == 997 )
             ut.passes( "Correctly factored 13958" );
         else
             ut.failure( "Correctly factored 13958" );
 
         // Test getSystemMemory
-        size_t system_bytes = AMP::Utilities::getSystemMemory();
+        size_t system_bytes = Utilities::getSystemMemory();
         std::cout << "Total system bytes = " << system_bytes << std::endl;
         if ( system_bytes > 0 )
             ut.passes( "getSystemMemory" );
@@ -317,19 +320,19 @@ int main( int argc, char *argv[] )
             ut.failure( "getSystemMemory" );
 
         // Test the memory usage
-        double t0       = AMP::AMP_MPI::time();
-        size_t n_bytes1 = AMP::Utilities::getMemoryUsage();
-        double time1    = AMP::AMP_MPI::time() - t0;
-        double *tmp     = new double[0x100000];
+        double t0       = Utilities::time();
+        size_t n_bytes1 = Utilities::getMemoryUsage();
+        double time1    = Utilities::time() - t0;
+        uint64_t *tmp   = new uint64_t[0x100000];
         memset( tmp, 0xAA, 0x100000 * sizeof( uint64_t ) );
-        AMP::Utilities::nullUse( tmp );
-        t0              = AMP::AMP_MPI::time();
-        size_t n_bytes2 = AMP::Utilities::getMemoryUsage();
-        double time2    = AMP::AMP_MPI::time() - t0;
+        Utilities::nullUse( tmp );
+        t0              = Utilities::time();
+        size_t n_bytes2 = Utilities::getMemoryUsage();
+        double time2    = Utilities::time() - t0;
         delete[] tmp;
-        t0              = AMP::AMP_MPI::time();
-        size_t n_bytes3 = AMP::Utilities::getMemoryUsage();
-        double time3    = AMP::AMP_MPI::time() - t0;
+        t0              = Utilities::time();
+        size_t n_bytes3 = Utilities::getMemoryUsage();
+        double time3    = Utilities::time() - t0;
         if ( globalComm.getRank() == 0 ) {
             std::cout << "Number of bytes used for a basic test: " << n_bytes1 << ", " << n_bytes2
                       << ", " << n_bytes3 << std::endl;
@@ -364,18 +367,18 @@ int main( int argc, char *argv[] )
         if ( system_bytes >= 4e9 && globalComm.getRank() == 0 ) {
             // Test getting the memory usage for 2-4 GB bytes
             // Note: we only run this test on machines with more than 4 GB of memory
-            n_bytes1       = AMP::Utilities::getMemoryUsage();
+            n_bytes1       = Utilities::getMemoryUsage();
             uint64_t *tmp2 = new uint64_t[0x10000001]; // Allocate 2^31+8 bytes
             memset( tmp2, 0xAA, 0x10000001 * sizeof( uint64_t ) );
-            AMP::Utilities::nullUse( tmp );
-            n_bytes2 = AMP::Utilities::getMemoryUsage();
+            Utilities::nullUse( tmp );
+            n_bytes2 = Utilities::getMemoryUsage();
             for ( int i = 0; i < 10; i++ ) {
                 if ( ( tmp2[rand() % 0x1000000] & 0xFF ) != 0xAA )
                     ut.failure( "Internal error" );
             }
             delete[] tmp2;
             tmp2            = nullptr;
-            size_t n_bytes3 = AMP::Utilities::getMemoryUsage();
+            size_t n_bytes3 = Utilities::getMemoryUsage();
             if ( n_bytes2 > 0x80000000 && n_bytes2 < n_bytes1 + 0x81000000 &&
                  abs_diff( n_bytes1, n_bytes3 ) < 50e3 ) {
                 ut.passes( "getMemoryUsage correctly handles 2^31 - 2^32 bytes" );
@@ -388,15 +391,15 @@ int main( int argc, char *argv[] )
         if ( system_bytes >= 8e9 && globalComm.getRank() == 0 ) {
             // Test getting the memory usage for > 4 GB bytes
             // Note: we only run this test on machines with more than 8 GB of memory
-            n_bytes1       = AMP::Utilities::getMemoryUsage();
+            n_bytes1       = Utilities::getMemoryUsage();
             size_t size    = 0x20000000;
             uint64_t *tmp2 = new uint64_t[size]; // Allocate 2^31+8 bytes
             if ( tmp == nullptr ) {
                 ut.expected_failure( "Unable to allocate variable of size 4 GB" );
             } else {
                 memset( tmp2, 0xAA, size * sizeof( uint64_t ) );
-                AMP::Utilities::nullUse( tmp );
-                n_bytes2 = AMP::Utilities::getMemoryUsage();
+                Utilities::nullUse( tmp );
+                n_bytes2 = Utilities::getMemoryUsage();
                 for ( int i = 0; i < 10; i++ ) {
                     if ( ( tmp2[rand() % size] & 0xFF ) != 0xAA )
                         ut.failure( "Internal error" );
@@ -404,7 +407,7 @@ int main( int argc, char *argv[] )
                 delete[] tmp2;
                 tmp2 = nullptr;
                 NULL_USE( tmp2 );
-                n_bytes3 = AMP::Utilities::getMemoryUsage();
+                n_bytes3 = Utilities::getMemoryUsage();
                 if ( n_bytes2 > 0x100000000 && n_bytes2 < n_bytes1 + 0x110000000 &&
                      abs_diff( n_bytes1, n_bytes3 ) < 50e3 ) {
                     ut.passes( "getMemoryUsage correctly handles memory > 2^32 bytes" );
@@ -417,9 +420,9 @@ int main( int argc, char *argv[] )
         }
 
         // Test getting the current call stack
-        double ts1      = AMP::AMP_MPI::time();
+        double ts1      = Utilities::time();
         auto call_stack = get_call_stack();
-        double ts2      = AMP::AMP_MPI::time();
+        double ts2      = Utilities::time();
         if ( globalComm.getRank() == 0 ) {
             std::cout << "Call stack:" << std::endl;
             for ( auto &elem : call_stack )
@@ -440,21 +443,21 @@ int main( int argc, char *argv[] )
         } else {
             ut.failure( "non empty call stack" );
         }
-        ts1        = AMP::AMP_MPI::time();
-        auto trace = AMP::StackTrace::backtrace();
-        ts2        = AMP::AMP_MPI::time();
+        ts1        = Utilities::time();
+        auto trace = StackTrace::backtrace();
+        ts2        = Utilities::time();
         std::cout << "Time to get backtrace: " << ts2 - ts1 << std::endl;
 
         // Test getting the symbols
         std::vector<void *> address;
         std::vector<char> type;
         std::vector<std::string> obj;
-        int rtn = AMP::StackTrace::getSymbols( address, type, obj );
+        int rtn = StackTrace::getSymbols( address, type, obj );
         if ( rtn == 0 && !address.empty() )
             ut.passes( "Read symbols from executable" );
 
         // Test getting the executable
-        std::string exe = AMP::StackTrace::getExecutable();
+        std::string exe = StackTrace::getExecutable();
         if ( globalComm.getRank() == 0 )
             std::cout << "Executable: " << exe << std::endl;
         if ( exe.find( "test_Utilities" ) != std::string::npos )
@@ -467,19 +470,19 @@ int main( int argc, char *argv[] )
             FILE *fid = fopen( "testDeleteFile.txt", "w" );
             fputs( "Temporary test", fid );
             fclose( fid );
-            if ( AMP::Utilities::fileExists( "testDeleteFile.txt" ) )
+            if ( Utilities::fileExists( "testDeleteFile.txt" ) )
                 ut.passes( "File exists" );
             else
                 ut.failure( "File exists" );
-            AMP::Utilities::deleteFile( "testDeleteFile.txt" );
-            if ( !AMP::Utilities::fileExists( "testDeleteFile.txt" ) )
+            Utilities::deleteFile( "testDeleteFile.txt" );
+            if ( !Utilities::fileExists( "testDeleteFile.txt" ) )
                 ut.passes( "File deleted" );
             else
                 ut.failure( "File deleted" );
         }
 
         // Test creating an empty directory
-        AMP::Utilities::recursiveMkdir( "." );
+        Utilities::recursiveMkdir( "." );
 
         // Finished testing, report the results
         ut.report();
@@ -487,7 +490,7 @@ int main( int argc, char *argv[] )
     }
 
     // Shutdown
-    AMP::AMPManager::shutdown();
+    AMPManager::shutdown();
 
     // Finished successfully
     return num_failed;

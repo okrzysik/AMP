@@ -10,52 +10,51 @@
 #include <stdexcept>
 
 
-// Detect the OS and include system dependent headers
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || \
-    defined( _MSC_VER )
-#define USE_WINDOWS
-#define NOMINMAX
+// Detect the OS
 // clang-format off
-#include <windows.h>
-#include <dbghelp.h>
-#include <DbgHelp.h>
-#include <TlHelp32.h>
-#include <Psapi.h>
-#include <iostream>
-#include <process.h>
-#include <stdio.h>
-#include <tchar.h>
-// clang-format on
-#pragma comment( lib, "version.lib" ) // for "VerQueryValue"
+#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || defined( _MSC_VER )
+    #define USE_WINDOWS
+    #define NOMINMAX
 #elif defined( __APPLE__ )
-#define USE_MAC
-#define USE_NM
-#include <dlfcn.h>
-#include <execinfo.h>
-#include <mach-o/dyld.h>
-#include <mach/mach.h>
-#include <sched.h>
-#include <signal.h>
-#include <sys/sysctl.h>
-#include <sys/sysctl.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <mach/mach_types.h>
-#include <mach-o/getsect.h>
+    #define USE_MAC
+    #define USE_NM
 #elif defined( __linux ) || defined( __unix ) || defined( __posix )
-#define USE_LINUX
-#define USE_NM
-#include <dlfcn.h>
-#include <execinfo.h>
-#include <malloc.h>
-#include <sched.h>
-#include <sys/time.h>
-#include <time.h>
-#include <unistd.h>
+    #define USE_LINUX
+    #define USE_NM
 #else
-#error Unknown OS
+    #error Unknown OS
 #endif
+// clang-format on
+
+
+// Include system dependent headers
+// clang-format off
+// Detect the OS and include system dependent headers
+#ifdef USE_WINDOWS
+    #include <windows.h>
+    #include <dbghelp.h>
+    #include <DbgHelp.h>
+    #include <TlHelp32.h>
+    #include <Psapi.h>
+    #include <process.h>
+    #include <stdio.h>
+    #include <tchar.h>
+    #pragma comment( lib, "version.lib" ) // for "VerQueryValue"
+#else
+    #include <dlfcn.h>
+    #include <execinfo.h>
+    #include <sched.h>
+    #include <sys/time.h>
+    #include <time.h>
+    #include <unistd.h>
+#endif
+#ifdef USE_MAC
+    #include <mach-o/dyld.h>
+    #include <mach/mach.h>
+    #include <sys/sysctl.h>
+    #include <sys/types.h>
+#endif
+// clang-format on
 
 
 #ifdef __GNUC__
