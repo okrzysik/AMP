@@ -10,8 +10,12 @@
 
 #include <Epetra_FECrsMatrix.h>
 #include <Epetra_Map.h>
-#include <Epetra_MpiComm.h>
 
+#ifdef USE_MPI
+#include <Epetra_MpiComm.h>
+#else
+#include <Epetra_SerialComm.h>
+#endif
 
 int main( int argc, char *argv[] )
 {
@@ -25,7 +29,12 @@ int main( int argc, char *argv[] )
     }
 
     // Create the matrix
+#ifdef USE_MPI
     Epetra_MpiComm comm = MPI_COMM_WORLD;
+#include <Epetra_MpiComm.h>
+#else
+    Epetra_SerialComm comm;
+#endif
     Epetra_Map map( 4, 2, 0, comm );
     int entities[4] = { 4, 4, 4, 4 };
     Epetra_FECrsMatrix matrix( Copy, map, entities, false );
