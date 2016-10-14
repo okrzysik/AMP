@@ -212,7 +212,7 @@ std::string StackTrace::getExecutable()
         DWORD size = 0x10000;
         char *buf  = new char[size];
         memset( buf, 0, size );
-        GetModuleFileName( NULL, buf, size );
+        GetModuleFileName( nullptr, buf, size );
         exe = std::string( buf );
         delete[] buf;
 #endif
@@ -298,9 +298,9 @@ int StackTrace::getSymbols( std::vector<void *> &address,
 *  Function to get the current call stack                                   *
 ****************************************************************************/
 #ifdef USE_MAC
-static void *loadAddress( const std::string &object )
+static void *loadAddress( const std::string& object )
 {
-    static std::map<std::string, void *> obj_map;
+    static std::map<std::string,void*> obj_map;
     if ( obj_map.empty() ) {
         uint32_t numImages = _dyld_image_count();
         for ( uint32_t i = 0; i < numImages; i++ ) {
@@ -392,17 +392,20 @@ static void getFileAndLine( StackTrace::stack_info &info )
         void *load_address = loadAddress( info.object );
         if ( load_address==0 )
             return;
-#if 0
         // Call atos to get the object info
         char buf[4096];
-        sprintf( buf, "atos -o %s -l %lx %lx 2> /dev/null", info.object.c_str(),
+        memset( buf, 0, sizeof(buf) );
+#if 0
+        char cmd[256] = {0};
+        sprintf( cmd, "atos -o %s -l %lx %lx 2> /dev/null", info.object.c_str(),
             reinterpret_cast<unsigned long int>( load_address ),
             reinterpret_cast<unsigned long int>( info.address ) );
-        FILE *f = popen( buf, "r" );
-        if ( f == nullptr )
-            return;
-        memset( buf, 0, sizeof(buf) );
-        fgets( buf, 4095, f );
+        FILE *f = popen( cmd, "r" );
+        if ( f != nullptr ) {
+            fgets( buf, 4095, f );
+            pclose( f );
+        }
+#endif
         //printf("%0x%016llx-output: %s",info.address,buf);
         // Parse the output for function, file and line info
         auto data = split_atos( buf );
@@ -416,8 +419,6 @@ static void getFileAndLine( StackTrace::stack_info &info )
             info.filename = std::get<2>(data);
         if ( info.line==0 )
             info.line = std::get<3>(data);
-        pclose( f );
-#endif
     #endif
 }
 // Try to use the global symbols to decode info about the stack
@@ -631,7 +632,7 @@ std::string StackTrace::getSymPaths()
     // Now add the path for the main-module:
     char temp[1024];
     memset( temp, 0, sizeof( temp ) );
-    if ( GetModuleFileNameA( NULL, temp, sizeof( temp ) - 1 ) > 0 ) {
+    if ( GetModuleFileNameA( nullptr, temp, sizeof( temp ) - 1 ) > 0 ) {
         for ( char *p = ( temp + strlen( temp ) - 1 ); p >= temp; --p ) {
             // locate the rightmost path separator
             if ( ( *p == '\\' ) || ( *p == '/' ) || ( *p == ':' ) ) {
@@ -689,10 +690,10 @@ BOOL StackTrace::GetModuleListTH32( HANDLE hProcess, DWORD pid )
 
     // try both dlls...
     const TCHAR *dllname[] = { _T("kernel32.dll"), _T("tlhelp32.dll") };
-    HINSTANCE hToolhelp    = NULL;
-    tCT32S pCT32S          = NULL;
-    tM32F pM32F            = NULL;
-    tM32N pM32N            = NULL;
+    HINSTANCE hToolhelp    = nullptr;
+    tCT32S pCT32S          = nullptr;
+    tM32F pM32F            = nullptr;
+    tM32N pM32N            = nullptr;
 
     HANDLE hSnap;
     MODULEENTRY32 me;
@@ -700,18 +701,18 @@ BOOL StackTrace::GetModuleListTH32( HANDLE hProcess, DWORD pid )
 
     for ( size_t i = 0; i < ( sizeof( dllname ) / sizeof( dllname[0] ) ); i++ ) {
         hToolhelp = LoadLibrary( dllname[i] );
-        if ( hToolhelp == NULL )
+        if ( hToolhelp == nullptr )
             continue;
         pCT32S = (tCT32S) GetProcAddress( hToolhelp, "CreateToolhelp32Snapshot" );
         pM32F  = (tM32F) GetProcAddress( hToolhelp, "Module32First" );
         pM32N  = (tM32N) GetProcAddress( hToolhelp, "Module32Next" );
-        if ( ( pCT32S != NULL ) && ( pM32F != NULL ) && ( pM32N != NULL ) )
+        if ( ( pCT32S != nullptr ) && ( pM32F != nullptr ) && ( pM32N != nullptr ) )
             break; // found the functions!
         FreeLibrary( hToolhelp );
-        hToolhelp = NULL;
+        hToolhelp = nullptr;
     }
 
-    if ( hToolhelp == NULL )
+    if ( hToolhelp == nullptr )
         return FALSE;
 
     hSnap = pCT32S( TH32CS_SNAPMODULE, pid );
@@ -739,26 +740,26 @@ DWORD StackTrace::LoadModule(
     CHAR *szImg  = _strdup( img );
     CHAR *szMod  = _strdup( mod );
     DWORD result = ERROR_SUCCESS;
-    if ( ( szImg == NULL ) || ( szMod == NULL ) )
+    if ( ( szImg == nullptr ) || ( szMod == nullptr ) )
         result = ERROR_NOT_ENOUGH_MEMORY;
     else {
         if ( SymLoadModule( hProcess, 0, szImg, szMod, baseAddr, size ) == 0 )
             result = GetLastError();
     }
     ULONGLONG fileVersion = 0;
-    if ( szImg != NULL ) {
+    if ( szImg != nullptr ) {
         // try to retrive the file-version:
-        VS_FIXEDFILEINFO *fInfo = NULL;
+        VS_FIXEDFILEINFO *fInfo = nullptr;
         DWORD dwHandle;
         DWORD dwSize = GetFileVersionInfoSizeA( szImg, &dwHandle );
         if ( dwSize > 0 ) {
             LPVOID vData = malloc( dwSize );
-            if ( vData != NULL ) {
+            if ( vData != nullptr ) {
                 if ( GetFileVersionInfoA( szImg, dwHandle, dwSize, vData ) != 0 ) {
                     UINT len;
                     TCHAR szSubBlock[] = _T("\\");
                     if ( VerQueryValue( vData, szSubBlock, (LPVOID *) &fInfo, &len ) == 0 )
-                        fInfo = NULL;
+                        fInfo = nullptr;
                     else {
                         fileVersion = ( (ULONGLONG) fInfo->dwFileVersionLS ) +
                                       ( (ULONGLONG) fInfo->dwFileVersionMS << 32 );
@@ -776,9 +777,9 @@ DWORD StackTrace::LoadModule(
         if ( Module.LoadedPdbName[0] != 0 )
             pdbName = Module.LoadedPdbName;
     }
-    if ( szImg != NULL )
+    if ( szImg != nullptr )
         free( szImg );
-    if ( szMod != NULL )
+    if ( szMod != nullptr )
         free( szMod );
     return result;
 }
