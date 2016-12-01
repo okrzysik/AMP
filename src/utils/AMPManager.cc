@@ -172,7 +172,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     PROFILE_DISABLE();
     // Set the abort method
     AMPManager::use_MPI_Abort = properties.use_MPI_Abort;
-// Initialize PETSc
+    // Initialize PETSc
 #ifdef USE_EXT_PETSC
     double petsc_start_time = Utilities::time();
     if ( PetscInitializeCalled ) {
@@ -188,6 +188,11 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
         for ( auto &petscArg : petscArgs )
             delete[] petscArg;
     }
+    #ifndef USE_MPI
+        // Fix minor bug in petsc where first call to dup returns MPI_COMM_WORLD instead of a new comm
+        MPI_Comm new_MPI_comm;
+        MPI_Comm_dup( MPI_COMM_WORLD, &new_MPI_comm );
+    #endif
     petsc_time = Utilities::time() - petsc_start_time;
 #endif
     // Initialize MPI
@@ -207,11 +212,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
 #endif
     // Initialize AMP's MPI
     if ( properties.COMM_WORLD == AMP_COMM_WORLD )
-#ifdef USE_EXT_MPI
         comm_world = AMP_MPI( MPI_COMM_WORLD );
-#else
-        comm_world = AMP_MPI( AMP_COMM_WORLD );
-#endif
     else
         comm_world = AMP_MPI( properties.COMM_WORLD ); // Initialize the parallel IO
     PIO::initialize();

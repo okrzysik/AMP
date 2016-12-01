@@ -516,8 +516,7 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
 {
     d_count       = nullptr;
     tmp_alignment = -1;
-#ifdef USE_MPI
-    // We are using MPI, use the MPI communicator to initialize the data
+    // Check if we are using our version of comm_world
     if ( comm == MPI_CLASS_COMM_WORLD ) {
         communicator = AMP::AMPManager::comm_world.communicator;
     } else if ( comm == MPI_CLASS_COMM_SELF ) {
@@ -527,6 +526,8 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
     } else {
         communicator = comm;
     }
+#ifdef USE_MPI
+    // We are using MPI, use the MPI communicator to initialize the data
     if ( communicator != MPI_COMM_NULL ) {
         // Set the MPI_SIZE_T datatype if it has not been set
         if ( MPI_SIZE_T == 0x0 )
@@ -565,11 +566,10 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
 #else
     // We are not using MPI, intialize based on the communicator
     NULL_USE(manage);
-    communicator = comm;
     comm_rank    = 0;
     comm_size    = 1;
     d_maxTag     = mpi_max_tag;
-    d_isNull     = communicator == MPI_CLASS_COMM_NULL;
+    d_isNull     = communicator == MPI_COMM_NULL;
     if ( d_isNull )
         comm_size = 0;
 #endif
@@ -586,7 +586,7 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
 
 
 /************************************************************************
-*  Return the ranks of the communicator in MPI_CLASS_COMM_WORLD         *
+*  Return the ranks of the communicator in the global comm              *
 ************************************************************************/
 #ifdef USE_MPI
 static int myGlobalRank = -1;
@@ -595,11 +595,9 @@ static int myGlobalRank = 0;
 #endif
 const std::vector<int> &MPI_CLASS::globalRanks() const
 {
-    if ( d_ranks->empty() && communicator != MPI_COMM_NULL &&
-         communicator != MPI_CLASS_COMM_NULL ) {
+    if ( d_ranks->empty() && communicator != MPI_COMM_NULL ) {
         d_ranks->resize( comm_size, -1 );
-        if ( communicator == MPI_CLASS_COMM_WORLD ||
-             communicator == AMP::AMPManager::comm_world.communicator ) {
+        if ( communicator == AMP::AMPManager::comm_world.communicator ) {
             for ( int i                  = 0; i < comm_size; i++ )
                 d_ranks->operator[]( i ) = i;
         } else {
@@ -763,7 +761,7 @@ MPI_CLASS MPI_CLASS::dup() const
     if ( d_isNull )
         return MPI_CLASS( MPI_CLASS_COMM_NULL );
     MPI_Comm new_MPI_comm;
-#ifdef USE_MPI
+#if defined(USE_MPI) || defined(USE_PETSC)
     // USE MPI to duplicate the communicator
     MPI_Comm_dup( communicator, &new_MPI_comm );
 #else
@@ -1007,7 +1005,7 @@ int MPI_CLASS::compare( const MPI_CLASS &comm ) const
         return 0;
     MPI_ERROR( "Unknown results from AMP_Comm_compare" );
 #else
-    if ( comm.communicator == MPI_CLASS_COMM_NULL || communicator == MPI_CLASS_COMM_NULL )
+    if ( comm.communicator == MPI_COMM_NULL || communicator == MPI_COMM_NULL )
         return 0;
     else
         return 3;

@@ -1143,6 +1143,10 @@ void testCommDup( UnitTest *ut )
         ut->failure( "dup comm" );
         return;
     }
+#if defined(USE_PETSC) && !defined(USE_MPI)
+    ut->expected_failure( "Skipping dup tests, PETSc (no-mpi) has a limit of 128 unique comms" );
+    return;
+#endif
     size_t N_comm_try = 10000; // Maximum number of comms to try and create
     std::vector<MPI_CLASS> comms;
     comms.reserve( N_comm_try );
