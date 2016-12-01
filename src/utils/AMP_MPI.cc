@@ -760,7 +760,7 @@ MPI_CLASS MPI_CLASS::dup() const
 {
     if ( d_isNull )
         return MPI_CLASS( MPI_CLASS_COMM_NULL );
-    MPI_Comm new_MPI_comm;
+    MPI_Comm new_MPI_comm = communicator;
 #if defined(USE_MPI) || defined(USE_PETSC)
     // USE MPI to duplicate the communicator
     MPI_Comm_dup( communicator, &new_MPI_comm );

@@ -190,8 +190,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     }
     #ifndef USE_MPI
         // Fix minor bug in petsc where first call to dup returns MPI_COMM_WORLD instead of a new comm
-        MPI_Comm new_MPI_comm;
-        MPI_Comm_dup( MPI_COMM_WORLD, &new_MPI_comm );
+        AMP::AMP_MPI( MPI_COMM_WORLD ).dup();
     #endif
     petsc_time = Utilities::time() - petsc_start_time;
 #endif
