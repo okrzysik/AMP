@@ -17,7 +17,11 @@ inline Matrix::Matrix( MatrixParameters::shared_ptr params ) : d_comm( params->g
 
 inline Matrix::~Matrix() {}
 
-inline void Matrix::axpy( double alpha, Matrix::const_shared_ptr x ) { axpy( alpha, *x ); }
+inline void Matrix::axpy( double alpha, Matrix::const_shared_ptr x )
+{
+    AMP_ASSERT(x->numGlobalColumns()==this->numGlobalRows());
+    axpy( alpha, *x );
+}
 
 inline void Matrix::addValueByGlobalID( int row, int col, double value )
 {
