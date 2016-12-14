@@ -153,12 +153,14 @@ static MPI_Request getRequest( MPI_Comm comm, int tag )
             text, "Not Programmed (%i,%i)", (int) sizeof( MPI_Request ), (int) sizeof( MPI_Comm ) );
         MPI_ERROR( std::string( text ) );
     }
+    MPI_Request request2;
     if ( sizeof( MPI_Request ) == 4 ) {
         uint32_t tmp = static_cast<uint32_t>(request);
-        return *reinterpret_cast<MPI_Request*>(&tmp);
+        memcpy(&request2,&tmp,sizeof(MPI_Request));
     } else {
-        return *reinterpret_cast<MPI_Request*>(&request);
+        memcpy(&request2,&request,sizeof(MPI_Request));
     }
+    return request2;
 }
 #endif
 
@@ -176,42 +178,50 @@ inline void check_MPI( int error )
 /******************************************************************
 * Some helper functions to convert between signed/unsigned types  *
 ******************************************************************/
+static inline constexpr unsigned int offset_int( )
+{
+    return ~static_cast<unsigned int>( std::numeric_limits<int>::min() ) + 1;
+}
+static inline constexpr unsigned long int offset_long( )
+{
+    return ~static_cast<long int>( std::numeric_limits<long int>::min() ) + 1;
+}
+static inline constexpr unsigned long long int offset_long_long( )
+{
+    return ~static_cast<long long int>( std::numeric_limits<long long int>::min() ) + 1;
+}
 static inline unsigned int signed_to_unsigned( int x )
 {
-    const unsigned int offset = static_cast<unsigned int>( -std::numeric_limits<int>::min() );
+    const auto offset = offset_int();
     return ( x >= 0 ) ? static_cast<unsigned int>( x ) + offset :
                         offset - static_cast<unsigned int>( -x );
 }
 static inline unsigned long int signed_to_unsigned( long int x )
 {
-    const unsigned long int offset =
-        static_cast<unsigned long int>( -std::numeric_limits<long int>::min() );
+    const auto offset = offset_long();
     return ( x >= 0 ) ? static_cast<unsigned long int>( x ) + offset :
                         offset - static_cast<unsigned long int>( -x );
 }
 static inline unsigned long long int signed_to_unsigned( long long int x )
 {
-    const unsigned long long int offset =
-        static_cast<unsigned long long int>( -std::numeric_limits<long long int>::min() );
+    const auto offset = offset_long_long();
     return ( x >= 0 ) ? static_cast<unsigned long long int>( x ) + offset :
                         offset - static_cast<unsigned long long int>( -x );
 }
 static inline int unsigned_to_signed( unsigned int x )
 {
-    const unsigned int offset = static_cast<unsigned int>( -std::numeric_limits<int>::min() );
+    const auto offset = offset_int();
     return ( x >= offset ) ? static_cast<int>( x - offset ) : -static_cast<int>( offset - x );
 }
 static inline long int unsigned_to_signed( unsigned long int x )
 {
-    const unsigned long int offset =
-        static_cast<unsigned long int>( -std::numeric_limits<long int>::min() );
+    const auto offset = offset_long();
     return ( x >= offset ) ? static_cast<long int>( x - offset ) :
                              -static_cast<long int>( offset - x );
 }
 static inline long long int unsigned_to_signed( unsigned long long int x )
 {
-    const unsigned long long int offset =
-        static_cast<unsigned long long int>( -std::numeric_limits<long long int>::min() );
+    const auto offset = offset_long_long();
     return ( x >= offset ) ? static_cast<long long int>( x - offset ) :
                              -static_cast<long long int>( offset - x );
 }

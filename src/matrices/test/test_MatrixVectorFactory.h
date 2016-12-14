@@ -93,7 +93,9 @@ public:
             AMP::LinearAlgebra::PetscMatrix::createView( global_cached_matrix );
         ::Mat m = matrix->castTo<AMP::LinearAlgebra::PetscMatrix>().getMat();
         ::Vec v;
+        DISABLE_WARNINGS
         MatGetVecs( m, &v, nullptr );
+        ENABLE_WARNINGS
         AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> p(
             new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
         AMP::LinearAlgebra::Vector::shared_ptr vector(
@@ -134,7 +136,9 @@ public:
             AMP::LinearAlgebra::PetscMatrix::createView( global_cached_matrix );
         ::Mat m = matrix->castTo<AMP::LinearAlgebra::PetscMatrix>().getMat();
         ::Vec v;
+        DISABLE_WARNINGS
         MatGetVecs( m, &v, nullptr );
+        ENABLE_WARNINGS
         AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> p(
             new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
         AMP::LinearAlgebra::Vector::shared_ptr vector(

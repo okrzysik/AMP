@@ -228,29 +228,31 @@
  *  \details This will start to supress all compile warnings.
  *      Be sure to follow with ENABLE_WARNINGS
  */
+// clang-format off
 #if defined( USING_MSVC )
-#define DISABLE_WARNINGS __pragma( warning( push, 0 ) )
-#define ENABLE_WARNINGS __pragma( warning( pop ) )
+    #define DISABLE_WARNINGS __pragma( warning( push, 0 ) )
+    #define ENABLE_WARNINGS __pragma( warning( pop ) )
 #elif defined( USING_CLANG )
-#define DISABLE_WARNINGS                                                               \
-    _Pragma( "clang diagnostic push" ) _Pragma( "clang diagnostic ignored \"-Wall\"" ) \
-        _Pragma( "clang diagnostic ignored \"-Wextra\"" )                              \
-            _Pragma( "clang diagnostic ignored \"-Wunused-private-field\"" )
-#define ENABLE_WARNINGS _Pragma( "clang diagnostic pop" )
+    #define DISABLE_WARNINGS                                                            \
+        _Pragma( "clang diagnostic push" ) _Pragma( "clang diagnostic ignored \"-Wall\"" ) \
+        _Pragma( "clang diagnostic ignored \"-Wextra\"" )                               \
+        _Pragma( "clang diagnostic ignored \"-Wunused-private-field\"" )                \
+        _Pragma( "clang diagnostic ignored \"-Wdeprecated-declarations\"" )
+    #define ENABLE_WARNINGS _Pragma( "clang diagnostic pop" )
 #elif defined( USING_GCC )
-#define DISABLE_WARNINGS                                                           \
-    _Pragma( "GCC diagnostic push" ) _Pragma( "GCC diagnostic ignored \"-Wall\"" ) \
-        _Pragma( "GCC diagnostic ignored \"-Wextra\"" )                            \
-            _Pragma( "GCC diagnostic ignored \"-Wunused-local-typedefs\"" )        \
-                _Pragma( "GCC diagnostic ignored \"-Woverloaded-virtual\"" )       \
-                    _Pragma( "GCC diagnostic ignored \"-Wunused-parameter\"" )
-
+    #define DISABLE_WARNINGS                                                            \
+        _Pragma( "GCC diagnostic push" ) _Pragma( "GCC diagnostic ignored \"-Wall\"" )  \
+        _Pragma( "GCC diagnostic ignored \"-Wextra\"" )                                 \
+        _Pragma( "GCC diagnostic ignored \"-Wunused-local-typedefs\"" )                 \
+        _Pragma( "GCC diagnostic ignored \"-Woverloaded-virtual\"" )                    \
+        _Pragma( "GCC diagnostic ignored \"-Wunused-parameter\"" )                      \
+        _Pragma( "GCC diagnostic ignored \"-Wdeprecated-declarations\"" )
 #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
 #else
 #define DISABLE_WARNINGS
 #define ENABLE_WARNINGS
 #endif
-
+// clang-format on
 
 /*! @} */
 
