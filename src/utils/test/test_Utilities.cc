@@ -9,6 +9,7 @@
 #include <string.h>
 #include <time.h>
 #include <vector>
+#include <memory>
 
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
@@ -217,6 +218,9 @@ void test_shared_from_this( UnitTest *ut )
         pass                      = pass && p3.use_count() == 2 && p5.use_count() == 0;
         std::shared_ptr<dummy> p6 = p3->getPtr();
         pass                      = pass && p3.use_count() == 3 && p6.use_count() == 3;
+    } catch( const std::bad_weak_ptr& ) {
+        // C++17 defines shared from this to be invalid for objects not managed by std::shared_ptr
+        pass = true;
     } catch ( ... ) {
         pass = false;
     }
