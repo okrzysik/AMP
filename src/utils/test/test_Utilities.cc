@@ -180,20 +180,47 @@ void test_interp( UnitTest *ut )
 
 
 // Test enable_shared_from_this
-class dummy : public enable_shared_from_this<dummy>
+class dummy : public AMP::enable_shared_from_this<dummy>
 {
 public:
     shared_ptr<dummy> getPtr() { return shared_from_this(); }
 };
+static inline bool test_shared_from_this_pointer( const shared_ptr<dummy>& p1 )
+{
+    bool pass = p1.use_count() == 1;
+    int count1, count2;
+    auto p2   = p1->getPtr();
+    count1    = p1.use_count();
+    count2    = p2.use_count();
+    pass      = pass && count1 == 2 && count2 == 2;
+    shared_ptr<dummy> p3( p1 );
+    count1  = p2.use_count();
+    count2  = p3.use_count();
+    pass    = pass && count1 == 3 && count2 == 3;
+    p2.reset();
+    count1  = p2.use_count();
+    count2  = p3.use_count();
+    pass    = pass && count1 == 0 && count2 == 2;
+    auto p4 = p3->getPtr();
+    count1  = p3.use_count();
+    count2  = p4.use_count();
+    pass    = pass && count1 == 3 && count2 == 3;
+    shared_ptr<dummy> p5( p3.get(), []( void * ) {} );
+    count1  = p3.use_count();
+    count2  = p5.use_count();
+    pass    = pass && count1 == 3 && count2 == 1;
+    p5.reset();
+    count1  = p3.use_count();
+    count2  = p5.use_count();
+    pass    = pass && p3.use_count() == 3 && p5.use_count() == 0;
+    return pass;
+}
 void test_shared_from_this( UnitTest *ut )
 {
     bool pass = true;
     try {
-        shared_ptr<dummy> p1( new dummy );
-        shared_ptr<dummy> p2 = p1.get()->getPtr();
-        int count                 = p2.use_count();
-        if ( count != 2 )
-            pass = false;
+        shared_ptr<dummy> ptr( new dummy );
+        pass = test_shared_from_this_pointer( ptr );
     } catch ( ... ) {
         pass = false;
     }
@@ -201,26 +228,10 @@ void test_shared_from_this( UnitTest *ut )
         ut->passes( "shared_from_this 1" );
     else
         ut->failure( "shared_from_this 1" );
-    pass = true;
     try {
-        dummy *p1                 = new dummy;
-        std::shared_ptr<dummy> p2 = p1->getPtr();
-        pass                      = pass && p2.use_count() == 1;
-        std::shared_ptr<dummy> p3( p1 ); // Take ownership
-        pass = pass && p2.use_count() == 1 && p3.use_count() == 1;
-        p2.reset();
-        pass                      = pass && p2.use_count() == 0 && p3.use_count() == 1;
-        std::shared_ptr<dummy> p4 = p3->getPtr();
-        pass                      = pass && p3.use_count() == 2 && p4.use_count() == 2;
-        std::shared_ptr<dummy> p5( p3.get(), []( void * ) {} );
-        pass = pass && p3.use_count() == 2 && p5.use_count() == 1;
-        p5.reset();
-        pass                      = pass && p3.use_count() == 2 && p5.use_count() == 0;
-        std::shared_ptr<dummy> p6 = p3->getPtr();
-        pass                      = pass && p3.use_count() == 3 && p6.use_count() == 3;
-    } catch( const std::bad_weak_ptr& ) {
-        // C++17 defines shared from this to be invalid for objects not managed by std::shared_ptr
-        pass = true;
+        dummy *p1 = new dummy;
+        auto p2   = p1->getPtr();
+        pass = test_shared_from_this_pointer( p2 );
     } catch ( ... ) {
         pass = false;
     }
