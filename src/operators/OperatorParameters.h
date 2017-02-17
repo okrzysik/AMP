@@ -21,6 +21,8 @@ namespace Operator {
 class OperatorParameters : public ParameterBase
 {
 public:
+    typedef AMP::shared_ptr<AMP::Operator::OperatorParameters> shared_ptr;
+
     /**
      * Construct and initialize a parameter list according to input
      * data.  Guess what the required and optional keywords are.

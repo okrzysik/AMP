@@ -765,9 +765,7 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
         if ( subset.size() == 0 ) {
             return AMP::shared_ptr<Mesh>();
         } else {
-            AMP::shared_ptr<Mesh> subsetMultiMesh( new MultiMesh( subset[0]->getComm(), subset ) );
-            subsetMultiMesh->setName( d_name + "_subset" );
-            return subsetMultiMesh;
+            return subset[0];
         }
     }
     // Create a new multi-mesh to contain the subset
