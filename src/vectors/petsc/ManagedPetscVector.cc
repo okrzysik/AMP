@@ -119,7 +119,7 @@ _AMP_setvalues( Vec px, PetscInt ni, const PetscInt ix[], const PetscScalar y[],
 
 
 // This function makes no sense wrt the PETSc interface VecShift( Vec, PetscScalar );
-PetscErrorCode _AMP_shift( Vec )
+PetscErrorCode _AMP_shift( Vec, PetscScalar )
 {
     AMP_ERROR( "This function cannot be implemented as designed" );
     return 0;
