@@ -118,7 +118,6 @@ _AMP_setvalues( Vec px, PetscInt ni, const PetscInt ix[], const PetscScalar y[],
 }
 
 #if PETSC_VERSION_(3,7,5)
-// This function makes no sense wrt the PETSc interface VecShift( Vec, PetscScalar );
 PetscErrorCode _AMP_shift( Vec px, PetscScalar s)
 {
     PETSC_RECAST( x, px );
