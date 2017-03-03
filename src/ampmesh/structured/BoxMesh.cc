@@ -2,6 +2,7 @@
 #include "ampmesh/MultiIterator.h"
 #include "ampmesh/structured/structuredMeshElement.h"
 #include "ampmesh/structured/structuredMeshIterator.h"
+#include "ampmesh/shapes/Box.h"
 
 #include "utils/Utilities.h"
 #ifdef USE_AMP_VECTORS
@@ -94,8 +95,9 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     initialize();
     // Create the appropriate mesh coordinates (and modify the id sets if necessary)
     if ( generator.compare( "cube" ) == 0 ) {
+        std::vector<double> range( 2*PhysicalDim, 0 );
         if ( d_db->keyExists( "Range" ) ) {
-            std::vector<double> range = d_db->getDoubleArray( "Range" );
+            range = d_db->getDoubleArray( "Range" );
             AMP_INSIST( range.size() == 2 * PhysicalDim, "Range must be 2*dim for cube generator" );
             fillCartesianNodes( PhysicalDim, &d_size[0], &range[0], d_index, d_coord );
         } else if ( d_db->keyExists( "x_grid" ) ) {
@@ -122,8 +124,11 @@ BoxMesh::BoxMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
                     AMP_ASSERT( j >= 0 && j <= d_size[d] );
                     d_coord[d][i] = grid[j];
                 }
+                range[2*d+0] = grid.front();
+                range[2*d+0] = grid.back();
             }
         }
+        d_geometry.reset( new Geometry::Box( range ) );
     } else if ( generator.compare( "tube" ) == 0 ) {
         AMP_INSIST( d_db->keyExists( "Range" ), "Field 'Range' must exist in database'" );
         std::vector<double> range = d_db->getDoubleArray( "Range" );
@@ -956,6 +961,8 @@ void BoxMesh::displaceMesh( const std::vector<double> &x )
         d_box_local[2 * i + 0] += x[i];
         d_box_local[2 * i + 1] += x[i];
     }
+    if ( d_geometry != nullptr )
+        d_geometry->displaceMesh( x );
 }
 #ifdef USE_AMP_VECTORS
 void BoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )

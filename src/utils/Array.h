@@ -594,6 +594,12 @@ public: // Math operations
      */
     void axpby( const TYPE &alpha, const Array &x, const TYPE &beta );
 
+    /*!
+     * Linear interpolation
+     * @param[in] x             Position as a decimal index
+     */
+    inline TYPE interp( const std::vector<double> &x );
+
     /**
       * \fn equals (Array & const rhs, TYPE tol )
       * \brief  Determine if two Arrays are equal using an absolute tolerance

@@ -17,6 +17,9 @@
 #include "utils/Utilities.h"
 
 
+using namespace AMP;
+
+
 class TestAllocateClass
 {
 public:
@@ -65,23 +68,96 @@ private:
 int TestAllocateClass::N_alloc = 0;
 
 
+// Function to test linear interpolation
+template<class TYPE> TYPE fun( double x, double y, double z );
+template<> inline double fun<double>( double x, double y, double z )
+{
+    return sin(x)*cos(y)*exp(-z);
+}
+template<> inline int fun<int>( double x, double y, double z )
+{
+    return static_cast<int>( 100000*fun<double>(x,y,z) );
+}
+template<class TYPE>
+void test_interp( UnitTest& ut, const std::vector<size_t> N )
+{
+    Array<TYPE> A(N);
+    std::vector<size_t> N2( N );
+    N2.resize(3,1);
+    char buf[100];
+    std::sprintf(buf,"interp<%s,%i,%i,%i>",typeid(TYPE).name(),(int)N2[0],(int)N2[1],(int)N2[2]);
+    std::string testname(buf);
+    // Fill A
+    A.fill( 0 );
+    for (int i=0; i<A.size(0); i++) {
+        double x = i*1.0/std::max<double>(N2[0]-1,1);
+        for (int j=0; j<A.size(1); j++) {
+            double y = j*1.0/std::max<double>(N2[1]-1,1);
+            for (int k=0; k<A.size(2); k++) {
+                double z = k*1.0/std::max<double>(N2[2]-1,1);
+                A(i,j,k) = fun<TYPE>(x,y,z);
+            }
+        }
+    }
+    // Test the input points
+    bool pass = true;
+    std::vector<double> x(3);
+    for (int i=0; i<A.size(0); i++) {
+        x[0] = i;
+        for (int j=0; j<A.size(1); j++) {
+            x[1] = j;
+            for (int k=0; k<A.size(2); k++) {
+                x[2] = k;
+                if ( fabs( A(i,j,k)-A.interp( x ) ) > 1e-12*A(i,j,k) )
+                    pass = false;
+            }
+        }
+    }
+    if ( pass )
+        ut.passes( testname + " (input points)" );
+    else
+        ut.failure( testname + " (input points)" );
+    // Test random points
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    static std::uniform_real_distribution<double> dis(0,1);
+    pass = true;
+    std::vector<double> x1(3,0);
+    std::vector<double> x2(3,0);
+    for (int i=0; i<10000; i++) {
+        for (size_t d=0; d<N.size(); d++) {
+            x1[d] = dis(gen);
+            x2[d] = (N[d]-1)*x1[d];
+        }
+        TYPE y1 = fun<TYPE>( x1[0], x1[1], x1[2] );
+        TYPE y2 = A.interp( x2 );
+        if ( fabs(y1-y2) > 1e-3*y1 )
+            pass = false;
+    }
+    if ( pass )
+        ut.passes( testname + " (random points)" );
+    else
+        ut.failure( testname + " (random points)" );
+}
+
+
 // The main function
 int main( int argc, char *argv[] )
 {
     // Startup
-    AMP::AMPManagerProperties startup_properties;
+    AMPManagerProperties startup_properties;
     startup_properties.use_MPI_Abort = false;
-    AMP::AMPManager::startup( argc, argv, startup_properties );
-    AMP::UnitTest ut;
+    AMPManager::startup( argc, argv, startup_properties );
+    UnitTest ut;
 
     // these are currently not defined for AMP
-    //    AMP::Utilities::setAbortBehavior(true,true,true);
-    //    AMP::Utilities::setErrorHandlers();
+    //    Utilities::setAbortBehavior(true,true,true);
+    //    Utilities::setErrorHandlers();
 
     // Limit the scope of variables
     {
         // Create several matrices
-        AMP::Array<double> M1, M2( 10, 5 );
+        Array<double> M1, M2( 10, 5 );
         M1.resize( 10, 7 );
         for ( size_t i = 0; i < M2.size( 0 ); i++ ) {
             for ( size_t j = 0; j < M2.size( 1 ); j++ ) {
@@ -90,9 +166,9 @@ int main( int argc, char *argv[] )
             }
         }
         M1.resize( 10, 5 );
-        AMP::Array<double> M3( M1 );
-        AMP::Array<double> M4 = M2;
-        AMP::Array<double> M5 = M1;
+        Array<double> M3( M1 );
+        Array<double> M4 = M2;
+        Array<double> M5 = M1;
         M5( 0, 0 ) = -1;
         if ( M1 == M2 && M1 == M3 && M1 == M4 && M1 != M5 )
             ut.passes( "Array constructors" );
@@ -100,7 +176,7 @@ int main( int argc, char *argv[] )
             ut.failure( "Array constructors" );
         // Test std::string
         bool pass = true;
-        AMP::Array<std::string> S;
+        Array<std::string> S;
         pass = pass && S.length() == 0;
         S.resize( 1 );
         pass   = pass && S.length() == 1;
@@ -108,13 +184,13 @@ int main( int argc, char *argv[] )
         S( 0 ) = std::string( "test" );
         pass   = pass && S( 0 ) == "test";
         if ( pass )
-            ut.passes( "AMP::Array string" );
+            ut.passes( "Array string" );
         else
-            ut.failure( "AMP::Array string" );
+            ut.failure( "Array string" );
         // Test a failed allocation
         try {
             size_t N = 10000;
-            AMP::Array<double> M( N, N, N );
+            Array<double> M( N, N, N );
 #if defined( __APPLE__ )
             ut.expected_failure( "Failed allocation succeeded (MAC)" );
 #else
@@ -200,18 +276,18 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "copyFromSubset" );
         // Test the time required to create a view
-        AMP::Array<double> M_view;
-        double t1 = AMP::Utilities::time();
+        Array<double> M_view;
+        double t1 = Utilities::time();
         for ( size_t i = 0; i < 100000; i++ ) {
             M_view.viewRaw( { M1.size( 0 ), M1.size( 1 ) }, M1.data() );
             NULL_USE( M_view );
         }
-        double t2 = AMP::Utilities::time();
+        double t2 = Utilities::time();
         if ( M_view == M1 )
             ut.passes( "view" );
         else
             ut.failure( "view" );
-        AMP::pout << "Time to create view: " << ( t2 - t1 ) * 1e9 / 100000 << " ns\n";
+        pout << "Time to create view: " << ( t2 - t1 ) * 1e9 / 100000 << " ns\n";
         // Simple tests of +/-
         M2 = M1;
         M2.scale( 2 );
@@ -262,30 +338,30 @@ int main( int argc, char *argv[] )
     }
     // Test sum
     {
-        AMP::Array<double> x( 1000, 100 );
+        Array<double> x( 1000, 100 );
         x.rand();
-        double t1          = AMP::Utilities::time();
+        double t1          = Utilities::time();
         double s1          = x.sum();
-        double t2          = AMP::Utilities::time();
+        double t2          = Utilities::time();
         double s2          = 0;
         const size_t N     = x.length();
         const double *data = x.data();
         for ( size_t i = 0; i < N; i++ )
             s2 += data[i];
-        double t3 = AMP::Utilities::time();
+        double t3 = Utilities::time();
         if ( fabs( s1 - s2 ) / s1 < 1e-12 )
             ut.passes( "sum" );
         else
             ut.failure( "sum" );
-        AMP::pout << "Time to perform sum (sum()): " << ( t2 - t1 ) * 1e9 / N << " ns\n";
-        AMP::pout << "Time to perform sum (raw): " << ( t3 - t2 ) * 1e9 / N << " ns\n";
+        pout << "Time to perform sum (sum()): " << ( t2 - t1 ) * 1e9 / N << " ns\n";
+        pout << "Time to perform sum (raw): " << ( t3 - t2 ) * 1e9 / N << " ns\n";
     }
     // Test the allocation of a non-trivial type
     {
         bool pass = true;
         std::shared_ptr<TestAllocateClass> ptr;
         {
-            AMP::Array<TestAllocateClass> x( 3, 4 );
+            Array<TestAllocateClass> x( 3, 4 );
             pass = pass && TestAllocateClass::get_N_alloc() == 12;
             x.resize( 2, 1 );
             pass = pass && TestAllocateClass::get_N_alloc() == 2;
@@ -299,12 +375,18 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "Allocator" );
     }
+    // Test interpolation
+    {
+        test_interp<double>( ut, { 100 } );
+        test_interp<double>( ut, { 50, 50 } );
+        test_interp<double>( ut, { 30, 30, 30 } );
+    }
 
     // Finished
-    ut.report();
+    ut.report(1);
     int num_failed = static_cast<int>( ut.NumFailGlobal() );
     if ( num_failed == 0 )
-        AMP::pout << "All tests passed\n";
-    AMP::AMPManager::shutdown();
+        pout << "All tests passed\n";
+    AMPManager::shutdown();
     return num_failed;
 }

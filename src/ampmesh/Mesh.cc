@@ -49,6 +49,9 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
                 "Communicator in mesh params must be non NULL " );
     setMeshID();
     d_name = "NULL";
+    if ( d_db != nullptr ) {
+        d_name = d_db->getStringWithDefault("MeshName","NULL");
+    }
 }
 
 

@@ -322,6 +322,9 @@ public:
     //! Return the bool vector indicating which directions are periodic
     inline std::vector<bool> periodic() const;
 
+    //! Return the size of the mesh
+    inline std::vector<size_t> size() const;
+
 
     /**
      * \brief    Return a mesh element given it's id.

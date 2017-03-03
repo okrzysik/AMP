@@ -99,6 +99,13 @@ inline std::vector<bool> BoxMesh::periodic() const
         per[d]  = d_isPeriodic[d];
     return per;
 }
+inline std::vector<size_t> BoxMesh::size() const
+{
+    std::vector<size_t> size( static_cast<int>( GeomDim ) );
+    for ( int d = 0; d < static_cast<int>( GeomDim ); d++ )
+        size[d]  = d_size[d];
+    return size;
+}
 inline BoxMesh::Box BoxMesh::getGlobalBox( int gcw ) const
 {
     Box box;

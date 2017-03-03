@@ -1,11 +1,10 @@
 #ifndef included_AMP_Mesh
 #define included_AMP_Mesh
 
-//#include "garbage.h"
-
 #include "ampmesh/MeshID.h"
 #include "ampmesh/MeshIterator.h"
 #include "ampmesh/MeshParameters.h"
+#include "ampmesh/Geometry.h"
 #include "utils/AMP_MPI.h"
 #include "utils/enable_shared_from_this.h"
 #include "utils/shared_ptr.h"
@@ -96,6 +95,14 @@ public:
      * \param params Parameters for constructing a mesh from an input database
      */
     static AMP::shared_ptr<AMP::Mesh::Mesh> buildMesh( const MeshParameters::shared_ptr &params );
+
+
+    /**
+     * \brief   Return the geometry of the mesh
+     * \details  This function will return the geometry for the mesh if it exists.
+     *    Not all meshes will have a geometry associated with them.
+     */
+    inline AMP::Geometry::Geometry::shared_ptr getGeometry( ) { return d_geometry; }
 
 
     /**
@@ -415,6 +422,9 @@ protected:
 
     //! The mesh parameters
     MeshParameters::shared_ptr params;
+
+    //! The geometry parameters
+    Geometry::Geometry::shared_ptr d_geometry;
 
     //! The geometric dimension (equivalent to the highest geometric object that could be
     //! represented)

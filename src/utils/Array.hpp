@@ -1008,6 +1008,85 @@ Array<TYPE, FUN, Allocator>::coarsen( const std::vector<size_t> &ratio,
 
 
 /********************************************************
+*  Interpolate                                          *
+********************************************************/
+template<class TYPE>
+inline TYPE Array_interp_1D( double x, int N, const TYPE *data )
+{
+    int i = floor( x );
+    i = std::max(i,0);
+    i = std::min(i,N-2);
+    return (i+1-x)*data[i] + (x-i)*data[i+1];
+}
+template<class TYPE>
+inline TYPE Array_interp_2D( double x, double y, int Nx, int Ny, const TYPE *data )
+{
+    int i = floor( x );
+    i = std::max(i,0);
+    i = std::min(i,Nx-2);
+    double dx = x - i;
+    double dx2 = 1.0 - dx;
+    int j = floor( y );
+    j = std::max(j,0);
+    j = std::min(j,Ny-2);
+    double dy = y - j;
+    double dy2 = 1.0 - dy;
+    double f[4] = { data[i+j*Nx], data[i+1+j*Nx], data[i+(j+1)*Nx], data[i+1+(j+1)*Nx] };
+    return ( dx * f[1] + dx2 * f[0] ) * dy2 + ( dx * f[3] + dx2 * f[2] ) * dy;
+}
+template<class TYPE>
+inline TYPE Array_interp_3D( double x, double y, double z, int Nx, int Ny, int Nz, const TYPE *data )
+{
+    int i = floor( x );
+    i = std::max(i,0);
+    i = std::min(i,Nx-2);
+    double dx = x - i;
+    double dx2 = 1.0 - dx;
+    int j = floor( y );
+    j = std::max(j,0);
+    j = std::min(j,Ny-2);
+    double dy = y - j;
+    double dy2 = 1.0 - dy;
+    int k = floor( z );
+    k = std::max(k,0);
+    k = std::min(k,Nz-2);
+    double dz = z - k;
+    double dz2 = 1.0 - dz;
+    double f[8] = { data[i+j*Nx+k*Nx*Ny], data[i+1+j*Nx+k*Nx*Ny], data[i+(j+1)*Nx+k*Nx*Ny], data[i+1+(j+1)*Nx+k*Nx*Ny],
+       data[i+j*Nx+(k+1)*Nx*Ny], data[i+1+j*Nx+(k+1)*Nx*Ny], data[i+(j+1)*Nx+(k+1)*Nx*Ny], data[i+1+(j+1)*Nx+(k+1)*Nx*Ny] };
+    double h0  = ( dx * f[1] + dx2 * f[0] ) * dy2 + ( dx * f[3] + dx2 * f[2] ) * dy;
+    double h1  = ( dx * f[5] + dx2 * f[4] ) * dy2 + ( dx * f[7] + dx2 * f[6] ) * dy;
+    return h0 * dz2 + h1 * dz;
+}
+template <class TYPE, class FUN, class Allocator>
+inline TYPE Array<TYPE, FUN, Allocator>::interp( const std::vector<double> &x )
+{
+    int ndim=0, dim[ARRAY_NDIM_MAX];
+    double x2[ARRAY_NDIM_MAX];
+    for (int d=0; d<d_ndim; d++) {
+        if ( d_N[d] > 1 ) {
+            x2[ndim] = x[d];
+            dim[ndim] = d_N[d];
+            ndim++;
+        }
+    }
+    TYPE f;
+    if ( d_ndim == 0 ) {
+        // No data, do nothing
+    } else if ( d_ndim == 1 ) {
+        f = Array_interp_1D( x2[0], dim[0], d_data );
+    } else if ( d_ndim == 2 ) {
+        f = Array_interp_2D( x2[0], x2[1], dim[0], dim[1], d_data );
+    } else if ( d_ndim == 3 ) {
+        f = Array_interp_3D( x2[0], x2[1], x2[2], dim[0], dim[1], dim[2], d_data );
+    } else {
+        AMP_ERROR("Not finished");
+    }
+    return f;
+}
+
+
+/********************************************************
 *  Math operations (should call the Math class)         *
 ********************************************************/
 template <class TYPE, class FUN, class Allocator>
