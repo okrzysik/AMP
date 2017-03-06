@@ -378,39 +378,21 @@ void BoxMesh::initialize()
                 }
             }
             // Create the elements
+            const GeomType geom = static_cast<GeomType>( d );
             if ( PhysicalDim == 1 ) {
-                for ( int i = range2[0]; i < range2[1]; i++ ) {
-                    MeshElementIndex index;
-                    index.type     = (GeomType) d;
-                    index.index[0] = i;
-                    index.index[1] = 0;
-                    index.index[2] = 0;
-                    index.side     = s;
-                    d_elements[d][0]->push_back( index );
-                }
+                for ( int i = range2[0]; i < range2[1]; i++ )
+                    d_elements[d][0]->push_back( MeshElementIndex( geom, s, i, 0, 0 ) );
             } else if ( PhysicalDim == 2 ) {
                 for ( int j = range2[2]; j < range2[3]; j++ ) {
                     for ( int i = range2[0]; i < range2[1]; i++ ) {
-                        MeshElementIndex index;
-                        index.type     = (GeomType) d;
-                        index.index[0] = i;
-                        index.index[1] = j;
-                        index.index[2] = 0;
-                        index.side     = s;
-                        d_elements[d][0]->push_back( index );
+                        d_elements[d][0]->push_back( MeshElementIndex( geom, s, i, j, 0 ) );
                     }
                 }
             } else if ( PhysicalDim == 3 ) {
                 for ( int k = range2[4]; k < range2[5]; k++ ) {
                     for ( int j = range2[2]; j < range2[3]; j++ ) {
                         for ( int i = range2[0]; i < range2[1]; i++ ) {
-                            MeshElementIndex index;
-                            index.type     = (GeomType) d;
-                            index.index[0] = i;
-                            index.index[1] = j;
-                            index.index[2] = k;
-                            index.side     = s;
-                            d_elements[d][0]->push_back( index );
+                            d_elements[d][0]->push_back( MeshElementIndex( geom, s, i, j, k ) );
                         }
                     }
                 }
@@ -534,22 +516,22 @@ void BoxMesh::initialize()
                     // Create the index (adjusting for periodic boundaries)
                     MeshElementIndex index( static_cast<GeomType>( PhysicalDim ), 0, i, j, k );
                     if ( i < 0 ) {
-                        index.index[0] += d_size[0];
+                        index.d_index[0] += d_size[0];
                     }
                     if ( j < 0 ) {
-                        index.index[1] += d_size[1];
+                        index.d_index[1] += d_size[1];
                     }
                     if ( k < 0 ) {
-                        index.index[2] += d_size[2];
+                        index.d_index[2] += d_size[2];
                     }
                     if ( i >= d_size[0] ) {
-                        index.index[0] -= d_size[0];
+                        index.d_index[0] -= d_size[0];
                     }
                     if ( j >= d_size[1] ) {
-                        index.index[1] -= d_size[1];
+                        index.d_index[1] -= d_size[1];
                     }
                     if ( k >= d_size[2] ) {
-                        index.index[2] -= d_size[2];
+                        index.d_index[2] -= d_size[2];
                     }
                     // Check if the element is already in one of the lists
                     bool found = false;
@@ -599,7 +581,7 @@ void BoxMesh::initialize()
             MeshElementIndex index = elem->d_index;
             for ( int d = 0; d < PhysicalDim; d++ ) {
                 // If we are outside or on the +boundary, we are not an interior element
-                if ( index.index[d] < range[2 * d + 0] || index.index[d] >= range[2 * d + 1] - 1 )
+                if ( index.d_index[d] < range[2 * d + 0] || index.d_index[d] >= range[2 * d + 1] - 1 )
                     interior_element = false;
             }
             if ( interior_element ) {
@@ -651,7 +633,7 @@ void BoxMesh::initialize()
         structuredMeshElement *element = dynamic_cast<structuredMeshElement *>( elem_ptr );
         AMP_ASSERT( element != nullptr );
         MeshElementIndex index = element->d_index;
-        AMP_ASSERT( index.type == 0 );
+        AMP_ASSERT( index.d_type == 0 );
         d_index[i] = index;
         ++nodeIterator;
     }
@@ -696,21 +678,21 @@ void BoxMesh::initialize()
                 for ( size_t i = 0; i < d_elements[d][gcw]->size(); i++ ) {
                     MeshElementIndex index = d_elements[d][gcw]->operator[]( i );
                     if ( d == PhysicalDim ) {
-                        if ( index.index[side / 2] == R1 )
+                        if ( index.d_index[side / 2] == R1 )
                             list.push_back( index );
-                    } else if ( index.type == Vertex ) {
-                        if ( index.index[side / 2] == R2 )
+                    } else if ( index.d_type == Vertex ) {
+                        if ( index.d_index[side / 2] == R2 )
                             list.push_back( index );
-                    } else if ( index.type == Edge ) {
+                    } else if ( index.d_type == Edge ) {
                         if ( PhysicalDim == 2 ) {
-                            if ( index.side == side / 2 && index.index[side / 2] == R2 )
+                            if ( index.d_side == side / 2 && index.d_index[side / 2] == R2 )
                                 list.push_back( index );
                         } else {
-                            if ( index.side != side / 2 && index.index[side / 2] == R2 )
+                            if ( index.d_side != side / 2 && index.d_index[side / 2] == R2 )
                                 list.push_back( index );
                         }
-                    } else if ( index.type == Face ) {
-                        if ( index.side == side / 2 && index.index[side / 2] == R2 )
+                    } else if ( index.d_type == Face ) {
+                        if ( index.d_side == side / 2 && index.d_index[side / 2] == R2 )
                             list.push_back( index );
                     } else {
                         AMP_ERROR( "Unknown element type" );
@@ -824,12 +806,12 @@ MeshElement BoxMesh::getElement( const MeshElementID &elem_id ) const
     for ( int d      = 0; d < PhysicalDim; d++ )
         myBoxSize[d] = range[2 * d + 1] - range[2 * d + 0];
     MeshElementIndex index;
-    index.type      = elem_id.type();
+    index.d_type      = elem_id.type();
     size_t local_id = elem_id.local_id();
-    index.index[0]  = range[0] + (int) local_id % myBoxSize[0];
-    index.index[1]  = range[2] + (int) ( local_id / myBoxSize[0] ) % myBoxSize[1];
-    index.index[2] = range[4] + (int) ( local_id / ( myBoxSize[0] * myBoxSize[1] ) ) % myBoxSize[2];
-    index.side     = (unsigned char) ( local_id / ( myBoxSize[0] * myBoxSize[1] * myBoxSize[2] ) );
+    index.d_index[0]  = range[0] + (int) local_id % myBoxSize[0];
+    index.d_index[1]  = range[2] + (int) ( local_id / myBoxSize[0] ) % myBoxSize[1];
+    index.d_index[2] = range[4] + (int) ( local_id / ( myBoxSize[0] * myBoxSize[1] ) ) % myBoxSize[2];
+    index.d_side     = (unsigned char) ( local_id / ( myBoxSize[0] * myBoxSize[1] * myBoxSize[2] ) );
     // Create the element
     structuredMeshElement elem( index, this );
     AMP_ASSERT( elem.globalID() == elem_id );
@@ -1063,13 +1045,13 @@ void BoxMesh::getOwnerBlock( const MeshElementIndex &index, unsigned int &rank, 
     for ( int d = 0; d < PhysicalDim; d++ ) {
         size_t size     = (size_t) d_size[d];
         size_t N_blocks = (size_t) d_numBlocks[d];
-        if ( index.index[d] == d_size[d] ) {
+        if ( index.d_index[d] == d_size[d] ) {
             // The element lies on the physical bounadry
-            AMP_ASSERT( index.type < PhysicalDim );
+            AMP_ASSERT( index.d_type < PhysicalDim );
             myBoxIndex[d] = d_numBlocks[d] - 1;
         } else {
             // Find the owning box
-            myBoxIndex[d] = (int) ( ( ( (size_t) index.index[d] + 1 ) * N_blocks - 1 ) / size );
+            myBoxIndex[d] = (int) ( ( ( (size_t) index.d_index[d] + 1 ) * N_blocks - 1 ) / size );
         }
         range[2 * d + 0] = (int) ( ( size * ( (size_t) myBoxIndex[d] ) ) / N_blocks );
         range[2 * d + 1] = (int) ( ( size * ( (size_t) myBoxIndex[d] + 1 ) ) / N_blocks );
@@ -1077,7 +1059,7 @@ void BoxMesh::getOwnerBlock( const MeshElementIndex &index, unsigned int &rank, 
     }
     // Increase the index range for the boxes on the boundary for all elements except the current
     // dimension
-    if ( index.type != PhysicalDim ) {
+    if ( index.d_type != PhysicalDim ) {
         for ( int d = 0; d < PhysicalDim; d++ ) {
             if ( range[2 * d + 1] == d_size[d] && !d_isPeriodic[d] )
                 range[2 * d + 1]++;
@@ -1099,10 +1081,10 @@ void BoxMesh::fillCartesianNodes( int dim,
 {
     AMP_ASSERT( index.size() == coord[0].size() );
     for ( size_t i = 0; i < index.size(); i++ ) {
-        AMP_ASSERT( index[i].type == 0 );
+        AMP_ASSERT( index[i].d_type == 0 );
         for ( int d     = 0; d < dim; d++ )
             coord[d][i] = range[2 * d + 0] +
-                          ( range[2 * d + 1] - range[2 * d + 0] ) * ( (double) index[i].index[d] ) /
+                          ( range[2 * d + 1] - range[2 * d + 0] ) * ( (double) index[i].d_index[d] ) /
                               ( (double) globalSize[d] );
     }
 }

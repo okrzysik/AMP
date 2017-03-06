@@ -32,46 +32,46 @@ BoxMesh::Box::Box( int ifirst, int ilast, int jfirst, int jlast, int kfirst, int
 
 
 // BoxMesh::MeshElementIndex
-BoxMesh::MeshElementIndex::MeshElementIndex() : type( 0 ), side( 0 )
+BoxMesh::MeshElementIndex::MeshElementIndex() : d_type( 0 ), d_side( 0 )
 {
-    index[0] = 0;
-    index[1] = 0;
-    index[2] = 0;
+    d_index[0] = 0;
+    d_index[1] = 0;
+    d_index[2] = 0;
 }
 BoxMesh::MeshElementIndex::MeshElementIndex(
     GeomType type_in, unsigned char side_in, int x, int y, int z )
-    : type( static_cast<unsigned char>( type_in ) ), side( side_in )
+    : d_type( static_cast<unsigned char>( type_in ) ), d_side( side_in )
 {
-    index[0] = x;
-    index[1] = y;
-    index[2] = z;
+    d_index[0] = x;
+    d_index[1] = y;
+    d_index[2] = z;
 }
 inline bool BoxMesh::MeshElementIndex::operator==( const MeshElementIndex &rhs ) const
 {
-    return type == rhs.type && side == rhs.side && index[0] == rhs.index[0] &&
-           index[1] == rhs.index[1] && index[2] == rhs.index[2];
+    return d_type == rhs.d_type && d_side == rhs.d_side && d_index[0] == rhs.d_index[0] &&
+           d_index[1] == rhs.d_index[1] && d_index[2] == rhs.d_index[2];
 }
 inline bool BoxMesh::MeshElementIndex::operator!=( const MeshElementIndex &rhs ) const
 {
-    return type != rhs.type || side != rhs.side || index[0] != rhs.index[0] ||
-           index[1] != rhs.index[1] || index[2] != rhs.index[2];
+    return d_type != rhs.d_type || d_side != rhs.d_side || d_index[0] != rhs.d_index[0] ||
+           d_index[1] != rhs.d_index[1] || d_index[2] != rhs.d_index[2];
 }
 inline bool BoxMesh::MeshElementIndex::operator>( const MeshElementIndex &rhs ) const
 {
-    if ( type < rhs.type ) {
+    if ( d_type < rhs.d_type ) {
         return false;
-    } else if ( type > rhs.type ) {
+    } else if ( d_type > rhs.d_type ) {
         return true;
     }
-    if ( side < rhs.side ) {
+    if ( d_side < rhs.d_side ) {
         return false;
-    } else if ( side > rhs.side ) {
+    } else if ( d_side > rhs.d_side ) {
         return true;
     }
     for ( int i = 2; i >= 0; i-- ) {
-        if ( index[i] < rhs.index[i] ) {
+        if ( d_index[i] < rhs.d_index[i] ) {
             return false;
-        } else if ( index[i] > rhs.index[i] ) {
+        } else if ( d_index[i] > rhs.d_index[i] ) {
             return true;
         }
     }

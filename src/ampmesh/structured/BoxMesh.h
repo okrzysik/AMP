@@ -125,10 +125,11 @@ public:
         inline bool operator>=( const MeshElementIndex &rhs ) const; //!< Operator >=
         inline bool operator<( const MeshElementIndex &rhs ) const;  //!< Operator <
         inline bool operator<=( const MeshElementIndex &rhs ) const; //!< Operator <=
+        inline int index( int d ) const { return d_index[d]; }
     private:
-        unsigned char type; //!<  Mesh element type
-        unsigned char side; //!<  Are we dealing with x, y, or z faces/edges
-        int index[3];       //!<  Global x, y, z index (may be negitive with periodic boundaries)
+        unsigned char d_type; //!<  Mesh element type
+        unsigned char d_side; //!<  Are we dealing with x, y, or z faces/edges
+        int d_index[3];       //!<  Global x, y, z index (may be negitive with periodic boundaries)
         friend class BoxMesh;
         friend class structuredMeshElement;
     };
