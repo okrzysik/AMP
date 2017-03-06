@@ -1112,6 +1112,7 @@ bool MultiMesh::addProcSimulation( const LoadBalance &mesh,
     AMP_ASSERT( submeshes.size() == multimeshParams->params.size() );
     bool added = false;
     if ( method == 1 ) {
+        // Try to place each mesh on an independent processor
         if ( mesh.getRanks().size() + 1 == submeshes.size() ) {
             // Special case where the domain decomposition changes
             std::vector<int> rank2( 1, 0 );
@@ -1162,6 +1163,7 @@ bool MultiMesh::addProcSimulation( const LoadBalance &mesh,
             added = submeshes[i_max].addProc( rank );
         }
     } else if ( method == 2 ) {
+        // Place all meshes on all processors
         for ( auto &mesh : submeshes ) {
             bool test = mesh.addProc( rank );
             added     = added || test;
@@ -1324,7 +1326,7 @@ MultiMesh::independentGroups2( int N_procs, std::vector<std::pair<double, int>> 
         if ( ( ids.size() + groups.size() ) == (size_t) N_procs ) {
             tmp_group.ids.resize( 1 );
             for ( size_t i = 0; i < ids.size(); i++ ) {
-                tmp_group.ids = std::vector<int>( 1, ids_in[i].second );
+                tmp_group.ids = std::vector<int>( 1, ids[i].second );
                 groups.push_back( tmp_group );
             }
             ids.resize( 0 );

@@ -1,0 +1,62 @@
+Mesh{
+	MeshName = "YAGCrystal"
+	MeshType = "Multimesh"
+	MeshDatabasePrefix = "Mesh_"
+	MeshArrayDatabasePrefix = "MeshArray_"
+
+	Mesh_1 {
+		MeshName = "ybYAG"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "cube"
+		Size = 50, 50, 5
+		Range = 0, 1, 0, 1, 0, .1
+		x_offset = -0.5
+		y_offset = -0.5
+	}
+	
+	Mesh_2 {
+		MeshName = "crYAGtop"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "cube"
+		Size = 14, 2, 5
+		Range = -.2, 1.2, 1, 1.2, 0, .1
+		x_offset = -0.5
+		y_offset = -0.5
+	}
+	
+	Mesh_3 {
+		MeshName = "crYAGbot"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "cube"
+		Size = 14, 2, 5
+		Range = -.2, 1.2, -.2, 0, 0, .1
+		x_offset = -0.5
+		y_offset = -0.5
+	}
+
+	Mesh_4 {
+		MeshName = "crYAGleft"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "cube"
+		Size = 2, 10, 5
+		Range = -.2, 0, 0, 1, 0, .1
+		x_offset = -0.5
+		y_offset = -0.5
+	}
+
+	Mesh_5 {
+		MeshName = "crYAGright"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "cube"
+		Size = 2, 10, 5
+		Range = 1, 1.2, 0, 1, 0, .1
+		x_offset = -0.5
+		y_offset = -0.5
+	}
+}
+
