@@ -1,7 +1,7 @@
 // This program simulates the load balance with a given input file on a given number of processors
 
 #include "ampmesh/Mesh.h"
-#include "ampmesh/loadBalance.h"
+#include "ampmesh/loadBalance/loadBalanceSimulator.h"
 #include "utils/AMPManager.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
@@ -17,13 +17,16 @@ int main( int argc, char **argv )
     AMP::AMPManager::startup( argc, argv );
 
     // Load the input file and the desired number of processors
-    if ( argc != 3 ) {
+    if ( argc < 3 ) {
         std::cout << "Error calling test_LoadBalancer, format should be:" << std::endl;
         std::cout << "   ./test_LoadBalancer  N_procs  input_file" << std::endl;
         return -1;
     }
     int N_procs            = std::atoi( argv[1] );
     std::string input_file = argv[2];
+    double ratio = 2.0;
+    if ( argc > 3 )
+        ratio = atof(argv[3]);
 
     // Simulate loading the mesh
     AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
@@ -34,7 +37,7 @@ int main( int argc, char **argv )
     for ( int i       = 0; i < N_procs; i++ )
         comm_ranks[i] = i;
     double t0         = AMP::AMP_MPI::time();
-    AMP::Mesh::LoadBalance mesh( params, comm_ranks );
+    AMP::Mesh::loadBalanceSimulator mesh( params, comm_ranks );
     double t1 = AMP::AMP_MPI::time();
 
     // Print the results of the load balance
@@ -56,7 +59,7 @@ int main( int argc, char **argv )
         N_errors++;
         std::cout << "load balance failed run time limits" << std::endl;
     }
-    if ( ( (double) mesh.max() ) > 2.0 * ( (double) mesh.avg() ) ) {
+    if ( ( (double) mesh.max() ) > ratio * ( (double) mesh.avg() ) ) {
         N_errors++;
         std::cout << "load balance failed quality limits" << std::endl;
     }

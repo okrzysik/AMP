@@ -2,7 +2,7 @@
 #define included_AMP_MultiMesh
 
 #include "ampmesh/Mesh.h"
-#include "ampmesh/loadBalance.h"
+#include "ampmesh/loadBalance/loadBalanceSimulator.h"
 
 namespace AMP {
 namespace Mesh {
@@ -220,17 +220,6 @@ public:
                                                         const GeomType type ) const override;
 
 
-    /**
-     * \brief    Displace the entire mesh
-     * \details  This function will displace the entire mesh by a scalar value.
-     *   This function is a blocking call for the mesh communicator, and requires
-     *   the same value on all processors.  The displacement vector should be the
-     *   size of the physical dimension.
-     * \param x  Displacement vector
-     */
-    virtual void displaceMesh( const std::vector<double> &x ) override;
-
-
     //! Is the current mesh a base mesh
     virtual inline bool isBaseMesh() const override { return false; }
 
@@ -275,6 +264,26 @@ public:
      */
     virtual std::vector<AMP::Mesh::Mesh::const_shared_ptr> getMeshes() const;
 
+
+    /**
+     * \brief    Is the mesh movable
+     * \details  This function will check if the mesh can be displaced.
+     *    It will return 0 if the mesh cannont be moved, 1 if it can be displaced,
+     *    and 2 if the individual nodes can be moved.
+     * @return  The if
+     */
+    virtual int isMeshMovable( ) const override;
+
+    /**
+     * \brief    Displace the entire mesh
+     * \details  This function will displace the entire mesh by a scalar value.
+     *   This function is a blocking call for the mesh communicator, and requires
+     *   the same value on all processors.  The displacement vector should be the
+     *   size of the physical dimension.
+     * \param x  Displacement vector
+     */
+    virtual void displaceMesh( const std::vector<double> &x ) override;
+
 #ifdef USE_AMP_VECTORS
     /**
      * \brief    Displace the entire mesh
@@ -293,12 +302,12 @@ public:
 
 
     // Function to simulate loading a multimesh
-    static LoadBalance simulateBuildMesh( const MeshParameters::shared_ptr params,
+    static loadBalanceSimulator simulateBuildMesh( const MeshParameters::shared_ptr params,
                                           const std::vector<int> &comm_ranks );
 
     // Function to add a processor to the load balance simulation
-    static bool addProcSimulation( const LoadBalance &mesh,
-                                   std::vector<LoadBalance> &submeshes,
+    static bool addProcSimulation( const loadBalanceSimulator &mesh,
+                                   std::vector<loadBalanceSimulator> &submeshes,
                                    int rank,
                                    char &decomp );
 

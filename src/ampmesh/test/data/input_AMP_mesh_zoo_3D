@@ -1,0 +1,124 @@
+Mesh{
+	MeshName = "zoo"
+	MeshType = "Multimesh"
+	MeshDatabasePrefix = "Mesh_"
+	MeshArrayDatabasePrefix = "MeshArray_"
+    LoadBalanceMethod = 2
+
+	Mesh_1 {
+		MeshName = "cube_3d"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "cube"
+		Size = 25, 15, 10
+		Range = -1, 1, -0.9, 0.9, -0.8, 0.8
+		x_offset = 0
+		y_offset = 2
+        static = TRUE
+	}
+	Mesh_2 {
+		MeshName = "cube_3d_2"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "cube"
+		Size = 25, 15, 10
+		Range = -1, 1, -0.9, 0.9, -0.8, 0.8
+		x_offset = 4
+		y_offset = 2
+        static = FALSE
+	}
+	
+	Mesh_3 {
+		MeshName = "cylinder"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "cylinder"
+		Size = 8, 10
+		Range = 1, -0.5, 0.5
+		x_offset = 0
+		y_offset = 6
+        static = TRUE
+	}
+	Mesh_4 {
+		MeshName = "cylinder_2"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "cylinder"
+		Size = 8, 10
+		Range = 1, -0.5, 0.5
+		x_offset = 4
+		y_offset = 6
+        static = FALSE
+	}
+	
+	Mesh_5 {
+		MeshName = "tube"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "tube"
+		Size = 5, 20, 5
+		Range = 0.8, 1, -0.5, 0.5
+		x_offset = 0
+		y_offset = 10
+        static = TRUE
+	}
+	Mesh_6 {
+		MeshName = "tube_2"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "tube"
+		Size = 5, 20, 5
+		Range = 0.8, 1, -0.5, 0.5
+		x_offset = 4
+		y_offset = 10
+        static = FALSE
+	}
+	
+	Mesh_7 {
+		MeshName = "sphere"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "sphere"
+		Size = 8
+		Range = 1
+		x_offset = 0
+		y_offset = 14
+        static = TRUE
+	}
+	Mesh_8 {
+		MeshName = "sphere_2"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "sphere"
+		Size = 8
+		Range = 1
+		x_offset = 4
+		y_offset = 14
+        static = FALSE
+	}
+
+	Mesh_9 {
+		MeshName = "shell"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "shell"
+		Size = 5, 25
+		Range = 0.8, 1
+		x_offset = 0
+		y_offset = 18
+        static = TRUE
+	}
+	Mesh_10 {
+		MeshName = "shell_2"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "shell"
+		Size = 5, 25
+		Range = 0.8, 1
+		x_offset = 4
+		y_offset = 18
+        static = FALSE
+	}
+	
+}
+

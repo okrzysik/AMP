@@ -41,10 +41,10 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
 {
     // Set the base properties
     AMP_ASSERT( sizeof( MeshElementID ) == 16 );
-    params  = params_in;
-    GeomDim = null;
-    d_comm  = params->comm;
-    d_db    = params->d_db;
+    d_params = params_in;
+    GeomDim  = null;
+    d_comm   = d_params->comm;
+    d_db     = d_params->d_db;
     AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ),
                 "Communicator in mesh params must be non NULL " );
     setMeshID();
@@ -78,7 +78,7 @@ AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
         mesh = AMP::shared_ptr<AMP::Mesh::MultiMesh>( new AMP::Mesh::MultiMesh( params ) );
     } else if ( MeshType == std::string( "AMP" ) ) {
         // The mesh is a AMP mesh
-        mesh = AMP::shared_ptr<AMP::Mesh::BoxMesh>( new AMP::Mesh::BoxMesh( params ) );
+        mesh = AMP::Mesh::BoxMesh::generate( params );
     } else if ( MeshType == std::string( "libMesh" ) ) {
 // The mesh is a libmesh mesh
 #ifdef USE_EXT_LIBMESH

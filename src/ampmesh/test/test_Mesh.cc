@@ -173,7 +173,7 @@ void testSTKMesh( AMP::UnitTest *ut )
     // Create a generic MeshParameters object
     AMP::shared_ptr<AMP::MemoryDatabase> database( new AMP::MemoryDatabase( "Mesh" ) );
     database->putInteger( "dim", 3 );
-    database->putString( "MeshName", "mesh1" );
+    database->putString( "MeshName", "pellet_lo_res.e" );
     database->putString( "FileName", "pellet_lo_res.e" );
     AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
@@ -198,7 +198,7 @@ void testlibMesh( AMP::UnitTest *ut )
     // Create a generic MeshParameters object
     AMP::shared_ptr<AMP::MemoryDatabase> database( new AMP::MemoryDatabase( "Mesh" ) );
     database->putInteger( "dim", 3 );
-    database->putString( "MeshName", "mesh1" );
+    database->putString( "MeshName", "pellet_lo_res.e" );
     database->putString( "FileName", "pellet_lo_res.e" );
     AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
@@ -223,7 +223,7 @@ void testMoabMesh( AMP::UnitTest *ut )
     // Create a generic MeshParameters object
     AMP::shared_ptr<AMP::MemoryDatabase> database( new AMP::MemoryDatabase( "Mesh" ) );
     database->putInteger( "dim", 3 );
-    database->putString( "MeshName", "mesh1" );
+    database->putString( "MeshName", "pellet_lo_res.e" );
     database->putString( "FileName", "pellet_lo_res.e" );
     AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
@@ -296,6 +296,43 @@ void testSubsetMesh( AMP::UnitTest *ut )
 }
 
 
+// Run the default tests/mesh generators
+void testDefaults( AMP::UnitTest& ut )
+{
+    // Run the ID test
+    testID( &ut );
+
+    // Run tests on a native AMP mesh
+    testAMPMesh( &ut );
+
+    // Run tests on a STKmesh mesh
+    #ifdef USE_TRILINOS_STKMESH
+        testSTKMesh( &ut );
+    #endif
+
+    // Run tests on a libmesh mesh
+    #ifdef USE_EXT_LIBMESH
+        testlibMesh( &ut );
+    #endif
+
+    // Run tests on a moab mesh
+    #ifdef USE_EXT_MOAB
+        testMoabMesh( &ut );
+    #endif
+
+    // Run tests on the input file
+    #ifdef USE_EXT_LIBMESH
+        testInputMesh( &ut, "input_Mesh" );
+    #endif
+
+    // Run the basic tests on all mesh generators
+    testMeshGenerators( &ut );
+
+    // Run the tests on the subset meshes
+    testSubsetMesh( &ut );
+}
+
+
 // Main function
 int main( int argc, char **argv )
 {
@@ -306,37 +343,14 @@ int main( int argc, char **argv )
     PROFILE_ENABLE();
     PROFILE_START( "Run tests" );
 
-    // Run the ID test
-    testID( &ut );
-
-    // Run tests on a native AMP mesh
-    testAMPMesh( &ut );
-
-// Run tests on a STKmesh mesh
-#ifdef USE_TRILINOS_STKMESH
-    testSTKMesh( &ut );
-#endif
-
-// Run tests on a libmesh mesh
-#ifdef USE_EXT_LIBMESH
-    testlibMesh( &ut );
-#endif
-
-// Run tests on a moab mesh
-#ifdef USE_EXT_MOAB
-    testMoabMesh( &ut );
-#endif
-
-// Run tests on the input file
-#ifdef USE_EXT_LIBMESH
-    testInputMesh( &ut, "input_Mesh" );
-#endif
-
-    // Run the basic tests on all mesh generators
-    testMeshGenerators( &ut );
-
-    // Run the tests on the subset meshes
-    testSubsetMesh( &ut );
+    if ( argc == 1 ) {
+        // Run the default tests
+        testDefaults( ut );
+    } else {
+        // Test each given input file
+        for (int i=1; i<argc; i++)
+            testInputMesh( &ut, argv[i] );
+    }
 
     // Save the timing results
     PROFILE_STOP( "Run tests" );

@@ -49,7 +49,7 @@ public:
         // Create a generic MeshParameters object
         AMP::shared_ptr<AMP::MemoryDatabase> database( new AMP::MemoryDatabase( "Mesh" ) );
         database->putInteger( "dim", 3 );
-        database->putString( "MeshName", "mesh1" );
+        database->putString( "MeshName", "AMP::cube" );
         database->putString( "Generator", "cube" );
         database->putIntegerArray( "Size", size );
         database->putDoubleArray( "Range", range );
@@ -57,7 +57,7 @@ public:
             new AMP::Mesh::MeshParameters( database ) );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create an AMP mesh
-        mesh = AMP::shared_ptr<AMP::Mesh::BoxMesh>( new AMP::Mesh::BoxMesh( params ) );
+        mesh = AMP::Mesh::BoxMesh::generate( params );
     }
 };
 template <int SIZE>
@@ -96,7 +96,7 @@ public:
         // Create a generic MeshParameters object
         AMP::shared_ptr<AMP::MemoryDatabase> database( new AMP::MemoryDatabase( "Mesh" ) );
         database->putInteger( "dim", 3 );
-        database->putString( "MeshName", "mesh1" );
+        database->putString( "MeshName", "AMP::cylinder" );
         database->putString( "Generator", "cylinder" );
         database->putIntegerArray( "Size", size );
         database->putDoubleArray( "Range", range );
@@ -104,7 +104,7 @@ public:
             new AMP::Mesh::MeshParameters( database ) );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create an AMP mesh
-        mesh = AMP::shared_ptr<AMP::Mesh::BoxMesh>( new AMP::Mesh::BoxMesh( params ) );
+        mesh = AMP::Mesh::BoxMesh::generate( params );
     }
     static std::string name() { return "AMPCylinderGenerator"; }
 };
@@ -129,7 +129,7 @@ public:
         // Create a generic MeshParameters object
         AMP::shared_ptr<AMP::MemoryDatabase> database( new AMP::MemoryDatabase( "Mesh" ) );
         database->putInteger( "dim", 3 );
-        database->putString( "MeshName", "mesh1" );
+        database->putString( "MeshName", "AMP::tube" );
         database->putString( "Generator", "tube" );
         database->putIntegerArray( "Size", size );
         database->putDoubleArray( "Range", range );
@@ -137,7 +137,7 @@ public:
             new AMP::Mesh::MeshParameters( database ) );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create an AMP mesh
-        mesh = AMP::shared_ptr<AMP::Mesh::BoxMesh>( new AMP::Mesh::BoxMesh( params ) );
+        mesh = AMP::Mesh::BoxMesh::generate( params );
     }
     static std::string name() { return "AMPTubeGenerator"; }
 };

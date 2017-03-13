@@ -157,6 +157,7 @@ void simpleDOFManager::initialize()
     // Note: this must be done after d_local_id is set, d_begin and d_global are set, and remote_ids
     // must be sorted.
     d_remote_dof = getRemoteDOF( d_remote_id );
+    AMP_ASSERT(d_remote_dof.size()==d_remote_id.size());
 }
 
 
@@ -256,10 +257,11 @@ AMP::Mesh::MeshIterator simpleDOFManager::getIterator() const { return d_localIt
 std::vector<size_t> simpleDOFManager::getRemoteDOFs() const
 {
     // Create the list of remote DOFs
-    std::vector<size_t> remote_DOFs( d_remote_id.size() * DOFsPerElement, (size_t) -1 );
-    for ( size_t i = 0; i < d_remote_id.size(); i++ ) {
-        for ( int j                             = 0; j < DOFsPerElement; j++ )
-            remote_DOFs[j + i * DOFsPerElement] = d_remote_dof[i] * DOFsPerElement + j;
+    size_t N = d_remote_id.size();
+    std::vector<size_t> remote_DOFs( N * DOFsPerElement, (size_t) -1 );
+    for ( size_t i = 0, k=0; i < N; i++ ) {
+        for ( int j = 0; j < DOFsPerElement; j++, k++ )
+            remote_DOFs[k] = d_remote_dof[i] * DOFsPerElement + j;
     }
     AMP::Utilities::quicksort( remote_DOFs );
     return remote_DOFs;

@@ -10,7 +10,7 @@ namespace Mesh {
 
 
 //! Enumeration for basic mesh-based quantities
-enum GeomType { Vertex = 0, Edge = 1, Face = 2, Volume = 3, null = 0xFF };
+enum GeomType : unsigned char { Vertex = 0, Edge = 1, Face = 2, Volume = 3, null = 0xFF };
 
 
 //! Typedef for a unsigned 64-bit integer
@@ -188,7 +188,10 @@ private:
     // The next 32 bits refer to the local id
     uint64 data[2];
 };
-}
-}
+
+
+} // Mesh namespace
+} // AMP namespace
+
 
 #endif

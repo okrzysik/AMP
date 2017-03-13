@@ -1,5 +1,5 @@
-#ifndef included_AMP_LoadBalance
-#define included_AMP_LoadBalance
+#ifndef included_AMP_loadBalanceSimulator
+#define included_AMP_loadBalanceSimulator
 
 #include "ampmesh/MeshParameters.h"
 
@@ -9,12 +9,12 @@ namespace Mesh {
 
 
 /**
- * \class LoadBalance
+ * \class loadBalanceSimulator
  * \brief Class used to contain simulated mesh load
  * \details  This structure provides info that can be used to simulate loading
  *   a mesh, and checking the resulting load balance
  */
-class LoadBalance
+class loadBalanceSimulator
 {
 public:
     /**
@@ -26,7 +26,7 @@ public:
      *                      (0: Get the number of elements through a call to
      * Mesh::estimateMeshSize())
      */
-    LoadBalance( AMP::shared_ptr<MeshParameters> params,
+    loadBalanceSimulator( AMP::shared_ptr<MeshParameters> params,
                  const std::vector<int> &ranks,
                  size_t N_elements = 0 );
 
@@ -39,16 +39,16 @@ public:
      * \param decomp  Domain decomposition for the submeshes
      *                (0: General, 1: No set of submeshes share a rank, and all ranks are used)
      */
-    LoadBalance( AMP::shared_ptr<MeshParameters> params,
+    loadBalanceSimulator( AMP::shared_ptr<MeshParameters> params,
                  const std::vector<int> &ranks,
-                 const std::vector<LoadBalance> &submeshes,
+                 const std::vector<loadBalanceSimulator> &submeshes,
                  int decomp );
 
     //! Empty constructor
-    LoadBalance();
+    loadBalanceSimulator();
 
     //! Copy constructor
-    LoadBalance( const LoadBalance & );
+    loadBalanceSimulator( const loadBalanceSimulator & );
 
     /**
      * \brief    Function to add a processor
@@ -97,7 +97,7 @@ private:
     size_t d_max_ranks;
     std::vector<int> d_ranks;
     AMP::shared_ptr<MeshParameters> d_params;
-    std::vector<LoadBalance> d_submeshes;
+    std::vector<loadBalanceSimulator> d_submeshes;
 
     // Special flag used to identify key decompositions
     char d_decomp; // 0: General decomposition, 1: All submeshes are on distinct sets of processors
@@ -107,7 +107,7 @@ private:
     size_t d_min, d_max;
 
     // Function to count the elements on each rank
-    void countElements( const LoadBalance &mesh, std::vector<size_t> &N_elements );
+    void countElements( const loadBalanceSimulator &mesh, std::vector<size_t> &N_elements );
 
     // Function to update cached data
     void updateCache();

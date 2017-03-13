@@ -1,0 +1,9 @@
+Mesh{
+	MeshName = "zoo"
+	MeshType = "Multimesh"
+	MeshDatabasePrefix = "Mesh_"
+	MeshArrayDatabasePrefix = "MeshArray_"
+    LoadBalanceMethod = 2
+
+}
+

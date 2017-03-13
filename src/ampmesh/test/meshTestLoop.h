@@ -29,11 +29,10 @@ void MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
     // Test the node neighbors
     getNodeNeighbors( ut, mesh );
     // Test displacement
-    if ( AMP::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>( mesh ).get() != nullptr )
-        ut->expected_failure( "Displace mesh tests are not valid for sub-meshes" );
-    else
-        DisplaceMesh( ut, mesh );
-
+    if ( mesh->isMeshMovable() >= 1 )
+        DisplaceMeshScalar( ut, mesh );
+    if ( mesh->isMeshMovable() >= 2 )
+        DisplaceMeshVector( ut, mesh );
     // VerifyNodeElemMapIteratorTest::run_test( ut, mesh );
     // Test the elements
     // VerifyBoundaryIteratorTest::run_test( ut, mesh );
@@ -49,6 +48,7 @@ void MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
     // Bug_761<7>::run_test( ut, mesh );
     // Bug_761<8>::run_test( ut, mesh );
     // MeshAdapterTest<AllPassTest>::run_test( ut, mesh );
+    MeshPerformance( ut, mesh );;
     PROFILE_STOP( "MeshTestLoop" );
 }
 

@@ -43,7 +43,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     PROFILE_START( "constructor" );
     this->d_max_gcw = 1;
     // Check for valid inputs
-    AMP_INSIST( params.get(), "Params must not be null" );
+    AMP_INSIST( d_params.get(), "Params must not be null" );
     AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ), "Communicator must be set" );
     // Intialize libMesh
     libmeshInit = AMP::shared_ptr<initializeLibMesh>( new initializeLibMesh( d_comm ) );
@@ -693,7 +693,7 @@ MeshIterator libMesh::getIterator( const GeomType type, const int gcw ) const
 ********************************************************/
 MeshIterator libMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
-    AMP_ASSERT( type >= 0 && type <= GeomDim );
+    AMP_ASSERT( type <= GeomDim );
     AMP::shared_ptr<std::vector<MeshElement>> local = d_localSurfaceElements[type];
     AMP::shared_ptr<std::vector<MeshElement>> ghost = d_ghostSurfaceElements[type];
     if ( local.get() == nullptr || ghost.get() == nullptr )
@@ -817,6 +817,10 @@ MeshElement libMesh::getElement( const MeshElementID &elem_id ) const
 /********************************************************
 * Displace a mesh                                       *
 ********************************************************/
+int libMesh::isMeshMovable( ) const
+{
+    return 1;
+}
 void libMesh::displaceMesh( const std::vector<double> &x_in )
 {
     // Check x

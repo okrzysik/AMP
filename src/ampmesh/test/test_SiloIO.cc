@@ -24,6 +24,7 @@
 #endif
 
 
+
 void test_Silo( AMP::UnitTest *ut, std::string input_file )
 {
 
@@ -45,41 +46,36 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     // Create the meshes from the input database
     PROFILE_START( "Load Mesh" );
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto pointType = AMP::Mesh::Vertex;
+    auto volumeType = mesh->getGeomType();
+    auto surfaceType = volumeType;
     globalComm.barrier();
     PROFILE_STOP( "Load Mesh" );
     double t2 = AMP::AMP_MPI::time();
 
     // Create a surface mesh
     AMP::Mesh::Mesh::shared_ptr submesh =
-        mesh->Subset( mesh->getSurfaceIterator( AMP::Mesh::Face, 1 ) );
+        mesh->Subset( mesh->getSurfaceIterator( surfaceType, 1 ) );
 
 #ifdef USE_AMP_VECTORS
     // Create a simple DOFManager
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
         new AMP::Discretization::DOFManagerParameters( mesh ) );
-    AMP::Discretization::DOFManager::shared_ptr DOF_scalar =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1, true );
-    AMP::Discretization::DOFManager::shared_ptr DOF_vector =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 3, true );
-    AMP::Discretization::DOFManager::shared_ptr DOF_gauss =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Volume, 1, 8, true );
-    AMP::Discretization::DOFManager::shared_ptr DOF_surface =
-        AMP::Discretization::simpleDOFManager::create( submesh, AMP::Mesh::Face, 0, 1, true );
+    auto DOF_scalar  = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 1, true );
+    auto DOF_vector  = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 3, true );
+    auto DOF_gauss   = AMP::Discretization::simpleDOFManager::create( mesh, volumeType, 1, 8, true );
+    auto DOF_surface = AMP::Discretization::simpleDOFManager::create( submesh, surfaceType, 0, 1, true );
 
     // Create the vectors
     AMP::LinearAlgebra::Variable::shared_ptr rank_var( new AMP::LinearAlgebra::Variable( "rank" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr rank_vec =
-        AMP::LinearAlgebra::createVector( DOF_scalar, rank_var, true );
+    auto rank_vec = AMP::LinearAlgebra::createVector( DOF_scalar, rank_var, true );
     AMP::LinearAlgebra::Variable::shared_ptr position_var(
         new AMP::LinearAlgebra::Variable( "position" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr position =
-        AMP::LinearAlgebra::createVector( DOF_vector, position_var, true );
+    auto position = AMP::LinearAlgebra::createVector( DOF_vector, position_var, true );
     AMP::LinearAlgebra::Variable::shared_ptr gp_var( new AMP::LinearAlgebra::Variable( "gp_var" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr gauss_pt =
-        AMP::LinearAlgebra::createVector( DOF_gauss, gp_var, true );
+    auto gauss_pt = AMP::LinearAlgebra::createVector( DOF_gauss, gp_var, true );
     AMP::LinearAlgebra::Variable::shared_ptr id_var( new AMP::LinearAlgebra::Variable( "ids" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr id_vec =
-        AMP::LinearAlgebra::createVector( DOF_surface, id_var, true );
+    auto id_vec = AMP::LinearAlgebra::createVector( DOF_surface, id_var, true );
     gauss_pt->setToScalar( 100 );
     globalComm.barrier();
 #endif
@@ -87,7 +83,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
 
 // Create a view of a vector
 #ifdef USE_AMP_VECTORS
-    AMP::LinearAlgebra::VS_MeshIterator meshSelector( submesh->getIterator( AMP::Mesh::Vertex, 1 ),
+    AMP::LinearAlgebra::VS_MeshIterator meshSelector( submesh->getIterator( pointType, 1 ),
                                                       submesh->getComm() );
     AMP::LinearAlgebra::VS_Stride zSelector( 2, 3 );
     AMP::LinearAlgebra::Vector::shared_ptr vec_meshSubset =
@@ -106,19 +102,19 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
 #endif
 
     // Create the silo writer and register the data
-    AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    int level                                     = 1; // How much detail do we want to register
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    int level       = 1; // How much detail do we want to register
     siloWriter->registerMesh( mesh, level );
     siloWriter->registerMesh( submesh, level );
 #ifdef USE_AMP_VECTORS
-    siloWriter->registerVector( rank_vec, mesh, AMP::Mesh::Vertex, "rank" );
-    siloWriter->registerVector( position, mesh, AMP::Mesh::Vertex, "position" );
-    siloWriter->registerVector( z_surface, submesh, AMP::Mesh::Vertex, "z_surface" );
-    siloWriter->registerVector( gauss_pt, mesh, AMP::Mesh::Volume, "gauss_pnt" );
-    siloWriter->registerVector( id_vec, submesh, AMP::Mesh::Face, "surface_ids" );
+    siloWriter->registerVector( rank_vec, mesh, pointType, "rank" );
+    siloWriter->registerVector( position, mesh, pointType, "position" );
+    siloWriter->registerVector( z_surface, submesh, pointType, "z_surface" );
+    siloWriter->registerVector( gauss_pt, mesh, volumeType, "gauss_pnt" );
+    siloWriter->registerVector( id_vec, submesh, surfaceType, "surface_ids" );
     // Register a vector over the clad
     if ( clad.get() != nullptr )
-        siloWriter->registerVector( cladPosition, clad, AMP::Mesh::Vertex, "clad_position" );
+        siloWriter->registerVector( cladPosition, clad, pointType, "clad_position" );
 #endif
     globalComm.barrier();
     double t4 = AMP::AMP_MPI::time();

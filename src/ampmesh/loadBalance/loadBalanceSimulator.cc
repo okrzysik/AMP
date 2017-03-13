@@ -1,4 +1,4 @@
-#include "loadBalance.h"
+#include "ampmesh/loadBalance/loadBalanceSimulator.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MultiMesh.h"
 
@@ -23,7 +23,7 @@ namespace Mesh {
 /************************************************************
 * Constructors                                              *
 ************************************************************/
-LoadBalance::LoadBalance()
+loadBalanceSimulator::loadBalanceSimulator()
 {
     d_N_elements = 0;
     d_decomp     = 0;
@@ -32,7 +32,7 @@ LoadBalance::LoadBalance()
     d_max_ranks  = 0;
     cache_valid  = false;
 }
-LoadBalance::LoadBalance( AMP::shared_ptr<MeshParameters> params,
+loadBalanceSimulator::loadBalanceSimulator( AMP::shared_ptr<MeshParameters> params,
                           const std::vector<int> &ranks,
                           size_t N_elements )
 {
@@ -48,7 +48,7 @@ LoadBalance::LoadBalance( AMP::shared_ptr<MeshParameters> params,
     d_decomp    = 0;
     cache_valid = false;
     if ( d_type == std::string( "Multimesh" ) ) {
-        LoadBalance rhs = MultiMesh::simulateBuildMesh( params, ranks );
+        loadBalanceSimulator rhs = MultiMesh::simulateBuildMesh( params, ranks );
         d_name          = rhs.d_name;
         d_type          = rhs.d_type;
         d_N_elements    = rhs.d_N_elements;
@@ -79,9 +79,9 @@ LoadBalance::LoadBalance( AMP::shared_ptr<MeshParameters> params,
     if ( d_ranks.size() > d_max_ranks )
         d_ranks.resize( d_max_ranks );
 }
-LoadBalance::LoadBalance( AMP::shared_ptr<MeshParameters> params,
+loadBalanceSimulator::loadBalanceSimulator( AMP::shared_ptr<MeshParameters> params,
                           const std::vector<int> &ranks,
-                          const std::vector<LoadBalance> &submeshes,
+                          const std::vector<loadBalanceSimulator> &submeshes,
                           int decomp )
 {
     AMP::shared_ptr<AMP::Database> database = params->getDatabase();
@@ -105,7 +105,7 @@ LoadBalance::LoadBalance( AMP::shared_ptr<MeshParameters> params,
         cache_valid = true;
     }
 }
-LoadBalance::LoadBalance( const LoadBalance &rhs )
+loadBalanceSimulator::loadBalanceSimulator( const loadBalanceSimulator &rhs )
     : d_name( rhs.d_name ),
       d_type( rhs.d_type ),
       d_ranks( rhs.d_ranks ),
@@ -124,7 +124,7 @@ LoadBalance::LoadBalance( const LoadBalance &rhs )
 /************************************************************
 * Function to add a processor                               *
 ************************************************************/
-bool LoadBalance::addProc( int rank )
+bool loadBalanceSimulator::addProc( int rank )
 {
     bool added  = false;
     cache_valid = false;
@@ -147,25 +147,25 @@ bool LoadBalance::addProc( int rank )
 /************************************************************
 * Function to return the min, max, and avg # of elements    *
 ************************************************************/
-size_t LoadBalance::min()
+size_t loadBalanceSimulator::min()
 {
     if ( !cache_valid )
         updateCache();
     return d_min;
 }
-size_t LoadBalance::max()
+size_t loadBalanceSimulator::max()
 {
     if ( !cache_valid )
         updateCache();
     return d_max;
 }
-size_t LoadBalance::avg() { return divide_double( d_N_elements, d_ranks.size() ); }
+size_t loadBalanceSimulator::avg() { return divide_double( d_N_elements, d_ranks.size() ); }
 
 
 /************************************************************
 * Function to print the load balance                        *
 ************************************************************/
-void LoadBalance::print( unsigned char detail, unsigned char indent_N )
+void loadBalanceSimulator::print( unsigned char detail, unsigned char indent_N )
 {
     int N_procs = 0;
     for ( auto &elem : d_ranks )
@@ -201,7 +201,7 @@ void LoadBalance::print( unsigned char detail, unsigned char indent_N )
 /************************************************************
 * Misc. functions                                           *
 ************************************************************/
-void LoadBalance::changeRanks( const std::vector<int> &ranks )
+void loadBalanceSimulator::changeRanks( const std::vector<int> &ranks )
 {
     if ( d_submeshes.empty() ) {
         d_ranks = ranks;
@@ -212,7 +212,7 @@ void LoadBalance::changeRanks( const std::vector<int> &ranks )
             d_ranks[i] = ranks[i];
     }
 }
-void LoadBalance::countElements( const LoadBalance &mesh, std::vector<size_t> &N_elements )
+void loadBalanceSimulator::countElements( const loadBalanceSimulator &mesh, std::vector<size_t> &N_elements )
 {
     if ( mesh.d_submeshes.empty() ) {
         for ( size_t i = 0; i < mesh.d_ranks.size(); i++ )
@@ -222,7 +222,7 @@ void LoadBalance::countElements( const LoadBalance &mesh, std::vector<size_t> &N
             countElements( elem, N_elements );
     }
 }
-void LoadBalance::updateCache()
+void loadBalanceSimulator::updateCache()
 {
     if ( d_submeshes.empty() ) {
         d_min = divide_double( d_N_elements, d_ranks.size() );

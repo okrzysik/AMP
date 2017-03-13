@@ -50,7 +50,7 @@ class structuredMeshIterator;
           cube (2d) - [ x-min, x-max, y-min, y-max, z-min, z-max ]
           cube (3d) - [ x-min, x-max, y-min, y-max               ]
           circle    - [ r                                        ]
-          cylinder  - [ r,     z                                 ]
+          cylinder  - [ r,     z_min, z_max                      ]
           tube      - [ r_min, r_max, z_min, z_max               ]
           sphere    - [ r                                        ]
           shell     - [ r_min, r_max                             ]
@@ -119,6 +119,8 @@ public:
          */
         inline explicit MeshElementIndex(
             GeomType type, unsigned char side, int x, int y = 0, int z = 0 );
+        inline void reset(
+            GeomType type, unsigned char side, int x, int y = 0, int z = 0 );
         inline bool operator==( const MeshElementIndex &rhs ) const; //!< Operator ==
         inline bool operator!=( const MeshElementIndex &rhs ) const; //!< Operator !=
         inline bool operator>( const MeshElementIndex &rhs ) const;  //!< Operator >
@@ -126,11 +128,14 @@ public:
         inline bool operator<( const MeshElementIndex &rhs ) const;  //!< Operator <
         inline bool operator<=( const MeshElementIndex &rhs ) const; //!< Operator <=
         inline int index( int d ) const { return d_index[d]; }
+        inline int& index( int d ) { return d_index[d]; }
+        inline GeomType type() const { return static_cast<GeomType>(d_type); }
+        inline unsigned char side() const { return d_side; }
+        static inline size_t numElements( const MeshElementIndex& first, const MeshElementIndex& last );
     private:
         unsigned char d_type; //!<  Mesh element type
         unsigned char d_side; //!<  Are we dealing with x, y, or z faces/edges
         int d_index[3];       //!<  Global x, y, z index (may be negitive with periodic boundaries)
-        friend class BoxMesh;
         friend class structuredMeshElement;
     };
 
@@ -142,11 +147,11 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params  Parameters for constructing a mesh from an input database
      */
-    explicit BoxMesh( const MeshParameters::shared_ptr &params );
+    static AMP::shared_ptr<BoxMesh> generate( MeshParameters::shared_ptr params );
 
 
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
-    virtual AMP::shared_ptr<Mesh> copy() const override;
+    virtual AMP::shared_ptr<Mesh> copy() const override = 0;
 
 
     /**
@@ -158,6 +163,16 @@ public:
      * \param params Parameters for constructing a mesh from an input database
      */
     static size_t estimateMeshSize( const MeshParameters::shared_ptr &params );
+
+    /**
+     * \brief   Estimate the number of elements in the mesh
+     * \details  This function will estimate the number of elements in the mesh.
+     *   This is used so that we can properly balance the meshes across multiple processors.
+     *   Ideally this should be both an accurate estimate and very fast.  It should not require
+     *   any communication and should not have to actually load a mesh.
+     * \param params Parameters for constructing a mesh from an input database
+     */
+    static std::vector<size_t> estimateLogicalMeshSize( const MeshParameters::shared_ptr &params );
 
 
     /**
@@ -176,20 +191,20 @@ public:
     /* Return the number of local element of the given type
      * \param type   Geometric type
      */
-    virtual size_t numLocalElements( const GeomType type ) const override;
+    virtual size_t numLocalElements( const GeomType type ) const override final;
 
 
     /* Return the global number of elements of the given type
      * Note: depending on the mesh this routine may require global communication across the mesh.
      * \param type   Geometric type
      */
-    virtual size_t numGlobalElements( const GeomType type ) const override;
+    virtual size_t numGlobalElements( const GeomType type ) const override final;
 
 
     /* Return the number of ghost elements of the given type on the current processor
      * \param type   Geometric type
      */
-    virtual size_t numGhostElements( const GeomType type, const int gcw ) const override;
+    virtual size_t numGhostElements( const GeomType type, const int gcw ) const override final;
 
 
     /**
@@ -198,7 +213,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const override;
+    virtual MeshIterator getIterator( const GeomType type, const int gcw = 0 ) const override final;
 
 
     /**
@@ -207,8 +222,7 @@ public:
      * \param type   Geometric type to iterate over
      * \param gcw    Desired ghost cell width
      */
-    virtual MeshIterator getSurfaceIterator( const GeomType type,
-                                             const int gcw = 0 ) const override;
+    virtual MeshIterator getSurfaceIterator( const GeomType type, const int gcw = 0 ) const override final;
 
 
     /**
@@ -216,7 +230,7 @@ public:
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBoundaryIDs() const override;
+    virtual std::vector<int> getBoundaryIDs() const override final;
 
 
     /**
@@ -229,14 +243,14 @@ public:
      * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator
-    getBoundaryIDIterator( const GeomType type, const int id, const int gcw = 0 ) const override;
+    getBoundaryIDIterator( const GeomType type, const int id, const int gcw = 0 ) const override final;
 
     /**
      * \brief    Return the list of all boundary ID sets in the mesh
      * \details  Return the list of all boundary ID sets in the mesh
      * Note: depending on the mesh this routine may require global communication across the mesh.
      */
-    virtual std::vector<int> getBlockIDs() const override;
+    virtual std::vector<int> getBlockIDs() const override final;
 
 
     /**
@@ -247,7 +261,7 @@ public:
      * \param gcw    Desired ghost cell width
      */
     virtual MeshIterator
-    getBlockIDIterator( const GeomType type, const int id, const int gcw = 0 ) const override;
+    getBlockIDIterator( const GeomType type, const int id, const int gcw = 0 ) const override final;
 
 
     /**
@@ -274,7 +288,7 @@ public:
      *    uses mesh iterators and requires O(N) time on the number of elements in the mesh.
      * \param id    Mesh element id we are requesting.
      */
-    virtual MeshElement getElement( const MeshElementID &id ) const override;
+    virtual MeshElement getElement( const MeshElementID &id ) const override final;
 
 
     /**
@@ -285,31 +299,7 @@ public:
      * \param type  Element type of the parents requested
      */
     virtual std::vector<MeshElement> getElementParents( const MeshElement &elem,
-                                                        const GeomType type ) const override;
-
-
-    /**
-     * \brief    Displace the entire mesh
-     * \details  This function will displace the entire mesh by a scalar value.
-     *   This function is a blocking call for the mesh communicator, and requires
-     *   the same value on all processors.  The displacement vector should be the
-     *   size of the physical dimension.
-     * \param x  Displacement vector
-     */
-    virtual void displaceMesh( const std::vector<double> &x ) override;
-
-
-#ifdef USE_AMP_VECTORS
-    /**
-     * \brief    Displace the entire mesh
-     * \details  This function will displace the entire mesh by displacing
-     *   each node by the values provided in the vector.  This function is
-     *   a blocking call for the mesh communicator
-     * \param x  Displacement vector.  Must have N DOFs per node where N
-     *           is the physical dimension of the mesh.
-     */
-    virtual void displaceMesh( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
-#endif
+                                                        const GeomType type ) const override final;
 
 
     //! Return the global logical box
@@ -338,16 +328,44 @@ public:
      */
     MeshElement getElement( const MeshElementIndex &index ) const;
 
+    /**
+     * \brief    Return a mesh element's coordinates given it's id.
+     * \details  This function queries the mesh to get an element's coordinates given the mesh id.
+     *    Ideally, this should be done in O(1) time, but the implimentation is up to
+     *    the underlying mesh.  
+     * \param[in] index     Mesh element index we are requesting.
+     * \param[out] pos      Mesh element coordinates
+     */
+    virtual void coord( const MeshElementIndex &index, double *pos ) const = 0;
+
+    //! Check if the element is on the given boundary id
+    virtual bool isOnBoundary( const MeshElementIndex &index, int id ) const;
 
 protected:
-    // Function to initialize the mesh data once the mesh has been created
+
+    // Constructor
+    BoxMesh( MeshParameters::shared_ptr );
+    BoxMesh( const BoxMesh& );
+
+    // Function to initialize the mesh data once the logical mesh info has been created
     void initialize();
 
+    // Function to finalize the mesh data once the coordinates have been set
+    void finalize();
+
     // Helper function to return the indices of the local block owned by the given processor
-    std::vector<int> getLocalBlock( unsigned int rank ) const;
+    inline std::array<int,6> getLocalBlock( unsigned int rank ) const;
 
     // Helper function to return the block and owning rank of the given MeshElementIndex
     void getOwnerBlock( const MeshElementIndex &index, unsigned int &rank, int *range ) const;
+
+    // Helper functions to identify the iterator blocks
+    typedef std::vector<std::pair<MeshElementIndex,MeshElementIndex>> ElementBlocks;
+    ElementBlocks getIteratorRange( std::array<int,6> range, const GeomType type, const int gcw ) const;
+    static ElementBlocks intersect( const ElementBlocks& v1, const ElementBlocks& v2 );
+
+    // Helper function to create an iterator from an ElementBlocks list
+    inline MeshIterator createIterator( const ElementBlocks& list ) const;
 
     // Helper function to fill the node data for a uniform cartesian mesh
     static void fillCartesianNodes( int dim,
@@ -357,49 +375,22 @@ protected:
                                     std::vector<double> *coord );
 
     // Internal data
-    bool d_isPeriodic[3];                  // Which directions are periodic
-    int d_size[3];                         // The size of the logical domain in each direction
-    int d_numBlocks[3];                    // The number of local box in each direction
-    std::vector<MeshElementIndex> d_index; // The indicies of the nodes we are storing
-    std::vector<double> d_coord[3];        // The coordinates of the nodes
-
-    // Basic mesh data
-    typedef AMP::shared_ptr<std::vector<MeshElementIndex>> ElementIndexList;
-    std::vector<ElementIndexList> d_elements[4];
-    size_t N_global[4];
-
-    // Boundary and id set data
-    std::vector<ElementIndexList> d_surface_list[4];
-    std::vector<int> d_ids;
-    std::map<std::pair<int, GeomType>, std::vector<ElementIndexList>> d_id_list;
+    std::array<bool,3> d_isPeriodic;        // Which directions are periodic
+    std::array<int,3>  d_globalSize;        // The size of the logical domain in each direction
+    std::array<int,3>  d_numBlocks;         // The number of local box in each direction
+    std::array<int,6>  d_localBlock;        // The local box
+    std::array<int,6>  d_surfaceId;         // For each surface which id is it part of (if any)
+    std::array<bool,6> d_onSurface;         // For each surface which id is it part of (if any)
+    ElementBlocks d_globalSurfaceList[6][4]; // List of logical surface elements for each surface/type
 
     // Friend functions to access protected functions
     friend class structuredMeshElement;
     friend class structuredMeshIterator;
 
-
-protected:
-    // Helper function to map x,y logical coordinates in [0,1] to x,y coordinate in a circle
-    // Note: this changes the x and y values
-    static void map_logical_circle( size_t N, double R, int method, double *x, double *y );
-
-    // Helper function to map x,y,z logical coordinates in [0,1] to x,y,z coordinate in a shell
-    // Note: this changes the x, y, and z values
-    static void
-    map_logical_shell( size_t N, double r1, double r2, double *x, double *y, double *z );
-
-    // Helper function to map x,y,z logical coordinates in [0,1] to x,y,z coordinate in a shpere
-    // Note: this changes the x, y, and z values
-    static void map_logical_sphere( size_t N, double r, double *x, double *y, double *z );
-
-    // Helper function to create the logical mesh
-    static void createLogicalMesh( AMP::shared_ptr<AMP::Database> db,
-                                   std::vector<int> &meshSize,
-                                   std::vector<bool> &isPeriodic,
-                                   std::vector<int> &minSize );
-
 private:
     BoxMesh(); // Private empty constructor
+
+    
 };
 
 

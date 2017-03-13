@@ -6,6 +6,9 @@
 #include "ampmesh/structured/structuredMeshElement.h"
 #include "utils/shared_ptr.h"
 
+#include <array>
+
+
 namespace AMP {
 namespace Mesh {
 
@@ -16,8 +19,13 @@ public:
     //! Empty MultiVectorIterator constructor
     structuredMeshIterator();
 
-    //! Default MultiVectorIterator constructor
-    structuredMeshIterator( AMP::shared_ptr<std::vector<BoxMesh::MeshElementIndex>> elements,
+    //! Range base constructor
+    structuredMeshIterator( BoxMesh::MeshElementIndex first, BoxMesh::MeshElementIndex last,
+                            const AMP::Mesh::BoxMesh *mesh,
+                            size_t pos = 0 );
+
+    //! Element list constructor
+    structuredMeshIterator( AMP::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> elements,
                             const AMP::Mesh::BoxMesh *mesh,
                             size_t pos = 0 );
 
@@ -85,12 +93,23 @@ protected:
     //! Clone the iterator
     virtual MeshIterator *clone() const override;
 
+    // Get the index given the position
+    inline BoxMesh::MeshElementIndex getIndex( int pos ) const;
+
+    // Get the elements in the iterator
+    AMP::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> getElements() const;
+
     friend class AMP::Mesh::BoxMesh;
 
 private:
     // Data members
     size_t d_pos;
-    AMP::shared_ptr<std::vector<BoxMesh::MeshElementIndex>> d_elements;
+    size_t d_size;
+    std::array<bool,3> d_isPeriodic;
+    std::array<int,3> d_globalSize;
+    BoxMesh::MeshElementIndex d_first;
+    BoxMesh::MeshElementIndex d_last;
+    AMP::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> d_elements;
     const AMP::Mesh::BoxMesh *d_mesh;
     mutable structuredMeshElement d_cur_element;
 };

@@ -48,9 +48,18 @@ public:
     /**
      * \brief     Return the coordinate of the vertex
      * \details   This function returns the coordinates of the vertex
+     *   Note: This is a faster access than a std::vector, but requires the user
+     *   to allocate the appropriate memory (number of dimensions)
+     * \param[out] pos      The coordinates
+     */
+    inline void coord( double *pos ) const { d_mesh->coord(d_index,pos); }
+
+    /**
+     * \brief     Return the coordinate of the vertex
+     * \details   This function returns the coordinates of the vertex
      *   in the given direction (only applies to verticies).
      *   Note: This is a faster access for obtaining a single coordinate
-     * \param i     The direction requested.  Equivalent to coord()[i]
+     * \param[in] i         The direction requested.  Equivalent to coord()[i]
      */
     virtual double coord( int i ) const override;
 
@@ -97,26 +106,35 @@ public:
     //! Return the index of the element
     BoxMesh::MeshElementIndex getIndex() const { return d_index; }
 
-
-protected:
+public:
     /** Default constructor
      * \param index     Index for the current elements
      * \param mesh      Underlying mesh
      */
     structuredMeshElement( BoxMesh::MeshElementIndex index, const AMP::Mesh::BoxMesh *mesh );
 
+protected:
+
     // Clone the iterator
     virtual MeshElement *clone() const override;
 
     // Internal data
-    unsigned char d_dim;
-    BoxMesh::MeshElementIndex d_index;
-    const AMP::Mesh::BoxMesh *d_mesh;
+    GeomType d_meshType;                // Mesh logical dimension
+    unsigned char d_physicalDim;        // Mesh physical dimension
+    BoxMesh::MeshElementIndex d_index;  // Index of element
+    const AMP::Mesh::BoxMesh *d_mesh;   // Pointer to mesh
+
+    // Helper functions
+    void getNeighborIndex( int &N, BoxMesh::MeshElementIndex* index ) const;
+    void getElementIndex( const GeomType type, int &N, BoxMesh::MeshElementIndex* index ) const;
 
     friend class AMP::Mesh::BoxMesh;
     friend class AMP::Mesh::structuredMeshIterator;
 };
-}
-}
+
+
+} // Mesh namespace
+} // AMP namespace
+
 
 #endif

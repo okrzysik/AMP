@@ -494,6 +494,10 @@ size_t SubsetMesh::numGhostElements( const GeomType type, int gcw ) const
         AMP_ERROR( "Maximum ghost width exceeded" );
     return d_elements[type][gcw]->size();
 }
+int SubsetMesh::isMeshMovable( ) const
+{
+    return 0;
+}
 void SubsetMesh::displaceMesh( const std::vector<double> & )
 {
     AMP_ERROR( "displaceMesh by a constant value does not work for subset mesh" );

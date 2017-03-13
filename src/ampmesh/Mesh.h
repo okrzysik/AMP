@@ -381,6 +381,16 @@ public:
 
 
     /**
+     * \brief    Is the mesh movable
+     * \details  This function will check if the mesh can be displaced.
+     *    It will return 0 if the mesh cannont be moved, 1 if it can be displaced,
+     *    and 2 if the individual nodes can be moved.
+     * @return  The if
+     */
+    virtual int isMeshMovable( ) const = 0;
+
+
+    /**
      * \brief    Displace the entire mesh
      * \details  This function will displace the entire mesh by a scalar value.
      *   This function is a blocking call for the mesh communicator, and requires
@@ -421,7 +431,7 @@ protected:
     Mesh() {}
 
     //! The mesh parameters
-    MeshParameters::shared_ptr params;
+    MeshParameters::shared_ptr d_params;
 
     //! The geometry parameters
     Geometry::Geometry::shared_ptr d_geometry;

@@ -3,7 +3,7 @@
 #include "ampmesh/MultiIterator.h"
 #include "ampmesh/MultiMeshParameters.h"
 #include "ampmesh/SubsetMesh.h"
-#include "ampmesh/loadBalance.h"
+#include "ampmesh/loadBalance/loadBalanceSimulator.h"
 
 #include "utils/Database.h"
 #include "utils/MemoryDatabase.h"
@@ -196,7 +196,7 @@ MultiMesh::MultiMesh( const AMP_MPI &comm, const std::vector<Mesh::shared_ptr> &
 /********************************************************
 * Function to simulate the mesh building process        *
 ********************************************************/
-AMP::Mesh::LoadBalance MultiMesh::simulateBuildMesh( const MeshParameters::shared_ptr params,
+AMP::Mesh::loadBalanceSimulator MultiMesh::simulateBuildMesh( const MeshParameters::shared_ptr params,
                                                      const std::vector<int> &comm_ranks )
 {
     // Create the multimesh parameters
@@ -215,7 +215,7 @@ AMP::Mesh::LoadBalance MultiMesh::simulateBuildMesh( const MeshParameters::share
         for ( size_t i = 0; i < meshDatabases.size(); i++ ) {
             AMP::Mesh::MeshParameters::shared_ptr meshParam(
                 new AMP::Mesh::MeshParameters( meshDatabases[i] ) );
-            LoadBalance mesh( meshParam, rank1 );
+            loadBalanceSimulator mesh( meshParam, rank1 );
             multimeshParams->params[i]     = mesh.getParams();
             multimeshParams->N_elements[i] = mesh.getSize();
         }
@@ -235,11 +235,11 @@ AMP::Mesh::LoadBalance MultiMesh::simulateBuildMesh( const MeshParameters::share
     }
     int decomp = ( N_proc_groups == comm_ranks.size() ) ? 1 : 0;
     // Create the simulated mesh structure
-    std::vector<LoadBalance> submeshes( groups.size() );
+    std::vector<loadBalanceSimulator> submeshes( groups.size() );
     for ( size_t i = 0; i < groups.size(); i++ )
         submeshes[i] =
-            LoadBalance( multimeshParams->params[i], groups[i], multimeshParams->N_elements[i] );
-    return LoadBalance( multimeshParams, comm_ranks, submeshes, decomp );
+            loadBalanceSimulator( multimeshParams->params[i], groups[i], multimeshParams->N_elements[i] );
+    return loadBalanceSimulator( multimeshParams, comm_ranks, submeshes, decomp );
 }
 
 
@@ -782,6 +782,13 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
 /********************************************************
 * Displace a mesh                                       *
 ********************************************************/
+int MultiMesh::isMeshMovable( ) const
+{
+    int value = 2;
+    for ( auto &elem : d_meshes )
+        value = std::min( value, elem->isMeshMovable() );
+    return value;
+}
 void MultiMesh::displaceMesh( const std::vector<double> &x_in )
 {
     // Check x
@@ -1100,8 +1107,8 @@ MultiMesh::loadBalancer( int N_procs,
     }
     return std::vector<rank_list>( 0 );
 }
-bool MultiMesh::addProcSimulation( const LoadBalance &mesh,
-                                   std::vector<LoadBalance> &submeshes,
+bool MultiMesh::addProcSimulation( const loadBalanceSimulator &mesh,
+                                   std::vector<loadBalanceSimulator> &submeshes,
                                    int rank,
                                    char &decomp )
 {
@@ -1217,7 +1224,7 @@ MultiMesh::independentGroups1( int N_procs,
     size_t N_total = 0;
     for ( size_t i = 0; i < meshParameters.size(); i++ )
         N_total += size[i];
-    std::vector<LoadBalance> load_balance( meshParameters.size() );
+    std::vector<loadBalanceSimulator> load_balance( meshParameters.size() );
     std::vector<size_t> max_size( meshParameters.size() );
     std::vector<int> rank1( N_procs );
     int N_procs_remaining = N_procs;
@@ -1229,7 +1236,7 @@ MultiMesh::independentGroups1( int N_procs,
         rank1.resize( N_proc_local );
         for ( int j     = 0; j < N_proc_local; j++ )
             rank1[j]    = j;
-        load_balance[i] = LoadBalance( meshParameters[i], rank1, size[i] );
+        load_balance[i] = loadBalanceSimulator( meshParameters[i], rank1, size[i] );
         max_size[i]     = load_balance[i].max();
         N_procs_remaining -= N_proc_local;
     }

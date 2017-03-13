@@ -159,7 +159,7 @@ void ElementIteratorTest( AMP::UnitTest *ut,
         if ( element.elementType() != type )
             type_pass = false;
         if ( type == AMP::Mesh::Vertex ) {
-            std::vector<double> coord = element.coord();
+            auto coord = element.coord();
             if ( coord.size() != mesh->getDim() )
                 coord_pass = false;
         } else {
@@ -175,20 +175,20 @@ void ElementIteratorTest( AMP::UnitTest *ut,
             if ( !in_a_block )
                 block_pass = false;
         }
-        std::vector<double> centroid = element.centroid();
+        auto centroid = element.centroid();
         if ( centroid.size() != mesh->getDim() )
             centroid_pass = false;
         if ( type == AMP::Mesh::Vertex ) {
-            std::vector<double> coord = element.coord();
+            auto coord = element.coord();
             for ( size_t i = 0; i < centroid.size(); i++ ) {
                 if ( centroid[i] != coord[i] )
                     centroid_pass = false;
             }
         }
         if ( id.is_local() ) {
-            for ( int i = 0; i <= (int) type; i++ ) {
-                const AMP::Mesh::GeomType type2            = (AMP::Mesh::GeomType) i;
-                std::vector<AMP::Mesh::MeshElement> pieces = element.getElements( type2 );
+            for ( int t2 = 0; t2 <= (int) type; t2++ ) {
+                auto type2  = static_cast<AMP::Mesh::GeomType>( t2 );
+                auto pieces = element.getElements( type2 );
                 ids.resize( pieces.size() );
                 for ( size_t j = 0; j < pieces.size(); j++ )
                     ids[j]     = pieces[j].globalID();
@@ -198,7 +198,7 @@ void ElementIteratorTest( AMP::UnitTest *ut,
                     elements_pass = false;
                 }
             }
-            std::vector<AMP::Mesh::MeshElement::shared_ptr> neighbors = element.getNeighbors();
+            auto neighbors = element.getNeighbors();
             if ( neighbors.empty() ) {
                 if ( element.elementType() == AMP::Mesh::Vertex ||
                      element.elementType() == mesh->getDim() )
@@ -290,9 +290,10 @@ void MeshIteratorTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh 
                     ut->expected_failure( message );
                 }
             }
+            if ( !iterator_created )
+                continue;
             // Test the regular iterator over local elements
-            if ( iterator_created )
-                ElementIteratorTest( ut, mesh, iterator, N_local, N_ghost, type );
+            ElementIteratorTest( ut, mesh, iterator, N_local, N_ghost, type );
             // Add tests with gcw != 0
             // Add const iterator tests
         }
@@ -465,6 +466,19 @@ void MeshBasicTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
         ut->passes( "mesh->getBoundingBox returns global bounding box" );
     else
         ut->failure( "mesh->getBoundingBox returns global bounding box" );
+    // Check that the sum of all local elements == number of global elements
+    bool pass = true;
+    for (int d=0; d<=static_cast<int>(mesh->getGeomType()); d++) {
+        auto geom = static_cast<AMP::Mesh::GeomType>(d);
+        size_t N_local = mesh->numLocalElements( geom );
+        size_t N_global = mesh->numGlobalElements( geom );
+        size_t N_global2 = mesh->getComm().sumReduce( N_local );
+        pass = pass && N_global==N_global2;
+    }
+    if ( pass )
+        ut->passes( "sum(numLocalElements) matches numGlobalElements" );
+    else
+        ut->failure( "sum(numLocalElements) matches numGlobalElements" );
 }
 
 
@@ -793,7 +807,7 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 
 
 // Test the displacement of the mesh
-void DisplaceMesh( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void DisplaceMeshScalar( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Test the scalar displacement
     std::vector<double> box1 = mesh->getBoundingBox();
@@ -816,7 +830,10 @@ void DisplaceMesh( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
         utils->passes( "scalar displacement test" );
     else
         utils->failure( "scalar displacement test" );
-// Test displacement vector
+}
+void DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    // Test displacement vector
 #ifdef USE_AMP_VECTORS
     // Get the volume of each element
     size_t numElements = mesh->numLocalElements( mesh->getGeomType() );
@@ -1362,5 +1379,106 @@ AMP::Mesh::MeshAdapter::shared_ptr  mesh )
 
 
 */
+
+
+// Test the performance of some common mesh operations
+inline double runAndTime( std::function<void(AMP::Mesh::Mesh::shared_ptr)> fun,
+    AMP::Mesh::Mesh::shared_ptr mesh, int N=1 )
+{
+    auto start = AMP::Utilities::time();
+    for (int i=0; i<N; i++)
+        fun(mesh);
+    auto stop = AMP::Utilities::time();
+    return (stop-start)/N;
+}
+inline void getIterator( AMP::Mesh::Mesh::shared_ptr mesh ) {
+    auto it = mesh->getIterator( AMP::Mesh::Vertex, 0 );
+    NULL_USE(it);
+}
+inline void incIterator( AMP::Mesh::Mesh::shared_ptr mesh ) {
+    size_t N = 0;
+    auto it = mesh->getIterator( AMP::Mesh::Vertex, 0 );
+    auto end = it.end();
+    for ( ; it!=end; N++, ++it ) {}
+    AMP_ASSERT(N==it.size());
+}
+inline void rangeLoop( AMP::Mesh::Mesh::shared_ptr mesh ) {
+    for ( auto elem : mesh->getIterator( AMP::Mesh::Vertex, 0 ) )
+        NULL_USE(elem);
+}
+inline void globalID( AMP::Mesh::Mesh::shared_ptr mesh ) {
+    for ( auto elem : mesh->getIterator( AMP::Mesh::Vertex, 0 ) ) {
+        auto id = elem.globalID();
+        NULL_USE(id);
+    }
+}
+inline void coord1( AMP::Mesh::Mesh::shared_ptr mesh ) {
+    bool pass = true;
+    for ( auto elem : mesh->getIterator( AMP::Mesh::Vertex, 0 ) ) {
+        auto x = elem.coord();
+        pass = pass && x.size()>0;
+    }
+    AMP_ASSERT(pass);
+}
+inline void coord2( AMP::Mesh::Mesh::shared_ptr mesh ) {
+    bool pass = true;
+    for ( auto elem : mesh->getIterator( AMP::Mesh::Vertex, 0 ) ) {
+        auto x = elem.coord(0);
+        pass = pass && x==x;
+    }
+    AMP_ASSERT(pass);
+}
+inline void volume( AMP::Mesh::Mesh::shared_ptr mesh ) {
+    bool pass = true;
+    for ( auto elem : mesh->getIterator(  mesh->getGeomType(), 0 ) ) {
+        auto V = elem.volume();
+        pass = pass && V>0;
+    }
+    AMP_ASSERT(pass);
+}
+inline void getElements( AMP::Mesh::Mesh::shared_ptr mesh ) {
+    bool pass = true;
+    auto type = mesh->getGeomType();
+    if ( type > AMP::Mesh::Vertex ) {
+        for ( auto elem : mesh->getIterator( type, 0 ) ) {
+            auto x = elem.getElements( AMP::Mesh::Vertex );
+            pass = pass && x.size()>0;
+        }
+        AMP_ASSERT(pass);
+    }
+}
+void MeshPerformance( AMP::UnitTest *, AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    if ( AMP::AMP_MPI(AMP_COMM_WORLD).getRank() != 0 )
+        return;
+    printf("%s performance:\n",mesh->getName().c_str());
+    double time;
+    const size_t N_nodes = mesh->numLocalElements( AMP::Mesh::Vertex );
+    const size_t N_elem  = mesh->numLocalElements( mesh->getGeomType() );
+    // Test getting iterator
+    time = runAndTime( getIterator, mesh, 1000 );
+    printf("   getIterator: %i us\n",static_cast<int>(1e6*time));
+    // Test empty iteration
+    time = runAndTime( incIterator, mesh, 10 );
+    printf("   ++iterator: %i ns\n",static_cast<int>(1e9*time/N_nodes));
+    // Test range-based loops
+    time = runAndTime( rangeLoop, mesh, 10 );
+    printf("   rangeLoop: %i ns\n",static_cast<int>(1e9*time/N_nodes));
+    // Test getting global id in an iterator
+    time = runAndTime( globalID, mesh, 10 );
+    printf("   globalID: %i ns\n",static_cast<int>(1e9*time/N_nodes));
+    // Test getting coordinates
+    time = runAndTime( coord1, mesh, 10 );
+    printf("   coord (1): %i ns\n",static_cast<int>(1e9*time/N_nodes));
+    time = runAndTime( coord2, mesh, 10 );
+    printf("   coord (2): %i ns\n",static_cast<int>(1e9*time/N_nodes));
+    // Test getting verticies for an element
+    time = runAndTime( getElements, mesh, 10 );
+    printf("   getElements: %i ns\n",static_cast<int>(1e9*time/N_elem));
+    // Test getting volume for an element
+    time = runAndTime( volume, mesh, 10 );
+    printf("   volume: %i ns\n",static_cast<int>(1e9*time/N_elem));
+
+}
 
 #endif
