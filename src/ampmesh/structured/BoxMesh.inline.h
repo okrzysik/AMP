@@ -169,7 +169,7 @@ inline std::array<int,6> BoxMesh::getLocalBlock( unsigned int rank ) const
     for ( int d = 0; d < GeomDim; d++ ) {
         int size = (d_globalSize[d]+d_numBlocks[d]-1)/d_numBlocks[d];
         range[2*d+0] = p[d]*size;
-        range[2*d+1] = (p[d]+1)*size-1;
+        range[2*d+1] = std::min((p[d]+1)*size-1,d_globalSize[d]-1);
     }
     return range;
 }
@@ -194,7 +194,7 @@ inline MeshElementID BoxMesh::convert( const BoxMesh::MeshElementIndex& index ) 
     k -= size[2]*pz;
     unsigned int local_id = i + (size[0]+1)*( j + (size[1]+1)*( k + (size[2]+1)*index.side() ) );
     int owner_rank = px + py*d_numBlocks[0] + pz*d_numBlocks[0]*d_numBlocks[1];
-    bool is_local = (int) owner_rank == d_comm.getRank();
+    bool is_local = owner_rank == d_comm.getRank();
     return MeshElementID( is_local, (GeomType) index.type(), local_id, owner_rank, d_meshID );
 }
 inline BoxMesh::MeshElementIndex BoxMesh::convert( const MeshElementID& id ) const

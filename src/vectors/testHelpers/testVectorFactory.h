@@ -1,8 +1,6 @@
 #ifndef included_test_Vector
 #define included_test_Vector
 
-#include "test_VectorTests.h"
-
 #include "utils/AMP_MPI.h"
 #include "vectors/ArrayVector.h"
 #include "vectors/ManagedVector.h"
@@ -20,10 +18,9 @@
 #endif
 #endif
 
-/// \cond UNDOCUMENTED
 
 namespace AMP {
-namespace unit_test {
+namespace LinearAlgebra {
 
 
 template <typename T>

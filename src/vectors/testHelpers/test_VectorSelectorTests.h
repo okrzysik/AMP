@@ -18,7 +18,7 @@ inline bool compareVecSubset( AMP::LinearAlgebra::Vector::const_shared_ptr vec1,
 
 // Test to check that Vector::select, Vector::constSelect, VectorSelector::subset,
 // and VectorSelector::constSubset return the same vectors
-void testSelector( AMP::UnitTest *ut,
+inline void testSelector( AMP::UnitTest *ut,
                    const std::string &test_name,
                    const AMP::LinearAlgebra::VectorSelector &selector,
                    AMP::LinearAlgebra::Vector::shared_ptr vec )

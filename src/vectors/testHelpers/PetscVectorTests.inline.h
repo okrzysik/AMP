@@ -7,10 +7,8 @@
 #include <algorithm>
 
 
-/// \cond UNDOCUMENTED
-
 namespace AMP {
-namespace unit_test {
+namespace LinearAlgebra {
 
 
 template <typename VECTOR_FACTORY>

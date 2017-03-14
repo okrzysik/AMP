@@ -379,7 +379,6 @@ protected:
     std::array<bool,3> d_isPeriodic;        // Which directions are periodic
     std::array<int,3>  d_globalSize;        // The size of the logical domain in each direction
     std::array<int,3>  d_numBlocks;         // The number of local box in each direction
-    std::array<int,6>  d_localBlock;        // The local box
     std::array<int,6>  d_surfaceId;         // For each surface which id is it part of (if any)
     std::array<bool,6> d_onSurface;         // For each surface which id is it part of (if any)
     ElementBlocks d_globalSurfaceList[6][4]; // List of logical surface elements for each surface/type

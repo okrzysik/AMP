@@ -1,5 +1,4 @@
-#ifndef included_MeshTests
-#define included_MeshTests
+#include "ampmesh/testHelpers/meshTests.h"
 
 #include <set>
 #include <vector>
@@ -9,19 +8,28 @@
 #include "utils/Utilities.h"
 
 #include "ampmesh/Mesh.h"
+#include "ampmesh/SubsetMesh.h"
 #include "ampmesh/MeshElement.h"
 #include "ampmesh/MeshElementVectorIterator.h"
 #include "ampmesh/MeshIterator.h"
-#include "ampmesh/SubsetMesh.h"
 
 #ifdef USE_AMP_VECTORS
 #include "vectors/Vector.h"
 #endif
 
 
-// Helper function to create a map from the base mesh communicator rank to the main mesh
-// communicator
-std::map<AMP::Mesh::MeshID, std::vector<int>> createRankMap( AMP::Mesh::Mesh::shared_ptr mesh )
+namespace AMP {
+namespace Mesh {
+
+
+// Some global variables
+AMP::Mesh::Mesh::shared_ptr meshTests::globalMeshForMeshVectorFactory = AMP::Mesh::Mesh::shared_ptr();
+AMP::Discretization::DOFManager::shared_ptr meshTests::globalDOFforMeshVectorFactory =
+    AMP::shared_ptr<AMP::Discretization::DOFManager>();
+
+
+// Helper function to create a map from the base mesh communicator rank to the main mesh communicator
+std::map<AMP::Mesh::MeshID, std::vector<int>> meshTests::createRankMap( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     std::map<AMP::Mesh::MeshID, std::vector<int>> proc_map;
     std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
@@ -45,11 +53,7 @@ std::map<AMP::Mesh::MeshID, std::vector<int>> createRankMap( AMP::Mesh::Mesh::sh
 
 
 // This test checks a single mesh element iterator
-// ut           Unit test class to report the results
-// iterator     local iterator over elements
-// N_local      number of local elements for the iterator
-// N_ghost      number of ghost elements for the iterator
-void ElementIteratorTest( AMP::UnitTest *ut,
+void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
                           AMP::Mesh::Mesh::shared_ptr mesh,
                           AMP::Mesh::MeshIterator iterator,
                           const size_t N_local,
@@ -265,7 +269,7 @@ void ElementIteratorTest( AMP::UnitTest *ut,
 
 
 // Check the different mesh element iterators
-void MeshIteratorTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     char message[1000];
     // Loop through different ghost widths
@@ -309,7 +313,7 @@ void MeshIteratorTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh 
 
 
 // Test operator operations for iterator
-void MeshIteratorOperationTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorOperationTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // Create some iterators to work with
     AMP::Mesh::MeshIterator A = mesh->getIterator( AMP::Mesh::Vertex, 1 );
@@ -352,7 +356,7 @@ void MeshIteratorOperationTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Me
 
 
 // Test set operations for the iterators
-void MeshIteratorSetOPTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorSetOPTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     AMP::Mesh::MeshIterator A = mesh->getIterator( AMP::Mesh::Vertex, 1 );
     AMP::Mesh::MeshIterator B = mesh->getIterator( AMP::Mesh::Vertex, 0 );
@@ -387,7 +391,7 @@ void MeshIteratorSetOPTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> 
 
 
 // Test the number of elements in the mesh
-void MeshCountTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshCountTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     AMP::AMP_MPI comm = mesh->getComm();
     for ( int i = 0; i <= (int) mesh->getGeomType(); i++ ) {
@@ -422,7 +426,7 @@ void MeshCountTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 
 
 // Test some basic Mesh properties
-void MeshBasicTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshBasicTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // test that we can get the mesh ID
     AMP::Mesh::MeshID meshID = mesh->meshID();
@@ -490,7 +494,7 @@ void MeshBasicTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 
 
 // This tests checks that all ghost elements are owned by "owner processor"
-void VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     for ( int type = 0; type <= (int) mesh->getGeomType(); type++ ) {
         int gcw = mesh->getMaxGhostWidth();
@@ -562,7 +566,7 @@ void VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh 
 
 
 // This tests loops over all boundary ids
-void VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     const std::vector<int> bids = mesh->getBoundaryIDs();
     for ( size_t i = 0; i < bids.size(); i++ ) {
@@ -608,7 +612,7 @@ void VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared
 
 
 // This tests loops over the boundary
-void VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     for ( int gcw = 0; gcw <= 0; gcw++ ) {
         for ( int type2 = 0; type2 <= (int) mesh->getGeomType(); type2++ ) {
@@ -631,7 +635,7 @@ void VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr m
 
 
 // This tests checks the block ids
-void testBlockIDs( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::testBlockIDs( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     const std::vector<int> blockIDs = mesh->getBlockIDs();
     if ( !blockIDs.empty() )
@@ -644,7 +648,7 @@ void testBlockIDs( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 
 
 // This tests basic id info
-void testID( AMP::UnitTest *utils )
+void meshTests::testID( AMP::UnitTest *utils )
 {
     unsigned int num_failed0 = utils->NumFailLocal();
     // Create some IDs for testing
@@ -707,7 +711,7 @@ void testID( AMP::UnitTest *utils )
 
 
 // Test if we correctly identify the node neighbors
-void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     std::map<AMP::Mesh::MeshElementID, std::vector<AMP::Mesh::MeshElementID>> neighbor_list;
     // Get a list of all neighors for each local node
@@ -814,7 +818,7 @@ void getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 
 
 // Test the displacement of the mesh
-void DisplaceMeshScalar( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::DisplaceMeshScalar( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Test the scalar displacement
     std::vector<double> box1 = mesh->getBoundingBox();
@@ -838,7 +842,7 @@ void DisplaceMeshScalar( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh 
     else
         utils->failure( "scalar displacement test" );
 }
-void DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Test displacement vector
 #ifdef USE_AMP_VECTORS
@@ -889,7 +893,7 @@ void DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh 
 
 
 // Test getting parent elements for each mesh element
-void getParents( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::getParents( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     bool pass = true;
     int gcw   = mesh->getMaxGhostWidth();
@@ -1389,7 +1393,7 @@ AMP::Mesh::MeshAdapter::shared_ptr  mesh )
 
 
 // Test the performance of some common mesh operations
-inline double runAndTime( std::function<void(AMP::Mesh::Mesh::shared_ptr)> fun,
+static inline double runAndTime( std::function<void(AMP::Mesh::Mesh::shared_ptr)> fun,
     AMP::Mesh::Mesh::shared_ptr mesh, int N=1 )
 {
     auto start = AMP::Utilities::time();
@@ -1398,28 +1402,28 @@ inline double runAndTime( std::function<void(AMP::Mesh::Mesh::shared_ptr)> fun,
     auto stop = AMP::Utilities::time();
     return (stop-start)/N;
 }
-inline void getIterator( AMP::Mesh::Mesh::shared_ptr mesh ) {
+static inline void getIterator( AMP::Mesh::Mesh::shared_ptr mesh ) {
     auto it = mesh->getIterator( AMP::Mesh::Vertex, 0 );
     NULL_USE(it);
 }
-inline void incIterator( AMP::Mesh::Mesh::shared_ptr mesh ) {
+static inline void incIterator( AMP::Mesh::Mesh::shared_ptr mesh ) {
     size_t N = 0;
     auto it = mesh->getIterator( AMP::Mesh::Vertex, 0 );
     auto end = it.end();
     for ( ; it!=end; N++, ++it ) {}
     AMP_ASSERT(N==it.size());
 }
-inline void rangeLoop( AMP::Mesh::Mesh::shared_ptr mesh ) {
+static inline void rangeLoop( AMP::Mesh::Mesh::shared_ptr mesh ) {
     for ( const auto& elem : mesh->getIterator( AMP::Mesh::Vertex, 0 ) )
         NULL_USE(elem);
 }
-inline void globalID( AMP::Mesh::Mesh::shared_ptr mesh ) {
+static inline void globalID( AMP::Mesh::Mesh::shared_ptr mesh ) {
     for ( auto elem : mesh->getIterator( AMP::Mesh::Vertex, 0 ) ) {
         auto id = elem.globalID();
         NULL_USE(id);
     }
 }
-inline void coord1( AMP::Mesh::Mesh::shared_ptr mesh ) {
+static inline void coord1( AMP::Mesh::Mesh::shared_ptr mesh ) {
     bool pass = true;
     for ( auto elem : mesh->getIterator( AMP::Mesh::Vertex, 0 ) ) {
         auto x = elem.coord();
@@ -1427,7 +1431,7 @@ inline void coord1( AMP::Mesh::Mesh::shared_ptr mesh ) {
     }
     AMP_ASSERT(pass);
 }
-inline void coord2( AMP::Mesh::Mesh::shared_ptr mesh ) {
+static inline void coord2( AMP::Mesh::Mesh::shared_ptr mesh ) {
     bool pass = true;
     for ( auto elem : mesh->getIterator( AMP::Mesh::Vertex, 0 ) ) {
         auto x = elem.coord(0);
@@ -1435,7 +1439,7 @@ inline void coord2( AMP::Mesh::Mesh::shared_ptr mesh ) {
     }
     AMP_ASSERT(pass);
 }
-inline void volume( AMP::Mesh::Mesh::shared_ptr mesh ) {
+static inline void volume( AMP::Mesh::Mesh::shared_ptr mesh ) {
     bool pass = true;
     for ( auto elem : mesh->getIterator(  mesh->getGeomType(), 0 ) ) {
         auto V = elem.volume();
@@ -1443,10 +1447,10 @@ inline void volume( AMP::Mesh::Mesh::shared_ptr mesh ) {
     }
     AMP_ASSERT(pass);
 }
-inline void getElements( AMP::Mesh::Mesh::shared_ptr mesh ) {
-    bool pass = true;
+static inline void getElements( AMP::Mesh::Mesh::shared_ptr mesh ) {
     auto type = mesh->getGeomType();
     if ( type > AMP::Mesh::Vertex ) {
+        bool pass = true;
         for ( auto elem : mesh->getIterator( type, 0 ) ) {
             auto x = elem.getElements( AMP::Mesh::Vertex );
             pass = pass && x.size()>0;
@@ -1454,7 +1458,7 @@ inline void getElements( AMP::Mesh::Mesh::shared_ptr mesh ) {
         AMP_ASSERT(pass);
     }
 }
-void MeshPerformance( AMP::UnitTest *, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::MeshPerformance( AMP::UnitTest *, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     if ( AMP::AMP_MPI(AMP_COMM_WORLD).getRank() != 0 )
         return;
@@ -1487,4 +1491,6 @@ void MeshPerformance( AMP::UnitTest *, AMP::Mesh::Mesh::shared_ptr mesh )
     printf("   volume: %i ns\n",static_cast<int>(1e9*time/N_elem));
 }
 
-#endif
+
+} // namespace Mesh
+} // namespace AMP

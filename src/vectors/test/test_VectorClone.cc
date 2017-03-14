@@ -1,7 +1,8 @@
 #include "vectors/MultiVector.h"
 #include "vectors/MultiVariable.h"
 
-#include "test_VectorLoops.h"
+#include "vectors/testHelpers/VectorTests.h"
+
 #include "utils/AMPManager.h"
 
 #ifdef USE_EXT_PETSC
@@ -14,16 +15,23 @@
 #include "vectors/sundials/ManagedSundialsVector.h"
 #endif
 
-using namespace AMP::unit_test;
 
+// Typedef some factories
+// clang-format off
+typedef AMP::LinearAlgebra::SimpleVectorFactory<15,false,double>  SimpleFactory1;
+typedef AMP::LinearAlgebra::SimpleVectorFactory<45, true,double>  SimpleFactory2;
+typedef AMP::LinearAlgebra::ArrayVectorFactory<4,10,false,double> ArrayFactory1;
+typedef AMP::LinearAlgebra::ArrayVectorFactory<4,10, true,double> ArrayFactory2;
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
-typedef CloneFactory<SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedEpetraVector>>
-    SMEVFactory;
-typedef CloneFactory<SimplePetscNativeFactory<AMP::LinearAlgebra::NativePetscVector>> SNPVFactory;
-typedef CloneFactory<MultiVectorFactory<SMEVFactory, 1, SNPVFactory, 1>> MVFactory1;
-typedef CloneFactory<MultiVectorFactory<SMEVFactory, 3, SNPVFactory, 2>> MVFactory2;
-typedef CloneFactory<MultiVectorFactory<MVFactory1, 2, MVFactory2, 2>> MVFactory3;
+    typedef AMP::LinearAlgebra::CloneFactory<AMP::LinearAlgebra::SimpleManagedVectorFactory<AMP::LinearAlgebra::ManagedEpetraVector>> SMEVFactory;
+    typedef AMP::LinearAlgebra::CloneFactory<AMP::LinearAlgebra::SimplePetscNativeFactory<AMP::LinearAlgebra::NativePetscVector>> SNPVFactory;
+    typedef AMP::LinearAlgebra::CloneFactory<AMP::LinearAlgebra::MultiVectorFactory<SMEVFactory, 1, SNPVFactory, 1>> MVFactory1;
+    typedef AMP::LinearAlgebra::CloneFactory<AMP::LinearAlgebra::MultiVectorFactory<SMEVFactory, 3, SNPVFactory, 2>> MVFactory2;
+    typedef AMP::LinearAlgebra::CloneFactory<AMP::LinearAlgebra::MultiVectorFactory<MVFactory1, 2, MVFactory2, 2>> MVFactory3;
 #endif
+// clang-format on
+
+using AMP::LinearAlgebra::vectorTests;
 
 
 int main( int argc, char **argv )
@@ -33,45 +41,45 @@ int main( int argc, char **argv )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     AMP::pout << "Testing SimpleVector" << std::endl;
-    testBasicVector<SimpleVectorFactory<15, false, double>>( &ut );
-    testBasicVector<SimpleVectorFactory<45, true, double>>( &ut );
+    vectorTests<SimpleFactory1>::testBasicVector( &ut );
+    vectorTests<SimpleFactory2>::testBasicVector( &ut );
     AMP::pout << std::endl;
     globalComm.barrier();
 
     AMP::pout << "Testing ArrayVector" << std::endl;
-    testBasicVector<ArrayVectorFactory<4, 10, false, double>>( &ut );
-    testBasicVector<ArrayVectorFactory<4, 10, true, double>>( &ut );
+    vectorTests<ArrayFactory1>::testBasicVector( &ut );
+    vectorTests<ArrayFactory2>::testBasicVector( &ut );
     AMP::pout << std::endl;
     globalComm.barrier();
 
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
     AMP::pout << "Testing Iterator" << std::endl;
-    VectorIteratorTests<MVFactory1>( &ut );
+    vectorTests<MVFactory1>::VectorIteratorTests( &ut );
     AMP::pout << std::endl;
     globalComm.barrier();
 
     AMP::pout << "Testing ManagedEpetraVector" << std::endl;
-    testManagedVector<SMEVFactory>( &ut );
+    vectorTests<SMEVFactory>::testManagedVector( &ut );
     AMP::pout << std::endl;
     globalComm.barrier();
 
     AMP::pout << "Testing NativePetscVector" << std::endl;
-    testManagedVector<SNPVFactory>( &ut );
+    vectorTests<SNPVFactory>::testManagedVector( &ut );
     AMP::pout << std::endl;
     globalComm.barrier();
 
     AMP::pout << "Testing simple multivector" << std::endl;
-    testManagedVector<MVFactory1>( &ut );
+    vectorTests<MVFactory1>::testManagedVector( &ut );
     AMP::pout << std::endl;
     globalComm.barrier();
 
     AMP::pout << "Testing bigger multivector" << std::endl;
-    testManagedVector<MVFactory2>( &ut );
+    vectorTests<MVFactory2>::testManagedVector( &ut );
     AMP::pout << std::endl;
     globalComm.barrier();
 
     AMP::pout << "Testing multivector of multivector" << std::endl;
-    testManagedVector<MVFactory3>( &ut );
+    vectorTests<MVFactory3>::testManagedVector( &ut );
     AMP::pout << std::endl;
     globalComm.barrier();
 #else

@@ -1,10 +1,11 @@
+#include "ampmesh/Mesh.h"
+#include "ampmesh/testHelpers/meshTests.h"
+
 #include "utils/AMPManager.h"
 #include "ProfilerApp.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
 #include "meshGenerators.h"
-#include "meshTestLoop.h"
-#include "meshTests.h"
 #include "utils/AMP_MPI.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
@@ -28,7 +29,7 @@ void runTest( AMP::UnitTest &ut )
 {
     auto generator = AMP::shared_ptr<GENERATOR>( new GENERATOR );
     generator->build_mesh();
-    MeshPerformance( &ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshPerformance( &ut, generator->getMesh() );
 }
 
 
@@ -71,7 +72,7 @@ void testInputMesh( AMP::UnitTest &ut, std::string filename )
     AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Run the mesh tests
-    MeshPerformance( &ut, mesh );;
+    AMP::Mesh::meshTests::MeshPerformance( &ut, mesh );;
     PROFILE_STOP( "testInputMesh" );
 }
 

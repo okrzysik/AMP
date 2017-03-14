@@ -1,6 +1,8 @@
 #ifndef included_MeshVectorTests
 #define included_MeshVectorTests
 
+#include "ampmesh/testHelpers/meshTests.h"
+
 #include "discretization/DOF_Manager.h"
 #include "discretization/DOF_ManagerParameters.h"
 #include "discretization/simpleDOF_Manager.h"
@@ -8,52 +10,51 @@
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 
-#include "../../vectors/test/test_VectorLoops.h"
+#include "vectors/testHelpers/VectorTests.h"
+
+
+namespace AMP {
+namespace Mesh {
 
 
 // Factory to create a vector from a mesh
-AMP::Mesh::Mesh::shared_ptr globalMeshForMeshVectorFactory = AMP::Mesh::Mesh::shared_ptr();
-AMP::Discretization::DOFManager::shared_ptr globalDOFforMeshVectorFactory =
-    AMP::shared_ptr<AMP::Discretization::DOFManager>();
 template <int SIZE, AMP::Mesh::GeomType TYPE, int GCW, bool SPLIT>
-class MeshVectorFactory
+AMP::LinearAlgebra::Variable::shared_ptr
+    meshTests::MeshVectorFactory<SIZE,TYPE,GCW,SPLIT>::getVariable()
 {
-public:
-    typedef AMP::LinearAlgebra::Vector vector;
-    static AMP::LinearAlgebra::Variable::shared_ptr getVariable()
-    {
-        if ( TYPE == AMP::Mesh::Vertex ) {
-            return AMP::LinearAlgebra::Variable::shared_ptr(
-                new AMP::LinearAlgebra::Variable( "test vector" ) );
-        } else {
-            AMP_ERROR( "Unfinished" );
-        }
-        return AMP::LinearAlgebra::Variable::shared_ptr();
+    if ( TYPE == AMP::Mesh::Vertex ) {
+        return AMP::LinearAlgebra::Variable::shared_ptr(
+            new AMP::LinearAlgebra::Variable( "test vector" ) );
+    } else {
+        AMP_ERROR( "Unfinished" );
     }
+    return AMP::LinearAlgebra::Variable::shared_ptr();
+}
+template <int SIZE, AMP::Mesh::GeomType TYPE, int GCW, bool SPLIT>
+AMP::LinearAlgebra::Vector::shared_ptr 
+    meshTests::MeshVectorFactory<SIZE,TYPE,GCW,SPLIT>::getVector()
+{
+    if ( globalMeshForMeshVectorFactory.get() == nullptr )
+        AMP_ERROR( "mesh must be set before this can be called" );
+    if ( globalDOFforMeshVectorFactory.get() == nullptr )
+        AMP_ERROR( "DOF must be set before this can be called" );
+    return AMP::LinearAlgebra::createVector(
+        globalDOFforMeshVectorFactory, getVariable(), SPLIT );
+}
+template <int SIZE, AMP::Mesh::GeomType TYPE, int GCW, bool SPLIT>
+AMP::Discretization::DOFManager::shared_ptr
+    meshTests::MeshVectorFactory<SIZE,TYPE,GCW,SPLIT>::getDOFMap()
+{
+    if ( globalDOFforMeshVectorFactory.get() == nullptr )
+        AMP_ERROR( "DOF must be set before this can be called" );
+    return globalDOFforMeshVectorFactory;
+}
 
-    static AMP::LinearAlgebra::Vector::shared_ptr getVector()
-    {
-        if ( globalMeshForMeshVectorFactory.get() == nullptr )
-            AMP_ERROR( "mesh must be set before this can be called" );
-        if ( globalDOFforMeshVectorFactory.get() == nullptr )
-            AMP_ERROR( "DOF must be set before this can be called" );
-        return AMP::LinearAlgebra::createVector(
-            globalDOFforMeshVectorFactory, getVariable(), SPLIT );
-    }
-
-    static AMP::Discretization::DOFManager::shared_ptr getDOFMap()
-    {
-        if ( globalDOFforMeshVectorFactory.get() == nullptr )
-            AMP_ERROR( "DOF must be set before this can be called" );
-        return globalDOFforMeshVectorFactory;
-    }
-
-    static std::string name() { return "MeshVectorFactory"; }
-};
 
 
+// Simple nodal vector tests
 template <int DOF_PER_NODE, bool SPLIT>
-void simpleNodalVectorTests( AMP::UnitTest *utils,
+void meshTests::simpleNodalVectorTests( AMP::UnitTest *utils,
                              AMP::Mesh::Mesh::shared_ptr mesh,
                              AMP::Discretization::DOFManager::shared_ptr DOFs,
                              int gcw )
@@ -103,8 +104,9 @@ void simpleNodalVectorTests( AMP::UnitTest *utils,
 }
 
 
+// VerifyGetVectorTest
 template <int DOF_PER_NODE, bool SPLIT>
-void VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
 
     for ( int gcw = 0; gcw <= 1; gcw++ ) {
@@ -125,15 +127,11 @@ void VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh
         if ( gcw == 0 ) {
             // Only run the managed vector tests
             // We need to check each test to see if it is valid for gcw==0
-            testManagedVector<MeshVectorFactory<DOF_PER_NODE, AMP::Mesh::Vertex, 0, SPLIT>>(
-                utils );
-            test_parallel_vectors_loop<
-                MeshVectorFactory<DOF_PER_NODE, AMP::Mesh::Vertex, 0, SPLIT>>( utils );
+            AMP::LinearAlgebra::vectorTests<MeshVectorFactory<DOF_PER_NODE, AMP::Mesh::Vertex, 0, SPLIT>>::testManagedVector( utils );
+            AMP::LinearAlgebra::vectorTests<MeshVectorFactory<DOF_PER_NODE, AMP::Mesh::Vertex, 0, SPLIT>>::testParallelVectors( utils );
         } else if ( gcw == 1 ) {
-            testManagedVector<MeshVectorFactory<DOF_PER_NODE, AMP::Mesh::Vertex, 1, SPLIT>>(
-                utils );
-            test_parallel_vectors_loop<
-                MeshVectorFactory<DOF_PER_NODE, AMP::Mesh::Vertex, 1, SPLIT>>( utils );
+            AMP::LinearAlgebra::vectorTests<MeshVectorFactory<DOF_PER_NODE, AMP::Mesh::Vertex, 1, SPLIT>>::testManagedVector( utils );
+            AMP::LinearAlgebra::vectorTests<MeshVectorFactory<DOF_PER_NODE, AMP::Mesh::Vertex, 1, SPLIT>>::testParallelVectors( utils );
         } else {
             AMP_ERROR( "Not finished" );
         }
@@ -142,5 +140,8 @@ void VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh
     }
 }
 
+
+} // namespace Mesh
+} // namespace AMP
 
 #endif

@@ -10,7 +10,7 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "cube"
-		Size = 25, 15, 10
+		Size = 15, 10, 6
 		Range = -1, 1, -0.9, 0.9, -0.8, 0.8
 		x_offset = 0
 		y_offset = 2
@@ -21,7 +21,7 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "cube"
-		Size = 25, 15, 10
+		Size = 15, 10, 6
 		Range = -1, 1, -0.9, 0.9, -0.8, 0.8
 		x_offset = 4
 		y_offset = 2
@@ -33,7 +33,7 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "cylinder"
-		Size = 8, 10
+		Size = 8, 6
 		Range = 1, -0.5, 0.5
 		x_offset = 0
 		y_offset = 6
@@ -44,7 +44,7 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "cylinder"
-		Size = 8, 10
+		Size = 8, 6
 		Range = 1, -0.5, 0.5
 		x_offset = 4
 		y_offset = 6
@@ -79,7 +79,7 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "sphere"
-		Size = 8
+		Size = 7
 		Range = 1
 		x_offset = 0
 		y_offset = 14
@@ -90,7 +90,7 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "sphere"
-		Size = 8
+		Size = 7
 		Range = 1
 		x_offset = 4
 		y_offset = 14

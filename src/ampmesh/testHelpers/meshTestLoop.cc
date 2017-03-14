@@ -1,17 +1,13 @@
-#include "meshTests.h"
-#include "meshTests.h"
-#include "string.h"
-#include "utils/UnitTest.h"
-#ifdef USE_AMP_VECTORS
-#include "meshVectorTests.h"
-#endif
-#ifdef USE_AMP_MATRICES
-#include "meshMatrixTests.h"
-#endif
+#include "ampmesh/testHelpers/meshTests.h"
+
 #include "ProfilerApp.h"
 
 
-void MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+namespace AMP {
+namespace Mesh {
+
+
+void meshTests::MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     PROFILE_START( "MeshTestLoop" );
     // Run some basic sanity checks
@@ -53,7 +49,7 @@ void MeshTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 }
 
 
-void MeshVectorTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshVectorTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
 // Run the vector tests
 #ifdef USE_AMP_VECTORS
@@ -67,7 +63,7 @@ void MeshVectorTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mes
 }
 
 
-void MeshMatrixTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshMatrixTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
 // Run the matrix tests
 #ifdef USE_AMP_MATRICES
@@ -92,3 +88,8 @@ void MeshMatrixTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mes
     }
 #endif
 }
+
+
+} // namespace Mesh
+} // namespace AMP
+

@@ -1,13 +1,19 @@
-#include "utils/AMP_MPI.h"
-#include "vectors/sundials/ManagedSundialsVector.h"
+#ifndef included_test_PetscVector
+#define included_test_PetscVector
 
-#include "VectorUnitTest.h"
-#include "test_SundialsVectorTests.h"
+#include "vectors/testHelpers/testVectorFactory.h"
+
+#include "utils/AMP_MPI.h"
+#include "vectors/petsc/PetscHelpers.h"
+#include "vectors/petsc/ManagedPetscVector.h"
+#include "vectors/petsc/NativePetscVector.h"
+
 
 /// \cond UNDOCUMENTED
 
 namespace AMP {
-namespace unit_test {
+namespace LinearAlgebra {
+
 
 template <typename FACTORY>
 class PetscCloneFactory
@@ -34,6 +40,7 @@ public:
     {
         return FACTORY::getManagedVector()->cloneVector();
     }
+    static std::string name() { return "PetscCloneFactory"; }
 };
 
 template <typename FACTORY>
@@ -42,7 +49,7 @@ class PetscViewFactory
 public:
     typedef AMP::LinearAlgebra::Vector vector;
 
-    static AMP::LinearAlgebra::Vector::shared_ptr getNativeVecto()
+    static AMP::LinearAlgebra::Vector::shared_ptr getNativeVector()
     {
         return FACTORY::getNativeVector();
     }
@@ -61,6 +68,7 @@ public:
     {
         return AMP::LinearAlgebra::PetscVector::view( FACTORY::getManagedVector() );
     }
+    static std::string name() { return "PetscViewFactory"; }
 };
 
 template <typename MANAGED_FACTORY>
@@ -71,19 +79,32 @@ public:
 
     static AMP::LinearAlgebra::Vector::shared_ptr getNativeVector()
     {
-        AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
         AMP::LinearAlgebra::Vector::shared_ptr t = getManagedVector();
+        size_t localSize                         = t->getLocalSize();
         Vec ans;
-        VecCreate( globalComm, &ans );
-        VecSetSizes( ans, t->getLocalSize(), PETSC_DECIDE );
+        AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+        VecCreate( globalComm.getCommunicator(), &ans );
+        VecSetSizes( ans, localSize, PETSC_DECIDE );
         VecSetFromOptions( ans );
-        return AMP::LinearAlgebra::Vector::shared_ptr(
-            new AMP::LinearAlgebra::NativePetscVector( ans, globalComm, true ) );
+        PetscInt N;
+        VecGetSize( ans, &N );
+        AMP_ASSERT( N == (int) ( t->getGlobalSize() ) );
+        int a, b;
+        VecGetOwnershipRange( ans, &a, &b );
+        AMP_ASSERT( b - a == (int) localSize );
+        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams(
+            new AMP::LinearAlgebra::NativePetscVectorParameters( ans, true ) );
+        npvParams->d_Deleteable = true;
+        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVector> retVal(
+            new AMP::LinearAlgebra::NativePetscVector( npvParams ) );
+        retVal->setVariable( AMP::LinearAlgebra::Variable::shared_ptr(
+            new AMP::LinearAlgebra::Variable( "petsc vector" ) ) );
+        return retVal;
     }
 
     static void destroyNativeVector( AMP::LinearAlgebra::NativePetscVector &rhs )
     {
-        VecDestroy( rhs.getVec() );
+        PETSC::vecDestroy( &rhs.getVec() );
     }
 
     static void destroyNativeVector( AMP::LinearAlgebra::Vector::shared_ptr rhs )
@@ -96,8 +117,11 @@ public:
     {
         return MANAGED_FACTORY::getVector();
     }
+    static std::string name() { return "SimplePetscVectorFactory"; }
 };
 
+
+#ifdef USE_EXT_TRILINOS
 template <typename T>
 class SimplePetscNativeFactory
     : public SimplePetscVectorFactory<
@@ -106,18 +130,17 @@ class SimplePetscNativeFactory
 public:
     typedef T vector;
 
-    static AMP::LinearAlgebra::Variable::shared_ptr getVariable( UnitTest & )
+    static AMP::LinearAlgebra::Variable::shared_ptr getVariable()
     {
-        return AMP::LinearAlgebra::Variable::shared_ptr(); // No associated variable
+        return AMP::LinearAlgebra::Variable::shared_ptr(
+            new AMP::LinearAlgebra::Variable( "dummy" ) ); // No associated variable
     }
 
-    static AMP::LinearAlgebra::Vector::shared_ptr getVector( UnitTest &u )
-    {
-        return getNativeVector( u );
-    }
+    static AMP::LinearAlgebra::Vector::shared_ptr getVector() { return getNativeVector(); }
 };
-};
+#endif
 }
 }
 
 /// \endcond
+#endif

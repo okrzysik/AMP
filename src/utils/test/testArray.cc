@@ -79,7 +79,7 @@ template<> inline int fun<int>( double x, double y, double z )
     return static_cast<int>( 100000*fun<double>(x,y,z) );
 }
 template<class TYPE>
-void test_interp( UnitTest& ut, const std::vector<size_t> N )
+void test_interp( UnitTest& ut, const std::vector<size_t>& N )
 {
     Array<TYPE> A(N);
     std::vector<size_t> N2( N );

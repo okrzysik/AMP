@@ -14,7 +14,7 @@
 
 
 namespace AMP {
-namespace unit_test {
+namespace LinearAlgebra {
 
 
 AMP::LinearAlgebra::Matrix::shared_ptr global_cached_matrix =

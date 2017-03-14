@@ -1,4 +1,5 @@
 #include "../../ampmesh/test/meshGenerators.h"
+
 #include "ProfilerApp.h"
 #include "ampmesh/Mesh.h"
 #include "discretization/DOF_Manager.h"
@@ -16,9 +17,11 @@
 #include <stdio.h>
 #include <string>
 
+using namespace AMP::unit_test;
+
 
 namespace AMP {
-namespace unit_test {
+namespace LinearAlgebra {
 
 
 // Class to create a matrix from a simpleDOFManager
@@ -107,63 +110,26 @@ private:
 
 
 // Initialize templated static data members
-template <>
-AMP::Mesh::Mesh::shared_ptr
-    DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 1>::mesh = AMP::Mesh::Mesh::shared_ptr();
-template <>
-AMP::Mesh::Mesh::shared_ptr
-    DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 2>::mesh = AMP::Mesh::Mesh::shared_ptr();
-template <>
-AMP::Mesh::Mesh::shared_ptr
-    DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>, 1>::mesh = AMP::Mesh::Mesh::shared_ptr();
-template <>
-AMP::Mesh::Mesh::shared_ptr
-    DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>, 2>::mesh = AMP::Mesh::Mesh::shared_ptr();
-template <>
-AMP::Discretization::DOFManager::shared_ptr
-    DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 1>::DOFs =
-        AMP::shared_ptr<AMP::Discretization::DOFManager>();
-template <>
-AMP::Discretization::DOFManager::shared_ptr
-    DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 2>::DOFs =
-        AMP::shared_ptr<AMP::Discretization::DOFManager>();
-template <>
-AMP::Discretization::DOFManager::shared_ptr
-    DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>, 1>::DOFs =
-        AMP::shared_ptr<AMP::Discretization::DOFManager>();
-template <>
-AMP::Discretization::DOFManager::shared_ptr
-    DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>, 2>::DOFs =
-        AMP::shared_ptr<AMP::Discretization::DOFManager>();
+// clang-format off
+template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<1,1,AMPCubeGenerator<5>,1>::mesh = AMP::Mesh::Mesh::shared_ptr();
+template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<1,1,AMPCubeGenerator<5>,2>::mesh = AMP::Mesh::Mesh::shared_ptr();
+template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<3,3,AMPCubeGenerator<5>,1>::mesh = AMP::Mesh::Mesh::shared_ptr();
+template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<3,3,AMPCubeGenerator<5>,2>::mesh = AMP::Mesh::Mesh::shared_ptr();
+template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<1,1,AMPCubeGenerator<5>,1>::DOFs = AMP::shared_ptr<AMP::Discretization::DOFManager>();
+template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<1,1,AMPCubeGenerator<5>,2>::DOFs = AMP::shared_ptr<AMP::Discretization::DOFManager>();
+template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<3,3,AMPCubeGenerator<5>,1>::DOFs = AMP::shared_ptr<AMP::Discretization::DOFManager>();
+template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<3,3,AMPCubeGenerator<5>,2>::DOFs = AMP::shared_ptr<AMP::Discretization::DOFManager>();
 #ifdef USE_EXT_LIBMESH
-template <>
-AMP::Mesh::Mesh::shared_ptr
-    DOFMatrixTestFactory<1, 1, ExodusReaderGenerator<>, 1>::mesh = AMP::Mesh::Mesh::shared_ptr();
-template <>
-AMP::Mesh::Mesh::shared_ptr
-    DOFMatrixTestFactory<1, 1, ExodusReaderGenerator<>, 2>::mesh = AMP::Mesh::Mesh::shared_ptr();
-template <>
-AMP::Mesh::Mesh::shared_ptr
-    DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 1>::mesh = AMP::Mesh::Mesh::shared_ptr();
-template <>
-AMP::Mesh::Mesh::shared_ptr
-    DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 2>::mesh = AMP::Mesh::Mesh::shared_ptr();
-template <>
-AMP::Discretization::DOFManager::shared_ptr
-    DOFMatrixTestFactory<1, 1, ExodusReaderGenerator<>, 1>::DOFs =
-        AMP::shared_ptr<AMP::Discretization::DOFManager>();
-template <>
-AMP::Discretization::DOFManager::shared_ptr
-    DOFMatrixTestFactory<1, 1, ExodusReaderGenerator<>, 2>::DOFs =
-        AMP::shared_ptr<AMP::Discretization::DOFManager>();
-template <>
-AMP::Discretization::DOFManager::shared_ptr
-    DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 1>::DOFs =
-        AMP::shared_ptr<AMP::Discretization::DOFManager>();
-template <>
-AMP::Discretization::DOFManager::shared_ptr
-    DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 2>::DOFs =
-        AMP::shared_ptr<AMP::Discretization::DOFManager>();
+template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<1,1,ExodusReaderGenerator<>,1>::mesh = AMP::Mesh::Mesh::shared_ptr();
+template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<1,1,ExodusReaderGenerator<>,2>::mesh = AMP::Mesh::Mesh::shared_ptr();
+template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<3,3,ExodusReaderGenerator<>,1>::mesh = AMP::Mesh::Mesh::shared_ptr();
+template<> AMP::Mesh::Mesh::shared_ptr DOFMatrixTestFactory<3,3,ExodusReaderGenerator<>,2>::mesh = AMP::Mesh::Mesh::shared_ptr();
+template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<1,1,ExodusReaderGenerator<>,1>::DOFs = AMP::shared_ptr<AMP::Discretization::DOFManager>();
+template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<1,1,ExodusReaderGenerator<>,2>::DOFs = AMP::shared_ptr<AMP::Discretization::DOFManager>();
+template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<3,3,ExodusReaderGenerator<>,1>::DOFs = AMP::shared_ptr<AMP::Discretization::DOFManager>();
+template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<3,3,ExodusReaderGenerator<>,2>::DOFs = AMP::shared_ptr<AMP::Discretization::DOFManager>();
 #endif
+// clang-format on
+
 }
 }

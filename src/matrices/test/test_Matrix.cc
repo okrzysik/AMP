@@ -7,7 +7,7 @@
 #include "utils/Utilities.h"
 
 
-using namespace AMP::unit_test;
+using namespace AMP::LinearAlgebra;
 
 
 template <typename FACTORY>

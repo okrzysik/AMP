@@ -1,5 +1,7 @@
-#ifndef included_test_VectorTests
-#define included_test_VectorTests
+#ifndef included_test_VectorTests_inline
+#define included_test_VectorTests_inline
+
+#include "vectors/testHelpers/VectorTests.h"
 
 #include "ampmesh/Mesh.h"
 #include "discretization/DOF_Manager.h"
@@ -17,15 +19,15 @@
 #include "vectors/petsc/PetscVector.h"
 #endif
 
-/// \cond UNDOCUMENTED
+
 namespace AMP {
-namespace unit_test {
+namespace LinearAlgebra {
 
 
 static inline int lround( double x ) { return x >= 0 ? floor( x ) : ceil( x ); }
 
 template <typename VECTOR_FACTORY>
-void InstantiateVector( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::InstantiateVector( AMP::UnitTest *utils )
 {
 
     AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
@@ -37,7 +39,7 @@ void InstantiateVector( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void CopyVectorConsistency( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::CopyVectorConsistency( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vec1( VECTOR_FACTORY::getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vec2                = vec1->cloneVector();
@@ -79,8 +81,9 @@ void CopyVectorConsistency( AMP::UnitTest *utils )
 }
 
 
-template <typename VECTOR_FACTORY, typename VIEWER>
-void DeepCloneOfView( AMP::UnitTest *utils )
+template <typename VECTOR_FACTORY>
+template <typename VIEWER>
+void vectorTests<VECTOR_FACTORY>::DeepCloneOfView( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( VECTOR_FACTORY::getVector() );
     if ( !vector1->isA<AMP::LinearAlgebra::MultiVector>() )
@@ -99,7 +102,7 @@ void DeepCloneOfView( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void Bug_728( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::Bug_728( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
     AMP::LinearAlgebra::Variable::shared_ptr var1 = vector->getVariable();
@@ -123,7 +126,7 @@ void Bug_728( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void SetToScalarVector( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::SetToScalarVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
     vector->setToScalar( 0. );
@@ -170,7 +173,7 @@ void SetToScalarVector( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void CloneVector( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::CloneVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr clone = vector->cloneVector( "cloned vector" );
@@ -191,7 +194,7 @@ void CloneVector( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void DotProductVector( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::DotProductVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( VECTOR_FACTORY::getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vector2( VECTOR_FACTORY::getVector() );
@@ -226,7 +229,7 @@ void DotProductVector( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void L2NormVector( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::L2NormVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
     vector->setToScalar( 1. );
@@ -248,7 +251,7 @@ void L2NormVector( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void AbsVector( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::AbsVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vec1( VECTOR_FACTORY::getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vec2 = vec1->cloneVector();
@@ -264,7 +267,7 @@ void AbsVector( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void L1NormVector( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::L1NormVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vector_1( VECTOR_FACTORY::getVector() );
@@ -282,7 +285,7 @@ void L1NormVector( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void MaxNormVector( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::MaxNormVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
     vector->setRandomValues();
@@ -304,7 +307,7 @@ void MaxNormVector( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void ScaleVector( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::ScaleVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( VECTOR_FACTORY::getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vector2( VECTOR_FACTORY::getVector() );
@@ -336,7 +339,7 @@ void ScaleVector( AMP::UnitTest *utils )
 
 #ifdef USE_EXT_PETSC
 template <typename VECTOR_FACTORY>
-void Bug_491( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::Bug_491( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( VECTOR_FACTORY::getVector() );
     vector1->setRandomValues();
@@ -406,7 +409,7 @@ void Bug_491( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void AddVector( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::AddVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( VECTOR_FACTORY::getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vector2( VECTOR_FACTORY::getVector() );
@@ -435,7 +438,7 @@ void AddVector( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void SubtractVector( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::SubtractVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( VECTOR_FACTORY::getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vector2( VECTOR_FACTORY::getVector() );
@@ -471,7 +474,7 @@ void SubtractVector( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void MultiplyVector( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::MultiplyVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( VECTOR_FACTORY::getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vector2( VECTOR_FACTORY::getVector() );
@@ -499,7 +502,7 @@ void MultiplyVector( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void DivideVector( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::DivideVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( VECTOR_FACTORY::getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vector2( VECTOR_FACTORY::getVector() );
@@ -532,7 +535,7 @@ void DivideVector( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void VectorIteratorLengthTest( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::VectorIteratorLengthTest( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( VECTOR_FACTORY::getVector() );
     AMP::LinearAlgebra::Vector::iterator curEntry = vector1->begin();
@@ -549,8 +552,9 @@ void VectorIteratorLengthTest( AMP::UnitTest *utils )
         utils->failure( "Wrong number of entries in iterator " + VECTOR_FACTORY::name() );
 }
 
+template <typename VECTOR_FACTORY>
 template <typename ITERATOR>
-void both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::UnitTest *utils )
 {
     typename ITERATOR::vector_type &ref = p->castTo<typename ITERATOR::vector_type>();
 
@@ -641,7 +645,7 @@ void both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::Un
 
 
 template <typename VECTOR_FACTORY>
-void VectorIteratorTests( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::VectorIteratorTests( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( VECTOR_FACTORY::getVector() );
     both_VectorIteratorTests<AMP::LinearAlgebra::Vector::iterator>( vector1, utils );
@@ -650,7 +654,7 @@ void VectorIteratorTests( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void VerifyVectorMin( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::VerifyVectorMin( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vec( VECTOR_FACTORY::getVector() );
     vec->setRandomValues();
@@ -663,7 +667,7 @@ void VerifyVectorMin( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void VerifyVectorMax( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::VerifyVectorMax( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vec( VECTOR_FACTORY::getVector() );
     vec->setRandomValues();
@@ -675,7 +679,7 @@ void VerifyVectorMax( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void VerifyVectorMaxMin( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::VerifyVectorMaxMin( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vec( VECTOR_FACTORY::getVector() );
     bool passes = true;
@@ -697,47 +701,42 @@ void VerifyVectorMaxMin( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-class SetRandomValuesVector
+void vectorTests<VECTOR_FACTORY>::SetRandomValuesVector::verify_vector(
+    AMP::UnitTest *utils, AMP::LinearAlgebra::Vector::shared_ptr v )
 {
-public:
-    static const char *get_test_name() { return "vector::setRandomValues"; }
-
-    static void verify_vector( AMP::UnitTest *utils, AMP::LinearAlgebra::Vector::shared_ptr v )
-    {
-        if ( v->min() >= 0 )
-            utils->passes( "Min value >= 0 " + VECTOR_FACTORY::name() );
+    if ( v->min() >= 0 )
+        utils->passes( "Min value >= 0 " + VECTOR_FACTORY::name() );
+    else
+        utils->failure( "Min value < 0 " + VECTOR_FACTORY::name() );
+    if ( v->max() < 1 )
+        utils->passes( "Max value < 1" + VECTOR_FACTORY::name() );
+    else
+        utils->failure( "Max value >= 1" + VECTOR_FACTORY::name() );
+    if ( v->L2Norm() > 0 )
+        utils->passes( "Non-zero vector created " + VECTOR_FACTORY::name() );
+    else
+        utils->failure( "Zero vector created " + VECTOR_FACTORY::name() );
+}
+template <typename VECTOR_FACTORY>
+void vectorTests<VECTOR_FACTORY>::SetRandomValuesVector::run_test( AMP::UnitTest *utils )
+{
+    AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
+    auto l2norm1 = -1;
+    for ( size_t i = 0; i < 5; i++ ) {
+        vector->setRandomValues();
+        auto l2norm2 = vector->L2Norm();
+        if ( fabs( l2norm1 - l2norm2 ) > 0.000001 )
+            utils->passes( "Distinct vector created " + VECTOR_FACTORY::name() );
         else
-            utils->failure( "Min value < 0 " + VECTOR_FACTORY::name() );
-        if ( v->max() < 1 )
-            utils->passes( "Max value < 1" + VECTOR_FACTORY::name() );
-        else
-            utils->failure( "Max value >= 1" + VECTOR_FACTORY::name() );
-        if ( v->L2Norm() > 0 )
-            utils->passes( "Non-zero vector created " + VECTOR_FACTORY::name() );
-        else
-            utils->failure( "Zero vector created " + VECTOR_FACTORY::name() );
+            utils->failure( "Similar vector created " + VECTOR_FACTORY::name() );
+        l2norm1 = l2norm2;
+        verify_vector( utils, vector );
     }
-
-    static void run_test( AMP::UnitTest *utils )
-    {
-        AMP::LinearAlgebra::Vector::shared_ptr vector( VECTOR_FACTORY::getVector() );
-        auto l2norm1 = -1;
-        for ( size_t i = 0; i < 5; i++ ) {
-            vector->setRandomValues();
-            auto l2norm2 = vector->L2Norm();
-            if ( fabs( l2norm1 - l2norm2 ) > 0.000001 )
-                utils->passes( "Distinct vector created " + VECTOR_FACTORY::name() );
-            else
-                utils->failure( "Similar vector created " + VECTOR_FACTORY::name() );
-            l2norm1 = l2norm2;
-            verify_vector( utils, vector );
-        }
-    }
-};
+}
 
 
 template <typename VECTOR_FACTORY>
-void ReciprocalVector( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::ReciprocalVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vectora( VECTOR_FACTORY::getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( VECTOR_FACTORY::getVector() );
@@ -758,174 +757,146 @@ void ReciprocalVector( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-class LinearSumVector
+void vectorTests<VECTOR_FACTORY>::LinearSumVector::do_instance(
+    AMP::UnitTest *utils, double alpha, double beta, const char *msg )
 {
-public:
-    static const char *get_test_name() { return "vector::linearSum"; }
-
-    static void do_instance( AMP::UnitTest *utils, double alpha, double beta, const char *msg )
-    {
-        AMP::LinearAlgebra::Vector::shared_ptr vectora( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr vectorb( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr vectorc( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr vectord( VECTOR_FACTORY::getVector() );
-        vectora->setRandomValues();
-        vectorb->setRandomValues();
-        vectorc->linearSum( alpha, vectora, beta, vectorb );
-        vectora->scale( alpha );
-        vectorb->scale( beta );
-        vectord->add( vectora, vectorb );
-        vectord->subtract( vectorc, vectord );
-        if ( vectord->maxNorm() < 0.0000001 )
-            utils->passes( msg );
-        else
-            utils->failure( msg );
-    }
-
-    static void run_test( AMP::UnitTest *utils )
-    {
-        do_instance( utils, 1.2345, 9.8765, "linear sum 1" );
-        do_instance( utils, -1.2345, 9.8765, "linear sum 2" );
-        do_instance( utils, 1.2345, -9.8765, "linear sum 3" );
-        do_instance( utils, -1.2345, -9.8765, "linear sum 4" );
-    }
-};
+    AMP::LinearAlgebra::Vector::shared_ptr vectora( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vectorb( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vectorc( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vectord( VECTOR_FACTORY::getVector() );
+    vectora->setRandomValues();
+    vectorb->setRandomValues();
+    vectorc->linearSum( alpha, vectora, beta, vectorb );
+    vectora->scale( alpha );
+    vectorb->scale( beta );
+    vectord->add( vectora, vectorb );
+    vectord->subtract( vectorc, vectord );
+    if ( vectord->maxNorm() < 0.0000001 )
+        utils->passes( msg );
+    else
+        utils->failure( msg );
+}
+template <typename VECTOR_FACTORY>
+void vectorTests<VECTOR_FACTORY>::LinearSumVector::run_test( AMP::UnitTest *utils )
+{
+    do_instance( utils, 1.2345, 9.8765, "linear sum 1" );
+    do_instance( utils, -1.2345, 9.8765, "linear sum 2" );
+    do_instance( utils, 1.2345, -9.8765, "linear sum 3" );
+    do_instance( utils, -1.2345, -9.8765, "linear sum 4" );
+}
 
 
 template <typename VECTOR_FACTORY>
-class AxpyVector
+void vectorTests<VECTOR_FACTORY>::AxpyVector::do_instance( AMP::UnitTest *utils, double alpha, const char *msg )
 {
-public:
-    static const char *get_test_name() { return "vector::axpy"; }
-
-    static void do_instance( AMP::UnitTest *utils, double alpha, const char *msg )
-    {
-        AMP::LinearAlgebra::Vector::shared_ptr vectora( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr vectorb( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr vectorc( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr vectord( VECTOR_FACTORY::getVector() );
-        vectora->setRandomValues();
-        vectorb->setRandomValues();
-        vectorc->linearSum( alpha, vectora, 1., vectorb );
-        vectord->axpy( alpha, vectora, vectorb );
-        vectorc->subtract( vectorc, vectord );
-        if ( vectorc->maxNorm() < 0.0000001 )
-            utils->passes( msg );
-        else
-            utils->failure( msg );
-    }
-
-    static void run_test( AMP::UnitTest *utils )
-    {
-        do_instance( utils, 6.38295, "axpy 1" );
-        do_instance( utils, -6.38295, "axpy 2" );
-    }
-};
+    AMP::LinearAlgebra::Vector::shared_ptr vectora( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vectorb( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vectorc( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vectord( VECTOR_FACTORY::getVector() );
+    vectora->setRandomValues();
+    vectorb->setRandomValues();
+    vectorc->linearSum( alpha, vectora, 1., vectorb );
+    vectord->axpy( alpha, vectora, vectorb );
+    vectorc->subtract( vectorc, vectord );
+    if ( vectorc->maxNorm() < 0.0000001 )
+        utils->passes( msg );
+    else
+        utils->failure( msg );
+}
+template <typename VECTOR_FACTORY>
+void vectorTests<VECTOR_FACTORY>::AxpyVector::run_test( AMP::UnitTest *utils )
+{
+    do_instance( utils, 6.38295, "axpy 1" );
+    do_instance( utils, -6.38295, "axpy 2" );
+}
 
 
 template <typename VECTOR_FACTORY>
-class AxpbyVector
+void vectorTests<VECTOR_FACTORY>::AxpbyVector::do_instance( AMP::UnitTest *utils, double alpha, double beta, const char *msg )
 {
-public:
-    static const char *get_test_name() { return "vector::axpby"; }
-
-    static void do_instance( AMP::UnitTest *utils, double alpha, double beta, const char *msg )
-    {
-        AMP::LinearAlgebra::Vector::shared_ptr vectora( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr vectorb( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr vectorb1( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr vectorc( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr vectord( VECTOR_FACTORY::getVector() );
-        vectora->setRandomValues();
-        vectorb->setRandomValues();
-        vectorc->copyVector( vectorb );
-        vectorb1->linearSum( alpha, vectora, beta, vectorb );
-        vectorb->linearSum( alpha, vectora, beta, vectorb );
-        vectorc->axpby( alpha, beta, vectora );
-        vectord->subtract( vectorc, vectorb1 );
-        auto maxNorm = vectord->maxNorm();
-        if ( maxNorm < 0.0000001 )
-            utils->passes( msg );
-        else
-            utils->failure( msg );
-        vectord->subtract( vectorc, vectorb );
-        maxNorm = vectord->maxNorm();
-        if ( maxNorm < 0.0000001 )
-            utils->passes( msg );
-        else
-            utils->failure( msg );
-    }
-
-    static void run_test( AMP::UnitTest *utils )
-    {
-        do_instance( utils, 6.38295, 99.273624, "axpby 1" );
-        do_instance( utils, 6.38295, -99.273624, "axpby 2" );
-        do_instance( utils, -6.38295, 99.273624, "axpby 3" );
-        do_instance( utils, -6.38295, -99.273624, "axpby 4" );
-    }
-};
+    AMP::LinearAlgebra::Vector::shared_ptr vectora( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vectorb( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vectorb1( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vectorc( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vectord( VECTOR_FACTORY::getVector() );
+    vectora->setRandomValues();
+    vectorb->setRandomValues();
+    vectorc->copyVector( vectorb );
+    vectorb1->linearSum( alpha, vectora, beta, vectorb );
+    vectorb->linearSum( alpha, vectora, beta, vectorb );
+    vectorc->axpby( alpha, beta, vectora );
+    vectord->subtract( vectorc, vectorb1 );
+    auto maxNorm = vectord->maxNorm();
+    if ( maxNorm < 0.0000001 )
+        utils->passes( msg );
+    else
+        utils->failure( msg );
+    vectord->subtract( vectorc, vectorb );
+    maxNorm = vectord->maxNorm();
+    if ( maxNorm < 0.0000001 )
+        utils->passes( msg );
+    else
+        utils->failure( msg );
+}
+template <typename VECTOR_FACTORY>
+void vectorTests<VECTOR_FACTORY>::AxpbyVector::run_test( AMP::UnitTest *utils )
+{
+    do_instance( utils, 6.38295, 99.273624, "axpby 1" );
+    do_instance( utils, 6.38295, -99.273624, "axpby 2" );
+    do_instance( utils, -6.38295, 99.273624, "axpby 3" );
+    do_instance( utils, -6.38295, -99.273624, "axpby 4" );
+}
 
 
 template <typename VECTOR_FACTORY>
-class CopyVector
+void vectorTests<VECTOR_FACTORY>::CopyVector::run_test( AMP::UnitTest *utils )
 {
-public:
-    static const char *get_test_name() { return "vector::copyVector"; }
+    AMP::LinearAlgebra::Vector::shared_ptr vectora( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vectorb( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vectorc( VECTOR_FACTORY::getVector() );
 
-    static void run_test( AMP::UnitTest *utils )
-    {
-        AMP::LinearAlgebra::Vector::shared_ptr vectora( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr vectorb( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr vectorc( VECTOR_FACTORY::getVector() );
+    vectora->setRandomValues();
+    vectorb->copyVector( vectora );
+    vectorc->subtract( vectora, vectorb );
+    if ( vectorc->maxNorm() == 0 )
+        utils->passes( "copy vector 1" );
+    else
+        utils->failure( "copy vector 1" );
 
-        vectora->setRandomValues();
-        vectorb->copyVector( vectora );
-        vectorc->subtract( vectora, vectorb );
-        if ( vectorc->maxNorm() == 0 )
-            utils->passes( "copy vector 1" );
-        else
-            utils->failure( "copy vector 1" );
-
-        vectora->scale( 100. );
-        vectorc->subtract( vectora, vectorb );
-        auto c_maxNorm = vectorc->maxNorm();
-        auto b_maxNorm = vectorb->maxNorm();
-        if ( fabs( c_maxNorm - 99 * b_maxNorm ) < 1e-12 * b_maxNorm )
-            utils->passes( "copy vector 2" );
-        else
-            utils->failure( "copy vector 2" );
-    }
-};
-
-template <typename VECTOR_FACTORY>
-class CopyRawDataBlockVector
-{
-public:
-    static const char *get_test_name() { return "vector::copyVector"; }
-
-    static void run_test( AMP::UnitTest *utils )
-    {
-        AMP::LinearAlgebra::Vector::shared_ptr vectora( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr vectorb( VECTOR_FACTORY::getVector() );
-        AMP::LinearAlgebra::Vector::shared_ptr vectorc( VECTOR_FACTORY::getVector() );
-
-        vectora->setRandomValues();
-        vectorb->zero();
-        auto buf = new double[vectora->getLocalSize()];
-        vectora->copyOutRawData( buf );
-        vectorb->putRawData( buf );
-        delete[] buf;
-        vectorc->subtract( vectora, vectorb );
-        if ( vectorc->maxNorm() == 0 )
-            utils->passes( "copy raw data block" );
-        else
-            utils->failure( "copy raw data block" );
-    }
-};
+    vectora->scale( 100. );
+    vectorc->subtract( vectora, vectorb );
+    auto c_maxNorm = vectorc->maxNorm();
+    auto b_maxNorm = vectorb->maxNorm();
+    if ( fabs( c_maxNorm - 99 * b_maxNorm ) < 1e-12 * b_maxNorm )
+        utils->passes( "copy vector 2" );
+    else
+        utils->failure( "copy vector 2" );
+}
 
 
 template <typename VECTOR_FACTORY>
-void VerifyVectorGhostCreate( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::CopyRawDataBlockVector::run_test( AMP::UnitTest *utils )
+{
+    AMP::LinearAlgebra::Vector::shared_ptr vectora( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vectorb( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vectorc( VECTOR_FACTORY::getVector() );
+
+    vectora->setRandomValues();
+    vectorb->zero();
+    auto buf = new double[vectora->getLocalSize()];
+    vectora->copyOutRawData( buf );
+    vectorb->putRawData( buf );
+    delete[] buf;
+    vectorc->subtract( vectora, vectorb );
+    if ( vectorc->maxNorm() == 0 )
+        utils->passes( "copy raw data block" );
+    else
+        utils->failure( "copy raw data block" );
+}
+
+
+template <typename VECTOR_FACTORY>
+void vectorTests<VECTOR_FACTORY>::VerifyVectorGhostCreate( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector = VECTOR_FACTORY::getVector();
     int num_ghosts                                = vector->getGhostSize();
@@ -942,7 +913,7 @@ void VerifyVectorGhostCreate( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
 {
     AMP::Discretization::DOFManager::shared_ptr dofmap = VECTOR_FACTORY::getDOFMap();
     AMP::LinearAlgebra::Vector::shared_ptr vector      = VECTOR_FACTORY::getVector();
@@ -1021,7 +992,7 @@ void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
 
 
 template <typename VECTOR_FACTORY>
-void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
 {
     AMP::Discretization::DOFManager::shared_ptr dofmap = VECTOR_FACTORY::getDOFMap();
     AMP::LinearAlgebra::Vector::shared_ptr vector      = VECTOR_FACTORY::getVector();
@@ -1089,7 +1060,7 @@ void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
 // Test creating a multivector with multiple copies of the data
 // This should always return one copy of the superset of the data
 template <typename VECTOR_FACTORY>
-void TestMultivectorDuplicate( AMP::UnitTest *utils )
+void vectorTests<VECTOR_FACTORY>::TestMultivectorDuplicate( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vec0 = VECTOR_FACTORY::getVector();
     // Create a multivector
@@ -1114,9 +1085,9 @@ void TestMultivectorDuplicate( AMP::UnitTest *utils )
     else
         utils->failure( "multivector resolves multiple copies of a vector " + VECTOR_FACTORY::name() );
 }
-}
-}
 
 
-/// \endcond
+} // namespace LinearAlgebra
+} // namespace AMP
+
 #endif

@@ -9,8 +9,12 @@
 #include "meshTests.h"
 
 
+namespace AMP {
+namespace Mesh {
+
+
 template <int DOF_PER_NODE, bool SPLIT>
-void VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Create the DOF_Manager
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
@@ -65,7 +69,7 @@ void VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_p
 
 
 template <int DOF_PER_NODE, bool SPLIT>
-void GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Create the DOF_Manager
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
@@ -214,5 +218,8 @@ void GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
     }
 }
 
+
+} // namespace Mesh
+} // namespace AMP
 
 #endif

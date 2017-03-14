@@ -5,15 +5,16 @@
 #include "utils/UnitTest.h"
 #include "vectors/SimpleVector.h"
 
-#include "../../vectors/test/test_VectorLoops.h"
+#include "vectors/testHelpers/VectorTests.h"
 #include "test_MatrixVectorFactory.h"
 
 #if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
 #include "matrices/petsc/ManagedPetscMatrix.h"
 #endif
 
+
 namespace AMP {
-namespace unit_test {
+namespace LinearAlgebra {
 
 
 template <class MATRIX_FACTORY>
@@ -67,12 +68,12 @@ public:
     {
         PROFILE_START( "VerifyGetLeftRightVector" );
         global_cached_matrix = FACTORY::getMatrix();
-        testManagedVector<AmpInterfaceRightVectorFactory>( utils );
-        testManagedVector<AmpInterfaceLeftVectorFactory>( utils );
+        vectorTests<AmpInterfaceRightVectorFactory>::testManagedVector( utils );
+        vectorTests<AmpInterfaceLeftVectorFactory>::testManagedVector( utils );
 #if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
         if ( global_cached_matrix->isA<AMP::LinearAlgebra::ManagedPetscMatrix>() ) {
-            testManagedVector<PETScInterfaceRightVectorFactory>( utils );
-            testManagedVector<PETScInterfaceLeftVectorFactory>( utils );
+            vectorTests<PETScInterfaceRightVectorFactory>::testManagedVector( utils );
+            vectorTests<PETScInterfaceLeftVectorFactory>::testManagedVector( utils );
         } else {
             utils->expected_failure(
                 "PetscMatrix::createView is not ready for arbitrary matricies" );

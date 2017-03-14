@@ -205,7 +205,6 @@ void BoxMesh::initialize()
             factors.resize( factors.size() - 1 );
         }
     }
-    d_localBlock = getLocalBlock( d_comm.getRank() );
     // Create the list of elements on each surface
     const std::array<int,6> globalRange = { 0, std::max(d_globalSize[0]-1,0),
                                             0, std::max(d_globalSize[1]-1,0),

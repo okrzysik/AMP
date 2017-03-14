@@ -1,15 +1,16 @@
-#include "utils/AMPManager.h"
-#include "ProfilerApp.h"
 #include "ampmesh/Mesh.h"
-#include "ampmesh/MeshElement.h"
-#include "meshGenerators.h"
-#include "meshTestLoop.h"
-#include "meshTests.h"
+#include "ampmesh/testHelpers/meshTests.h"
+
+#include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/MemoryDatabase.h"
 #include "utils/UnitTest.h"
+
+#include "ProfilerApp.h"
+
+#include "meshGenerators.h"
 
 #include "ampmesh/structured/BoxMesh.h"
 #ifdef USE_TRILINOS_STKMESH
@@ -22,7 +23,6 @@
 #include "ampmesh/moab/moabMesh.h"
 #endif
 
-
 // Function to test the creation/destruction of a mesh with the mesh generators
 // Note: this only runs the mesh tests, not the vector or matrix tests
 void testMeshGenerators( AMP::UnitTest *ut )
@@ -33,49 +33,49 @@ void testMeshGenerators( AMP::UnitTest *ut )
     generator = AMP::shared_ptr<AMP::unit_test::AMPCubeGenerator<4>>(
         new AMP::unit_test::AMPCubeGenerator<4> );
     generator->build_mesh();
-    MeshTestLoop( ut, generator->getMesh() );
-    MeshVectorTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshVectorTestLoop( ut, generator->getMesh() );
     generator = AMP::shared_ptr<AMP::unit_test::AMPCylinderGenerator>(
         new AMP::unit_test::AMPCylinderGenerator );
     generator->build_mesh();
-    MeshTestLoop( ut, generator->getMesh() );
-    MeshVectorTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshVectorTestLoop( ut, generator->getMesh() );
     generator =
         AMP::shared_ptr<AMP::unit_test::AMPTubeGenerator>( new AMP::unit_test::AMPTubeGenerator );
     generator->build_mesh();
-    MeshTestLoop( ut, generator->getMesh() );
-    MeshVectorTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshVectorTestLoop( ut, generator->getMesh() );
     generator = AMP::shared_ptr<AMP::unit_test::AMPMultiMeshGenerator>(
         new AMP::unit_test::AMPMultiMeshGenerator );
     generator->build_mesh();
-    MeshTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
 // libmesh generators
 #ifdef USE_EXT_LIBMESH
     // Test the libmesh cube generator
     generator = AMP::shared_ptr<AMP::unit_test::MeshGenerator>(
         new AMP::unit_test::LibMeshCubeGenerator<5> );
     generator->build_mesh();
-    MeshTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     // Test the libmesh reader generator
     generator = AMP::shared_ptr<AMP::unit_test::MeshGenerator>(
         new AMP::unit_test::ExodusReaderGenerator<> );
     generator->build_mesh();
-    MeshTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     generator = AMP::shared_ptr<AMP::unit_test::MeshGenerator>(
         new AMP::unit_test::ExodusReaderGenerator<2> );
     generator->build_mesh();
-    MeshTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     // Test the ThreeElementLGenerator generator
     generator = AMP::shared_ptr<AMP::unit_test::MeshGenerator>(
         new AMP::unit_test::libMeshThreeElementGenerator );
     generator->build_mesh();
-    MeshTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     // Test the multimesh generator
     generator = AMP::shared_ptr<AMP::unit_test::MultiMeshGenerator>(
         new AMP::unit_test::MultiMeshGenerator );
     generator->build_mesh();
-    MeshTestLoop( ut, generator->getMesh() );
-    MeshVectorTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshVectorTestLoop( ut, generator->getMesh() );
 #endif
     PROFILE_STOP( "testMeshGenerators" );
 }
@@ -121,12 +121,12 @@ void testAMPMesh( AMP::UnitTest *ut )
 
     // Check the volumes
     std::vector<double> range( 6, 0.0 );
-    range[1]                         = 1.0;
-    range[3]                         = 1.0;
-    range[5]                         = 1.0;
-    double dx                        = range[1] / size[0];
-    AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Edge );
-    bool passes                      = true;
+    range[1]      = 1.0;
+    range[3]      = 1.0;
+    range[5]      = 1.0;
+    double dx     = range[1] / size[0];
+    auto iterator = mesh->getIterator( AMP::Mesh::Edge );
+    bool passes   = true;
     for ( size_t i = 0; i < iterator.size(); i++ ) {
         if ( !AMP::Utilities::approx_equal( iterator->volume(), dx, 1e-12 ) )
             passes = false;
@@ -157,10 +157,10 @@ void testAMPMesh( AMP::UnitTest *ut )
         ut->failure( "Simple structured mesh has correct element volume" );
 
     // Run the mesh tests
-    MeshTestLoop( ut, mesh );
-    getParents( ut, mesh );
-    MeshVectorTestLoop( ut, mesh );
-    MeshMatrixTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::getParents( ut, mesh );
+    AMP::Mesh::meshTests::MeshVectorTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh );
     PROFILE_STOP( "testAMPMesh" );
 }
 
@@ -182,9 +182,9 @@ void testSTKMesh( AMP::UnitTest *ut )
     AMP::shared_ptr<AMP::Mesh::STKMesh> mesh( new AMP::Mesh::STKMesh( params ) );
 
     // Run the mesh tests
-    MeshTestLoop( ut, mesh );
-    MeshVectorTestLoop( ut, mesh );
-    MeshMatrixTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshVectorTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh );
     PROFILE_STOP( "testSTKMesh" );
 }
 #endif
@@ -207,9 +207,9 @@ void testlibMesh( AMP::UnitTest *ut )
     AMP::shared_ptr<AMP::Mesh::libMesh> mesh( new AMP::Mesh::libMesh( params ) );
 
     // Run the mesh tests
-    MeshTestLoop( ut, mesh );
-    MeshVectorTestLoop( ut, mesh );
-    MeshMatrixTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshVectorTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh );
     PROFILE_STOP( "testlibMesh" );
 }
 #endif
@@ -261,9 +261,9 @@ void testInputMesh( AMP::UnitTest *ut, std::string filename )
     AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Run the mesh tests
-    MeshTestLoop( ut, mesh );
-    MeshVectorTestLoop( ut, mesh );
-    MeshMatrixTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshVectorTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh );
     PROFILE_STOP( "testInputMesh" );
 }
 
@@ -277,7 +277,7 @@ void testSubsetMesh( AMP::UnitTest *ut )
         new AMP::unit_test::SurfaceSubsetGenerator<AMP::unit_test::ExodusReaderGenerator<>, 0> );
     generator->build_mesh();
     AMP::Mesh::Mesh::shared_ptr mesh = generator->getMesh();
-    MeshTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
     // MeshVectorTestLoop( ut, mesh );
     // MeshMatrixTestLoop( ut, mesh );
 
@@ -286,7 +286,7 @@ void testSubsetMesh( AMP::UnitTest *ut )
         new AMP::unit_test::SurfaceSubsetGenerator<AMP::unit_test::ExodusReaderGenerator<3>, 1> );
     generator->build_mesh();
     mesh = generator->getMesh();
-    MeshTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
 // MeshVectorTestLoop( ut, mesh );
 // MeshMatrixTestLoop( ut, mesh );
 #else
@@ -300,7 +300,7 @@ void testSubsetMesh( AMP::UnitTest *ut )
 void testDefaults( AMP::UnitTest& ut )
 {
     // Run the ID test
-    testID( &ut );
+    AMP::Mesh::meshTests::testID( &ut );
 
     // Run tests on a native AMP mesh
     testAMPMesh( &ut );

@@ -17,7 +17,7 @@ redundantCopy
 
 // Suppress operator test == warnings in tests
 duplicateExpression:*/utils/test/test_AMP_MPI.cc
-duplicateExpression:*/ampmesh/test/meshTests.h
+duplicateExpression:*/ampmesh/testHelpers/meshTests.cc
 duplicateExpression:*/ampmesh/structured/BoxMesh.cc
 duplicateExpression:*/discretization/test/DOFManager_tests.h
 
