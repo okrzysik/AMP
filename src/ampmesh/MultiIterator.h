@@ -57,29 +57,11 @@ public:
     //! Check if two iterators are not equal
     bool operator!=( const MeshIterator &rhs ) const override;
 
-    //! Dereference the iterator
-    MeshElement &operator*(void) override;
-
-    //! Dereference the iterator
-    MeshElement *operator->(void) override;
-
-    //! Dereference the iterator
-    const MeshElement &operator*( void ) const override;
-
-    //! Dereference the iterator
-    const MeshElement *operator->( void ) const override;
-
     //! Return an iterator to the begining
     MeshIterator begin() const override;
 
     //! Return an iterator to the begining
     MeshIterator end() const override;
-
-    //! Return the number of elements in the iterator
-    virtual size_t size() const override;
-
-    //! Return the current position (from the beginning) in the iterator
-    virtual size_t position() const override;
 
     using MeshIterator::operator+;
     using MeshIterator::operator+=;
@@ -90,12 +72,14 @@ protected:
 
 private:
     // Data members
-    size_t d_localPos, d_globalPos, d_iteratorNum, d_globalSize;
+    size_t d_localPos, d_iteratorNum;
     std::vector<size_t> d_iteratorSize;
     std::vector<AMP::shared_ptr<MeshIterator>> d_iterators;
     MeshIterator cur_iterator;
 };
-}
-}
+
+
+} // Mesh namespace
+} // AMP namespace
 
 #endif

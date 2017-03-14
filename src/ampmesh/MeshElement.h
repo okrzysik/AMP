@@ -44,20 +44,14 @@ public:
     virtual inline ~MeshElement();
 
 
+public: // Virtual functions
+
     //! Return the owner rank according to AMP_COMM_WORLD
     virtual inline unsigned int globalOwnerRank() const;
 
 
-    //! Return the element type
-    virtual inline GeomType elementType() const { return d_globalID.type(); }
-
-
     //! Return the element class
     virtual inline std::string elementClass() const;
-
-
-    //! Return the unique global ID of the element
-    virtual inline MeshElementID globalID() const { return d_globalID; }
 
 
     //! Return the elements composing the current element
@@ -130,6 +124,21 @@ public:
     virtual inline bool isInBlock( int id ) const;
 
 
+public: // non-virtual functions
+
+
+    //! Function to get a pointer to the raw mesh element (structuredMeshElement, etc.)
+    inline MeshElement *getRawElement();
+
+    //! Function to get a pointer to the raw mesh element (structuredMeshElement, etc.)
+    inline const MeshElement *getRawElement() const;
+
+    //! Return the element type
+    inline GeomType elementType() const;
+
+    //! Return the unique global ID of the element
+    inline MeshElementID globalID() const;
+
     // Overload operators
     inline bool operator==( const MeshElement &rhs ) const { return d_globalID == rhs.d_globalID; }
     inline bool operator!=( const MeshElement &rhs ) const { return d_globalID != rhs.d_globalID; }
@@ -145,15 +154,6 @@ public:
     inline bool operator>=( const MeshElementID &rhs ) const { return d_globalID >= rhs; }
 
 
-    //! Function to get a pointer to the raw mesh element (libMeshElement, structuredMeshElement,
-    //! etc.)
-    virtual inline MeshElement *getRawElement();
-
-    //! Function to get a pointer to the raw mesh element (libMeshElement, structuredMeshElement,
-    //! etc.)
-    virtual inline const MeshElement *getRawElement() const;
-
-
 protected:
     // Unique (per class) ID for identifing the underlying iterator
     unsigned int typeID;
@@ -167,9 +167,11 @@ protected:
     // Clone the iterator
     virtual inline MeshElement *clone() const;
 };
-}
-}
 
-#include "MeshElement.inline.h"
+
+} // Mesh namespace
+} // AMP namespace
+
+#include "ampmesh/MeshElement.inline.h"
 
 #endif

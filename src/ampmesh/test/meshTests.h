@@ -82,7 +82,10 @@ void ElementIteratorTest( AMP::UnitTest *ut,
     size_t number_of_ghost_elements = 0;
     std::set<AMP::Mesh::MeshElementID> id_set;
     AMP::Mesh::MeshIterator it = iterator.begin();
+    bool pass_position = true;
     for ( size_t i = 0; i < iterator.size(); i++, ++it ) {
+        if ( it.position()!=i )
+            pass_position = false;
         AMP::Mesh::MeshElementID id = it->globalID();
         id_set.insert( id );
         if ( id.is_local() )
@@ -90,7 +93,11 @@ void ElementIteratorTest( AMP::UnitTest *ut,
         else
             number_of_ghost_elements++;
     }
-    if ( number_of_local_elements == N_local && number_of_ghost_elements == N_ghost )
+    if ( pass_position)
+        ut->passes( "iterator.position()" );
+    else
+        ut->failure( "iterator.position()" );
+   if ( number_of_local_elements == N_local && number_of_ghost_elements == N_ghost )
         ut->passes( "regular iterator count" );
     else
         ut->failure( "regular iterator count" );
@@ -1403,7 +1410,7 @@ inline void incIterator( AMP::Mesh::Mesh::shared_ptr mesh ) {
     AMP_ASSERT(N==it.size());
 }
 inline void rangeLoop( AMP::Mesh::Mesh::shared_ptr mesh ) {
-    for ( auto elem : mesh->getIterator( AMP::Mesh::Vertex, 0 ) )
+    for ( const auto& elem : mesh->getIterator( AMP::Mesh::Vertex, 0 ) )
         NULL_USE(elem);
 }
 inline void globalID( AMP::Mesh::Mesh::shared_ptr mesh ) {
@@ -1478,7 +1485,6 @@ void MeshPerformance( AMP::UnitTest *, AMP::Mesh::Mesh::shared_ptr mesh )
     // Test getting volume for an element
     time = runAndTime( volume, mesh, 10 );
     printf("   volume: %i ns\n",static_cast<int>(1e9*time/N_elem));
-
 }
 
 #endif

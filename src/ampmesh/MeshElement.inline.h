@@ -82,17 +82,13 @@ MeshElement *MeshElement::clone() const
 /********************************************************
 * Function to get the raw element                       *
 ********************************************************/
-MeshElement *MeshElement::getRawElement()
+inline MeshElement *MeshElement::getRawElement()
 {
-    if ( element == nullptr )
-        return this;
-    return element->getRawElement();
+    return element==nullptr ? this:element;
 }
-const MeshElement *MeshElement::getRawElement() const
+inline const MeshElement *MeshElement::getRawElement() const
 {
-    if ( element == nullptr )
-        return this;
-    return element->getRawElement();
+    return element==nullptr ? this:element;
 }
 
 
@@ -140,14 +136,25 @@ bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) co
 
 
 /********************************************************
+* Function to return basic info                         *
+********************************************************/
+inline MeshElementID MeshElement::globalID() const
+{
+    return element==nullptr ? d_globalID:element->d_globalID;
+}
+inline GeomType MeshElement::elementType() const
+{
+    return globalID().type();
+}
+inline std::string MeshElement::elementClass() const
+{
+    return element==nullptr ? std::string("MeshElement"):element->elementClass();
+}
+
+
+/********************************************************
 * Functions that aren't implimented for the base class  *
 ********************************************************/
-std::string MeshElement::elementClass() const
-{
-    if ( element == nullptr )
-        AMP_ERROR( "MeshElement" );
-    return element->elementClass();
-}
 std::vector<MeshElement> MeshElement::getElements( const GeomType type ) const
 {
     if ( element == nullptr )

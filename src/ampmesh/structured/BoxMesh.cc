@@ -109,8 +109,8 @@ BoxMesh::BoxMesh( MeshParameters::shared_ptr params_in ):
     AMP_INSIST( d_db.get(), "Database must exist" );
     for (int i=0; i<3; i++) {
         d_isPeriodic[i] = false;
-        d_globalSize[i] = 0;
-        d_numBlocks[i] = 0;
+        d_globalSize[i] = 1;
+        d_numBlocks[i] = 1;
     }
     for (int i=0; i<6; i++) {
         d_surfaceId[i] = i;
@@ -370,31 +370,13 @@ size_t BoxMesh::maxProcs( const MeshParameters::shared_ptr &params )
 /****************************************************************
 * Function to return the element given an ID                    *
 ****************************************************************/
-MeshElement BoxMesh::getElement( const MeshElementID &elem_id ) const
+MeshElement BoxMesh::getElement( const MeshElementID &id ) const
 {
-    auto range = getLocalBlock( elem_id.owner_rank() );
-    // Increase the index range for the boxes on the boundary for all elements except the current
-    // dimension
-    if ( elem_id.type() != GeomDim ) {
-        for ( int d = 0; d < GeomDim; d++ ) {
-            if ( range[2 * d + 1] == d_globalSize[d]-1 && !d_isPeriodic[d] )
-                range[2 * d + 1]++;
-        }
-    }
-    // Get the 3-index from the local id
-    size_t myBoxSize[3] = { 1, 1, 1 };
-    for ( int d      = 0; d < GeomDim; d++ )
-        myBoxSize[d] = range[2 * d + 1] - range[2 * d + 0] + 1;
-    size_t local_id = elem_id.local_id();
-    auto type = elem_id.type();
-    auto side = local_id / ( myBoxSize[0] * myBoxSize[1] * myBoxSize[2] );
-    int x = range[0] + (int) local_id % myBoxSize[0];
-    int y = range[2] + (int) ( local_id / myBoxSize[0] ) % myBoxSize[1];
-    int z = range[4] + (int) ( local_id / ( myBoxSize[0] * myBoxSize[1] ) ) % myBoxSize[2];
-    MeshElementIndex index( type, side, x, y, z );
+    // Get the index of the element
+    MeshElementIndex index = convert( id );
     // Create the element
     structuredMeshElement elem( index, this );
-    AMP_ASSERT( elem.globalID() == elem_id );
+    AMP_ASSERT( elem.globalID() == id );
     return elem;
 }
 MeshElement BoxMesh::getElement( const MeshElementIndex &index ) const
@@ -730,41 +712,6 @@ bool BoxMesh::isOnBoundary( const MeshElementIndex &index, int id ) const
         }
     }
     return on_boundary;
-}
-
-
-/****************************************************************
-* Helper function to return the indices and rank of the owning  *
-* block for a given MeshElementIndex                            *
-****************************************************************/
-void BoxMesh::getOwnerBlock( const MeshElementIndex &index, unsigned int &rank, int *range ) const
-{
-    int myBoxIndex[3] = { 0, 0, 0 };
-    for ( int d = 0; d < GeomDim; d++ ) {
-        size_t size     = (size_t) d_globalSize[d];
-        size_t N_blocks = (size_t) d_numBlocks[d];
-        if ( index.index(d) == d_globalSize[d] ) {
-            // The element lies on the physical bounadry
-            AMP_ASSERT( index.type() < GeomDim );
-            myBoxIndex[d] = d_numBlocks[d] - 1;
-        } else {
-            // Find the owning box
-            myBoxIndex[d] = (int) ( ( ( (size_t) index.index(d) + 1 ) * N_blocks - 1 ) / size );
-        }
-        range[2 * d + 0] = (int) ( ( size * ( (size_t) myBoxIndex[d] ) ) / N_blocks );
-        range[2 * d + 1] = (int) ( ( size * ( (size_t) myBoxIndex[d] + 1 ) ) / N_blocks );
-        range[2 * d + 1] = std::min( range[2 * d + 1], d_globalSize[d] );
-    }
-    // Increase the index range for the boxes on the boundary for all elements except the current
-    // dimension
-    if ( index.type() != GeomDim ) {
-        for ( int d = 0; d < GeomDim; d++ ) {
-            if ( range[2 * d + 1] == d_globalSize[d] && !d_isPeriodic[d] )
-                range[2 * d + 1]++;
-        }
-    }
-    rank = (unsigned int) ( myBoxIndex[0] + myBoxIndex[1] * d_numBlocks[0] +
-                            myBoxIndex[2] * d_numBlocks[0] * d_numBlocks[1] );
 }
 
 

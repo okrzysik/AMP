@@ -62,29 +62,11 @@ public:
     //! Check if two iterators are not equal
     virtual bool operator!=( const MeshIterator &rhs ) const override;
 
-    //! Dereference the iterator
-    virtual MeshElement &operator*(void) override;
-
-    //! Dereference the iterator
-    virtual MeshElement *operator->(void) override;
-
-    //! Dereference the iterator
-    virtual const MeshElement &operator*( void ) const override;
-
-    //! Dereference the iterator
-    virtual const MeshElement *operator->( void ) const override;
-
     //! Return an iterator to the begining
     virtual MeshIterator begin() const override;
 
     //! Return an iterator to the begining
     virtual MeshIterator end() const override;
-
-    //! Return the number of elements in the iterator
-    virtual size_t size() const override;
-
-    //! Return the current position (from the beginning) in the iterator
-    virtual size_t position() const override;
 
     using MeshIterator::operator+;
     using MeshIterator::operator+=;
@@ -103,8 +85,6 @@ protected:
 
 private:
     // Data members
-    size_t d_pos;
-    size_t d_size;
     std::array<bool,3> d_isPeriodic;
     std::array<int,3> d_globalSize;
     BoxMesh::MeshElementIndex d_first;
@@ -112,8 +92,12 @@ private:
     AMP::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> d_elements;
     const AMP::Mesh::BoxMesh *d_mesh;
     mutable structuredMeshElement d_cur_element;
+
+    void setCurrentElement();
 };
-}
-}
+
+
+} // Mesh namespace
+} // AMP namespace
 
 #endif

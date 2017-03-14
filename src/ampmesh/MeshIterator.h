@@ -41,6 +41,8 @@ public:
     //! Deconstructor
     virtual ~MeshIterator();
 
+public: // Virtual functions
+
     /**
      * \brief Pre-Increment
      * \details  Pre-Increment the mesh iterator and return the reference to the iterator.
@@ -71,38 +73,11 @@ public:
      */
     virtual MeshIterator operator--( int );
 
-    //! Check if two iterators are equal
-    virtual bool operator==( const MeshIterator &rhs ) const;
-
-    //! Check if two iterators are not equal
-    virtual bool operator!=( const MeshIterator &rhs ) const;
-
-    //! Dereference the iterator
-    virtual MeshElement &operator*( void );
-
-    //! Dereference the iterator
-    virtual const MeshElement &operator*( void ) const;
-
-    //! Dereference the iterator
-    virtual MeshElement *operator->( void );
-
-    //! Dereference the iterator
-    virtual const MeshElement *operator->( void ) const;
-
     //! Return an iterator to the begining
     virtual MeshIterator begin() const;
 
     //! Return an iterator to the begining
     virtual MeshIterator end() const;
-
-    //! Return the number of elements in the iterator
-    virtual size_t size() const;
-
-    //! Return the current position (from the beginning) in the iterator
-    virtual size_t position() const;
-
-    //! Return the Unique (per class) ID for identifing the underlying iterator
-    unsigned int type_id() const { return typeID; }
 
     /**
      * \brief Arithmetic operator+
@@ -181,30 +156,76 @@ public:
      */
     virtual MeshIterator &operator-=( const MeshIterator &it );
 
-    //! Operator <
-    virtual bool operator<( const MeshIterator & );
-
-    //! Operator <=
-    virtual bool operator<=( const MeshIterator &it );
-
-    //! Operator >
-    virtual bool operator>( const MeshIterator & );
-
-    //! Operator >=
-    virtual bool operator>=( const MeshIterator & );
-
     //! Dereference iterator with offset
     virtual MeshElement &operator[]( int );
 
+    //! Check if two iterators are equal
+    virtual bool operator==( const MeshIterator &rhs ) const;
+
+    //! Check if two iterators are not equal
+    virtual bool operator!=( const MeshIterator &rhs ) const;
+
+
+public: // non-virtual functions
+
+    //! Return the raw iterator (may be this)
+    inline const MeshIterator* rawIterator() const;
+
+    //! Return the number of elements in the iterator
+    inline size_t size() const;
+
+    //! Return the current position (from the beginning) in the iterator
+    inline size_t position() const;
+
+    //! Return the Unique (per class) ID for identifing the underlying iterator
+    inline unsigned int type_id() const;
+
+    //! Operator <
+    inline bool operator<( const MeshIterator & ) const;
+
+    //! Operator <=
+    inline bool operator<=( const MeshIterator &it ) const;
+
+    //! Operator >
+    inline bool operator>( const MeshIterator & ) const;
+
+    //! Operator >=
+    inline bool operator>=( const MeshIterator & ) const;
+
+    //! Dereference the iterator
+    inline MeshElement &operator*( void );
+
+    //! Dereference the iterator
+    inline const MeshElement &operator*( void ) const;
+
+    //! Dereference the iterator
+    inline MeshElement *operator->( void );
+
+    //! Dereference the iterator
+    inline const MeshElement *operator->( void ) const;
+
 protected:
-    // A pointer to the derived class
-    MeshIterator *iterator;
     // Clone the iterator
     virtual MeshIterator *clone() const;
+
+protected:
+    // A pointer to the derived class
+    MeshIterator *d_iterator;
     // Unique (per class) ID for identifing the underlying iterator
-    unsigned int typeID;
+    unsigned int d_typeID;
+    // Size of the iterator
+    size_t d_size;
+    // Position of the iterator
+    size_t d_pos;
+    // Pointer to the current element
+    MeshElement *d_element;
 };
-}
-}
+
+
+} // Mesh namespace
+} // AMP namespace
+
+#include "ampmesh/MeshIterator.inline.h"
 
 #endif
+

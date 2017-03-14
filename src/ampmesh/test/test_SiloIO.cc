@@ -24,6 +24,19 @@
 #endif
 
 
+AMP::Mesh::GeomType getSurfaceType( AMP::Mesh::GeomType volume )
+{
+    if ( volume == AMP::Mesh::Vertex )
+        return AMP::Mesh::Vertex;
+    else if ( volume == AMP::Mesh::Edge )
+        return AMP::Mesh::Vertex;
+    else if ( volume == AMP::Mesh::Face )
+        return AMP::Mesh::Edge;
+    else if ( volume == AMP::Mesh::Volume )
+        return AMP::Mesh::Face;
+    return AMP::Mesh::null;
+}
+
 
 void test_Silo( AMP::UnitTest *ut, std::string input_file )
 {
@@ -48,7 +61,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( params );
     auto pointType = AMP::Mesh::Vertex;
     auto volumeType = mesh->getGeomType();
-    auto surfaceType = volumeType;
+    auto surfaceType = getSurfaceType( volumeType );
     globalComm.barrier();
     PROFILE_STOP( "Load Mesh" );
     double t2 = AMP::AMP_MPI::time();
@@ -135,7 +148,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     id_vec->setToScalar( -1 );
     std::vector<int> ids = submesh->getBoundaryIDs();
     for ( auto &id : ids ) {
-        AMP::Mesh::MeshIterator it = submesh->getBoundaryIDIterator( AMP::Mesh::Face, id, 0 );
+        AMP::Mesh::MeshIterator it = submesh->getBoundaryIDIterator( surfaceType, id, 0 );
         for ( size_t j = 0; j < it.size(); j++ ) {
             DOF_surface->getDOFs( it->globalID(), dofs );
             AMP_ASSERT( dofs.size() == 1 );

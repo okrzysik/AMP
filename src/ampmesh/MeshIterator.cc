@@ -15,39 +15,48 @@ static MeshElement nullElement;
 /********************************************************
 * Constructors                                          *
 ********************************************************/
-MeshIterator::MeshIterator()
+MeshIterator::MeshIterator():
+    d_iterator(nullptr),
+    d_typeID( MeshIteratorTypeID ),
+    d_size(0),
+    d_pos(0),
+    d_element(nullptr)
 {
-    typeID   = MeshIteratorTypeID;
-    iterator = nullptr;
 }
-MeshIterator::MeshIterator( const MeshIterator &rhs )
+MeshIterator::MeshIterator( const MeshIterator &rhs ):
+    d_iterator(nullptr),
+    d_typeID( MeshIteratorTypeID ),
+    d_size(0),
+    d_pos(0),
+    d_element(nullptr)
 {
-    typeID   = MeshIteratorTypeID;
-    iterator = nullptr;
-    if ( rhs.iterator == nullptr && rhs.typeID == MeshIteratorTypeID ) {
-        iterator = nullptr;
-    } else if ( rhs.typeID != MeshIteratorTypeID ) {
-        iterator = rhs.clone();
+    if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
+        d_iterator = nullptr;
+    } else if ( rhs.d_typeID != MeshIteratorTypeID ) {
+        d_iterator = rhs.clone();
     } else {
-        iterator = rhs.iterator->clone();
+        d_iterator = rhs.d_iterator->clone();
     }
 }
 MeshIterator &MeshIterator::operator=( const MeshIterator &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    if ( iterator != nullptr ) {
+    if ( d_iterator != nullptr ) {
         // Delete the existing element
-        delete iterator;
-        iterator = nullptr;
+        delete d_iterator;
+        d_iterator = nullptr;
     }
-    typeID = MeshIteratorTypeID;
-    if ( rhs.iterator == nullptr && rhs.typeID == MeshIteratorTypeID ) {
-        iterator = nullptr;
-    } else if ( rhs.typeID != MeshIteratorTypeID ) {
-        iterator = rhs.clone();
+    d_typeID = MeshIteratorTypeID;
+    d_size = 0;
+    d_pos = 0;
+    d_element = nullptr;
+    if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
+        d_iterator = nullptr;
+    } else if ( rhs.d_typeID != MeshIteratorTypeID ) {
+        d_iterator = rhs.clone();
     } else {
-        iterator = rhs.iterator->clone();
+        d_iterator = rhs.d_iterator->clone();
     }
     return *this;
 }
@@ -58,18 +67,18 @@ MeshIterator &MeshIterator::operator=( const MeshIterator &rhs )
 ********************************************************/
 MeshIterator::~MeshIterator()
 {
-    if ( iterator != nullptr )
-        delete iterator;
-    iterator = nullptr;
+    if ( d_iterator != nullptr )
+        delete d_iterator;
+    d_iterator = nullptr;
 }
 
 
 /********************************************************
-* Function to clone the iterator                        *
+* Function to clone the d_iterator                        *
 ********************************************************/
 MeshIterator *MeshIterator::clone() const
 {
-    if ( iterator == nullptr )
+    if ( d_iterator == nullptr )
         return new MeshIterator();
     else
         AMP_ERROR( "clone must instantiated by the derived class" );
@@ -78,29 +87,29 @@ MeshIterator *MeshIterator::clone() const
 
 
 /********************************************************
-* Functions to return the begin or end iterator         *
+* Functions to return the begin or end d_iterator         *
 ********************************************************/
 MeshIterator MeshIterator::begin() const
 {
-    if ( iterator == nullptr )
+    if ( d_iterator == nullptr )
         return MeshIterator();
-    return iterator->begin();
+    return d_iterator->begin();
 }
 MeshIterator MeshIterator::end() const
 {
-    if ( iterator == nullptr )
+    if ( d_iterator == nullptr )
         return MeshIterator();
-    return iterator->end();
+    return d_iterator->end();
 }
 
 
 /********************************************************
 * Functions for incrementing/decrementing               *
 ********************************************************/
-MeshIterator &MeshIterator::operator++() { return iterator->operator++(); }
-MeshIterator MeshIterator::operator++( int i ) { return iterator->operator++( i ); }
-MeshIterator &MeshIterator::operator--() { return iterator->operator--(); }
-MeshIterator MeshIterator::operator--( int i ) { return iterator->operator--( i ); }
+MeshIterator &MeshIterator::operator++() { return d_iterator->operator++(); }
+MeshIterator MeshIterator::operator++( int i ) { return d_iterator->operator++( i ); }
+MeshIterator &MeshIterator::operator--() { return d_iterator->operator--(); }
+MeshIterator MeshIterator::operator--( int i ) { return d_iterator->operator--( i ); }
 
 
 /********************************************************
@@ -112,9 +121,9 @@ bool MeshIterator::operator==( const MeshIterator &rhs ) const
         return true;
     if ( this->size() != rhs.size() || this->position() != rhs.position() )
         return false;
-    if ( iterator == nullptr )
-        return rhs.iterator == nullptr;
-    return iterator->operator==( rhs );
+    if ( d_iterator == nullptr )
+        return rhs.d_iterator == nullptr;
+    return d_iterator->operator==( rhs );
 }
 bool MeshIterator::operator!=( const MeshIterator &rhs ) const
 {
@@ -122,42 +131,21 @@ bool MeshIterator::operator!=( const MeshIterator &rhs ) const
         return false;
     if ( this->size() != rhs.size() || this->position() != rhs.position() )
         return true;
-    if ( iterator == nullptr )
-        return rhs.iterator != nullptr;
-    return iterator->operator!=( rhs );
+    if ( d_iterator == nullptr )
+        return rhs.d_iterator != nullptr;
+    return d_iterator->operator!=( rhs );
 }
 
 
 /********************************************************
-* Functions for dereferencing the iterator              *
+* Functions for dereferencing the d_iterator            *
 ********************************************************/
-MeshElement &MeshIterator::operator*() { return iterator->operator*(); }
-MeshElement *MeshIterator::operator->() { return iterator->operator->(); }
-const MeshElement &MeshIterator::operator*() const { return iterator->operator*(); }
-const MeshElement *MeshIterator::operator->() const { return iterator->operator->(); }
 MeshElement &MeshIterator::operator[]( int i )
 {
-    if ( iterator != nullptr )
-        return iterator->operator[]( i );
-    AMP_ERROR( "Dereferencing iterator with offset is not supported by default" );
+    if ( d_iterator != nullptr )
+        return d_iterator->operator[]( i );
+    AMP_ERROR( "Dereferencing d_iterator with offset is not supported by default" );
     return this->operator*(); // This line never executes and would return the wrong object
-}
-
-
-/********************************************************
-* Function to get the size and position of the iterator *
-********************************************************/
-size_t MeshIterator::size() const
-{
-    if ( iterator == nullptr )
-        return 0;
-    return iterator->size();
-}
-size_t MeshIterator::position() const
-{
-    if ( iterator == nullptr )
-        return 0;
-    return iterator->position();
 }
 
 
@@ -166,85 +154,65 @@ size_t MeshIterator::position() const
 ********************************************************/
 MeshIterator MeshIterator::operator+( int n ) const
 {
-    if ( iterator != nullptr )
-        return iterator->operator+( n );
-    MeshIterator tmp( *this ); // Create a temporary iterator
-    tmp.operator+=( n );       // Increment temporary iterator
-    return tmp;                // return temporary iterator
+    if ( d_iterator != nullptr )
+        return d_iterator->operator+( n );
+    MeshIterator tmp( *this ); // Create a temporary d_iterator
+    tmp.operator+=( n );       // Increment temporary d_iterator
+    return tmp;                // return temporary d_iterator
 }
 MeshIterator MeshIterator::operator+( const MeshIterator &it ) const
 {
-    if ( iterator != nullptr )
-        return iterator->operator+( it );
+    if ( d_iterator != nullptr )
+        return d_iterator->operator+( it );
     return this->operator+( (int) it.position() );
 }
 MeshIterator MeshIterator::operator-( int n ) const
 {
-    if ( iterator != nullptr )
-        return iterator->operator-( n );
-    MeshIterator tmp( *this ); // Create a temporary iterator
+    if ( d_iterator != nullptr )
+        return d_iterator->operator-( n );
+    MeshIterator tmp( *this ); // Create a temporary d_iterator
     return this->operator+( -n );
 }
 MeshIterator MeshIterator::operator-( const MeshIterator &it ) const
 {
-    if ( iterator != nullptr )
-        return iterator->operator+( it );
+    if ( d_iterator != nullptr )
+        return d_iterator->operator+( it );
     return this->operator+( -static_cast<int>( it.position() ) );
 }
 MeshIterator &MeshIterator::operator+=( int n )
 {
-    if ( iterator != nullptr )
-        return iterator->operator+=( n );
+    if ( d_iterator != nullptr )
+        return d_iterator->operator+=( n );
     if ( n >= 0 ) {
         for ( int i = 0; i < n; i++ ) {
             this->operator++();
-        } // increment iterator
+        } // increment d_iterator
     } else {
         for ( int i = 0; i < -n; i++ ) {
             this->operator--();
-        } // decrement iterator
+        } // decrement d_iterator
     }
     return *this;
 }
 MeshIterator &MeshIterator::operator+=( const MeshIterator &it )
 {
-    if ( iterator != nullptr )
-        return iterator->operator+=( (int) it.position() );
+    if ( d_iterator != nullptr )
+        return d_iterator->operator+=( (int) it.position() );
     return this->operator+=( (int) it.position() );
 }
 MeshIterator &MeshIterator::operator-=( int n )
 {
-    if ( iterator != nullptr )
-        return iterator->operator-=( n );
+    if ( d_iterator != nullptr )
+        return d_iterator->operator-=( n );
     return this->operator+=( -n );
 }
 MeshIterator &MeshIterator::operator-=( const MeshIterator &it )
 {
-    if ( iterator != nullptr )
-        return iterator->operator-=( (int) it.position() );
+    if ( d_iterator != nullptr )
+        return d_iterator->operator-=( (int) it.position() );
     return this->operator+=( -static_cast<int>( it.position() ) );
 }
 
-
-/********************************************************
-*  Comparison operators                                 *
-********************************************************/
-bool MeshIterator::operator<( const MeshIterator &rhs )
-{
-    return this->position() < rhs.position();
-}
-bool MeshIterator::operator<=( const MeshIterator &rhs )
-{
-    return this->position() <= rhs.position();
-}
-bool MeshIterator::operator>( const MeshIterator &rhs )
-{
-    return this->position() > rhs.position();
-}
-bool MeshIterator::operator>=( const MeshIterator &rhs )
-{
-    return this->position() >= rhs.position();
-}
 
 
 } // Mesh namespace

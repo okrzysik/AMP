@@ -159,23 +159,62 @@ inline BoxMesh::Box BoxMesh::getLocalBox( int gcw ) const
 ****************************************************************/
 inline std::array<int,6> BoxMesh::getLocalBlock( unsigned int rank ) const
 {
-    size_t num_blocks = 1;
-    for ( int d = 0; d < GeomDim; d++ )
-        num_blocks *= d_numBlocks[d];
-    AMP_ASSERT( (int) rank < (int) num_blocks );
+    int p[3];
+    p[0] = rank % d_numBlocks[0];
+    p[1] = rank/d_numBlocks[0] % d_numBlocks[1];
+    p[2] = rank/(d_numBlocks[0]*d_numBlocks[1]);
+    AMP_ASSERT( p[2] < d_numBlocks[2] );
     std::array<int,6> range;
     range.fill(0);
-    int tmp = 1;
     for ( int d = 0; d < GeomDim; d++ ) {
-        size_t i = static_cast<size_t>( ( ( (int) rank ) / tmp ) % d_numBlocks[d] );
-        tmp *= d_numBlocks[d];
-        size_t size      = (size_t) d_globalSize[d];
-        size_t N_blocks  = (size_t) d_numBlocks[d];
-        range[2 * d + 0] = static_cast<int>( ( i * size ) / ( (size_t) N_blocks ) );
-        range[2 * d + 1] = static_cast<int>( ( ( i + 1 ) * size ) / ( (size_t) N_blocks ) ) - 1;
-        range[2 * d + 1] = std::min( range[2 * d + 1], d_globalSize[d]-1 );
+        int size = (d_globalSize[d]+d_numBlocks[d]-1)/d_numBlocks[d];
+        range[2*d+0] = p[d]*size;
+        range[2*d+1] = (p[d]+1)*size-1;
     }
     return range;
+}
+
+
+/****************************************************************
+* Convert between the different id types                        *
+****************************************************************/
+inline MeshElementID BoxMesh::convert( const BoxMesh::MeshElementIndex& index ) const
+{
+    int size[3] = { (d_globalSize[0]+d_numBlocks[0]-1)/d_numBlocks[0],
+                    (d_globalSize[1]+d_numBlocks[1]-1)/d_numBlocks[1],
+                    (d_globalSize[2]+d_numBlocks[2]-1)/d_numBlocks[2] };
+    int i = index.index(0);
+    int j = index.index(1);
+    int k = index.index(2);
+    int px = std::min(i/size[0],d_numBlocks[0]-1);
+    int py = std::min(j/size[1],d_numBlocks[1]-1);
+    int pz = std::min(k/size[2],d_numBlocks[2]-1);
+    i -= size[0]*px;
+    j -= size[1]*py;
+    k -= size[2]*pz;
+    unsigned int local_id = i + (size[0]+1)*( j + (size[1]+1)*( k + (size[2]+1)*index.side() ) );
+    int owner_rank = px + py*d_numBlocks[0] + pz*d_numBlocks[0]*d_numBlocks[1];
+    bool is_local = (int) owner_rank == d_comm.getRank();
+    return MeshElementID( is_local, (GeomType) index.type(), local_id, owner_rank, d_meshID );
+}
+inline BoxMesh::MeshElementIndex BoxMesh::convert( const MeshElementID& id ) const
+{
+    int rank = id.owner_rank();
+    int proc[3] = { rank % d_numBlocks[0],
+                    rank/d_numBlocks[0] % d_numBlocks[1],
+                    rank/(d_numBlocks[0]*d_numBlocks[1]) };
+    int size[3] = { (d_globalSize[0]+d_numBlocks[0]-1)/d_numBlocks[0],
+                    (d_globalSize[1]+d_numBlocks[1]-1)/d_numBlocks[1],
+                    (d_globalSize[2]+d_numBlocks[2]-1)/d_numBlocks[2] };
+    size_t ijk = id.local_id();
+    int i = ijk % (size[0]+1);  ijk /= (size[0]+1);
+    int j = ijk % (size[1]+1);  ijk /= (size[1]+1);
+    int k = ijk % (size[2]+1);  ijk /= (size[2]+1);
+    int side = ijk;
+    i += proc[0]*size[0];
+    j += proc[1]*size[1];
+    k += proc[2]*size[2];
+    return MeshElementIndex( id.type(), side, i, j, k );
 }
 
 

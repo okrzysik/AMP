@@ -54,11 +54,9 @@ AMP::LinearAlgebra::Vector::shared_ptr createVector( AMP::LinearAlgebra::Variabl
     AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     params->setComm( comm );
     // Create an AMP mesh
-    AMP::Mesh::Mesh::shared_ptr mesh =
-        AMP::shared_ptr<AMP::Mesh::BoxMesh>( new AMP::Mesh::BoxMesh( params ) );
+    auto mesh = AMP::Mesh::BoxMesh::generate( params );
     // Create the DOF Manager
-    AMP::Discretization::DOFManager::shared_ptr DOF =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1, true );
+    auto DOF =  AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1, true );
     // Create the vector
     return AMP::LinearAlgebra::createVector( DOF, var, true );
 }
@@ -82,13 +80,11 @@ void test_AsciiWriter( AMP::UnitTest *ut )
     AMP::LinearAlgebra::Variable::shared_ptr var2(
         new AMP::LinearAlgebra::Variable( "vec_" + rankString ) );
 #ifdef USE_AMP_MESH
-    AMP::LinearAlgebra::Vector::shared_ptr vec1 = createVector<2, 3, 4>( var1, globalComm );
-    AMP::LinearAlgebra::Vector::shared_ptr vec2 = createVector<3, 2, 1>( var2, selfComm );
+    auto vec1 = createVector<2, 3, 4>( var1, globalComm );
+    auto vec2 = createVector<3, 2, 1>( var2, selfComm );
 #else
-    AMP::LinearAlgebra::Vector::shared_ptr vec1 =
-        AMP::LinearAlgebra::SimpleVector<double>::create( 20, var1, globalComm );
-    AMP::LinearAlgebra::Vector::shared_ptr vec2 =
-        AMP::LinearAlgebra::SimpleVector<double>::create( 50, var2, selfComm );
+    auto vec1 = AMP::LinearAlgebra::SimpleVector<double>::create( 20, var1, globalComm );
+    auto vec2 = AMP::LinearAlgebra::SimpleVector<double>::create( 50, var2, selfComm );
 #endif
     writer->registerVector( vec1 );
     writer->registerVector( vec2 );
@@ -104,10 +100,8 @@ void test_AsciiWriter( AMP::UnitTest *ut )
     }
 #endif
     if ( test_matrix ) {
-        AMP::LinearAlgebra::Matrix::shared_ptr mat1 =
-            AMP::LinearAlgebra::createMatrix( vec1, vec1 );
-        AMP::LinearAlgebra::Matrix::shared_ptr mat2 =
-            AMP::LinearAlgebra::createMatrix( vec2, vec2 );
+        auto mat1 = AMP::LinearAlgebra::createMatrix( vec1, vec1 );
+        auto mat2 = AMP::LinearAlgebra::createMatrix( vec2, vec2 );
         writer->registerMatrix( mat1 );
         writer->registerMatrix( mat2 );
         mat1->setScalar( 1.0 );

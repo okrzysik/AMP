@@ -113,6 +113,14 @@ public:
      */
     structuredMeshElement( BoxMesh::MeshElementIndex index, const AMP::Mesh::BoxMesh *mesh );
 
+    //! Reset the internal data to an empty element
+    void reset();
+
+    //! Reset the internal data to the given element
+    void reset( BoxMesh::MeshElementIndex index, const AMP::Mesh::BoxMesh *mesh );
+
+
+
 protected:
 
     // Clone the iterator

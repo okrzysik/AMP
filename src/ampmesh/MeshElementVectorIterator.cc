@@ -14,42 +14,52 @@ static unsigned int MultiVectorIteratorTypeID = TYPE_HASH( MultiVectorIterator )
 ********************************************************/
 MultiVectorIterator::MultiVectorIterator()
 {
-    typeID     = MultiVectorIteratorTypeID;
-    iterator   = nullptr;
+    d_typeID   = MultiVectorIteratorTypeID;
+    d_iterator = nullptr;
     d_elements = AMP::shared_ptr<std::vector<MeshElement>>();
     d_pos      = 0;
+    d_size     = 0;
+    d_element  = nullptr;
 }
 MultiVectorIterator::MultiVectorIterator( AMP::shared_ptr<std::vector<MeshElement>> elements,
                                           size_t pos )
 {
-    typeID     = MultiVectorIteratorTypeID;
-    iterator   = nullptr;
+    d_typeID   = MultiVectorIteratorTypeID;
+    d_iterator = nullptr;
     d_elements = elements;
     d_pos      = pos;
+    d_size     = d_elements->size();
+    d_element  = d_pos<d_size ? &d_elements->operator[]( d_pos ):nullptr;
 }
 MultiVectorIterator::MultiVectorIterator( const std::vector<MeshElement> &elements, size_t pos )
 {
-    typeID   = MultiVectorIteratorTypeID;
-    iterator = nullptr;
+    d_typeID   = MultiVectorIteratorTypeID;
+    d_iterator = nullptr;
     d_elements.reset( new std::vector<MeshElement>( elements ) );
     d_pos = pos;
+    d_size     = d_elements->size();
+    d_element = d_pos<d_size ? &d_elements->operator[]( d_pos ):nullptr;
 }
 MultiVectorIterator::MultiVectorIterator( const MultiVectorIterator &rhs )
     : MeshIterator() // Note: we never want to call the base copy constructor
 {
-    typeID     = MultiVectorIteratorTypeID;
-    iterator   = nullptr;
+    d_typeID   = MultiVectorIteratorTypeID;
+    d_iterator = nullptr;
     d_elements = rhs.d_elements;
     d_pos      = rhs.d_pos;
+    d_size     = rhs.d_size;
+    d_element  = d_pos<d_size ? &d_elements->operator[]( d_pos ):nullptr;
 }
 MultiVectorIterator &MultiVectorIterator::operator=( const MultiVectorIterator &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID     = MultiVectorIteratorTypeID;
-    this->iterator   = nullptr;
-    this->d_elements = rhs.d_elements;
-    this->d_pos      = rhs.d_pos;
+    d_typeID   = MultiVectorIteratorTypeID;
+    d_iterator = nullptr;
+    d_elements = rhs.d_elements;
+    d_pos      = rhs.d_pos;
+    d_size     = rhs.d_size;
+    d_element  = d_pos<d_size ? &d_elements->operator[]( d_pos ):nullptr;
     return *this;
 }
 
@@ -77,24 +87,13 @@ MeshIterator MultiVectorIterator::end() const
 
 
 /********************************************************
-* Return the number of elements in the iterator         *
-********************************************************/
-size_t MultiVectorIterator::size() const
-{
-    if ( d_elements.get() == nullptr )
-        return 0;
-    return d_elements->size();
-}
-size_t MultiVectorIterator::position() const { return d_pos; }
-
-
-/********************************************************
 * Increment/Decrement the iterator                      *
 ********************************************************/
 MeshIterator &MultiVectorIterator::operator++()
 {
     // Prefix increment (increment and return this)
     d_pos++;
+    d_element = d_pos<d_size ? &d_elements->operator[]( d_pos ):nullptr;
     return *this;
 }
 MeshIterator MultiVectorIterator::operator++( int )
@@ -108,6 +107,7 @@ MeshIterator &MultiVectorIterator::operator--()
 {
     // Prefix decrement (increment and return this)
     d_pos--;
+    d_element = d_pos<d_size ? &d_elements->operator[]( d_pos ):nullptr;
     return *this;
 }
 MeshIterator MultiVectorIterator::operator--( int )
@@ -141,6 +141,7 @@ MeshIterator &MultiVectorIterator::operator+=( int n )
             AMP_ERROR( "Iterated past beginning of iterator" );
         d_pos -= n2;
     }
+    d_element = d_pos<d_size ? &d_elements->operator[]( d_pos ):nullptr;
     return *this;
 }
 
@@ -155,11 +156,11 @@ bool MultiVectorIterator::operator==( const MeshIterator &rhs ) const
     const MultiVectorIterator *tmp = reinterpret_cast<const MultiVectorIterator *>( &rhs );
     if ( typeid( rhs ) == typeid( MultiVectorIterator ) ) {
         rhs2 = tmp; // We can safely cast rhs to a MultiVectorIterator
-    } else if ( tmp->typeID == MultiVectorIteratorTypeID ) {
+    } else if ( tmp->d_typeID == MultiVectorIteratorTypeID ) {
         rhs2 = tmp; // We can safely cast rhs.iterator to a MultiVectorIterator
-    } else if ( ( reinterpret_cast<MultiVectorIterator *>( tmp->iterator ) )->typeID ==
+    } else if ( ( reinterpret_cast<MultiVectorIterator *>( tmp->d_iterator ) )->d_typeID ==
                 MultiVectorIteratorTypeID ) {
-        rhs2 = reinterpret_cast<MultiVectorIterator *>( tmp->iterator );
+        rhs2 = reinterpret_cast<MultiVectorIterator *>( tmp->d_iterator );
     }
     // Perform direct comparisions if we are dealing with two MultiVectorIterators
     if ( rhs2 != nullptr ) {
@@ -202,35 +203,6 @@ bool MultiVectorIterator::operator==( const MeshIterator &rhs ) const
 bool MultiVectorIterator::operator!=( const MeshIterator &rhs ) const
 {
     return !( ( *this ) == rhs );
-}
-
-
-/********************************************************
-* Dereference the iterator to get the element           *
-********************************************************/
-MeshElement &MultiVectorIterator::operator*()
-{
-    if ( d_pos >= d_elements->size() )
-        AMP_ERROR( "Invalid dereference (iterator is out of range" );
-    return d_elements->operator[]( d_pos );
-}
-const MeshElement &MultiVectorIterator::operator*() const
-{
-    if ( d_pos >= d_elements->size() )
-        AMP_ERROR( "Invalid dereference (iterator is out of range" );
-    return d_elements->operator[]( d_pos );
-}
-MeshElement *MultiVectorIterator::operator->()
-{
-    if ( d_pos >= d_elements->size() )
-        AMP_ERROR( "Invalid dereference (iterator is out of range" );
-    return &( d_elements->operator[]( d_pos ) );
-}
-const MeshElement *MultiVectorIterator::operator->() const
-{
-    if ( d_pos >= d_elements->size() )
-        AMP_ERROR( "Invalid dereference (iterator is out of range" );
-    return &( d_elements->operator[]( d_pos ) );
 }
 
 

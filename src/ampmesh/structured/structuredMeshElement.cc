@@ -35,6 +35,10 @@ double dot3cross( double a[3], double b[3], double c[3] )
 ********************************************************/
 structuredMeshElement::structuredMeshElement()
 {
+    reset();
+}
+void structuredMeshElement::reset()
+{
     typeID     = structuredMeshElementTypeID;
     element    = nullptr;
     d_index    = BoxMesh::MeshElementIndex();
@@ -45,28 +49,18 @@ structuredMeshElement::structuredMeshElement()
 structuredMeshElement::structuredMeshElement( BoxMesh::MeshElementIndex index,
                                               const AMP::Mesh::BoxMesh *mesh )
 {
+    reset( index, mesh );
+}
+void structuredMeshElement::reset( BoxMesh::MeshElementIndex index,
+                                              const AMP::Mesh::BoxMesh *mesh )
+{
     typeID = structuredMeshElementTypeID;
     d_mesh = mesh;
     d_meshType  = d_mesh->getGeomType();
     d_physicalDim = d_mesh->getDim();
     AMP_ASSERT( d_meshType > 0 && d_meshType <= 3 );
     d_index = index;
-    unsigned int owner_rank;
-    int myBoxSize[3]  = { 1, 1, 1 };
-    int myBoxRange[6] = { 0, 1, 0, 1, 0, 1 };
-    d_mesh->getOwnerBlock( d_index, owner_rank, myBoxRange );
-    for ( int d = 0; d < d_mesh->PhysicalDim; d++ ) {
-        AMP_ASSERT( index.d_index[d] >= myBoxRange[2 * d + 0] &&
-                    index.d_index[d] < myBoxRange[2 * d + 1] );
-        myBoxSize[d] = myBoxRange[2 * d + 1] - myBoxRange[2 * d + 0];
-    }
-    unsigned int local_id = ( index.d_index[0] - myBoxRange[0] ) +
-                            ( index.d_index[1] - myBoxRange[2] ) * myBoxSize[0] +
-                            ( index.d_index[2] - myBoxRange[4] ) * myBoxSize[0] * myBoxSize[1] +
-                            index.d_side * myBoxSize[0] * myBoxSize[1] * myBoxSize[2];
-    bool is_local = (int) owner_rank == d_mesh->d_comm.getRank();
-    d_globalID =
-        MeshElementID( is_local, (GeomType) index.d_type, local_id, owner_rank, d_mesh->d_meshID );
+    d_globalID = d_mesh->convert( index );
 }
 structuredMeshElement::structuredMeshElement( const structuredMeshElement &rhs )
     : MeshElement() // Note: we never want to call the base copy constructor

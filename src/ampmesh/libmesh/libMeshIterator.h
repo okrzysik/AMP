@@ -48,29 +48,11 @@ public:
     // Check if two iterators are not equal
     virtual bool operator!=( const MeshIterator &rhs ) const override;
 
-    // Dereference the iterator
-    virtual MeshElement &operator*(void) override;
-
-    // Dereference the iterator
-    virtual MeshElement *operator->(void) override;
-
-    // Dereference the iterator
-    virtual const MeshElement &operator*( void ) const override;
-
-    // Dereference the iterator
-    virtual const MeshElement *operator->( void ) const override;
-
     // Return an iterator to the begining
     virtual MeshIterator begin() const override;
 
     // Return an iterator to the begining
     virtual MeshIterator end() const override;
-
-    // Return the number of elements in the iterator
-    virtual size_t size() const override;
-
-    // Return the current position (from the beginning) in the iterator
-    virtual size_t position() const override;
 
     using MeshIterator::operator+;
     using MeshIterator::operator+=;
@@ -105,15 +87,15 @@ private:
     int d_gcw;
     int d_dim;
     int d_type;
-    int d_size;
-    int d_pos2;
     int d_rank;
-    void *d_begin;
-    void *d_end;
-    void *d_pos;
+    void *d_begin2;
+    void *d_end2;
+    void *d_pos2;
     MeshID d_meshID;
     const AMP::Mesh::libMesh *d_mesh;
-    mutable MeshElement d_cur_element;
+    MeshElement d_cur_element;
+
+    void setCurrentElement();
 };
 }
 }

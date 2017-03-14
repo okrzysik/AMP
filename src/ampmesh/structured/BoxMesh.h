@@ -356,9 +356,6 @@ protected:
     // Helper function to return the indices of the local block owned by the given processor
     inline std::array<int,6> getLocalBlock( unsigned int rank ) const;
 
-    // Helper function to return the block and owning rank of the given MeshElementIndex
-    void getOwnerBlock( const MeshElementIndex &index, unsigned int &rank, int *range ) const;
-
     // Helper functions to identify the iterator blocks
     typedef std::vector<std::pair<MeshElementIndex,MeshElementIndex>> ElementBlocks;
     ElementBlocks getIteratorRange( std::array<int,6> range, const GeomType type, const int gcw ) const;
@@ -373,6 +370,10 @@ protected:
                                     const double *range,
                                     const std::vector<MeshElementIndex> &index,
                                     std::vector<double> *coord );
+
+    // Convert between the MeshElementID and the MeshElementIndex
+    inline MeshElementID convert( const MeshElementIndex& id ) const;
+    inline MeshElementIndex convert( const MeshElementID& id ) const;
 
     // Internal data
     std::array<bool,3> d_isPeriodic;        // Which directions are periodic
