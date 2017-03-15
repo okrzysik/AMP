@@ -325,6 +325,8 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
         shapetype = DB_ZONETYPE_HEX;
     else if ( shapesize == 4 )
         shapetype = DB_ZONETYPE_QUAD;
+    else if ( shapesize == 2 )
+        shapetype = DB_ZONETYPE_BEAM;
     else
         AMP_ERROR( "Unknown element type" );
     int shapecnt = elem_iterator.size();
@@ -433,7 +435,9 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
         for ( int j            = 0; j < data.varSize[i]; ++j )
             var[j]             = nullptr;
         const char *varnames[] = { "1", "2", "3" };
-        if ( data.varType[i] == AMP::Mesh::Vertex ) {
+        if ( data.varType[i] > mesh->getGeomType() ) {
+            // We have a mixed mesh type and there will be no data of the given type for this mesh
+        } else if ( data.varType[i] == AMP::Mesh::Vertex ) {
             // We are saving node-centered data
             centering = DB_NODECENT;
             nvar      = (int) nodelist_ids.size();

@@ -57,6 +57,7 @@ ADD_AMP_TEST( test_LoadBalance 64000 inputMultiPellet348 )
 #ADD_AMP_TEST( test_LoadBalance 64000 17x17_denovo_thermal_1x )
 
 # Add tests
+ADD_AMP_TEST( test_BoxMeshHelpers )
 ADD_AMP_TEST_1_2_4( test_Mesh )
 ADD_AMP_TEST_PARALLEL( test_Mesh 4 input_AMP_mesh_zoo_2D )
 ADD_AMP_TEST_PARALLEL( test_Mesh 4 input_AMP_mesh_zoo_3D )

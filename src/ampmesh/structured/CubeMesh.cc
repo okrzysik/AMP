@@ -158,6 +158,23 @@ void CubeMesh::coord( const MeshElementIndex &index, double *pos ) const
 }
 
 
+/****************************************************************
+* Return the logical coordinates                                *
+****************************************************************/
+std::array<double,3> CubeMesh::physicalToLogical( const double *x ) const
+{
+    std::array<double,3> y = { 0, 0, 0 };
+    for (int d=0; d<GeomDim; d++) {
+        int i = AMP::Utilities::findfirst( d_coord[d], x[d] );
+        i = std::max<int>(i,1);
+        i = std::min<int>(i,d_coord[d].size()-1);
+        y[d] = (i-1) + (x[d]-d_coord[d][i-1])/(d_coord[d][i]-d_coord[d][i-1]);
+        y[d] = y[d]/d_globalSize[d];
+    }
+    return y;
+}
+
+
 } // Mesh namespace
 } // AMP namespace
 

@@ -145,6 +145,16 @@ void CylinderMesh::coord( const MeshElementIndex &index, double *pos ) const
 }
 
 
+/****************************************************************
+* Return the logical coordinates                                *
+****************************************************************/
+std::array<double,3> CylinderMesh::physicalToLogical( const double* ) const
+{
+    AMP_ERROR("physicalToLogical is not supported in CylinderMesh");
+    return std::array<double,3>();
+}
+
+
 } // Mesh namespace
 } // AMP namespace
 

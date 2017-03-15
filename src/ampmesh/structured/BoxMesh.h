@@ -121,6 +121,7 @@ public:
             GeomType type, unsigned char side, int x, int y = 0, int z = 0 );
         inline void reset(
             GeomType type, unsigned char side, int x, int y = 0, int z = 0 );
+        inline bool isNull() const { return d_side==255; }
         inline bool operator==( const MeshElementIndex &rhs ) const; //!< Operator ==
         inline bool operator!=( const MeshElementIndex &rhs ) const; //!< Operator !=
         inline bool operator>( const MeshElementIndex &rhs ) const;  //!< Operator >
@@ -341,6 +342,45 @@ public:
     //! Check if the element is on the given boundary id
     virtual bool isOnBoundary( const MeshElementIndex &index, int id ) const;
 
+
+public: // BoxMesh specific functionality
+
+    /**
+     * \brief    Return the logical coordinates
+     * \details  This function queries the mesh to get the logical coordinates in [0,1]
+     *     from the physical coordinates.  Not all meshes support this functionallity.
+     * \param[in] x         Physical coordinates
+     * @return              Returns the logical coordinates
+     */
+    virtual std::array<double,3> physicalToLogical( const double *x ) const = 0;
+
+    /**
+     * \brief    Return the element containing the point
+     * \details  This function queries the mesh to get the element index given a logical point
+     * \param[in] x         Logical coordinates in [0,1]
+     * @return              Returns the element containing the logical point.
+     *                      Note: it will return a null index (isNull) if no element of
+     *                      the given type contains the point.
+     */
+    MeshElementIndex getElementFromLogical( const std::array<double,3>& x, GeomType type ) const;
+
+    /**
+     * \brief    Return the element containing the point
+     * \details  This function queries the mesh to get the element index given a physical point.
+     *    This functionallity requires physicalToLogical which may not be supported by all meshes.
+     * \param[in] x         Physical coordinates
+     * @return              Returns the element containing the physical point.
+     *                      Note: it will return a null index (isNull) if no element of
+     *                      the given type contains the point.
+     */
+    MeshElementIndex getElementFromPhysical( const double *x, GeomType type ) const;
+
+    //! Convert the MeshElementIndex to the MeshElementID
+    inline MeshElementID convert( const MeshElementIndex& id ) const;
+
+    //! Convert the MeshElementID to the MeshElementIndex
+    inline MeshElementIndex convert( const MeshElementID& id ) const;
+
 protected:
 
     // Constructor
@@ -370,10 +410,6 @@ protected:
                                     const double *range,
                                     const std::vector<MeshElementIndex> &index,
                                     std::vector<double> *coord );
-
-    // Convert between the MeshElementID and the MeshElementIndex
-    inline MeshElementID convert( const MeshElementIndex& id ) const;
-    inline MeshElementIndex convert( const MeshElementID& id ) const;
 
     // Internal data
     std::array<bool,3> d_isPeriodic;        // Which directions are periodic

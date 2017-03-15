@@ -137,7 +137,7 @@ public: // non-virtual functions
     inline GeomType elementType() const;
 
     //! Return the unique global ID of the element
-    inline MeshElementID globalID() const;
+    inline const MeshElementID& globalID() const;
 
     // Overload operators
     inline bool operator==( const MeshElement &rhs ) const { return d_globalID == rhs.d_globalID; }

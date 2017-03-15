@@ -1,5 +1,5 @@
-#ifndef included_AMP_MovableBoxMesh
-#define included_AMP_MovableBoxMesh
+#ifndef included_AMP_SphereSurfaceBoxMesh
+#define included_AMP_SphereSurfaceBoxMesh
 
 #include "ampmesh/structured/BoxMesh.h"
 
@@ -10,20 +10,27 @@ namespace Mesh {
 
 
 /**
- * \class MovableBoxMesh
- * \brief A general BoxMesh
- * \details A concrete implimentation of BoxMesh in which the
- *    coordinates of the nodes may be moved.  The base class
- *    BoxMesh is an arbitrary logically rectangular mesh class.
- *    To allow for derived implimentations which can leverage specific
- *    properties, a derived class is required.  
+ * \class SphereSurfaceMesh
+ * \brief A derived version of BoxMesh for a cube
+ * \details A concrete implementation of BoxMesh for a shell
  */
-class MovableBoxMesh : public AMP::Mesh::BoxMesh
+class SphereSurfaceMesh : public AMP::Mesh::BoxMesh
 {
 public:
-    //! Construct a movable box mesh from any existing box mesh
-    MovableBoxMesh( const AMP::Mesh::BoxMesh& mesh );
-    
+
+    //! Default constructor
+    SphereSurfaceMesh( MeshParameters::shared_ptr params );
+
+    /**
+     * \brief   Estimate the number of elements in the mesh
+     * \details  This function will estimate the number of elements in the mesh.
+     *   This is used so that we can properly balance the meshes across multiple processors.
+     *   Ideally this should be both an accurate estimate and very fast.  It should not require
+     *   any communication and should not have to actually load a mesh.
+     * \param params Parameters for constructing a mesh from an input database
+     */
+    static std::vector<size_t> estimateLogicalMeshSize( const MeshParameters::shared_ptr &params );
+
     /**
      * \brief    Is the mesh movable
      * \details  This function will check if the mesh can be displaced.
@@ -58,6 +65,7 @@ public:
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
     virtual AMP::shared_ptr<Mesh> copy() const override;
 
+
     /**
      * \brief    Return a mesh element's coordinates given it's id.
      * \details  This function queries the mesh to get an element's coordinates given the mesh id.
@@ -82,16 +90,12 @@ public: // BoxMesh specific functionality
 
 
 private:
-    MovableBoxMesh(); // Private empty constructor
+    SphereSurfaceMesh(); // Private empty constructor
 
-    // The coordinates of the nodes
-    std::vector<MeshElementIndex> d_index;
-    std::vector<double> d_coord[3];
+    // Internal data
+    double d_r;
+    std::array<double,3> d_offset;
 
-    // Boundary information
-    std::vector<int> d_ids;
-    std::vector<MeshIterator> d_surface[4];
-    std::vector<std::vector<MeshIterator>> d_boundary[4];
 };
 
 

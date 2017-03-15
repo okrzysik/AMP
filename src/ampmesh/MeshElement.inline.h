@@ -138,7 +138,7 @@ bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) co
 /********************************************************
 * Function to return basic info                         *
 ********************************************************/
-inline MeshElementID MeshElement::globalID() const
+inline const MeshElementID& MeshElement::globalID() const
 {
     return element==nullptr ? d_globalID:element->d_globalID;
 }

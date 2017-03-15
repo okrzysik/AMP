@@ -76,6 +76,19 @@ public:
      */
     virtual void coord( const MeshElementIndex &index, double *pos ) const override;
 
+
+public: // BoxMesh specific functionality
+
+    /**
+     * \brief    Return the logical coordinates
+     * \details  This function queries the mesh to get the logical coordinates in [0,1]
+     *     from the physical coordinates.  Not all meshes support this functionallity.
+     * \param[in] x         Physical coordinates
+     * @return              Returns the logical coordinates
+     */
+    virtual std::array<double,3> physicalToLogical( const double *x ) const override;
+
+
 private:
     ShellMesh(); // Private empty constructor
 

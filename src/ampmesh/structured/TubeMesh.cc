@@ -153,6 +153,16 @@ void TubeMesh::coord( const MeshElementIndex &index, double *pos ) const
 }
 
 
+/****************************************************************
+* Return the logical coordinates                                *
+****************************************************************/
+std::array<double,3> TubeMesh::physicalToLogical( const double* ) const
+{
+    AMP_ERROR("physicalToLogical is not supported in TubeMesh");
+    return std::array<double,3>();
+}
+
+
 } // Mesh namespace
 } // AMP namespace
 

@@ -603,7 +603,7 @@ double structuredMeshElement::volume() const
         d_mesh->coord( nodes[0], x[0] );
         d_mesh->coord( nodes[1], x[1] );
         double dist2           = 0.0;
-        for ( int i = 0; i < d_meshType; i++ )
+        for ( int i = 0; i < d_physicalDim; i++ )
             dist2 += ( x[0][i] - x[1][i] ) * ( x[0][i] - x[1][i] );
         return sqrt( dist2 );
     } else if ( d_globalID.type() == Face ) {
@@ -621,7 +621,7 @@ double structuredMeshElement::volume() const
         d_mesh->coord( nodes[3], x[3] );
         double AB[3] = { 0, 0, 0 }, AC[3] = { 0, 0, 0 }, AD[3] = { 0, 0, 0 },
                AC_AB_AD[3] = { 0, 0, 0 };
-        for ( int i = 0; i < d_meshType; i++ ) {
+        for ( int i = 0; i < d_physicalDim; i++ ) {
             AC[i]       = x[2][i] - x[0][i];         // Vector pointing from A to C
             AB[i]       = x[1][i] - x[0][i];         // Vector pointing from A to B
             AD[i]       = x[3][i] - x[0][i];         // Vector pointing from A to D

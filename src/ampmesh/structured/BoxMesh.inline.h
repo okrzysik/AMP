@@ -32,7 +32,7 @@ BoxMesh::Box::Box( int ifirst, int ilast, int jfirst, int jlast, int kfirst, int
 
 
 // BoxMesh::MeshElementIndex
-BoxMesh::MeshElementIndex::MeshElementIndex() : d_type( 0 ), d_side( 0 )
+BoxMesh::MeshElementIndex::MeshElementIndex() : d_type( 0 ), d_side( 255 )
 {
     d_index[0] = 0;
     d_index[1] = 0;

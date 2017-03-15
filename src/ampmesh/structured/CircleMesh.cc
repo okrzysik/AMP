@@ -83,7 +83,8 @@ std::vector<size_t> CircleMesh::estimateLogicalMeshSize( const MeshParameters::s
 int CircleMesh::isMeshMovable( ) const
 {
     return 1;
-}void CircleMesh::displaceMesh( const std::vector<double> &x )
+}
+void CircleMesh::displaceMesh( const std::vector<double> &x )
 {
     AMP_ASSERT( x.size() == PhysicalDim );
     for ( int i = 0; i < PhysicalDim; i++ ) {
@@ -130,6 +131,17 @@ void CircleMesh::coord( const MeshElementIndex &index, double *pos ) const
     auto point = BoxMeshHelpers::map_logical_circle( d_R, 2, x, y );
     pos[0] = point.first  + d_offset[0];
     pos[1] = point.second + d_offset[1];
+}
+
+
+/****************************************************************
+* Return the logical coordinates                                *
+****************************************************************/
+std::array<double,3> CircleMesh::physicalToLogical( const double *x ) const
+{
+    auto point = BoxMeshHelpers::map_circle_logical( d_R, 2, x[0], x[1] );
+    std::array<double,3> y = { point.first, point.second, 0 };
+    return y;
 }
 
 

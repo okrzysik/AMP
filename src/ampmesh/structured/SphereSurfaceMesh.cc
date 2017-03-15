@@ -1,4 +1,4 @@
-#include "ampmesh/structured/SphereMesh.h"
+#include "ampmesh/structured/SphereSurfaceMesh.h"
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/BoxMeshHelpers.h"
 
@@ -24,39 +24,43 @@ namespace Mesh {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-SphereMesh::SphereMesh( MeshParameters::shared_ptr params ):
+SphereSurfaceMesh::SphereSurfaceMesh( MeshParameters::shared_ptr params ):
     BoxMesh( params )
 {
     // Input options from the database
-    PhysicalDim = d_db->getInteger( "dim" );
-    GeomDim     = (GeomType) PhysicalDim;
+    PhysicalDim = 3;
+    GeomDim     = Face;
     auto size   = d_db->getIntegerArray( "Size" );
     auto range  = d_db->getDoubleArray( "Range" );
     d_max_gcw   = d_db->getIntegerWithDefault( "GCW", 2 );
     AMP_INSIST( size.size() == 1u, "Size must be an array of length 1" );
-    AMP_INSIST( range.size() == 1u, "Range must be an array of length 3" );
+    AMP_INSIST( range.size() == 1u, "Range must be an array of length 1" );
     AMP_INSIST( (int) PhysicalDim == 3, "dim must be 3" );
+    AMP_ASSERT( range[0] >= 0 );
     d_r = range[0];
-    d_globalSize[0] = 2 * size[0];
-    d_globalSize[1] = 2 * size[0];
-    d_globalSize[2] = 2 * size[0];
+    d_isPeriodic[0] = true;
+    d_isPeriodic[1] = false;
+    d_isPeriodic[2] = false;
+    d_globalSize[0] = size[0];
+    d_globalSize[1] = size[0]/2;
+    d_globalSize[2] = 1;
     d_offset.fill( 0 );
     // Change the surface ids to match the standard ids
     // 0,1,2,3 - 4: Outer surface
     // 4 - 2: Bottom surface
     // 5 - 1: Top surface
-    d_surfaceId[0] = 4;
-    d_surfaceId[1] = 4;
-    d_surfaceId[2] = 4;
-    d_surfaceId[3] = 4;
-    d_surfaceId[4] = 2;
-    d_surfaceId[5] = 1;
-    d_onSurface[0] = true;
-    d_onSurface[1] = true;
-    d_onSurface[2] = true;
-    d_onSurface[3] = true;
-    d_onSurface[4] = true;
-    d_onSurface[5] = true;
+    d_surfaceId[0] = -1;
+    d_surfaceId[1] = -1;
+    d_surfaceId[2] = -1;
+    d_surfaceId[3] = -1;
+    d_surfaceId[4] = -1;
+    d_surfaceId[5] = -1;
+    d_onSurface[0] = false;
+    d_onSurface[1] = false;
+    d_onSurface[2] = false;
+    d_onSurface[3] = false;
+    d_onSurface[4] = false;
+    d_onSurface[5] = false;
     // Initialize the logical mesh
     BoxMesh::initialize();
     // Set the geometry
@@ -69,23 +73,26 @@ SphereMesh::SphereMesh( MeshParameters::shared_ptr params ):
 /****************************************************************
 * Estimate the mesh size                                        *
 ****************************************************************/
-std::vector<size_t> SphereMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
+std::vector<size_t> SphereSurfaceMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
     auto db = params->getDatabase();
     std::vector<int> size = db->getIntegerArray( "Size" );
     AMP_ASSERT(size.size()==1u);
-    return std::vector<size_t>(3,2*size[0]);
+    std::vector<size_t> size2(1);
+    size2[0] = size[0];
+    size2[1] = size[0] / 2;
+    return size2;
 }
 
 
 /****************************************************************
 * Functions to displace the mesh                                *
 ****************************************************************/
-int SphereMesh::isMeshMovable( ) const
+int SphereSurfaceMesh::isMeshMovable( ) const
 {
     return 1;
 }
-void SphereMesh::displaceMesh( const std::vector<double> &x )
+void SphereSurfaceMesh::displaceMesh( const std::vector<double> &x )
 {
     AMP_ASSERT( x.size() == PhysicalDim );
     for ( int i = 0; i < PhysicalDim; i++ ) {
@@ -99,9 +106,9 @@ void SphereMesh::displaceMesh( const std::vector<double> &x )
         d_geometry->displaceMesh( x );
 }
 #ifdef USE_AMP_VECTORS
-void SphereMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr )
+void SphereSurfaceMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    AMP_ERROR( "displaceMesh (vector) violates SphereMesh properties" );
+    AMP_ERROR( "displaceMesh (vector) violates SphereSurfaceMesh properties" );
 }
 #endif
 
@@ -109,24 +116,22 @@ void SphereMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_pt
 /****************************************************************
 * Copy the mesh                                                 *
 ****************************************************************/
-AMP::shared_ptr<Mesh> SphereMesh::copy() const
+AMP::shared_ptr<Mesh> SphereSurfaceMesh::copy() const
 {
-    return AMP::shared_ptr<SphereMesh>( new SphereMesh(*this) );
+    return AMP::shared_ptr<SphereSurfaceMesh>( new SphereSurfaceMesh(*this) );
 }
 
 
 /****************************************************************
 * Return the coordinate                                         *
 ****************************************************************/
-void SphereMesh::coord( const MeshElementIndex &index, double *pos ) const
+void SphereSurfaceMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
     int i = index.index(0);
     int j = index.index(1);
-    int k = index.index(2);
     double x = static_cast<double>(i) / static_cast<double>(d_globalSize[0]);
     double y = static_cast<double>(j) / static_cast<double>(d_globalSize[1]);
-    double z = static_cast<double>(k) / static_cast<double>(d_globalSize[2]);
-    auto point = BoxMeshHelpers::map_logical_sphere( d_r, x, y, z );
+    auto point = BoxMeshHelpers::map_logical_sphere_surface( d_r, x, y );
     pos[0] = std::get<0>( point ) + d_offset[0];
     pos[1] = std::get<1>( point ) + d_offset[1];
     pos[2] = std::get<2>( point ) + d_offset[2];
@@ -136,10 +141,15 @@ void SphereMesh::coord( const MeshElementIndex &index, double *pos ) const
 /****************************************************************
 * Return the logical coordinates                                *
 ****************************************************************/
-std::array<double,3> SphereMesh::physicalToLogical( const double* ) const
+std::array<double,3> SphereSurfaceMesh::physicalToLogical( const double *x ) const
 {
-    AMP_ERROR("physicalToLogical is not supported in SphereMesh");
-    return std::array<double,3>();
+    const double x0 = x[0] - d_offset[0];
+    const double y0 = x[1] - d_offset[1];
+    const double z0 = x[2] - d_offset[2];
+    const double r = sqrt( x0*x0 + y0*y0 + z0*z0 );
+    auto point = BoxMeshHelpers::map_sphere_surface_logical( d_r, x0, y0, z0 );
+    std::array<double,3> pos = { point.first, point.second, r/d_r-1 };
+    return pos;
 }
 
 

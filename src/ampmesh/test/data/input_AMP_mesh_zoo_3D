@@ -102,7 +102,7 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "shell"
-		Size = 5, 25
+		Size = 5, 10
 		Range = 0.8, 1
 		x_offset = 0
 		y_offset = 18
@@ -113,8 +113,31 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "shell"
-		Size = 5, 25
+		Size = 5, 10
 		Range = 0.8, 1
+		x_offset = 4
+		y_offset = 18
+        static = FALSE
+	}
+
+	Mesh_11 {
+		MeshName = "sphere_surface"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "sphere_surface"
+		Size = 50
+		Range = 1
+		x_offset = 0
+		y_offset = 18
+        static = TRUE
+	}
+	Mesh_12 {
+		MeshName = "sphere_surface_2"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "sphere_surface"
+		Size = 50
+		Range = 1
 		x_offset = 4
 		y_offset = 18
         static = FALSE

@@ -38,6 +38,23 @@ AMP::Mesh::GeomType getSurfaceType( AMP::Mesh::GeomType volume )
 }
 
 
+AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr mesh )
+{
+    auto DOF = AMP::Discretization::simpleDOFManager::create( mesh, mesh->getGeomType(), 0, 1, false );
+    AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "volume" ) );
+    auto vec = AMP::LinearAlgebra::createVector( DOF, var, true );
+    vec->zero();
+    std::vector<size_t> dofs;
+    for ( const auto& elem : mesh->getIterator(mesh->getGeomType(),0) ) {
+        double volume = elem.volume();
+        DOF->getDOFs( elem.globalID(), dofs );
+        AMP_ASSERT( dofs.size()==1 );
+        vec->addLocalValueByGlobalID( dofs[0], volume );
+    }
+    return vec;
+}
+
+
 void test_Silo( AMP::UnitTest *ut, std::string input_file )
 {
 
@@ -96,21 +113,24 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
 
 // Create a view of a vector
 #ifdef USE_AMP_VECTORS
-    AMP::LinearAlgebra::VS_MeshIterator meshSelector( submesh->getIterator( pointType, 1 ),
-                                                      submesh->getComm() );
-    AMP::LinearAlgebra::VS_Stride zSelector( 2, 3 );
-    AMP::LinearAlgebra::Vector::shared_ptr vec_meshSubset =
-        position->select( meshSelector, "mesh subset" );
-    AMP_ASSERT( vec_meshSubset.get() != nullptr );
-    AMP::LinearAlgebra::Vector::shared_ptr z_surface =
-        vec_meshSubset->select( zSelector, "z surface" );
-    AMP_ASSERT( z_surface.get() != nullptr );
-    AMP::Mesh::Mesh::shared_ptr clad = mesh->Subset( "clad" );
+    AMP::Mesh::Mesh::shared_ptr clad;
+    AMP::LinearAlgebra::Vector::shared_ptr z_surface;
     AMP::LinearAlgebra::Vector::shared_ptr cladPosition;
-    if ( clad.get() != nullptr ) {
-        clad->setName( "clad" );
-        AMP::LinearAlgebra::VS_Mesh cladMeshSelector( clad );
-        cladPosition = position->select( cladMeshSelector, "cladPosition" );
+    if ( submesh != nullptr ) {
+        AMP::LinearAlgebra::VS_MeshIterator meshSelector( submesh->getIterator( pointType, 1 ),
+                                                          submesh->getComm() );
+        AMP::LinearAlgebra::VS_Stride zSelector( 2, 3 );
+        AMP::LinearAlgebra::Vector::shared_ptr vec_meshSubset =
+            position->select( meshSelector, "mesh subset" );
+        AMP_ASSERT( vec_meshSubset.get() != nullptr );
+        z_surface = vec_meshSubset->select( zSelector, "z surface" );
+        AMP_ASSERT( z_surface.get() != nullptr );
+        clad = mesh->Subset( "clad" );
+        if ( clad.get() != nullptr ) {
+            clad->setName( "clad" );
+            AMP::LinearAlgebra::VS_Mesh cladMeshSelector( clad );
+            cladPosition = position->select( cladMeshSelector, "cladPosition" );
+        }
     }
 #endif
 
@@ -118,13 +138,16 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     int level       = 1; // How much detail do we want to register
     siloWriter->registerMesh( mesh, level );
-    siloWriter->registerMesh( submesh, level );
+    if ( submesh != nullptr )
+        siloWriter->registerMesh( submesh, level );
 #ifdef USE_AMP_VECTORS
     siloWriter->registerVector( rank_vec, mesh, pointType, "rank" );
     siloWriter->registerVector( position, mesh, pointType, "position" );
-    siloWriter->registerVector( z_surface, submesh, pointType, "z_surface" );
     siloWriter->registerVector( gauss_pt, mesh, volumeType, "gauss_pnt" );
-    siloWriter->registerVector( id_vec, submesh, surfaceType, "surface_ids" );
+    if ( submesh != nullptr ) {
+        siloWriter->registerVector( z_surface, submesh, pointType, "z_surface" );
+        siloWriter->registerVector( id_vec, submesh, surfaceType, "surface_ids" );
+    }
     // Register a vector over the clad
     if ( clad.get() != nullptr )
         siloWriter->registerVector( cladPosition, clad, pointType, "clad_position" );
@@ -132,6 +155,14 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     globalComm.barrier();
     double t4 = AMP::AMP_MPI::time();
 
+    // For each submesh, store the volume
+    auto meshIDs = mesh->getBaseMeshIDs();
+    for ( auto id : meshIDs ) {
+        auto mesh2 = mesh->Subset( id );
+        auto volume = calcVolume( mesh2 );
+        siloWriter->registerMesh( mesh2, level );
+        siloWriter->registerVector( volume, mesh2, mesh2->getGeomType(), "volume" );
+    }
 
 // Initialize the data
 #ifdef USE_AMP_VECTORS
@@ -145,15 +176,17 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
         position->setValuesByGlobalID( dofs.size(), &dofs[0], &pos[0] );
     }
     position->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    id_vec->setToScalar( -1 );
-    std::vector<int> ids = submesh->getBoundaryIDs();
-    for ( auto &id : ids ) {
-        AMP::Mesh::MeshIterator it = submesh->getBoundaryIDIterator( surfaceType, id, 0 );
-        for ( size_t j = 0; j < it.size(); j++ ) {
-            DOF_surface->getDOFs( it->globalID(), dofs );
-            AMP_ASSERT( dofs.size() == 1 );
-            id_vec->setValueByGlobalID( dofs[0], id );
-            ++it;
+    if ( submesh != nullptr ) {
+        id_vec->setToScalar( -1 );
+        std::vector<int> ids = submesh->getBoundaryIDs();
+        for ( auto &id : ids ) {
+            AMP::Mesh::MeshIterator it = submesh->getBoundaryIDIterator( surfaceType, id, 0 );
+            for ( size_t j = 0; j < it.size(); j++ ) {
+                DOF_surface->getDOFs( it->globalID(), dofs );
+                AMP_ASSERT( dofs.size() == 1 );
+                id_vec->setValueByGlobalID( dofs[0], id );
+                ++it;
+            }
         }
     }
     globalComm.barrier();

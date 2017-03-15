@@ -5,6 +5,7 @@
 #include "ampmesh/structured/CylinderMesh.h"
 #include "ampmesh/structured/ShellMesh.h"
 #include "ampmesh/structured/SphereMesh.h"
+#include "ampmesh/structured/SphereSurfaceMesh.h"
 #include "ampmesh/structured/MovableBoxMesh.h"
 
 #include "ampmesh/MultiIterator.h"
@@ -53,6 +54,8 @@ AMP::shared_ptr<BoxMesh> BoxMesh::generate( MeshParameters::shared_ptr params )
         mesh.reset( new ShellMesh( params ) );
     } else if ( generator.compare( "sphere" ) == 0 ) {
         mesh.reset( new SphereMesh( params ) );
+    } else if ( generator.compare( "sphere_surface" ) == 0 ) {
+        mesh.reset( new SphereSurfaceMesh( params ) );
     } else {
         AMP_ERROR( "Unknown generator" );
     }
@@ -90,6 +93,8 @@ std::vector<size_t> BoxMesh::estimateLogicalMeshSize( const MeshParameters::shar
         N = ShellMesh::estimateLogicalMeshSize( params );
     } else if ( generator.compare( "sphere" ) == 0 ) {
         N = SphereMesh::estimateLogicalMeshSize( params );
+    } else if ( generator.compare( "sphere_surface" ) == 0 ) {
+        N = SphereSurfaceMesh::estimateLogicalMeshSize( params );
     } else {
         AMP_ERROR( "Unknown generator" );
     }
@@ -384,6 +389,71 @@ MeshElement BoxMesh::getElement( const MeshElementIndex &index ) const
 }
 
 
+/****************************************************************
+* Find the mesh element index from a point                      *
+****************************************************************/
+static inline int to_nearest( double x )
+{
+    return static_cast<int>( floor(x+0.5) );
+}
+BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const std::array<double,3>& x0, GeomType type ) const
+{
+    // Correct x for periodic boundaries
+    auto x = x0;
+    for (int d=0; d<GeomDim; d++) {
+        if ( d_isPeriodic[d] ) {
+            while ( x[d] < 0 )
+                x[d] += 1.0;
+            while ( x[d] >= 1.0 )
+                x[d] -= 1.0;
+        }
+        if ( fabs(x[d]-1.0) < 1e-12 )
+            x[d] = 1.0 - 1e-12;
+    }
+    // Convert x to [0,size]
+    x[0] = x[0]*d_globalSize[0];
+    x[1] = x[1]*d_globalSize[1];
+    x[2] = x[2]*d_globalSize[2];
+    // Compute the index
+    MeshElementIndex index;
+    if ( type == GeomDim ) {
+        index = MeshElementIndex( GeomDim, 0, x[0], x[1], x[2] );
+    } else if ( type == Vertex ) {
+        int i = to_nearest( x[0] );
+        int j = to_nearest( x[1] );
+        int k = to_nearest( x[2] );
+        bool keep = fabs(x[0]-i)<1e-6 && fabs(x[1]-j)<1e-6 && fabs(x[2]-k)<1e-6;
+        keep = keep && i>=0 && j>=0 && k>=0 ;
+        keep = keep && i<=d_globalSize[0] && j<=d_globalSize[1] && k<=d_globalSize[2];
+        if ( keep )
+            index = MeshElementIndex( Vertex, 0, i, j, k );
+    } else if ( type == Edge ) {
+        AMP_ERROR("Not finished");
+    } else if ( type == Face ) {
+        int i = to_nearest( x[0] );
+        int j = to_nearest( x[1] );
+        int k = to_nearest( x[2] );
+        if ( fabs(x[0]-i)<1e-6 )
+            index = MeshElementIndex( Face, 0, i, x[1], x[2] );
+        else if ( fabs(x[1]-j)<1e-6 )
+            index = MeshElementIndex( Face, 1, x[0], j, x[2] );
+        else if ( fabs(x[2]-k)<1e-6 )
+            index = MeshElementIndex( Face, 2, x[0], x[1], k );
+    } else if ( type == Volume ) {
+        AMP_ERROR("Not finished");
+    } else {
+        AMP_ERROR("Unknown mesh element type");
+    }
+    return index;
+}
+BoxMesh::MeshElementIndex BoxMesh::getElementFromPhysical( const double *x, GeomType type ) const
+{
+    auto logical = physicalToLogical( x );
+    auto index = getElementFromLogical( logical, type );
+    return index;
+}
+
+
 /********************************************************
 * Function to return parents of an element              *
 ********************************************************/
@@ -409,6 +479,8 @@ std::vector<MeshElement> BoxMesh::getElementParents( const MeshElement &meshelem
 ****************************************************************/
 size_t BoxMesh::numLocalElements( const GeomType type ) const
 {
+    if ( type > GeomDim )
+        return 0;
     auto box = getLocalBlock( d_comm.getRank() );
     auto range = getIteratorRange( box, type, 0 );
     size_t N = 0;
@@ -418,6 +490,8 @@ size_t BoxMesh::numLocalElements( const GeomType type ) const
 }
 size_t BoxMesh::numGlobalElements( const GeomType type ) const
 {
+    if ( type > GeomDim )
+        return 0;
     std::array<int,6> box = { 0, d_globalSize[0]-1, 0, d_globalSize[1]-1, 0, d_globalSize[2]-1 };
     auto range = getIteratorRange( box, type, 0 );
     size_t N = 0;
@@ -427,6 +501,8 @@ size_t BoxMesh::numGlobalElements( const GeomType type ) const
 }
 size_t BoxMesh::numGhostElements( const GeomType type, int gcw ) const
 {
+    if ( type > GeomDim )
+        return 0;
     auto box = getLocalBlock( d_comm.getRank() );
     auto range1 = getIteratorRange( box, type, 0 );
     auto range2 = getIteratorRange( box, type, gcw );
@@ -591,6 +667,8 @@ inline MeshIterator BoxMesh::createIterator( const ElementBlocks& list ) const
 }
 MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 {
+    if ( type > GeomDim )
+        return MeshIterator();
     auto box = getLocalBlock( d_comm.getRank() );
     auto range = getIteratorRange( box, type, gcw );
     return createIterator( range );
@@ -602,6 +680,8 @@ MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 ****************************************************************/
 MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
+    if ( type > GeomDim )
+        return MeshIterator();
     // Include each surface as needed
     ElementBlocks sufaceSet;
     for (int i=0; i<2*GeomDim; i++) {
@@ -649,6 +729,8 @@ std::vector<int> BoxMesh::getBoundaryIDs() const
 MeshIterator
 BoxMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw ) const
 {
+    if ( type > GeomDim )
+        return MeshIterator();
     // Include each surface as needed
     ElementBlocks sufaceSet;
     for (int i=0; i<2*GeomDim; i++) {
