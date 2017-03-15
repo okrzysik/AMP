@@ -407,8 +407,12 @@ BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const std::array<doubl
             while ( x[d] >= 1.0 )
                 x[d] -= 1.0;
         }
+        if ( fabs(x[d]) < 1e-12 )
+            x[d] = 0.0;
         if ( fabs(x[d]-1.0) < 1e-12 )
             x[d] = 1.0 - 1e-12;
+        if ( x[d]<0 || x[d]>1 )
+            return MeshElementIndex();
     }
     // Convert x to [0,size]
     x[0] = x[0]*d_globalSize[0];
@@ -433,12 +437,25 @@ BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const std::array<doubl
         int i = to_nearest( x[0] );
         int j = to_nearest( x[1] );
         int k = to_nearest( x[2] );
-        if ( fabs(x[0]-i)<1e-6 )
+        int ijk = 0;
+        double min = fabs(x[0]-i);
+        if ( fabs(x[1]-j)<min && GeomDim>=2 ) {
+            min = fabs(x[1]-j);
+            ijk = 1;
+        }
+        if ( fabs(x[2]-k)<min && GeomDim>=2 ) {
+            min = fabs(x[2]-k);
+            ijk = 2;
+        }
+        if ( min > 1e-6 ) {
+            // Point is not on any face
+        } else if ( ijk == 0 ) {
             index = MeshElementIndex( Face, 0, i, x[1], x[2] );
-        else if ( fabs(x[1]-j)<1e-6 )
+        } else if ( ijk == 1 ) {
             index = MeshElementIndex( Face, 1, x[0], j, x[2] );
-        else if ( fabs(x[2]-k)<1e-6 )
+        } else if ( ijk == 2 ) {
             index = MeshElementIndex( Face, 2, x[0], x[1], k );
+        }
     } else if ( type == Volume ) {
         AMP_ERROR("Not finished");
     } else {
