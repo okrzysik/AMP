@@ -5,8 +5,11 @@
 #include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
 // Trilinos includes
+DISABLE_WARNINGS
 #include "NOX_Thyra.H"
 #include "NOX_Thyra_Group.H"
+ENABLE_WARNINGS
+
 
 namespace AMP {
 namespace Solver {

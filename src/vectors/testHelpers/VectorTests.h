@@ -2,6 +2,12 @@
 #define included_test_VectorTests
 
 #include "utils/UnitTest.h"
+#include "utils/shared_ptr.h"
+
+#include "vectors/Variable.h"
+#include "vectors/Vector.h"
+
+#include <string>
 
 
 namespace AMP {
@@ -9,165 +15,177 @@ namespace LinearAlgebra {
 
 
 /**
- * \class vectorTests
- * \brief A helper class to store/run tests for a vector
+ * \class VectorFactory
+ * \brief A helper class to generate vectors
  */
-template <typename VECTOR_FACTORY>
-class vectorTests
+class VectorFactory
 {
 public:
 
-    static void testPetscVector( AMP::UnitTest *ut );
+    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const = 0;
 
-    static void testBasicVector( AMP::UnitTest *ut );
+    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const = 0;
 
-    static void testSundialsVector( AMP::UnitTest *ut );
+    virtual std::string name() const = 0;
 
-    static void testManagedVector( AMP::UnitTest *ut );
+    //! Get the DOFManager
+    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const = 0;
 
-    static void testNullVector( AMP::UnitTest *ut );
+protected:
+    VectorFactory() {}
+    VectorFactory( const VectorFactory& );
+};
 
-    static void testParallelVectors( AMP::UnitTest *ut );
 
-    static void testVectorSelector( AMP::UnitTest *ut );
+/**
+ * \class vectorTests
+ * \brief A helper class to store/run tests for a vector
+ */
+class VectorTests
+{
+public:
+    VectorTests( AMP::shared_ptr<const VectorFactory> factory ): d_factory(factory) {}
+
+public:
+
+    void testBasicVector( AMP::UnitTest *ut );
+
+    void testManagedVector( AMP::UnitTest *ut );
+
+    void testNullVector( AMP::UnitTest *ut );
+
+    void testParallelVectors( AMP::UnitTest *ut );
+
+    void testVectorSelector( AMP::UnitTest *ut );
 
 
 public:
 
-    static void InstantiateVector( AMP::UnitTest *utils );
+    void InstantiateVector( AMP::UnitTest *utils );
 
 
-    static void CopyVectorConsistency( AMP::UnitTest *utils );
+    void CopyVectorConsistency( AMP::UnitTest *utils );
 
 
     template <typename VIEWER>
-    static void DeepCloneOfView( AMP::UnitTest *utils );
+    void DeepCloneOfView( AMP::UnitTest *utils );
 
 
-    static void Bug_728( AMP::UnitTest *utils );
+    void Bug_728( AMP::UnitTest *utils );
 
 
-    static void SetToScalarVector( AMP::UnitTest *utils );
+    void SetToScalarVector( AMP::UnitTest *utils );
 
 
-    static void CloneVector( AMP::UnitTest *utils );
+    void CloneVector( AMP::UnitTest *utils );
 
 
-    static void DotProductVector( AMP::UnitTest *utils );
+    void DotProductVector( AMP::UnitTest *utils );
 
 
-    static void L2NormVector( AMP::UnitTest *utils );
+    void L2NormVector( AMP::UnitTest *utils );
 
 
-    static void AbsVector( AMP::UnitTest *utils );
+    void AbsVector( AMP::UnitTest *utils );
 
 
-    static void L1NormVector( AMP::UnitTest *utils );
+    void L1NormVector( AMP::UnitTest *utils );
 
 
-    static void MaxNormVector( AMP::UnitTest *utils );
+    void MaxNormVector( AMP::UnitTest *utils );
 
 
-    static void ScaleVector( AMP::UnitTest *utils );
+    void ScaleVector( AMP::UnitTest *utils );
 
 
 #ifdef USE_EXT_PETSC
-    static void Bug_491( AMP::UnitTest *utils );
+    void Bug_491( AMP::UnitTest *utils );
 #endif
 
 
-    static void AddVector( AMP::UnitTest *utils );
+    void AddVector( AMP::UnitTest *utils );
 
 
-    static void SubtractVector( AMP::UnitTest *utils );
+    void SubtractVector( AMP::UnitTest *utils );
 
 
-    static void MultiplyVector( AMP::UnitTest *utils );
+    void MultiplyVector( AMP::UnitTest *utils );
 
 
-    static void DivideVector( AMP::UnitTest *utils );
+    void DivideVector( AMP::UnitTest *utils );
 
 
-    static void VectorIteratorLengthTest( AMP::UnitTest *utils );
+    void VectorIteratorLengthTest( AMP::UnitTest *utils );
 
 
     template <typename ITERATOR>
-    static void both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::UnitTest *utils );
+    void both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::UnitTest *utils );
 
 
-    static void VectorIteratorTests( AMP::UnitTest *utils );
+    void VectorIteratorTests( AMP::UnitTest *utils );
 
 
-    static void VerifyVectorMin( AMP::UnitTest *utils );
+    void VerifyVectorMin( AMP::UnitTest *utils );
 
 
-    static void VerifyVectorMax( AMP::UnitTest *utils );
+    void VerifyVectorMax( AMP::UnitTest *utils );
 
 
-    static void VerifyVectorMaxMin( AMP::UnitTest *utils );
+    void VerifyVectorMaxMin( AMP::UnitTest *utils );
 
 
-    class SetRandomValuesVector {
-      public:
-        static inline const char *get_test_name() { return "vector::setRandomValues"; }
-        static void verify_vector( AMP::UnitTest *utils, AMP::LinearAlgebra::Vector::shared_ptr v );
-        static void run_test( AMP::UnitTest *utils );
-    };
+    void SetRandomValuesVector( AMP::UnitTest *utils );
 
 
-    static void ReciprocalVector( AMP::UnitTest *utils );
+    void ReciprocalVector( AMP::UnitTest *utils );
 
 
-    class LinearSumVector {
-      public:
-        static inline const char *get_test_name() { return "vector::linearSum"; }
-        static void do_instance( AMP::UnitTest *utils, double alpha, double beta, const char *msg );
-        static void run_test( AMP::UnitTest *utils );
-    };
+    void LinearSumVector( AMP::UnitTest *utils );
 
 
-    class AxpyVector {
-      public:
-        static inline const char *get_test_name() { return "vector::axpy"; }
-        static void do_instance( AMP::UnitTest *utils, double alpha, const char *msg );
-        static void run_test( AMP::UnitTest *utils );
-    };
+    void AxpyVector( AMP::UnitTest *utils );
 
 
-    class AxpbyVector {
-      public:
-        static inline const char *get_test_name() { return "vector::axpby"; }
-        static void do_instance( AMP::UnitTest *utils, double alpha, double beta, const char *msg );
-        static void run_test( AMP::UnitTest *utils );
-    };
+    void AxpbyVector( AMP::UnitTest *utils );
 
 
-    class CopyVector {
-      public:
-        static inline const char *get_test_name() { return "vector::copyVector"; }
-        static void run_test( AMP::UnitTest *utils );
-    };
-
-    class CopyRawDataBlockVector {
-      public:
-        static inline const char *get_test_name() { return "vector::copyVector"; }
-        static void run_test( AMP::UnitTest *utils );
-    };
+    void CopyVector( AMP::UnitTest *utils );
 
 
-    static void VerifyVectorGhostCreate( AMP::UnitTest *utils );
+    void CopyRawDataBlockVector( AMP::UnitTest *utils );
 
 
-    static void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils );
+    void VerifyVectorGhostCreate( AMP::UnitTest *utils );
 
 
-    static void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils );
+    void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils );
+
+
+    void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils );
 
 
     // Test creating a multivector with multiple copies of the data
     // This should always return one copy of the superset of the data
-    static void TestMultivectorDuplicate( AMP::UnitTest *utils );
+    void TestMultivectorDuplicate( AMP::UnitTest *utils );
 
+
+public: // Vector selector tests
+
+    // Test to check that Vector::select, Vector::constSelect, VectorSelector::subset,
+    // and VectorSelector::constSubset return the same vectors
+    void testAllSelectors( AMP::UnitTest *ut );
+
+
+    // Test the behavior of VS_ByVariableName
+    void test_VS_ByVariableName( AMP::UnitTest *ut );
+
+
+    // Test the behavior of VS_Comm
+    void test_VS_Comm( AMP::UnitTest *ut );
+
+
+private:
+    AMP::shared_ptr<const VectorFactory> d_factory;
 };
 
 
@@ -177,7 +195,6 @@ public:
 
 // Extra includes
 #include "vectors/testHelpers/VectorTests.inline.h"
-#include "vectors/testHelpers/vectorTestLoop.inline.h"
 
 
 #endif

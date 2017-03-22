@@ -1,6 +1,8 @@
 #ifndef included_AMP_NativeThyraVector
 #define included_AMP_NativeThyraVector
 
+#include "vectors/Vector.h"
+#include "vectors/VectorEngine.h"
 #include "vectors/NativeVector.h"
 #include "vectors/trilinos/thyra/ThyraVector.h"
 
@@ -125,6 +127,12 @@ public:
     virtual AMP_MPI getComm() const;
 
     virtual void copyOutRawData( double *out ) const;
+
+    // Return the id of the data
+    virtual uint64_t getDataID() const override
+    {
+        return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
+    }
 
 protected:
     //! Empty constructor.

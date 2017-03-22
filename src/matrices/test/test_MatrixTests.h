@@ -68,12 +68,20 @@ public:
     {
         PROFILE_START( "VerifyGetLeftRightVector" );
         global_cached_matrix = FACTORY::getMatrix();
-        vectorTests<AmpInterfaceRightVectorFactory>::testManagedVector( utils );
-        vectorTests<AmpInterfaceLeftVectorFactory>::testManagedVector( utils );
+        AMP::shared_ptr<VectorFactory> factory1( new AmpInterfaceRightVectorFactory() );
+        AMP::shared_ptr<VectorFactory> factory2( new AmpInterfaceLeftVectorFactory() );
+        VectorTests tests1( factory1 );
+        VectorTests tests2( factory2 );
+        tests1.testManagedVector( utils );
+        tests2.testManagedVector( utils );
 #if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
         if ( global_cached_matrix->isA<AMP::LinearAlgebra::ManagedPetscMatrix>() ) {
-            vectorTests<PETScInterfaceRightVectorFactory>::testManagedVector( utils );
-            vectorTests<PETScInterfaceLeftVectorFactory>::testManagedVector( utils );
+            AMP::shared_ptr<VectorFactory> factory3( new PETScInterfaceRightVectorFactory() );
+            AMP::shared_ptr<VectorFactory> factory4( new PETScInterfaceLeftVectorFactory() );
+            VectorTests tests3( factory3 );
+            VectorTests tests4( factory4 );
+            tests3.testManagedVector( utils );
+            tests4.testManagedVector( utils );
         } else {
             utils->expected_failure(
                 "PetscMatrix::createView is not ready for arbitrary matricies" );

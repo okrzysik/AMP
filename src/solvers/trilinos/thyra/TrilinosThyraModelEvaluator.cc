@@ -6,9 +6,12 @@
 #include "vectors/trilinos/thyra/ThyraVectorSpaceWrapper.h"
 #include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
+DISABLE_WARNINGS
 #include "Thyra_DetachedVectorView.hpp"
 #include "Thyra_LinearOpBase.hpp"
 #include "Thyra_VectorBase.hpp"
+ENABLE_WARNINGS
+
 
 namespace AMP {
 namespace Solver {
@@ -77,8 +80,7 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
         AMP::LinearAlgebra::Vector::shared_ptr x2 =
             AMP::const_pointer_cast<AMP::LinearAlgebra::Vector>( x );
         AMP::shared_ptr<AMP::Operator::OperatorParameters> op_params =
-            d_nonlinearOp->getJacobianParameters( x2 );
-        d_preconditioner->resetOperator( op_params );
+            d_nonlinearOp->getParameters( "Jacobian", x2 );
     }
 
     if ( f_out != NULL ) {
@@ -95,7 +97,9 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
         }
         if ( d_prePostOperator != NULL )
             d_prePostOperator->runPreApply( x, f_out, exact );
-        d_nonlinearOp->apply( d_rhs, x, f_out, 1.0, -1.0 );
+        // Apply the AMP::Operator to compute r = A(u) - rhs
+        d_nonlinearOp->apply( x, f_out );
+        f_out->axpby( -1, 1, d_rhs );
         if ( d_prePostOperator != NULL )
             d_prePostOperator->runPostApply( x, f_out, exact );
     }

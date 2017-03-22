@@ -2,6 +2,7 @@
 #include "vectors/trilinos/thyra/ThyraVectorSpaceWrapper.h"
 
 
+DISABLE_WARNINGS
 #include "RTOpPack_RTOpT_decl.hpp"
 #include "RTOpPack_SPMD_apply_op_def.hpp"
 #include "RTOpPack_Types.hpp"
@@ -12,6 +13,8 @@
 #endif
 #include "Thyra_DefaultMultiVectorProductVectorSpace.hpp"
 #include "Thyra_DefaultSpmdVectorSpace.hpp"
+ENABLE_WARNINGS
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -161,6 +164,7 @@ Teuchos::RCP<Thyra::VectorBase<double>> ThyraVectorWrapper::clone_v() const
 ****************************************************************/
 bool ThyraVectorWrapper::opSupportedImpl( Thyra::EOpTransp M_trans ) const
 {
+    NULL_USE( M_trans );
     AMP_ERROR( "Not finished" );
     return false;
 }
@@ -285,11 +289,15 @@ void ThyraVectorWrapper::acquireDetachedMultiVectorViewImpl(
     const Teuchos::Range1D &colRng,
     RTOpPack::ConstSubMultiVectorView<double> *sub_mv ) const
 {
+    NULL_USE( rowRng );
+    NULL_USE( colRng );
+    NULL_USE( sub_mv );
     AMP_ERROR( "Not finished" );
 }
 void ThyraVectorWrapper::releaseDetachedMultiVectorViewImpl(
     RTOpPack::ConstSubMultiVectorView<double> *sub_mv ) const
 {
+    NULL_USE( sub_mv );
     AMP_ERROR( "Not finished" );
 }
 void ThyraVectorWrapper::acquireNonconstDetachedMultiVectorViewImpl(
@@ -297,11 +305,15 @@ void ThyraVectorWrapper::acquireNonconstDetachedMultiVectorViewImpl(
     const Teuchos::Range1D &colRng,
     RTOpPack::SubMultiVectorView<double> *sub_mv )
 {
+    NULL_USE( rowRng );
+    NULL_USE( colRng );
+    NULL_USE( sub_mv );
     AMP_ERROR( "Not finished" );
 }
 void ThyraVectorWrapper::commitNonconstDetachedMultiVectorViewImpl(
     RTOpPack::SubMultiVectorView<double> *sub_mv )
 {
+    NULL_USE( sub_mv );
     AMP_ERROR( "Not finished" );
 }
 
@@ -369,6 +381,7 @@ void ThyraVectorWrapper::commitNonconstDetachedVectorViewImpl(
 }
 void ThyraVectorWrapper::setSubVectorImpl( const RTOpPack::SparseSubVectorT<double> &sub_vec )
 {
+    NULL_USE( sub_vec );
     AMP_ERROR( "Not finished" );
 }
 

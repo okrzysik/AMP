@@ -1,5 +1,7 @@
 #include "vectors/trilinos/thyra/ThyraVector.h"
 #include "vectors/SimpleVector.h"
+#include "vectors/MultiVector.h"
+#include "vectors/MultiVariable.h"
 #include "vectors/trilinos/thyra/ManagedThyraVector.h"
 #include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
 

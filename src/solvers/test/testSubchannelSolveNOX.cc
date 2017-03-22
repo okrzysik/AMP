@@ -73,6 +73,9 @@
 #include "discretization/structuredFaceDOFManager.h"
 
 
+typedef std::vector<double> doubleVec;
+
+
 // Function to get an arbitrary power profile (W/kg) assuming a density of 1 kg/m^3 for the volume
 // integral
 // P is the total power of the pin, V is the volume of the pin
@@ -438,7 +441,7 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
                             curBCcol->getBoundaryOperator( curBCentry ) );
                     AMP_ASSERT( thermalMapVec != NULL );
                     gapBC->setVariableFlux( thermalMapVec );
-                    gapBC->reset( gapBC->getParameters() );
+                    gapBC->reset( gapBC->getParameters("Jacobian",nullptr) );
                 } else if ( ( opNames[curBCentry] == "BottomP2PNonlinearRobinVectorCorrection" ) ||
                             ( opNames[curBCentry] == "MiddleP2PNonlinearRobinBoundaryCondition" ) ||
                             ( opNames[curBCentry] == "TopP2PNonlinearRobinBoundaryCondition" ) ) {
@@ -447,7 +450,7 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
                             curBCcol->getBoundaryOperator( curBCentry ) );
                     AMP_ASSERT( thermalMapVec != NULL );
                     p2pBC->setVariableFlux( thermalMapVec );
-                    p2pBC->reset( p2pBC->getParameters() );
+                    p2pBC->reset( p2pBC->getParameters("Jacobian",nullptr) );
                 } else if ( opNames[curBCentry] == "C2WBoundaryVectorCorrection" ) {
                     AMP::shared_ptr<AMP::Database> thisDb =
                         global_input_db->getDatabase( opNames[curBCentry] );
@@ -460,7 +463,7 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
                         c2wBC->setVariableFlux( thermalMapVec );
                         c2wBC->setFrozenVector( density_map_vec );
                         c2wBC->setFrozenVector( ChannelDiameterVec );
-                        c2wBC->reset( c2wBC->getParameters() );
+                        c2wBC->reset( c2wBC->getParameters("Jacobian",nullptr) );
                     }
                 } else if ( opNames[curBCentry] == "C2PRobinVectorCorrection" ) {
                     AMP::shared_ptr<AMP::Operator::RobinVectorCorrection> gapBC =
@@ -468,7 +471,7 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
                             curBCcol->getBoundaryOperator( curBCentry ) );
                     AMP_ASSERT( thermalMapVec != NULL );
                     gapBC->setVariableFlux( thermalMapVec );
-                    gapBC->reset( gapBC->getParameters() );
+                    gapBC->reset( gapBC->getParameters("Jacobian",nullptr) );
                 } else {
                     AMP_ERROR( "Unknown boundary operator" );
                 }
@@ -698,9 +701,9 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
         double Tin = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
                          ->getDouble( "Inlet_Temperature" );
         // compute inlet enthalpy
-        std::map<std::string, AMP::shared_ptr<std::vector<double>>> enthalpyArgMap;
-        enthalpyArgMap.insert( std::make_pair( "temperature", new std::vector<double>( 1, Tin ) ) );
-        enthalpyArgMap.insert( std::make_pair( "pressure", new std::vector<double>( 1, Pout ) ) );
+        std::map<std::string,AMP::shared_ptr<doubleVec>> enthalpyArgMap;
+        enthalpyArgMap.insert( std::make_pair( "temperature", AMP::make_shared<doubleVec>( 1, Tin ) ) );
+        enthalpyArgMap.insert( std::make_pair<std::string,AMP::shared_ptr<doubleVec>>( "pressure", AMP::make_shared<doubleVec>( 1, Pout ) ) );
         std::vector<double> enthalpyResult( 1 );
         subchannelPhysicsModel->getProperty( "Enthalpy", enthalpyResult, enthalpyArgMap );
         double hin = enthalpyResult[0];
@@ -801,13 +804,9 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
             scalarFaceDOFManager->getDOFs( face->globalID(), scalarDofs );
             std::map<std::string, AMP::shared_ptr<std::vector<double>>> subchannelArgMap;
             subchannelArgMap.insert(
-                std::make_pair( "enthalpy",
-                                new std::vector<double>(
-                                    1, h_scale * flowSolVec->getValueByGlobalID( dofs[0] ) ) ) );
+                std::make_pair( "enthalpy", std::make_shared<doubleVec>( 1, h_scale * flowSolVec->getValueByGlobalID( dofs[0] ) ) ) );
             subchannelArgMap.insert(
-                std::make_pair( "pressure",
-                                new std::vector<double>(
-                                    1, P_scale * flowSolVec->getValueByGlobalID( dofs[1] ) ) ) );
+                std::make_pair( "pressure", std::make_shared<doubleVec>( 1, P_scale * flowSolVec->getValueByGlobalID( dofs[1] ) ) ) );
             std::vector<double> outTemperatureResult( 1 );
             subchannelPhysicsModel->getProperty(
                 "Temperature", outTemperatureResult, subchannelArgMap );

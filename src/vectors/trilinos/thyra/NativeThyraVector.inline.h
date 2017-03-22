@@ -1,8 +1,10 @@
 #include "vectors/trilinos/thyra/NativeThyraVector.h"
+#include "utils/Counter.h"
 
-
+DISABLE_WARNINGS
 #include "Thyra_VectorStdOps_def.hpp"
 #include "Trilinos_version.h"
+ENABLE_WARNINGS
 
 
 namespace AMP {
@@ -55,6 +57,7 @@ inline void NativeThyraVector::getValuesByLocalID( int numVals, size_t *ndx, dou
 
 inline Vector::shared_ptr NativeThyraVector::getManagedVectorCopy( AMP_MPI comm )
 {
+    NULL_USE(comm);
     AMP_ERROR( "Not programmed yet" );
     return Vector::shared_ptr();
 }
@@ -65,15 +68,23 @@ inline AMP_MPI NativeThyraVector::getComm() const { return Vector::getComm(); }
 
 inline Vector::shared_ptr NativeThyraVector::getManagedVectorDuplicate( AMP_MPI comm )
 {
+    NULL_USE(comm);
+
     AMP_ERROR( "Not programmed yet" );
     return Vector::shared_ptr();
 }
 
 
-inline void NativeThyraVector::aliasVector( Vector & ) { AMP_ERROR( "not implemented" ); }
+inline void NativeThyraVector::aliasVector( Vector & )
+{
+    AMP_ERROR( "not implemented" );
+}
 
 
-inline void NativeThyraVector::swapVectors( Vector &other ) { AMP_ERROR( "not implemented" ); }
+inline void NativeThyraVector::swapVectors( Vector & )
+{
+    AMP_ERROR( "not implemented" );
+}
 
 
 inline Teuchos::RCP<const Thyra::VectorBase<double>>
@@ -237,6 +248,9 @@ inline double NativeThyraVector::dot( const VectorOperations &x ) const
 
 inline void NativeThyraVector::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
+    NULL_USE( num );
+    NULL_USE( indices );
+    NULL_USE( vals );
     AMP_ERROR( "not implemented" );
 }
 
@@ -244,12 +258,18 @@ inline void NativeThyraVector::setValuesByLocalID( int num, size_t *indices, con
 inline void
 NativeThyraVector::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
+    NULL_USE( num );
+    NULL_USE( indices );
+    NULL_USE( vals );
     AMP_ERROR( "not implemented" );
 }
 
 
 inline void NativeThyraVector::addValuesByLocalID( int num, size_t *indices, const double *vals )
 {
+    NULL_USE( num );
+    NULL_USE( indices );
+    NULL_USE( vals );
     AMP_ERROR( "not implemented" );
 }
 
@@ -257,6 +277,9 @@ inline void NativeThyraVector::addValuesByLocalID( int num, size_t *indices, con
 inline void
 NativeThyraVector::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
+    NULL_USE( num );
+    NULL_USE( indices );
+    NULL_USE( vals );
     AMP_ERROR( "not implemented" );
 }
 
@@ -273,7 +296,12 @@ inline size_t NativeThyraVector::getGlobalSize() const { return d_thyraVec->spac
 inline void
 NativeThyraVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
+    NULL_USE( numVals );
+    NULL_USE( ndx );
+    NULL_USE( vals );
     AMP_ERROR( "not implemented" );
 }
-}
-}
+
+
+} // LinearAlgebra namespace
+} // AMP namespace

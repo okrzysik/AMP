@@ -4,7 +4,8 @@
 #include "ampmesh/Mesh.h"
 #include "matrices/Matrix.h"
 #include "matrices/MatrixBuilder.h"
-#include "vectors/VectorBuilder.h"
+#include "vectors/Vector.h"
+#include "vectors/MultiVector.h"
 
 #include "meshTests.h"
 

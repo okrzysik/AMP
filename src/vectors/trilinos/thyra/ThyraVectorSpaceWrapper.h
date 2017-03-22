@@ -1,12 +1,16 @@
 #ifndef included_AMP_ThyraVectorSpaceWrapper
 #define included_AMP_ThyraVectorSpaceWrapper
 
-// Trilinos includes
-#include "Thyra_VectorDefaultBase_decl.hpp"
-#include "Thyra_VectorSpaceBase_decl.hpp"
-
 // AMP includes
 #include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
+#include "utils/Utilities.h"
+
+
+// Trilinos includes
+DISABLE_WARNINGS
+#include "Thyra_VectorDefaultBase_decl.hpp"
+#include "Thyra_VectorSpaceBase_decl.hpp"
+ENABLE_WARNINGS
 
 
 namespace AMP {

@@ -2,6 +2,7 @@
 #define included_AMP_PetscVector
 
 #include "vectors/DataChangeListener.h"
+#include "vectors/Vector.h"
 #include "vectors/petsc/PetscHelpers.h"
 
 #include "petscvec.h"

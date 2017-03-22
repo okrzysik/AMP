@@ -443,7 +443,7 @@ BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const std::array<doubl
             min = fabs(x[1]-j);
             ijk = 1;
         }
-        if ( fabs(x[2]-k)<min && GeomDim>=2 ) {
+        if ( fabs(x[2]-k)<min && GeomDim>=3 ) {
             min = fabs(x[2]-k);
             ijk = 2;
         }

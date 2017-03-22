@@ -7,6 +7,9 @@
 #ifdef USE_AMP_VECTORS
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
+#include "vectors/testHelpers/VectorTests.h"
+#include "vectors/VectorBuilder.h"
+#include "discretization/simpleDOF_Manager.h"
 #endif
 
 
@@ -187,19 +190,37 @@ public: // Vector based tests
 
 #ifdef USE_AMP_VECTORS    
     //! Factory to create a vector from a mesh
-    template <int SIZE, AMP::Mesh::GeomType TYPE, int GCW, bool SPLIT>
-    class MeshVectorFactory
+    class MeshVectorFactory : public AMP::LinearAlgebra::VectorFactory
     {
     public:
-        typedef AMP::LinearAlgebra::Vector vector;
+        MeshVectorFactory( AMP::Mesh::Mesh::shared_ptr mesh,
+            AMP::Mesh::GeomType type, int gcw, int dofs_per_node, bool split ):
+            SPLIT(split)
+        {
+            d_dofManager = AMP::Discretization::simpleDOFManager::create(
+                    mesh, type, gcw, dofs_per_node, split );
+        }
         //! Get the Variable
-        static AMP::LinearAlgebra::Variable::shared_ptr getVariable();
+        virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
+        {
+            return AMP::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
+        }
         //! Get the Vector
-        static AMP::LinearAlgebra::Vector::shared_ptr getVector();
+        virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
+        {
+            return AMP::LinearAlgebra::createVector( d_dofManager, getVariable(), SPLIT );
+        }
         //! Get the DOFManager
-        static AMP::Discretization::DOFManager::shared_ptr getDOFMap();
+        virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
+        {
+            return d_dofManager;
+        }
         //! Get the name
-        static std::string name() { return "MeshVectorFactory"; }
+        virtual std::string name() const override { return "MeshVectorFactory"; }
+      private:
+        MeshVectorFactory();
+        AMP::Discretization::DOFManager::shared_ptr d_dofManager;
+        bool SPLIT;
     };
 #endif
 
@@ -258,7 +279,6 @@ private: // Private data
     static std::map<AMP::Mesh::MeshID, std::vector<int>> createRankMap( AMP::Mesh::Mesh::shared_ptr mesh );
 
     static AMP::Mesh::Mesh::shared_ptr globalMeshForMeshVectorFactory;
-    static AMP::Discretization::DOFManager::shared_ptr globalDOFforMeshVectorFactory;
 };
 
 

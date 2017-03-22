@@ -1070,7 +1070,7 @@ inline TYPE Array<TYPE, FUN, Allocator>::interp( const std::vector<double> &x )
             ndim++;
         }
     }
-    TYPE f;
+    TYPE f = 0;
     if ( d_ndim == 0 ) {
         // No data, do nothing
     } else if ( d_ndim == 1 ) {

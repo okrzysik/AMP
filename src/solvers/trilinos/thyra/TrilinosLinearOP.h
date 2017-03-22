@@ -7,7 +7,9 @@
 #include "vectors/Vector.h"
 
 // Trilinos includes
+DISABLE_WARNINGS
 #include "Thyra_LinearOpBase_def.hpp"
+ENABLE_WARNINGS
 
 
 namespace AMP {

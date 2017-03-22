@@ -9,7 +9,9 @@
 
 
 // Trilinos includes
+DISABLE_WARNINGS
 #include "Thyra_StateFuncModelEvaluatorBase.hpp"
+ENABLE_WARNINGS
 
 
 namespace AMP {

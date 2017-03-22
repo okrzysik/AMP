@@ -6,7 +6,9 @@
 #include "vectors/Vector.h"
 
 // Thyra includes
+DISABLE_WARNINGS
 #include "Thyra_VectorDefaultBase_decl.hpp"
+ENABLE_WARNINGS
 
 
 namespace AMP {

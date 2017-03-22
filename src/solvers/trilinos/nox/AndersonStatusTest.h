@@ -5,9 +5,11 @@
 #include "utils/Database.h"
 
 // Trilinos includes
+DISABLE_WARNINGS
 #include "NOX_Solver_Generic.H"
 #include "NOX_StatusTest_Generic.H"
 #include "NOX_Thyra.H"
+ENABLE_WARNINGS
 
 
 namespace AMP {

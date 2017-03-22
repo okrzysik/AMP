@@ -159,9 +159,11 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     auto meshIDs = mesh->getBaseMeshIDs();
     for ( auto id : meshIDs ) {
         auto mesh2 = mesh->Subset( id );
-        auto volume = calcVolume( mesh2 );
-        siloWriter->registerMesh( mesh2, level );
-        siloWriter->registerVector( volume, mesh2, mesh2->getGeomType(), "volume" );
+        if ( mesh2 != nullptr ) {
+            auto volume = calcVolume( mesh2 );
+            siloWriter->registerMesh( mesh2, level );
+            siloWriter->registerVector( volume, mesh2, mesh2->getGeomType(), "volume" );
+        }
     }
 
 // Initialize the data

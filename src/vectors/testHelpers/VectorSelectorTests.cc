@@ -1,7 +1,9 @@
+#include <vectors/testHelpers/VectorTests.h>
+
 #include "vectors/ManagedVector.h"
 #include "vectors/MultiVector.h"
 #include "vectors/VectorSelector.h"
-#include "vectors/VectorSelector.h"
+#include "vectors/testHelpers/VectorTests.h"
 
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
@@ -41,10 +43,9 @@ inline void testSelector( AMP::UnitTest *ut,
     else
         ut->failure( "select matches constSelect and subset (" + test_name + ")" );
 }
-template <typename VECTOR_FACTORY>
-void testAllSelectors( AMP::UnitTest *ut )
+void AMP::LinearAlgebra::VectorTests::testAllSelectors( AMP::UnitTest *ut )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vec( VECTOR_FACTORY::getVector() );
+    AMP::LinearAlgebra::Vector::shared_ptr vec( d_factory->getVector() );
     vec->setVariable( AMP::LinearAlgebra::Variable::shared_ptr(
         new AMP::LinearAlgebra::Variable( "test_selector" ) ) );
     AMP::AMP_MPI vec_comm = vec->getComm();
@@ -68,11 +69,10 @@ void testAllSelectors( AMP::UnitTest *ut )
 
 
 // Test the behavior of VS_ByVariableName
-template <typename VECTOR_FACTORY>
-void test_VS_ByVariableName( AMP::UnitTest *ut )
+void AMP::LinearAlgebra::VectorTests::test_VS_ByVariableName( AMP::UnitTest *ut )
 {
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::LinearAlgebra::Vector::shared_ptr vec1  = VECTOR_FACTORY::getVector();
+    AMP::LinearAlgebra::Vector::shared_ptr vec1  = d_factory->getVector();
     AMP::LinearAlgebra::Vector::shared_ptr vec2  = vec1->cloneVector( "vec2" );
     AMP::LinearAlgebra::Vector::shared_ptr vec3a = vec1->cloneVector( "vec3" );
     AMP::LinearAlgebra::Vector::shared_ptr vec3b = vec1->cloneVector( "vec3" );
@@ -128,10 +128,9 @@ void test_VS_ByVariableName( AMP::UnitTest *ut )
 
 
 // Test the behavior of VS_Comm
-template <typename VECTOR_FACTORY>
-void test_VS_Comm( AMP::UnitTest *ut )
+void AMP::LinearAlgebra::VectorTests::test_VS_Comm( AMP::UnitTest *ut )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vec1 = VECTOR_FACTORY::getVector();
+    AMP::LinearAlgebra::Vector::shared_ptr vec1 = d_factory->getVector();
     AMP::LinearAlgebra::Vector::shared_ptr vec2;
     AMP::AMP_MPI vec_comm = vec1->getComm();
     AMP::AMP_MPI world_comm( AMP_COMM_WORLD );

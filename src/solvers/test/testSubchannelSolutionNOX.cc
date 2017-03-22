@@ -30,6 +30,9 @@
 #include "vectors/VectorBuilder.h"
 
 
+typedef std::vector<double> doubleVec;
+
+
 // Function to get the linear heat generation rate
 double getLinearHeatGeneration( double Q, double H, double z )
 {
@@ -151,14 +154,14 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     double rho = 1000;
     for ( int i = 0; i < 3; i++ ) {
         std::map<std::string, AMP::shared_ptr<std::vector<double>>> enthalpyArgMap;
-        enthalpyArgMap.insert( std::make_pair( "temperature", new std::vector<double>( 1, Tin ) ) );
-        enthalpyArgMap.insert( std::make_pair( "pressure", new std::vector<double>( 1, Pin ) ) );
+        enthalpyArgMap.insert( std::make_pair( "temperature", AMP::make_shared<doubleVec>( 1, Tin ) ) );
+        enthalpyArgMap.insert( std::make_pair( "pressure", AMP::make_shared<doubleVec>( 1, Pin ) ) );
         std::vector<double> enthalpyResult( 1 );
         subchannelPhysicsModel->getProperty( "Enthalpy", enthalpyResult, enthalpyArgMap );
         hin = enthalpyResult[0];
         std::map<std::string, AMP::shared_ptr<std::vector<double>>> volumeArgMap_plus;
-        volumeArgMap_plus.insert( std::make_pair( "enthalpy", new std::vector<double>( 1, hin ) ) );
-        volumeArgMap_plus.insert( std::make_pair( "pressure", new std::vector<double>( 1, Pin ) ) );
+        volumeArgMap_plus.insert( std::make_pair( "enthalpy", AMP::make_shared<doubleVec>( 1, hin ) ) );
+        volumeArgMap_plus.insert( std::make_pair( "pressure", AMP::make_shared<doubleVec>( 1, Pin ) ) );
         std::vector<double> volumeResult_plus( 1 );
         subchannelPhysicsModel->getProperty(
             "SpecificVolume", volumeResult_plus, volumeArgMap_plus );
@@ -260,16 +263,16 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
         double h = h_scale * solVec->getValueByGlobalID( dofs[0] );
         double P = P_scale * solVec->getValueByGlobalID( dofs[1] );
         std::map<std::string, AMP::shared_ptr<std::vector<double>>> temperatureArgMap;
-        temperatureArgMap.insert( std::make_pair( "enthalpy", new std::vector<double>( 1, h ) ) );
-        temperatureArgMap.insert( std::make_pair( "pressure", new std::vector<double>( 1, P ) ) );
+        temperatureArgMap.insert( std::make_pair( "enthalpy", AMP::make_shared<doubleVec>( 1, h ) ) );
+        temperatureArgMap.insert( std::make_pair( "pressure", AMP::make_shared<doubleVec>( 1, P ) ) );
         std::vector<double> temperatureResult( 1 );
         subchannelPhysicsModel->getProperty( "Temperature", temperatureResult, temperatureArgMap );
         tempVec->setValueByGlobalID( tdofs[0], temperatureResult[0] );
         // Check that we recover the enthalapy from the temperature
         std::map<std::string, AMP::shared_ptr<std::vector<double>>> enthalpyArgMap;
         enthalpyArgMap.insert(
-            std::make_pair( "temperature", new std::vector<double>( 1, temperatureResult[0] ) ) );
-        enthalpyArgMap.insert( std::make_pair( "pressure", new std::vector<double>( 1, P ) ) );
+            std::make_pair( "temperature", AMP::make_shared<doubleVec>( 1, temperatureResult[0] ) ) );
+        enthalpyArgMap.insert( std::make_pair( "pressure", AMP::make_shared<doubleVec>( 1, P ) ) );
         std::vector<double> enthalpyResult( 1 );
         subchannelPhysicsModel->getProperty( "Enthalpy", enthalpyResult, enthalpyArgMap );
         double h2 = enthalpyResult[0];

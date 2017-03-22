@@ -22,10 +22,9 @@ namespace AMP {
 namespace Mesh {
 
 
+
 // Some global variables
 AMP::Mesh::Mesh::shared_ptr meshTests::globalMeshForMeshVectorFactory = AMP::Mesh::Mesh::shared_ptr();
-AMP::Discretization::DOFManager::shared_ptr meshTests::globalDOFforMeshVectorFactory =
-    AMP::shared_ptr<AMP::Discretization::DOFManager>();
 
 
 // Helper function to create a map from the base mesh communicator rank to the main mesh communicator

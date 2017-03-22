@@ -85,9 +85,11 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
     }
     for ( size_t i = 0; i < x.size(); i++ ) {
         if ( d_operator != NULL ) {
-            // Apply the AMP::Operator to compute the residual
+            // Apply the AMP::Operator to compute f = OP(M)*X
             AMP::LinearAlgebra::Vector::shared_ptr f = y[i]->cloneVector();
-            d_operator->apply( f, x[i], y[i], alpha, beta );
+            d_operator->apply( x[i], f );
+            // Compute Y = alpha*OP(M)*X + beta*Y
+            y[i]->axpby( alpha, beta, *f );
         } else {
             // Apply the AMP::Solver
             d_solver->solve( x[i], y[i] );

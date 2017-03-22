@@ -152,7 +152,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr SpecificPowerVec =
         AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
 
-    neutronicsOperator->apply( nullVec, nullVec, SpecificPowerVec, 1., 0. );
+    // Set the SpecificPowerVec to the residual of the neutronicsOperator
+    neutronicsOperator->apply( nullVec, SpecificPowerVec );
+    SpecificPowerVec->scale( -1.0 );
+    SpecificPowerVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
     /////////////////////////////////////////////////////
     //  Integrate Nuclear Rhs over Desnity * Volume //
@@ -173,7 +176,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     PowerInWattsVec->zero();
 
     // convert the vector of specific power to power for a given basis.
-    sourceOperator->apply( nullVec, SpecificPowerVec, PowerInWattsVec, 1., 0. );
+    sourceOperator->residual( nullVec, SpecificPowerVec, PowerInWattsVec );
 
     rhsVec->copyVector( PowerInWattsVec );
 
@@ -210,7 +213,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     AMP::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(
         new AMP::Solver::TrilinosNOXSolver( nonlinearSolverParams ) );
 
-    nonlinearThermalOperator->apply( rhsVec, solVec, resVec, 1.0, -1.0 );
+    nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
     double initialResidualNorm = resVec->L2Norm();
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
@@ -226,7 +229,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     solVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
     resVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
 
-    nonlinearThermalOperator->apply( rhsVec, solVec, resVec, 1.0, -1.0 );
+    nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
 
     double finalResidualNorm = resVec->L2Norm();
     double finalSolutionNorm = solVec->L2Norm();
@@ -236,9 +239,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     std::cout << "Final Solution Norm: " << finalSolutionNorm << std::endl;
     std::cout << "Final Rhs Norm: " << finalRhsNorm << std::endl;
 
+    double ansSolutionNorm = 45431.3;
     if ( fabs( finalResidualNorm ) > 1e-9 )
         ut->failure( "the Final Residual is larger than the tolerance" );
-    if ( !AMP::Utilities::approx_equal( 45431.3, solVec->L2Norm(), 1e-5 ) )
+    if ( !AMP::Utilities::approx_equal( ansSolutionNorm, finalSolutionNorm, 1e-5 ) )
         ut->failure( "the Final Solution Norm has changed." );
     if ( !AMP::Utilities::approx_equal( initialRhsNorm, finalRhsNorm, 1e-12 ) )
         ut->failure( "the Final Rhs Norm has changed." );
