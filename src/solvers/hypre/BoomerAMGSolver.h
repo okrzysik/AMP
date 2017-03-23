@@ -97,6 +97,52 @@ private:
 
     HYPRE_IJMatrix d_ijMatrix;  //! pointer to HYPRE matrix struct
 
+    int d_num_functions;
+    int d_max_coarse_size;
+    int d_min_coarse_size;
+    int d_max_levels;
+    int d_coarsen_type;
+    int d_measure_type;
+    int d_agg_num_levels;
+    int d_num_paths;
+    int d_cgc_iterations;
+    int d_nodal;
+    int d_nodal_diag;
+    int d_interp_type;
+    int d_P_max_elements;
+    int d_separate_weights;
+    int d_agg_interp_type;
+    int d_agg_P_max_elements;
+    int d_agg_P12_max_elements;
+    int d_cycle_type;
+    int d_additive_level;
+    int d_mult_additive_level;
+    int d_simple_level;
+    int d_number_sweeps;
+    int d_relax_type;
+    int d_relax_order;
+    int d_chebyshev_order;
+    int d_smooth_type;
+    int d_smooth_number_levels;
+    int d_smooth_number_sweeps;
+    int d_schwarz_variant;
+    int d_schwarz_overlap;
+    int d_schwarz_domain_type;
+    int d_logging;
+    int d_debug_flag;
+    int d_rap2;
+    int d_keep_transpose;
+
+    double d_strong_threshold;
+    double d_max_row_sum;
+    double d_non_galerkin_tol;
+    double d_trunc_factor;
+    double d_agg_trunc_factor;
+    double d_agg_P12_trunc_factor;
+    double d_additive_trunc_factor;
+    double d_relax_weight;
+    double d_chebyshev_fraction;
+
     bool d_bCreationPhase; /**< set to true if the PC is not ready and false otherwise. */
 };
 }
