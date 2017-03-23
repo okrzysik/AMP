@@ -78,7 +78,7 @@ std::vector<size_t> SphereSurfaceMesh::estimateLogicalMeshSize( const MeshParame
     auto db = params->getDatabase();
     std::vector<int> size = db->getIntegerArray( "Size" );
     AMP_ASSERT(size.size()==1u);
-    std::vector<size_t> size2(1);
+    std::vector<size_t> size2(2);
     size2[0] = size[0];
     size2[1] = size[0] / 2;
     return size2;

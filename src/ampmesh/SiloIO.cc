@@ -148,6 +148,8 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
 ************************************************************/
 void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::string path )
 {
+    if ( mesh == nullptr )
+        return;
     if ( d_dim == -1 )
         d_dim = mesh->getDim();
     else
@@ -197,7 +199,7 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
                 std::pair<AMP::Mesh::MeshID, siloMultiMeshData>( data2.id, data2 ) );
         }
     } else {
-        // We are dealining with a multimesh, register the current mesh and sub meshes
+        // We are dealing with a multimesh, register the current mesh and sub meshes
         int level2 = level;
         if ( level == 1 ) {
             level2 = 0;
