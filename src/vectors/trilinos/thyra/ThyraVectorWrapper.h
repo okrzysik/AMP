@@ -84,6 +84,8 @@ protected:
                             const double alpha,
                             const double beta ) const;
 
+    void assignImpl(double alpha) override { AMP_ERROR( "Not finished" ); }
+
     // Functions derived from Thyra::MultiVectorBase
     virtual Teuchos::RCP<Thyra::VectorBase<double>> nonconstColImpl( Teuchos::Ordinal j );
     virtual Teuchos::RCP<const Thyra::MultiVectorBase<double>>
