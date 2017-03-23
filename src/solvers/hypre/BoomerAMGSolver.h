@@ -6,6 +6,7 @@
 
 #include "HYPRE.h"
 #include "HYPRE_IJ_mv.h"
+#include "HYPRE_parcsr_ls.h"
 
 namespace AMP {
 namespace Solver {
@@ -93,11 +94,16 @@ private:
      */
     void createHYPREMatrix( const AMP::shared_ptr<AMP::LinearAlgebra::Matrix> matrix );
 
+    void setParameters(void); //! set BoomerAMG parameters based on internally set variables
+
     AMP_MPI d_comm;
 
     HYPRE_IJMatrix d_ijMatrix;  //! pointer to HYPRE matrix struct
 
+    HYPRE_Solver d_solver;      //! pointer to HYPRE BoomerAMG solver
+
     int d_num_functions;
+    int d_min_iterations;
     int d_max_coarse_size;
     int d_min_coarse_size;
     int d_max_levels;
@@ -114,10 +120,12 @@ private:
     int d_agg_interp_type;
     int d_agg_P_max_elements;
     int d_agg_P12_max_elements;
+    int d_number_samples; 
     int d_cycle_type;
     int d_additive_level;
     int d_mult_additive_level;
     int d_simple_level;
+    int d_add_P_max_elmts;
     int d_number_sweeps;
     int d_relax_type;
     int d_relax_order;
@@ -128,6 +136,7 @@ private:
     int d_schwarz_variant;
     int d_schwarz_overlap;
     int d_schwarz_domain_type;
+    int d_schwarz_nonsymmetric;
     int d_logging;
     int d_debug_flag;
     int d_rap2;
@@ -141,7 +150,9 @@ private:
     double d_agg_P12_trunc_factor;
     double d_additive_trunc_factor;
     double d_relax_weight;
+    double d_outer_weight;
     double d_chebyshev_fraction;
+    double d_schwarz_weight;
 
     bool d_bCreationPhase; /**< set to true if the PC is not ready and false otherwise. */
 };
