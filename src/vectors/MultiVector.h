@@ -161,6 +161,8 @@ public:
 
     // Vector functions
     using Vector::cloneVector;
+    using Vector::subsetVectorForVariable;
+    using Vector::constSubsetVectorForVariable;
 
     virtual void
     dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const override;

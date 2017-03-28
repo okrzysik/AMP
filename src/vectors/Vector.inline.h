@@ -102,6 +102,26 @@ inline double Vector::getValueByLocalID( size_t ndx ) const
 }
 
 
+/****************************************************************
+* Subset for variable name                                      *
+****************************************************************/
+inline Vector::shared_ptr Vector::subsetVectorForVariable( const std::string& name )
+{
+    auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>(name);
+    return subsetVectorForVariable( var );
+}
+inline Vector::const_shared_ptr
+Vector::constSubsetVectorForVariable( const std::string& name ) const
+{
+    auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>(name);
+    return constSubsetVectorForVariable( var );
+}
+
+
+
+/****************************************************************
+* Misc functions                                                *
+****************************************************************/
 inline void Vector::dataChanged()
 {
     if ( *d_UpdateState == UNCHANGED )

@@ -178,7 +178,23 @@ public:
       * \return  A Vector shared pointer
       * \see MultiVector
      */
+    inline Vector::shared_ptr subsetVectorForVariable( const std::string& name );
+
+
+    /** \brief Retrieve a sub-vector associated with a particular Variable
+      * \param[in] name  Variable by which to retrieve a subvector
+      * \return  A Vector shared pointer
+      * \see MultiVector
+     */
     virtual Vector::shared_ptr subsetVectorForVariable( const Variable::shared_ptr &name );
+
+    /** \brief Retrieve a sub-vector associated with a particular Variable
+      * \param[in] name  Variable by which to retrieve a subvector
+      * \return  A Vector shared pointer
+      * \see MultiVector
+     */
+    inline Vector::const_shared_ptr
+    constSubsetVectorForVariable( const std::string& name ) const;
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
       * \param[in] name  Variable by which to retrieve a subvector
