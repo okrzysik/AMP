@@ -113,8 +113,8 @@ double SimpleVector<T>::maxNorm( void ) const
 {
     double ans = 0.0;
     for ( const auto &val : d_Data )
-        ans = static_cast<double>( std::max( ans, fabs( val ) ) );
-    ans     = d_comm.maxReduce( ans );
+        ans = std::max<double>( ans, fabs( val ) );
+    ans = d_comm.maxReduce( ans );
     return ans;
 }
 

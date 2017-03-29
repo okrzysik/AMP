@@ -4,13 +4,13 @@
 #include <vectors/testHelpers/StridedVectorSelector.h>
 
 #ifdef USE_EXT_PETSC
-#include <vectors/testHelpers/PetscVectorFactory.inline.h>
+#include <vectors/testHelpers/petsc/PetscVectorFactory.h>
 #endif
 
 #ifdef USE_EXT_TRILINOS
 #include <vectors/trilinos/ManagedEpetraVector.h>
 #ifdef USE_TRILINOS_THYRA
-#include <vectors/testHelpers/ThyraVectorFactory.h>
+#include <vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h>
 #endif
 #endif
 
@@ -111,10 +111,10 @@ AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string& name )
         }
     } else if ( factoryName == "SimplePetscNativeFactory" ) {
         AMP_ASSERT(args.size()==0);
-        #ifdef USE_EXT_PETSC
+        #if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
             factory.reset( new SimplePetscNativeFactory( ) );
         #else
-            AMP_ERROR("Generator is not valid without support for Petsc");
+            AMP_ERROR("Generator is not valid without support for PETSc and Trilinos");
         #endif
     } else if ( factoryName == "MultiVectorFactory" ) {
         AMP_ASSERT(args.size()==4);
@@ -125,10 +125,10 @@ AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string& name )
     } else if ( factoryName == "SimpleManagedVectorFactory" ) {
         AMP_ASSERT(args.size()==1);
         if ( args[0] == "ManagedPetscVector" ) {
-            #ifdef USE_EXT_PETSC
+            #if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
                 factory.reset( new SimpleManagedVectorFactory<ManagedPetscVector>() );
             #else
-                AMP_ERROR("Generator is not valid without support for Petsc");
+                AMP_ERROR("Generator is not valid without support for PETSc and Trilinos");
             #endif
         } else if ( args[0] == "ManagedEpetraVector" ) {
             #ifdef USE_EXT_TRILINOS

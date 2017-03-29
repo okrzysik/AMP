@@ -1,6 +1,6 @@
 #ifdef USE_EXT_SUNDIALS
 
-#include "vectors/testHelpers/SundialsVectorTests.h"
+#include "vectors/testHelpers/sundials/SundialsVectorTests.h"
 #include "vectors/Vector.h"
 #include "vectors/sundials/SundialsVector.h"
 #include "vectors/sundials/ManagedSundialsVector.h"

@@ -12,7 +12,7 @@
 #include "matrices/petsc/PetscMatrix.h"
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/petsc/NativePetscVector.h"
-#include <vectors/testHelpers/PetscVectorFactory.inline.h>
+#include <vectors/testHelpers/petsc/PetscVectorFactory.h>
 #endif
 
 

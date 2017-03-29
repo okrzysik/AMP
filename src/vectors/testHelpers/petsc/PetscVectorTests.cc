@@ -2,7 +2,7 @@
 
 #include "vectors/MultiVector.h"
 #include "vectors/petsc/PetscHelpers.h"
-#include "vectors/testHelpers/PetscVectorTests.h"
+#include "vectors/testHelpers/petsc/PetscVectorTests.h"
 #include "utils/UnitTest.h"
 
 #include "string"

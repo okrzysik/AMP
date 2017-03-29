@@ -73,8 +73,8 @@ void TimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> param
 {
     d_object_name = parameters->d_object_name;
 
-    // for now the solution is set to the initial conditions
-    // by Jungho
+    // for now the solution is set to the initial conditions by Jungho
+    AMP_ASSERT( parameters->d_ic_vector != nullptr );
     d_solution = ( parameters->d_ic_vector )->cloneVector();
     d_solution->copyVector( parameters->d_ic_vector );
 

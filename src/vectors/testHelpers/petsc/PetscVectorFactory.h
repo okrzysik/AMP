@@ -2,7 +2,7 @@
 #define included_test_PetscVectorFactory
 
 #include "vectors/testHelpers/VectorFactory.h"
-#include "vectors/testHelpers/PetscVectorTests.h"
+#include "vectors/testHelpers/petsc/PetscVectorTests.h"
 #include "vectors/testHelpers/generateVectorFactories.h"
 
 #include "utils/AMP_MPI.h"

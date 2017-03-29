@@ -1,4 +1,6 @@
-#include "vectors/testHelpers/ThyraVectorFactory.h"
+#ifdef USE_TRILINOS_THYRA
+
+#include "vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
 
 #include "discretization/DOF_Manager.h"
 #include "utils/AMP_MPI.h"
@@ -152,3 +154,5 @@ void testBelosThyraVector( AMP::UnitTest &ut, const VectorFactory& factory )
 }
 
 /// \endcond
+
+#endif
