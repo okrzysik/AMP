@@ -1,6 +1,6 @@
 #ifdef USE_TRILINOS_THYRA
 
-#include "vectors/testHelpers/ThyraVectorFactory.h"
+#include "vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
 
 #include "discretization/DOF_Manager.h"
 #include "utils/AMP_MPI.h"

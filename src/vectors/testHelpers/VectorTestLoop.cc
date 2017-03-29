@@ -2,14 +2,16 @@
 
 #include "utils/UnitTest.h"
 
+#include "vectors/testHelpers/VectorFactory.h"
+
 #ifdef USE_EXT_SUNDIALS
 #include "vectors/sundials/SundialsVector.h"
-#include "vectors/testHelpers/SundialsVectorTests.h"
+#include "vectors/testHelpers/sundials/SundialsVectorTests.h"
 #endif
 #ifdef USE_EXT_PETSC
 #include "vectors/petsc/PetscVector.h"
-#include "vectors/testHelpers/PetscVectorFactory.inline.h"
-#include "vectors/testHelpers/PetscVectorTests.h"
+#include "vectors/testHelpers/petsc/PetscVectorFactory.h"
+#include "vectors/testHelpers/petsc/PetscVectorTests.h"
 #endif
 
 

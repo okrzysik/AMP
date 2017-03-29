@@ -6,10 +6,7 @@
 #include <algorithm>
 
 #include "utils/UnitTest.h"
-#include "vectors/petsc/PetscVector.h"
-#include "vectors/petsc/NativePetscVector.h"
 #include "vectors/testHelpers/VectorTests.h"
-#include "vectors/testHelpers/PetscVectorTests.h"
 #include "vectors/sundials/ManagedSundialsVector.h"
 
 

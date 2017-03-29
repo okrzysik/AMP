@@ -9,7 +9,7 @@
 #include "test_ArrayVector.h"
 
 #ifdef USE_TRILINOS_THYRA
-#include <vectors/testHelpers/ThyraVectorFactory.h>
+#include <vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h>
 #endif
 
 
