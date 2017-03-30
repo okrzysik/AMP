@@ -25,7 +25,7 @@ public:
     // Inherited functions
     virtual std::string getExtension() { return ""; }
     virtual void readFile( const std::string & ){};
-    virtual void writeFile( const std::string &, size_t ) {}
+    virtual void writeFile( const std::string &, size_t, double=0 ) {}
 #ifdef USE_AMP_MESH
     virtual void
     registerMesh( AMP::Mesh::Mesh::shared_ptr, int level = 1, std::string path = std::string() )

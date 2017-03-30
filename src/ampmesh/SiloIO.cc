@@ -53,12 +53,12 @@ void SiloIO::readFile( const std::string & ) { AMP_ERROR( "readFile is not impli
 * it cannot reopen it (or at least doing this on the        *
 * processor that created the file creates problems).        *
 ************************************************************/
-void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
+void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
 {
     PROFILE_START( "writeFile" );
     // Create the file name
     std::stringstream tmp;
-    tmp << fname_in << "_" << iteration_count << "." << getExtension();
+    tmp << fname_in << "_" << cycle << "." << getExtension();
     std::string fname = tmp.str();
     // Check that the dimension is matched across all processors
     PROFILE_START( "sync dim" );
@@ -100,7 +100,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
                     siloBaseMeshData &data = iterator->second;
                     data.file              = fname.c_str();
                     AMP_ASSERT( data.id == iterator->first );
-                    writeMesh( FileHandle, iterator->second );
+                    writeMesh( FileHandle, iterator->second, cycle, time );
                 }
                 // Close the file
                 DBClose( FileHandle );
@@ -113,7 +113,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
             Utilities::recursiveMkdir( fname_in + "_silo", ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
         d_comm.barrier();
         std::stringstream tmp2;
-        tmp2 << fname_in << "_silo/" << iteration_count << "." << d_comm.getRank() + 1 << "."
+        tmp2 << fname_in << "_silo/" << cycle << "." << d_comm.getRank() + 1 << "."
              << getExtension();
         std::string fname_rank = tmp2.str();
         DBfile *FileHandle = DBCreate( fname_rank.c_str(), DB_CLOBBER, DB_LOCAL, nullptr, DB_HDF5 );
@@ -123,7 +123,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
             siloBaseMeshData &data = iterator->second;
             data.file              = fname_rank.c_str();
             AMP_ASSERT( data.id == iterator->first );
-            writeMesh( FileHandle, iterator->second );
+            writeMesh( FileHandle, iterator->second, cycle, time );
         }
         // Close the file
         DBClose( FileHandle );
@@ -138,7 +138,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t iteration_count )
         }
         d_comm.barrier();
     }
-    writeSummary( fname );
+    writeSummary( fname, cycle, time );
     PROFILE_STOP( "writeFile" );
 }
 
@@ -313,7 +313,7 @@ void SiloIO::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr )
 /************************************************************
 * Function to write a mesh                                  *
 ************************************************************/
-void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
+void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cycle, double time )
 {
     PROFILE_START( "writeMesh" );
     AMP::Mesh::Mesh::shared_ptr mesh = data.mesh;
@@ -429,6 +429,12 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
         delete[] coord[i];
 // Write the variables
 #ifdef USE_AMP_VECTORS
+    float ftime = time;
+    DBoptlist *optlist = DBMakeOptlist(10);
+    DBAddOption( optlist, DBOPT_CYCLE, &cycle );
+    DBAddOption( optlist, DBOPT_TIME, &ftime );
+    DBAddOption( optlist, DBOPT_DTIME, &time );
+    //DBAddOption(optlist, DBOPT_UNITS, (void *)units);
     for ( size_t i = 0; i < data.varName.size(); ++i ) {
         AMP::Discretization::DOFManager::shared_ptr DOFs = data.vec[i]->getDOFManager();
         int nvar                                         = 0;
@@ -489,7 +495,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
                          0,
                          DB_DOUBLE,
                          centering,
-                         nullptr );
+                         optlist );
         } else {
             // Write each component
             for ( int j = 0; j < data.varSize[i]; ++j ) {
@@ -506,7 +512,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
                              0,
                              DB_DOUBLE,
                              centering,
-                             nullptr );
+                             optlist );
             }
         }
         for ( int j = 0; j < data.varSize[i]; ++j ) {
@@ -515,6 +521,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data )
         }
         delete[] var;
     }
+    DBFreeOptlist( optlist );
 #endif
     // Change the directory back to root
     DBSetDir( FileHandle, "/" );
@@ -718,7 +725,7 @@ void SiloIO::syncVariableList( std::set<std::string> &data_set, int root ) const
 /************************************************************
 * Function to write the summary data                        *
 ************************************************************/
-void SiloIO::writeSummary( std::string filename )
+void SiloIO::writeSummary( std::string filename, int cycle, double time )
 {
     PROFILE_START( "writeSummary" );
     AMP_ASSERT( !filename.empty() );
@@ -757,7 +764,7 @@ void SiloIO::writeSummary( std::string filename )
     // Note: we only need to guarantee that rank 0 has all the data
     syncMultiMeshData( multiMeshes, 0 );
     syncVariableList( d_varNames, 0 );
-    // Write the multimeshes
+    // Write the multimeshes and multivariables
     std::string base_path;
     if ( find_slash( filename ) != std::string::npos )
         base_path = filename.substr( 0, find_slash( filename ) + 1 );
@@ -837,8 +844,11 @@ void SiloIO::writeSummary( std::string filename )
                 }
                 std::string multiMeshName = data.name;
                 std::string visitVarName  = multiMeshName + "_" + varName;
-                DBoptlist *opts           = nullptr;
-                // DBoptlist *opts = DBMakeOptlist(1);
+                float ftime = time;
+                DBoptlist *opts = DBMakeOptlist(10);
+                DBAddOption( opts, DBOPT_CYCLE, &cycle );
+                DBAddOption( opts, DBOPT_TIME, &ftime );
+                DBAddOption( opts, DBOPT_DTIME, &time );
                 // DBAddOption( opts, DBOPT_MMESH_NAME, (char*) multiMeshName.c_str() );
                 if ( varSize == 1 || varSize == d_dim || varSize == d_dim * d_dim ) {
                     // We are writing a scalar, vector, or tensor variable
@@ -867,7 +877,7 @@ void SiloIO::writeSummary( std::string filename )
                                        opts );
                     }
                 }
-                // DBFreeOptlist( opts );
+                DBFreeOptlist( opts );
                 delete[] varnames;
                 delete[] vartypes;
             }
@@ -1145,7 +1155,7 @@ void createSiloDirectory( DBfile *FileHandle, std::string path )
 
 #else
 void SiloIO::readFile( const std::string & ) { AMP_ERROR( "SILO not configured" ); }
-void SiloIO::writeFile( const std::string &, size_t ) { AMP_ERROR( "SILO not configured" ); }
+void SiloIO::writeFile( const std::string &, size_t, double ) { AMP_ERROR( "SILO not configured" ); }
 void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, std::string )
 {
     AMP_ERROR( "SILO not configured" );

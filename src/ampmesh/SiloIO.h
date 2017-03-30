@@ -47,7 +47,7 @@ public:
     virtual void readFile( const std::string &fname );
 
     //!  Function to write a file
-    virtual void writeFile( const std::string &fname, size_t iteration_count );
+    virtual void writeFile( const std::string &fname, size_t iteration_count, double time=0 );
 
     /**
      * \brief    Function to register a mesh
@@ -169,7 +169,7 @@ private:
 
 // Function to write a single mesh
 #ifdef USE_EXT_SILO
-    void writeMesh( DBfile *file, const siloBaseMeshData &data );
+    void writeMesh( DBfile *file, const siloBaseMeshData &data, int cycle, double time );
 #endif
 
     // Function to determine which base mesh ids to register a vector with
@@ -177,7 +177,7 @@ private:
 
     // Function to write the summary file (the file should already be created, ready to reopen)
     // This function requires global communication
-    void writeSummary( std::string filename );
+    void writeSummary( std::string filename, int cycle, double time );
 
     // The dimension
     int d_dim;

@@ -61,8 +61,9 @@ std::set<AsciiWriter::global_id> getKeys( const std::map<AsciiWriter::global_id,
     comm.setGather( ids );
     return ids;
 }
-void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count )
+void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count, double time )
 {
+    NULL_USE(time);
     PROFILE_START( "writeFile" );
     // Open the file for writing
     FILE *fid = nullptr;
