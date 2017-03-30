@@ -3,6 +3,8 @@
 
 #include "ampmesh/structured/BoxMesh.h"
 
+#include <array>
+
 
 namespace AMP {
 namespace Mesh {

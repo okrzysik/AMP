@@ -16,6 +16,7 @@ class Vector;
 #include "utils/shared_ptr.h"
 #include <map>
 #include <vector>
+#include <array>
 
 
 namespace AMP {
