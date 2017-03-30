@@ -10,6 +10,7 @@
 
 
 // Trilinos includes
+DISABLE_WARNINGS
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 //#include "Thyra_SpmdVectorBase_def.hpp"
@@ -22,6 +23,7 @@
 #else
 #include <Epetra_SerialComm.h>
 #endif
+ENABLE_WARNINGS
 
 /// \cond UNDOCUMENTED
 

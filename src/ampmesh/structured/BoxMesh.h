@@ -385,8 +385,8 @@ public: // BoxMesh specific functionality
 protected:
 
     // Constructor
-    BoxMesh( MeshParameters::shared_ptr );
-    BoxMesh( const BoxMesh& );
+    explicit BoxMesh( MeshParameters::shared_ptr );
+    explicit BoxMesh( const BoxMesh& );
 
     // Function to initialize the mesh data once the logical mesh info has been created
     void initialize();

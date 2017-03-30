@@ -5,13 +5,16 @@
 
 // AMP headers
 #include "ampmesh/MeshIterator.h"
+#include "utils/Utilities.h"
 
 
 // Libmesh headers
+DISABLE_WARNINGS
 #include "libmesh/elem.h"
 #include "libmesh/enum_quadrature_type.h"
 #include "libmesh/fe_base.h"
 #include "libmesh/fe_type.h"
+ENABLE_WARNINGS
 
 
 namespace AMP {

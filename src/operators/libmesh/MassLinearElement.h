@@ -5,7 +5,7 @@
 
 #include "utils/shared_ptr.h"
 
-/* AMP files */
+// AMP files
 #include "operators/libmesh/MassElement.h"
 
 namespace AMP {

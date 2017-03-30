@@ -5,15 +5,20 @@
 
 #include "utils/shared_ptr.h"
 
-/* AMP files*/
+// AMP files
 #include "operators/ElementOperation.h"
 #include "operators/libmesh/SourcePhysicsModel.h"
+#include "utils/Utilities.h"
 
-/* Libmesh files */
+
+// Libmesh headers
+DISABLE_WARNINGS
 #include "libmesh/elem.h"
 #include "libmesh/fe_base.h"
 #include "libmesh/fe_type.h"
 #include "libmesh/quadrature_gauss.h"
+ENABLE_WARNINGS
+
 
 namespace AMP {
 namespace Operator {
