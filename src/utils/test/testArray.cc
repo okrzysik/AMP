@@ -89,11 +89,11 @@ void test_interp( UnitTest& ut, const std::vector<size_t>& N )
     std::string testname(buf);
     // Fill A
     A.fill( 0 );
-    for (int i=0; i<A.size(0); i++) {
+    for (size_t i=0; i<A.size(0); i++) {
         double x = i*1.0/std::max<double>(N2[0]-1,1);
-        for (int j=0; j<A.size(1); j++) {
+        for (size_t j=0; j<A.size(1); j++) {
             double y = j*1.0/std::max<double>(N2[1]-1,1);
-            for (int k=0; k<A.size(2); k++) {
+            for (size_t k=0; k<A.size(2); k++) {
                 double z = k*1.0/std::max<double>(N2[2]-1,1);
                 A(i,j,k) = fun<TYPE>(x,y,z);
             }
@@ -102,11 +102,11 @@ void test_interp( UnitTest& ut, const std::vector<size_t>& N )
     // Test the input points
     bool pass = true;
     std::vector<double> x(3);
-    for (int i=0; i<A.size(0); i++) {
+    for (size_t i=0; i<A.size(0); i++) {
         x[0] = i;
-        for (int j=0; j<A.size(1); j++) {
+        for (size_t j=0; j<A.size(1); j++) {
             x[1] = j;
-            for (int k=0; k<A.size(2); k++) {
+            for (size_t k=0; k<A.size(2); k++) {
                 x[2] = k;
                 if ( fabs( A(i,j,k)-A.interp( x ) ) > 1e-12*A(i,j,k) )
                     pass = false;
