@@ -11,12 +11,7 @@
 #include "vectors/sundials/ManagedSundialsVector.h"
 #include "vectors/sundials/SundialsVector.h"
 
-// Changed by BC
-//#include "operators/MassMatrix.h"
 #include "operators/LinearOperator.h"
-// added by JLEE
-#include "operators/libmesh/MassLinearFEOperator.h"
-#include "operators/libmesh/VolumeIntegralOperator.h"
 
 /*
  #ifndef included_ImplicitTimeIntegrator
@@ -31,11 +26,10 @@ extern "C" {
 #include "sundials/sundials_types.h"
 }
 
+
 namespace AMP {
 namespace TimeIntegrator {
 
-// Added by Bill to make things go
-typedef AMP::Operator::MassLinearFEOperator MassOperator;
 
 /** \class IDATimeIntegrator
  *
@@ -297,11 +291,6 @@ private:
     AMP::shared_ptr<IDATimeOperator> d_pIDATimeOperator; // BP, can go, but need to be careful
     AMP::shared_ptr<LinearTimeOperator> d_pLinearTimeOperator;
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_solution_prime;
-
-
-    // volume operator
-    // AMP::shared_ptr<VolumeIntegralOperator> d_volumeIntegralOperator;
-
 
     AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
