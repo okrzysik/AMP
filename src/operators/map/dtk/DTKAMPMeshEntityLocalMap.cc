@@ -123,7 +123,7 @@ void AMPMeshEntityLocalMap::getElementNodeCoordinates(
     // Get the vertices.
     std::vector<AMP::Mesh::MeshElement> vertices =
         Teuchos::rcp_dynamic_cast<AMPMeshEntityExtraData>( entity.extraData() )
-            ->d_element.getElements( AMP::Mesh::Vertex );
+            ->d_element.getElements( AMP::Mesh::GeomType::Vertex );
 
     // Allocate and fill the coordinate container.
     int num_cells = 1;

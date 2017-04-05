@@ -81,7 +81,7 @@ void myTest( AMP::UnitTest *ut )
         nonlinBvpOperator->getOutputVariable();
 
     AMP::Discretization::DOFManager::shared_ptr tempDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr initTempVec =
         AMP::LinearAlgebra::createVector( tempDofMap, temperatureVariable, true );
@@ -133,7 +133,7 @@ void myTest( AMP::UnitTest *ut )
     dirichletDispInVecOp->setVariable( displacementVariable );
 
     AMP::Discretization::DOFManager::shared_ptr dispDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     AMP::LinearAlgebra::Vector::shared_ptr mechNlSolVec =
@@ -199,7 +199,7 @@ void myTest( AMP::UnitTest *ut )
     nonlinearSolver->setZeroInitialGuess( false );
 
 #ifdef USE_EXT_SILO
-    siloWriter->registerVector( mechNlSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
+    siloWriter->registerVector( mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
 #endif
 
     for ( int step = 0; step < NumberOfLoadingSteps; step++ ) {

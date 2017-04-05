@@ -44,9 +44,9 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( params );
     // create two different dof managers
     AMP::Discretization::DOFManager::shared_ptr firstDofManager =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::Discretization::DOFManager::shared_ptr secondDofManager =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Volume, 0, 2, true );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Volume, 0, 2, true );
     size_t n = firstDofManager->numGlobalDOF();
     size_t m = secondDofManager->numGlobalDOF();
     AMP_ASSERT( n != m );

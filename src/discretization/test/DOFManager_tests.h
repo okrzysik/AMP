@@ -4,7 +4,6 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/MultiDOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
-#include "discretization/structuredFaceDOFManager.h"
 #include "discretization/subsetDOFManager.h"
 #include "utils/UnitTest.h"
 
@@ -134,10 +133,10 @@ void testSubsetMesh( AMP::Mesh::Mesh::shared_ptr mesh,
             if ( subsetMesh.get() != nullptr ) {
                 subsetDOF = DOF->subset( subsetMesh );
                 testGetDOFIterator(
-                    ut, subsetMesh->getIterator( AMP::Mesh::Vertex, gcw ), subsetDOF );
+                    ut, subsetMesh->getIterator( AMP::Mesh::GeomType::Vertex, gcw ), subsetDOF );
                 AMP::Discretization::DOFManager::shared_ptr mesh_DOF =
                     AMP::Discretization::simpleDOFManager::create(
-                        subsetMesh, AMP::Mesh::Vertex, gcw, DOFsPerNode, false );
+                        subsetMesh, AMP::Mesh::GeomType::Vertex, gcw, DOFsPerNode, false );
                 if ( *mesh_DOF != *subsetDOF )
                     passes = false;
             }

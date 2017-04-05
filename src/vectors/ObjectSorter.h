@@ -54,7 +54,7 @@ public:
 
     /** Tag for sort type
       */
-    enum SortType { DefaultNodeOrder };
+    enum class SortType { DefaultNodeOrder };
 
     /** Create an ObjectSorter from a set of parameters
       */

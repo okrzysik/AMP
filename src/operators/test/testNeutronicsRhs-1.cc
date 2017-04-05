@@ -81,7 +81,7 @@ void sourceTest( AMP::UnitTest *ut, std::string exeName )
         bool split      = true;
         AMP::Discretization::DOFManager::shared_ptr dof_map =
             AMP::Discretization::simpleDOFManager::create(
-                meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerNode, split );
+                meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerNode, split );
         // create a variable/vector combo.
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         // AMP::Operator::NeutronicsRhs::SP_HexGaussPointVariable outVar(new

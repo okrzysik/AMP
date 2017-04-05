@@ -116,7 +116,7 @@ void nonlinearTest( AMP::UnitTest *ut, std::string exeName )
     subchannelPhysicsModel->getProperty(
         "SaturatedLiquidEnthalpy", liquidEnthalpyResult, liquidEnthalpyArgs );
     std::vector<double> volumeResult( n );
-    subchannelPhysicsModel->getProperty( "SpecificVolume", volumeResult, volumeArgs );
+    subchannelPhysicsModel->getProperty( "SpecificGeomType::Volume", volumeResult, volumeArgs );
     std::vector<double> conductivityResult( n );
     subchannelPhysicsModel->getProperty(
         "ThermalConductivity", conductivityResult, conductivityArgs );
@@ -191,9 +191,9 @@ void nonlinearTest( AMP::UnitTest *ut, std::string exeName )
     subchannelPhysicsModel->getProperty(
         "SaturatedLiquidEnthalpy", liquidEnthalpyResult0Arg, liquidEnthalpyArgs0 );
     std::vector<double> volumeResult1Arg( 1 );
-    subchannelPhysicsModel->getProperty( "SpecificVolume", volumeResult1Arg, volumeArgs1 );
+    subchannelPhysicsModel->getProperty( "SpecificGeomType::Volume", volumeResult1Arg, volumeArgs1 );
     std::vector<double> volumeResult0Arg( 1 );
-    subchannelPhysicsModel->getProperty( "SpecificVolume", volumeResult0Arg, volumeArgs0 );
+    subchannelPhysicsModel->getProperty( "SpecificGeomType::Volume", volumeResult0Arg, volumeArgs0 );
     std::vector<double> conductivityResult1Arg( 1 );
     subchannelPhysicsModel->getProperty(
         "ThermalConductivity", conductivityResult1Arg, conductivityArgs1 );

@@ -29,7 +29,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-// Using mesh and function calls from testLibmeshFaceStuff.cc
+// Using mesh and function calls from testLibmeshGeomType::FaceStuff.cc
 
 void calculateGrad( AMP::UnitTest *ut )
 {

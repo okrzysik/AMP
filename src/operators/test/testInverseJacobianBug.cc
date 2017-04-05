@@ -63,18 +63,18 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     AMP::LinearAlgebra::Variable::shared_ptr myVar( new AMP::LinearAlgebra::Variable( "myVar" ) );
     AMP::Discretization::DOFManager::shared_ptr dof_map =
-        AMP::Discretization::simpleDOFManager::create( ampMesh, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( ampMesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Vector::shared_ptr T =
         AMP::LinearAlgebra::createVector( dof_map, myVar, true );
 
     FILE *fp;
     fp = fopen( "InverseJacobian.txt", "w" );
 
-    AMP::Mesh::MeshIterator el     = ampMesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = ampMesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     while ( el != end_el ) {
-        std::vector<AMP::Mesh::MeshElement> nodes = el->getElements( AMP::Mesh::Vertex );
+        std::vector<AMP::Mesh::MeshElement> nodes = el->getElements( AMP::Mesh::GeomType::Vertex );
         for ( size_t i = 0; i < nodes.size(); i++ ) {
             std::vector<double> pt = nodes[i].coord();
             fprintf(
@@ -111,8 +111,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
     std::vector<size_t> d_dofIndices;
-    el          = ampMesh->getIterator( AMP::Mesh::Volume, 0 );
-    d_currNodes = el->getElements( AMP::Mesh::Vertex );
+    el          = ampMesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    d_currNodes = el->getElements( AMP::Mesh::GeomType::Vertex );
 
     std::vector<AMP::Mesh::MeshElementID> globalIDs( d_currNodes.size() );
 

@@ -190,7 +190,7 @@ AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::MeshIterator &i
 {
     // Get the intesection of the current iterator with the given iterator
     AMP::Mesh::MeshIterator intersection =
-        AMP::Mesh::Mesh::getIterator( AMP::Mesh::Intersection, iterator, getIterator() );
+        AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, iterator, getIterator() );
     if ( intersection.size() == getIterator().size() )
         intersection = getIterator();
     // Get the list of element we want

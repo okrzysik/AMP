@@ -128,14 +128,14 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
         for ( unsigned int k = 0; k < numDofIds; k++ ) {
 
             AMP::Mesh::MeshIterator bnd1 =
-                d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
+                d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryIds[nid], 0 );
             const AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
 
             for ( ; bnd1 != end_bnd1; ++bnd1 ) {
                 PROFILE_START( "prepare element", 2 );
 
                 // Get the nodes for the current element
-                d_currNodes                     = bnd1->getElements( AMP::Mesh::Vertex );
+                d_currNodes                     = bnd1->getElements( AMP::Mesh::GeomType::Vertex );
                 unsigned int numNodesInCurrElem = d_currNodes.size();
 
                 dofIndices.resize( numNodesInCurrElem );

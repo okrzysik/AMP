@@ -160,7 +160,7 @@ void MechanicsNonlinearFEOperator::postAssembly()
 
 void MechanicsNonlinearFEOperator::preElementOperation( const AMP::Mesh::MeshElement &elem )
 {
-    d_currNodes                     = elem.getElements( AMP::Mesh::Vertex );
+    d_currNodes                     = elem.getElements( AMP::Mesh::GeomType::Vertex );
     unsigned int numNodesInCurrElem = d_currNodes.size();
 
     AMP_ASSERT( numNodesInCurrElem == 8 );
@@ -279,7 +279,7 @@ void MechanicsNonlinearFEOperator::init()
 {
     d_isInitialized = true;
 
-    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     d_materialModel->preNonlinearInit( d_resetReusesRadialReturn, d_jacobianReusesRadialReturn );
@@ -289,7 +289,7 @@ void MechanicsNonlinearFEOperator::init()
     }
 
     for ( d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx ) {
-        d_currNodes                     = el->getElements( AMP::Mesh::Vertex );
+        d_currNodes                     = el->getElements( AMP::Mesh::GeomType::Vertex );
         unsigned int numNodesInCurrElem = d_currNodes.size();
 
         if ( d_useUpdatedLagrangian ) {
@@ -359,7 +359,7 @@ void MechanicsNonlinearFEOperator::reset( const AMP::shared_ptr<OperatorParamete
     if ( d_resetReusesRadialReturn ) {
         d_materialModel->globalReset();
     } else {
-        AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+        AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
         AMP::Mesh::MeshIterator end_el = el.end();
 
         setVector( Mechanics::DISPLACEMENT, myParams->d_EquilibriumVec[Mechanics::DISPLACEMENT] );
@@ -504,7 +504,7 @@ AMP::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
 
         d_materialModel->preNonlinearJacobian();
 
-        AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+        AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
         AMP::Mesh::MeshIterator end_el = el.end();
 
         for ( d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx ) {
@@ -530,7 +530,7 @@ void MechanicsNonlinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vec
         init();
     }
 
-    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     FILE *fp = fopen( fname.c_str(), "w" );
@@ -579,7 +579,7 @@ void MechanicsNonlinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vec
     d_materialModel->preNonlinearAssembly();
 
     for ( d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx ) {
-        d_currNodes                     = el->getElements( AMP::Mesh::Vertex );
+        d_currNodes                     = el->getElements( AMP::Mesh::GeomType::Vertex );
         unsigned int numNodesInCurrElem = d_currNodes.size();
 
         getDofIndicesForCurrentElement( Mechanics::DISPLACEMENT, d_dofIndices );
@@ -657,7 +657,7 @@ void MechanicsNonlinearFEOperator::updateMaterialForElementCommonFunction(
     std::vector<std::vector<double>> &elementInputVectors,
     std::vector<std::vector<double>> &elementInputVectors_pre )
 {
-    d_currNodes                     = elem.getElements( AMP::Mesh::Vertex );
+    d_currNodes                     = elem.getElements( AMP::Mesh::GeomType::Vertex );
     unsigned int numNodesInCurrElem = d_currNodes.size();
 
     getDofIndicesForCurrentElement( Mechanics::DISPLACEMENT, d_dofIndices );

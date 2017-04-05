@@ -189,7 +189,7 @@ void NeutronicsRhsExtras::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         double value = d_fixedValues[this_step];
         rInternal->setToScalar( value );
     } else {
-        AMP::Mesh::MeshIterator elem      = d_Mesh->getIterator( AMP::Mesh::Volume, 1 );
+        AMP::Mesh::MeshIterator elem      = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 1 );
         AMP::Mesh::MeshIterator end_elems = elem.begin();
 
         int DOFsPerElement = 8;
@@ -197,7 +197,7 @@ void NeutronicsRhsExtras::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         bool split         = true;
         AMP::Discretization::DOFManager::shared_ptr dof_map =
             AMP::Discretization::simpleDOFManager::create(
-                d_Mesh, AMP::Mesh::Volume, ghostWidth, DOFsPerElement, split );
+                d_Mesh, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerElement, split );
 
         int gp = 0;
         for ( ; elem != end_elems; ++elem ) {

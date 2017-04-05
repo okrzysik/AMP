@@ -180,7 +180,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
     loadOperator->setVariable( fusedVar );
 
     AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF =
-        AMP::Discretization::simpleDOFManager::create( fusedMeshAdapter, AMP::Mesh::Vertex, 1, 3 );
+        AMP::Discretization::simpleDOFManager::create( fusedMeshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     AMP::LinearAlgebra::Vector::shared_ptr fusedSolVec =
@@ -495,7 +495,7 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
 
     AMP::Discretization::DOFManager::shared_ptr dofManager =
         AMP::Discretization::simpleDOFManager::create(
-            fusedMeshesAdapter, AMP::Mesh::Vertex, 1, 3 );
+            fusedMeshesAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
     AMP::LinearAlgebra::Variable::shared_ptr fusedColumnVar =
         fusedColumnOperator->getOutputVariable();

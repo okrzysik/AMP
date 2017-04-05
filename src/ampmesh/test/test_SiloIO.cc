@@ -26,15 +26,15 @@
 
 AMP::Mesh::GeomType getSurfaceType( AMP::Mesh::GeomType volume )
 {
-    if ( volume == AMP::Mesh::Vertex )
-        return AMP::Mesh::Vertex;
-    else if ( volume == AMP::Mesh::Edge )
-        return AMP::Mesh::Vertex;
-    else if ( volume == AMP::Mesh::Face )
-        return AMP::Mesh::Edge;
-    else if ( volume == AMP::Mesh::Volume )
-        return AMP::Mesh::Face;
-    return AMP::Mesh::null;
+    if ( volume == AMP::Mesh::GeomType::Vertex )
+        return AMP::Mesh::GeomType::Vertex;
+    else if ( volume == AMP::Mesh::GeomType::Edge )
+        return AMP::Mesh::GeomType::Vertex;
+    else if ( volume == AMP::Mesh::GeomType::Face )
+        return AMP::Mesh::GeomType::Edge;
+    else if ( volume == AMP::Mesh::GeomType::Volume )
+        return AMP::Mesh::GeomType::Face;
+    return AMP::Mesh::GeomType::null;
 }
 
 
@@ -76,7 +76,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     // Create the meshes from the input database
     PROFILE_START( "Load Mesh" );
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( params );
-    auto pointType = AMP::Mesh::Vertex;
+    auto pointType = AMP::Mesh::GeomType::Vertex;
     auto volumeType = mesh->getGeomType();
     auto surfaceType = getSurfaceType( volumeType );
     globalComm.barrier();

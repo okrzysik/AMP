@@ -137,7 +137,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
     AMP::Discretization::DOFManager::shared_ptr DOF_vector =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
     AMP::LinearAlgebra::Vector::shared_ptr mechNlSolVec =
         AMP::LinearAlgebra::createVector( DOF_vector, residualVariable, true );
     AMP::LinearAlgebra::Vector::shared_ptr mechNlRhsVec =
@@ -149,8 +149,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( mechNlSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution_Vector" );
-    siloWriter->registerVector( mechNlResVec, meshAdapter, AMP::Mesh::Vertex, "Residual_Vector" );
+    siloWriter->registerVector( mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
+    siloWriter->registerVector( mechNlResVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual_Vector" );
 #endif
 
     // Initial guess for NL solver must satisfy the displacement boundary conditions

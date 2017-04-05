@@ -75,7 +75,7 @@ void MassLinearFEOperator::postAssembly()
 
 void MassLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElement &elem )
 {
-    d_currNodes                 = elem.getElements( AMP::Mesh::Vertex );
+    d_currNodes                 = elem.getElements( AMP::Mesh::GeomType::Vertex );
     unsigned int num_local_dofs = d_currNodes.size();
 
     d_elementMassMatrix.resize( num_local_dofs );

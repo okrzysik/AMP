@@ -99,20 +99,20 @@ void thermalContactTest( AMP::UnitTest *ut, std::string exeName )
     bool split               = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            manager, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            manager, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     //--------------------------------------------------
 
     AMP::Mesh::Mesh::shared_ptr meshAdapter1 = manager->Subset( "pellet" );
     AMP::Mesh::Mesh::shared_ptr meshAdapter2 = manager->Subset( "clad" );
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap1 =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter1, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter1, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap2 =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter2, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter2, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap1 =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter1, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+            meshAdapter1, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
     AMP::LinearAlgebra::VS_Mesh vectorSelector1( meshAdapter1 );
     AMP::LinearAlgebra::VS_Mesh vectorSelector2( meshAdapter2 );
 
@@ -187,7 +187,7 @@ void thermalContactTest( AMP::UnitTest *ut, std::string exeName )
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
     //----------------------------------------------------------
-    //  Integrate Nuclear Rhs over Desnity * Volume //
+    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
     //----------------------------------------------------------
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
@@ -624,7 +624,7 @@ void thermalContactTest( AMP::UnitTest *ut, std::string exeName )
             AMP::Utilities::Writer::buildWriter( "Silo" );
 
         siloWriter->registerVector(
-            TemperatureInKelvin, manager, AMP::Mesh::Vertex, "TemperatureInKelvin" );
+            TemperatureInKelvin, manager, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
 
         siloWriter->writeFile( input_file, 0 );
 #endif

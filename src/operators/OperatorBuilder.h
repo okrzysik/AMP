@@ -72,7 +72,7 @@ public:
      * \param meshAdapter           Mesh for the operator
      * \param boundaryOperatorName  Name of the operator to create
      * \param input_db              Input database
-     * \param volumeOperator        Volume operator to use
+     * \param volumeOperator        GeomType::Volume operator to use
      * \param elementPhysicsModel   Element physics model to use
      * \param localModelFactory     Local model factor to use
      */
@@ -95,7 +95,7 @@ public:
      * \param meshAdapter           Mesh for the operator
      * \param boundaryOperatorName  Name of the operator to create
      * \param input_db              Input database
-     * \param volumeOperator        Volume operator to use
+     * \param volumeOperator        GeomType::Volume operator to use
      * \param elementPhysicsModel   Element physics model to use
      * \param localModelFactory     Local model factor to use
      */

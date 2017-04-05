@@ -136,7 +136,7 @@ void DirichletMatrixCorrection::applyMatrixCorrection()
 
     for ( size_t k = 0; k < d_boundaryIds.size(); ++k ) {
         AMP::Mesh::MeshIterator bnd =
-            d_Mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryIds[k], 0 );
+            d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[k], 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         for ( ; bnd != end_bnd; ++bnd ) {

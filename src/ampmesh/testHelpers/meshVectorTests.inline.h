@@ -37,17 +37,17 @@ void meshTests::simpleNodalVectorTests( AMP::UnitTest *utils,
         AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
 
     // Check the size of the vector
-    size_t num_dofs = mesh->numGlobalElements( AMP::Mesh::Vertex ) * DOF_PER_NODE;
+    size_t num_dofs = mesh->numGlobalElements( AMP::Mesh::GeomType::Vertex ) * DOF_PER_NODE;
     if ( vectora->getGlobalSize() == num_dofs )
         utils->passes( "global vector size" );
     else
         utils->failure( "global vector size" );
-    num_dofs = mesh->numLocalElements( AMP::Mesh::Vertex ) * DOF_PER_NODE;
+    num_dofs = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex ) * DOF_PER_NODE;
     if ( vectora->getLocalSize() == num_dofs )
         utils->passes( "local vector size" );
     else
         utils->failure( "local vector size" );
-    num_dofs = mesh->numGhostElements( AMP::Mesh::Vertex, gcw ) * DOF_PER_NODE;
+    num_dofs = mesh->numGhostElements( AMP::Mesh::GeomType::Vertex, gcw ) * DOF_PER_NODE;
     if ( vectora->getGhostSize() == num_dofs )
         utils->passes( "ghost vector size" );
     else
@@ -82,7 +82,7 @@ void meshTests::VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shar
             new AMP::Discretization::DOFManagerParameters( mesh ) );
         AMP::Discretization::DOFManager::shared_ptr DOFs =
             AMP::Discretization::simpleDOFManager::create(
-                mesh, AMP::Mesh::Vertex, gcw, DOF_PER_NODE, SPLIT );
+                mesh, AMP::Mesh::GeomType::Vertex, gcw, DOF_PER_NODE, SPLIT );
 
         // Run some basic nodal vector tests
         simpleNodalVectorTests<DOF_PER_NODE, SPLIT>( utils, mesh, DOFs, gcw );
@@ -90,7 +90,7 @@ void meshTests::VerifyGetVectorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shar
         // Run the vector tests
         globalMeshForMeshVectorFactory = mesh;
         AMP::shared_ptr<AMP::LinearAlgebra::VectorFactory> factory( 
-            new MeshVectorFactory( mesh, AMP::Mesh::Vertex, gcw, DOF_PER_NODE, SPLIT ) );
+            new MeshVectorFactory( mesh, AMP::Mesh::GeomType::Vertex, gcw, DOF_PER_NODE, SPLIT ) );
         AMP::LinearAlgebra::VectorTests vectorTests( factory );
         vectorTests.testManagedVector( utils );
         vectorTests.testParallelVectors( utils );

@@ -42,19 +42,19 @@ ScalarN2GZAxisMap::ScalarN2GZAxisMap( const AMP::shared_ptr<AMP::Operator::Opera
     // Create the element iterators
     if ( d_mesh1.get() != nullptr ) {
         d_srcIterator1 =
-            d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
+            d_mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, params->d_BoundaryID1, 0 );
         d_dstIterator1 =
-            d_mesh1->getBoundaryIDIterator( AMP::Mesh::Face, params->d_BoundaryID1, 0 );
+            d_mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, params->d_BoundaryID1, 0 );
     }
     if ( d_mesh2.get() != nullptr ) {
         d_srcIterator2 =
-            d_mesh2->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID2, 0 );
+            d_mesh2->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, params->d_BoundaryID2, 0 );
         d_dstIterator2 =
-            d_mesh2->getBoundaryIDIterator( AMP::Mesh::Face, params->d_BoundaryID2, 0 );
+            d_mesh2->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, params->d_BoundaryID2, 0 );
     }
 
     AMP::Mesh::MeshIterator iterator =
-        AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, d_dstIterator1, d_dstIterator2 );
+        AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Union, d_dstIterator1, d_dstIterator2 );
     libmeshElements.reinit( iterator );
 
     // Build the z-coordinates of the return gauss points

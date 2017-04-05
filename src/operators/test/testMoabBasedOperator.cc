@@ -225,7 +225,7 @@ void moabInterface( AMP::UnitTest *ut )
     bool split          = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::LinearAlgebra::Variable::shared_ptr nodalVar(
         new AMP::LinearAlgebra::Variable( "nodalPressure" ) );
     AMP::LinearAlgebra::Vector::shared_ptr nodalVec =
@@ -235,7 +235,7 @@ void moabInterface( AMP::UnitTest *ut )
 
     // Now create Moab map operator
     AMP::pout << "Creating Node-Based Moab Map Operator" << std::endl;
-    input_db->putString( "InterpolateToType", "Vertex" );
+    input_db->putString( "InterpolateToType", "GeomType::Vertex" );
     SP_MoabMap moabNodeMap( new MoabMap( mapParams ) );
 
     // Do interpolation
@@ -274,7 +274,7 @@ void moabInterface( AMP::UnitTest *ut )
         std::string meshCoords   = "Mesh_Coords";
         SP_AMPVec thisMeshCoords = currentMesh->getPositionVector( meshCoords );
 
-        for ( unsigned int i = 0; i < currentMesh->numLocalElements( AMP::Mesh::Vertex ); ++i ) {
+        for ( unsigned int i = 0; i < currentMesh->numLocalElements( AMP::Mesh::GeomType::Vertex ); ++i ) {
             double val1 = 100.0 * ( thisMeshCoords->getValueByLocalID( 3 * i ) +
                                     thisMeshCoords->getValueByLocalID(
                                         3 * i + 2 ) ); // AMP  coordinates are in meters
@@ -292,7 +292,7 @@ void moabInterface( AMP::UnitTest *ut )
             }
         }
 
-        offset += currentMesh->numLocalElements( AMP::Mesh::Vertex );
+        offset += currentMesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
     }
 
     if ( numMismatched == 0 )
@@ -306,7 +306,7 @@ void moabInterface( AMP::UnitTest *ut )
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( mesh );
-    siloWriter->registerVector( nodalVec, mesh, AMP::Mesh::Vertex, "Temperatures" );
+    siloWriter->registerVector( nodalVec, mesh, AMP::Mesh::GeomType::Vertex, "Temperatures" );
     siloWriter->writeFile( "Moab_Temp", 0 );
 #endif
 

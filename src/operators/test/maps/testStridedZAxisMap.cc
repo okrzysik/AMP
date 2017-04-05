@@ -88,10 +88,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     int const barDofsPerNode = 1;
     AMP::Discretization::DOFManager::shared_ptr fooDofManager =
         AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::Vertex, ghostWidth, fooDofsPerNode );
+            mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, fooDofsPerNode );
     AMP::Discretization::DOFManager::shared_ptr barDofManager =
         AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::Vertex, ghostWidth, barDofsPerNode );
+            mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, barDofsPerNode );
 
     // and two vectors
     AMP::LinearAlgebra::Variable::shared_ptr variable1(
@@ -121,12 +121,12 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     int const fooBoundaryID = 1;
     int const barBoundaryID = 0;
     AMP::Mesh::MeshIterator fooMeshIterator =
-        fooMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, fooBoundaryID );
+        fooMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, fooBoundaryID );
     project( fooMeshIterator, fooFooVector, fooDof, fooDofsPerNode, fooFunctionOfSpace );
     project( fooMeshIterator, barFooVector, fooDof, fooDofsPerNode, barFunctionOfSpace );
 
     AMP::Mesh::MeshIterator barMeshIterator =
-        barMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, barBoundaryID );
+        barMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, barBoundaryID );
     project( barMeshIterator, barBarVector, barDof, barDofsPerNode, barFunctionOfSpace );
     project( barMeshIterator, fooBarVector, barDof, barDofsPerNode, fooFunctionOfSpace );
 
@@ -153,8 +153,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->setDecomposition( 1 );
-    siloWriter->registerVector( myVector, mesh, AMP::Mesh::Vertex, "my" );
-    siloWriter->registerVector( otherVector, mesh, AMP::Mesh::Vertex, "other" );
+    siloWriter->registerVector( myVector, mesh, AMP::Mesh::GeomType::Vertex, "my" );
+    siloWriter->registerVector( otherVector, mesh, AMP::Mesh::GeomType::Vertex, "other" );
     siloWriter->writeFile( "tmp", 0 );
 #endif
     mapOperator->setVector( otherVector );

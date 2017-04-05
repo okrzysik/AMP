@@ -220,7 +220,7 @@ void IDATimeIntegratorTest( AMP::UnitTest *ut )
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
     /////////////////////////////////////////////////////
-    //  Integrate Nuclear Rhs over Desnity * Volume //
+    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
     /////////////////////////////////////////////////////
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );

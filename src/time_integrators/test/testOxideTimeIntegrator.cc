@@ -34,17 +34,17 @@ void OxideTest( AMP::UnitTest *ut, std::string input_file )
 
     // Create the surface mesh that we will use to create the oxide layer
     AMP::Mesh::Mesh::shared_ptr surface =
-        mesh->Subset( mesh->getBoundaryIDIterator( AMP::Mesh::Face, 4, 0 ) );
+        mesh->Subset( mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 4, 0 ) );
     surface->setName( "clad_surface" );
 
     // Create the temperature profile
     AMP::Discretization::DOFManager::shared_ptr DOF =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Variable::shared_ptr temp_var(
         new AMP::LinearAlgebra::Variable( "temperature" ) );
     AMP::LinearAlgebra::Vector::shared_ptr temp_vec =
         AMP::LinearAlgebra::createVector( DOF, temp_var, true );
-    AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Vertex );
+    AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
     double T0                        = input_db->getDoubleWithDefault( "T0", 650 );
     std::vector<size_t> dofs;
     for ( size_t i = 0; i < iterator.size(); i++ ) {
@@ -76,9 +76,9 @@ void OxideTest( AMP::UnitTest *ut, std::string input_file )
 // Register the data with the silo writer
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( temp_vec, mesh, AMP::Mesh::Vertex, "temperature" );
-    siloWriter->registerVector( oxide, surface, AMP::Mesh::Vertex, "oxide_thickness" );
-    siloWriter->registerVector( alpha, surface, AMP::Mesh::Vertex, "alpha_thickness" );
+    siloWriter->registerVector( temp_vec, mesh, AMP::Mesh::GeomType::Vertex, "temperature" );
+    siloWriter->registerVector( oxide, surface, AMP::Mesh::GeomType::Vertex, "oxide_thickness" );
+    siloWriter->registerVector( alpha, surface, AMP::Mesh::GeomType::Vertex, "alpha_thickness" );
 #endif
 
     // Run the time integration

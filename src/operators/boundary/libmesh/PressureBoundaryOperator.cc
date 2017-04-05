@@ -40,15 +40,15 @@ PressureBoundaryOperator::PressureBoundaryOperator(
     std::vector<std::vector<unsigned int>> sideMap( npes );
     std::vector<std::vector<AMP::Mesh::MeshElementID>> idMap( npes );
 
-    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
     for ( ; el != end_el; ++el ) {
-        std::vector<AMP::Mesh::MeshElement> sides = el->getElements( AMP::Mesh::Face );
+        std::vector<AMP::Mesh::MeshElement> sides = el->getElements( AMP::Mesh::GeomType::Face );
         for ( size_t s = 0; s < sides.size(); ++s ) {
             if ( sides[s].isOnBoundary( bndId ) ) {
                 AMP::Mesh::MeshElementID sideId              = sides[s].globalID();
                 unsigned int owner                           = sideId.owner_rank();
-                std::vector<AMP::Mesh::MeshElement> vertices = el->getElements( AMP::Mesh::Vertex );
+                std::vector<AMP::Mesh::MeshElement> vertices = el->getElements( AMP::Mesh::GeomType::Vertex );
                 for ( auto &vertice : vertices ) {
                     std::vector<double> pt = vertice.coord();
                     for ( auto &elem : pt ) {

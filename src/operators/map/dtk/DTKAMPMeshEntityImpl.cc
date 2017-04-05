@@ -33,21 +33,21 @@ int AMPMeshEntityImpl::topologicalDimension() const
     int entity_dim;
     Mesh::GeomType geom_type = d_extra_data->d_element.elementType();
     switch ( geom_type ) {
-    case Mesh::Vertex:
+    case Mesh::GeomType::Vertex:
         entity_dim = 0;
         break;
-    case Mesh::Edge:
+    case Mesh::GeomType::Edge:
         entity_dim = 1;
         break;
-    case Mesh::Face:
+    case Mesh::GeomType::Face:
         entity_dim = 2;
         break;
-    case Mesh::Volume:
+    case Mesh::GeomType::Volume:
         entity_dim = 3;
         break;
     default:
-        AMP_INSIST( geom_type == Mesh::Vertex || geom_type == Mesh::Edge ||
-                        geom_type == Mesh::Face || geom_type == Mesh::Volume,
+        AMP_INSIST( geom_type == Mesh::GeomType::Vertex || geom_type == Mesh::GeomType::Edge ||
+                        geom_type == Mesh::GeomType::Face || geom_type == Mesh::GeomType::Volume,
                     "Invalid geometry type!" );
         entity_dim = 0;
         break;
@@ -78,7 +78,7 @@ int AMPMeshEntityImpl::ownerRank() const { return d_owner_rank; }
 int AMPMeshEntityImpl::physicalDimension() const
 {
     // Get the vertices of the element.
-    std::vector<Mesh::MeshElement> vertices = d_extra_data->d_element.getElements( Mesh::Vertex );
+    std::vector<Mesh::MeshElement> vertices = d_extra_data->d_element.getElements( Mesh::GeomType::Vertex );
 
     // Get the dimension via the coordinates.
     int space_dim = 0;
@@ -101,7 +101,7 @@ void AMPMeshEntityImpl::boundingBox( Teuchos::Tuple<double, 6> &bounds ) const
     bounds     = Teuchos::tuple( max, max, max, -max, -max, -max );
 
     // Get the vertices of the element.
-    std::vector<Mesh::MeshElement> vertices = d_extra_data->d_element.getElements( Mesh::Vertex );
+    std::vector<Mesh::MeshElement> vertices = d_extra_data->d_element.getElements( Mesh::GeomType::Vertex );
 
     // Create a bounding box from the vertex coordinates.
     int num_vertices = vertices.size();

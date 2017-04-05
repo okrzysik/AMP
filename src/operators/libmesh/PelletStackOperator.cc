@@ -77,7 +77,7 @@ void PelletStackOperator::applyUnscaling( AMP::LinearAlgebra::Vector::shared_ptr
 {
     AMP::LinearAlgebra::Vector::shared_ptr subF         = f->subsetVectorForVariable( d_var );
     AMP::Discretization::DOFManager::shared_ptr dof_map = subF->getDOFManager();
-    AMP::Mesh::MeshIterator bnd = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_slaveId, 0 );
+    AMP::Mesh::MeshIterator bnd = d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_slaveId, 0 );
     AMP::Mesh::MeshIterator end_bnd = bnd.end();
     for ( ; bnd != end_bnd; ++bnd ) {
         std::vector<size_t> bndGlobalIds;
@@ -115,7 +115,7 @@ void PelletStackOperator::applyOnlyZcorrection( AMP::LinearAlgebra::Vector::shar
     AMP::Discretization::DOFManager::shared_ptr dof_map = subU->getDOFManager();
     for ( size_t i = 0; i < d_pelletIds.size(); ++i ) {
         if ( d_pelletIds[i] > 0 ) {
-            AMP::Mesh::MeshIterator nd     = d_meshes[i]->getIterator( AMP::Mesh::Vertex, 0 );
+            AMP::Mesh::MeshIterator nd     = d_meshes[i]->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
             AMP::Mesh::MeshIterator end_nd = nd.end();
             for ( ; nd != end_nd; ++nd ) {
                 std::vector<size_t> dofIds;
@@ -143,7 +143,7 @@ void PelletStackOperator::applyXYZcorrection( AMP::LinearAlgebra::Vector::const_
         d_frozenVectorForMaps->subsetVectorForVariable( d_var );
     AMP::LinearAlgebra::Vector::shared_ptr subR         = r->subsetVectorForVariable( d_var );
     AMP::Discretization::DOFManager::shared_ptr dof_map = subR->getDOFManager();
-    AMP::Mesh::MeshIterator bnd = d_Mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_slaveId, 0 );
+    AMP::Mesh::MeshIterator bnd = d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_slaveId, 0 );
     AMP::Mesh::MeshIterator end_bnd = bnd.end();
     for ( ; bnd != end_bnd; ++bnd ) {
         std::vector<size_t> bndGlobalIds;
@@ -158,7 +158,7 @@ void PelletStackOperator::applyXYZcorrection( AMP::LinearAlgebra::Vector::const_
     for ( size_t i = 0; i < d_pelletIds.size(); ++i ) {
         if ( d_pelletIds[i] > 1 ) {
             AMP::Mesh::MeshIterator bnd =
-                d_meshes[i]->getBoundaryIDIterator( AMP::Mesh::Vertex, d_slaveId, 0 );
+                d_meshes[i]->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_slaveId, 0 );
             AMP::Mesh::MeshIterator end_bnd = bnd.end();
             for ( ; bnd != end_bnd; ++bnd ) {
                 std::vector<size_t> bndGlobalIds;
@@ -237,7 +237,7 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
         // BP, Nov 3, 2015
         //        subR->copyVector(subF);
         AMP::Mesh::MeshIterator bnd =
-            d_meshes[currPellIdx]->getBoundaryIDIterator( AMP::Mesh::Vertex, d_slaveId, 0 );
+            d_meshes[currPellIdx]->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_slaveId, 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
         for ( ; bnd != end_bnd; ++bnd ) {
             std::vector<size_t> bndGlobalIds;
@@ -258,7 +258,7 @@ void PelletStackOperator::computeZscan( AMP::LinearAlgebra::Vector::const_shared
     std::vector<double> myMaxZdisps( d_pelletIds.size(), 0.0 );
     for ( size_t i = 0; i < d_pelletIds.size(); i++ ) {
         AMP::Mesh::MeshIterator bnd =
-            d_meshes[i]->getBoundaryIDIterator( AMP::Mesh::Vertex, d_masterId, 0 );
+            d_meshes[i]->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_masterId, 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
         for ( ; bnd != end_bnd; ++bnd ) {
             std::vector<size_t> bndGlobalIds;

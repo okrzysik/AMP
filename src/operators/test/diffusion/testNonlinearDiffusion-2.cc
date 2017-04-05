@@ -124,7 +124,7 @@ void nonlinearTest( AMP::UnitTest *ut,
     bool split          = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     //----------------------------------------------------------------------------------------------------------------------------------------------//
 
     // create solution, rhs, and residual vectors
@@ -200,7 +200,7 @@ void nonlinearTest( AMP::UnitTest *ut,
     diffRhsVec->setToScalar( 0.0 );
 
     int zeroGhostWidth              = 0;
-    AMP::Mesh::MeshIterator curNode = meshAdapter->getIterator( AMP::Mesh::Vertex, zeroGhostWidth );
+    AMP::Mesh::MeshIterator curNode = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
     AMP::Mesh::MeshIterator endNode = curNode.end();
 
     for ( curNode = curNode.begin(); curNode != endNode; ++curNode ) {
@@ -246,7 +246,7 @@ void nonlinearTest( AMP::UnitTest *ut,
     // write values in mathematica form
     int nranks = globalComm.getSize();
     if ( nranks == 1 ) {
-        size_t nnodes        = meshAdapter->numLocalElements( AMP::Mesh::Vertex );
+        size_t nnodes        = meshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
         int proc             = globalComm.getRank();
         int nproc            = globalComm.getSize();
         std::string filename = "values-" + exeName;
@@ -256,7 +256,7 @@ void nonlinearTest( AMP::UnitTest *ut,
                  << "\n";
         }
         AMP::Mesh::MeshIterator node =
-            meshAdapter->getIterator( AMP::Mesh::Vertex, zeroGhostWidth );
+            meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
 
         int i = 0;
         for ( ; node != node.end(); ++node ) {

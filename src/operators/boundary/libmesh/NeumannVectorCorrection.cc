@@ -114,8 +114,8 @@ void NeumannVectorCorrection::reset( const AMP::shared_ptr<OperatorParameters> &
     AMP::Mesh::MeshIterator iterator;
     for ( auto &elem : d_boundaryIds ) {
         AMP::Mesh::MeshIterator iterator2 =
-            d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, elem, 0 );
-        iterator = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, iterator, iterator2 );
+            d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, elem, 0 );
+        iterator = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Union, iterator, iterator2 );
     }
     d_libmeshElements.reinit( iterator, d_qruleType, d_qruleOrder, d_type );
 }
@@ -149,14 +149,14 @@ void NeumannVectorCorrection::addRHScorrection(
             for ( unsigned int k = 0; k < numDofIds; k++ ) {
 
                 AMP::Mesh::MeshIterator bnd =
-                    d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[j], 0 );
+                    d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryIds[j], 0 );
                 AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
                 int count = 0;
                 for ( ; bnd != end_bnd; ++bnd ) {
                     count++;
 
-                    d_currNodes                     = bnd->getElements( AMP::Mesh::Vertex );
+                    d_currNodes                     = bnd->getElements( AMP::Mesh::GeomType::Vertex );
                     unsigned int numNodesInCurrElem = d_currNodes.size();
 
                     dofIndices.resize( numNodesInCurrElem );

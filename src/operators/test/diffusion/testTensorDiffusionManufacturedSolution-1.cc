@@ -119,7 +119,7 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshName )
     bool split          = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     //----------------------------------------------------------------------------------------------------------------------------------------------//
 
     // create solution, rhs, and residual vectors
@@ -152,7 +152,7 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshName )
     }*/
     int zeroGhostWidth = 1;
     AMP::Mesh::MeshIterator iterator =
-        meshAdapter->getIterator( AMP::Mesh::Vertex, zeroGhostWidth );
+        meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
     std::string mfgName = mfgSolution->get_name();
     if ( mfgName.find( "Cylindrical" ) < mfgName.size() ) {
         for ( ; iterator != iterator.end(); iterator++ ) {
@@ -271,10 +271,10 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshName )
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
 
-    siloWriter->registerVector( workVec, meshAdapter, AMP::Mesh::Vertex, "RelativeError" );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
-    siloWriter->registerVector( sourceVec, meshAdapter, AMP::Mesh::Vertex, "Source" );
-    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+    siloWriter->registerVector( workVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "RelativeError" );
+    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->registerVector( sourceVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Source" );
+    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
 
     siloWriter->writeFile( input_file, 0 );
 #endif

@@ -243,7 +243,7 @@ void DiffusionNonlinearFEOperator::preElementOperation(
 
     std::vector<std::vector<double>> elementInputVectors( Diffusion::NUMBER_VARIABLES );
 
-    d_currNodes = elem.getElements( AMP::Mesh::Vertex );
+    d_currNodes = elem.getElements( AMP::Mesh::GeomType::Vertex );
     std::vector<AMP::Mesh::MeshElementID> ids( d_currNodes.size() );
     for ( size_t i = 0; i < d_currNodes.size(); i++ )
         ids[i]     = d_currNodes[i].globalID();
@@ -306,11 +306,11 @@ void DiffusionNonlinearFEOperator::init(
         AMP::pout << "DiffusionNonlinearFEOperator::init, entering" << std::endl;
 
     (void) params;
-    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     for ( d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx ) {
-        d_currNodes = el->getElements( AMP::Mesh::Vertex );
+        d_currNodes = el->getElements( AMP::Mesh::GeomType::Vertex );
         d_diffNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
                                                        d_transportModel );
         d_diffNonlinElem->initTransportModel();

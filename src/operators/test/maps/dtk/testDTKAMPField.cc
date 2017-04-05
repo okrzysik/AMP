@@ -52,12 +52,12 @@ void myTest( AMP::UnitTest *ut )
     int const dofsPerNode = 1;
     AMP::Discretization::DOFManager::shared_ptr dofManager =
         AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::Vertex, ghostWidth, dofsPerNode );
+            mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
     AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::LinearAlgebra::Variable( "var" ) );
     AMP::LinearAlgebra::Vector::shared_ptr ampVector =
         AMP::LinearAlgebra::createVector( dofManager, variable, split );
     std::vector<std::size_t> dofIndices;
-    AMP::Mesh::MeshIterator meshIterator = mesh->getIterator( AMP::Mesh::Vertex, ghostWidth );
+    AMP::Mesh::MeshIterator meshIterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, ghostWidth );
     for ( meshIterator = meshIterator.begin(); meshIterator != meshIterator.end();
           ++meshIterator ) {
         dofManager->getDOFs( meshIterator->globalID(), dofIndices );

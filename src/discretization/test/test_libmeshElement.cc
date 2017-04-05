@@ -10,7 +10,7 @@ void testLibmeshElement( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     AMP::Discretization::createLibmeshElements list;
     try {
-        AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Volume, 1 );
+        AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume, 1 );
         list.reinit( iterator );
         for ( size_t i = 0; i < iterator.size(); i++ ) {
             const libMesh::Elem *elem = list.getElement( iterator->globalID() );
@@ -22,7 +22,7 @@ void testLibmeshElement( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh )
         ut->failure( "Created volume elements" );
     }
     try {
-        AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Face, 1 );
+        AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::GeomType::Face, 1 );
         list.reinit( iterator );
         for ( size_t i = 0; i < iterator.size(); i++ ) {
             const libMesh::Elem *elem = list.getElement( iterator->globalID() );

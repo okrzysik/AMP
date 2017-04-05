@@ -78,14 +78,14 @@ public:
                               const int boundaryID,
                               std::vector<AMP::Mesh::MeshElementID> &faceVerticesGlobalIDs,
                               std::vector<double> &shiftGlobalCoords,
-                              std::vector<double> &projectionLocalCoordsOnFace,
+                              std::vector<double> &projectionLocalCoordsOnGeomType::Face,
                               std::vector<int> &flags );
 
     void projectOnBoundaryID( AMP::AMP_MPI comm,
                               const int boundaryID,
                               std::vector<AMP::Mesh::MeshElementID> &faceVerticesGlobalIDs,
                               std::vector<double> &shiftGlobalCoords,
-                              std::vector<double> &projectionLocalCoordsOnFace,
+                              std::vector<double> &projectionLocalCoordsOnGeomType::Face,
                               std::vector<int> &flags,
                               std::vector<AMP::Mesh::MeshElementID> &volumeGlobalIDs,
                               std::vector<size_t> &faceLocalIndices );
@@ -123,11 +123,11 @@ private:
 struct DendroSearch::ProjectOnBoundaryData {
     size_t d_PointLocalID;
     SearchStatus d_SearchStatus;
-    AMP::Mesh::MeshElementID d_FaceVerticesIDs[4];
-    double d_ProjectionLocalCoordsOnFace[2];
+    AMP::Mesh::MeshElementID d_GeomType::FaceVerticesIDs[4];
+    double d_ProjectionLocalCoordsOnGeomType::Face[2];
     double d_ShiftGlobalCoords[3];
-    size_t d_FaceLocalIndex;
-    AMP::Mesh::MeshElementID d_VolumeID;
+    size_t d_GeomType::FaceLocalIndex;
+    AMP::Mesh::MeshElementID d_GeomType::VolumeID;
 };
 }
 }

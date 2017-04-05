@@ -42,7 +42,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
-    std::cout << "Mesh has " << ( meshAdapter->numLocalElements( AMP::Mesh::Vertex ) ) << " nodes."
+    std::cout << "Mesh has " << ( meshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex ) ) << " nodes."
               << std::endl;
 
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
@@ -64,7 +64,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     dirichletVecOp->setVariable( displacementVariable );
 
     AMP::Discretization::DOFManager::shared_ptr dofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     AMP::LinearAlgebra::Vector::shared_ptr mechSolVec =

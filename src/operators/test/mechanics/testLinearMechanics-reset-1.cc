@@ -72,7 +72,7 @@ void myTest( AMP::UnitTest *ut )
 
         AMP::Discretization::DOFManager::shared_ptr dofMap =
             AMP::Discretization::simpleDOFManager::create(
-                meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+                meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
         AMP_INSIST( input_db->keyExists( "Mechanics_Assembly" ),
                     "Key ''Mechanics_Assembly'' is missing!" );

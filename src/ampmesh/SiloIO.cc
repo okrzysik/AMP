@@ -260,13 +260,13 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
     AMP::Mesh::MeshIterator iterator1                = mesh->getIterator( type, 0 );
     AMP::Mesh::MeshIterator iterator2                = DOFs->getIterator();
     AMP::Mesh::MeshIterator iterator3 =
-        AMP::Mesh::Mesh::getIterator( AMP::Mesh::Intersection, iterator1, iterator2 );
+        AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, iterator1, iterator2 );
     if ( iterator1.size() != iterator3.size() )
         AMP_ERROR( "vector does not cover the entire mesh for the given entity type" );
     std::vector<size_t> dofs;
     DOFs->getDOFs( iterator1->globalID(), dofs );
     int DOFsPerPoint = dofs.size();
-    if ( type == AMP::Mesh::Vertex )
+    if ( type == AMP::Mesh::GeomType::Vertex )
         iterator1 = mesh->getIterator( type, 1 );
     for ( size_t i = 0; i < iterator1.size(); ++i ) {
         DOFs->getDOFs( iterator1->globalID(), dofs );
@@ -320,7 +320,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     // Get the zone (element) lists
     AMP::Mesh::MeshIterator elem_iterator = mesh->getIterator( mesh->getGeomType(), 0 );
     AMP_ASSERT( elem_iterator.size() > 0 );
-    std::vector<AMP::Mesh::MeshElement> nodes = elem_iterator->getElements( AMP::Mesh::Vertex );
+    std::vector<AMP::Mesh::MeshElement> nodes = elem_iterator->getElements( AMP::Mesh::GeomType::Vertex );
     int shapesize                             = nodes.size();
     int shapetype;
     if ( shapesize == 8 )
@@ -333,7 +333,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
         AMP_ERROR( "Unknown element type" );
     int shapecnt = elem_iterator.size();
     // Get the node list (unique integer for each node) and coordinates
-    AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::Vertex, 1 );
+    AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
     std::vector<AMP::Mesh::MeshElementID> nodelist_ids( node_iterator.size() );
     for ( size_t i = 0; i < node_iterator.size(); ++i ) {
         nodelist_ids[i] = node_iterator->globalID();
@@ -343,7 +343,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     double *coord[3];
     for ( int i   = 0; i < d_dim; ++i )
         coord[i]  = new double[node_iterator.size()];
-    node_iterator = mesh->getIterator( AMP::Mesh::Vertex, 1 );
+    node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
     for ( size_t i = 0; i < node_iterator.size(); ++i ) {
         size_t index = AMP::Utilities::findfirst( nodelist_ids, node_iterator->globalID() );
         AMP_ASSERT( nodelist_ids[index] == node_iterator->globalID() );
@@ -356,7 +356,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     std::vector<int> nodelist;
     nodelist.reserve( shapesize * elem_iterator.size() );
     for ( size_t i = 0; i < elem_iterator.size(); ++i ) {
-        nodes = elem_iterator->getElements( AMP::Mesh::Vertex );
+        nodes = elem_iterator->getElements( AMP::Mesh::GeomType::Vertex );
         AMP_INSIST( (int) nodes.size() == shapesize,
                     "Mixed element types is currently not supported" );
         for ( auto &node : nodes ) {
@@ -445,7 +445,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
         const char *varnames[] = { "1", "2", "3" };
         if ( data.varType[i] > mesh->getGeomType() ) {
             // We have a mixed mesh type and there will be no data of the given type for this mesh
-        } else if ( data.varType[i] == AMP::Mesh::Vertex ) {
+        } else if ( data.varType[i] == AMP::Mesh::GeomType::Vertex ) {
             // We are saving node-centered data
             centering = DB_NODECENT;
             nvar      = (int) nodelist_ids.size();
@@ -478,7 +478,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
             }
         } else {
             // We are storing edge or face data
-            AMP_ERROR( "The silo writer currently only supports Vertex and Cell data" );
+            AMP_ERROR( "The silo writer currently only supports GeomType::Vertex and Cell data" );
         }
         std::string varNameRank = data.varName[i] + "P" + rank;
         if ( data.varSize[i] == 1 || data.varSize[i] == d_dim ||

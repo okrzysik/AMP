@@ -93,7 +93,7 @@ void myTest( AMP::UnitTest *ut )
         size_t nVars   = 0;
         for ( int opN = 1; opN <= numberOfOperators; opN++ ) {
             dofMapVec.push_back( AMP::Discretization::simpleDOFManager::create(
-                meshAdapter, AMP::Mesh::Vertex, 1, dofsPerNodeArr[opN - 1], true ) );
+                meshAdapter, AMP::Mesh::GeomType::Vertex, 1, dofsPerNodeArr[opN - 1], true ) );
 
             char testOpName[256];
             sprintf( testOpName, "testOperator%d", opN );

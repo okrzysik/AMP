@@ -94,11 +94,11 @@ void computeTemperatureRhsVector(
     AMP::Discretization::DOFManager::shared_ptr dof_map_0 = rInternal->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr dof_map_1 = currTemperatureVec->getDOFManager();
 
-    AMP::Mesh::MeshIterator el     = mesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     for ( ; el != end_el; ++el ) {
-        std::vector<AMP::Mesh::MeshElement> currNodes = el->getElements( AMP::Mesh::Vertex );
+        std::vector<AMP::Mesh::MeshElement> currNodes = el->getElements( AMP::Mesh::GeomType::Vertex );
         size_t numNodesInCurrElem                     = currNodes.size();
 
         std::vector<std::vector<size_t>> type0DofIndices( currNodes.size() );

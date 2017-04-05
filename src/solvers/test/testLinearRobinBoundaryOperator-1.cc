@@ -103,10 +103,10 @@ void linearRobinTest( AMP::UnitTest *ut, std::string exeName )
     bool split         = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, ghostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, ghostWidth, DOFsPerNode, split );
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerElement, split );
+            meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerElement, split );
 
     // Create a shared pointer to a Variable - Power - Output because it will be used in the
     // "residual" location of
@@ -156,7 +156,7 @@ void linearRobinTest( AMP::UnitTest *ut, std::string exeName )
     //------------------------------------------
     // check the solution
     int zeroGhostWidth           = 0;
-    AMP::Mesh::MeshIterator node = meshAdapter->getIterator( AMP::Mesh::Vertex, zeroGhostWidth );
+    AMP::Mesh::MeshIterator node = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
     AMP::Mesh::MeshIterator end_node = node.end();
 
     for ( ; node != end_node; ++node ) {
@@ -204,7 +204,7 @@ void linearRobinTest( AMP::UnitTest *ut, std::string exeName )
     robinBoundaryOp->reset( correctionParameters );
 
     //----------------------------------------------------------
-    //  Integrate Nuclear Rhs over Desnity * Volume //
+    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
     //----------------------------------------------------------
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
@@ -317,8 +317,8 @@ void linearRobinTest( AMP::UnitTest *ut, std::string exeName )
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerVector(
-        TemperatureInKelvinVec, meshAdapter, AMP::Mesh::Vertex, "TemperatureInKelvin" );
-    siloWriter->registerVector( exactVec, meshAdapter, AMP::Mesh::Vertex, "Exact" );
+        TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
+    siloWriter->registerVector( exactVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Exact" );
     siloWriter->writeFile( input_file, 0 );
 #endif
 

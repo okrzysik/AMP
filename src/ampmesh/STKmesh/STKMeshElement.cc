@@ -29,15 +29,15 @@ AMP::Mesh::GeomType geom_type( const stk::mesh::EntityRank rank )
 {
     switch ( rank ) {
     case stk::mesh::fem::FEMMetaData::NODE_RANK + 0:
-        return Vertex;
+        return GeomType::Vertex;
     case stk::mesh::fem::FEMMetaData::NODE_RANK + 1:
-        return Edge;
+        return GeomType::Edge;
     case stk::mesh::fem::FEMMetaData::NODE_RANK + 2:
-        return Face;
+        return GeomType::Face;
     case stk::mesh::fem::FEMMetaData::NODE_RANK + 3:
-        return Volume;
+        return GeomType::Volume;
     }
-    return Vertex;
+    return GeomType::Vertex;
 }
 }
 
@@ -142,9 +142,9 @@ std::vector<MeshElement> STKMeshElement::getElements( const GeomType type ) cons
     AMP_INSIST( type <= d_globalID.type(), "sub-elements must be of a smaller or equivalent type" );
     std::vector<MeshElement> children( 0 );
     stk::mesh::Entity *elem = ptr_element;
-    if ( d_globalID.type() == Vertex ) {
+    if ( d_globalID.type() == GeomType::Vertex ) {
         // A vertex does not have children, return itself
-        if ( type != Vertex )
+        if ( type != GeomType::Vertex )
             AMP_ERROR( "A vertex is the base element and cannot have and sub-elements" );
         children.resize( 1 );
         children[0] = *this;
@@ -160,7 +160,7 @@ std::vector<MeshElement> STKMeshElement::getElements( const GeomType type ) cons
             children.resize( 1 );
             children[0] = *this;
         }
-    } else if ( type == Vertex ) {
+    } else if ( type == GeomType::Vertex ) {
         // Return the nodes of the current element
         const stk::mesh::PairIterRelation r = elem->node_relations();
         children.resize( r.second - r.first );
@@ -170,9 +170,9 @@ std::vector<MeshElement> STKMeshElement::getElements( const GeomType type ) cons
     } else {
         // Return the children
         stk::mesh::PairIterRelation r;
-        if ( type == Edge )
+        if ( type == GeomType::Edge )
             r = elem->relations( d_mesh->d_STKMeshMeta->edge_rank() );
-        else if ( type == Face )
+        else if ( type == GeomType::Face )
             r = elem->relations( d_mesh->d_STKMeshMeta->face_rank() );
         else
             AMP_ERROR( "Internal error" );
@@ -195,7 +195,7 @@ std::vector<MeshElement> STKMeshElement::getElements( const GeomType type ) cons
 std::vector<MeshElement::shared_ptr> STKMeshElement::getNeighbors() const
 {
     std::vector<MeshElement::shared_ptr> neighbors( 0 );
-    if ( d_globalID.type() == Vertex ) {
+    if ( d_globalID.type() == GeomType::Vertex ) {
         // Return the neighbors of the current node
         std::vector<stk::mesh::Entity *> neighbor_nodes = d_mesh->getNeighborNodes( d_globalID );
         neighbors.resize( neighbor_nodes.size(), MeshElement::shared_ptr() );
@@ -252,14 +252,14 @@ std::vector<MeshElement::shared_ptr> STKMeshElement::getNeighbors() const
 double STKMeshElement::volume() const
 {
     const unsigned numCells = 1;
-    if ( d_globalID.type() == Vertex )
+    if ( d_globalID.type() == GeomType::Vertex )
         AMP_ERROR( "STKMeshElement::volume:volume is is not defined on Nodes" );
-    if ( d_globalID.type() == Edge ) {
-        AMP_WARNING( "STKMeshElement::volume:volume is is not defined on Edges" );
+    if ( d_globalID.type() == GeomType::Edge ) {
+        AMP_WARNING( "STKMeshElement::volume:volume is is not defined on GeomType::Edges" );
         return 1;
     }
-    if ( d_globalID.type() == Face ) {
-        AMP_WARNING( "STKMeshElement::volume:volume is is not defined on Faces" );
+    if ( d_globalID.type() == GeomType::Face ) {
+        AMP_WARNING( "STKMeshElement::volume:volume is is not defined on GeomType::Faces" );
         return 1;
     }
     const stk::mesh::Entity *elem = (stk::mesh::Entity *) ptr_element;
@@ -313,7 +313,7 @@ double STKMeshElement::volume() const
 }
 std::vector<double> STKMeshElement::coord() const
 {
-    if ( d_globalID.type() != Vertex )
+    if ( d_globalID.type() != GeomType::Vertex )
         AMP_ERROR( "coord is only defined for Nodes" );
     stk::mesh::Entity *node = (stk::mesh::Entity *) ptr_element;
 
@@ -325,7 +325,7 @@ std::vector<double> STKMeshElement::coord() const
 }
 std::vector<double> STKMeshElement::centroid() const
 {
-    if ( d_globalID.type() == Vertex )
+    if ( d_globalID.type() == GeomType::Vertex )
         return coord();
     stk::mesh::Entity *elem = (stk::mesh::Entity *) ptr_element;
 
@@ -347,7 +347,7 @@ std::vector<double> STKMeshElement::centroid() const
 bool STKMeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
 {
     AMP_ERROR( "STKMeshElement::containPoint is is not defined" );
-    if ( d_globalID.type() == Vertex ) {
+    if ( d_globalID.type() == GeomType::Vertex ) {
         // double dist = 0.0;
         std::vector<double> point = this->coord();
         double dist2              = 0.0;
@@ -388,7 +388,7 @@ bool STKMeshElement::isInBlock( int id ) const
     AMP_ERROR( "STKMeshElement::isInBlock is is not defined" );
     GeomType type = d_globalID.type();
     bool in_block = false;
-    if ( type == Vertex ) {
+    if ( type == GeomType::Vertex ) {
         // Entity is a libmesh node
         AMP_ERROR( "isInBlock is not currently implimented for anything but elements" );
     } else if ( (int) type == d_dim ) {

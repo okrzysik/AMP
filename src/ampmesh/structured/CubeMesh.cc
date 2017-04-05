@@ -138,7 +138,7 @@ AMP::shared_ptr<Mesh> CubeMesh::copy() const
 ****************************************************************/
 void CubeMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
-    AMP_ASSERT( index.type() == AMP::Mesh::Vertex );
+    AMP_ASSERT( index.type() == AMP::Mesh::GeomType::Vertex );
     for ( int d  = 0; d < PhysicalDim; d++ ) {
         int i = index.index(d);
         if ( i>=0 && i <=d_globalSize[d] ) {
@@ -164,7 +164,7 @@ void CubeMesh::coord( const MeshElementIndex &index, double *pos ) const
 std::array<double,3> CubeMesh::physicalToLogical( const double *x ) const
 {
     std::array<double,3> y = { 0, 0, 0 };
-    for (int d=0; d<GeomDim; d++) {
+    for (int d=0; d<static_cast<int>(GeomDim); d++) {
         int i = AMP::Utilities::findfirst( d_coord[d], x[d] );
         i = std::max<int>(i,1);
         i = std::min<int>(i,d_coord[d].size()-1);

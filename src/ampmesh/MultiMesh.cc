@@ -689,7 +689,7 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
     if ( !isGlobal && iterator_in.size() == 0 )
         return AMP::shared_ptr<Mesh>();
     // Check the iterator
-    auto type = AMP::Mesh::null;
+    auto type = AMP::Mesh::GeomType::null;
     if ( iterator_in.size() > 0 ) {
         type          = iterator_in->elementType();
         auto iterator = iterator_in.begin();
@@ -706,7 +706,7 @@ AMP::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
         MeshIterator iterator;
         if ( iterator_in.size() > 0 ) {
             iterator = Mesh::getIterator(
-                Intersection, iterator_in, elem->getIterator( type, elem->getMaxGhostWidth() ) );
+                SetOP::Intersection, iterator_in, elem->getIterator( type, elem->getMaxGhostWidth() ) );
         }
         AMP::shared_ptr<Mesh> mesh = elem->Subset( iterator, isGlobal );
         if ( mesh.get() != nullptr ) {

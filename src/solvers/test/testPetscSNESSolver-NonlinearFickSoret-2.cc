@@ -85,7 +85,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     bool split          = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     //--------------------------------------------------
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
@@ -158,7 +158,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
         300. ); // Fill in manufactured solution
     int zeroGhostWidth = 0;
     AMP::Mesh::MeshIterator iterator =
-        meshAdapter->getIterator( AMP::Mesh::Vertex, zeroGhostWidth );
+        meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
     for ( ; iterator != iterator.end(); iterator++ ) {
         double x, y;
         std::valarray<double> poly( 10 );
@@ -259,7 +259,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     {
         int zeroGhostWidth = 0;
         AMP::Mesh::MeshIterator iterator =
-            meshAdapter->getIterator( AMP::Mesh::Vertex, zeroGhostWidth );
+            meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
         size_t nnodes = fickCoeffVec->getLocalSize(), node;
         std::vector<size_t> gids( nnodes );
         std::vector<double> temp( nnodes ), conc( nnodes ), fickCoeff( nnodes ),
@@ -297,15 +297,15 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
 
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
-    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
     siloWriter->registerVector( fickFrozen[AMP::Operator::Diffusion::TEMPERATURE],
                                 meshAdapter,
-                                AMP::Mesh::Vertex,
+                                AMP::Mesh::GeomType::Vertex,
                                 "Temperature" );
-    siloWriter->registerVector( fickCoeffVec, meshAdapter, AMP::Mesh::Vertex, "FickCoefficient" );
+    siloWriter->registerVector( fickCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "FickCoefficient" );
     siloWriter->registerVector(
-        soretCoeffVec, meshAdapter, AMP::Mesh::Vertex, "ThermalDiffusionCoefficient" );
+        soretCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ThermalDiffusionCoefficient" );
 
     siloWriter->writeFile( exeName, 0 );
 #endif
@@ -315,7 +315,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     {
         int zeroGhostWidth = 0;
         AMP::Mesh::MeshIterator iterator =
-            meshAdapter->getIterator( AMP::Mesh::Vertex, zeroGhostWidth );
+            meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
         iterator        = iterator.begin();
         size_t numNodes = 0;
         for ( ; iterator != iterator.end(); iterator++ )

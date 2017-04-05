@@ -32,13 +32,13 @@ AMPMeshEntitySet::AMPMeshEntitySet( const AMP::shared_ptr<AMP::Mesh::Mesh> &mesh
     // Map the global ids to DTK ids.
     for ( auto &m : d_id_maps )
         m = std::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
-    mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::Vertex, 0 ), d_id_maps[0] );
+    mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ), d_id_maps[0] );
     if ( d_amp_mesh->getGeomType() > 0 )
-        mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::Edge, 0 ), d_id_maps[1] );
+        mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::GeomType::Edge, 0 ), d_id_maps[1] );
     if ( d_amp_mesh->getGeomType() > 1 )
-        mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::Face, 0 ), d_id_maps[2] );
+        mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::GeomType::Face, 0 ), d_id_maps[2] );
     if ( d_amp_mesh->getGeomType() > 2 )
-        mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::Volume, 0 ), d_id_maps[3] );
+        mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 ), d_id_maps[3] );
 }
 
 //---------------------------------------------------------------------------//
@@ -143,19 +143,19 @@ void AMPMeshEntitySet::mapGlobalIds(
 AMP::Mesh::GeomType
 AMPMeshEntitySet::getGeomTypeFromEntityType( const int topological_dimension ) const
 {
-    AMP::Mesh::GeomType type_id = AMP::Mesh::Vertex;
+    AMP::Mesh::GeomType type_id = AMP::Mesh::GeomType::Vertex;
     switch ( topological_dimension ) {
     case ( 0 ):
-        type_id = AMP::Mesh::Vertex;
+        type_id = AMP::Mesh::GeomType::Vertex;
         break;
     case ( 1 ):
-        type_id = AMP::Mesh::Edge;
+        type_id = AMP::Mesh::GeomType::Edge;
         break;
     case ( 2 ):
-        type_id = AMP::Mesh::Face;
+        type_id = AMP::Mesh::GeomType::Face;
         break;
     case ( 3 ):
-        type_id = AMP::Mesh::Volume;
+        type_id = AMP::Mesh::GeomType::Volume;
         break;
     default:
         type_id = AMP::Mesh::null;

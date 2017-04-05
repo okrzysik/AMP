@@ -1,6 +1,6 @@
 
-#ifndef included_AMP_NoteToFaceContactOperator
-#define included_AMP_NoteToFaceContactOperator
+#ifndef included_AMP_NoteToGeomType::FaceContactOperator
+#define included_AMP_NoteToGeomType::FaceContactOperator
 
 
 #include "utils/shared_ptr.h"
@@ -20,7 +20,7 @@ namespace Operator {
   an implementation of the apply() function.
   @see Operator
   */
-class NodeToFaceContactOperator : public ContactOperator
+class NodeToGeomType::FaceContactOperator : public ContactOperator
 {
 
 public:
@@ -28,7 +28,7 @@ public:
       Constructor. This resets the matrix shared pointer.
       @param [in] params
       */
-    NodeToFaceContactOperator( const AMP::shared_ptr<ContactOperatorParameters> &params )
+    NodeToGeomType::FaceContactOperator( const AMP::shared_ptr<ContactOperatorParameters> &params )
         : ContactOperator( params ), d_ContactIsFrictionless( false )
     {
         size_t rank          = d_GlobalComm.getRank();
@@ -39,7 +39,7 @@ public:
     /**
       Destructor
       */
-    virtual ~NodeToFaceContactOperator() { d_fout.close(); }
+    virtual ~NodeToGeomType::FaceContactOperator() { d_fout.close(); }
 
     /**
      * This function is useful for re-initializing/updating an operator
@@ -168,12 +168,12 @@ private:
 struct ProjectionData {
     AMP::Mesh::MeshElementID d_MasterVolumeGlobalID;
     size_t d_MasterFaceLocalIndex;
-    double d_SlaveVertexLocalCoordOnMasterFace[2];
+    double d_SlaveGeomType::VertexLocalCoordOnMasterFace[2];
 };
 
 struct StressStateData {
-    double d_SlaveVertexNormalVector[3];
-    double d_SlaveVertexSurfaceTraction[3];
+    double d_SlaveGeomType::VertexNormalVector[3];
+    double d_SlaveGeomType::VertexSurfaceTraction[3];
 };
 
 struct AnotherDataWithNoName {
@@ -181,8 +181,8 @@ struct AnotherDataWithNoName {
     double d_Displacement[3];
 };
 
-struct FaceData {
-    AMP::Mesh::MeshElementID d_FaceVerticesGlobalIDs[4];
+struct GeomType::FaceData {
+    AMP::Mesh::MeshElementID d_GeomType::FaceVerticesGlobalIDs[4];
 };
 }
 }

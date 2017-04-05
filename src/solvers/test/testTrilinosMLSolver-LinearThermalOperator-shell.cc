@@ -91,7 +91,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
     /////////////////////////////////////////////////////
-    //  Integrate Nuclear Source over Desnity * Volume //
+    //  Integrate Nuclear Source over Desnity * GeomType::Volume //
     /////////////////////////////////////////////////////
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );

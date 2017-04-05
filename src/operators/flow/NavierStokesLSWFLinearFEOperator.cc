@@ -100,7 +100,7 @@ void NavierStokesLSWFLinearFEOperator::postAssembly() { d_matrix->makeConsistent
 void NavierStokesLSWFLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElement &elem )
 {
 
-    d_currNodes                     = elem.getElements( AMP::Mesh::Vertex );
+    d_currNodes                     = elem.getElements( AMP::Mesh::GeomType::Vertex );
     unsigned int numNodesInCurrElem = d_currNodes.size();
 
     getDofIndicesForCurrentElement( NavierStokes::VELOCITY, d_type0DofIndices );

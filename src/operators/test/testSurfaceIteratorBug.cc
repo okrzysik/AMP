@@ -62,7 +62,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     // Create a nodal scalar vector
     AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "myVar" ) );
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Vector::shared_ptr vec =
         AMP::LinearAlgebra::createVector( nodalScalarDOF, var, true );
     vec->zero();
@@ -70,7 +70,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-    AMP::Mesh::MeshIterator bnd = mesh->getBoundaryIDIterator( AMP::Mesh::Face, surfaceId, 0 );
+    AMP::Mesh::MeshIterator bnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, surfaceId, 0 );
     std::cout << "Number of surface elements: " << bnd.size() << std::endl;
     AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
@@ -78,7 +78,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     std::vector<size_t> dofs;
     while ( bnd != end_bnd ) {
 
-        std::vector<AMP::Mesh::MeshElement> nodes = bnd->getElements( AMP::Mesh::Vertex );
+        std::vector<AMP::Mesh::MeshElement> nodes = bnd->getElements( AMP::Mesh::GeomType::Vertex );
         std::vector<size_t> bndGlobalIds;
         for ( auto &node : nodes ) {
             nodalScalarDOF->getDOFs( node.globalID(), dofs );
@@ -89,7 +89,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         // Some basic checks
         AMP_ASSERT( bndGlobalIds.size() == 4 );
         // AMP_ASSERT((bnd->getElem()).default_order() == feTypeOrder);
-        AMP_ASSERT( bnd->elementType() == AMP::Mesh::Face );
+        AMP_ASSERT( bnd->elementType() == AMP::Mesh::GeomType::Face );
 
         // Create the libmesh element
         // Note: This must be done inside the loop because libmesh's reinit function doesn't seem to
@@ -116,8 +116,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             vol1 += djxw[qp];
         double vol2 = bnd->volume();
         if ( fabs( vol1 - vol2 ) > ( 1.0e-8 * vol2 ) ) {
-            std::cout << "Volume 1 = " << std::setprecision( 15 ) << vol1 << std::endl;
-            std::cout << "Volume 2 = " << std::setprecision( 15 ) << vol2 << std::endl << std::endl;
+            std::cout << "GeomType::Volume 1 = " << std::setprecision( 15 ) << vol1 << std::endl;
+            std::cout << "GeomType::Volume 2 = " << std::setprecision( 15 ) << vol2 << std::endl << std::endl;
             volume_passes = false;
         }
 
@@ -149,9 +149,9 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     } // end for bnd
 
     if ( volume_passes == true )
-        ut->passes( "Volume passes" );
+        ut->passes( "GeomType::Volume passes" );
     else
-        ut->failure( "Volume passes" );
+        ut->failure( "GeomType::Volume passes" );
 
     vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_ADD );
 

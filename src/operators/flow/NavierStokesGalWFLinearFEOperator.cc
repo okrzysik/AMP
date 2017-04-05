@@ -137,7 +137,7 @@ namespace Operator {
     void NavierStokesGalWFLinearFEOperator :: preElementOperation( const AMP::Mesh::MeshElement &
    elem ) {
 
-      d_currNodes = elem.getElements(AMP::Mesh::Vertex);
+      d_currNodes = elem.getElements(AMP::Mesh::GeomType::Vertex);
       unsigned int numNodesInCurrElem = d_currNodes.size();
 
       gettype0DofIndicesForCurrentElement(NavierStokes::VELOCITY, d_type0DofIndices);

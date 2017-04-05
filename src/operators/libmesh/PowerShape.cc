@@ -131,7 +131,7 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
 
     // Create the cylindrical bounding box
     d_radialBoundingBox              = min_max_pos;
-    AMP::Mesh::MeshIterator iterator = d_Mesh->getIterator( AMP::Mesh::Vertex, 0 );
+    AMP::Mesh::MeshIterator iterator = d_Mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( size_t i = 0; i < iterator.size(); i++ ) {
         std::vector<double> coord = iterator->coord();
         double rx                 = ( coord[0] - centerx );
@@ -387,14 +387,14 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     bool split         = true;
     AMP::Discretization::DOFManager::shared_ptr dof_map =
         AMP::Discretization::simpleDOFManager::create(
-            d_Mesh, AMP::Mesh::Volume, ghostWidth, DOFsPerElement, split );
+            d_Mesh, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerElement, split );
 
     // Create a shared pointer to a Variable - Power - Output because it will be used in the
     // "residual" location of
     // apply.
     r->setToScalar( 1. );
 
-    AMP::Mesh::MeshIterator elem      = d_Mesh->getIterator( AMP::Mesh::Volume, ghostWidth );
+    AMP::Mesh::MeshIterator elem      = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
     AMP::Mesh::MeshIterator end_elems = elem.end();
 
     if ( d_coordinateSystem == "cartesian" ) {
@@ -406,7 +406,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
             // Loop over all elements on the mesh
             for ( ; elem != end_elems; ++elem ) {
-                d_currNodes = elem->getElements( AMP::Mesh::Vertex );
+                d_currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
                 createCurrentLibMeshElement();
                 d_fe->reinit( d_currElemPtr );
 
@@ -467,7 +467,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::pout << "Power Shape: Processing all Gauss-Points." << std::endl;
             // Loop over all elements on the mesh
             for ( ; elem != end_elems; ++elem ) {
-                d_currNodes = elem->getElements( AMP::Mesh::Vertex );
+                d_currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
                 createCurrentLibMeshElement();
                 d_fe->reinit( d_currElemPtr );
 
@@ -534,7 +534,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::pout << "Power Shape: Processing all Gauss-Points." << std::endl;
             // Loop over all elements on the mesh
             for ( ; elem != end_elems; elem++ ) {
-                d_currNodes = elem->getElements( AMP::Mesh::Vertex );
+                d_currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
                 createCurrentLibMeshElement();
                 d_fe->reinit( d_currElemPtr );
 
@@ -589,7 +589,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::pout << "Power Shape: Processing all Gauss-Points." << std::endl;
             // Loop over all elements on the mesh
             for ( ; elem != end_elems; ++elem ) {
-                d_currNodes = elem->getElements( AMP::Mesh::Vertex );
+                d_currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
                 createCurrentLibMeshElement();
                 d_fe->reinit( d_currElemPtr );
 
@@ -655,7 +655,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             int nodalGhostWidth = 1;
             AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
                 AMP::Discretization::simpleDOFManager::create(
-                    d_Mesh, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+                    d_Mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
             AMP::LinearAlgebra::Variable::shared_ptr nodalVariable(
                 new AMP::LinearAlgebra::Variable( "Temperature" ) );
             AMP::LinearAlgebra::Vector::shared_ptr nodalVector =
@@ -684,7 +684,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::pout << "Power Shape: Processing all Gauss-Points." << std::endl;
             // Loop over all elements on the mesh
             for ( ; elem != end_elems; ++elem ) {
-                d_currNodes = elem->getElements( AMP::Mesh::Vertex );
+                d_currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
                 createCurrentLibMeshElement();
                 d_fe->reinit( d_currElemPtr );
 
@@ -738,7 +738,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::pout << "Power Shape: Processing all Gauss-Points." << std::endl;
             // Loop over all elements on the mesh
             for ( ; elem != end_elems; ++elem ) {
-                d_currNodes = elem->getElements( AMP::Mesh::Vertex );
+                d_currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
                 createCurrentLibMeshElement();
                 d_fe->reinit( d_currElemPtr );
 
@@ -855,11 +855,11 @@ double PowerShape::getVolumeIntegralSum( double rmax, double cx, double cy )
     double x, y, radius;
 
     int ghostWidth                    = 0;
-    AMP::Mesh::MeshIterator elem      = d_Mesh->getIterator( AMP::Mesh::Volume, ghostWidth );
+    AMP::Mesh::MeshIterator elem      = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
     AMP::Mesh::MeshIterator end_elems = elem.end();
 
     for ( ; elem != end_elems; ++elem ) {
-        d_currNodes = elem->getElements( AMP::Mesh::Vertex );
+        d_currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
         createCurrentLibMeshElement();
         d_fe->reinit( d_currElemPtr );
         double elemVolume = elem->volume();

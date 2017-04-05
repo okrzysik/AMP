@@ -84,10 +84,10 @@ void linearThermalTest( AMP::UnitTest *ut )
     bool split               = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+            meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
     //--------------------------------------------------
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -112,7 +112,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
     /////////////////////////////////////////////////////
-    //  Integrate Nuclear Source over Desnity * Volume //
+    //  Integrate Nuclear Source over Desnity * GeomType::Volume //
     /////////////////////////////////////////////////////
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
@@ -207,7 +207,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     // check the solution
     int zeroGhostWidth = 0;
     AMP::Mesh::MeshIterator iterator =
-        meshAdapter->getIterator( AMP::Mesh::Vertex, zeroGhostWidth );
+        meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
 
     // The analytical solution is:  T = a + b*z + c*z*z
     //   c = -power/2
@@ -288,10 +288,10 @@ void linearThermalTest( AMP::UnitTest *ut )
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
 
-    siloWriter->registerVector( PowerInWattsVec, meshAdapter, AMP::Mesh::Vertex, "PowerInWatts" );
+    siloWriter->registerVector( PowerInWattsVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "PowerInWatts" );
     siloWriter->registerVector(
-        TemperatureInKelvinVec, meshAdapter, AMP::Mesh::Vertex, "TemperatureInKelvin" );
-    siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+        TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
+    siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
 
     siloWriter->writeFile( input_file, 0 );
 #endif

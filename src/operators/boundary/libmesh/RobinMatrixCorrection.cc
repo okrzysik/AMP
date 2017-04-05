@@ -127,8 +127,8 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
         AMP::Mesh::MeshIterator iterator;
         for ( auto &elem : d_boundaryIds ) {
             AMP::Mesh::MeshIterator iterator2 =
-                d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, elem, 0 );
-            iterator = AMP::Mesh::Mesh::getIterator( AMP::Mesh::Union, iterator, iterator2 );
+                d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, elem, 0 );
+            iterator = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Union, iterator, iterator2 );
         }
         libmeshElements.reinit( iterator );
 
@@ -163,7 +163,7 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
 
             for ( unsigned int k = 0; k < numDofIds; k++ ) {
                 AMP::Mesh::MeshIterator bnd1 =
-                    d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
+                    d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryIds[nid], 0 );
                 AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
                 for ( ; bnd1 != end_bnd1; ++bnd1 ) {
 
@@ -182,7 +182,7 @@ void RobinMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &pa
 
                     // Get the nodes for the element and their global ids
                     std::vector<AMP::Mesh::MeshElement> currNodes =
-                        bnd1->getElements( AMP::Mesh::Vertex );
+                        bnd1->getElements( AMP::Mesh::GeomType::Vertex );
                     dofIndices.resize( currNodes.size() );
                     std::vector<AMP::Mesh::MeshElementID> globalIDs( currNodes.size() );
                     for ( size_t j   = 0; j < currNodes.size(); j++ )

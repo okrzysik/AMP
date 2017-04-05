@@ -45,7 +45,7 @@ void myTest( AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     int gcw                               = 0;
-    AMP::Mesh::MeshIterator mesh_iterator = mesh->getIterator( AMP::Mesh::Volume, gcw );
+    AMP::Mesh::MeshIterator mesh_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume, gcw );
 
     // Make an entity set.
     AMP::shared_ptr<DataTransferKit::EntitySet> dtk_entity_set(
@@ -71,7 +71,7 @@ void myTest( AMP::UnitTest *ut )
 
             // Check the bounding box.
             std::vector<AMP::Mesh::MeshElement> vertices =
-                mesh_iterator->getElements( AMP::Mesh::Vertex );
+                mesh_iterator->getElements( AMP::Mesh::GeomType::Vertex );
             AMP_ASSERT( 8 == vertices.size() );
             std::vector<double> box( 6 );
             Teuchos::Tuple<double, 6> element_box;

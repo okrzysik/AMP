@@ -56,7 +56,7 @@ void myTest( AMP::UnitTest *ut )
     int const dofsPerNode = 1;
     AMP::Discretization::DOFManager::shared_ptr dofManager =
         AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::Vertex, ghostWidth, dofsPerNode );
+            mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
     AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::LinearAlgebra::Variable( "var" ) );
     AMP::LinearAlgebra::Vector::shared_ptr vector =
         AMP::LinearAlgebra::createVector( dofManager, variable, split );
@@ -69,7 +69,7 @@ void myTest( AMP::UnitTest *ut )
     Teuchos::RCP<DataTransferKit::FunctionSpace> function_space = dtk_mesh_manager.functionSpace();
 
     // Test the entity set and entity selector by getting an iterator over the nodes.
-    AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::Vertex, ghostWidth );
+    AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, ghostWidth );
     DataTransferKit::EntityIterator dtk_node_iterator =
         function_space->entitySet()->entityIterator( 0, function_space->selectFunction() );
     AMP_ASSERT( dtk_node_iterator.size() == node_iterator.size() );

@@ -94,7 +94,7 @@ void myTest( AMP::UnitTest *ut )
         AMP::LinearAlgebra::Variable::shared_ptr myOutVar = myLinOp->getOutputVariable();
         AMP::Discretization::DOFManager::shared_ptr NodalDOF =
             AMP::Discretization::simpleDOFManager::create(
-                meshAdapter, AMP::Mesh::Vertex, 1, dofsPerNode, true );
+                meshAdapter, AMP::Mesh::GeomType::Vertex, 1, dofsPerNode, true );
 
         {
             AMP::LinearAlgebra::Vector::shared_ptr solVec =

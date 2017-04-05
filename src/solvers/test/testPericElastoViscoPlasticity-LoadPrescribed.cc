@@ -116,7 +116,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     dirichletLoadVecOp->setVariable( dispVar );
 
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -260,7 +260,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             ->printStressAndStrain( solVec, fname );
 
 #ifdef USE_EXT_SILO
-        siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution_Vector" );
+        siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
         meshAdapter->displaceMesh( solVec );
         char outFileName2[256];
         sprintf( outFileName2, "displacementPrescribed-DeformedPlateWithHole_%d", step );

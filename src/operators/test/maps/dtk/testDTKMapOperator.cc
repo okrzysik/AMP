@@ -45,8 +45,8 @@ void myTest( AMP::UnitTest *ut )
         new AMP::Mesh::MeshParameters( sourceMeshDatabase ) );
     sourceMeshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr sourceMesh    = AMP::Mesh::Mesh::buildMesh( sourceMeshParams );
-    std::size_t const numVerticesOnSourceMesh = sourceMesh->numGlobalElements( AMP::Mesh::Vertex );
-    std::size_t const numElementsOnSourceMesh = sourceMesh->numGlobalElements( AMP::Mesh::Volume );
+    std::size_t const numVerticesOnSourceMesh = sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
+    std::size_t const numElementsOnSourceMesh = sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
     AMP::pout << "source mesh contains " << numVerticesOnSourceMesh << " vertices\n";
     AMP::pout << "source mesh contains " << numElementsOnSourceMesh << " elements\n";
 
@@ -57,7 +57,7 @@ void myTest( AMP::UnitTest *ut )
     int const dofsPerNode = 1;
     AMP::Discretization::DOFManager::shared_ptr sourceDofManager =
         AMP::Discretization::simpleDOFManager::create(
-            sourceMesh, AMP::Mesh::Vertex, ghostWidth, dofsPerNode );
+            sourceMesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
     AMP::LinearAlgebra::Variable::shared_ptr variable(
         new AMP::LinearAlgebra::Variable( "dummy" ) );
     AMP::LinearAlgebra::Vector::shared_ptr sourceVector =
@@ -66,7 +66,7 @@ void myTest( AMP::UnitTest *ut )
     std::vector<std::size_t> dofIndices;
     double value;
     AMP::pout << "Filling source vector" << std::endl;
-    AMP::Mesh::MeshIterator sourceMeshIterator = sourceMesh->getIterator( AMP::Mesh::Vertex );
+    AMP::Mesh::MeshIterator sourceMeshIterator = sourceMesh->getIterator( AMP::Mesh::GeomType::Vertex );
     for ( sourceMeshIterator = sourceMeshIterator.begin();
           sourceMeshIterator != sourceMeshIterator.end();
           ++sourceMeshIterator ) {
@@ -80,7 +80,7 @@ void myTest( AMP::UnitTest *ut )
         AMP::Utilities::Writer::shared_ptr siloWriter =
             AMP::Utilities::Writer::buildWriter( "silo" );
         siloWriter->setDecomposition( 1 );
-        siloWriter->registerVector( sourceVector, sourceMesh, AMP::Mesh::Vertex, "vector" );
+        siloWriter->registerVector( sourceVector, sourceMesh, AMP::Mesh::GeomType::Vertex, "vector" );
         siloWriter->writeFile( "source", 0 );
     }
 #endif
@@ -92,15 +92,15 @@ void myTest( AMP::UnitTest *ut )
         new AMP::Mesh::MeshParameters( targetMeshDatabase ) );
     targetMeshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr targetMesh    = AMP::Mesh::Mesh::buildMesh( targetMeshParams );
-    std::size_t const numVerticesOnTargetMesh = targetMesh->numGlobalElements( AMP::Mesh::Vertex );
-    std::size_t const numElementsOnTargetMesh = targetMesh->numGlobalElements( AMP::Mesh::Volume );
+    std::size_t const numVerticesOnTargetMesh = targetMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
+    std::size_t const numElementsOnTargetMesh = targetMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
     AMP::pout << "target mesh contains " << numVerticesOnTargetMesh << " vertices\n";
     AMP::pout << "target mesh contains " << numElementsOnTargetMesh << " elements\n";
 
     AMP::pout << "Building the target vector" << std::endl;
     AMP::Discretization::DOFManager::shared_ptr targetDofManager =
         AMP::Discretization::simpleDOFManager::create(
-            targetMesh, AMP::Mesh::Vertex, ghostWidth, dofsPerNode );
+            targetMesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
     AMP::LinearAlgebra::Vector::shared_ptr targetVector =
         AMP::LinearAlgebra::createVector( targetDofManager, variable, split );
 
@@ -128,13 +128,13 @@ void myTest( AMP::UnitTest *ut )
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "silo" );
     siloWriter->setDecomposition( 1 );
-    siloWriter->registerVector( targetVector, targetMesh, AMP::Mesh::Vertex, "vector" );
+    siloWriter->registerVector( targetVector, targetMesh, AMP::Mesh::GeomType::Vertex, "vector" );
     siloWriter->writeFile( "target", 0 );
 #endif
     double const atol                          = 1.0e-14;
     double const rtol                          = 1.0e-14;
     double const tol                           = atol + rtol * targetVector->L2Norm();
-    AMP::Mesh::MeshIterator targetMeshIterator = targetMesh->getIterator( AMP::Mesh::Vertex );
+    AMP::Mesh::MeshIterator targetMeshIterator = targetMesh->getIterator( AMP::Mesh::GeomType::Vertex );
     for ( targetMeshIterator = targetMeshIterator.begin();
           targetMeshIterator != targetMeshIterator.end();
           ++targetMeshIterator ) {

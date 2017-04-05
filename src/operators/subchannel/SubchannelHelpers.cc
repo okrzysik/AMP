@@ -39,7 +39,7 @@ subsetForSubchannel( AMP::Mesh::Mesh::shared_ptr subchannel, size_t i, size_t j 
     size_t Nx = x.size() - 1;
     size_t Ny = y.size() - 1;
     // Get the elements in the subchannel of interest
-    AMP::Mesh::MeshIterator el = subchannel->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el = subchannel->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elements(
         new std::vector<AMP::Mesh::MeshElement>() );
     elements->reserve( el.size() / ( Nx * Ny ) );
@@ -316,7 +316,7 @@ std::vector<double> getHeatFluxClad( std::vector<double> z,
     AMP::shared_ptr<std::vector<double>> cladTemp( new std::vector<double>( N ) );
     AMP::shared_ptr<std::vector<double>> flowDens( new std::vector<double>( N ) );
     std::vector<double> specificVolume( z.size(), 0.0 );
-    subchannelPhysicsModel->getProperty( "SpecificVolume", specificVolume, temperatureArgMap );
+    subchannelPhysicsModel->getProperty( "SpecificGeomType::Volume", specificVolume, temperatureArgMap );
     for ( size_t i = 0; i < N; i++ ) {
         ( *flowTemp )[i] = 0.5 * ( ( *Tf )[i] + ( *Tf )[i + 1] );
         ( *cladTemp )[i] = 0.5 * ( ( *Tc )[i] + ( *Tc )[i + 1] );
@@ -358,7 +358,7 @@ AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
     getCladProperties( comm, clad, clad_x, clad_y, clad_d );
     AMP::Mesh::Mesh::shared_ptr clad_surface;
     if ( clad.get() != nullptr )
-        clad_surface = clad->Subset( clad->getBoundaryIDIterator( AMP::Mesh::Face, 4, 1 ) );
+        clad_surface = clad->Subset( clad->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 4, 1 ) );
     // Get the subchannel properties
     size_t N[2];
     std::vector<double> x, y, hydraulic_diam;
@@ -396,13 +396,13 @@ AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
         return AMP::LinearAlgebra::Vector::shared_ptr();
     // Create and initialize the vector
     AMP::Discretization::DOFManager::shared_ptr DOF = AMP::Discretization::simpleDOFManager::create(
-        clad_surface, AMP::Mesh::Vertex, 1, 1, true );
+        clad_surface, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Variable::shared_ptr variable(
         new AMP::LinearAlgebra::Variable( "ChannelDiameter" ) );
     AMP::LinearAlgebra::Vector::shared_ptr diameter =
         AMP::LinearAlgebra::createVector( DOF, variable );
     diameter->zero();
-    AMP::Mesh::MeshIterator it = clad_surface->getIterator( AMP::Mesh::Vertex );
+    AMP::Mesh::MeshIterator it = clad_surface->getIterator( AMP::Mesh::GeomType::Vertex );
     std::vector<size_t> dofs( 1 );
     size_t Nx = x.size() - 1;
     size_t Ny = y.size() - 1;

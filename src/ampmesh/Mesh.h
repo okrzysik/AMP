@@ -23,7 +23,7 @@ namespace Mesh {
 
 
 //! Enumeration for basic mesh-based quantities
-enum SetOP { Union, Intersection, Complement };
+enum class SetOP { Union, Intersection, Complement };
 
 
 /**
@@ -260,9 +260,9 @@ public:
      * \details  Return an MeshIterator constructed through a set operation of two other
      * MeshIterators.
      * \param OP Set operation to perform.
-     *           Union - Perform a union of the iterators ( A U B )
-     *           Intersection - Perform an intersection of the iterators ( A n B )
-     *           Complement - Perform a compliment of the iterators ( A - B )
+     *           SetOP::Union - Perform a union of the iterators ( A U B )
+     *           SetOP::Intersection - Perform an intersection of the iterators ( A n B )
+     *           SetOP::Complement - Perform a compliment of the iterators ( A - B )
      * \param A  Pointer to MeshIterator A
      * \param B  Pointer to MeshIterator B
      */

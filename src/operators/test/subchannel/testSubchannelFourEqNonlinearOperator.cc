@@ -167,11 +167,11 @@ void Test( AMP::UnitTest *ut, std::string exeName )
         AMP::Mesh::MeshIterator axialFaces1 =
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 1 );
         AMP::Mesh::MeshIterator gapFaces0 = AMP::Mesh::Mesh::getIterator(
-            AMP::Mesh::Union,
+            AMP::Mesh::SetOP::Union,
             AMP::Mesh::StructuredMeshHelper::getXZFaceIterator( subchannelMesh, 0 ),
             AMP::Mesh::StructuredMeshHelper::getYZFaceIterator( subchannelMesh, 0 ) );
         AMP::Mesh::MeshIterator gapFaces1 = AMP::Mesh::Mesh::getIterator(
-            AMP::Mesh::Union,
+            AMP::Mesh::SetOP::Union,
             AMP::Mesh::StructuredMeshHelper::getXZFaceIterator( subchannelMesh, 1 ),
             AMP::Mesh::StructuredMeshHelper::getYZFaceIterator( subchannelMesh, 1 ) );
         std::vector<AMP::Discretization::DOFManager::shared_ptr> subchannelChildrenDOFManagers( 2 );
@@ -260,7 +260,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
     AMP::Mesh::MeshElement
         d_elem[numSubchannels][numAxialIntervals]; // array of array of elements for each subchannel
     AMP::Mesh::MeshIterator cell = subchannelOpParams->d_Mesh->getIterator(
-        AMP::Mesh::Volume, 0 );            // iterator for cells of mesh
+        AMP::Mesh::GeomType::Volume, 0 );            // iterator for cells of mesh
     for ( ; cell != cell.end(); ++cell ) { // loop over all cells
         std::vector<double> center = cell->centroid();
         // get the index of the subchannel
@@ -340,7 +340,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
     // array of gap faces
     AMP::Mesh::MeshElement gapFaces[numGaps][numAxialIntervals]; // gap faces
     // loop over all faces in mesh
-    AMP::Mesh::MeshIterator face = subchannelOpParams->d_Mesh->getIterator( AMP::Mesh::Face, 0 );
+    AMP::Mesh::MeshIterator face = subchannelOpParams->d_Mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     for ( ; face != face.end(); face++ ) { // loop over all faces in mesh
         std::vector<double> faceCentroid = face->centroid();
         // try to find face in lateral face map
@@ -393,7 +393,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
                 m_res[ii - 1][0] = ResVec->getValueByGlobalID( minusDofs[0] ) / m_scale;
                 h_res[ii - 1][0] = ResVec->getValueByGlobalID( minusDofs[1] ) / h_scale;
                 p_res[ii - 1][0] = ResVec->getValueByGlobalID( minusDofs[2] ) / p_scale;
-                std::cout << "Face 0:\t" << m_res[ii - 1][0] << "\t" << h_res[ii - 1][0] << "\t"
+                std::cout << "GeomType::Face 0:\t" << m_res[ii - 1][0] << "\t" << h_res[ii - 1][0] << "\t"
                           << p_res[ii - 1][0] << std::endl;
             }
 
@@ -404,7 +404,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
             m_res[ii - 1][j + 1] = ResVec->getValueByGlobalID( plusDofs[0] ) / m_scale;
             h_res[ii - 1][j + 1] = ResVec->getValueByGlobalID( plusDofs[1] ) / h_scale;
             p_res[ii - 1][j + 1] = ResVec->getValueByGlobalID( plusDofs[2] ) / p_scale;
-            std::cout << "Face " << j + 1 << ":\t" << m_res[ii - 1][j + 1] << "\t"
+            std::cout << "GeomType::Face " << j + 1 << ":\t" << m_res[ii - 1][j + 1] << "\t"
                       << h_res[ii - 1][j + 1] << "\t" << p_res[ii - 1][j + 1] << std::endl;
         }
     }

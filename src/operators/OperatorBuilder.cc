@@ -520,9 +520,9 @@ OperatorBuilder::createLinearDiffusionOperator( AMP::Mesh::Mesh::shared_ptr mesh
     diffusionOpParams->d_elemOp         = diffusionLinElem;
     diffusionOpParams->d_Mesh           = meshAdapter;
     diffusionOpParams->d_inDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     diffusionOpParams->d_outDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::shared_ptr<AMP::Operator::DiffusionLinearFEOperator> diffusionOp(
         new AMP::Operator::DiffusionLinearFEOperator( diffusionOpParams ) );
 
@@ -641,7 +641,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOpe
     AMP::shared_ptr<AMP::Database> active_db =
         diffusionNLinFEOp_db->getDatabase( "ActiveInputVariables" );
     AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     std::string name;
     AMP::LinearAlgebra::Variable::shared_ptr tVar;
     AMP::LinearAlgebra::Vector::shared_ptr tVec;
@@ -775,9 +775,9 @@ OperatorBuilder::createLinearMechanicsOperator( AMP::Mesh::Mesh::shared_ptr mesh
     mechanicsOpParams->d_elemOp = mechanicsLinElem;
     mechanicsOpParams->d_Mesh   = meshAdapter;
     mechanicsOpParams->d_inDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
     mechanicsOpParams->d_outDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechanicsOp(
         new AMP::Operator::MechanicsLinearFEOperator( mechanicsOpParams ) );
@@ -831,15 +831,15 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearMechanicsOpe
     mechanicsOpParams->d_elemOp = mechanicsElem;
     mechanicsOpParams->d_Mesh   = meshAdapter;
     mechanicsOpParams->d_dofMap[Mechanics::DISPLACEMENT] =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
     mechanicsOpParams->d_dofMap[Mechanics::TEMPERATURE] =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     mechanicsOpParams->d_dofMap[Mechanics::BURNUP] =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     mechanicsOpParams->d_dofMap[Mechanics::OXYGEN_CONCENTRATION] =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     mechanicsOpParams->d_dofMap[Mechanics::LHGR] =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     AMP::shared_ptr<AMP::Operator::MechanicsNonlinearFEOperator> mechanicsOp(
         new AMP::Operator::MechanicsNonlinearFEOperator( mechanicsOpParams ) );
@@ -890,9 +890,9 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createLinearNavierStokesLSW
     flowOpParams->d_elemOp   = flowLinElem;
     flowOpParams->d_Mesh     = meshAdapter;
     flowOpParams->d_inDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::Vertex, 1, 10, true );
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 10, true );
     flowOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::Vertex, 1, 10, true );
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 10, true );
 
     AMP::shared_ptr<AMP::Operator::NavierStokesLSWFLinearFEOperator> flowOp(
         new AMP::Operator::NavierStokesLSWFLinearFEOperator( flowOpParams ) );
@@ -944,7 +944,7 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearNavierStokes
     flowOpParams->d_elemOp = flowElem;
     flowOpParams->d_Mesh   = meshAdapter;
     flowOpParams->d_dofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::Vertex, 1, 10, true );
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 10, true );
     AMP::shared_ptr<AMP::Operator::NavierStokesLSWFFEOperator> flowOp(
         new AMP::Operator::NavierStokesLSWFFEOperator( flowOpParams ) );
 
@@ -1000,9 +1000,9 @@ OperatorBuilder::createMassLinearFEOperator( AMP::Mesh::Mesh::shared_ptr meshAda
     densityOpParams->d_elemOp       = densityLinElem;
     densityOpParams->d_Mesh         = meshAdapter;
     densityOpParams->d_inDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     densityOpParams->d_outDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::shared_ptr<AMP::Operator::MassLinearFEOperator> densityOp(
         new AMP::Operator::MassLinearFEOperator( densityOpParams ) );
 

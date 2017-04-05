@@ -41,7 +41,7 @@ void setBoundary( int id,
 
     AMP::Discretization::DOFManager::shared_ptr d1 = v1->getDOFManager();
 
-    AMP::Mesh::MeshIterator curBnd = mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, id, 0 );
+    AMP::Mesh::MeshIterator curBnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, id, 0 );
     AMP::Mesh::MeshIterator endBnd = curBnd.end();
 
     std::vector<size_t> ids;
@@ -75,7 +75,7 @@ void setGpBoundary( int id,
 
     AMP::Discretization::DOFManager::shared_ptr d1 = v1->getDOFManager();
 
-    AMP::Mesh::MeshIterator curBnd = mesh->getBoundaryIDIterator( AMP::Mesh::Face, id, 0 );
+    AMP::Mesh::MeshIterator curBnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, id, 0 );
     AMP::Mesh::MeshIterator endBnd = curBnd.end();
 
     libmeshElements.reinit( curBnd );
@@ -121,10 +121,10 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
         new AMP::Discretization::DOFManagerParameters( mesh ) );
     AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1 );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
     AMP::Discretization::DOFManager::shared_ptr GpDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::Face, 1, DOFsPerObject, true );
+            mesh, AMP::Mesh::GeomType::Face, 1, DOFsPerObject, true );
 
     // Test the creation/destruction of ScalarN2GZAxisMap (no apply call)
     try {

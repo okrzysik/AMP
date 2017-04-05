@@ -64,7 +64,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     // Create the DOF manager
     AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1 );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr multiVector =

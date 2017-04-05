@@ -74,12 +74,12 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     bool split          = true;
     AMP::Discretization::DOFManager::shared_ptr DOFs =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::LinearAlgebra::Variable::shared_ptr dummyVariable(
         new AMP::LinearAlgebra::Variable( "Dummy" ) );
     AMP::LinearAlgebra::Vector::shared_ptr dummyVector = createVector( DOFs, dummyVariable, split );
 
-    AMP::Mesh::MeshIterator node     = meshAdapter->getIterator( AMP::Mesh::Vertex, 0 );
+    AMP::Mesh::MeshIterator node     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     AMP::Mesh::MeshIterator end_node = node.end();
     for ( ; node != end_node; ++node ) {
         std::vector<size_t> globalID;
@@ -194,13 +194,13 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     AMP_ASSERT( globalMaxError < 1.0e-12 );
 
     std::vector<AMP::Mesh::MeshElementID> faceVerticesGlobalIDs;
-    std::vector<double> shiftGlobalCoords, projectionLocalCoordsOnFace;
+    std::vector<double> shiftGlobalCoords, projectionLocalCoordsOnGeomType::Face;
     std::vector<int> flags;
     dendroSearch.projectOnBoundaryID( globalComm,
                                       4,
                                       faceVerticesGlobalIDs,
                                       shiftGlobalCoords,
-                                      projectionLocalCoordsOnFace,
+                                      projectionLocalCoordsOnGeomType::Face,
                                       flags );
 
     unsigned int localPtsNotFound =

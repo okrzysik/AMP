@@ -59,7 +59,7 @@ void test_with_shape( AMP::UnitTest *ut )
     bool split      = true;
     AMP::Discretization::DOFManager::shared_ptr dof_map =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerNode, split );
 
 #ifdef USE_EXT_SILO
     AMP::LinearAlgebra::Variable::shared_ptr shapeVar(
@@ -68,7 +68,7 @@ void test_with_shape( AMP::UnitTest *ut )
         AMP::LinearAlgebra::createVector( dof_map, shapeVar, split );
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector( shapeVec, meshAdapter, AMP::Mesh::Volume, "PowerShape" );
+    siloWriter->registerVector( shapeVec, meshAdapter, AMP::Mesh::GeomType::Volume, "PowerShape" );
 #endif
 
     for ( int nMoments = 0; nMoments < 3; nMoments++ ) {

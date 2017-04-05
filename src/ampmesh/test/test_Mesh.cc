@@ -102,19 +102,19 @@ void testAMPMesh( AMP::UnitTest *ut )
                             ( size[0] + 1 ) * size[1] * ( size[2] + 1 ) +
                             ( size[0] + 1 ) * ( size[1] + 1 ) * size[2];
     size_t N_nodes_global = ( size[0] + 1 ) * ( size[1] + 1 ) * ( size[2] + 1 );
-    if ( mesh->numGlobalElements( AMP::Mesh::Vertex ) == N_nodes_global )
+    if ( mesh->numGlobalElements( AMP::Mesh::GeomType::Vertex ) == N_nodes_global )
         ut->passes( "Simple structured mesh has expected number of nodes" );
     else
         ut->failure( "Simple structured mesh has expected number of nodes" );
-    if ( mesh->numGlobalElements( AMP::Mesh::Edge ) == N_edges_global )
+    if ( mesh->numGlobalElements( AMP::Mesh::GeomType::Edge ) == N_edges_global )
         ut->passes( "Simple structured mesh has expected number of edges" );
     else
         ut->failure( "Simple structured mesh has expected number of edges" );
-    if ( mesh->numGlobalElements( AMP::Mesh::Face ) == N_faces_global )
+    if ( mesh->numGlobalElements( AMP::Mesh::GeomType::Face ) == N_faces_global )
         ut->passes( "Simple structured mesh has expected number of faces" );
     else
         ut->failure( "Simple structured mesh has expected number of faces" );
-    if ( mesh->numGlobalElements( AMP::Mesh::Volume ) == N_elements_global )
+    if ( mesh->numGlobalElements( AMP::Mesh::GeomType::Volume ) == N_elements_global )
         ut->passes( "Simple structured mesh has expected number of elements" );
     else
         ut->failure( "Simple structured mesh has expected number of elements" );
@@ -125,7 +125,7 @@ void testAMPMesh( AMP::UnitTest *ut )
     range[3]      = 1.0;
     range[5]      = 1.0;
     double dx     = range[1] / size[0];
-    auto iterator = mesh->getIterator( AMP::Mesh::Edge );
+    auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Edge );
     bool passes   = true;
     for ( size_t i = 0; i < iterator.size(); i++ ) {
         if ( !AMP::Utilities::approx_equal( iterator->volume(), dx, 1e-12 ) )
@@ -135,7 +135,7 @@ void testAMPMesh( AMP::UnitTest *ut )
         ut->passes( "Simple structured mesh has correct edge legth" );
     else
         ut->failure( "Simple structured mesh has correct edge legth" );
-    iterator = mesh->getIterator( AMP::Mesh::Face );
+    iterator = mesh->getIterator( AMP::Mesh::GeomType::Face );
     passes   = true;
     for ( size_t i = 0; i < iterator.size(); i++ ) {
         if ( !AMP::Utilities::approx_equal( iterator->volume(), dx * dx, 1e-12 ) )
@@ -145,7 +145,7 @@ void testAMPMesh( AMP::UnitTest *ut )
         ut->passes( "Simple structured mesh has correct face area" );
     else
         ut->failure( "Simple structured mesh has correct face area" );
-    iterator = mesh->getIterator( AMP::Mesh::Volume );
+    iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
     passes   = true;
     for ( size_t i = 0; i < iterator.size(); i++ ) {
         if ( !AMP::Utilities::approx_equal( iterator->volume(), dx * dx * dx, 1e-12 ) )

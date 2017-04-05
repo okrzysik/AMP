@@ -118,13 +118,13 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
     if ( d_isInputType == "NodalScalar" ) {
         for ( unsigned int var = 0; var < d_inpVariables->numVariables(); var++ ) {
             AMP::Mesh::MeshElementID tmp = d_inVec[var]->getDOFManager()->getIterator()->globalID();
-            if ( tmp.type() != AMP::Mesh::Vertex )
+            if ( tmp.type() != AMP::Mesh::GeomType::Vertex )
                 AMP_ERROR( "Input vector isn't really a NodalScalar" );
         }
         for ( unsigned int var = 0; var < d_auxVariables->numVariables(); var++ ) {
             AMP::Mesh::MeshElementID tmp =
                 d_auxVec[var]->getDOFManager()->getIterator()->globalID();
-            if ( tmp.type() != AMP::Mesh::Vertex )
+            if ( tmp.type() != AMP::Mesh::GeomType::Vertex )
                 AMP_ERROR( "aux vector isn't really a NodalScalar" );
         }
     }
@@ -134,7 +134,7 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
 void VolumeIntegralOperator::preElementOperation( const AMP::Mesh::MeshElement &elem )
 {
     PROFILE_START( "preElementOperation", 5 );
-    d_currNodes = elem.getElements( AMP::Mesh::Vertex );
+    d_currNodes = elem.getElements( AMP::Mesh::GeomType::Vertex );
 
     std::vector<size_t> elemDofIds;
     d_elementDofMap->getDOFs( elem.globalID(), elemDofIds );
@@ -204,10 +204,10 @@ void VolumeIntegralOperator::postAssembly()
 
 void VolumeIntegralOperator::init( const AMP::shared_ptr<VolumeIntegralOperatorParameters> & )
 {
-    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     d_srcNonlinElem->setElementFlags( d_isInputType );
     for ( d_currElemIdx = 0; d_currElemIdx < el.size(); ++d_currElemIdx, ++el ) {
-        d_currNodes = el->getElements( AMP::Mesh::Vertex );
+        d_currNodes = el->getElements( AMP::Mesh::GeomType::Vertex );
         d_srcNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
                                                       d_sourcePhysicsModel );
     } // end for el

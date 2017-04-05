@@ -80,7 +80,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     // create solution, rhs, and residual vectors
     AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Vector::shared_ptr solVec =
         AMP::LinearAlgebra::createVector( NodalScalarDOF, thermalVariable, true );
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec =
@@ -95,8 +95,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     //-------------------------------------------------------------------------------------------//
     // Create the silo writer and register the data
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
-    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
 #endif
 
     AMP::pout << "Constructing Linear Thermal Operator..." << std::endl;
@@ -127,7 +127,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     bool split      = true;
     AMP::Discretization::DOFManager::shared_ptr gauss_dof_map =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerNode, split );
 
     AMP::LinearAlgebra::Variable::shared_ptr SpecificPowerVar =
         neutronicsOperator->getOutputVariable();
@@ -137,7 +137,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
     /////////////////////////////////////////////////////
-    //  Integrate Nuclear Rhs over Desnity * Volume //
+    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
     /////////////////////////////////////////////////////
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );

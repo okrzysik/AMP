@@ -99,7 +99,7 @@ void DirichletVectorCorrection::applyZeroValues( AMP::LinearAlgebra::Vector::sha
     size_t numIds                                       = d_boundaryIds.size();
     for ( size_t j = 0; j < numIds; j++ ) {
         AMP::Mesh::MeshIterator bnd =
-            d_Mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
+            d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[j], 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         for ( ; bnd != end_bnd; ++bnd ) {
@@ -120,7 +120,7 @@ void DirichletVectorCorrection::applyNonZeroValues( AMP::LinearAlgebra::Vector::
     size_t numIds                                       = d_boundaryIds.size();
     for ( size_t j = 0; j < numIds; j++ ) {
         AMP::Mesh::MeshIterator bnd =
-            d_Mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
+            d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[j], 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         for ( ; bnd != end_bnd; ++bnd ) {
@@ -151,7 +151,7 @@ void DirichletVectorCorrection::applyResidual( AMP::LinearAlgebra::Vector::const
     size_t numIds                                          = d_boundaryIds.size();
     for ( size_t j = 0; j < numIds; j++ ) {
         AMP::Mesh::MeshIterator bnd =
-            d_Mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryIds[j], 0 );
+            d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[j], 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         for ( ; bnd != end_bnd; ++bnd ) {

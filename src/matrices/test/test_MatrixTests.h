@@ -406,12 +406,12 @@ public:
         matrix->zero();
 
         // Fill all the node-node entries
-        AMP::Mesh::MeshIterator it  = mesh->getIterator( AMP::Mesh::Volume, 0 );
+        AMP::Mesh::MeshIterator it  = mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
         AMP::Mesh::MeshIterator end = it.end();
         std::vector<size_t> dofs;
         dofs.reserve( 24 );
         while ( it != end ) {
-            std::vector<AMP::Mesh::MeshElement> nodes = it->getElements( AMP::Mesh::Vertex );
+            std::vector<AMP::Mesh::MeshElement> nodes = it->getElements( AMP::Mesh::GeomType::Vertex );
             dofs.clear();
             for ( auto &node : nodes ) {
                 std::vector<size_t> dofsNode;
@@ -444,7 +444,7 @@ public:
 
         // Check the values
         bool pass = true;
-        it        = mesh->getIterator( AMP::Mesh::Vertex, 0 );
+        it        = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         end       = it.end();
         std::vector<unsigned int> cols;
         std::vector<double> values;

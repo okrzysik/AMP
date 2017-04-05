@@ -44,7 +44,7 @@ libMeshElement::libMeshElement( int dim,
     unsigned int local_id   = (unsigned int) -1;
     unsigned int owner_rank = (unsigned int) -1;
     bool is_local           = false;
-    if ( type == Vertex ) {
+    if ( type == GeomType::Vertex ) {
         ::Node *node = (::Node *) ptr_element;
         local_id     = node->id();
         owner_rank   = node->processor_id();
@@ -80,7 +80,7 @@ libMeshElement::libMeshElement( int dim,
     unsigned int local_id   = (unsigned int) -1;
     unsigned int owner_rank = (unsigned int) -1;
     bool is_local           = false;
-    if ( type == Vertex ) {
+    if ( type == GeomType::Vertex ) {
         ::Node *node = (::Node *) ptr_element;
         local_id     = node->id();
         owner_rank   = node->processor_id();
@@ -152,9 +152,9 @@ std::vector<MeshElement> libMeshElement::getElements( const GeomType type ) cons
     AMP_INSIST( type <= d_globalID.type(), "sub-elements must be of a smaller or equivalent type" );
     std::vector<MeshElement> children( 0 );
     ::Elem *elem = (::Elem *) ptr_element;
-    if ( d_globalID.type() == Vertex ) {
+    if ( d_globalID.type() == GeomType::Vertex ) {
         // A vertex does not have children, return itself
-        if ( type != Vertex )
+        if ( type != GeomType::Vertex )
             AMP_ERROR( "A vertex is the base element and cannot have and sub-elements" );
         children.resize( 1 );
         children[0] = *this;
@@ -169,7 +169,7 @@ std::vector<MeshElement> libMeshElement::getElements( const GeomType type ) cons
             children.resize( 1 );
             children[0] = *this;
         }
-    } else if ( type == Vertex ) {
+    } else if ( type == GeomType::Vertex ) {
         // Return the nodes of the current element
         children.resize( elem->n_nodes() );
         for ( unsigned int i = 0; i < children.size(); i++ )
@@ -177,18 +177,18 @@ std::vector<MeshElement> libMeshElement::getElements( const GeomType type ) cons
                 d_dim, type, (void *) elem->get_node( i ), d_rank, d_meshID, d_mesh );
     } else {
         // Return the children
-        if ( type == Edge )
+        if ( type == GeomType::Edge )
             children.resize( elem->n_edges() );
-        else if ( type == Face )
+        else if ( type == GeomType::Face )
             children.resize( elem->n_faces() );
         else
             AMP_ERROR( "Internal error" );
         for ( unsigned int i = 0; i < children.size(); i++ ) {
             // We need to build a valid element
             ::AutoPtr<::Elem> tmp;
-            if ( type == Edge )
+            if ( type == GeomType::Edge )
                 tmp = elem->build_edge( i );
-            else if ( type == Face )
+            else if ( type == GeomType::Face )
                 tmp = elem->build_side( i, false );
             else
                 AMP_ERROR( "Internal error" );
@@ -220,14 +220,14 @@ std::vector<MeshElement> libMeshElement::getElements( const GeomType type ) cons
 std::vector<MeshElement::shared_ptr> libMeshElement::getNeighbors() const
 {
     std::vector<MeshElement::shared_ptr> neighbors( 0 );
-    if ( d_globalID.type() == Vertex ) {
+    if ( d_globalID.type() == GeomType::Vertex ) {
         // Return the neighbors of the current node
         std::vector<::Node *> neighbor_nodes = d_mesh->getNeighborNodes( d_globalID );
         neighbors.resize( neighbor_nodes.size(), MeshElement::shared_ptr() );
         for ( size_t i = 0; i < neighbor_nodes.size(); i++ ) {
             // There are no NULL neighbors
             AMP::shared_ptr<libMeshElement> neighbor( new libMeshElement(
-                d_dim, Vertex, (void *) neighbor_nodes[i], d_rank, d_meshID, d_mesh ) );
+                d_dim, GeomType::Vertex, (void *) neighbor_nodes[i], d_rank, d_meshID, d_mesh ) );
             neighbors[i] = neighbor;
         }
     } else if ( (int) d_globalID.type() == d_dim ) {
@@ -256,14 +256,14 @@ std::vector<MeshElement::shared_ptr> libMeshElement::getNeighbors() const
 ****************************************************************/
 double libMeshElement::volume() const
 {
-    if ( d_globalID.type() == Vertex )
+    if ( d_globalID.type() == GeomType::Vertex )
         AMP_ERROR( "volume is is not defined Nodes" );
     ::Elem *elem = (::Elem *) ptr_element;
     return elem->volume();
 }
 std::vector<double> libMeshElement::coord() const
 {
-    if ( d_globalID.type() != Vertex )
+    if ( d_globalID.type() != GeomType::Vertex )
         AMP_ERROR( "coord is only defined for Nodes" );
     ::Node *node = (::Node *) ptr_element;
     std::vector<double> x( d_dim, 0.0 );
@@ -273,14 +273,14 @@ std::vector<double> libMeshElement::coord() const
 }
 double libMeshElement::coord( int i ) const
 {
-    if ( d_globalID.type() != Vertex )
+    if ( d_globalID.type() != GeomType::Vertex )
         AMP_ERROR( "coord is only defined for Nodes" );
     ::Node *node = (::Node *) ptr_element;
     return ( *node )( i );
 }
 std::vector<double> libMeshElement::centroid() const
 {
-    if ( d_globalID.type() == Vertex )
+    if ( d_globalID.type() == GeomType::Vertex )
         return coord();
     ::Elem *elem   = (::Elem *) ptr_element;
     ::Point center = elem->centroid();
@@ -291,7 +291,7 @@ std::vector<double> libMeshElement::centroid() const
 }
 bool libMeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
 {
-    if ( d_globalID.type() == Vertex ) {
+    if ( d_globalID.type() == GeomType::Vertex ) {
         // double dist = 0.0;
         std::vector<double> point = this->coord();
         double dist2              = 0.0;
@@ -305,7 +305,7 @@ bool libMeshElement::containsPoint( const std::vector<double> &pos, double TOL )
 }
 bool libMeshElement::isOnSurface() const
 {
-    GeomType type      = d_globalID.type();
+    int type           = static_cast<int>(d_globalID.type());
     MeshElement search = MeshElement( *this );
     if ( d_globalID.is_local() ) {
         const std::vector<MeshElement> &data = *( d_mesh->d_localSurfaceElements[type] );
@@ -335,7 +335,7 @@ bool libMeshElement::isOnBoundary( int id ) const
     GeomType type                     = d_globalID.type();
     bool on_boundary                  = false;
     AMP::shared_ptr<::Mesh> d_libMesh = d_mesh->getlibMesh();
-    if ( type == Vertex ) {
+    if ( type == GeomType::Vertex ) {
         // Entity is a libmesh node
         ::Node *node                = (::Node *) ptr_element;
         std::vector<short int> bids = d_libMesh->boundary_info->boundary_ids( node );
@@ -351,7 +351,7 @@ bool libMeshElement::isOnBoundary( int id ) const
             on_boundary = true;
     } else {
         // All other entities are on the boundary iff all of their verticies are on the surface
-        std::vector<MeshElement> nodes = this->getElements( Vertex );
+        std::vector<MeshElement> nodes = this->getElements( GeomType::Vertex );
         on_boundary                    = true;
         for ( auto &node : nodes )
             on_boundary = on_boundary && node.isOnBoundary( id );
@@ -362,7 +362,7 @@ bool libMeshElement::isInBlock( int id ) const
 {
     GeomType type = d_globalID.type();
     bool in_block = false;
-    if ( type == Vertex ) {
+    if ( type == GeomType::Vertex ) {
         // Entity is a libmesh node
         AMP_ERROR( "isInBlock is not currently implimented for anything but elements" );
     } else if ( (int) type == d_dim ) {

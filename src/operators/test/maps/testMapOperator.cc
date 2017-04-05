@@ -54,7 +54,7 @@ void testMap( AMP::UnitTest *ut, std::string exeName )
 
     // Create a simple DOFManager and the vectors
     AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1 );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     AMP::LinearAlgebra::Variable::shared_ptr testVariable(
         new AMP::LinearAlgebra::Variable( "MapSolution" ) );
@@ -121,7 +121,7 @@ void testMap( AMP::UnitTest *ut, std::string exeName )
 
     // Set the boundary for the source vector
     unsigned int d_boundaryId   = map3dto1d_db1->getInteger( "BoundaryId" );
-    AMP::Mesh::MeshIterator bnd = mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryId, 0 );
+    AMP::Mesh::MeshIterator bnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryId, 0 );
     AMP::Mesh::MeshIterator end_bnd                     = bnd.end();
     AMP::Discretization::DOFManager::shared_ptr dof_map = mapSolutionMaster->getDOFManager();
     std::vector<size_t> ids;

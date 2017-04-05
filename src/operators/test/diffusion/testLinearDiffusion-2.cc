@@ -96,7 +96,7 @@ void linearTest( AMP::UnitTest *ut,
 
     // create vectors for parameters
     AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Variable::shared_ptr tempVar(
         new AMP::LinearAlgebra::Variable( "testTempVar" ) );
     AMP::LinearAlgebra::Variable::shared_ptr concVar(
@@ -140,7 +140,7 @@ void linearTest( AMP::UnitTest *ut,
         AMP::LinearAlgebra::createVector( NodalScalarDOF, diffResVar, true );
     diffRhsVec->setToScalar( 0.0 );
 
-    AMP::Mesh::MeshIterator curNode = meshAdapter->getIterator( AMP::Mesh::Vertex, 0 );
+    AMP::Mesh::MeshIterator curNode = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     AMP::Mesh::MeshIterator endNode = curNode.end();
     std::vector<size_t> dofs;
     while ( curNode != endNode ) {
@@ -161,7 +161,7 @@ void linearTest( AMP::UnitTest *ut,
     // write values in mathematica form
     int nranks = globalComm.getSize();
     if ( nranks == 1 ) {
-        size_t nnodes        = meshAdapter->numLocalElements( AMP::Mesh::Vertex );
+        size_t nnodes        = meshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
         int proc             = globalComm.getRank();
         int nproc            = globalComm.getSize();
         std::string filename = "values-" + exeName;
@@ -170,7 +170,7 @@ void linearTest( AMP::UnitTest *ut,
             file << "values={"
                  << "\n";
         }
-        curNode = meshAdapter->getIterator( AMP::Mesh::Vertex, 0 );
+        curNode = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         for ( size_t i = 0; i < nnodes; i++ ) {
             std::vector<double> pos = curNode->coord();
             double x                = pos[0];

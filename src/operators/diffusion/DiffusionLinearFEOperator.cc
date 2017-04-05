@@ -124,7 +124,7 @@ void DiffusionLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
     if ( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionLinearFEOperator::preElementOperation, entering" << std::endl;
 
-    d_currNodes = elem.getElements( AMP::Mesh::Vertex );
+    d_currNodes = elem.getElements( AMP::Mesh::GeomType::Vertex );
 
     unsigned int num_local_dofs = d_currNodes.size();
 

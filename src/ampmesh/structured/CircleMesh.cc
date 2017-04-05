@@ -121,7 +121,7 @@ void CircleMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
     // This maps from a a logically rectangular 2D mesh to a circular mesh using the mapping by:
     // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and Finite
-    // Volume
+    // GeomType::Volume
     //    Methods for PDEs in Circular and Spherical Domains", SIAM REVIEW, Vol. 50, No. 4, pp.
     //    723–752 (2008)
     int i = index.index(0);

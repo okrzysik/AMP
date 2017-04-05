@@ -126,7 +126,7 @@ void SubchannelTwoEqNonlinearOperator::reset( const AMP::shared_ptr<OperatorPara
     d_ownSubChannel  = std::vector<bool>( d_numSubchannels, false );
     d_subchannelElem = std::vector<std::vector<AMP::Mesh::MeshElement>>(
         d_numSubchannels, std::vector<AMP::Mesh::MeshElement>( 0 ) );
-    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     for ( size_t i = 0; i < el.size(); i++ ) {
         std::vector<double> center = el->centroid();
         int index                  = getSubchannelIndex( center[0], center[1] );
@@ -338,7 +338,7 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                                         new std::vector<double>( 1, p_plus ) ) ) );
                 std::vector<double> volumeResult_plus( 1 );
                 d_subchannelPhysicsModel->getProperty(
-                    "SpecificVolume", volumeResult_plus, volumeArgMap_plus );
+                    "SpecificGeomType::Volume", volumeResult_plus, volumeArgMap_plus );
                 double rho_plus = 1.0 / volumeResult_plus[0];
 
                 // evaluate density at lower face
@@ -353,7 +353,7 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                                         new std::vector<double>( 1, p_minus ) ) ) );
                 std::vector<double> volumeResult_minus( 1 );
                 d_subchannelPhysicsModel->getProperty(
-                    "SpecificVolume", volumeResult_minus, volumeArgMap_minus );
+                    "SpecificGeomType::Volume", volumeResult_minus, volumeArgMap_minus );
                 double rho_minus = 1.0 / volumeResult_minus[0];
 
                 double u_plus  = mass / ( A * rho_plus );  // velocity evaluated at upper face
@@ -371,7 +371,7 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                     AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p_avg ) ) ) );
                 std::vector<double> volumeResult_avg( 1 );
                 d_subchannelPhysicsModel->getProperty(
-                    "SpecificVolume", volumeResult_avg, volumeArgMap_avg );
+                    "SpecificGeomType::Volume", volumeResult_avg, volumeArgMap_avg );
                 double rho_avg = 1.0 / volumeResult_avg[0];
 
                 double fric; // friction factor

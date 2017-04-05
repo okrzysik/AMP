@@ -111,7 +111,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     dirichletDispInVecOp->setVariable( displacementVariable );
 
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
@@ -232,7 +232,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
 #ifdef USE_EXT_SILO
         siloWriter->registerVector(
-            mechNlSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution_Vector" );
+            mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
         meshAdapter->displaceMesh( mechNlSolVec );
         char outFileName2[256];
         sprintf( outFileName2, "PressurePrescribed-DeformedBrick-LinearElasticity_%d", step );

@@ -176,7 +176,7 @@ void thermalContactTest( AMP::UnitTest *ut, std::string exeName )
     neutronicsOperator->apply( nullVec, nullVec, SpecificPowerVec, 1., 0. );
 
     //----------------------------------------------------------
-    //  Integrate Nuclear Rhs over Desnity * Volume //
+    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
     //----------------------------------------------------------
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );

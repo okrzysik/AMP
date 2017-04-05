@@ -110,7 +110,7 @@ SubchannelToCladGPMap::getGaussPoints( AMP::Mesh::Mesh::shared_ptr,
     std::vector<SubchannelToCladGPMap::gaussPointZCoord> z_pos;
     z_pos.resize( ids.size() );
     for ( size_t i = 0; i < ids.size(); i++ ) {
-        AMP_ASSERT( ids[i].type() == AMP::Mesh::Face );
+        AMP_ASSERT( ids[i].type() == AMP::Mesh::GeomType::Face );
         // Create the libmesh element
         libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
         libMeshEnums::FEFamily feFamily =

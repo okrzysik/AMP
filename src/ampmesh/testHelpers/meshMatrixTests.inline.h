@@ -21,7 +21,7 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
         new AMP::Discretization::DOFManagerParameters( mesh ) );
     AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, DOF_PER_NODE );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
 
     // Create a nodal variable
     AMP::LinearAlgebra::Variable::shared_ptr variable(
@@ -76,7 +76,7 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
         new AMP::Discretization::DOFManagerParameters( mesh ) );
     AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, DOF_PER_NODE );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
 
     // Create a nodal variable
     AMP::LinearAlgebra::Variable::shared_ptr variable(
@@ -105,7 +105,7 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
                 double proc = mesh->getComm().getRank();
                 bool passes = true;
                 // Loop through the owned nodes
-                AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Vertex, 0 );
+                AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
                 for ( size_t i = 0; i < iterator.size(); i++ ) {
                     // Get the DOFs for the node and it's neighbors
                     std::vector<size_t> localDOFs;
@@ -165,7 +165,7 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
         bool passes = true;
         // Get a list of all nodes owned by the given processor p
         std::set<AMP::Mesh::MeshElementID> nodes_p;
-        AMP::Mesh::MeshIterator iterator = mesh->getIterator(AMP::Mesh::Vertex,1);
+        AMP::Mesh::MeshIterator iterator = mesh->getIterator(AMP::Mesh::GeomType::Vertex,1);
         for (size_t i=0; i<iterator.size(); i++) {
             AMP::Mesh::MeshElementID id = iterator->globalID();
             const std::vector<int> &map = proc_map.find(id.meshID())->second;
@@ -181,7 +181,7 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
         if ( dofs_p.size()==0 )
             dofs_p.push_back( (size_t)-1 );
         AMP::Utilities::quicksort( dofs_p );
-        iterator = mesh->getIterator(AMP::Mesh::Vertex,0);
+        iterator = mesh->getIterator(AMP::Mesh::GeomType::Vertex,0);
         double proc = p;
         for (size_t i=0; i<iterator.size(); i++) {
             std::vector<size_t> dofs;

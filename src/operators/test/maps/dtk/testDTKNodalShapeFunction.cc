@@ -56,16 +56,16 @@ void myTest( AMP::UnitTest *ut )
     int const dofsPerNode = 1;
     AMP::Discretization::DOFManager::shared_ptr dofManager =
         AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::Vertex, ghostWidth, dofsPerNode );
+            mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
     AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::LinearAlgebra::Variable( "var" ) );
     AMP::LinearAlgebra::Vector::shared_ptr vector =
         AMP::LinearAlgebra::createVector( dofManager, variable, split );
 
     // get the volume iterator
-    AMP::Mesh::MeshIterator vol_iterator = mesh->getIterator( AMP::Mesh::Volume );
+    AMP::Mesh::MeshIterator vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
 
     // get the vertex iterator
-    AMP::Mesh::MeshIterator vert_iterator = mesh->getIterator( AMP::Mesh::Vertex );
+    AMP::Mesh::MeshIterator vert_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
 
     // map the volume ids to dtk ids
     AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> vol_id_map =
@@ -169,7 +169,7 @@ void myTest( AMP::UnitTest *ut )
     ref_node_8[1] = 1.0;
     ref_node_8[2] = 1.0;
 
-    AMP::Mesh::MeshIterator elem_iterator = mesh->getIterator( AMP::Mesh::Volume );
+    AMP::Mesh::MeshIterator elem_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
     DataTransferKit::EntityIterator dtk_elem_iterator =
         AMP::Operator::AMPMeshEntityIterator( rank_map, vol_id_map, elem_iterator, selectAll );
 
@@ -331,7 +331,7 @@ void myTest( AMP::UnitTest *ut )
     }
 
     // Test the shape function with the nodes.
-    AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::Vertex );
+    AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
     DataTransferKit::EntityIterator dtk_node_iterator =
         AMP::Operator::AMPMeshEntityIterator( rank_map, vert_id_map, node_iterator, selectAll );
     std::vector<std::size_t> node_dofs;

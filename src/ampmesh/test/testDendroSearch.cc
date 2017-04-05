@@ -149,18 +149,18 @@ void drawSpacePartition( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     drawOctant( &( space[0] ), 2, 1, 1, 2, 2, point_of_view, os );
 }
 
-void drawFacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                             int boundaryID,
                             std::ostream &os,
                             double const *point_of_view,
                             const std::string &option = "" )
 {
     AMP::Mesh::MeshIterator boundaryIterator =
-        meshAdapter->getBoundaryIDIterator( AMP::Mesh::Face, boundaryID );
+        meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, boundaryID );
     AMP::Mesh::MeshIterator boundaryIterator_begin = boundaryIterator.begin(),
                             boundaryIterator_end   = boundaryIterator.end();
     std::vector<AMP::Mesh::MeshElement> faceVertices;
-    std::vector<double> faceVertexCoordinates;
+    std::vector<double> faceGeomType::VertexCoordinates;
     double faceData[12]          = { 0.0 };
     double const *faceDataPtr[4] = { faceData, faceData + 3, faceData + 6, faceData + 9 };
 
@@ -168,13 +168,13 @@ void drawFacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 
     for ( boundaryIterator = boundaryIterator_begin; boundaryIterator != boundaryIterator_end;
           ++boundaryIterator ) {
-        faceVertices = boundaryIterator->getElements( AMP::Mesh::Vertex );
+        faceVertices = boundaryIterator->getElements( AMP::Mesh::GeomType::Vertex );
         AMP_ASSERT( faceVertices.size() == 4 );
         for ( size_t i = 0; i < 4; ++i ) {
-            faceVertexCoordinates = faceVertices[i].coord();
-            AMP_ASSERT( faceVertexCoordinates.size() == 3 );
+            faceGeomType::VertexCoordinates = faceVertices[i].coord();
+            AMP_ASSERT( faceGeomType::VertexCoordinates.size() == 3 );
             std::copy(
-                faceVertexCoordinates.begin(), faceVertexCoordinates.end(), faceData + 3 * i );
+                faceGeomType::VertexCoordinates.begin(), faceGeomType::VertexCoordinates.end(), faceData + 3 * i );
         } // end for i
         triangle_t t( faceDataPtr[0], faceDataPtr[1], faceDataPtr[2] );
 
@@ -310,7 +310,7 @@ void run( const std::string &meshFileName,
     AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
     globalComm.barrier();
     double meshEndTime                = MPI_Wtime();
-    size_t numberGlobalVolumeElements = meshAdapter->numGlobalElements( AMP::Mesh::Volume );
+    size_t numberGlobalVolumeElements = meshAdapter->numGlobalElements( AMP::Mesh::GeomType::Volume );
     //  AMP_ASSERT(static_cast<size_t>(npes) * size_radius * size_radius * 4 * size_height ==
     //  numberGlobalVolumeElements);
     if ( !rank ) {
@@ -325,12 +325,12 @@ void run( const std::string &meshFileName,
       std::string file_name;
       file_name = "outer_surface_" + meshFileName;
       fout.open(file_name.c_str(), std::fstream::out);
-      drawFacesOnBoundaryID(meshAdapter, 4, fout, point_of_view);
+      drawGeomType::FacesOnBoundaryID(meshAdapter, 4, fout, point_of_view);
       fout.close();
       file_name = "top_surface_" + meshFileName;
       fout.open(file_name.c_str(), std::fstream::out);
-      drawFacesOnBoundaryID(meshAdapter, 1, fout, point_of_view);
-      drawFacesOnBoundaryID(meshAdapter, 33, fout, point_of_view);
+      drawGeomType::FacesOnBoundaryID(meshAdapter, 1, fout, point_of_view);
+      drawGeomType::FacesOnBoundaryID(meshAdapter, 33, fout, point_of_view);
       fout.close();
     */
 
@@ -345,12 +345,12 @@ void run( const std::string &meshFileName,
     bool split          = true;
     AMP::Discretization::DOFManager::shared_ptr DOFs =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::LinearAlgebra::Variable::shared_ptr dummyVariable(
         new AMP::LinearAlgebra::Variable( "Dummy" ) );
     AMP::LinearAlgebra::Vector::shared_ptr dummyVector = createVector( DOFs, dummyVariable, split );
 
-    AMP::Mesh::MeshIterator node     = meshAdapter->getIterator( AMP::Mesh::Vertex, 0 );
+    AMP::Mesh::MeshIterator node     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     AMP::Mesh::MeshIterator end_node = node.end();
     for ( ; node != end_node; ++node ) {
         std::vector<size_t> globalID;
@@ -430,13 +430,13 @@ void run( const std::string &meshFileName,
 
     // Project on boundary
     std::vector<AMP::Mesh::MeshElementID> faceVerticesGlobalIDs;
-    std::vector<double> shiftGlobalCoords, projectionLocalCoordsOnFace;
+    std::vector<double> shiftGlobalCoords, projectionLocalCoordsOnGeomType::Face;
     std::vector<int> flags;
     dendroSearch.projectOnBoundaryID( globalComm,
                                       4,
                                       faceVerticesGlobalIDs,
                                       shiftGlobalCoords,
-                                      projectionLocalCoordsOnFace,
+                                      projectionLocalCoordsOnGeomType::Face,
                                       flags );
 
     size_t localPtsNotFound =

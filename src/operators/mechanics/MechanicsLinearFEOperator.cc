@@ -38,11 +38,11 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
         d_refXYZ = AMP::LinearAlgebra::createVector( d_inDofMap, d_inpVariable, true );
         d_refXYZ->zero();
 
-        AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+        AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
         AMP::Mesh::MeshIterator end_el = el.end();
 
         for ( ; el != end_el; ++el ) {
-            d_currNodes                     = el->getElements( AMP::Mesh::Vertex );
+            d_currNodes                     = el->getElements( AMP::Mesh::GeomType::Vertex );
             unsigned int numNodesInCurrElem = d_currNodes.size();
 
             getDofIndicesForCurrentElement();
@@ -123,7 +123,7 @@ void MechanicsLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
 
 void MechanicsLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElement &elem )
 {
-    d_currNodes                     = elem.getElements( AMP::Mesh::Vertex );
+    d_currNodes                     = elem.getElements( AMP::Mesh::GeomType::Vertex );
     unsigned int numNodesInCurrElem = d_currNodes.size();
 
     getDofIndicesForCurrentElement();
@@ -200,11 +200,11 @@ void MechanicsLinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vector
     disp->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     d_materialModel->preLinearAssembly();
 
-    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     for ( ; el != end_el; ++el ) {
-        d_currNodes                     = el->getElements( AMP::Mesh::Vertex );
+        d_currNodes                     = el->getElements( AMP::Mesh::GeomType::Vertex );
         unsigned int numNodesInCurrElem = d_currNodes.size();
 
         getDofIndicesForCurrentElement();

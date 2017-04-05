@@ -95,7 +95,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         loadOperator->setVariable( dispVar );
 
         AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF =
-            AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3 );
+            AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         AMP::LinearAlgebra::Vector::shared_ptr solVec =

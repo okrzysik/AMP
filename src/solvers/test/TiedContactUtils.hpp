@@ -35,7 +35,7 @@ void createMasterSlaveMap( AMP::Mesh::MeshManager::Adapter::shared_ptr masterMes
                            std::vector<unsigned int> &masterContactNodes,
                            std::vector<unsigned int> &slaveContactNodes,
                            std::vector<unsigned int> &masterVolumeNodes,
-                           std::vector<unsigned int> &slaveVolumeNodes )
+                           std::vector<unsigned int> &slaveGeomType::VolumeNodes )
 {
     std::vector<PointAndId> masterContactSet;
     std::vector<PointAndId> slaveContactSet;
@@ -88,28 +88,28 @@ void createMasterSlaveMap( AMP::Mesh::MeshManager::Adapter::shared_ptr masterMes
         slaveContactNodes[i] = slaveContactSet[i].d_id;
     }
 
-    std::cout << "Master Volume Node Size = ";
+    std::cout << "Master GeomType::Volume Node Size = ";
     std::cout << ( masterMeshAdapter->numLocalNodes() ) << std::endl;
 
-    std::cout << "Slave Volume Node Size = ";
+    std::cout << "Slave GeomType::Volume Node Size = ";
     std::cout << ( slaveMeshAdapter->numLocalNodes() ) << std::endl;
 
     masterVolumeNodes.resize( masterMeshAdapter->numLocalNodes() );
-    slaveVolumeNodes.resize( slaveMeshAdapter->numLocalNodes() );
+    slaveGeomType::VolumeNodes.resize( slaveMeshAdapter->numLocalNodes() );
 
     for ( size_t i = 0; i < masterVolumeNodes.size(); i++ ) {
         masterVolumeNodes[i] = i;
     }
 
-    for ( size_t i = 0; i < slaveVolumeNodes.size(); i++ ) {
-        slaveVolumeNodes[i] = i;
+    for ( size_t i = 0; i < slaveGeomType::VolumeNodes.size(); i++ ) {
+        slaveGeomType::VolumeNodes[i] = i;
     }
 
     for ( size_t i = 0; i < numContactNodes; i++ ) {
         AMP_ASSERT( masterContactNodes[i] < masterVolumeNodes.size() );
-        AMP_ASSERT( slaveContactNodes[i] < slaveVolumeNodes.size() );
+        AMP_ASSERT( slaveContactNodes[i] < slaveGeomType::VolumeNodes.size() );
         masterVolumeNodes[masterContactNodes[i]] = static_cast<unsigned int>( -1 );
-        slaveVolumeNodes[slaveContactNodes[i]]   = static_cast<unsigned int>( -1 );
+        slaveGeomType::VolumeNodes[slaveContactNodes[i]]   = static_cast<unsigned int>( -1 );
     }
 
     std::vector<unsigned int> tmpMaster;
@@ -120,14 +120,14 @@ void createMasterSlaveMap( AMP::Mesh::MeshManager::Adapter::shared_ptr masterMes
     }
 
     std::vector<unsigned int> tmpSlave;
-    for ( size_t i = 0; i < slaveVolumeNodes.size(); i++ ) {
-        if ( slaveVolumeNodes[i] != ( static_cast<unsigned int>( -1 ) ) ) {
-            tmpSlave.push_back( slaveVolumeNodes[i] );
+    for ( size_t i = 0; i < slaveGeomType::VolumeNodes.size(); i++ ) {
+        if ( slaveGeomType::VolumeNodes[i] != ( static_cast<unsigned int>( -1 ) ) ) {
+            tmpSlave.push_back( slaveGeomType::VolumeNodes[i] );
         }
     }
 
     masterVolumeNodes = tmpMaster;
-    slaveVolumeNodes  = tmpSlave;
+    slaveGeomType::VolumeNodes  = tmpSlave;
 
     std::cout << "Created Master-Slave map for Tied-Contact." << std::endl;
 }

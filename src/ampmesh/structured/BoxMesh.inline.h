@@ -166,7 +166,7 @@ inline std::array<int,6> BoxMesh::getLocalBlock( unsigned int rank ) const
     AMP_ASSERT( p[2] < d_numBlocks[2] );
     std::array<int,6> range;
     range.fill(0);
-    for ( int d = 0; d < GeomDim; d++ ) {
+    for ( int d = 0; d < static_cast<int>(GeomDim); d++ ) {
         int size = (d_globalSize[d]+d_numBlocks[d]-1)/d_numBlocks[d];
         range[2*d+0] = p[d]*size;
         range[2*d+1] = std::min((p[d]+1)*size-1,d_globalSize[d]-1);
