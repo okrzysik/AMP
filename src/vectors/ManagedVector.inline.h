@@ -69,8 +69,8 @@ inline Vector::iterator ManagedVector::end()
 
 inline void ManagedVector::dataChanged()
 {
-    if ( *d_UpdateState == UNCHANGED )
-        *d_UpdateState = LOCAL_CHANGED;
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 
@@ -157,7 +157,7 @@ inline void ManagedVector::setToScalar( double alpha )
 {
     d_Engine->setToScalar( alpha );
     dataChanged();
-    this->makeConsistent( CONSISTENT_SET );
+    this->makeConsistent( ScatterType::CONSISTENT_SET );
 }
 
 
@@ -310,7 +310,7 @@ inline void ManagedVector::setRandomValues( void )
 {
     d_Engine->setRandomValues();
     dataChanged();
-    this->makeConsistent( CONSISTENT_SET );
+    this->makeConsistent( ScatterType::CONSISTENT_SET );
 }
 
 

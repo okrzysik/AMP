@@ -456,7 +456,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 } // end for gauss-points
                 destroyCurrentLibMeshElement();
             } // end for elements
-            r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+            r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "End Power Shape Loop over : " << countGP << " Gauss Points."
@@ -513,7 +513,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 } // end for gauss-points
                 destroyCurrentLibMeshElement();
             } // end for elements
-            r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+            r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processing GP #: " << countGP << std::endl;
@@ -577,7 +577,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 } // end for gauss-points
                 destroyCurrentLibMeshElement();
             } // end for elements
-            r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+            r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processing GP #: " << countGP << std::endl;
@@ -618,7 +618,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 } // end for gauss-points
                 destroyCurrentLibMeshElement();
             } // end for elements
-            r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+            r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
             AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
@@ -671,7 +671,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         "The denominator is zero - not good." );
             r->scale( unodalPower->L1Norm() / rnodalPower->L1Norm() );
 
-            r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+            r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processed GP #: " << countGP << std::endl;
         }
@@ -726,7 +726,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 } // end for gauss-points
                 destroyCurrentLibMeshElement();
             } // end for elements
-            r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+            r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processed GP #: " << countGP << std::endl;
@@ -775,7 +775,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 } // end for gauss-points
                 destroyCurrentLibMeshElement();
             } // end for elements
-            r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+            r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processed GP #: " << countGP << std::endl;

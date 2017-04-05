@@ -359,7 +359,7 @@ void run( const std::string &meshFileName,
             dummyVector->setLocalValueByGlobalID( globalID[d], dummyFunction( node->coord(), d ) );
         } // end d
     }
-    dummyVector->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    dummyVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     // Generate the random points
     int totalNumPts = numRandomPts;

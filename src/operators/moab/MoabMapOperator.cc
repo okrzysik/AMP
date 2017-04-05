@@ -149,7 +149,7 @@ void MoabMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     r->setValuesByLocalID( numCoords, &myIndices[0], &outputVar[0] );
 
     // Make consistent
-    r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 
 //---------------------------------------------------------------------------//

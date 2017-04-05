@@ -71,7 +71,7 @@ public:
     /**\brief Flag to choose algorithm for makeConsistent
       *\see makeConsistent
       */
-    enum ScatterType { CONSISTENT_ADD, CONSISTENT_SET };
+    enum class ScatterType { CONSISTENT_ADD, CONSISTENT_SET };
 
     /** \typedef shared_ptr
       * \brief Shorthand for shared pointer to Vector
@@ -1047,7 +1047,7 @@ public:
     /**\brief The four states a Vector can be in
       *\see makeConsistent
       */
-    enum UpdateState { UNCHANGED, LOCAL_CHANGED, ADDING, SETTING, MIXED };
+    enum class UpdateState { UNCHANGED, LOCAL_CHANGED, ADDING, SETTING, MIXED };
 
 
     /** \brief  Return the current update state of the Vector

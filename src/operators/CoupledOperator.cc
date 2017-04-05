@@ -62,7 +62,7 @@ void CoupledOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
         r->scale( -1.0 );
     }
 
-    r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 }
 }

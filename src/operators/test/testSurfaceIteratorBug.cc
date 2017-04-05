@@ -153,7 +153,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     else
         ut->failure( "Volume passes" );
 
-    vec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
+    vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_ADD );
 
     double l2Norm = vec->L2Norm();
     std::cout << "size = " << vec->getGlobalSize() << std::endl;

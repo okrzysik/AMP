@@ -28,7 +28,7 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
     if ( db->keyExists( "Geometry" ) && db->keyExists( "Order" ) &&
          db->keyExists( "BoundaryType" ) ) {
 
-        d_FunctionType = POLYNOMIAL;
+        d_FunctionType = FunctionType::POLYNOMIAL;
 
         std::string geom   = db->getString( "Geometry" );
         std::string order  = db->getString( "Order" );
@@ -36,73 +36,73 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
         d_Name             = geom + order + bctype;
 
         if ( geom == "Brick" )
-            d_geom = BRICK;
+            d_geom = Geometry::BRICK;
         else if ( geom == "CylindricalRod" )
-            d_geom = CYLROD;
+            d_geom = Geometry::CYLROD;
         else if ( geom == "CylindricalRodRZ" )
-            d_geom = CYLRODRZ;
+            d_geom = Geometry::CYLRODRZ;
         else if ( geom == "CylindricalShell" )
-            d_geom = CYLSHELL;
+            d_geom = Geometry::CYLSHELL;
         else if ( geom == "CylindricalQuarterShell" )
-            d_geom = QTRCYLSHELL;
+            d_geom = Geometry::QTRCYLSHELL;
         else
             AMP_INSIST( false, "improper specification of geometry" );
 
         if ( order == "Quadratic" )
-            d_order = QUADRATIC;
+            d_order = Order::QUADRATIC;
         else if ( order == "Cubic" )
-            d_order = CUBIC;
+            d_order = Order::CUBIC;
         else
             AMP_INSIST( false, "improper specification of order" );
 
         if ( bctype == "Neumann" )
-            d_bcType = NEUMANN;
+            d_bcType = BCType::NEUMANN;
         else if ( bctype == "Dirichlet-1" )
-            d_bcType = DIRICHLET1;
+            d_bcType = BCType::DIRICHLET1;
         else if ( bctype == "Dirichlet-2" )
-            d_bcType = DIRICHLET2;
+            d_bcType = BCType::DIRICHLET2;
         else if ( bctype == "Dirichlet-2-z" )
-            d_bcType = DIRICHLETZ2;
+            d_bcType = BCType::DIRICHLETZ2;
         else if ( bctype == "None" )
-            d_bcType = NONE;
+            d_bcType = BCType::NONE;
         else
             AMP_INSIST( false, "improper specification of boundary condition type" );
 
-        if ( d_geom == BRICK ) {
-            if ( d_order == QUADRATIC ) {
-                if ( d_bcType == NEUMANN ) {
+        if ( d_geom == Geometry::BRICK ) {
+            if ( d_order == Order::QUADRATIC ) {
+                if ( d_bcType == BCType::NEUMANN ) {
                     d_functionPointer    = &quad_neumann;
                     d_NumberOfParameters = 1;
                     d_NumberOfInputs     = 6;
-                } else if ( d_bcType == DIRICHLET1 ) {
+                } else if ( d_bcType == BCType::DIRICHLET1 ) {
                     d_functionPointer    = &quad_dirichlet1;
                     d_NumberOfParameters = 1;
                     d_NumberOfInputs     = 2;
-                } else if ( d_bcType == DIRICHLET2 ) {
+                } else if ( d_bcType == BCType::DIRICHLET2 ) {
                     d_functionPointer    = &quad_dirichlet2;
                     d_NumberOfParameters = 1;
                     d_NumberOfInputs     = 2;
-                } else if ( d_bcType == NONE ) {
+                } else if ( d_bcType == BCType::NONE ) {
                     d_functionPointer    = &quad_none;
                     d_NumberOfParameters = 10;
                     d_NumberOfInputs     = 0;
                 } else {
                     AMP_INSIST( false, "manufactured solution combination is not available" );
                 }
-            } else if ( d_order == CUBIC ) {
-                if ( d_bcType == NEUMANN ) {
+            } else if ( d_order == Order::CUBIC ) {
+                if ( d_bcType == BCType::NEUMANN ) {
                     d_functionPointer    = &cubic_neumann;
                     d_NumberOfParameters = 8;
                     d_NumberOfInputs     = 6;
-                } else if ( d_bcType == DIRICHLET1 ) {
+                } else if ( d_bcType == BCType::DIRICHLET1 ) {
                     d_functionPointer    = &cubic_dirichlet1;
                     d_NumberOfParameters = 8;
                     d_NumberOfInputs     = 2;
-                } else if ( d_bcType == DIRICHLET2 ) {
+                } else if ( d_bcType == BCType::DIRICHLET2 ) {
                     d_functionPointer    = &cubic_dirichlet2;
                     d_NumberOfParameters = 8;
                     d_NumberOfInputs     = 2;
-                } else if ( d_bcType == NONE ) {
+                } else if ( d_bcType == BCType::NONE ) {
                     d_functionPointer    = &cubic_none;
                     d_NumberOfParameters = 20;
                     d_NumberOfInputs     = 0;
@@ -110,21 +110,21 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
                     AMP_INSIST( false, "manufactured solution combination is not available" );
                 }
             }
-        } else if ( d_geom == CYLROD ) {
-            if ( d_order == QUADRATIC ) {
-                if ( d_bcType == NONE ) {
+        } else if ( d_geom == Geometry::CYLROD ) {
+            if ( d_order == Order::QUADRATIC ) {
+                if ( d_bcType == BCType::NONE ) {
                     d_functionPointer    = &quad_cyl_rod_none;
                     d_NumberOfParameters = 15;
                     d_NumberOfInputs     = 0;
                 } else {
                     AMP_INSIST( false, "manufactured solution combination is not available" );
                 }
-            } else if ( d_order == CUBIC ) {
-                if ( d_bcType == DIRICHLETZ2 ) {
+            } else if ( d_order == Order::CUBIC ) {
+                if ( d_bcType == BCType::DIRICHLETZ2 ) {
                     d_functionPointer    = &cubic_cyl_rod_dirichletz2;
                     d_NumberOfParameters = 96;
                     d_NumberOfInputs     = 2;
-                } else if ( d_bcType == NONE ) {
+                } else if ( d_bcType == BCType::NONE ) {
                     d_functionPointer    = &cubic_cyl_rod_none;
                     d_NumberOfParameters = 64;
                     d_NumberOfInputs     = 0;
@@ -135,8 +135,8 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
                 AMP_INSIST( false, "manufactured solution combination is not available" );
             }
             d_CylindricalCoords = true;
-        } else if ( d_geom == CYLRODRZ ) {
-            if ( d_bcType == NONE ) {
+        } else if ( d_geom == Geometry::CYLRODRZ ) {
+            if ( d_bcType == BCType::NONE ) {
                 d_functionPointer    = &cubic_cyl_rod_rz_none;
                 d_NumberOfParameters = 16;
                 d_NumberOfInputs     = 0;
@@ -144,13 +144,13 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
                 AMP_INSIST( false, "manufactured solution combination is not available" );
             }
             d_CylindricalCoords = true;
-        } else if ( d_geom == CYLSHELL ) {
-            if ( d_order == QUADRATIC ) {
-                if ( d_bcType == NEUMANN ) {
+        } else if ( d_geom == Geometry::CYLSHELL ) {
+            if ( d_order == Order::QUADRATIC ) {
+                if ( d_bcType == BCType::NEUMANN ) {
                     d_functionPointer    = &quad_cyl_shell_neumann;
                     d_NumberOfParameters = 9;
                     d_NumberOfInputs     = 4;
-                } else if ( d_bcType == NONE ) {
+                } else if ( d_bcType == BCType::NONE ) {
                     d_functionPointer =
                         &quad_cyl_rod_none; // TODO: This should be: &quad_cyl_shell_none; once that
                                             // function is completed.
@@ -159,8 +159,8 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
                 } else {
                     AMP_INSIST( false, "manufactured solution combination is not available" );
                 }
-            } else if ( d_order == CUBIC ) {
-                if ( d_bcType == NONE ) {
+            } else if ( d_order == Order::CUBIC ) {
+                if ( d_bcType == BCType::NONE ) {
                     d_functionPointer    = &cubic_cyl_rod_none;
                     d_NumberOfParameters = 35;
                     d_NumberOfInputs     = 0;
@@ -169,17 +169,17 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
                 AMP_INSIST( false, "manufactured solution combination is not available" );
             }
             d_CylindricalCoords = true;
-        } else if ( d_geom == QTRCYLSHELL ) {
-            if ( d_order == QUADRATIC ) {
-                if ( d_bcType == NEUMANN ) {
+        } else if ( d_geom == Geometry::QTRCYLSHELL ) {
+            if ( d_order == Order::QUADRATIC ) {
+                if ( d_bcType == BCType::NEUMANN ) {
                     d_functionPointer    = &quad_cyl_qtr_shell_neumann;
                     d_NumberOfParameters = 7;
                     d_NumberOfInputs     = 4;
-                } else if ( d_bcType == DIRICHLET2 ) {
+                } else if ( d_bcType == BCType::DIRICHLET2 ) {
                     d_functionPointer    = &quad_cyl_qtr_shell_dirichlet2;
                     d_NumberOfParameters = 7;
                     d_NumberOfInputs     = 4;
-                } else if ( d_bcType == NONE ) {
+                } else if ( d_bcType == BCType::NONE ) {
                     d_functionPointer =
                         &cubic_cyl_rod_none; // TODO: This should be: &quad_cyl_qtr_shell_none; once
                                              // that function is completed.
@@ -188,12 +188,12 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
                 } else {
                     AMP_INSIST( false, "manufactured solution combination is not available" );
                 }
-            } else if ( d_order == CUBIC ) {
+            } else if ( d_order == Order::CUBIC ) {
                 d_functionPointer    = &cubic_cyl_qtr_shell_neumann;
                 d_NumberOfParameters = 56;
                 d_NumberOfInputs     = 4;
-                if ( d_bcType == NEUMANN ) {
-                } else if ( d_bcType == NONE ) {
+                if ( d_bcType == BCType::NEUMANN ) {
+                } else if ( d_bcType == BCType::NONE ) {
                     d_functionPointer = &cubic_cyl_rod_none; // TODO: This should be:
                                                              // &cubic_cyl_qtr_shell_none; once
                                                              // that function is completed.
@@ -217,7 +217,7 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
         if ( db->keyExists( "BoundaryData" ) ) {
             hasBoundaryData = true;
         }
-        if ( hasCoefficients && ( hasBoundaryData || ( d_bcType == NONE ) ) ) {
+        if ( hasCoefficients && ( hasBoundaryData || ( d_bcType == BCType::NONE ) ) ) {
             std::vector<double> array( 0 );
             db->getArray( "Coefficients", array );
             AMP_INSIST( array.size() >= d_NumberOfParameters, "wrong number of coefficients" );
@@ -235,7 +235,7 @@ ManufacturedSolution::ManufacturedSolution( AMP::shared_ptr<Database> db )
                 d_c[i]     = array[i];
         }
     } else if ( db->keyExists( "QuadraticDistortion" ) && db->keyExists( "QuadraticFunction" ) ) {
-        d_FunctionType       = GENERALQUADRATIC;
+        d_FunctionType       = FunctionType::GENERALQUADRATIC;
         std::string function = db->getString( "QuadraticFunction" );
         if ( function == "Exponential" )
             d_functionPointer = &general_quadratic_exponential;

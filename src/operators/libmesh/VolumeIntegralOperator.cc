@@ -90,7 +90,7 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
             d_inpVariables->getVariable( var );
         d_inVec[var] = meshSubsetPrimary->constSubsetVectorForVariable( primaryVariable );
         AMP_ASSERT( d_inVec[var] != nullptr );
-        AMP_ASSERT( d_inVec[var]->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
+        AMP_ASSERT( d_inVec[var]->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
     }
 
     if ( d_auxVariables->numVariables() > 0 )
@@ -100,7 +100,7 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
             d_auxVariables->getVariable( var );
         d_auxVec[var] = meshSubsetAuxillary->constSubsetVectorForVariable( auxillaryVariable );
         AMP_ASSERT( d_auxVec[var] != nullptr );
-        AMP_ASSERT( d_auxVec[var]->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
+        AMP_ASSERT( d_auxVec[var]->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
     }
 
     // subsetOutputVector is from Operator.h
@@ -198,7 +198,7 @@ void VolumeIntegralOperator::postElementOperation()
 
 void VolumeIntegralOperator::postAssembly()
 {
-    d_outVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
+    d_outVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_ADD );
 }
 
 

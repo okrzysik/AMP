@@ -192,7 +192,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
             BatterySolVec->setValueByGlobalID( bndGlobalIds[3], val );
         } // end for node
     }
-    multiSolVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    multiSolVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     siloWriter->writeFile( logFile, 0 );
 
     // create dtk map operator.

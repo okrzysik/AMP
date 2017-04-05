@@ -236,14 +236,14 @@ void PetscKrylovSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
     uVecView = AMP::LinearAlgebra::PetscVector::view( u );
 
     // Check input vector states
-    AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED ) ||
-                ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED ) );
-    AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED ) ||
-                ( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED ) );
-    AMP_ASSERT( ( fVecView->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED ) ||
-                ( fVecView->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED ) );
-    AMP_ASSERT( ( uVecView->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED ) ||
-                ( uVecView->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+                ( f->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+                ( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( fVecView->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+                ( fVecView->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( uVecView->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+                ( uVecView->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
         std::cout << "PetscKrylovSolver::solve: initial L2Norm of solution vector: " << u->L2Norm()
@@ -438,12 +438,12 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
         AMP::LinearAlgebra::ExternalVectorDeleter() );
 
     // Make sure the vectors are in a consistent state
-    AMP_ASSERT( ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED ) ||
-                ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED ) );
-    AMP_ASSERT( ( sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED ) ||
-                ( sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::LOCAL_CHANGED ) );
-    sp_r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    sp_z->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    AMP_ASSERT( ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+                ( sp_r->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED ) ||
+                ( sp_z->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED ) );
+    sp_r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    sp_z->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     // these tests were helpful in finding a bug
     if ( ( (PetscKrylovSolver *) ctx )->getDebugPrintInfoLevel() > 5 ) {

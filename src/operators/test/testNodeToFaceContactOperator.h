@@ -224,7 +224,7 @@ void applyCustomDirichletCondition(
                 dir->setLocalValueByGlobalID( dofIndices[jt->first], jt->second );
             } // end for
         }     // end for
-        dir->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        dir->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         mat->mult( dir, cor );
         for ( std::map<AMP::Mesh::MeshElementID, std::map<size_t, double>>::const_iterator it =
                   constraints.begin();

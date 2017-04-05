@@ -37,7 +37,7 @@ int main( int argc, char *argv[] )
     UnitTest ut;
 
     // Basic sanity check
-    MathExpr fun( "5*8" );
+    MathExpr fun( " 5 * 8 " );
     if ( fun.eval()==40 )
         ut.passes("5*8");
     else

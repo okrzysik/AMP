@@ -141,7 +141,7 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
         outputVec->setValuesByLocalID( dofs.size(), &dofs[0], &localOutput[0] );
     }
     if ( outputVec )
-        outputVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        outputVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     PROFILE_STOP( "apply" );
 }
 

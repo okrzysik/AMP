@@ -124,8 +124,8 @@ Vector::constSubsetVectorForVariable( const std::string& name ) const
 ****************************************************************/
 inline void Vector::dataChanged()
 {
-    if ( *d_UpdateState == UNCHANGED )
-        *d_UpdateState = LOCAL_CHANGED;
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 
@@ -137,7 +137,7 @@ inline RNG::shared_ptr Vector::getDefaultRNG()
         AMP_MPI globalComm( AMP_COMM_WORLD );
         int rank = globalComm.getRank();
         RNGParameters::shared_ptr params(
-            new RNGParameters( RNGParameters::USE_GLOBAL_SEED, static_cast<size_t>( rank ) ) );
+            new RNGParameters( RNGParameters::RNGOptions::USE_GLOBAL_SEED, static_cast<size_t>( rank ) ) );
         d_DefaultRNG = RNG::shared_ptr( new RNG( params ) );
     }
     return d_DefaultRNG;

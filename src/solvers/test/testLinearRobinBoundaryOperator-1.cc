@@ -198,7 +198,7 @@ void linearRobinTest( AMP::UnitTest *ut, std::string exeName )
             variableFluxVec->setValueByGlobalID( gid[0], val );
         }
     } // end for node
-    RightHandSideVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    RightHandSideVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     correctionParameters->d_variableFlux = variableFluxVec;
     robinBoundaryOp->reset( correctionParameters );

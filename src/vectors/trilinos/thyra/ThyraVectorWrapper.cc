@@ -445,9 +445,9 @@ void ThyraVectorWrapper::applyOpImpl(
     for ( size_t i = 0; i < targ_vecs_ptr.size(); i++ ) {
         for ( size_t j = 0; j < d_vecs.size(); j++ ) {
             if ( targ_vecs_ptr[i]->d_vecs[j]->getUpdateStatus() ==
-                 AMP::LinearAlgebra::Vector::UNCHANGED )
+                 AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED )
                 targ_vecs_ptr[i]->d_vecs[j]->setUpdateStatus(
-                    AMP::LinearAlgebra::Vector::LOCAL_CHANGED );
+                    AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED );
         }
     }
 }
@@ -525,9 +525,9 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
     for ( size_t i = 0; i < targ_vecs_ptr.size(); i++ ) {
         for ( size_t j = 0; j < d_vecs.size(); j++ ) {
             if ( targ_vecs_ptr[i]->d_vecs[j]->getUpdateStatus() ==
-                 AMP::LinearAlgebra::Vector::UNCHANGED )
+                 AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED )
                 targ_vecs_ptr[i]->d_vecs[j]->setUpdateStatus(
-                    AMP::LinearAlgebra::Vector::LOCAL_CHANGED );
+                    AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED );
         }
     }
 }
@@ -588,9 +588,9 @@ void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
     for ( size_t i = 0; i < targ_vecs_ptr.size(); i++ ) {
         for ( size_t j = 0; j < d_vecs.size(); j++ ) {
             if ( targ_vecs_ptr[i]->d_vecs[j]->getUpdateStatus() ==
-                 AMP::LinearAlgebra::Vector::UNCHANGED )
+                 AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED )
                 targ_vecs_ptr[i]->d_vecs[j]->setUpdateStatus(
-                    AMP::LinearAlgebra::Vector::LOCAL_CHANGED );
+                    AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED );
         }
     }
 }

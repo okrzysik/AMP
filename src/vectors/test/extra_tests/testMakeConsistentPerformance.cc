@@ -51,7 +51,7 @@ void runTest( AMP::UnitTest *ut )
     // Time makeConsistentSet
     globalComm.barrier();
     double start_time = AMP::AMP_MPI::time();
-    v1->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    v1->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     globalComm.barrier();
     double end_time = AMP::AMP_MPI::time();
     std::cout << std::endl << "Time for makeConsistent: " << end_time - start_time << std::endl;

@@ -48,7 +48,7 @@ void IdentityOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     rInternal->copyVector( uInternal );
 
-    rInternal->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 }
 }

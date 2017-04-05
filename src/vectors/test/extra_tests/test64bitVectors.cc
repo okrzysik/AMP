@@ -62,7 +62,7 @@ void simpleDOFManagerVectorTest( AMP::UnitTest *ut,
     // Time makeConsistentSet
     mesh->getComm().barrier();
     start_time = AMP::AMP_MPI::time();
-    v1->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    v1->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     mesh->getComm().barrier();
     end_time = AMP::AMP_MPI::time();
     if ( mesh->getComm().getRank() == 0 )

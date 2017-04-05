@@ -469,7 +469,7 @@ void MultiVector::makeConsistent( ScatterType t )
 {
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
         d_vVectors[i]->makeConsistent( t );
-    *d_UpdateState = Vector::UNCHANGED;
+    *d_UpdateState = Vector::UpdateState::UNCHANGED;
 }
 
 
@@ -687,20 +687,20 @@ Vector::UpdateState MultiVector::getUpdateStatus() const
     Vector::UpdateState state = *d_UpdateState;
     for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
         Vector::UpdateState sub_state = d_vVectors[i]->getUpdateStatus();
-        if ( sub_state == UNCHANGED ) {
+        if ( sub_state == UpdateState::UNCHANGED ) {
             continue;
-        } else if ( sub_state == LOCAL_CHANGED && state == UNCHANGED ) {
-            state = LOCAL_CHANGED;
-        } else if ( sub_state == LOCAL_CHANGED ) {
+        } else if ( sub_state == UpdateState::LOCAL_CHANGED && state == UpdateState::UNCHANGED ) {
+            state = UpdateState::LOCAL_CHANGED;
+        } else if ( sub_state == UpdateState::LOCAL_CHANGED ) {
             continue;
-        } else if ( sub_state == ADDING &&
-                    ( state == UNCHANGED || state == LOCAL_CHANGED || state == ADDING ) ) {
-            state = ADDING;
-        } else if ( sub_state == SETTING &&
-                    ( state == UNCHANGED || state == LOCAL_CHANGED || state == SETTING ) ) {
-            state = SETTING;
+        } else if ( sub_state == UpdateState::ADDING &&
+                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED || state == UpdateState::ADDING ) ) {
+            state = UpdateState::ADDING;
+        } else if ( sub_state == UpdateState::SETTING &&
+                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED || state == UpdateState::SETTING ) ) {
+            state = UpdateState::SETTING;
         } else {
-            state = MIXED;
+            state = UpdateState::MIXED;
         }
     }
     return state;

@@ -43,8 +43,8 @@ inline void SimpleVector<T>::setValuesByLocalID( int num, size_t *indices, const
     INCREMENT_COUNT( "Virtual" );
     for ( int i            = 0; i != num; i++ )
         d_Data[indices[i]] = static_cast<T>( vals[i] );
-    if ( *d_UpdateState == UNCHANGED )
-        *d_UpdateState = LOCAL_CHANGED;
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 template <typename T>
@@ -56,8 +56,8 @@ SimpleVector<T>::setLocalValuesByGlobalID( int num, size_t *indices, const doubl
         AMP_ASSERT( indices[i] >= d_startIndex && indices[i] < d_startIndex + d_Data.size() );
         d_Data[indices[i] - d_startIndex] = static_cast<T>( vals[i] );
     }
-    if ( *d_UpdateState == UNCHANGED )
-        *d_UpdateState = LOCAL_CHANGED;
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 template <typename T>
@@ -66,8 +66,8 @@ inline void SimpleVector<T>::addValuesByLocalID( int num, size_t *indices, const
     INCREMENT_COUNT( "Virtual" );
     for ( int i = 0; i != num; i++ )
         d_Data[indices[i]] += static_cast<T>( vals[i] );
-    if ( *d_UpdateState == UNCHANGED )
-        *d_UpdateState = LOCAL_CHANGED;
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 template <typename T>
@@ -79,8 +79,8 @@ SimpleVector<T>::addLocalValuesByGlobalID( int num, size_t *indices, const doubl
         AMP_ASSERT( indices[i] >= d_startIndex && indices[i] < d_startIndex + d_Data.size() );
         d_Data[indices[i] - d_startIndex] += static_cast<T>( vals[i] );
     }
-    if ( *d_UpdateState == UNCHANGED )
-        *d_UpdateState = LOCAL_CHANGED;
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 template <typename T>

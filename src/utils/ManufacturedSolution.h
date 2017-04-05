@@ -234,10 +234,10 @@ private:
     std::valarray<std::valarray<double>> geth() { return d_h; }
     std::valarray<std::valarray<double>> geths() { return d_hs; }
 
-    enum FunctionType { POLYNOMIAL, GENERALQUADRATIC };
-    enum Geometry { BRICK, CYLROD, CYLRODRZ, CYLSHELL, QTRCYLSHELL, LASTGeometry };
-    enum Order { QUADRATIC, CUBIC, FOURIER, GAUSSIAN, LASTOrder };
-    enum BCType { NEUMANN, DIRICHLET1, DIRICHLET2, DIRICHLETZ2, NONE, LASTType };
+    enum class FunctionType { POLYNOMIAL, GENERALQUADRATIC };
+    enum class Geometry { BRICK, CYLROD, CYLRODRZ, CYLSHELL, QTRCYLSHELL, LASTGeometry };
+    enum class Order { QUADRATIC, CUBIC, FOURIER, GAUSSIAN, LASTOrder };
+    enum class BCType { NEUMANN, DIRICHLET1, DIRICHLET2, DIRICHLETZ2, NONE, LASTType };
 
     FunctionType d_FunctionType;
 

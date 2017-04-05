@@ -192,7 +192,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
             potentialSolVec->setValueByGlobalID( bndGlobalIds[0], val );
         } // end for node
     }
-    potentialSolVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    potentialSolVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     siloWriter->writeFile( logFile, 0 );
 
     AMP::pout << " L2Norm of Sol Vec " << potentialSolVec->L2Norm() << std::endl;

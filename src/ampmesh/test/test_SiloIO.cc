@@ -169,7 +169,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
 // Initialize the data
 #ifdef USE_AMP_VECTORS
     rank_vec->setToScalar( globalComm.getRank() );
-    rank_vec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    rank_vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     std::vector<size_t> dofs;
     for ( AMP::Mesh::MeshIterator it = DOF_vector->getIterator(); it != it.end(); it++ ) {
         AMP::Mesh::MeshElementID id = it->globalID();
@@ -177,7 +177,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
         std::vector<double> pos = it->coord();
         position->setValuesByGlobalID( dofs.size(), &dofs[0], &pos[0] );
     }
-    position->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    position->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     if ( submesh != nullptr ) {
         id_vec->setToScalar( -1 );
         std::vector<int> ids = submesh->getBoundaryIDs();

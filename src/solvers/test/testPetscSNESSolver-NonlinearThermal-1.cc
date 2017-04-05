@@ -225,8 +225,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     nonlinearSolver->solve( rhsVec, solVec );
 
-    solVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    resVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
 

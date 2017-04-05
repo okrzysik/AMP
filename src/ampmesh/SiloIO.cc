@@ -74,10 +74,10 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
     PROFILE_START( "makeConsistent" );
     for ( auto &elem : d_vectors ) {
         AMP::LinearAlgebra::Vector::UpdateState localState = elem->getUpdateStatus();
-        if ( localState == AMP::LinearAlgebra::Vector::ADDING )
-            elem->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
+        if ( localState == AMP::LinearAlgebra::Vector::UpdateState::ADDING )
+            elem->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_ADD );
         else
-            elem->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+            elem->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     }
     PROFILE_STOP( "makeConsistent" );
 #endif

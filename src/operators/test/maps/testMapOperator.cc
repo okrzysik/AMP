@@ -131,7 +131,7 @@ void testMap( AMP::UnitTest *ut, std::string exeName )
         AMP_ASSERT( ids.size() == 1 );
         mapSolutionMaster->setValueByGlobalID( ids[0], x[2] );
     }
-    mapSolutionMaster->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    mapSolutionMaster->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     //-------------------------------------
 

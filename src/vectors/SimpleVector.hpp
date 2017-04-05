@@ -187,7 +187,7 @@ void SimpleVector<T>::setToScalar( double alpha )
 
     for ( auto &val : d_Data )
         val = alpha_T;
-    this->makeConsistent( CONSISTENT_SET );
+    this->makeConsistent( ScatterType::CONSISTENT_SET );
 }
 
 template <typename T>
