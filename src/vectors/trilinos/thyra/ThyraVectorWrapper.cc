@@ -154,8 +154,9 @@ Teuchos::RCP<Thyra::VectorBase<double>> ThyraVectorWrapper::clone_v() const
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vecs( d_vecs.size() );
     for ( size_t i = 0; i < d_vecs.size(); i++ )
         vecs[i]    = d_vecs[i]->cloneVector();
-    return Teuchos::RCP<Thyra::VectorBase<double>>(
+    Teuchos::RCP<Thyra::VectorBase<double>> new_vec(
         new ThyraVectorWrapper( vecs, d_cols, d_N_cols ) );
+    return new_vec;
 }
 
 

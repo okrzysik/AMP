@@ -46,9 +46,8 @@ public:
     /** \brief  A factory method.
       * \return  A column of map operators of type MAP_TYPE
       * \details  In order to use this builder, the MAP_TYPE must have 3 things:  a static member
-      * (or enum) called CommTagBase, a static method:  bool validMapType ( const std::string & ),
-     * and
-      * a typedef for the parameters of the class called Parameters.
+      *    called CommTagBase, a static method:  bool validMapType ( const std::string & ), and
+      *    a typedef for the parameters of the class called Parameters.
       * \tparam  MAP_TYPE  The type of map to create
       * \param[in]  manager     The multi-mesh to search for maps to add to the column
       * \param[in]  database    The global database of the simulation

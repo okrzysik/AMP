@@ -338,7 +338,7 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                                         new std::vector<double>( 1, p_plus ) ) ) );
                 std::vector<double> volumeResult_plus( 1 );
                 d_subchannelPhysicsModel->getProperty(
-                    "SpecificGeomType::Volume", volumeResult_plus, volumeArgMap_plus );
+                    "SpecificVolume", volumeResult_plus, volumeArgMap_plus );
                 double rho_plus = 1.0 / volumeResult_plus[0];
 
                 // evaluate density at lower face
@@ -353,7 +353,7 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                                         new std::vector<double>( 1, p_minus ) ) ) );
                 std::vector<double> volumeResult_minus( 1 );
                 d_subchannelPhysicsModel->getProperty(
-                    "SpecificGeomType::Volume", volumeResult_minus, volumeArgMap_minus );
+                    "SpecificVolume", volumeResult_minus, volumeArgMap_minus );
                 double rho_minus = 1.0 / volumeResult_minus[0];
 
                 double u_plus  = mass / ( A * rho_plus );  // velocity evaluated at upper face
@@ -371,7 +371,7 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                     AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p_avg ) ) ) );
                 std::vector<double> volumeResult_avg( 1 );
                 d_subchannelPhysicsModel->getProperty(
-                    "SpecificGeomType::Volume", volumeResult_avg, volumeArgMap_avg );
+                    "SpecificVolume", volumeResult_avg, volumeArgMap_avg );
                 double rho_avg = 1.0 / volumeResult_avg[0];
 
                 double fric; // friction factor

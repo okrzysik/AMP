@@ -1319,7 +1319,7 @@ double SubchannelFourEqNonlinearOperator::Volume( double h, double p )
         std::make_pair( std::string( "pressure" ),
                         AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p ) ) ) );
     std::vector<double> result( 1 );
-    d_subchannelPhysicsModel->getProperty( "SpecificGeomType::Volume", result, argMap );
+    d_subchannelPhysicsModel->getProperty( "SpecificVolume", result, argMap );
     return result[0];
 }
 

@@ -164,7 +164,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
         volumeArgMap_plus.insert( std::make_pair( "pressure", AMP::make_shared<doubleVec>( 1, Pin ) ) );
         std::vector<double> volumeResult_plus( 1 );
         subchannelPhysicsModel->getProperty(
-            "SpecificGeomType::Volume", volumeResult_plus, volumeArgMap_plus );
+            "SpecificVolume", volumeResult_plus, volumeArgMap_plus );
         rho = 1.0 / volumeResult_plus[0];
         Pin = getSolutionPressure( input_db, H, Pout, rho, 0 );
     }

@@ -34,19 +34,19 @@ MassDensityModel::MassDensityModel( const AMP::shared_ptr<MassDensityModelParame
     AMP_INSIST( ( params->d_db->keyExists( "Equation" ) ), "Mass Key ''Equation'' is missing!" );
     std::string eqnname = params->d_db->getString( "Equation" );
     if ( eqnname == "Mechanics" )
-        d_equation = Mechanics;
+        d_equation = MassEquation::Mechanics;
     // The mechanics mass matrix is multiplied by the density of the material.
     else if ( eqnname == "ThermalSource" )
-        d_equation = Mechanics;
+        d_equation = MassEquation::Mechanics;
     // Because the specific power (Watts/gram) are defined from the NeutronicsSource,
     // The mass matrix for the right-hand-side of the thermal equation must include
     // the density (grams/cubic-centimeter) to the get units correct (Watts/cc)
     else if ( eqnname == "Thermal" )
-        d_equation = Thermal;
+        d_equation = MassEquation::Thermal;
     else if ( eqnname == "Chemical" )
-        d_equation = Chemical;
+        d_equation = MassEquation::Chemical;
     else if ( eqnname == "ManufacturedSource" )
-        d_equation = Manufactured;
+        d_equation = MassEquation::Manufactured;
     // used for manufactured solution testing rhs
     else
         AMP_INSIST( false, "Mass Equation name is invalid" );
@@ -56,10 +56,10 @@ MassDensityModel::MassDensityModel( const AMP::shared_ptr<MassDensityModelParame
         AMP_INSIST( params->d_db->keyExists( "BilogVariable" ), "must specify BilogVariable" );
         d_BilogVariable = params->d_db->getStringWithDefault( "BilogVariable", "NONE" );
 
-        if ( d_equation == Thermal ) {
+        if ( d_equation == MassEquation::Thermal ) {
             d_BilogRange =
                 d_material->property( "ThermalConductivity" )->get_arg_range( "temperature" );
-        } else if ( d_equation == Chemical ) {
+        } else if ( d_equation == MassEquation::Chemical ) {
             d_BilogRange =
                 d_material->property( "FickCoefficient" )->get_arg_range( "concentration" );
         }
@@ -67,9 +67,9 @@ MassDensityModel::MassDensityModel( const AMP::shared_ptr<MassDensityModelParame
                     "material argument upper bound == lower bound" );
 
         std::vector<std::string> names;
-        if ( d_equation == Thermal ) {
+        if ( d_equation == MassEquation::Thermal ) {
             names = d_material->property( "ThermalConductivity" )->get_arguments();
-        } else if ( d_equation == Chemical ) {
+        } else if ( d_equation == MassEquation::Chemical ) {
             names = d_material->property( "FickCoefficient" )->get_arguments();
         }
         d_BilogIndex = 999999;
@@ -92,19 +92,19 @@ MassDensityModel::MassDensityModel( const AMP::shared_ptr<MassDensityModelParame
         }
     }
 
-    if ( d_equation == Manufactured ) {
+    if ( d_equation == MassEquation::Manufactured ) {
         AMP_INSIST( params->d_db->keyExists( "ManufacturedSourceEquation" ),
                     "ManufacturedSourceEquation is missing" );
         std::string mfgeqn = params->d_db->getString( "ManufacturedSourceEquation" );
 
         if ( mfgeqn == "Thermal" )
-            d_ManufacturedEquation = ThermalSrc;
+            d_ManufacturedEquation = ManufacturedEquation::ThermalSrc;
         else if ( mfgeqn == "Fick" )
-            d_ManufacturedEquation = FickSrc;
+            d_ManufacturedEquation = ManufacturedEquation::FickSrc;
         else if ( mfgeqn == "Soret" )
-            d_ManufacturedEquation = SoretSrc;
+            d_ManufacturedEquation = ManufacturedEquation::SoretSrc;
         else if ( mfgeqn == "FickSoret" )
-            d_ManufacturedEquation = FickSoretSrc;
+            d_ManufacturedEquation = ManufacturedEquation::FickSoretSrc;
         else
             AMP_INSIST( false, "invalid value for ManufacturedSourceEquation" );
 
@@ -127,7 +127,7 @@ MassDensityModel::MassDensityModel( const AMP::shared_ptr<MassDensityModelParame
         d_ManufacturedSolution.reset( new ManufacturedSolution( mfg_db ) );
     }
 
-    if ( d_equation == Mechanics ) {
+    if ( d_equation == MassEquation::Mechanics ) {
         AMP::Materials::PropertyPtr property = d_material->property( "Density" );
 
         // load and check defaults
@@ -251,7 +251,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
     bool needD = false;
 
     if ( d_PropertyName == "unspecified" ) {
-        if ( d_ManufacturedEquation == ThermalSrc ) {
+        if ( d_ManufacturedEquation == ManufacturedEquation::ThermalSrc ) {
             sourceProp = d_material->property( "ThermalConductivity" );
             if ( d_ManufacturedUseConc ) {
                 dSourceProp = d_material->property( "DxThermalConductivity" );
@@ -261,7 +261,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
                 dSourceProp = d_material->property( "DTThermalConductivity" );
                 needD       = true;
             }
-        } else if ( d_ManufacturedEquation == FickSrc ) {
+        } else if ( d_ManufacturedEquation == ManufacturedEquation::FickSrc ) {
             sourceProp = d_material->property( "FickCoefficient" );
             if ( d_ManufacturedUseConc ) {
                 dSourceProp = d_material->property( "DxFickCoefficient" );
@@ -271,7 +271,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
                 dSourceProp = d_material->property( "DTFickCoefficient" );
                 needD       = true;
             }
-        } else if ( d_ManufacturedEquation == SoretSrc ) {
+        } else if ( d_ManufacturedEquation == ManufacturedEquation::SoretSrc ) {
             sourceProp = d_material->property( "ThermalDiffusionCoefficient" );
             if ( d_ManufacturedUseConc ) {
                 dSourceProp = d_material->property( "DxThermalDiffusionCoefficient" );
@@ -281,7 +281,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
                 dSourceProp = d_material->property( "DTThermalDiffusionCoefficient" );
                 needD       = true;
             }
-        } else if ( d_ManufacturedEquation == FickSoretSrc ) {
+        } else if ( d_ManufacturedEquation == ManufacturedEquation::FickSoretSrc ) {
             AMP_INSIST( false, "cannot do Fick-Soret yet" );
         }
     } else {

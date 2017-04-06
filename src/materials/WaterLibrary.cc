@@ -280,7 +280,7 @@ class SpecificVolumeProp : public Property<double>
 {
 public:
     SpecificVolumeProp()
-        : Property<double>( name_base + "_" + "SpecificGeomType::Volume", // Name string
+        : Property<double>( name_base + "_" + "SpecificVolume", // Name string
                             source,                             // Reference source
                             VolParams,                          // Property parameters
                             VolNumParams,                       // Number of parameters

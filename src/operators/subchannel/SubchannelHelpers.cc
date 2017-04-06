@@ -316,7 +316,7 @@ std::vector<double> getHeatFluxClad( std::vector<double> z,
     AMP::shared_ptr<std::vector<double>> cladTemp( new std::vector<double>( N ) );
     AMP::shared_ptr<std::vector<double>> flowDens( new std::vector<double>( N ) );
     std::vector<double> specificVolume( z.size(), 0.0 );
-    subchannelPhysicsModel->getProperty( "SpecificGeomType::Volume", specificVolume, temperatureArgMap );
+    subchannelPhysicsModel->getProperty( "SpecificVolume", specificVolume, temperatureArgMap );
     for ( size_t i = 0; i < N; i++ ) {
         ( *flowTemp )[i] = 0.5 * ( ( *Tf )[i] + ( *Tf )[i + 1] );
         ( *cladTemp )[i] = 0.5 * ( ( *Tc )[i] + ( *Tc )[i + 1] );

@@ -79,7 +79,7 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
             if ( d_outputVar->getName() == "Density" ) {
                 std::vector<double> specificVolume( 1 );
                 d_subchannelPhysicsModel->getProperty(
-                    "SpecificGeomType::Volume", specificVolume, subchannelArgMap );
+                    "SpecificVolume", specificVolume, subchannelArgMap );
                 output_face = 1.0 / specificVolume[0];
             } else if ( d_outputVar->getName() == "Temperature" ) {
                 std::vector<double> temperature( 1 );

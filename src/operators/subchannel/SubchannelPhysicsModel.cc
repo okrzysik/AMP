@@ -37,7 +37,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
         properties.push_back( "Enthalpy" );
     } else if ( formulation == std::string( "TwoEqnJFNKPressure" ) ) {
         properties.push_back( "Enthalpy" );
-        properties.push_back( "SpecificGeomType::Volume" );
+        properties.push_back( "SpecificVolume" );
     } else if ( formulation == std::string( "TwoEqnJFNKDensity" ) ) {
         properties.push_back( "Enthalpy" );
         properties.push_back( "Pressure" );
@@ -45,7 +45,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
     } else if ( formulation == std::string( "FunctionsTesting" ) ) {
         properties.push_back( "Temperature" );
         properties.push_back( "SaturatedLiquidEnthalpy" );
-        properties.push_back( "SpecificGeomType::Volume" );
+        properties.push_back( "SpecificVolume" );
         properties.push_back( "ThermalConductivity" );
         properties.push_back( "ConvectiveHeat" );
         properties.push_back( "DynamicViscosity" );

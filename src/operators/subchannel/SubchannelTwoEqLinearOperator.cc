@@ -266,7 +266,7 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
                                         new std::vector<double>( 1, p_plus ) ) ) );
                 std::vector<double> volumeResult_plus( 1 );
                 d_subchannelPhysicsModel->getProperty(
-                    "SpecificGeomType::Volume", volumeResult_plus, volumeArgMap_plus );
+                    "SpecificVolume", volumeResult_plus, volumeArgMap_plus );
                 double v_plus = volumeResult_plus[0];
 
                 // evaluate specific volume at lower face
@@ -281,7 +281,7 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
                                         new std::vector<double>( 1, p_minus ) ) ) );
                 std::vector<double> volumeResult_minus( 1 );
                 d_subchannelPhysicsModel->getProperty(
-                    "SpecificGeomType::Volume", volumeResult_minus, volumeArgMap_minus );
+                    "SpecificVolume", volumeResult_minus, volumeArgMap_minus );
                 double v_minus = volumeResult_minus[0];
 
                 // evaluate friction factor
@@ -483,7 +483,7 @@ double SubchannelTwoEqLinearOperator::dvdh( double h, double p )
                         AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p ) ) ) );
     std::vector<double> specificVolumeResult_pert( 1 );
     d_subchannelPhysicsModel->getProperty(
-        "SpecificGeomType::Volume", specificVolumeResult_pert, specificVolumeArgMap_pert );
+        "SpecificVolume", specificVolumeResult_pert, specificVolumeArgMap_pert );
     double v_pert = specificVolumeResult_pert[0];
 
     // calculate unperturbed value
@@ -496,7 +496,7 @@ double SubchannelTwoEqLinearOperator::dvdh( double h, double p )
                         AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p ) ) ) );
     std::vector<double> specificVolumeResult( 1 );
     d_subchannelPhysicsModel->getProperty(
-        "SpecificGeomType::Volume", specificVolumeResult, specificVolumeArgMap );
+        "SpecificVolume", specificVolumeResult, specificVolumeArgMap );
     double v = specificVolumeResult[0];
 
     // calculate derivative
@@ -520,7 +520,7 @@ double SubchannelTwoEqLinearOperator::dvdp( double h, double p )
         AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p + pert ) ) ) );
     std::vector<double> specificVolumeResult_pert( 1 );
     d_subchannelPhysicsModel->getProperty(
-        "SpecificGeomType::Volume", specificVolumeResult_pert, specificVolumeArgMap_pert );
+        "SpecificVolume", specificVolumeResult_pert, specificVolumeArgMap_pert );
     double v_pert = specificVolumeResult_pert[0];
 
     // calculate unperturbed value
@@ -533,7 +533,7 @@ double SubchannelTwoEqLinearOperator::dvdp( double h, double p )
                         AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p ) ) ) );
     std::vector<double> specificVolumeResult( 1 );
     d_subchannelPhysicsModel->getProperty(
-        "SpecificGeomType::Volume", specificVolumeResult, specificVolumeArgMap );
+        "SpecificVolume", specificVolumeResult, specificVolumeArgMap );
     double v = specificVolumeResult[0];
 
     // calculate derivative
@@ -565,7 +565,7 @@ double SubchannelTwoEqLinearOperator::friction(
         std::string( "pressure" ),
         AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p_plus ) ) ) );
     std::vector<double> volumeResult_plus( 1 );
-    d_subchannelPhysicsModel->getProperty( "SpecificGeomType::Volume", volumeResult_plus, volumeArgMap_plus );
+    d_subchannelPhysicsModel->getProperty( "SpecificVolume", volumeResult_plus, volumeArgMap_plus );
     double v_plus = volumeResult_plus[0];
 
     // evaluate specific volume at lower face
@@ -578,7 +578,7 @@ double SubchannelTwoEqLinearOperator::friction(
         AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p_minus ) ) ) );
     std::vector<double> volumeResult_minus( 1 );
     d_subchannelPhysicsModel->getProperty(
-        "SpecificGeomType::Volume", volumeResult_minus, volumeArgMap_minus );
+        "SpecificVolume", volumeResult_minus, volumeArgMap_minus );
     double v_minus = volumeResult_minus[0];
 
     double v_avg   = 0.5 * ( v_plus + v_minus );

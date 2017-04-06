@@ -84,4 +84,7 @@ obsoleteFunctionsusleep
 *:/*/graphics/ogre/*
 
 
+// Suppress warnings for external code
+memleak:*/utils/tinyexpr/tinyexpr.c
+
 

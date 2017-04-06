@@ -62,7 +62,7 @@ public:
 
 private:
     // Defines fission data types.
-    enum PowerShape_Types { LINEAR, QUADRATIC, CUBIC, NUM_POWER_SHAPES };
+    enum class PowerShape_Types { LINEAR, QUADRATIC, CUBIC, NUM_POWER_SHAPES };
 
     // use a spatially constant power distribution
     bool d_useFixedPower;

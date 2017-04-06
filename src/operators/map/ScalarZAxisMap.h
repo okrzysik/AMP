@@ -34,7 +34,7 @@ public:
     typedef ScalarZAxisMapParameters Parameters;
 
     //!  The base tag used in communication.
-    enum { CommTagBase = 20000 };
+    static const int CommTagBase = 20000;
 
     /** \brief   Standard constructor
      * \param[in] params  Input parameters

@@ -819,7 +819,7 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
                 subchannelPhysicsModel->getProperty("Temperature", outTemperatureResult,
     subchannelArgMap);
                 std::vector<double> specificVolume(1);
-                subchannelPhysicsModel->getProperty("SpecificGeomType::Volume", specificVolume,
+                subchannelPhysicsModel->getProperty("SpecificVolume", specificVolume,
     subchannelArgMap);
                 flowTempVec->setValueByGlobalID(scalarDofs[0],outTemperatureResult[0]);
                 flowDensityVec->setValueByGlobalID(scalarDofs[0],1.0/specificVolume[0]);

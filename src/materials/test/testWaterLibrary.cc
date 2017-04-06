@@ -69,7 +69,7 @@ int main( int argc, char **argv )
         mat->property( "SaturatedLiquidEnthalpy" ); // saturated liquid enthalpy property
     PropertyPtr vaporEnthalpyProperty =
         mat->property( "SaturatedVaporEnthalpy" ); // saturated vapor enthalpy property
-    PropertyPtr volumeProperty = mat->property( "SpecificGeomType::Volume" ); // specific volume property
+    PropertyPtr volumeProperty = mat->property( "SpecificVolume" ); // specific volume property
     PropertyPtr conductivityProperty =
         mat->property( "ThermalConductivity" ); // thermal conductivity property
     PropertyPtr viscosityProperty =
