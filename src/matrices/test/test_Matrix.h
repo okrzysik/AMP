@@ -59,7 +59,7 @@ public:
         AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
             new AMP::Discretization::DOFManagerParameters( mesh ) );
         DOFs = AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::Vertex, 1, NUM_DOF_ROW );
+            mesh, AMP::Mesh::GeomType::Vertex, 1, NUM_DOF_ROW );
         PROFILE_STOP( "initMesh" );
     }
 

@@ -37,7 +37,7 @@ void runTest( AMP::UnitTest *ut )
     AMP::Discretization::DOFManagerParameters::shared_ptr DOFparams(
         new AMP::Discretization::DOFManagerParameters( mesh ) );
     AMP::Discretization::DOFManager::shared_ptr DOFs =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, DOFsPerNode );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, DOFsPerNode );
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr dummy;
@@ -51,7 +51,7 @@ void runTest( AMP::UnitTest *ut )
     // Time makeConsistentSet
     globalComm.barrier();
     double start_time = AMP::AMP_MPI::time();
-    v1->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    v1->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     globalComm.barrier();
     double end_time = AMP::AMP_MPI::time();
     std::cout << std::endl << "Time for makeConsistent: " << end_time - start_time << std::endl;
@@ -61,7 +61,7 @@ void runTest( AMP::UnitTest *ut )
         v1->getCommunicationList();
     std::vector<size_t> ghost_ids = communicationList->getGhostIDList();
     size_t N_ghosts               = globalComm.sumReduce( ghost_ids.size() );
-    size_t N_ghosts2 = globalComm.sumReduce( mesh->numGhostElements( AMP::Mesh::Vertex, 1 ) );
+    size_t N_ghosts2 = globalComm.sumReduce( mesh->numGhostElements( AMP::Mesh::GeomType::Vertex, 1 ) );
     std::cout << std::endl << "There are " << N_ghosts << " global ghost values" << std::endl;
     std::cout << std::endl
               << "There are " << N_ghosts2 << " global ghost values in the iterator" << std::endl;

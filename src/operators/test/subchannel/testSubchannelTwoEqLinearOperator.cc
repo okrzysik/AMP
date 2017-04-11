@@ -136,7 +136,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
     // set frozen vector before construction of linear operator to prevent reset from being applied
     // with a zero frozen vector
     std::vector<size_t> dofs;
-    AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator( AMP::Mesh::Face, 0 );
+    AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
 
     const double h_scale = AMP::Operator::Subchannel::scaleEnthalpy;
     const double P_scale = AMP::Operator::Subchannel::scalePressure;
@@ -187,7 +187,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
     { // test block
         std::cout << std::endl << "Test Computed Jacobian:" << std::endl;
         std::vector<size_t> dofs;
-        AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator( AMP::Mesh::Face, 0 );
+        AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
         faceDOFManager->getDOFs( face->globalID(), dofs );
         FrozenVec->setValueByGlobalID( dofs[0], h_scale * 700.0e3 );
         FrozenVec->setValueByGlobalID( dofs[1], P_scale * 12.4e6 );

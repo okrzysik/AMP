@@ -91,8 +91,8 @@ private:
     // Get Node Coordinates on mesh
     void getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &xyz );
 
-    // Build Volume integral operator
-    void buildVolumeIntOp( SP_VolIntOp &volIntOp, AMP::Mesh::Mesh::shared_ptr &mesh );
+    // Build GeomType::Volume integral operator
+    void buildGeomType::VolumeIntOp( SP_VolIntOp &volIntOp, AMP::Mesh::Mesh::shared_ptr &mesh );
 
     // Parameters
     SP_MoabMapParams d_params;

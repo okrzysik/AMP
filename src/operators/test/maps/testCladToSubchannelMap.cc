@@ -26,9 +26,9 @@ double getTemp( const std::vector<double> &x )
 AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel, int ghostWidth )
 {
     std::multimap<double, AMP::Mesh::MeshElement> xyFace;
-    AMP::Mesh::MeshIterator iterator = subChannel->getIterator( AMP::Mesh::Face, ghostWidth );
+    AMP::Mesh::MeshIterator iterator = subChannel->getIterator( AMP::Mesh::GeomType::Face, ghostWidth );
     for ( size_t i = 0; i < iterator.size(); ++i ) {
-        std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::Vertex );
+        std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::GeomType::Vertex );
         std::vector<double> center                = iterator->centroid();
         bool is_valid                             = true;
         for ( auto &node : nodes ) {
@@ -95,20 +95,20 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
     AMP::LinearAlgebra::Vector::shared_ptr dummy;
     if ( pin_mesh.get() != nullptr ) {
         pin_DOFs = AMP::Discretization::simpleDOFManager::create(
-            pin_mesh, AMP::Mesh::Vertex, 1, DOFsPerNode );
+            pin_mesh, AMP::Mesh::GeomType::Vertex, 1, DOFsPerNode );
         T1 = AMP::LinearAlgebra::createVector( pin_DOFs, temperature );
         T1->setToScalar( 0.0 );
     }
     if ( subchannel_face.get() != nullptr ) {
         subchannel_DOFs = AMP::Discretization::simpleDOFManager::create(
-            subchannel_face, AMP::Mesh::Face, 1, DOFsPerNode );
+            subchannel_face, AMP::Mesh::GeomType::Face, 1, DOFsPerNode );
         T2 = AMP::LinearAlgebra::createVector( subchannel_DOFs, temperature );
         T2->setToScalar( 0.0 );
     }
 
     // Initialize the pin temperatures
     if ( pin_mesh.get() != nullptr ) {
-        AMP::Mesh::MeshIterator it = pin_mesh->getIterator( AMP::Mesh::Vertex, 0 );
+        AMP::Mesh::MeshIterator it = pin_mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
             pin_DOFs->getDOFs( it->globalID(), dofs );
@@ -141,7 +141,7 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 // Check the results
 /*if ( subchannel_face.get()!=NULL ) {
     bool passes = true;
-    AMP::Mesh::MeshIterator it = subchannel_face->getIterator(AMP::Mesh::Face,1);
+    AMP::Mesh::MeshIterator it = subchannel_face->getIterator(AMP::Mesh::GeomType::Face,1);
     std::vector<size_t> dofs;
     for (size_t i=0; i<it.size(); i++) {
         subchannel_DOFs->getDOFs(it->globalID(),dofs);
@@ -162,9 +162,9 @@ void runTest( const std::string &fname, AMP::UnitTest *ut )
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     if ( T1.get() != nullptr )
-        siloWriter->registerVector( T1, pin_mesh, AMP::Mesh::Vertex, "Temperature" );
+        siloWriter->registerVector( T1, pin_mesh, AMP::Mesh::GeomType::Vertex, "Temperature" );
     if ( T2.get() != nullptr )
-        siloWriter->registerVector( T2, subchannel_face, AMP::Mesh::Face, "Temperature" );
+        siloWriter->registerVector( T2, subchannel_face, AMP::Mesh::GeomType::Face, "Temperature" );
     siloWriter->setDecomposition( 1 );
     siloWriter->writeFile( fname, 0 );
 #endif

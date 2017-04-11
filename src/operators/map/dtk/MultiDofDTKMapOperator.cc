@@ -36,9 +36,9 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
 
     if ( mesh1 ) {
         boundaryMesh1_vol =
-            mesh1->Subset( mesh1->getBoundaryIDIterator( AMP::Mesh::Volume, boundaryID1 ) );
+            mesh1->Subset( mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Volume, boundaryID1 ) );
         boundaryMesh1_ver =
-            mesh1->Subset( mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, boundaryID1 ) );
+            mesh1->Subset( mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, boundaryID1 ) );
         // Build map 1 -> 2
     }
     AMP::LinearAlgebra::VS_Comm bndMesh1VolCommSelect =
@@ -65,9 +65,9 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
 
     if ( mesh2 ) {
         AMP::Mesh::MeshIterator iterator_vol =
-            mesh2->getBoundaryIDIterator( AMP::Mesh::Volume, boundaryID2 );
+            mesh2->getBoundaryIDIterator( AMP::Mesh::GeomType::Volume, boundaryID2 );
         AMP::Mesh::MeshIterator iterator_ver =
-            mesh2->getBoundaryIDIterator( AMP::Mesh::Vertex, boundaryID2 );
+            mesh2->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, boundaryID2 );
         boundaryMesh2_vol = mesh2->Subset( iterator_vol );
         boundaryMesh2_ver = mesh2->Subset( iterator_ver );
     }
@@ -157,7 +157,7 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
     AMP::shared_ptr<AMP::Database> nullDatabase;
     if ( mesh1 ) {
         boundaryMesh1 =
-            mesh1->Subset( mesh1->getBoundaryIDIterator( AMP::Mesh::Volume, boundaryID1 ) );
+            mesh1->Subset( mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Volume, boundaryID1 ) );
     }
     AMP::LinearAlgebra::VS_Comm bndMesh1CommSelect =
         createCommSelect( d_multiDofDTKMapOpParams->d_globalComm, ( boundaryMesh1 != nullptr ) );
@@ -175,7 +175,7 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
 
     if ( mesh2 ) {
         boundaryMesh2 =
-            mesh2->Subset( mesh2->getBoundaryIDIterator( AMP::Mesh::Volume, boundaryID2 ) );
+            mesh2->Subset( mesh2->getBoundaryIDIterator( AMP::Mesh::GeomType::Volume, boundaryID2 ) );
     }
     AMP::LinearAlgebra::VS_Comm bndMesh2CommSelect =
         createCommSelect( d_multiDofDTKMapOpParams->d_globalComm, ( boundaryMesh2 != nullptr ) );
@@ -197,7 +197,7 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
     d_Map21->apply( d_SourceVectorMap21, d_TargetVectorMap21 );
 
     d_multiDofDTKMapOpParams->d_TargetVector->makeConsistent(
-        AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 }
 }

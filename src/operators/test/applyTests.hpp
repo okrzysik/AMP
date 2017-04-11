@@ -26,7 +26,7 @@ void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,
             subvec->addScalar( subvec, shift[i] );
         }
     }
-    vec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 
 void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec, const double shift, const double scale )

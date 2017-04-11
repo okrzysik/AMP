@@ -59,7 +59,7 @@ void computeFuelTemperature( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                              double linearHeatGenerationRate,
                              double fuelThermalConductivity )
 {
-    AMP::Mesh::MeshIterator meshIterator       = meshAdapter->getIterator( AMP::Mesh::Vertex );
+    AMP::Mesh::MeshIterator meshIterator       = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
     AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
     AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
     double epsilon                             = 1.0e-14;
@@ -91,7 +91,7 @@ void computeCladTemperature( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                              double cladOuterRadiusTemperature,
                              double cladThermalConductivity )
 {
-    AMP::Mesh::MeshIterator meshIterator       = meshAdapter->getIterator( AMP::Mesh::Vertex );
+    AMP::Mesh::MeshIterator meshIterator       = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
     AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
     AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
     std::vector<double> vertexCoord;
@@ -224,7 +224,7 @@ void applyCustomDirichletCondition(
                 dir->setLocalValueByGlobalID( dofIndices[jt->first], jt->second );
             } // end for
         }     // end for
-        dir->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        dir->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         mat->mult( dir, cor );
         for ( std::map<AMP::Mesh::MeshElementID, std::map<size_t, double>>::const_iterator it =
                   constraints.begin();
@@ -279,12 +279,12 @@ void applyCustomDirichletCondition(
 void shrinkMesh( AMP::Mesh::Mesh::shared_ptr mesh, double const shrinkFactor )
 {
     AMP::Discretization::DOFManager::shared_ptr dofManager =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 0, 3, false );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 0, 3, false );
     AMP::LinearAlgebra::Variable::shared_ptr dispVar( new AMP::LinearAlgebra::Variable( "disp" ) );
     AMP::LinearAlgebra::Vector::shared_ptr dispVec =
         AMP::LinearAlgebra::createVector( dofManager, dispVar, false );
     dispVec->zero();
-    AMP::Mesh::MeshIterator meshIterator       = mesh->getIterator( AMP::Mesh::Vertex );
+    AMP::Mesh::MeshIterator meshIterator       = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
     AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
     AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
     std::vector<double> vertexCoord( 3 ), vertexDisp( 3 );
@@ -305,26 +305,26 @@ void shrinkMesh( AMP::Mesh::Mesh::shared_ptr mesh, double const shrinkFactor )
 void rotateMesh( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     AMP::Discretization::DOFManager::shared_ptr dofManager =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 0, 3, false );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 0, 3, false );
     AMP::LinearAlgebra::Variable::shared_ptr dispVar( new AMP::LinearAlgebra::Variable( "disp" ) );
     AMP::LinearAlgebra::Vector::shared_ptr dispVec =
         AMP::LinearAlgebra::createVector( dofManager, dispVar, false );
     dispVec->zero();
-    AMP::Mesh::MeshIterator meshIterator       = mesh->getIterator( AMP::Mesh::Vertex );
+    AMP::Mesh::MeshIterator meshIterator       = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
     AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
     AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
     for ( meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator ) {
-        std::vector<double> oldVertexCoord = meshIterator->coord();
+        std::vector<double> oldGeomType::VertexCoord = meshIterator->coord();
         std::vector<size_t> dofIndices;
         dofManager->getDOFs( meshIterator->globalID(), dofIndices );
         AMP_ASSERT( dofIndices.size() == 3 );
-        std::vector<double> newVertexCoord( oldVertexCoord );
+        std::vector<double> newGeomType::VertexCoord( oldGeomType::VertexCoord );
         // 15 degrees around the z axis
-        //    rotate_points(2, M_PI / 12.0, 1, &(newVertexCoord[0]));
-        rotate_points( 2, M_PI / 2.0, 1, &( newVertexCoord[0] ) );
+        //    rotate_points(2, M_PI / 12.0, 1, &(newGeomType::VertexCoord[0]));
+        rotate_points( 2, M_PI / 2.0, 1, &( newGeomType::VertexCoord[0] ) );
         std::vector<double> vertexDisp( 3, 0.0 );
         make_vector_from_two_points(
-            &( oldVertexCoord[0] ), &( newVertexCoord[0] ), &( vertexDisp[0] ) );
+            &( oldGeomType::VertexCoord[0] ), &( newGeomType::VertexCoord[0] ), &( vertexDisp[0] ) );
         dispVec->setLocalValuesByGlobalID( 3, &( dofIndices[0] ), &( vertexDisp[0] ) );
     } // end for
     mesh->displaceMesh( dispVec );
@@ -367,16 +367,16 @@ void computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
 
     std::set<std::pair<AMP::Mesh::MeshElementID, size_t>, dummyClass> verticesGlobalIDsAndCount;
 
-    size_t numLocalVertices = mesh->numLocalElements( AMP::Mesh::Vertex );
+    size_t numLocalVertices = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
     size_t countVertices    = 0;
-    std::vector<size_t> verticesInHowManyVolumeElements( numLocalVertices, 1 );
+    std::vector<size_t> verticesInHowManyGeomType::VolumeElements( numLocalVertices, 1 );
     std::vector<size_t> verticesDOFIndex( numLocalVertices );
-    AMP::Mesh::MeshIterator meshIterator       = mesh->getIterator( AMP::Mesh::Volume );
+    AMP::Mesh::MeshIterator meshIterator       = mesh->getIterator( AMP::Mesh::GeomType::Volume );
     AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
     AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
     for ( meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator ) {
         std::vector<AMP::Mesh::MeshElement> volumeVertices =
-            meshIterator->getElements( AMP::Mesh::Vertex );
+            meshIterator->getElements( AMP::Mesh::GeomType::Vertex );
         AMP_ASSERT( volumeVertices.size() == 8 );
         std::vector<AMP::Mesh::MeshElementID> volumeVerticesGlobalIDs( 8 );
         double volumeVerticesCoordinates[24];
@@ -442,7 +442,7 @@ void computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
                 sigma_eff->setLocalValueByGlobalID( indices[0], vonMisesStress );
             } else {
                 // sigh...
-                ++verticesInHowManyVolumeElements[dummy.first->second];
+                ++verticesInHowManyGeomType::VolumeElements[dummy.first->second];
                 sigma_xx->addLocalValueByGlobalID( indices[0], stressTensor[0] );
                 sigma_yy->addLocalValueByGlobalID( indices[0], stressTensor[1] );
                 sigma_zz->addLocalValueByGlobalID( indices[0], stressTensor[2] );
@@ -487,41 +487,41 @@ void computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
     }     // end for
     AMP_ASSERT( verticesGlobalIDsAndCount.size() == numLocalVertices );
     AMP_ASSERT( countVertices == numLocalVertices );
-    AMP_ASSERT( find( verticesInHowManyVolumeElements.begin(),
-                      verticesInHowManyVolumeElements.end(),
-                      0 ) == verticesInHowManyVolumeElements.end() );
+    AMP_ASSERT( find( verticesInHowManyGeomType::VolumeElements.begin(),
+                      verticesInHowManyGeomType::VolumeElements.end(),
+                      0 ) == verticesInHowManyGeomType::VolumeElements.end() );
 
     for ( size_t v = 0; v < numLocalVertices; ++v ) {
-        if ( verticesInHowManyVolumeElements[v] > 1 ) {
-            //      AMP_ASSERT(verticesInHowManyVolumeElements[v] < 9);
+        if ( verticesInHowManyGeomType::VolumeElements[v] > 1 ) {
+            //      AMP_ASSERT(verticesInHowManyGeomType::VolumeElements[v] < 9);
             sigma_xx->setLocalValueByGlobalID(
                 verticesDOFIndex[v],
                 sigma_xx->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
-                    static_cast<double>( verticesInHowManyVolumeElements[v] ) );
+                    static_cast<double>( verticesInHowManyGeomType::VolumeElements[v] ) );
             sigma_yy->setLocalValueByGlobalID(
                 verticesDOFIndex[v],
                 sigma_yy->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
-                    static_cast<double>( verticesInHowManyVolumeElements[v] ) );
+                    static_cast<double>( verticesInHowManyGeomType::VolumeElements[v] ) );
             sigma_zz->setLocalValueByGlobalID(
                 verticesDOFIndex[v],
                 sigma_zz->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
-                    static_cast<double>( verticesInHowManyVolumeElements[v] ) );
+                    static_cast<double>( verticesInHowManyGeomType::VolumeElements[v] ) );
             sigma_yz->setLocalValueByGlobalID(
                 verticesDOFIndex[v],
                 sigma_yz->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
-                    static_cast<double>( verticesInHowManyVolumeElements[v] ) );
+                    static_cast<double>( verticesInHowManyGeomType::VolumeElements[v] ) );
             sigma_xz->setLocalValueByGlobalID(
                 verticesDOFIndex[v],
                 sigma_xz->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
-                    static_cast<double>( verticesInHowManyVolumeElements[v] ) );
+                    static_cast<double>( verticesInHowManyGeomType::VolumeElements[v] ) );
             sigma_xy->setLocalValueByGlobalID(
                 verticesDOFIndex[v],
                 sigma_xy->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
-                    static_cast<double>( verticesInHowManyVolumeElements[v] ) );
+                    static_cast<double>( verticesInHowManyGeomType::VolumeElements[v] ) );
             sigma_eff->setLocalValueByGlobalID(
                 verticesDOFIndex[v],
                 sigma_eff->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
-                    static_cast<double>( verticesInHowManyVolumeElements[v] ) );
+                    static_cast<double>( verticesInHowManyGeomType::VolumeElements[v] ) );
         } // end if
     }     // end for v
 }
@@ -595,7 +595,7 @@ void drawVerticesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                const std::string &option = "" )
 {
     AMP::Mesh::MeshIterator boundaryIterator =
-        meshAdapter->getBoundaryIDIterator( AMP::Mesh::Vertex, boundaryID );
+        meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, boundaryID );
     AMP::Mesh::MeshIterator boundaryIterator_begin = boundaryIterator.begin(),
                             boundaryIterator_end   = boundaryIterator.end();
     std::vector<double> vertexCoordinates;
@@ -610,18 +610,18 @@ void drawVerticesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     } // end for
 }
 
-void drawFacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                             int boundaryID,
                             std::ostream &os,
                             double const *point_of_view,
                             const std::string &option = "" )
 {
     AMP::Mesh::MeshIterator boundaryIterator =
-        meshAdapter->getBoundaryIDIterator( AMP::Mesh::Face, boundaryID );
+        meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, boundaryID );
     AMP::Mesh::MeshIterator boundaryIterator_begin = boundaryIterator.begin(),
                             boundaryIterator_end   = boundaryIterator.end();
     std::vector<AMP::Mesh::MeshElement> faceVertices;
-    std::vector<double> faceVertexCoordinates;
+    std::vector<double> faceGeomType::VertexCoordinates;
     double faceData[12]          = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
     double const *faceDataPtr[4] = { faceData, faceData + 3, faceData + 6, faceData + 9 };
 
@@ -629,13 +629,13 @@ void drawFacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 
     for ( boundaryIterator = boundaryIterator_begin; boundaryIterator != boundaryIterator_end;
           ++boundaryIterator ) {
-        faceVertices = boundaryIterator->getElements( AMP::Mesh::Vertex );
+        faceVertices = boundaryIterator->getElements( AMP::Mesh::GeomType::Vertex );
         AMP_ASSERT( faceVertices.size() == 4 );
         for ( size_t i = 0; i < 4; ++i ) {
-            faceVertexCoordinates = faceVertices[i].coord();
-            AMP_ASSERT( faceVertexCoordinates.size() == 3 );
+            faceGeomType::VertexCoordinates = faceVertices[i].coord();
+            AMP_ASSERT( faceGeomType::VertexCoordinates.size() == 3 );
             std::copy(
-                faceVertexCoordinates.begin(), faceVertexCoordinates.end(), faceData + 3 * i );
+                faceGeomType::VertexCoordinates.begin(), faceGeomType::VertexCoordinates.end(), faceData + 3 * i );
         } // end for i
         triangle_t t( faceDataPtr[0], faceDataPtr[1], faceDataPtr[2] );
 

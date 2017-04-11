@@ -8,17 +8,16 @@ namespace Mesh {
 /********************************************************
 * Constructors                                          *
 ********************************************************/
-MeshParameters::MeshParameters()
+MeshParameters::MeshParameters():
+    comm( AMP_COMM_NULL ),
+    MAX_GCW_WIDTH( 1 )
 {
-    d_db          = AMP::shared_ptr<AMP::Database>();
-    MAX_GCW_WIDTH = 1;
-    comm          = AMP::AMP_MPI( AMP_COMM_NULL );
 }
-MeshParameters::MeshParameters( const AMP::shared_ptr<AMP::Database> db )
+MeshParameters::MeshParameters( const AMP::shared_ptr<AMP::Database> db ):
+    d_db( db ),
+    comm( AMP_COMM_NULL ),
+    MAX_GCW_WIDTH( 1 )
 {
-    d_db          = db;
-    MAX_GCW_WIDTH = 1;
-    comm          = AMP::AMP_MPI( AMP_COMM_NULL );
 }
 
 

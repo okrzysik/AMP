@@ -78,11 +78,11 @@ void calculateManufacturedSolution(
     AMP::Mesh::Mesh::shared_ptr bottomAdapter = meshAdapter->Subset( "Bottom" );
 
     if ( bottomAdapter.get() != nullptr ) {
-        AMP::Mesh::MeshIterator el     = bottomAdapter->getIterator( AMP::Mesh::Volume, 0 );
+        AMP::Mesh::MeshIterator el     = bottomAdapter->getIterator( AMP::Mesh::GeomType::Volume, 0 );
         AMP::Mesh::MeshIterator end_el = el.end();
 
         for ( ; el != end_el; ++el ) {
-            std::vector<AMP::Mesh::MeshElement> d_currNodes = el->getElements( AMP::Mesh::Vertex );
+            std::vector<AMP::Mesh::MeshElement> d_currNodes = el->getElements( AMP::Mesh::GeomType::Vertex );
 
             std::vector<AMP::Mesh::MeshElementID> globalIDs( d_currNodes.size() );
 
@@ -104,7 +104,7 @@ void calculateManufacturedSolution(
         }
     }
 
-    manufacturedSolution->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    manufacturedSolution->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 
 void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
@@ -114,7 +114,7 @@ void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 {
     // Compute the source on the gauss point
 
-    AMP::Mesh::MeshIterator el     = meshAdapter->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
@@ -141,7 +141,7 @@ void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
         }
     }
 
-    manufacturedRHS->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    manufacturedRHS->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 
 void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
@@ -152,7 +152,7 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     //------------------------------------------
     // CALCULATE THE L2Norm OF (U-Uh)         //
     //------------------------------------------
-    AMP::Mesh::MeshIterator el     = meshAdapter->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     AMP::Discretization::DOFManager::shared_ptr dof_map = TemperatureVec->getDOFManager();
@@ -170,7 +170,7 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 
     for ( ; el != end_el; ++el ) {
 
-        std::vector<AMP::Mesh::MeshElement> d_currNodes = el->getElements( AMP::Mesh::Vertex );
+        std::vector<AMP::Mesh::MeshElement> d_currNodes = el->getElements( AMP::Mesh::GeomType::Vertex );
 
         std::vector<size_t> bndGlobalIds;
         std::vector<AMP::Mesh::MeshElementID> globalIDs( d_currNodes.size() );
@@ -369,7 +369,7 @@ void myTest(
         new AMP::LinearAlgebra::Variable( "Temperature" ) );
 
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     //  create solution, rhs, and  residual vectors
     AMP::LinearAlgebra::Vector::shared_ptr TemperatureVec =
         AMP::LinearAlgebra::createVector( nodalScalarDOF, outputVar, true );
@@ -390,7 +390,7 @@ void myTest(
     int DOFsPerElement = 8;
     AMP::Discretization::DOFManager::shared_ptr gaussPointDOF =
         AMP::Discretization::simpleDOFManager::create(
-            manager, AMP::Mesh::Volume, 1, DOFsPerElement, true );
+            manager, AMP::Mesh::GeomType::Volume, 1, DOFsPerElement, true );
 
     AMP::pout << "Creating gauss Vectors " << std::endl;
 
@@ -420,12 +420,12 @@ void myTest(
     siloWriter->registerMesh( manager );
 
     siloWriter->registerVector(
-        manufacturedSolution, manager, AMP::Mesh::Vertex, "ManufacturedSolution" );
-    siloWriter->registerVector( TemperatureVec, manager, AMP::Mesh::Vertex, "ComputedSolution" );
-    siloWriter->registerVector( ResidualVec, manager, AMP::Mesh::Vertex, "Residual" );
-    siloWriter->registerVector( solutionError, manager, AMP::Mesh::Vertex, "SolutionErro" );
+        manufacturedSolution, manager, AMP::Mesh::GeomType::Vertex, "ManufacturedSolution" );
+    siloWriter->registerVector( TemperatureVec, manager, AMP::Mesh::GeomType::Vertex, "ComputedSolution" );
+    siloWriter->registerVector( ResidualVec, manager, AMP::Mesh::GeomType::Vertex, "Residual" );
+    siloWriter->registerVector( solutionError, manager, AMP::Mesh::GeomType::Vertex, "SolutionErro" );
 
-    siloWriter->registerVector( manufacturedRHS, manager, AMP::Mesh::Volume, "ManufacturedRhs" );
+    siloWriter->registerVector( manufacturedRHS, manager, AMP::Mesh::GeomType::Volume, "ManufacturedRhs" );
     std::string silo_file = "testMeshRefinementDiffusion-1";
     siloWriter->writeFile( silo_file, 0 );
 #endif
@@ -469,10 +469,10 @@ void myTest(
 
     volumeIntegralColumnOperator->apply( manufacturedRHS, integratedRHSVec );
 
-    integratedRHSVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    integratedRHSVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
 #ifdef USE_EXT_SILO
-    siloWriter->registerVector( integratedRHSVec, manager, AMP::Mesh::Vertex, "Source" );
+    siloWriter->registerVector( integratedRHSVec, manager, AMP::Mesh::GeomType::Vertex, "Source" );
 #endif
 
     // modify the RHS to take into account boundary conditions
@@ -504,7 +504,7 @@ void myTest(
      -1.0);
      */
     nonlinearThermalColumnOperator->residual( integratedRHSVec, TemperatureVec, ResidualVec );
-    ResidualVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    ResidualVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     double initialResidualNorm = ResidualVec->L2Norm();
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
@@ -535,7 +535,7 @@ void myTest(
     std::cout << "Max of ||U-Uh|| : " << solutionError->max()
               << " Min of ||U-Uh|| : " << solutionError->min() << std::endl;
 
-    TemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    TemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     double discretizationErrorNorm2;
     double TotalNorm2 = 0;

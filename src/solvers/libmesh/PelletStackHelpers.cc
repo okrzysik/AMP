@@ -105,7 +105,7 @@ void helperSetFrozenVectorForMapsForPelletMechanics(
         AMP::dynamic_pointer_cast<AMP::Operator::ColumnOperator>( coupledOp->getOperator( 3 ) );
     AMP::LinearAlgebra::Variable::shared_ptr dispVar = nonlinearColumnOperator->getOutputVariable();
     AMP::Discretization::DOFManager::shared_ptr nodal3VectorDOF =
-        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::GeomType::Vertex, 1, 3, true );
     AMP::LinearAlgebra::Vector::shared_ptr dirichletValues =
         AMP::LinearAlgebra::createVector( nodal3VectorDOF, dispVar, true );
     if ( n2nmaps ) {
@@ -161,7 +161,7 @@ void helperCreateVectorsForPelletMechanics( AMP::Mesh::Mesh::shared_ptr manager,
         AMP::dynamic_pointer_cast<AMP::Operator::ColumnOperator>( coupledOp->getOperator( 3 ) );
     AMP::LinearAlgebra::Variable::shared_ptr dispVar = nonlinearColumnOperator->getOutputVariable();
     AMP::Discretization::DOFManager::shared_ptr nodal3VectorDOF =
-        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::GeomType::Vertex, 1, 3, true );
     solVec       = AMP::LinearAlgebra::createVector( nodal3VectorDOF, dispVar, true );
     rhsVec       = AMP::LinearAlgebra::createVector( nodal3VectorDOF, dispVar, true );
     scaledRhsVec = rhsVec->cloneVector();
@@ -213,7 +213,7 @@ void helperCreateTemperatureVectorsForPelletMechanics(
     AMP::LinearAlgebra::Variable::shared_ptr tempVar(
         new AMP::LinearAlgebra::Variable( "temperature" ) );
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     initialTemperatureVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, tempVar, true );
     finalTemperatureVec   = initialTemperatureVec->cloneVector();
 }

@@ -81,10 +81,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     bool split               = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+            meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear thermal diffusion
@@ -155,10 +155,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     // Set the SpecificPowerVec to the residual of the neutronicsOperator
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
     SpecificPowerVec->scale( -1.0 );
-    SpecificPowerVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    SpecificPowerVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     /////////////////////////////////////////////////////
-    //  Integrate Nuclear Rhs over Desnity * Volume //
+    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
     /////////////////////////////////////////////////////
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
@@ -226,8 +226,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     nonlinearSolver->solve( rhsVec, solVec );
 
-    solVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    resVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
 
@@ -250,8 +250,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
-    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
     siloWriter->writeFile( input_file, 0 );
 #endif
 

@@ -112,9 +112,9 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     // Create the DOF managers
     AMP::Discretization::DOFManager::shared_ptr DOF_scalar =
-        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::Discretization::DOFManager::shared_ptr DOF_vector =
-        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     // Create the vectors
     AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> globalSolVec =
@@ -135,7 +135,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     // Create a zero matrix over meshAdapterH08
     AMP::Discretization::DOFManager::shared_ptr DOF_H08_scalar =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapterH08, AMP::Mesh::Vertex, 1, 1, true );
+            meshAdapterH08, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Matrix::shared_ptr zeroMat = AMP::LinearAlgebra::createMatrix(
         AMP::LinearAlgebra::createVector( DOF_H08_scalar, pressureVar ),
         AMP::LinearAlgebra::createVector( DOF_H08_scalar, pressureVar ) );

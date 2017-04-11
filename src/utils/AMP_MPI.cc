@@ -178,6 +178,7 @@ inline void check_MPI( int error )
 /******************************************************************
 * Some helper functions to convert between signed/unsigned types  *
 ******************************************************************/
+DISABLE_WARNINGS
 static inline constexpr unsigned int offset_int( )
 {
     return ~static_cast<unsigned int>( std::numeric_limits<int>::min() ) + 1;
@@ -190,6 +191,7 @@ static inline constexpr unsigned long long int offset_long_long( )
 {
     return ~static_cast<long long int>( std::numeric_limits<long long int>::min() ) + 1;
 }
+ENABLE_WARNINGS
 static inline unsigned int signed_to_unsigned( int x )
 {
     const auto offset = offset_int();

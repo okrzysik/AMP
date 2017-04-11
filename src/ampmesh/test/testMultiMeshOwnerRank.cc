@@ -78,7 +78,7 @@ void testMultiMeshOwnerRank( AMP::UnitTest &ut )
     AMP::Mesh::MeshIterator it;
     AMP::Mesh::Mesh::shared_ptr arrayBoundaryMesh;
     if ( arrayMesh ) {
-        it                = arrayMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 0 );
+        it                = arrayMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 0 );
         arrayBoundaryMesh = arrayMesh->Subset( it );
     }
 
@@ -92,7 +92,7 @@ void testMultiMeshOwnerRank( AMP::UnitTest &ut )
         // ranks are correct.
         int bnd_comm_rank            = arrayBoundaryMesh->getComm().getRank();
         bool owner_rank_is_comm_rank = true;
-        it                           = arrayBoundaryMesh->getIterator( AMP::Mesh::Vertex, 0 );
+        it                           = arrayBoundaryMesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         auto it_begin                = it.begin();
         auto it_end                  = it.end();
         for ( it = it_begin; it != it_end; ++it ) {
@@ -121,9 +121,9 @@ void testMultiMeshOwnerRank( AMP::UnitTest &ut )
     // Do a reduction to make sure we only get one instance of locally owned elements.
     std::vector<unsigned long long> local_ids( 0 );
     if ( arrayBoundaryMesh ) {
-        it              = arrayMesh->getBoundaryIDIterator( AMP::Mesh::Volume, 0 );
+        it              = arrayMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Volume, 0 );
         auto volBndMesh = arrayMesh->Subset( it );
-        it              = volBndMesh->getIterator( AMP::Mesh::Volume, 0 );
+        it              = volBndMesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
         auto it_begin   = it.begin();
         auto it_end     = it.end();
         for ( it = it_begin; it != it_end; ++it ) {

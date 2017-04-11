@@ -35,7 +35,7 @@ public:
     static bool validMapType( const std::string &s );
 
     //!  The base tag used in communication.
-    enum { CommTagBase = 10000 };
+    static const int CommTagBase = 10000;
 
     //! Constructor
     explicit NodeToNodeMap( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &params );

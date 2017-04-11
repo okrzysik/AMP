@@ -17,7 +17,7 @@ void runTest( AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr mesh = generator.getMesh();
 
     // Get iterators over each of the face types
-    AMP::Mesh::MeshIterator faces   = mesh->getIterator( AMP::Mesh::Face, 0 );
+    AMP::Mesh::MeshIterator faces   = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     AMP::Mesh::MeshIterator x_faces = AMP::Mesh::StructuredMeshHelper::getYZFaceIterator( mesh, 0 );
     AMP::Mesh::MeshIterator y_faces = AMP::Mesh::StructuredMeshHelper::getXZFaceIterator( mesh, 0 );
     AMP::Mesh::MeshIterator z_faces = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( mesh, 0 );

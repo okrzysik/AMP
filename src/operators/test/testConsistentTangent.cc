@@ -77,7 +77,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int callLinReset )
 
 
     AMP::Discretization::DOFManager::shared_ptr dofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Variable::shared_ptr var = nonlinOperator->getOutputVariable();
 
@@ -124,7 +124,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int callLinReset )
 
     solVec->setRandomValues();
     solVec->scale( 100.0 );
-    solVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     solNorm = solVec->L2Norm();
     AMP::pout << "sol-Norm-2 = " << solNorm << std::endl;
 
@@ -154,7 +154,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int callLinReset )
     tmpLinVec->scale( 10.0 );
 
     solVec->scale( 10.0 );
-    solVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     solNorm = solVec->L2Norm();
     AMP::pout << "sol-Norm-2 = " << solNorm << std::endl;
 

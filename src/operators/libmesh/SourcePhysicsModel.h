@@ -7,8 +7,13 @@
 #include "materials/Material.h"
 #include "operators/ElementPhysicsModel.h"
 #include "operators/ElementPhysicsModelParameters.h"
+#include "utils/Utilities.h"
 
+
+// Libmesh headers
+DISABLE_WARNINGS
 #include "libmesh/point.h"
+ENABLE_WARNINGS
 
 
 namespace AMP {

@@ -98,10 +98,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     dirichletLoadVecOp->setVariable( dispVar );
 
     AMP::Discretization::DOFManager::shared_ptr vectorDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::Discretization::DOFManager::shared_ptr scalarDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -267,10 +267,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
 #ifdef USE_EXT_SILO
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
-    siloWriter->registerVector( burnVec, meshAdapter, AMP::Mesh::Vertex, "InitialDamageThreshold" );
+    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->registerVector( burnVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "InitialDamageThreshold" );
     siloWriter->registerVector(
-        lhgrVec, meshAdapter, AMP::Mesh::Vertex, "CriticalDamageThreshold" );
+        lhgrVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "CriticalDamageThreshold" );
     char outFileName1[256];
     sprintf( outFileName1, "undeformedMesh_SS_3" );
     siloWriter->writeFile( outFileName1, 1 );

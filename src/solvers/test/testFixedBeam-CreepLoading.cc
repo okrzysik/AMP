@@ -118,10 +118,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     // Create the DOFManagers
     AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 3 );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
     AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1 );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -152,8 +152,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 // Create the silo writer and register the data
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( solVec, mesh, AMP::Mesh::Vertex, "Solution_Vector" );
-    siloWriter->registerVector( resVec, mesh, AMP::Mesh::Vertex, "Residual_Vector" );
+    siloWriter->registerVector( solVec, mesh, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
+    siloWriter->registerVector( resVec, mesh, AMP::Mesh::GeomType::Vertex, "Residual_Vector" );
 #endif
 
     // Adding the Temperature and Burnup

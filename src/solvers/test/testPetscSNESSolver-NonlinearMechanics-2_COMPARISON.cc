@@ -64,9 +64,9 @@ void myTest( AMP::UnitTest *ut )
 
     // Create the DOFManagers
     AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1 );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
     AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 3 );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
@@ -106,7 +106,7 @@ void myTest( AMP::UnitTest *ut )
     initTempVec->abs( initTempVec );
     double initTempConst = input_db->getDoubleWithDefault( "INIT_TEMP_CONST", 1.0 );
     initTempVec->scale( initTempConst );
-    initTempVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    initTempVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     bool setFinalTempEqualsInitialTemp =
         input_db->getBoolWithDefault( "SET_FINAL_TEMP_EQUALS_INIT_TEMP", false );
@@ -120,7 +120,7 @@ void myTest( AMP::UnitTest *ut )
         double finalTempConst = input_db->getDoubleWithDefault( "FINAL_TEMP_CONST", 1.0 );
         finalTempVec->scale( finalTempConst );
     }
-    finalTempVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    finalTempVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     ( AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
           nonlinBvpOperator->getVolumeOperator() ) )
@@ -159,13 +159,13 @@ void myTest( AMP::UnitTest *ut )
 // Create the silo writer and register the data
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( mechNlSolVec, mesh, AMP::Mesh::Vertex, "MechanicsSolution" );
+    siloWriter->registerVector( mechNlSolVec, mesh, AMP::Mesh::GeomType::Vertex, "MechanicsSolution" );
 #endif
 
     // Initial guess for NL solver must satisfy the displacement boundary conditions
     mechNlSolVec->setToScalar( 0.0 );
     dirichletDispInVecOp->apply( nullVec, mechNlSolVec );
-    mechNlSolVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    mechNlSolVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     mechNlRhsVec->setToScalar( 0.0 );
     dirichletLoadVecOp->apply( nullVec, mechNlRhsVec );
@@ -230,7 +230,7 @@ void myTest( AMP::UnitTest *ut )
 
         double scaleValue = ( (double) step + 1.0 ) / NumberOfLoadingSteps;
         mechNlScaledRhsVec->scale( scaleValue, mechNlRhsVec );
-        mechNlScaledRhsVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        mechNlScaledRhsVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         AMP::pout << "L2 Norm at loading step " << ( step + 1 ) << " is "
                   << mechNlScaledRhsVec->L2Norm() << std::endl;
 

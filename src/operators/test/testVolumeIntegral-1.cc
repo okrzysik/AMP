@@ -48,7 +48,7 @@ void adjust( const AMP::LinearAlgebra::Vector::shared_ptr vec,
     AMP::LinearAlgebra::Vector &x = *vec;
     AMP::LinearAlgebra::Vector &y = *work;
     vec->add( x, y );
-    vec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 
 void applyTest( AMP::UnitTest *ut,
@@ -257,10 +257,10 @@ void sourceTest( AMP::UnitTest *ut, std::string exeName )
     bool split          = true;
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerElement, split );
+            meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerElement, split );
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     AMP::LinearAlgebra::Vector::shared_ptr solVec =
         AMP::LinearAlgebra::createVector( gaussPointDofMap, inputVariable, split );

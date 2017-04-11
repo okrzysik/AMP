@@ -258,7 +258,7 @@ void STKMesh::initialize()
     // Construct the list of elements of type side or edge
     for ( int i = 0; i <= (int) GeomDim; i++ ) {
         GeomType type = (GeomType) i;
-        if ( type == Vertex || type == GeomDim )
+        if ( type == GeomType::Vertex || type == GeomDim )
             continue;
         // Get a unique list of all elements of the desired type
         std::set<MeshElement> element_list;
@@ -379,26 +379,26 @@ void STKMesh::initialize()
     AMP::Utilities::quicksort( *d_ghostSurfaceElements[GeomDim] );
 
 
-    d_localSurfaceElements[Vertex] = AMP::shared_ptr<std::vector<MeshElement>>(
+    d_localSurfaceElements[GeomType::Vertex] = AMP::shared_ptr<std::vector<MeshElement>>(
         new std::vector<MeshElement>( localBoundaryNodes.size() ) );
     std::set<stk::mesh::Entity *>::iterator node_iterator = localBoundaryNodes.begin();
     for ( size_t i = 0; i < localBoundaryNodes.size(); i++ ) {
-        ( *d_localSurfaceElements[Vertex] )[i] =
+        ( *d_localSurfaceElements[GeomType::Vertex] )[i] =
             STKMeshElement( PhysicalDim, *node_iterator, rank, d_meshID, this );
         ++node_iterator;
     }
-    AMP::Utilities::quicksort( *d_localSurfaceElements[Vertex] );
+    AMP::Utilities::quicksort( *d_localSurfaceElements[GeomType::Vertex] );
 
 
-    d_ghostSurfaceElements[Vertex] = AMP::shared_ptr<std::vector<MeshElement>>(
+    d_ghostSurfaceElements[GeomType::Vertex] = AMP::shared_ptr<std::vector<MeshElement>>(
         new std::vector<MeshElement>( ghostBoundaryNodes.size() ) );
     node_iterator = ghostBoundaryNodes.begin();
     for ( size_t i = 0; i < ghostBoundaryNodes.size(); i++ ) {
-        ( *d_ghostSurfaceElements[Vertex] )[i] =
+        ( *d_ghostSurfaceElements[GeomType::Vertex] )[i] =
             STKMeshElement( PhysicalDim, *node_iterator, rank, d_meshID, this );
         ++node_iterator;
     }
-    AMP::Utilities::quicksort( *d_ghostSurfaceElements[Vertex] );
+    AMP::Utilities::quicksort( *d_ghostSurfaceElements[GeomType::Vertex] );
     // Construct the boundary elements for all other types
     // An face or edge is on the boundary if all of its nodes are on the surface
     //    size_t element_surface_global_size =
@@ -408,7 +408,7 @@ void STKMesh::initialize()
         std::set<MeshElement> local, ghost;
         MeshIterator it = getIterator( type, 0 );
         for ( size_t i = 0; i < it.size(); i++ ) {
-            std::vector<MeshElement> nodes = it->getElements( Vertex );
+            std::vector<MeshElement> nodes = it->getElements( GeomType::Vertex );
             AMP_ASSERT( !nodes.empty() );
             bool on_boundary = true;
             for ( size_t j = 0; j < nodes.size(); j++ ) {
@@ -601,16 +601,16 @@ MeshIterator STKMesh::getIterator( const GeomType type, const int gcw ) const
 {
     stk::mesh::EntityRank entity_rank = 0xFF;
     switch ( type ) {
-    case Volume:
+    case GeomType::Volume:
         entity_rank = d_STKMeshMeta->element_rank();
         break;
-    case Vertex:
+    case GeomType::Vertex:
         entity_rank = d_STKMeshMeta->node_rank();
         break;
-    case Edge:
+    case GeomType::Edge:
         entity_rank = d_STKMeshMeta->edge_rank();
         break;
-    case Face:
+    case GeomType::Face:
         entity_rank = d_STKMeshMeta->face_rank();
         break;
     default:
@@ -705,7 +705,7 @@ MeshIterator STKMesh::getBlockIDIterator( const GeomType type, const int id, con
 ********************************************************/
 std::vector<stk::mesh::Entity *> STKMesh::getNeighborNodes( MeshElementID id ) const
 {
-    AMP_INSIST( id.type() == Vertex, "This function is for nodes" );
+    AMP_INSIST( id.type() == GeomType::Vertex, "This function is for nodes" );
     AMP_INSIST( id.meshID() == d_meshID, "Unknown mesh" );
     AMP_INSIST( id.is_local(), "Only owned nodes can return their neighbor lists" );
     int i = AMP::Utilities::findfirst( neighborNodeIDs, id.local_id() );
@@ -727,7 +727,7 @@ MeshElement STKMesh::getElement( const MeshElementID &elem_id ) const
         stk::mesh::Entity *element =
             d_STKMeshBulk->get_entity( d_STKMeshMeta->element_rank(), elem_id.local_id() );
         return STKMeshElement( (int) PhysicalDim, element, rank, mesh_id, this );
-    } else if ( elem_id.type() == Vertex ) {
+    } else if ( elem_id.type() == GeomType::Vertex ) {
         // This is a STKMesh node
         stk::mesh::Entity *node =
             d_STKMeshBulk->get_entity( d_STKMeshMeta->node_rank(), elem_id.local_id() );
@@ -803,8 +803,8 @@ void STKMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
     // Create the position vector with the necessary ghost nodes
     AMP::Discretization::DOFManager::shared_ptr DOFs =
         AMP::Discretization::simpleDOFManager::create( shared_from_this(),
-                                                       getIterator( AMP::Mesh::Vertex, 1 ),
-                                                       getIterator( AMP::Mesh::Vertex, 0 ),
+                                                       getIterator( AMP::Mesh::GeomType::Vertex, 1 ),
+                                                       getIterator( AMP::Mesh::GeomType::Vertex, 0 ),
                                                        PhysicalDim );
     AMP::LinearAlgebra::Variable::shared_ptr nodalVariable(
         new AMP::LinearAlgebra::Variable( "tmp_pos" ) );
@@ -812,7 +812,7 @@ void STKMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
         AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
     std::vector<size_t> dofs1( PhysicalDim );
     std::vector<size_t> dofs2( PhysicalDim );
-    AMP::Mesh::MeshIterator cur                      = getIterator( AMP::Mesh::Vertex, 0 );
+    AMP::Mesh::MeshIterator cur                      = getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     AMP::Mesh::MeshIterator end                      = cur.end();
     AMP::Discretization::DOFManager::shared_ptr DOFx = x->getDOFManager();
     std::vector<double> data( PhysicalDim );
@@ -824,7 +824,7 @@ void STKMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
         displacement->setValuesByGlobalID( PhysicalDim, &dofs2[0], &data[0] );
         ++cur;
     }
-    displacement->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    displacement->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     // Move all nodes (including the ghost nodes)
     const unsigned rank = d_comm.getRank();
     std::vector<stk::mesh::Entity *> nodes;
@@ -836,7 +836,7 @@ void STKMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
         const unsigned int owner_rank = node->owner_rank();
         const unsigned int local_id   = node->identifier();
         const bool is_local           = owner_rank == rank;
-        AMP::Mesh::MeshElementID id( is_local, AMP::Mesh::Vertex, local_id, owner_rank, d_meshID );
+        AMP::Mesh::MeshElementID id( is_local, AMP::Mesh::GeomType::Vertex, local_id, owner_rank, d_meshID );
         // Get the position of the point
         DOFs->getDOFs( id, dofs2 );
         displacement->getValuesByGlobalID( PhysicalDim, &dofs2[0], &data[0] );

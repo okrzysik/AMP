@@ -5,7 +5,6 @@
 #include "operators/Operator.h"
 #include "operators/OperatorBuilder.h"
 #include "operators/OperatorParameters.h"
-#include "operators/libmesh/MassLinearFEOperator.h"
 #include "time_integrators/TimeOperator.h"
 #include "time_integrators/TimeOperatorParameters.h"
 #include "utils/InputDatabase.h"
@@ -13,8 +12,6 @@
 #include "utils/shared_ptr.h"
 #include "vectors/Vector.h"
 
-// BP : the next include is probably unnecessary
-#include "operators/libmesh/VolumeIntegralOperator.h"
 
 namespace AMP {
 namespace TimeIntegrator {

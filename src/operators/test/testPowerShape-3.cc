@@ -66,7 +66,7 @@ void test_with_shape( AMP::UnitTest *ut )
     bool split      = true;
     AMP::Discretization::DOFManager::shared_ptr dof_map =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Volume, ghostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerNode, split );
 
     // Create a shared pointer to a Variable - Power - Output because it will be used in the
     // "residual" location of
@@ -95,7 +95,7 @@ void test_with_shape( AMP::UnitTest *ut )
 
     // Check that the data is non-negative
     bool itpasses                     = 1;
-    AMP::Mesh::MeshIterator elem      = meshAdapter->getIterator( AMP::Mesh::Volume, ghostWidth );
+    AMP::Mesh::MeshIterator elem      = meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
     AMP::Mesh::MeshIterator end_elems = elem.end();
 
     for ( ; elem != end_elems; ++elem ) {

@@ -60,7 +60,7 @@ void myTest( AMP::UnitTest *ut )
     bool const split      = true;
     AMP::Discretization::DOFManager::shared_ptr dofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, gostWidth, dofsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, gostWidth, dofsPerNode, split );
 
     AMP::LinearAlgebra::Vector::shared_ptr vec1;
     AMP::LinearAlgebra::Vector::shared_ptr vec2;
@@ -111,7 +111,7 @@ void myTest( AMP::UnitTest *ut )
             std::vector<double> slaveValues;
             int const boundaryID = 2;
             AMP::Mesh::MeshIterator it =
-                meshAdapter->getBoundaryIDIterator( AMP::Mesh::Vertex, boundaryID );
+                meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, boundaryID );
             size_t const numDOFs = it.size() * dofsPerNode;
             slaveIndices.resize( numDOFs );
             slaveValues.resize( numDOFs );
@@ -164,7 +164,7 @@ void myTest( AMP::UnitTest *ut )
             new AMP::Operator::OperatorParameters( shell_db ) );
         AMP::shared_ptr<AMP::Operator::PetscMatrixShellOperator> shellOp(
             new AMP::Operator::PetscMatrixShellOperator( shellParams ) );
-        int const numLocalNodes = meshAdapter->numLocalElements( AMP::Mesh::Vertex );
+        int const numLocalNodes = meshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
         int const matLocalSize  = dofsPerNode * numLocalNodes;
         AMP_ASSERT( matLocalSize == static_cast<int>( dofMap->numLocalDOF() ) );
         shellOp->setComm( globalComm );

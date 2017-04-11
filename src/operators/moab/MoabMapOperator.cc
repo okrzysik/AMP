@@ -32,12 +32,12 @@ MoabMapOperator::MoabMapOperator( const SP_MoabMapParams &params )
     d_moabInterface = d_moab->getMoabInterface();
 
     // Interpolate to nodes or Gauss points?
-    if ( params->d_db->getString( "InterpolateToType" ).compare( "Vertex" ) == 0 ) {
+    if ( params->d_db->getString( "InterpolateToType" ).compare( "GeomType::Vertex" ) == 0 ) {
         d_interpType = NODES;
     } else if ( params->d_db->getString( "InterpolateToType" ).compare( "GaussPoint" ) == 0 ) {
         d_interpType = GAUSS_POINTS;
     } else
-        AMP_ERROR( "InterpolateToType must be Vertex or GaussPoint" );
+        AMP_ERROR( "InterpolateToType must be GeomType::Vertex or GaussPoint" );
 }
 
 //---------------------------------------------------------------------------//
@@ -149,7 +149,7 @@ void MoabMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     r->setValuesByLocalID( numCoords, &myIndices[0], &outputVar[0] );
 
     // Make consistent
-    r->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    r->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 
 //---------------------------------------------------------------------------//
@@ -168,11 +168,11 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
     bool split               = true;
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+            mesh, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
 
     // Get size of Gauss-point vectors
     // We're explicitly assuming every element has 8 Gauss points
-    unsigned int numGauss = DOFsPerElement * mesh->numLocalElements( AMP::Mesh::Volume );
+    unsigned int numGauss = DOFsPerElement * mesh->numLocalElements( AMP::Mesh::GeomType::Volume );
 
     // Resize vector
     xyz.resize( 3 * numGauss, 0.0 );
@@ -187,9 +187,9 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
     //  Moab meshes aren't all going to be in cm.
     double m_to_cm = 100.0;
 
-    // Build Volume Integral Operator
+    // Build GeomType::Volume Integral Operator
     SP_VolIntOp volIntOp;
-    buildVolumeIntOp( volIntOp, mesh );
+    buildGeomType::VolumeIntOp( volIntOp, mesh );
     AMP_ASSERT( volIntOp );
 
     // Get FE Base from volume integral operator
@@ -197,11 +197,11 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
 
     // Extract coordinates of each Gauss point
     unsigned int zeroGhostWidth  = 0;
-    AMP::Mesh::MeshIterator elem = mesh->getIterator( AMP::Mesh::Volume, zeroGhostWidth );
+    AMP::Mesh::MeshIterator elem = mesh->getIterator( AMP::Mesh::GeomType::Volume, zeroGhostWidth );
     int elem_ctr = 0, gp_ctr = 0;
     for ( ; elem != elem.end(); elem++ ) {
         std::vector<AMP::Mesh::MeshElement> currNodes;
-        currNodes = elem->getElements( AMP::Mesh::Vertex );
+        currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
         ::Elem *currElemPtr;
         currElemPtr = new ::Hex8;
         for ( size_t j = 0; j < currNodes.size(); j++ ) {
@@ -247,7 +247,7 @@ void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl 
     AMP_INSIST( d_interpType == NODES, "Wrong interpolation type" );
 
     // Get size of nodal vectors
-    unsigned int numNodes = mesh->numLocalElements( AMP::Mesh::Vertex );
+    unsigned int numNodes = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
 
     // Resize vector
     xyz.resize( 3 * numNodes, 0.0 );
@@ -261,7 +261,7 @@ void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl 
 
     // Extract coordinates of each node
     unsigned int zeroGhostWidth  = 0;
-    AMP::Mesh::MeshIterator node = mesh->getIterator( AMP::Mesh::Vertex, zeroGhostWidth );
+    AMP::Mesh::MeshIterator node = mesh->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
     int node_ctr                 = 0;
     for ( ; node != node.end(); node++ ) {
         xyz[3 * node_ctr]     = ( node->coord() )[0] * m_to_cm;
@@ -276,7 +276,7 @@ void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl 
  *\brief Build volume integral operator
  */
 //---------------------------------------------------------------------------//
-void MoabMapOperator::buildVolumeIntOp( SP_VolIntOp &volIntOp, AMP::Mesh::Mesh::shared_ptr &mesh )
+void MoabMapOperator::buildGeomType::VolumeIntOp( SP_VolIntOp &volIntOp, AMP::Mesh::Mesh::shared_ptr &mesh )
 {
     using AMP::Operator::OperatorBuilder;
 
@@ -290,7 +290,7 @@ void MoabMapOperator::buildVolumeIntOp( SP_VolIntOp &volIntOp, AMP::Mesh::Mesh::
     volume_db->putInteger( "Number_Active_Variables", 1 );
     volume_db->putInteger( "Number_Auxillary_Variables", 0 );
     volume_db->putBool( "Constant_Source", 1 );
-    volume_db->putString( "OutputVariable", "VolumeIntegrated" );
+    volume_db->putString( "OutputVariable", "GeomType::VolumeIntegrated" );
     volume_db->putInteger( "print_info_level", 1 );
     volume_db->putDatabase( "ActiveInputVariables" );
     volume_db->putDatabase( "SourceElement" );

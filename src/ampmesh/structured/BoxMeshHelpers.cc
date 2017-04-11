@@ -15,7 +15,7 @@ static inline std::pair<double,double> map_c2p( int method, double xc, double yc
 {
     // map xc > 0 and |yc| < xc ≡ d to (xp,yp) in r=1 using the mapping by:
     //    Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
-    //       and Finite Volume Methods for PDEs in Circular and Spherical Domains", 
+    //       and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains", 
     //       SIAM REVIEW, Vol. 50, No. 4, pp.723–752 (2008)
     if ( xc<1e-12 && yc<1e-12 )
         return std::make_pair( 0.0, 0.0 );
@@ -77,7 +77,7 @@ std::pair<double,double> map_logical_circle( double r, int method, double x, dou
 {
     // This maps from a a logically rectangular 3D mesh to a sphere mesh using the mapping by:
     //    Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
-    //       and Finite Volume Methods for PDEs in Circular and Spherical Domains", 
+    //       and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains", 
     //       SIAM REVIEW, Vol. 50, No. 4, pp.723–752 (2008)
     const double xc = 2 * x - 1; // Change domain to [-1,1]
     const double yc = 2 * y - 1; // Change domain to [-1,1]
@@ -131,7 +131,7 @@ std::tuple<double,double,double> map_logical_sphere( double r, double x, double 
 {
     // This maps from a a logically rectangular 3D mesh to a sphere mesh using the mapping by:
     //    Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
-    //       and Finite Volume Methods for PDEs in Circular and Spherical Domains", 
+    //       and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains", 
     //       SIAM REVIEW, Vol. 50, No. 4, pp.723–752 (2008)
     const double sqrt3 = 1.732050807568877;
     double xc = 2 * x - 1; // Change domain to [-1,1]
@@ -159,7 +159,7 @@ std::tuple<double,double,double> map_logical_sphere_surface( double R, double x,
 {
     // This maps from a a logically rectangular 3D mesh to the surface of a sphere using the mapping by:
     // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and Finite
-    // Volume
+    // GeomType::Volume
     //    Methods for PDEs in Circular and Spherical Domains", SIAM REVIEW, Vol. 50, No. 4, pp.
     //    723–752 (2008)
     double x2 = 2 * x - 1;  // Change domain to [-1,1]
@@ -198,7 +198,7 @@ std::tuple<double,double,double> map_logical_shell( double r1, double r2, double
 {
     // This maps from a a logically rectangular 3D mesh to a shell mesh using the mapping by:
     // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and Finite
-    // Volume
+    // GeomType::Volume
     //    Methods for PDEs in Circular and Spherical Domains", SIAM REVIEW, Vol. 50, No. 4, pp.
     //    723–752 (2008)
     double dr = r2 - r1;

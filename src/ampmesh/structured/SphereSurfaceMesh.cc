@@ -29,7 +29,7 @@ SphereSurfaceMesh::SphereSurfaceMesh( MeshParameters::shared_ptr params ):
 {
     // Input options from the database
     PhysicalDim = 3;
-    GeomDim     = Face;
+    GeomDim     = GeomType::Face;
     auto size   = d_db->getIntegerArray( "Size" );
     auto range  = d_db->getDoubleArray( "Range" );
     d_max_gcw   = d_db->getIntegerWithDefault( "GCW", 2 );

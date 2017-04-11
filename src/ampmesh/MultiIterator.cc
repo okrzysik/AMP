@@ -16,15 +16,11 @@ static MeshElement nullElement;
 /********************************************************
 * Constructors                                          *
 ********************************************************/
-MultiIterator::MultiIterator()
+MultiIterator::MultiIterator():
+    d_localPos(0),
+    d_iteratorNum(0)
 {
-    d_typeID       = MultiIteratorTypeID;
-    d_iterator     = nullptr;
-    d_iterators    = std::vector<AMP::shared_ptr<MeshIterator>>( 0 );
-    d_iteratorSize = std::vector<size_t>( 0 );
-    d_localPos     = 0;
-    d_pos    = 0;
-    d_iteratorNum  = 0;
+    d_typeID = MultiIteratorTypeID;
 }
 MultiIterator::MultiIterator( std::vector<AMP::shared_ptr<MeshIterator>> iterators,
                               size_t global_pos )
@@ -273,16 +269,15 @@ MeshIterator &MultiIterator::operator+=( int n )
 ********************************************************/
 bool MultiIterator::operator==( const MeshIterator &rhs ) const
 {
-    MultiIterator *rhs2 = nullptr;
-    MultiIterator *tmp =
-        (MultiIterator
-             *) &rhs; // Convert rhs to a MultiIterator* so we can access the base class members
+    // Convert rhs to a MultiIterator* so we can access the base class members
+    const MultiIterator *rhs2 = nullptr;
+    const MultiIterator *tmp = reinterpret_cast<const MultiIterator*>( &rhs );
     if ( typeid( rhs ) == typeid( MultiIterator ) ) {
         rhs2 = tmp; // We can safely cast rhs to a MultiIterator
     } else if ( tmp->d_typeID == MultiIteratorTypeID ) {
         rhs2 = tmp; // We can safely cast rhs.iterator to a MultiIterator
-    } else if ( ( (MultiIterator *) tmp->d_iterator )->d_typeID == MultiIteratorTypeID ) {
-        rhs2 = (MultiIterator *) tmp->d_iterator;
+    } else if ( reinterpret_cast<MultiIterator*>( tmp->d_iterator )->d_typeID == MultiIteratorTypeID ) {
+        rhs2 = reinterpret_cast<MultiIterator*>( tmp->d_iterator );
     }
     // Perform direct comparisions if we are dealing with two MultiIterator
     if ( rhs2 != nullptr ) {

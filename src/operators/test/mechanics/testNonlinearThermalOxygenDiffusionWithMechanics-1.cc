@@ -125,11 +125,11 @@ void thermoMechanicsTest( AMP::UnitTest *ut, std::string exeName )
     bool split          = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     int displacementDOFsPerNode = 3;
     AMP::Discretization::DOFManager::shared_ptr displDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, displacementDOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, displacementDOFsPerNode, split );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // initialize the input multi-variable

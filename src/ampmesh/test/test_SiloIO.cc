@@ -26,15 +26,15 @@
 
 AMP::Mesh::GeomType getSurfaceType( AMP::Mesh::GeomType volume )
 {
-    if ( volume == AMP::Mesh::Vertex )
-        return AMP::Mesh::Vertex;
-    else if ( volume == AMP::Mesh::Edge )
-        return AMP::Mesh::Vertex;
-    else if ( volume == AMP::Mesh::Face )
-        return AMP::Mesh::Edge;
-    else if ( volume == AMP::Mesh::Volume )
-        return AMP::Mesh::Face;
-    return AMP::Mesh::null;
+    if ( volume == AMP::Mesh::GeomType::Vertex )
+        return AMP::Mesh::GeomType::Vertex;
+    else if ( volume == AMP::Mesh::GeomType::Edge )
+        return AMP::Mesh::GeomType::Vertex;
+    else if ( volume == AMP::Mesh::GeomType::Face )
+        return AMP::Mesh::GeomType::Edge;
+    else if ( volume == AMP::Mesh::GeomType::Volume )
+        return AMP::Mesh::GeomType::Face;
+    return AMP::Mesh::GeomType::null;
 }
 
 
@@ -76,7 +76,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     // Create the meshes from the input database
     PROFILE_START( "Load Mesh" );
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( params );
-    auto pointType = AMP::Mesh::Vertex;
+    auto pointType = AMP::Mesh::GeomType::Vertex;
     auto volumeType = mesh->getGeomType();
     auto surfaceType = getSurfaceType( volumeType );
     globalComm.barrier();
@@ -169,7 +169,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
 // Initialize the data
 #ifdef USE_AMP_VECTORS
     rank_vec->setToScalar( globalComm.getRank() );
-    rank_vec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    rank_vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     std::vector<size_t> dofs;
     for ( AMP::Mesh::MeshIterator it = DOF_vector->getIterator(); it != it.end(); it++ ) {
         AMP::Mesh::MeshElementID id = it->globalID();
@@ -177,7 +177,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
         std::vector<double> pos = it->coord();
         position->setValuesByGlobalID( dofs.size(), &dofs[0], &pos[0] );
     }
-    position->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    position->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     if ( submesh != nullptr ) {
         id_vec->setToScalar( -1 );
         std::vector<int> ids = submesh->getBoundaryIDs();

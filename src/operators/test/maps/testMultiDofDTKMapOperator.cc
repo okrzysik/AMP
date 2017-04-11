@@ -60,10 +60,10 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     bool const split     = true;
     AMP::Discretization::DOFManager::shared_ptr phiDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::Vertex, ghostWidth, 1, split );
+            mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, 1, split );
     AMP::Discretization::DOFManager::shared_ptr eectDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::Vertex, ghostWidth, 5, split );
+            mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, 5, split );
 
     // Construct Vectors
     AMP::pout << "------------------------------------\n";
@@ -100,10 +100,10 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( mesh );
     siloWriter->setDecomposition( 1 );
-    siloWriter->registerVector( potentialMapVec, mesh, AMP::Mesh::Vertex, "potentialMapVec" );
-    siloWriter->registerVector( potentialSolVec, mesh, AMP::Mesh::Vertex, "potentialSolVec" );
-    siloWriter->registerVector( ElectrodeMapVec, mesh, AMP::Mesh::Vertex, "batteryMapVec" );
-    siloWriter->registerVector( ElectrodeSolVec, mesh, AMP::Mesh::Vertex, "batterySolVec" );
+    siloWriter->registerVector( potentialMapVec, mesh, AMP::Mesh::GeomType::Vertex, "potentialMapVec" );
+    siloWriter->registerVector( potentialSolVec, mesh, AMP::Mesh::GeomType::Vertex, "potentialSolVec" );
+    siloWriter->registerVector( ElectrodeMapVec, mesh, AMP::Mesh::GeomType::Vertex, "batteryMapVec" );
+    siloWriter->registerVector( ElectrodeSolVec, mesh, AMP::Mesh::GeomType::Vertex, "batterySolVec" );
 
     //---------------------------------------------------
 
@@ -136,7 +136,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     AMP::Mesh::MeshIterator node;
     AMP::Mesh::MeshIterator end_node;
     if ( anodeCCMesh ) {
-        node     = anodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
+        node     = anodeCCMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 5, 0 );
         end_node = node.end();
         for ( ; node != end_node; ++node ) {
             std::vector<size_t> bndGlobalIds;
@@ -151,7 +151,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     }
 
     if ( cathodeCCMesh ) {
-        node     = cathodeCCMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 3, 0 );
+        node     = cathodeCCMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 3, 0 );
         end_node = node.end();
         for ( ; node != end_node; ++node ) {
             std::vector<size_t> bndGlobalIds;
@@ -166,7 +166,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     }
 
     if ( cellSandwichMesh ) {
-        node     = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
+        node     = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1, 0 );
         end_node = node.end();
         for ( ; node != end_node; ++node ) {
             std::vector<size_t> bndGlobalIds;
@@ -179,7 +179,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
             BatterySolVec->setValueByGlobalID( bndGlobalIds[3], val );
         } // end for node
 
-        node     = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 2, 0 );
+        node     = cellSandwichMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2, 0 );
         end_node = node.end();
         for ( ; node != end_node; ++node ) {
             std::vector<size_t> bndGlobalIds;
@@ -192,7 +192,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
             BatterySolVec->setValueByGlobalID( bndGlobalIds[3], val );
         } // end for node
     }
-    multiSolVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    multiSolVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     siloWriter->writeFile( logFile, 0 );
 
     // create dtk map operator.
@@ -283,7 +283,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
             ElectrodeMapVec->constSelect( meshSelector, "V4" );
 
         if ( meshName.compare( "CathodeCC_3_1" ) == 0 ) {
-            node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 3, 0 );
+            node     = adapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 3, 0 );
             end_node = node.end();
             errorVec = commSubsetPVec->constSelect(
                 AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
@@ -304,7 +304,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
                 ut->failure( whatAmIChecking );
 
         } else if ( meshName.compare( "AnodeCC_1_1" ) == 0 ) {
-            node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 5, 0 );
+            node     = adapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 5, 0 );
             end_node = node.end();
             errorVec = commSubsetPVec->constSelect(
                 AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
@@ -325,7 +325,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
                 ut->failure( whatAmIChecking );
 
         } else if ( meshName.compare( "CellSandwich_2_1" ) == 0 ) {
-            node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 2, 0 );
+            node     = adapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2, 0 );
             end_node = node.end();
             errorVec = commSubsetEVec->constSelect(
                 AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
@@ -345,7 +345,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
             if ( errorNorm > tolerance )
                 ut->failure( whatAmIChecking );
             ////########################################
-            node     = adapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
+            node     = adapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1, 0 );
             end_node = node.end();
             errorVec = commSubsetEVec->constSelect(
                 AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );

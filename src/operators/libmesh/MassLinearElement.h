@@ -5,7 +5,7 @@
 
 #include "utils/shared_ptr.h"
 
-/* AMP files */
+// AMP files
 #include "operators/libmesh/MassElement.h"
 
 namespace AMP {
@@ -18,7 +18,7 @@ public:
     explicit MassLinearElement( const AMP::shared_ptr<ElementOperationParameters> &params )
         : MassElement( params ),
           d_elementMassMatrix( NULL ),
-          d_equation( MassDensityModel::UnknownMassEquation )
+          d_equation( MassDensityModel::MassEquation::UnknownMassEquation )
     {
         d_densityAtGauss = params->d_db->getBoolWithDefault( "DensityAtGaussPoints", true );
     }

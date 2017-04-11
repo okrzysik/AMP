@@ -137,7 +137,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
     AMP::Discretization::DOFManager::shared_ptr DOF_vector =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
     AMP::LinearAlgebra::Vector::shared_ptr mechNlSolVec =
         AMP::LinearAlgebra::createVector( DOF_vector, residualVariable, true );
     AMP::LinearAlgebra::Vector::shared_ptr mechNlRhsVec =
@@ -149,14 +149,14 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( mechNlSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution_Vector" );
-    siloWriter->registerVector( mechNlResVec, meshAdapter, AMP::Mesh::Vertex, "Residual_Vector" );
+    siloWriter->registerVector( mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
+    siloWriter->registerVector( mechNlResVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual_Vector" );
 #endif
 
     // Initial guess for NL solver must satisfy the displacement boundary conditions
     mechNlSolVec->setToScalar( 0.0 );
     dirichletDispInVecOp->apply( nullVec, mechNlSolVec );
-    mechNlSolVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    mechNlSolVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     nonlinBvpOperator->apply( mechNlSolVec, mechNlResVec );
     linBvpOperator->reset( nonlinBvpOperator->getParameters( "Jacobian", mechNlSolVec ) );
@@ -207,7 +207,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
         double scaleValue = ( (double) step + 1.0 ) / NumberOfLoadingSteps;
         mechNlScaledRhsVec->scale( scaleValue, mechNlRhsVec );
-        mechNlScaledRhsVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        mechNlScaledRhsVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         AMP::pout << "L2 Norm of RHS at loading step " << ( step + 1 ) << " is "
                   << mechNlScaledRhsVec->L2Norm() << std::endl;
 

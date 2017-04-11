@@ -129,10 +129,10 @@ void nekPipeOperator( AMP::UnitTest *ut )
     bool split               = true;
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+            mesh, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // Have mesh manager create vector over all meshes
     AMP::LinearAlgebra::Vector::shared_ptr r_gp =
@@ -147,7 +147,7 @@ void nekPipeOperator( AMP::UnitTest *ut )
     moabGPMap->apply( nullVec, nullVec, r_gp, 0.0, 0.0 );
 
     AMP::pout << "Creating Node-Based Moab Map Operator" << std::endl;
-    nekDB->putString( "InterpolateToType", "Vertex" );
+    nekDB->putString( "InterpolateToType", "GeomType::Vertex" );
     SP_MoabMap moabNodeMap( new MoabMap( mapParams ) );
 
     moabNodeMap->apply( nullVec, nullVec, r_node, 0.0, 0.0 );
@@ -190,8 +190,8 @@ void nekPipeOperator( AMP::UnitTest *ut )
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( mesh );
-    siloWriter->registerVector( r_gp, mesh, AMP::Mesh::Volume, "AllGaussPointPressures" );
-    siloWriter->registerVector( r_node, mesh, AMP::Mesh::Vertex, "AllNodalPressures" );
+    siloWriter->registerVector( r_gp, mesh, AMP::Mesh::GeomType::Volume, "AllGaussPointPressures" );
+    siloWriter->registerVector( r_node, mesh, AMP::Mesh::GeomType::Vertex, "AllNodalPressures" );
     siloWriter->writeFile( "Nek_Pressure", 0 );
 #endif
 

@@ -59,7 +59,7 @@ void LinearTimeOperatorTest( AMP::UnitTest *ut )
 
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     //----------------------------------------------------------------------------------------
     // create a linear BVP operator

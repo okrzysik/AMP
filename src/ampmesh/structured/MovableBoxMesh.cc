@@ -25,7 +25,7 @@ MovableBoxMesh::MovableBoxMesh( const AMP::Mesh::BoxMesh& mesh ):
     BoxMesh( mesh )
 {
     // Get a list of all nodes on the current processor
-    MeshIterator nodeIterator = mesh.getIterator( Vertex, d_max_gcw );
+    MeshIterator nodeIterator = mesh.getIterator( GeomType::Vertex, d_max_gcw );
     d_index.reserve( nodeIterator.size() );
     for ( size_t i = 0; i < nodeIterator.size(); ++i, ++nodeIterator ) {
         auto element = dynamic_cast<structuredMeshElement*>( nodeIterator->getRawElement() );
@@ -76,8 +76,8 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
     // Create the position vector with the necessary ghost nodes
     AMP::Discretization::DOFManager::shared_ptr DOFs =
         AMP::Discretization::simpleDOFManager::create( shared_from_this(),
-                                                       getIterator( AMP::Mesh::Vertex, d_max_gcw ),
-                                                       getIterator( AMP::Mesh::Vertex, 0 ),
+                                                       getIterator( AMP::Mesh::GeomType::Vertex, d_max_gcw ),
+                                                       getIterator( AMP::Mesh::GeomType::Vertex, 0 ),
                                                        PhysicalDim );
     AMP::LinearAlgebra::Variable::shared_ptr nodalVariable(
         new AMP::LinearAlgebra::Variable( "tmp_pos" ) );
@@ -85,7 +85,7 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
         AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
     std::vector<size_t> dofs1( PhysicalDim );
     std::vector<size_t> dofs2( PhysicalDim );
-    AMP::Mesh::MeshIterator cur                      = getIterator( AMP::Mesh::Vertex, 0 );
+    AMP::Mesh::MeshIterator cur                      = getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     AMP::Mesh::MeshIterator end                      = cur.end();
     AMP::Discretization::DOFManager::shared_ptr DOFx = x->getDOFManager();
     std::vector<double> data( PhysicalDim );
@@ -97,7 +97,7 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
         displacement->setValuesByGlobalID( PhysicalDim, &dofs2[0], &data[0] );
         ++cur;
     }
-    displacement->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    displacement->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     // Move all nodes (including the ghost nodes)
     std::vector<size_t> dofs( PhysicalDim );
     std::vector<double> disp( PhysicalDim );
@@ -147,7 +147,7 @@ AMP::shared_ptr<Mesh> MovableBoxMesh::copy() const
 ****************************************************************/
 void MovableBoxMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
-    AMP_ASSERT( index.type() == AMP::Mesh::Vertex );
+    AMP_ASSERT( index.type() == AMP::Mesh::GeomType::Vertex );
     size_t i = AMP::Utilities::findfirst( d_index, index );
     AMP_ASSERT( d_index[i] == index );
     for ( int d  = 0; d < PhysicalDim; d++ )

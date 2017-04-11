@@ -64,7 +64,7 @@ void AsyncMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     applyFinish( u, f );
     if ( requiresMakeConsistentSet() ) {
         AMP_ASSERT( d_OutputVector.get() != nullptr );
-        d_OutputVector->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        d_OutputVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     }
     PROFILE_STOP( "apply" );
 }

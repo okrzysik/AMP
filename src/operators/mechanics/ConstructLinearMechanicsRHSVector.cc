@@ -12,8 +12,8 @@ void computeTemperatureRhsVector(
     const AMP::shared_ptr<AMP::LinearAlgebra::Vector> &prevTemperatureVec,
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec )
 {
-    currTemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    prevTemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    currTemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    prevTemperatureVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal =
         rhsVec->subsetVectorForVariable( displacementVar );
@@ -94,11 +94,11 @@ void computeTemperatureRhsVector(
     AMP::Discretization::DOFManager::shared_ptr dof_map_0 = rInternal->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr dof_map_1 = currTemperatureVec->getDOFManager();
 
-    AMP::Mesh::MeshIterator el     = mesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     for ( ; el != end_el; ++el ) {
-        std::vector<AMP::Mesh::MeshElement> currNodes = el->getElements( AMP::Mesh::Vertex );
+        std::vector<AMP::Mesh::MeshElement> currNodes = el->getElements( AMP::Mesh::GeomType::Vertex );
         size_t numNodesInCurrElem                     = currNodes.size();
 
         std::vector<std::vector<size_t>> type0DofIndices( currNodes.size() );
@@ -255,5 +255,5 @@ void computeTemperatureRhsVector(
         elem = nullptr;
     } // end el
 
-    rInternal->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
+    rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_ADD );
 }

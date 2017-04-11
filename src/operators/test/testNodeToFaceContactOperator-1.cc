@@ -24,7 +24,7 @@
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 #include "operators/boundary/DirichletVectorCorrection.h"
-#include "operators/contact/NodeToFaceContactOperator.h"
+#include "operators/contact/NodeToGeomType::FaceContactOperator.h"
 #include "operators/mechanics/IsotropicElasticModel.h"
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "operators/mechanics/MechanicsMaterialModel.h"
@@ -43,7 +43,7 @@
 #include "ampmesh/latex_visualization_tools.h"
 #include <fstream>
 
-#include "testNodeToFaceContactOperator.h"
+#include "testNodeToGeomType::FaceContactOperator.h"
 
 void myGetRow( void *object, int row, std::vector<unsigned int> &cols, std::vector<double> &values )
 {
@@ -84,7 +84,7 @@ void myGetRow( void *object, int row, std::vector<unsigned int> &cols, std::vect
 void selectNodes( AMP::Mesh::Mesh::shared_ptr mesh,
                   std::vector<AMP::Mesh::MeshElementID> &nodesGlobalIDs )
 {
-    AMP::Mesh::MeshIterator meshIterator = mesh->getBoundaryIDIterator( AMP::Mesh::Vertex, 4 );
+    AMP::Mesh::MeshIterator meshIterator = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 4 );
     AMP::Mesh::MeshIterator meshIterator_begin = meshIterator.begin();
     AMP::Mesh::MeshIterator meshIterator_end   = meshIterator.end();
     nodesGlobalIDs.clear();
@@ -132,14 +132,14 @@ void applySlaveLoadOperator( double loadParameterX,
         double totalLoadX = 0.0;
         double totalLoadZ = 0.0;
         AMP::Mesh::MeshIterator boundaryIterator =
-            meshAdapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 0, 0 );
+            meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 0, 0 );
         AMP::Mesh::MeshIterator boundaryIterator_begin = boundaryIterator.begin(),
                                 boundaryIterator_end   = boundaryIterator.end();
         std::vector<double> vertexCoordinates;
         std::vector<size_t> vertexDofIndices;
-        size_t nFaces = ( meshAdapter->getBoundaryIDIterator( AMP::Mesh::Face, 0, 0 ) ).size();
-        loadParameterX /= static_cast<double>( nFaces );
-        loadParameterZ /= static_cast<double>( nFaces );
+        size_t nGeomType::Faces = ( meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 0, 0 ) ).size();
+        loadParameterX /= static_cast<double>( nGeomType::Faces );
+        loadParameterZ /= static_cast<double>( nGeomType::Faces );
         for ( boundaryIterator = boundaryIterator_begin; boundaryIterator != boundaryIterator_end;
               ++boundaryIterator ) {
             vertexCoordinates = boundaryIterator->coord();
@@ -174,7 +174,7 @@ void applySlaveLoadOperator( double loadParameterX,
         loadValuesX.size(), &( dofIndicesX[0] ), &( loadValuesX[0] ) );
     loadVector->setLocalValuesByGlobalID(
         loadValuesZ.size(), &( dofIndicesZ[0] ), &( loadValuesZ[0] ) );
-    loadVector->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    loadVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 
 void applyMasterLoadOperator( double loadParameterX,
@@ -195,14 +195,14 @@ void applyMasterLoadOperator( double loadParameterX,
         double totalLoadX = 0.0;
         double totalLoadZ = 0.0;
         AMP::Mesh::MeshIterator boundaryIterator =
-            meshAdapter->getBoundaryIDIterator( AMP::Mesh::Vertex, 1, 0 );
+            meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1, 0 );
         AMP::Mesh::MeshIterator boundaryIterator_begin = boundaryIterator.begin(),
                                 boundaryIterator_end   = boundaryIterator.end();
         std::vector<double> vertexCoordinates;
         std::vector<size_t> vertexDofIndices;
-        size_t nFaces = ( meshAdapter->getBoundaryIDIterator( AMP::Mesh::Face, 1, 0 ) ).size();
-        loadParameterX /= static_cast<double>( nFaces );
-        loadParameterZ /= static_cast<double>( nFaces );
+        size_t nGeomType::Faces = ( meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 1, 0 ) ).size();
+        loadParameterX /= static_cast<double>( nGeomType::Faces );
+        loadParameterZ /= static_cast<double>( nGeomType::Faces );
         for ( boundaryIterator = boundaryIterator_begin; boundaryIterator != boundaryIterator_end;
               ++boundaryIterator ) {
             vertexCoordinates = boundaryIterator->coord();
@@ -237,7 +237,7 @@ void applyMasterLoadOperator( double loadParameterX,
         loadValuesX.size(), &( dofIndicesX[0] ), &( loadValuesX[0] ) );
     loadVector->setLocalValuesByGlobalID(
         loadValuesZ.size(), &( dofIndicesZ[0] ), &( loadValuesZ[0] ) );
-    loadVector->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    loadVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 
 void myTest( AMP::UnitTest *ut, std::string exeName )
@@ -298,7 +298,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     bool split          = true;
     AMP::Discretization::DOFManager::shared_ptr dispDofManager =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, dofsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, dofsPerNode, split );
 
     // Build a column operator and a column preconditioner
     AMP::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
@@ -342,8 +342,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     contactOperatorParams->d_MasterMechanicsMaterialModel = masterMechanicsMaterialModel;
     contactOperatorParams->reset(); // got segfault at constructor since d_Mesh was pointing to NULL
 
-    AMP::shared_ptr<AMP::Operator::NodeToFaceContactOperator> contactOperator(
-        new AMP::Operator::NodeToFaceContactOperator( contactOperatorParams ) );
+    AMP::shared_ptr<AMP::Operator::NodeToGeomType::FaceContactOperator> contactOperator(
+        new AMP::Operator::NodeToGeomType::FaceContactOperator( contactOperatorParams ) );
 
     contactOperator->initialize();
     contactOperator->setContactIsFrictionless(
@@ -394,16 +394,16 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         // std::fstream masterFout;
         // masterFout.open("master_pellet", std::fstream::out);
         // double point_of_view[3] = { 1.0, 1.0, 1.0 };
-        // drawFacesOnBoundaryID(masterMeshAdapter, 0, masterFout, point_of_view, "blue");
-        // drawFacesOnBoundaryID(masterMeshAdapter, 1, masterFout, point_of_view, "green");
-        // drawFacesOnBoundaryID(masterMeshAdapter, 2, masterFout, point_of_view, "red");
-        // drawFacesOnBoundaryID(masterMeshAdapter, 3, masterFout, point_of_view, "magenta");
-        // drawFacesOnBoundaryID(masterMeshAdapter, 4, masterFout, point_of_view, "black");
-        // drawFacesOnBoundaryID(masterMeshAdapter, 5, masterFout, point_of_view, "orange");
-        // drawFacesOnBoundaryID(masterMeshAdapter, 6, masterFout, point_of_view, "pink");
-        // drawFacesOnBoundaryID(masterMeshAdapter, 7, masterFout, point_of_view, "violet");
-        ////drawFacesOnBoundaryID(masterMeshAdapter, 1, masterFout, point_of_view);
-        ////drawFacesOnBoundaryID(masterMeshAdapter, 4, masterFout, point_of_view);
+        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 0, masterFout, point_of_view, "blue");
+        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 1, masterFout, point_of_view, "green");
+        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 2, masterFout, point_of_view, "red");
+        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 3, masterFout, point_of_view, "magenta");
+        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 4, masterFout, point_of_view, "black");
+        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 5, masterFout, point_of_view, "orange");
+        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 6, masterFout, point_of_view, "pink");
+        // drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 7, masterFout, point_of_view, "violet");
+        ////drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 1, masterFout, point_of_view);
+        ////drawGeomType::FacesOnBoundaryID(masterMeshAdapter, 4, masterFout, point_of_view);
         // masterFout.close();
     } // end if
 
@@ -449,9 +449,9 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         // std::fstream slaveFout;
         // slaveFout.open("slave_pellet", std::fstream::out);
         // double point_of_view[3] = { 1.0, 1.0, 1.0 };
-        // drawFacesOnBoundaryID(slaveMeshAdapter, 0, slaveFout, point_of_view, "dashed,red");
-        ////drawFacesOnBoundaryID(slaveMeshAdapter, 1, slaveFout, point_of_view, "dashed");
-        ////drawFacesOnBoundaryID(slaveMeshAdapter, 4, slaveFout, point_of_view, "dashed");
+        // drawGeomType::FacesOnBoundaryID(slaveMeshAdapter, 0, slaveFout, point_of_view, "dashed,red");
+        ////drawGeomType::FacesOnBoundaryID(slaveMeshAdapter, 1, slaveFout, point_of_view, "dashed");
+        ////drawGeomType::FacesOnBoundaryID(slaveMeshAdapter, 4, slaveFout, point_of_view, "dashed");
         ////drawVerticesOnBoundaryID(slaveMeshAdapter, 2, slaveFout, point_of_view, "red");
         // slaveFout.close();
     } // end if
@@ -467,10 +467,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     int numMasterLocalNodes = 0;
     int numSlaveLocalNodes  = 0;
     if ( masterMeshAdapter.get() != NULL ) {
-        numMasterLocalNodes = masterMeshAdapter->numLocalElements( AMP::Mesh::Vertex );
+        numMasterLocalNodes = masterMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
     }
     if ( slaveMeshAdapter.get() != NULL ) {
-        numSlaveLocalNodes = slaveMeshAdapter->numLocalElements( AMP::Mesh::Vertex );
+        numSlaveLocalNodes = slaveMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
     }
     int matLocalSize = dofsPerNode * ( numMasterLocalNodes + numSlaveLocalNodes );
     AMP_ASSERT( matLocalSize == static_cast<int>( dispDofManager->numLocalDOF() ) );
@@ -527,7 +527,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Variable::shared_ptr dispVar = columnOperator->getOutputVariable();
     AMP::Discretization::DOFManager::shared_ptr tempDofManager =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, 1, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, 1, split );
     AMP::LinearAlgebra::Vector::shared_ptr tempVec =
         AMP::LinearAlgebra::createVector( tempDofManager, tempVar, split );
     double const referenceTemperature = 300.0;
@@ -597,24 +597,24 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 #ifdef USE_EXT_SILO
     {
         siloWriter->registerVector(
-            columnSolVec, meshAdapter, AMP::Mesh::Vertex, "SolutionDisplacement" );
-        siloWriter->registerVector( sigma_eff, meshAdapter, AMP::Mesh::Vertex, "vonMisesStresses" );
-        siloWriter->registerVector( sigma_xx, meshAdapter, AMP::Mesh::Vertex, "sigma_xx" );
-        siloWriter->registerVector( sigma_yy, meshAdapter, AMP::Mesh::Vertex, "sigma_yy" );
-        siloWriter->registerVector( sigma_zz, meshAdapter, AMP::Mesh::Vertex, "sigma_zz" );
-        siloWriter->registerVector( sigma_yz, meshAdapter, AMP::Mesh::Vertex, "sigma_yz" );
-        siloWriter->registerVector( sigma_xz, meshAdapter, AMP::Mesh::Vertex, "sigma_xz" );
-        siloWriter->registerVector( sigma_xy, meshAdapter, AMP::Mesh::Vertex, "sigma_xy" );
+            columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "SolutionDisplacement" );
+        siloWriter->registerVector( sigma_eff, meshAdapter, AMP::Mesh::GeomType::Vertex, "vonMisesStresses" );
+        siloWriter->registerVector( sigma_xx, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xx" );
+        siloWriter->registerVector( sigma_yy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yy" );
+        siloWriter->registerVector( sigma_zz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_zz" );
+        siloWriter->registerVector( sigma_yz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yz" );
+        siloWriter->registerVector( sigma_xz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xz" );
+        siloWriter->registerVector( sigma_xy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xy" );
         siloWriter->registerVector(
-            activeSetBeforeUpdateVec, meshAdapter, AMP::Mesh::Vertex, "ActiveSetBeforeUpdate" );
+            activeSetBeforeUpdateVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ActiveSetBeforeUpdate" );
         siloWriter->registerVector(
-            activeSetAfterUpdateVec, meshAdapter, AMP::Mesh::Vertex, "ActiveSetAfterUpdate" );
+            activeSetAfterUpdateVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ActiveSetAfterUpdate" );
         siloWriter->registerVector(
-            surfaceTractionVec, meshAdapter, AMP::Mesh::Vertex, "Traction" );
-        siloWriter->registerVector( normalVectorVec, meshAdapter, AMP::Mesh::Vertex, "Normal" );
+            surfaceTractionVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Traction" );
+        siloWriter->registerVector( normalVectorVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Normal" );
         siloWriter->registerVector(
-            contactPressureVec, meshAdapter, AMP::Mesh::Vertex, "ContactPressure" );
-        siloWriter->registerVector( contactShiftVec, meshAdapter, AMP::Mesh::Vertex, "Shift" );
+            contactPressureVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ContactPressure" );
+        siloWriter->registerVector( contactShiftVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Shift" );
         char outFileName[256];
         sprintf( outFileName, "TOTO_%d", 0 );
         siloWriter->writeFile( outFileName, 0 );
@@ -832,16 +832,16 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         std::fstream masterFout;
         masterFout.open( "master_pellet_displaced_mesh", std::fstream::out );
         double point_of_view[3] = { 1.0, 1.0, 1.0 };
-        drawFacesOnBoundaryID( masterMeshAdapter, 1, masterFout, point_of_view, "" );
-        drawFacesOnBoundaryID( masterMeshAdapter, 4, masterFout, point_of_view, "" );
+        drawGeomType::FacesOnBoundaryID( masterMeshAdapter, 1, masterFout, point_of_view, "" );
+        drawGeomType::FacesOnBoundaryID( masterMeshAdapter, 4, masterFout, point_of_view, "" );
         masterFout.close();
     } // end if
     if ( slaveMeshAdapter.get() != NULL ) {
         std::fstream slaveFout;
         slaveFout.open( "slave_pellet_displaced_mesh", std::fstream::out );
         double point_of_view[3] = { 1.0, 1.0, 1.0 };
-        drawFacesOnBoundaryID( slaveMeshAdapter, 1, slaveFout, point_of_view, "dashed" );
-        drawFacesOnBoundaryID( slaveMeshAdapter, 4, slaveFout, point_of_view, "dashed" );
+        drawGeomType::FacesOnBoundaryID( slaveMeshAdapter, 1, slaveFout, point_of_view, "dashed" );
+        drawGeomType::FacesOnBoundaryID( slaveMeshAdapter, 4, slaveFout, point_of_view, "dashed" );
         // drawVerticesOnBoundaryID(slaveMeshAdapter, 2, slaveFout, point_of_view, "red");
         slaveFout.close();
     } // end if
@@ -866,7 +866,7 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.push_back( "testNodeToFaceContactOperator-1" );
+    exeNames.push_back( "testNodeToGeomType::FaceContactOperator-1" );
 
     for ( size_t i = 0; i < exeNames.size(); ++i ) {
         myTest( &ut, exeNames[i] );

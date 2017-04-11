@@ -123,20 +123,20 @@ Vector::UpdateState ManagedVector::getUpdateStatus() const
     }
     if ( vec.get() != nullptr ) {
         Vector::UpdateState sub_state = vec->getUpdateStatus();
-        if ( sub_state == UNCHANGED ) {
+        if ( sub_state == UpdateState::UNCHANGED ) {
             // No change in state
-        } else if ( sub_state == LOCAL_CHANGED && state == UNCHANGED ) {
-            state = LOCAL_CHANGED;
-        } else if ( sub_state == LOCAL_CHANGED ) {
+        } else if ( sub_state == UpdateState::LOCAL_CHANGED && state == UpdateState::UNCHANGED ) {
+            state = UpdateState::LOCAL_CHANGED;
+        } else if ( sub_state == UpdateState::LOCAL_CHANGED ) {
             // No change in state
-        } else if ( sub_state == ADDING &&
-                    ( state == UNCHANGED || state == LOCAL_CHANGED || state == ADDING ) ) {
-            state = ADDING;
-        } else if ( sub_state == SETTING &&
-                    ( state == UNCHANGED || state == LOCAL_CHANGED || state == SETTING ) ) {
-            state = SETTING;
+        } else if ( sub_state == UpdateState::ADDING &&
+                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED || state == UpdateState::ADDING ) ) {
+            state = UpdateState::ADDING;
+        } else if ( sub_state == UpdateState::SETTING &&
+                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED || state == UpdateState::SETTING ) ) {
+            state = UpdateState::SETTING;
         } else {
-            state = MIXED;
+            state = UpdateState::MIXED;
         }
     }
     return state;
@@ -207,9 +207,9 @@ void ManagedVector::getGhostValuesByGlobalID( int numVals, size_t *ndx, double *
 void ManagedVector::setValuesByLocalID( int i, size_t *id, const double *val )
 {
     INCREMENT_COUNT( "Virtual" );
-    AMP_ASSERT( *d_UpdateState != ADDING );
-    if ( *d_UpdateState == UNCHANGED )
-        *d_UpdateState = LOCAL_CHANGED;
+    AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
     d_Engine->setValuesByLocalID( i, id, val );
     fireDataChange();
 }
@@ -217,9 +217,9 @@ void ManagedVector::setValuesByLocalID( int i, size_t *id, const double *val )
 void ManagedVector::setLocalValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
     INCREMENT_COUNT( "Virtual" );
-    AMP_ASSERT( *d_UpdateState != ADDING );
-    if ( *d_UpdateState == UNCHANGED )
-        *d_UpdateState = LOCAL_CHANGED;
+    AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
     d_Engine->setLocalValuesByGlobalID( numVals, ndx, vals );
     fireDataChange();
 }
@@ -240,8 +240,8 @@ void ManagedVector::setValuesByGlobalID( int numVals, size_t *ndx, const double 
     Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec.get() != nullptr ) {
         INCREMENT_COUNT( "Virtual" );
-        AMP_ASSERT( *d_UpdateState != ADDING );
-        *d_UpdateState         = SETTING;
+        AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
+        *d_UpdateState         = UpdateState::SETTING;
         Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
         vec->setValuesByGlobalID( numVals, ndx, vals );
         fireDataChange();
@@ -274,9 +274,9 @@ void ManagedVector::setValuesByGlobalID( int numVals, size_t *ndx, const double 
 void ManagedVector::addValuesByLocalID( int i, size_t *id, const double *val )
 {
     INCREMENT_COUNT( "Virtual" );
-    AMP_ASSERT( *d_UpdateState != SETTING );
-    if ( *d_UpdateState == UNCHANGED )
-        *d_UpdateState = LOCAL_CHANGED;
+    AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
     d_Engine->addValuesByLocalID( i, id, val );
     fireDataChange();
 }
@@ -284,9 +284,9 @@ void ManagedVector::addValuesByLocalID( int i, size_t *id, const double *val )
 void ManagedVector::addLocalValuesByGlobalID( int i, size_t *id, const double *val )
 {
     INCREMENT_COUNT( "Virtual" );
-    AMP_ASSERT( *d_UpdateState != SETTING );
-    if ( *d_UpdateState == UNCHANGED )
-        *d_UpdateState = LOCAL_CHANGED;
+    AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
     d_Engine->addLocalValuesByGlobalID( i, id, val );
     fireDataChange();
 }

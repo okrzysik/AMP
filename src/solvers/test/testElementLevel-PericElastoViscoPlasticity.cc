@@ -75,7 +75,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         AMP::Mesh::Mesh::shared_ptr meshAdapter( new AMP::Mesh::libMesh( mesh, "cook" ) );
 
         AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF =
-            AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3 );
+            AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
         AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                     "Key ''NumberOfLoadingSteps'' is missing!" );

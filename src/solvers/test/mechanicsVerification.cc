@@ -79,7 +79,7 @@ void computeForcingTerms(
     AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( volumeOp->getInputVariable() );
  AMP::LinearAlgebra::Variable::shared_ptr variable = multivariable->getVariable(0);
  AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF =
-    AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::Vertex,1,3);
+    AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::GeomType::Vertex,1,3);
 
  AMP::LinearAlgebra::Vector::shared_ptr dummyIntegrationPointVecU =
  AMP::LinearAlgebra::createVector(NodalVectorDOF,variable);
@@ -88,7 +88,7 @@ void computeForcingTerms(
  AMP::LinearAlgebra::Vector::shared_ptr dummyIntegrationPointVecW =
  AMP::LinearAlgebra::createVector(NodalVectorDOF,variable);
  // Loop over all elements
- AMP::Mesh::MeshIterator el = meshAdapter->getIterator(AMP::Mesh::Volume,0);
+ AMP::Mesh::MeshIterator el = meshAdapter->getIterator(AMP::Mesh::GeomType::Volume,0);
  AMP::Mesh::MeshIterator end_el = el.end();
  for( ; el != end_el; ++el) {
    volumeOp->getSourceElement()->getFEBase()->reinit(&el->getElem());
@@ -161,7 +161,7 @@ void computeExactSolution( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 {
     // Loop over all nodes
     AMP::Discretization::DOFManager::shared_ptr dofMap = exactSolutionsVec->getDOFManager();
-    AMP::Mesh::MeshIterator nd     = meshAdapter->getIterator( AMP::Mesh::Vertex, 0 );
+    AMP::Mesh::MeshIterator nd     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     AMP::Mesh::MeshIterator end_nd = nd.end();
     for ( ; nd != end_nd; ++nd ) {
         std::vector<size_t> globalIDs;
@@ -342,7 +342,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     /** Vectors: solution, right-hand side, residual */
     AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3 );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
     AMP::LinearAlgebra::Vector::shared_ptr solVec =
         AMP::LinearAlgebra::createVector( NodalVectorDOF, bvpOperator->getInputVariable() );
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec =
@@ -504,7 +504,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
 
     /** scale L2 norm by a factor h^(d/2) */
     double Lx = 10.0 * scaleMeshFactor, Ly = 10.0 * scaleMeshFactor, Lz = 10.0 * scaleMeshFactor;
-    double nElements   = meshAdapter->numGlobalElements( AMP::Mesh::Volume );
+    double nElements   = meshAdapter->numGlobalElements( AMP::Mesh::GeomType::Volume );
     double scaleFactor = sqrt( Lx * Ly * Lz / nElements );
     AMP::pout << "number of elements = " << nElements << "\n";
     AMP::pout << "scale factor = " << scaleFactor << "\n";
@@ -538,11 +538,11 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
 
-    siloWriter->registerVector( exactErrVec, meshAdapter, AMP::Mesh::Vertex, "Exact_Error_Vector" );
+    siloWriter->registerVector( exactErrVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Exact_Error_Vector" );
     siloWriter->registerVector(
-        exactSolVec, meshAdapter, AMP::Mesh::Vertex, "Exact_Solution_Vector" );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution_Vector" );
-    // siloWriter->registerVector( resVec, meshAdapter , AMP::Mesh::Vertex, "Residual_Vector");
+        exactSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Exact_Solution_Vector" );
+    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
+    // siloWriter->registerVector( resVec, meshAdapter , AMP::Mesh::GeomType::Vertex, "Residual_Vector");
 
     char outFileName1[256];
     sprintf( outFileName1, "undeformedBeam_%d", exampleNum );

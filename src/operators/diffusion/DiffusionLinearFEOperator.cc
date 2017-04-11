@@ -60,7 +60,7 @@ void DiffusionLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
     if ( d_temperature.get() != nullptr ) {
         if ( params->d_temperature.get() != nullptr ) {
             d_temperature->copyVector( params->d_temperature );
-            d_temperature->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+            d_temperature->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         } else {
             d_temperature.reset();
         }
@@ -73,7 +73,7 @@ void DiffusionLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
     if ( d_concentration.get() != nullptr ) {
         if ( params->d_concentration.get() != nullptr ) {
             d_concentration->copyVector( params->d_concentration );
-            d_concentration->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+            d_concentration->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         } else {
             d_concentration.reset();
         }
@@ -85,7 +85,7 @@ void DiffusionLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
     if ( d_burnup.get() != nullptr ) {
         if ( params->d_burnup.get() != nullptr ) {
             d_burnup->copyVector( params->d_burnup );
-            d_burnup->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+            d_burnup->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         } else {
             d_burnup.reset();
         }
@@ -124,7 +124,7 @@ void DiffusionLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
     if ( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionLinearFEOperator::preElementOperation, entering" << std::endl;
 
-    d_currNodes = elem.getElements( AMP::Mesh::Vertex );
+    d_currNodes = elem.getElements( AMP::Mesh::GeomType::Vertex );
 
     unsigned int num_local_dofs = d_currNodes.size();
 

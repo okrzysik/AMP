@@ -81,10 +81,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     bool split               = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+            meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
     //--------------------------------------------------
 
     AMP::pout << "Constructing Nonlinear Thermal Operator..." << std::endl;
@@ -150,7 +150,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
     /////////////////////////////////////////////////////
-    //  Integrate Nuclear Rhs over Desnity * Volume //
+    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
     /////////////////////////////////////////////////////
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
@@ -290,8 +290,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
-    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
     siloWriter->writeFile( exeName, 0 );
 #endif
 

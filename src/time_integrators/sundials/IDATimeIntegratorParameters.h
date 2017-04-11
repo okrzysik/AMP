@@ -19,7 +19,6 @@
 //#include "operators/MassMatrix.h"
 //#endif
 #include "operators/Operator.h"
-#include "operators/libmesh/MassLinearFEOperator.h"
 
 #ifndef included_SolverStrategy
 #include "solvers/SolverStrategy.h"
@@ -28,7 +27,6 @@
 namespace AMP {
 namespace TimeIntegrator {
 
-typedef AMP::Operator::MassLinearFEOperator MassOperator;
 
 /*!
  @brief TimeIntegratorParameters is a base class for providing

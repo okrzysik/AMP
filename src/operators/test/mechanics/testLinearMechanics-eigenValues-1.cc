@@ -99,7 +99,7 @@ void myTest( AMP::UnitTest *ut )
 
         AMP::Discretization::DOFManager::shared_ptr dofMap =
             AMP::Discretization::simpleDOFManager::create(
-                meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+                meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
         AMP_INSIST( input_db->keyExists( "Mechanics_Assembly" ),
                     "Key ''Mechanics_Assembly'' is missing!" );
@@ -128,7 +128,7 @@ void myTest( AMP::UnitTest *ut )
             fprintf( fp, "\n" );
         } // end for i
 
-        AMP::Mesh::MeshIterator nd     = meshAdapter->getIterator( AMP::Mesh::Vertex, 0 );
+        AMP::Mesh::MeshIterator nd     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         AMP::Mesh::MeshIterator end_nd = nd.end();
 
         for ( int i = 0; nd != end_nd; ++nd, ++i ) {

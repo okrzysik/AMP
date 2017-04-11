@@ -189,7 +189,7 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    std::string exeName = "testHex8ElementNormalToFaces";
+    std::string exeName = "testHex8ElementNormalToGeomType::Faces";
 
     myTest( &ut, exeName );
 

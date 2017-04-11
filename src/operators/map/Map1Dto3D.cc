@@ -61,7 +61,7 @@ void Map1Dto3D::reset( const AMP::shared_ptr<OperatorParameters> &params )
 
     if ( d_useGaussVec ) {
         AMP::Mesh::MeshIterator iterator =
-            d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryId, 0 );
+            d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryId, 0 );
         libmeshElements.reinit( iterator );
     }
 
@@ -92,7 +92,7 @@ void Map1Dto3D::computeZNodeLocations()
     if ( d_MapMesh.get() != nullptr ) {
         // Get an iterator over the nodes on the boundary
         AMP::Mesh::MeshIterator bnd =
-            d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryId, 0 );
+            d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryId, 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         double Xx = 0;
@@ -135,7 +135,7 @@ void Map1Dto3D::computeZGaussLocations()
     if ( d_MapMesh.get() != nullptr ) {
         // Get an iterator over the nodes on the boundary
         AMP::Mesh::MeshIterator bnd =
-            d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryId, 0 );
+            d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryId, 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
@@ -256,7 +256,7 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     const double TOL                                    = 1e-12;
     AMP::Discretization::DOFManager::shared_ptr dof_map = outputVec->getDOFManager();
     AMP::Mesh::MeshIterator bnd =
-        d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryId, 0 );
+        d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryId, 0 );
     const double z1 = d_zLocations[0] - TOL;
     const double z2 = d_zLocations[d_zLocations.size() - 1] + TOL;
 
@@ -311,7 +311,7 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP::pout << inputVec << std::endl;
     }
 
-    outputVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    outputVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     if ( d_iDebugPrintInfoLevel > 5 ) {
         AMP::pout << "The output to Map1Dto3D " << std::endl;
@@ -353,7 +353,7 @@ void Map1Dto3D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP::Discretization::DOFManager::shared_ptr dof_map = outputVec->getDOFManager();
     std::vector<size_t> dofs( 1 );
     AMP::Mesh::MeshIterator bnd =
-        d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_boundaryId, 0 );
+        d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryId, 0 );
     const double z1 = d_zLocations[0] - TOL;
     const double z2 = d_zLocations[d_zLocations.size() - 1] + TOL;
     for ( size_t i = 0; i < bnd.size(); i++ ) {
@@ -390,7 +390,7 @@ void Map1Dto3D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP::pout << inputVec << std::endl;
     }
 
-    outputVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    outputVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     if ( d_iDebugPrintInfoLevel > 5 ) {
         AMP::pout << "The output to Map1Dto3D " << std::endl;

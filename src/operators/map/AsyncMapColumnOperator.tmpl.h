@@ -10,8 +10,8 @@ namespace AMP {
 namespace Operator {
 
 
-enum MapDominance { Master, Slave };
-enum MapConstructionType { Synchronous, Asynchronous };
+enum class MapDominance { Master, Slave };
+enum class MapConstructionType { Synchronous, Asynchronous };
 struct MapConstructionParam {
     int boundaryId;
     AMP_MPI comm;

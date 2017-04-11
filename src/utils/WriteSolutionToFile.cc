@@ -9,7 +9,7 @@ void printSolution( AMP::Mesh::Mesh::shared_ptr mesh,
 
     AMP::Discretization::DOFManager::shared_ptr dof_map = solVec->getDOFManager();
 
-    AMP::Mesh::MeshIterator nd     = mesh->getIterator( AMP::Mesh::Vertex, 0 );
+    AMP::Mesh::MeshIterator nd     = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     AMP::Mesh::MeshIterator end_nd = nd.end();
 
     std::string fname = "results_" + exeName + ".txt";

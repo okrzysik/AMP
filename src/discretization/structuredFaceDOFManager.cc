@@ -22,7 +22,7 @@ DOFManager::shared_ptr structuredFaceDOFManager::create( AMP::shared_ptr<AMP::Me
 {
     if ( mesh.get() == nullptr )
         return DOFManager::shared_ptr();
-    if ( mesh->getGeomType() != AMP::Mesh::Volume || mesh->getDim() != 3 )
+    if ( mesh->getGeomType() != AMP::Mesh::GeomType::Volume || mesh->getDim() != 3 )
         AMP_ERROR( "The mesh must be a volume/3d mesh for structuredFaceDOFManager" );
     AMP::shared_ptr<structuredFaceDOFManager> manager( new structuredFaceDOFManager() );
     manager->d_comm = mesh->getComm();
@@ -106,7 +106,7 @@ void structuredFaceDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
                                         std::vector<size_t> &dofs ) const
 {
     dofs.resize( 0 );
-    if ( id.type() != AMP::Mesh::Face )
+    if ( id.type() != AMP::Mesh::GeomType::Face )
         return;
     // Search for the dof locally
     for ( int d = 0; d < 3; d++ ) {
@@ -187,12 +187,12 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOFs() const
 ****************************************************************/
 std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
 {
-    if ( obj.elementType() != AMP::Mesh::Face )
+    if ( obj.elementType() != AMP::Mesh::GeomType::Face )
         return std::vector<size_t>();
     // Get a list of all element ids that are part of the row
     // Only faces that share an element are part of the row
     std::vector<AMP::Mesh::MeshElement> parents =
-        d_mesh->getElementParents( obj, AMP::Mesh::Volume );
+        d_mesh->getElementParents( obj, AMP::Mesh::GeomType::Volume );
     AMP_ASSERT( parents.size() == 1 || parents.size() == 2 );
     // Temporarily add neighbor elements
     size_t p_size = parents.size();
@@ -208,7 +208,7 @@ std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshE
     std::vector<AMP::Mesh::MeshElementID> ids;
     ids.reserve( 6 * parents.size() );
     for ( auto &parent : parents ) {
-        std::vector<AMP::Mesh::MeshElement> children = parent.getElements( AMP::Mesh::Face );
+        std::vector<AMP::Mesh::MeshElement> children = parent.getElements( AMP::Mesh::GeomType::Face );
         AMP_ASSERT( children.size() == 6 );
         for ( auto &elem : children )
             ids.push_back( elem.globalID() );

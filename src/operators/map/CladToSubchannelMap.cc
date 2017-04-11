@@ -36,7 +36,7 @@ CladToSubchannelMap::CladToSubchannelMap(
 
     // Get the iterators
     if ( d_mesh1.get() != nullptr )
-        d_iterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::Vertex, params->d_BoundaryID1, 0 );
+        d_iterator1 = d_mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, params->d_BoundaryID1, 0 );
     if ( d_mesh2.get() != nullptr )
         d_iterator2 = getSubchannelIterator( d_mesh2 );
 
@@ -169,9 +169,9 @@ AMP::Mesh::MeshIterator
 CladToSubchannelMap::getSubchannelIterator( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     std::multimap<double, AMP::Mesh::MeshElement> xyFace;
-    AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Face, 0 );
+    AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     for ( size_t i = 0; i < iterator.size(); ++i ) {
-        std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::Vertex );
+        std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::GeomType::Vertex );
         std::vector<double> center                = iterator->centroid();
         bool is_valid                             = true;
         for ( auto &node : nodes ) {
@@ -299,7 +299,7 @@ void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
         AMP::AMP_MPI::waitAll( (int) d_currRequests.size(), &d_currRequests[0] );
     d_currRequests.resize( 0 );
     // Call makeConsistent
-    d_OutputVector->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    d_OutputVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 
 

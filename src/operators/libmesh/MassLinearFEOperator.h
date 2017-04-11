@@ -2,13 +2,11 @@
 #ifndef included_AMP_MassLinearFEOperator
 #define included_AMP_MassLinearFEOperator
 
-/* AMP files */
+// AMP files
 #include "operators/libmesh/LinearFEOperator.h"
 #include "operators/libmesh/MassLinearElement.h"
 #include "operators/libmesh/MassLinearFEOperatorParameters.h"
 #include "utils/Utilities.h"
-
-/* Boost files */
 #include "utils/shared_ptr.h"
 
 #include <vector>

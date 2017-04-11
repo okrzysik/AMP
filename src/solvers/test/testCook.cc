@@ -109,7 +109,7 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
     AMP::Discretization::DOFManager::shared_ptr DOF_vector =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
     AMP::LinearAlgebra::Vector::shared_ptr mechSolVec =
         AMP::LinearAlgebra::createVector( DOF_vector, bvpOperator->getOutputVariable(), true );
     AMP::LinearAlgebra::Vector::shared_ptr mechRhsVec =

@@ -116,7 +116,7 @@ T_b_i->second))/(Cp*d_G*d_De))*he_z;
     AMP::LinearAlgebra::Vector::shared_ptr outputVec = r->subsetVectorForVariable ( d_MapVariable );
     buildReturn ( outputVec );
 
-    outputVec->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    outputVec->makeConsistent ( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     if(f.get() == NULL) {
         outputVec->scale(a);

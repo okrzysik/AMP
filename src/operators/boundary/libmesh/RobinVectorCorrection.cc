@@ -62,8 +62,8 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal       = this->subsetInputVector( r );
     AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = this->subsetInputVector( u );
 
-    AMP_ASSERT( uInternal->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
-    // rInternal->makeConsistent ( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    AMP_ASSERT( uInternal->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
+    // rInternal->makeConsistent ( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     std::vector<std::string> variableNames;
     size_t numVar = 0;
@@ -94,7 +94,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
             AMP_INSIST( d_elementInputVec[i + 1],
                         "Did not find vector '" + variableNames[i] + "'" );
             AMP_ASSERT( d_elementInputVec[i + 1]->getUpdateStatus() ==
-                        AMP::LinearAlgebra::Vector::UNCHANGED );
+                        AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
         }
 
         if ( d_iDebugPrintInfoLevel == 100 ) {
@@ -128,14 +128,14 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
         for ( unsigned int k = 0; k < numDofIds; k++ ) {
 
             AMP::Mesh::MeshIterator bnd1 =
-                d_Mesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryIds[nid], 0 );
+                d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryIds[nid], 0 );
             const AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
 
             for ( ; bnd1 != end_bnd1; ++bnd1 ) {
                 PROFILE_START( "prepare element", 2 );
 
                 // Get the nodes for the current element
-                d_currNodes                     = bnd1->getElements( AMP::Mesh::Vertex );
+                d_currNodes                     = bnd1->getElements( AMP::Mesh::GeomType::Vertex );
                 unsigned int numNodesInCurrElem = d_currNodes.size();
 
                 dofIndices.resize( numNodesInCurrElem );
@@ -239,7 +239,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
     }         // end for nid
     PROFILE_STOP( "integration loop" );
 
-    rInternal->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
+    rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_ADD );
     // std::cout << rInternal << std::endl;
 
     PROFILE_STOP( "apply" );

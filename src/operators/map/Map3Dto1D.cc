@@ -50,7 +50,7 @@ void Map3Dto1D::reset( const AMP::shared_ptr<OperatorParameters> &params )
 
     if ( d_useGaussVec ) {
         AMP::Mesh::MeshIterator iterator =
-            d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryId, 0 );
+            d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryId, 0 );
         libmeshElements.reinit( iterator );
     }
 
@@ -87,7 +87,7 @@ void Map3Dto1D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP_ASSERT( u != nullptr );
         AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
         AMP_ASSERT( inputVec != nullptr );
-        AMP_ASSERT( inputVec->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
+        AMP_ASSERT( inputVec->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
 
         AMP::Discretization::DOFManager::shared_ptr dof_map = inputVec->getDOFManager();
 
@@ -100,7 +100,7 @@ void Map3Dto1D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
         // Get an iterator over the side elements
         AMP::Mesh::MeshIterator bnd =
-            d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryId, 0 );
+            d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryId, 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         // Iterator for the solid-clad boundary
@@ -226,7 +226,7 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         // Subset u for the local vector of interest
         AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
         AMP_ASSERT( inputVec != nullptr );
-        AMP_ASSERT( inputVec->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
+        AMP_ASSERT( inputVec->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
 
         AMP::Discretization::DOFManager::shared_ptr dof_map = inputVec->getDOFManager();
 
@@ -239,14 +239,14 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
         // Get an iterator over the side elements
         AMP::Mesh::MeshIterator bnd =
-            d_MapMesh->getBoundaryIDIterator( AMP::Mesh::Face, d_boundaryId, 0 );
+            d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryId, 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
         // Iterator for the solid-clad boundary
         for ( ; bnd != end_bnd; ++bnd ) {
 
             AMP::Mesh::MeshElement cur_side           = *bnd;
-            std::vector<AMP::Mesh::MeshElement> nodes = cur_side.getElements( AMP::Mesh::Vertex );
+            std::vector<AMP::Mesh::MeshElement> nodes = cur_side.getElements( AMP::Mesh::GeomType::Vertex );
             AMP_ASSERT( nodes.size() == 4 );
 
             std::vector<double> zcoords;

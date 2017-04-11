@@ -85,10 +85,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     dirichletLoadVecOp->setVariable( dispVar );
 
     AMP::Discretization::DOFManager::shared_ptr dispDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::Discretization::DOFManager::shared_ptr tempDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;

@@ -145,7 +145,7 @@ void linearRobinTest( AMP::UnitTest *ut, std::string exeName )
     // AMP::LinearAlgebra::Vector::shared_ptr bndVec = meshAdapter->createVector(
     // volumeOp->getOutputVariable() );
     AMP::Discretization::DOFManager::shared_ptr NodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Vector::shared_ptr bndVec =
         AMP::LinearAlgebra::createVector( NodalScalarDOF, volumeOp->getOutputVariable(), true );
 

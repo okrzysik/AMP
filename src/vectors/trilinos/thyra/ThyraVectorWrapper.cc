@@ -154,8 +154,9 @@ Teuchos::RCP<Thyra::VectorBase<double>> ThyraVectorWrapper::clone_v() const
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vecs( d_vecs.size() );
     for ( size_t i = 0; i < d_vecs.size(); i++ )
         vecs[i]    = d_vecs[i]->cloneVector();
-    return Teuchos::RCP<Thyra::VectorBase<double>>(
+    Teuchos::RCP<Thyra::VectorBase<double>> new_vec(
         new ThyraVectorWrapper( vecs, d_cols, d_N_cols ) );
+    return new_vec;
 }
 
 
@@ -338,11 +339,12 @@ void ThyraVectorWrapper::acquireDetachedVectorViewImpl(
         indices[i] = lower + i;
     vec->getValuesByLocalID( size, indices, ptr );
     delete[] indices;
-    sub_vec = new RTOpPack::ConstSubVectorView<double>( array );
+    *sub_vec = RTOpPack::ConstSubVectorView<double>( array );
 }
 void ThyraVectorWrapper::releaseDetachedVectorViewImpl(
     RTOpPack::ConstSubVectorView<double> *sub_vec ) const
 {
+    NULL_USE(sub_vec);
 }
 void ThyraVectorWrapper::acquireNonconstDetachedVectorViewImpl(
     const Teuchos::Range1D &rng, RTOpPack::SubVectorView<double> *sub_vec )
@@ -361,7 +363,7 @@ void ThyraVectorWrapper::acquireNonconstDetachedVectorViewImpl(
         indices[i] = lower + i;
     vec->getValuesByLocalID( size, indices, ptr );
     delete[] indices;
-    sub_vec = new RTOpPack::SubVectorView<double>( array );
+    *sub_vec = RTOpPack::SubVectorView<double>( array );
 }
 void ThyraVectorWrapper::commitNonconstDetachedVectorViewImpl(
     RTOpPack::SubVectorView<double> *sub_vec )
@@ -396,6 +398,7 @@ void ThyraVectorWrapper::applyOpImpl(
     const Teuchos::Ptr<RTOpPack::ReductTarget> &reduct_obj,
     const Teuchos::Ordinal global_offset ) const
 {
+    NULL_USE( global_offset );
     size_t n_blocks = d_vecs[0]->numberOfDataBlocks();
     std::vector<size_t> block_size( n_blocks, 0 );
     for ( size_t i    = 0; i < n_blocks; i++ )
@@ -443,9 +446,9 @@ void ThyraVectorWrapper::applyOpImpl(
     for ( size_t i = 0; i < targ_vecs_ptr.size(); i++ ) {
         for ( size_t j = 0; j < d_vecs.size(); j++ ) {
             if ( targ_vecs_ptr[i]->d_vecs[j]->getUpdateStatus() ==
-                 AMP::LinearAlgebra::Vector::UNCHANGED )
+                 AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED )
                 targ_vecs_ptr[i]->d_vecs[j]->setUpdateStatus(
-                    AMP::LinearAlgebra::Vector::LOCAL_CHANGED );
+                    AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED );
         }
     }
 }
@@ -523,9 +526,9 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
     for ( size_t i = 0; i < targ_vecs_ptr.size(); i++ ) {
         for ( size_t j = 0; j < d_vecs.size(); j++ ) {
             if ( targ_vecs_ptr[i]->d_vecs[j]->getUpdateStatus() ==
-                 AMP::LinearAlgebra::Vector::UNCHANGED )
+                 AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED )
                 targ_vecs_ptr[i]->d_vecs[j]->setUpdateStatus(
-                    AMP::LinearAlgebra::Vector::LOCAL_CHANGED );
+                    AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED );
         }
     }
 }
@@ -537,6 +540,8 @@ void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
     const Teuchos::Ptr<RTOpPack::ReductTarget> &reduct_obj,
     const Teuchos::Ordinal primary_global_offset ) const
 {
+    NULL_USE( secondary_op );
+    NULL_USE( primary_global_offset );
     size_t n_blocks = d_vecs[0]->numberOfDataBlocks();
     std::vector<size_t> block_size( n_blocks, 0 );
     for ( size_t i    = 0; i < n_blocks; i++ )
@@ -584,9 +589,9 @@ void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
     for ( size_t i = 0; i < targ_vecs_ptr.size(); i++ ) {
         for ( size_t j = 0; j < d_vecs.size(); j++ ) {
             if ( targ_vecs_ptr[i]->d_vecs[j]->getUpdateStatus() ==
-                 AMP::LinearAlgebra::Vector::UNCHANGED )
+                 AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED )
                 targ_vecs_ptr[i]->d_vecs[j]->setUpdateStatus(
-                    AMP::LinearAlgebra::Vector::LOCAL_CHANGED );
+                    AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED );
         }
     }
 }

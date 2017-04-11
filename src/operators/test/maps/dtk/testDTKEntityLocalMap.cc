@@ -48,10 +48,10 @@ void myTest( AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // get the volume iterator
-    AMP::Mesh::MeshIterator vol_iterator = mesh->getIterator( AMP::Mesh::Volume );
+    AMP::Mesh::MeshIterator vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
 
     // get the vertex iterator
-    AMP::Mesh::MeshIterator vert_iterator = mesh->getIterator( AMP::Mesh::Vertex );
+    AMP::Mesh::MeshIterator vert_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
 
     // map the volume ids to dtk ids
     AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> vol_id_map =
@@ -180,7 +180,7 @@ void myTest( AMP::UnitTest *ut )
     }
 
     // Test the local map with nodes.
-    AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::Vertex );
+    AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
     for ( node_iterator = node_iterator.begin(); node_iterator != node_iterator.end();
           ++node_iterator ) {
         DataTransferKit::Entity dtk_node =

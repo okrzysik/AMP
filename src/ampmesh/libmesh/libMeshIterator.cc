@@ -370,7 +370,7 @@ void libMeshIterator::setCurrentElement()
         // Node iterator
         ::Mesh::node_iterator *it = (::Mesh::node_iterator *) d_pos2;
         ::Node *node              = it->operator*();
-        d_cur_element = libMeshElement( d_dim, Vertex, (void *) node, d_rank, d_meshID, d_mesh );
+        d_cur_element = libMeshElement( d_dim, GeomType::Vertex, (void *) node, d_rank, d_meshID, d_mesh );
     } else if ( d_type == 1 ) {
         // Element iterator
         ::Mesh::element_iterator *it = (::Mesh::element_iterator *) d_pos2;

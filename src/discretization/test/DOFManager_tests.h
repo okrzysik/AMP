@@ -4,7 +4,6 @@
 #include "discretization/DOF_Manager.h"
 #include "discretization/MultiDOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
-#include "discretization/structuredFaceDOFManager.h"
 #include "discretization/subsetDOFManager.h"
 #include "utils/UnitTest.h"
 
@@ -134,10 +133,10 @@ void testSubsetMesh( AMP::Mesh::Mesh::shared_ptr mesh,
             if ( subsetMesh.get() != nullptr ) {
                 subsetDOF = DOF->subset( subsetMesh );
                 testGetDOFIterator(
-                    ut, subsetMesh->getIterator( AMP::Mesh::Vertex, gcw ), subsetDOF );
+                    ut, subsetMesh->getIterator( AMP::Mesh::GeomType::Vertex, gcw ), subsetDOF );
                 AMP::Discretization::DOFManager::shared_ptr mesh_DOF =
                     AMP::Discretization::simpleDOFManager::create(
-                        subsetMesh, AMP::Mesh::Vertex, gcw, DOFsPerNode, false );
+                        subsetMesh, AMP::Mesh::GeomType::Vertex, gcw, DOFsPerNode, false );
                 if ( *mesh_DOF != *subsetDOF )
                     passes = false;
             }
@@ -224,7 +223,7 @@ void testMultiDOFVector( AMP::UnitTest *ut, AMP::Discretization::DOFManager::sha
     AMP::Discretization::DOFManager::shared_ptr multiDOF = multiVector->getDOFManager();
     // Check that we can set each value correctly
     multiVector->zero();
-    multiVector->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    multiVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     AMP::Mesh::MeshIterator it = DOF->getIterator();
     std::vector<size_t> dof1, dof2;
     bool uniqueMultiDOFs = true;
@@ -243,7 +242,7 @@ void testMultiDOFVector( AMP::UnitTest *ut, AMP::Discretization::DOFManager::sha
         ut->passes( "MultiDOFManger with duplicate subDOFManagers returns unique DOFs" );
     else
         ut->failure( "MultiDOFManger with duplicate subDOFManagers returns unique DOFs" );
-    multiVector->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    multiVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     double vec1norm        = vec1->L1Norm();
     double vec2norm        = vec2->L1Norm();
     double multiVectorNorm = multiVector->L1Norm();

@@ -33,13 +33,13 @@ void simpleDOFManagerVectorTest( AMP::UnitTest *ut,
 {
     // Calculate the number of DOFs per Node (we require that the # of DOFs is >= N_DOFs)
     double avgDOFsPerNode =
-        ( (double) N_DOFs ) / ( (double) mesh->numGlobalElements( AMP::Mesh::Vertex ) );
+        ( (double) N_DOFs ) / ( (double) mesh->numGlobalElements( AMP::Mesh::GeomType::Vertex ) );
     int DOFsPerNode = (int) ceil( avgDOFsPerNode );
     // Create a simple DOFManager
     std::string varName = "test";
     AMP::Discretization::DOFManager::shared_ptr DOFs =
         AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::Vertex, 1, DOFsPerNode, split );
+            mesh, AMP::Mesh::GeomType::Vertex, 1, DOFsPerNode, split );
     // Create the vector
     double start_time = AMP::AMP_MPI::time();
     AMP::LinearAlgebra::Variable::shared_ptr nodalVariable(
@@ -62,7 +62,7 @@ void simpleDOFManagerVectorTest( AMP::UnitTest *ut,
     // Time makeConsistentSet
     mesh->getComm().barrier();
     start_time = AMP::AMP_MPI::time();
-    v1->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    v1->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     mesh->getComm().barrier();
     end_time = AMP::AMP_MPI::time();
     if ( mesh->getComm().getRank() == 0 )

@@ -85,7 +85,7 @@ void NavierStokesLSWFLinearFEOperator::preAssembly(
             if(d_inVec[i].get() != NULL) {
               if(params->d_frozenVec[i].get() != NULL) {
                 d_inVec[i]->copyVector(vector);
-                d_inVec[i]->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+                d_inVec[i]->makeConsistent(AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET);
               } else {
                 d_inVec[i].reset();
               }
@@ -100,7 +100,7 @@ void NavierStokesLSWFLinearFEOperator::postAssembly() { d_matrix->makeConsistent
 void NavierStokesLSWFLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElement &elem )
 {
 
-    d_currNodes                     = elem.getElements( AMP::Mesh::Vertex );
+    d_currNodes                     = elem.getElements( AMP::Mesh::GeomType::Vertex );
     unsigned int numNodesInCurrElem = d_currNodes.size();
 
     getDofIndicesForCurrentElement( NavierStokes::VELOCITY, d_type0DofIndices );

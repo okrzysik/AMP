@@ -28,7 +28,7 @@ Vector::Vector()
     d_Ghosts    = AMP::shared_ptr<std::vector<double>>( new std::vector<double> );
     d_AddBuffer = AMP::shared_ptr<std::vector<double>>( new std::vector<double> );
     d_UpdateState.reset( new UpdateState );
-    *d_UpdateState = UNCHANGED;
+    *d_UpdateState = UpdateState::UNCHANGED;
     d_Views        = AMP::shared_ptr<std::vector<AMP::weak_ptr<Vector>>>(
         new std::vector<AMP::weak_ptr<Vector>>() );
 }
@@ -43,7 +43,7 @@ Vector::Vector( VectorParameters::shared_ptr parameters )
                 "d_DOFManager must be set in VectorParameters" );
     setCommunicationList( parameters->d_CommList );
     d_UpdateState.reset( new UpdateState );
-    *d_UpdateState = UNCHANGED;
+    *d_UpdateState = UpdateState::UNCHANGED;
     d_DOFManager   = parameters->d_DOFManager;
     d_Views        = AMP::shared_ptr<std::vector<AMP::weak_ptr<Vector>>>(
         new std::vector<AMP::weak_ptr<Vector>>() );
@@ -166,8 +166,8 @@ Vector::shared_ptr Vector::cloneVector( const std::string &name ) const
 void Vector::setValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
     INCREMENT_COUNT( "Virtual" );
-    AMP_ASSERT( *d_UpdateState != ADDING );
-    *d_UpdateState = SETTING;
+    AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
+    *d_UpdateState = UpdateState::SETTING;
     for ( int i = 0; i < numVals; i++ ) {
         if ( ( ndx[i] < getLocalStartID() ) ||
              ( ndx[i] >= ( getLocalStartID() + getLocalMaxID() ) ) ) {
@@ -180,8 +180,8 @@ void Vector::setValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 void Vector::setGhostValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
     INCREMENT_COUNT( "Virtual" );
-    AMP_ASSERT( *d_UpdateState != ADDING );
-    *d_UpdateState = SETTING;
+    AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
+    *d_UpdateState = UpdateState::SETTING;
     for ( int i = 0; i < numVals; i++ ) {
         if ( ( ndx[i] < getLocalStartID() ) ||
              ( ndx[i] >= ( getLocalStartID() + getLocalMaxID() ) ) ) {
@@ -194,8 +194,8 @@ void Vector::setGhostValuesByGlobalID( int numVals, size_t *ndx, const double *v
 void Vector::addValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
     INCREMENT_COUNT( "Virtual" );
-    AMP_ASSERT( *d_UpdateState != SETTING );
-    *d_UpdateState = ADDING;
+    AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
+    *d_UpdateState = UpdateState::ADDING;
     for ( int i = 0; i < numVals; i++ ) {
         if ( ( ndx[i] < getLocalStartID() ) ||
              ( ndx[i] >= ( getLocalStartID() + getLocalMaxID() ) ) ) {
@@ -280,7 +280,7 @@ void Vector::setToScalar( double alpha )
     dataChanged();
     for ( size_t i            = 0; i != d_Ghosts->size(); i++ )
         ( *d_Ghosts )[i]      = alpha;
-    ( *getUpdateStatusPtr() ) = UNCHANGED;
+    ( *getUpdateStatusPtr() ) = UpdateState::UNCHANGED;
 }
 void Vector::setRandomValues()
 {
@@ -293,7 +293,7 @@ void Vector::setRandomValues()
         ++curMe;
     }
     dataChanged();
-    this->makeConsistent( CONSISTENT_SET );
+    this->makeConsistent( ScatterType::CONSISTENT_SET );
 }
 void Vector::setRandomValues( RNG::shared_ptr rng )
 {
@@ -305,7 +305,7 @@ void Vector::setRandomValues( RNG::shared_ptr rng )
         ++curMe;
     }
     dataChanged();
-    this->makeConsistent( CONSISTENT_SET );
+    this->makeConsistent( ScatterType::CONSISTENT_SET );
 }
 
 
@@ -754,8 +754,8 @@ double Vector::wrmsNormMask( const VectorOperations &x,
 
 void Vector::makeConsistent( ScatterType t )
 {
-    if ( t == CONSISTENT_ADD ) {
-        AMP_ASSERT( *d_UpdateState != SETTING );
+    if ( t == ScatterType::CONSISTENT_ADD ) {
+        AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
         std::vector<double> send_vec_add( d_CommList->getVectorReceiveBufferSize() );
         std::vector<double> recv_vec_add( d_CommList->getVectorSendBufferSize() );
         d_CommList->packReceiveBuffer( send_vec_add, *this );
@@ -765,14 +765,14 @@ void Vector::makeConsistent( ScatterType t )
             elem = 0.0;
         }
     }
-    *d_UpdateState = SETTING;
+    *d_UpdateState = UpdateState::SETTING;
     std::vector<double> send_vec( d_CommList->getVectorSendBufferSize() );
     std::vector<double> recv_vec( d_CommList->getVectorReceiveBufferSize() );
     d_CommList->packSendBuffer( send_vec, *this );
     d_CommList->scatter_set( send_vec, recv_vec );
     d_CommList->unpackReceiveBufferSet( recv_vec, *this );
-    *d_UpdateState = UNCHANGED;
-    this->setUpdateStatus( UNCHANGED );
+    *d_UpdateState = UpdateState::UNCHANGED;
+    this->setUpdateStatus( UpdateState::UNCHANGED );
 }
 
 
@@ -793,7 +793,7 @@ void Vector::copyGhostValues( const AMP::shared_ptr<const Vector> &rhs )
         // We can't copy the ghosts from the rhs
         // Use makeConsistent to fill the ghosts
         // Note: this will incure global communication
-        makeConsistent( CONSISTENT_SET );
+        makeConsistent( ScatterType::CONSISTENT_SET );
     }
 }
 

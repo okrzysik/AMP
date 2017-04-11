@@ -99,9 +99,9 @@ std::vector<double> MeshElement::centroid() const
 {
     if ( element != nullptr )
         return element->centroid();
-    if ( d_globalID.type() == Vertex )
+    if ( d_globalID.type() == GeomType::Vertex )
         return coord();
-    std::vector<MeshElement> nodes = getElements( Vertex );
+    std::vector<MeshElement> nodes = getElements( GeomType::Vertex );
     AMP_ASSERT( !nodes.empty() );
     std::vector<double> center = nodes[0].coord();
     for ( size_t i = 1; i < nodes.size(); i++ ) {
@@ -122,7 +122,7 @@ bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) co
 {
     if ( element != nullptr )
         return element->containsPoint( pos, TOL );
-    if ( d_globalID.type() == Vertex ) {
+    if ( d_globalID.type() == GeomType::Vertex ) {
         // double dist = 0.0;
         std::vector<double> point = this->coord();
         double dist2              = 0.0;

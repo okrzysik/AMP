@@ -96,7 +96,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
     // reset the nonlinear operator
     subchannelOperator->reset( subchannelOpParams );
     std::vector<size_t> dofs;
-    AMP::Mesh::MeshIterator face     = xyFaceMesh->getIterator( AMP::Mesh::Face, 0 );
+    AMP::Mesh::MeshIterator face     = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     AMP::Mesh::MeshIterator end_face = face.end();
 
     const double h_scale = AMP::Operator::Subchannel::scaleEnthalpy;
@@ -104,7 +104,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
 
     {
         // Test apply with known residual evaluation
-        face = xyFaceMesh->getIterator( AMP::Mesh::Face, 0 );
+        face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
         faceDOFManager->getDOFs( face->globalID(), dofs );
         ++face;
         SolVec->setValueByGlobalID( dofs[0], h_scale * 700.0e3 );
@@ -155,7 +155,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
             73891.3070728496,  448.83209941079,   -608747.573661467, -368.184663947199,
             484044.660140265,  237.580675983725,  -225841.184839454, 800000
         };
-        face  = xyFaceMesh->getIterator( AMP::Mesh::Face, 0 );
+        face  = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
         int i = 0;
         for ( ; face != end_face; ++face, ++i ) {
             faceDOFManager->getDOFs( face->globalID(), dofs );

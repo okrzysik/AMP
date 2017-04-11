@@ -22,7 +22,7 @@ static const std::string name_base( "WaterLibrary" );
 static const std::string source( "\
 M. P. Paulsen, et. al, \
 RETRAN-3D, \
-Electric Power Research Institute, Technical Document NP-7450, Volume 1, \
+Electric Power Research Institute, Technical Document NP-7450, GeomType::Volume 1, \
 September 1998" );
 
 // Temperature as a function of enthalpy and pressure

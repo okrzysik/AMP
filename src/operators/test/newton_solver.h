@@ -6,16 +6,16 @@
 #include <iostream>
 
 
-enum status_t { CONV_RTOL, CONV_ATOL, DIV_MAXIT, DIV_TOL };
+enum class status_t { CONV_RTOL, CONV_ATOL, DIV_MAXIT, DIV_TOL };
 std::ostream &operator<<( std::ostream &os, status_t const &status )
 {
-    if ( status == CONV_RTOL ) {
+    if ( status == status_t::CONV_RTOL ) {
         os << "CONV_RTOL";
-    } else if ( status == CONV_ATOL ) {
+    } else if ( status == status_t::CONV_ATOL ) {
         os << "CONV_ATOL";
-    } else if ( status == DIV_MAXIT ) {
+    } else if ( status == status_t::DIV_MAXIT ) {
         os << "DIV_MAXIT";
-    } else if ( status == DIV_TOL ) {
+    } else if ( status == status_t::DIV_TOL ) {
         os << "DIV_TOL";
     } else {
         AMP_ASSERT( false );
@@ -83,11 +83,11 @@ solve_status_t newton_solver_t<vector_t>::solve( vector_t &solution, void *param
         compute_residual( solution, residual, parameters );
         norm_residual = compute_norm( residual );
         if ( norm_residual < _atol ) {
-            return solve_status_t( CONV_ATOL, i, norm_residual );
+            return solve_status_t( status_t::CONV_ATOL, i, norm_residual );
         } else if ( norm_residual < _rtol * initial_residual_norm ) {
-            return solve_status_t( CONV_RTOL, i, norm_residual );
+            return solve_status_t( status_t::CONV_RTOL, i, norm_residual );
         } else if ( norm_residual > _dtol * initial_residual_norm ) {
-            return solve_status_t( DIV_TOL, i, norm_residual );
+            return solve_status_t( status_t::DIV_TOL, i, norm_residual );
         } // end if
     }     // end for i
     return solve_status_t( DIV_MAXIT, _maxit, norm_residual );

@@ -68,7 +68,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     // Create the DOFManagers
     AMP::Discretization::DOFManager::shared_ptr NodalVectorDOF =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 3 );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
@@ -149,7 +149,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 // Create the silo writer and register the data
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( solVec, mesh, AMP::Mesh::Vertex, "Solution_Vector" );
+    siloWriter->registerVector( solVec, mesh, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
 #endif
 
     // Adding the Temperature and Burnup

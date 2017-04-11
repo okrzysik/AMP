@@ -45,7 +45,7 @@ void thermalTest( AMP::UnitTest *ut, std::string input_file )
     bool split          = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            manager, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            manager, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     AMP::LinearAlgebra::Variable::shared_ptr thermalVariable(
         new AMP::LinearAlgebra::Variable( "Temperature" ) );
@@ -64,9 +64,9 @@ void thermalTest( AMP::UnitTest *ut, std::string input_file )
 
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( manager );
-    siloWriter->registerVector( SolutionVec, manager, AMP::Mesh::Vertex, "SolutionVec" );
-    siloWriter->registerVector( thermalMapVec, manager, AMP::Mesh::Vertex, "MapVec" );
-    siloWriter->registerVector( RankVec, manager, AMP::Mesh::Vertex, "RankVec" );
+    siloWriter->registerVector( SolutionVec, manager, AMP::Mesh::GeomType::Vertex, "SolutionVec" );
+    siloWriter->registerVector( thermalMapVec, manager, AMP::Mesh::GeomType::Vertex, "MapVec" );
+    siloWriter->registerVector( RankVec, manager, AMP::Mesh::GeomType::Vertex, "RankVec" );
 
     RightHandSideVec->setToScalar( 0.0 );
 

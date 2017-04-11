@@ -37,10 +37,10 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
     d_dim = 0;
     if ( d_UseSurfaceElements ) {
         d_dim      = 2;
-        d_iterator = d_Mesh->getIterator( AMP::Mesh::Face, 0 );
+        d_iterator = d_Mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     } else {
         d_dim      = 3;
-        d_iterator = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+        d_iterator = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     }
     // Initialize some libmesh variables
     libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
@@ -59,7 +59,7 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
     AMP::Mesh::MeshIterator iterator = d_iterator.begin();
     for ( size_t i = 0; i < iterator.size(); ++i, ++iterator ) {
         // Cache the nodes for all elements
-        std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::Vertex );
+        std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::GeomType::Vertex );
         d_nodes[i].resize( nodes.size() );
         for ( size_t j    = 0; j < nodes.size(); j++ )
             d_nodes[i][j] = nodes[j].globalID();
@@ -96,7 +96,7 @@ void NodeToGaussPointOperator::apply( AMP::LinearAlgebra::Vector::const_shared_p
     AMP::LinearAlgebra::Vector::shared_ptr gaussPtVec = subsetOutputVector( r );
     PROFILE_STOP( "subsetOutputVector" );
 
-    AMP_ASSERT( nodalVec->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
+    AMP_ASSERT( nodalVec->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
 
     PROFILE_START( "getDOFManager" );
     AMP::Discretization::DOFManager::shared_ptr dof_map         = nodalVec->getDOFManager();

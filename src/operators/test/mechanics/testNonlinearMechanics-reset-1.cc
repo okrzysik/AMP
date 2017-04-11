@@ -54,7 +54,7 @@ void myTest( AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     AMP::Discretization::DOFManager::shared_ptr dofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     //  AMP_INSIST(input_db->keyExists("NumberOfLoadingSteps"), "Key ''NumberOfLoadingSteps'' is
     //  missing!");
@@ -210,7 +210,7 @@ void myTest( AMP::UnitTest *ut )
             // conditions
             mechNlSolVec->setRandomValues();
             dirichletDispInVecOp->apply( nullVec, mechNlSolVec );
-            mechNlSolVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+            mechNlSolVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
             nonlinBvpOperator->residual( mechNlRhsVec, mechNlSolVec, mechNlResVec );
         } // end for i
 

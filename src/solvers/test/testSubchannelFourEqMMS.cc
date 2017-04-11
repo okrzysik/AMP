@@ -205,7 +205,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     // Compute the manufactured solution
     AMP::Mesh::Mesh::shared_ptr xyFaceMesh = subchannelMesh->Subset(
         AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 ) );
-    AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator( AMP::Mesh::Face, 0 );
+    AMP::Mesh::MeshIterator face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     std::vector<size_t> axialDofs;
     // Scale to change the input vector back to correct units
     const double h_scale = 1.0 / AMP::Operator::Subchannel::scaleEnthalpy;
@@ -249,7 +249,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     //=============================================================================
 
     // Compute the initial guess solution
-    face = xyFaceMesh->getIterator( AMP::Mesh::Face, 0 );
+    face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     // loop over axial faces
     for ( int i = 0; i < (int) face.size(); i++ ) {
         subchannelDOFManager->getDOFs( face->globalID(), axialDofs );
@@ -369,7 +369,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
         new AMP::LinearAlgebra::Variable( "Temperature" ) );
     AMP::LinearAlgebra::Vector::shared_ptr tempVec =
         AMP::LinearAlgebra::createVector( tempDOFManager, tempVariable, true );
-    face = xyFaceMesh->getIterator( AMP::Mesh::Face, 0 );
+    face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     std::vector<size_t> tdofs;
     bool pass = true;
     for ( int i = 0; i < (int) face.size(); i++ ) {
@@ -405,7 +405,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
 
     // Print the Inlet/Outlet properties
     std::cout << std::endl << std::endl;
-    face = xyFaceMesh->getIterator( AMP::Mesh::Face, 0 );
+    face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     subchannelDOFManager->getDOFs( face->globalID(), axialDofs );
     tempDOFManager->getDOFs( face->globalID(), tdofs );
     double TinSol = tempVec->getValueByGlobalID( tdofs[0] );
@@ -417,7 +417,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
               << P_scale * solVec->getValueByGlobalID( axialDofs[2] ) << std::endl;
     std::cout << "Inlet Computed Temperature = " << TinSol << std::endl;
     std::cout << std::endl;
-    face = --( ( xyFaceMesh->getIterator( AMP::Mesh::Face, 0 ) ).end() );
+    face = --( ( xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 ) ).end() );
     subchannelDOFManager->getDOFs( face->globalID(), axialDofs );
     tempDOFManager->getDOFs( face->globalID(), tdofs );
     double ToutSol = tempVec->getValueByGlobalID( tdofs[0] );
@@ -517,14 +517,14 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
         subchannelMass->scale(m_scale);
         subchannelEnthalpy->scale(h_scale);
         subchannelPressure->scale(P_scale);
-        siloWriter->registerVector( manufacturedVec, xyFaceMesh, AMP::Mesh::Face,
+        siloWriter->registerVector( manufacturedVec, xyFaceMesh, AMP::Mesh::GeomType::Face,
     "ManufacturedSolution" );
-        siloWriter->registerVector( solVec, xyFaceMesh, AMP::Mesh::Face, "ComputedSolution" );
-        siloWriter->registerVector( subchannelMass, xyFaceMesh, AMP::Mesh::Face, "Axial Mass Flow
+        siloWriter->registerVector( solVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "ComputedSolution" );
+        siloWriter->registerVector( subchannelMass, xyFaceMesh, AMP::Mesh::GeomType::Face, "Axial Mass Flow
     Rate" );
-        siloWriter->registerVector( subchannelEnthalpy, xyFaceMesh, AMP::Mesh::Face, "Enthalpy" );
-        siloWriter->registerVector( subchannelPressure, xyFaceMesh, AMP::Mesh::Face, "Pressure" );
-        siloWriter->registerVector( tempVec, xyFaceMesh, AMP::Mesh::Face, "Temperature" );
+        siloWriter->registerVector( subchannelEnthalpy, xyFaceMesh, AMP::Mesh::GeomType::Face, "Enthalpy" );
+        siloWriter->registerVector( subchannelPressure, xyFaceMesh, AMP::Mesh::GeomType::Face, "Pressure" );
+        siloWriter->registerVector( tempVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "Temperature" );
         siloWriter->writeFile( silo_name , 0 );
     #endif
     */

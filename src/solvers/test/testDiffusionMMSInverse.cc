@@ -129,7 +129,7 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Variable::shared_ptr workVar( new AMP::LinearAlgebra::Variable( "work" ) );
 
     AMP::Discretization::DOFManager::shared_ptr DOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr solVec = AMP::LinearAlgebra::createVector( DOF, solVar );
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec = AMP::LinearAlgebra::createVector( DOF, rhsVar );
@@ -144,7 +144,7 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Fill in manufactured solution in mesh interior
     const double Pi                  = 3.1415926535898;
-    AMP::Mesh::MeshIterator iterator = meshAdapter->getIterator( AMP::Mesh::Vertex, 0 );
+    AMP::Mesh::MeshIterator iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     std::string mfgName              = mfgSolution->get_name();
     bool isCylindrical               = mfgName.find( "Cylindrical" ) < mfgName.size();
     for ( ; iterator != iterator.end(); iterator++ ) {
@@ -177,7 +177,7 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     // Fill in manufactured solution on mesh boundary
     for ( int j = 0; j <= 8; j++ ) {
         AMP::Mesh::MeshIterator beg_bnd =
-            meshAdapter->getBoundaryIDIterator( AMP::Mesh::Vertex, j, 0 );
+            meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, j, 0 );
         AMP::Mesh::MeshIterator end_bnd = beg_bnd.end();
         AMP::Mesh::MeshIterator iter;
         for ( iter = beg_bnd; iter != end_bnd; iter++ ) {
@@ -259,8 +259,8 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     // Final communication
-    solVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    resVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     // Output Mathematica form (requires serial execution)
     for ( int i = 0; i < globalComm.getSize(); i++ ) {
@@ -277,12 +277,12 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
                 file << "results={" << std::endl;
             }
 
-            iterator        = meshAdapter->getIterator( AMP::Mesh::Vertex, 0 );
+            iterator        = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
             size_t numNodes = 0;
             for ( ; iterator != iterator.end(); iterator++ )
                 numNodes++;
 
-            iterator     = meshAdapter->getIterator( AMP::Mesh::Vertex, 0 );
+            iterator     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
             size_t iNode = 0;
             double l2err = 0.;
             for ( ; iterator != iterator.end(); iterator++ ) {
@@ -327,10 +327,10 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 #ifdef USE_EXT_SILO
         AMP::Utilities::Writer::shared_ptr siloWriter =
             AMP::Utilities::Writer::buildWriter( "Silo" );
-        siloWriter->registerVector( workVec, meshAdapter, AMP::Mesh::Vertex, "RelativeError" );
-        siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
-        siloWriter->registerVector( srcVec, meshAdapter, AMP::Mesh::Vertex, "Source" );
-        siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+        siloWriter->registerVector( workVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "RelativeError" );
+        siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+        siloWriter->registerVector( srcVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Source" );
+        siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
         siloWriter->writeFile( exeName, 0 );
 #endif
     }

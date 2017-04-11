@@ -134,7 +134,7 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
     d_ownSubChannel  = std::vector<bool>( d_numSubchannels, false );
     d_subchannelElem = std::vector<std::vector<AMP::Mesh::MeshElement>>(
         d_numSubchannels, std::vector<AMP::Mesh::MeshElement>( 0 ) );
-    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     for ( size_t i = 0; i < el.size(); i++ ) {
         std::vector<double> center = el->centroid();
         int index                  = getSubchannelIndex( center[0], center[1] );

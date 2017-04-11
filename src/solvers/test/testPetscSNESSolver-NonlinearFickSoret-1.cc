@@ -92,7 +92,7 @@ void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> &resu
 
     // create solution, rhs, and residual vectors
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Vector::shared_ptr solVec =
         AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec =
@@ -104,8 +104,8 @@ void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> &resu
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // register some variables for plotting
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
-    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
 #endif
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
@@ -181,8 +181,8 @@ void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> &resu
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-    solVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    resVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
 #ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 0 );
@@ -190,7 +190,7 @@ void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> &resu
 
     // store result
     {
-        AMP::Mesh::MeshIterator iterator = meshAdapter->getIterator( AMP::Mesh::Vertex, 0 );
+        AMP::Mesh::MeshIterator iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         size_t numNodes                  = iterator.size();
         results.resize( numNodes );
         std::vector<size_t> dofs;
@@ -273,7 +273,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create solution, rhs, and residual vectors
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::LinearAlgebra::Vector::shared_ptr solVec =
         AMP::LinearAlgebra::createVector( nodalScalarDOF, cVar, true );
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec =
@@ -294,8 +294,8 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // register some variables for plotting
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
-    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
 #endif
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
@@ -363,8 +363,8 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-    solVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    resVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
 #ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 0 );
@@ -372,7 +372,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
 
     // store result
     {
-        AMP::Mesh::MeshIterator iterator = meshAdapter->getIterator( AMP::Mesh::Vertex, 0 );
+        AMP::Mesh::MeshIterator iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         size_t numNodes                  = iterator.size();
         results.resize( numNodes );
         std::vector<size_t> dofs;

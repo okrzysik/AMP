@@ -48,7 +48,7 @@ void LinearFEOperator::reset( const AMP::shared_ptr<OperatorParameters> &params 
     AMP_ASSERT( ( *d_inDofMap ) == ( *d_matrix->getLeftDOFManager() ) );
     AMP_ASSERT( ( *d_inDofMap ) == ( *d_matrix->getRightDOFManager() ) );
 
-    AMP::Mesh::MeshIterator el           = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el           = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     const AMP::Mesh::MeshIterator end_el = el.end();
 
     this->preAssembly( params );

@@ -80,7 +80,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     AMP::Mesh::Mesh::shared_ptr surfaceMesh;
     if ( meshAdapter2.get() != nullptr ) {
         surfaceMesh =
-            meshAdapter2->Subset( meshAdapter2->getBoundaryIDIterator( AMP::Mesh::Face, 4, 0 ) );
+            meshAdapter2->Subset( meshAdapter2->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 4, 0 ) );
         surfaceMesh->setName( "clad_surface" );
     }
     globalComm.barrier();
@@ -89,18 +89,18 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
 
     // Create the DOF managers
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     // AMP::Discretization::DOFManager::shared_ptr flowNodalScalarDOF =
-    //    AMP::Discretization::simpleDOFManager::create(surfaceMesh,AMP::Mesh::Vertex,1,1,true);
+    //    AMP::Discretization::simpleDOFManager::create(surfaceMesh,AMP::Mesh::GeomType::Vertex,1,1,true);
     AMP::Discretization::DOFManager::shared_ptr flowNodalScalarDOF;
     if ( meshAdapter2.get() != nullptr )
         flowNodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
-            meshAdapter2, AMP::Mesh::Vertex, 1, 1, true );
+            meshAdapter2, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     int DOFsPerElement = 8;
     AMP::Discretization::DOFManager::shared_ptr gaussPointDOF1;
     if ( meshAdapter1.get() != nullptr )
         gaussPointDOF1 = AMP::Discretization::simpleDOFManager::create(
-            meshAdapter1, AMP::Mesh::Volume, 1, DOFsPerElement, true );
+            meshAdapter1, AMP::Mesh::GeomType::Volume, 1, DOFsPerElement, true );
 
     //--------------------------------------------------
     // Creating the parameters that will form the right-hand side for the thermal calculation.
@@ -209,7 +209,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     }
 
     //----------------------------------------------------------
-    //  Integrate Nuclear Rhs over Density * Volume //
+    //  Integrate Nuclear Rhs over Density * GeomType::Volume //
     //----------------------------------------------------------
     AMP::shared_ptr<AMP::Operator::VolumeIntegralOperator>
         specificPowerGpVecToPowerDensityNodalVecOperatator;
@@ -625,12 +625,12 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     if ( meshAdapter1.get() != nullptr ) {
         siloWriter->registerVector(
-            globalSolVec, meshAdapter1, AMP::Mesh::Vertex, "PelletTemperature" );
+            globalSolVec, meshAdapter1, AMP::Mesh::GeomType::Vertex, "PelletTemperature" );
     }
     if ( meshAdapter2.get() != nullptr ) {
         siloWriter->registerVector(
-            globalSolVec, meshAdapter2, AMP::Mesh::Vertex, "CladTemperature" );
-        siloWriter->registerVector( flowSolVec, surfaceMesh, AMP::Mesh::Vertex, "FlowTemperature" );
+            globalSolVec, meshAdapter2, AMP::Mesh::GeomType::Vertex, "CladTemperature" );
+        siloWriter->registerVector( flowSolVec, surfaceMesh, AMP::Mesh::GeomType::Vertex, "FlowTemperature" );
     }
 #endif
 

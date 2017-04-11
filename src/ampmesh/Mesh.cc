@@ -42,7 +42,7 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
     // Set the base properties
     AMP_ASSERT( sizeof( MeshElementID ) == 16 );
     d_params = params_in;
-    GeomDim  = null;
+    GeomDim  = GeomType::null;
     d_comm   = d_params->comm;
     d_db     = d_params->d_db;
     AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ),
@@ -311,7 +311,7 @@ AMP::LinearAlgebra::Vector::shared_ptr Mesh::getPositionVector( std::string name
     AMP::Discretization::DOFManager::shared_ptr DOFs =
         AMP::Discretization::simpleDOFManager::create(
             AMP::const_pointer_cast<Mesh>( shared_from_this() ),
-            AMP::Mesh::Vertex,
+            AMP::Mesh::GeomType::Vertex,
             gcw,
             PhysicalDim,
             true );
@@ -404,7 +404,7 @@ size_t Mesh::numGhostElements( const GeomType, int ) const
 ********************************************************/
 MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshIterator &B )
 {
-    if ( OP == Union ) {
+    if ( OP == SetOP::Union ) {
         // Perform a union: A U B
         // Get the union using the mesh IDs
         std::set<MeshElementID> union_set;
@@ -441,7 +441,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
             }
             return MultiVectorIterator( elements, 0 );
         }
-    } else if ( OP == Intersection ) {
+    } else if ( OP == SetOP::Intersection ) {
         // Perform a intersection: A n B
         // Get the intersection using the mesh IDs
         if ( A.size() == 0 || B.size() == 0 )
@@ -487,8 +487,8 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
             }
             return MultiVectorIterator( elements, 0 );
         }
-    } else if ( OP == Complement ) {
-        // Perform a Complement:  A - B
+    } else if ( OP == SetOP::Complement ) {
+        // Perform a SetOP::Complement:  A - B
         // Get the compliment using the mesh IDs
         std::set<MeshElementID> compliment_set;
         for ( auto &elem : A )

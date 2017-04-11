@@ -101,10 +101,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         nonlinearThermalOperator->getOutputVariable();
 
     AMP::Discretization::DOFManager::shared_ptr vectorDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::Discretization::DOFManager::shared_ptr scalarDofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     // create solution, rhs, and residual vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -126,8 +126,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
 #ifdef USE_EXT_SILO
     siloWriter->registerVector(
-        displacementVec, meshAdapter, AMP::Mesh::Vertex, "MechanicsSolution" );
-    siloWriter->registerVector( temperatureVec, meshAdapter, AMP::Mesh::Vertex, "ThermalSolution" );
+        displacementVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "MechanicsSolution" );
+    siloWriter->registerVector( temperatureVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ThermalSolution" );
 #endif
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//

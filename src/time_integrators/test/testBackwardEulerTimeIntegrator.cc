@@ -78,10 +78,10 @@ void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
     bool split               = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+            meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
 
     // create a linear BVP operator
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
@@ -117,7 +117,7 @@ void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
 
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    //  Integrate Nuclear Rhs over Density * Volume //
+    //  Integrate Nuclear Rhs over Density * GeomType::Volume //
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceTransportModel;
@@ -145,7 +145,7 @@ void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // set initial conditions, initialize created vectors
     int zeroGhostWidth           = 0;
-    AMP::Mesh::MeshIterator node = meshAdapter->getIterator( AMP::Mesh::Vertex, zeroGhostWidth );
+    AMP::Mesh::MeshIterator node = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
     AMP::Mesh::MeshIterator end_node = node.end();
 
     for ( ; node != end_node; ++node ) {

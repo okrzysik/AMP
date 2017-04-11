@@ -24,7 +24,7 @@ void StructuredMeshHelper::getXYZCoordinates( AMP::Mesh::Mesh::shared_ptr mesh,
 {
     AMP_ASSERT( mesh != nullptr );
     std::set<double> x, y, z;
-    AMP::Mesh::MeshIterator it = mesh->getIterator( AMP::Mesh::Vertex, 0 );
+    AMP::Mesh::MeshIterator it = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( size_t i = 0; i < it.size(); i++ ) {
         std::vector<double> coord = it->coord();
         AMP_ASSERT( coord.size() == 3 );
@@ -61,7 +61,7 @@ void StructuredMeshHelper::getXYZCoordinates( AMP::Mesh::Mesh::shared_ptr mesh,
     size_t Ny = y.size() - 1;
     size_t Nz = z.size() - 1;
     if ( check )
-        AMP_ASSERT( Nx * Ny * Nz == mesh->numGlobalElements( AMP::Mesh::Volume ) );
+        AMP_ASSERT( Nx * Ny * Nz == mesh->numGlobalElements( AMP::Mesh::GeomType::Volume ) );
 }
 
 
@@ -128,7 +128,7 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
                 for ( int j = box.first[1]; j <= box.last[1]; j++ ) {
                     for ( int i = box.first[0]; i <= box.last[0] + last[0]; i++ )
                         face_list->push_back(
-                            AMP::Mesh::BoxMesh::MeshElementIndex( AMP::Mesh::Face, 0, i, j, k ) );
+                            AMP::Mesh::BoxMesh::MeshElementIndex( AMP::Mesh::GeomType::Face, 0, i, j, k ) );
                 }
             }
         } else if ( direction == 1 ) {
@@ -137,7 +137,7 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
                 for ( int i = box.first[0]; i <= box.last[0]; i++ ) {
                     for ( int j = box.first[1]; j <= box.last[1] + last[1]; j++ )
                         face_list->push_back(
-                            AMP::Mesh::BoxMesh::MeshElementIndex( AMP::Mesh::Face, 1, i, j, k ) );
+                            AMP::Mesh::BoxMesh::MeshElementIndex( AMP::Mesh::GeomType::Face, 1, i, j, k ) );
                 }
             }
         } else if ( direction == 2 ) {
@@ -146,7 +146,7 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
                 for ( int i = box.first[0]; i <= box.last[0]; i++ ) {
                     for ( int k = box.first[2]; k <= box.last[2] + last[2]; k++ )
                         face_list->push_back(
-                            AMP::Mesh::BoxMesh::MeshElementIndex( AMP::Mesh::Face, 2, i, j, k ) );
+                            AMP::Mesh::BoxMesh::MeshElementIndex( AMP::Mesh::GeomType::Face, 2, i, j, k ) );
                 }
             }
         } else {
@@ -155,7 +155,7 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
         return structuredMeshIterator( face_list, boxmesh.get(), 0 );
     } else {
         // General case
-        AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::Face, gcw );
+        AMP::Mesh::MeshIterator iterator = mesh->getIterator( AMP::Mesh::GeomType::Face, gcw );
         std::vector<AMP::Mesh::MeshElement> face_list;
         std::vector<double> face_index;
         face_list.reserve( iterator.size() );
@@ -165,7 +165,7 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
         std::vector<std::tuple<int, int, int>> index;
         index.reserve( iterator.size() );
         for ( size_t i = 0; i < iterator.size(); ++i ) {
-            std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::Vertex );
+            std::vector<AMP::Mesh::MeshElement> nodes = iterator->getElements( AMP::Mesh::GeomType::Vertex );
             std::vector<double> center                = iterator->centroid();
             bool is_valid                             = true;
             for ( auto &node : nodes ) {

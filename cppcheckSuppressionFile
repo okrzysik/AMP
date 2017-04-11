@@ -55,6 +55,7 @@ duplicateExpression:*/utils/Grammar.cc
 
 
 // Suppress warnings for ampmesh
+noExplicitConstructor:*/ampmesh/MeshID.h
 toomanyconfigs:*/ampmesh/test/test_Mesh.cc
 
 // Supress material warnings
@@ -82,5 +83,8 @@ obsoleteFunctionsusleep
 // Supress graphics for now
 *:/*/graphics/ogre/*
 
+
+// Suppress warnings for external code
+memleak:*/utils/tinyexpr/tinyexpr.c
 
 

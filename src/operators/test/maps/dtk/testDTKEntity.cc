@@ -45,7 +45,7 @@ void myTest( AMP::UnitTest *ut )
     AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // get iterators
-    AMP::Mesh::MeshIterator vol_iterator = mesh->getIterator( AMP::Mesh::Volume );
+    AMP::Mesh::MeshIterator vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
 
     // map the volume ids to dtk ids
     int counter = 0;
@@ -90,7 +90,7 @@ void myTest( AMP::UnitTest *ut )
 
         // Check the bounding box.
         std::vector<AMP::Mesh::MeshElement> vertices =
-            vol_iterator->getElements( AMP::Mesh::Vertex );
+            vol_iterator->getElements( AMP::Mesh::GeomType::Vertex );
         AMP_ASSERT( 8 == vertices.size() );
         std::vector<double> box( 6 );
         Teuchos::Tuple<double, 6> element_box;

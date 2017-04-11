@@ -41,16 +41,16 @@ void MassLinearElement::apply()
         }     // end for qp
 
         switch ( d_equation ) {
-        case MassDensityModel::Mechanics:
+        case MassDensityModel::MassEquation::Mechanics:
             d_densityModel->getDensityMechanics( density, temperature, concentration, burnup );
             break;
-        case MassDensityModel::Thermal:
+        case MassDensityModel::MassEquation::Thermal:
             d_densityModel->getDensityThermal( density, temperature, concentration, burnup );
             break;
-        case MassDensityModel::Chemical:
+        case MassDensityModel::MassEquation::Chemical:
             d_densityModel->getDensityChemical( density, temperature, concentration, burnup );
             break;
-        case MassDensityModel::Manufactured:
+        case MassDensityModel::MassEquation::Manufactured:
             d_densityModel->getDensityManufactured(
                 density, temperature, concentration, burnup, d_fe->get_xyz() );
             break;
@@ -61,19 +61,19 @@ void MassLinearElement::apply()
         std::vector<double> nodalDensity( num_local_dofs );
         std::vector<Point> elem_nodes;
         switch ( d_equation ) {
-        case MassDensityModel::Mechanics:
+        case MassDensityModel::MassEquation::Mechanics:
             d_densityModel->getDensityMechanics(
                 nodalDensity, d_LocalTemperature, d_LocalConcentration, d_LocalBurnup );
             break;
-        case MassDensityModel::Thermal:
+        case MassDensityModel::MassEquation::Thermal:
             d_densityModel->getDensityThermal(
                 nodalDensity, d_LocalTemperature, d_LocalConcentration, d_LocalBurnup );
             break;
-        case MassDensityModel::Chemical:
+        case MassDensityModel::MassEquation::Chemical:
             d_densityModel->getDensityChemical(
                 nodalDensity, d_LocalTemperature, d_LocalConcentration, d_LocalBurnup );
             break;
-        case MassDensityModel::Manufactured:
+        case MassDensityModel::MassEquation::Manufactured:
             elem_nodes.resize( num_local_dofs );
             for ( size_t i    = 0; i < num_local_dofs; i++ )
                 elem_nodes[i] = d_elem->point( i );

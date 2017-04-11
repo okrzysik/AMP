@@ -101,7 +101,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     linearSolver->setPreconditioner( pelletStackSolver );
 
 #ifdef USE_EXT_SILO
-    siloWriter->registerVector( solVec, manager, AMP::Mesh::Vertex, "Displacement" );
+    siloWriter->registerVector( solVec, manager, AMP::Mesh::GeomType::Vertex, "Displacement" );
 #endif
 
     for ( unsigned int step = 0; step < NumberOfLoadingSteps; step++ ) {

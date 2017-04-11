@@ -74,7 +74,7 @@ void DTKAMPField::finalizeAfterWrite()
 {
     // Do nothing for now.
     if ( d_amp_vector )
-        d_amp_vector->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        d_amp_vector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
 
 //---------------------------------------------------------------------------//

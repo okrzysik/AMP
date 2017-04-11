@@ -145,14 +145,14 @@ namespace Operator {
 
     void NavierStokesGalWFFEOperator :: postAssembly()
     {
-      d_outVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
+      d_outVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_ADD );
     }
 
     // preelement operation for this operator assumes that the pressure and
     // temperature use same discretization and order of approximation
     void NavierStokesGalWFFEOperator :: preElementOperation( const AMP::Mesh::MeshElement & elem)
     {
-      d_currNodes = elem.getElements(AMP::Mesh::Vertex);
+      d_currNodes = elem.getElements(AMP::Mesh::GeomType::Vertex);
       unsigned int numNodesInCurrElem = d_currNodes.size();
 
       gettype0DofIndicesForCurrentElement(NavierStokes::VELOCITY, d_type0DofIndices);
@@ -270,7 +270,7 @@ namespace Operator {
             AMP::LinearAlgebra::Vector::shared_ptr temperature = u->subsetVectorForVariable(tvar);
             outParams->d_frozenVec[NavierStokes::TEMPERATURE] = temperature;
             outParams->d_frozenVec[NavierStokes::TEMPERATURE]->makeConsistent(
-   AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+   AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
           }
         }
 
@@ -309,7 +309,7 @@ namespace Operator {
             d_inVec[id] = frozenVec->subsetVectorForVariable(var);
           }
 
-          (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+          (d_inVec[id])->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         }
 */
 }

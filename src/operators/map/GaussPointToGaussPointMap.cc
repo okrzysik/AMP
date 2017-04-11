@@ -133,15 +133,15 @@ void GaussPointToGaussPointMap::createIdxMap(
     meshesForMap[1] = d_mesh2;
     AMP::Mesh::Mesh::shared_ptr multiMesh( new AMP::Mesh::MultiMesh( d_MapComm, meshesForMap ) );
 
-    //      AMP::Mesh::MeshIterator surfIter = multiMesh->getSurfaceIterator(AMP::Mesh::Face, 0);
+    //      AMP::Mesh::MeshIterator surfIter = multiMesh->getSurfaceIterator(AMP::Mesh::GeomType::Face, 0);
     //      AMP::Discretization::DOFManager::shared_ptr dofMap =
     //      AMP::Discretization::simpleDOFManager::create(multiMesh,
     //          surfIter, surfIter, dofsPerElem);
     AMP::Mesh::Mesh::shared_ptr submesh =
-        multiMesh->Subset( multiMesh->getSurfaceIterator( AMP::Mesh::Face, 0 ) );
+        multiMesh->Subset( multiMesh->getSurfaceIterator( AMP::Mesh::GeomType::Face, 0 ) );
     AMP::Discretization::DOFManager::shared_ptr dofMap =
         AMP::Discretization::simpleDOFManager::create(
-            submesh, AMP::Mesh::Face, 0, dofsPerElem, true );
+            submesh, AMP::Mesh::GeomType::Face, 0, dofsPerElem, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr inVec =
         AMP::LinearAlgebra::createVector( dofMap, variable );
@@ -152,7 +152,7 @@ void GaussPointToGaussPointMap::createIdxMap(
     for ( auto &_i : d_sendList ) {
         AMP::Mesh::MeshElement el = multiMesh->getElement( _i );
 
-        std::vector<AMP::Mesh::MeshElement> currNodes = el.getElements( AMP::Mesh::Vertex );
+        std::vector<AMP::Mesh::MeshElement> currNodes = el.getElements( AMP::Mesh::GeomType::Vertex );
 
         ::Elem *elem = new ::Quad4;
         for ( size_t j = 0; j < currNodes.size(); ++j ) {
@@ -195,7 +195,7 @@ void GaussPointToGaussPointMap::createIdxMap(
     for ( auto &_i : d_recvList ) {
         AMP::Mesh::MeshElement el = multiMesh->getElement( _i );
 
-        std::vector<AMP::Mesh::MeshElement> currNodes = el.getElements( AMP::Mesh::Vertex );
+        std::vector<AMP::Mesh::MeshElement> currNodes = el.getElements( AMP::Mesh::GeomType::Vertex );
 
         ::Elem *elem = new ::Quad4;
         for ( size_t j = 0; j < currNodes.size(); ++j ) {

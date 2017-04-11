@@ -13,7 +13,7 @@ class RNGParameters
 public:
     /**\brief Flag to let the RNG know if you want to provide a seed or use a global seed
      */
-    enum RNGOptions { USE_GLOBAL_SEED, USE_PARAMS_SEED };
+    enum class RNGOptions { USE_GLOBAL_SEED, USE_PARAMS_SEED };
 
     /**\brief Shorthand for shared pointer to RNGParameters
      */
@@ -35,7 +35,7 @@ public:
 
     /**\brief Constructor.
      */
-    RNGParameters( RNGOptions o = USE_GLOBAL_SEED, size_t rank = 0, size_t seed = 0 );
+    RNGParameters( RNGOptions o = RNGOptions::USE_GLOBAL_SEED, size_t rank = 0, size_t seed = 0 );
 };
 
 

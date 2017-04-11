@@ -16,6 +16,7 @@ class Vector;
 #include "utils/shared_ptr.h"
 #include <map>
 #include <vector>
+#include <array>
 
 
 namespace AMP {
@@ -271,9 +272,9 @@ public:
      * \details  Return an MeshIterator constructed through a set operation of two other
      * MeshIterators.
      * \param OP Set operation to perform.
-     *           Union - Perform a union of the iterators ( A U B )
-     *           Intersection - Perform an intersection of the iterators ( A n B )
-     *           Complement - Perform a compliment of the iterators ( A - B )
+     *           SetOP::Union - Perform a union of the iterators ( A U B )
+     *           SetOP::Intersection - Perform an intersection of the iterators ( A n B )
+     *           SetOP::Complement - Perform a compliment of the iterators ( A - B )
      * \param A  Pointer to MeshIterator A
      * \param B  Pointer to MeshIterator B
      */
@@ -384,8 +385,8 @@ public: // BoxMesh specific functionality
 protected:
 
     // Constructor
-    BoxMesh( MeshParameters::shared_ptr );
-    BoxMesh( const BoxMesh& );
+    explicit BoxMesh( MeshParameters::shared_ptr );
+    explicit BoxMesh( const BoxMesh& );
 
     // Function to initialize the mesh data once the logical mesh info has been created
     void initialize();

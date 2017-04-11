@@ -40,7 +40,7 @@ void TractionBoundaryOperator::addRHScorrection( AMP::LinearAlgebra::Vector::sha
         }
         computeCorrection();
         myRhs->add( myRhs, d_correction );
-        myRhs->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        myRhs->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     }
 }
 
@@ -54,7 +54,7 @@ void TractionBoundaryOperator::apply( AMP::LinearAlgebra::Vector::const_shared_p
         }
         computeCorrection();
         rInternal->subtract( rInternal, d_correction );
-        rInternal->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     }
 }
 
@@ -114,7 +114,7 @@ void TractionBoundaryOperator::computeCorrection()
         delete elem;
         elem = nullptr;
     } // end b
-    d_correction->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_ADD );
+    d_correction->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_ADD );
 }
 
 AMP::LinearAlgebra::Vector::shared_ptr

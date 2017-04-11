@@ -141,7 +141,7 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
 libMesh::Elem *createLibmeshElements::createElement( const AMP::Mesh::MeshElement &elem )
 {
     int dim                                   = (int) elem.elementType();
-    std::vector<AMP::Mesh::MeshElement> nodes = elem.getElements( AMP::Mesh::Vertex );
+    std::vector<AMP::Mesh::MeshElement> nodes = elem.getElements( AMP::Mesh::GeomType::Vertex );
     libMesh::Elem *element                    = nullptr;
     // Create the libmesh element
     if ( dim == 3 && nodes.size() == 8 ) {

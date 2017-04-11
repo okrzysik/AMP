@@ -91,7 +91,7 @@ void CoupledFlow1DSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vecto
 
     d_Sol = u->subsetVectorForVariable( d_outVariable );
     d_Rhs = f->constSubsetVectorForVariable( d_outVariable );
-    AMP_ASSERT( d_Rhs->getUpdateStatus() == AMP::LinearAlgebra::Vector::UNCHANGED );
+    AMP_ASSERT( d_Rhs->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
 
     ( AMP::dynamic_pointer_cast<AMP::Operator::Map3Dto1D>( d_flowInternal3to1 ) )
         ->setVector( d_flowInput );

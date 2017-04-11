@@ -30,8 +30,6 @@
 namespace AMP {
 namespace Mesh {
 
-static inline double round( double x ) { return x < 0.0 ? ceil( x - 0.5 ) : floor( x + 0.5 ); }
-
 
 /****************************************************************
 * Generator                                                     *
@@ -155,8 +153,9 @@ void BoxMesh::initialize()
 {
     PROFILE_START( "initialize" );
     // Check some assumptions/variables
-    AMP_INSIST( GeomDim <= 3, "Geometric dimension must be <= 3" );
-    for (int i=2*GeomDim; i<6; i++) {
+    AMP_INSIST( static_cast<int>(GeomDim) <= 3,
+        "Geometric dimension must be <= 3" );
+    for (int i=2*static_cast<int>(GeomDim); i<6; i++) {
         d_onSurface[i] = false;
         d_surfaceId[i] = -1;
     }
@@ -169,14 +168,14 @@ void BoxMesh::initialize()
                 AMP_ASSERT(d_surfaceId[i]==-1);
         }
     }
-    for (int d=0; d<GeomDim; d++)
+    for (int d=0; d<static_cast<int>(GeomDim); d++)
         AMP_ASSERT(d_globalSize[d]>0);
     // Get the minimum mesh size
-    std::vector<int> minSize( GeomDim, 1 );
+    std::vector<int> minSize( static_cast<int>(GeomDim), 1 );
     if ( d_db->keyExists( "LoadBalanceMinSize" ) ) {
         minSize = d_db->getIntegerArray( "LoadBalanceMinSize" );
         AMP_ASSERT( (int) minSize.size() == (int) GeomDim );
-        for (int d=0; d<GeomDim; d++) {
+        for (int d=0; d<static_cast<int>(GeomDim); d++) {
             if ( minSize[d] == -1 )
                 minSize[d] = d_globalSize[d];
             if ( minSize[d] == 0 )
@@ -186,7 +185,7 @@ void BoxMesh::initialize()
     // Create the load balance
     if ( d_comm.getSize() == 1 ) {
         // We are dealing with a serial mesh (do nothing to change the local box sizes)
-        for ( int d = 0; d < GeomDim; d++ )
+        for ( int d = 0; d < static_cast<int>(GeomDim); d++ )
             d_numBlocks[d] = 1;
     } else {
         // We are dealing with a parallel mesh
@@ -197,7 +196,7 @@ void BoxMesh::initialize()
         while ( !factors.empty() ) {
             int d    = -1;
             double v = -1;
-            for ( int i = 0; i < GeomDim; i++ ) {
+            for ( int i = 0; i < static_cast<int>(GeomDim); i++ ) {
                 double tmp = (double) d_globalSize[i] / (double) d_numBlocks[i];
                 if ( tmp > v && tmp > minSize[i] && minSize[i] >= 0 ) {
                     d = i;
@@ -214,9 +213,9 @@ void BoxMesh::initialize()
     const std::array<int,6> globalRange = { 0, std::max(d_globalSize[0]-1,0),
                                             0, std::max(d_globalSize[1]-1,0),
                                             0, std::max(d_globalSize[2]-1,0) };
-    for ( int d = 0; d < GeomDim; d++ ) {
+    for ( int d = 0; d < static_cast<int>(GeomDim); d++ ) {
         // Loop through the different geometry types;
-        for ( int t = 0; t <= GeomDim; t++ ) {
+        for ( int t = 0; t <= static_cast<int>(GeomDim); t++ ) {
             GeomType type = static_cast<GeomType>(t);
             auto range1 = globalRange;
             auto range2 = globalRange;
@@ -231,7 +230,7 @@ void BoxMesh::initialize()
                 AMP_ASSERT( set1.size()==1u && set2.size()==1u );
                 d_globalSurfaceList[2*d+0][t].push_back( set1[0] );
                 d_globalSurfaceList[2*d+1][t].push_back( set2[0] );
-            } else if ( type == Vertex ) {
+            } else if ( type == GeomType::Vertex ) {
                 AMP_ASSERT( set1.size()==1u && set2.size()==1u );
                 set1[0].first.index(d)  = 0;
                 set1[0].second.index(d) = 0;
@@ -239,7 +238,7 @@ void BoxMesh::initialize()
                 set2[0].second.index(d) = d_globalSize[d];
                 d_globalSurfaceList[2*d+0][t].push_back( set1[0] );
                 d_globalSurfaceList[2*d+1][t].push_back( set2[0] );
-            } else if ( type==Edge && GeomDim==Face ) {
+            } else if ( type==GeomType::Edge && GeomDim==GeomType::Face ) {
                 AMP_ASSERT( set1.size()==2u && set2.size()==2u );
                 for (size_t i=0; i<set1.size(); i++) {
                     if ( set1[i].first.side() == d ) {
@@ -251,7 +250,7 @@ void BoxMesh::initialize()
                         d_globalSurfaceList[2*d+1][t].push_back( set2[i] );
                     }
                 }
-            } else if ( type==Edge && GeomDim==Volume ) {
+            } else if ( type==GeomType::Edge && GeomDim==GeomType::Volume ) {
                 AMP_ASSERT( set1.size()==3u && set2.size()==3u );
                 for (size_t i=0; i<set1.size(); i++) {
                     if ( set1[i].first.side() == d ) {
@@ -263,7 +262,7 @@ void BoxMesh::initialize()
                         d_globalSurfaceList[2*d+1][t].push_back( set2[i] );
                     }
                 }
-            } else if ( type==Face && GeomDim==Volume ) {
+            } else if ( type==GeomType::Face && GeomDim==GeomType::Volume ) {
                 AMP_ASSERT( set1.size()==3u && set2.size()==3u );
                 for (size_t i=0; i<set1.size(); i++) {
                     if ( set1[i].first.side() == d ) {
@@ -282,7 +281,7 @@ void BoxMesh::initialize()
     }
     for (int i=0; i<6; i++) {
         if ( !d_onSurface[i] ) {
-            for (int j=0; j<GeomDim; j++)
+            for (int j=0; j<static_cast<int>(GeomDim); j++)
                 d_globalSurfaceList[i][j].clear();
         }
     }
@@ -301,7 +300,7 @@ void BoxMesh::finalize()
         d_box_local[2 * d + 1] = -1e100;
     }
     double x[3] = {0,0,0};
-    for ( auto& node : getIterator(Vertex,0) ) {
+    for ( auto& node : getIterator(GeomType::Vertex,0) ) {
         auto element = dynamic_cast<structuredMeshElement*>( node.getRawElement() );
         AMP_ASSERT( element != nullptr );
         coord( element->getIndex(), x );
@@ -396,11 +395,12 @@ static inline int to_nearest( double x )
 {
     return static_cast<int>( floor(x+0.5) );
 }
-BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const std::array<double,3>& x0, GeomType type ) const
+BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical(
+    const std::array<double,3>& x0, GeomType type ) const
 {
     // Correct x for periodic boundaries
     auto x = x0;
-    for (int d=0; d<GeomDim; d++) {
+    for (int d=0; d<static_cast<int>(GeomDim); d++) {
         if ( d_isPeriodic[d] ) {
             while ( x[d] < 0 )
                 x[d] += 1.0;
@@ -422,7 +422,7 @@ BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const std::array<doubl
     MeshElementIndex index;
     if ( type == GeomDim ) {
         index = MeshElementIndex( GeomDim, 0, x[0], x[1], x[2] );
-    } else if ( type == Vertex ) {
+    } else if ( type == GeomType::Vertex ) {
         int i = to_nearest( x[0] );
         int j = to_nearest( x[1] );
         int k = to_nearest( x[2] );
@@ -430,33 +430,33 @@ BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const std::array<doubl
         keep = keep && i>=0 && j>=0 && k>=0 ;
         keep = keep && i<=d_globalSize[0] && j<=d_globalSize[1] && k<=d_globalSize[2];
         if ( keep )
-            index = MeshElementIndex( Vertex, 0, i, j, k );
-    } else if ( type == Edge ) {
+            index = MeshElementIndex( GeomType::Vertex, 0, i, j, k );
+    } else if ( type == GeomType::Edge ) {
         AMP_ERROR("Not finished");
-    } else if ( type == Face ) {
+    } else if ( type == GeomType::Face ) {
         int i = to_nearest( x[0] );
         int j = to_nearest( x[1] );
         int k = to_nearest( x[2] );
         int ijk = 0;
         double min = fabs(x[0]-i);
-        if ( fabs(x[1]-j)<min && GeomDim>=2 ) {
+        if ( fabs(x[1]-j)<min && static_cast<int>(GeomDim)>=2 ) {
             min = fabs(x[1]-j);
             ijk = 1;
         }
-        if ( fabs(x[2]-k)<min && GeomDim>=3 ) {
+        if ( fabs(x[2]-k)<min && static_cast<int>(GeomDim)>=3 ) {
             min = fabs(x[2]-k);
             ijk = 2;
         }
         if ( min > 1e-6 ) {
             // Point is not on any face
         } else if ( ijk == 0 ) {
-            index = MeshElementIndex( Face, 0, i, x[1], x[2] );
+            index = MeshElementIndex( GeomType::Face, 0, i, x[1], x[2] );
         } else if ( ijk == 1 ) {
-            index = MeshElementIndex( Face, 1, x[0], j, x[2] );
+            index = MeshElementIndex( GeomType::Face, 1, x[0], j, x[2] );
         } else if ( ijk == 2 ) {
-            index = MeshElementIndex( Face, 2, x[0], x[1], k );
+            index = MeshElementIndex( GeomType::Face, 2, x[0], x[1], k );
         }
-    } else if ( type == Volume ) {
+    } else if ( type == GeomType::Volume ) {
         AMP_ERROR("Not finished");
     } else {
         AMP_ERROR("Unknown mesh element type");
@@ -541,7 +541,7 @@ BoxMesh::getIteratorRange( std::array<int,6> range, const GeomType type, const i
 {
     AMP_ASSERT( type <= GeomDim );
     // Get the range of cells we care about
-    for (int d=0; d<GeomDim; d++) {
+    for (int d=0; d<static_cast<int>(GeomDim); d++) {
         range[2*d+0] -= gcw;
         range[2*d+1] += gcw;
         if ( !d_isPeriodic[d] ) {
@@ -556,8 +556,8 @@ BoxMesh::getIteratorRange( std::array<int,6> range, const GeomType type, const i
         blocks.push_back( std::make_pair(
             MeshElementIndex( type, 0, range[0], range[2], range[4] ),
             MeshElementIndex( type, 0, range[1], range[3], range[5] ) ) );
-    } else if ( type == Vertex ) {
-        for (int d=0; d<GeomDim; d++) {
+    } else if ( type == GeomType::Vertex ) {
+        for (int d=0; d<static_cast<int>(GeomDim); d++) {
             if ( gcw != 0 )
                 range[2*d+1]++;
             else if ( !d_isPeriodic[d] && range[2*d+1]==d_globalSize[d]-1 )
@@ -566,7 +566,7 @@ BoxMesh::getIteratorRange( std::array<int,6> range, const GeomType type, const i
         blocks.push_back( std::make_pair(
             MeshElementIndex( type, 0, range[0], range[2], range[4] ),
             MeshElementIndex( type, 0, range[1], range[3], range[5] ) ) );
-    } else if ( type==Edge && GeomDim==Face ) {
+    } else if ( type==GeomType::Edge && GeomDim==GeomType::Face ) {
         auto range1 = range;
         auto range2 = range;
         if ( gcw!=0 || ( gcw==0 && !d_isPeriodic[0] && range[1]==d_globalSize[0]-1 ) )
@@ -579,7 +579,7 @@ BoxMesh::getIteratorRange( std::array<int,6> range, const GeomType type, const i
         blocks.push_back( std::make_pair(
             MeshElementIndex( type, 1, range2[0], range2[2], range2[4] ),
             MeshElementIndex( type, 1, range2[1], range2[3], range2[5] ) ) );
-    } else if ( type==Edge && GeomDim==Volume ) {
+    } else if ( type==GeomType::Edge && GeomDim==GeomType::Volume ) {
         auto range1 = range;
         auto range2 = range;
         auto range3 = range;
@@ -604,7 +604,7 @@ BoxMesh::getIteratorRange( std::array<int,6> range, const GeomType type, const i
         blocks.push_back( std::make_pair(
             MeshElementIndex( type, 2, range3[0], range3[2], range3[4] ),
             MeshElementIndex( type, 2, range3[1], range3[3], range3[5] ) ) );
-    } else if ( type==Face && GeomDim==Volume ) {
+    } else if ( type==GeomType::Face && GeomDim==GeomType::Volume ) {
         auto range1 = range;
         auto range2 = range;
         auto range3 = range;
@@ -628,7 +628,7 @@ BoxMesh::getIteratorRange( std::array<int,6> range, const GeomType type, const i
     }
     // Check that each block does not have duplicate elements
     for ( auto& block : blocks ) {
-        for (int d=0; d<GeomDim; d++) {
+        for (int d=0; d<static_cast<int>(GeomDim); d++) {
             if ( d_isPeriodic[d] ) {
                 auto& first = block.first;
                 auto& last = block.second;
@@ -701,9 +701,9 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
         return MeshIterator();
     // Include each surface as needed
     ElementBlocks sufaceSet;
-    for (int i=0; i<2*GeomDim; i++) {
+    for (int i=0; i<2*static_cast<int>(GeomDim); i++) {
         if ( d_onSurface[i] ) {
-            for ( const auto& item : d_globalSurfaceList[i][type] )
+            for ( const auto& item : d_globalSurfaceList[i][static_cast<int>(type)] )
                 sufaceSet.emplace_back( item );
         }
     }
@@ -737,7 +737,7 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
 std::vector<int> BoxMesh::getBoundaryIDs() const
 {
     std::set<int> ids;
-    for (int i=0; i<2*GeomDim; i++) {
+    for (int i=0; i<2*static_cast<int>(GeomDim); i++) {
         if ( !d_isPeriodic[i/2] && d_surfaceId[i]!=-1 )
             ids.insert(d_surfaceId[i]);
     }
@@ -750,9 +750,9 @@ BoxMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
         return MeshIterator();
     // Include each surface as needed
     ElementBlocks sufaceSet;
-    for (int i=0; i<2*GeomDim; i++) {
+    for (int i=0; i<2*static_cast<int>(GeomDim); i++) {
         if ( d_surfaceId[i] == id ) {
-            for ( auto item : d_globalSurfaceList[i][type] )
+            for ( auto item : d_globalSurfaceList[i][static_cast<int>(type)] )
                 sufaceSet.emplace_back( item );
         }
     }
@@ -795,13 +795,13 @@ bool BoxMesh::isOnBoundary( const MeshElementIndex &index, int id ) const
             if ( index.type() == GeomDim ) {
                 on_boundary = on_boundary || ( s==0 && index.index(d)==0 );
                 on_boundary = on_boundary || ( s==1 && index.index(d)==d_globalSize[d]-1 );
-            } else if ( index.type() == Vertex ) {
+            } else if ( index.type() == GeomType::Vertex ) {
                 on_boundary = on_boundary || ( s==0 && index.index(d)==0 );
                 on_boundary = on_boundary || ( s==1 && index.index(d)==d_globalSize[d] );
-            } else if ( index.type() == Edge ) {
+            } else if ( index.type() == GeomType::Edge ) {
                 on_boundary = on_boundary || ( s==0 && index.side()==d && index.index(d)==0 );
                 on_boundary = on_boundary || ( s==1 && index.side()==d && index.index(d)==d_globalSize[d] );
-            } else if ( index.type() == Face ) {
+            } else if ( index.type() == GeomType::Face ) {
                 on_boundary = on_boundary || ( s==0 && index.side()==d && index.index(d)==0 );
                 on_boundary = on_boundary || ( s==1 && index.side()==d && index.index(d)==d_globalSize[d] );
             } else {

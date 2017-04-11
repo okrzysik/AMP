@@ -32,7 +32,7 @@ void NodeToSegmentConstraintsOperator::reset( const AMP::shared_ptr<OperatorPara
     AMP::Mesh::Mesh::shared_ptr slaveMesh = mesh->Subset( d_SlaveMeshID );
     if ( slaveMesh != NULL ) {
         AMP::Mesh::MeshIterator slaveMeshIterator =
-            slaveMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_SlaveBoundaryID );
+            slaveMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_SlaveBoundaryID );
         AMP::Mesh::MeshIterator slaveMeshIterator_begin = slaveMeshIterator.begin(),
                                 slaveMeshIterator_end   = slaveMeshIterator.end();
         nSlaveVertices                                  = slaveMeshIterator.size();
@@ -67,19 +67,19 @@ void NodeToSegmentConstraintsOperator::reset( const AMP::shared_ptr<OperatorPara
     dendroSearchOnMaster.search( comm, tmpSlaveVerticesCoord );
 
     std::vector<AMP::Mesh::MeshElementID> tmpMasterVerticesGlobalIDs;
-    std::vector<double> tmpSlaveVerticesShift, tmpSlaveVerticesLocalCoordOnFace;
+    std::vector<double> tmpSlaveVerticesShift, tmpSlaveVerticesLocalCoordOnGeomType::Face;
     std::vector<int> flags;
 
     dendroSearchOnMaster.projectOnBoundaryID( comm,
                                               d_MasterBoundaryID,
                                               tmpMasterVerticesGlobalIDs,
                                               tmpSlaveVerticesShift,
-                                              tmpSlaveVerticesLocalCoordOnFace,
+                                              tmpSlaveVerticesLocalCoordOnGeomType::Face,
                                               flags );
 
     AMP_ASSERT( nSlaveVertices == tmpMasterVerticesGlobalIDs.size() / 4 );
     AMP_ASSERT( nSlaveVertices == tmpSlaveVerticesShift.size() / 3 );
-    AMP_ASSERT( nSlaveVertices == tmpSlaveVerticesLocalCoordOnFace.size() / 2 );
+    AMP_ASSERT( nSlaveVertices == tmpSlaveVerticesLocalCoordOnGeomType::Face.size() / 2 );
     AMP_ASSERT( nSlaveVertices == flags.size() );
 
     /** build the constraints */
@@ -129,8 +129,8 @@ void NodeToSegmentConstraintsOperator::reset( const AMP::shared_ptr<OperatorPara
         tmpSlaveVerticesGlobalIDs.begin();
     std::vector<AMP::Mesh::MeshElementID>::const_iterator tmpMasterVerticesGlobalIDsConstIterator =
         tmpMasterVerticesGlobalIDs.begin();
-    double const *tmpSlaveVerticesLocalCoordOnFacePointerToConst =
-        &( tmpSlaveVerticesLocalCoordOnFace[0] );
+    double const *tmpSlaveVerticesLocalCoordOnGeomType::FacePointerToConst =
+        &( tmpSlaveVerticesLocalCoordOnGeomType::Face[0] );
     std::vector<double>::const_iterator tmpSlaveVerticesShiftConstIterator =
         tmpSlaveVerticesShift.begin();
     double *masterShapeFunctionsValuesPointer                = &( d_MasterShapeFunctionsValues[0] );
@@ -157,9 +157,9 @@ void NodeToSegmentConstraintsOperator::reset( const AMP::shared_ptr<OperatorPara
         //    AMP::Mesh::DendroSearch::FoundOnBoundary) );
         if ( *flagsIterator == AMP::Mesh::DendroSearch::FoundOnBoundary ) {
             hex8_element_t::get_basis_functions_values_on_face(
-                tmpSlaveVerticesLocalCoordOnFacePointerToConst, masterShapeFunctionsValuesPointer );
+                tmpSlaveVerticesLocalCoordOnGeomType::FacePointerToConst, masterShapeFunctionsValuesPointer );
             for ( size_t d = 0; d < 2; ++d ) {
-                ++tmpSlaveVerticesLocalCoordOnFacePointerToConst;
+                ++tmpSlaveVerticesLocalCoordOnGeomType::FacePointerToConst;
             }
             for ( size_t v = 0; v < 4; ++v ) {
                 ++masterShapeFunctionsValuesPointer;
@@ -181,7 +181,7 @@ void NodeToSegmentConstraintsOperator::reset( const AMP::shared_ptr<OperatorPara
             } // end for v
         } else {
             for ( size_t d = 0; d < 2; ++d ) {
-                ++tmpSlaveVerticesLocalCoordOnFacePointerToConst;
+                ++tmpSlaveVerticesLocalCoordOnGeomType::FacePointerToConst;
             }
             ++tmpSlaveVerticesGlobalIDsConstIterator;
             for ( size_t d = 0; d < 3; ++d ) {
@@ -192,8 +192,8 @@ void NodeToSegmentConstraintsOperator::reset( const AMP::shared_ptr<OperatorPara
             }
         } // end if
     }     // end for
-    AMP_ASSERT( tmpSlaveVerticesLocalCoordOnFacePointerToConst ==
-                &( tmpSlaveVerticesLocalCoordOnFace[0] ) + 2 * nSlaveVertices );
+    AMP_ASSERT( tmpSlaveVerticesLocalCoordOnGeomType::FacePointerToConst ==
+                &( tmpSlaveVerticesLocalCoordOnGeomType::Face[0] ) + 2 * nSlaveVertices );
     AMP_ASSERT( tmpSlaveVerticesShiftConstIterator == tmpSlaveVerticesShift.end() );
     AMP_ASSERT( tmpSlaveVerticesGlobalIDsConstIterator == tmpSlaveVerticesGlobalIDs.end() );
     AMP_ASSERT( tmpMasterVerticesGlobalIDsConstIterator == tmpMasterVerticesGlobalIDs.end() );
@@ -206,7 +206,7 @@ void NodeToSegmentConstraintsOperator::reset( const AMP::shared_ptr<OperatorPara
     tmpSlaveVerticesGlobalIDs.clear();
     tmpMasterVerticesGlobalIDs.clear();
     tmpSlaveVerticesShift.clear();
-    tmpSlaveVerticesLocalCoordOnFace.clear();
+    tmpSlaveVerticesLocalCoordOnGeomType::Face.clear();
     flags.clear();
 
     /** setup for apply */

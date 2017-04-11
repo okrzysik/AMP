@@ -138,7 +138,7 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
     d_ownSubChannel  = std::vector<bool>( d_numSubchannels, false );
     d_subchannelElem = std::vector<std::vector<AMP::Mesh::MeshElement>>(
         d_numSubchannels, std::vector<AMP::Mesh::MeshElement>( 0 ) );
-    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     for ( size_t i = 0; i < el.size(); i++ ) {
         std::vector<double> center = el->centroid();
         int index                  = getSubchannelIndex( center[0], center[1] );
@@ -221,7 +221,7 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
     const double height     = box[5] - box[4];
 
     // iterator for cells of mesh
-    AMP::Mesh::MeshIterator cell = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator cell = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
 
     // put elements in array by subchannel
     std::vector<std::vector<AMP::Mesh::MeshElement>> d_elem( d_numSubchannels );
@@ -432,7 +432,7 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
 
             // loop over gap faces
             std::vector<AMP::Mesh::MeshElement> cellFaces =
-                localSubchannelCell->getElements( AMP::Mesh::Face );
+                localSubchannelCell->getElements( AMP::Mesh::GeomType::Face );
             for ( auto face = cellFaces.begin(); face != cellFaces.end(); ++face ) {
                 std::vector<double> faceCentroid = face->centroid();
                 auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
@@ -445,7 +445,7 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
                     double w = w_scale * d_frozenVec->getValueByGlobalID( gapDofs[0] );
                     // get index of neighboring subchannel
                     std::vector<AMP::Mesh::MeshElement> adjacentCells =
-                        d_Mesh->getElementParents( lateralFace, AMP::Mesh::Volume );
+                        d_Mesh->getElementParents( lateralFace, AMP::Mesh::GeomType::Volume );
                     AMP_INSIST( adjacentCells.size() == 2,
                                 "There were not 2 adjacent cells to a lateral gap face" );
                     std::vector<double> subchannelCentroid1 = adjacentCells[0].centroid();
@@ -717,7 +717,7 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
 
     // loop over lateral faces
     AMP::Mesh::MeshIterator face =
-        d_Mesh->getIterator( AMP::Mesh::Face, 0 ); // iterator for cells of mesh
+        d_Mesh->getIterator( AMP::Mesh::GeomType::Face, 0 ); // iterator for cells of mesh
     for ( ; face != face.end(); face++ ) {
         std::vector<double> faceCentroid = face->centroid();
         auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
@@ -731,7 +731,7 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
 
             // get adjacent cells
             std::vector<AMP::Mesh::MeshElement> adjacentCells =
-                d_Mesh->getElementParents( lateralFace, AMP::Mesh::Volume );
+                d_Mesh->getElementParents( lateralFace, AMP::Mesh::GeomType::Volume );
             AMP_INSIST( adjacentCells.size() == 2,
                         "There were not 2 adjacent cells to a lateral gap face" );
             AMP::Mesh::MeshElement cell1      = adjacentCells[0];
@@ -757,9 +757,9 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
                 // get cells below bottom faces
                 // get adjacent cells
                 std::vector<AMP::Mesh::MeshElement> cell1MinusFaceAdjacentCells =
-                    d_Mesh->getElementParents( cell1MinusFace, AMP::Mesh::Volume );
+                    d_Mesh->getElementParents( cell1MinusFace, AMP::Mesh::GeomType::Volume );
                 std::vector<AMP::Mesh::MeshElement> cell2MinusFaceAdjacentCells =
-                    d_Mesh->getElementParents( cell2MinusFace, AMP::Mesh::Volume );
+                    d_Mesh->getElementParents( cell2MinusFace, AMP::Mesh::GeomType::Volume );
                 AMP_INSIST( cell1MinusFaceAdjacentCells.size() == 2,
                             "There were not 2 adjacent cells to an axial face" );
                 AMP_INSIST( cell2MinusFaceAdjacentCells.size() == 2,
@@ -911,7 +911,7 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
                     w_plus = w_mid;
                 else {
                     std::vector<AMP::Mesh::MeshElement> cell1PlusFaceAdjacentCells =
-                        d_Mesh->getElementParents( cell1PlusFace, AMP::Mesh::Volume );
+                        d_Mesh->getElementParents( cell1PlusFace, AMP::Mesh::GeomType::Volume );
                     AMP_INSIST( cell1PlusFaceAdjacentCells.size() == 2,
                                 "There were not 2 adjacent cells to an axial gap face" );
                     AMP::Mesh::MeshElement axialCell1      = cell1PlusFaceAdjacentCells[0];
@@ -1094,7 +1094,7 @@ void SubchannelFourEqLinearOperator::getLateralFaces(
     std::map<std::vector<double>, AMP::Mesh::MeshElement> &exteriorLateralFaceMap )
 {
     // get iterator over all faces of mesh
-    AMP::Mesh::MeshIterator face = mesh->getIterator( AMP::Mesh::Face, 0 );
+    AMP::Mesh::MeshIterator face = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     // loop over faces
     for ( ; face != face.end(); face++ ) {
         // check that face is vertical
@@ -1102,7 +1102,7 @@ void SubchannelFourEqLinearOperator::getLateralFaces(
         // get centroid of current face
         std::vector<double> faceCentroid = face->centroid();
         // get vertices of current face
-        std::vector<AMP::Mesh::MeshElement> vertices = face->getElements( AMP::Mesh::Vertex );
+        std::vector<AMP::Mesh::MeshElement> vertices = face->getElements( AMP::Mesh::GeomType::Vertex );
 
         bool perpindicular_to_x = true; // is the current face perpindicular to x-axis?
         bool perpindicular_to_y = true; // is the current face perpindicular to y-axis?
@@ -1124,7 +1124,7 @@ void SubchannelFourEqLinearOperator::getLateralFaces(
         // if the face is vertical
         if ( perpindicular_to_x || perpindicular_to_y ) {
             // if the face has more than 1 adjacent cell
-            if ( ( mesh->getElementParents( *face, AMP::Mesh::Volume ) ).size() > 1 ) {
+            if ( ( mesh->getElementParents( *face, AMP::Mesh::GeomType::Volume ) ).size() > 1 ) {
                 // insert face into interior lateral face map with centroid
                 interiorLateralFaceMap.insert(
                     std::pair<std::vector<double>, AMP::Mesh::MeshElement>( faceCentroid, *face ) );
@@ -1149,19 +1149,19 @@ SubchannelFourEqLinearOperator::getGapWidths( AMP::Mesh::Mesh::shared_ptr mesh,
     size_t Nz   = d_z.size() - 1;
     double topZ = 0.5 * ( d_z[Nz] + d_z[Nz - 1] );
     // get iterator over all faces of mesh
-    AMP::Mesh::MeshIterator face = mesh->getIterator( AMP::Mesh::Face, 0 );
+    AMP::Mesh::MeshIterator face = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     for ( ; face != face.end(); face++ ) {
         std::vector<double> faceCentroid = face->centroid();
         if ( AMP::Utilities::approx_equal_abs( faceCentroid[2], topZ, 1.0e-12 ) ) {
             // if the face has more than 1 adjacent cell
-            if ( ( mesh->getElementParents( *face, AMP::Mesh::Volume ) ).size() > 1 ) {
+            if ( ( mesh->getElementParents( *face, AMP::Mesh::GeomType::Volume ) ).size() > 1 ) {
                 // create vector of xy position of gap face
                 std::vector<double> xyPos( 2 );
                 xyPos[0] = faceCentroid[0];
                 xyPos[1] = faceCentroid[1];
                 // get vertices of current face
                 std::vector<AMP::Mesh::MeshElement> vertices =
-                    face->getElements( AMP::Mesh::Vertex );
+                    face->getElements( AMP::Mesh::GeomType::Vertex );
                 // loop over vertices of current face
                 bool topVertex1Found = false;
                 double x1            = 0.0;
@@ -1216,7 +1216,7 @@ void SubchannelFourEqLinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::shared
     // Create the grid for all processors
     std::set<double> x, y, z;
     if ( mesh.get() != nullptr ) {
-        AMP::Mesh::MeshIterator vertex = mesh->getIterator( AMP::Mesh::Vertex, 0 );
+        AMP::Mesh::MeshIterator vertex = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         // for all vertices in mesh
         for ( size_t i = 0; i < vertex.size(); i++ ) {
             std::vector<double> coord = vertex->coord();
@@ -1269,7 +1269,7 @@ void SubchannelFourEqLinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::shared
     size_t Nz = d_z.size() - 1; // number of mesh divisions along z-axis
     if ( mesh.get() != nullptr )
         // check that computed number of elements matches that found by numGlobalElements()
-        AMP_ASSERT( Nx * Ny * Nz == mesh->numGlobalElements( AMP::Mesh::Volume ) );
+        AMP_ASSERT( Nx * Ny * Nz == mesh->numGlobalElements( AMP::Mesh::GeomType::Volume ) );
     // compute number of subchannels
     d_numSubchannels = Nx * Ny;
 }
@@ -1465,7 +1465,7 @@ void SubchannelFourEqLinearOperator::getAxialFaces( AMP::Mesh::MeshElement cell,
     bool lowerFaceFound              = false;
     std::vector<double> cellCentroid = cell.centroid();
     // get all faces of cell
-    std::vector<AMP::Mesh::MeshElement> cellFaces = cell.getElements( AMP::Mesh::Face );
+    std::vector<AMP::Mesh::MeshElement> cellFaces = cell.getElements( AMP::Mesh::GeomType::Face );
     // loop over faces of cell
     for ( auto face = cellFaces.begin(); face != cellFaces.end(); ++face ) {
         std::vector<double> faceCentroid = face->centroid();
@@ -1516,7 +1516,7 @@ AMP::Mesh::MeshElement SubchannelFourEqLinearOperator::getAxiallyAdjacentLateral
     // lateral face
     AMP::Mesh::MeshElement axiallyAdjacentLateralFace;
     std::vector<AMP::Mesh::MeshElement> daughterCellFaces =
-        daughterCell->getElements( AMP::Mesh::Face );
+        daughterCell->getElements( AMP::Mesh::GeomType::Face );
     for ( auto face = daughterCellFaces.begin(); face != daughterCellFaces.end(); ++face ) {
         std::vector<double> faceCentroid = face->centroid();
         auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );

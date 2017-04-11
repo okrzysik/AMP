@@ -4,7 +4,7 @@
 #include "ampmesh/dendro/DendroSearch.h"
 #include "ampmesh/euclidean_geometry_tools.h"
 #include "ampmesh/latex_visualization_tools.h"
-#include "operators/contact/NodeToFaceContactOperator.h"
+#include "operators/contact/NodeToGeomType::FaceContactOperator.h"
 
 #include <algorithm>
 #include <cmath>
@@ -15,7 +15,7 @@
 namespace AMP {
 namespace Operator {
 
-void NodeToFaceContactOperator::initialize()
+void NodeToGeomType::FaceContactOperator::initialize()
 {
     d_ActiveSet.clear();
     d_InactiveSet.clear();
@@ -23,7 +23,7 @@ void NodeToFaceContactOperator::initialize()
     AMP::Mesh::Mesh::shared_ptr slaveMesh = d_Mesh->Subset( d_SlaveMeshID );
     if ( slaveMesh.get() != NULL ) {
         AMP::Mesh::MeshIterator slaveMeshIterator =
-            slaveMesh->getBoundaryIDIterator( AMP::Mesh::Vertex, d_SlaveBoundaryID );
+            slaveMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_SlaveBoundaryID );
         AMP::Mesh::MeshIterator slaveMeshIterator_begin = slaveMeshIterator.begin(),
                                 slaveMeshIterator_end   = slaveMeshIterator.end();
         size_t const nSlaveVertices                     = slaveMeshIterator.size();
@@ -37,7 +37,7 @@ void NodeToFaceContactOperator::initialize()
     }     // end if
 }
 
-size_t NodeToFaceContactOperator::updateActiveSet(
+size_t NodeToGeomType::FaceContactOperator::updateActiveSet(
     AMP::LinearAlgebra::Vector::shared_ptr displacementFieldVector, bool skipDisplaceMesh )
 {
     size_t const npes = d_GlobalComm.getSize();
@@ -58,13 +58,13 @@ size_t NodeToFaceContactOperator::updateActiveSet(
 
     /** get the inactive slave vertices coordinates */
     std::vector<double> inactiveSlaveVerticesCoord( 3 * nInactiveSlaveVerticesBeforeUpdate );
-    AMP::Mesh::MeshElement tmpInactiveSlaveVertex;
-    std::vector<double> tmpInactiveSlaveVertexCoord( 3 );
+    AMP::Mesh::MeshElement tmpInactiveSlaveGeomType::Vertex;
+    std::vector<double> tmpInactiveSlaveGeomType::VertexCoord( 3 );
     for ( size_t i = 0; i < nInactiveSlaveVerticesBeforeUpdate; ++i ) {
-        tmpInactiveSlaveVertex      = d_Mesh->getElement( d_InactiveSet[i] );
-        tmpInactiveSlaveVertexCoord = tmpInactiveSlaveVertex.coord();
-        std::copy( tmpInactiveSlaveVertexCoord.begin(),
-                   tmpInactiveSlaveVertexCoord.end(),
+        tmpInactiveSlaveGeomType::Vertex      = d_Mesh->getElement( d_InactiveSet[i] );
+        tmpInactiveSlaveGeomType::VertexCoord = tmpInactiveSlaveGeomType::Vertex.coord();
+        std::copy( tmpInactiveSlaveGeomType::VertexCoord.begin(),
+                   tmpInactiveSlaveGeomType::VertexCoord.end(),
                    &( inactiveSlaveVerticesCoord[3 * i] ) );
     } // end for i
 
@@ -77,7 +77,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
     dendroSearchOnMaster.search( d_GlobalComm, inactiveSlaveVerticesCoord );
 
     std::vector<AMP::Mesh::MeshElementID> tmpMasterVerticesGlobalIDs;
-    std::vector<double> tmpSlaveVerticesShift, tmpSlaveVerticesLocalCoordOnFace;
+    std::vector<double> tmpSlaveVerticesShift, tmpSlaveVerticesLocalCoordOnGeomType::Face;
     std::vector<int> flags;
     std::vector<AMP::Mesh::MeshElementID> tmpMasterVolumesGlobalIDs;
     std::vector<size_t> tmpMasterFacesLocalIndices;
@@ -85,7 +85,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
                                               d_MasterBoundaryID,
                                               tmpMasterVerticesGlobalIDs,
                                               tmpSlaveVerticesShift,
-                                              tmpSlaveVerticesLocalCoordOnFace,
+                                              tmpSlaveVerticesLocalCoordOnGeomType::Face,
                                               flags,
                                               tmpMasterVolumesGlobalIDs,
                                               tmpMasterFacesLocalIndices );
@@ -144,7 +144,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
                 d_MasterFacesLocalIndices[i];
             hex8_element_t::get_local_coordinates_on_face(
                 &( d_MasterShapeFunctionsValues[4 * i] ),
-                sendProjectionDataBuffer[sendMap[i]].d_SlaveVertexLocalCoordOnMasterFace );
+                sendProjectionDataBuffer[sendMap[i]].d_SlaveGeomType::VertexLocalCoordOnMasterFace );
             ++sendCnts[sendToRank];
         } // end for i
         AMP_ASSERT( std::find( sendMap.begin(), sendMap.end(), nSendData ) == sendMap.end() );
@@ -174,7 +174,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
             // vertex
             std::vector<AMP::Mesh::MeshElement> masterVolumeVertices =
                 d_Mesh->getElement( recvProjectionDataBuffer[i].d_MasterVolumeGlobalID )
-                    .getElements( AMP::Mesh::Vertex );
+                    .getElements( AMP::Mesh::GeomType::Vertex );
             AMP_ASSERT( masterVolumeVertices.size() == 8 );
             std::vector<AMP::Mesh::MeshElementID> masterVolumeVerticesGlobalIDs( 8 );
             double masterVolumeVerticesCoordinates[24];
@@ -189,13 +189,13 @@ size_t NodeToFaceContactOperator::updateActiveSet(
             hex8_element_t masterVolumeElement( masterVolumeVerticesCoordinates );
             masterVolumeElement.compute_normal_to_face(
                 recvProjectionDataBuffer[i].d_MasterFaceLocalIndex,
-                recvProjectionDataBuffer[i].d_SlaveVertexLocalCoordOnMasterFace,
-                sendStressStateDataBuffer[i].d_SlaveVertexNormalVector );
-            double slaveVertexLocalCoordinates[3];
+                recvProjectionDataBuffer[i].d_SlaveGeomType::VertexLocalCoordOnMasterFace,
+                sendStressStateDataBuffer[i].d_SlaveGeomType::VertexNormalVector );
+            double slaveGeomType::VertexLocalCoordinates[3];
             hex8_element_t::map_face_to_local(
                 recvProjectionDataBuffer[i].d_MasterFaceLocalIndex,
-                recvProjectionDataBuffer[i].d_SlaveVertexLocalCoordOnMasterFace,
-                slaveVertexLocalCoordinates );
+                recvProjectionDataBuffer[i].d_SlaveGeomType::VertexLocalCoordOnMasterFace,
+                slaveGeomType::VertexLocalCoordinates );
             std::vector<size_t> displacementIndices;
             getVectorIndicesFromGlobalIDs( masterVolumeVerticesGlobalIDs, displacementIndices );
             AMP_ASSERT( displacementIndices.size() == 24 );
@@ -204,7 +204,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
                 24, &( displacementIndices[0] ), &( displacementValues[0] ) );
             double strainTensor[6];
             masterVolumeElement.compute_strain_tensor(
-                slaveVertexLocalCoordinates, displacementValues, strainTensor );
+                slaveGeomType::VertexLocalCoordinates, displacementValues, strainTensor );
             // compute thermal strain
             if ( d_TemperatureFieldVector.get() != NULL ) {
                 std::vector<size_t> temperatureIndices;
@@ -215,7 +215,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
                 d_TemperatureFieldVector->getValuesByGlobalID(
                     8, &( temperatureIndices[0] ), &( temperatureValues[0] ) );
                 double basisFunctionsValues[8];
-                hex8_element_t::get_basis_functions_values( slaveVertexLocalCoordinates,
+                hex8_element_t::get_basis_functions_values( slaveGeomType::VertexLocalCoordinates,
                                                             basisFunctionsValues );
                 double temperature = std::inner_product(
                     temperatureValues, temperatureValues + 8, basisFunctionsValues, 0.0 );
@@ -239,8 +239,8 @@ size_t NodeToFaceContactOperator::updateActiveSet(
             double stressTensor[6];
             compute_stress_tensor( constitutiveMatrix, strainTensor, stressTensor );
             compute_traction( stressTensor,
-                              sendStressStateDataBuffer[i].d_SlaveVertexNormalVector,
-                              sendStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction );
+                              sendStressStateDataBuffer[i].d_SlaveGeomType::VertexNormalVector,
+                              sendStressStateDataBuffer[i].d_SlaveGeomType::VertexSurfaceTraction );
         } // end for i
         recvProjectionDataBuffer.clear();
 
@@ -258,12 +258,12 @@ size_t NodeToFaceContactOperator::updateActiveSet(
         sendStressStateDataBuffer.clear();
 
         for ( size_t i = 0; i < nSendData; ++i ) {
-            std::transform( recvStressStateDataBuffer[i].d_SlaveVertexNormalVector,
-                            recvStressStateDataBuffer[i].d_SlaveVertexNormalVector + 3,
+            std::transform( recvStressStateDataBuffer[i].d_SlaveGeomType::VertexNormalVector,
+                            recvStressStateDataBuffer[i].d_SlaveGeomType::VertexNormalVector + 3,
                             &( d_SlaveVerticesNormalVectorBeforeUpdate[3 * recvMap[i]] ),
                             std::bind1st( std::multiplies<double>(), -1.0 ) );
-            std::transform( recvStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction,
-                            recvStressStateDataBuffer[i].d_SlaveVertexSurfaceTraction + 3,
+            std::transform( recvStressStateDataBuffer[i].d_SlaveGeomType::VertexSurfaceTraction,
+                            recvStressStateDataBuffer[i].d_SlaveGeomType::VertexSurfaceTraction + 3,
                             &( d_SlaveVerticesSurfaceTractionBeforeUpdate[3 * recvMap[i]] ),
                             std::bind1st( std::multiplies<double>(), -1.0 ) );
         } // end for i
@@ -287,7 +287,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
             double nDotT =
                 compute_scalar_product( &( d_SlaveVerticesNormalVectorBeforeUpdate[3 * i] ),
                                         &( d_SlaveVerticesSurfaceTractionBeforeUpdate[3 * i] ) );
-            // std::vector<double> slaveVertexCoordinates =
+            // std::vector<double> slaveGeomType::VertexCoordinates =
             // d_Mesh->getElement(*activeSetIterator).coord();
             if ( nDotT > 1.0e-10 ) {
                 ++nActiveSlaveVerticesDeactivated;
@@ -391,7 +391,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
             d_ActiveSet.push_back( *inactiveSetIterator );
             inactiveSetIterator = d_InactiveSet.erase( inactiveSetIterator );
             hex8_element_t::get_basis_functions_values_on_face(
-                &( tmpSlaveVerticesLocalCoordOnFace[2 * i] ), masterShapeFunctionsValuesPointer );
+                &( tmpSlaveVerticesLocalCoordOnGeomType::Face[2 * i] ), masterShapeFunctionsValuesPointer );
             std::advance( masterShapeFunctionsValuesPointer, 4 );
             std::copy( &( tmpSlaveVerticesShift[3 * i] ),
                        &( tmpSlaveVerticesShift[3 * i] ) + 3,
@@ -412,7 +412,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
                 d_fout << std::setprecision( 6 ) << std::fixed;
                 std::vector<AMP::Mesh::MeshElement> elementVertices =
                     d_Mesh->getElement( tmpMasterVolumesGlobalIDs[i] )
-                        .getElements( AMP::Mesh::Vertex );
+                        .getElements( AMP::Mesh::GeomType::Vertex );
                 double verticesCoordinates[24];
                 for ( size_t kk = 0; kk < 8; ++kk ) {
                     std::vector<double> vertexCoordinates = elementVertices[kk].coord();
@@ -442,7 +442,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
         0 ); // DendroSearch::FoundNotOnBoundary is not acceptable
     tmpMasterVerticesGlobalIDs.clear();
     tmpSlaveVerticesShift.clear();
-    tmpSlaveVerticesLocalCoordOnFace.clear();
+    tmpSlaveVerticesLocalCoordOnGeomType::Face.clear();
     flags.clear();
     tmpMasterVolumesGlobalIDs.clear();
     tmpMasterFacesLocalIndices.clear();
@@ -477,7 +477,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
             d_MasterFacesLocalIndices[nActiveSlaveVerticesTmp + i];
         hex8_element_t::get_local_coordinates_on_face(
             &( d_MasterShapeFunctionsValues[4 * ( nActiveSlaveVerticesTmp + i )] ),
-            sendProjectionDataBuffer[sendMap[i]].d_SlaveVertexLocalCoordOnMasterFace );
+            sendProjectionDataBuffer[sendMap[i]].d_SlaveGeomType::VertexLocalCoordOnMasterFace );
         ++sendCnts[sendToRank];
     } // end for i
     std::vector<int> recvCnts( npes, 0 );
@@ -504,7 +504,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
     for ( size_t i = 0; i < nRecvData; ++i ) {
         std::vector<AMP::Mesh::MeshElement> masterVolumeVertices =
             d_Mesh->getElement( recvProjectionDataBuffer[i].d_MasterVolumeGlobalID )
-                .getElements( AMP::Mesh::Vertex );
+                .getElements( AMP::Mesh::GeomType::Vertex );
         std::vector<AMP::Mesh::MeshElementID> masterVolumeVerticesGlobalIDs( 8 );
         AMP_ASSERT( masterVolumeVertices.size() == 8 );
         double masterVolumeVerticesCoordinates[24];
@@ -528,7 +528,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
         } // end if
         double basis_functions_values_on_face[4];
         hex8_element_t::get_basis_functions_values_on_face(
-            recvProjectionDataBuffer[i].d_SlaveVertexLocalCoordOnMasterFace,
+            recvProjectionDataBuffer[i].d_SlaveGeomType::VertexLocalCoordOnMasterFace,
             basis_functions_values_on_face );
         std::fill( sendProjOnMasterFaceData[i].d_Displacement,
                    sendProjOnMasterFaceData[i].d_Displacement + 3,
@@ -548,7 +548,7 @@ size_t NodeToFaceContactOperator::updateActiveSet(
         hex8_element_t masterVolumeElement( masterVolumeVerticesCoordinates );
         masterVolumeElement.compute_normal_to_face(
             recvProjectionDataBuffer[i].d_MasterFaceLocalIndex,
-            recvProjectionDataBuffer[i].d_SlaveVertexLocalCoordOnMasterFace,
+            recvProjectionDataBuffer[i].d_SlaveGeomType::VertexLocalCoordOnMasterFace,
             sendProjOnMasterFaceData[i].d_NormalVector );
     } // end for i
     recvProjectionDataBuffer.clear();
@@ -598,30 +598,30 @@ size_t NodeToFaceContactOperator::updateActiveSet(
                            true );
     sendProjOnMasterFaceDisplacements.clear();
 
-    double activatedSlaveVertexShiftCorrection[3];
-    double activatedSlaveVertexDisplacementValues[3];
+    double activatedSlaveGeomType::VertexShiftCorrection[3];
+    double activatedSlaveGeomType::VertexDisplacementValues[3];
     for ( size_t i = 0; i < nInactiveSlaveVerticesActivated; ++i ) {
-        std::vector<size_t> activatedSlaveVertexDisplacementIndices;
+        std::vector<size_t> activatedSlaveGeomType::VertexDisplacementIndices;
         getVectorIndicesFromGlobalIDs(
             std::vector<AMP::Mesh::MeshElementID>( 1, d_ActiveSet[nActiveSlaveVerticesTmp + i] ),
-            activatedSlaveVertexDisplacementIndices );
-        AMP_ASSERT( activatedSlaveVertexDisplacementIndices.size() == 3 );
+            activatedSlaveGeomType::VertexDisplacementIndices );
+        AMP_ASSERT( activatedSlaveGeomType::VertexDisplacementIndices.size() == 3 );
         if ( !skipDisplaceMesh ) {
             displacementFieldVector->getValuesByGlobalID(
                 3,
-                &( activatedSlaveVertexDisplacementIndices[0] ),
-                activatedSlaveVertexDisplacementValues );
+                &( activatedSlaveGeomType::VertexDisplacementIndices[0] ),
+                activatedSlaveGeomType::VertexDisplacementValues );
         } else {
-            std::fill( activatedSlaveVertexDisplacementValues,
-                       activatedSlaveVertexDisplacementValues + 3,
+            std::fill( activatedSlaveGeomType::VertexDisplacementValues,
+                       activatedSlaveGeomType::VertexDisplacementValues + 3,
                        0.0 );
         } // end if
-        make_vector_from_two_points( activatedSlaveVertexDisplacementValues,
+        make_vector_from_two_points( activatedSlaveGeomType::VertexDisplacementValues,
                                      recvProjOnMasterFaceData[sendMap[i]].d_Displacement,
-                                     activatedSlaveVertexShiftCorrection );
+                                     activatedSlaveGeomType::VertexShiftCorrection );
         std::transform( &( d_SlaveShift[3 * ( nActiveSlaveVerticesTmp + i )] ),
                         &( d_SlaveShift[3 * ( nActiveSlaveVerticesTmp + i )] ) + 3,
-                        activatedSlaveVertexShiftCorrection,
+                        activatedSlaveGeomType::VertexShiftCorrection,
                         &( d_SlaveShift[3 * ( nActiveSlaveVerticesTmp + i )] ),
                         std::minus<double>() );
         std::transform( recvProjOnMasterFaceData[sendMap[i]].d_NormalVector,
@@ -753,13 +753,13 @@ size_t NodeToFaceContactOperator::updateActiveSet(
                                    nActiveSlaveVerticesDeactivated );
 }
 
-void NodeToFaceContactOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
+void NodeToGeomType::FaceContactOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
 {
     AMP_INSIST( ( params != NULL ), "NULL parameter" );
     AMP_INSIST( ( ( params->d_db ) != NULL ), "NULL database" );
 }
 
-void NodeToFaceContactOperator::getVectorIndicesFromGlobalIDs(
+void NodeToGeomType::FaceContactOperator::getVectorIndicesFromGlobalIDs(
     const std::vector<AMP::Mesh::MeshElementID> &globalIDs, std::vector<size_t> &vectorIndices )
 {
     std::vector<size_t> tmpIndices;
@@ -781,7 +781,7 @@ void NodeToFaceContactOperator::getVectorIndicesFromGlobalIDs(
     AMP_ASSERT( vectorIndicesIterator == vectorIndices.end() );
 }
 
-void NodeToFaceContactOperator::copyMasterToSlave( AMP::LinearAlgebra::Vector::shared_ptr u )
+void NodeToGeomType::FaceContactOperator::copyMasterToSlave( AMP::LinearAlgebra::Vector::shared_ptr u )
 {
     /** send and receive the master values */
     AMP::AMP_MPI comm = d_GlobalComm;
@@ -845,7 +845,7 @@ void NodeToFaceContactOperator::copyMasterToSlave( AMP::LinearAlgebra::Vector::s
     } // end if
 }
 
-void NodeToFaceContactOperator::addSlaveToMaster( AMP::LinearAlgebra::Vector::shared_ptr u )
+void NodeToGeomType::FaceContactOperator::addSlaveToMaster( AMP::LinearAlgebra::Vector::shared_ptr u )
 {
     /** send and receive slave value times shape functions values */
     AMP::AMP_MPI comm = d_GlobalComm;
@@ -892,7 +892,7 @@ void NodeToFaceContactOperator::addSlaveToMaster( AMP::LinearAlgebra::Vector::sh
     } // end if
 }
 
-void NodeToFaceContactOperator::setSlaveToZero( AMP::LinearAlgebra::Vector::shared_ptr u )
+void NodeToGeomType::FaceContactOperator::setSlaveToZero( AMP::LinearAlgebra::Vector::shared_ptr u )
 {
     if ( ( d_ContactIsFrictionless ) && ( !d_SlaveVerticesGlobalIDs.empty() ) ) {
         AMP_ASSERT( d_DOFsPerNode == 3 );
@@ -910,7 +910,7 @@ void NodeToFaceContactOperator::setSlaveToZero( AMP::LinearAlgebra::Vector::shar
     } // end if
 }
 
-void NodeToFaceContactOperator::addShiftToSlave( AMP::LinearAlgebra::Vector::shared_ptr u )
+void NodeToGeomType::FaceContactOperator::addShiftToSlave( AMP::LinearAlgebra::Vector::shared_ptr u )
 {
     if ( ( d_ContactIsFrictionless ) && ( !d_SlaveVerticesGlobalIDs.empty() ) ) {
         AMP_ASSERT( d_DOFsPerNode == 3 );

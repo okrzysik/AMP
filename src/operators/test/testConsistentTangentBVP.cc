@@ -80,7 +80,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int callLinReset )
                 meshAdapter, "LinearMechanicsOperator", input_db, elementPhysicsModel ) );
 
     AMP::Discretization::DOFManager::shared_ptr dofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Variable::shared_ptr var = nonlinOperator->getOutputVariable();
 

@@ -94,10 +94,10 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     bool split               = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     AMP::Discretization::DOFManager::shared_ptr gaussPointDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+            meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
     //--------------------------------------------------
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -158,7 +158,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
     //----------------------------------------------------------
-    //  Integrate Nuclear Rhs over Desnity * Volume //
+    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
     //----------------------------------------------------------
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
@@ -315,7 +315,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
 
-    siloWriter->registerVector( globalSolVec, meshAdapter, AMP::Mesh::Vertex, "Temperature" );
+    siloWriter->registerVector( globalSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Temperature" );
 
     siloWriter->writeFile( input_file, 0 );
 #endif

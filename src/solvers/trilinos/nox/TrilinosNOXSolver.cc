@@ -5,9 +5,11 @@
 #include "solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
 #include "vectors/trilinos/thyra/ThyraVector.h"
 #include "vectors/trilinos/thyra/ThyraVectorWrapper.h"
+#include "utils/Utilities.h"
 
 
 // Trilinos includes
+DISABLE_WARNINGS
 #include "BelosTypes.hpp"
 #include "NOX_MatrixFree_ModelEvaluatorDecorator.hpp"
 #include "NOX_Solver_Factory.H"
@@ -23,6 +25,7 @@
 #include "NOX_Thyra_MatrixFreeJacobianOperator.hpp"
 #include "Stratimikos_DefaultLinearSolverBuilder.hpp"
 #include <Teuchos_RefCountPtrDecl.hpp>
+ENABLE_WARNINGS
 
 
 namespace AMP {

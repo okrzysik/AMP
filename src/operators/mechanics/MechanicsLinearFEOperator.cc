@@ -38,11 +38,11 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
         d_refXYZ = AMP::LinearAlgebra::createVector( d_inDofMap, d_inpVariable, true );
         d_refXYZ->zero();
 
-        AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+        AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
         AMP::Mesh::MeshIterator end_el = el.end();
 
         for ( ; el != end_el; ++el ) {
-            d_currNodes                     = el->getElements( AMP::Mesh::Vertex );
+            d_currNodes                     = el->getElements( AMP::Mesh::GeomType::Vertex );
             unsigned int numNodesInCurrElem = d_currNodes.size();
 
             getDofIndicesForCurrentElement();
@@ -65,7 +65,7 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
             destroyCurrentLibMeshElement();
         } // end of el
 
-        d_refXYZ->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+        d_refXYZ->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     } // end of UpdatedLagrangian condition.
 
     bool isAttachedToNonlinearOperator =
@@ -111,7 +111,7 @@ void MechanicsLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
         if ( d_dispVec != nullptr ) {
             if ( params->d_dispVec != nullptr ) {
                 d_dispVec->copyVector( params->d_dispVec );
-                d_dispVec->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+                d_dispVec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
             } else {
                 d_dispVec.reset();
             }
@@ -123,7 +123,7 @@ void MechanicsLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParam
 
 void MechanicsLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElement &elem )
 {
-    d_currNodes                     = elem.getElements( AMP::Mesh::Vertex );
+    d_currNodes                     = elem.getElements( AMP::Mesh::GeomType::Vertex );
     unsigned int numNodesInCurrElem = d_currNodes.size();
 
     getDofIndicesForCurrentElement();
@@ -197,14 +197,14 @@ void MechanicsLinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vector
     fprintf( fp,
              "x, y, z, Stresses(11, 22, 33, 23, 13, 12), Strains(11, 22, 33, 23, 13, 12) \n\n" );
 
-    disp->makeConsistent( AMP::LinearAlgebra::Vector::CONSISTENT_SET );
+    disp->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     d_materialModel->preLinearAssembly();
 
-    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     for ( ; el != end_el; ++el ) {
-        d_currNodes                     = el->getElements( AMP::Mesh::Vertex );
+        d_currNodes                     = el->getElements( AMP::Mesh::GeomType::Vertex );
         unsigned int numNodesInCurrElem = d_currNodes.size();
 
         getDofIndicesForCurrentElement();

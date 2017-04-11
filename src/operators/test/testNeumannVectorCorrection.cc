@@ -39,9 +39,9 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "myVar" ) );
     AMP::Discretization::DOFManager::shared_ptr nodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 1, true );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     AMP::Discretization::DOFManager::shared_ptr nodalVectorDOF =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::Vertex, 1, 2, true );
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 2, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr scalarVec =
         AMP::LinearAlgebra::createVector( nodalScalarDOF, var, true );

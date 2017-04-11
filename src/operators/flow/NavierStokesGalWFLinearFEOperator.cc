@@ -87,7 +87,7 @@ namespace Operator {
       if(d_inVec[NavierStokes::VELOCITY].get() != NULL) {
         if(params->d_frozenVec[NavierStokes::VELOCITY].get() != NULL) {
           d_inVec[NavierStokes::VELOCITY]->copyVector(params->d_frozenVec[NavierStokes::VELOCITY]);
-          d_inVec[NavierStokes::VELOCITY]->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+          d_inVec[NavierStokes::VELOCITY]->makeConsistent(AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET);
         } else {
           d_inVec[NavierStokes::VELOCITY].reset();
         }
@@ -102,7 +102,7 @@ namespace Operator {
       if(d_inVec[NavierStokes::PRESSURE].get() != NULL) {
         if(params->d_frozenVec[NavierStokes::PRESSURE].get() != NULL) {
           d_inVec[NavierStokes::PRESSURE]->copyVector(params->d_frozenVec[NavierStokes::PRESSURE]);
-          d_inVec[NavierStokes::PRESSURE]->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+          d_inVec[NavierStokes::PRESSURE]->makeConsistent(AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET);
         } else {
           d_inVec[NavierStokes::PRESSURE].reset();
         }
@@ -117,7 +117,7 @@ namespace Operator {
       if(d_inVec[NavierStokes::TEMPERATURE].get() != NULL) {
         if(params->d_frozenVec[NavierStokes::TEMPERATURE].get() != NULL) {
           d_inVec[NavierStokes::TEMPERATURE]->copyVector(params->d_frozenVec[NavierStokes::TEMPERATURE]);
-          d_inVec[NavierStokes::TEMPERATURE]->makeConsistent(AMP::LinearAlgebra::Vector::CONSISTENT_SET);
+          d_inVec[NavierStokes::TEMPERATURE]->makeConsistent(AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET);
         } else {
           d_inVec[NavierStokes::TEMPERATURE].reset();
         }
@@ -137,7 +137,7 @@ namespace Operator {
     void NavierStokesGalWFLinearFEOperator :: preElementOperation( const AMP::Mesh::MeshElement &
    elem ) {
 
-      d_currNodes = elem.getElements(AMP::Mesh::Vertex);
+      d_currNodes = elem.getElements(AMP::Mesh::GeomType::Vertex);
       unsigned int numNodesInCurrElem = d_currNodes.size();
 
       gettype0DofIndicesForCurrentElement(NavierStokes::VELOCITY, d_type0DofIndices);

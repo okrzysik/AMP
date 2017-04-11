@@ -15,23 +15,27 @@
 #include "utils/Utilities.h"
 #include <vector>
 
-/* AMP files */
+// AMP files
 #include "operators/Operator.h"
 #include "operators/OperatorParameters.h"
 #include "operators/libmesh/PowerShapeParameters.h"
 #include "utils/InputDatabase.h"
 #include "vectors/Variable.h"
-
-/*Boost files */
 #include "utils/shared_ptr.h"
+#include "utils/Utilities.h"
 
-/*LibMesh Includes */
+
+// Libmesh headers
+DISABLE_WARNINGS
 #include "libmesh/elem.h"
 #include "libmesh/fe_base.h"
 #include "libmesh/fe_type.h"
 #include "libmesh/quadrature_gauss.h"
+ENABLE_WARNINGS
+
 
 #include <vector>
+
 
 namespace AMP {
 namespace Operator {
@@ -58,7 +62,7 @@ public:
 
 private:
     // Defines fission data types.
-    enum PowerShape_Types { LINEAR, QUADRATIC, CUBIC, NUM_POWER_SHAPES };
+    enum class PowerShape_Types { LINEAR, QUADRATIC, CUBIC, NUM_POWER_SHAPES };
 
     // use a spatially constant power distribution
     bool d_useFixedPower;

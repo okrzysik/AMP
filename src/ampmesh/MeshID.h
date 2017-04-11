@@ -10,7 +10,7 @@ namespace Mesh {
 
 
 //! Enumeration for basic mesh-based quantities
-enum GeomType : unsigned char { Vertex = 0, Edge = 1, Face = 2, Volume = 3, null = 0xFF };
+enum class GeomType : unsigned char { Vertex = 0, Edge = 1, Face = 2, Volume = 3, null = 0xFF };
 
 
 //! Typedef for a unsigned 64-bit integer

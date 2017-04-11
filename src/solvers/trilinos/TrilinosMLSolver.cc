@@ -431,13 +431,13 @@ void TrilinosMLSolver::computeCoordinates( const AMP::shared_ptr<AMP::Operator::
     AMP::Mesh::Mesh::shared_ptr myMesh = op->getMesh();
 
     // Resize vectors to hold node values
-    int numNodes = myMesh->numLocalElements( AMP::Mesh::Vertex );
+    int numNodes = myMesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
     d_x_values.resize( numNodes, 0.0 );
     d_y_values.resize( numNodes, 0.0 );
     d_z_values.resize( numNodes, 0.0 );
 
     // Get node iterators
-    AMP::Mesh::MeshIterator thisNode = myMesh->getIterator( AMP::Mesh::Vertex, 0 );
+    AMP::Mesh::MeshIterator thisNode = myMesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     AMP::Mesh::MeshIterator endNode  = thisNode.end();
 
     int nodeCounter = 0;
@@ -463,12 +463,12 @@ void TrilinosMLSolver::computeNullSpace( const AMP::shared_ptr<AMP::Operator::Op
                 "Null space dimension must be 6 to use computed null space." );
 
     // Resize vectors to hold node values
-    int numNodes  = myMesh->numLocalElements( AMP::Mesh::Vertex );
+    int numNodes  = myMesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
     int vecLength = numPDE * numNodes;
     d_null_space.resize( dimNS * vecLength, 0.0 );
 
     // Get node iterators
-    AMP::Mesh::MeshIterator thisNode = myMesh->getIterator( AMP::Mesh::Vertex, 0 );
+    AMP::Mesh::MeshIterator thisNode = myMesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     AMP::Mesh::MeshIterator endNode  = thisNode.end();
 
     int nodeCounter = 0;

@@ -51,7 +51,7 @@ DOFManager::shared_ptr simpleDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh
 {
     // Check the iterators
     AMP::Mesh::MeshIterator intersection =
-        AMP::Mesh::Mesh::getIterator( AMP::Mesh::Intersection, it1, it2 );
+        AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, it1, it2 );
     AMP_INSIST( intersection.size() == it2.size(), "it1 must include it2" );
     AMP::Mesh::MeshIterator tmp = it2.begin();
     for ( size_t i = 0; i < tmp.size(); i++ ) {
@@ -277,7 +277,7 @@ std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
     AMP::Mesh::GeomType meshType = d_mesh->getGeomType();
     AMP::Mesh::GeomType objType  = obj.elementType();
     std::vector<AMP::Mesh::MeshElementID> ids;
-    if ( objType == d_type && ( objType == AMP::Mesh::Vertex || objType == meshType ) ) {
+    if ( objType == d_type && ( objType == AMP::Mesh::GeomType::Vertex || objType == meshType ) ) {
         // Use the getNeighbors function to get the neighbors of the current element
         std::vector<Mesh::MeshElement::shared_ptr> neighbor_elements = obj.getNeighbors();
         ids.reserve( neighbor_elements.size() + 1 );
