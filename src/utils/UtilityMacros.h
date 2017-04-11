@@ -237,7 +237,8 @@
         _Pragma( "clang diagnostic push" ) _Pragma( "clang diagnostic ignored \"-Wall\"" ) \
         _Pragma( "clang diagnostic ignored \"-Wextra\"" )                               \
         _Pragma( "clang diagnostic ignored \"-Wunused-private-field\"" )                \
-        _Pragma( "clang diagnostic ignored \"-Wdeprecated-declarations\"" )
+        _Pragma( "clang diagnostic ignored \"-Wdeprecated-declarations\"" )             \
+        _Pragma( "clang diagnostic ignored \"-Winteger-overflow\"" )
     #define ENABLE_WARNINGS _Pragma( "clang diagnostic pop" )
 #elif defined( USING_GCC )
     #define DISABLE_WARNINGS                                                            \

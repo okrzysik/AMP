@@ -151,9 +151,9 @@ public:
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override { return getNativeVector(); }
 
-    virtual std::string name() const { return "SimplePetscNativeFactory"; }
+    virtual std::string name() const override { return "SimplePetscNativeFactory"; }
 
-    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const { return d_factory->getDOFMap(); }
+    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override { return d_factory->getDOFMap(); }
 
 };
 

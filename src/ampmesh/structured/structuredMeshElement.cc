@@ -458,7 +458,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
             char text[100];
             sprintf( text,
                      "Unknown type: dim=%i, elem_type=%i, type=%i",
-                     d_meshType,
+                     (int) d_meshType,
                      (int) d_index.d_type,
                      (int) type );
             AMP_ERROR( std::string( text ) );
@@ -511,7 +511,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
             char text[100];
             sprintf( text,
                      "Unknown type: dim=%i, elem_type=%i, type=%i",
-                     d_meshType,
+                     (int) d_meshType,
                      (int) d_index.d_type,
                      (int) type );
             AMP_ERROR( std::string( text ) );
@@ -520,7 +520,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
         char text[100];
         sprintf( text,
                  "Case not programmed yet: dim=%i, elem_type=%i, type=%i",
-                 d_meshType,
+                 (int) d_meshType,
                  (int) d_index.d_type,
                  (int) type );
         AMP_ERROR( std::string( text ) );
