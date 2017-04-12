@@ -31,8 +31,8 @@ COPY_TEST_FILE( input_testSubchannelFourEqMMS-2)
 
 COPY_TEST_FILE( input_testAMGuniform)
 COPY_MESH_FILE( testAMGmesh5 )
-COPY_MESH_FILE( testAMGmesh17 )
-COPY_MESH_FILE( testAMGmesh33 )
+#COPY_MESH_FILE( testAMGmesh17 )
+#COPY_MESH_FILE( testAMGmesh33 )
 
 COPY_TEST_FILE( input_testSubchannelSolve-1 )
 COPY_TEST_FILE( input_testSubchannelSolve-2 )
@@ -351,7 +351,7 @@ COPY_TEST_FILE( input_testLinearFlow-1 )
 
 IF( USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
     # Tests that only require libmesh
-    ADD_AMP_PROVISIONAL_TEST( testAMGuniform )
+    ADD_AMP_TEST( testAMGuniform )
     ADD_AMP_TEST_1_2_4( testMatMultiply )
     ADD_AMP_TEST_1_2_4( testMatCreate )
     ADD_AMP_TEST_1_2_4( testMaterialModels_VonMisesPlasticity-1 )

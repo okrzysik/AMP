@@ -157,6 +157,7 @@ ENDIF()
 
 # Add the src directory
 IF ( NOT ONLY_BUILD_DOCS )
+    WRITE_REPO_VERSION()
     SET( EXCLUDE_TESTS_FROM_ALL 1 )
     ADD_SUBDIRECTORY( src )
 ENDIF()
@@ -207,6 +208,28 @@ SET( CPPCLEAN_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}" )
 FIND_PACKAGE( Cppclean )
 
 
+# Create release target
+IF ( AMP_MAJOR_VERSION AND AMP_MINOR_VERSION )
+    ADD_CUSTOM_TARGET( release )
+    INCLUDE( "${${PROJ}_INSTALL_DIR}/${PROJ}_Version.cmake" )
+    SET( AMP_NAME AMP-${AMP_MAJOR_VERSION}.${AMP_MINOR_VERSION}.${AMP_BUILD_VERSION} )
+    SET( RELEASE_FILENAME ${AMP_NAME}.tar )
+    SET( TMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/tmp" )
+    FILE(WRITE  "${TMP_DIR}/release.cmake" "# Create the release tar\n" )
+    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory \"${CMAKE_CURRENT_SOURCE_DIR}\" ${AMP_NAME})\n" )
+    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${AMP_NAME}/.hg )\n" )
+    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f ${AMP_NAME}/.hgtags )\n" )
+    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f ${AMP_NAME}/.hgignore )\n" )
+    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E copy version.cmake ${AMP_NAME}/AMP_Version.cmake)\n" )
+    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E tar -cf ${AMP_NAME}.tar ${AMP_NAME})\n" )
+    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${AMP_NAME}.tar \"${AMP_INSTALL_DIR}/${${AMP_NAME}}\" )\n" )
+    ADD_CUSTOM_COMMAND( TARGET release PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -P "${TMP_DIR}/release.cmake"
+        WORKING_DIRECTORY "${TMP_DIR}" 
+    )
+ENDIF()
+
+
 # Install the documentation
 IF ( USE_EXT_DOXYGEN )
     ADD_DEPENDENCIES( doxygen latex_docs )
@@ -220,7 +243,6 @@ IF ( NOT ONLY_BUILD_DOCS )
     CONFIGURE_FILE( cmake/FindAMP.template.cmake "${${PROJ}_INSTALL_DIR}/FindAMP.cmake" @ONLY )
     COPY_DATA_FILE( "${TPL_MACRO_CMAKE}" "${${PROJ}_INSTALL_DIR}/cmake/macros.cmake" )
     COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SharedPtr.cmake" "${${PROJ}_INSTALL_DIR}/cmake/SharedPtr.cmake" )
-    COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/WriteRepoVersion.cmake" "${${PROJ}_INSTALL_DIR}/cmake/WriteRepoVersion.cmake" )
     SAVE_CMAKE_FLAGS( "${${PROJ}_INSTALL_DIR}/amp.cmake" )
 ENDIF()
 
