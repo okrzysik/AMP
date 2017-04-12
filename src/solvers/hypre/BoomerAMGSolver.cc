@@ -22,22 +22,31 @@ BoomerAMGSolver::BoomerAMGSolver()
 BoomerAMGSolver::BoomerAMGSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
-    AMP_ERROR("Not implemented");
+
+    HYPRE_BoomerAMGCreate( &d_solver );
+
     AMP_ASSERT( parameters.get() != nullptr );
     initialize( parameters );
+
 }
+
 BoomerAMGSolver::~BoomerAMGSolver()
 {
-    AMP_ERROR("Not implemented");
+    HYPRE_BoomerAMGDestroy( d_solver );
+    HYPRE_IJMatrixDestroy( d_ijMatrix );
+    HYPRE_IJVectorDestroy( d_hypre_rhs );
+    HYPRE_IJVectorDestroy( d_hypre_sol );
 }
 
 void BoomerAMGSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters )
 {
-    AMP_ERROR("Not implemented");
     getFromInput( parameters->d_db );
+
     if ( d_pOperator.get() != nullptr ) {
         registerOperator( d_pOperator );
     }
+
+    setParameters();
 }
 
 void BoomerAMGSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
@@ -235,22 +244,24 @@ void BoomerAMGSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
     // 6.2.91 in hypre 11.2 manual 
     if( db->keyExists( "keep_transpose" ) )
         d_keep_transpose = db->getInteger( "keep_transpose" );
-
-
-    AMP_ERROR("Not implemented");
 }
 
 void BoomerAMGSolver::createHYPREMatrix( const AMP::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
 {
-    AMP_ERROR("Not implemented");
     int ierr;
+    char hypre_mesg[100];
 
     const auto myFirstRow = matrix->getLeftDOFManager()->beginDOF();
     const auto myEndRow   = matrix->getLeftDOFManager()->endDOF(); // check whether endDOF is truly the last -1 
 
     ierr = HYPRE_IJMatrixCreate( d_comm.getCommunicator(), myFirstRow, myEndRow-1, myFirstRow, myEndRow-1, &d_ijMatrix );
+    HYPRE_DescribeError( ierr, hypre_mesg);
+
     ierr = HYPRE_IJMatrixSetObjectType( d_ijMatrix, HYPRE_PARCSR );
+    HYPRE_DescribeError( ierr, hypre_mesg);
+
     ierr = HYPRE_IJMatrixInitialize( d_ijMatrix );
+    HYPRE_DescribeError( ierr, hypre_mesg);
 
     std::vector<unsigned int> cols;
     std::vector<double> values;
@@ -267,14 +278,103 @@ void BoomerAMGSolver::createHYPREMatrix( const AMP::shared_ptr<AMP::LinearAlgebr
                                         (HYPRE_Int *)&irow, 
                                         (HYPRE_Int *) &cols[0], 
                                         (const double *) &values[0] );
+        HYPRE_DescribeError( ierr, hypre_mesg);
     }
 
     ierr = HYPRE_IJMatrixAssemble( d_ijMatrix );
+    HYPRE_DescribeError( ierr, hypre_mesg);
+}
+
+void BoomerAMGSolver::createHYPREVectors( void )
+{
+    char hypre_mesg[100];
+
+    auto linearOperator =
+        AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+    AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
+    
+    const auto &matrix = linearOperator->getMatrix();
+    AMP_INSIST( matrix.get() != nullptr, "matrix cannot be NULL" );
+
+    const auto myFirstRow = matrix->getLeftDOFManager()->beginDOF();
+    const auto myEndRow   = matrix->getLeftDOFManager()->endDOF(); // check whether endDOF is truly the last -1 
+    int ierr;
+
+    // create the rhs
+    ierr = HYPRE_IJVectorCreate( d_comm.getCommunicator(), myFirstRow, myEndRow-1, &d_hypre_rhs );
+    HYPRE_DescribeError( ierr, hypre_mesg);
+    ierr = HYPRE_IJVectorSetObjectType( d_hypre_rhs, HYPRE_PARCSR );
+    HYPRE_DescribeError( ierr, hypre_mesg);
+
+    // create the solution vector
+    ierr = HYPRE_IJVectorCreate( d_comm.getCommunicator(), myFirstRow, myEndRow-1, &d_hypre_sol );
+    HYPRE_DescribeError( ierr, hypre_mesg);
+    ierr = HYPRE_IJVectorSetObjectType( d_hypre_sol, HYPRE_PARCSR );
+    HYPRE_DescribeError( ierr, hypre_mesg);
+
+}
+
+void BoomerAMGSolver::copyToHypre( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> amp_v, 
+                                   HYPRE_IJVector hypre_v )
+{
+    char hypre_mesg[100];
+    int ierr;
+
+    AMP_INSIST( amp_v.get() != nullptr, "vector cannot be NULL" );
+    const auto &dofManager =  amp_v->getDOFManager();
+    AMP_INSIST( dofManager.get() != nullptr, "DOF_Manager cannot be NULL" );
+    
+    const auto startingIndex = dofManager->beginDOF();
+    const auto nDOFS = dofManager->numLocalDOF();
+    
+    std::vector<size_t> indices(nDOFS, 0);
+    std::vector<HYPRE_Int> hypre_indices(nDOFS, 0);
+    std::iota(indices.begin(), indices.end(), (HYPRE_Int) startingIndex);
+    std::copy(indices.begin(), indices.end(), hypre_indices.begin() );
+
+    std::vector<double> values(nDOFS, 0.0);
+    
+    amp_v->getValuesByGlobalID( nDOFS, &indices[0], &values[0] );
+ 
+    ierr = HYPRE_IJVectorInitialize(hypre_v);
+    HYPRE_DescribeError( ierr, hypre_mesg);
+    ierr = HYPRE_IJVectorSetValues( hypre_v, nDOFS,  &hypre_indices[0], &values[0] );
+    HYPRE_DescribeError( ierr, hypre_mesg);
+    ierr = HYPRE_IJVectorAssemble(hypre_v);
+    HYPRE_DescribeError( ierr, hypre_mesg);
+}
+
+
+void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v, 
+                                     AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_v )
+{
+    char hypre_mesg[100];
+
+    int ierr;
+
+    AMP_INSIST( amp_v.get() != nullptr, "vector cannot be NULL" );
+    const auto &dofManager =  amp_v->getDOFManager();
+    AMP_INSIST( dofManager.get() != nullptr, "DOF_Manager cannot be NULL" );
+    
+    const auto startingIndex = dofManager->beginDOF();
+    const auto nDOFS = dofManager->numLocalDOF();
+    
+    std::vector<size_t> indices(nDOFS, 0);
+    std::vector<HYPRE_Int> hypre_indices(nDOFS, 0);
+    std::iota(indices.begin(), indices.end(), startingIndex);
+    std::copy(indices.begin(), indices.end(), hypre_indices.begin() );
+
+    std::vector<double> values(nDOFS, 0.0);
+
+    ierr = HYPRE_IJVectorGetValues( hypre_v, static_cast<HYPRE_Int>(nDOFS),  &hypre_indices[0], &values[0] );
+    HYPRE_DescribeError( ierr, hypre_mesg);
+    amp_v->setLocalValuesByGlobalID( nDOFS, &indices[0], &values[0] );
+
 }
 
 void BoomerAMGSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
 {
-    AMP_ERROR("Not implemented");
+
     d_pOperator = op;
     AMP_INSIST( d_pOperator.get() != nullptr,
                 "ERROR: BoomerAMGSolver::registerOperator() operator cannot be NULL" );
@@ -286,7 +386,13 @@ void BoomerAMGSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Ope
     auto matrix = linearOperator->getMatrix();
     AMP_INSIST( matrix.get() != nullptr, "matrix cannot be NULL" );
 
+    // set the comm for this solver based on the comm for the matrix
+    // being lazy??
+    const auto &dofManager = matrix->getLeftDOFManager();
+    d_comm = dofManager->getComm();
+
     createHYPREMatrix( matrix );
+    createHYPREVectors( );
 
     // the next section of code should initialize a hypre IJ matrix based on the AMP matrix
     d_bCreationPhase = false;
@@ -352,7 +458,6 @@ void BoomerAMGSolver::setParameters( void )
 void BoomerAMGSolver::resetOperator(
     const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
-    AMP_ERROR("Not implemented");
     PROFILE_START( "resetOperator" );
     AMP_INSIST( ( d_pOperator.get() != nullptr ),
                 "ERROR: BoomerAMGSolver::resetOperator() operator cannot be NULL" );
@@ -364,7 +469,6 @@ void BoomerAMGSolver::resetOperator(
 
 void BoomerAMGSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
 {
-    AMP_ERROR("Not implemented");
     PROFILE_START( "reset" );
     registerOperator( d_pOperator );
     PROFILE_STOP( "reset" );
@@ -372,9 +476,8 @@ void BoomerAMGSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
 
 
 void BoomerAMGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                 AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+                             AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    AMP_ERROR("Not implemented");
     PROFILE_START( "solve" );
     // in this case we make the assumption we can access a EpetraMat for now
     AMP_INSIST( d_pOperator.get() != nullptr,
@@ -387,6 +490,9 @@ void BoomerAMGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
     if ( d_bCreationPhase ) {
         d_bCreationPhase = false;
     }
+
+    copyToHypre(u, d_hypre_sol);
+    copyToHypre(f, d_hypre_rhs);
 
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> r;
 
@@ -411,7 +517,20 @@ void BoomerAMGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
                   << solution_norm << std::endl;
     }
 
+    HYPRE_ParCSRMatrix parcsr_A;
+    HYPRE_ParVector par_b;
+    HYPRE_ParVector par_x;
+
+    HYPRE_IJMatrixGetObject(d_ijMatrix, (void **) &parcsr_A);
+    HYPRE_IJVectorGetObject(d_hypre_rhs, (void **) &par_b);
+    HYPRE_IJVectorGetObject(d_hypre_sol, (void **) &par_x);
+
+    
     // add in code for solve here
+    HYPRE_BoomerAMGSetup( d_solver, parcsr_A, par_b, par_x );
+    HYPRE_BoomerAMGSolve( d_solver, parcsr_A, par_b, par_x );
+
+    copyFromHypre( d_hypre_sol, u );
 
     // Check for NaNs in the solution (no communication necessary)
     double localNorm = u->localL2Norm();

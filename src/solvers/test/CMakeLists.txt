@@ -319,6 +319,8 @@ COPY_TEST_FILE( input_testTrilinosMueLuSolver-LinearThermalOperator-2_HALDEN_cla
 COPY_TEST_FILE( input_testTrilinosMueLuSolver-LinearFickOperator-bar )
 COPY_TEST_FILE( input_testTrilinosMueLuSolver-LinearElasticityOperator-1 )
 
+COPY_TEST_FILE( input_testBoomerAMGSolver-LinearThermalRobin )
+
 COPY_TEST_FILE( input_testColumnSolver-LinearThermalAndFick-1 )
 COPY_TEST_FILE( inputNonlinearKrylovAccelerator1 )
 #COPY_TEST_FILE( input_testTrilinosMLSolver-NonlinearThermalRobin )
@@ -518,6 +520,8 @@ IF( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
     ADD_AMP_TEST_1_2_4( testTrilinosMueLuSolver-LinearThermalOperator-2 )
     ADD_AMP_TEST_1_2_4( testTrilinosMueLuSolver-LinearFickOperator-bar )
     ADD_AMP_TEST_1_2_4( testTrilinosMueLuSolver-LinearElasticityOperator-1 )
+
+    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalRobin )
 
     ADD_AMP_PROVISIONAL_TEST( testPetscSNESSolver-NonlinearThermoMechanics-1 8)
     ADD_AMP_PROVISIONAL_TEST( testPetscSNESSolver-NonlinearMechanics-1 1)

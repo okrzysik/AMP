@@ -67,7 +67,7 @@ void linearElasticTest( AMP::UnitTest *ut )
     dirichletVecOp->setVariable( var );
 
     AMP::Discretization::DOFManager::shared_ptr dofMap =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::Vertex, 1, 3, true );
+        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     AMP::LinearAlgebra::Vector::shared_ptr mechSolVec =
@@ -111,7 +111,7 @@ void linearElasticTest( AMP::UnitTest *ut )
     mlSolver->solve( mechRhsVec, mechSolVec );
 
 #ifdef USE_EXT_SILO
-    siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::Vertex, "Solution" );
+    siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->writeFile( exeName, 0 );
 #endif
 

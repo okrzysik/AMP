@@ -85,7 +85,7 @@ void linearFickTest( AMP::UnitTest *ut )
     bool split          = true;
     AMP::Discretization::DOFManager::shared_ptr nodalDofMap =
         AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::Vertex, nodalGhostWidth, DOFsPerNode, split );
+            meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     //--------------------------------------------------
 
     ////////////////////////////////////
@@ -169,7 +169,7 @@ void linearFickTest( AMP::UnitTest *ut )
 
     int zeroGhostWidth = 0;
     AMP::Mesh::MeshIterator iterator =
-        meshAdapter->getIterator( AMP::Mesh::Vertex, zeroGhostWidth );
+        meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
 
     // The analytical solution is:  T = a + b*z + c*z*z
     //   c = -power/2
@@ -245,8 +245,8 @@ void linearFickTest( AMP::UnitTest *ut )
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
 
-    siloWriter->registerVector( SolutionVec, meshAdapter, AMP::Mesh::Vertex, "Concentration" );
-    siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::Vertex, "Residual" );
+    siloWriter->registerVector( SolutionVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Concentration" );
+    siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
 
     siloWriter->writeFile( input_file, 0 );
 #endif

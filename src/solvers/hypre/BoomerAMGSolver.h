@@ -4,9 +4,11 @@
 #include "solvers/SolverStrategy.h"
 #include "solvers/SolverStrategyParameters.h"
 
+extern "C" {
 #include "HYPRE.h"
 #include "HYPRE_IJ_mv.h"
 #include "HYPRE_parcsr_ls.h"
+}
 
 namespace AMP {
 namespace Solver {
@@ -94,11 +96,32 @@ private:
      */
     void createHYPREMatrix( const AMP::shared_ptr<AMP::LinearAlgebra::Matrix> matrix );
 
+    /** 
+     * create and initialize the internal hypre vectors for rhs and solution
+     */
+    void createHYPREVectors( );
+
+    /**
+     *  copy values from amp vector to hypre vector
+     */
+    void copyToHypre( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> amp_v, 
+                      HYPRE_IJVector hypre_v );
+
+    /**
+     *  copy values from hypre vector to amp vector
+     */
+    void copyFromHypre( HYPRE_IJVector hypre_v, 
+                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_v );
+
+
     void setParameters(void); //! set BoomerAMG parameters based on internally set variables
 
     AMP_MPI d_comm;
 
     HYPRE_IJMatrix d_ijMatrix;  //! pointer to HYPRE matrix struct
+
+    HYPRE_IJVector d_hypre_rhs;       //! pointer to HYPRE representation of rhs 
+    HYPRE_IJVector d_hypre_sol;       //! pointer to HYPRE representation of solution
 
     HYPRE_Solver d_solver;      //! pointer to HYPRE BoomerAMG solver
 
