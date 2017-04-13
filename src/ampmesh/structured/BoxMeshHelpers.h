@@ -1,7 +1,6 @@
 #ifndef included_AMP_BoxMeshHelpers
 #define included_AMP_BoxMeshHelpers
 
-#include "ampmesh/structured/BoxMeshHelpers.h"
 
 #include <set>
 #include <tuple>

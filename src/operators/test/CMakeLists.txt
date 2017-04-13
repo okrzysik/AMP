@@ -214,7 +214,7 @@ COPY_MESH_FILE ( halden_1_clad.e )
 #NEK-5000 tests
 IF( USE_EXT_NEK ) 
   COPY_TEST_FILE( SESSION.NAME )
-  COPY_TEST_FILE( input.h5m )
+  COPY_MESH_FILE( input.h5m )
   COPY_TEST_FILE( pipe.rea )
   ADD_AMP_TEST_PARALLEL( testMoabNekPipe 2 ) # This test doesn't work in serial
   ADD_AMP_TEST_PARALLEL( testMoabNekPipe 4 )

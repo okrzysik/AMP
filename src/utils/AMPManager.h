@@ -3,8 +3,14 @@
 
 #include "utils/AMP_MPI.h"
 
+#include <vector>
+#include <array>
+#include <string>
+
 
 namespace AMP {
+
+
 
 /*!
  * @brief Class AMPManagerProperties is a class that contains the various startup options for AMP
@@ -29,6 +35,9 @@ public:
 
     //! The default level for the MPI timers.  Default is 2
     int profile_MPI_level;
+
+    //! Print version information upon startup (default is false)
+    bool print_startup;
 
     /*!
      *  MPI communicator to use for AMP_COMM_WORLD.  By default this should be set to
@@ -106,6 +115,19 @@ public:
 
     //! Check if MPI is active
     static bool MPI_Active();
+
+    /*!
+     * @brief  AMP version number
+     * @details  This function returns the current version of AMP
+     *   Note that a value of {0,0,xxx} will be returned for the development version.
+     *   The build number is the revision number based on the commits in the development version.
+     *   Note: when comparing versions, only the last number needs to be compared.
+     * @return          Returns array containing the {major,minor,build} version
+     */
+    static std::array<int,3> revision();
+
+    //! Return detailed revision information
+    static std::string info();    
 
 private:
     // Private constructor (we do not actually want to create an object)

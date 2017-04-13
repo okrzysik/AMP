@@ -39,6 +39,7 @@ int main( int argc, char *argv[] )
     startup_properties.print_times   = true;
     startup_properties.use_MPI_Abort = false;
     startup_properties.COMM_WORLD    = AMP_comm;
+    startup_properties.print_startup = true;
 
     // Start AMP
     AMP::AMPManager::startup( argc, argv, startup_properties );

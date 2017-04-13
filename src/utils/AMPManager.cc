@@ -1,4 +1,5 @@
 #include "AMPManager.h"
+#include "AMP_Version.h"
 #include "PIO.h"
 #include "ProfilerApp.h"
 #include "RNG.h"
@@ -7,21 +8,46 @@
 #include "utils/StackTrace.h"
 #include "utils/Utilities.h"
 
-#ifdef USE_EXT_PETSC
-#include "petsc.h"
-#include "petscerror.h"
-#include "petscsys.h"
-#endif
 
-#ifdef USE_TIMER
-#include "MemoryApp.h"
+// Include external files for startup/version info
+// clang-format off
+#ifdef USE_EXT_PETSC
+    #include "petsc.h"
+    #include "petscerror.h"
+    #include "petscsys.h"
+    #include "petscversion.h"
 #endif
+#if USE_EXT_TIMER
+    #include "TimerUtilityVersion.h"
+    #include "MemoryApp.h"
+#endif
+#ifdef USE_EXT_TRILINOS
+    #include "Trilinos_version.h"
+#endif
+#ifdef USE_EXT_LIBMESH
+    #include "libmesh/libmesh_version.h"
+#endif
+#ifdef USE_EXT_HDF5
+    #include "H5public.h"
+#endif
+#ifdef USE_EXT_SUNDIALS
+    #include "sundials/sundials_config.h"
+#endif
+#ifdef USE_EXT_SILO
+    #include "silo.h"
+#endif
+#ifdef USE_EXT_HYPRE
+    #include "HYPRE_config.h"
+#endif
+// clang-format off
+
 
 #include <iostream>
 #include <new>
 #include <sstream>
 #include <string.h>
-
+#include <vector>
+#include <array>
 #include <algorithm>
 #include <signal.h>
 #include <stdexcept>
@@ -223,12 +249,17 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     initialized  = 1;
     rank         = comm_world.getRank();
     startup_time = Utilities::time() - start_time;
+    if ( properties.print_startup ) {
+        AMP::pout << "Version info:\n" << info() << std::endl;
+        AMP::pout.flush();
+    }
     if ( print_times && comm_world.getRank() == 0 ) {
         printf( "startup time = %0.3f s\n", startup_time );
         if ( petsc_time != 0 )
             printf( " PETSc startup time = %0.3f s\n", petsc_time );
         if ( MPI_time != 0 )
             printf( " MPI startup time = %0.3f s\n", MPI_time );
+        printf( "\n" );
     }
 }
 
@@ -293,6 +324,7 @@ void AMPManager::shutdown()
             printf( " PETSc shutdown time = %0.3f s\n", petsc_time );
         if ( MPI_time != 0 )
             printf( " MPI shutdown time = %0.3f s\n", MPI_time );
+        printf( "\n" );
     }
     // Print any AMP_MPI leaks
     if ( AMP_MPI::MPI_Comm_created() != AMP_MPI::MPI_Comm_destroyed() ) {
@@ -420,6 +452,7 @@ AMPManagerProperties::AMPManagerProperties()
     use_MPI_Abort     = true;
     print_times       = false;
     profile_MPI_level = 2;
+    print_startup     = false;
     COMM_WORLD        = AMP_COMM_WORLD;
 }
 
@@ -453,4 +486,84 @@ bool AMPManager::MPI_Active()
     return false;
 #endif
 }
+
+
+/****************************************************************************
+*  Functions to return version info                                         *
+****************************************************************************/
+std::array<int,3> AMPManager::revision()
+{
+    return { AMP::Version::major, AMP::Version::minor, AMP::Version::build };
 }
+std::string AMPManager::info()
+{
+    std::stringstream out; 
+    out << "AMP:" << std::endl;
+    out << "   Version: " << AMP::Version::major << "." <<
+                              AMP::Version::minor << "." <<
+                              AMP::Version::build << std::endl;
+    out << "   Hash: " << AMP::Version::short_hash << std::endl;
+    out << "   C Compiler: " << AMP::Version::C << std::endl;
+    out << "   C++ Compiler: " << AMP::Version::CXX << std::endl;
+    out << "   Fortran Compiler: " << AMP::Version::Fortran << std::endl;
+    out << "   C Compiler ID: " << AMP::Version::C_ID << std::endl;
+    out << "   C++ Compiler ID: " << AMP::Version::CXX_ID << std::endl;
+    out << "   Fortran Compiler ID: " << AMP::Version::Fortran_ID << std::endl;
+    out << "   C Compiler Version: " << AMP::Version::C_VERSION << std::endl;
+    out << "   C++ Compiler Version: " << AMP::Version::CXX_VERSION << std::endl;
+    out << "   Fortran Compiler Version: " << AMP::Version::Fortran_VERSION << std::endl;
+    out << "   C Flags: " << AMP::Version::C_FLAGS << std::endl;
+    out << "   C++ Flags: " << AMP::Version::CXX_FLAGS << std::endl;
+    out << "   Fortran Flags: " << AMP::Version::Fortran_FLAGS << std::endl;
+#ifdef USE_TIMER
+    out << "ProfilerApp: " << TIMER_VERSION << std::endl;
+#endif
+#ifdef USE_EXT_PETSC
+    out << "PETSc: " << PETSC_VERSION_MAJOR << "." <<
+                        PETSC_VERSION_MINOR << "." <<
+                        PETSC_VERSION_SUBMINOR << std::endl;
+#endif
+#ifdef USE_EXT_TRILINOS
+    out << "Trilinos: " << TRILINOS_VERSION_STRING << std::endl;
+#endif
+#ifdef USE_EXT_SUNDIALS
+    out << "Sundials: " << SUNDIALS_PACKAGE_VERSION << std::endl;
+#endif
+#ifdef USE_EXT_HYPRE
+    out << "Hypre: " << HYPRE_RELEASE_VERSION << std::endl;
+#endif
+#ifdef USE_EXT_LIBMESH
+    out << "libMesh: " << libMesh::get_libmesh_version() << std::endl;
+#endif
+#ifdef USE_EXT_HDF5
+    out << "HDF5: " << H5_VERS_MAJOR << "." << H5_VERS_MINOR << "." << H5_VERS_RELEASE << std::endl;
+#endif
+#ifdef USE_EXT_SILO
+    out << "SILO: " << SILO_VERS_MAJ << "." << SILO_VERS_MIN << "." << SILO_VERS_PAT << std::endl;
+#endif
+#ifdef USE_EXT_MPI
+    int MPI_version_length = 0;
+    char MPI_version_string[MPI_MAX_LIBRARY_VERSION_STRING];
+#if MPI_VERSION >= 3
+    MPI_Get_library_version( MPI_version_string, &MPI_version_length );
+#endif
+    if ( MPI_version_length > 0 ) {
+        std::string MPI_info( MPI_version_string, MPI_version_length );
+        size_t pos = MPI_info.find('\n');
+        while ( pos != std::string::npos ) {
+             MPI_info.insert( pos+1, "   " );
+             pos = MPI_info.find('\n',pos+1);
+        }
+        out << "MPI: " << MPI_info;
+    } else {
+        int MPI_version;
+        int MPI_subversion;
+        MPI_Get_version( &MPI_version, &MPI_subversion );
+        out << "MPI: " << MPI_version << "." << MPI_subversion << std::endl;
+    }
+#endif
+    return out.str();
+}
+
+
+} // namespace AMP
