@@ -30,7 +30,7 @@
 #include "utils/Writer.h"
 #include "vectors/Vector.h"
 
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 #include "utils/ReadTestMesh.h"
 

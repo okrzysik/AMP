@@ -36,7 +36,7 @@
 #include "operators/mechanics/MechanicsLinearElement.h"
 #include "operators/mechanics/MechanicsLinearFEOperator.h"
 #include "solvers/ColumnSolver.h"
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 #include "time_integrators/ColumnTimeOperator.h"
 #include "time_integrators/sundials/IDATimeIntegrator.h"

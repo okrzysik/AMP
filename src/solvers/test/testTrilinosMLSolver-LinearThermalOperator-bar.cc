@@ -30,7 +30,7 @@
 #include "operators/boundary/DirichletMatrixCorrection.h"
 #include "vectors/VectorBuilder.h"
 
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 #define ITFAILS ut.failure( __LINE__ );
 #define UNIT_TEST( a ) \

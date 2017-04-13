@@ -29,7 +29,7 @@
 #include "utils/Writer.h"
 #include "vectors/Vector.h"
 
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_file )
 {

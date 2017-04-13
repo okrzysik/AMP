@@ -45,7 +45,7 @@
 #include "solvers/petsc/PetscSNESSolver.h"
 #include "solvers/petsc/PetscSNESSolverParameters.h"
 
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 
 void myTest( AMP::UnitTest *ut, std::string exeName )

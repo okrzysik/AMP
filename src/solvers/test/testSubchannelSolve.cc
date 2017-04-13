@@ -68,7 +68,7 @@
 #include "solvers/ColumnSolver.h"
 #include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/petsc/PetscSNESSolver.h"
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 #include "ampmesh/StructuredMeshHelper.h"
 #include "discretization/structuredFaceDOFManager.h"

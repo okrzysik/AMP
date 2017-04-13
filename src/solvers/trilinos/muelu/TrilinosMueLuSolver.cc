@@ -1,12 +1,8 @@
 #include "solvers/trilinos/muelu/TrilinosMueLuSolver.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wextra"
+DISABLE_WARNINGS
 #include <MueLu_CreateEpetraPreconditioner.hpp>
-#pragma GCC diagnostic pop
-#pragma GCC diagnostic pop
+ENABLE_WARNINGS
 
 #include "ProfilerApp.h"
 #include "matrices/Matrix.h"

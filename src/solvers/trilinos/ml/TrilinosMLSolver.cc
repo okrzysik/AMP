@@ -1,4 +1,4 @@
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 #include "ProfilerApp.h"
 #include "matrices/Matrix.h"

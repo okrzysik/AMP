@@ -6,7 +6,7 @@
 #include "operators/subchannel/SubchannelTwoEqLinearOperator.h"
 #include "operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
 #include "solvers/ColumnSolver.h"
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "solvers/trilinos/nox/TrilinosNOXSolver.h"
 #include "solvers/trilinos/nox/TrilinosNOXSolverParameters.h"
 #include "utils/AMPManager.h"

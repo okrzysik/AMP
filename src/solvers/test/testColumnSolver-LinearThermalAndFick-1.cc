@@ -32,7 +32,7 @@
 #include "operators/diffusion/DiffusionLinearFEOperator.h"
 
 #include "solvers/ColumnSolver.h"
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 
 void myTest( AMP::UnitTest *ut, std::string exeName )

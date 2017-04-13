@@ -35,7 +35,7 @@
 #include "operators/diffusion/DiffusionTransportModel.h"
 #include "operators/libmesh/VolumeIntegralOperator.h"
 
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 
 #define __PI__ 3.14159265

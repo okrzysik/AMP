@@ -36,7 +36,7 @@
 #include "solvers/petsc/PetscKrylovSolverParameters.h"
 #include "solvers/petsc/PetscSNESSolver.h"
 #include "solvers/petsc/PetscSNESSolverParameters.h"
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 #define ITFAILS ut.failure( __LINE__ );
 #define UNIT_TEST( a ) \
