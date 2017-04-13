@@ -3,7 +3,9 @@
 
 #include "utils/FunctionTable.h"
 #include "utils/Utilities.h"
-#include "utils/LapackWrappers.h"
+
+// External includes
+#include "LapackWrappers.h"
 
 #include <algorithm>
 #include <cstring>
@@ -197,7 +199,7 @@ template <class TYPE>
 inline void FunctionTable::gemmWrapper(char TRANSA, char TRANSB, int M, int N, int K, TYPE alpha, const TYPE* A, int LDA, const TYPE* B, int LDB, TYPE beta, TYPE* C, int LDC)
 {
 
-    AMP::Lapack<TYPE>::gemm(TRANSA,TRANSB,M,N,K,alpha,A,LDA,B,LDB,beta,C,LDC);
+    Lapack<TYPE>::gemm(TRANSA,TRANSB,M,N,K,alpha,A,LDA,B,LDB,beta,C,LDC);
 
 }
 
