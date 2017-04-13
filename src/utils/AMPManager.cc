@@ -46,7 +46,8 @@
 #include <new>
 #include <sstream>
 #include <string.h>
-
+#include <vector>
+#include <array>
 #include <algorithm>
 #include <signal.h>
 #include <stdexcept>

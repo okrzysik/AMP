@@ -3,6 +3,10 @@
 
 #include "utils/AMP_MPI.h"
 
+#include <vector>
+#include <array>
+#include <string>
+
 
 namespace AMP {
 
