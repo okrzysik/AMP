@@ -7,6 +7,7 @@
 #include "vectors/DataChangeFirer.h"
 
 #include <iomanip>
+#include <numeric>
 
 namespace AMP {
 namespace Solver {
