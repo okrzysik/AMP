@@ -483,16 +483,15 @@ IF( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-LinearElasticity-1a )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-LinearElasticity-1b )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-LinearElasticity-1c )
+
     ADD_AMP_PROVISIONAL_TEST( testUpdatedLagrangianMechanics-LinearElasticity-2 1 )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-LinearElasticity-2 )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-LinearElasticity-3 )
+
     ADD_AMP_PROVISIONAL_TEST( testSmallStrainMechanics-ThermoMechanics-1 1 )
     COPY_TEST_FILE( input_testSmallStrainMechanics-ThermoMechanics-1 )
     ADD_AMP_TEST( testUpdatedLagrangianMechanics-FlanaganTaylorElement-1 )
     COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-FlanaganTaylorElement-1 )
-
-    ADD_AMP_TEST( testMatrixFreeML )
-    COPY_TEST_FILE( input_testMatrixFreeML-1 )
 
     ADD_AMP_PROVISIONAL_TEST( testLinearFlow-1 )
 
@@ -516,13 +515,15 @@ IF( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
     ADD_AMP_TEST_PARALLEL( testLinearMechanics-PressureBoundary 4 )
     ADD_AMP_TEST_1_2_4( testLinearRobinBoundaryOperator-1 )
     #ADD_AMP_TEST_1_2_4( testThermalRobinFlow-1 )
-IF ( USE_EXT_TRILINOS )
+
     ADD_AMP_TEST_1_2_4( testTrilinosMLSolver-LinearThermalRobin )
     ADD_AMP_TEST_1_2_4( testTrilinosMLSolver-LinearThermalOperator-bar )
     ADD_AMP_TEST_1_2_4( testTrilinosMLSolver-LinearFickOperator-bar )
     ADD_AMP_TEST_1_2_4( testTrilinosMLSolver-LinearThermalOperator-cylinder )
     ADD_AMP_TEST_1_2_4( testTrilinosMLSolver-LinearElasticityOperator-1 )
-ENDIF()
+
+    ADD_AMP_TEST( testMatrixFreeML )
+    COPY_TEST_FILE( input_testMatrixFreeML-1 )
 
     ADD_AMP_TEST_1_2_4( testColumnSolver-LinearThermalAndFick-1 )
     ADD_AMP_TEST_1_2_4( testFlowSolution-1 )
@@ -530,27 +531,13 @@ ENDIF()
     ADD_AMP_PROVISIONAL_TEST( testFlowSolution-2 2)
     ADD_AMP_PROVISIONAL_TEST( testFlowSolution-2 4)
 
-IF ( USE_EXT_TRILINOS AND USE_TRILINOS_MUELU )
+IF ( USE_TRILINOS_MUELU )
     ADD_AMP_TEST_1_2_4( testTrilinosMueLuSolver-LinearThermalRobin )
     ADD_AMP_TEST_1_2_4( testTrilinosMueLuSolver-LinearThermalOperator-bar )
     ADD_AMP_TEST_1_2_4( testTrilinosMueLuSolver-LinearThermalOperator-cylinder )
     ADD_AMP_TEST_1_2_4( testTrilinosMueLuSolver-LinearThermalOperator-2 )
     ADD_AMP_TEST_1_2_4( testTrilinosMueLuSolver-LinearFickOperator-bar )
     ADD_AMP_TEST_1_2_4( testTrilinosMueLuSolver-LinearElasticityOperator-1 )
-ENDIF()
-
-IF ( USE_EXT_HYPRE )
-    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalRobin )
-    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalOperator-bar )
-    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalOperator-cylinder )
-    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalOperator-2 )
-    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearFickOperator-bar )
-    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearElasticityOperator-1 )
-ENDIF()
-
-IF ( USE_EXT_PETSC AND USE_EXT_HYPRE )
-    ADD_AMP_TEST_1_2_4( testPetscSNESSolver-BoomerAMG-NonlinearThermal-1 )
-    ADD_AMP_TEST_1_2_4( testPetscSNESSolver-JFNK-BoomerAMG-NonlinearMechanics-1 )
 ENDIF()
 
     ADD_AMP_PROVISIONAL_TEST( testPetscSNESSolver-NonlinearThermoMechanics-1 8)
@@ -568,6 +555,21 @@ ENDIF()
 
     ADD_AMP_PROVISIONAL_TEST( testPetscSNESSolver-IncompressibleFlow-1 1)
 
+ENDIF()
+
+IF ( USE_EXT_LIBMESH AND USE_EXT_HYPRE )
+    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalRobin )
+    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalOperator-bar )
+    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalOperator-cylinder )
+    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalOperator-2 )
+    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearFickOperator-bar )
+    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearElasticityOperator-1 )
+ENDIF()
+
+IF ( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_HYPRE )
+    ADD_AMP_TEST_1_2_4( testPetscSNESSolver-BoomerAMG-NonlinearThermal-1 )
+    ADD_AMP_TEST_1_2_4( testPetscSNESSolver-JFNK-BoomerAMG-NonlinearMechanics-1 )
+    ADD_AMP_TEST_1_2_4( testPetscSNESSolver-BoomerAMG-NonlinearFickSoret-2 )
 ENDIF()
 
 
