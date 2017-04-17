@@ -1,8 +1,10 @@
 #include "solvers/BandedSolver.h"
 #include "ProfilerApp.h"
 #include "operators/LinearOperator.h"
-#include "utils/LapackWrappers.h"
 #include "utils/Utilities.h"
+
+// External includes
+#include "LapackWrappers.h"
 
 
 namespace AMP {

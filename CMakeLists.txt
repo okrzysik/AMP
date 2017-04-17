@@ -45,7 +45,7 @@ IF ( NOT ONLY_BUILD_DOCS )
     ENDIF()
     SET( CMAKE_MODULE_PATH "${TPL_DIRECTORY}" ${CMAKE_MODULE_PATH} )
     IF ( NOT DEFINED TPL_LIST_REQUIRED )
-        SET( TPL_LIST_REQUIRED LAPACK )
+        SET( TPL_LIST_REQUIRED LAPACK LAPACK_WRAPPERS )
     ENDIF()
     IF ( NOT DEFINED TPL_LIST_OPTIONAL )
         SET( TPL_LIST_OPTIONAL MPI BOOST ZLIB EIGEN PETSC HDF5 SILO HYPRE TRILINOS SUNDIALS LIBMESH X11 OGRE TIMER )
@@ -157,23 +157,15 @@ ENDIF()
 
 # Add the src directory
 IF ( NOT ONLY_BUILD_DOCS )
+    WRITE_REPO_VERSION()
     SET( EXCLUDE_TESTS_FROM_ALL 1 )
     ADD_SUBDIRECTORY( src )
 ENDIF()
 
 
 # Add the cppcheck tests
+#SET( CPPCHECK_INCLUDE "-I${TIMER_INCLUDE}" "-I${${PROJ}_INSTALL_DIR}/include" )    # slow
 SET( CPPCHECK_INCLUDE "-I${TIMER_INCLUDE}" )
-SET( CPPCHECK_OPTIONS -q --enable=all --force --suppress=missingIncludeSystem 
-    "--suppressions-list=${CMAKE_CURRENT_SOURCE_DIR}/cppcheckSuppressionFile" )
-IF ( CXX_STD STREQUAL 98 )
-    SET( CPPCHECK_OPTIONS ${CPPCHECK_OPTIONS} --std=c99 --std=c++03 --std=posix )
-ELSEIF ( CXX_STD STREQUAL 11 )
-    SET( CPPCHECK_OPTIONS ${CPPCHECK_OPTIONS} --std=c11 --std=c++11 --std=posix )
-ELSEIF ( CXX_STD STREQUAL 14 )
-    SET( CPPCHECK_OPTIONS ${CPPCHECK_OPTIONS} --std=c11 --std=c++11 --std=posix )
-ENDIF()
-SET( CPPCHECK_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}" )
 FIND_PACKAGE( Cppcheck )
 
 
@@ -196,8 +188,8 @@ SET( CPPCLEAN_SUPPRESSIONS
 )
 SET( CPPCLEAN_UNNECESSARY_INCLUDE 1 )
 SET( CPPCLEAN_EXTRA_INCLUDE 1 )
-SET( CPPCLEAN_SHOULD_INCLUDE 0 )
-SET( CPPCLEAN_INCLUDE_NOT_FOUND 0 )
+SET( CPPCLEAN_SHOULD_INCLUDE 1 )
+SET( CPPCLEAN_INCLUDE_NOT_FOUND 1 )
 SET( CPPCLEAN_FUN_NOT_FOUND 0 )
 SET( CPPCLEAN_DECLARED 0 )
 SET( CPPCLEAN_STATIC 0 )
@@ -205,6 +197,28 @@ SET( CPPCLEAN_UNUSED_VARIABLE 0 )
 SET( CPPCLEAN_UNKNOWN 1 )
 SET( CPPCLEAN_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}" )
 FIND_PACKAGE( Cppclean )
+
+
+# Create release target
+IF ( AMP_MAJOR_VERSION AND AMP_MINOR_VERSION )
+    ADD_CUSTOM_TARGET( release )
+    INCLUDE( "${${PROJ}_INSTALL_DIR}/${PROJ}_Version.cmake" )
+    SET( AMP_NAME AMP-${AMP_MAJOR_VERSION}.${AMP_MINOR_VERSION}.${AMP_BUILD_VERSION} )
+    SET( RELEASE_FILENAME ${AMP_NAME}.tar )
+    SET( TMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/tmp" )
+    FILE(WRITE  "${TMP_DIR}/release.cmake" "# Create the release tar\n" )
+    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory \"${CMAKE_CURRENT_SOURCE_DIR}\" ${AMP_NAME})\n" )
+    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${AMP_NAME}/.hg )\n" )
+    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f ${AMP_NAME}/.hgtags )\n" )
+    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f ${AMP_NAME}/.hgignore )\n" )
+    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E copy version.cmake ${AMP_NAME}/AMP_Version.cmake)\n" )
+    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E tar -cf ${AMP_NAME}.tar ${AMP_NAME})\n" )
+    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${AMP_NAME}.tar \"${AMP_INSTALL_DIR}/${${AMP_NAME}}\" )\n" )
+    ADD_CUSTOM_COMMAND( TARGET release PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -P "${TMP_DIR}/release.cmake"
+        WORKING_DIRECTORY "${TMP_DIR}" 
+    )
+ENDIF()
 
 
 # Install the documentation
@@ -220,7 +234,6 @@ IF ( NOT ONLY_BUILD_DOCS )
     CONFIGURE_FILE( cmake/FindAMP.template.cmake "${${PROJ}_INSTALL_DIR}/FindAMP.cmake" @ONLY )
     COPY_DATA_FILE( "${TPL_MACRO_CMAKE}" "${${PROJ}_INSTALL_DIR}/cmake/macros.cmake" )
     COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SharedPtr.cmake" "${${PROJ}_INSTALL_DIR}/cmake/SharedPtr.cmake" )
-    COPY_DATA_FILE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/WriteRepoVersion.cmake" "${${PROJ}_INSTALL_DIR}/cmake/WriteRepoVersion.cmake" )
     SAVE_CMAKE_FLAGS( "${${PROJ}_INSTALL_DIR}/amp.cmake" )
 ENDIF()
 
