@@ -529,8 +529,10 @@ std::string AMPManager::info()
 #ifdef USE_EXT_SUNDIALS
     out << "Sundials: " << SUNDIALS_PACKAGE_VERSION << std::endl;
 #endif
-#ifdef USE_EXT_HYPRE
+#ifdef HYPRE_RELEASE_VERSION
     out << "Hypre: " << HYPRE_RELEASE_VERSION << std::endl;
+#elif defined(HYPRE_PACKAGE_VERSION)
+    out << "Hypre: " << HYPRE_PACKAGE_VERSION << std::endl;
 #endif
 #ifdef USE_EXT_LIBMESH
     out << "libMesh: " << libMesh::get_libmesh_version() << std::endl;
