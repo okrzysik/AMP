@@ -10,42 +10,10 @@
 #include "vectors/petsc/NativePetscVector.h"
 #include "vectors/testHelpers/VectorTests.h"
 
-
 namespace AMP {
 namespace LinearAlgebra {
 
-
-/**
- * \class PetscVectorFactory
- * \brief A helper class to generate vectors
- */
-class PetscVectorFactory
-{
-public:
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const = 0;
-
-    virtual void destroyNativeVector( AMP::LinearAlgebra::NativePetscVector &rhs ) const
-    {
-        PETSC::vecDestroy( &rhs.getVec() );
-    }
-
-    virtual void destroyNativeVector( AMP::LinearAlgebra::Vector::shared_ptr rhs ) const
-    {
-        destroyNativeVector(
-            *AMP::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVector>( rhs ) );
-    }
-
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const = 0;
-
-    virtual std::string name() const = 0;
-
-protected:
-    PetscVectorFactory() {}
-    PetscVectorFactory( const PetscVectorFactory& );
-};
-
-
+class PetscVectorFactory;
 
 /**
  * \class PetscVectorTests
@@ -54,7 +22,7 @@ protected:
 class PetscVectorTests
 {
 public:
-    PetscVectorTests( AMP::shared_ptr<const PetscVectorFactory> factory ): d_factory(factory) {}
+    explicit PetscVectorTests( AMP::shared_ptr<const PetscVectorFactory> factory ): d_factory(factory) {}
 
     void testPetscVector( AMP::UnitTest *ut );
 

@@ -120,8 +120,12 @@ AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string& name )
         AMP_ASSERT(args.size()==4);
         factory.reset( new MultiVectorFactory( generateVectorFactory(args[0]), to_int(args[1]),
                                                generateVectorFactory(args[2]), to_int(args[3]) ) );
-    } else if ( factoryName == "NativePetscVector" ) {
-        AMP_ERROR("Not Finished");
+    } else if ( factoryName == "NativePetscVectorFactory" ) {
+        #if defined(USE_EXT_PETSC)
+        factory.reset( new NativePetscVectorFactory( ) );
+        #else
+            AMP_ERROR("Generator is not valid without support for PETSc");
+        #endif
     } else if ( factoryName == "SimpleManagedVectorFactory" ) {
         AMP_ASSERT(args.size()==1);
         if ( args[0] == "ManagedPetscVector" ) {

@@ -2,7 +2,6 @@
 #define included_test_PetscVectorFactory
 
 #include "vectors/testHelpers/VectorFactory.h"
-#include "vectors/testHelpers/petsc/PetscVectorTests.h"
 #include "vectors/testHelpers/generateVectorFactories.h"
 
 #include "utils/AMP_MPI.h"
@@ -16,11 +15,41 @@
 namespace AMP {
 namespace LinearAlgebra {
 
+/**
+ * \class PetscVectorFactory
+ * \brief A helper class to generate vectors
+ */
+class PetscVectorFactory
+{
+public:
+
+    virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const = 0;
+
+    virtual void destroyNativeVector( AMP::LinearAlgebra::NativePetscVector &rhs ) const
+    {
+        PETSC::vecDestroy( &rhs.getVec() );
+    }
+
+    virtual void destroyNativeVector( AMP::LinearAlgebra::Vector::shared_ptr rhs ) const
+    {
+        destroyNativeVector(
+            *AMP::dynamic_pointer_cast<AMP::LinearAlgebra::NativePetscVector>( rhs ) );
+    }
+
+    virtual AMP::LinearAlgebra::Vector::shared_ptr getManagedVector() const = 0;
+
+    virtual std::string name() const = 0;
+
+protected:
+    PetscVectorFactory() {}
+    PetscVectorFactory( const PetscVectorFactory& );
+};
 
 class PetscCloneFactory: public PetscVectorFactory
 {
 public:
-    PetscCloneFactory( AMP::shared_ptr<const PetscVectorFactory> factory ): d_factory(factory) {}
+    PetscCloneFactory( ) = delete;
+    explicit PetscCloneFactory( AMP::shared_ptr<const PetscVectorFactory> factory ): d_factory(factory) {}
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
     {
@@ -44,7 +73,6 @@ public:
     virtual std::string name() const override { return "PetscCloneFactory"; }
 
 private:
-    PetscCloneFactory();
     AMP::shared_ptr<const PetscVectorFactory> d_factory;
 };
 
@@ -52,7 +80,7 @@ private:
 class PetscViewFactory: public PetscVectorFactory
 {
 public:
-    PetscViewFactory( AMP::shared_ptr<const PetscVectorFactory> factory ): d_factory(factory) {}
+    explicit PetscViewFactory( AMP::shared_ptr<const PetscVectorFactory> factory ): d_factory(factory) {}
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
     {
@@ -85,7 +113,7 @@ class SimplePetscVectorFactory: public PetscVectorFactory
 {
 public:
 
-    SimplePetscVectorFactory( AMP::shared_ptr<const VectorFactory> factory ): d_factory(factory) {}
+    explicit SimplePetscVectorFactory( AMP::shared_ptr<const VectorFactory> factory ): d_factory(factory) {}
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const override
     {
@@ -104,7 +132,7 @@ public:
         AMP_ASSERT( b - a == (int) localSize );
         AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams(
             new AMP::LinearAlgebra::NativePetscVectorParameters( ans, true ) );
-        npvParams->d_Deleteable = true;
+
         AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVector> retVal(
             new AMP::LinearAlgebra::NativePetscVector( npvParams ) );
         retVal->setVariable( AMP::LinearAlgebra::Variable::shared_ptr(
