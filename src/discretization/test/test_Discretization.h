@@ -251,16 +251,16 @@ void testStructureDOFManager( AMP::UnitTest *ut )
         for ( size_t ii = 0; ii < it.size(); ++ii, ++it ) {
             std::vector<AMP::Mesh::MeshElement> faces = it->getElements( AMP::Mesh::GeomType::Face );
             for ( size_t i = 0; i < faces.size(); i++ ) {
-                std::vector<size_t> row = DOFs->getRowDOFs( faces[i] );
+                std::vector<size_t> rows = DOFs->getRowDOFs( faces[i] );
                 std::vector<size_t> dofs;
                 for ( size_t j = 0; j < faces.size(); j++ ) {
                     DOFs->getDOFs( faces[j].globalID(), dofs );
                     for ( size_t k = 0; k < dofs.size(); k++ ) {
-                        size_t index = AMP::Utilities::findfirst( row, dofs[k] );
-                        if ( index == row.size() ) {
+                        size_t index = AMP::Utilities::findfirst( rows, dofs[k] );
+                        if ( index == rows.size() ) {
                             index--;
                         }
-                        if ( row[index] != dofs[k] )
+                        if ( rows[index] != dofs[k] )
                             pass = false;
                     }
                 }

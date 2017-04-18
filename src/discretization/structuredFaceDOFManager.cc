@@ -144,6 +144,32 @@ void structuredFaceDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
 
 
 /****************************************************************
+* Get the element ID give a dof                                 *
+****************************************************************/
+AMP::Mesh::MeshElementID structuredFaceDOFManager::getElementID( size_t dof ) const
+{
+    if ( dof >= d_begin && dof < d_end ) {
+        // We are searching for a local dof
+        for (int i=0; i<3; i++) {
+            for (size_t j=0; j<d_local_ids[i].size(); j++) {
+                if ( dof>=d_local_dofs[i][j] && dof<d_local_dofs[i][j]+d_DOFsPerFace[i] )
+                    return d_local_ids[i][j];
+            }
+        }
+    } else {
+        // We are searching for a remote dof
+        for (int i=0; i<3; i++) {
+            for (size_t j=0; j<d_remote_ids[i].size(); j++) {
+                if ( dof>=d_remote_dofs[i][j] && dof<d_remote_dofs[i][j]+d_DOFsPerFace[i] )
+                    return d_remote_ids[i][j];
+            }
+        }
+    }
+    return AMP::Mesh::MeshElementID();
+}
+
+
+/****************************************************************
 * Get an entry over the mesh elements associated with the DOFs  *
 ****************************************************************/
 AMP::Mesh::MeshIterator structuredFaceDOFManager::getIterator() const
@@ -185,6 +211,13 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOFs() const
 /****************************************************************
 * Return the row DOFs                                           *
 ****************************************************************/
+std::vector<size_t> structuredFaceDOFManager::getRowDOFs( size_t row ) const
+{
+    auto id = this->getElementID( row );
+    AMP_ASSERT( !id.isNull() );
+    auto elem = d_mesh->getElement( id );
+    return getRowDOFs( elem );
+}
 std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
 {
     if ( obj.elementType() != AMP::Mesh::GeomType::Face )

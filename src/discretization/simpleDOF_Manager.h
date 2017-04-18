@@ -71,6 +71,14 @@ public:
     virtual ~simpleDOFManager();
 
 
+    /** \brief Get the mesh element ID for a DOF
+     * \details  This will return the mesh element ID associated with a given DOF.
+     * \param[in] dof       The entries in the vector associated with D.O.F.s on the nodes
+     * \param[out] id       The element ID for the given DOF.
+     */
+    virtual AMP::Mesh::MeshElementID getElementID( size_t dof ) const override;
+
+
     /** \brief Get the entry indices of DOFs given a mesh element ID
      * \details  This will return a vector of pointers into a Vector that are associated with which.
      *  Note: this function only works if the element we are search for is a element on which a DOF
@@ -82,7 +90,7 @@ public:
      * (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
-    virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
+    virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const override;
 
 
     /** \brief   Get an entry over the mesh elements associated with the DOFs
@@ -92,16 +100,20 @@ public:
      *  would have 3 DOFs stored at each node, and would return an iterator over
      *  all the nodes.
      */
-    virtual AMP::Mesh::MeshIterator getIterator() const;
+    virtual AMP::Mesh::MeshIterator getIterator() const override;
 
 
     //! Get the remote DOFs for a vector
-    virtual std::vector<size_t> getRemoteDOFs() const;
+    virtual std::vector<size_t> getRemoteDOFs() const override;
+
+
+    //! Get the row DOFs given a row index
+    virtual std::vector<size_t> getRowDOFs( size_t row ) const override;
 
 
     //! Get the row DOFs given a mesh element
-    virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
-
+    virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const override;
+    
 
     /** \brief Subset the DOF Manager for a mesh
      * \details  This will subset a DOF manager for a particular mesh.  The resulting DOFManager
@@ -112,7 +124,7 @@ public:
      * will return NULL.
      */
     virtual DOFManager::shared_ptr subset( const AMP::Mesh::Mesh::shared_ptr mesh,
-                                           bool useMeshComm = true );
+                                           bool useMeshComm = true ) override;
 
 
 private:

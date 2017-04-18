@@ -161,6 +161,13 @@ public:
 
 
     /**
+     * \brief Generate a random number
+     * \details  This generates a random number that is consistent across the comm
+     */
+    size_t rand() const;
+
+
+    /**
      * \brief Split an existing communicator
      * \details  This creates a new communicator by splitting an existing communicator.
      *   See MPI_Comm_split for information on how the underlying split will occur.
@@ -726,6 +733,24 @@ public:
      */
     MPI_Request
     IrecvBytes( void *buf, const int N_bytes, const int send_proc, const int tag ) const;
+
+
+    /*!
+     * Each processor sends every other processor a single value.
+     * @param[in] x      Input value for allGather
+     * @return           Output array for allGather
+     */
+    template <class type>
+    std::vector<type> allGather( const type& x ) const;
+
+
+    /*!
+     * Each processor sends every other processor an array
+     * @param[in] x      Input array for allGather
+     * @return           Output array for allGather
+     */
+    template <class type>
+    std::vector<type> allGather( const std::vector<type>& x_in ) const;
 
 
     /*!

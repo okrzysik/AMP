@@ -131,6 +131,16 @@ void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
 
 
 /****************************************************************
+* Get the element ID give a dof                                 *
+****************************************************************/
+AMP::Mesh::MeshElementID subsetDOFManager::getElementID( size_t dof ) const
+{
+    std::vector<size_t> dof2 = getParentDOF( {dof} );
+    return d_parentDOFManager->getElementID( dof2[0] );
+}
+
+
+/****************************************************************
 * Get an entry over the mesh elements associated with the DOFs  *
 * Note: if any sub-DOFManagers are the same, then this will     *
 * iterate over repeated elements.                               *
@@ -147,6 +157,21 @@ std::vector<size_t> subsetDOFManager::getRemoteDOFs() const { return d_remoteSub
 /****************************************************************
 * Return the global number of D.O.F.s                           *
 ****************************************************************/
+std::vector<size_t> subsetDOFManager::getRowDOFs( size_t row ) const
+{
+    std::vector<size_t> row2 = getParentDOF( {row} );
+    auto col = d_parentDOFManager->getRowDOFs( row2[0] );
+    std::vector<size_t> subsetDOFs = getSubsetDOF( col );
+    size_t index                   = 0;
+    for ( size_t i = 0; i < subsetDOFs.size(); i++ ) {
+        if ( subsetDOFs[i] < d_global ) {
+            subsetDOFs[index] = subsetDOFs[i];
+            index++;
+        }
+    }
+    subsetDOFs.resize( index );
+    return subsetDOFs;
+}
 std::vector<size_t> subsetDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
 {
     std::vector<size_t> parentDOFs = d_parentDOFManager->getRowDOFs( obj );

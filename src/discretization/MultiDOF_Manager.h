@@ -35,7 +35,7 @@ public:
     multiDOFManager( const AMP_MPI &comm, std::vector<DOFManager::shared_ptr> managers );
 
     //! Deconstructor
-    virtual ~multiDOFManager();
+    virtual ~multiDOFManager() override;
 
     /** \brief Get the entry indices of DOFs given a mesh element ID
      * \details  This will return a vector of pointers into a Vector that are associated with which.
@@ -48,22 +48,68 @@ public:
      * (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
-    virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
+    virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const override;
+
+
+    /** \brief Get the mesh element ID for a DOF
+     * \details  This will return the mesh element ID associated with a given DOF.
+     * \param[in] dof       The entries in the vector associated with D.O.F.s on the nodes
+     * \param[out] id       The element ID for the given DOF.
+     */
+    virtual AMP::Mesh::MeshElementID getElementID( size_t dof ) const override;
 
 
     /** \brief   Get an entry over the mesh elements associated with the DOFs
      * \details  This will return an iterator over the mesh elements associated with the DOFs.
      * Note: if any sub-DOFManagers are the same, then this will iterate over repeated elements.
      */
-    virtual AMP::Mesh::MeshIterator getIterator() const;
+    virtual AMP::Mesh::MeshIterator getIterator() const override;
 
 
     //! Get the remote DOFs for a vector
-    virtual std::vector<size_t> getRemoteDOFs() const;
+    virtual std::vector<size_t> getRemoteDOFs() const override;
+
+
+    //! Get the row DOFs given a row index
+    virtual std::vector<size_t> getRowDOFs( size_t row ) const override;
 
 
     //! Get the row DOFs given a mesh element
-    virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
+    virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const override;
+
+
+    /** \brief Subset the DOF Manager for a AMP_MPI communicator
+     * \details  This will subset a DOF manager for a given communicator.
+     * \param[in]  comm         The communicator to use to subset
+     */
+    virtual DOFManager::shared_ptr subset( const AMP_MPI &comm ) override;
+
+
+    /** \brief Subset the DOF Manager for a mesh
+     * \details  This will subset a DOF manager for a particular mesh.  The resulting DOFManager
+     *    can exist on either the comm of the parent DOF manager, or the comm of the mesh (default).
+     * \param[in]  mesh         The mesh to use to subset
+     * \param[in]  useMeshComm  Do we want to use the mesh comm for the new DOFManager.
+     *                          Note: if this is true, any processors that do not contain the mesh
+     * will return NULL.
+     */
+    virtual DOFManager::shared_ptr subset( const AMP::Mesh::Mesh::shared_ptr mesh,
+                                           bool useMeshComm = true ) override;
+
+
+    /** \brief Subset the DOF Manager for a mesh element iterator
+     * \details  This will subset a DOF manager for a given mesh element iterator.
+     *    The resulting DOFManager will exist on the privided comm.
+     * \param[in]  iterator     The mesh iterator for the subset
+     * \param[in]  comm         The desired comm
+     */
+    virtual DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator,
+                                           const AMP_MPI &comm ) override;
+
+public:
+
+    //! Get the DOFManagers that compose the multiDOFManager
+    std::vector<DOFManager::shared_ptr> getDOFManagers() const;
 
 
     /** \brief   Function to convert DOFs from a sub-manager DOF to the global DOF
@@ -97,99 +143,71 @@ public:
     std::vector<size_t> getSubDOF( const int DOFManager, std::vector<size_t> &globalDOF ) const;
 
 
-    //! Get the DOFManagers that compose the multiDOFManager
-    std::vector<DOFManager::shared_ptr> getDOFManagers() const;
+private:
 
+    // Convert the local to global dof
+    inline size_t subToGlobal( int manager, size_t dof ) const;
 
-    /** \brief Subset the DOF Manager for a AMP_MPI communicator
-     * \details  This will subset a DOF manager for a given communicator.
-     * \param[in]  comm         The communicator to use to subset
-     */
-    virtual DOFManager::shared_ptr subset( const AMP_MPI &comm );
+    // Convert the global to local dof
+    inline std::pair<size_t,int> globalToSub( size_t dof ) const;
 
+private:
 
-    /** \brief Subset the DOF Manager for a mesh
-     * \details  This will subset a DOF manager for a particular mesh.  The resulting DOFManager
-     *    can exist on either the comm of the parent DOF manager, or the comm of the mesh (default).
-     * \param[in]  mesh         The mesh to use to subset
-     * \param[in]  useMeshComm  Do we want to use the mesh comm for the new DOFManager.
-     *                          Note: if this is true, any processors that do not contain the mesh
-     * will return NULL.
-     */
-    virtual DOFManager::shared_ptr subset( const AMP::Mesh::Mesh::shared_ptr mesh,
-                                           bool useMeshComm = true );
-
-
-    /** \brief Subset the DOF Manager for a mesh element iterator
-     * \details  This will subset a DOF manager for a given mesh element iterator.
-     *    The resulting DOFManager will exist on the privided comm.
-     * \param[in]  iterator     The mesh iterator for the subset
-     * \param[in]  comm         The desired comm
-     */
-    virtual DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator,
-                                           const AMP_MPI &comm );
+    // Data used to convert between the local (sub) and global (parent) DOFs
+    struct DOFMapStruct {
+        // Constructors
+        inline DOFMapStruct( size_t sub_start, size_t sub_end, size_t global_start, size_t id )
+        {
+            data[0] = sub_start;
+            data[1] = sub_end;
+            data[2] = global_start;
+            data[3] = id;
+        }
+        inline DOFMapStruct()
+        {
+            data[0] = 0;
+            data[1] = 0;
+            data[2] = 0;
+            data[3] = 0;
+        }
+        // Convert ids
+        inline size_t toGlobal( size_t local ) const
+        {
+            return local-data[0]+data[2];
+        }
+        inline size_t toLocal( size_t global ) const
+        {
+            return global-data[2]+data[0];
+        }
+        inline bool inRangeLocal( size_t local ) const
+        {
+            return local>=data[0] && local<data[1];
+        }
+        inline size_t inRangeGlobal( size_t global ) const
+        {
+            return global>=data[2] && (global-data[2])<(data[1]-data[0]);
+        }
+        inline size_t id() const
+        {
+            return data[3];
+        }
+      private:
+        size_t data[4];
+    };
 
 
 private:
+
     std::vector<DOFManager::shared_ptr> d_managers;
+    std::vector<size_t> d_ids;
     std::vector<size_t> d_localSize;
     std::vector<size_t> d_globalSize;
+    std::vector<DOFMapStruct> d_dofMap;
+    const size_t neg_one = ~( (size_t) 0 );
 
-    // Data used to convert between the local (sub) and global (parent) DOFs
-    struct subDOF_struct {
-        size_t DOF1_begin;
-        size_t DOF1_end;
-        size_t DOF2_begin;
-        size_t DOF2_end;
-        // Constructors
-        inline subDOF_struct( size_t v1, size_t v2, size_t v3, size_t v4 )
-        {
-            DOF1_begin = v1;
-            DOF1_end   = v2;
-            DOF2_begin = v3;
-            DOF2_end   = v4;
-        }
-        inline subDOF_struct()
-        {
-            DOF1_begin = ~size_t( 0 );
-            DOF1_end   = ~size_t( 0 );
-            DOF2_begin = ~size_t( 0 );
-            DOF2_end   = ~size_t( 0 );
-        }
-        // Overload key operators
-        inline bool operator==( const subDOF_struct &rhs ) const
-        {
-            return DOF1_begin == rhs.DOF1_begin && DOF1_end == rhs.DOF1_end &&
-                   DOF2_begin == rhs.DOF2_begin && DOF2_end == rhs.DOF2_end;
-        }
-        inline bool operator!=( const subDOF_struct &rhs ) const
-        {
-            return DOF1_begin != rhs.DOF1_begin || DOF1_end != rhs.DOF1_end ||
-                   DOF2_begin != rhs.DOF2_begin || DOF2_end != rhs.DOF2_end;
-        }
-        inline bool operator>=( const subDOF_struct &rhs ) const
-        {
-            if ( DOF1_begin != rhs.DOF1_begin )
-                return DOF1_begin >= rhs.DOF1_begin;
-            if ( DOF1_end != rhs.DOF1_end )
-                return DOF1_end >= rhs.DOF1_end;
-            if ( DOF2_begin != rhs.DOF2_begin )
-                return DOF2_begin >= rhs.DOF2_begin;
-            return DOF2_end >= rhs.DOF2_end;
-        }
-        inline bool operator>( const subDOF_struct &rhs ) const
-        {
-            return operator>=( rhs ) && operator!=( rhs );
-        }
-        inline bool operator<( const subDOF_struct &rhs ) const { return !operator>=( rhs ); }
-        inline bool operator<=( const subDOF_struct &rhs ) const
-        {
-            return !operator>=( rhs ) || operator==( rhs );
-        }
-    };
-    std::vector<std::vector<subDOF_struct>> d_subToGlobalDOF;
-    std::vector<std::vector<subDOF_struct>> d_globalToSubDOF;
 };
+
+
 }
 }
 

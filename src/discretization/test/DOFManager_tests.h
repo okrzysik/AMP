@@ -24,19 +24,52 @@ void testGetDOFIterator( AMP::UnitTest *ut,
                          const AMP::Mesh::MeshIterator &iterator,
                          AMP::Discretization::DOFManager::shared_ptr DOF )
 {
-    bool passes                 = true;
+    bool pass1 = true;
+    bool pass2 = true;
     AMP::Mesh::MeshIterator cur = iterator.begin();
     std::vector<size_t> dofs;
     for ( size_t i = 0; i < cur.size(); i++ ) {
-        DOF->getDOFs( cur->globalID(), dofs );
+        const auto id = cur->globalID();
+        DOF->getDOFs( id, dofs );
         if ( dofs.empty() )
-            passes = false;
+            pass1 = false;
+        for ( size_t dof : dofs ) {
+            auto id2 = DOF->getElementID( dof );
+            if ( id2 != id )
+                pass2 = false;
+        }
         ++cur;
     }
-    if ( passes )
+    if ( pass1 )
         ut->passes( "Got the DOFs for every element in iterator" );
     else
         ut->failure( "Got the DOFs for every element in iterator" );
+    if ( pass2 )
+        ut->passes( "getElementID" );
+    else
+        ut->failure( "getElementID" );
+}
+
+
+// Function to test getting the DOFs for a mesh iterator
+void test_getRowDOFs( AMP::UnitTest *ut,
+                      AMP::Discretization::DOFManager::shared_ptr DOF )
+{
+    bool passes = true;
+    std::vector<size_t> dofs;
+    for ( const auto& elem : DOF->getIterator() ) {
+        DOF->getDOFs( elem.globalID(), dofs );
+        auto row1 = DOF->getRowDOFs( elem );
+        for ( auto dof : dofs ) {
+            auto row2 = DOF->getRowDOFs( dof );
+            if ( row1 != row2 )
+                passes = false;
+        }
+    }
+    if ( passes )
+        ut->passes( "getRowDOFs match" );
+    else
+        ut->failure( "getRowDOFs do not match" );
 }
 
 
@@ -78,6 +111,14 @@ void testBasics( AMP::Discretization::DOFManager::shared_ptr DOF, AMP::UnitTest 
     if ( ut2.NumFailLocal() != 0 ) {
         passAll = false;
         ut->failure( "Failed checking local iterator" );
+    }
+
+    // Check that both interfaces for getRowDOFs agree
+    AMP::UnitTest ut3;
+    //test_getRowDOFs( &ut3, DOF );
+    if ( ut3.NumFailLocal() != 0 ) {
+        passAll = false;
+        ut->failure( "getRowDOFs do not match" );
     }
 
     // Check the results of the basic tests

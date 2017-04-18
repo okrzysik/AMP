@@ -38,18 +38,33 @@ public:
 
 
     /** \brief Basic constructor for DOFManager
-     * \details  This will create a very simple DOFManager with the given number of DOFs on each
-     * processor.
-     *   It will not contain info to relate that to a mesh.  A derived implimentation should be used
-     * for
-     *   more advanced features.  For example see simpleDOFManager and multiDOFManager.
+     * \details  This will create a very simple DOFManager with the given number
+     *    of DOFs on each processor.  It will not contain info to relate that to a mesh.
+     *    A derived implimentation should be used for more advanced features.
+     *    For example see simpleDOFManager and multiDOFManager.
      * \param[in]  N_local  The local number of DOFs
      * \param[in]  comm     The comm over which the DOFManager exists
      */
     DOFManager( size_t N_local, const AMP_MPI &comm );
 
+
+    /** \brief Basic constructor for DOFManager
+     * \details  This will create a very simple DOFManager with the given number
+     *    of DOFs on each processor.  It will not contain info to relate that to a mesh.
+     *    A derived implimentation should be used for more advanced features.
+     *    For example see simpleDOFManager and multiDOFManager.
+     * \param[in] start     The first local dof
+     * \param[in] end       The last+1 local dof
+     * \param[in] comm      The comm over which the DOFManager exists
+     * \param[in] getRow    Optional function to provide the column indices given the row index.
+     */
+    DOFManager( size_t start, size_t end, const AMP_MPI &comm,
+        std::function<std::vector<size_t>(size_t)> getRow = std::function<std::vector<size_t>(size_t)>() );
+
+
     //! Deconstructor
     virtual ~DOFManager();
+
 
     /** \brief  Compares two DOFManager for equality.
       * \details This operation compares two DOF managers to see if they are equivalent
@@ -69,9 +84,17 @@ public:
      * \details  This will return a vector of pointers into a Vector that are associated with which.
      * \param[in]  id       The element ID to collect nodal objects for.
      *                      Note: the mesh element may be any type (include a vertex).
-     * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
+     * \param[out] dofs     The entries in the vector associated with D.O.F.s
      */
     virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
+
+
+    /** \brief Get the mesh element ID for a DOF
+     * \details  This will return the mesh element ID associated with a given DOF.
+     * \param[in] dof       The entries in the vector associated with D.O.F.s on the nodes
+     * \param[out] id       The element ID for the given DOF.
+     */
+    virtual AMP::Mesh::MeshElementID getElementID( size_t dof ) const;
 
 
     /** \brief Get the entry indices of DOFs given a mesh element ID
@@ -130,6 +153,10 @@ public:
     virtual std::vector<size_t> getRemoteDOFs() const;
 
 
+    //! Get the row DOFs given a row index
+    virtual std::vector<size_t> getRowDOFs( size_t row ) const;
+
+
     //! Get the row DOFs given a mesh element
     virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
 
@@ -174,6 +201,10 @@ protected:
 
     //! The comm for this DOFManager
     AMP_MPI d_comm;
+
+    //! Get the column entries of a row
+    std::function<std::vector<size_t>(size_t)> d_getRow;
+
 };
 
 

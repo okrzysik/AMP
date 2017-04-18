@@ -246,6 +246,24 @@ void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
 
 
 /****************************************************************
+* Get the element ID give a dof                                 *
+****************************************************************/
+AMP::Mesh::MeshElementID simpleDOFManager::getElementID( size_t dof ) const
+{
+    if ( dof >= d_begin && dof < d_end ) {
+        // We are searching for a local dof
+        return d_local_id[(dof-d_begin)/DOFsPerElement];
+    }
+    const size_t dof2 = dof/DOFsPerElement;
+    for (size_t i=0; i<d_remote_id.size(); i++) {
+        if ( d_remote_dof[i] == dof2 )
+            return d_remote_id[i];
+    }
+    return AMP::Mesh::MeshElementID();
+}
+
+
+/****************************************************************
 * Get an entry over the mesh elements associated with the DOFs  *
 ****************************************************************/
 AMP::Mesh::MeshIterator simpleDOFManager::getIterator() const { return d_localIterator.begin(); }
@@ -271,6 +289,12 @@ std::vector<size_t> simpleDOFManager::getRemoteDOFs() const
 /****************************************************************
 * Return the row DOFs                                           *
 ****************************************************************/
+std::vector<size_t> simpleDOFManager::getRowDOFs( size_t row ) const
+{
+    auto id = this->getElementID( row );
+    auto elem = d_mesh->getElement( id );
+    return getRowDOFs( elem );
+}
 std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
 {
     // Get a list of all element ids that are part of the row

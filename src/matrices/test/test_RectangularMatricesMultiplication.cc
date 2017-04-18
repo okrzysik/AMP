@@ -59,16 +59,16 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     firstVec->zero();
     secondVec->zero();
     // Loop through the valid matrix build types
-    std::vector<int> types;
-    types.push_back( 0 );
-#if defined( USE_EXT_TRILINOS )
-    types.push_back( 1 );
+    std::vector<std::string> types = { "DenseSerialMatrix" };
+#ifdef USE_EXT_TRILINOS
+    types.push_back( "ManagedEpetraMatrix" );
 #endif
-    if ( globalComm.getSize() == 1 )
-        types.push_back( 2 );
+#if defined(USE_EXT_TRILINOS) && defined(USE_EXT_PETSC)
+    types.push_back( "ManagedPetscMatrix" );
+#endif
     for ( auto &type : types ) {
         char tmp[100];
-        sprintf( tmp, "%s: %i", exeName.c_str(), type );
+        sprintf( tmp, "%s: %s", exeName.c_str(), type.c_str() );
         // create four matrices
         AMP::LinearAlgebra::Matrix::shared_ptr firstMat =
             AMP::LinearAlgebra::createMatrix( firstVec, secondVec, type ); // mxn

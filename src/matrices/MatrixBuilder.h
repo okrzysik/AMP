@@ -4,7 +4,9 @@
 
 #include "matrices/Matrix.h"
 #include "vectors/Vector.h"
+
 #include <string>
+#include <functional>
 
 
 namespace AMP {
@@ -14,22 +16,25 @@ namespace LinearAlgebra {
 /**
  * \brief  This function will create a matrix from two vectors
  * \details  This function is responsible for creating vectors from a DOFManager and variable.
- * \param operand  Vector that will be used to create the matrix.  The operand vector is the right
- *                 vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector ) and
- *                 determines the number of rows.
- * \param result   Vector that will be used to create the matrix  The result vector is the left
- *                 vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector ) and
- *                 determines the number of columns.
- * \param type     Type of matrix to build:
- *                 0: Automatically determined based on build (default)
- *                 1: ManagedPetscMatrix
- *                 2: DenseSerialMatrix
+ * \param left      Vector that will be used to create the matrix.  The left is y in the expression y = A*x.
+ * \param right     Vector that will be used to create the matrix  The right is x in the expression y = A*x.
+ * \param type      Type of matrix to build:
+ *                      auto: Automatically determined based on build (default)
+ *                      ManagedPetscMatrix
+ *                      ManagedEpetraMatrix
+ *                      DenseSerialMatrix
+ * \param getRow    Function to provide the column indices given the row index.
+ *                      If not provided, with will default to calling the getRowDOFs function on the
+ *                      DOFManager associated with the left vector.
  */
-AMP::LinearAlgebra::Matrix::shared_ptr createMatrix( AMP::LinearAlgebra::Vector::shared_ptr operand,
-                                                     AMP::LinearAlgebra::Vector::shared_ptr result,
-                                                     int type = 0 );
-}
-}
+AMP::LinearAlgebra::Matrix::shared_ptr createMatrix( AMP::LinearAlgebra::Vector::shared_ptr left,
+    AMP::LinearAlgebra::Vector::shared_ptr right,
+    const std::string& type = "auto", 
+    std::function<std::vector<size_t>(size_t)> getRow = std::function<std::vector<size_t>(size_t)>() );
+
+
+} // LinearAlgebra namespace
+} // AMP namespace
 
 #endif
 #endif

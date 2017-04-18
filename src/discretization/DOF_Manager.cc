@@ -20,6 +20,15 @@ DOFManager::DOFManager( size_t N_local, const AMP_MPI &comm )
     d_begin  = d_end - N_local;
     d_global = d_comm.bcast( d_end, d_comm.getSize() - 1 );
 }
+DOFManager::DOFManager( size_t start, size_t end, const AMP_MPI &comm,
+    std::function<std::vector<size_t>(size_t)> getRow )
+{
+    d_comm = comm;
+    d_begin = start;
+    d_end = end;
+    d_global = d_comm.sumReduce( d_end - d_begin );
+    d_getRow = getRow;
+}
 
 
 /****************************************************************
@@ -52,6 +61,15 @@ void DOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
     }
 }
 
+
+/****************************************************************
+* Get the element ID give a dof                                 *
+****************************************************************/
+AMP::Mesh::MeshElementID DOFManager::getElementID( size_t ) const
+{
+    AMP_ERROR( "getDOFs is not implimented for the base class" );
+    return AMP::Mesh::MeshElementID();
+}
 
 /****************************************************************
 * Get an entry over the mesh elements associated with the DOFs  *
@@ -92,9 +110,17 @@ std::vector<size_t> DOFManager::getRemoteDOFs() const { return std::vector<size_
 /****************************************************************
 * Return the global number of D.O.F.s                           *
 ****************************************************************/
+std::vector<size_t> DOFManager::getRowDOFs( size_t row ) const
+{
+    if ( d_getRow )
+        return d_getRow( row );
+    AMP_ERROR( "Generic getRowDOFs(row) is not implimented for the base class,"
+        "  and user did not provided function");
+    return std::vector<size_t>();
+}
 std::vector<size_t> DOFManager::getRowDOFs( const AMP::Mesh::MeshElement & ) const
 {
-    AMP_ERROR( "getRowDOFs is not implimented for the base class" );
+    AMP_ERROR( "getRowDOFs(element) is not implimented for the base class" );
     return std::vector<size_t>();
 }
 
