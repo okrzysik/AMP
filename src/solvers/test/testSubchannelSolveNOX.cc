@@ -66,7 +66,7 @@
 
 #include "solvers/BandedSolver.h"
 #include "solvers/ColumnSolver.h"
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "solvers/trilinos/nox/TrilinosNOXSolver.h"
 
 #include "ampmesh/StructuredMeshHelper.h"

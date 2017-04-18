@@ -32,7 +32,7 @@
 #include "operators/libmesh/MassLinearFEOperator.h"
 #include "operators/libmesh/VolumeIntegralOperator.h"
 
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 #include "time_integrators/BackwardEulerTimeIntegrator.h"
 #include "time_integrators/BackwardEulerTimeOperator.h"

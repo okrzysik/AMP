@@ -18,7 +18,7 @@
 #include "vectors/VectorBuilder.h"
 #include <string>
 
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 void myTest( AMP::UnitTest *ut )
 {

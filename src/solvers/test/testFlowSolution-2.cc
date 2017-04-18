@@ -43,7 +43,7 @@
 #include "solvers/petsc/PetscKrylovSolverParameters.h"
 #include "solvers/petsc/PetscSNESSolver.h"
 #include "solvers/petsc/PetscSNESSolverParameters.h"
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "vectors/Variable.h"
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"

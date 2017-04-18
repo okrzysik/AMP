@@ -58,7 +58,7 @@ ENABLE_WARNINGS
 
 #include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/petsc/PetscSNESSolver.h"
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 #include "utils/ReadTestMesh.h"
 

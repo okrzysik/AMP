@@ -26,7 +26,7 @@ ENABLE_WARNINGS
 
 #include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/petsc/PetscKrylovSolverParameters.h"
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 #include "ampmesh/libmesh/initializeLibMesh.h"
 #include "ampmesh/libmesh/libMesh.h"

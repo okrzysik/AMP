@@ -42,7 +42,7 @@
 #include "solvers/trilinos/nox/TrilinosNOXSolver.h"
 #include "solvers/trilinos/nox/TrilinosNOXSolverParameters.h"
 
-#include "solvers/trilinos/TrilinosMLSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 
 void myTest( AMP::UnitTest *ut, std::string exeName )
