@@ -28,8 +28,14 @@ int main( int argc, char **argv )
     testArrayVectorDimensions<double>( dims, ut );
     AMP::pout << std::endl;
 
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+#if defined( USE_EXT_PETSC )
     AMP::pout << "Testing NativePetscVector" << std::endl;
+    testBasicVector( ut, NPVFactory );
+    AMP::pout << std::endl;
+#endif
+
+#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+    AMP::pout << "Testing ManagedPetscVector<NativePetscVector>" << std::endl;
     testManagedVector( ut, SNPVFactory );
     AMP::pout << std::endl;
 #else

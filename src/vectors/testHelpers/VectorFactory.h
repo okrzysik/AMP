@@ -26,7 +26,7 @@ namespace LinearAlgebra {
 class CloneFactory: public VectorFactory
 {
 public:
-    CloneFactory( AMP::shared_ptr<const VectorFactory> factory ): d_factory(factory) {}
+    explicit CloneFactory( AMP::shared_ptr<const VectorFactory> factory ): d_factory(factory) {}
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
     {
@@ -199,6 +199,41 @@ public:
 
 
 #ifdef USE_EXT_PETSC
+class NativePetscVectorFactory: public VectorFactory
+{
+public:
+
+    virtual AMP::LinearAlgebra::Variable::shared_ptr getVariable() const override
+    {
+        return AMP::LinearAlgebra::Variable::shared_ptr(); // no variable.....
+    }
+
+    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
+    {
+        Vec v;
+        AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+        VecCreate( globalComm.getCommunicator(), &v );
+        PetscInt local_size = 15;
+        VecSetSizes( v, local_size, PETSC_DECIDE );
+        VecSetType( v, VECMPI );  // this line will have to be modified for the no mpi and cuda cases
+        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams(
+            new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
+        AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVector> newVec( new AMP::LinearAlgebra::NativePetscVector( npvParams ) );
+        VecSetFromOptions( v );
+        newVec->assemble();
+        newVec->setVariable( AMP::LinearAlgebra::Variable::shared_ptr(
+            new AMP::LinearAlgebra::Variable( "Test NativePetscVector" ) ) );
+        return newVec;
+    }
+
+    virtual std::string name() const override { return "NativePetscVectorFactory"; }
+
+    virtual AMP::Discretization::DOFManager::shared_ptr getDOFMap() const override
+    {
+        return getVector()->getDOFManager();
+    }
+};
+
 template <typename T>
 class PetscManagedVectorFactory: public VectorFactory
 {
