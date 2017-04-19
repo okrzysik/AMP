@@ -568,6 +568,31 @@ MPI_CLASS::Irecv( type *buf, const int length, const int send_proc, const int ta
 /************************************************************************
 *  allGather                                                            *
 ************************************************************************/
+template <class type>
+std::vector<type> MPI_CLASS::allGather( const type& x ) const
+{
+    if ( getSize() <= 1 )
+        return std::vector<type>( 1, x );
+    std::vector<type> data( getSize() );
+    allGather( x, data.data() );
+    return data;
+}
+template <class type>
+std::vector<type> MPI_CLASS::allGather( const std::vector<type>& x ) const
+{
+    if ( getSize() <= 1 )
+        return x;
+    std::vector<int> count = allGather<int>( x.size() );
+    std::vector<int> disp( getSize(), 0 );
+    size_t N = count[0];
+    for ( size_t i=1; i<count.size(); i++ ) {
+        disp[i] = disp[i-1] + count[i-1];
+        N += count[i];
+    }
+    std::vector<type> data( N );
+    allGather<type>( x.data(), x.size(), data.data(), count.data(), disp.data(), true );
+    return data;
+}
 // Specialization of MPI_CLASS::allGather for std::string
 template <>
 inline void MPI_CLASS::allGather<std::string>( const std::string x_in, std::string *x_out ) const

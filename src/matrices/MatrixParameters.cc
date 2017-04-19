@@ -11,19 +11,11 @@ MatrixParameters::MatrixParameters( AMP::Discretization::DOFManager::shared_ptr 
                                     AMP::Discretization::DOFManager::shared_ptr right,
                                     AMP_MPI comm )
 {
+    AMP_ASSERT(left);
+    AMP_ASSERT(right);
     d_comm            = comm;
     d_DOFManagerLeft  = left;
     d_DOFManagerRight = right;
-    if ( d_DOFManagerLeft != nullptr ) {
-        AMP_ASSERT( d_comm >= d_DOFManagerLeft->getComm() );
-        numLocalRows = d_DOFManagerLeft->numLocalDOF();
-    }
-    if ( d_DOFManagerRight != nullptr ) {
-        AMP_ASSERT( d_comm >= d_DOFManagerRight->getComm() );
-        numLocalColumns = d_DOFManagerRight->numLocalDOF();
-    }
-    numGlobalRows    = comm.sumReduce( numLocalRows );
-    numGlobalColumns = comm.sumReduce( numLocalColumns );
 }
 }
 }

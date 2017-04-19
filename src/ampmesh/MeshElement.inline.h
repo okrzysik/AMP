@@ -56,13 +56,22 @@ MeshElement &MeshElement::operator=( const MeshElement &rhs )
 
 
 /********************************************************
-* De-constructor                                        *
+* Destructor                                            *
 ********************************************************/
 MeshElement::~MeshElement()
 {
     if ( element != nullptr )
         delete element;
     element = nullptr;
+}
+
+
+/********************************************************
+* Is the element null                                   *
+********************************************************/
+bool MeshElement::isNull() const
+{
+    return typeID==MeshElementTypeID && element==nullptr;
 }
 
 
