@@ -231,6 +231,12 @@ void ThyraVectorWrapper::applyImpl( const Thyra::EOpTransp M_trans,
     }
 }
 
+void ThyraVectorWrapper::assignImpl(double alpha) 
+{
+    for ( auto &vec: d_vecs ) {
+        vec->setToScalar(alpha);
+    }
+}
 
 /****************************************************************
 * Protected functions derived from Thyra::MultiVectorBase       *
