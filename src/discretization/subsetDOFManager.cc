@@ -103,12 +103,12 @@ subsetDOFManager::~subsetDOFManager() {}
 /****************************************************************
 * Get the dofs for the given element                            *
 ****************************************************************/
-void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
+void subsetDOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
                                 std::vector<size_t> &dofs ) const
 {
     // Get the parent DOFs
     std::vector<size_t> parentDOFs;
-    d_parentDOFManager->getDOFs( id, parentDOFs );
+    d_parentDOFManager->getDOFs( ids, parentDOFs );
     if ( parentDOFs.empty() ) {
         dofs.resize( 0 );
         return;
@@ -127,6 +127,20 @@ void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
     dofs.resize( subsetDOFs.size() );
     for ( size_t i = 0; i < subsetDOFs.size(); i++ )
         dofs[i]    = subsetDOFs[i];
+}
+void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
+                                std::vector<size_t> &dofs ) const
+{
+    getDOFs( std::vector<AMP::Mesh::MeshElementID>(1,id), dofs );
+}
+
+/****************************************************************
+* Get the element ID give a dof                                 *
+****************************************************************/
+AMP::Mesh::MeshElement subsetDOFManager::getElement( size_t dof ) const
+{
+    std::vector<size_t> dof2 = getParentDOF( {dof} );
+    return d_parentDOFManager->getElement( dof2[0] );
 }
 
 

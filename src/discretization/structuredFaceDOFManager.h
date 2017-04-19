@@ -15,7 +15,7 @@ namespace Discretization {
  * \class structuredFaceDOFManager
  * \brief A derived class to create a DOFManager for faces
  * \details  This derived class impliments a concrete DOFManager for creating Vectors
- *    and matricies over a mesh on the faces of s structured mesh.
+ *    and matricies over a mesh on the faces of structured meshes.
  *    This is a specific implimentation designed for rectangular 3d meshes,
  *    and will create the unknowns on the faces.  Two faces are neighbors if they
  *    share an element.
@@ -23,7 +23,6 @@ namespace Discretization {
 class structuredFaceDOFManager : public DOFManager
 {
 public:
-    using DOFManager::getDOFs;
     using DOFManager::subset;
 
 
@@ -53,7 +52,25 @@ public:
      * (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
-    virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
+    virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const override;
+
+
+    /** \brief Get the entry indices of DOFs given a mesh element ID
+     * \details  This will return a vector of pointers into a Vector that are associated with which.
+     * \param[in]  ids      The element IDs to collect nodal objects for.
+     *                      Note: the mesh element may be any type (include a vertex).
+     * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
+     */
+    virtual void getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
+                          std::vector<size_t> &dofs ) const override;
+
+
+    /** \brief Get the mesh element for a DOF
+     * \details  This will return the mesh element associated with a given DOF.
+     * \param[in] dof       The entry in the vector associated with DOF
+     * @return              The element for the given DOF.
+     */
+    virtual AMP::Mesh::MeshElement getElement( size_t dof ) const override;
 
 
     /** \brief   Get an entry over the mesh elements associated with the DOFs
@@ -63,15 +80,15 @@ public:
      *  would have 3 DOFs stored at each node, and would return an iterator over
      *  all the nodes.
      */
-    virtual AMP::Mesh::MeshIterator getIterator() const;
+    virtual AMP::Mesh::MeshIterator getIterator() const override;
 
 
     //! Get the remote DOFs for a vector
-    virtual std::vector<size_t> getRemoteDOFs() const;
+    virtual std::vector<size_t> getRemoteDOFs() const override;
 
 
     //! Get the row DOFs given a mesh element
-    virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
+    virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const override;
 
 
 private:
@@ -81,6 +98,9 @@ private:
 
     // Function to initialize the data
     void initialize();
+
+    // Append DOFs
+    inline void appendDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
 
     // Data members
     AMP::shared_ptr<AMP::Mesh::Mesh> d_mesh;

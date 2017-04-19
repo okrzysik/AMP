@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <typeinfo>
+#include <random>
 
 
 // Include OS specific headers
@@ -624,6 +625,23 @@ const std::vector<int> &MPI_CLASS::globalRanks() const
         }
     }
     return *d_ranks;
+}
+
+
+/************************************************************************
+*  Generate a random number                                             *
+************************************************************************/
+size_t MPI_CLASS::rand() const
+{
+    size_t val = 0;
+    if ( getRank() == 0 ) {
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        static std::uniform_int_distribution<size_t> dist;
+        val = dist(gen);
+    }
+    val = bcast( val, 0 );
+    return val;
 }
 
 

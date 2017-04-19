@@ -165,10 +165,13 @@ public:
             utils->passes( "trivial vector" );
 
         // Test that axpy failes with different sized matricies
+        std::vector<size_t> row(7);
+        for (size_t i=0; i<row.size(); i++)
+            row[i] = i;
         AMP::LinearAlgebra::Vector::shared_ptr smallVec =
             AMP::LinearAlgebra::SimpleVector<double>::create( 7, vector1lhs->getVariable() );
         AMP::LinearAlgebra::Matrix::shared_ptr smallMat =
-            AMP::LinearAlgebra::createMatrix( smallVec, smallVec, FACTORY::type() );
+            AMP::LinearAlgebra::createMatrix( smallVec, smallVec, FACTORY::type(), [row](size_t){ return row; } );
         try {
             matrix2->axpy( -2., smallMat ); // matrix2 = -matrix1
             utils->failure( "axpy did not crash with different sized matrices" );

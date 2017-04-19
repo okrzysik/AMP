@@ -44,11 +44,10 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
         std::vector<unsigned int> cols;
         std::vector<double> vals;
         rhs.getRowByGlobalID( (int) i, cols, vals );
+        std::vector<size_t> cols2( cols.size() );
         for ( size_t j = 0; j != cols.size(); j++ )
-            vals[j]    = 0;
-        if ( !cols.empty() )
-            createValuesByGlobalID(
-                1, (int) cols.size(), (int *) &i, (int *) &( cols[0] ), &( vals[0] ) );
+            cols2[j]    = cols[j];
+        createValuesByGlobalID( i, cols2 );
     }
     d_RangeMap  = rhs.d_RangeMap;
     d_DomainMap = rhs.d_DomainMap;
@@ -324,13 +323,17 @@ void ManagedEpetraMatrix::addValuesByGlobalID(
             d_epetraMatrix->SumIntoGlobalValues( rows[i], num_cols, values + num_cols * i, cols ),
             "addValuesByGlobalId" );
 }
-void ManagedEpetraMatrix::createValuesByGlobalID(
-    int num_rows, int num_cols, int *rows, int *cols, double *values )
+void ManagedEpetraMatrix::createValuesByGlobalID( int row, const std::vector<size_t>& cols )
 {
-    for ( int i = 0; i != num_rows; i++ )
-        VerifyEpetraReturn(
-            d_epetraMatrix->InsertGlobalValues( rows[i], num_cols, values + num_cols * i, cols ),
-            "setValuesByGlobalID" );
+    if ( cols.empty() )
+        return;
+    std::vector<int> indices( cols.size() );
+    std::vector<double> values( cols.size(), 0 );
+    for (size_t i=0; i<cols.size(); i++)
+        indices[i] = cols[i];
+    VerifyEpetraReturn(
+        d_epetraMatrix->InsertGlobalValues( row, cols.size(), values.data(), indices.data() ),
+        "setValuesByGlobalID" );
 }
 void ManagedEpetraMatrix::setValuesByGlobalID(
     int num_rows, int num_cols, int *rows, int *cols, double *values )

@@ -2,8 +2,8 @@
 
 #include "matrices/MatrixBuilder.h"
 #include "matrices/DenseSerialMatrix.h"
-
 #include "discretization/DOF_Manager.h"
+#include "utils/Utilities.h"
 
 #ifdef USE_EXT_TRILINOS
     #include "matrices/trilinos/ManagedEpetraMatrix.h"
@@ -14,6 +14,8 @@
     #endif
 #endif
 
+#include <functional>
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -23,98 +25,69 @@ namespace LinearAlgebra {
 * Build a ManagedPetscMatrix                             *
 ********************************************************/
 AMP::LinearAlgebra::Matrix::shared_ptr
-createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr operandVec,
-                     AMP::LinearAlgebra::Vector::shared_ptr resultVec )
+createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+                     AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+                     std::function<std::vector<size_t>(size_t)> getRow,
+                     const std::string& type )
 {
 #if defined( USE_EXT_TRILINOS )
     // Get the DOFs
-    AMP::Discretization::DOFManager::shared_ptr operandDOF = operandVec->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr resultDOF  = resultVec->getDOFManager();
-    if ( operandDOF->getComm().compare( resultVec->getComm() ) == 0 )
-        AMP_ERROR( "operandDOF and resultDOF on different comm groups is NOT tested, and needs to "
+    AMP::Discretization::DOFManager::shared_ptr leftDOF = leftVec->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr rightDOF  = rightVec->getDOFManager();
+    if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
+        AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested, and needs to "
                    "be fixed" );
-    AMP_MPI comm = operandDOF->getComm();
+    AMP_MPI comm = leftDOF->getComm();
     if ( comm.getSize() == 1 )
         comm = AMP_MPI( AMP_COMM_SELF );
 
     // Create the matrix parameters
     AMP::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrixParameters> params(
-        new AMP::LinearAlgebra::ManagedEpetraMatrixParameters( resultDOF, operandDOF, comm ) );
-    params->d_CommListLeft  = resultVec->getCommunicationList();
-    params->d_CommListRight = operandVec->getCommunicationList();
-    params->d_VariableLeft  = resultVec->getVariable();
-    params->d_VariableRight = operandVec->getVariable();
+        new AMP::LinearAlgebra::ManagedEpetraMatrixParameters( leftDOF, rightDOF, comm ) );
+    params->d_CommListLeft  = leftVec->getCommunicationList();
+    params->d_CommListRight = rightVec->getCommunicationList();
+    params->d_VariableLeft  = leftVec->getVariable();
+    params->d_VariableRight = rightVec->getVariable();
 
-    // Add the rows to the matrix parameters
-    AMP::Mesh::MeshIterator cur_elem = resultDOF->getIterator();
-    AMP::Mesh::MeshIterator end_elem = cur_elem.end();
-    int columns[1000]; // Preallocate for the columns for speed
-    for ( auto &column : columns ) {
-        column = 0.0;
+    // Add the row sizes and local columns to the matrix parameters
+    std::set<size_t> columns;
+    size_t row_start = leftDOF->beginDOF();
+    size_t row_end   = leftDOF->endDOF();
+    for ( size_t row = row_start; row < row_end; row++ ) {
+        auto col = getRow( row );
+        params->setEntriesInRow( row-row_start, col.size() );
+        for ( auto tmp : col )
+            columns.insert( tmp );
     }
-    while ( cur_elem != end_elem ) {
-        AMP::Mesh::MeshElement obj = *cur_elem;
-        // Get the result DOFs associated with the given element
-        std::vector<size_t> ids;
-        resultDOF->getDOFs( obj.globalID(), ids );
-        // Get the operand DOFs associated with the given element
-        std::vector<size_t> row = operandDOF->getRowDOFs( obj );
-        AMP_ASSERT( !row.empty() );
-        size_t nnz = row.size();
-        for ( size_t i = 0; i < row.size(); i++ )
-            columns[i] = (int) row[i];
-        // Add the rows
-        for ( auto globalRowID : ids ) {
+    params->addColumns( columns );
 
-            int localRowID = globalRowID - resultDOF->beginDOF();
-            params->setEntriesInRow( localRowID, nnz );
-        }
-        // Add the columns
-        params->addColumns( nnz, columns );
-        // Increment the iterator (pre-increment for speed)
-        ++cur_elem;
+    // Create the matrix
+    AMP::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrix> newMatrix;
+    if ( type == "ManagedPetscMatrix" ) {
+        #if defined( USE_EXT_PETSC )
+            newMatrix.reset( new AMP::LinearAlgebra::ManagedPetscMatrix( params ) );
+        #else
+            AMP_ERROR("Unable to build ManagedPetscMatrix without PETSc");
+        #endif
+    } else if ( type == "ManagedEpetraMatrix" ) {
+        newMatrix.reset( new AMP::LinearAlgebra::ManagedEpetraMatrix( params ) );
+    } else {
+        AMP_ERROR("Unknown ManagedMatrix type");
     }
-
-// Create the matrix
-#if defined( USE_EXT_PETSC )
-    AMP::shared_ptr<AMP::LinearAlgebra::ManagedPetscMatrix> newMatrix(
-        new AMP::LinearAlgebra::ManagedPetscMatrix( params ) );
-#else
-    AMP::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrix> newMatrix(
-        new AMP::LinearAlgebra::ManagedEpetraMatrix( params ) );
-#endif
 
     // Initialize the matrix
-    cur_elem = resultDOF->getIterator();
-    end_elem = cur_elem.end();
-    double values[1000];
-    for ( auto &value : values ) {
-        value = 0.0;
+    for ( size_t row = row_start; row < row_end; row++ ) {
+        auto col = getRow( row );
+        newMatrix->createValuesByGlobalID( row, col );
     }
-    while ( cur_elem != end_elem ) {
-        AMP::Mesh::MeshElement obj = *cur_elem;
-        // Get the result DOFs associated with the given element
-        std::vector<size_t> ids;
-        resultDOF->getDOFs( obj.globalID(), ids );
-        // Get the operand DOFs associated with the given element
-        std::vector<size_t> row = operandDOF->getRowDOFs( obj );
-        size_t nnz              = row.size();
-        for ( size_t i = 0; i < row.size(); i++ )
-            columns[i] = (int) row[i];
-        // Add the rows
-        for ( int globalRowID : ids ) {
-            newMatrix->createValuesByGlobalID( 1, nnz, &globalRowID, columns, values );
-        }
-        ++cur_elem;
-    }
-    newMatrix->castTo<AMP::LinearAlgebra::EpetraMatrix>().setEpetraMaps( resultVec, operandVec );
+    newMatrix->castTo<AMP::LinearAlgebra::EpetraMatrix>().setEpetraMaps( leftVec, rightVec );
+    newMatrix->fillComplete();
     newMatrix->zero();
     newMatrix->makeConsistent();
-
     return newMatrix;
 #else
-    NULL_USE( operandVec );
-    NULL_USE( resultVec );
+    NULL_USE( leftVec );
+    NULL_USE( rightVec );
     AMP_ERROR( "Unable to build a ManagedMatrix without TRILINOS" );
     return AMP::LinearAlgebra::Matrix::shared_ptr();
 #endif
@@ -125,25 +98,25 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr operandVec,
 * Build a DenseSerialMatrix                             *
 ********************************************************/
 AMP::LinearAlgebra::Matrix::shared_ptr
-createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr operandVec,
-                         AMP::LinearAlgebra::Vector::shared_ptr resultVec )
+createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+                         AMP::LinearAlgebra::Vector::shared_ptr rightVec )
 {
     // Get the DOFs
-    AMP::Discretization::DOFManager::shared_ptr operandDOF = operandVec->getDOFManager();
-    AMP::Discretization::DOFManager::shared_ptr resultDOF  = resultVec->getDOFManager();
-    if ( operandDOF->getComm().compare( resultVec->getComm() ) == 0 )
-        AMP_ERROR( "operandDOF and resultDOF on different comm groups is NOT tested, and needs to "
+    AMP::Discretization::DOFManager::shared_ptr leftDOF = leftVec->getDOFManager();
+    AMP::Discretization::DOFManager::shared_ptr rightDOF  = rightVec->getDOFManager();
+    if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
+        AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested, and needs to "
                    "be fixed" );
-    AMP_MPI comm = operandDOF->getComm();
+    AMP_MPI comm = leftDOF->getComm();
     if ( comm.getSize() == 1 )
         comm = AMP_MPI( AMP_COMM_SELF );
     else
-        AMP_ERROR( "The only native matrix is a serial dense matrix" );
+        AMP_ERROR( "serial dense matrix does not support parallel matricies" );
     // Create the matrix parameters
     AMP::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params(
-        new AMP::LinearAlgebra::MatrixParameters( resultDOF, operandDOF, comm ) );
-    params->d_VariableLeft  = resultVec->getVariable();
-    params->d_VariableRight = operandVec->getVariable();
+        new AMP::LinearAlgebra::MatrixParameters( leftDOF, rightDOF, comm ) );
+    params->d_VariableLeft  = leftVec->getVariable();
+    params->d_VariableRight = rightVec->getVariable();
     // Create the matrix
     AMP::shared_ptr<AMP::LinearAlgebra::DenseSerialMatrix> newMatrix(
         new AMP::LinearAlgebra::DenseSerialMatrix( params ) );
@@ -155,27 +128,69 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr operandVec,
 
 
 /********************************************************
+* Test the matrix to ensure it is valid                 *
+********************************************************/
+static void test( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
+{
+    auto leftDOF = matrix->getLeftDOFManager();
+    auto rightDOF = matrix->getRightDOFManager();
+    size_t N_local_row1 = leftDOF->numLocalDOF();
+    size_t N_local_row2 = matrix->numLocalRows();
+    size_t N_local_col1 = rightDOF->numLocalDOF();
+    size_t N_local_col2 = matrix->numLocalColumns();
+    size_t N_global_row1 = leftDOF->numGlobalDOF();
+    size_t N_global_row2 = matrix->numGlobalRows();
+    size_t N_global_col1 = rightDOF->numGlobalDOF();
+    size_t N_global_col2 = matrix->numGlobalColumns();
+    AMP_ASSERT( N_local_row1 == N_local_row2 );
+    AMP_ASSERT( N_local_col1 == N_local_col2 );
+    AMP_ASSERT( N_global_row1 == N_global_row2 );
+    AMP_ASSERT( N_global_col1 == N_global_col2 );
+}
+
+
+/********************************************************
 * Matrix builder                                        *
 ********************************************************/
 AMP::LinearAlgebra::Matrix::shared_ptr
-createMatrix( AMP::LinearAlgebra::Vector::shared_ptr operandVec,
-              AMP::LinearAlgebra::Vector::shared_ptr resultVec,
-              int type )
+createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+              AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+              const std::string& type,
+              std::function<std::vector<size_t>(size_t)> getRow )
 {
-    AMP::LinearAlgebra::Matrix::shared_ptr matrix;
-    if ( type == 0 ) {
-#if defined( USE_EXT_TRILINOS )
-        matrix = createManagedMatrix( operandVec, resultVec );
+    // Determine the type of matrix to build
+    std::string type2 = type;
+    if ( type == "auto" ) {
+#if defined( USE_EXT_TRILINOS ) && defined( USE_EXT_PETSC )
+        type2 = "ManagedPetscMatrix";
+#elif defined( USE_EXT_TRILINOS )
+        type2 = "ManagedEpetraMatrix";
 #else
-        matrix = createDenseSerialMatrix( operandVec, resultVec );
+        type2 = "DenseSerialMatrix";
 #endif
-    } else if ( type == 1 ) {
-        matrix = createManagedMatrix( operandVec, resultVec );
-    } else if ( type == 2 ) {
-        matrix = createDenseSerialMatrix( operandVec, resultVec );
+    }
+    // Create the default getRow function (if not provided)
+    if ( !getRow ) {
+        const auto leftDOF = leftVec->getDOFManager().get();
+        const auto rightDOF = rightVec->getDOFManager().get();
+        getRow = [leftDOF,rightDOF]( size_t row )
+            {
+                auto elem = leftDOF->getElement( row );
+                return rightDOF->getRowDOFs( elem );
+            };
+    }
+    // Build the matrix
+    AMP::LinearAlgebra::Matrix::shared_ptr matrix;
+    if ( type2 == "ManagedPetscMatrix" || type2 == "ManagedEpetraMatrix" ) {
+        matrix = createManagedMatrix( leftVec, rightVec, getRow, type2 );
+    } else if ( type2 == "DenseSerialMatrix" ) {
+        matrix = createDenseSerialMatrix( leftVec, rightVec );
     } else {
         AMP_ERROR( "Unknown matrix type to build" );
     }
+    // Run some quick checks on the matrix
+    if ( matrix )
+        test( matrix );
     return matrix;
 }
 }
