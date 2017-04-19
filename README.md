@@ -7,7 +7,7 @@ To access the Advanced Multi-Physics (AMP) code:
 
 * Log in to bitbucket
 * Clone the AMP repository to your local machine/cluster, e.g.
-    * hg clone https://bitbucket.org/AdvancedMultiPhysics/amp
+    * hg clone https://bitbucket.org/AdvancedMultiPhysics/amp2
 * Build the prerequisite software following the instructions on the Wiki (link on left or below)
 # Associated Websites #
 
