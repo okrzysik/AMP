@@ -50,14 +50,32 @@ multiDOFManager::~multiDOFManager() {}
 /****************************************************************
 * Get the dofs for the element                                  *
 ****************************************************************/
+void multiDOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids, std::vector<size_t> &dofs ) const
+{
+    dofs.resize( 0 );
+    if ( d_managers.empty() )
+        return;
+    if ( d_managers[0]->numGlobalDOF() == this->d_global ) {
+        // We are dealing with a multiDOFManager with only 1 sub DOF (this happens with multivectors)
+        d_managers[0]->getDOFs( ids, dofs );
+    } else {
+        std::vector<size_t> local_dofs;
+        for ( size_t i = 0; i < d_managers.size(); i++ ) {
+            d_managers[i]->getDOFs( ids, local_dofs );
+            if ( !local_dofs.empty() ) {
+                std::vector<size_t> tmp_dofs = getGlobalDOF( i, local_dofs );
+                dofs.insert( dofs.end(), tmp_dofs.begin(), tmp_dofs.end() );
+            }
+        }
+    }
+}
 void multiDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const
 {
     dofs.resize( 0 );
     if ( d_managers.empty() )
         return;
     if ( d_managers[0]->numGlobalDOF() == this->d_global ) {
-        // We are dealing with a multiDOFManager with only 1 sub DOF (this happens with
-        // multivectors)
+        // We are dealing with a multiDOFManager with only 1 sub DOF (this happens with multivectors)
         d_managers[0]->getDOFs( id, dofs );
     } else {
         std::vector<size_t> local_dofs;
@@ -100,12 +118,11 @@ inline std::pair<size_t,int> multiDOFManager::globalToSub( size_t dof ) const
 /****************************************************************
 * Get the element ID give a dof                                 *
 ****************************************************************/
-AMP::Mesh::MeshElementID multiDOFManager::getElementID( size_t dof ) const
+AMP::Mesh::MeshElement multiDOFManager::getElement( size_t dof ) const
 {
     auto map = globalToSub( dof );
     AMP_ASSERT( map.second >= 0 );
-    auto id = d_managers[map.second]->getElementID( map.first );
-    return id;
+    return d_managers[map.second]->getElement( map.first );
 }
 
 
@@ -165,13 +182,6 @@ std::vector<size_t> multiDOFManager::getRemoteDOFs() const
 /****************************************************************
 * Return the global number of D.O.F.s                           *
 ****************************************************************/
-std::vector<size_t> multiDOFManager::getRowDOFs( size_t row ) const
-{
-    auto map = globalToSub( row );
-    auto col = d_managers[map.second]->getRowDOFs( map.first );
-    auto col2 = getGlobalDOF( map.second, col );
-    return col2;
-}
 std::vector<size_t> multiDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
 {
     std::vector<size_t> global_dofs;

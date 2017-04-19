@@ -59,7 +59,9 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     firstVec->zero();
     secondVec->zero();
     // Loop through the valid matrix build types
-    std::vector<std::string> types = { "DenseSerialMatrix" };
+    std::vector<std::string> types;
+    if ( globalComm.getSize() == 1 )
+        types.push_back( "DenseSerialMatrix" );
 #ifdef USE_EXT_TRILINOS
     types.push_back( "ManagedEpetraMatrix" );
 #endif

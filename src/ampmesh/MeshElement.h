@@ -40,8 +40,12 @@ public:
     inline MeshElement &operator=( const MeshElement & );
 
 
-    //! De-constructor for a MeshElement
+    //! Destructor for a MeshElement
     virtual inline ~MeshElement();
+
+    
+    //! Is the mesh element null
+    inline bool isNull() const;
 
 
 public: // Virtual functions

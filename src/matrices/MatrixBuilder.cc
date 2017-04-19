@@ -59,7 +59,6 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         for ( auto tmp : col )
             columns.insert( tmp );
     }
-    size_t N_cols = columns.size();
     params->addColumns( columns );
 
     // Create the matrix
@@ -112,7 +111,7 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     if ( comm.getSize() == 1 )
         comm = AMP_MPI( AMP_COMM_SELF );
     else
-        AMP_ERROR( "The only native matrix is a serial dense matrix" );
+        AMP_ERROR( "serial dense matrix does not support parallel matricies" );
     // Create the matrix parameters
     AMP::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params(
         new AMP::LinearAlgebra::MatrixParameters( leftDOF, rightDOF, comm ) );
@@ -154,8 +153,8 @@ static void test( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
 * Matrix builder                                        *
 ********************************************************/
 AMP::LinearAlgebra::Matrix::shared_ptr
-createMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
-              AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+              AMP::LinearAlgebra::Vector::shared_ptr leftVec,
               const std::string& type,
               std::function<std::vector<size_t>(size_t)> getRow )
 {
@@ -170,10 +169,18 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         type2 = "DenseSerialMatrix";
 #endif
     }
+    // Create the default getRow function (if not provided)
+    if ( !getRow ) {
+        const auto leftDOF = leftVec->getDOFManager().get();
+        const auto rightDOF = rightVec->getDOFManager().get();
+        getRow = [leftDOF,rightDOF]( size_t row )
+            {
+                auto elem = leftDOF->getElement( row );
+                return rightDOF->getRowDOFs( elem );
+            };
+    }
     // Build the matrix
     AMP::LinearAlgebra::Matrix::shared_ptr matrix;
-    if ( !getRow )
-        getRow = [leftVec]( size_t row ) { return leftVec->getDOFManager()->getRowDOFs( row ); };
     if ( type2 == "ManagedPetscMatrix" || type2 == "ManagedEpetraMatrix" ) {
         matrix = createManagedMatrix( leftVec, rightVec, getRow, type2 );
     } else if ( type2 == "DenseSerialMatrix" ) {

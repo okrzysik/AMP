@@ -16,8 +16,8 @@ namespace LinearAlgebra {
 /**
  * \brief  This function will create a matrix from two vectors
  * \details  This function is responsible for creating vectors from a DOFManager and variable.
- * \param left      Vector that will be used to create the matrix.  The left is y in the expression y = A*x.
  * \param right     Vector that will be used to create the matrix  The right is x in the expression y = A*x.
+ * \param left      Vector that will be used to create the matrix.  The left is y in the expression y = A*x.
  * \param type      Type of matrix to build:
  *                      auto: Automatically determined based on build (default)
  *                      ManagedPetscMatrix
@@ -27,8 +27,9 @@ namespace LinearAlgebra {
  *                      If not provided, with will default to calling the getRowDOFs function on the
  *                      DOFManager associated with the left vector.
  */
-AMP::LinearAlgebra::Matrix::shared_ptr createMatrix( AMP::LinearAlgebra::Vector::shared_ptr left,
+AMP::LinearAlgebra::Matrix::shared_ptr createMatrix( 
     AMP::LinearAlgebra::Vector::shared_ptr right,
+    AMP::LinearAlgebra::Vector::shared_ptr left,
     const std::string& type = "auto", 
     std::function<std::vector<size_t>(size_t)> getRow = std::function<std::vector<size_t>(size_t)>() );
 

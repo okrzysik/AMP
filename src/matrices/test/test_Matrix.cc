@@ -46,7 +46,7 @@ void testBasics( AMP::UnitTest& ut, const std::string& type )
     // Test creating a non-square matrix and ensure it is the proper size
     auto left  = AMP::LinearAlgebra::SimpleVector<double>::create( 5, "left" );
     auto right = AMP::LinearAlgebra::SimpleVector<double>::create( 10, "right" );
-    auto mat = AMP::LinearAlgebra::createMatrix( left, right, type,
+    auto mat = AMP::LinearAlgebra::createMatrix( right, left, type,
         [](size_t row) { return std::vector<size_t>(1,row); } );
     int rows = mat->numGlobalRows();
     int cols = mat->numGlobalColumns();
@@ -55,6 +55,7 @@ void testBasics( AMP::UnitTest& ut, const std::string& type )
     else
         ut.failure("Failed non-square matrix ("+type+")");
 }
+
 
 int main( int argc, char **argv )
 {
