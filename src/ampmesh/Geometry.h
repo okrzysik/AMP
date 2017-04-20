@@ -19,6 +19,9 @@ class Geometry
 {
 public:
 
+    //! Destructor
+    virtual ~Geometry();
+
     /**
      *\typedef shared_ptr
      *\brief  Name for the shared pointer.

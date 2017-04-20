@@ -119,9 +119,9 @@ MatTestResult testMaterial( string &name )
     results.propResults.resize( nprop );
     for ( size_t type = 0; type < proplist.size(); type++ ) {
 
-        string propname                      = proplist[type];
-        results.propResults[type].name       = propname;
-        AMP::Materials::PropertyPtr property = mat->property( propname );
+        string propname                = proplist[type];
+        results.propResults[type].name = propname;
+        auto property                  = mat->property( propname );
 
         // test parameter get and set
         try {
@@ -272,7 +272,7 @@ MatTestResult testMaterial( string &name )
 
         // test defaults get and set
         try {
-            PropertyPtr prop = property;
+            auto prop = property;
             vector<double> defin( nargs );
             for ( size_t i = 0; i < nargs; i++ )
                 defin[i]   = justright[i][0];

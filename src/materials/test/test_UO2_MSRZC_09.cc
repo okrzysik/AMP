@@ -30,7 +30,7 @@ int main( int argc, char **argv )
     // test constructors
     AMP::shared_ptr<AMP::Materials::Material> mat =
         AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( "UO2_MSRZC_09" );
-    PropertyPtr prop = mat->property( "ThermalConductivity" );
+    auto prop = mat->property( "ThermalConductivity" );
 
     // test property accessors
     string tcname = prop->get_name();
