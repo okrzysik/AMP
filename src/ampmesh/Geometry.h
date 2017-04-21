@@ -20,7 +20,7 @@ class Geometry
 public:
 
     //! Destructor
-    virtual ~Geometry();
+    virtual ~Geometry() {}
 
     /**
      *\typedef shared_ptr
