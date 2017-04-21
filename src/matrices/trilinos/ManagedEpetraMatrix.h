@@ -7,7 +7,7 @@
 #include "matrices/ManagedMatrix.h"
 #include "matrices/trilinos/EpetraMatrix.h"
 #include "matrices/trilinos/ManagedEpetraMatrixParameters.h"
-#include "vectors/trilinos/EpetraVector.h"
+#include "vectors/trilinos/epetra/EpetraVector.h"
 
 #include <Epetra_FECrsMatrix.h>
 

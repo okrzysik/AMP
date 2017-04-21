@@ -17,6 +17,8 @@
 #include "solvers/petsc/PetscKrylovSolver.h"
 #endif
 
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
+
 
 void helperCreateStackOperatorForPelletMechanics(
     AMP::Mesh::Mesh::shared_ptr manager,

@@ -7,7 +7,7 @@
 #include "operators/trilinos/TrilinosMatrixShellOperator.h"
 #include "utils/Utilities.h"
 #include "vectors/DataChangeFirer.h"
-#include "vectors/trilinos/EpetraVector.h"
+#include "vectors/trilinos/epetra/EpetraVector.h"
 
 namespace AMP {
 namespace Solver {

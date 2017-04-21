@@ -25,12 +25,12 @@ public:
                          const std::vector<std::vector<double>> &arguments );
 
     AMP::Materials::Material::shared_ptr getMaterial() { return d_material; }
-    AMP::Materials::PropertyPtr getProperty() { return d_property; }
+    AMP::shared_ptr<AMP::Materials::Property<double>> getProperty() { return d_property; }
 
 protected:
     AMP::Materials::Material::shared_ptr d_material;
 
-    AMP::Materials::PropertyPtr d_property;
+    AMP::shared_ptr<AMP::Materials::Property<double>> d_property;
 
     std::vector<std::string> d_argNames;
 

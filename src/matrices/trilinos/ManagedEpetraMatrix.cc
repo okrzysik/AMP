@@ -1,8 +1,8 @@
 #include "matrices/trilinos/ManagedEpetraMatrix.h"
 #include "ProfilerApp.h"
 #include "utils/Utilities.h"
-#include "vectors/trilinos/EpetraVector.h"
-#include "vectors/trilinos/EpetraVectorEngine.h"
+#include "vectors/trilinos/epetra/EpetraVector.h"
+#include "vectors/trilinos/epetra/EpetraVectorEngine.h"
 #include "vectors/trilinos/ManagedEpetraVector.h"
 #include <algorithm>
 

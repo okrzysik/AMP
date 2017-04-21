@@ -57,7 +57,7 @@ protected:
 
     AMP::Materials::Material::shared_ptr d_material;
 
-    AMP::Materials::PropertyPtr d_property;
+    AMP::shared_ptr<AMP::Materials::Property<double>> d_property;
 
 private:
     double d_DefaultTemperature;

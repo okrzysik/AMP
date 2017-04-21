@@ -2,25 +2,23 @@
 #define MATERIAL_H
 
 #include "utils/shared_ptr.h"
-#include <limits>
+#include "utils/Factory.h"
+#include "Property.h"
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "utils/Factory.h"
-#include "utils/Utilities.h"
-
-#include "Property.h"
 
 // do not use property name with an embedded underscore
 #define INSERT_PROPERTY_IN_MAP( name, space ) \
     d_propertyMap->insert(                    \
         std::make_pair( #name, AMP::shared_ptr<space::name##Prop>( new space::name##Prop ) ) );
 
+
 namespace AMP {
 namespace Materials {
 
-typedef AMP::shared_ptr<Property<double>> PropertyPtr;
 
 /**
  * Material base class.
@@ -43,14 +41,14 @@ public:
     bool hasProperty( std::string type );
 
     /// get a pointer to a specific scalar property through its name
-    PropertyPtr property( std::string type );
+    AMP::shared_ptr<Property<double>> property( std::string type );
 
     /// return a list of all properties in this material
     std::vector<std::string> list();
 
 protected:
     /// database of scalar properties
-    std::map<std::string, PropertyPtr> *d_propertyMap;
+    std::map<std::string, AMP::shared_ptr<Property<double>>> *d_propertyMap;
 };
 
 /*// This macro is to be placed after each material class (UO2, Pu, etc.)
