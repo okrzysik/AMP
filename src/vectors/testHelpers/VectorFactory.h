@@ -14,7 +14,7 @@
 #include <vectors/petsc/NativePetscVector.h>
 #endif
 #ifdef USE_EXT_TRILINOS
-#include <vectors/trilinos/EpetraVectorEngine.h>
+#include <vectors/trilinos/epetra/EpetraVectorEngine.h>
 #endif
 
 

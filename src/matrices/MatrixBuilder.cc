@@ -7,7 +7,7 @@
 
 #ifdef USE_EXT_TRILINOS
     #include "matrices/trilinos/ManagedEpetraMatrix.h"
-    #include "vectors/trilinos/EpetraVectorEngine.h"
+    #include "vectors/trilinos/epetra/EpetraVectorEngine.h"
     #ifdef USE_EXT_PETSC
         #include "matrices/petsc/ManagedPetscMatrix.h"
         #include "vectors/petsc/ManagedPetscVector.h"

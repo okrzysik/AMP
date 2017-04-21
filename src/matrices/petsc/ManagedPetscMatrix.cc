@@ -5,7 +5,7 @@
 #include "vectors/Vector.h"
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/petsc/PetscVector.h"
-#include "vectors/trilinos/EpetraVectorEngine.h"
+#include "vectors/trilinos/epetra/EpetraVectorEngine.h"
 
 #include "matrices/petsc/ManagedPetscMatrix.h"
 #include "matrices/trilinos/ManagedEpetraMatrix.h"

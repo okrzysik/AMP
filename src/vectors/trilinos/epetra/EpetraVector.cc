@@ -1,4 +1,4 @@
-#include "vectors/trilinos/EpetraVector.h"
+#include "vectors/trilinos/epetra/EpetraVector.h"
 #include "vectors/MultiVector.h"
 #include "vectors/trilinos/ManagedEpetraVector.h"
 

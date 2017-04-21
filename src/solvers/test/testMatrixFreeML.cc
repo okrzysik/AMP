@@ -27,7 +27,7 @@
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/trilinos/TrilinosMatrixShellOperator.h"
 
-#include "vectors/trilinos/EpetraVector.h"
+#include "vectors/trilinos/epetra/EpetraVector.h"
 
 #include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/petsc/PetscKrylovSolverParameters.h"
