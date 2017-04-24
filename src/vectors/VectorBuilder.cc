@@ -13,7 +13,7 @@
 #ifdef USE_EXT_TRILINOS
 #include "vectors/trilinos/epetra/EpetraVector.h"
 #include "vectors/trilinos/epetra/EpetraVectorEngine.h"
-#include "vectors/trilinos/ManagedEpetraVector.h"
+#include "vectors/trilinos/epetra/ManagedEpetraVector.h"
 #endif
 
 #include <iostream>

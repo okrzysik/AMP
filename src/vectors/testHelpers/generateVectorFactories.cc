@@ -8,7 +8,9 @@
 #endif
 
 #ifdef USE_EXT_TRILINOS
-#include <vectors/trilinos/ManagedEpetraVector.h>
+#ifdef USE_TRILINOS_THYRA
+#include <vectors/trilinos/epetra/ManagedEpetraVector.h>
+#endif
 #ifdef USE_TRILINOS_THYRA
 #include <vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h>
 #endif

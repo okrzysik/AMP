@@ -3,7 +3,7 @@
 #include "utils/Utilities.h"
 #include "vectors/trilinos/epetra/EpetraVector.h"
 #include "vectors/trilinos/epetra/EpetraVectorEngine.h"
-#include "vectors/trilinos/ManagedEpetraVector.h"
+#include "vectors/trilinos/epetra/ManagedEpetraVector.h"
 #include <algorithm>
 
 #include "utils/AMP_MPI.h"
