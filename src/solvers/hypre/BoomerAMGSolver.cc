@@ -546,12 +546,10 @@ void BoomerAMGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     bool computeResidual = false;
 
-    double initialResNorm = 0., finalResNorm = 0.;
-
     if ( computeResidual ) {
         r = f->cloneVector();
         d_pOperator->residual( f, u, r );
-        initialResNorm = r->L2Norm();
+        auto initialResNorm = r->L2Norm();
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "BoomerAMGSolver::solve(), L2 norm of residual before solve "
@@ -600,7 +598,7 @@ void BoomerAMGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     if ( computeResidual ) {
         d_pOperator->residual( f, u, r );
-        finalResNorm = r->L2Norm();
+        auto finalResNorm = r->L2Norm();
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "BoomerAMGSolver::solve(), L2 norm of residual after solve "
