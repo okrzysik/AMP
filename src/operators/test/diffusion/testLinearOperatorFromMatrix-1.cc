@@ -98,32 +98,26 @@ void linearTest1( AMP::UnitTest * const ut, const std::string &exeName )
 
     // extract solution, rhs, and residual variables
     const auto uVar = diffOp->getInputVariable();
-    const auto v1Var = diffOp->getOutputVariable();
-    const auto v2Var = diffOp->getOutputVariable();
+    const auto vVar = diffOp->getOutputVariable();
 
     // construct a nodal DOF manager
     const auto nodalScalarDOFManager =
         AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
-    auto  u = AMP::LinearAlgebra::createVector( nodalScalarDOFManager, uVar );
-    auto v1 = AMP::LinearAlgebra::createVector( nodalScalarDOFManager, v1Var );
-    auto v2 = AMP::LinearAlgebra::createVector( nodalScalarDOFManager, v2Var );
+    auto u = AMP::LinearAlgebra::createVector( nodalScalarDOFManager, uVar );
+    auto v = AMP::LinearAlgebra::createVector( nodalScalarDOFManager, vVar );
 
     ut->passes( exeName );
 
-    // Test apply
-    bool passed = true;
-    for ( int i = 0; i < 10; i++ ) {
-        u->setRandomValues();
-        v1->setRandomValues();
-        v2->setRandomValues();
-        diffOp->apply( u, v1 );
-        linearOp->apply( u, v2 );
-        // COMMENT: simple add, subtract routines would be nice for matrices
-        // this test does not really test equivalence, keeping to remind myself
-        v2->subtract(v1,v2);
-        passed = passed && ( v2->maxNorm() < std::numeric_limits<double>::min());
-    } // end for i
+    newMat->axpy(-1.0, diffMat);
+
+    u->setRandomValues();
+    v->setRandomValues();
+    
+    linearOp->apply( u, v );
+
+    // COMMENT: simple add, subtract routines would be nice for matrices
+    auto passed = ( v->maxNorm() <= std::numeric_limits<double>::min());
 
     if( passed ) {
         ut->passes( exeName );
