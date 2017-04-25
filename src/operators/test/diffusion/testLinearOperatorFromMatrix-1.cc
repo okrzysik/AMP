@@ -96,7 +96,7 @@ void linearTest1( AMP::UnitTest * const ut, const std::string &exeName )
         newMat->setValuesByGlobalID( 1, (int) cols.size(), (int *) &row, &cols[0], &values[0]);
     }
 
-    // extract solution, rhs, and residual variables
+    // extract input and output variables
     const auto uVar = diffOp->getInputVariable();
     const auto vVar = diffOp->getOutputVariable();
 
@@ -109,6 +109,8 @@ void linearTest1( AMP::UnitTest * const ut, const std::string &exeName )
 
     ut->passes( exeName );
 
+    // form the difference of the matrices
+    // COMMENT: simple add, subtract routines would be nice for matrices
     newMat->axpy(-1.0, diffMat);
 
     u->setRandomValues();
@@ -116,7 +118,6 @@ void linearTest1( AMP::UnitTest * const ut, const std::string &exeName )
     
     linearOp->apply( u, v );
 
-    // COMMENT: simple add, subtract routines would be nice for matrices
     auto passed = ( v->maxNorm() <= std::numeric_limits<double>::min());
 
     if( passed ) {
