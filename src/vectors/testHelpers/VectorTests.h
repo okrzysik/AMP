@@ -44,7 +44,7 @@ protected:
 class VectorTests
 {
 public:
-    VectorTests( AMP::shared_ptr<const VectorFactory> factory ): d_factory(factory) {}
+    explicit VectorTests( AMP::shared_ptr<const VectorFactory> factory ): d_factory(factory) {}
 
 public:
 
