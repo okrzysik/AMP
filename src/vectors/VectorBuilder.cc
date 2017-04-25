@@ -39,7 +39,7 @@ createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
     if ( split )
         multiDOF = AMP::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>( DOFs );
     // Check if we are dealing with a multiVariable
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> multiVariable =
+    auto multiVariable =
         AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( variable );
     if ( multiVariable.get() != nullptr ) {
         // We are dealing with a MultiVariable, first check that there are no duplicate or null
