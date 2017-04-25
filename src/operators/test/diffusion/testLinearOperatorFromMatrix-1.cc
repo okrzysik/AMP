@@ -60,6 +60,13 @@ void linearTest1( AMP::UnitTest *ut, std::string exeName )
     // extract the left and right vectors
     // COMMENT: these lines will have to be replaced for an external application
     // to provide explicit right and left vectors
+    // COMMENT: note that under the hood we are primarily interested in the DOF manager
+    // or rather in constructing one. We can't seem to avoid this for an external
+    // application
+    // COMMENT: We do not give a good description of what left and right vectors are
+    // or what information they should provide (elaborate)
+    // COMMENT: We do not currently seem to have the ability to construct simple vectors
+    // and DOF managers with ghost cells independent of meshes
     const auto leftVector  = diffMat->getLeftVector();
     const auto rightVector = diffMat->getRightVector();
 
