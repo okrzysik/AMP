@@ -87,6 +87,8 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 #else
     NULL_USE( leftVec );
     NULL_USE( rightVec );
+    NULL_USE( type);
+    NULL_USE( getRow );
     AMP_ERROR( "Unable to build a ManagedMatrix without TRILINOS" );
     return AMP::LinearAlgebra::Matrix::shared_ptr();
 #endif
@@ -110,7 +112,7 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     if ( comm.getSize() == 1 )
         comm = AMP_MPI( AMP_COMM_SELF );
     else
-        AMP_ERROR( "serial dense matrix does not support parallel matricies" );
+        AMP_ERROR( "serial dense matrix does not support parallel matrices" );
     // Create the matrix parameters
     AMP::shared_ptr<AMP::LinearAlgebra::MatrixParameters> params(
         new AMP::LinearAlgebra::MatrixParameters( leftDOF, rightDOF, comm ) );

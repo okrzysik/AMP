@@ -28,12 +28,6 @@
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 
-#include "solvers/petsc/PetscKrylovSolver.h"
-#include "solvers/petsc/PetscKrylovSolverParameters.h"
-#include "solvers/petsc/PetscSNESSolver.h"
-#include "solvers/petsc/PetscSNESSolverParameters.h"
-#include "solvers/trilinos/ml/TrilinosMLSolver.h"
-
 #include "libmesh/mesh_communication.h"
 #include "utils/ReadTestMesh.h"
 
