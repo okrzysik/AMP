@@ -24,11 +24,7 @@
 
 #include "operators/OperatorBuilder.h"
 #include "operators/OperatorParameters.h"
-#include "operators/diffusion/DiffusionConstants.h"
-#include "operators/diffusion/DiffusionLinearElement.h"
-#include "operators/diffusion/DiffusionLinearFEOperator.h"
-#include "operators/diffusion/DiffusionLinearFEOperatorParameters.h"
-#include "operators/diffusion/DiffusionTransportModel.h"
+#include "operators/LinearOperator.h"
 
 void linearTest1( AMP::UnitTest *ut, std::string exeName )
 {
@@ -54,7 +50,7 @@ void linearTest1( AMP::UnitTest *ut, std::string exeName )
 
     // create a linear diffusion operator
     auto linearOperator = AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "LinearDiffusionOp", input_db );
-    auto diffOp = AMP::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>( linearOperator );
+    auto diffOp = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( linearOperator );
 
     // concludes creation of a native linear diffusion operator
     // ************************************************************************************************
@@ -116,6 +112,8 @@ void linearTest1( AMP::UnitTest *ut, std::string exeName )
         v2->setRandomValues();
         diffOp->apply( u, v1 );
         linearOp->apply( u, v2 );
+        // COMMENT: simple add, subtract routines would be nice for matrices
+        // this test does not really test equivalence, keeping to remind myself
         v2->subtract(v1,v2);
         passed = passed && ( v2->maxNorm() < std::numeric_limits<double>::min());
     } // end for i
