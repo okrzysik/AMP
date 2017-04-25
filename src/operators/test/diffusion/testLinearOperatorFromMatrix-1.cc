@@ -26,7 +26,7 @@
 #include "operators/OperatorParameters.h"
 #include "operators/LinearOperator.h"
 
-void linearTest1( AMP::UnitTest *ut, const std::string &exeName )
+void linearTest1( AMP::UnitTest * const ut, const std::string &exeName )
 {
     // Test create
     const std::string input_file = "input_" + exeName;
