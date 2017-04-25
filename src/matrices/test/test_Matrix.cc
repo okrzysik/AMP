@@ -66,7 +66,7 @@ int main( int argc, char **argv )
     AMP::UnitTest ut;
     PROFILE_ENABLE();
 
-    // Test some basic properites
+    // Test some basic properties
     std::vector<std::string> types = { "DenseSerialMatrix" };
 #ifdef USE_EXT_TRILINOS
     types.push_back( "ManagedEpetraMatrix" );
