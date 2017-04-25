@@ -99,7 +99,7 @@ private:
 
 template <class BaseClass, class Derived, typename Key>
 struct Registration<BaseClass, Derived, Key, 0> : public RegistrationBase<BaseClass, Key, 0> {
-    Registration( const Key &key )
+    explicit Registration( const Key &key )
     {
         try {
             Factory<BaseClass, Key, 0>::instance().Register(
