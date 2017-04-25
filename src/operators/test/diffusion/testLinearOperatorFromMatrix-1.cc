@@ -26,7 +26,7 @@
 #include "operators/OperatorParameters.h"
 #include "operators/LinearOperator.h"
 
-void linearTest1( AMP::UnitTest *ut, std::string exeName )
+void linearTest1( AMP::UnitTest *ut, const std::string &exeName )
 {
     // Test create
     const std::string input_file = "input_" + exeName;
@@ -52,7 +52,7 @@ void linearTest1( AMP::UnitTest *ut, std::string exeName )
     auto linearOperator = AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "LinearDiffusionOp", input_db );
     auto diffOp = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( linearOperator );
 
-    // concludes creation of a native linear diffusion operator
+    // concludes creation of a native linear operator
     // ************************************************************************************************
     // extract the internal matrix
     const auto &diffMat = diffOp->getMatrix();
@@ -137,13 +137,12 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    const int NUMFILES          = 8;
-    const std::string files[NUMFILES] = { "Diffusion-TUI-Thermal-1",     "Diffusion-TUI-Fick-1",
-                                          "Diffusion-TUI-Soret-1",       "Diffusion-UO2MSRZC09-Thermal-1",
-                                          "Diffusion-UO2MSRZC09-Fick-1", "Diffusion-UO2MSRZC09-Soret-1",
-                                          "Diffusion-TUI-TensorFick-1",  "Diffusion-CylindricalFick-1" };
+    std::vector<std::string> files = { "Diffusion-TUI-Thermal-1",     "Diffusion-TUI-Fick-1",
+                                       "Diffusion-TUI-Soret-1",       "Diffusion-UO2MSRZC09-Thermal-1",
+                                       "Diffusion-UO2MSRZC09-Fick-1", "Diffusion-UO2MSRZC09-Soret-1",
+                                       "Diffusion-TUI-TensorFick-1",  "Diffusion-CylindricalFick-1" };
 
-    for ( auto &file : files )
+    for ( const auto &file : files )
         linearTest1( &ut, file );
 
     ut.report();
