@@ -122,26 +122,26 @@ protected:
 private:
     AMP_MPI d_comm;
 
-    double d_dRelativeTolerance; //! relative tolerance to converge to
+    double d_dRelativeTolerance = 1.0e-10; //! relative tolerance to converge to
 
-    bool d_bRestart; //! whether to restart
+    bool d_bRestart = false; //! whether to restart
 
-    int d_iMaxKrylovDimension; //! maximum dimension of the Krylov subspace before a restart or
-                               //! termination happens
+    int d_iMaxKrylovDimension = 50; //! maximum dimension of the Krylov subspace before a restart or
+                                    //! termination happens
 
     int d_restarts; //! logs number of times the solver is restarted
 
-    int d_nr; // dimension of the least squares system
+    int d_nr = 0; // dimension of the least squares system
 
     //! string, determines orthogonalization method in Arnoldi
     //! options are "CGS", "MGS", "HR", where
     //! "CGS" : classical Gram-Schmidt ( fast but potentially unstable )
     //! "MGS" : modified Gram-Schmidt  ( stable )
     //! "HR" : Householder reflections (use when highly ill conditioned)
-    std::string d_sOrthogonalizationMethod;
+    std::string d_sOrthogonalizationMethod = "MGS";
 
     //! boolean, for whether a preconditioner present or not
-    bool d_bUsesPreconditioner;
+    bool d_bUsesPreconditioner = false;
 
     //! stores the upper Hessenberg matrix formed during the GMRES iteration
     AMP::Array<double> d_dHessenberg;

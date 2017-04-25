@@ -22,7 +22,7 @@ class CylinderMesh : public AMP::Mesh::BoxMesh
 public:
 
     //! Default constructor
-    CylinderMesh( MeshParameters::shared_ptr params );
+    explicit CylinderMesh( MeshParameters::shared_ptr params );
 
     /**
      * \brief   Estimate the number of elements in the mesh

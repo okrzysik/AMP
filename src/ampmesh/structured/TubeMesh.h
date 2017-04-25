@@ -21,7 +21,7 @@ class TubeMesh : public AMP::Mesh::BoxMesh
 public:
 
     //! Default constructor
-    TubeMesh( MeshParameters::shared_ptr params );
+    explicit TubeMesh( MeshParameters::shared_ptr params );
 
     /**
      * \brief   Estimate the number of elements in the mesh

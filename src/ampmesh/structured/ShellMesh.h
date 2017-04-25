@@ -21,7 +21,7 @@ class ShellMesh : public AMP::Mesh::BoxMesh
 public:
 
     //! Default constructor
-    ShellMesh( MeshParameters::shared_ptr params );
+    explicit ShellMesh( MeshParameters::shared_ptr params );
 
     /**
      * \brief   Estimate the number of elements in the mesh

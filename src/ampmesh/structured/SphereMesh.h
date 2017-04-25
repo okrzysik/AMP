@@ -21,7 +21,7 @@ class SphereMesh : public AMP::Mesh::BoxMesh
 public:
 
     //! Default constructor
-    SphereMesh( MeshParameters::shared_ptr params );
+    explicit SphereMesh( MeshParameters::shared_ptr params );
 
     /**
      * \brief   Estimate the number of elements in the mesh
