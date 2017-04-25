@@ -63,7 +63,7 @@ public:
     virtual void multTranspose( const Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
     virtual Vector::shared_ptr
     extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const override;
-    virtual void scale( double alpha );
+    virtual void scale( double alpha ) override;
     virtual void axpy( double alpha, const Matrix &rhs ) override;
     virtual size_t numGlobalRows() const override { return d_epetraMatrix->NumGlobalRows(); }
     virtual size_t numGlobalColumns() const override { return d_epetraMatrix->NumGlobalCols(); }
