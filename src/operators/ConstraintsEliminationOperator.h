@@ -21,7 +21,7 @@ public:
       Constructor.
       @param [in] params
       */
-    ConstraintsEliminationOperator( const AMP::shared_ptr<OperatorParameters> &params )
+    explicit ConstraintsEliminationOperator( const AMP::shared_ptr<OperatorParameters> &params )
         : Operator( params )
     {
         AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "key not found" );

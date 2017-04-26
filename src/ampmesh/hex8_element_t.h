@@ -22,7 +22,7 @@ double compute_von_mises_stress( double const *stress_tensor );
 class hex8_element_t
 {
 public:
-    hex8_element_t( double const *p );
+    explicit hex8_element_t( double const *p );
     ~hex8_element_t();
     void set_support_points( double const *p );
     double const *get_support_point( unsigned int i ) const;

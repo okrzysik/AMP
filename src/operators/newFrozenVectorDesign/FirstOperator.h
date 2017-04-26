@@ -10,7 +10,7 @@ namespace Operator {
 class FirstOperator : public OnePointOperator
 {
 public:
-    FirstOperator( const AMP::shared_ptr<OperatorParameters> &params ) : OnePointOperator( params )
+    explicit FirstOperator( const AMP::shared_ptr<OperatorParameters> &params ) : OnePointOperator( params )
     {
         d_constant = 2.0;
         d_var.reset( new AMP::LinearAlgebra::Variable( params->d_db->getString( "Variable" ) ) );
