@@ -103,7 +103,7 @@ public:
      * mesh.
      * \param mat   The matrix we want to write
      */
-    virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat );
+    virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat ) override;
 #endif
 
 
