@@ -350,6 +350,7 @@ COPY_TEST_FILE( input_testLinearFlow-1 )
 
 IF( USE_EXT_LIBMESH )
   ADD_AMP_TEST( testUpdatedLagrangianMechanics-eigenValues-1 )
+  COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-eigenValues-1 )
 ENDIF()
 
 IF( USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
@@ -399,8 +400,6 @@ IF( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
 
     ADD_AMP_PROVISIONAL_TEST( testUpdatedLagrangianThermoMechanics-LinearElasticity-1 1 )
     COPY_TEST_FILE( input_testUpdatedLagrangianThermoMechanics-LinearElasticity-1 )
-
-    COPY_TEST_FILE( input_testUpdatedLagrangianMechanics-eigenValues-1 )
 
     ADD_AMP_PROVISIONAL_TEST( testPericElastoViscoPlasticity )
     COPY_TEST_FILE( input_testPericElastoViscoPlasticity-1 )
