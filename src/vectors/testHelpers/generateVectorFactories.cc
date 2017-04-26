@@ -166,6 +166,20 @@ AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string& name )
         #else
             AMP_ERROR("Generator is not valid without support for Thyra");
         #endif
+    } else if ( factoryName == "NativeSundialsFactory" ) {
+        AMP_ASSERT(args.size()==0);
+        #ifdef EXT_SUNDIALS
+            AMP_ERROR("Not implemented");
+        #else
+            AMP_ERROR("Generator is not valid without support for Sundials");
+        #endif
+    } else if ( factoryName == "ManagedSundialsVectorFactory" ) {
+         AMP_ASSERT(args.size()==0);
+         #ifdef EXT_SUNDIALS
+            AMP_ERROR("Not implemented");
+        #else
+            AMP_ERROR("Generator is not valid without support for Sundials");
+        #endif
     } else if ( factoryName == "ViewFactory" ) {
         AMP_ASSERT(args.size()==2);
         auto factory2 = generateVectorFactory(args[1]);

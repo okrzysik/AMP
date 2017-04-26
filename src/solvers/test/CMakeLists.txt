@@ -356,8 +356,6 @@ ENDIF()
 IF( USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
     # Tests that only require libmesh
     ADD_AMP_TEST( testAMGuniform )
-    ADD_AMP_TEST_1_2_4( testMatMultiply )
-    ADD_AMP_TEST_1_2_4( testMatCreate )
     ADD_AMP_TEST_1_2_4( testMaterialModels_VonMisesPlasticity-1 )
     ADD_AMP_TEST_1_2_4( testMaterialModels_VonMisesPlasticity-2 )
     IF( USE_TRILINOS_NOX )

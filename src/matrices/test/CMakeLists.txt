@@ -31,10 +31,17 @@ COPY_MESH_FILE ( pellet_1x.e )
 COPY_MESH_FILE ( pellet_lo_res.e )
 COPY_MESH_FILE ( clad_1x_1pellet.e )
 COPY_MESH_FILE ( clad_1x_2pellet.e )
+COPY_MESH_FILE ( cube343H27.e )
 
 # Add matrix test
 ADD_AMP_TEST_1_2_4( test_Matrix )
 ADD_AMP_TEST_1_2_4( test_RectangularMatricesMultiplication )
+
+IF( USE_EXT_LIBMESH )
+  ADD_AMP_TEST_1_2_4( testMatCreate )
+  COPY_TEST_FILE( input_testMatCreate-1 )
+  ADD_AMP_TEST_1_2_4( testMatMultiply )
+ENDIF()
 
 ADD_SUBDIRECTORY ( extra_tests )
 
