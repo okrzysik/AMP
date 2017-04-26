@@ -84,7 +84,7 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    myTest( &ut, "input_testLinearFlow-1" );
+    myTest( &ut, "input_testMatCreate-1" );
 
     ut.report();
 

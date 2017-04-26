@@ -62,6 +62,11 @@ const std::string MTFactory = "ManagedThyraFactory<SimpleVectorFactory<45,true,d
 const std::string MNTFactory = "ManagedNativeThyraFactory<SimpleVectorFactory<45,true,double>>";
 const std::string MNT_MVFactory = "ManagedNativeThyraFactory<"+MVFactory1+">";
 #endif
+
+#ifdef EXT_SUNDIALS
+const std::string NSVFactory = "NativeSundialsFactory";
+#endif
+
 const std::string StridedFactory = "StridedVectorFactory<"+SMEVFactory+">";
 
 
