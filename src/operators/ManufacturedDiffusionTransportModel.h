@@ -22,7 +22,7 @@ namespace Operator {
 class ManufacturedDiffusionTransportModel : public DiffusionTransportModel
 {
 public:
-    ManufacturedDiffusionTransportModel(
+    explicit ManufacturedDiffusionTransportModel(
         const AMP::shared_ptr<DiffusionTransportModelParameters> &params )
         : DiffusionTransportModel( params )
     {
