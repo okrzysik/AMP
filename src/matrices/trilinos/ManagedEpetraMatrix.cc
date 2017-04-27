@@ -60,8 +60,9 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
 ********************************************************/
 Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
 {
-    AMP::shared_ptr<ManagedEpetraMatrixParameters> memp =
+    auto memp =
         AMP::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
+    AMP_INSIST(memp!=nullptr, "null cached ManagedEpetraMatrixParameters");
     int localSize  = memp->getLocalNumberOfColumns();
     int globalSize = memp->getGlobalNumberOfColumns();
     EpetraVectorEngineParameters *evep =
@@ -80,8 +81,9 @@ Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
 }
 Vector::shared_ptr ManagedEpetraMatrix::getLeftVector() const
 {
-    AMP::shared_ptr<ManagedEpetraMatrixParameters> memp =
+    auto memp =
         AMP::dynamic_pointer_cast<ManagedEpetraMatrixParameters>( d_pParameters );
+    AMP_INSIST(memp!=nullptr, "null cached ManagedEpetraMatrixParameters");
     int localSize  = memp->getLocalNumberOfRows();
     int globalSize = memp->getGlobalNumberOfRows();
     EpetraVectorEngineParameters *evep =
