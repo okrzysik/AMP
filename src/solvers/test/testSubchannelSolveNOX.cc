@@ -939,7 +939,7 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
     PROFILE_ENABLE( 0 );
 
-    std::string exeName = "testSubchannelSolve-1";
+    std::string exeName = "testSubchannelSolveNOX-1";
     if ( argc == 2 )
         exeName = argv[1];
 
