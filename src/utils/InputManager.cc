@@ -82,7 +82,7 @@ void InputManager::freeManager()
 *************************************************************************
 */
 
-InputManager::InputManager() { comm = AMP_MPI( AMP_COMM_WORLD ); }
+InputManager::InputManager() : comm(AMP_COMM_WORLD) { }
 
 InputManager::~InputManager() {}
 

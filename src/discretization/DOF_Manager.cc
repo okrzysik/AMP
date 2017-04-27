@@ -13,9 +13,8 @@ namespace Discretization {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-DOFManager::DOFManager( size_t N_local, const AMP_MPI &comm )
+DOFManager::DOFManager( size_t N_local, const AMP_MPI &comm ): d_comm(comm)
 {
-    d_comm = comm;
     d_comm.sumScan( &N_local, &d_end, 1 );
     d_begin  = d_end - N_local;
     d_global = d_comm.bcast( d_end, d_comm.getSize() - 1 );

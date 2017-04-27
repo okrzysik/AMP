@@ -36,9 +36,8 @@ static T *getPtr( const std::vector<T> &in )
 /************************************************************************
 * Constructors                                                          *
 ************************************************************************/
-CommunicationListParameters::CommunicationListParameters()
+CommunicationListParameters::CommunicationListParameters(): d_comm( AMP_COMM_NULL )
 {
-    d_comm        = AMP_MPI( AMP_COMM_NULL );
     d_localsize   = (size_t) -1;
     d_remote_DOFs = std::vector<size_t>( 0 );
 }

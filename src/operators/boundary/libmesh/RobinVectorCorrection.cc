@@ -249,14 +249,12 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
 AMP::shared_ptr<OperatorParameters>
     RobinVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    AMP::shared_ptr<AMP::InputDatabase> tmp_db( new AMP::InputDatabase( "Dummy" ) );
+    auto tmp_db = AMP::make_shared<AMP::InputDatabase> ( "Dummy" );
     tmp_db->putBool( "skip_params", true );
     tmp_db->putBool( "skip_rhs_correction", true );
     tmp_db->putBool( "skip_matrix_correction", false );
     tmp_db->putBool( "IsFluxGaussPtVector", d_isFluxGaussPtVector );
-    AMP::shared_ptr<RobinMatrixCorrectionParameters> outParams(
-        new RobinMatrixCorrectionParameters( tmp_db ) );
-
+    auto outParams = AMP::make_shared<RobinMatrixCorrectionParameters> ( tmp_db );
     outParams->d_robinPhysicsModel = d_robinPhysicsModel;
     outParams->d_elementInputVec   = d_elementInputVec;
     outParams->d_variableFlux      = d_variableFlux;
