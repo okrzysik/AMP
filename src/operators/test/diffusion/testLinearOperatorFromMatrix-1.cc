@@ -56,10 +56,11 @@ void linearTest1( AMP::UnitTest * const ut, const std::string &exeName )
     // ************************************************************************************************
     // extract the internal matrix
     const auto &diffMat = diffOp->getMatrix();
+    AMP_INSIST( diffMat->numGlobalColumns()==diffMat->numGlobalRows(), "matrix is not square" );
 
-    // extract the left and right vectors
+    // extract the left vector
     // COMMENT: these lines will have to be replaced for an external application
-    // to provide explicit right and left vectors
+    // to provide explicit left vectors
     // COMMENT: note that under the hood we are primarily interested in the DOF manager
     // or rather in constructing one. We can't seem to avoid this for an external
     // application
@@ -68,7 +69,7 @@ void linearTest1( AMP::UnitTest * const ut, const std::string &exeName )
     // COMMENT: We do not currently seem to have the ability to construct simple vectors
     // and DOF managers with ghost cells independent of meshes
     const auto leftVector  = diffMat->getLeftVector();
-    const auto rightVector = diffMat->getRightVector();
+    const auto rightVector = leftVector; // we are dealing with square matrices so this is fine
 
     // COMMENT: this function pointer will need to be set to an actual function
     // COMMENT 2: if we expect users to provide such an interface we should provide one too!!
