@@ -32,6 +32,7 @@ COPY_MESH_FILE ( pellet_lo_res.e )
 COPY_MESH_FILE ( clad_1x_1pellet.e )
 COPY_MESH_FILE ( clad_1x_2pellet.e )
 COPY_MESH_FILE ( cube343H27.e )
+COPY_MESH_FILE( mpcMesh-1 )
 
 # Add matrix test
 ADD_AMP_TEST_1_2_4( test_Matrix )

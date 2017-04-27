@@ -46,9 +46,8 @@ AMP::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( AMP::shared_ptr<AMP
 /************************************************************
 * Constructor/Destructor                                    *
 ************************************************************/
-Writer::Writer()
+Writer::Writer() : d_comm( AMP_COMM_WORLD )
 {
-    d_comm          = AMP_MPI( AMP_COMM_WORLD );
     d_decomposition = 2;
 }
 Writer::~Writer() {}
