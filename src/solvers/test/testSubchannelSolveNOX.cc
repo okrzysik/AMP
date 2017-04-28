@@ -637,8 +637,7 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
         nonlinearSolverParams->d_pOperator       = nonlinearCoupledOperator;
         nonlinearSolverParams->d_pInitialGuess   = globalSolMultiVector;
         nonlinearSolverParams->d_pLinearOperator = linearColumnOperator;
-        AMP::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(
-            new AMP::Solver::TrilinosNOXSolver( nonlinearSolverParams ) );
+        nonlinearSolver = AMP::make_shared<AMP::Solver::TrilinosNOXSolver>( nonlinearSolverParams );
 
         /*// create linear solver
         AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
