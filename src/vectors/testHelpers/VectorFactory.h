@@ -253,7 +253,7 @@ public:
         VecSetSizes( v, 15, PETSC_DECIDE );
         AMP::shared_ptr<AMP::LinearAlgebra::NativePetscVectorParameters> npvParams(
             new AMP::LinearAlgebra::NativePetscVectorParameters( v, true ) );
-        auto newVec = AMP::make_shared<AMP::LinearAlgebra::NativePetscVector> ( nvpParams );
+        auto newVec = AMP::make_shared<AMP::LinearAlgebra::NativePetscVector> ( npvParams );
         VecSetFromOptions( v );
         newVec->assemble();
         auto p1        = new AMP::LinearAlgebra::ManagedVectorParameters;
