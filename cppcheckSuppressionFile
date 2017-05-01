@@ -1,5 +1,6 @@
 // Supress false warnings
 noConstructor:*/utils/RNG.h
+copyCtorPointerCopying:*/utils/AMP_MPI.cc
 
 // Suppress unmatched suppressions
 unmatchedSuppression
@@ -20,6 +21,7 @@ duplicateExpression:*/utils/test/test_AMP_MPI.cc
 duplicateExpression:*/ampmesh/testHelpers/meshTests.cc
 duplicateExpression:*/ampmesh/structured/BoxMesh.cc
 duplicateExpression:*/discretization/test/DOFManager_tests.h
+duplicateExpression:*/utils/Array.hpp
 
 // Suppress specific instances of "Upon exception there is memory leak"
 exceptNew:*/vectors/petsc/PetscVector.cc
@@ -76,6 +78,7 @@ knownConditionTrueFalse:*/oxide/OxideModel.cc
 knownConditionTrueFalse:*/utils/test/test_AMP_MPI.cc
 noExplicitConstructor:*/utils/AMP_MPI.h
 noExplicitConstructor:*/utils/test/test_AMP_MPI.cc
+postfixOperator:*/ampmesh/testHelpers/meshTests.cc
 
 // Supress warnings for usleep
 obsoleteFunctionsusleep
@@ -86,5 +89,15 @@ obsoleteFunctionsusleep
 
 // Suppress warnings for external code
 memleak:*/utils/tinyexpr/tinyexpr.c
+
+// Suppress #error code paths (may not have complete #define statements
+preprocessorErrorDirective:*/utils/AMPManager.cc
+preprocessorErrorDirective:*/vectors/petsc/PetscHelpers.h
+preprocessorErrorDirective:*/solvers/petsc/PetscKrylovSolver.cc
+preprocessorErrorDirective:*/solvers/petsc/PetscSNESSolver.h
+
+// Suppress unsupported code
+*:*/ampmesh/dendro/*
+*:*/ampmesh/hex8_element_t.cc
 
 

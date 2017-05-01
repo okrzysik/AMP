@@ -262,8 +262,8 @@ void testInputMesh( AMP::UnitTest *ut, std::string filename )
 
     // Run the mesh tests
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
-    AMP::Mesh::meshTests::MeshVectorTestLoop( ut, mesh );
-    AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh );
+    AMP::Mesh::meshTests::MeshVectorTestLoop( ut, mesh, true );
+    AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh, true );
     PROFILE_STOP( "testInputMesh" );
 }
 
@@ -278,7 +278,7 @@ void testSubsetMesh( AMP::UnitTest *ut )
     generator->build_mesh();
     AMP::Mesh::Mesh::shared_ptr mesh = generator->getMesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
-    // MeshVectorTestLoop( ut, mesh );
+    //MeshVectorTestLoop( ut, mesh );
     // MeshMatrixTestLoop( ut, mesh );
 
     // Subset a mesh for a surface with ghost cells and test
@@ -340,7 +340,7 @@ int main( int argc, char **argv )
     startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup( argc, argv, startup_properties );
     AMP::UnitTest ut;
-    PROFILE_ENABLE();
+    PROFILE_ENABLE( 2 );
     PROFILE_START( "Run tests" );
 
     if ( argc == 1 ) {

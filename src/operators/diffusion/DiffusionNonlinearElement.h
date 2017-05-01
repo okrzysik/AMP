@@ -59,9 +59,6 @@ public:
     bool getTransportAtGauss() { return d_transportAtGauss; }
 
 protected:
-    const std::vector<Real> *d_JxW;
-
-    const std::vector<std::vector<RealGradient>> *d_dphi;
 
     std::vector<std::vector<double>> d_elementInputVectors;
 

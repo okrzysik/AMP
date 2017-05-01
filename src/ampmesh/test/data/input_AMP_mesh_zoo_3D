@@ -79,7 +79,7 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "sphere"
-		Size = 7
+		Size = 6
 		Range = 1
 		x_offset = 0
 		y_offset = 14
@@ -90,7 +90,7 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "sphere"
-		Size = 7
+		Size = 6
 		Range = 1
 		x_offset = 4
 		y_offset = 14
@@ -125,7 +125,7 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "sphere_surface"
-		Size = 50
+		Size = 40
 		Range = 1
 		x_offset = 0
 		y_offset = 18
@@ -136,7 +136,7 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "sphere_surface"
-		Size = 50
+		Size = 40
 		Range = 1
 		x_offset = 4
 		y_offset = 18

@@ -582,7 +582,7 @@ void meshTests::VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils, AMP::Mesh::M
                 node_ids.insert( curNode->globalID() );
                 if ( !curNode->isOnBoundary( bid ) )
                     testPassed = false;
-                curNode++;
+                ++curNode;
             }
             size_t total_size = mesh->getComm().sumReduce( node_ids.size() );
             if ( total_size == 0 )
@@ -597,7 +597,7 @@ void meshTests::VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils, AMP::Mesh::M
                     if ( node_ids.find( curMNode->globalID() ) == node_ids.end() )
                         testPassed = false;
                 }
-                curMNode++;
+                ++curMNode;
             }
             if ( numFound != node_ids.size() )
                 testPassed = false;

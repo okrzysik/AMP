@@ -13,13 +13,15 @@ MathExpr::MathExpr( ):
     d_fun(nullptr)
 {
 }
-MathExpr::MathExpr( const std::string& expression, const std::vector<std::string>& variables )
+MathExpr::MathExpr( const std::string& expression, const std::vector<std::string>& variables ):
+    d_fun(nullptr)
 {
     initialize( expression, variables );
 }
 MathExpr::MathExpr( const MathExpr &rhs ):
-    MathExpr( rhs.d_expr, rhs.d_vars )
+    d_fun(nullptr)
 {
+    initialize( rhs.d_expr, rhs.d_vars );
 }
 MathExpr& MathExpr::operator=( const MathExpr &rhs )
 {

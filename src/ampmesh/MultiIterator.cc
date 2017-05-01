@@ -66,17 +66,17 @@ MultiIterator::MultiIterator( std::vector<AMP::shared_ptr<MeshIterator>> iterato
     d_element = cur_iterator.operator->();
 }
 MultiIterator::MultiIterator( const MultiIterator &rhs )
-    : MeshIterator() // Note: we never want to call the base copy constructor
+    : MeshIterator(), // Note: we never want to call the base copy constructor
+    d_localPos( rhs.d_localPos ),
+    d_iteratorNum( rhs.d_iteratorNum ),
+    d_iteratorSize( rhs.d_iteratorSize ),
+    d_iterators( rhs.d_iterators ),
+    cur_iterator( rhs.cur_iterator )
 {
     d_typeID       = MultiIteratorTypeID;
     d_iterator     = nullptr;
-    d_iterators    = rhs.d_iterators;
-    d_iteratorSize = rhs.d_iteratorSize;
     d_size         = rhs.d_size;
-    d_localPos     = rhs.d_localPos;
     d_pos          = rhs.d_pos;
-    d_iteratorNum  = rhs.d_iteratorNum;
-    cur_iterator   = rhs.cur_iterator;
     d_element = cur_iterator.operator->();
 }
 MultiIterator &MultiIterator::operator=( const MultiIterator &rhs )

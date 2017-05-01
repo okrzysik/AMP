@@ -63,15 +63,15 @@ void structuredMeshElement::reset( BoxMesh::MeshElementIndex index,
     d_globalID = d_mesh->convert( index );
 }
 structuredMeshElement::structuredMeshElement( const structuredMeshElement &rhs )
-    : MeshElement() // Note: we never want to call the base copy constructor
+    : MeshElement(), // Note: we never want to call the base copy constructor
+    d_meshType( rhs.d_meshType ),
+    d_physicalDim( rhs.d_physicalDim ),
+    d_index( rhs.d_index ),
+    d_mesh( rhs.d_mesh )
 {
     typeID     = structuredMeshElementTypeID;
     element    = nullptr;
     d_globalID = rhs.d_globalID;
-    d_meshType = rhs.d_meshType;
-    d_physicalDim = rhs.d_physicalDim;
-    d_index    = rhs.d_index;
-    d_mesh     = rhs.d_mesh;
 }
 structuredMeshElement &structuredMeshElement::operator=( const structuredMeshElement &rhs )
 {

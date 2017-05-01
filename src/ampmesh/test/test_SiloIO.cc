@@ -171,7 +171,7 @@ void test_Silo( AMP::UnitTest *ut, std::string input_file )
     rank_vec->setToScalar( globalComm.getRank() );
     rank_vec->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     std::vector<size_t> dofs;
-    for ( AMP::Mesh::MeshIterator it = DOF_vector->getIterator(); it != it.end(); it++ ) {
+    for ( AMP::Mesh::MeshIterator it = DOF_vector->getIterator(); it != it.end(); ++it ) {
         AMP::Mesh::MeshElementID id = it->globalID();
         DOF_vector->getDOFs( id, dofs );
         std::vector<double> pos = it->coord();

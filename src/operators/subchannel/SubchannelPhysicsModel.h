@@ -25,7 +25,7 @@ public:
     /**
       Constructor
       */
-    SubchannelPhysicsModel( const AMP::shared_ptr<ElementPhysicsModelParameters> &params );
+    explicit SubchannelPhysicsModel( const AMP::shared_ptr<ElementPhysicsModelParameters> &params );
 
     /**
       Destructor

@@ -21,13 +21,6 @@ unsigned N_copies( const unsigned increment = 0 )
     copies += increment;
     return copies;
 }
-AMP_MPI &d_comm( const AMP_MPI c = AMP_COMM_NULL )
-{
-    static AMP_MPI comm( AMP_COMM_NULL );
-    if ( c != AMP_COMM_NULL )
-        comm = c;
-    return comm;
-}
 }
 
 /************************************************************
@@ -48,8 +41,8 @@ initializeSTKMesh::initializeSTKMesh( AMP_MPI comm )
         // STKmesh is not initialized
         // Use a barrier to ensure all processors are at the same point
         N_copies( 1 );
-        d_comm( comm );
-        d_comm().barrier();
+        d_comm = comm ;
+        d_comm.barrier();
     }
     return;
 }
@@ -61,7 +54,7 @@ initializeSTKMesh::initializeSTKMesh( AMP_MPI comm )
 initializeSTKMesh::~initializeSTKMesh()
 {
     // Use a barrier to ensure all processors are at the same point
-    d_comm().barrier();
+    d_comm.barrier();
     N_copies( -1 );
 }
 
@@ -71,7 +64,7 @@ initializeSTKMesh::~initializeSTKMesh()
 ************************************************************/
 bool initializeSTKMesh::canBeInitialized( AMP_MPI comm )
 {
-    return ( !N_copies() || comm == d_comm() || d_comm().compare( comm ) );
+    return ( !N_copies() || comm == d_comm || d_comm.compare( comm ) );
 }
 
 

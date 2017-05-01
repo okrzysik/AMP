@@ -416,14 +416,15 @@ MPI_CLASS::MPI_CLASS()
     communicator = MPI_CLASS_COMM_NULL;
     d_maxTag     = mpi_max_tag;
 #endif
-    d_ranks.reset( new std::vector<int>( 0 ) );
-    d_count                              = nullptr;
-    comm_rank                            = 0;
-    comm_size                            = 1;
-    d_isNull                             = true;
-    d_currentTag                         = nullptr;
-    call_abort_in_serial_instead_of_exit = true;
-    tmp_alignment                        = -1;
+    d_ranks       = nullptr;
+    d_count       = nullptr;
+    d_manage      = false;
+    comm_rank     = 0;
+    comm_size     = 1;
+    d_isNull      = true;
+    d_currentTag  = nullptr;
+    d_call_abort  = true;
+    tmp_alignment = -1;
 }
 
 
@@ -438,18 +439,20 @@ void MPI_CLASS::reset()
     if ( d_count != nullptr )
         count = decrement_count( d_count );
     if ( count == 0 ) {
-// We are holding that last reference to the MPI_Comm object, we need to free it
+        // We are holding that last reference to the MPI_Comm object, we need to free it
+        if ( d_manage ) {
 #ifdef USE_MPI
-        MPI_Comm_set_errhandler( communicator, MPI_ERRORS_ARE_FATAL );
-        delete d_count;
-        int err = MPI_Comm_free( &communicator );
-        if ( err != MPI_SUCCESS )
-            MPI_ERROR( "Problem free'ing MPI_Comm object" );
-        communicator = MPI_CLASS_COMM_NULL;
-        ++N_MPI_Comm_destroyed;
-#else
-        MPI_ERROR( "Internal Error (why do we have a count in serial)" );
+            MPI_Comm_set_errhandler( communicator, MPI_ERRORS_ARE_FATAL );
+            delete d_count;
+            int err = MPI_Comm_free( &communicator );
+            if ( err != MPI_SUCCESS )
+                MPI_ERROR( "Problem free'ing MPI_Comm object" );
+            communicator = MPI_CLASS_COMM_NULL;
+            ++N_MPI_Comm_destroyed;
 #endif
+        }
+        if ( d_ranks != nullptr )
+            delete[] d_ranks;
     }
     if ( d_currentTag == nullptr ) {
         // No tag index
@@ -458,43 +461,61 @@ void MPI_CLASS::reset()
     } else {
         delete[] d_currentTag;
     }
-    d_ranks.reset( new std::vector<int>( 0 ) );
-    d_count                              = nullptr;
-    comm_rank                            = 0;
-    comm_size                            = 1;
-    d_maxTag                             = 0;
-    d_isNull                             = true;
-    d_currentTag                         = nullptr;
-    call_abort_in_serial_instead_of_exit = true;
+    d_manage     = false;
+    d_count      = nullptr;
+    d_ranks      = nullptr;
+    comm_rank    = 0;
+    comm_size    = 1;
+    d_maxTag     = 0;
+    d_isNull     = true;
+    d_currentTag = nullptr;
+    d_call_abort = true;
 }
 
 
 /************************************************************************
-*  Copy constructor                                                     *
+*  Copy constructors                                                    *
 ************************************************************************/
-MPI_CLASS::MPI_CLASS( const MPI_CLASS &comm )
+MPI_CLASS::MPI_CLASS( const MPI_CLASS &comm ):
+    communicator( comm.communicator ),
+    d_isNull( comm.d_isNull ),
+    d_manage( comm.d_manage ),
+    comm_rank( comm.comm_rank ),
+    comm_size( comm.comm_size ),
+    d_ranks( comm.d_ranks ),
+    d_maxTag( comm.d_maxTag ),
+    d_currentTag( comm.d_currentTag )
 {
     // Initialize the data members to the existing comm object
-    communicator = comm.communicator;
-    comm_rank    = comm.comm_rank;
-    comm_size    = comm.comm_size;
-    d_isNull     = comm.d_isNull;
-    d_maxTag     = comm.d_maxTag;
-    d_currentTag = comm.d_currentTag;
-    d_ranks      = comm.d_ranks;
     if ( d_currentTag != nullptr )
         ++d_currentTag[1];
-    call_abort_in_serial_instead_of_exit = comm.call_abort_in_serial_instead_of_exit;
+    d_call_abort = comm.d_call_abort;
     // Set and increment the count
     d_count = comm.d_count;
     if ( d_count != nullptr )
         increment_count( d_count );
     tmp_alignment = -1;
 }
+MPI_CLASS::MPI_CLASS( MPI_CLASS &&rhs ):
+    MPI_CLASS()
+{
+    std::swap( communicator, rhs.communicator );
+    std::swap( d_isNull, rhs.d_isNull );
+    std::swap( d_manage, rhs.d_manage );
+    std::swap( d_call_abort, rhs.d_call_abort );
+    std::swap( profile_level, rhs.profile_level );
+    std::swap( comm_rank, rhs.comm_rank );
+    std::swap( comm_size, rhs.comm_size );
+    std::swap( d_ranks, rhs.d_ranks );
+    std::swap( d_maxTag, rhs.d_maxTag );
+    std::swap( d_currentTag, rhs.d_currentTag );
+    std::swap( d_count, rhs.d_count );
+    std::swap( tmp_alignment, rhs.tmp_alignment );
+}
 
 
 /************************************************************************
-*  Assignment operator                                                  *
+*  Assignment operators                                                 *
 ************************************************************************/
 MPI_CLASS &MPI_CLASS::operator=( const MPI_CLASS &comm )
 {
@@ -503,14 +524,15 @@ MPI_CLASS &MPI_CLASS::operator=( const MPI_CLASS &comm )
     // Destroy the previous object
     this->reset();
     // Initialize the data members to the existing object
-    this->communicator                         = comm.communicator;
-    this->comm_rank                            = comm.comm_rank;
-    this->comm_size                            = comm.comm_size;
-    this->d_ranks                              = comm.d_ranks;
-    this->d_isNull                             = comm.d_isNull;
-    this->d_maxTag                             = comm.d_maxTag;
-    this->call_abort_in_serial_instead_of_exit = comm.call_abort_in_serial_instead_of_exit;
-    this->d_currentTag                         = comm.d_currentTag;
+    this->communicator = comm.communicator;
+    this->comm_rank    = comm.comm_rank;
+    this->comm_size    = comm.comm_size;
+    this->d_ranks      = comm.d_ranks;
+    this->d_isNull     = comm.d_isNull;
+    this->d_manage     = comm.d_manage;
+    this->d_maxTag     = comm.d_maxTag;
+    this->d_call_abort = comm.d_call_abort;
+    this->d_currentTag = comm.d_currentTag;
     if ( this->d_currentTag != nullptr )
         ++( this->d_currentTag[1] );
     // Set and increment the count
@@ -520,6 +542,24 @@ MPI_CLASS &MPI_CLASS::operator=( const MPI_CLASS &comm )
     this->tmp_alignment = -1;
     return *this;
 }
+MPI_CLASS &MPI_CLASS::operator=( MPI_CLASS &&rhs )
+{
+    if ( this == &rhs ) // protect against invalid self-assignment
+        return *this;
+    std::swap( communicator, rhs.communicator );
+    std::swap( d_isNull, rhs.d_isNull );
+    std::swap( d_manage, rhs.d_manage );
+    std::swap( d_call_abort, rhs.d_call_abort );
+    std::swap( profile_level, rhs.profile_level );
+    std::swap( comm_rank, rhs.comm_rank );
+    std::swap( comm_size, rhs.comm_size );
+    std::swap( d_ranks, rhs.d_ranks );
+    std::swap( d_maxTag, rhs.d_maxTag );
+    std::swap( d_currentTag, rhs.d_currentTag );
+    std::swap( d_count, rhs.d_count );
+    std::swap( tmp_alignment, rhs.tmp_alignment );
+    return *this;
+}
 
 
 /************************************************************************
@@ -527,7 +567,9 @@ MPI_CLASS &MPI_CLASS::operator=( const MPI_CLASS &comm )
 ************************************************************************/
 MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
 {
-    d_count       = nullptr;
+    d_count  = nullptr;
+    d_ranks  = nullptr;
+    d_manage = false;
     tmp_alignment = -1;
     // Check if we are using our version of comm_world
     if ( comm == MPI_CLASS_COMM_WORLD ) {
@@ -570,11 +612,16 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
     }
     d_isNull = communicator == MPI_COMM_NULL;
     if ( manage && communicator != MPI_COMM_NULL && communicator != MPI_COMM_SELF &&
-         communicator != MPI_COMM_WORLD ) {
-        // Create the count (Note: we do not need to worry about thread safety)
-        d_count      = new int;
-        *( d_count ) = 1;
-        ++N_MPI_Comm_created;
+         communicator != MPI_COMM_WORLD )
+        d_manage = true;
+    // Create the count (Note: we do not need to worry about thread safety)
+    d_count      = new int;
+    *( d_count ) = 1;
+    ++N_MPI_Comm_created;
+    // Create d_ranks
+    if ( comm_size > 1 ) {
+        d_ranks = new int[comm_size];
+        d_ranks[0] = -1;
     }
 #else
     // We are not using MPI, intialize based on the communicator
@@ -586,7 +633,6 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
     if ( d_isNull )
         comm_size = 0;
 #endif
-    d_ranks.reset( new std::vector<int>() );
     if ( d_isNull ) {
         d_currentTag = nullptr;
     } else {
@@ -594,37 +640,43 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
         d_currentTag[0] = ( d_maxTag <= 0x10000 ) ? 1 : 0x1FFF;
         d_currentTag[1] = 1;
     }
-    call_abort_in_serial_instead_of_exit = true;
+    d_call_abort = true;
 }
 
 
 /************************************************************************
 *  Return the ranks of the communicator in the global comm              *
 ************************************************************************/
-#ifdef USE_MPI
-static int myGlobalRank = -1;
-#else
-static int myGlobalRank = 0;
-#endif
-const std::vector<int> &MPI_CLASS::globalRanks() const
+std::vector<int> MPI_CLASS::globalRanks() const
 {
-    if ( d_ranks->empty() && communicator != MPI_COMM_NULL ) {
-        d_ranks->resize( comm_size, -1 );
-        if ( communicator == AMP::AMPManager::comm_world.communicator ) {
-            for ( int i                  = 0; i < comm_size; i++ )
-                d_ranks->operator[]( i ) = i;
-        } else {
-            if ( myGlobalRank == -1 ) {
+    // Get my global rank if it has not been set
+    static int myGlobalRank = -1;
+    if ( myGlobalRank == -1 ) {
 #ifdef USE_MPI
-                if ( MPI_active() )
-                    MPI_Comm_rank( AMP::AMPManager::comm_world.communicator, &myGlobalRank );
+        if ( MPI_active() )
+            MPI_Comm_rank( AMP::AMPManager::comm_world.communicator, &myGlobalRank );
+#else
+        myGlobalRank = 0;
 #endif
-            }
+    }
+    // Check if we are dealing with a serial or null communicator
+    if ( comm_size == 1 )
+        return std::vector<int>(1,myGlobalRank);
+    if ( d_ranks == nullptr || communicator == MPI_COMM_NULL )
+        return std::vector<int>();
+    // Fill d_ranks if necessary
+    if ( d_ranks[0] == -1 ) {
+        if ( communicator == AMP::AMPManager::comm_world.communicator ) {
+            for ( int i = 0; i < comm_size; i++ )
+                d_ranks[i] = i;
+        } else {
+
             MPI_ASSERT( myGlobalRank != -1 );
-            this->allGather( myGlobalRank, d_ranks->data() );
+            this->allGather( myGlobalRank, d_ranks );
         }
     }
-    return *d_ranks;
+    // Return d_ranks
+    return std::vector<int>( d_ranks, d_ranks+comm_size );
 }
 
 
@@ -751,7 +803,7 @@ MPI_CLASS MPI_CLASS::split( int color, int key ) const
     // Create the new object
     NULL_USE(key);
     MPI_CLASS new_comm( new_MPI_comm, true );
-    new_comm.call_abort_in_serial_instead_of_exit = call_abort_in_serial_instead_of_exit;
+    new_comm.d_call_abort = d_call_abort;
     return new_comm;
 }
 MPI_CLASS MPI_CLASS::splitByNode( int key ) const
@@ -801,7 +853,7 @@ MPI_CLASS MPI_CLASS::dup() const
     // Create the new comm object
     MPI_CLASS new_comm( new_MPI_comm, true );
     new_comm.d_isNull                             = d_isNull;
-    new_comm.call_abort_in_serial_instead_of_exit = call_abort_in_serial_instead_of_exit;
+    new_comm.d_call_abort = d_call_abort;
     return new_comm;
 }
 
@@ -1049,7 +1101,7 @@ int MPI_CLASS::compare( const MPI_CLASS &comm ) const
 ************************************************************************/
 void MPI_CLASS::setCallAbortInSerialInsteadOfExit( bool flag )
 {
-    call_abort_in_serial_instead_of_exit = flag;
+    d_call_abort = flag;
 }
 void MPI_CLASS::abort() const
 {
@@ -1062,7 +1114,7 @@ void MPI_CLASS::abort() const
         exit( -1 );
     } else if ( comm_size > 1 ) {
         MPI_Abort( comm, -1 );
-    } else if ( call_abort_in_serial_instead_of_exit ) {
+    } else if ( d_call_abort ) {
         MPI_Abort( comm, -1 );
     } else {
         exit( -1 );
@@ -1678,7 +1730,7 @@ void MPI_CLASS::call_minReduce<unsigned long long int>( const unsigned long long
         call_minReduce<double>( tmp, n, comm_rank_of_min );
         for ( int i = 0; i < n; i++ )
             recv[i] = static_cast<long long int>( tmp[i] );
-        delete [] tmp;
+        delete[] tmp;
     }
     PROFILE_STOP( "minReduce1<long int>", profile_level );
 }
@@ -1711,6 +1763,7 @@ void MPI_CLASS::call_minReduce<long long int>( const long long int *x,
         call_minReduce<double>( tmp, n, comm_rank_of_min );
         for ( int i = 0; i < n; i++ )
             y[i]    = static_cast<long long int>( tmp[i] );
+        delete[] tmp;
     }
     PROFILE_STOP( "minReduce1<long int>", profile_level );
 }
@@ -2157,7 +2210,7 @@ void MPI_CLASS::call_maxReduce<unsigned long long int>( const unsigned long long
         call_maxReduce<double>( tmp, n, comm_rank_of_max );
         for ( int i = 0; i < n; i++ )
             recv[i] = static_cast<long long int>( tmp[i] );
-        delete [] tmp;
+        delete[] tmp;
     }
     PROFILE_STOP( "maxReduce1<long int>", profile_level );
 }
@@ -2190,7 +2243,7 @@ void MPI_CLASS::call_maxReduce<long long int>( const long long int *x,
         call_maxReduce<double>( tmp, n, comm_rank_of_max );
         for ( int i = 0; i < n; i++ )
             y[i]    = static_cast<long long int>( tmp[i] );
-        delete [] tmp;
+        delete[] tmp;
     }
     PROFILE_STOP( "maxReduce1<long int>", profile_level );
 }

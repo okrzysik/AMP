@@ -255,9 +255,9 @@ bool structuredMeshIterator::operator==( const MeshIterator &rhs ) const
         rhs2 = tmp; // We can safely cast rhs to a structuredMeshIterator
     } else if ( tmp->d_typeID == structuredMeshIteratorTypeID ) {
         rhs2 = tmp; // We can safely cast rhs.iterator to a structuredMeshIterator
-    } else if ( ( (structuredMeshIterator *) tmp->d_iterator )->d_typeID ==
+    } else if ( reinterpret_cast<structuredMeshIterator*>( tmp->d_iterator )->d_typeID ==
                 structuredMeshIteratorTypeID ) {
-        rhs2 = (structuredMeshIterator *) tmp->d_iterator;
+        rhs2 = reinterpret_cast<structuredMeshIterator*>( tmp->d_iterator );
     }
     // Perform direct comparisions if we are dealing with two structuredMeshIterators
     if ( rhs2 != nullptr ) {

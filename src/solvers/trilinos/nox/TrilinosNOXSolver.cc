@@ -36,10 +36,9 @@ namespace Solver {
 *  Constructors                                                 *
 ****************************************************************/
 TrilinosNOXSolver::TrilinosNOXSolver() : SolverStrategy() {}
-TrilinosNOXSolver::TrilinosNOXSolver( AMP::shared_ptr<TrilinosNOXSolverParameters> parameters )
-    : SolverStrategy( parameters )
+TrilinosNOXSolver::TrilinosNOXSolver( AMP::shared_ptr<TrilinosNOXSolverParameters> parameters ):
+    SolverStrategy( parameters )
 {
-    TrilinosNOXSolver();
     initialize( parameters );
 }
 void TrilinosNOXSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters )

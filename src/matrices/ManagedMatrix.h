@@ -23,7 +23,7 @@ protected:
     ManagedMatrix();
 
 public:
-    ManagedMatrix( MatrixParameters::shared_ptr p );
+    explicit ManagedMatrix( MatrixParameters::shared_ptr p );
 
     /** \brief  Create values in a matrix
       * \param[in]  num_rows  number of rows in values

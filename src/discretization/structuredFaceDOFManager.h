@@ -20,7 +20,7 @@ namespace Discretization {
  *    and will create the unknowns on the faces.  Two faces are neighbors if they
  *    share an element.
  */
-class structuredFaceDOFManager : public DOFManager
+class structuredFaceDOFManager final : public DOFManager
 {
 public:
     using DOFManager::subset;
@@ -89,6 +89,12 @@ public:
 
     //! Get the row DOFs given a mesh element
     virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const override;
+
+
+private:
+
+    // Empty constructor
+    structuredFaceDOFManager() {}
 
 
 private:

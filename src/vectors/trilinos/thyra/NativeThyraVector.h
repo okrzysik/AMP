@@ -55,7 +55,7 @@ public:
     /** \brief Construct a wrapper for a Thyra Vec from a set of parameters
       * \param[in] params The parameters describing the Vec
       */
-    NativeThyraVector( VectorParameters::shared_ptr params );
+    explicit NativeThyraVector( VectorParameters::shared_ptr params );
 
     //! Destructor
     virtual ~NativeThyraVector();

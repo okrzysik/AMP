@@ -190,7 +190,7 @@ getLateralFaces( AMP::Mesh::Mesh::shared_ptr mesh, bool )
     // get iterator over all faces of mesh
     AMP::Mesh::MeshIterator face = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     // loop over faces
-    for ( ; face != face.end(); face++ ) {
+    for ( ; face != face.end(); ++face ) {
         // check that face is vertical
         // ---------------------------
         // get centroid of current face
@@ -307,7 +307,7 @@ void createGlobalIDMaps( AMP::Discretization::DOFManager::shared_ptr dof_manager
     AMP::Mesh::Mesh::shared_ptr xyMesh =
         mesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( mesh, 0 ) );
     AMP::Mesh::MeshIterator axial_face = xyMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
-    for ( ; axial_face != axial_face.end(); axial_face++ ) {
+    for ( ; axial_face != axial_face.end(); ++axial_face ) {
         std::vector<size_t> dofs;
         dof_manager->getDOFs( axial_face->globalID(), dofs );
         elements_by_globalID.insert( std::make_pair( dofs[0], *axial_face ) );
@@ -322,7 +322,7 @@ void createGlobalIDMaps( AMP::Discretization::DOFManager::shared_ptr dof_manager
     std::map<std::vector<double>, AMP::Mesh::MeshElement> lateral_face_map =
         getLateralFaces( mesh, true );
     AMP::Mesh::MeshIterator face = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
-    for ( ; face != face.end(); face++ ) {
+    for ( ; face != face.end(); ++face ) {
         std::vector<double> centroid = face->centroid();
         auto lateral_face_iterator   = lateral_face_map.find( centroid );
         if ( lateral_face_iterator != lateral_face_map.end() ) {
@@ -352,7 +352,7 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
     AMP::Mesh::Mesh::shared_ptr xyMesh =
         mesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( mesh, 0 ) );
     AMP::Mesh::MeshIterator axial_face = xyMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
-    for ( ; axial_face != axial_face.end(); axial_face++ ) {
+    for ( ; axial_face != axial_face.end(); ++axial_face ) {
         std::vector<size_t> dofs;
         dof_manager->getDOFs( axial_face->globalID(), dofs );
         size_t i_m_AMP    = dofs[0];
@@ -397,7 +397,7 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
 
     // loop over lateral faces
     AMP::Mesh::MeshIterator lateral_face = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
-    for ( ; lateral_face != lateral_face.end(); lateral_face++ ) {
+    for ( ; lateral_face != lateral_face.end(); ++lateral_fac ) {
         std::vector<double> centroid = lateral_face->centroid();
         auto lateral_face_iterator   = lateral_face_map.find( centroid );
         if ( lateral_face_iterator != lateral_face_map.end() ) {
@@ -659,7 +659,7 @@ void Test( AMP::UnitTest *ut, const std::string &exeName )
     AMP::Mesh::MeshElement gapFaces[numGaps_MATLAB][numAxialIntervals]; // gap faces
     // loop over all faces in mesh
     AMP::Mesh::MeshIterator face = subchannelMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
-    for ( ; face != face.end(); face++ ) { // loop over all faces in mesh
+    for ( ; face != face.end(); ++face ) { // loop over all faces in mesh
         std::vector<double> faceCentroid = face->centroid();
         // try to find face in lateral face map
         auto lateralFaceIterator = interiorLateralFaceMap.find( faceCentroid );

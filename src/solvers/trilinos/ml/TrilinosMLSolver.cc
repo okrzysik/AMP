@@ -21,6 +21,8 @@ TrilinosMLSolver::TrilinosMLSolver()
     d_ml             = nullptr;
     d_mlAggregate    = nullptr;
     d_bCreationPhase = true;
+    d_bUseEpetra     = false;
+    d_bRobustMode    = false;
 }
 TrilinosMLSolver::TrilinosMLSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )

@@ -645,7 +645,9 @@ int MPI_CLASS::allGather( const type *send_data,
         MPI_CLASS_ERROR( "Error calling allGather" );
     // Check if we are dealing with a single processor
     if ( comm_size == 1 ) {
-        if ( !known_recv ) {
+        if ( send_data==nullptr && send_cnt>0 ) {
+            MPI_CLASS_ERROR( "send_data is null" );
+        } else if ( !known_recv ) {
             // We do not know the recieved sizes
             for ( int i      = 0; i < send_cnt; i++ )
                 recv_data[i] = send_data[i];
