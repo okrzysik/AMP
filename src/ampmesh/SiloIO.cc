@@ -1011,14 +1011,14 @@ SiloIO::siloBaseMeshData SiloIO::siloBaseMeshData::unpack( char *ptr )
 /************************************************************
 * Functions for siloMultiMeshData                           *
 ************************************************************/
-SiloIO::siloMultiMeshData::siloMultiMeshData( const SiloIO::siloMultiMeshData &rhs )
+SiloIO::siloMultiMeshData::siloMultiMeshData( const SiloIO::siloMultiMeshData &rhs ):
+    id( rhs.id ),
+    mesh( rhs.mesh ),
+    ownerRank( rhs.ownerRank ),
+    name( rhs.name ),
+    meshes( rhs.meshes ),
+    varName( rhs.varName )
 {
-    id        = rhs.id;
-    mesh      = rhs.mesh;
-    ownerRank = rhs.ownerRank;
-    name      = rhs.name;
-    meshes    = rhs.meshes;
-    varName   = rhs.varName;
 }
 SiloIO::siloMultiMeshData &SiloIO::siloMultiMeshData::
 operator=( const SiloIO::siloMultiMeshData &rhs )

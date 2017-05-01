@@ -76,6 +76,7 @@ knownConditionTrueFalse:*/oxide/OxideModel.cc
 knownConditionTrueFalse:*/utils/test/test_AMP_MPI.cc
 noExplicitConstructor:*/utils/AMP_MPI.h
 noExplicitConstructor:*/utils/test/test_AMP_MPI.cc
+postfixOperator:*/ampmesh/testHelpers/meshTests.cc
 
 // Supress warnings for usleep
 obsoleteFunctionsusleep
@@ -86,5 +87,14 @@ obsoleteFunctionsusleep
 
 // Suppress warnings for external code
 memleak:*/utils/tinyexpr/tinyexpr.c
+
+// Suppress #error code paths (may not have complete #define statements
+preprocessorErrorDirective:*/utils/AMPManager.cc
+preprocessorErrorDirective:*/solvers/petsc/PetscKrylovSolver.cc
+preprocessorErrorDirective:*/solvers/petsc/PetscSNESSolver.h
+
+// Suppress unsupported code
+*:*/ampmesh/dendro/*
+*:*/ampmesh/hex8_element_t.cc
 
 

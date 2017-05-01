@@ -62,11 +62,11 @@ libMeshElement::libMeshElement( int dim,
 }
 libMeshElement::libMeshElement( int dim,
                                 GeomType type,
-                                AMP::shared_ptr<::Elem>
-                                    libmesh_element,
+                                AMP::shared_ptr<::Elem> libmesh_element,
                                 unsigned int rank,
                                 MeshID meshID,
-                                const libMesh *mesh )
+                                const libMesh *mesh ):
+    d_delete_elem( false )
 {
     AMP_ASSERT( libmesh_element.get() != nullptr );
     typeID                  = libMeshElementTypeID;
@@ -94,7 +94,9 @@ libMeshElement::libMeshElement( int dim,
     d_globalID = MeshElementID( is_local, type, local_id, owner_rank, meshID );
 }
 libMeshElement::libMeshElement( const libMeshElement &rhs )
-    : MeshElement() // Note: we never want to call the base copy constructor
+    : MeshElement(), // Note: we never want to call the base copy constructor
+    d_meshID( rhs.d_meshID ),
+    d_delete_elem( false )
 {
     typeID      = libMeshElementTypeID;
     element     = nullptr;
@@ -104,7 +106,6 @@ libMeshElement::libMeshElement( const libMeshElement &rhs )
     ptr2        = rhs.ptr2;
     d_rank      = rhs.d_rank;
     d_mesh      = rhs.d_mesh;
-    d_meshID    = rhs.d_meshID;
 }
 libMeshElement &libMeshElement::operator=( const libMeshElement &rhs )
 {
@@ -119,6 +120,7 @@ libMeshElement &libMeshElement::operator=( const libMeshElement &rhs )
     this->d_rank      = rhs.d_rank;
     this->d_mesh      = rhs.d_mesh;
     this->d_meshID    = rhs.d_meshID;
+    this->d_delete_elem = false;
     return *this;
 }
 
