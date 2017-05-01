@@ -17,7 +17,7 @@ public:
 
 
     explicit NodeToNodeMapParameters( const AMP::shared_ptr<AMP::Database> &db )
-        : AsyncMapOperatorParameters( db )
+        : AsyncMapOperatorParameters( db ), d_NumPartners(0)
     {
     }
 };

@@ -41,7 +41,7 @@ public:
      * \param[out] ut           Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshVectorTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+    static void MeshVectorTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh, bool fast=false );
 
 
     /**
@@ -50,7 +50,7 @@ public:
      * \param[out] ut           Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshMatrixTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh );
+    static void MeshMatrixTestLoop( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh, bool fast=false );
 
 public: // Basic tests
 

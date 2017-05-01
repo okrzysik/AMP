@@ -12,7 +12,8 @@ namespace AMP {
 namespace Solver {
 
 CoupledFlow1DSolver::CoupledFlow1DSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
-    : SolverStrategy( parameters )
+    : SolverStrategy( parameters ),
+    d_numpoints(0)
 {
     AMP_ASSERT( parameters.get() != nullptr );
 

@@ -11,14 +11,14 @@ namespace Discretization {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-multiDOFManager::multiDOFManager(
-                                 const AMP_MPI &globalComm, std::vector<DOFManager::shared_ptr> managers ) : d_managers(managers)
+multiDOFManager::multiDOFManager( const AMP_MPI &globalComm, std::vector<DOFManager::shared_ptr> managers ):
+    d_managers(managers),
+    d_ids( managers.size(), 0 ),
+    d_localSize( managers.size(), 0 ),
+    d_globalSize( managers.size(), 0 )
 { 
     d_comm = globalComm;
     // Compute the total begin, end, and global size
-    d_globalSize      = std::vector<size_t>( managers.size(), 0 );
-    d_localSize       = std::vector<size_t>( managers.size(), 0 );
-    d_ids             = std::vector<size_t>( managers.size(), 0 );
     size_t local_size = 0;
     for ( size_t i = 0; i < managers.size(); i++ ) {
         d_ids[i] = managers[i]->getComm().rand();

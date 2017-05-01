@@ -28,7 +28,7 @@ public:
     /** \brief Construct a NativeVector from a set of parameters
       * \param[in] params  The parameters describing the NativeVector
       */
-    NativeVector( parameters_ptr params );
+    explicit NativeVector( parameters_ptr params );
 
     //! Virtual Destuctor
     virtual ~NativeVector() {}

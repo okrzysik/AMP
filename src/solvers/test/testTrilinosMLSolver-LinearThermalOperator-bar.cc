@@ -241,12 +241,12 @@ void linearThermalTest( AMP::UnitTest *ut )
 
             iterator        = iterator.begin();
             size_t numNodes = 0, iNode = 0;
-            for ( ; iterator != iterator.end(); iterator++ )
+            for ( ; iterator != iterator.end(); ++iterator )
                 numNodes++;
 
             iterator   = iterator.end();
             double mse = 0.0;
-            for ( ; iterator != iterator.end(); iterator++ ) {
+            for ( ; iterator != iterator.end(); ++iterator ) {
                 std::vector<size_t> gid;
                 nodalDofMap->getDOFs( iterator->globalID(), gid );
                 cal = TemperatureInKelvinVec->getValueByGlobalID( gid[0] );

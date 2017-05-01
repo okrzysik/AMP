@@ -92,6 +92,7 @@ memleak:*/utils/tinyexpr/tinyexpr.c
 
 // Suppress #error code paths (may not have complete #define statements
 preprocessorErrorDirective:*/utils/AMPManager.cc
+preprocessorErrorDirective:*/vectors/petsc/PetscHelpers.h
 preprocessorErrorDirective:*/solvers/petsc/PetscKrylovSolver.cc
 preprocessorErrorDirective:*/solvers/petsc/PetscSNESSolver.h
 

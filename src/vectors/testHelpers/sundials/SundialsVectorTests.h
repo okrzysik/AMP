@@ -22,7 +22,7 @@ namespace LinearAlgebra {
 class SundialsVectorTests
 {
 public:
-    SundialsVectorTests( AMP::shared_ptr<const VectorFactory> factory ): d_factory(factory) {}
+    explicit SundialsVectorTests( AMP::shared_ptr<const VectorFactory> factory ): d_factory(factory) {}
 
     void testSundialsVector( AMP::UnitTest *ut );
 
