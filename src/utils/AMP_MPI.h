@@ -51,9 +51,10 @@ namespace AMP {
  * succeed provided that the size of the data type object is a fixed size on
  * all processors.  sizeof(type) must be the same for all elements and processors.
  */
-class AMP_MPI
+class AMP_MPI final
 {
-public:
+public: // Constructors
+
     /**
      *\brief  Is MPI active
      *\details  This returns true if MPI is initailized and not finalized
@@ -73,14 +74,6 @@ public:
 
 
     /**
-     * \brief Constructor from existing communicator
-     * \details  This constructor creates a new communicator from an existing communicator.
-     *   This does not create a new internal MPI_Comm, but uses the existing comm.
-     * \param comm Existing communicator
-     */
-    AMP_MPI( const AMP::AMP_MPI &comm );
-
-    /**
      * \brief Constructor from existing MPI communicator
      * \details  This constructor creates a new communicator from an existing MPI communicator.
      *    This does not create a new internal MPI_Comm, but uses the existing comm.
@@ -96,11 +89,34 @@ public:
 
 
     /**
+     * \brief Constructor from existing communicator
+     * \details  This constructor creates a new communicator from an existing communicator.
+     *   This does not create a new internal MPI_Comm, but uses the existing comm.
+     * \param comm Existing communicator
+     */
+    AMP_MPI( const AMP_MPI &comm );
+
+
+    /*!
+     * Move constructor
+     * @param rhs           Communicator to copy
+     */
+    AMP_MPI( AMP_MPI &&rhs );
+
+
+    /**
      * \brief Assignment operator
      * \details  This operator overloads the assignment to correctly copy an communicator
      * \param comm Existing MPI object
      */
-    AMP_MPI &operator=( const AMP::AMP_MPI &comm );
+    AMP_MPI &operator=( const AMP_MPI &comm );
+
+
+    /*!
+     * Move assignment operator
+     * @param rhs           Communicator to copy
+     */
+    AMP_MPI &operator=( AMP_MPI &&rhs );
 
 
     /**
@@ -109,6 +125,8 @@ public:
      */
     void reset();
 
+
+public: // Member functions
 
     /**
      * \brief Get the node name
@@ -241,7 +259,7 @@ public:
      * \details  This returns a vector which contains the global ranks for each
      *   member of the communicator.  The global ranks are defined according to AMP_COMM_WORLD.
      */
-    const std::vector<int> &globalRanks() const;
+    std::vector<int> globalRanks() const;
 
 
     /**
@@ -979,49 +997,7 @@ public:
     static size_t MPI_Comm_destroyed() { return N_MPI_Comm_destroyed; }
 
 
-private:
-    // The internal MPI communicator
-    MPI_Comm communicator;
-
-    // Is the communicator NULL
-    bool d_isNull;
-
-    // Do we want to call MPI_abort instead of exit
-    bool call_abort_in_serial_instead_of_exit;
-
-    // The level for the profiles of MPI
-    static short profile_level;
-
-    // The rank and size of the communicator
-    int comm_rank, comm_size;
-
-    // The ranks of the comm in the global comm
-    mutable std::shared_ptr<std::vector<int>> d_ranks;
-
-    // Some attributes
-    int d_maxTag;
-    int *volatile d_currentTag;
-
-    /* How many objects share the same underlying MPI communicator.
-     * When the count goes to 0, the MPI comm will be free'd (assuming it was created
-     * by an communicator).  This may not be perfect, but is likely to be good enough.
-     * Note that for thread safety, any access to this variable should be blocked for thread safety.
-     * The value of count MUST be volatile to ensure the correct value is always used.
-     */
-    int *volatile d_count;
-
-    // Add a variable for data alignment (necessary for some Intel builds)
-    double tmp_alignment;
-
-    /* We want to keep track of how many MPI_Comm objects we have created over time.
-     * Like the count, for thread safety this should be blocked, however the most likely error
-     * caused by not blocking is a slight error in the MPI count.  Since this is just for reference
-     * we do not need to block (recognizing that the value may not be 100% accurate).
-     */
-    static volatile unsigned int N_MPI_Comm_created;
-    static volatile unsigned int N_MPI_Comm_destroyed;
-
-    // Private helper functions for templated MPI operations;
+private: // Private helper functions for templated MPI operations;
     template <class type>
     void call_sumReduce( type *x, const int n = 1 ) const;
     template <class type>
@@ -1054,6 +1030,54 @@ private:
                         type *recv_data,
                         const int *recv_cnt,
                         const int *recv_disp ) const;
+
+
+private: // data members
+
+    // The internal MPI communicator
+    MPI_Comm communicator;
+
+    // Is the communicator NULL
+    bool d_isNull;
+
+    // Do we want to manage this communicator
+    bool d_manage;
+
+    // Do we want to call MPI_abort instead of exit
+    bool d_call_abort;
+
+    // The level for the profiles of MPI
+    static short profile_level;
+
+    // The rank and size of the communicator
+    int comm_rank, comm_size;
+
+    // The ranks of the comm in the global comm
+    mutable int *volatile d_ranks;
+
+    // Some attributes
+    int d_maxTag;
+    int *volatile d_currentTag;
+
+    /* How many objects share the same underlying MPI communicator.
+     * When the count goes to 0, the MPI comm will be free'd (assuming it was created
+     * by an communicator).  This may not be perfect, but is likely to be good enough.
+     * Note that for thread safety, any access to this variable should be blocked for thread safety.
+     * The value of count MUST be volatile to ensure the correct value is always used.
+     */
+    int *volatile d_count;
+
+    // Add a variable for data alignment (necessary for some Intel builds)
+    double tmp_alignment;
+
+    /* We want to keep track of how many MPI_Comm objects we have created over time.
+     * Like the count, for thread safety this should be blocked, however the most likely error
+     * caused by not blocking is a slight error in the MPI count.  Since this is just for reference
+     * we do not need to block (recognizing that the value may not be 100% accurate).
+     */
+    static volatile unsigned int N_MPI_Comm_created;
+    static volatile unsigned int N_MPI_Comm_destroyed;
+
 };
 
 
