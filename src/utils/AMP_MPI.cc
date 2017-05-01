@@ -661,7 +661,7 @@ std::vector<int> MPI_CLASS::globalRanks() const
     }
     // Check if we are dealing with a serial or null communicator
     if ( comm_size == 1 )
-        return std::vector<int>(1,0);
+        return std::vector<int>(1,myGlobalRank);
     if ( d_ranks == nullptr || communicator == MPI_COMM_NULL )
         return std::vector<int>();
     // Fill d_ranks if necessary
