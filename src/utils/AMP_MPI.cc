@@ -1678,6 +1678,7 @@ void MPI_CLASS::call_minReduce<unsigned long long int>( const unsigned long long
         call_minReduce<double>( tmp, n, comm_rank_of_min );
         for ( int i = 0; i < n; i++ )
             recv[i] = static_cast<long long int>( tmp[i] );
+        delete [] tmp;
     }
     PROFILE_STOP( "minReduce1<long int>", profile_level );
 }
@@ -2156,6 +2157,7 @@ void MPI_CLASS::call_maxReduce<unsigned long long int>( const unsigned long long
         call_maxReduce<double>( tmp, n, comm_rank_of_max );
         for ( int i = 0; i < n; i++ )
             recv[i] = static_cast<long long int>( tmp[i] );
+        delete [] tmp;
     }
     PROFILE_STOP( "maxReduce1<long int>", profile_level );
 }
@@ -2188,6 +2190,7 @@ void MPI_CLASS::call_maxReduce<long long int>( const long long int *x,
         call_maxReduce<double>( tmp, n, comm_rank_of_max );
         for ( int i = 0; i < n; i++ )
             y[i]    = static_cast<long long int>( tmp[i] );
+        delete [] tmp;
     }
     PROFILE_STOP( "maxReduce1<long int>", profile_level );
 }
