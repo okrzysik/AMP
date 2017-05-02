@@ -133,7 +133,7 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
     }
     builder.setParameterList( p );
     d_lowsFactory = builder.createLinearSolveStrategy( "" );
-    //d_lowsFactory->initializeVerboseObjectBase();
+    //    d_lowsFactory->initializeVerboseObjectBase();
     d_thyraModel->set_W_factory( d_lowsFactory );
     // Create the convergence tests (these will need to be on the input database)
     Teuchos::RCP<NOX::StatusTest::NormF> absresid =
