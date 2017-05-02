@@ -16,8 +16,9 @@ namespace Operator {
 
 
 FlowFrapconJacobian::FlowFrapconJacobian(
-    const AMP::shared_ptr<FlowFrapconJacobianParameters> &params )
-    : Operator( params )
+    const AMP::shared_ptr<FlowFrapconJacobianParameters> &params ):
+    Operator( params ),
+    dCp(0)
 {
     std::string inpVar = params->d_db->getString( "InputVariable" );
     d_inpVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );

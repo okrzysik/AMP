@@ -230,7 +230,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     nonlinearOperator->getLateralFaces(
         nonlinearOpParams->d_Mesh, interiorLateralFaceMap, exteriorLateralFaceMap );
     // loop over lateral faces
-    for ( face = face.begin(); face != face.end(); face++ ) {
+    for ( face = face.begin(); face != face.end(); ++face ) {
         std::vector<double> faceCentroid = face->centroid();
         auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
@@ -259,7 +259,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
         ++face;
     }
     // loop over lateral faces
-    for ( face = face.begin(); face != face.end(); face++ ) {
+    for ( face = face.begin(); face != face.end(); ++face ) {
         std::vector<double> faceCentroid = face->centroid();
         auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {

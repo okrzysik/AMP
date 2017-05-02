@@ -144,7 +144,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
     // set dummy values for reset in operator constructor; otherwise zero-values give error in
     // thermodynamic property
     // evaluations
-    for ( ; face != face.end(); face++ ) {
+    for ( ; face != face.end(); ++face ) {
         faceDOFManager->getDOFs( face->globalID(), dofs );
         FrozenVec->setValueByGlobalID( dofs[0], h_scale * 900.0e3 );
         FrozenVec->setValueByGlobalID( dofs[1], P_scale * 15.0e6 );

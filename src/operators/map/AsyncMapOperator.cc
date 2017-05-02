@@ -11,11 +11,10 @@ AsyncMapOperator::AsyncMapOperator( const AMP::shared_ptr<OperatorParameters> &p
     : AsynchronousOperator( p )
 {
     // Fill some basic info
-    AMP::shared_ptr<AsyncMapOperatorParameters> params =
-        AMP::dynamic_pointer_cast<AsyncMapOperatorParameters>( p );
-    d_MapComm = params->d_MapComm;
-    d_mesh1   = params->d_Mesh1;
-    d_mesh2   = params->d_Mesh2;
+    auto params = AMP::dynamic_pointer_cast<AsyncMapOperatorParameters>( p );
+    d_MapComm   = params->d_MapComm;
+    d_mesh1     = params->d_Mesh1;
+    d_mesh2     = params->d_Mesh2;
     AMP_INSIST( !d_MapComm.isNull(), "NULL communicator for map is invalid" );
     AMP_INSIST( d_MapComm.sumReduce<int>( d_mesh1.get() != nullptr ? 1 : 0 ) > 0,
                 "Somebody must own mesh 1" );

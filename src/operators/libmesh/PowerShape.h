@@ -188,7 +188,6 @@ protected:
     AMP::shared_ptr<::FEBase> d_fe;
     AMP::shared_ptr<::QBase> d_qrule;
 
-    AMP::Mesh::Mesh::shared_ptr d_Mesh;
     void createCurrentLibMeshElement();
 
     void destroyCurrentLibMeshElement();

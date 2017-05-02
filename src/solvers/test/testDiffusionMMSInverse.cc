@@ -147,7 +147,7 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     AMP::Mesh::MeshIterator iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     std::string mfgName              = mfgSolution->get_name();
     bool isCylindrical               = mfgName.find( "Cylindrical" ) < mfgName.size();
-    for ( ; iterator != iterator.end(); iterator++ ) {
+    for ( ; iterator != iterator.end(); ++iterator ) {
         double x, y, z;
         std::valarray<double> poly( 10 );
         std::vector<double> coord = iterator->coord();
@@ -180,7 +180,7 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
             meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, j, 0 );
         AMP::Mesh::MeshIterator end_bnd = beg_bnd.end();
         AMP::Mesh::MeshIterator iter;
-        for ( iter = beg_bnd; iter != end_bnd; iter++ ) {
+        for ( iter = beg_bnd; iter != end_bnd; ++iter ) {
             std::valarray<double> poly( 10 );
             double x, y, z;
             std::vector<double> coord = iterator->coord();
@@ -279,13 +279,13 @@ void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
             iterator        = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
             size_t numNodes = 0;
-            for ( ; iterator != iterator.end(); iterator++ )
+            for ( ; iterator != iterator.end(); ++iterator )
                 numNodes++;
 
             iterator     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
             size_t iNode = 0;
             double l2err = 0.;
-            for ( ; iterator != iterator.end(); iterator++ ) {
+            for ( ; iterator != iterator.end(); ++iterator ) {
                 double x, y, z;
                 std::vector<double> coord = iterator->coord();
                 x                         = coord[0];

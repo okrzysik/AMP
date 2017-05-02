@@ -16,6 +16,20 @@
 namespace AMP {
 namespace Operator {
 
+
+FlowFrapconOperator::FlowFrapconOperator( const AMP::shared_ptr<FlowFrapconOperatorParameters> &params ):
+    Operator( params ),
+    d_boundaryId( 0 )
+{
+    std::string inpVar = params->d_db->getString( "InputVariable" );
+    d_inpVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
+
+    std::string outVar = params->d_db->getString( "OutputVariable" );
+    d_outVariable.reset( new AMP::LinearAlgebra::Variable( outVar ) );
+
+    reset( params );
+}
+
 void FlowFrapconOperator::reset( const AMP::shared_ptr<OperatorParameters> &params )
 {
     AMP::shared_ptr<FlowFrapconOperatorParameters> myparams =

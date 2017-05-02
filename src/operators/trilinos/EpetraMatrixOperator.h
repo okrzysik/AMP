@@ -1,8 +1,8 @@
 #ifndef included_EpetraMatrixOperator_h
 #define included_EpetraMatrixOperator_h
 
-#include "EpetraMatrixOperatorParameters.h"
-#include "LinearOperator.h"
+#include "operators/trilinos/EpetraMatrixOperatorParameters.h"
+#include "operators/LinearOperator.h"
 #include "matrices/trilinos/ManagedEpetraMatrix.h"
 
 namespace AMP {
@@ -14,7 +14,7 @@ private:
     AMP::LinearAlgebra::Variable::shared_ptr d_Input, d_Output;
 
 public:
-    EpetraMatrixOperator( const AMP::shared_ptr<EpetraMatrixOperatorParameters> &params )
+    explicit EpetraMatrixOperator( const AMP::shared_ptr<EpetraMatrixOperatorParameters> &params )
         : LinearOperator( params )
     {
         AMP::LinearAlgebra::Matrix::shared_ptr t(

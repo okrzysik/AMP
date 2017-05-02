@@ -177,15 +177,11 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName )
                 file << "results={" << std::endl;
             }
 
-            AMP::Mesh::MeshIterator urIterator = iterator.begin();
-            size_t numNodes                    = 0;
-            for ( ; urIterator != iterator.end(); urIterator++ )
-                numNodes++;
-
+            size_t numNodes = iterator.size();
             size_t iNode                       = 0;
             double l2err                       = 0.;
             AMP::Mesh::MeshIterator myIterator = iterator.begin();
-            for ( ; myIterator != iterator.end(); myIterator++ ) {
+            for ( ; myIterator != iterator.end(); ++myIterator ) {
                 double x, y, z;
                 x = ( myIterator->coord() )[0];
                 y = ( myIterator->coord() )[1];

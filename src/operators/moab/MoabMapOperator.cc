@@ -199,7 +199,7 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
     unsigned int zeroGhostWidth  = 0;
     AMP::Mesh::MeshIterator elem = mesh->getIterator( AMP::Mesh::GeomType::Volume, zeroGhostWidth );
     int elem_ctr = 0, gp_ctr = 0;
-    for ( ; elem != elem.end(); elem++ ) {
+    for ( ; elem != elem.end(); ++elem ) {
         std::vector<AMP::Mesh::MeshElement> currNodes;
         currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
         ::Elem *currElemPtr;
@@ -263,7 +263,7 @@ void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl 
     unsigned int zeroGhostWidth  = 0;
     AMP::Mesh::MeshIterator node = mesh->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
     int node_ctr                 = 0;
-    for ( ; node != node.end(); node++ ) {
+    for ( ; node != node.end(); ++node ) {
         xyz[3 * node_ctr]     = ( node->coord() )[0] * m_to_cm;
         xyz[3 * node_ctr + 1] = ( node->coord() )[1] * m_to_cm;
         xyz[3 * node_ctr + 2] = ( node->coord() )[2] * m_to_cm;

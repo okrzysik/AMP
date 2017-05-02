@@ -25,17 +25,7 @@ public:
       Constructor creates a simpleVariables for Input and Output. The reset is called to
       read the flow parameters.
       */
-    explicit FlowFrapconOperator( const AMP::shared_ptr<FlowFrapconOperatorParameters> &params )
-        : Operator( params )
-    {
-        std::string inpVar = params->d_db->getString( "InputVariable" );
-        d_inpVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
-
-        std::string outVar = params->d_db->getString( "OutputVariable" );
-        d_outVariable.reset( new AMP::LinearAlgebra::Variable( outVar ) );
-
-        reset( params );
-    }
+    explicit FlowFrapconOperator( const AMP::shared_ptr<FlowFrapconOperatorParameters> &params );
 
     /**
       Destructor

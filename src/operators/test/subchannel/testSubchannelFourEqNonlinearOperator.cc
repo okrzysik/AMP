@@ -341,7 +341,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
     AMP::Mesh::MeshElement gapFaces[numGaps][numAxialIntervals]; // gap faces
     // loop over all faces in mesh
     AMP::Mesh::MeshIterator face = subchannelOpParams->d_Mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
-    for ( ; face != face.end(); face++ ) { // loop over all faces in mesh
+    for ( ; face != face.end(); ++face ) { // loop over all faces in mesh
         std::vector<double> faceCentroid = face->centroid();
         // try to find face in lateral face map
         auto lateralFaceIterator = interiorLateralFaceMap.find( faceCentroid );

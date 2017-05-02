@@ -397,7 +397,7 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
 
     // loop over lateral faces
     AMP::Mesh::MeshIterator lateral_face = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
-    for ( ; lateral_face != lateral_face.end(); ++lateral_fac ) {
+    for ( ; lateral_face != lateral_face.end(); ++lateral_face ) {
         std::vector<double> centroid = lateral_face->centroid();
         auto lateral_face_iterator   = lateral_face_map.find( centroid );
         if ( lateral_face_iterator != lateral_face_map.end() ) {

@@ -17,8 +17,27 @@ namespace Operator {
 
 // Constructor
 SubchannelFourEqNonlinearOperator::SubchannelFourEqNonlinearOperator(
-    const AMP::shared_ptr<SubchannelOperatorParameters> &params )
-    : Operator( params )
+    const AMP::shared_ptr<SubchannelOperatorParameters> &params ):
+    Operator( params ),
+    d_forceNoConduction(0),
+    d_forceNoTurbulence(0),
+    d_forceNoHeatSource(0),
+    d_forceNoFriction(0),
+    d_Pout(0),
+    d_Tin(0),
+    d_mass(0),
+    d_win(0),
+    d_gamma(0),
+    d_theta(0),
+    d_turbulenceCoef(0),
+    d_reynolds(0),
+    d_prandtl(0),
+    d_KG(0),
+    d_friction(0),
+    d_roughness(0),
+    d_NGrid(0),
+    d_Q(0),
+    d_numSubchannels(0)
 {
     AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "Key 'InputVariable' does not exist" );
     std::string inpVar = params->d_db->getString( "InputVariable" );
@@ -242,7 +261,7 @@ void SubchannelFourEqNonlinearOperator::getLateralFaces(
     // get iterator over all faces of mesh
     AMP::Mesh::MeshIterator face = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     // loop over faces
-    for ( ; face != face.end(); face++ ) {
+    for ( ; face != face.end(); ++face ) {
         // check that face is vertical
         // ---------------------------
         // get centroid of current face
@@ -296,7 +315,7 @@ SubchannelFourEqNonlinearOperator::getGapWidths( AMP::Mesh::Mesh::shared_ptr mes
     double topZ = 0.5 * ( d_z[Nz] + d_z[Nz - 1] );
     // get iterator over all faces of mesh
     AMP::Mesh::MeshIterator face = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
-    for ( ; face != face.end(); face++ ) {
+    for ( ; face != face.end(); ++face ) {
         std::vector<double> faceCentroid = face->centroid();
         if ( AMP::Utilities::approx_equal( faceCentroid[2], topZ, 1.0e-12 ) ) {
             // if the face has more than 1 adjacent cell
@@ -948,7 +967,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
     // loop over lateral faces
     AMP::Mesh::MeshIterator face =
         d_Mesh->getIterator( AMP::Mesh::GeomType::Face, 0 ); // iterator for cells of mesh
-    for ( ; face != face.end(); face++ ) {
+    for ( ; face != face.end(); ++face ) {
         std::vector<double> faceCentroid = face->centroid();
         auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
