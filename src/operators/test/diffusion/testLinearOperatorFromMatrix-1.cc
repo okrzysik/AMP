@@ -86,15 +86,12 @@ void linearTest1( AMP::UnitTest * const ut, const std::string &exeName )
     // COMMENT: the next few lines should ideally need to be replaced
     // by a getRowsByGlobalID call that extracts the rows numbered by global ID
     const auto &leftDOFManager =  diffMat->getLeftDOFManager();
-    std::vector<unsigned int> uint_cols;
     std::vector<double> values;
+    std::vector<size_t> cols;
     for ( auto row = leftDOFManager->beginDOF(); row < leftDOFManager->endDOF(); ++row ) {
-        diffMat->getRowByGlobalID( row, uint_cols, values );
-        std::vector<int> cols;
-        // COMMENT: for now do an explicit conversion till we fix the interfaces
-        cols.assign(uint_cols.begin(), uint_cols.end());  
+        diffMat->getRowByGlobalID( row, cols, values );
         // COMMENT: Note the incosistency in the get and set, need to fix!!
-        newMat->setValuesByGlobalID( 1, (int) cols.size(), (int *) &row, &cols[0], &values[0]);
+        newMat->setValuesByGlobalID( 1, cols.size(), &row, cols.data(), values.data());
     }
 
     // extract input and output variables
