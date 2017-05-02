@@ -22,7 +22,7 @@ void fillWithPseudoLaplacian( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
 {
     AMP::Discretization::DOFManager::shared_ptr dofmap = MATRIX_FACTORY::getDOFMap();
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-        std::vector<unsigned int> cols;
+        std::vector<size_t> cols;
         std::vector<double> vals;
         matrix->getRowByGlobalID( i, cols, vals );
         for ( size_t j = 0; j != cols.size(); j++ ) {
@@ -33,7 +33,7 @@ void fillWithPseudoLaplacian( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
         }
         if ( cols.size() )
             matrix->setValuesByGlobalID(
-                1, (int) cols.size(), (int *) &i, (int *) &( cols[0] ), (double *) &( vals[0] ) );
+                1, cols.size(), &i, &( cols[0] ), (double *) &( vals[0] ) );
     }
     matrix->makeConsistent();
 }
@@ -109,7 +109,7 @@ public:
         fillWithPseudoLaplacian<FACTORY>(
             matrix ); // puts 6 on the diagonal and -1 on allocated off-diagonals
         for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-            std::vector<unsigned int> cols;
+            std::vector<size_t> cols;
             std::vector<double> vals;
             matrix->getRowByGlobalID( i, cols, vals );
             for ( size_t j = 0; j != cols.size(); j++ ) {
@@ -449,7 +449,7 @@ public:
         bool pass = true;
         it        = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         end       = it.end();
-        std::vector<unsigned int> cols;
+        std::vector<size_t> cols;
         std::vector<double> values;
         while ( it != end ) {
             dofmap->getDOFs( it->globalID(), dofs );

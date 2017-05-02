@@ -8,7 +8,7 @@ inline Matrix::shared_ptr NativePetscMatrix::cloneMatrix() const
 {
     Mat new_mat;
     MatDuplicate( d_Mat, MAT_DO_NOT_COPY_VALUES, &new_mat );
-    AMP_ERROR( "not qutie implemented" );
+    AMP_ERROR( "not quite implemented" );
     return shared_ptr( new NativePetscMatrix( new_mat, true ) );
 }
 
@@ -17,7 +17,7 @@ inline size_t NativePetscMatrix::numGlobalRows() const
 {
     int rows, cols;
     MatGetSize( d_Mat, &rows, &cols );
-    return rows;
+    return (size_t) rows;
 }
 
 
@@ -25,7 +25,7 @@ inline size_t NativePetscMatrix::numGlobalColumns() const
 {
     int rows, cols;
     MatGetSize( d_Mat, &rows, &cols );
-    return cols;
+    return (size_t) cols;
 }
 
 
@@ -74,16 +74,26 @@ inline void NativePetscMatrix::multTranspose( Vector::const_shared_ptr in, Vecto
 
 
 inline void NativePetscMatrix::addValuesByGlobalID(
-    int num_rows, int num_cols, int *rows, int *cols, double *values )
+    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
 {
-    MatSetValues( d_Mat, num_rows, rows, num_cols, cols, values, ADD_VALUES );
+    std::vector<PetscInt> petsc_rows( num_rows );
+    std::vector<PetscInt> petsc_cols( num_cols );
+    std::copy(rows, rows+num_rows, petsc_rows.begin() );
+    std::copy(cols, cols+num_cols, petsc_cols.begin() );
+
+    MatSetValues( d_Mat, num_rows, &petsc_rows[0], num_cols, &petsc_cols[0], values, ADD_VALUES );
 }
 
 
 inline void NativePetscMatrix::setValuesByGlobalID(
-    int num_rows, int num_cols, int *rows, int *cols, double *values )
+    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
 {
-    MatSetValues( d_Mat, num_rows, rows, num_cols, cols, values, INSERT_VALUES );
+    std::vector<PetscInt> petsc_rows( num_rows );
+    std::vector<PetscInt> petsc_cols( num_cols );
+    std::copy(rows, rows+num_rows, petsc_rows.begin() );
+    std::copy(cols, cols+num_cols, petsc_cols.begin() );
+
+    MatSetValues( d_Mat, num_rows, &petsc_rows[0], num_cols, &petsc_cols[0], values, INSERT_VALUES );
 }
 
 

@@ -14,7 +14,7 @@ TrilinosMatrixShellOperator::TrilinosMatrixShellOperator(
 
 
 void TrilinosMatrixShellOperator::setGetRow( void ( *func )(
-    void *object, int row, std::vector<unsigned int> &cols, std::vector<double> &values ) )
+    void *object, int row, std::vector<size_t> &cols, std::vector<double> &values ) )
 {
     d_getRow = func;
 }
@@ -104,7 +104,7 @@ int TrilinosMatrixShellOperator::getRow( ML_Operator *data,
     int cnt           = 0;
     for ( int i = 0; i < N_requested_rows; i++ ) {
         int row = requested_rows[i];
-        std::vector<unsigned int> cols;
+        std::vector<size_t> cols;
         std::vector<double> vals;
 
         ( *( op->d_getRow ) )( op->d_operator.get(), row, cols, vals );
@@ -127,7 +127,7 @@ int TrilinosMatrixShellOperator::getRow( ML_Operator *data,
 
 
 void TrilinosMatrixShellOperator::getColumn( int column,
-                                             std::vector<unsigned int> &rows,
+                                             std::vector<size_t> &rows,
                                              std::vector<double> &values )
 {
     AMP::LinearAlgebra::Vector::shared_ptr inVec =

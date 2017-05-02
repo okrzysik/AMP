@@ -65,7 +65,7 @@ void BandedSolver::reset( AMP::shared_ptr<SolverStrategyParameters> parameters )
     size_t row_begin = leftDOF->beginDOF();
     size_t col_begin = rightDOF->beginDOF();
     size_t col_end   = rightDOF->endDOF();
-    std::vector<unsigned int> cols;
+    std::vector<size_t> cols;
     std::vector<double> values;
     for ( int i = 0; i < M; i++ ) {
         size_t row = i + row_begin;

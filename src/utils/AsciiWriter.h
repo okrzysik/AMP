@@ -139,7 +139,7 @@ private:
     static void sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr mat,
                                AMP_MPI d_comm,
                                int row,
-                               std::vector<unsigned int> &col,
+                               std::vector<size_t> &col,
                                std::vector<double> &data );
 #endif
 };

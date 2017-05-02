@@ -112,7 +112,7 @@ void linearTest1( AMP::UnitTest *ut, std::string exeName )
     if ( nranks == 1 ) {
         std::cout << "cols={" << std::endl;
         for ( size_t i = 0; i < matdim; i++ ) {
-            std::vector<unsigned int> matCols;
+            std::vector<size_t> matCols;
             std::vector<double> matVals;
             diffMat->getRowByGlobalID( i, matCols, matVals );
             std::cout << "{";
@@ -131,7 +131,7 @@ void linearTest1( AMP::UnitTest *ut, std::string exeName )
         std::cout << "matrix = {" << std::endl;
 
         for ( size_t i = 0; i < matdim; i++ ) {
-            std::vector<unsigned int> matCols;
+            std::vector<size_t> matCols;
             std::vector<double> matVals;
             diffMat->getRowByGlobalID( i, matCols, matVals );
             std::cout << "{";

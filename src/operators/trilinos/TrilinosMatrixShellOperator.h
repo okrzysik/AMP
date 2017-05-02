@@ -51,9 +51,9 @@ public:
                        int row_lengths[] );
 
     void setGetRow( void ( *func )(
-        void *object, int row, std::vector<unsigned int> &cols, std::vector<double> &values ) );
+        void *object, int row, std::vector<size_t> &cols, std::vector<double> &values ) );
 
-    void getColumn( int column, std::vector<unsigned int> &rows, std::vector<double> &values );
+    void getColumn( int column, std::vector<size_t> &rows, std::vector<double> &values );
 
     size_t getMatrixSize();
 
@@ -64,7 +64,7 @@ private:
 
     void ( *d_getRow )( void *object,
                         int row,
-                        std::vector<unsigned int> &cols,
+                        std::vector<size_t> &cols,
                         std::vector<double> &values );
 };
 }

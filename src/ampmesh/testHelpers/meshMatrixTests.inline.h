@@ -137,7 +137,7 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
                             matrix->setValueByGlobalID( localDOFs[j], neighborDOFs[i], proc );
                             matrix->setValueByGlobalID( neighborDOFs[i], localDOFs[j], proc );
                         }
-                        std::vector<unsigned int> cols;
+                        std::vector<size_t> cols;
                         std::vector<double> values;
                         matrix->getRowByGlobalID( localDOFs[j], cols, values );
                         for ( size_t i1 = 0; i1 < cols.size(); i1++ ) {

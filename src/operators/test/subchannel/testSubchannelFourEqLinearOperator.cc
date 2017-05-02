@@ -362,7 +362,7 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
         size_t i_h_MATLAB = AMP_to_MATLAB( *axial_face, 1 );
         size_t i_p_MATLAB = AMP_to_MATLAB( *axial_face, 2 );
         std::vector<double> val_m, val_h, val_p;       // nonzero values in Jacobian row
-        std::vector<unsigned int> ind_m, ind_h, ind_p; // indices of nonzeros in Jacobian row
+        std::vector<size_t> ind_m, ind_h, ind_p; // indices of nonzeros in Jacobian row
         J_test_AMP->getRowByGlobalID( i_m_AMP, ind_m, val_m );
         J_test_AMP->getRowByGlobalID( i_h_AMP, ind_h, val_h );
         J_test_AMP->getRowByGlobalID( i_p_AMP, ind_p, val_p );
@@ -406,7 +406,7 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
             size_t i_w_AMP    = dofs[0];
             size_t i_w_MATLAB = AMP_to_MATLAB( *lateral_face, 3 );
             std::vector<double> val_w;       // nonzero values in Jacobian row
-            std::vector<unsigned int> ind_w; // indices of nonzeros in Jacobian row
+            std::vector<size_t> ind_w; // indices of nonzeros in Jacobian row
             J_test_AMP->getRowByGlobalID( i_w_AMP, ind_w, val_w );
             // loop over all DOFs
             for ( size_t j_AMP = 0; j_AMP < num_dofs_AMP; j_AMP++ ) {

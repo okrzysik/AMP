@@ -48,12 +48,12 @@ public:
     int getNumColumnsForBlock( int id );
 
     static void
-    getRow( void *object, int row, std::vector<unsigned int> &cols, std::vector<double> &values );
+    getRow( void *object, int row, std::vector<size_t> &cols, std::vector<double> &values );
 
     void getRowForBlock( int locRow,
                          int blkRowId,
                          int blkColId,
-                         std::vector<unsigned int> &locCols,
+                         std::vector<size_t> &locCols,
                          std::vector<double> &values );
 
 protected:

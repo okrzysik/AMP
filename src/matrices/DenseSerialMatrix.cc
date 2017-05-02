@@ -131,7 +131,7 @@ void DenseSerialMatrix::axpy( double alpha, const Matrix &X )
     AMP_ASSERT( X.numGlobalColumns() == this->numGlobalColumns() );
     if ( dynamic_cast<const DenseSerialMatrix *>( &X ) == nullptr ) {
         // X is an unknown matrix type
-        std::vector<unsigned int> cols;
+        std::vector<size_t> cols;
         std::vector<double> values;
         for ( size_t i = 0; i < d_rows; i++ ) {
             X.getRowByGlobalID( static_cast<int>( i ), cols, values );
@@ -158,31 +158,31 @@ void DenseSerialMatrix::zero() { memset( d_M, 0, d_rows * d_cols * sizeof( doubl
 * Get/Set values                                        *
 ********************************************************/
 void DenseSerialMatrix::addValuesByGlobalID(
-    int num_rows, int num_cols, int *rows, int *cols, double *values )
+    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
 {
-    for ( int i = 0; i < num_rows; i++ ) {
-        for ( int j = 0; j < num_cols; j++ ) {
+    for ( size_t i = 0; i < num_rows; i++ ) {
+        for ( size_t j = 0; j < num_cols; j++ ) {
             d_M[rows[i] + cols[j] * d_rows] += values[num_cols * i + j];
         }
     }
 }
 void DenseSerialMatrix::setValuesByGlobalID(
-    int num_rows, int num_cols, int *rows, int *cols, double *values )
+    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
 {
-    for ( int i = 0; i < num_rows; i++ ) {
-        for ( int j = 0; j < num_cols; j++ ) {
+    for ( size_t i = 0; i < num_rows; i++ ) {
+        for ( size_t j = 0; j < num_cols; j++ ) {
             d_M[rows[i] + cols[j] * d_rows] = values[num_cols * i + j];
         }
     }
 }
-void DenseSerialMatrix::addValueByGlobalID( int row, int col, double value )
+void DenseSerialMatrix::addValueByGlobalID( size_t row, size_t col, double value )
 {
-    AMP_ASSERT( row < (int) d_rows && col < (int) d_cols );
+    AMP_ASSERT( row < d_rows && col < d_cols );
     d_M[row + col * d_rows] += value;
 }
-void DenseSerialMatrix::setValueByGlobalID( int row, int col, double value )
+void DenseSerialMatrix::setValueByGlobalID( size_t row, size_t col, double value )
 {
-    AMP_ASSERT( row < (int) d_rows && col < (int) d_cols );
+    AMP_ASSERT( row < d_rows && col < d_cols );
     d_M[row + col * d_rows] = value;
 }
 
@@ -190,11 +190,11 @@ void DenseSerialMatrix::setValueByGlobalID( int row, int col, double value )
 /********************************************************
 * Get values/rows by global id                          *
 ********************************************************/
-void DenseSerialMatrix::getRowByGlobalID( int row,
-                                          std::vector<unsigned int> &cols,
+void DenseSerialMatrix::getRowByGlobalID( size_t row,
+                                          std::vector<size_t> &cols,
                                           std::vector<double> &values ) const
 {
-    AMP_ASSERT( row < (int) d_rows );
+    AMP_ASSERT( row < d_rows );
     cols.resize( d_cols );
     values.resize( d_cols );
     for ( size_t i = 0; i < d_cols; i++ ) {
@@ -202,15 +202,15 @@ void DenseSerialMatrix::getRowByGlobalID( int row,
         values[i] = d_M[row + i * d_rows];
     }
 }
-double DenseSerialMatrix::getValueByGlobalID( int row, int col ) const
+double DenseSerialMatrix::getValueByGlobalID( size_t row, size_t col ) const
 {
     return d_M[row + col * d_rows];
 }
 void DenseSerialMatrix::getValuesByGlobalID(
-    int num_rows, int num_cols, int *rows, int *cols, double *values ) const
+    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const
 {
-    for ( int i = 0; i < num_rows; i++ )
-        for ( int j                  = 0; j < num_cols; j++ )
+    for ( size_t i = 0; i < num_rows; i++ )
+        for ( size_t j                  = 0; j < num_cols; j++ )
             values[i * num_cols + j] = d_M[rows[i] + cols[j] * d_rows];
 }
 

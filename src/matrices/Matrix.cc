@@ -79,7 +79,7 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
         << "Local number of rows: " << M->numLocalRows() << "\n"
         << "Local number of colums: " << M->numLocalColumns() << "\n";
     // Loop through each local row
-    std::vector<unsigned int> cols;
+    std::vector<size_t> cols;
     std::vector<double> values;
     out << "Compressed Matix: " << std::endl;
     for ( size_t row = leftDOF->beginDOF(); row < leftDOF->endDOF(); row++ ) {

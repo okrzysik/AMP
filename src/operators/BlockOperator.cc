@@ -185,7 +185,7 @@ int BlockOperator::getNumColumnsForBlock( int id )
 
 void BlockOperator::getRow( void *object,
                             int row,
-                            std::vector<unsigned int> &cols,
+                            std::vector<size_t> &cols,
                             std::vector<double> &values )
 {
     BlockOperator *myObject = static_cast<BlockOperator *> ( object );
@@ -217,7 +217,7 @@ void BlockOperator::getRow( void *object,
     cols.clear();
     values.clear();
     for ( int blkColId = 0; blkColId < myObject->d_iNumColumnBlocks; blkColId++ ) {
-        std::vector<unsigned int> tmpCols;
+        std::vector<size_t> tmpCols;
         std::vector<double> tmpVals;
         myObject->getRowForBlock( locRow, blkRowId, blkColId, tmpCols, tmpVals );
         for ( auto &tmpCol : tmpCols ) {
@@ -231,7 +231,7 @@ void BlockOperator::getRow( void *object,
 void BlockOperator::getRowForBlock( int locRow,
                                     int blkRowId,
                                     int blkColId,
-                                    std::vector<unsigned int> &locCols,
+                                    std::vector<size_t> &locCols,
                                     std::vector<double> &values )
 {
     AMP::shared_ptr<BlockOperator> blockOp =

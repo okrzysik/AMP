@@ -56,7 +56,7 @@ public:
       */
     virtual ~ManagedEpetraMatrix() {}
 
-    virtual void createValuesByGlobalID( int row, const std::vector<size_t>& cols ) override;
+    virtual void createValuesByGlobalID( size_t row, const std::vector<size_t>& cols ) override;
 
 
     virtual void mult( const Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
@@ -68,13 +68,13 @@ public:
     virtual size_t numGlobalRows() const override { return d_epetraMatrix->NumGlobalRows(); }
     virtual size_t numGlobalColumns() const override { return d_epetraMatrix->NumGlobalCols(); }
     virtual void
-    addValuesByGlobalID( int num_rows, int num_cols, int *rows, int *cols, double *values ) override;
+    addValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
     virtual void
-    setValuesByGlobalID( int num_rows, int num_cols, int *rows, int *cols, double *values ) override;
+    setValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
     virtual void
-    getRowByGlobalID( int row, std::vector<unsigned int> &cols, std::vector<double> &values ) const override;
+    getRowByGlobalID( size_t row, std::vector<size_t> &cols, std::vector<double> &values ) const override;
     virtual void
-    getValuesByGlobalID( int num_rows, int num_cols, int *rows, int *cols, double *values ) const override;
+    getValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const override;
 
     virtual void setScalar( double ) override;
     virtual void setDiagonal( Vector::const_shared_ptr in ) override;
