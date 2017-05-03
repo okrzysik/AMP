@@ -163,7 +163,7 @@ public:
      * @param [in] params
      *        OperatorParameters object that is NULL by default
      */
-    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params );
+    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
 
     /**
      * Resets the solver internally with new parameters if necessary

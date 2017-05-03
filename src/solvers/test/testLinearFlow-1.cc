@@ -36,8 +36,8 @@
 #include "flow/ConsMomentumGalWFLinearFEOperator.h"
 */
 
-#include "operators/EpetraMatrixOperator.h"
-#include "operators/EpetraMatrixOperatorParameters.h"
+#include "operators/trilinos/EpetraMatrixOperator.h"
+#include "operators/trilinos/EpetraMatrixOperatorParameters.h"
 #include "operators/LinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 
