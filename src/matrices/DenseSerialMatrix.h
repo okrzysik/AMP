@@ -151,6 +151,11 @@ public:
     virtual void
     getRowByGlobalID( size_t row, std::vector<size_t> &cols, std::vector<double> &values ) const;
 
+    /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
+      * \param[in]  row Which row
+      */
+    std::vector<size_t> getColumnIDs( size_t row ) const override;
+
     /** \brief  Set the diagonal to the values in a vector
       * \param[in] in The values to set the diagonal to
       */

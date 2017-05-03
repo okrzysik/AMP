@@ -18,6 +18,7 @@
 
 #include "vectors/Variable.h"
 #include "vectors/Vector.h"
+#include "vectors/SimpleVector.h"
 #include "vectors/VectorBuilder.h"
 
 #include "matrices/MatrixBuilder.h"
@@ -26,7 +27,7 @@
 #include "operators/OperatorParameters.h"
 #include "operators/LinearOperator.h"
 
-void linearTest1( AMP::UnitTest * const ut, const std::string &exeName )
+void userLinearOperatorTest( AMP::UnitTest * const ut, const std::string &exeName )
 {
     // Test create
     const std::string input_file = "input_" + exeName;
@@ -51,69 +52,69 @@ void linearTest1( AMP::UnitTest * const ut, const std::string &exeName )
     // create a linear diffusion operator
     auto linearOperator = AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "LinearDiffusionOp", input_db );
     auto diffOp = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( linearOperator );
+    
+    // extract the internal matrix
+    const auto &userMat = diffOp->getMatrix();
+
+    AMP_INSIST( userMat->numGlobalColumns()==userMat->numGlobalRows(), "matrix is not square" );
+
+    // extract the right vector
+    const auto userVector  = userMat->getRightVector();
 
     // concludes creation of a native linear operator
     // ************************************************************************************************
-    // extract the internal matrix
-    const auto &diffMat = diffOp->getMatrix();
-
-    AMP_INSIST( diffMat->numGlobalColumns()==diffMat->numGlobalRows(), "matrix is not square" );
-
-    // extract the left vector
-    // COMMENT: these lines will have to be replaced for an external application
-    // to provide explicit left vectors
-    // COMMENT: note that under the hood we are primarily interested in the DOF manager
-    // or rather in constructing one. We can't seem to avoid this for an external
-    // application
-    // COMMENT: We do not give a good description of what left and right vectors are
-    // or what information they should provide (elaborate)
-    // COMMENT: We do not currently seem to have the ability to construct simple vectors
-    // and DOF managers with ghost cells independent of meshes
-    const auto leftVector  = diffMat->getLeftVector();
-    const auto rightVector = leftVector; // we are dealing with square matrices so this is fine
     
-    const auto inputVariable = diffOp->getInputVariable();
-    const auto outputVariable = diffOp->getOutputVariable();
+    // extract information about the local size and mpi comm
+    const auto localSize    = userVector->getLocalSize();
+    const auto ampComm      = userVector->getComm();
 
-    // COMMENT: this function pointer will need to be set to an actual function
-    // COMMENT 2: if we expect users to provide such an interface we should provide one too!!
-    std::function<std::vector<size_t>(size_t)> getRow;
-    auto newMat = AMP::LinearAlgebra::createMatrix( rightVector, leftVector, "auto", getRow );
+    // construct a dof manager
+    const auto dofManager = AMP::make_shared<AMP::Discretization::DOFManager> ( localSize, ampComm );  
+    const auto copyVariable = AMP::make_shared<AMP::LinearAlgebra::Variable> ( "copyVariable" ); 
+    
+    // create a vector based on the dofs and variable
+    auto ampVector = AMP::LinearAlgebra::createVector( dofManager, copyVariable );
+    AMP_INSIST(ampVector!=nullptr, "ampVector is null" );
+
+    // copy values from one vector to another    
+    std::copy( userVector->begin(), userVector->end(), ampVector->begin());
+    ampVector->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+    // concludes demonstrating how to initialize an AMP vector from a user vector
+    // ************************************************************************************************
+ 
+    // create a lambda that returns non zero column ids given a global row id
+    auto getColumnIDS = [ userMat ]( size_t row ) { return userMat->getColumnIDs(row); };
+
+    // create a matrix based on the dimensions of the copied vector
+    auto ampMat = AMP::LinearAlgebra::createMatrix( ampVector, ampVector, "auto",  getColumnIDS );
 
     // construct a LinearOperator and set its matrix
     const auto linearOpDB = AMP::make_shared<AMP::InputDatabase> ( "linearOperatorDB" );
     linearOpDB->putInteger("print_info_level", 0);
     auto linearOpParameters = AMP::make_shared<AMP::Operator::OperatorParameters> ( linearOpDB );
     auto linearOp = AMP::make_shared<AMP::Operator::LinearOperator> ( linearOpParameters );
-    linearOp->setMatrix( newMat );
-    linearOp->setVariables(inputVariable, outputVariable);
+    linearOp->setMatrix( ampMat );
+    linearOp->setVariables( copyVariable, copyVariable );
 
-    // COMMENT: the next few lines should ideally need to be replaced
-    // by a getRowsByGlobalID call that extracts the rows numbered by global ID
-    const auto &leftDOFManager =  diffMat->getLeftDOFManager();
-    std::vector<double> values;
+    // copy the user matrix into the amp matrix
+    std::vector<double> coefficients;
     std::vector<size_t> cols;
-    for ( auto row = leftDOFManager->beginDOF(); row < leftDOFManager->endDOF(); ++row ) {
-        diffMat->getRowByGlobalID( row, cols, values );
-        // COMMENT: Note the incosistency in the get and set, need to fix!!
-        newMat->setValuesByGlobalID( 1, cols.size(), &row, cols.data(), values.data());
+    for ( auto row = userMat->beginRow(); row < userMat->endRow(); ++row ) {
+        userMat->getRowByGlobalID( row, cols, coefficients );
+        ampMat->setValuesByGlobalID( 1, cols.size(), &row, cols.data(), coefficients.data());
     }
-
-    // construct a nodal DOF manager
-    const auto nodalScalarDOFManager =
-        AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-
-    auto u = AMP::LinearAlgebra::createVector( nodalScalarDOFManager, inputVariable );
-    auto v = AMP::LinearAlgebra::createVector( nodalScalarDOFManager, outputVariable );
-
-    ut->passes( exeName );
-
-    // form the difference of the matrices
-    // COMMENT: simple add, subtract routines would be nice for matrices
-    newMat->axpy(-1.0, diffMat);
+    // concludes demonstrating how to initialize an AMP linear operator from a user matrix
+    // ************************************************************************************************
+    
+    auto u = ampVector->cloneVector();
+    auto v = ampVector->cloneVector();
 
     u->setRandomValues();
     v->setRandomValues();
+
+    // form the difference of the matrices
+    // COMMENT: simple add, subtract routines would be nice for matrices
+    ampMat->axpy(-1.0, userMat);
     
     linearOp->apply( u, v );
 
@@ -131,13 +132,10 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    std::vector<std::string> files = { "Diffusion-TUI-Thermal-1",     "Diffusion-TUI-Fick-1",
-                                       "Diffusion-TUI-Soret-1",       "Diffusion-UO2MSRZC09-Thermal-1",
-                                       "Diffusion-UO2MSRZC09-Fick-1", "Diffusion-UO2MSRZC09-Soret-1",
-                                       "Diffusion-TUI-TensorFick-1",  "Diffusion-CylindricalFick-1" };
+    std::vector<std::string> files = { "Diffusion-TUI-Thermal-1",     "Diffusion-UO2MSRZC09-Thermal-1" };
 
     for ( const auto &file : files )
-        linearTest1( &ut, file );
+        userLinearOperatorTest( &ut, file );
 
     ut.report();
 

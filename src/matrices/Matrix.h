@@ -123,7 +123,7 @@ public:
       * \param[in] num_cols The number of cols represented in values
       * \param[in] rows  The row ids of values
       * \param[in] cols  The column ids of values
-      * \param[in] values  The values to get from the matrix (row-major ordering)
+      * \param[out] values  The values to get from the matrix (row-major ordering)
       * \details  This method will return zero for any entries that
       *   have not been allocated or are not ghosts on the current processor.
       */
@@ -178,6 +178,11 @@ public:
                                    std::vector<size_t> &cols,
                                    std::vector<double> &values ) const = 0;
 
+    /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
+      * \param[in]  row Which row
+      */
+     virtual std::vector<size_t> getColumnIDs( size_t row ) const = 0;
+
     /** \brief  Set the diagonal to the values in a vector
       * \param[in] in The values to set the diagonal to
       */
@@ -211,6 +216,16 @@ public:
       * \return  The number of global columns
       */
     virtual size_t numGlobalColumns() const;
+    
+    /** \brief  Get the global id of the beginning row
+     * \return  beginning global row id
+     */
+    virtual size_t beginRow() const;
+    
+    /** \brief  Get the global id of the ending row
+     * \return  ending global row id
+     */
+    virtual size_t endRow() const;
 
     /** \brief  Extract the diagonal from a matrix
       * \param[in]  buf  An optional vector to use as a buffer

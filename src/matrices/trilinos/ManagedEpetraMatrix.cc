@@ -421,6 +421,29 @@ void ManagedEpetraMatrix::getRowByGlobalID( size_t row,
 }
 
 
+std::vector<size_t>  ManagedEpetraMatrix::getColumnIDs( size_t row ) const
+{
+    size_t firstRow = d_pParameters->getLeftDOFManager()->beginDOF();
+    size_t numRows  = d_pParameters->getLeftDOFManager()->endDOF();
+    AMP_ASSERT( row >= firstRow );
+    AMP_ASSERT( row < firstRow + numRows );
+
+    size_t localRow = row - firstRow;
+    int numCols  = d_pParameters->entriesInRow( localRow );
+    std::vector<size_t> cols ( numCols );
+    std::vector<double> values ( numCols );
+    std::vector<int> epetra_cols(numCols);
+
+    if ( numCols ) {
+        VerifyEpetraReturn( d_epetraMatrix->ExtractGlobalRowCopy(
+                                                                 row, numCols, numCols, &( values[0] ), &( epetra_cols[0] ) ),
+                            "getRowByGlobalID" );
+        std::copy(epetra_cols.begin(), epetra_cols.end(), cols.begin() );
+    }
+
+    return cols;
+}
+
 /********************************************************
 * makeConsistent                                        *
 ********************************************************/

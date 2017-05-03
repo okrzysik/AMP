@@ -47,6 +47,17 @@ size_t Matrix::numGlobalColumns() const
     return DOF->numGlobalDOF();
 }
 
+size_t Matrix::beginRow() const
+{
+    auto DOF = getRightDOFManager();
+    return DOF->beginDOF();
+}
+
+size_t Matrix::endRow() const
+{
+    auto DOF = getRightDOFManager();
+    return DOF->endDOF();
+}
 
 // Print the matrix to a IO stream
 std::ostream &operator<<( std::ostream &out, const Matrix &M_in )

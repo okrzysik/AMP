@@ -49,14 +49,14 @@ Vector::const_shared_ptr EpetraVector::constView( Vector::const_shared_ptr inVec
         return inVector;
     } else if ( inVector->isA<MultiVector>() ) {
         if ( inVector->numberOfDataBlocks() == 1 ) {
-            AMP::shared_ptr<MultiVector> multivector = AMP::dynamic_pointer_cast<MultiVector>(
+            auto multivector = AMP::dynamic_pointer_cast<MultiVector>(
                 AMP::const_pointer_cast<Vector>( inVector ) );
             retVal = constView( multivector->getVector( 0 ) );
         } else {
             AMP_ERROR( "View of multi-block MultiVector is not supported yet" );
         }
     } else if ( inVector->isA<ManagedVector>() ) {
-        AMP::shared_ptr<ManagedVector> managedVector =
+        auto managedVector =
             AMP::dynamic_pointer_cast<ManagedVector>( AMP::const_pointer_cast<Vector>( inVector ) );
         AMP::shared_ptr<Vector> root = managedVector->getRootVector();
         if ( root == inVector ) {
@@ -65,7 +65,11 @@ Vector::const_shared_ptr EpetraVector::constView( Vector::const_shared_ptr inVec
         } else {
             retVal = constView( root );
         }
+    } else {
+        AMP::shared_ptr<ManagedEpetraVector> managed( new ManagedEpetraVector( AMP::const_pointer_cast<Vector>( inVector ) ) );
+        retVal = managed;
     }
+
     if ( !retVal )
         AMP_ERROR( "Cannot create view!" );
     return retVal;
