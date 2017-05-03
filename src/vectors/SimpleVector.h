@@ -29,6 +29,14 @@ public:
       * \param    localSize  The number of elements in the vector on this processor
       * \param    var The variable associated with the new vector
       */
+    static Vector::shared_ptr create( size_t localSize, const std::string& var );
+
+    /** \brief    Create a SimpleVector
+      * \details  This is the factory method for the SimpleVector.  It returns the shared pointer
+      * to be used in the code
+      * \param    localSize  The number of elements in the vector on this processor
+      * \param    var The variable associated with the new vector
+      */
     static Vector::shared_ptr create( size_t localSize, Variable::shared_ptr var );
 
     /** \brief    Create a SimpleVector

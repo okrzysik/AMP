@@ -5,7 +5,7 @@
 #include "vectors/Vector.h"
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/petsc/PetscVector.h"
-#include "vectors/trilinos/EpetraVectorEngine.h"
+#include "vectors/trilinos/epetra/EpetraVectorEngine.h"
 
 #include "matrices/petsc/ManagedPetscMatrix.h"
 #include "matrices/trilinos/ManagedEpetraMatrix.h"
@@ -215,8 +215,10 @@ void ManagedPetscMatrix::copyFromMat( Mat m )
         const int *cols;
         const double *data;
         MatGetRow( m, row, &num_cols, &cols, &data );
-        createValuesByGlobalID(
-            1, num_cols, &row, const_cast<int *>( cols ), const_cast<double *>( data ) );
+        std::vector<size_t> cols2( num_cols );
+        for (int i=0; i<num_cols; i++)
+            cols2[i] = cols[i];
+        createValuesByGlobalID( row, cols2 );
         MatRestoreRow( m, row, &num_cols, &cols, &data );
     }
     d_epetraMatrix->FillComplete();

@@ -118,10 +118,10 @@ void myTest( AMP::UnitTest *ut )
         AMP::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat = mechOp->getMatrix();
 
         for ( int i = 0; i < 24; ++i ) {
-            std::vector<unsigned int> matCols;
+            std::vector<size_t> matCols;
             std::vector<double> matVals;
             mechMat->getRowByGlobalID( i, matCols, matVals );
-            for ( unsigned int j = 0; j < matCols.size(); j++ ) {
+            for ( size_t j = 0; j < matCols.size(); j++ ) {
                 fprintf(
                     fp, "A(%d, %d) = %.15f ; \n", ( i + 1 ), (int) ( matCols[j] + 1 ), matVals[j] );
             } // end for j

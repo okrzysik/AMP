@@ -53,7 +53,7 @@ void myTest( AMP::UnitTest *ut )
     AMP::shared_ptr<AMP::LinearAlgebra::Matrix> mat = bvpOperator->getMatrix();
     size_t matSz                                    = mat->numGlobalRows();
     for ( size_t i = 0; i < matSz; ++i ) {
-        std::vector<unsigned int> cols;
+        std::vector<size_t> cols;
         std::vector<double> vals;
         mat->getRowByGlobalID( i, cols, vals );
         for ( size_t j = 0; j < cols.size(); ++j ) {

@@ -159,7 +159,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     int zeroGhostWidth = 0;
     AMP::Mesh::MeshIterator iterator =
         meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
-    for ( ; iterator != iterator.end(); iterator++ ) {
+    for ( ; iterator != iterator.end(); ++iterator ) {
         double x, y;
         std::valarray<double> poly( 10 );
         x = ( iterator->coord() )[0];
@@ -264,7 +264,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
         std::vector<size_t> gids( nnodes );
         std::vector<double> temp( nnodes ), conc( nnodes ), fickCoeff( nnodes ),
             soretCoeff( nnodes ), burn( nnodes );
-        for ( node = 0; iterator != iterator.end(); iterator++ ) {
+        for ( node = 0; iterator != iterator.end(); ++iterator ) {
             std::vector<size_t> gid;
             nodalDofMap->getDOFs( iterator->globalID(), gid );
             gids[node] = gid[0];
@@ -318,13 +318,13 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
             meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
         iterator        = iterator.begin();
         size_t numNodes = 0;
-        for ( ; iterator != iterator.end(); iterator++ )
+        for ( ; iterator != iterator.end(); ++iterator )
             numNodes++;
         results.resize( numNodes );
 
         iterator     = iterator.begin();
         size_t iNode = 0;
-        for ( ; iterator != iterator.end(); iterator++ ) {
+        for ( ; iterator != iterator.end(); ++iterator ) {
             std::vector<size_t> gid;
             nodalDofMap->getDOFs( iterator->globalID(), gid );
             results[iNode] = solVec->getValueByGlobalID( gid[0] );

@@ -19,7 +19,7 @@ Matrix::shared_ptr Matrix::matMultiply( shared_ptr A, shared_ptr B )
 // Get the number of local rows in the matrix
 size_t Matrix::numLocalRows() const
 {
-    Discretization::DOFManager::shared_ptr DOF = getLeftDOFManager();
+    auto DOF = getLeftDOFManager();
     return DOF->numLocalDOF();
 }
 
@@ -27,7 +27,7 @@ size_t Matrix::numLocalRows() const
 // Get the number of global rows in the matrix
 size_t Matrix::numGlobalRows() const
 {
-    Discretization::DOFManager::shared_ptr DOF = getLeftDOFManager();
+    auto DOF = getLeftDOFManager();
     return DOF->numGlobalDOF();
 }
 
@@ -35,7 +35,7 @@ size_t Matrix::numGlobalRows() const
 // Get the number of local columns in the matrix
 size_t Matrix::numLocalColumns() const
 {
-    Discretization::DOFManager::shared_ptr DOF = getRightDOFManager();
+    auto DOF = getRightDOFManager();
     return DOF->numLocalDOF();
 }
 
@@ -43,7 +43,7 @@ size_t Matrix::numLocalColumns() const
 // Get the number of global columns in the matrix
 size_t Matrix::numGlobalColumns() const
 {
-    Discretization::DOFManager::shared_ptr DOF = getRightDOFManager();
+    auto DOF = getRightDOFManager();
     return DOF->numGlobalDOF();
 }
 
@@ -79,7 +79,7 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
         << "Local number of rows: " << M->numLocalRows() << "\n"
         << "Local number of colums: " << M->numLocalColumns() << "\n";
     // Loop through each local row
-    std::vector<unsigned int> cols;
+    std::vector<size_t> cols;
     std::vector<double> values;
     out << "Compressed Matix: " << std::endl;
     for ( size_t row = leftDOF->beginDOF(); row < leftDOF->endDOF(); row++ ) {

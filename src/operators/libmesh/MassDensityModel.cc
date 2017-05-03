@@ -128,7 +128,7 @@ MassDensityModel::MassDensityModel( const AMP::shared_ptr<MassDensityModelParame
     }
 
     if ( d_equation == MassEquation::Mechanics ) {
-        AMP::Materials::PropertyPtr property = d_material->property( "Density" );
+        auto property = d_material->property( "Density" );
 
         // load and check defaults
         // initially set them to the minimum of the range plus a bit
@@ -246,8 +246,8 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
     std::valarray<double> soln( 10 );
     size_t neval = result.size();
 
-    AMP::Materials::PropertyPtr sourceProp;
-    AMP::Materials::PropertyPtr dSourceProp;
+    AMP::shared_ptr<AMP::Materials::Property<double>> sourceProp;
+    AMP::shared_ptr<AMP::Materials::Property<double>> dSourceProp;
     bool needD = false;
 
     if ( d_PropertyName == "unspecified" ) {

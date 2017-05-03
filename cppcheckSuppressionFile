@@ -1,5 +1,6 @@
 // Supress false warnings
 noConstructor:*/utils/RNG.h
+copyCtorPointerCopying:*/utils/AMP_MPI.cc
 
 // Suppress unmatched suppressions
 unmatchedSuppression
@@ -11,7 +12,7 @@ missingInclude
 unusedPrivateFunction:*/materials/Property.h
 unusedFunction
 
-// Supress redundantAssignment/Copy, they can be better practice in many instances
+// Suppress redundantAssignment/Copy, they can be better practice in many instances
 redundantAssignment
 redundantCopy
 
@@ -20,6 +21,7 @@ duplicateExpression:*/utils/test/test_AMP_MPI.cc
 duplicateExpression:*/ampmesh/testHelpers/meshTests.cc
 duplicateExpression:*/ampmesh/structured/BoxMesh.cc
 duplicateExpression:*/discretization/test/DOFManager_tests.h
+duplicateExpression:*/utils/Array.hpp
 
 // Suppress specific instances of "Upon exception there is memory leak"
 exceptNew:*/vectors/petsc/PetscVector.cc
@@ -31,11 +33,12 @@ exceptNew:*/matrices/trilinos/ManagedEpetraMatrix.cc
 invalidscanf
 invalidscanf_libc
 
-// Supress specific errors for AMPManager
+// Suppress specific errors for AMPManager
 variableScope:*/utils/AMPManager.cc
+knownConditionTrueFalse:*/utils/AMPManager.cc
 memleak:*/utils/test/test_AMPManager.cc
 
-// Supress warnings for Scanner.cc, Database.cc, MemoryDatabase.cc, Parser.cc, and Grammar.cc
+// Suppress warnings for Scanner.cc, Database.cc, MemoryDatabase.cc, Parser.cc, and Grammar.cc
 toomanyconfigs:*/utils/Scanner.cc
 unusedStructMember:*/utils/Scanner.cc
 ConfigurationNotChecked:*/utils/Scanner.cc
@@ -58,13 +61,13 @@ duplicateExpression:*/utils/Grammar.cc
 noExplicitConstructor:*/ampmesh/MeshID.h
 toomanyconfigs:*/ampmesh/test/test_Mesh.cc
 
-// Supress material warnings
+// Suppress material warnings
 nullPointer:*/materials/Property.h
 
 // Suppress utils warnings
 usleepCalled:*/utils/Utilities.cc
 
-// Supress common test warnings (example: x==x)
+// Suppress common test warnings (example: x==x)
 duplicateExpression:*/test/test*
 uselessCallsCompare:*/test/test*
 variableScope:*/test/test*
@@ -76,15 +79,28 @@ knownConditionTrueFalse:*/oxide/OxideModel.cc
 knownConditionTrueFalse:*/utils/test/test_AMP_MPI.cc
 noExplicitConstructor:*/utils/AMP_MPI.h
 noExplicitConstructor:*/utils/test/test_AMP_MPI.cc
+postfixOperator:*/ampmesh/testHelpers/meshTests.cc
 
-// Supress warnings for usleep
+// Suppress warnings for usleep
 obsoleteFunctionsusleep
 
-// Supress graphics for now
-*:/*/graphics/ogre/*
+// Suppress false warnings for useInitializationList
+useInitializationList:*/operators/map/AsyncMapOperator.cc
 
+// Suppress graphics for now
+*:/*/graphics/ogre/*
 
 // Suppress warnings for external code
 memleak:*/utils/tinyexpr/tinyexpr.c
+
+// Suppress #error code paths (may not have complete #define statements
+preprocessorErrorDirective:*/utils/AMPManager.cc
+preprocessorErrorDirective:*/vectors/petsc/PetscHelpers.h
+preprocessorErrorDirective:*/solvers/petsc/PetscKrylovSolver.cc
+preprocessorErrorDirective:*/solvers/petsc/PetscSNESSolver.h
+
+// Suppress unsupported code
+*:*/ampmesh/dendro/*
+*:*/ampmesh/hex8_element_t.cc
 
 

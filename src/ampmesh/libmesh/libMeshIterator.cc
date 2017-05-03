@@ -30,7 +30,9 @@ libMeshIterator::libMeshIterator()
     d_type     = -1;
     d_size     = 0;
     d_rank     = 0;
-    d_element  = &d_cur_element;
+    d_gcw      = 0;
+    d_dim      = 0;
+    d_mesh     = nullptr;
 }
 libMeshIterator::libMeshIterator( int type,
                                   const AMP::Mesh::libMesh *mesh,
@@ -101,7 +103,8 @@ libMeshIterator::libMeshIterator( int type,
     setCurrentElement();
 }
 libMeshIterator::libMeshIterator( const libMeshIterator &rhs )
-    : MeshIterator() // Note: we never want to call the base copy constructor
+    : MeshIterator(), // Note: we never want to call the base copy constructor
+    d_meshID( rhs.d_meshID )
 {
     d_typeID   = libMeshIteratorTypeID;
     d_iterator = nullptr;
@@ -111,7 +114,6 @@ libMeshIterator::libMeshIterator( const libMeshIterator &rhs )
     d_pos      = rhs.d_pos;
     d_size     = rhs.d_size;
     d_rank     = rhs.d_rank;
-    d_meshID   = rhs.d_meshID;
     d_dim      = rhs.d_dim;
     d_element  = &d_cur_element;
     if ( d_type == 0 ) {
@@ -315,8 +317,8 @@ bool libMeshIterator::operator==( const MeshIterator &rhs ) const
         rhs2 = tmp; // We can safely cast rhs to a libMeshIterator
     } else if ( tmp->d_typeID == libMeshIteratorTypeID ) {
         rhs2 = tmp; // We can safely cast rhs.iterator to a libMeshIterator
-    } else if ( ( (libMeshIterator *) tmp->d_iterator )->d_typeID == libMeshIteratorTypeID ) {
-        rhs2 = (libMeshIterator *) tmp->d_iterator;
+    } else if ( reinterpret_cast<libMeshIterator*>( tmp->d_iterator )->d_typeID == libMeshIteratorTypeID ) {
+        rhs2 = reinterpret_cast<libMeshIterator*>( tmp->d_iterator );
     }
     // Perform direct comparisions if we are dealing with two libMeshIterators
     if ( rhs2 != nullptr ) {

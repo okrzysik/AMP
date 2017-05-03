@@ -43,7 +43,7 @@
 
 AMP::LinearAlgebra::Matrix::shared_ptr myMatrix;
 
-void myGetRow( int row, std::vector<unsigned int> &cols, std::vector<double> &values )
+void myGetRow( int row, std::vector<size_t> &cols, std::vector<double> &values )
 {
     myMatrix->getRowByGlobalID( row, cols, values );
 }

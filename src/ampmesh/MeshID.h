@@ -178,6 +178,10 @@ public:
         else
             data[1] &= 0x7FFFFFFFFFFFFFFF;
     }
+    inline bool isNull() const
+    {
+        return data[0] == 0xFFFFFFFFFFFFFFFF || data[1] == 0x000000FFFFFFFFFF;
+    }
 
 private:
     // We will store the data as a 128-bit data type

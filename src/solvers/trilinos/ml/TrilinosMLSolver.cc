@@ -7,7 +7,7 @@
 #include "operators/trilinos/TrilinosMatrixShellOperator.h"
 #include "utils/Utilities.h"
 #include "vectors/DataChangeFirer.h"
-#include "vectors/trilinos/EpetraVector.h"
+#include "vectors/trilinos/epetra/EpetraVector.h"
 
 namespace AMP {
 namespace Solver {
@@ -21,6 +21,8 @@ TrilinosMLSolver::TrilinosMLSolver()
     d_ml             = nullptr;
     d_mlAggregate    = nullptr;
     d_bCreationPhase = true;
+    d_bUseEpetra     = false;
+    d_bRobustMode    = false;
 }
 TrilinosMLSolver::TrilinosMLSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )

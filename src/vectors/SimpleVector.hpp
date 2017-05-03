@@ -16,6 +16,12 @@ SimpleVector<T>::SimpleVector() : Vector(), d_startIndex( 0 ), d_globalSize( 0 )
 }
 
 template <typename T>
+Vector::shared_ptr SimpleVector<T>::create( size_t localSize, const std::string& var )
+{
+    return create( localSize, AMP::make_shared<Variable>( var ) );
+}
+
+template <typename T>
 Vector::shared_ptr SimpleVector<T>::create( size_t localSize, Variable::shared_ptr var )
 {
     AMP::shared_ptr<SimpleVector<T>> retVal( new SimpleVector<T> );

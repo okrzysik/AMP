@@ -102,10 +102,9 @@ void structuredFaceDOFManager::initialize()
 /****************************************************************
 * Get the DOFs for the element                                  *
 ****************************************************************/
-void structuredFaceDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
+inline void structuredFaceDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
                                         std::vector<size_t> &dofs ) const
 {
-    dofs.resize( 0 );
     if ( id.type() != AMP::Mesh::GeomType::Face )
         return;
     // Search for the dof locally
@@ -117,9 +116,8 @@ void structuredFaceDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
             }
             if ( id == d_local_ids[d][index] ) {
                 // The id was found
-                dofs.resize( d_DOFsPerFace[d] );
                 for ( int j = 0; j < d_DOFsPerFace[d]; j++ )
-                    dofs[j] = d_local_dofs[d][index] + j;
+                    dofs.emplace_back( d_local_dofs[d][index] + j );
                 return;
             }
         }
@@ -133,13 +131,54 @@ void structuredFaceDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
             }
             if ( id == d_remote_ids[d][index] ) {
                 // The id was found
-                dofs.resize( d_DOFsPerFace[d] );
                 for ( int j = 0; j < d_DOFsPerFace[d]; j++ )
-                    dofs[j] = d_remote_dofs[d][index] + j;
+                    dofs.emplace_back( d_remote_dofs[d][index] + j );
                 return;
             }
         }
     }
+}
+void structuredFaceDOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
+                                std::vector<size_t> &dofs ) const
+{
+    dofs.resize( 0 );
+    for ( auto id : ids )
+        appendDOFs( id, dofs );
+}
+void structuredFaceDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
+                                        std::vector<size_t> &dofs ) const
+{
+    dofs.resize( 0 );
+    appendDOFs( id, dofs );
+}
+
+
+/****************************************************************
+* Get the element ID give a dof                                 *
+****************************************************************/
+AMP::Mesh::MeshElement structuredFaceDOFManager::getElement( size_t dof ) const
+{
+    AMP::Mesh::MeshElementID id;
+    if ( dof >= d_begin && dof < d_end ) {
+        // We are searching for a local dof
+        for (int i=0; i<3; i++) {
+            for (size_t j=0; j<d_local_ids[i].size(); j++) {
+                if ( dof>=d_local_dofs[i][j] && dof<d_local_dofs[i][j]+d_DOFsPerFace[i] )
+                    id = d_local_ids[i][j];
+            }
+        }
+    } else {
+        // We are searching for a remote dof
+        for (int i=0; i<3; i++) {
+            for (size_t j=0; j<d_remote_ids[i].size(); j++) {
+                if ( dof>=d_remote_dofs[i][j] && dof<d_remote_dofs[i][j]+d_DOFsPerFace[i] )
+                    id = d_remote_ids[i][j];
+            }
+        }
+    }
+    if ( id.isNull() )
+        return AMP::Mesh::MeshElement();
+    return d_mesh->getElement( id );
 }
 
 

@@ -533,7 +533,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processing all Gauss-Points." << std::endl;
             // Loop over all elements on the mesh
-            for ( ; elem != end_elems; elem++ ) {
+            for ( ; elem != end_elems; ++elem ) {
                 d_currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
                 createCurrentLibMeshElement();
                 d_fe->reinit( d_currElemPtr );

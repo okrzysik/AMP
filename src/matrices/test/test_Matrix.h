@@ -41,7 +41,21 @@ public:
         return std::string( tmp );
     }
 
-    static int type() { return TYPE; }
+    static std::string type()
+    {
+        if ( TYPE == 0 ) {
+            return "auto";
+        } else if ( TYPE == 1 ) {
+#ifdef USE_EXT_PETSC
+            return "ManagedPetscMatrix";
+#else
+            return "ManagedEpetraMatrix";
+#endif
+        } else if ( TYPE == 2 ) {
+            return "DenseSerialMatrix";
+        }
+        return "unknown";
+    }
 
     static void initMesh()
     {
@@ -94,7 +108,7 @@ public:
         AMP::LinearAlgebra::Vector::shared_ptr vector_b =
             AMP::LinearAlgebra::createVector( DOFs, variable_b );
         AMP::LinearAlgebra::Matrix::shared_ptr matrix =
-            AMP::LinearAlgebra::createMatrix( vector_a, vector_b, TYPE );
+            AMP::LinearAlgebra::createMatrix( vector_a, vector_b, type() );
         PROFILE_STOP( "getMatrix" );
         return matrix;
     }

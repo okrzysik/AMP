@@ -28,12 +28,6 @@
 #include "operators/NonlinearBVPOperator.h"
 #include "operators/OperatorBuilder.h"
 
-#include "solvers/petsc/PetscKrylovSolver.h"
-#include "solvers/petsc/PetscKrylovSolverParameters.h"
-#include "solvers/petsc/PetscSNESSolver.h"
-#include "solvers/petsc/PetscSNESSolverParameters.h"
-#include "solvers/trilinos/ml/TrilinosMLSolver.h"
-
 #include "libmesh/mesh_communication.h"
 #include "utils/ReadTestMesh.h"
 
@@ -136,7 +130,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     AMP::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat = linearMechanicsBVPoperator->getMatrix();
 
     for ( int i = 0; i < 24; i++ ) {
-        std::vector<unsigned int> matCols;
+        std::vector<size_t> matCols;
         std::vector<double> matVals;
         mechMat->getRowByGlobalID( i, matCols, matVals );
         for ( unsigned int j = 0; j < matCols.size(); j++ ) {

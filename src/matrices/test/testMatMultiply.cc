@@ -68,15 +68,15 @@ void myTest( AMP::UnitTest *ut, std::string mesh_file )
     AMP::LinearAlgebra::Matrix::shared_ptr mat3 =
         AMP::LinearAlgebra::Matrix::matMultiply( mat1, mat2 );
 
-    std::vector<unsigned int> cols1;
+    std::vector<size_t> cols1;
     std::vector<double> vals1;
     mat1->getRowByGlobalID( 0, cols1, vals1 );
 
-    std::vector<unsigned int> cols2;
+    std::vector<size_t> cols2;
     std::vector<double> vals2;
     mat2->getRowByGlobalID( 0, cols2, vals2 );
 
-    std::vector<unsigned int> cols3;
+    std::vector<size_t> cols3;
     std::vector<double> vals3;
     mat3->getRowByGlobalID( 0, cols3, vals3 );
 

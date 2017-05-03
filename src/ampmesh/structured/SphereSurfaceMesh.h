@@ -21,7 +21,7 @@ class SphereSurfaceMesh : public AMP::Mesh::BoxMesh
 public:
 
     //! Default constructor
-    SphereSurfaceMesh( MeshParameters::shared_ptr params );
+    explicit SphereSurfaceMesh( MeshParameters::shared_ptr params );
 
     /**
      * \brief   Estimate the number of elements in the mesh

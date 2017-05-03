@@ -22,7 +22,7 @@ class CubeMesh : public AMP::Mesh::BoxMesh
 public:
 
     //! Default constructor
-    CubeMesh( MeshParameters::shared_ptr params );
+    explicit CubeMesh( MeshParameters::shared_ptr params );
 
     /**
      * \brief   Estimate the number of elements in the mesh

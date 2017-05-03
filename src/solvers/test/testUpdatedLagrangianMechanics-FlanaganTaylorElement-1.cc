@@ -353,7 +353,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             linearMechanicsBVPoperator->getMatrix();
 
         for ( int i = 0; i < 24; i++ ) {
-            std::vector<unsigned int> matCols;
+            std::vector<size_t> matCols;
             std::vector<double> matVals;
             mechMat->getRowByGlobalID( i, matCols, matVals );
             for ( unsigned int j = 0; j < matCols.size(); j++ ) {

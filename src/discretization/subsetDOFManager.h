@@ -19,7 +19,6 @@ namespace Discretization {
 class subsetDOFManager : public DOFManager
 {
 public:
-    using DOFManager::getDOFs;
     using DOFManager::subset;
 
     /** \brief Default constructor
@@ -46,7 +45,25 @@ public:
      * (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
-    virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
+    virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const override;
+
+
+    /** \brief Get the entry indices of DOFs given a mesh element ID
+     * \details  This will return a vector of pointers into a Vector that are associated with which.
+     * \param[in]  ids      The element IDs to collect nodal objects for.
+     *                      Note: the mesh element may be any type (include a vertex).
+     * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
+     */
+    virtual void getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
+                          std::vector<size_t> &dofs ) const override;
+
+
+    /** \brief Get the mesh element for a DOF
+     * \details  This will return the mesh element associated with a given DOF.
+     * \param[in] dof       The entry in the vector associated with DOF
+     * @return              The element for the given DOF.
+     */
+    virtual AMP::Mesh::MeshElement getElement( size_t dof ) const override;
 
 
     //! Deconstructor
@@ -57,15 +74,15 @@ public:
      * \details  This will return an iterator over the mesh elements associated with the DOFs.
      * Note: if any sub-DOFManagers are the same, then this will iterate over repeated elements.
      */
-    virtual AMP::Mesh::MeshIterator getIterator() const;
+    virtual AMP::Mesh::MeshIterator getIterator() const override;
 
 
     //! Get the remote DOFs for a vector
-    virtual std::vector<size_t> getRemoteDOFs() const;
+    virtual std::vector<size_t> getRemoteDOFs() const override;
 
 
     //! Get the row DOFs given a mesh element
-    virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
+    virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const override;
 
 
     //! Function to return the local DOFs on the parent DOF manager

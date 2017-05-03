@@ -79,8 +79,8 @@ protected:
 
 public:
     /** \brief Change the EpetraMaps for the matrix
-      * \param[in] range  A vector that represents the range (column map)
-      * \param[in] domain  A vector that represents the domain (row map)
+      * \param[in] range  A vector that represents the range: y in y = A*x (row map)
+      * \param[in] domain  A vector that represents the domain: x in y = A*x (column map)
       * \details  This does not change the matrix, just the maps stored above
       *
       */

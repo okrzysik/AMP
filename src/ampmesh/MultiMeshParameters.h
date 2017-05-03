@@ -17,7 +17,7 @@ class MultiMeshParameters : public MeshParameters
 public:
     // Constructors
     MultiMeshParameters() : MeshParameters() {}
-    MultiMeshParameters( const AMP::shared_ptr<AMP::Database> db ) : MeshParameters( db ) {}
+    explicit MultiMeshParameters( const AMP::shared_ptr<AMP::Database> db ) : MeshParameters( db ) {}
 
 protected:
     //! A vector containing the mesh parameters for the sum meshes

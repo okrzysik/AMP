@@ -24,7 +24,7 @@ public:
      *  different, then this function will throw an error.  If a different comm
      *  is needed, then the user needs to call finalize first.
      */
-    initializeLibMesh( AMP_MPI comm );
+    explicit initializeLibMesh( AMP_MPI comm );
 
     /*!
      *  Deconstructor that finalizes libmesh.  This allows libmesh to be reinitialized on

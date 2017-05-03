@@ -23,7 +23,7 @@ protected:
     ManagedMatrix();
 
 public:
-    ManagedMatrix( MatrixParameters::shared_ptr p );
+    explicit ManagedMatrix( MatrixParameters::shared_ptr p );
 
     /** \brief  Create values in a matrix
       * \param[in]  num_rows  number of rows in values
@@ -36,8 +36,7 @@ public:
       * set, this method is used.  Once all createValuesByGlobalID
       * are finished, call fillComplete().
       */
-    virtual void
-    createValuesByGlobalID( int num_rows, int num_cols, int *rows, int *cols, double *values ) = 0;
+    virtual void createValuesByGlobalID( size_t row, const std::vector<size_t>& cols ) = 0;
 
     /** \brief  All createValuesByGlobalID have completed.
       */

@@ -77,7 +77,7 @@ ScalarZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
         double val            = vec->getValueByGlobalID( ids[0] );
         std::vector<double> x = cur->coord();
         addTo1DMap( map, x[2], val );
-        cur++;
+        ++cur;
     }
     PROFILE_STOP( "buildMap" );
     return map;
@@ -131,16 +131,16 @@ void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr v
         if ( fabs( zi - z0 ) <= TOL ) {
             // We are within TOL of the first point
             vec->setValueByGlobalID( dof, v0 );
-            cur++;
+            ++cur;
             continue;
         } else if ( fabs( zi - z1 ) <= TOL ) {
             // We are within TOL of the last point
             vec->setValueByGlobalID( dof, v1 );
-            cur++;
+            ++cur;
             continue;
         } else if ( zi < z0 || zi > z1 ) {
             // We are outside the bounds of the map
-            cur++;
+            ++cur;
             continue;
         }
 
@@ -158,7 +158,7 @@ void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr v
         double fi = ( 1.0 - wt ) * f[k - 1] + wt * f[k];
         vec->setValueByGlobalID( dof, fi );
 
-        cur++;
+        ++cur;
     }
     PROFILE_STOP( "buildReturn" );
 }

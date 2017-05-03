@@ -23,17 +23,17 @@ inline void Matrix::axpy( double alpha, Matrix::const_shared_ptr x )
     axpy( alpha, *x );
 }
 
-inline void Matrix::addValueByGlobalID( int row, int col, double value )
+inline void Matrix::addValueByGlobalID( size_t row, size_t col, double value )
 {
     addValuesByGlobalID( 1u, 1u, &row, &col, &value );
 }
 
-inline void Matrix::setValueByGlobalID( int row, int col, double value )
+inline void Matrix::setValueByGlobalID( size_t row, size_t col, double value )
 {
     setValuesByGlobalID( 1u, 1u, &row, &col, &value );
 }
 
-inline double Matrix::getValueByGlobalID( int row, int col ) const
+inline double Matrix::getValueByGlobalID( size_t row, size_t col ) const
 {
     double rtn = 0.0;
     getValuesByGlobalID( 1u, 1u, &row, &col, &rtn );

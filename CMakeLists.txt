@@ -164,8 +164,7 @@ ENDIF()
 
 
 # Add the cppcheck tests
-#SET( CPPCHECK_INCLUDE "-I${TIMER_INCLUDE}" "-I${${PROJ}_INSTALL_DIR}/include" )    # slow
-SET( CPPCHECK_INCLUDE "-I${TIMER_INCLUDE}" )
+SET( CPPCHECK_INCLUDE "-I${TIMER_INCLUDE}" "-I${${PROJ}_INSTALL_DIR}/include" )
 FIND_PACKAGE( Cppcheck )
 
 

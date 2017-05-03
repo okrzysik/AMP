@@ -55,78 +55,78 @@ public:
     /** \brief Construct a wrapper for a Thyra Vec from a set of parameters
       * \param[in] params The parameters describing the Vec
       */
-    NativeThyraVector( VectorParameters::shared_ptr params );
+    explicit NativeThyraVector( VectorParameters::shared_ptr params );
 
     //! Destructor
     virtual ~NativeThyraVector();
 
-    virtual std::string type() const { return "Native Thyra Vector"; }
+    virtual std::string type() const  override{ return "Native Thyra Vector"; }
 
-    virtual Vector::shared_ptr getManagedVectorCopy( AMP_MPI comm );
+    virtual Vector::shared_ptr getManagedVectorCopy( AMP_MPI comm ) override;
 
-    virtual Vector::shared_ptr getManagedVectorDuplicate( AMP_MPI comm );
+    virtual Vector::shared_ptr getManagedVectorDuplicate( AMP_MPI comm ) override;
 
     using Vector::cloneVector;
-    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const;
-    virtual void copyVector( Vector::const_shared_ptr vec );
+    virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
+    virtual void copyVector( Vector::const_shared_ptr vec ) override;
 
-    virtual void swapVectors( Vector &other );
-    virtual void aliasVector( Vector & );
+    virtual void swapVectors( Vector &other ) override;
+    virtual void aliasVector( Vector & ) override;
 
-    virtual size_t numberOfDataBlocks() const;
-    virtual size_t sizeOfDataBlock( size_t i ) const;
+    virtual size_t numberOfDataBlocks() const override;
+    virtual size_t sizeOfDataBlock( size_t i ) const override;
 
 
-    virtual void setToScalar( double alpha );
-    virtual void scale( double alpha, const VectorOperations &x );
-    virtual void scale( double alpha );
-    virtual void add( const VectorOperations &x, const VectorOperations &y );
-    virtual void subtract( const VectorOperations &x, const VectorOperations &y );
-    virtual void multiply( const VectorOperations &x, const VectorOperations &y );
-    virtual void divide( const VectorOperations &x, const VectorOperations &y );
-    virtual void reciprocal( const VectorOperations &x );
+    virtual void setToScalar( double alpha ) override;
+    virtual void scale( double alpha, const VectorOperations &x ) override;
+    virtual void scale( double alpha ) override;
+    virtual void add( const VectorOperations &x, const VectorOperations &y ) override;
+    virtual void subtract( const VectorOperations &x, const VectorOperations &y ) override;
+    virtual void multiply( const VectorOperations &x, const VectorOperations &y ) override;
+    virtual void divide( const VectorOperations &x, const VectorOperations &y ) override;
+    virtual void reciprocal( const VectorOperations &x ) override;
     virtual void
-    linearSum( double alpha, const VectorOperations &x, double beta, const VectorOperations &y );
-    virtual void axpy( double alpha, const VectorOperations &x, const VectorOperations &y );
-    virtual void axpby( double alpha, double beta, const VectorOperations &x );
-    virtual void abs( const VectorOperations &x );
-    virtual double min( void ) const;
-    virtual double max( void ) const;
-    virtual void setRandomValues( void );
+    linearSum( double alpha, const VectorOperations &x, double beta, const VectorOperations &y ) override;
+    virtual void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
+    virtual void axpby( double alpha, double beta, const VectorOperations &x ) override;
+    virtual void abs( const VectorOperations &x ) override;
+    virtual double min( void ) const override;
+    virtual double max( void ) const override;
+    virtual void setRandomValues( void ) override;
 
-    virtual double L1Norm( void ) const;
-    virtual double L2Norm( void ) const;
-    virtual double maxNorm( void ) const;
+    virtual double L1Norm( void ) const override;
+    virtual double L2Norm( void ) const override;
+    virtual double maxNorm( void ) const override;
     using Vector::dot;
-    virtual double dot( const VectorOperations &x ) const;
+    virtual double dot( const VectorOperations &x ) const override;
 
-    virtual void setValuesByLocalID( int, size_t *, const double * );
-    virtual void setLocalValuesByGlobalID( int, size_t *, const double * );
-    virtual void addValuesByLocalID( int, size_t *, const double * );
-    virtual void addLocalValuesByGlobalID( int, size_t *, const double * );
+    virtual void setValuesByLocalID( int, size_t *, const double * ) override;
+    virtual void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
+    virtual void addValuesByLocalID( int, size_t *, const double * ) override;
+    virtual void addLocalValuesByGlobalID( int, size_t *, const double * ) override;
 
-    virtual void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const;
-    virtual void getValuesByLocalID( int numVals, size_t *ndx, double *vals ) const;
+    virtual void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
+    virtual void getValuesByLocalID( int numVals, size_t *ndx, double *vals ) const override;
 
-    virtual void assemble();
+    virtual void assemble() override;
 
-    virtual size_t getLocalSize() const;
-    virtual size_t getGlobalSize() const;
+    virtual size_t getLocalSize() const override;
+    virtual size_t getGlobalSize() const override;
 
-    virtual void putRawData( const double * );
+    virtual void putRawData( const double * ) override;
 
-    virtual BufferPtr getNewBuffer();
-    virtual bool sameEngine( VectorEngine & ) const;
-    virtual VectorEngine::shared_ptr cloneEngine( BufferPtr p ) const;
+    virtual BufferPtr getNewBuffer() override;
+    virtual bool sameEngine( VectorEngine & ) const override;
+    virtual VectorEngine::shared_ptr cloneEngine( BufferPtr p ) const override;
 
-    virtual void swapEngines( VectorEngine::shared_ptr );
+    virtual void swapEngines( VectorEngine::shared_ptr ) override;
 
-    virtual void *getDataBlock( size_t i );
-    virtual const void *getDataBlock( size_t i ) const;
+    virtual void *getDataBlock( size_t i ) override;
+    virtual const void *getDataBlock( size_t i ) const override;
 
-    virtual AMP_MPI getComm() const;
+    virtual AMP_MPI getComm() const override;
 
-    virtual void copyOutRawData( double *out ) const;
+    virtual void copyOutRawData( double *out ) const override;
 
     // Return the id of the data
     virtual uint64_t getDataID() const override
@@ -138,8 +138,8 @@ protected:
     //! Empty constructor.
     NativeThyraVector();
 
-    virtual void *getRawDataBlockAsVoid( size_t i );
-    virtual const void *getRawDataBlockAsVoid( size_t i ) const;
+    virtual void *getRawDataBlockAsVoid( size_t i ) override;
+    virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
 
 private:
     size_t d_local;

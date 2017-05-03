@@ -7,7 +7,7 @@
 #include "matrices/ManagedMatrix.h"
 #include "matrices/trilinos/EpetraMatrix.h"
 #include "matrices/trilinos/ManagedEpetraMatrixParameters.h"
-#include "vectors/trilinos/EpetraVector.h"
+#include "vectors/trilinos/epetra/EpetraVector.h"
 
 #include <Epetra_FECrsMatrix.h>
 
@@ -38,7 +38,7 @@ protected:
     //!  Update data off-core
     void setOtherData();
 
-    virtual void multiply( shared_ptr other_op, shared_ptr &result );
+    virtual void multiply( shared_ptr other_op, shared_ptr &result ) override;
 
 public:
     /** \brief Constructor
@@ -56,40 +56,39 @@ public:
       */
     virtual ~ManagedEpetraMatrix() {}
 
-    virtual void
-    createValuesByGlobalID( int num_rows, int num_cols, int *rows, int *cols, double *values );
+    virtual void createValuesByGlobalID( size_t row, const std::vector<size_t>& cols ) override;
 
 
-    virtual void mult( const Vector::const_shared_ptr in, Vector::shared_ptr out );
-    virtual void multTranspose( const Vector::const_shared_ptr in, Vector::shared_ptr out );
+    virtual void mult( const Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
+    virtual void multTranspose( const Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
     virtual Vector::shared_ptr
-    extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const;
-    virtual void scale( double alpha );
-    virtual void axpy( double alpha, const Matrix &rhs );
-    virtual size_t numGlobalRows() const { return d_epetraMatrix->NumGlobalRows(); }
-    virtual size_t numGlobalColumns() const { return d_epetraMatrix->NumGlobalCols(); }
+    extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const override;
+    virtual void scale( double alpha ) override;
+    virtual void axpy( double alpha, const Matrix &rhs ) override;
+    virtual size_t numGlobalRows() const override { return d_epetraMatrix->NumGlobalRows(); }
+    virtual size_t numGlobalColumns() const override { return d_epetraMatrix->NumGlobalCols(); }
     virtual void
-    addValuesByGlobalID( int num_rows, int num_cols, int *rows, int *cols, double *values );
+    addValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
     virtual void
-    setValuesByGlobalID( int num_rows, int num_cols, int *rows, int *cols, double *values );
+    setValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
     virtual void
-    getRowByGlobalID( int row, std::vector<unsigned int> &cols, std::vector<double> &values ) const;
+    getRowByGlobalID( size_t row, std::vector<size_t> &cols, std::vector<double> &values ) const override;
     virtual void
-    getValuesByGlobalID( int num_rows, int num_cols, int *rows, int *cols, double *values ) const;
+    getValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const override;
 
-    virtual void setScalar( double );
-    virtual void setDiagonal( Vector::const_shared_ptr in );
+    virtual void setScalar( double ) override;
+    virtual void setDiagonal( Vector::const_shared_ptr in ) override;
 
-    virtual void makeConsistent();
-    virtual double L1Norm() const;
-    virtual Matrix::shared_ptr cloneMatrix() const;
-    virtual Vector::shared_ptr getRightVector() const;
-    virtual Vector::shared_ptr getLeftVector() const;
-    virtual Discretization::DOFManager::shared_ptr getRightDOFManager() const;
-    virtual Discretization::DOFManager::shared_ptr getLeftDOFManager() const;
-    virtual void fillComplete();
-    virtual void setIdentity();
-    virtual void zero();
+    virtual void makeConsistent() override;
+    virtual double L1Norm() const override;
+    virtual Matrix::shared_ptr cloneMatrix() const override;
+    virtual Vector::shared_ptr getRightVector() const override;
+    virtual Vector::shared_ptr getLeftVector() const override;
+    virtual Discretization::DOFManager::shared_ptr getRightDOFManager() const override;
+    virtual Discretization::DOFManager::shared_ptr getLeftDOFManager() const override;
+    virtual void fillComplete() override;
+    virtual void setIdentity() override;
+    virtual void zero() override;
 };
 }
 }

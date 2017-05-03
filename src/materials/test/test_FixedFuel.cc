@@ -29,7 +29,7 @@ int main( int argc, char **argv )
     // get material pointer
     Material::shared_ptr mat =
         AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( "FixedFuel" );
-    PropertyPtr prop = mat->property( "ThermalConductivity" );
+    auto prop = mat->property( "ThermalConductivity" );
 
     // test property accessors
     string tcname = prop->get_name();

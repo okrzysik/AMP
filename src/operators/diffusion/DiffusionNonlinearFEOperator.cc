@@ -443,7 +443,7 @@ void DiffusionNonlinearFEOperator::resetFrozen(
 
 bool DiffusionNonlinearFEOperator::isValidInput( AMP::LinearAlgebra::Vector::shared_ptr &u )
 {
-    AMP::Materials::PropertyPtr property = d_transportModel->getProperty();
+    auto property = d_transportModel->getProperty();
     std::vector<std::string> names       = property->get_arguments();
     size_t nnames                        = names.size();
     std::string argname;

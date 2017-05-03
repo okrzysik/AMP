@@ -10,7 +10,8 @@ class EpetraMatrixOperatorParameters : public OperatorParameters
 public:
     Epetra_CrsMatrix *d_Matrix;
 
-    EpetraMatrixOperatorParameters( const AMP::shared_ptr<Database> &db ) : OperatorParameters( db )
+    explicit EpetraMatrixOperatorParameters( const AMP::shared_ptr<Database> &db ) :
+        OperatorParameters( db ), d_Matrix(nullptr)
     {
     }
 };

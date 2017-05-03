@@ -61,9 +61,15 @@ ADD_AMP_TEST( test_LoadBalance 64000 inputMultiPellet348 )
 
 # Add tests
 ADD_AMP_TEST( test_BoxMeshHelpers )
+
+IF( USE_EXT_PETSC AND USE_EXT_TRILINOS )
 ADD_AMP_TEST_1_2_4( test_Mesh )
 ADD_AMP_TEST_PARALLEL( test_Mesh 4 input_AMP_mesh_zoo_2D )
 ADD_AMP_TEST_PARALLEL( test_Mesh 4 input_AMP_mesh_zoo_3D )
+ELSE()
+ADD_AMP_TEST( test_Mesh )
+ENDIF()
+
 ADD_AMP_PROVISIONAL_TEST( testMeshPerformance )
 IF ( USE_TRILINOS_STKMESH )
 ENDIF()

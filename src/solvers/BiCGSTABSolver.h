@@ -103,11 +103,11 @@ protected:
 private:
     AMP_MPI d_comm;
 
-    double d_dRelativeTolerance; //! relative tolerance to converge to
+    double d_dRelativeTolerance = 1.0e-10; //! relative tolerance to converge to
 
-    int d_restarts; //! number of times the solver is restarted
+    int d_restarts = 0; //! number of times the solver is restarted
 
-    bool d_bUsesPreconditioner;
+    bool d_bUsesPreconditioner = false;
 
     AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };

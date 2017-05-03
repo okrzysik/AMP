@@ -113,7 +113,6 @@ protected:
     double d_timeStepInSeconds;
     AMP::LinearAlgebra::Variable::shared_ptr d_outputVariable;
     Vec_Dbl3 d_values;
-    AMP::Mesh::Mesh::shared_ptr d_Mesh;
     double d_secondsPerDay;
     SourceType str2id( std::string str );
 };

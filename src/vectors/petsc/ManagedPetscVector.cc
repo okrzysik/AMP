@@ -3,7 +3,7 @@
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/petsc/PetscVector.h"
 #ifdef USE_EXT_TRILINOS
-#include "vectors/trilinos/EpetraVectorEngine.h"
+#include "vectors/trilinos/epetra/EpetraVectorEngine.h"
 #endif
 
 

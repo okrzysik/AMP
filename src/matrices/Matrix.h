@@ -103,7 +103,7 @@ public:
       * on the actual subclass of matrix used.
       */
     virtual void
-    addValuesByGlobalID( int num_rows, int num_cols, int *rows, int *cols, double *values ) = 0;
+    addValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) = 0;
 
     /** \brief  Set values in the matrix
       * \param[in] num_rows The number of rows represented in values
@@ -116,7 +116,7 @@ public:
       * on the actual subclass of matrix used.
       */
     virtual void
-    setValuesByGlobalID( int num_rows, int num_cols, int *rows, int *cols, double *values ) = 0;
+    setValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) = 0;
 
     /** \brief  Get values in the matrix
       * \param[in] num_rows The number of rows represented in values
@@ -128,7 +128,7 @@ public:
       *   have not been allocated or are not ghosts on the current processor.
       */
     virtual void getValuesByGlobalID(
-        int num_rows, int num_cols, int *rows, int *cols, double *values ) const = 0;
+        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const = 0;
 
 
     /** \brief  Add values to those in the matrix
@@ -139,7 +139,7 @@ public:
       * allocated a particular (row,col) specified, depending
       * on the actual subclass of matrix used.
       */
-    virtual void addValueByGlobalID( int row, int col, double value );
+    virtual void addValueByGlobalID( size_t row, size_t col, double value );
 
     /** \brief  Set values in the matrix
       * \param[in] row  The row id of value
@@ -149,14 +149,14 @@ public:
       * allocated a particular (row,col) specified, depending
       * on the actual subclass of matrix used.
       */
-    virtual void setValueByGlobalID( int row, int col, double value );
+    virtual void setValueByGlobalID( size_t row, size_t col, double value );
 
     /** \brief  Get values in the matrix
       * \param[in] row  The row id of value
       * \param[in] col  The column id of value
       * \details  This method will return zero for any values that have not been allocated.
       */
-    virtual double getValueByGlobalID( int row, int col ) const;
+    virtual double getValueByGlobalID( size_t row, size_t col ) const;
 
 
     /** \brief  Set the non-zeros of the matrix to a scalar
@@ -174,8 +174,8 @@ public:
       * \param[out] cols  The column ids of the returned values
       * \param[out] values  The values in the row
       */
-    virtual void getRowByGlobalID( int row,
-                                   std::vector<unsigned int> &cols,
+    virtual void getRowByGlobalID( size_t row,
+                                   std::vector<size_t> &cols,
                                    std::vector<double> &values ) const = 0;
 
     /** \brief  Set the diagonal to the values in a vector

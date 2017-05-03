@@ -13,9 +13,8 @@ namespace Discretization {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-DOFManager::DOFManager( size_t N_local, const AMP_MPI &comm )
+DOFManager::DOFManager( size_t N_local, const AMP_MPI &comm ): d_comm(comm)
 {
-    d_comm = comm;
     d_comm.sumScan( &N_local, &d_end, 1 );
     d_begin  = d_end - N_local;
     d_global = d_comm.bcast( d_end, d_comm.getSize() - 1 );
@@ -38,8 +37,8 @@ void DOFManager::getDOFs( const AMP::Mesh::MeshElementID &, std::vector<size_t> 
 void DOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
                           std::vector<size_t> &dofs ) const
 {
-    // This is a simple loop to provide a vector interface.  Ideally this should be overwritten by
-    // the user
+    // This is a simple loop to provide a vector interface
+    // Ideally this should be overwritten by derived DOFManager for performance
     dofs.resize( 0 );
     dofs.reserve( 2 );
     std::vector<size_t> local_dofs;
@@ -52,6 +51,15 @@ void DOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
     }
 }
 
+
+/****************************************************************
+* Get the element ID give a dof                                 *
+****************************************************************/
+AMP::Mesh::MeshElement DOFManager::getElement( size_t ) const
+{
+    AMP_ERROR( "getElement is not implimented for the base class" );
+    return AMP::Mesh::MeshElement();
+}
 
 /****************************************************************
 * Get an entry over the mesh elements associated with the DOFs  *
@@ -94,7 +102,7 @@ std::vector<size_t> DOFManager::getRemoteDOFs() const { return std::vector<size_
 ****************************************************************/
 std::vector<size_t> DOFManager::getRowDOFs( const AMP::Mesh::MeshElement & ) const
 {
-    AMP_ERROR( "getRowDOFs is not implimented for the base class" );
+    AMP_ERROR( "getRowDOFs(element) is not implimented for the base class" );
     return std::vector<size_t>();
 }
 

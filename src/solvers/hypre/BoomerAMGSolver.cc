@@ -363,12 +363,15 @@ void BoomerAMGSolver::createHYPREMatrix( const AMP::shared_ptr<AMP::LinearAlgebr
     ierr = HYPRE_IJMatrixInitialize( d_ijMatrix );
     HYPRE_DescribeError( ierr, hypre_mesg);
 
-    std::vector<unsigned int> cols;
+    std::vector<size_t> cols;
     std::vector<double> values;
 
     // iterate over all rows
     for(auto i=myFirstRow; i!=myEndRow; ++i) {
         matrix->getRowByGlobalID(i, cols, values);
+        std::vector<HYPRE_Int> hypre_cols(cols.size());
+        std::copy(cols.begin(), cols.end(), hypre_cols.begin());
+
         const int nrows = 1;
         const auto irow = i;
         const auto ncols = cols.size();
@@ -376,7 +379,7 @@ void BoomerAMGSolver::createHYPREMatrix( const AMP::shared_ptr<AMP::LinearAlgebr
                                         nrows, 
                                         (HYPRE_Int *)&ncols, 
                                         (HYPRE_Int *)&irow, 
-                                        (HYPRE_Int *) &cols[0], 
+                                        hypre_cols.data(), 
                                         (const double *) &values[0] );
         HYPRE_DescribeError( ierr, hypre_mesg);
     }
@@ -546,12 +549,10 @@ void BoomerAMGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     bool computeResidual = false;
 
-    double initialResNorm = 0., finalResNorm = 0.;
-
     if ( computeResidual ) {
         r = f->cloneVector();
         d_pOperator->residual( f, u, r );
-        initialResNorm = r->L2Norm();
+        const auto initialResNorm = r->L2Norm();
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "BoomerAMGSolver::solve(), L2 norm of residual before solve "
@@ -600,7 +601,7 @@ void BoomerAMGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     if ( computeResidual ) {
         d_pOperator->residual( f, u, r );
-        finalResNorm = r->L2Norm();
+        const auto finalResNorm = r->L2Norm();
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "BoomerAMGSolver::solve(), L2 norm of residual after solve "

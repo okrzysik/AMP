@@ -422,10 +422,10 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
                 AMP_ERROR( "Unknown Mesh" );
             }
 
-            AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> curBVPop =
+            auto curBVPop =
                 AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
                     nonlinearColumnOperator->getOperator( curOperator ) );
-            AMP::shared_ptr<AMP::Operator::ColumnBoundaryOperator> curBCcol =
+            auto curBCcol =
                 AMP::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator>(
                     curBVPop->getBoundaryOperator() );
             AMP::shared_ptr<AMP::Database> operator_db =
@@ -436,42 +436,42 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
             int opNumber                     = curBCdb->getInteger( "numberOfBoundaryOperators" );
             for ( int curBCentry = 0; curBCentry != opNumber; curBCentry++ ) {
                 if ( opNames[curBCentry] == "P2CRobinVectorCorrection" ) {
-                    AMP::shared_ptr<AMP::Operator::RobinVectorCorrection> gapBC =
+                   auto gapBC =
                         AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
                             curBCcol->getBoundaryOperator( curBCentry ) );
                     AMP_ASSERT( thermalMapVec != NULL );
                     gapBC->setVariableFlux( thermalMapVec );
-                    gapBC->reset( gapBC->getParameters("Jacobian",nullptr) );
+                    gapBC->reset( gapBC->getOperatorParameters() );
                 } else if ( ( opNames[curBCentry] == "BottomP2PNonlinearRobinVectorCorrection" ) ||
                             ( opNames[curBCentry] == "MiddleP2PNonlinearRobinBoundaryCondition" ) ||
                             ( opNames[curBCentry] == "TopP2PNonlinearRobinBoundaryCondition" ) ) {
-                    AMP::shared_ptr<AMP::Operator::RobinVectorCorrection> p2pBC =
+                    auto p2pBC =
                         AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
                             curBCcol->getBoundaryOperator( curBCentry ) );
                     AMP_ASSERT( thermalMapVec != NULL );
                     p2pBC->setVariableFlux( thermalMapVec );
-                    p2pBC->reset( p2pBC->getParameters("Jacobian",nullptr) );
+                    p2pBC->reset( p2pBC->getOperatorParameters() );
                 } else if ( opNames[curBCentry] == "C2WBoundaryVectorCorrection" ) {
                     AMP::shared_ptr<AMP::Database> thisDb =
                         global_input_db->getDatabase( opNames[curBCentry] );
                     bool isCoupled = thisDb->getBoolWithDefault( "IsCoupledBoundary_0", false );
                     if ( isCoupled ) {
-                        AMP::shared_ptr<AMP::Operator::RobinVectorCorrection> c2wBC =
+                        auto c2wBC =
                             AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
                                 curBCcol->getBoundaryOperator( curBCentry ) );
                         AMP_ASSERT( thermalMapVec != NULL );
                         c2wBC->setVariableFlux( thermalMapVec );
                         c2wBC->setFrozenVector( density_map_vec );
                         c2wBC->setFrozenVector( ChannelDiameterVec );
-                        c2wBC->reset( c2wBC->getParameters("Jacobian",nullptr) );
+                        c2wBC->reset( c2wBC->getOperatorParameters() );
                     }
                 } else if ( opNames[curBCentry] == "C2PRobinVectorCorrection" ) {
-                    AMP::shared_ptr<AMP::Operator::RobinVectorCorrection> gapBC =
+                    auto gapBC =
                         AMP::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
                             curBCcol->getBoundaryOperator( curBCentry ) );
                     AMP_ASSERT( thermalMapVec != NULL );
                     gapBC->setVariableFlux( thermalMapVec );
-                    gapBC->reset( gapBC->getParameters("Jacobian",nullptr) );
+                    gapBC->reset( gapBC->getOperatorParameters() );
                 } else {
                     AMP_ERROR( "Unknown boundary operator" );
                 }
@@ -529,7 +529,7 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
     mapsColumn->append( coupledChannelMapOperator );
 
     if ( pinMesh.get() != NULL ) {
-        AMP::shared_ptr<AMP::InputDatabase> copyOp_db =
+        auto copyOp_db =
             AMP::dynamic_pointer_cast<AMP::InputDatabase>(
                 global_input_db->getDatabase( "CopyOperator" ) );
         AMP::shared_ptr<AMP::Operator::VectorCopyOperatorParameters> vecCopyOperatorParams(
@@ -637,8 +637,7 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
         nonlinearSolverParams->d_pOperator       = nonlinearCoupledOperator;
         nonlinearSolverParams->d_pInitialGuess   = globalSolMultiVector;
         nonlinearSolverParams->d_pLinearOperator = linearColumnOperator;
-        AMP::shared_ptr<AMP::Solver::TrilinosNOXSolver> nonlinearSolver(
-            new AMP::Solver::TrilinosNOXSolver( nonlinearSolverParams ) );
+        nonlinearSolver = AMP::make_shared<AMP::Solver::TrilinosNOXSolver>( nonlinearSolverParams );
 
         /*// create linear solver
         AMP::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
@@ -719,7 +718,7 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
         subchannelPressure->setToScalar( AMP::Operator::Subchannel::scalePressure * Pout );
 
         // FIRST APPLY CALL
-        AMP::shared_ptr<AMP::Operator::SubchannelOperatorParameters> subchannelLinearParams =
+       auto subchannelLinearParams =
             AMP::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>(
                 subchannelNonlinearOperator->getParameters( "Jacobian", flowSolVec ) );
         subchannelLinearParams->d_initialize = false;
@@ -737,7 +736,7 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
         totalOp = nonlinearColumnOperator->getNumberOfOperators();
     }
     for ( size_t id = 0; id != totalOp; id++ ) {
-        AMP::shared_ptr<AMP::Operator::NonlinearBVPOperator> nonlinearThermalOperator =
+        auto nonlinearThermalOperator =
             AMP::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
                 nonlinearColumnOperator->getOperator( id ) );
         nonlinearThermalOperator->modifyInitialSolutionVector( globalThermalSolVec );
@@ -939,7 +938,7 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
     PROFILE_ENABLE( 0 );
 
-    std::string exeName = "testSubchannelSolve-1";
+    std::string exeName = "testSubchannelSolveNOX-1";
     if ( argc == 2 )
         exeName = argv[1];
 

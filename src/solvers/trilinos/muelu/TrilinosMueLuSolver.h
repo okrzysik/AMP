@@ -5,7 +5,7 @@
 #include "matrices/trilinos/EpetraMatrix.h"
 #include "solvers/SolverStrategy.h"
 #include "solvers/SolverStrategyParameters.h"
-#include "solvers/trilinos/MLoptions.h"
+#include "solvers/trilinos/ml/MLoptions.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"

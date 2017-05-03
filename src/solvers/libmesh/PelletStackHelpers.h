@@ -7,7 +7,6 @@
 #include "operators/map/AsyncMapColumnOperator.h"
 #include "solvers/ColumnSolver.h"
 #include "solvers/libmesh/PelletStackMechanicsSolver.h"
-#include "solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "vectors/Vector.h"
 
 

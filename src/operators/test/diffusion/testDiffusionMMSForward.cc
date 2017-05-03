@@ -121,7 +121,7 @@ void forwardTest1( AMP::UnitTest *ut, std::string exeName )
     int zeroGhostWidth = 0;
     AMP::Mesh::MeshIterator iterator =
         meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
-    for ( ; iterator != iterator.end(); iterator++ ) {
+    for ( ; iterator != iterator.end(); ++iterator ) {
         double x, y, z;
         std::valarray<double> poly( 10 );
         x = ( iterator->coord() )[0];
@@ -157,13 +157,13 @@ void forwardTest1( AMP::UnitTest *ut, std::string exeName )
 
             iterator        = iterator.begin();
             size_t numNodes = 0;
-            for ( ; iterator != iterator.end(); iterator++ )
+            for ( ; iterator != iterator.end(); ++iterator )
                 numNodes++;
 
             iterator     = iterator.begin();
             size_t iNode = 0;
             double l2err = 0.;
-            for ( ; iterator != iterator.end(); iterator++ ) {
+            for ( ; iterator != iterator.end(); ++iterator ) {
                 double x, y, z;
                 x = ( iterator->coord() )[0];
                 y = ( iterator->coord() )[1];

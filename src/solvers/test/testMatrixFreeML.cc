@@ -27,7 +27,7 @@
 #include "operators/boundary/DirichletVectorCorrection.h"
 #include "operators/trilinos/TrilinosMatrixShellOperator.h"
 
-#include "vectors/trilinos/EpetraVector.h"
+#include "vectors/trilinos/epetra/EpetraVector.h"
 
 #include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/petsc/PetscKrylovSolverParameters.h"
@@ -37,7 +37,7 @@
 
 void myGetRow2( void *object,
                 int row,
-                std::vector<unsigned int> &cols,
+                std::vector<size_t> &cols,
                 std::vector<double> &values )
 {
     AMP::Operator::ColumnOperator *op = reinterpret_cast<AMP::Operator::ColumnOperator *>( object );
@@ -49,7 +49,7 @@ void myGetRow2( void *object,
 
 void myGetRow3( void *object,
                 int row,
-                std::vector<unsigned int> &cols,
+                std::vector<size_t> &cols,
                 std::vector<double> &values )
 {
     AMP::Operator::ColumnOperator *op = reinterpret_cast<AMP::Operator::ColumnOperator *>( object );
@@ -111,7 +111,7 @@ int myGetRow( ML_Operator *data,
     int cnt           = 0;
     for ( int i = 0; i < N_requested_rows; i++ ) {
         int row = requested_rows[i];
-        std::vector<unsigned int> cols;
+        std::vector<size_t> cols;
         std::vector<double> vals;
 
         mat->getRowByGlobalID( row, cols, vals );

@@ -38,18 +38,19 @@ public:
 
 
     /** \brief Basic constructor for DOFManager
-     * \details  This will create a very simple DOFManager with the given number of DOFs on each
-     * processor.
-     *   It will not contain info to relate that to a mesh.  A derived implimentation should be used
-     * for
-     *   more advanced features.  For example see simpleDOFManager and multiDOFManager.
+     * \details  This will create a very simple DOFManager with the given number
+     *    of DOFs on each processor.  It will not contain info to relate that to a mesh.
+     *    A derived implimentation should be used for more advanced features.
+     *    For example see simpleDOFManager and multiDOFManager.
      * \param[in]  N_local  The local number of DOFs
      * \param[in]  comm     The comm over which the DOFManager exists
      */
     DOFManager( size_t N_local, const AMP_MPI &comm );
 
+
     //! Deconstructor
     virtual ~DOFManager();
+
 
     /** \brief  Compares two DOFManager for equality.
       * \details This operation compares two DOF managers to see if they are equivalent
@@ -65,11 +66,19 @@ public:
     bool operator!=( const DOFManager &rhs ) const;
 
 
+    /** \brief Get the mesh element for a DOF
+     * \details  This will return the mesh element associated with a given DOF.
+     * \param[in] dof       The entry in the vector associated with DOF
+     * @return              The element for the given DOF.
+     */
+    virtual AMP::Mesh::MeshElement getElement( size_t dof ) const;
+
+
     /** \brief Get the entry indices of DOFs given a mesh element ID
      * \details  This will return a vector of pointers into a Vector that are associated with which.
      * \param[in]  id       The element ID to collect nodal objects for.
      *                      Note: the mesh element may be any type (include a vertex).
-     * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
+     * \param[out] dofs     The entries in the vector associated with D.O.F.s
      */
     virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
 
@@ -174,6 +183,7 @@ protected:
 
     //! The comm for this DOFManager
     AMP_MPI d_comm;
+
 };
 
 

@@ -43,7 +43,7 @@ std::string AsciiWriter::getExtension() { return "ascii"; }
 ************************************************************/
 void AsciiWriter::readFile( const std::string & )
 {
-    AMP_ERROR( "readFile is not implimented yet" );
+    AMP_ERROR( "readFile is not implemented yet" );
 }
 
 
@@ -125,14 +125,14 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
                      static_cast<int>( size[0] ),
                      static_cast<int>( size[1] ) );
         }
-        std::vector<unsigned int> col;
+        std::vector<size_t> col;
         std::vector<double> data;
         for ( int row = 0; row < static_cast<int>( size[0] ); row++ ) {
             // Get and print the current row
             sendRowToRoot( mat, d_comm, row, col, data );
             if ( d_comm.getRank() == 0 ) {
                 for ( size_t i = 0; i < col.size(); i++ )
-                    fprintf( fid, "   %4i %4u  %0.14e\n", row, col[i], data[i] );
+                    fprintf( fid, "   %4i %4u  %0.14e\n", row, (unsigned int) col[i], data[i] );
             }
         }
         if ( d_comm.getRank() == 0 ) {
@@ -248,7 +248,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
 void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr mat,
                                  AMP_MPI comm,
                                  int row,
-                                 std::vector<unsigned int> &cols,
+                                 std::vector<size_t> &cols,
                                  std::vector<double> &data )
 {
     int rank = comm.getRank();
@@ -271,7 +271,7 @@ void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr ma
         size_t size = cols.size();
         requests.push_back( comm.Isend<size_t>( &size, 1, 0, 124 ) );
         if ( size > 0 ) {
-            requests.push_back( comm.Isend<unsigned int>( &cols[0], size, 0, 125 ) );
+            requests.push_back( comm.Isend<size_t>( &cols[0], size, 0, 125 ) );
             requests.push_back( comm.Isend<double>( &data[0], size, 0, 126 ) );
         }
     }
@@ -283,7 +283,7 @@ void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr ma
         cols.resize( size, 0 );
         data.resize( size, 0 );
         if ( size > 0 ) {
-            requests.push_back( comm.Irecv<unsigned int>( &cols[0], size, own_rank, 125 ) );
+            requests.push_back( comm.Irecv<size_t>( &cols[0], size, own_rank, 125 ) );
             requests.push_back( comm.Irecv<double>( &data[0], size, own_rank, 126 ) );
         }
     }

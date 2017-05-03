@@ -19,8 +19,27 @@ namespace Operator {
 
 // Constructor
 SubchannelFourEqLinearOperator::SubchannelFourEqLinearOperator(
-    const AMP::shared_ptr<SubchannelOperatorParameters> &params )
-    : LinearOperator( params )
+    const AMP::shared_ptr<SubchannelOperatorParameters> &params ):
+    LinearOperator( params ),
+    d_forceNoConduction(0),
+    d_forceNoTurbulence(0),
+    d_forceNoHeatSource(0),
+    d_forceNoFriction(0),
+    d_Pout(0),
+    d_Tin(0),
+    d_mass(0),
+    d_win(0),
+    d_gamma(0),
+    d_theta(0),
+    d_turbulenceCoef(0),
+    d_reynolds(0),
+    d_prandtl(0),
+    d_KG(0),
+    d_friction(0),
+    d_roughness(0),
+    d_NGrid(0),
+    d_Q(0),
+    d_numSubchannels(0)
 {
     AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "Key 'InputVariable' does not exist" );
     std::string inpVar = params->d_db->getString( "InputVariable" );
@@ -718,7 +737,7 @@ void SubchannelFourEqLinearOperator::reset( const AMP::shared_ptr<OperatorParame
     // loop over lateral faces
     AMP::Mesh::MeshIterator face =
         d_Mesh->getIterator( AMP::Mesh::GeomType::Face, 0 ); // iterator for cells of mesh
-    for ( ; face != face.end(); face++ ) {
+    for ( ; face != face.end(); ++face ) {
         std::vector<double> faceCentroid = face->centroid();
         auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
@@ -1096,7 +1115,7 @@ void SubchannelFourEqLinearOperator::getLateralFaces(
     // get iterator over all faces of mesh
     AMP::Mesh::MeshIterator face = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     // loop over faces
-    for ( ; face != face.end(); face++ ) {
+    for ( ; face != face.end(); ++face ) {
         // check that face is vertical
         // ---------------------------
         // get centroid of current face
@@ -1150,7 +1169,7 @@ SubchannelFourEqLinearOperator::getGapWidths( AMP::Mesh::Mesh::shared_ptr mesh,
     double topZ = 0.5 * ( d_z[Nz] + d_z[Nz - 1] );
     // get iterator over all faces of mesh
     AMP::Mesh::MeshIterator face = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
-    for ( ; face != face.end(); face++ ) {
+    for ( ; face != face.end(); ++face ) {
         std::vector<double> faceCentroid = face->centroid();
         if ( AMP::Utilities::approx_equal_abs( faceCentroid[2], topZ, 1.0e-12 ) ) {
             // if the face has more than 1 adjacent cell
@@ -1404,23 +1423,6 @@ double SubchannelFourEqLinearOperator::Temperature( double h, double p )
     return result[0];
 }
 
-double SubchannelFourEqLinearOperator::ThermalConductivity( double T, double rho )
-{
-    // evaluates thermal conductivity
-    // T: temperature
-    // rho: density
-    std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
-    argMap.insert(
-        std::make_pair( std::string( "temperature" ),
-                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, T ) ) ) );
-    argMap.insert( std::make_pair(
-        std::string( "density" ),
-        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, rho ) ) ) );
-    std::vector<double> result( 1 );
-    d_subchannelPhysicsModel->getProperty( "ThermalConductivity", result, argMap );
-    return result[0];
-}
-
 double SubchannelFourEqLinearOperator::DynamicViscosity( double T, double rho )
 {
     // evaluates dynamic viscosity
@@ -1438,22 +1440,6 @@ double SubchannelFourEqLinearOperator::DynamicViscosity( double T, double rho )
     return result[0];
 }
 
-double SubchannelFourEqLinearOperator::Enthalpy( double T, double p )
-{
-    // evaluates specific enthalpy
-    // T: temperature
-    // p: pressure
-    std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
-    argMap.insert(
-        std::make_pair( std::string( "temperature" ),
-                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, T ) ) ) );
-    argMap.insert(
-        std::make_pair( std::string( "pressure" ),
-                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p ) ) ) );
-    std::vector<double> result( 1 );
-    d_subchannelPhysicsModel->getProperty( "Enthalpy", result, argMap );
-    return result[0];
-}
 
 void SubchannelFourEqLinearOperator::getAxialFaces( AMP::Mesh::MeshElement cell,
                                                     AMP::Mesh::MeshElement &upperFace,

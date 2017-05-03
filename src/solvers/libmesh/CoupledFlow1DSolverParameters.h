@@ -21,7 +21,7 @@ public:
     virtual ~CoupledFlow1DSolverParameters() {}
 
     AMP::shared_ptr<AMP::Solver::SolverStrategy> d_flow1DSolver;
-    AMP::shared_ptr<AMP::Operator::Operator> d_pOperator;
+    using SolverStrategyParameters::d_pOperator;
 
 protected:
 private:

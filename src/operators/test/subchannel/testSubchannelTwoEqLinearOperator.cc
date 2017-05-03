@@ -37,7 +37,7 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian
 
     // loop over rows of Jacobian
     for ( size_t i = 0; i < num_dofs; i++ ) {
-        std::vector<unsigned int> matCols; // indices of nonzero entries in row i
+        std::vector<size_t> matCols; // indices of nonzero entries in row i
         std::vector<double> matVals;       // values of nonzero entries in row i
         testJacobian->getRowByGlobalID(
             i, matCols, matVals ); // get nonzero entries of row i of Jacobian
@@ -144,7 +144,7 @@ void Test( AMP::UnitTest *ut, std::string exeName )
     // set dummy values for reset in operator constructor; otherwise zero-values give error in
     // thermodynamic property
     // evaluations
-    for ( ; face != face.end(); face++ ) {
+    for ( ; face != face.end(); ++face ) {
         faceDOFManager->getDOFs( face->globalID(), dofs );
         FrozenVec->setValueByGlobalID( dofs[0], h_scale * 900.0e3 );
         FrozenVec->setValueByGlobalID( dofs[1], P_scale * 15.0e6 );

@@ -24,19 +24,30 @@ void testGetDOFIterator( AMP::UnitTest *ut,
                          const AMP::Mesh::MeshIterator &iterator,
                          AMP::Discretization::DOFManager::shared_ptr DOF )
 {
-    bool passes                 = true;
+    bool pass1 = true;
+    bool pass2 = true;
     AMP::Mesh::MeshIterator cur = iterator.begin();
     std::vector<size_t> dofs;
     for ( size_t i = 0; i < cur.size(); i++ ) {
-        DOF->getDOFs( cur->globalID(), dofs );
+        const auto id = cur->globalID();
+        DOF->getDOFs( id, dofs );
         if ( dofs.empty() )
-            passes = false;
+            pass1 = false;
+        for ( size_t dof : dofs ) {
+            auto id2 = DOF->getElement( dof ).globalID();
+            if ( id2 != id )
+                pass2 = false;
+        }
         ++cur;
     }
-    if ( passes )
+    if ( pass1 )
         ut->passes( "Got the DOFs for every element in iterator" );
     else
         ut->failure( "Got the DOFs for every element in iterator" );
+    if ( pass2 )
+        ut->passes( "getElementID" );
+    else
+        ut->failure( "getElementID" );
 }
 
 

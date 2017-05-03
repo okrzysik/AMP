@@ -34,7 +34,13 @@ ADD_AMP_TEST_1_2_4( test_Utilities )
 ADD_AMP_TEST( test_LapackWrappers )
 ADD_AMP_TEST_1_2_4( test_InputManager-1 )
 ADD_AMP_TEST_1_2_4( test_Database-1 )
+
+IF( USE_EXT_PETSC AND USE_EXT_TRILINOS )
 ADD_AMP_TEST_1_2_4( test_AsciiWriter )
+ELSE()
+ADD_AMP_TEST( test_AsciiWriter )
+ENDIF()
+
 ADD_AMP_TEST_1_2_4( testManufacturedSolution )
 ADD_AMP_TEST( test_LinearRegression )
 ADD_AMP_TEST( testArray )

@@ -23,8 +23,8 @@ public:
      * \brief Construct a box
      * \param range     The range of the box [xmin, xmax, ymin, ymax, zmin, zmax, ...]
      */
-    Box( const std::vector<double>& range ): d_range(range) {}
-
+    explicit Box( const std::vector<double>& range ): d_range(range) {}
+  
     /**
      * \brief    Calculate the distance to the object given a ray
      * \details  This function computes the distance to the object given a ray.

@@ -8,7 +8,9 @@
 #endif
 
 #ifdef USE_EXT_TRILINOS
-#include <vectors/trilinos/ManagedEpetraVector.h>
+#ifdef USE_TRILINOS_THYRA
+#include <vectors/trilinos/epetra/ManagedEpetraVector.h>
+#endif
 #ifdef USE_TRILINOS_THYRA
 #include <vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h>
 #endif
@@ -120,8 +122,12 @@ AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string& name )
         AMP_ASSERT(args.size()==4);
         factory.reset( new MultiVectorFactory( generateVectorFactory(args[0]), to_int(args[1]),
                                                generateVectorFactory(args[2]), to_int(args[3]) ) );
-    } else if ( factoryName == "NativePetscVector" ) {
-        AMP_ERROR("Not Finished");
+    } else if ( factoryName == "NativePetscVectorFactory" ) {
+        #if defined(USE_EXT_PETSC)
+        factory.reset( new NativePetscVectorFactory( ) );
+        #else
+            AMP_ERROR("Generator is not valid without support for PETSc");
+        #endif
     } else if ( factoryName == "SimpleManagedVectorFactory" ) {
         AMP_ASSERT(args.size()==1);
         if ( args[0] == "ManagedPetscVector" ) {
@@ -159,6 +165,20 @@ AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string& name )
             factory.reset( new ManagedNativeThyraFactory( generateVectorFactory(args[0]) ) );
         #else
             AMP_ERROR("Generator is not valid without support for Thyra");
+        #endif
+    } else if ( factoryName == "NativeSundialsFactory" ) {
+        AMP_ASSERT(args.size()==0);
+        #ifdef EXT_SUNDIALS
+            AMP_ERROR("Not implemented");
+        #else
+            AMP_ERROR("Generator is not valid without support for Sundials");
+        #endif
+    } else if ( factoryName == "ManagedSundialsVectorFactory" ) {
+         AMP_ASSERT(args.size()==0);
+         #ifdef EXT_SUNDIALS
+            AMP_ERROR("Not implemented");
+        #else
+            AMP_ERROR("Generator is not valid without support for Sundials");
         #endif
     } else if ( factoryName == "ViewFactory" ) {
         AMP_ASSERT(args.size()==2);

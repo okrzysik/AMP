@@ -22,7 +22,7 @@ class CircleMesh : public AMP::Mesh::BoxMesh
 public:
 
     //! Default constructor
-    CircleMesh( MeshParameters::shared_ptr params );
+    explicit CircleMesh( MeshParameters::shared_ptr params );
 
     /**
      * \brief   Estimate the number of elements in the mesh

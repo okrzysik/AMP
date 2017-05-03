@@ -101,7 +101,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
         // load and check defaults:
         // for each property needed by formulation
         for ( auto prop = properties.begin(); prop != properties.end(); ++prop ) {
-            AMP::Materials::PropertyPtr property =
+            auto property =
                 d_properties.find( *prop )->second;                        // pointer to property
             size_t n_arguments = property->get_number_arguments();         // number of arguments
             std::vector<std::string> argnames = property->get_arguments(); // argument names

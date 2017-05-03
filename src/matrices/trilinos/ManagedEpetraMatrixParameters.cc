@@ -56,13 +56,13 @@ Epetra_Map &ManagedEpetraMatrixParameters::getEpetraRowMap()
 
 Epetra_Map *ManagedEpetraMatrixParameters::getEpetraColMap()
 {
-#ifdef USE_EXT_MPI
+    return nullptr;
+/*#ifdef USE_EXT_MPI
     Epetra_MpiComm comm = d_comm.getCommunicator();
 #else
     Epetra_SerialComm comm;
 #endif
-    return nullptr;
-    /*AMP_ASSERT(d_DOFManagerLeft.get()!=NULL);
+    AMP_ASSERT(d_DOFManagerLeft.get()!=NULL);
     AMP_ASSERT(d_DOFManagerRight.get()!=NULL);
     AMP_INSIST(d_DOFManagerLeft->numGlobalDOF()<0x80000000,"Epetra does not support vectors with
     global size greater
@@ -89,6 +89,11 @@ void ManagedEpetraMatrixParameters::addColumns( int a, int *b )
 {
     for ( int i = 0; i != a; i++ )
         d_sColumns.insert( b[i] );
+}
+void ManagedEpetraMatrixParameters::addColumns( const std::set<size_t>& col )
+{
+    for ( auto b : col )
+        d_sColumns.insert( b );
 }
 
 

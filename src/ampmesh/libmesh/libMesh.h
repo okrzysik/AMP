@@ -50,7 +50,7 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params Parameters for constructing a mesh from an input database
      */
-    libMesh( const MeshParameters::shared_ptr &params );
+    explicit libMesh( const MeshParameters::shared_ptr &params );
 
     /**
      * \brief Contructor to create a libMesh object from a libMesh mesh.
@@ -61,7 +61,7 @@ public:
      * \param mesh The mesh in libmesh we want to use to construct the new mesh object
      * \param name The name of the new mesh object
      */
-    libMesh( AMP::shared_ptr<::Mesh> mesh, std::string name );
+    explicit libMesh( AMP::shared_ptr<::Mesh> mesh, std::string name );
 
     //! Deconstructor
     virtual ~libMesh();

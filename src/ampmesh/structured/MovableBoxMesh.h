@@ -25,7 +25,7 @@ class MovableBoxMesh : public AMP::Mesh::BoxMesh
 {
 public:
     //! Construct a movable box mesh from any existing box mesh
-    MovableBoxMesh( const AMP::Mesh::BoxMesh& mesh );
+    explicit MovableBoxMesh( const AMP::Mesh::BoxMesh& mesh );
     
     /**
      * \brief    Is the mesh movable

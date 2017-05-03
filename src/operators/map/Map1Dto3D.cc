@@ -103,7 +103,7 @@ void Map1Dto3D::computeZNodeLocations()
             t_zLocations.push_back( x[2] );
             Xx = x[0];
             Yy = x[1];
-            bnd++;
+            ++bnd;
         }
         for ( ; bnd != end_bnd; ++bnd ) {
             std::vector<double> x = bnd->coord();
@@ -163,7 +163,7 @@ void Map1Dto3D::computeZGaussLocations()
                 Xx = coordinate( 0 );
                 Yy = coordinate( 1 );
             }
-            bnd++;
+            ++bnd;
         }
 
         for ( ; bnd != end_bnd; ++bnd ) {

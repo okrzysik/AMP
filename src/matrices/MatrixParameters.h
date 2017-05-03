@@ -34,16 +34,16 @@ public:
     virtual ~MatrixParameters(){};
 
     //! Return the local number of rows
-    inline size_t getLocalNumberOfRows() const { return numLocalRows; }
+    inline size_t getLocalNumberOfRows() const { return d_DOFManagerLeft->numLocalDOF(); }
 
     //! Return the local number of columns
-    inline size_t getLocalNumberOfColumns() const { return numLocalColumns; }
+    inline size_t getLocalNumberOfColumns() const { return d_DOFManagerRight->numLocalDOF(); }
 
     //! Return the global number of rows
-    inline size_t getGlobalNumberOfRows() const { return numGlobalRows; }
+    inline size_t getGlobalNumberOfRows() const { return d_DOFManagerLeft->numGlobalDOF(); }
 
     //! Return the global number of columns
-    inline size_t getGlobalNumberOfColumns() const { return numGlobalColumns; }
+    inline size_t getGlobalNumberOfColumns() const { return d_DOFManagerRight->numGlobalDOF(); }
 
     //!  Get the DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )
@@ -90,11 +90,6 @@ protected:
     // The comm of the matrix
     AMP_MPI d_comm;
 
-    // The size of the matrix
-    size_t numLocalRows;
-    size_t numLocalColumns;
-    size_t numGlobalRows;
-    size_t numGlobalColumns;
 };
 }
 }

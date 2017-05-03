@@ -155,7 +155,7 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshName )
         meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
     std::string mfgName = mfgSolution->get_name();
     if ( mfgName.find( "Cylindrical" ) < mfgName.size() ) {
-        for ( ; iterator != iterator.end(); iterator++ ) {
+        for ( ; iterator != iterator.end(); ++iterator ) {
             double x, y, z, r, th = 0.;
             std::valarray<double> poly( 10 );
             x         = ( iterator->coord() )[0];
@@ -174,7 +174,7 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshName )
             solVec->setValueByGlobalID( gid[0], poly[0] );
         }
     } else {
-        for ( ; iterator != iterator.end(); iterator++ ) {
+        for ( ; iterator != iterator.end(); ++iterator ) {
             double x, y, z;
             std::valarray<double> poly( 10 );
             x = ( iterator->coord() )[0];
@@ -211,15 +211,12 @@ void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshName )
                 file << "results={" << std::endl;
             }
 
-            iterator        = iterator.begin();
-            size_t numNodes = 0;
-            for ( ; iterator != iterator.end(); iterator++ )
-                numNodes++;
+            size_t numNodes = iterator.size();
 
             iterator     = iterator.begin();
             size_t iNode = 0;
             double l2err = 0.;
-            for ( ; iterator != iterator.end(); iterator++ ) {
+            for ( ; iterator != iterator.end(); ++iterator ) {
                 double x, y, z;
                 x = ( iterator->coord() )[0];
                 y = ( iterator->coord() )[1];

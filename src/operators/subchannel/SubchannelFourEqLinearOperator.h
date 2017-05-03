@@ -161,9 +161,7 @@ private:
 
     double Volume( double, double );              // evaluates specific volume
     double Temperature( double, double );         // evaluates temperature
-    double ThermalConductivity( double, double ); // evaluates thermal conductivity
     double DynamicViscosity( double, double );    // evaluates dynamic viscosity
-    double Enthalpy( double, double );            // evaluates specific enthalpy
 
     AMP::Mesh::MeshElement
     getAxiallyAdjacentLateralFace( AMP::Mesh::MeshElement *,

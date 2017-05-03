@@ -13,7 +13,7 @@ inline double ManagedEpetraMatrix::L1Norm() const { return d_epetraMatrix->NormO
 
 inline Matrix::shared_ptr ManagedEpetraMatrix::cloneMatrix() const
 {
-    ManagedEpetraMatrix *r = new ManagedEpetraMatrix( d_epetraMatrix );
+    ManagedEpetraMatrix *r = new ManagedEpetraMatrix( *this );
     r->d_DeleteMatrix      = true;
     return Matrix::shared_ptr( r );
 }
