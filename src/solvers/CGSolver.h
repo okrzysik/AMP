@@ -47,13 +47,13 @@ public:
      */
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u );
+                    u ) override;
 
     /**
      * Initialize the CGSolver. Should not be necessary for the user to call in general.
      * @param parameters
      */
-    void initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters );
+    void initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters ) override;
 
     /**
      * returns a shared pointer to a preconditioner object. The preconditioner is derived from
@@ -78,13 +78,13 @@ public:
      * Register the operator that the solver will use during solves
      * @param [in] op shared pointer to operator $A()$ for equation \f$A(u) = f\f$
      */
-    void registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op );
+    void registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op ) override;
 
     /**
      * Resets the registered operator internally with new parameters if necessary
      * @param parameters    OperatorParameters object that is NULL by default
      */
-    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters );
+    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
 
 protected:
     void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
