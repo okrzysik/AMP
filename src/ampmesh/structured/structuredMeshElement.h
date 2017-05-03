@@ -34,16 +34,23 @@ public:
     virtual inline std::string elementClass() const override { return "structuredMeshElement"; }
 
     //! Return the elements composing the current element
-    virtual std::vector<MeshElement> getElements( const GeomType type ) const override;
+    virtual void getElements( const GeomType type, std::vector<MeshElement>& elements ) const override;
+
+    //! Return the IDs of the elements composing the current element
+    virtual void getElementsID( const GeomType type, std::vector<MeshElementID>& ID ) const;
 
     //! Return the elements neighboring the current element
-    virtual std::vector<MeshElement::shared_ptr> getNeighbors() const override;
+    virtual void getNeighbors( std::vector<MeshElement::shared_ptr>& neighbors ) const override;
 
     //! Return the volume of the current element (does not apply to verticies)
     virtual double volume() const override;
 
     //! Return the coordinates of the vertex (only applies to verticies)
-    virtual std::vector<double> coord() const override;
+    virtual inline void coord( size_t& N, double* x ) const override final
+    {
+        N = d_physicalDim;
+        d_mesh->coord(d_index,x);
+    }
 
     /**
      * \brief     Return the coordinate of the vertex
@@ -53,15 +60,6 @@ public:
      * \param[out] pos      The coordinates
      */
     inline void coord( double *pos ) const { d_mesh->coord(d_index,pos); }
-
-    /**
-     * \brief     Return the coordinate of the vertex
-     * \details   This function returns the coordinates of the vertex
-     *   in the given direction (only applies to verticies).
-     *   Note: This is a faster access for obtaining a single coordinate
-     * \param[in] i         The direction requested.  Equivalent to coord()[i]
-     */
-    virtual double coord( int i ) const override;
 
     /**
      * \brief     Return true if the element contains the point

@@ -119,13 +119,13 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
                     std::vector<size_t> localDOFs;
                     DOFs->getDOFs( iterator->globalID(), localDOFs );
                     std::vector<size_t> neighborDOFs, dofs;
-                    std::vector<AMP::Mesh::MeshElement::shared_ptr> elements =
-                        iterator->getNeighbors();
-                    for ( size_t i = 0; i < elements.size(); i++ ) {
-                        DOFs->getDOFs( elements[i]->globalID(), dofs );
-                        for ( size_t j = 0; j < dofs.size(); j++ ) {
+                    auto neighbors = iterator->getNeighbors();
+                    for ( const auto& neighbor : neighbors ) {
+                        if ( neighbor == nullptr )
+                            continue;
+                        DOFs->getDOFs( neighbor->globalID(), dofs );
+                        for ( size_t j = 0; j < dofs.size(); j++ )
                             neighborDOFs.push_back( dofs[j] );
-                        }
                     }
                     // For each local DOF, set all matrix elements involving the current DOF
                     for ( size_t j = 0; j < localDOFs.size(); j++ ) {

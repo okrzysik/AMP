@@ -113,16 +113,25 @@ unsigned int structuredMeshElement::globalOwnerRank() const
 * Function to get the elements composing the current element    *
 * We use a Canonical numbering system                           *
 ****************************************************************/
-std::vector<MeshElement> structuredMeshElement::getElements( const GeomType type ) const
+void structuredMeshElement::getElements( const GeomType type, std::vector<MeshElement>& elements ) const
 {
     int N = 0;
     BoxMesh::MeshElementIndex index[12];
     getElementIndex( type, N, index );
     // Create the elements
-    std::vector<MeshElement> elements( N );
+    elements.clear( );
+    elements.reserve( N );
     for ( int i=0; i<N; i++ )
-        elements[i] = structuredMeshElement( index[i], d_mesh );
-    return elements;
+        elements.emplace_back( structuredMeshElement( index[i], d_mesh ) );
+}
+void structuredMeshElement::getElementsID( const GeomType type, std::vector<MeshElementID>& ID ) const
+{
+    int N = 0;
+    BoxMesh::MeshElementIndex index[12];
+    getElementIndex( type, N, index );
+    ID.resize( N );
+    for ( int i=0; i<N; i++ )
+        ID[i] = d_mesh->convert( index[i] );
 }
 void structuredMeshElement::getElementIndex( const GeomType type, int &N, BoxMesh::MeshElementIndex* index ) const
 {
@@ -283,14 +292,13 @@ void structuredMeshElement::getElementIndex( const GeomType type, int &N, BoxMes
 /****************************************************************
 * Function to get the neighboring elements                      *
 ****************************************************************/
-std::vector<MeshElement::shared_ptr> structuredMeshElement::getNeighbors() const
+void structuredMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr>& neighbors ) const
 {
     int N = 0;
     BoxMesh::MeshElementIndex index[27];
     getNeighborIndex( N, index );
     // Get the neighbor elements
-    std::vector<MeshElement::shared_ptr> neighbors;
-    neighbors.reserve( N );
+    neighbors.resize( N );
     bool periodic[3];
     int size[3];
     for ( int d = 0; d < static_cast<int>(d_meshType); d++ ) {
@@ -319,12 +327,10 @@ std::vector<MeshElement::shared_ptr> structuredMeshElement::getNeighbors() const
             }
         }
         if ( in_mesh )
-            neighbors.push_back(
-                MeshElement::shared_ptr( new structuredMeshElement( elem, d_mesh ) ) );
+            neighbors[i].reset( new structuredMeshElement( elem, d_mesh ) );
         else if ( d_globalID.type() != GeomType::Vertex )
-            neighbors.push_back( MeshElement::shared_ptr() );
+            neighbors[i].reset();
     }
-    return neighbors;
 }
 void structuredMeshElement::getNeighborIndex(int &N, BoxMesh::MeshElementIndex* index ) const
 {
@@ -690,23 +696,6 @@ double structuredMeshElement::volume() const
     }
     AMP_ERROR( "Internal error" );
     return 0.0;
-}
-
-
-/****************************************************************
-* Function to get the node coordinates                          *
-****************************************************************/
-std::vector<double> structuredMeshElement::coord() const
-{
-    std::vector<double> coord( (size_t) d_physicalDim, 0.0 );
-    d_mesh->coord( d_index, coord.data() );
-    return coord;
-}
-double structuredMeshElement::coord( int i ) const
-{
-    double coord[10];
-    d_mesh->coord( d_index, coord );
-    return coord[i];
 }
 
 

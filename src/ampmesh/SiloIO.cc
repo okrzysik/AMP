@@ -2,6 +2,9 @@
 #include "ProfilerApp.h"
 #include "ampmesh/MultiMesh.h"
 
+#include <chrono>
+
+
 namespace AMP {
 namespace Mesh {
 
@@ -61,17 +64,17 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
     tmp << fname_in << "_" << cycle << "." << getExtension();
     std::string fname = tmp.str();
     // Check that the dimension is matched across all processors
-    PROFILE_START( "sync dim" );
+    PROFILE_START( "sync dim", 1 );
     int dim2 = d_comm.maxReduce( d_dim );
     if ( d_dim == -1 )
         d_dim = dim2;
     else
         AMP_ASSERT( dim2 == d_dim );
     d_comm.barrier();
-    PROFILE_STOP( "sync dim" );
+    PROFILE_STOP( "sync dim", 1 );
 // Syncronize all vectors
 #ifdef USE_AMP_VECTORS
-    PROFILE_START( "makeConsistent" );
+    PROFILE_START( "makeConsistent", 1 );
     for ( auto &elem : d_vectors ) {
         AMP::LinearAlgebra::Vector::UpdateState localState = elem->getUpdateStatus();
         if ( localState == AMP::LinearAlgebra::Vector::UpdateState::ADDING )
@@ -79,7 +82,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
         else
             elem->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     }
-    PROFILE_STOP( "makeConsistent" );
+    PROFILE_STOP( "makeConsistent", 1 );
 #endif
     // Write the data for each base mesh
     if ( d_decomposition == 1 ) {
@@ -315,9 +318,10 @@ void SiloIO::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr )
 ************************************************************/
 void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cycle, double time )
 {
-    PROFILE_START( "writeMesh" );
+    PROFILE_START( "writeMesh", 1 );
     AMP::Mesh::Mesh::shared_ptr mesh = data.mesh;
     // Get the zone (element) lists
+    PROFILE_START( "writeMesh - get-elements", 2 );
     AMP::Mesh::MeshIterator elem_iterator = mesh->getIterator( mesh->getGeomType(), 0 );
     AMP_ASSERT( elem_iterator.size() > 0 );
     std::vector<AMP::Mesh::MeshElement> nodes = elem_iterator->getElements( AMP::Mesh::GeomType::Vertex );
@@ -332,7 +336,10 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     else
         AMP_ERROR( "Unknown element type" );
     int shapecnt = elem_iterator.size();
+    PROFILE_STOP( "writeMesh - get-elements", 2 );
     // Get the node list (unique integer for each node) and coordinates
+    PROFILE_START( "writeMesh - get-nodelist", 3 );
+    PROFILE_START( "writeMesh - get-nodelist-1", 3 );
     AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
     std::vector<AMP::Mesh::MeshElementID> nodelist_ids( node_iterator.size() );
     for ( size_t i = 0; i < node_iterator.size(); ++i ) {
@@ -340,6 +347,8 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
         ++node_iterator;
     }
     AMP::Utilities::quicksort( nodelist_ids );
+    PROFILE_STOP( "writeMesh - get-nodelist-1", 3 );
+    PROFILE_START( "writeMesh - get-nodelist-2", 3 );
     double *coord[3];
     for ( int i   = 0; i < d_dim; ++i )
         coord[i]  = new double[node_iterator.size()];
@@ -352,21 +361,27 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
             coord[j][index] = elem_coord[j];
         ++node_iterator;
     }
+    PROFILE_STOP( "writeMesh - get-nodelist-2", 3 );
+    PROFILE_START( "writeMesh - get-nodelist-3", 3 );
     elem_iterator = mesh->getIterator( mesh->getGeomType(), 0 );
     std::vector<int> nodelist;
     nodelist.reserve( shapesize * elem_iterator.size() );
-    for ( size_t i = 0; i < elem_iterator.size(); ++i ) {
-        nodes = elem_iterator->getElements( AMP::Mesh::GeomType::Vertex );
-        AMP_INSIST( (int) nodes.size() == shapesize,
-                    "Mixed element types is currently not supported" );
-        for ( auto &node : nodes ) {
-            size_t index = AMP::Utilities::findfirst( nodelist_ids, node.globalID() );
-            AMP_ASSERT( nodelist_ids[index] == node.globalID() );
+    std::vector<MeshElementID> nodeids;
+    for ( const auto& elem : elem_iterator ) {
+        elem.getElementsID( AMP::Mesh::GeomType::Vertex, nodeids );
+        AMP_INSIST( (int) nodeids.size() == shapesize,
+            "Mixed element types is currently not supported" );
+        for ( auto &nodeid : nodeids ) {
+            size_t index = AMP::Utilities::findfirst( nodelist_ids, nodeid );
+            AMP_ASSERT( nodelist_ids[index] == nodeid );
             nodelist.push_back( (int) index );
         }
         ++elem_iterator;
     }
+    PROFILE_STOP( "writeMesh - get-nodelist-3", 3 );
+    PROFILE_STOP( "writeMesh - get-nodelist", 2 );
     // Create the directory for the mesh
+    PROFILE_START( "writeMesh - directory", 2 );
     std::string tmp_path = data.path;
     while ( tmp_path.size() > 0 ) {
         if ( tmp_path[0] == '/' ) {
@@ -391,7 +406,9 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     }
     DBSetDir( FileHandle, "/" );
     DBSetDir( FileHandle, data.path.c_str() );
+    PROFILE_STOP( "writeMesh - directory", 2 );
     // Write the elements (connectivity)
+    PROFILE_START( "writeMesh - elements", 2 );
     std::stringstream stream;
     stream << data.rank;
     std::string rank                         = stream.str();
@@ -413,7 +430,9 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
                     &shapecnt,
                     1,
                     nullptr );
+    PROFILE_STOP( "writeMesh - elements", 2 );
     // Write the mesh
+    PROFILE_START( "writeMesh - mesh", 2 );
     DBPutUcdmesh( FileHandle,
                   meshName.c_str(),
                   d_dim,
@@ -427,7 +446,9 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
                   nullptr );
     for ( int i = 0; i < d_dim; ++i )
         delete[] coord[i];
-// Write the variables
+    PROFILE_STOP( "writeMesh - mesh", 2 );
+    // Write the variables
+    PROFILE_START( "writeMesh - variables", 2 );
 #ifdef USE_AMP_VECTORS
     float ftime = time;
     DBoptlist *optlist = DBMakeOptlist(10);
@@ -522,10 +543,11 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
         delete[] var;
     }
     DBFreeOptlist( optlist );
+    PROFILE_STOP( "writeMesh - variables", 2 );
 #endif
     // Change the directory back to root
     DBSetDir( FileHandle, "/" );
-    PROFILE_STOP( "writeMesh" );
+    PROFILE_STOP( "writeMesh", 1 );
 }
 
 
@@ -536,7 +558,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
 void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &data,
                                 int root ) const
 {
-    PROFILE_START( "syncMultiMeshData" );
+    PROFILE_START( "syncMultiMeshData", 1 );
     // Convert the data to vectors
     std::vector<AMP::Mesh::MeshID> ids;
     std::vector<siloMultiMeshData> meshdata;
@@ -643,7 +665,7 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &
             }
         }
     }
-    PROFILE_STOP( "syncMultiMeshData" );
+    PROFILE_STOP( "syncMultiMeshData", 1 );
 }
 
 
@@ -653,7 +675,7 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &
 ************************************************************/
 void SiloIO::syncVariableList( std::set<std::string> &data_set, int root ) const
 {
-    PROFILE_START( "syncVariableList" );
+    PROFILE_START( "syncVariableList", 1 );
     std::vector<std::string> data( data_set.begin(), data_set.end() );
     size_t N_local  = data.size();
     size_t N_global = d_comm.sumReduce( N_local );
@@ -718,7 +740,7 @@ void SiloIO::syncVariableList( std::set<std::string> &data_set, int root ) const
     delete[] recv_buf;
     delete[] size_local;
     delete[] size_global;
-    PROFILE_STOP( "syncVariableList" );
+    PROFILE_STOP( "syncVariableList", 1 );
 }
 
 
@@ -727,7 +749,7 @@ void SiloIO::syncVariableList( std::set<std::string> &data_set, int root ) const
 ************************************************************/
 void SiloIO::writeSummary( std::string filename, int cycle, double time )
 {
-    PROFILE_START( "writeSummary" );
+    PROFILE_START( "writeSummary", 1 );
     AMP_ASSERT( !filename.empty() );
     // Add the siloBaseMeshData to the multimeshes
     std::map<AMP::Mesh::MeshID, siloMultiMeshData> multiMeshes = d_multiMeshes;
@@ -773,7 +795,7 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
         FileHandle = DBOpen( filename.c_str(), DB_HDF5, DB_APPEND );
         std::map<AMP::Mesh::MeshID, siloMultiMeshData>::iterator it;
         // Create the subdirectories
-        PROFILE_START( "create directories" );
+        PROFILE_START( "create directories", 2 );
         std::set<std::string> subdirs;
         for ( it = multiMeshes.begin(); it != multiMeshes.end(); ++it ) {
             siloMultiMeshData data = it->second;
@@ -787,9 +809,9 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
         }
         for ( const auto &subdir : subdirs )
             createSiloDirectory( FileHandle, subdir );
-        PROFILE_STOP( "create directories" );
+        PROFILE_STOP( "create directories", 2 );
         // Create the multimeshes
-        PROFILE_START( "write multimeshes" );
+        PROFILE_START( "write multimeshes", 2 );
         for ( it = multiMeshes.begin(); it != multiMeshes.end(); ++it ) {
             siloMultiMeshData data = it->second;
             std::vector<std::string> meshNames( data.meshes.size() );
@@ -815,9 +837,9 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
             delete[] meshnames;
             delete[] meshtypes;
         }
-        PROFILE_STOP( "write multimeshes" );
+        PROFILE_STOP( "write multimeshes", 2 );
         // Generate the multi-variables
-        PROFILE_START( "write multivariables" );
+        PROFILE_START( "write multivariables", 2 );
         for ( it = multiMeshes.begin(); it != multiMeshes.end(); ++it ) {
             siloMultiMeshData data = it->second;
             // std::cout << data.name << std::endl;
@@ -882,10 +904,10 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
                 delete[] vartypes;
             }
         }
-        PROFILE_STOP( "write multivariables" );
+        PROFILE_STOP( "write multivariables", 2 );
         DBClose( FileHandle );
     }
-    PROFILE_STOP( "writeSummary" );
+    PROFILE_STOP( "writeSummary", 1 );
 }
 
 
