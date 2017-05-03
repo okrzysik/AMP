@@ -81,16 +81,17 @@ int main( int argc, char **argv )
     AMP::pout << "Testing NativeThyraVector of a ManagedThyraVector of a MultVector" << std::endl;
     testBasicVector( ut, ManagedNativeThyraFactory1 );
     AMP::pout << std::endl;
-#endif
 
 // Run Belos tests of thyra vectors
-#ifdef USE_TRILINOS_THYRA
+#ifdef USE_TRILINOS_BELOS
     AMP::pout << "Testing Belos interface to Thyra vectors" << std::endl;
     testBelosThyraVector( ut, NativeThyraFactory() );
     testBelosThyraVector( ut, ManagedThyraFactory( generateVectorFactory(SimpleFactory2) ) );
     testBelosThyraVector( ut, ManagedNativeThyraFactory( generateVectorFactory(SimpleFactory2) ) );
     testBelosThyraVector( ut, ManagedNativeThyraFactory( generateVectorFactory(MVFactory1) ) );
     AMP::pout << std::endl;
+#endif
+
 #endif
 
 #else

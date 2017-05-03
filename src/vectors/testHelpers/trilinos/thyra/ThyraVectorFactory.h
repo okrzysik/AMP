@@ -71,9 +71,9 @@ private:
     AMP::shared_ptr<VectorFactory> d_factory;
 };
 
-
+#ifdef USE_TRILINOS_BELOS
 void testBelosThyraVector( AMP::UnitTest &utils, const VectorFactory& factory );
-
+#endif
 
 }
 }

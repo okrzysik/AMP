@@ -10,7 +10,11 @@
 
 // Trilinos includes
 DISABLE_WARNINGS
+
+#ifdef USE_TRILINOS_BELOS
 #include "BelosTypes.hpp"
+#endif
+
 #include "NOX_MatrixFree_ModelEvaluatorDecorator.hpp"
 #include "NOX_Solver_Factory.H"
 #include "NOX_StatusTest_Combo.H"

@@ -51,7 +51,7 @@ public:
      @param [out] u : shared pointer to approximate computed solution
      */
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Initialize the solution vector and potentially create internal vectors needed for solution
@@ -62,20 +62,20 @@ public:
      the solver.
      The LinearOperator currently is assumed to contain a pointer to an EpetraMatrix object.
      */
-    void initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters );
+    void initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters ) override;
 
     /**
      * Register the operator that the solver will use during solves
      @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$
      */
-    void registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op );
+    void registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op ) override;
 
     /**
      * Resets the associated operator internally with new parameters if necessary
      * @param [in] params
      *        OperatorParameters object that is NULL by default
      */
-    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params );
+    void resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
 
     /**
      * Resets the solver internally with new parameters if necessary
@@ -85,7 +85,7 @@ public:
      * and recreates it based on the parameters object. See constructor for
      * fields required for parameter object.
      */
-    void reset( AMP::shared_ptr<SolverStrategyParameters> params );
+    void reset( AMP::shared_ptr<SolverStrategyParameters> params ) override;
 
     void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
 

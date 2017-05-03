@@ -82,7 +82,7 @@ public:
     * @param parameters
     *        SolverStrategyParameters object that is NULL by default
     */
-    virtual void reset( AMP::shared_ptr<SolverStrategyParameters> parameters );
+    virtual void reset( AMP::shared_ptr<SolverStrategyParameters> parameters ) override;
 
     /**
      * Solve the system \f$Au = 0\f$.
@@ -91,7 +91,7 @@ public:
      */
     virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                         AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                            u );
+                            u ) override;
 
     /**
      * Provide the initial guess for the solver. This is a pure virtual function that the derived
@@ -99,7 +99,7 @@ public:
      * need to provide an implementation of.
      * @param [in] initialGuess: shared pointer to the initial guess vector.
      */
-    virtual void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess )
+    virtual void setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override
     {
         d_initialGuess = initialGuess;
     }
