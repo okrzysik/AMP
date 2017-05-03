@@ -132,5 +132,23 @@ void NativePetscMatrix::getRowByGlobalID( size_t row,
         std::copy( (double *) out_vals, (double *) ( out_vals + numCols ), values.begin() );
     }
 }
+
+std::vector<size_t> NativePetscMatrix::getColumnIDs( size_t row ) const
+{
+    int numCols;
+    MatGetRow( d_Mat, row, &numCols, PETSC_NULL, PETSC_NULL );
+    std::vector<size_t> cols ( numCols );
+
+    if ( numCols ) {
+        const PetscInt *out_cols;
+        const PetscScalar *out_vals;
+        MatGetRow( d_Mat, row, &numCols, &out_cols, &out_vals );
+        std::copy(
+            (unsigned int *) out_cols, (unsigned int *) ( out_cols + numCols ), cols.begin() );
+    }
+
+    return cols;
+}
+
 }
 } // end
