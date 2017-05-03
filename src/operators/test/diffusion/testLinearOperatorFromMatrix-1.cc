@@ -99,9 +99,10 @@ void userLinearOperatorTest( AMP::UnitTest * const ut, const std::string &exeNam
     // copy the user matrix into the amp matrix
     std::vector<double> coefficients;
     std::vector<size_t> cols;
+    const size_t numRows = 1;
     for ( auto row = userMat->beginRow(); row < userMat->endRow(); ++row ) {
-        userMat->getRowByGlobalID( row, cols, coefficients );
-        ampMat->setValuesByGlobalID( 1, cols.size(), &row, cols.data(), coefficients.data());
+        userMat->getRowByGlobalID( row, cols, coefficients );        
+        ampMat->setValuesByGlobalID( numRows, cols.size(), &row, cols.data(), coefficients.data());
     }
     // concludes demonstrating how to initialize an AMP linear operator from a user matrix
     // ************************************************************************************************
