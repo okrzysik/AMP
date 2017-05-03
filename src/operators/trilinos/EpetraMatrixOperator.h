@@ -22,16 +22,6 @@ public:
         setMatrix( t );
     }
 
-    void setVariables( AMP::LinearAlgebra::Variable::shared_ptr in,
-                       AMP::LinearAlgebra::Variable::shared_ptr out )
-    {
-        d_Input  = in;
-        d_Output = out;
-    }
-
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_Input; }
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_Output; }
-
     virtual ~EpetraMatrixOperator() {}
 };
 }

@@ -149,10 +149,10 @@ unsigned int libMeshElement::globalOwnerRank() const
 /****************************************************************
 * Function to get the elements composing the current element    *
 ****************************************************************/
-std::vector<MeshElement> libMeshElement::getElements( const GeomType type ) const
+void libMeshElement::getElements( const GeomType type, std::vector<MeshElement>& children ) const
 {
     AMP_INSIST( type <= d_globalID.type(), "sub-elements must be of a smaller or equivalent type" );
-    std::vector<MeshElement> children( 0 );
+    children.clear( );
     ::Elem *elem = (::Elem *) ptr_element;
     if ( d_globalID.type() == GeomType::Vertex ) {
         // A vertex does not have children, return itself
@@ -212,16 +212,15 @@ std::vector<MeshElement> libMeshElement::getElements( const GeomType type ) cons
             children[i] = libMeshElement( d_dim, type, element, d_rank, d_meshID, d_mesh );
         }
     }
-    return children;
 }
 
 
 /****************************************************************
 * Function to get the neighboring elements                      *
 ****************************************************************/
-std::vector<MeshElement::shared_ptr> libMeshElement::getNeighbors() const
+void libMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr>& neighbors ) const
 {
-    std::vector<MeshElement::shared_ptr> neighbors( 0 );
+    neighbors.clear();
     if ( d_globalID.type() == GeomType::Vertex ) {
         // Return the neighbors of the current node
         std::vector<::Node *> neighbor_nodes = d_mesh->getNeighborNodes( d_globalID );
@@ -249,7 +248,6 @@ std::vector<MeshElement::shared_ptr> libMeshElement::getNeighbors() const
     } else {
         // We constructed a temporary libmesh object and do not have access to the neighbor info
     }
-    return neighbors;
 }
 
 
@@ -263,41 +261,34 @@ double libMeshElement::volume() const
     ::Elem *elem = (::Elem *) ptr_element;
     return elem->volume();
 }
-std::vector<double> libMeshElement::coord() const
+void libMeshElement::coord( size_t& N, double* x ) const
 {
     if ( d_globalID.type() != GeomType::Vertex )
         AMP_ERROR( "coord is only defined for Nodes" );
     ::Node *node = (::Node *) ptr_element;
-    std::vector<double> x( d_dim, 0.0 );
+    N = std::min<size_t>( N, d_dim );
     for ( int i = 0; i < d_dim; i++ )
-        x[i]    = ( *node )( i );
-    return x;
+        x[i] = ( *node )( i );
 }
-double libMeshElement::coord( int i ) const
-{
-    if ( d_globalID.type() != GeomType::Vertex )
-        AMP_ERROR( "coord is only defined for Nodes" );
-    ::Node *node = (::Node *) ptr_element;
-    return ( *node )( i );
-}
-std::vector<double> libMeshElement::centroid() const
+void libMeshElement::centroid( size_t& N, double* x ) const
 {
     if ( d_globalID.type() == GeomType::Vertex )
-        return coord();
+        return coord( N, x );
     ::Elem *elem   = (::Elem *) ptr_element;
     ::Point center = elem->centroid();
-    std::vector<double> x( d_dim, 0.0 );
+    N = std::min<size_t>( N, d_dim );
     for ( int i = 0; i < d_dim; i++ )
-        x[i]    = center( i );
-    return x;
+        x[i] = center( i );
 }
 bool libMeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
 {
     if ( d_globalID.type() == GeomType::Vertex ) {
         // double dist = 0.0;
-        std::vector<double> point = this->coord();
-        double dist2              = 0.0;
-        for ( size_t i = 0; i < point.size(); i++ )
+        size_t N = 10;
+        double point[10];
+        this->coord( N, point );
+        double dist2 = 0.0;
+        for ( size_t i = 0; i < N; i++ )
             dist2 += ( point[i] - pos[i] ) * ( point[i] - pos[i] );
         return dist2 <= TOL * TOL;
     }
@@ -353,7 +344,8 @@ bool libMeshElement::isOnBoundary( int id ) const
             on_boundary = true;
     } else {
         // All other entities are on the boundary iff all of their verticies are on the surface
-        std::vector<MeshElement> nodes = this->getElements( GeomType::Vertex );
+        std::vector<MeshElement> nodes;
+        this->getElements( GeomType::Vertex, nodes );
         on_boundary                    = true;
         for ( auto &node : nodes )
             on_boundary = on_boundary && node.isOnBoundary( id );

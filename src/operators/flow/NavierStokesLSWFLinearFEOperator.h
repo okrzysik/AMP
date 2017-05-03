@@ -29,10 +29,6 @@ public:
 
     void postElementOperation();
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_inpVariables; }
-
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outVariables; }
-
 protected:
     void getDofIndicesForCurrentElement( int varId, std::vector<std::vector<size_t>> &dofIds );
 
@@ -56,9 +52,6 @@ protected:
                     AMP::LinearAlgebra::Variable::shared_ptr var );
 
 private:
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariables; /**< Input variables. */
-
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariables; /**< Output variables. */
 };
 }
 }

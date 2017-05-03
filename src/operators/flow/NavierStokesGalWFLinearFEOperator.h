@@ -30,15 +30,11 @@ public:
 
     void postElementOperation();
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_inpVariable; }
-
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outVariable; }
-
     unsigned int numberOfDOFMaps() { return 1; }
 
     AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap( unsigned int )
     {
-        return d_inpVariable;
+        return d_inputVariable;
     }
 
 protected:
@@ -65,9 +61,6 @@ protected:
     unsigned int d_numNodesForCurrentElement; /**< Number of nodes in the current element. */
 
 private:
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariable; /**< Input variables. */
-
-    AMP::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_outVariable; /**< Output variables. */
 };
 }
 }

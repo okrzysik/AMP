@@ -51,9 +51,24 @@ public:
      */
     virtual void setMatrix( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> in_mat );
 
+    virtual void setVariables( AMP::LinearAlgebra::Variable::shared_ptr in,
+                               AMP::LinearAlgebra::Variable::shared_ptr out )
+    {
+        d_inputVariable  = in;
+        d_outputVariable = out;
+    }
+
+    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inputVariable; }
+    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outputVariable; }
+
 protected:
     //! Empty constructor
     LinearOperator();
+
+    // input and output variables
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inputVariable;
+
+    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outputVariable;
 
     AMP::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix; // The matrix shared pointer
 
