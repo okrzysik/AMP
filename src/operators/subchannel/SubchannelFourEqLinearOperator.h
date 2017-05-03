@@ -26,10 +26,6 @@ public:
 
     void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inpVariable; }
-
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outVariable; }
-
     virtual AMP::LinearAlgebra::Vector::shared_ptr
     subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
     virtual AMP::LinearAlgebra::Vector::const_shared_ptr
@@ -107,8 +103,6 @@ private:
     // Function used in reset to get bool parameter or use default if missing
     bool getBoolParameter( AMP::shared_ptr<SubchannelOperatorParameters>, std::string, bool );
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_cladTemperature;
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_frozenVec;
 

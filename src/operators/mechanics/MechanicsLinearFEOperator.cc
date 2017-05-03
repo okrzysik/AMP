@@ -28,14 +28,14 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
 
     AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "key not found" );
     std::string inpVarName = params->d_db->getString( "InputVariable" );
-    d_inpVariable.reset( new AMP::LinearAlgebra::Variable( inpVarName ) );
+    d_inputVariable.reset( new AMP::LinearAlgebra::Variable( inpVarName ) );
 
     AMP_INSIST( params->d_db->keyExists( "OutputVariable" ), "key not found" );
     std::string outVarName = params->d_db->getString( "OutputVariable" );
-    d_outVariable.reset( new AMP::LinearAlgebra::Variable( outVarName ) );
+    d_outputVariable.reset( new AMP::LinearAlgebra::Variable( outVarName ) );
 
     if ( d_useUpdatedLagrangian ) {
-        d_refXYZ = AMP::LinearAlgebra::createVector( d_inDofMap, d_inpVariable, true );
+        d_refXYZ = AMP::LinearAlgebra::createVector( d_inDofMap, d_inputVariable, true );
         d_refXYZ->zero();
 
         AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
@@ -78,24 +78,14 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
             reset( params );
         } else {
             AMP::LinearAlgebra::Vector::shared_ptr tmpInVec =
-                AMP::LinearAlgebra::createVector( d_inDofMap, d_inpVariable, true );
+                AMP::LinearAlgebra::createVector( d_inDofMap, d_inputVariable, true );
             AMP::LinearAlgebra::Vector::shared_ptr tmpOutVec =
-                AMP::LinearAlgebra::createVector( d_outDofMap, d_outVariable, true );
+                AMP::LinearAlgebra::createVector( d_outDofMap, d_outputVariable, true );
             d_matrix = AMP::LinearAlgebra::createMatrix( tmpInVec, tmpOutVec );
         }
     } else {
         reset( params );
     }
-}
-
-AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::getInputVariable()
-{
-    return d_inpVariable;
-}
-
-AMP::LinearAlgebra::Variable::shared_ptr MechanicsLinearFEOperator::getOutputVariable()
-{
-    return d_outVariable;
 }
 
 void MechanicsLinearFEOperator::preAssembly( const AMP::shared_ptr<OperatorParameters> &oparams )

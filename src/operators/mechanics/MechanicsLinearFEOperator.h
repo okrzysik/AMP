@@ -82,16 +82,6 @@ public:
     void postElementOperation() override;
 
     /**
-      @return The variable for the input vector.
-      */
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
-
-    /**
-      @return The variable for the output vector
-      */
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
-
-    /**
       Writes the stress and strain at each Gauss point to a file.
       The 6 components of stress and strain at each Gauss point are arranged in the order:
       xx, yy, zz, yz, xz and  xy.
@@ -120,10 +110,6 @@ protected:
     AMP::LinearAlgebra::Vector::shared_ptr d_dispVec;
 
     bool d_useUpdatedLagrangian;
-
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Input variable */
-
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output variable */
 };
 }
 }
