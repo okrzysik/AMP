@@ -56,6 +56,7 @@ void linearTest1( AMP::UnitTest * const ut, const std::string &exeName )
     // ************************************************************************************************
     // extract the internal matrix
     const auto &diffMat = diffOp->getMatrix();
+
     AMP_INSIST( diffMat->numGlobalColumns()==diffMat->numGlobalRows(), "matrix is not square" );
 
     // extract the left vector
@@ -70,6 +71,9 @@ void linearTest1( AMP::UnitTest * const ut, const std::string &exeName )
     // and DOF managers with ghost cells independent of meshes
     const auto leftVector  = diffMat->getLeftVector();
     const auto rightVector = leftVector; // we are dealing with square matrices so this is fine
+    
+    const auto inputVariable = diffOp->getInputVariable();
+    const auto outputVariable = diffOp->getOutputVariable();
 
     // COMMENT: this function pointer will need to be set to an actual function
     // COMMENT 2: if we expect users to provide such an interface we should provide one too!!
@@ -82,6 +86,7 @@ void linearTest1( AMP::UnitTest * const ut, const std::string &exeName )
     auto linearOpParameters = AMP::make_shared<AMP::Operator::OperatorParameters> ( linearOpDB );
     auto linearOp = AMP::make_shared<AMP::Operator::LinearOperator> ( linearOpParameters );
     linearOp->setMatrix( newMat );
+    linearOp->setVariables(inputVariable, outputVariable);
 
     // COMMENT: the next few lines should ideally need to be replaced
     // by a getRowsByGlobalID call that extracts the rows numbered by global ID
@@ -94,16 +99,12 @@ void linearTest1( AMP::UnitTest * const ut, const std::string &exeName )
         newMat->setValuesByGlobalID( 1, cols.size(), &row, cols.data(), values.data());
     }
 
-    // extract input and output variables
-    const auto uVar = diffOp->getInputVariable();
-    const auto vVar = diffOp->getOutputVariable();
-
     // construct a nodal DOF manager
     const auto nodalScalarDOFManager =
         AMP::Discretization::simpleDOFManager::create( meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
-    auto u = AMP::LinearAlgebra::createVector( nodalScalarDOFManager, uVar );
-    auto v = AMP::LinearAlgebra::createVector( nodalScalarDOFManager, vVar );
+    auto u = AMP::LinearAlgebra::createVector( nodalScalarDOFManager, inputVariable );
+    auto v = AMP::LinearAlgebra::createVector( nodalScalarDOFManager, outputVariable );
 
     ut->passes( exeName );
 
