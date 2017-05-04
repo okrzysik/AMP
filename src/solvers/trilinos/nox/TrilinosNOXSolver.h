@@ -106,7 +106,7 @@ public:
 
 
 protected:
-    void initialize( AMP::shared_ptr<SolverStrategyParameters> parameters );
+    void initialize( AMP::shared_ptr<SolverStrategyParameters> parameters ) override;
 
     AMP_MPI d_comm;
 

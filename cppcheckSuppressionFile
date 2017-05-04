@@ -93,11 +93,12 @@ useInitializationList:*/operators/map/AsyncMapOperator.cc
 // Suppress warnings for external code
 memleak:*/utils/tinyexpr/tinyexpr.c
 
-// Suppress #error code paths (may not have complete #define statements
+// Suppress #error code paths (may not have complete #define statements)
 preprocessorErrorDirective:*/utils/AMPManager.cc
 preprocessorErrorDirective:*/vectors/petsc/PetscHelpers.h
 preprocessorErrorDirective:*/solvers/petsc/PetscKrylovSolver.cc
 preprocessorErrorDirective:*/solvers/petsc/PetscSNESSolver.h
+preprocessorErrorDirective:*/solvers/petsc/ManagedPetscVector.h
 
 // Suppress unsupported code
 *:*/ampmesh/dendro/*

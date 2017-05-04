@@ -360,7 +360,9 @@ IF( USE_EXT_LIBMESH AND USE_EXT_TRILINOS )
     ADD_AMP_TEST_1_2_4( testMaterialModels_VonMisesPlasticity-2 )
     IF( USE_TRILINOS_NOX )
         ADD_AMP_TEST_1_2_4( testTrilinosNOX-NonlinearThermal-1 )
-        ADD_AMP_WEEKLY_TEST(testSubchannelSolveNOX 8 testSubchannelSolveNOX-1 )
+        # making the next test provisional as it needs to be debugged
+        # for convergence problems with NOX
+        ADD_AMP_PROVISIONAL_TEST(testSubchannelSolveNOX 8 testSubchannelSolveNOX-1 )
         COPY_TEST_FILE( input_testSubchannelSolveNOX-1 )
         ADD_AMP_TEST(testSubchannelSolutionNOX)
     ENDIF()

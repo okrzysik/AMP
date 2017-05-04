@@ -35,10 +35,6 @@ public:
 
     void postElementOperation() override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
-
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
-
     AMP::shared_ptr<DiffusionTransportModel> getTransportModel();
 
 protected:
@@ -60,9 +56,6 @@ protected:
 
     AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
 
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
-
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 };
 }
 }

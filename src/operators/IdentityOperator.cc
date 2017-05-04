@@ -19,11 +19,11 @@ void IdentityOperator::reset( const AMP::shared_ptr<OperatorParameters> &params 
     if ( params->d_db.get() != nullptr ) {
         if ( params->d_db->keyExists( "InputVariable" ) ) {
             std::string inpVar = params->d_db->getString( "InputVariable" );
-            d_inVar.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
+            d_inputVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
         }
         if ( params->d_db->keyExists( "OutputVariable" ) ) {
             std::string outVar = params->d_db->getString( "OutputVariable" );
-            d_outVar.reset( new AMP::LinearAlgebra::Variable( outVar ) );
+            d_outputVariable.reset( new AMP::LinearAlgebra::Variable( outVar ) );
         }
     }
 }

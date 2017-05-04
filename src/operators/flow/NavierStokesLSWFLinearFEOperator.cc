@@ -22,8 +22,8 @@ NavierStokesLSWFLinearFEOperator::NavierStokesLSWFLinearFEOperator(
     d_transportModel = params->d_transportModel;
 
     std::string varName = params->d_db->getString( "InputVariable" );
-    d_inpVariables.reset( new AMP::LinearAlgebra::Variable( varName ) );
-    d_outVariables.reset( new AMP::LinearAlgebra::Variable( varName ) );
+    d_inputVariable.reset( new AMP::LinearAlgebra::Variable( varName ) );
+    d_outputVariable.reset( new AMP::LinearAlgebra::Variable( varName ) );
 
     /*
             std::vector<std::string> InternalVariableNames(4);
@@ -54,9 +54,9 @@ NavierStokesLSWFLinearFEOperator::NavierStokesLSWFLinearFEOperator(
             reset( params );
         } else {
             AMP::LinearAlgebra::Vector::shared_ptr tmpInVec =
-                AMP::LinearAlgebra::createVector( d_inDofMap, d_inpVariables, true );
+                AMP::LinearAlgebra::createVector( d_inDofMap, d_inputVariable, true );
             AMP::LinearAlgebra::Vector::shared_ptr tmpOutVec =
-                AMP::LinearAlgebra::createVector( d_outDofMap, d_outVariables, true );
+                AMP::LinearAlgebra::createVector( d_outDofMap, d_outputVariable, true );
             d_matrix = AMP::LinearAlgebra::createMatrix( tmpInVec, tmpOutVec );
         }
     } else {
@@ -72,7 +72,7 @@ void NavierStokesLSWFLinearFEOperator::preAssembly(
         AMP::dynamic_pointer_cast<NavierStokesLinearFEOperatorParameters>( oparams );
 
     if ( params->d_frozenVec.get() != nullptr ) {
-        d_inVec = mySubsetVector( params->d_frozenVec, d_inpVariables );
+        d_inVec = mySubsetVector( params->d_frozenVec, d_inputVariable );
     }
     /*
           for(unsigned int i = 0; i < d_inpVariables->numVariables() ; i++) {

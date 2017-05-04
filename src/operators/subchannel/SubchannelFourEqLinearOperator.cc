@@ -43,12 +43,12 @@ SubchannelFourEqLinearOperator::SubchannelFourEqLinearOperator(
 {
     AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "Key 'InputVariable' does not exist" );
     std::string inpVar = params->d_db->getString( "InputVariable" );
-    d_inpVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
+    d_inputVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
 
     AMP_INSIST( params->d_db->keyExists( "OutputVariable" ),
                 "Key 'OutputVariable' does not exist" );
     std::string outVar = params->d_db->getString( "OutputVariable" );
-    d_outVariable.reset( new AMP::LinearAlgebra::Variable( outVar ) );
+    d_outputVariable.reset( new AMP::LinearAlgebra::Variable( outVar ) );
 
     d_params      = params;
     d_initialized = false;

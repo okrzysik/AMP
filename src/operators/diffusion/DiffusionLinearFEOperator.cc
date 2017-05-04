@@ -5,19 +5,6 @@
 namespace AMP {
 namespace Operator {
 
-
-AMP::LinearAlgebra::Variable::shared_ptr DiffusionLinearFEOperator::getInputVariable()
-{
-    return d_inpVariable;
-}
-
-
-AMP::LinearAlgebra::Variable::shared_ptr DiffusionLinearFEOperator::getOutputVariable()
-{
-    return d_outVariable;
-}
-
-
 DiffusionLinearFEOperator::DiffusionLinearFEOperator(
     const AMP::shared_ptr<DiffusionLinearFEOperatorParameters> &params )
     : LinearFEOperator( params )
@@ -34,10 +21,10 @@ DiffusionLinearFEOperator::DiffusionLinearFEOperator(
     d_useConstantBurnup        = params->d_db->getBoolWithDefault( "FixedBurnup", false );
 
     std::string inpVar = params->d_db->getString( "InputVariable" );
-    d_inpVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
+    d_inputVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
 
     std::string outVar = params->d_db->getString( "OutputVariable" );
-    d_outVariable.reset( new AMP::LinearAlgebra::Variable( outVar ) );
+    d_outputVariable.reset( new AMP::LinearAlgebra::Variable( outVar ) );
 
     reset( params );
 }

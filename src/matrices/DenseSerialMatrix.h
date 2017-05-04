@@ -32,7 +32,7 @@ public:
       * \details  Compute \f$\mathbf{Ain} = \mathbf{out}\f$.
       */
     virtual void mult( AMP::LinearAlgebra::Vector::const_shared_ptr in,
-                       AMP::LinearAlgebra::Vector::shared_ptr out );
+                       AMP::LinearAlgebra::Vector::shared_ptr out ) override;
 
     /** \brief  Matrix transpose-vector multiplication
       * \param[in]  in  The vector to multiply
@@ -40,24 +40,24 @@ public:
       * \details  Compute \f$\mathbf{A}^T\mathbf{in} = \mathbf{out}\f$.
       */
     virtual void multTranspose( AMP::LinearAlgebra::Vector::const_shared_ptr in,
-                                AMP::LinearAlgebra::Vector::shared_ptr out );
+                                AMP::LinearAlgebra::Vector::shared_ptr out ) override;
 
 
     /** \brief  Return a new matrix that is the transpose of this one
       * \return  A copy of this matrix transposed.
       */
-    virtual shared_ptr transpose() const;
+    virtual shared_ptr transpose() const override;
 
     /** \brief  Return a matrix with the same non-zero and distributed structure
       * \return  The new matrix
       */
-    virtual shared_ptr cloneMatrix() const;
+    virtual shared_ptr cloneMatrix() const override;
 
     /** \brief  Scale the matrix by a scalar
       * \param[in] alpha  The value to scale by
       * \details  Compute \f$\mathbf{A} = \alpha\mathbf{A}\f$
       */
-    virtual void scale( double alpha );
+    virtual void scale( double alpha ) override;
 
 
     /** \brief  Compute the linear combination of two matrices
@@ -65,7 +65,7 @@ public:
       * \param[in] X matrix
       * \details  Compute \f$\mathbf{THIS} = \alpha\mathbf{X} + \mathbf{THIS}\f$
       */
-    virtual void axpy( double alpha, const Matrix &X );
+    virtual void axpy( double alpha, const Matrix &X ) override;
 
 
     /** \brief  Add values to those in the matrix
@@ -79,7 +79,7 @@ public:
       * on the actual subclass of matrix used.
       */
     virtual void
-    addValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values );
+    addValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
 
     /** \brief  Set values in the matrix
       * \param[in] num_rows The number of rows represented in values
@@ -92,7 +92,7 @@ public:
       * on the actual subclass of matrix used.
       */
     virtual void
-    setValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values );
+    setValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
 
     /** \brief  Get values in the matrix
       * \param[in] num_rows The number of rows represented in values
@@ -104,7 +104,7 @@ public:
       *   have not been allocated or are not ghosts on the current processor.
       */
     virtual void
-    getValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const;
+    getValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const override;
 
 
     /** \brief  Add values to those in the matrix
@@ -115,7 +115,7 @@ public:
       * allocated a particular(row,col) specified, depending
       * on the actual subclass of matrix used.
       */
-    virtual void addValueByGlobalID( size_t row, size_t col, double value );
+    virtual void addValueByGlobalID( size_t row, size_t col, double value ) override;
 
     /** \brief  Set values in the matrix
       * \param[in] row  The row id of value
@@ -125,7 +125,7 @@ public:
       * allocated a particular(row,col) specified, depending
       * on the actual subclass of matrix used.
       */
-    virtual void setValueByGlobalID( size_t row, size_t col, double value );
+    virtual void setValueByGlobalID( size_t row, size_t col, double value ) override;
 
     /** \brief  Set values in the matrix
       * \param[in] row  The row id of value
@@ -134,13 +134,13 @@ public:
       * allocated a particular(row,col) specified, depending
       * on the actual subclass of matrix used.
       */
-    virtual double getValueByGlobalID( size_t row, size_t col ) const;
+    virtual double getValueByGlobalID( size_t row, size_t col ) const override;
 
 
     /** \brief  Set the non-zeros of the matrix to a scalar
       * \param[in]  alpha  The value to set the non-zeros to
       */
-    virtual void setScalar( double alpha );
+    virtual void setScalar( double alpha ) override;
 
 
     /** \brief  Retrieve a row of the matrix in compressed format
@@ -149,64 +149,69 @@ public:
       * \param[out] values  The values in the row
       */
     virtual void
-    getRowByGlobalID( size_t row, std::vector<size_t> &cols, std::vector<double> &values ) const;
+    getRowByGlobalID( size_t row, std::vector<size_t> &cols, std::vector<double> &values ) const override;
+
+    /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
+      * \param[in]  row Which row
+      */
+    std::vector<size_t> getColumnIDs( size_t row ) const override;
 
     /** \brief  Set the diagonal to the values in a vector
       * \param[in] in The values to set the diagonal to
       */
-    virtual void setDiagonal( Vector::const_shared_ptr in );
+    virtual void setDiagonal( Vector::const_shared_ptr in ) override;
 
     /** \brief  Set the matrix to the identity matrix
      */
-    virtual void setIdentity();
+    virtual void setIdentity() override;
 
     /** \brief  Set the non-zeros of the matrix to zero
       * \details  May not deallocate space.
       */
-    virtual void zero();
+    virtual void zero() override;
 
     /** \brief  Perform communication to ensure values in the
       * matrix are the same across cores.
       */
-    virtual void makeConsistent() {}
+    virtual void makeConsistent()  override{}
 
     /** \brief  Extract the diagonal from a matrix
       * \param[in]  buf  An optional vector to use as a buffer
       * \return  A vector of the diagonal values
       */
     virtual Vector::shared_ptr
-    extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const;
+    extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const override;
 
     /** \brief Get a right vector( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$ is a right
      * vector )
       * \return  A newly created right vector
       */
-    virtual Vector::shared_ptr getRightVector() const;
+    virtual Vector::shared_ptr getRightVector() const override;
 
     /** \brief Get a left vector( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{y}\f$ is a left
      * vector )
       * \return  A newly created left vector
       */
-    virtual Vector::shared_ptr getLeftVector() const;
+    virtual Vector::shared_ptr getLeftVector() const override;
 
     /** \brief Get the DOFManager associated with a right vector( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$\mathbf{x}\f$ is
      * a right vector )
       * \return  The DOFManager associated with a right vector
       */
-    virtual Discretization::DOFManager::shared_ptr getRightDOFManager() const;
+    virtual Discretization::DOFManager::shared_ptr getRightDOFManager() const override;
 
     /** \brief Get the DOFManager associated with a left vector( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$\mathbf{y}\f$ is
      * a left vector )
       * \return  The DOFManager associated with a left vector
       */
-    virtual Discretization::DOFManager::shared_ptr getLeftDOFManager() const;
+    virtual Discretization::DOFManager::shared_ptr getLeftDOFManager() const override;
 
     /** \brief Compute the maximum column sum
       * \return  The L1 norm of the matrix
       */
-    virtual double L1Norm() const;
+    virtual double L1Norm() const override;
 
 
 protected:

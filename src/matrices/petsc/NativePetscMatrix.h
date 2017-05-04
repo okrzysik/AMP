@@ -72,6 +72,8 @@ public:
     virtual void
     getRowByGlobalID( size_t row, std::vector<size_t> &cols, std::vector<double> &values ) const override;
 
+    std::vector<size_t> getColumnIDs( size_t row ) const override;
+
     virtual void setScalar( double ) override;
     virtual void setDiagonal( Vector::const_shared_ptr in ) override;
 

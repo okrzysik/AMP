@@ -50,27 +50,16 @@ public:
      */
     virtual void setMatrix( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> in_mat ) override;
 
-    //! Return the input variable
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
-    {
-        return d_outVar;
-    }
-
-    //! Return the output variable
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inVar; }
-
     //! Set the input variable
-    virtual void setInputVariable( AMP::LinearAlgebra::Variable::shared_ptr var ) { d_inVar = var; }
+    virtual void setInputVariable( AMP::LinearAlgebra::Variable::shared_ptr var ) { d_inputVariable = var; }
 
     //! Set the output variable
     virtual void setOutputVariable( AMP::LinearAlgebra::Variable::shared_ptr var )
     {
-        d_outVar = var;
+        d_outputVariable = var;
     }
 
 private:
-    AMP::LinearAlgebra::Variable::shared_ptr d_inVar;
-    AMP::LinearAlgebra::Variable::shared_ptr d_outVar;
 };
 }
 }

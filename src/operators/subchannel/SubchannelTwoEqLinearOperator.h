@@ -28,10 +28,6 @@ public:
 
     void reset( const AMP::shared_ptr<OperatorParameters> &params );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() { return d_inpVariable; }
-
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() { return d_outVariable; }
-
     //! Sets frozen vector
     void setFrozenVector( AMP::LinearAlgebra::Vector::shared_ptr frozenVec )
     {
@@ -63,10 +59,6 @@ private:
     std::string getStringParameter( AMP::shared_ptr<SubchannelOperatorParameters>,
                                     std::string,
                                     std::string );
-
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
-
-    AMP::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
     double d_Pout;     // exit pressure [Pa]
     double d_Tin;      // inlet temperature [K]
