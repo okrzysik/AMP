@@ -28,7 +28,7 @@ VectorDataIterator::VectorDataIterator( const VectorDataIterator &rhs )
     d_size         = rhs.d_size;
     d_CurBlockSize = rhs.d_CurBlockSize;
 }
-VectorDataIterator::VectorDataIterator( Vector *p, size_t position )
+VectorDataIterator::VectorDataIterator( VectorData *p, size_t position )
 {
     d_Vec          = p;
     d_Block        = nullptr;
@@ -83,7 +83,7 @@ ConstVectorDataIterator::ConstVectorDataIterator( const ConstVectorDataIterator 
     d_size         = rhs.d_size;
     d_CurBlockSize = rhs.d_CurBlockSize;
 }
-ConstVectorDataIterator::ConstVectorDataIterator( const Vector *p, size_t position )
+ConstVectorDataIterator::ConstVectorDataIterator( const VectorData *p, size_t position )
 {
     d_Vec          = p;
     d_Block        = nullptr;

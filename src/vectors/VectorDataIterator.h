@@ -3,13 +3,11 @@
 
 #include <iterator>
 
-#include "utils/Utilities.h"
-
 
 namespace AMP {
 namespace LinearAlgebra {
 
-class Vector;
+class VectorData;
 
 
 /**
@@ -28,7 +26,7 @@ class Vector;
 class VectorDataIterator
 {
 private:
-    Vector *d_Vec;
+    VectorData *d_Vec;
     double *d_Block;
     size_t d_CurBlock, d_CurBlockSize, d_CurOffset, d_position, d_size;
 
@@ -37,7 +35,7 @@ private:
 
 public:
     //!  Convenince typedef for testing
-    typedef Vector vector_type;
+    typedef VectorData vector_type;
 
     //!  Required typedef for iterator_traits
     typedef int difference_type;
@@ -71,7 +69,7 @@ public:
       * \param[in] p  A (non-reference counted) pointer to the vector being iterated over
       * \param[in] position  The local position in the vector.
       */
-    explicit VectorDataIterator( Vector *p, size_t position );
+    explicit VectorDataIterator( VectorData *p, size_t position );
 
     /** \brief Dereference the iterator
       * \return Value pointed to by the iterator
@@ -221,7 +219,7 @@ public:
 class ConstVectorDataIterator
 {
 private:
-    const Vector *d_Vec;
+    const VectorData *d_Vec;
     const double *d_Block;
     size_t d_CurBlock, d_CurBlockSize, d_CurOffset, d_position, d_size;
 
@@ -231,7 +229,7 @@ private:
 public:
     /** \brief  Convenince typedef for testing
       */
-    typedef const Vector vector_type;
+    typedef const VectorData vector_type;
     /** \brief  Required typedef for iterator_traits
       */
     typedef int difference_type;
@@ -273,7 +271,7 @@ public:
       * \param[in] p  A (non-reference counted) pointer to the vector being iterated over
       * \param[in] position  The local position in the vector.
       */
-    explicit ConstVectorDataIterator( const Vector *p, size_t position );
+    explicit ConstVectorDataIterator( const VectorData *p, size_t position );
 
     /** \brief Dereference the iterator
       */

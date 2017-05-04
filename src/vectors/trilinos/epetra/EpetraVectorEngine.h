@@ -136,6 +136,14 @@ public:
     double dot( const VectorOperations &x ) const override;
     void putRawData( const double *in ) override;
     void copyOutRawData( double *out ) const override;
+
+    virtual double localMin( void ) const override;
+    virtual double localMax( void ) const override;
+    virtual double localL1Norm( void ) const override;
+    virtual double localL2Norm( void ) const override;
+    virtual double localMaxNorm() const override;
+
+
 };
 }
 }

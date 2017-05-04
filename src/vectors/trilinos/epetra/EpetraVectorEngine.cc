@@ -303,5 +303,34 @@ void EpetraVectorEngine::copyOutRawData( double *out ) const
 {
     getEpetra_Vector().ExtractCopy( out );
 }
+
+
+double EpetraVectorEngine::localMin( void ) const
+{
+    AMP_ERROR("Not implimented");
+    return 0;
+}
+double EpetraVectorEngine::localMax( void ) const
+{
+    AMP_ERROR("Not implimented");
+    return 0;
+}
+double EpetraVectorEngine::localL1Norm( void ) const
+{
+    AMP_ERROR("Not implimented");
+    return 0;
+}
+double EpetraVectorEngine::localL2Norm( void ) const
+{
+    AMP_ERROR("Not implimented");
+    return 0;
+}
+double EpetraVectorEngine::localMaxNorm( void ) const
+{
+    AMP_ERROR("Not implimented");
+    return 0;
+}
+
+
 }
 }

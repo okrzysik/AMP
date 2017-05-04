@@ -10,96 +10,17 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Get the size of the vector                                    *
-****************************************************************/
-inline size_t Vector::getGlobalMaxID() const { return getGlobalSize(); }
-inline size_t Vector::getLocalMaxID() const { return getLocalSize(); }
-inline size_t Vector::getLocalStartID() const { return getCommunicationList()->getStartGID(); }
-
-
-/****************************************************************
-* Create vector iterators                                       *
-****************************************************************/
-inline ConstVectorDataIterator Vector::end() const
-{
-    return ConstVectorDataIterator( this, getLocalSize() );
-}
-inline ConstVectorDataIterator Vector::begin() const { return ConstVectorDataIterator( this, 0 ); }
-inline VectorDataIterator Vector::begin() { return VectorDataIterator( this, 0 ); }
-inline VectorDataIterator Vector::end() { return VectorDataIterator( this, getLocalSize() ); }
-inline size_t Vector::getGhostSize() const { return d_Ghosts->size(); }
-
-
-/****************************************************************
 * Get basic info                                                *
 ****************************************************************/
 inline AMP::shared_ptr<ParameterBase> Vector::getParameters()
 {
     return AMP::shared_ptr<ParameterBase>();
 }
-inline CommunicationList::shared_ptr Vector::getCommunicationList() const { return d_CommList; }
 inline AMP::Discretization::DOFManager::shared_ptr Vector::getDOFManager() const
 {
     return d_DOFManager;
 }
 inline AMP_MPI Vector::getComm() const { return d_CommList->getComm(); }
-
-
-/****************************************************************
-* Set/Get individual values                                     *
-****************************************************************/
-inline void Vector::setValueByLocalID( size_t i, const double val )
-{
-    setValuesByLocalID( 1, &i, &val );
-}
-inline void Vector::setLocalValueByGlobalID( size_t i, const double val )
-{
-    setLocalValuesByGlobalID( 1, &i, &val );
-}
-inline void Vector::setGhostValueByGlobalID( size_t i, const double val )
-{
-    setGhostValuesByGlobalID( 1, &i, &val );
-}
-inline void Vector::setValueByGlobalID( size_t i, const double val )
-{
-    setValuesByGlobalID( 1, &i, &val );
-}
-inline void Vector::addValueByLocalID( size_t i, const double val )
-{
-    addValuesByLocalID( 1, &i, &val );
-}
-inline void Vector::addLocalValueByGlobalID( size_t i, const double val )
-{
-    addLocalValuesByGlobalID( 1, &i, &val );
-}
-inline void Vector::addValueByGlobalID( size_t i, const double val )
-{
-    addValuesByGlobalID( 1, &i, &val );
-}
-inline double Vector::getValueByGlobalID( size_t i ) const
-{
-    double ans;
-    getValuesByGlobalID( 1, &i, &ans );
-    return ans;
-}
-inline double Vector::getLocalValueByGlobalID( size_t i ) const
-{
-    double ans;
-    getLocalValuesByGlobalID( 1, &i, &ans );
-    return ans;
-}
-inline double Vector::getGhostValueByGlobalID( size_t i ) const
-{
-    double ans;
-    getGhostValuesByGlobalID( 1, &i, &ans );
-    return ans;
-}
-inline double Vector::getValueByLocalID( size_t ndx ) const
-{
-    double ans;
-    getValuesByLocalID( 1, &ndx, &ans );
-    return ans;
-}
 
 
 /****************************************************************
@@ -118,15 +39,38 @@ Vector::constSubsetVectorForVariable( const std::string& name ) const
 }
 
 
+/****************************************************************
+* getView/hasView                                               *
+****************************************************************/
+template <typename VIEW_TYPE>
+Vector::shared_ptr Vector::getView() const
+{
+    for ( size_t i = 0; i != d_Views->size(); i++ ) {
+        if ( ( *d_Views )[i].lock() ) {
+            if ( ( *d_Views )[i].lock()->isA<VIEW_TYPE>() ) {
+                return Vector::shared_ptr( ( *d_Views )[i] );
+            }
+        }
+    }
+    return Vector::shared_ptr();
+}
+template <typename VIEW_TYPE>
+bool Vector::hasView() const
+{
+    for ( size_t i = 0; i != d_Views->size(); i++ ) {
+        if ( ( *d_Views )[i].lock() ) {
+            if ( ( *d_Views )[i].lock()->isA<VIEW_TYPE>() ) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 
 /****************************************************************
 * Misc functions                                                *
 ****************************************************************/
-inline void Vector::dataChanged()
-{
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
-}
 
 
 inline void Vector::setDefaultRNG( RNG::shared_ptr p ) { d_DefaultRNG = p; }
@@ -143,15 +87,6 @@ inline RNG::shared_ptr Vector::getDefaultRNG()
     return d_DefaultRNG;
 }
 
-inline bool Vector::containsGlobalElement( size_t i )
-{
-    if ( ( i >= d_CommList->getStartGID() ) &&
-         ( i < d_CommList->getStartGID() + d_CommList->numLocalRows() ) )
-        return true;
-    return std::find( d_CommList->getGhostIDList().begin(),
-                      d_CommList->getGhostIDList().end(),
-                      (unsigned int) i ) != d_CommList->getGhostIDList().end();
-}
 
 
 inline void Vector::requireSameSize( Vector &rhs )
@@ -238,17 +173,6 @@ inline void Vector::axpby( double alpha, double beta, const_shared_ptr x )
 inline void Vector::abs( const_shared_ptr x ) { this->abs( *x ); }
 
 inline double Vector::dot( const_shared_ptr x ) { return dot( *x ); }
-
-inline Vector::UpdateState Vector::getUpdateStatus() const { return *d_UpdateState; }
-
-inline void Vector::setUpdateStatus( UpdateState state ) { *d_UpdateState = state; }
-
-inline AMP::shared_ptr<Vector::UpdateState> Vector::getUpdateStatusPtr() const
-{
-    return d_UpdateState;
-}
-
-inline void Vector::setUpdateStatusPtr( AMP::shared_ptr<UpdateState> rhs ) { d_UpdateState = rhs; }
 
 inline void Vector::addCommunicationListToParameters( CommunicationList::shared_ptr ) {}
 
