@@ -3,6 +3,7 @@
 #include "vectors/VectorBuilder.h"
 #include <stdio.h>
 
+#include <numeric>
 
 namespace AMP {
 namespace LinearAlgebra {

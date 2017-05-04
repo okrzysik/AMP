@@ -37,7 +37,7 @@ public:
     virtual void getElements( const GeomType type, std::vector<MeshElement>& elements ) const override;
 
     //! Return the IDs of the elements composing the current element
-    virtual void getElementsID( const GeomType type, std::vector<MeshElementID>& ID ) const;
+    virtual void getElementsID( const GeomType type, std::vector<MeshElementID>& ID ) const override;
 
     //! Return the elements neighboring the current element
     virtual void getNeighbors( std::vector<MeshElement::shared_ptr>& neighbors ) const override;
