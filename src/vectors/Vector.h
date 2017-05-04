@@ -14,7 +14,7 @@
 #include "vectors/Variable.h"
 #include "vectors/VectorData.h"
 #include "vectors/VectorOperations.h"
-
+#include "vectors/VectorOperationsDefault.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -68,6 +68,7 @@ class ManagedVector;
 class Vector :
     virtual public VectorData,
     virtual public VectorOperations,
+    virtual public VectorOperationsDefault,
     public AMP::enable_shared_from_this<Vector>
 {
 
@@ -290,14 +291,6 @@ public: // Virtual functions
       */
     virtual bool equals( Vector const &rhs, double tol = 0.000001 ) const;
 
-    /**
-      * \param[in] x a vector
-      * \brief Return the dot product of this vector with the argument vector.
-      * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
-     */
-    virtual double dot( Vector::const_shared_ptr x );
-    using VectorOperations::dot;
-
 
     /**
      * \brief Set data in this vector to random values on [0,1).
@@ -393,7 +386,6 @@ public: // Non-virtual functions
      * For Vectors, \f$\mathit{this}_i = \alpha x_i\f$.
      */
     void scale( double alpha, Vector::const_shared_ptr x );
-    using VectorOperations::scale;
 
     /**
       * \brief set vector to \f$x + \alpha \bar{1}\f$.
@@ -410,7 +402,6 @@ public: // Non-virtual functions
      * For Vectors, \f$\mathit{this}_i = x_i + y_i\f$.
      */
     void add( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-    using VectorOperations::add;
 
     /**
       * \brief Subtracts one vector from another.
@@ -419,7 +410,6 @@ public: // Non-virtual functions
       * For Vectors, \f$\mathit{this}_i = x_i - y_i\f$
      */
     void subtract( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-    using VectorOperations::subtract;
 
     /**
       * \brief Component-wise multiply one vector with another.
@@ -428,7 +418,6 @@ public: // Non-virtual functions
       * For Vectors, \f$\mathit{this}_i = x_i  y_i\f$
      */
     void multiply( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-    using VectorOperations::multiply;
 
     /**
       * \brief Component-wise divide one vector by another.
@@ -437,7 +426,6 @@ public: // Non-virtual functions
       * For Vectors, \f$\mathit{this}_i = x_i / y_i\f$
      */
     void divide( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-    using VectorOperations::divide;
 
     /**
       * \brief Set this to the component-wise reciprocal of a vector.  \f$\mathit{this}_i =
@@ -445,7 +433,6 @@ public: // Non-virtual functions
       * \param[in] x  a vector
      */
     void reciprocal( Vector::const_shared_ptr x );
-    using VectorOperations::reciprocal;
 
     /**
      * \param[in] alpha a scalar
@@ -457,7 +444,7 @@ public: // Non-virtual functions
      */
     void
     linearSum( double alpha, Vector::const_shared_ptr x, double beta, Vector::const_shared_ptr y );
-    using VectorOperations::linearSum;
+
 
     /**
       * \param[in] alpha a scalar
@@ -468,7 +455,6 @@ public: // Non-virtual functions
       *    and may require calling makeConsistent(SET) if consistency is required.
      */
     void axpy( double alpha, Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-    using VectorOperations::axpy;
 
     /**
       * \param[in] alpha a scalar
@@ -480,7 +466,6 @@ public: // Non-virtual functions
       *    and may require calling makeConsistent(SET) if consistency is required.
       */
     void axpby( double alpha, double beta, Vector::const_shared_ptr x );
-    using VectorOperations::axpby;
 
     /**
       * \param[in] x a vector
@@ -488,8 +473,6 @@ public: // Non-virtual functions
       * \f$\mathit{this}_i = |x_i|\f$.
      */
     void abs( Vector::const_shared_ptr x );
-    using VectorOperations::abs;
-
 
     /**
       * \brief  Determine if two vectors are equal using an absolute tolerance
@@ -498,6 +481,13 @@ public: // Non-virtual functions
       * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
       */
     bool equals( Vector::const_shared_ptr rhs, double tol = 0.000001 ) const;
+
+    /**
+      * \param[in] x a vector
+      * \brief Return the dot product of this vector with the argument vector.
+      * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
+     */
+    inline double dot( Vector::const_shared_ptr x ) const;
 
 
     //! \name Static methods for computation
@@ -655,32 +645,22 @@ private:
 public: // Default implimentations (MOVE)
 
     virtual void setToScalar(double) override;
-    virtual void scale(double) override;
-    virtual void scale(double, const AMP::LinearAlgebra::VectorOperations&) override;
-    virtual void add( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void subtract( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void multiply( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void divide( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void reciprocal( const VectorOperations &x ) override;
-    virtual void linearSum(double, const VectorOperations&, double, const VectorOperations&) override;
-    virtual void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void axpby( double alpha, double beta, const VectorOperations &x ) override;
-    virtual void abs( const VectorOperations &x ) override;
-    virtual double min() const override;
-    virtual double max() const override;
-    virtual double dot( const VectorOperations &x ) const override;
-    virtual double L1Norm( void ) const override;
-    virtual double maxNorm( void ) const override;
-    virtual double L2Norm( void ) const override;
-    virtual double localMin( void ) const override;
-    virtual double localMax( void ) const override;
-    virtual double localL1Norm( void ) const override;
-    virtual double localL2Norm( void ) const override;
-    virtual double localMaxNorm( void ) const override;
     virtual void dumpOwnedData( std::ostream &out, size_t GIDoffset=0, size_t LIDoffset=0 ) const override;
     virtual void dumpGhostedData( std::ostream &out, size_t offset=0 ) const override;
 
-    virtual double localDot( AMP::shared_ptr<const Vector> x ) const;
+
+public: // Pull VectorOperations into the current scope
+    using VectorOperationsDefault::add;
+    using VectorOperationsDefault::abs;
+    using VectorOperationsDefault::axpy;
+    using VectorOperationsDefault::axpby;
+    using VectorOperationsDefault::divide;
+    using VectorOperationsDefault::dot;
+    using VectorOperationsDefault::linearSum;
+    using VectorOperationsDefault::multiply;
+    using VectorOperationsDefault::scale;
+    using VectorOperationsDefault::subtract;
+    using VectorOperationsDefault::reciprocal;
 };
 
 

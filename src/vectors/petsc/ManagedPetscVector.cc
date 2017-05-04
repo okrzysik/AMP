@@ -193,7 +193,7 @@ PetscErrorCode _AMP_dot_local( Vec a, Vec b, PetscScalar *ans )
 {
     PETSC_RECAST( x, a );
     PETSC_RECAST( y, b );
-    *ans = x->localDot( y->shared_from_this() );
+    *ans = x->localDot( *y );
     return 0;
 }
 

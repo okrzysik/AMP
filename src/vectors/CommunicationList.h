@@ -204,7 +204,7 @@ public:
      * \brief  Return the communicator used for this communication list
      * \return The communicator.
      */
-    AMP_MPI getComm() const;
+    const AMP_MPI& getComm() const;
 
 
     /**

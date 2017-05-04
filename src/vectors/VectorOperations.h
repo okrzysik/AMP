@@ -4,6 +4,7 @@
 
 #include "utils/Castable.h"
 #include "utils/shared_ptr.h"
+#include "utils/AMP_MPI.h"
 #include <vector>
 
 
@@ -146,37 +147,37 @@ public:
     /**
       * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
      */
-    virtual double min( void ) const = 0;
+    virtual double min( void ) const;
 
     /**
       * \brief Return the maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
      */
-    virtual double max( void ) const = 0;
+    virtual double max( void ) const;
 
     /**
      * \brief Return discrete @f$ L_1 @f$ -norm of this vector.
      * \details Returns \f[\sum_i |\mathit{this}_i|\f]
      */
-    virtual double L1Norm( void ) const = 0;
+    virtual double L1Norm( void ) const;
 
     /**
      * \brief Return discrete @f$ L_2 @f$ -norm of this vector.
      * \details Returns \f[\sqrt{\sum_i \mathit{this}_i^2}\f]
      */
-    virtual double L2Norm( void ) const = 0;
+    virtual double L2Norm( void ) const;
 
     /**
      * \brief Return the @f$ L_\infty @f$ -norm of this vector.
      * \details Returns \f[\max_i |\mathit{this}_i|\f]
      */
-    virtual double maxNorm( void ) const = 0;
+    virtual double maxNorm( void ) const;
 
     /**
       * \param x a vector
       * \brief Return the dot product of this vector with the argument vector.
       * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
      */
-    virtual double dot( const VectorOperations &x ) const = 0;
+    virtual double dot( const VectorOperations &x ) const ;
 
     /**
       * \brief Return the local minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
@@ -211,7 +212,7 @@ public:
       * \brief Return the local dot product of this vector with the argument vector.
       * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
      */
-    //virtual double localDot( AMP::shared_ptr<const VectorOperations> x ) const;
+    virtual double localDot( const VectorOperations& x ) const = 0;
 
     /**
      * \brief Set data in this vector to random values on [0,1).
@@ -227,6 +228,11 @@ public:
     //! Return the pointer to the VectorData
     inline const VectorData* getVectorData() const { return d_VectorData; }
 
+    //! Do we have a valid communicator
+    inline bool hasComm() const;
+
+    //! Do we have a valid communicator
+    inline const AMP_MPI& getComm() const;
 
 protected:
 
@@ -243,5 +249,7 @@ protected: // Internal data
 
 } // LinearAlgebra namespace
 } // AMP namespace
+
+#include "VectorOperations.inline.h"
 
 #endif

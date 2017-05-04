@@ -291,6 +291,12 @@ double EpetraVectorEngine::dot( const VectorOperations &x ) const
     return retVal;
 }
 
+double EpetraVectorEngine::localDot( const VectorOperations & ) const
+{
+    AMP_ERROR("Not implimented");
+    return 0;
+}
+
 void EpetraVectorEngine::putRawData( const double *in )
 {
     double *p;

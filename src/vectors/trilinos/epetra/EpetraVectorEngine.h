@@ -130,19 +130,19 @@ public:
     virtual void addLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
     virtual void getValuesByLocalID( int i, size_t *, double *val ) const override;
     virtual void getLocalValuesByGlobalID( int i, size_t *, double *val ) const override;
-    double L1Norm( void ) const override;
-    double L2Norm( void ) const override;
-    double maxNorm( void ) const override;
-    double dot( const VectorOperations &x ) const override;
-    void putRawData( const double *in ) override;
-    void copyOutRawData( double *out ) const override;
+    virtual double L1Norm( void ) const override;
+    virtual double L2Norm( void ) const override;
+    virtual double maxNorm( void ) const override;
+    virtual double dot( const VectorOperations &x ) const override;
+    virtual void putRawData( const double *in ) override;
+    virtual void copyOutRawData( double *out ) const override;
 
     virtual double localMin( void ) const override;
     virtual double localMax( void ) const override;
     virtual double localL1Norm( void ) const override;
     virtual double localL2Norm( void ) const override;
     virtual double localMaxNorm() const override;
-
+    virtual double localDot( const VectorOperations &x ) const override;
 
 };
 }

@@ -456,7 +456,7 @@ double MultiVector::dot( const VectorOperations &x ) const
         AMP_ERROR( "x is not a multivector and this is" );
     double ans = 0.0;
     for ( size_t i = 0; i < d_vVectors.size(); i++ )
-        ans += d_vVectors[i]->localDot( getVector( x, i ) );
+        ans += d_vVectors[i]->localDot( *getVector( x, i ) );
     ans = getComm().sumReduce( ans );
     return ans;
 }

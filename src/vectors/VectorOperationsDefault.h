@@ -30,7 +30,7 @@ public:
      * \brief  Set all compenents of a vector to a scalar.
      * For Vectors, the components of <em>this</em> are set to \f$\alpha\f$.
      */
-    virtual void setToScalar( double alpha ) override;
+    virtual void setToScalar( double alpha ) override = 0;
 
     /**
      * \param  alpha  a scalar double
@@ -126,41 +126,6 @@ public:
     virtual void abs( const VectorOperations &x ) override;
 
     /**
-      * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
-     */
-    virtual double min( void ) const override;
-
-    /**
-      * \brief Return the maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
-     */
-    virtual double max( void ) const override;
-
-    /**
-     * \brief Return discrete @f$ L_1 @f$ -norm of this vector.
-     * \details Returns \f[\sum_i |\mathit{this}_i|\f]
-     */
-    virtual double L1Norm( void ) const override;
-
-    /**
-     * \brief Return discrete @f$ L_2 @f$ -norm of this vector.
-     * \details Returns \f[\sqrt{\sum_i \mathit{this}_i^2}\f]
-     */
-    virtual double L2Norm( void ) const override;
-
-    /**
-     * \brief Return the @f$ L_\infty @f$ -norm of this vector.
-     * \details Returns \f[\max_i |\mathit{this}_i|\f]
-     */
-    virtual double maxNorm( void ) const override;
-
-    /**
-      * \param x a vector
-      * \brief Return the dot product of this vector with the argument vector.
-      * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
-     */
-    virtual double dot( const VectorOperations &x ) const override;
-
-    /**
       * \brief Return the local minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
      */
     virtual double localMin( void ) const override;
@@ -193,12 +158,12 @@ public:
       * \brief Return the local dot product of this vector with the argument vector.
       * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
      */
-    //virtual double localDot( AMP::shared_ptr<const VectorOperations> x ) const;
+    virtual double localDot( const VectorOperations& x ) const override;
 
     /**
      * \brief Set data in this vector to random values on [0,1).
      */
-    virtual void setRandomValues( void ) override;
+    virtual void setRandomValues( void ) override = 0;
 
 };
 
