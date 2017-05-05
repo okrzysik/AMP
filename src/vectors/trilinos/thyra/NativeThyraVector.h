@@ -60,23 +60,17 @@ public:
     //! Destructor
     virtual ~NativeThyraVector();
 
+
+    //! Overloaded functions
     virtual std::string type() const  override{ return "Native Thyra Vector"; }
-
     virtual Vector::shared_ptr getManagedVectorCopy( AMP_MPI comm ) override;
-
     virtual Vector::shared_ptr getManagedVectorDuplicate( AMP_MPI comm ) override;
-
-    using Vector::cloneVector;
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
     virtual void copyVector( Vector::const_shared_ptr vec ) override;
-
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector & ) override;
-
     virtual size_t numberOfDataBlocks() const override;
     virtual size_t sizeOfDataBlock( size_t i ) const override;
-
-
     virtual void setToScalar( double alpha ) override;
     virtual void scale( double alpha, const VectorOperations &x ) override;
     virtual void scale( double alpha ) override;
@@ -85,54 +79,37 @@ public:
     virtual void multiply( const VectorOperations &x, const VectorOperations &y ) override;
     virtual void divide( const VectorOperations &x, const VectorOperations &y ) override;
     virtual void reciprocal( const VectorOperations &x ) override;
-    virtual void
-    linearSum( double alpha, const VectorOperations &x, double beta, const VectorOperations &y ) override;
+    virtual void linearSum( double alpha, const VectorOperations &x, double beta, const VectorOperations &y ) override;
     virtual void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
     virtual void axpby( double alpha, double beta, const VectorOperations &x ) override;
     virtual void abs( const VectorOperations &x ) override;
     virtual double min( void ) const override;
     virtual double max( void ) const override;
     virtual void setRandomValues( void ) override;
-
     virtual double L1Norm( void ) const override;
     virtual double L2Norm( void ) const override;
     virtual double maxNorm( void ) const override;
-    using Vector::dot;
     virtual double dot( const VectorOperations &x ) const override;
-
     virtual void setValuesByLocalID( int, size_t *, const double * ) override;
     virtual void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
     virtual void addValuesByLocalID( int, size_t *, const double * ) override;
     virtual void addLocalValuesByGlobalID( int, size_t *, const double * ) override;
-
     virtual void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
     virtual void getValuesByLocalID( int numVals, size_t *ndx, double *vals ) const override;
-
     virtual void assemble() override;
-
     virtual size_t getLocalSize() const override;
     virtual size_t getGlobalSize() const override;
-
     virtual void putRawData( const double * ) override;
-
     virtual BufferPtr getNewBuffer() override;
     virtual bool sameEngine( VectorEngine & ) const override;
     virtual VectorEngine::shared_ptr cloneEngine( BufferPtr p ) const override;
-
     virtual void swapEngines( VectorEngine::shared_ptr ) override;
-
     virtual void *getDataBlock( size_t i ) override;
     virtual const void *getDataBlock( size_t i ) const override;
-
     virtual AMP_MPI getComm() const override;
-
     virtual void copyOutRawData( double *out ) const override;
+    virtual uint64_t getDataID() const override  { return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) ); }
 
-    // Return the id of the data
-    virtual uint64_t getDataID() const override
-    {
-        return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
-    }
 
 protected:
     //! Empty constructor.
@@ -141,15 +118,37 @@ protected:
     virtual void *getRawDataBlockAsVoid( size_t i ) override;
     virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
 
+
 private:
     size_t d_local;
 
     static Teuchos::RCP<const Thyra::VectorBase<double>> getThyraVec( const VectorOperations &v );
     static Teuchos::RCP<const Thyra::VectorBase<double>>
     getThyraVec( const Vector::const_shared_ptr &v );
+
+
+public: // Pull VectorOperations into the current scope
+    using Vector::add;
+    using Vector::abs;
+    using Vector::axpy;
+    using Vector::axpby;
+    using Vector::divide;
+    using Vector::dot;
+    using Vector::linearSum;
+    using Vector::minQuotient;
+    using Vector::multiply;
+    using Vector::scale;
+    using Vector::setRandomValues;
+    using Vector::subtract;
+    using Vector::reciprocal;
+    using Vector::wrmsNorm;
+    using Vector::wrmsNormMask;
+    using Vector::cloneVector;
 };
-}
-}
+
+
+} // LinearAlgebra namespace
+} // AMP namespace
 
 
 #include "NativeThyraVector.inline.h"

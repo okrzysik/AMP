@@ -2,7 +2,7 @@
 #define included_AMP_VectorEngine
 
 
-#include "VectorOperations.h"
+#include "VectorOperationsDefault.h"
 #include "utils/AMP_MPI.h"
 #include "utils/shared_ptr.h"
 #include <vector>
@@ -69,7 +69,7 @@ protected:
  * and access while this class will completely encapsulate dense kernels on
  * the data.
 */
-class VectorEngine : virtual public VectorOperations
+class VectorEngine : virtual public VectorOperationsDefault
 {
 protected:
     VectorEngineParameters::shared_ptr d_Params;

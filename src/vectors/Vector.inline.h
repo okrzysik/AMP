@@ -122,27 +122,13 @@ inline void Vector::addScalar( const_shared_ptr x, double alpha )
 * Wrappers for shared_ptr                                       *
 ****************************************************************/
 // clang-format off
-inline  bool Vector::equals( Vector::const_shared_ptr rhs, double tol ) const { return equals( *rhs, tol ); }
-inline  void Vector::swapVectors( shared_ptr other ) { swapVectors( *other ); }
-inline  void Vector::aliasVector( shared_ptr other ) { aliasVector( *other ); }
-inline  void Vector::scale( double alpha, const_shared_ptr x ) { scale( alpha, *x ); }
-inline  void Vector::add( const_shared_ptr x, const_shared_ptr y ) { add( *x, *y ); }
-inline  void Vector::subtract( const_shared_ptr x, const_shared_ptr y ) { subtract( *x, *y ); }
-inline  void Vector::multiply( const_shared_ptr x, const_shared_ptr y ) { multiply( *x, *y ); }
-inline  void Vector::divide( const_shared_ptr x, const_shared_ptr y ) { divide( *x, *y ); }
-inline  void Vector::reciprocal( const_shared_ptr x ) { reciprocal( *x ); }
-inline double Vector::minQuotient( const_shared_ptr x, const_shared_ptr y ) { return minQuotient( *x, *y ); }
-inline double Vector::wrmsNorm( const_shared_ptr x, const_shared_ptr y ) { return wrmsNorm( *x, *y ); }
-inline  void Vector::linearSum( double alpha, const_shared_ptr x, double beta, const_shared_ptr y ) { linearSum( alpha, *x, beta, *y ); }
-inline  void Vector::axpy( double alpha, const_shared_ptr x, const_shared_ptr y ) { axpy( alpha, *x, *y ); }
-inline  void Vector::axpby( double alpha, double beta, const_shared_ptr x ) { axpby( alpha, beta, *x ); }
-inline  void Vector::abs( const_shared_ptr x ) { this->abs( *x ); }
-inline double Vector::dot( const_shared_ptr x ) const { return dot( *x ); }
-inline  void Vector::addCommunicationListToParameters( CommunicationList::shared_ptr ) {}
-inline  void Vector::aliasGhostBuffer( shared_ptr in ) { d_Ghosts = in->d_Ghosts; }
+inline bool Vector::equals( Vector::const_shared_ptr rhs, double tol ) const { return equals( *rhs, tol ); }
+inline void Vector::swapVectors( shared_ptr other ) { swapVectors( *other ); }
+inline void Vector::aliasVector( shared_ptr other ) { aliasVector( *other ); }
+inline void Vector::addCommunicationListToParameters( CommunicationList::shared_ptr ) {}
+inline void Vector::aliasGhostBuffer( shared_ptr in ) { d_Ghosts = in->d_Ghosts; }
 inline std::ostream &operator<<( std::ostream &out, const Vector::shared_ptr p ) { return operator<<( out, *p ); }
 // clang-format on
-
 
 
 } // LinearAlgebra namespace

@@ -335,6 +335,7 @@ public:
      * \brief Set data in this vector to random values on [0,1).
      */
     void setRandomValues( void ) override;
+    using Vector::setRandomValues;
 
     /**
      * \brief Return discrete @f$ L_1 @f$ -norm of this vector.

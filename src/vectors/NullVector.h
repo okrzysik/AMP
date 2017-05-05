@@ -60,6 +60,7 @@ public:
     virtual double min( void ) const override;
     virtual double max( void ) const override;
     virtual void setRandomValues( void ) override;
+    using Vector::setRandomValues;
     virtual void setValuesByLocalID( int, size_t *, const double * ) override;
     virtual void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
     virtual void addValuesByLocalID( int, size_t *, const double * ) override;

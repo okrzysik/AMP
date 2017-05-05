@@ -1,5 +1,6 @@
 #include "vectors/VectorOperationsDefault.h"
 #include "vectors/VectorData.h"
+#include "vectors/Vector.h"
 
 
 namespace AMP {
@@ -82,6 +83,114 @@ double VectorOperationsDefault::localDot( const VectorOperations& x ) const
         ++curMe;
     }
     return ans;
+}
+double VectorOperationsDefault::localMinQuotient( const VectorOperations &x ) const
+{
+    auto curx = x.getVectorData()->begin();
+    auto endx = x.getVectorData()->end();
+    auto cury = d_VectorData->begin();
+    double ans = std::numeric_limits<double>::max();
+    while ( curx != endx ) {
+        if ( *cury != 0.0 )
+            ans = std::min( ans, ( *curx ) / ( *cury ) );
+        ++curx;
+        ++cury;
+    }
+    return ans;
+}
+double VectorOperationsDefault::localWrmsNorm( const VectorOperations &x ) const
+{
+    auto curx = x.getVectorData()->begin();
+    auto endx = x.getVectorData()->end();
+    auto cury = d_VectorData->begin();
+    double ans = 0;
+    size_t N = 0;
+    while ( curx != endx ) {
+        ans += (*curx)*(*curx) * (*cury)*(*cury);
+        ++curx;
+        ++cury;
+        ++N;
+    }
+    return sqrt(ans/N);
+}
+double VectorOperationsDefault::localWrmsNormMask( const VectorOperations &x,
+                             const VectorOperations &mask ) const
+{
+    auto curx = x.getVectorData()->begin();
+    auto endx = x.getVectorData()->end();
+    auto cury = d_VectorData->begin();
+    auto curm = mask.getVectorData()->begin();
+    double ans = 0;
+    size_t N = 0;
+    while ( curx != endx ) {
+        if ( *curm > 0.0 )
+            ans += (*curx)*(*curx) * (*cury)*(*cury);
+        ++curx;
+        ++cury;
+        ++curm;
+        ++N;
+    }
+    return sqrt(ans/N);
+}
+
+
+/****************************************************************
+* Functions to initalize the data                               *
+****************************************************************/
+void VectorOperationsDefault::zero()
+{
+    auto curMe = d_VectorData->begin();
+    auto last  = d_VectorData->end();
+    while ( curMe != last ) {
+        *curMe = 0;
+        ++curMe;
+    }
+    if ( haGhosts() ) {
+        auto& ghosts = getGhosts();
+        for ( size_t i = 0; i != ghosts.size(); i++ )
+            ghosts[i] = 0.0;
+    }
+    *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
+}
+void VectorOperationsDefault::setToScalar( double alpha )
+{
+    auto curMe = d_VectorData->begin();
+    auto last  = d_VectorData->end();
+    while ( curMe != last ) {
+        *curMe = alpha;
+        ++curMe;
+    }
+    if ( haGhosts() ) {
+        auto& ghosts = getGhosts();
+        for ( size_t i = 0; i != ghosts.size(); i++ )
+            ghosts[i] = alpha;
+    }
+    *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
+}
+void VectorOperationsDefault::setRandomValues()
+{
+    RandomVariable<double> r( 0., 1., Vector::getDefaultRNG() );
+    auto curMe = d_VectorData->begin();
+    auto last  = d_VectorData->end();
+    while ( curMe != last ) {
+        double curRand = r;
+        *curMe         = curRand;
+        ++curMe;
+    }
+    d_VectorData->dataChanged();
+    d_VectorData->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
+}
+void VectorOperationsDefault::setRandomValues( RNG::shared_ptr rng )
+{
+    RandomVariable<double> r( 0., 1., rng );
+    auto curMe = d_VectorData->begin();
+    auto last  = d_VectorData->end();
+    while ( curMe != last ) {
+        *curMe = r;
+        ++curMe;
+    }
+    d_VectorData->dataChanged();
+    d_VectorData->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
 }
 
 

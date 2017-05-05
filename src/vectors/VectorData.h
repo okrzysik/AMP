@@ -325,20 +325,6 @@ public: // Virtual functions
       */
     virtual void getValuesByLocalID( int num, size_t *indices, double *vals ) const;
 
-    /** \brief Write owned data to an std::ostream
-      * \param[in] out  The output stream to write to.
-      * \param[in] GIDoffset  A number to add to the global ID when writing information
-      * \param[in] LIDoffset  A number to add to the local ID when writing information
-      */
-    virtual void
-    dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const = 0;
-
-    /** \brief Write data owned by other processors to an std::ostream
-      * \param[in] out  The output stream to write to.
-      * \param[in] offset  A number to add to the global ID when writing information
-      */
-    virtual void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const = 0;
-
     /**\brief  A unique id for the underlying data allocation
       *\details This is a unique id that is associated with the data
       *   data allocation.  Views of a vector should preserve the id of
@@ -347,6 +333,23 @@ public: // Virtual functions
       *   Note: this id is not consistent across multiple processors.
       */
     virtual uint64_t getDataID() const = 0;
+
+
+public:
+
+    /** \brief Write owned data to an std::ostream
+      * \param[in] out  The output stream to write to.
+      * \param[in] GIDoffset  A number to add to the global ID when writing information
+      * \param[in] LIDoffset  A number to add to the local ID when writing information
+      */
+    virtual void
+    dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const;
+
+    /** \brief Write data owned by other processors to an std::ostream
+      * \param[in] out  The output stream to write to.
+      * \param[in] offset  A number to add to the global ID when writing information
+      */
+    virtual void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const;
 
 
 public: // Virtual functions dealing with the update status
@@ -374,6 +377,23 @@ public: // Virtual functions dealing with the update status
       * \param[in] state  State of the vector to set
       */
     virtual void setUpdateStatus( UpdateState state );
+
+    /**
+      * \brief Update shared values on entire communicator
+      * \param t The type of scatter used to compute values
+      * \details  There are two algorithms used by makeConsistent
+      * - If t = CONSISTENT_SET, then owned values are
+      *   sent to processors that share the value.  Shared values are
+      *   overwritten
+      * - If t = CONSISTENT_ADD, then shared values are accumulated
+      *   on the core that owns it and applied as determined, either
+      *   add or set.  Then, the values are broadcast out.
+      *
+      * Generally, when adding to a vector, the GATHER_SCATTER should
+      * be used to make consistent.  When setting entries in a vector
+      * the BROADCAST should be used.
+      */
+    virtual void makeConsistent( ScatterType t );
 
 
 public: // Non-virtual functions
@@ -552,6 +572,8 @@ protected: // Internal data
     AMP::shared_ptr<std::vector<double>> d_Ghosts;
     AMP::shared_ptr<std::vector<double>> d_AddBuffer;
 
+    // Friends
+    friend class VectorOperations;
 };
 
 

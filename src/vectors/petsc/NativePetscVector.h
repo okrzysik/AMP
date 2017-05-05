@@ -180,9 +180,29 @@ private:
     parameters_ptr d_pParameters;
     bool d_bDeleteMe;
     mutable double *d_pArray; // mutable so that we can cache the value
+
+public: // Pull VectorOperations into the current scope
+    using VectorOperationsDefault::add;
+    using VectorOperationsDefault::abs;
+    using VectorOperationsDefault::axpy;
+    using VectorOperationsDefault::axpby;
+    using VectorOperationsDefault::divide;
+    using VectorOperationsDefault::dot;
+    using VectorOperationsDefault::linearSum;
+    using VectorOperationsDefault::minQuotient;
+    using VectorOperationsDefault::multiply;
+    using VectorOperationsDefault::scale;
+    using VectorOperationsDefault::setRandomValues;
+    using VectorOperationsDefault::subtract;
+    using VectorOperationsDefault::reciprocal;
+    using VectorOperationsDefault::wrmsNorm;
+    using VectorOperationsDefault::wrmsNormMask;
+
 };
-}
-}
+
+
+} // LinearAlgebra namespace
+} // AMP namespace
 
 #include "NativePetscVector.inline.h"
 

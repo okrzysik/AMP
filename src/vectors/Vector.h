@@ -245,28 +245,6 @@ public: // Virtual functions
       */
     virtual void assemble() = 0;
 
-
-    //! \name Parallel Management
-    //@{
-
-    /**
-      * \brief Update shared values on entire communicator
-      * \param t The type of scatter used to compute values
-      * \details  There are two algorithms used by makeConsistent
-      * - If t = CONSISTENT_SET, then owned values are
-      *   sent to processors that share the value.  Shared values are
-      *   overwritten
-      * - If t = CONSISTENT_ADD, then shared values are accumulated
-      *   on the core that owns it and applied as determined, either
-      *   add or set.  Then, the values are broadcast out.
-      *
-      * Generally, when adding to a vector, the GATHER_SCATTER should
-      * be used to make consistent.  When setting entries in a vector
-      * the BROADCAST should be used.
-      */
-    virtual void makeConsistent( ScatterType t );
-
-
     //! Get the DOFManager for this Vector
     virtual AMP::Discretization::DOFManager::shared_ptr getDOFManager() const;
 
@@ -280,8 +258,6 @@ public: // Virtual functions
       */
     virtual AMP_MPI getComm() const;
 
-
-
     /**
       * \fn equals (Vector & const rhs, double tol )
       * \brief  Determine if two vectors are equal using an absolute tolerance
@@ -291,11 +267,22 @@ public: // Virtual functions
       */
     virtual bool equals( Vector const &rhs, double tol = 0.000001 ) const;
 
+    /** \brief  Selects a portion of this vector and puts a view into a vector
+      * \param[in]  criterion  The method for deciding inclusion in the view
+      * \param[in,out]  vector  The vector to add the view to
+      * \details  vector must be a MultiVector.  The easiest way to ensure this is to
+      * create it with the select method.
+      */
+    virtual Vector::shared_ptr selectInto( const VectorSelector &criterion );
 
-    /**
-     * \brief Set data in this vector to random values on [0,1).
-     */
-    virtual void setRandomValues( void ) override;
+    // This is the const version of selectInto.
+    virtual Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const;
+
+    /** \brief Helper function that probably doesn't need to exist anymore
+      * \param  commList  The CommunicationList to add to the parameters
+      * \details For internal use only
+      */
+    virtual void addCommunicationListToParameters( CommunicationList::shared_ptr commList );
 
 
 public: // Constructor/destructors
@@ -313,14 +300,6 @@ public: // Constructor/destructors
 
 
 public: // Non-virtual functions
-
-    /**
-     * \brief Set data in this vector to random values using
-     * a particular generator
-     * \param[in]  rng  The generator to use.
-     */
-    void setRandomValues( RNG::shared_ptr rng );
-
 
     /** \brief Change the variable associated with this vector
       * \param[in] name  The new variable
@@ -365,27 +344,11 @@ public: // Non-virtual functions
      */
     void swapVectors( Vector::shared_ptr other );
 
-
     /**  \brief  Make <i>this</i> be an alias of another vector
       *  \param[in]  other  Vector to be aliased
       *  \details  This will make <i>this</i> "point" to other.
      */
     void aliasVector( Vector::shared_ptr other );
-
-    /**
-      *\brief Set vector entries (including ghosts) to zero
-      *\details This is equivalent (but more efficient) to calling setToScalar ( 0.0 ) followed by a
-      *makeConsistent(SET)
-      */
-    void zero();
-
-    /**
-     * \brief  Set vector equal to scaled input.
-     * \param[in]  alpha  a scalar double
-     * \param[in]  x  a vector
-     * For Vectors, \f$\mathit{this}_i = \alpha x_i\f$.
-     */
-    void scale( double alpha, Vector::const_shared_ptr x );
 
     /**
       * \brief set vector to \f$x + \alpha \bar{1}\f$.
@@ -396,145 +359,12 @@ public: // Non-virtual functions
     void addScalar( Vector::const_shared_ptr x, double alpha );
 
     /**
-     * \brief  Adds two vectors.
-     * \param[in]  x  a vector
-     * \param[in]  y  a vector
-     * For Vectors, \f$\mathit{this}_i = x_i + y_i\f$.
-     */
-    void add( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-
-    /**
-      * \brief Subtracts one vector from another.
-      * \param[in] x  a vector
-      * \param[in] y  a vector
-      * For Vectors, \f$\mathit{this}_i = x_i - y_i\f$
-     */
-    void subtract( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-
-    /**
-      * \brief Component-wise multiply one vector with another.
-      * \param[in] x  a vector
-      * \param[in] y  a vector
-      * For Vectors, \f$\mathit{this}_i = x_i  y_i\f$
-     */
-    void multiply( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-
-    /**
-      * \brief Component-wise divide one vector by another.
-      * \param[in] x  a vector
-      * \param[in] y  a vector
-      * For Vectors, \f$\mathit{this}_i = x_i / y_i\f$
-     */
-    void divide( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-
-    /**
-      * \brief Set this to the component-wise reciprocal of a vector.  \f$\mathit{this}_i =
-     * 1/x_i\f$.
-      * \param[in] x  a vector
-     */
-    void reciprocal( Vector::const_shared_ptr x );
-
-    /**
-     * \param[in] alpha a scalar
-     * \param[in] x a vector
-     * \param[in] beta a scalar
-     * \param[in] y a vector
-     * \brief Set a vector to be a linear combination of two vectors.
-     *  \f$\mathit{this}_i = \alpha x_i + \beta y_i\f$.
-     */
-    void
-    linearSum( double alpha, Vector::const_shared_ptr x, double beta, Vector::const_shared_ptr y );
-
-
-    /**
-      * \param[in] alpha a scalar
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
-      *    Note: after this call, the data may not be in a consistent state,
-      *    and may require calling makeConsistent(SET) if consistency is required.
-     */
-    void axpy( double alpha, Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-
-    /**
-      * \param[in] alpha a scalar
-      * \param[in] beta a scalar
-      * \param[in] x  a vector
-      * \brief Set this vector alpha * x + this.
-      *    \f$\mathit{this}_i = \alpha x_i + \beta \mathit{this}_i \f$
-      *    Note: after this call, the data may not be in a consistent state,
-      *    and may require calling makeConsistent(SET) if consistency is required.
-      */
-    void axpby( double alpha, double beta, Vector::const_shared_ptr x );
-
-    /**
-      * \param[in] x a vector
-      * \brief Set this to the component-wise absolute value of a vector.
-      * \f$\mathit{this}_i = |x_i|\f$.
-     */
-    void abs( Vector::const_shared_ptr x );
-
-    /**
       * \brief  Determine if two vectors are equal using an absolute tolerance
       * \param[in] rhs Vector to compare to
       * \param[in] tol Tolerance of comparison
       * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
       */
     bool equals( Vector::const_shared_ptr rhs, double tol = 0.000001 ) const;
-
-    /**
-      * \param[in] x a vector
-      * \brief Return the dot product of this vector with the argument vector.
-      * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
-     */
-    inline double dot( Vector::const_shared_ptr x ) const;
-
-
-    //! \name Static methods for computation
-    //@{
-    /**
-      * \brief Return a weighted norm of a vector
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
-      */
-    static double wrmsNorm( const VectorOperations &x, const VectorOperations &y );
-
-    /**
-      * \brief Return a weighted norm of a subset of a vector
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \param[in] mask a vector
-      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
-      */
-
-    static double wrmsNormMask( const VectorOperations &x,
-                                const VectorOperations &y,
-                                const VectorOperations &mask );
-
-    /**
-      * \brief Returns the minimum of the quotient of two vectors
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
-      */
-
-    static double minQuotient( const VectorOperations &x, const VectorOperations &y );
-    /**
-      * \brief Returns the minimum of the quotient of two vectors
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
-      */
-    static double minQuotient( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-
-    /**
-      * \brief Return a weighted norm of a vector
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \details Returns \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
-      */
-    static double wrmsNorm( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
 
     /** \brief  If a particular type of view of this Vector has been created,
       * return it.
@@ -567,32 +397,7 @@ public: // Non-virtual functions
       * \details  If setDefaultRNG has not been called, this returns
       * an AMP::RNG base class.
       */
-    RNG::shared_ptr getDefaultRNG();
-
-
-
-protected: // Virtual functions
-
-    /** \brief  Selects a portion of this vector and puts a view into a vector
-      * \param[in]  criterion  The method for deciding inclusion in the view
-      * \param[in,out]  vector  The vector to add the view to
-      * \details  vector must be a MultiVector.  The easiest way to ensure this is to
-      * create it with the select method.
-      */
-    virtual Vector::shared_ptr selectInto( const VectorSelector &criterion );
-
-    // This is the const version of selectInto.
-    virtual Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const;
-
-    /** \brief Helper function that probably doesn't need to exist anymore
-      * \param  commList  The CommunicationList to add to the parameters
-      * \details For internal use only
-      */
-    virtual void addCommunicationListToParameters( CommunicationList::shared_ptr commList );
-
-
-protected: // Non-virtual functions
-
+    static RNG::shared_ptr getDefaultRNG();
 
     /** \brief Copy ghosted vlues to a vector
       * \param[in] rhs  Vector to copy ghost values from
@@ -642,13 +447,6 @@ private:
     AMP::shared_ptr<std::vector<AMP::weak_ptr<Vector>>> d_Views;
 
 
-public: // Default implimentations (MOVE)
-
-    virtual void setToScalar(double) override;
-    virtual void dumpOwnedData( std::ostream &out, size_t GIDoffset=0, size_t LIDoffset=0 ) const override;
-    virtual void dumpGhostedData( std::ostream &out, size_t offset=0 ) const override;
-
-
 public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::add;
     using VectorOperationsDefault::abs;
@@ -657,10 +455,14 @@ public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::divide;
     using VectorOperationsDefault::dot;
     using VectorOperationsDefault::linearSum;
+    using VectorOperationsDefault::minQuotient;
     using VectorOperationsDefault::multiply;
+    using VectorOperationsDefault::setRandomValues;
     using VectorOperationsDefault::scale;
     using VectorOperationsDefault::subtract;
     using VectorOperationsDefault::reciprocal;
+    using VectorOperationsDefault::wrmsNorm;
+    using VectorOperationsDefault::wrmsNormMask;
 };
 
 

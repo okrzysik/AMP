@@ -165,56 +165,7 @@ Vector::shared_ptr Vector::cloneVector( const std::string &name ) const
 
 
 /****************************************************************
-* Functions to initalize the data                               *
-****************************************************************/
-void Vector::zero()
-{
-    setToScalar( 0.0 );
-    for ( size_t i       = 0; i != d_Ghosts->size(); i++ )
-        ( *d_Ghosts )[i] = 0.0;
-}
-void Vector::setToScalar( double alpha )
-{
-    iterator curMe = begin();
-    iterator last  = end();
-    while ( curMe != last ) {
-        *curMe = alpha;
-        ++curMe;
-    }
-    dataChanged();
-    for ( size_t i            = 0; i != d_Ghosts->size(); i++ )
-        ( *d_Ghosts )[i]      = alpha;
-    ( *getUpdateStatusPtr() ) = UpdateState::UNCHANGED;
-}
-void Vector::setRandomValues()
-{
-    RandomVariable<double> r( 0., 1., getDefaultRNG() );
-    iterator curMe = begin();
-    iterator last  = end();
-    while ( curMe != last ) {
-        double curRand = r;
-        *curMe         = curRand;
-        ++curMe;
-    }
-    dataChanged();
-    this->makeConsistent( ScatterType::CONSISTENT_SET );
-}
-void Vector::setRandomValues( RNG::shared_ptr rng )
-{
-    RandomVariable<double> r( 0., 1., rng );
-    iterator curMe = begin();
-    iterator last  = end();
-    while ( curMe != last ) {
-        *curMe = r;
-        ++curMe;
-    }
-    dataChanged();
-    this->makeConsistent( ScatterType::CONSISTENT_SET );
-}
-
-
-/****************************************************************
-* Basic linear algebra                                          *
+* Misc                                                          *
 ****************************************************************/
 void Vector::copyVector( Vector::const_shared_ptr rhs )
 {
@@ -234,8 +185,6 @@ void Vector::copyVector( Vector::const_shared_ptr rhs )
     // Copy the consistency state from the rhs
     *d_UpdateState = *( rhs->getUpdateStatusPtr() );
 }
-
-
 void Vector::setCommunicationList( CommunicationList::shared_ptr comm )
 {
     AMP_ASSERT( comm );
@@ -248,8 +197,6 @@ void Vector::setCommunicationList( CommunicationList::shared_ptr comm )
             new std::vector<double>( d_CommList->getVectorReceiveBufferSize() ) );
     }
 }
-
-
 bool Vector::equals( Vector const &rhs, double tol ) const
 {
     int RetVal = 0;
@@ -282,104 +229,6 @@ bool Vector::equals( Vector const &rhs, double tol ) const
 
     return ans == 1 ? true : false;
 }
-
-
-// The following two functions are Jungho's
-// This will fail when y_i = 0... Needs to be fixed
-double Vector::minQuotient( const VectorOperations &x, const VectorOperations &y )
-{
-    const Vector &x_vec         = x.castTo<Vector>();
-    const Vector &y_vec         = y.castTo<Vector>();
-    Vector::const_iterator curx = x_vec.begin();
-    Vector::const_iterator cury = y_vec.begin();
-    Vector::const_iterator endx = x_vec.end();
-    while ( curx != endx ) {
-        if ( *cury != 0.0 )
-            break;
-        ++curx;
-        ++cury;
-    }
-    // Probably should do a test across processors, not just the one
-    AMP_INSIST( curx != endx, "denominator is the zero vector on an entire process" );
-    double myRetVal = ( *curx ) / ( *cury );
-    while ( curx != endx ) {
-        if ( *cury != 0.0 ) {
-            myRetVal = std::min( myRetVal, ( *curx ) / ( *cury ) );
-        }
-        ++curx;
-        ++cury;
-    }
-    double retVal = x_vec.getComm().minReduce( myRetVal );
-    return retVal;
-}
-
-
-double Vector::wrmsNorm( const VectorOperations &x, const VectorOperations &y )
-{
-    double dot_prod             = 0.0;
-    int global_size             = 0;
-    Vector::shared_ptr temp_vec = x.castTo<Vector>().cloneVector();
-    temp_vec->multiply( x, y );
-
-    dot_prod    = temp_vec->dot( temp_vec );
-    global_size = temp_vec->getGlobalSize();
-
-    return ( sqrt( dot_prod / global_size ) );
-}
-
-
-double Vector::wrmsNormMask( const VectorOperations &x,
-                             const VectorOperations &y,
-                             const VectorOperations &mask )
-{
-    double dot_prod     = 0.0;
-    const Vector &x_vec = x.castTo<Vector>();
-    const Vector &y_vec = y.castTo<Vector>();
-    const Vector &m_vec = mask.castTo<Vector>();
-
-    Vector::const_iterator curx = x_vec.begin();
-    Vector::const_iterator endx = x_vec.end();
-    Vector::const_iterator cury = y_vec.begin();
-    Vector::const_iterator curm = m_vec.begin();
-    while ( curx != endx ) {
-        if ( *curm > 0.0 ) {
-            dot_prod += ( *curx ) * ( *curx ) * ( *cury ) * ( *cury );
-        }
-        ++curx;
-        ++cury;
-        ++curm;
-    }
-    AMP_ASSERT( cury == y_vec.end() );
-    AMP_ASSERT( curm == m_vec.end() );
-    double all_dot = x_vec.getComm().sumReduce( dot_prod );
-    return sqrt( all_dot / (double) x_vec.getGlobalSize() );
-}
-
-
-void Vector::makeConsistent( ScatterType t )
-{
-    if ( t == ScatterType::CONSISTENT_ADD ) {
-        AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
-        std::vector<double> send_vec_add( d_CommList->getVectorReceiveBufferSize() );
-        std::vector<double> recv_vec_add( d_CommList->getVectorSendBufferSize() );
-        d_CommList->packReceiveBuffer( send_vec_add, *this );
-        d_CommList->scatter_add( send_vec_add, recv_vec_add );
-        d_CommList->unpackSendBufferAdd( recv_vec_add, *this );
-        for ( auto &elem : *d_AddBuffer ) {
-            elem = 0.0;
-        }
-    }
-    *d_UpdateState = UpdateState::SETTING;
-    std::vector<double> send_vec( d_CommList->getVectorSendBufferSize() );
-    std::vector<double> recv_vec( d_CommList->getVectorReceiveBufferSize() );
-    d_CommList->packSendBuffer( send_vec, *this );
-    d_CommList->scatter_set( send_vec, recv_vec );
-    d_CommList->unpackReceiveBufferSet( recv_vec, *this );
-    *d_UpdateState = UpdateState::UNCHANGED;
-    this->setUpdateStatus( UpdateState::UNCHANGED );
-}
-
-
 void Vector::copyGhostValues( const AMP::shared_ptr<const Vector> &rhs )
 {
     if ( getGhostSize() == 0 ) {
@@ -398,35 +247,6 @@ void Vector::copyGhostValues( const AMP::shared_ptr<const Vector> &rhs )
         // Use makeConsistent to fill the ghosts
         // Note: this will incure global communication
         makeConsistent( ScatterType::CONSISTENT_SET );
-    }
-}
-
-
-void Vector::dumpOwnedData( std::ostream &out, size_t GIDoffset, size_t LIDoffset ) const
-{
-    const_iterator curElement = begin();
-    size_t gid                = GIDoffset;
-    if ( getCommunicationList() )
-        gid += getCommunicationList()->getStartGID();
-    size_t lid = LIDoffset;
-    while ( curElement != end() ) {
-        out << "  GID: " << gid << "  LID: " << lid << "  Value: " << *curElement << "\n";
-        ++curElement;
-        ++gid;
-        ++lid;
-    }
-}
-
-
-void Vector::dumpGhostedData( std::ostream &out, size_t offset ) const
-{
-    if ( !getCommunicationList() )
-        return;
-    const std::vector<size_t> &ghosts = getCommunicationList()->getGhostIDList();
-    auto curVal                       = d_Ghosts->begin();
-    for ( auto &ghost : ghosts ) {
-        out << "  GID: " << ( ghost + offset ) << "  Value: " << ( *curVal ) << "\n";
-        ++curVal;
     }
 }
 
@@ -463,5 +283,8 @@ std::ostream &operator<<( std::ostream &out, const Vector &v )
 
     return out;
 }
-}
-}
+
+
+} // LinearAlgebra namespace
+} // AMP namespace
+

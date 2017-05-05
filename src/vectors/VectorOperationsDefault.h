@@ -26,11 +26,30 @@ public:
 
 
     /**
+      *\brief Set vector entries (including ghosts) to zero
+      *\details This is equivalent (but more efficient) to calling setToScalar ( 0.0 ) followed by a
+      *makeConsistent(SET)
+      */
+    virtual void zero() override;
+
+    /**
      * \param  alpha a scalar double
      * \brief  Set all compenents of a vector to a scalar.
      * For Vectors, the components of <em>this</em> are set to \f$\alpha\f$.
      */
-    virtual void setToScalar( double alpha ) override = 0;
+    virtual void setToScalar( double alpha ) override;
+
+    /**
+     * \brief Set data in this vector to random values on [0,1).
+     */
+    virtual void setRandomValues( void ) override;
+
+    /**
+     * \brief Set data in this vector to random values using
+     * a particular generator
+     * \param[in]  rng  The generator to use.
+     */
+    virtual void setRandomValues( RNG::shared_ptr rng ) override;
 
     /**
      * \param  alpha  a scalar double
@@ -160,10 +179,53 @@ public:
      */
     virtual double localDot( const VectorOperations& x ) const override;
 
+
+private:
+
     /**
-     * \brief Set data in this vector to random values on [0,1).
-     */
-    virtual void setRandomValues( void ) override = 0;
+      * \brief Returns the local minimum of the quotient of two vectors:
+      *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
+      * \param[in] x a vector
+      * \param[in] y a vector
+      * \return \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
+      */
+    virtual double localMinQuotient( const VectorOperations &x ) const override;
+
+    /**
+      * \brief Return a weighted norm of a vector
+      * \param[in] x a vector
+      * \param[in] y a vector
+      * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_i \mathit{this}^2_i}{n}}\f]
+      */
+    virtual double localWrmsNorm( const VectorOperations &x ) const override;
+
+    /**
+      * \brief Return a weighted norm of a subset of a vector
+      * \param[in] x a vector
+      * \param[in] y a vector
+      * \param[in] mask a vector
+      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0}  \mathit{this}^2_iy^2_i}{n}}\f]
+      */
+    virtual double localWrmsNormMask( const VectorOperations &x,
+                                const VectorOperations &mask ) const override;
+
+
+public: // Pull VectorOperations into the current scope
+    using VectorOperations::add;
+    using VectorOperations::abs;
+    using VectorOperations::axpy;
+    using VectorOperations::axpby;
+    using VectorOperations::divide;
+    using VectorOperations::dot;
+    using VectorOperations::linearSum;
+    using VectorOperations::minQuotient;
+    using VectorOperations::multiply;
+    using VectorOperations::setRandomValues;
+    using VectorOperations::scale;
+    using VectorOperations::subtract;
+    using VectorOperations::reciprocal;
+    using VectorOperations::wrmsNorm;
+    using VectorOperations::wrmsNormMask;
 
 };
 

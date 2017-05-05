@@ -144,9 +144,30 @@ public:
     virtual double localMaxNorm() const override;
     virtual double localDot( const VectorOperations &x ) const override;
 
+
+public: // Pull VectorOperations into the current scope
+    using VectorOperationsDefault::add;
+    using VectorOperationsDefault::abs;
+    using VectorOperationsDefault::axpy;
+    using VectorOperationsDefault::axpby;
+    using VectorOperationsDefault::divide;
+    using VectorOperationsDefault::dot;
+    using VectorOperationsDefault::linearSum;
+    using VectorOperationsDefault::minQuotient;
+    using VectorOperationsDefault::multiply;
+    using VectorOperationsDefault::scale;
+    using VectorOperationsDefault::setRandomValues;
+    using VectorOperationsDefault::subtract;
+    using VectorOperationsDefault::reciprocal;
+    using VectorOperationsDefault::wrmsNorm;
+    using VectorOperationsDefault::wrmsNormMask;
+
 };
-}
-}
+
+
+} // LinearAlgebra namespace
+} // AMP namespace
+
 
 #include "EpetraVectorEngine.inline.h"
 
