@@ -51,7 +51,11 @@ public:
 
     /**
       A function for computing the information necessary to construct the jacobian.
-      @param u The solution vector that is used to construct the jacobian
+     * \param type: std:string specifying type of return operator parameters
+     *      being requested. Currently the valid option is Jacobian
+     * \param u: const pointer to current solution vector
+     * \param params: pointer to additional parameters that might be required
+     *      to construct the return parameters
       @return The parameters required to construct the jacobian.
       */
     virtual AMP::shared_ptr<OperatorParameters>

@@ -44,7 +44,7 @@ public:
     /**
     * Test the stopping criterion
     * @param solver Instance of solver for which convergence is being evaluated.
-    *        checkType Type of convergence check
+    * @param checkType Type of convergence check
     */
     NOX::StatusTest::StatusType checkStatus( const NOX::Solver::Generic &solver,
                                              NOX::StatusTest::CheckType checkType );
