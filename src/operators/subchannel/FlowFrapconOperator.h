@@ -35,7 +35,7 @@ public:
     /**
       For this operator we have an in-place apply.
       @param [in]  u input vector.
-      @param [out] r residual/output vector.
+      @param [out] f output vector.
       */
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;

@@ -1,14 +1,3 @@
-//----------------------------------*-C++-*----------------------------------//
-/*!
- * \file   operators/PowerShape.h
- * \author Kevin Clarno and Gokhan Yesilyurt
- * \brief  Power shape
- * \note   Copyright (C) 2008 Oak Ridge National Laboratory, UT-Battelle, LLC.
- */
-//---------------------------------------------------------------------------//
-// $Id: PowerShape.h,v 1.3 2010/06/15 12:00:00 h51 Exp $
-//---------------------------------------------------------------------------//
-
 #ifndef included_AMP_PowerShape_h
 #define included_AMP_PowerShape_h
 

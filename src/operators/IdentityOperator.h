@@ -32,7 +32,7 @@ public:
      * r = A(u)
      * Here, A(u) is simply a Matrix-Vector multiplication.
      * @param [in] u input vector.
-     * @param [out] r residual/output vector.
+     * @param [out] f output vector.
      */
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr f ) override;
