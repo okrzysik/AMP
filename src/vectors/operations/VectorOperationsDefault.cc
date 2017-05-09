@@ -1,4 +1,4 @@
-#include "vectors/VectorOperationsDefault.h"
+#include "vectors/operations/VectorOperationsDefault.h"
 #include "vectors/VectorData.h"
 #include "vectors/Vector.h"
 

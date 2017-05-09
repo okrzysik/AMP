@@ -1,8 +1,8 @@
-#ifndef included_AMP_VectorOperationsDefault
-#define included_AMP_VectorOperationsDefault
+#ifndef included_AMP_MultiVectorOperations
+#define included_AMP_MultiVectorOperations
 
 
-#include "vectors/VectorOperations.h"
+#include "vectors/operations/VectorOperations.h"
 
 
 namespace AMP {
@@ -10,20 +10,19 @@ namespace LinearAlgebra {
 
 
 /**
-  * \brief  A default set of vector operations
-  * \details VectorOperationsDefault impliments a default set of 
-  *    vector operations on the CPU. 
+  * \brief  A set of vector operations for multivectors
+  * \details MultiVectorOperations impliments a default set of 
+  *    vector operations for multivectors.
   */
-class VectorOperationsDefault : virtual public VectorOperations
+class MultiVectorOperations : virtual public VectorOperations
 {
 public:
 
     // Constructor
-    VectorOperationsDefault() {}
+    MultiVectorOperations( ) {}
 
     //! Destructor
-    virtual ~VectorOperationsDefault() {}
-
+    virtual ~MultiVectorOperations() {}
 
     /**
       *\brief Set vector entries (including ghosts) to zero
@@ -224,6 +223,12 @@ private:
       */
     virtual double localWrmsNormMask( const VectorOperations &x,
                                 const VectorOperations &mask ) const override;
+
+
+protected:
+
+    // Internal data
+    std::vector<VectorOperations*> d_operations;
 
 
 public: // Pull VectorOperations into the current scope

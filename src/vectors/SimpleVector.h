@@ -2,6 +2,8 @@
 #define included_AMP_SimpleVector
 
 #include "Vector.h"
+#include "vectors/operations/VectorOperationsDefault.h"
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -11,7 +13,9 @@ namespace LinearAlgebra {
 * \details This is a Vector that implements the Vector interface for a std::vector<double>.
 */
 template <typename T>
-class SimpleVector : public Vector
+class SimpleVector :
+    public Vector,
+    public VectorOperationsDefault
 {
 protected:
     std::vector<T> d_Data;

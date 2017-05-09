@@ -13,8 +13,8 @@
 #include "utils/shared_ptr.h"
 #include "vectors/Variable.h"
 #include "vectors/VectorData.h"
-#include "vectors/VectorOperations.h"
-#include "vectors/VectorOperationsDefault.h"
+#include "vectors/operations/VectorOperations.h"
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -68,7 +68,6 @@ class ManagedVector;
 class Vector :
     virtual public VectorData,
     virtual public VectorOperations,
-    virtual public VectorOperationsDefault,
     public AMP::enable_shared_from_this<Vector>
 {
 
@@ -411,25 +410,6 @@ private:
 
     AMP::shared_ptr<std::vector<AMP::weak_ptr<Vector>>> d_Views;
 
-
-public: // Pull VectorOperations into the current scope
-    using VectorOperationsDefault::add;
-    using VectorOperationsDefault::addScalar;
-    using VectorOperationsDefault::abs;
-    using VectorOperationsDefault::axpy;
-    using VectorOperationsDefault::axpby;
-    using VectorOperationsDefault::divide;
-    using VectorOperationsDefault::dot;
-    using VectorOperationsDefault::equals;
-    using VectorOperationsDefault::linearSum;
-    using VectorOperationsDefault::minQuotient;
-    using VectorOperationsDefault::multiply;
-    using VectorOperationsDefault::setRandomValues;
-    using VectorOperationsDefault::scale;
-    using VectorOperationsDefault::subtract;
-    using VectorOperationsDefault::reciprocal;
-    using VectorOperationsDefault::wrmsNorm;
-    using VectorOperationsDefault::wrmsNormMask;
 };
 
 

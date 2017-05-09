@@ -87,6 +87,14 @@ public:
     virtual void scale( double alpha ) = 0;
 
     /**
+      * \brief set vector to \f$x + \alpha \bar{1}\f$.
+      * \param[in] x a vector
+      * \param[in] alpha a scalar
+      * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
+      */
+    virtual void addScalar( const VectorOperations &x, double alpha ) = 0;
+
+    /**
      * \brief  Adds two vectors.
      *      For Vectors, \f$\mathit{this}_i = x_i + y_i\f$.
      * \param[in] x         Input vector x
@@ -239,17 +247,6 @@ public:
       * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
       */
     virtual bool localEquals( const VectorOperations &rhs, double tol = 0.000001 ) const = 0;
-
-    /**
-      * \brief set vector to \f$x + \alpha \bar{1}\f$.
-      * \param[in] x a vector
-      * \param[in] alpha a scalar
-      * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
-      */
-    virtual void addScalar( const VectorOperations &x, double alpha ) = 0;
-
-
-protected: // Private virtual functions
 
     /**
       * \brief Returns the local minimum of the quotient of two vectors:

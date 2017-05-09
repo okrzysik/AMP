@@ -4,6 +4,7 @@
 #include <string>
 
 #include "vectors/Vector.h"
+#include "vectors/operations/VectorOperationsDefault.h"
 #include "utils/FunctionTable.h"
 #include "utils/Array.h"
 
@@ -16,7 +17,9 @@ namespace LinearAlgebra {
   * \details This is a Vector that implements the Vector interface for a std::vector<double>.
   */
 template <typename T, typename FUN = FunctionTable, typename Allocator = std::allocator<T>>
-class ArrayVector : public Vector
+class ArrayVector :
+    public Vector,
+    public VectorOperationsDefault
 {
 private:
     AMP::Array<T, FUN, Allocator> d_array;

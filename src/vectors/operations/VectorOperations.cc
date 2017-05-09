@@ -1,4 +1,4 @@
-#include "vectors/VectorOperations.h"
+#include "vectors/operations/VectorOperations.h"
 #include "vectors/VectorData.h"
 #include "vectors/Vector.h"
 
@@ -36,7 +36,7 @@ double VectorOperations::max() const
 }
 double VectorOperations::dot( const VectorOperations &x ) const
 {
-    double ans = x.localDot( x );
+    double ans = localDot( x );
     if ( hasComm() )
         ans = getComm().sumReduce( ans );
     return ans;

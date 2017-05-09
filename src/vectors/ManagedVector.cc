@@ -294,5 +294,170 @@ void ManagedVector::addLocalValuesByGlobalID( int i, size_t *id, const double *v
 void ManagedVector::putRawData( const double *in ) { d_Engine->putRawData( in ); }
 
 void ManagedVector::copyOutRawData( double *in ) const { d_Engine->copyOutRawData( in ); }
+
+
+void ManagedVector::scale( double alpha, const VectorOperations &x )
+{
+    if ( x.isA<ManagedVector>() ) {
+        d_Engine->scale( alpha, *x.castTo<ManagedVector>().d_Engine );
+    } else {
+        VectorOperationsDefault::scale( alpha, x );
+    }
+    dataChanged();
+}
+
+
+void ManagedVector::scale( double alpha )
+{
+    d_Engine->scale( alpha );
+    dataChanged();
+}
+
+
+void ManagedVector::add( const VectorOperations &x, const VectorOperations &y )
+{
+    if ( x.isA<ManagedVector>() && y.isA<ManagedVector>() ) {
+        d_Engine->add( *x.castTo<ManagedVector>().d_Engine, *y.castTo<ManagedVector>().d_Engine );
+    } else {
+        VectorOperationsDefault::add( x, y );
+    }
+    dataChanged();
+}
+
+
+void ManagedVector::subtract( const VectorOperations &x, const VectorOperations &y )
+{
+    if ( x.isA<ManagedVector>() && y.isA<ManagedVector>() ) {
+        d_Engine->subtract( *x.castTo<ManagedVector>().d_Engine,
+                            *y.castTo<ManagedVector>().d_Engine );
+    } else {
+        VectorOperationsDefault::subtract( x, y );
+    }
+    dataChanged();
+}
+
+
+void ManagedVector::multiply( const VectorOperations &x, const VectorOperations &y )
+{
+    if ( x.isA<ManagedVector>() && y.isA<ManagedVector>() ) {
+        d_Engine->multiply( *x.castTo<ManagedVector>().d_Engine,
+                            *y.castTo<ManagedVector>().d_Engine );
+    } else {
+        VectorOperationsDefault::multiply( x, y );
+    }
+    dataChanged();
+}
+
+
+void ManagedVector::divide( const VectorOperations &x, const VectorOperations &y )
+{
+    if ( x.isA<ManagedVector>() && y.isA<ManagedVector>() ) {
+        d_Engine->divide( *x.castTo<ManagedVector>().d_Engine,
+                          *y.castTo<ManagedVector>().d_Engine );
+    } else {
+        VectorOperationsDefault::divide( x, y );
+    }
+    dataChanged();
+}
+
+
+void ManagedVector::reciprocal( const VectorOperations &x )
+{
+    d_Engine->reciprocal( *x.castTo<ManagedVector>().d_Engine );
+    dataChanged();
+}
+
+
+void ManagedVector::linearSum( double alpha,
+                                      const VectorOperations &x,
+                                      double beta,
+                                      const VectorOperations &y )
+{
+    if ( x.isA<ManagedVector>() && y.isA<ManagedVector>() ) {
+        d_Engine->linearSum(
+            alpha, *x.castTo<ManagedVector>().d_Engine, beta, *y.castTo<ManagedVector>().d_Engine );
+    } else {
+        VectorOperationsDefault::linearSum( alpha, x, beta, y );
+    }
+    dataChanged();
+}
+
+
+void
+ManagedVector::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
+{
+    if ( x.isA<ManagedVector>() && y.isA<ManagedVector>() ) {
+        d_Engine->axpy(
+            alpha, *x.castTo<ManagedVector>().d_Engine, *y.castTo<ManagedVector>().d_Engine );
+    } else {
+        VectorOperationsDefault::axpy( alpha, x, y );
+    }
+    dataChanged();
+}
+
+
+void ManagedVector::axpby( double alpha, double beta, const VectorOperations &x )
+{
+    if ( x.isA<ManagedVector>() ) {
+        d_Engine->axpby( alpha, beta, *x.castTo<ManagedVector>().d_Engine );
+    } else {
+        VectorOperationsDefault::axpby( alpha, beta, x );
+    }
+    dataChanged();
+}
+
+
+void ManagedVector::abs( const VectorOperations &x )
+{
+    if ( x.isA<ManagedVector>() ) {
+        d_Engine->abs( *x.castTo<ManagedVector>().d_Engine );
+    } else {
+        VectorOperationsDefault::abs( x );
+    }
+    dataChanged();
+}
+
+
+double ManagedVector::min( void ) const { return d_Engine->min(); }
+
+
+double ManagedVector::max( void ) const { return d_Engine->max(); }
+
+
+void ManagedVector::setRandomValues( void )
+{
+    d_Engine->setRandomValues();
+    dataChanged();
+    this->makeConsistent( ScatterType::CONSISTENT_SET );
+}
+
+
+void ManagedVector::setToScalar( double alpha )
+{
+    d_Engine->setToScalar( alpha );
+    dataChanged();
+    this->makeConsistent( ScatterType::CONSISTENT_SET );
+}
+
+
+double ManagedVector::L1Norm( void ) const { return d_Engine->L1Norm(); }
+
+
+double ManagedVector::L2Norm( void ) const { return d_Engine->L2Norm(); }
+
+
+double ManagedVector::maxNorm( void ) const { return d_Engine->maxNorm(); }
+
+
+double ManagedVector::dot( const VectorOperations &x ) const
+{
+    if ( x.isA<ManagedVector>() )
+        return d_Engine->dot( *x.castTo<ManagedVector>().d_Engine );
+    return VectorOperationsDefault::dot( *this );
+}
+
+
+
+
 }
 }

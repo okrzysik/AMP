@@ -1,7 +1,8 @@
 #ifndef included_AMP_SubsetVector
 #define included_AMP_SubsetVector
 
-#include "Vector.h"
+#include "vectors/Vector.h"
+#include "vectors/operations/VectorOperationsDefault.h"
 #include <vector>
 
 namespace AMP {
@@ -43,7 +44,9 @@ namespace LinearAlgebra {
       vec2.copyVector( vec3 );
     \endcode
   */
-class SubsetVector : public Vector
+class SubsetVector :
+    public Vector,
+    public VectorOperationsDefault
 {
 
 public:

@@ -2,9 +2,11 @@
 #define included_AMP_ManagedVector
 
 
-#include "DataChangeFirer.h"
-#include "Vector.h"
-#include "VectorEngine.h"
+#include "vectors/Vector.h"
+#include "vectors/operations/VectorOperationsDefault.h"
+#include "vectors/VectorEngine.h"
+#include "vectors/DataChangeFirer.h"
+
 #include <stdexcept>
 #include <vector>
 
@@ -45,7 +47,10 @@ public:
    A ManagedVector has two pointers: data and engine.  If the data pointer
    is null, then the engine is assumed to have the data.
 */
-class ManagedVector : public Vector, public DataChangeFirer
+class ManagedVector :
+    public Vector,
+    public VectorOperationsDefault,
+    public DataChangeFirer
 {
 
 public:
@@ -94,7 +99,6 @@ public:
 
     virtual bool isAnAliasOf( Vector &rhs );
     virtual bool isAnAliasOf( Vector::shared_ptr rhs );
-    using Vector::cloneVector;
     virtual AMP::shared_ptr<Vector> cloneVector( const Variable::shared_ptr name ) const override;
     virtual AMP::shared_ptr<ParameterBase> getParameters() override;
 
@@ -129,7 +133,6 @@ public:
     virtual double min( void ) const override;
     virtual double max( void ) const override;
     virtual void setRandomValues( void ) override;
-    using Vector::setRandomValues;
     virtual void setValuesByLocalID( int i, size_t *, const double *val ) override;
     virtual void addValuesByLocalID( int i, size_t *, const double *val ) override;
     virtual void addLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
@@ -138,7 +141,6 @@ public:
     double L1Norm( void ) const override;
     double L2Norm( void ) const override;
     double maxNorm( void ) const override;
-    using Vector::dot;
     double dot( const VectorOperations &x ) const override;
     virtual UpdateState getUpdateStatus() const override;
     virtual void setUpdateStatus( UpdateState state ) override;
@@ -169,6 +171,30 @@ protected:
     virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
 
     virtual void addCommunicationListToParameters( CommunicationList::shared_ptr comm ) override;
+
+
+public: // Pull Vector into the current scope
+    using Vector::cloneVector;
+
+public: // Pull VectorOperations into the current scope
+    using VectorOperationsDefault::add;
+    using VectorOperationsDefault::addScalar;
+    using VectorOperationsDefault::abs;
+    using VectorOperationsDefault::axpy;
+    using VectorOperationsDefault::axpby;
+    using VectorOperationsDefault::divide;
+    using VectorOperationsDefault::dot;
+    using VectorOperationsDefault::equals;
+    using VectorOperationsDefault::linearSum;
+    using VectorOperationsDefault::minQuotient;
+    using VectorOperationsDefault::multiply;
+    using VectorOperationsDefault::setRandomValues;
+    using VectorOperationsDefault::scale;
+    using VectorOperationsDefault::subtract;
+    using VectorOperationsDefault::reciprocal;
+    using VectorOperationsDefault::wrmsNorm;
+    using VectorOperationsDefault::wrmsNormMask;
+    using VectorOperationsDefault::zero;
 
 private:
     ManagedVector();

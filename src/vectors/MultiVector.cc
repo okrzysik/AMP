@@ -167,6 +167,14 @@ void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
         d_CommList            = AMP::LinearAlgebra::CommunicationList::shared_ptr(
             new AMP::LinearAlgebra::CommunicationList( params ) );
     }
+    // Set the vector operations
+    updateVectorOperations();
+}
+void MultiVector::updateVectorOperations()
+{
+    d_operations.resize( d_vVectors.size() );
+    for (size_t i=0; i<d_vVectors.size(); i++)
+        d_operations[i] = d_vVectors[i].get();
 }
 void MultiVector::addVectorHelper( Vector::shared_ptr vec )
 {
@@ -242,6 +250,7 @@ void MultiVector::replaceSubVector( Vector::shared_ptr oldVec, Vector::shared_pt
     } // end for i
     AMP_INSIST( pos != -1, "oldVec was not found" );
     d_vVectors[pos] = newVec;
+    updateVectorOperations();
 }
 
 
@@ -302,163 +311,6 @@ bool MultiVector::containsPointer( const Vector::shared_ptr p ) const
         }
     }
     return false;
-}
-
-
-/****************************************************************
-* Basic linear algebra                                          *
-****************************************************************/
-void MultiVector::subtract( const VectorOperations &x, const VectorOperations &y )
-{
-    if ( !x.isA<MultiVector>() || !y.isA<MultiVector>() )
-        AMP_ERROR( "x or y is not a multivector and this is" );
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->subtract( getVector( x, i ), getVector( y, i ) );
-}
-void MultiVector::multiply( const VectorOperations &x, const VectorOperations &y )
-{
-    if ( !x.isA<MultiVector>() || !y.isA<MultiVector>() )
-        AMP_ERROR( "x or y is not a multivector and this is" );
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->multiply( getVector( x, i ), getVector( y, i ) );
-}
-void MultiVector::divide( const VectorOperations &x, const VectorOperations &y )
-{
-    if ( !x.isA<MultiVector>() || !y.isA<MultiVector>() )
-        AMP_ERROR( "x or y is not a multivector and this is" );
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->divide( getVector( x, i ), getVector( y, i ) );
-}
-void MultiVector::reciprocal( const VectorOperations &x )
-{
-    if ( !x.isA<MultiVector>() )
-        AMP_ERROR( "x is not a multivector and this is" );
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->reciprocal( getVector( x, i ) );
-}
-void MultiVector::linearSum( double alpha,
-                             const VectorOperations &x,
-                             double beta,
-                             const VectorOperations &y )
-{
-    if ( !x.isA<MultiVector>() || !y.isA<MultiVector>() )
-        AMP_ERROR( "x or y is not a multivector and this is" );
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->linearSum( alpha, getVector( x, i ), beta, getVector( y, i ) );
-}
-void MultiVector::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
-{
-    if ( !x.isA<MultiVector>() || !y.isA<MultiVector>() )
-        AMP_ERROR( "x or y is not a multivector and this is" );
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->axpy( alpha, getVector( x, i ), getVector( y, i ) );
-}
-void MultiVector::axpby( double alpha, double beta, const VectorOperations &x )
-{
-    if ( x.isA<MultiVector>() ) {
-        // this and x are both multivectors
-        for ( size_t i = 0; i != d_vVectors.size(); i++ )
-            d_vVectors[i]->axpby( alpha, beta, getVector( x, i ) );
-    } else if ( d_vVectors.size() == 1 ) {
-        // x is not a multivector, but this only contains one vector, try comparing
-        d_vVectors[0]->axpby( alpha, beta, x );
-    } else {
-        AMP_ERROR( "x is not a multivector and this is" );
-    }
-}
-void MultiVector::abs( const VectorOperations &x )
-{
-    if ( !x.isA<MultiVector>() )
-        AMP_ERROR( "x is not a multivector and this is" );
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->abs( getVector( x, i ) );
-}
-void MultiVector::setRandomValues()
-{
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->setRandomValues();
-}
-void MultiVector::setToScalar( double alpha )
-{
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->setToScalar( alpha );
-}
-void MultiVector::scale( double alpha, const VectorOperations &x )
-{
-    if ( !x.isA<MultiVector>() )
-        AMP_ERROR( "x is not a multivector and this is" );
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->scale( alpha, getVector( x, i ) );
-}
-void MultiVector::scale( double alpha )
-{
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->scale( alpha );
-}
-void MultiVector::add( const VectorOperations &x, const VectorOperations &y )
-{
-    if ( !x.isA<MultiVector>() || !y.isA<MultiVector>() )
-        AMP_ERROR( "x or y is not a multivector and this is" );
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        d_vVectors[i]->add( getVector( x, i ), getVector( y, i ) );
-}
-
-
-/****************************************************************
-* min, max, norms, etc.                                         *
-* Note: these routines require communication                    *
-****************************************************************/
-double MultiVector::min( void ) const
-{
-    double ans = 1e300;
-    for ( auto &elem : d_vVectors )
-        ans = std::min( ans, elem->localMin() );
-    ans     = getComm().minReduce( ans );
-    return ans;
-}
-double MultiVector::max( void ) const
-{
-    double ans = -1e300;
-    for ( auto &elem : d_vVectors )
-        ans = std::max( ans, elem->localMax() );
-    ans     = getComm().maxReduce( ans );
-    return ans;
-}
-double MultiVector::L1Norm() const
-{
-    double ans = 0.0;
-    for ( auto &elem : d_vVectors )
-        ans += elem->localL1Norm();
-    ans = getComm().sumReduce( ans );
-    return ans;
-}
-double MultiVector::L2Norm() const
-{
-    double ans = 0.0;
-    for ( auto vec : d_vVectors ) {
-        double tmp = vec->localL2Norm();
-        ans += tmp * tmp;
-    }
-    ans = getComm().sumReduce( ans );
-    return sqrt( ans );
-}
-double MultiVector::maxNorm() const
-{
-    double ans = 0.0;
-    for ( auto &elem : d_vVectors )
-        ans = std::max( ans, elem->localMaxNorm() );
-    ans     = getComm().maxReduce( ans );
-    return ans;
-}
-double MultiVector::dot( const VectorOperations &x ) const
-{
-    if ( !x.isA<MultiVector>() )
-        AMP_ERROR( "x is not a multivector and this is" );
-    double ans = 0.0;
-    for ( size_t i = 0; i < d_vVectors.size(); i++ )
-        ans += d_vVectors[i]->localDot( *getVector( x, i ) );
-    ans = getComm().sumReduce( ans );
-    return ans;
 }
 
 
@@ -780,6 +632,7 @@ Vector::shared_ptr MultiVector::cloneVector( const Variable::shared_ptr name ) c
     retVec->d_vVectors.resize( d_vVectors.size() );
     for ( size_t i            = 0; i != d_vVectors.size(); i++ )
         retVec->d_vVectors[i] = d_vVectors[i]->cloneVector();
+    retVec->updateVectorOperations();
     return retVec;
 }
 

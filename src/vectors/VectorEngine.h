@@ -1,8 +1,7 @@
 #ifndef included_AMP_VectorEngine
 #define included_AMP_VectorEngine
 
-
-#include "VectorOperationsDefault.h"
+#include "vectors/operations/VectorOperationsDefault.h"
 #include "utils/AMP_MPI.h"
 #include "utils/shared_ptr.h"
 #include <vector>
@@ -60,6 +59,7 @@ protected:
     AMP_MPI d_comm;  // Comm
 };
 
+
 /** \class VectorEngine
  * \brief A class that can perform mathematics on vectors.
  * \see Vector
@@ -69,7 +69,7 @@ protected:
  * and access while this class will completely encapsulate dense kernels on
  * the data.
 */
-class VectorEngine : virtual public VectorOperationsDefault
+class VectorEngine : virtual public VectorOperations
 {
 protected:
     VectorEngineParameters::shared_ptr d_Params;

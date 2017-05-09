@@ -5,6 +5,7 @@
 #include "vectors/NativeVector.h"
 #include "vectors/VectorEngine.h"
 #include "vectors/petsc/PetscVector.h"
+#include "vectors/operations/VectorOperationsDefault.h"
 
 
 namespace AMP {
@@ -58,7 +59,11 @@ public:
   * \see PetscVector
   * \see ManagedPetscVector
   */
-class NativePetscVector : public NativeVector, public PetscVector, public VectorEngine
+class NativePetscVector :
+    public NativeVector,
+    public PetscVector,
+    public VectorEngine,
+    public VectorOperationsDefault
 {
 public:
     //! Conveninece typedef

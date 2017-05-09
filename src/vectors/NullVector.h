@@ -1,7 +1,8 @@
 #ifndef included_AMP_NullVector
 #define included_AMP_NullVector
 
-#include "Vector.h"
+#include "vectors/Vector.h"
+#include "vectors/operations/VectorOperationsDefault.h"
 #include <string>
 
 namespace AMP {
@@ -13,7 +14,9 @@ namespace LinearAlgebra {
   * circumstances, a NullVector is used.  This stores no data and performs no
   * work.
   */
-class NullVector : public Vector
+class NullVector :
+    public Vector,
+    public VectorOperationsDefault
 {
 private:
     explicit NullVector( Variable::shared_ptr );

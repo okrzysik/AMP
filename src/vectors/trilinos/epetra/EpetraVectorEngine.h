@@ -6,6 +6,7 @@
 
 #include "EpetraVector.h"
 #include "vectors/VectorEngine.h"
+#include "vectors/operations/VectorOperationsDefault.h"
 
 
 namespace AMP {
@@ -56,7 +57,9 @@ private:
   * libraries, it is very difficult to separate the data from the engine.  For this
   * reason, the EpetraVectorEngine contains the Epetra_Vector to operate on.
   */
-class EpetraVectorEngine : public VectorEngine
+class EpetraVectorEngine :
+    public VectorEngine,
+    public VectorOperationsDefault
 {
 protected:
     /** \brief  The Epetra_Vector to perform work on

@@ -1,9 +1,11 @@
 #ifndef included_AMP_MultiVector
 #define included_AMP_MultiVector
 
-#include "DataChangePassThrough.h"
-#include "Vector.h"
-#include "VectorEngine.h"
+
+#include "vectors/Vector.h"
+#include "vectors/operations/MultiVectorOperations.h"
+#include "vectors/VectorEngine.h"
+#include "vectors/DataChangePassThrough.h"
 
 
 namespace AMP {
@@ -17,6 +19,7 @@ namespace LinearAlgebra {
   */
 class MultiVector : 
     public Vector,
+    public MultiVectorOperations,
     public VectorEngine,
     public DataChangePassThrough
 {
@@ -162,11 +165,6 @@ public:
     //!  Destructor
     virtual ~MultiVector();
 
-    // Vector functions
-    using Vector::cloneVector;
-    using Vector::subsetVectorForVariable;
-    using Vector::constSubsetVectorForVariable;
-
     virtual void
     dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const override;
     virtual void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const override;
@@ -185,26 +183,6 @@ public:
     virtual void copyVector( Vector::const_shared_ptr src_vec ) override;
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector &other ) override;
-    virtual void setToScalar( double alpha ) override;
-    virtual void scale( double alpha, const VectorOperations &x ) override;
-    virtual void scale( double alpha ) override;
-    virtual void add( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void subtract( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void multiply( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void divide( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void reciprocal( const VectorOperations &x ) override;
-    virtual void linearSum( double alpha,
-                            const VectorOperations &x,
-                            double beta,
-                            const VectorOperations &y ) override;
-    virtual void
-    axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void axpby( double alpha, double beta, const VectorOperations &x ) override;
-    virtual void abs( const VectorOperations &x ) override;
-    virtual double min( void ) const override;
-    virtual double max( void ) const override;
-    virtual void setRandomValues( void ) override;
-    using Vector::setRandomValues;
     virtual void setValuesByLocalID( int num, size_t *indices, const double *vals ) override;
     virtual void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
     virtual void setGhostValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
@@ -220,11 +198,6 @@ public:
     virtual UpdateState getUpdateStatus() const override;
     virtual void setUpdateStatus( UpdateState state ) override;
     virtual void assemble() override;
-    virtual double L1Norm( void ) const override;
-    virtual double L2Norm( void ) const override;
-    virtual double maxNorm( void ) const override;
-    using Vector::dot;
-    virtual double dot( const VectorOperations &x ) const override;
     virtual size_t getLocalSize() const override;
     virtual size_t getGlobalSize() const override;
     virtual size_t getGhostSize() const override;
@@ -233,12 +206,10 @@ public:
     // Vector engine functions
     virtual AMP::shared_ptr<std::vector<double>> getNewBuffer() override;
     virtual bool sameEngine( VectorEngine &rhs ) const override;
-    virtual VectorEngine::shared_ptr
-    cloneEngine( AMP::shared_ptr<std::vector<double>> ) const override;
+    virtual VectorEngine::shared_ptr cloneEngine( AMP::shared_ptr<std::vector<double>> ) const override;
     virtual void swapEngines( VectorEngine::shared_ptr p ) override;
     virtual const void *getDataBlock( size_t i ) const override;
     virtual void *getDataBlock( size_t i ) override;
-
     virtual void copyOutRawData( double *out ) const override;
 
 
@@ -317,12 +288,46 @@ protected:
     //! Return the id of the data
     virtual uint64_t getDataID() const override { return 0; }
 
+
 private:
     // Helper function to add a vector without updating the DOF manager
     void addVectorHelper( Vector::shared_ptr vec );
+
+    // Helper function to update the vector operations
+    inline void updateVectorOperations();
+
+
+public: // Pull Vector into the current scope
+    using Vector::cloneVector;
+    using Vector::subsetVectorForVariable;
+    using Vector::constSubsetVectorForVariable;
+
+
+public: // Pull VectorOperations into the current scope
+    using MultiVectorOperations::add;
+    using MultiVectorOperations::addScalar;
+    using MultiVectorOperations::abs;
+    using MultiVectorOperations::axpy;
+    using MultiVectorOperations::axpby;
+    using MultiVectorOperations::divide;
+    using MultiVectorOperations::dot;
+    using MultiVectorOperations::equals;
+    using MultiVectorOperations::linearSum;
+    using MultiVectorOperations::minQuotient;
+    using MultiVectorOperations::multiply;
+    using MultiVectorOperations::setRandomValues;
+    using MultiVectorOperations::scale;
+    using MultiVectorOperations::subtract;
+    using MultiVectorOperations::reciprocal;
+    using MultiVectorOperations::wrmsNorm;
+    using MultiVectorOperations::wrmsNormMask;
+    using MultiVectorOperations::zero;
+
 };
-}
-}
+
+
+} // LinearAlgebra namespace
+} // AMP namespace
 
 #include "MultiVector.inline.h"
 

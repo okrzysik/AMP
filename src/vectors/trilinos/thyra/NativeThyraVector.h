@@ -5,7 +5,7 @@
 #include "vectors/VectorEngine.h"
 #include "vectors/NativeVector.h"
 #include "vectors/trilinos/thyra/ThyraVector.h"
-
+#include "vectors/operations/VectorOperationsDefault.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -42,7 +42,11 @@ public:
   * \see ThyraVector
   * \see ManagedThyraVector
   */
-class NativeThyraVector : public NativeVector, public ThyraVector, public VectorEngine
+class NativeThyraVector :
+    public NativeVector,
+    public ThyraVector,
+    public VectorEngine,
+    public VectorOperationsDefault
 {
 public:
     //! Conveninece typedef
