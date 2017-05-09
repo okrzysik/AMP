@@ -232,6 +232,22 @@ public:
      */
     virtual double localDot( const VectorOperations& x ) const = 0;
 
+    /**
+      * \brief  Determine if the local portion of two vectors are equal using an absolute tolerance
+      * \param[in] rhs      Vector to compare to
+      * \param[in] tol      Tolerance of comparison
+      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
+      */
+    virtual bool localEquals( const VectorOperations &rhs, double tol = 0.000001 ) const = 0;
+
+    /**
+      * \brief set vector to \f$x + \alpha \bar{1}\f$.
+      * \param[in] x a vector
+      * \param[in] alpha a scalar
+      * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
+      */
+    virtual void addScalar( const VectorOperations &x, double alpha ) = 0;
+
 
 protected: // Private virtual functions
 
@@ -239,7 +255,6 @@ protected: // Private virtual functions
       * \brief Returns the local minimum of the quotient of two vectors:
       *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
       * \param[in] x a vector
-      * \param[in] y a vector
       * \return \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
       */
     virtual double localMinQuotient( const VectorOperations &x ) const = 0;
@@ -247,7 +262,6 @@ protected: // Private virtual functions
     /**
       * \brief Return a weighted norm of a vector
       * \param[in] x a vector
-      * \param[in] y a vector
       * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_i \mathit{this}^2_i}{n}}\f]
       */
     virtual double localWrmsNorm( const VectorOperations &x ) const = 0;
@@ -255,7 +269,6 @@ protected: // Private virtual functions
     /**
       * \brief Return a weighted norm of a subset of a vector
       * \param[in] x a vector
-      * \param[in] y a vector
       * \param[in] mask a vector
       * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0}  \mathit{this}^2_iy^2_i}{n}}\f]
       */
@@ -264,6 +277,15 @@ protected: // Private virtual functions
 
 
 public: // Non-virtual functions
+
+    /**
+      * \brief  Determine if two vectors are equal using an absolute tolerance
+      * \param[in] rhs      Vector to compare to
+      * \param[in] tol      Tolerance of comparison
+      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
+      */
+    bool equals( const VectorOperations &rhs, double tol = 0.000001 ) const;
+
 
     /**
       * \brief Returns the minimum of the quotient of two vectors:
@@ -297,10 +319,14 @@ public: // Non-virtual functions
 
 public: // shared_ptr wrappers
    
+    /// @copydoc VectorOperations::equals(const VectorOperations&,double)
+    inline bool equals( AMP::shared_ptr<const VectorOperations> rhs, double tol = 0.000001 );
     /// @copydoc VectorOperations::scale(double,const VectorOperations&)
     inline void scale( double alpha, AMP::shared_ptr<const VectorOperations> x );
     /// @copydoc VectorOperations::add(const VectorOperations&,const VectorOperations&)
     inline void add( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
+    /// @copydoc VectorOperations::addScalar(const VectorOperations&,double)
+    inline void addScalar( AMP::shared_ptr<const VectorOperations> x, double alpha );
     /// @copydoc VectorOperations::subtract(const VectorOperations&,const VectorOperations&)
     inline void subtract( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::multiply(const VectorOperations&,const VectorOperations&)

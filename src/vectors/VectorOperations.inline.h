@@ -42,6 +42,10 @@ inline std::vector<double>& VectorOperations::getGhosts()
 /****************************************************************
 * Wrappers for shared_ptr                                       *
 ****************************************************************/
+inline bool VectorOperations::equals( AMP::shared_ptr<const VectorOperations> x, double tol )
+{
+    return equals( *x, tol );
+}
 inline void VectorOperations::scale( double alpha, AMP::shared_ptr<const VectorOperations> x )
 {
     return scale( alpha, *x );
@@ -49,6 +53,10 @@ inline void VectorOperations::scale( double alpha, AMP::shared_ptr<const VectorO
 inline void VectorOperations::add( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
 {
     return add( *x, *y );
+}
+void VectorOperations::addScalar( AMP::shared_ptr<const VectorOperations> x, double alpha )
+{
+    return addScalar( *x, alpha );
 }
 inline void VectorOperations::subtract( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y )
 {

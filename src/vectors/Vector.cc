@@ -179,8 +179,9 @@ void Vector::copyVector( Vector::const_shared_ptr rhs )
         ++cur1;
         ++cur2;
     }
-    if ( isA<DataChangeFirer>() )
-        castTo<DataChangeFirer>().fireDataChange();
+    auto firer = dynamic_cast<DataChangeFirer*>( this );
+    if ( firer != nullptr )
+        firer->fireDataChange();
     copyGhostValues( rhs );
     // Copy the consistency state from the rhs
     *d_UpdateState = *( rhs->getUpdateStatusPtr() );
@@ -197,38 +198,7 @@ void Vector::setCommunicationList( CommunicationList::shared_ptr comm )
             new std::vector<double>( d_CommList->getVectorReceiveBufferSize() ) );
     }
 }
-bool Vector::equals( Vector const &rhs, double tol ) const
-{
-    int RetVal = 0;
-    if ( ( getGlobalSize() == rhs.getGlobalSize() ) && ( getLocalSize() == rhs.getLocalSize() ) ) {
-        ConstVectorDataIterator cur1 = begin();
-        ConstVectorDataIterator cur2 = rhs.begin();
-        ConstVectorDataIterator last = end();
-        bool failed                  = false;
-        while ( cur1 != last ) {
-            double v1 = *cur1;
-            double v2 = *cur2;
-            if ( fabs( v1 - v2 ) > tol ) {
-                failed = true;
-                break;
-            }
-            ++cur1;
-            ++cur2;
-        }
-        if ( !failed ) {
-            RetVal = 1;
-        }
-    }
 
-    int ans;
-    if ( d_CommList ) {
-        ans = d_CommList->getComm().minReduce( RetVal );
-    } else {
-        ans = RetVal;
-    }
-
-    return ans == 1 ? true : false;
-}
 void Vector::copyGhostValues( const AMP::shared_ptr<const Vector> &rhs )
 {
     if ( getGhostSize() == 0 ) {

@@ -44,23 +44,6 @@ public:
     virtual void swapVectors( Vector & ) override;
     virtual void aliasVector( Vector & ) override;
 
-    virtual void setToScalar( double ) override;
-    virtual void scale( double, const VectorOperations & ) override;
-    virtual void scale( double ) override;
-    virtual void add( const VectorOperations &, const VectorOperations & ) override;
-    virtual void subtract( const VectorOperations &, const VectorOperations & ) override;
-    virtual void multiply( const VectorOperations &, const VectorOperations & ) override;
-    virtual void divide( const VectorOperations &, const VectorOperations & ) override;
-    virtual void reciprocal( const VectorOperations & ) override;
-    virtual void
-    linearSum( double, const VectorOperations &, double, const VectorOperations & ) override;
-    virtual void axpy( double, const VectorOperations &, const VectorOperations & ) override;
-    virtual void axpby( double, double, const VectorOperations & ) override;
-    virtual void abs( const VectorOperations & ) override;
-    virtual double min( void ) const override;
-    virtual double max( void ) const override;
-    virtual void setRandomValues( void ) override;
-    using Vector::setRandomValues;
     virtual void setValuesByLocalID( int, size_t *, const double * ) override;
     virtual void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
     virtual void addValuesByLocalID( int, size_t *, const double * ) override;
@@ -70,10 +53,6 @@ public:
     virtual void makeConsistent( ScatterType ) override;
 
     virtual void assemble() override;
-    virtual double L1Norm( void ) const override;
-    virtual double L2Norm( void ) const override;
-    virtual double maxNorm( void ) const override;
-    virtual double dot( const VectorOperations & ) const override;
 
     virtual void putRawData( const double *in ) override;
     virtual void copyOutRawData( double *out ) const override;

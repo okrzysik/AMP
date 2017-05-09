@@ -179,6 +179,22 @@ public:
      */
     virtual double localDot( const VectorOperations& x ) const override;
 
+    /**
+      * \brief  Determine if the local portion of two vectors are equal using an absolute tolerance
+      * \param[in] rhs      Vector to compare to
+      * \param[in] tol      Tolerance of comparison
+      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
+      */
+    virtual bool localEquals( const VectorOperations &rhs, double tol = 0.000001 ) const override;
+
+    /**
+      * \brief set vector to \f$x + \alpha \bar{1}\f$.
+      * \param[in] x a vector
+      * \param[in] alpha a scalar
+      * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
+      */
+    virtual void addScalar( const VectorOperations &x, double alpha ) override;
+
 
 private:
 
@@ -212,11 +228,13 @@ private:
 
 public: // Pull VectorOperations into the current scope
     using VectorOperations::add;
+    using VectorOperations::addScalar;
     using VectorOperations::abs;
     using VectorOperations::axpy;
     using VectorOperations::axpby;
     using VectorOperations::divide;
     using VectorOperations::dot;
+    using VectorOperations::equals;
     using VectorOperations::linearSum;
     using VectorOperations::minQuotient;
     using VectorOperations::multiply;

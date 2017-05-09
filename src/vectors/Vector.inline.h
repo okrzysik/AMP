@@ -69,10 +69,9 @@ bool Vector::hasView() const
 
 
 /****************************************************************
-* Misc functions                                                *
+* RNG                                                           *
 ****************************************************************/
 inline void Vector::setDefaultRNG( RNG::shared_ptr p ) { d_DefaultRNG = p; }
-
 inline RNG::shared_ptr Vector::getDefaultRNG()
 {
     if ( !d_DefaultRNG ) {
@@ -85,36 +84,17 @@ inline RNG::shared_ptr Vector::getDefaultRNG()
     return d_DefaultRNG;
 }
 
-inline void Vector::requireSameSize( Vector &rhs )
-{
-    if ( rhs.getLocalSize() != getLocalSize() ) {
-        AMP_ERROR( "Vectors are not of compatible size" );
-    }
-    if ( rhs.getGlobalSize() != getGlobalSize() ) {
-        AMP_ERROR( "Vectors are not of compatible size" );
-    }
-}
 
+/****************************************************************
+* Misc functions                                                *
+****************************************************************/
 inline const Variable::shared_ptr Vector::getVariable() const { return d_pVariable; }
-
-inline Variable::shared_ptr Vector::getVariable()
-{
-    return d_pVariable; // Fix this!
-}
-
+inline Variable::shared_ptr Vector::getVariable() { return d_pVariable; }
 inline Vector::shared_ptr Vector::cloneVector() const { return cloneVector( getVariable() ); }
-
 inline void Vector::setVariable( const Variable::shared_ptr name )
 {
     AMP_ASSERT( name.get() != nullptr );
     d_pVariable = name;
-}
-
-inline void Vector::addScalar( const_shared_ptr x, double alpha )
-{
-    Vector::shared_ptr one_vec = cloneVector();
-    one_vec->setToScalar( 1. );
-    axpy( alpha, one_vec, x );
 }
 
 
@@ -122,7 +102,6 @@ inline void Vector::addScalar( const_shared_ptr x, double alpha )
 * Wrappers for shared_ptr                                       *
 ****************************************************************/
 // clang-format off
-inline bool Vector::equals( Vector::const_shared_ptr rhs, double tol ) const { return equals( *rhs, tol ); }
 inline void Vector::swapVectors( shared_ptr other ) { swapVectors( *other ); }
 inline void Vector::aliasVector( shared_ptr other ) { aliasVector( *other ); }
 inline void Vector::addCommunicationListToParameters( CommunicationList::shared_ptr ) {}

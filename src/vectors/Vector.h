@@ -96,18 +96,16 @@ public: // typedefs
       * \code
       void square ( Vector::shared_ptr  vector )
       {
-        Vector::iterator    cur_entry = vector->begin();
-        while ( cur_entry != vector->end() )
-        {
-        (*cur_entry) = (*cur_entry)*(*cur_entry);
-        cur_entry++;
+        auto cur_entry = vector->begin();
+        while ( cur_entry != vector->end() ) {
+          (*cur_entry) = (*cur_entry)*(*cur_entry);
+          cur_entry++;
         }
-        if ( vector->isA<DataChangeFirer>() )
-        {
-        vector->castTo<DataChangeFirer>().fireDataChange();
-        }
+        auto firer = dynamic_cast<DataChangeFirer>vector.get();
+        if ( firer != nullptr )
+            firer->fireDataChange();
       }
-        \endcode
+      \endcode
       */
     typedef VectorDataIterator iterator;
 
@@ -258,20 +256,9 @@ public: // Virtual functions
       */
     virtual AMP_MPI getComm() const;
 
-    /**
-      * \fn equals (Vector & const rhs, double tol )
-      * \brief  Determine if two vectors are equal using an absolute tolerance
-      * \param[in] rhs Vector to compare to
-      * \param[in] tol Tolerance of comparison
-      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
-      */
-    virtual bool equals( Vector const &rhs, double tol = 0.000001 ) const;
 
     /** \brief  Selects a portion of this vector and puts a view into a vector
       * \param[in]  criterion  The method for deciding inclusion in the view
-      * \param[in,out]  vector  The vector to add the view to
-      * \details  vector must be a MultiVector.  The easiest way to ensure this is to
-      * create it with the select method.
       */
     virtual Vector::shared_ptr selectInto( const VectorSelector &criterion );
 
@@ -350,22 +337,6 @@ public: // Non-virtual functions
      */
     void aliasVector( Vector::shared_ptr other );
 
-    /**
-      * \brief set vector to \f$x + \alpha \bar{1}\f$.
-      * \param[in] x a vector
-      * \param[in] alpha a scalar
-      * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
-      */
-    void addScalar( Vector::const_shared_ptr x, double alpha );
-
-    /**
-      * \brief  Determine if two vectors are equal using an absolute tolerance
-      * \param[in] rhs Vector to compare to
-      * \param[in] tol Tolerance of comparison
-      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
-      */
-    bool equals( Vector::const_shared_ptr rhs, double tol = 0.000001 ) const;
-
     /** \brief  If a particular type of view of this Vector has been created,
       * return it.
       * \tparam VIEW_TYPE The type of view to look for
@@ -407,12 +378,6 @@ public: // Non-virtual functions
       */
     void copyGhostValues( const AMP::shared_ptr<const Vector> &rhs );
 
-    /** \brief returns if two vectors are the same length globally and locally, otherwise throws an
-     * exception
-      * \param rhs  Vector to compare with
-      */
-    void requireSameSize( Vector &rhs );
-
     /** \brief Associate the ghost buffer of a Vector with this Vector
       * \param in  The Vector to share a ghost buffer with
       */
@@ -449,11 +414,13 @@ private:
 
 public: // Pull VectorOperations into the current scope
     using VectorOperationsDefault::add;
+    using VectorOperationsDefault::addScalar;
     using VectorOperationsDefault::abs;
     using VectorOperationsDefault::axpy;
     using VectorOperationsDefault::axpby;
     using VectorOperationsDefault::divide;
     using VectorOperationsDefault::dot;
+    using VectorOperationsDefault::equals;
     using VectorOperationsDefault::linearSum;
     using VectorOperationsDefault::minQuotient;
     using VectorOperationsDefault::multiply;

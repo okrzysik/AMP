@@ -134,18 +134,16 @@ public: // Virtual functions
       * \code
       void square ( Vector::shared_ptr  vector )
       {
-        Vector::iterator    cur_entry = vector->begin();
-        while ( cur_entry != vector->end() )
-        {
-        (*cur_entry) = (*cur_entry)*(*cur_entry);
-        cur_entry++;
+        auto cur_entry = vector->begin();
+        while ( cur_entry != vector->end() ) {
+          (*cur_entry) = (*cur_entry)*(*cur_entry);
+          cur_entry++;
         }
-        if ( vector->isA<DataChangeFirer>() )
-        {
-        vector->castTo<DataChangeFirer>().fireDataChange();
-        }
+        auto firer = dynamic_cast<DataChangeFirer>vector.get();
+        if ( firer != nullptr )
+            firer->fireDataChange();
       }
-        \endcode
+      \endcode
       */
     virtual VectorDataIterator begin();
 
@@ -173,18 +171,16 @@ public: // Virtual functions
       * \code
       void square ( Vector::shared_ptr  vector )
       {
-        Vector::iterator    cur_entry = vector->begin();
-        while ( cur_entry != vector->end() )
-        {
-        (*cur_entry) = (*cur_entry)*(*cur_entry);
-        cur_entry++;
+        auto cur_entry = vector->begin();
+        while ( cur_entry != vector->end() ) {
+          (*cur_entry) = (*cur_entry)*(*cur_entry);
+          cur_entry++;
         }
-        if ( vector->isA<DataChangeFirer>() )
-        {
-        vector->castTo<DataChangeFirer>().fireDataChange();
-        }
+        auto firer = dynamic_cast<DataChangeFirer>vector.get();
+        if ( firer != nullptr )
+            firer->fireDataChange();
       }
-        \endcode
+      \endcode
       */
     virtual VectorDataIterator end();
 

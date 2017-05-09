@@ -26,18 +26,6 @@ namespace LinearAlgebra {
   *  -# Provides a Thyra Vector for derived classes to use, fill, manage, etc.
   *  -# Provides an interface for accessing this Thyra Vector independent of derived classes
   *  -# Provides a static method for creating a Thyra view of an AMP Vector.
-  *
-  *  This allows the Castable class to be used to verify correctness of code.  For instance,
-  *  given a Vector shared pointer, it is possible to get the Thyra Vector safely thusly
-  \code
-     Vector::shared_ptr  vector;
-     vector->castTo<ThyraVector>().getVec();
-  \endcode
-  *  The castTo ensures that the Thyra Vector exists.  If the Vec does not exist, the castTo will
-  *  throw an error.  If, on the other hand, you have an arbitrary AMP Vector that may
-  *  or may not have a Thyra Vector associated with it, you can use the static members
-  *  ThyraVector::view or ThyraVector::constView
-  *  to create the Thyra Vector if it doesn't already exist, give or take some edge cases.
   */
 class ThyraVector : public DataChangePassThrough
 {

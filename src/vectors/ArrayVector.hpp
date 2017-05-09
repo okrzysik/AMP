@@ -419,15 +419,12 @@ double ArrayVector<T, FUN, Allocator>::dot( const VectorOperations &x ) const
 }
 
 template <typename T, typename FUN, typename Allocator>
-bool ArrayVector<T, FUN, Allocator>::equals( Vector const &x, double tol ) const
+bool ArrayVector<T, FUN, Allocator>::localEquals( const VectorOperations &x, double tol ) const
 {
     const auto &xa = dynamic_cast<const ArrayVector<T, FUN, Allocator> &>(x);
     const auto &xarray = xa.getArray();
     const auto &array = this->getArray();
-
-    auto local_eq = array.equals(xarray, tol);
-    auto global_eq = d_comm.allReduce(local_eq);
-    return global_eq;
+    return array.equals(xarray, tol);
 }
 
 template <typename T, typename FUN, typename Allocator>

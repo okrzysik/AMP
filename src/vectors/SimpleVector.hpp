@@ -128,11 +128,10 @@ template <typename T>
 double SimpleVector<T>::dot( const VectorOperations &rhs ) const
 {
     AMP_ASSERT( getLocalSize() > 0 );
-    AMP_ASSERT( getLocalSize() == rhs.castTo<Vector>().getLocalSize() );
+    AMP_ASSERT( getLocalSize() == rhs.getVectorData()->getLocalSize() );
     const_iterator a     = begin();
-    const_iterator b     = rhs.castTo<Vector>().begin();
+    const_iterator b     = rhs.getVectorData()->begin();
     const_iterator a_end = end();
-    // const_iterator b_end = rhs.castTo<Vector>().end();
     double ans = 0;
     while ( a != a_end ) {
         ans += static_cast<double>( *a * *b );
@@ -202,7 +201,7 @@ void SimpleVector<T>::scale( double alpha, const VectorOperations &x )
     auto alpha_T = static_cast<T>( alpha );
 
     iterator cur        = begin();
-    const_iterator curx = x.castTo<Vector>().begin();
+    const_iterator curx = x.getVectorData()->begin();
     while ( cur != end() ) {
         ( *cur ) = alpha_T * static_cast<T>( ( *curx ) );
         ++cur;
@@ -223,11 +222,9 @@ void SimpleVector<T>::scale( double alpha )
 template <typename T>
 void SimpleVector<T>::add( const VectorOperations &x, const VectorOperations &y )
 {
-    const_iterator curx, cury;
-    iterator cur;
-    curx = x.castTo<Vector>().begin();
-    cury = y.castTo<Vector>().begin();
-    cur  = begin();
+    auto curx = x.getVectorData()->begin();
+    auto cury = y.getVectorData()->begin();
+    auto cur  = begin();
     while ( cur != end() ) {
         ( *cur ) = static_cast<T>( *curx ) + static_cast<T>( *cury );
         ++curx;
@@ -239,11 +236,9 @@ void SimpleVector<T>::add( const VectorOperations &x, const VectorOperations &y 
 template <typename T>
 void SimpleVector<T>::subtract( const VectorOperations &x, const VectorOperations &y )
 {
-    const_iterator curx, cury;
-    iterator cur;
-    curx = x.castTo<Vector>().begin();
-    cury = y.castTo<Vector>().begin();
-    cur  = begin();
+    auto curx = x.getVectorData()->begin();
+    auto cury = y.getVectorData()->begin();
+    auto cur  = begin();
     while ( cur != end() ) {
         ( *cur ) = static_cast<T>( *curx ) - static_cast<T>( *cury );
         ++curx;
@@ -255,11 +250,9 @@ void SimpleVector<T>::subtract( const VectorOperations &x, const VectorOperation
 template <typename T>
 void SimpleVector<T>::multiply( const VectorOperations &x, const VectorOperations &y )
 {
-    const_iterator curx, cury;
-    iterator cur;
-    curx = x.castTo<Vector>().begin();
-    cury = y.castTo<Vector>().begin();
-    cur  = begin();
+    auto curx = x.getVectorData()->begin();
+    auto cury = y.getVectorData()->begin();
+    auto cur  = begin();
     while ( cur != end() ) {
         ( *cur ) = static_cast<T>( *curx ) * static_cast<T>( *cury );
         ++curx;
@@ -271,11 +264,9 @@ void SimpleVector<T>::multiply( const VectorOperations &x, const VectorOperation
 template <typename T>
 void SimpleVector<T>::divide( const VectorOperations &x, const VectorOperations &y )
 {
-    const_iterator curx, cury;
-    iterator cur;
-    curx = x.castTo<Vector>().begin();
-    cury = y.castTo<Vector>().begin();
-    cur  = begin();
+    auto curx = x.getVectorData()->begin();
+    auto cury = y.getVectorData()->begin();
+    auto cur  = begin();
     while ( cur != end() ) {
         ( *cur ) = static_cast<T>( *curx ) / static_cast<T>( *cury );
         ++curx;
@@ -287,8 +278,8 @@ void SimpleVector<T>::divide( const VectorOperations &x, const VectorOperations 
 template <typename T>
 void SimpleVector<T>::reciprocal( const VectorOperations &x )
 {
-    iterator cur        = begin();
-    const_iterator curx = x.castTo<Vector>().begin();
+    auto cur  = begin();
+    auto curx = x.getVectorData()->begin();
     while ( cur != end() ) {
         ( *cur ) = 1. / static_cast<T>( *curx );
         ++cur;
@@ -302,11 +293,9 @@ void SimpleVector<T>::linearSum( double alpha,
                                  double beta,
                                  const VectorOperations &y )
 {
-    const_iterator curx, cury;
-    iterator cur;
-    curx         = x.castTo<Vector>().begin();
-    cury         = y.castTo<Vector>().begin();
-    cur          = begin();
+    auto curx    = x.getVectorData()->begin();
+    auto cury    = y.getVectorData()->begin();
+    auto cur     = begin();
     auto alpha_T = static_cast<T>( alpha );
     auto beta_T  = static_cast<T>( beta );
     while ( cur != end() ) {
@@ -320,12 +309,10 @@ void SimpleVector<T>::linearSum( double alpha,
 template <typename T>
 void SimpleVector<T>::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
 {
-    const_iterator curx, cury;
-    iterator cur;
     auto alpha_T = static_cast<T>( alpha );
-    curx         = x.castTo<Vector>().begin();
-    cury         = y.castTo<Vector>().begin();
-    cur          = begin();
+    auto curx    = x.getVectorData()->begin();
+    auto cury    = y.getVectorData()->begin();
+    auto cur     = begin();
     while ( cur != end() ) {
         ( *cur ) = alpha_T * static_cast<T>( *curx ) + static_cast<T>( *cury );
         ++curx;
@@ -337,12 +324,10 @@ void SimpleVector<T>::axpy( double alpha, const VectorOperations &x, const Vecto
 template <typename T>
 void SimpleVector<T>::axpby( double alpha, double beta, const VectorOperations &x )
 {
-    const_iterator curx;
-    iterator cur;
     auto alpha_T = static_cast<T>( alpha );
     auto beta_T  = static_cast<T>( beta );
-    curx         = x.castTo<Vector>().begin();
-    cur          = begin();
+    auto curx    = x.getVectorData()->begin();
+    auto cur     = begin();
     while ( cur != end() ) {
         ( *cur ) = alpha_T * static_cast<T>( *curx ) + beta_T * static_cast<T>( *cur );
         ++curx;
@@ -353,8 +338,8 @@ void SimpleVector<T>::axpby( double alpha, double beta, const VectorOperations &
 template <typename T>
 void SimpleVector<T>::abs( const VectorOperations &x )
 {
-    iterator cur        = begin();
-    const_iterator curx = x.castTo<Vector>().begin();
+    auto  cur  = begin();
+    auto  curx = x.castTo<Vector>().begin();
     while ( cur != end() ) {
         ( *cur ) = fabs( static_cast<T>( *curx ) );
         ++cur;

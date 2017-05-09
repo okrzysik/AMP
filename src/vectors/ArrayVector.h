@@ -370,7 +370,7 @@ public:
       * \param[in] tol Tolerance of comparison
       * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
       */
-    bool equals( Vector const &rhs, double tol = 0.000001 ) const override;
+    bool localEquals( const VectorOperations &rhs, double tol = 0.000001 ) const override;
 
 protected:
 

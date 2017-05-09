@@ -20,6 +20,20 @@ static inline double *getBufferPtr( VectorEngine::BufferPtr buf )
 }
 
 
+static inline Epetra_Vector& getEpetraVector( VectorOperations& vec )
+{
+    auto epetra = dynamic_cast<EpetraVectorEngine*>( &vec );
+    AMP_INSIST( epetra != nullptr, "Not an EpetraVectorEngine" );
+    return epetra->getEpetra_Vector();
+}
+static inline const Epetra_Vector& getEpetraVector( const VectorOperations& vec )
+{
+    auto epetra = dynamic_cast<const EpetraVectorEngine*>( &vec );
+    AMP_INSIST( epetra != nullptr, "Not an EpetraVectorEngine" );
+    return epetra->getEpetra_Vector();
+}
+
+
 /********************************************************
 * EpetraVectorEngineParameters constructors             *
 ********************************************************/
@@ -81,7 +95,9 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
 ********************************************************/
 EpetraVectorEngine::EpetraVectorEngine( VectorEngineParameters::shared_ptr alias, BufferPtr buf )
     : d_epetraVector(
-          View, alias->castTo<EpetraVectorEngineParameters>().getEpetraMap(), getBufferPtr( buf ) ),
+          View, 
+          dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(), 
+          getBufferPtr( buf ) ),
       d_iLocalSize( 0 ),
       d_iGlobalSize( 0 )
 {
@@ -101,8 +117,8 @@ void EpetraVectorEngine::swapEngines( VectorEngine::shared_ptr x )
     double *my_pointer;
     double *oth_pointer;
     getEpetra_Vector().ExtractView( &my_pointer );
-    x->castTo<EpetraVectorEngine>().getEpetra_Vector().ExtractView( &oth_pointer );
-    x->castTo<EpetraVectorEngine>().getEpetra_Vector().ResetView( my_pointer );
+    getEpetraVector( *x ).ExtractView( &oth_pointer );
+    getEpetraVector( *x ).ResetView( my_pointer );
     getEpetra_Vector().ResetView( oth_pointer );
 }
 
@@ -113,7 +129,7 @@ void EpetraVectorEngine::setToScalar( const double alpha )
 
 void EpetraVectorEngine::scale( double alpha, const VectorOperations &x )
 {
-    getEpetra_Vector().Scale( alpha, x.castTo<EpetraVectorEngine>().getEpetra_Vector() );
+    getEpetra_Vector().Scale( alpha, getEpetraVector( x ) );
 }
 
 void EpetraVectorEngine::scale( double alpha ) { getEpetra_Vector().Scale( alpha ); }
@@ -125,41 +141,28 @@ VectorEngine::shared_ptr EpetraVectorEngine::cloneEngine( BufferPtr p ) const
 
 void EpetraVectorEngine::add( const VectorOperations &x, const VectorOperations &y )
 {
-    getEpetra_Vector().Update( 1.,
-                               x.castTo<EpetraVectorEngine>().getEpetra_Vector(),
-                               1.,
-                               y.castTo<EpetraVectorEngine>().getEpetra_Vector(),
+    getEpetra_Vector().Update( 1., getEpetraVector( x ), 1., getEpetraVector( y ),
                                0. );
 }
 
 void EpetraVectorEngine::subtract( const VectorOperations &x, const VectorOperations &y )
 {
-    getEpetra_Vector().Update( 1.,
-                               x.castTo<EpetraVectorEngine>().getEpetra_Vector(),
-                               -1.,
-                               y.castTo<EpetraVectorEngine>().getEpetra_Vector(),
-                               0. );
+    getEpetra_Vector().Update( 1., getEpetraVector( x ), -1., getEpetraVector( y ), 0. );
 }
 
 void EpetraVectorEngine::multiply( const VectorOperations &x, const VectorOperations &y )
 {
-    getEpetra_Vector().Multiply( 1.,
-                                 x.castTo<EpetraVectorEngine>().getEpetra_Vector(),
-                                 y.castTo<EpetraVectorEngine>().getEpetra_Vector(),
-                                 0. );
+    getEpetra_Vector().Multiply( 1., getEpetraVector( x ), getEpetraVector( y ), 0. );
 }
 
 void EpetraVectorEngine::divide( const VectorOperations &x, const VectorOperations &y )
 {
-    getEpetra_Vector().ReciprocalMultiply( 1.,
-                                           y.castTo<EpetraVectorEngine>().getEpetra_Vector(),
-                                           x.castTo<EpetraVectorEngine>().getEpetra_Vector(),
-                                           0. );
+    getEpetra_Vector().ReciprocalMultiply( 1., getEpetraVector( y ), getEpetraVector( x ), 0. );
 }
 
 void EpetraVectorEngine::reciprocal( const VectorOperations &x )
 {
-    getEpetra_Vector().Reciprocal( x.castTo<EpetraVectorEngine>().getEpetra_Vector() );
+    getEpetra_Vector().Reciprocal( getEpetraVector( x ) );
 }
 
 void EpetraVectorEngine::linearSum( double alpha,
@@ -167,11 +170,7 @@ void EpetraVectorEngine::linearSum( double alpha,
                                     double beta,
                                     const VectorOperations &y )
 {
-    getEpetra_Vector().Update( alpha,
-                               x.castTo<EpetraVectorEngine>().getEpetra_Vector(),
-                               beta,
-                               y.castTo<EpetraVectorEngine>().getEpetra_Vector(),
-                               0. );
+    getEpetra_Vector().Update( alpha, getEpetraVector( x ), beta, getEpetraVector( y ), 0. );
 }
 
 void EpetraVectorEngine::axpy( double alpha, const VectorOperations &x, const VectorOperations &y )
@@ -186,7 +185,7 @@ void EpetraVectorEngine::axpby( double alpha, double beta, const VectorOperation
 
 void EpetraVectorEngine::abs( const VectorOperations &x )
 {
-    getEpetra_Vector().Abs( x.castTo<EpetraVectorEngine>().getEpetra_Vector() );
+    getEpetra_Vector().Abs( getEpetraVector( x ) );
 }
 
 double EpetraVectorEngine::min( void ) const
@@ -287,7 +286,7 @@ double EpetraVectorEngine::maxNorm( void ) const
 double EpetraVectorEngine::dot( const VectorOperations &x ) const
 {
     double retVal;
-    getEpetra_Vector().Dot( x.castTo<EpetraVectorEngine>().getEpetra_Vector(), &retVal );
+    getEpetra_Vector().Dot( getEpetraVector( x ), &retVal );
     return retVal;
 }
 

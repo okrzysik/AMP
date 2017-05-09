@@ -94,6 +94,20 @@ double VectorOperations::wrmsNormMask( const VectorOperations &x,
     return ans;
 }
 
+
+/****************************************************************
+* equals                                                        *
+* Note: these routines require communication                    *
+****************************************************************/
+bool VectorOperations::equals( const VectorOperations &rhs, double tol ) const
+{
+    bool equal = localEquals( rhs, tol );
+    if ( hasComm() )
+        equal = getComm().allReduce( equal );
+    return equal;
+}
+
+
 } // LinearAlgebra namespace
 } // AMP namespace
 

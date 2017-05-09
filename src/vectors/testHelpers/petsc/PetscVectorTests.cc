@@ -14,6 +14,14 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
+static inline Vec getVec( AMP::LinearAlgebra::Vector::shared_ptr vector )
+{
+    auto petsc = dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( vector );
+    AMP_ASSERT( petsc != nullptr );
+    return petsc->getVec();
+}
+
+
 void checkPetscError( AMP::UnitTest *utils, PetscErrorCode i )
 {
     if ( i ) {
@@ -76,8 +84,8 @@ void PetscVectorTests::Bug_612( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getManagedVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getManagedVector() );
 
-    Vec veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    Vec vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    Vec veca = getVec( vectora );
+    Vec vecb = getVec( vectorb );
 
     vectora->setToScalar( 5.0 );
     vectorb->setToScalar( 0.0 );
@@ -117,7 +125,7 @@ void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
 
     vectora->setVariable( AMP::LinearAlgebra::Variable::shared_ptr(
         new AMP::LinearAlgebra::Variable( "dummy_variable" ) ) );
-    Vec petsc_vec = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    Vec petsc_vec = getVec( vectora );
     Vec another_vec;
     checkPetscError( utils, VecDuplicate( petsc_vec, &another_vec ) );
     AMP::LinearAlgebra::ManagedPetscVector *dup =
@@ -230,14 +238,12 @@ void PetscVectorTests::VerifyPointwiseMaxAbsPetscVector( AMP::UnitTest *utils )
     vectord->copyVector( vectora );
     vectore->setToScalar( .65 );
 
-    Vec veca, vecb, vecc, vecd, vece, vecf;
-
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecd = vectord->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vece = vectore->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecf = vectorf->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
+    auto vecc = getVec( vectorc );
+    auto vecd = getVec( vectord );
+    auto vece = getVec( vectore );
+    auto vecf = getVec( vectorf );
 
     checkPetscError( utils, VecPointwiseMaxAbs( vecc, veca, vecb ) );
     checkPetscError( utils, VecPointwiseMaxAbs( vecf, vecd, vece ) );
@@ -265,14 +271,12 @@ void PetscVectorTests::VerifyPointwiseMaxPetscVector( AMP::UnitTest *utils )
     vectord->copyVector( vectora );
     vectore->setToScalar( .35 );
 
-    Vec veca, vecb, vecc, vecd, vece, vecf;
-
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecd = vectord->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vece = vectore->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecf = vectorf->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
+    auto vecc = getVec( vectorc );
+    auto vecd = getVec( vectord );
+    auto vece = getVec( vectore );
+    auto vecf = getVec( vectorf );
 
     checkPetscError( utils, VecPointwiseMax( vecc, veca, vecb ) );
     checkPetscError( utils, VecPointwiseMax( vecf, vecd, vece ) );
@@ -300,14 +304,12 @@ void PetscVectorTests::VerifyPointwiseMinPetscVector( AMP::UnitTest *utils )
     vectord->copyVector( vectora );
     vectore->setToScalar( .35 );
 
-    Vec veca, vecb, vecc, vecd, vece, vecf;
-
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecd = vectord->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vece = vectore->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecf = vectorf->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
+    auto vecc = getVec( vectorc );
+    auto vecd = getVec( vectord );
+    auto vece = getVec( vectore );
+    auto vecf = getVec( vectorf );
 
     checkPetscError( utils, VecPointwiseMin( vecc, veca, vecb ) );
     checkPetscError( utils, VecPointwiseMin( vecf, vecd, vece ) );
@@ -337,19 +339,15 @@ void PetscVectorTests::VerifyAXPBYPCZPetscVector( AMP::UnitTest *utils )
     vectore->setToScalar( -.5 );
     vectorf->setToScalar( 3.45678 );
 
-    Vec veca, vecb, vecc, vecd, vece, vecf;
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
+    auto vecc = getVec( vectorc );
+    auto vecd = getVec( vectord );
+    auto vece = getVec( vectore );
+    auto vecf = getVec( vectorf );
 
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecd = vectord->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vece = vectore->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecf = vectorf->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-
-    checkPetscError( utils,
-                                     VecAXPBYPCZ( veca, 3.14159, 1.414, 2.1727, vecb, vecc ) );
-    checkPetscError( utils,
-                                     VecAXPBYPCZ( vecd, 3.14159, 1.414, 2.1727, vece, vecf ) );
+    checkPetscError( utils, VecAXPBYPCZ( veca, 3.14159, 1.414, 2.1727, vecb, vecc ) );
+    checkPetscError( utils, VecAXPBYPCZ( vecd, 3.14159, 1.414, 2.1727, vece, vecf ) );
 
     if ( vectora->equals( vectord ) )
         utils->passes( "VecAXPBYPCZ test" );
@@ -372,12 +370,10 @@ void PetscVectorTests::VerifyAYPXPetscVector( AMP::UnitTest *utils )
     vectorc->copyVector( vectora );
     vectord->copyVector( vectorb );
 
-    Vec veca, vecb, vecc, vecd;
-
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecd = vectord->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
+    auto vecc = getVec( vectorc );
+    auto vecd = getVec( vectord );
 
     checkPetscError( utils, VecAYPX( veca, 2, vecb ) );
     checkPetscError( utils, VecAYPX( vecc, 2, vecd ) );
@@ -399,10 +395,8 @@ void PetscVectorTests::VerifyExpPetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectorb = d_factory->getManagedVector();
     vectorb->copyVector( vectora );
 
-    Vec veca, vecb;
-
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
 
     checkPetscError( utils, VecExp( veca ) );
     checkPetscError( utils, VecExp( vecb ) );
@@ -424,10 +418,8 @@ void PetscVectorTests::VerifyLogPetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectorb = d_factory->getManagedVector();
     vectorb->copyVector( vectora );
 
-    Vec veca, vecb;
-
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
 
     checkPetscError( utils, VecLog( veca ) );
     checkPetscError( utils, VecLog( vecb ) );
@@ -442,8 +434,7 @@ void PetscVectorTests::VerifyLogPetscVector( AMP::UnitTest *utils )
 void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
-    Vec veca;
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
 
     vectora->setRandomValues();
     double l1norm_a1, l1norm_a2;
@@ -475,8 +466,7 @@ void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *utils )
     vectorc->copyVector( vectora );
 
 
-    Vec vecc;
-    vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto vecc = getVec( vectorc );
     double l1norm_c1, l1norm_c2;
     double l2norm_c1, l2norm_c2;
     double infnorm_c1, infnorm_c2;
@@ -568,12 +558,10 @@ void PetscVectorTests::VerifyAXPBYPetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectord = d_factory->getManagedVector();
     vectord->copyVector( vectorb );
 
-
-    Vec veca, vecb, vecc, vecd;
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecd = vectord->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
+    auto vecc = getVec( vectorc );
+    auto vecd = getVec( vectord );
 
     checkPetscError( utils, VecAXPBY( veca, 1.234, 2.345, vecb ) );
     checkPetscError( utils, VecAXPBY( vecc, 1.234, 2.345, vecd ) );
@@ -607,10 +595,9 @@ void PetscVectorTests::VerifySwapPetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectord( d_factory->getNativeVector() );
-    Vec veca, vecb;
 
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
 
     vectora->setRandomValues();
     vectorb->setToScalar( 99. );
@@ -638,9 +625,8 @@ void PetscVectorTests::VerifySwapPetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectorg = d_factory->getManagedVector();
     AMP::LinearAlgebra::Vector::shared_ptr vectorh = d_factory->getManagedVector();
 
-    Vec vece, vecf;
-    vece = vectore->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecf = vectorf->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto vece = getVec( vectore );
+    auto vecf = getVec( vectorf );
     vectore->setRandomValues();
     vectorf->setToScalar( 99. );
     vectorg->copyVector( vectore );
@@ -671,9 +657,8 @@ void PetscVectorTests::VerifyGetSizePetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb = d_factory->getManagedVector();
 
-    Vec veca, vecb;
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
 
     int sizea1, sizea2, sizeb1, sizeb2;
     sizea1 = vectora->getGlobalSize();
@@ -707,11 +692,10 @@ void PetscVectorTests::VerifyMaxPointwiseDividePetscVector( AMP::UnitTest *utils
     AMP::LinearAlgebra::Vector::shared_ptr vectord = d_factory->getManagedVector();
     vectord->copyVector( vectorb );
 
-    Vec veca, vecb, vecc, vecd;
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecd = vectord->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
+    auto vecc = getVec( vectorc );
+    auto vecd = getVec( vectord );
 
     double ans1, ans2;
 
@@ -729,9 +713,8 @@ void PetscVectorTests::VerifyAbsPetscVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
-    Vec veca, vecb;
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
     if ( !veca || !vecb )
         utils->failure( "PETSC abs create" );
 
@@ -749,9 +732,8 @@ void PetscVectorTests::VerifyAbsPetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectorc = d_factory->getManagedVector();
     AMP::LinearAlgebra::Vector::shared_ptr vectord = d_factory->getManagedVector();
 
-    Vec vecc, vecd;
-    vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecd = vectord->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto vecc = getVec( vectorc );
+    auto vecd = getVec( vectord );
     if ( !vecc || !vecd )
         utils->failure( "PETSC abs create" );
 
@@ -782,9 +764,8 @@ void PetscVectorTests::VerifyPointwiseMultPetscVector( AMP::UnitTest *utils )
     vectorc->copyVector( vectora );
     vectord->copyVector( vectorb );
 
-    Vec veca, vecb;
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
 
     checkPetscError( utils, VecPointwiseMult( veca, veca, vecb ) );
     vectorc->multiply( vectorc, vectord );
@@ -805,9 +786,8 @@ void PetscVectorTests::VerifyPointwiseMultPetscVector( AMP::UnitTest *utils )
     vectorg->copyVector( vectore );
     vectorh->copyVector( vectorf );
 
-    Vec vece, vecf;
-    vece = vectore->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecf = vectorf->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto vece = getVec( vectore );
+    auto vecf = getVec( vectorf );
 
     checkPetscError( utils, VecPointwiseMult( vece, vece, vecf ) );
     vectorg->multiply( vectorg, vectorh );
@@ -831,9 +811,8 @@ void PetscVectorTests::VerifyPointwiseDividePetscVector( AMP::UnitTest *utils )
     vectorc->copyVector( vectora );
     vectord->copyVector( vectorb );
 
-    Vec veca, vecb;
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
 
     checkPetscError( utils, VecPointwiseDivide( veca, veca, vecb ) );
     vectorc->divide( vectorc, vectord );
@@ -853,9 +832,8 @@ void PetscVectorTests::VerifyPointwiseDividePetscVector( AMP::UnitTest *utils )
     vectorg->copyVector( vectore );
     vectorh->copyVector( vectorf );
 
-    Vec vece, vecf;
-    vece = vectore->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecf = vectorf->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto vece = getVec( vectore );
+    auto vecf = getVec( vectorf );
 
     checkPetscError( utils, VecPointwiseDivide( vece, vece, vecf ) );
     vectorg->divide( vectorg, vectorh );
@@ -877,9 +855,8 @@ void PetscVectorTests::VerifySqrtPetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getManagedVector() );
     vectorb->copyVector( vectora );
 
-    Vec veca, vecb;
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
     checkPetscError( utils, VecSqrt( veca ) );
     checkPetscError( utils, VecSqrt( vecb ) );
@@ -902,9 +879,8 @@ void PetscVectorTests::VerifySetRandomPetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getManagedVector() );
 
-    Vec veca, vecb;
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
 
     vectora->setToScalar( 10.0 );
     vectorb->setToScalar( 10.0 );
@@ -943,9 +919,8 @@ void PetscVectorTests::VerifySetPetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getManagedVector() );
 
-    Vec veca, vecb;
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
 
     checkPetscError( utils, VecSet( veca, 2.0 ) );
     checkPetscError( utils, VecSet( vecb, 3.0 ) );
@@ -982,11 +957,10 @@ void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectora_orig( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb2( d_factory->getNativeVector() );
-    Vec veca, vecb, veca2, veca_orig;
-    veca      = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    veca2     = vectora2->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    veca_orig = vectora_orig->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb      = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
+    auto veca2 = getVec( vectora2 );
+    auto veca_orig = getVec( vectora_orig );
     if ( !veca || !vecb || !veca || !veca_orig )
         utils->failure( "PETSc AXPY create" );
 
@@ -1020,11 +994,10 @@ void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *utils )
     vectord->copyVector( vectorb );
     vectord2->copyVector( vectorb2 );
 
-    Vec vecc, vecd, vecc2, vecd2;
-    vecc  = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecc2 = vectorc2->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecd  = vectord->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecd2 = vectord2->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto vecc = getVec( vectorc );
+    auto vecd = getVec( vectord );
+    auto vecc2 = getVec( vectorc2 );
+    auto vecd2 = getVec( vectord2 );
     checkPetscError( utils, VecAXPY( vecc, 1.23456, vecd ) );
     vectorc2->axpy( 1.23456, vectord2, vectorc2 );
     if ( !vecc || !vecd || !vecc2 || !vecd2 )
@@ -1063,10 +1036,9 @@ void PetscVectorTests::VerifyScalePetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectora2( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
-    Vec veca, vecb, veca2;
-    veca  = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    veca2 = vectora2->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb  = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
+    auto veca2 = getVec( vectora2 );
     if ( !veca || !veca2 || !vecb )
         utils->failure( "PETSc scale create" );
 
@@ -1098,8 +1070,7 @@ void PetscVectorTests::VerifyScalePetscVector( AMP::UnitTest *utils )
     vectorc->copyVector( vectora );
     vectord->copyVector( vectora );
 
-    Vec vecc;
-    vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto vecc = getVec( vectorc );
     double norm3, norm4;
     checkPetscError( utils, VecScale( vecc, 1.23456 ) );
     norm3 = vectorc->L2Norm();
@@ -1120,9 +1091,8 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getNativeVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getNativeVector() );
-    Vec veca, vecb;
-    veca = vectora->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecb = vectorb->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto veca = getVec( vectora );
+    auto vecb = getVec( vectorb );
 
     vectora->setRandomValues();
     vectorb->setRandomValues();
@@ -1143,9 +1113,8 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectord = d_factory->getManagedVector();
     vectorc->copyVector( vectora );
     vectord->copyVector( vectorb );
-    Vec vecc, vecd;
-    vecc = vectorc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecd = vectord->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto vecc = getVec( vectorc );
+    auto vecd = getVec( vectord );
     double dot3, dot4;
     checkPetscError( utils, VecDot( vecc, vecd, &dot3 ) );
     dot4 = vectorc->dot( vectord );
@@ -1162,9 +1131,8 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectorf = d_factory->getManagedVector();
     vectore->copyVector( vectora );
     vectorf->copyVector( vectorb );
-    Vec vece, vecf;
-    vece = vectore->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    vecf = vectorf->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto vece = getVec( vectore );
+    auto vecf = getVec( vectorf );
     double dot5, dot6;
     checkPetscError( utils, VecDot( vece, vecf, &dot5 ) );
     dot6 = vectore->dot( vectorf );

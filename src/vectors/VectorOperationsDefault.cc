@@ -10,6 +10,26 @@ namespace LinearAlgebra {
 /****************************************************************
 * min, max, norms, etc.                                         *
 ****************************************************************/
+bool VectorOperationsDefault::localEquals( const VectorOperations &rhs, double tol ) const
+{
+    const auto& x = *d_VectorData;
+    const auto& y = *rhs.getVectorData();
+    if ( ( x.getGlobalSize() != y.getGlobalSize() ) || ( x.getLocalSize() != y.getLocalSize() ) )
+        return false;
+    bool equal = true;
+    auto cur1 = x.begin();
+    auto cur2 = y.begin();
+    auto last = x.end();
+    while ( cur1 != last ) {
+        if ( fabs( *cur1 - *cur2 ) > tol ) {
+            equal = false;
+            break;
+        }
+        ++cur1;
+        ++cur2;
+    }
+    return equal;
+}
 double VectorOperationsDefault::localMin( void ) const
 {
     size_t N_blocks = d_VectorData->numberOfDataBlocks();
@@ -353,6 +373,19 @@ void VectorOperationsDefault::abs( const VectorOperations &x )
     auto curXRhs = x.getVectorData()->begin();
     while ( curMe != last ) {
         *curMe = fabs( *curXRhs );
+        ++curXRhs;
+        ++curMe;
+    }
+    d_VectorData->dataChanged();
+}
+void VectorOperationsDefault::addScalar( const VectorOperations &x, double alpha )
+{
+    AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
+    auto curMe = d_VectorData->begin();
+    auto last  = d_VectorData->end();
+    auto curXRhs = x.getVectorData()->begin();
+    while ( curMe != last ) {
+        *curMe = *curXRhs + alpha;
         ++curXRhs;
         ++curMe;
     }
