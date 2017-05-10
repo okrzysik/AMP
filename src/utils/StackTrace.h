@@ -71,7 +71,7 @@ std::string signalName( int signal );
 
 /*!
  * Return the symbols from the current executable (not availible for all platforms)
- * @return      Returns 0 if sucessful
+ * @return              Returns 0 if sucessful
  */
 int getSymbols(
     std::vector<void *> &address, std::vector<char> &type, std::vector<std::string> &obj );
@@ -86,7 +86,7 @@ std::string getExecutable();
 
 /*!
  * Return the search path for the symbols
- * @return      Returns the search path for the symbols
+ * @return              Returns the search path for the symbols
  */
 std::string getSymPaths();
 
@@ -96,14 +96,15 @@ enum class terminateType { signal, exception };
 
 /*!
  * Set the error handlers
- * @param[in]   Function to terminate the program: abort(msg,type)
+ * @param[in] abort     Function to terminate the program: abort(msg,type)
  */
 void setErrorHandlers( std::function<void( std::string, terminateType )> abort );
 
 
 /*!
  * Set the given signals to the handler
- * @param[in]   Function to terminate the program: abort(msg,type)
+ * @param[in] signals   List of signals to set
+ * @param[in] handler   Function to handle signals
  */
 void setSignals( const std::vector<int>& signals, void (*handler) (int) );
 

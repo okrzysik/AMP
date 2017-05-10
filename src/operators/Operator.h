@@ -73,10 +73,10 @@ public:
      * might be used would be the construction of Jacobian, frozen Jacobian,
      * preconditioner approximations to the Jacobian, adjoint operators etc
      * \param type: std:string specifying type of return operator parameters
-     * being requested. Currently the valid option is Jacobian
+     *      being requested. Currently the valid option is Jacobian
      * \param u: const pointer to current solution vector
      * \param params: pointer to additional parameters that might be required
-     * to construct the return parameters
+     *      to construct the return parameters
      */
     virtual AMP::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,

@@ -32,17 +32,9 @@ public:
 
     virtual ~ColumnBoundaryOperator() {}
 
-    /**
-     * The apply routine for the column operator calls apply on each of the component operators
-     */
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
-    /**
-      A function for computing the information necessary to construct the jacobian.
-      @param u The solution vector that is used to construct the jacobian
-      @return The parameters required to construct the jacobian.
-      */
     AMP::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,

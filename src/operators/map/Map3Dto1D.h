@@ -36,12 +36,6 @@ public:
      */
     void reset( const AMP::shared_ptr<OperatorParameters> & ) override;
 
-    /**
-      For this operator the apply function would map the solution by interpolation from
-      NodalScalar Vector in u to Simple Vector in r.
-      @param [in]  u input vector.
-      @param [out] r output vector.
-     */
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 

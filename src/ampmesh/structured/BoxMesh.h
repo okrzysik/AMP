@@ -359,6 +359,7 @@ public: // BoxMesh specific functionality
      * \brief    Return the element containing the point
      * \details  This function queries the mesh to get the element index given a logical point
      * \param[in] x         Logical coordinates in [0,1]
+     * \param type          Geometric type to get
      * @return              Returns the element containing the logical point.
      *                      Note: it will return a null index (isNull) if no element of
      *                      the given type contains the point.
@@ -370,6 +371,7 @@ public: // BoxMesh specific functionality
      * \details  This function queries the mesh to get the element index given a physical point.
      *    This functionallity requires physicalToLogical which may not be supported by all meshes.
      * \param[in] x         Physical coordinates
+     * \param type          Geometric type to get
      * @return              Returns the element containing the physical point.
      *                      Note: it will return a null index (isNull) if no element of
      *                      the given type contains the point.

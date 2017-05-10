@@ -1,4 +1,4 @@
-
+//! @cond Doxygen_Suppress
 #ifndef included_AMP_DTK_AMPMeshEntitySet
 #define included_AMP_DTK_AMPMeshEntitySet
 
@@ -51,6 +51,7 @@ public:
     /*!
      * \brief Given an EntityId, get the entity.
      * \param entity_id Get the entity with this id.
+     * \param topological_dimension the number of dimensions
      * \param entity The entity with the given id.
      */
     void getEntity( const DataTransferKit::EntityId entity_id,
@@ -102,3 +103,4 @@ private:
 }
 
 #endif
+//! @endcond

@@ -26,7 +26,7 @@ public:
      * Perform a reduce operator y = f(x)
      * @param[in] op            The function operation
      *                          Note: the operator is a template parameter to improve performance
-     * @param[in] x             The array to operate on
+     * @param[in] A             The array to operate on
      * @param[in] initialValue  The initial value for the reduction (0 for sum, +/- inf for min/max, ...)
      * @return                  The reduction
      */
@@ -37,8 +37,8 @@ public:
      * Perform a reduce operator z = f(x,y)
      * @param[in] op            The function operation
      *                          Note: the operator is a template parameter to improve performance
-     * @param[in] x             The first array to operate on
-     * @param[in] y             The second array to operate on
+     * @param[in] A             The first array to operate on
+     * @param[in] B             The second array to operate on
      * @param[in] initialValue  The initial value for the reduction (0 for sum, +/- inf for min/max, ...)
      * @return                  The reduction
      */
@@ -77,64 +77,64 @@ public:
  
     /*!
      * Check if two arrays are approximately equal
-     * @param[in] a             The first array
-     * @param[in] b             The second array
-     * @param[in] TOL           The tolerance
+     * @param[in] A             The first array
+     * @param[in] B             The second array
+     * @param[in] tol           The tolerance
      */
     template <class TYPE, class FUN, class ALLOC>
     static bool equals( const Array<TYPE, FUN, ALLOC> &A, const Array<TYPE, FUN, ALLOC> &B, TYPE tol );
    
     /*!
      * Perform a element-wise operation y = max(x , 0)
-     * @param[in,out] x         The array to operate on
-     * @param[out] y            The output array
+     * @param[in] A             The input array
+     * @param[out] B            The output array
      */
     template <class TYPE, class FUN, class ALLOC>
     static void transformReLU(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
     /*!
-     * Perform a element-wise operation y = |x|
-     * @param[in,out] x         The array to operate on
-     * @param[out] y            The output array
-     */ 
+     * Perform a element-wise operation B = |A|
+     * @param[in] A             The array to operate on
+     * @param[out] B            The output array
+     */
     template <class TYPE, class FUN, class ALLOC>
     static void transformAbs(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
     /*!
-     * Perform a element-wise operation y = tanh(x)
-     * @param[in,out] x         The array to operate on
-     * @param[out] y            The output array
+     * Perform a element-wise operation B = tanh(A)
+     * @param[in] A             The array to operate on
+     * @param[out] B            The output array
      */
     template <class TYPE, class FUN, class ALLOC>
     static void transformTanh(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
     /*!
-     * Perform a element-wise operation y = max(-1 , min(1 , x) )
-     * @param[in,out] x         The array to operate on
-     * @param[out] y            The output array
+     * Perform a element-wise operation B = max(-1 , min(1 , A) )
+     * @param[in] A             The array to operate on
+     * @param[out] B            The output array
      */
     template <class TYPE, class FUN, class ALLOC>
     static void transformHardTanh(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
     /*!
-     * Perform a element-wise operation y = 1 / (1 + exp(-x))
-     * @param[in,out] x         The array to operate on
-     * @param[out] y            The output array
+     * Perform a element-wise operation B = 1 / (1 + exp(-A))
+     * @param[in] A             The array to operate on
+     * @param[out] B            The output array
      */
     template <class TYPE, class FUN, class ALLOC>
     static void transformSigmoid(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
     /*!
-     * Perform a element-wise operation y = log(exp(x) + 1)
-     * @param[in,out] x         The array to operate on
-     * @param[out] y            The output array
+     * Perform a element-wise operation B = log(exp(A) + 1)
+     * @param[in] A             The array to operate on
+     * @param[out] B            The output array
      */
     template <class TYPE, class FUN, class ALLOC>
     static void transformSoftPlus(const Array<TYPE, FUN, ALLOC> &A, Array<TYPE, FUN, ALLOC> &B);
 
     /*!
      * Sum the elements of the Array
-     * @param[i] A              The array to sum
+     * @param[in] A             The array to sum
      */
     template <class TYPE, class FUN, class ALLOC>
     static TYPE sum(const Array<TYPE, FUN, ALLOC> &A); 

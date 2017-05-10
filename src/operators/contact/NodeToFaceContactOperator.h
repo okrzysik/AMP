@@ -1,4 +1,3 @@
-
 #ifndef included_AMP_NoteToGeomType::FaceContactOperator
 #define included_AMP_NoteToGeomType::FaceContactOperator
 
