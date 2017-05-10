@@ -60,73 +60,73 @@ AMP::shared_ptr<const MultiVector> MultiVector::const_create(
 }
 AMP::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr &vec, AMP_MPI comm )
 {
-    if ( vec->isA<MultiVector>() ) {
+    auto multivec = AMP::dynamic_pointer_cast<MultiVector>( vec );
+    if ( multivec ) {
         if ( !comm.isNull() )
             AMP_ASSERT( comm.compare( vec->getComm() ) != 0 );
-        return AMP::dynamic_pointer_cast<MultiVector>( vec );
+        return multivec;
     }
     if ( comm.isNull() )
         comm = vec->getComm();
-    AMP::shared_ptr<MultiVector> retval =
-        create( vec->getVariable()->getName(), comm, std::vector<Vector::shared_ptr>( 1, vec ) );
-    if ( vec->isA<DataChangeFirer>() )
-        vec->castTo<DataChangeFirer>().registerListener(
-            &( retval->castTo<DataChangeListener>() ) );
-    return retval;
+    multivec = create( vec->getVariable()->getName(), comm, std::vector<Vector::shared_ptr>( 1, vec ) );
+    auto firer = dynamic_pointer_cast<DataChangeFirer>( vec );
+    if ( firer )
+        firer->registerListener( multivec.get() );
+    return multivec;
 }
 AMP::shared_ptr<MultiVector> MultiVector::view( Vector::shared_ptr &vec, AMP_MPI comm )
 {
-    AMP::shared_ptr<MultiVector> retval;
     // Check to see if this is a multivector
-    if ( vec->isA<MultiVector>() ) {
+    auto multivec = AMP::dynamic_pointer_cast<MultiVector>( vec );
+    if ( multivec ) {
         if ( !comm.isNull() )
             AMP_ASSERT( comm.compare( vec->getComm() ) != 0 );
-        retval = AMP::dynamic_pointer_cast<MultiVector>( vec );
     }
     // Check to see if the engine is a multivector
-    if ( vec->isA<ManagedVector>() ) {
-        if ( vec->castTo<ManagedVector>().getVectorEngine()->isA<MultiVector>() ) {
+    auto managed = AMP::dynamic_pointer_cast<ManagedVector>( vec );
+    if ( managed ) {
+        auto vec2 = AMP::dynamic_pointer_cast<MultiVector>( managed->getVectorEngine() );
+        if ( vec2 ) {
             if ( !comm.isNull() )
                 AMP_ASSERT( comm.compare( vec->getComm() ) != 0 );
-            retval = AMP::dynamic_pointer_cast<MultiVector>(
-                vec->castTo<ManagedVector>().getVectorEngine() );
+            multivec = vec2;
         }
     }
     // If still don't have a multivector, make one
-    if ( !retval ) {
+    if ( !multivec ) {
         if ( comm.isNull() )
             comm = vec->getComm();
-        retval   = create(
-            vec->getVariable()->getName(), comm, std::vector<Vector::shared_ptr>( 1, vec ) );
+        multivec = create( vec->getVariable()->getName(), comm,
+            std::vector<Vector::shared_ptr>( 1, vec ) );
     }
-    return retval;
+    return multivec;
 }
 AMP::shared_ptr<const MultiVector> MultiVector::view( Vector::const_shared_ptr &vec, AMP_MPI comm )
 {
-    AMP::shared_ptr<const MultiVector> retval;
     // Check to see if this is a multivector
-    if ( vec->isA<const MultiVector>() ) {
+    auto multivec = AMP::dynamic_pointer_cast<const MultiVector>( vec );
+    if ( multivec ) {
         if ( !comm.isNull() )
             AMP_ASSERT( comm.compare( vec->getComm() ) != 0 );
-        retval = AMP::dynamic_pointer_cast<const MultiVector>( vec );
     }
     // Check to see if the engine is a multivector
-    if ( vec->isA<const ManagedVector>() ) {
-        if ( vec->castTo<const ManagedVector>().getVectorEngine()->isA<const MultiVector>() ) {
+    auto managed = AMP::dynamic_pointer_cast<const ManagedVector>( vec );
+    if ( managed ) {
+        auto vec2 = AMP::dynamic_pointer_cast<const MultiVector>( managed->getVectorEngine() );
+        if ( vec2 ) {
             if ( !comm.isNull() )
                 AMP_ASSERT( comm.compare( vec->getComm() ) != 0 );
-            retval = AMP::dynamic_pointer_cast<const MultiVector>(
-                vec->castTo<const ManagedVector>().getVectorEngine() );
+            multivec = vec2;
         }
     }
     // If still don't have a multivector, make one
-    if ( !retval ) {
+    if ( !multivec ) {
         if ( comm.isNull() )
             comm = vec->getComm();
-        retval   = const_create(
-            vec->getVariable()->getName(), comm, std::vector<Vector::const_shared_ptr>( 1, vec ) );
+        multivec = const_create( vec->getVariable()->getName(), comm,
+            std::vector<Vector::const_shared_ptr>( 1, vec ) );
     }
-    return retval;
+    return multivec;
 }
 
 
@@ -182,17 +182,14 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
         return;
     auto id = vec->getDataID();
     if ( id == 0 ) {
-        // We are dealing with a multivector, emptry vecotr, or something special
+        // We are dealing with a multivector, empty vector, or something special
         if ( vec->getGlobalSize() == 0 )
             return;
-        AMP::shared_ptr<MultiVector> multivec;
-        if ( vec->isA<MultiVector>() ) {
-            multivec = AMP::dynamic_pointer_cast<MultiVector>( vec );
-        } else if ( vec->isA<ManagedVector>() ) {
-            if ( vec->castTo<ManagedVector>().getVectorEngine()->isA<MultiVector>() ) {
-                multivec = AMP::dynamic_pointer_cast<MultiVector>(
-                    vec->castTo<ManagedVector>().getVectorEngine() );
-            }
+        auto multivec = AMP::dynamic_pointer_cast<MultiVector>( vec );
+        if ( multivec == nullptr ) {
+            auto managed = AMP::dynamic_pointer_cast<ManagedVector>( vec );
+            if ( managed )
+                multivec = AMP::dynamic_pointer_cast<MultiVector>( managed->getVectorEngine() );
         }
         if ( multivec.get() != nullptr ) {
             for ( size_t i = 0; i != multivec->getNumberOfSubvectors(); i++ )
@@ -200,9 +197,9 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
         } else {
             AMP_ERROR( "Not finished" );
             d_vVectors.push_back( vec );
-            if ( vec->isA<DataChangeFirer>() ) {
-                vec->castTo<DataChangeFirer>().registerListener( this );
-            }
+            auto firer = AMP::dynamic_pointer_cast<DataChangeFirer>( vec );
+            if ( firer )
+                firer->registerListener( this );
         }
     } else {
         // We are dealing with a single vector, check if it is already added in some form
@@ -214,9 +211,9 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
         if ( index == -1 ) {
             // Add the vector
             d_vVectors.push_back( vec );
-            if ( vec->isA<DataChangeFirer>() ) {
-                vec->castTo<DataChangeFirer>().registerListener( this );
-            }
+            auto firer = AMP::dynamic_pointer_cast<DataChangeFirer>( vec );
+            if ( firer )
+                firer->registerListener( this );
         } else {
             // the vector exists, which vector (or both) do we keep?
             auto dof1 = vec->getDOFManager();
@@ -581,8 +578,8 @@ void MultiVector::copyVector( Vector::const_shared_ptr src )
         d_vVectors[0]->copyVector( src );
     } else if ( *getDOFManager() == *( src->getDOFManager() ) ) {
         // The two DOFManagers are compatible, we can perform a basic copy
-        VectorDataIterator dst_it = Vector::begin();
-        for ( ConstVectorDataIterator src_it = src->begin(); src_it != src->end();
+        VectorDataIterator<double> dst_it = Vector::begin();
+        for ( VectorDataIterator<const double> src_it = src->begin(); src_it != src->end();
               ++dst_it, ++src_it )
             *dst_it = *src_it;
     } else {
@@ -608,12 +605,17 @@ void MultiVector::aliasVector( Vector &other )
 VectorEngine::BufferPtr MultiVector::getNewBuffer() { return VectorEngine::BufferPtr(); }
 
 
-bool MultiVector::sameEngine( VectorEngine &rhs ) const { return rhs.isA<MultiVector>(); }
+bool MultiVector::sameEngine( VectorEngine &rhs ) const
+{
+    return dynamic_cast<MultiVector*>( &rhs ) != nullptr;
+}
 
 
 void MultiVector::swapEngines( VectorEngine::shared_ptr p )
 {
-    return swapVectors( p->castTo<MultiVector>() );
+    auto vec = dynamic_pointer_cast<MultiVector>( p );
+    AMP_INSIST( vec != nullptr, "Cannot swap with a non-MulitVector" );
+    return swapVectors( *vec );
 }
 
 
@@ -899,5 +901,8 @@ void MultiVector::partitionLocalValues( const int num,
     }
     PROFILE_STOP( "partitionLocalValues", 2 );
 }
-}
-}
+
+
+} // LinearAlgebra namespace
+} // AMP namespace
+

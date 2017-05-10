@@ -32,14 +32,21 @@ inline MultiVector::vector_iterator MultiVector::endVector() { return d_vVectors
 inline const Vector::shared_ptr &MultiVector::getVector( const VectorOperations &rhs,
                                                          size_t which ) const
 {
-    AMP_ASSERT( which < rhs.castTo<MultiVector>().d_vVectors.size() );
-    return rhs.castTo<MultiVector>().d_vVectors[which];
+    auto x = dynamic_cast<const MultiVector*>( &rhs );
+    AMP_ASSERT( x != nullptr );
+    AMP_ASSERT( which < x->d_vVectors.size() );
+    return x->d_vVectors[which];
 }
 
 inline Vector::shared_ptr &MultiVector::getVector( VectorOperations &rhs, size_t which ) const
 {
-    AMP_ASSERT( which < rhs.castTo<MultiVector>().d_vVectors.size() );
-    return rhs.castTo<MultiVector>().d_vVectors[which];
+    auto x = dynamic_cast<MultiVector*>( &rhs );
+    AMP_ASSERT( x != nullptr );
+    AMP_ASSERT( which < x->d_vVectors.size() );
+    return x->d_vVectors[which];
 }
-}
-}
+
+
+} // LinearAlgebra namespace
+} // AMP namespace
+

@@ -120,7 +120,7 @@ void PetscVectorTests::Bug_612( AMP::UnitTest *utils )
 void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getManagedVector() );
-    if ( vectora->isA<AMP::LinearAlgebra::NativePetscVector>() )
+    if ( dynamic_pointer_cast<NativePetscVector>( vectora ) )
         return;
 
     vectora->setVariable( AMP::LinearAlgebra::Variable::shared_ptr(
@@ -143,7 +143,7 @@ void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
     checkPetscError( utils, PETSC::vecDestroy( &another_vec ) );
     utils->passes( "managed duplicated destroyed" );
 
-    if ( vectora->isA<AMP::LinearAlgebra::MultiVector>() ) {
+    if ( dynamic_pointer_cast<MultiVector>( vectora ) ) {
         AMP::LinearAlgebra::Vector::shared_ptr b =
             AMP::LinearAlgebra::PetscVector::view( vectora );
         bool passed = true;
@@ -1158,9 +1158,8 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
 }
 
 
-
-}
-}
+} // LinearAlgebra namespace
+} // AMP namespace
 
 /// \endcond
 

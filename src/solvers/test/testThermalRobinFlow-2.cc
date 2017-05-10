@@ -189,25 +189,22 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     ut->passes( "set up to the iterations passes." );
     //-------------------------------------
 
-    AMP::LinearAlgebra::Vector::shared_ptr globalSolMultiVector =
-        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
-    globalSolMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector( globalSolVec );
+    auto globalSolMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    globalSolMultiVector->addVector( globalSolVec );
 
     // AMP::LinearAlgebra::Vector::shared_ptr globalSolMultiVectorView =
     // AMP::LinearAlgebra::MultiVector::view(
     // globalSolMultiVector, globalComm );
     //---------------------------------------------------------------------------------------------------------------------//
-    AMP::LinearAlgebra::Vector::shared_ptr globalRhsMultiVector =
-        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
-    globalRhsMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector( globalRhsVec );
+    auto globalRhsMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    globalRhsMultiVector->addVector( globalRhsVec );
 
     // AMP::LinearAlgebra::Vector::shared_ptr globalRhsMultiVectorView =
     // AMP::LinearAlgebra::MultiVector::view(
     // globalRhsMultiVector, globalComm );
     //---------------------------------------------------------------------------------------------------------------------//
-    AMP::LinearAlgebra::Vector::shared_ptr globalResMultiVector =
-        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
-    globalResMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector( globalResVec );
+    auto globalResMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    globalResMultiVector->addVector( globalResVec );
 
     // AMP::LinearAlgebra::Vector::shared_ptr globalResMultiVectorView =
     // AMP::LinearAlgebra::MultiVector::view(

@@ -35,8 +35,6 @@ public:
 };
 
 
-class VectorDataIterator;
-class ConstVectorDataIterator;
 class VectorSelector;
 class MultiVector;
 class ManagedVector;
@@ -106,12 +104,12 @@ public: // typedefs
       }
       \endcode
       */
-    typedef VectorDataIterator iterator;
+    typedef VectorDataIterator<double> iterator;
 
     /** \typedef const_iterator
       * \brief An iterator for the data in a Vector
       */
-    typedef ConstVectorDataIterator const_iterator;
+    typedef VectorDataIterator<const double> const_iterator;
 
 
 public: // Virtual functions

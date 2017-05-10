@@ -33,7 +33,7 @@ bool VectorOperationsDefault::localEquals( const VectorOperations &rhs, double t
 double VectorOperationsDefault::localMin( void ) const
 {
     size_t N_blocks = d_VectorData->numberOfDataBlocks();
-    double ans      = 1e300;
+    double ans      = std::numeric_limits<double>::max();
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size        = d_VectorData->sizeOfDataBlock( i );
         const double *data = d_VectorData->getRawDataBlock<double>( i );
@@ -45,7 +45,7 @@ double VectorOperationsDefault::localMin( void ) const
 double VectorOperationsDefault::localMax( void ) const
 {
     size_t N_blocks = d_VectorData->numberOfDataBlocks();
-    double ans      = -1e300;
+    double ans      = std::numeric_limits<double>::lowest();
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size        = d_VectorData->sizeOfDataBlock( i );
         const double *data = d_VectorData->getRawDataBlock<double>( i );
@@ -57,7 +57,7 @@ double VectorOperationsDefault::localMax( void ) const
 double VectorOperationsDefault::localL1Norm( void ) const
 {
     size_t N_blocks = d_VectorData->numberOfDataBlocks();
-    double ans      = 0.0;
+    double ans      = 0;
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size        = d_VectorData->sizeOfDataBlock( i );
         const double *data = d_VectorData->getRawDataBlock<double>( i );
@@ -69,7 +69,7 @@ double VectorOperationsDefault::localL1Norm( void ) const
 double VectorOperationsDefault::localL2Norm( void ) const
 {
     size_t N_blocks = d_VectorData->numberOfDataBlocks();
-    double ans      = 0.0;
+    double ans      = 0;
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size        = d_VectorData->sizeOfDataBlock( i );
         const double *data = d_VectorData->getRawDataBlock<double>( i );
@@ -81,7 +81,7 @@ double VectorOperationsDefault::localL2Norm( void ) const
 double VectorOperationsDefault::localMaxNorm( void ) const
 {
     size_t N_blocks = d_VectorData->numberOfDataBlocks();
-    double ans      = 0.0;
+    double ans      = 0;
     for ( size_t i = 0; i < N_blocks; i++ ) {
         size_t size        = d_VectorData->sizeOfDataBlock( i );
         const double *data = d_VectorData->getRawDataBlock<double>( i );
@@ -96,7 +96,7 @@ double VectorOperationsDefault::localDot( const VectorOperations& x ) const
     auto curMe   = d_VectorData->begin();
     auto last    = d_VectorData->end();
     auto curXRhs = x.getVectorData()->begin();
-    double ans             = 0.0;
+    double ans   = 0;
     while ( curMe != last ) {
         ans += *curMe * *curXRhs;
         ++curXRhs;
@@ -111,7 +111,7 @@ double VectorOperationsDefault::localMinQuotient( const VectorOperations &x ) co
     auto cury = d_VectorData->begin();
     double ans = std::numeric_limits<double>::max();
     while ( curx != endx ) {
-        if ( *cury != 0.0 )
+        if ( *cury != 0 )
             ans = std::min( ans, ( *curx ) / ( *cury ) );
         ++curx;
         ++cury;
@@ -143,7 +143,7 @@ double VectorOperationsDefault::localWrmsNormMask( const VectorOperations &x,
     double ans = 0;
     size_t N = 0;
     while ( curx != endx ) {
-        if ( *curm > 0.0 )
+        if ( *curm > 0 )
             ans += (*curx)*(*curx) * (*cury)*(*cury);
         ++curx;
         ++cury;
@@ -168,7 +168,7 @@ void VectorOperationsDefault::zero()
     if ( haGhosts() ) {
         auto& ghosts = getGhosts();
         for ( size_t i = 0; i != ghosts.size(); i++ )
-            ghosts[i] = 0.0;
+            ghosts[i] = 0;
     }
     *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
 }
@@ -189,7 +189,7 @@ void VectorOperationsDefault::setToScalar( double alpha )
 }
 void VectorOperationsDefault::setRandomValues()
 {
-    RandomVariable<double> r( 0., 1., Vector::getDefaultRNG() );
+    RandomVariable<double> r( 0, 1, Vector::getDefaultRNG() );
     auto curMe = d_VectorData->begin();
     auto last  = d_VectorData->end();
     while ( curMe != last ) {
@@ -202,7 +202,7 @@ void VectorOperationsDefault::setRandomValues()
 }
 void VectorOperationsDefault::setRandomValues( RNG::shared_ptr rng )
 {
-    RandomVariable<double> r( 0., 1., rng );
+    RandomVariable<double> r( 0, 1, rng );
     auto curMe = d_VectorData->begin();
     auto last  = d_VectorData->end();
     while ( curMe != last ) {

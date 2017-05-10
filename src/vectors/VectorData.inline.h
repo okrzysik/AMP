@@ -31,11 +31,26 @@ inline bool VectorData::containsGlobalElement( size_t i )
 /****************************************************************
 * Create vector iterators                                       *
 ****************************************************************/
-inline VectorDataIterator VectorData::begin() { return VectorDataIterator( this, 0 ); }
-inline VectorDataIterator VectorData::end() { return VectorDataIterator( this, getLocalSize() ); }
-inline ConstVectorDataIterator VectorData::begin() const { return ConstVectorDataIterator( this, 0 ); }
-inline ConstVectorDataIterator VectorData::end() const { return ConstVectorDataIterator( this, getLocalSize() ); }
-inline size_t VectorData::getGhostSize() const { return d_Ghosts->size(); }
+inline VectorDataIterator<double> VectorData::begin()
+{
+    return VectorDataIterator<double>( this, 0 );
+}
+inline VectorDataIterator<double> VectorData::end()
+{
+    return VectorDataIterator<double>( this, getLocalSize() );
+}
+inline VectorDataIterator<const double> VectorData::begin() const
+{
+    return VectorDataIterator<const double>( const_cast<VectorData*>(this), 0 );
+}
+inline VectorDataIterator<const double> VectorData::end() const
+{
+    return VectorDataIterator<const double>( const_cast<VectorData*>(this), getLocalSize() );
+}
+inline size_t VectorData::getGhostSize() const
+{
+    return d_Ghosts->size();
+}
 
 
 /****************************************************************

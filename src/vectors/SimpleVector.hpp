@@ -151,7 +151,7 @@ void SimpleVector<T>::copyVector( Vector::const_shared_ptr src_vec )
 {
     if ( getLocalSize() != src_vec->getLocalSize() )
         AMP_ERROR( "Mismatched vectors" );
-    ConstVectorDataIterator it = src_vec->begin();
+    auto it = src_vec->begin();
     for ( size_t i = 0; i < getLocalSize(); i++ ) {
         d_Data[i] = static_cast<T>( *it );
         ++it;
@@ -338,8 +338,8 @@ void SimpleVector<T>::axpby( double alpha, double beta, const VectorOperations &
 template <typename T>
 void SimpleVector<T>::abs( const VectorOperations &x )
 {
-    auto  cur  = begin();
-    auto  curx = x.castTo<Vector>().begin();
+    auto cur  = begin();
+    auto curx = x.getVectorData()->begin();
     while ( cur != end() ) {
         ( *cur ) = fabs( static_cast<T>( *curx ) );
         ++cur;

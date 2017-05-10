@@ -35,17 +35,6 @@ class PetscVectorParameters
   *  -# Provides an interface for accessing this PETSc Vec independent of derived classes
   *  -# Provides a static method for creating a PETSc view of an AMP Vector.
   *
-  *  This allows the Castable class to be used to verify correctness of code.  For instance,
-  *  given a Vector shared pointer, it is possible to get the PETSc Vec safely thusly
-  \code
-     Vector::shared_ptr  vector;
-     vector->castTo<PetscVector>().getVec();
-  \endcode
-  *  The castTo ensures that the PETSc Vec exists.  If the Vec does not exist, the castTo will
-  *  throw an error.  If, on the other hand, you have an arbitrary AMP Vector that may
-  *  or may not have a PETSc Vec associated with it, you can use the static members
-  *  PetscVector::view or PetscVector::constView
-  *  to create the PETSc Vec if it doesn't already exist, give or take some edge cases.
   */
 
 class PetscVector : public DataChangeListener
@@ -102,14 +91,13 @@ public:
       double  DoPETScMax ( Vector::shared_ptr  &in )
       {
         double   ans;
+        // Create a PETSc Vec if necessary
+        Vector::shared_ptr in_petsc_view = PetscVector::view( in );
 
-       // Create a PETSc Vec if necessary
-        Vector::shared_ptr  in_petsc_view = PetscVector::view ( in );
+        // Extract the Vec
+        Vec  in_vec = dynamic_pointer_cast<PetscVector>(in_petsc_view)->getVec();
 
-       // Extract the Vec
-        Vec  in_vec = in_petsc_view->castTo<PetscVector>().getVec ();
-
-       // Perform a PETSc operation
+        // Perform a PETSc operation
         VecMax ( in_vec , &abs );
         return ans;
       }
@@ -127,13 +115,13 @@ public:
       double  DoPETScMax ( Vector::shared_ptr  &in )
       {
         double   ans;
-       // Create a PETSc Vec if necessary
-        Vector::shared_ptr  in_petsc_view = PetscVector::view ( in );
+        // Create a PETSc Vec if necessary
+        Vector::shared_ptr in_petsc_view = PetscVector::view( in );
 
-       // Extract the Vec
-        Vec  in_vec = in_petsc_view->castTo<PetscVector>().getVec ();
+        // Extract the Vec
+        Vec  in_vec = dynamic_pointer_cast<PetscVector>(in_petsc_view)->getVec();
 
-       // Perform a PETSc operation
+        // Perform a PETSc operation
         VecMax ( in_vec , &abs );
         return ans;
       }

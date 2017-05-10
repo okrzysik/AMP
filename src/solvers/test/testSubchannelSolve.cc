@@ -95,7 +95,8 @@ void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
                     AMP::LinearAlgebra::Vector::shared_ptr &specificPowerGpVec )
 {
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    globalMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    auto multivec = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    globalMultiVector = multivec;
 
     AMP::LinearAlgebra::Variable::shared_ptr thermalVariable(
         new AMP::LinearAlgebra::Variable( "Temperature" ) ); // temperature on pellets and cladding
@@ -110,7 +111,7 @@ void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
             AMP::Discretization::simpleDOFManager::create( pinMesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
         thermalVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, thermalVariable );
     }
-    globalMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector( thermalVec );
+    multivec->addVector( thermalVec );
 
     AMP::LinearAlgebra::Vector::shared_ptr flowVec;
     if ( subchannelMesh.get() != nullptr ) {
@@ -120,7 +121,7 @@ void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
         // create solution, rhs, and residual vectors
         flowVec = AMP::LinearAlgebra::createVector( faceDOFManager, flowVariable, true );
     }
-    globalMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector( flowVec );
+    multivec->addVector( flowVec );
 
     if ( pinMesh.get() != nullptr ) {
         AMP::Discretization::DOFManager::shared_ptr gaussPtDOFManager =

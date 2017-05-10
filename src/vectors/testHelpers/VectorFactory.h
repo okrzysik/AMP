@@ -350,12 +350,11 @@ public:
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-        AMP::LinearAlgebra::Vector::shared_ptr retVal =
-            AMP::LinearAlgebra::MultiVector::create( getVariable(), globalComm );
+        auto retVal = AMP::LinearAlgebra::MultiVector::create( getVariable(), globalComm );
         for ( int i = 0; i != NUM1; i++ )
-            retVal->castTo<AMP::LinearAlgebra::MultiVector>().addVector( FACTORY1->getVector() );
+            retVal->addVector( FACTORY1->getVector() );
         for ( int i = 0; i != NUM2; i++ )
-            retVal->castTo<AMP::LinearAlgebra::MultiVector>().addVector( FACTORY2->getVector() );
+            retVal->addVector( FACTORY2->getVector() );
         return retVal;
     }
 

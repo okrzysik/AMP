@@ -46,8 +46,10 @@ template <typename VIEW_TYPE>
 Vector::shared_ptr Vector::getView() const
 {
     for ( size_t i = 0; i != d_Views->size(); i++ ) {
-        if ( ( *d_Views )[i].lock() ) {
-            if ( ( *d_Views )[i].lock()->isA<VIEW_TYPE>() ) {
+        auto vec = ( *d_Views )[i].lock();
+        if ( vec ) {
+            auto vec2 = AMP::dynamic_pointer_cast<VIEW_TYPE>( vec );
+            if ( vec2 ) {
                 return Vector::shared_ptr( ( *d_Views )[i] );
             }
         }
@@ -58,8 +60,10 @@ template <typename VIEW_TYPE>
 bool Vector::hasView() const
 {
     for ( size_t i = 0; i != d_Views->size(); i++ ) {
-        if ( ( *d_Views )[i].lock() ) {
-            if ( ( *d_Views )[i].lock()->isA<VIEW_TYPE>() ) {
+        auto vec = ( *d_Views )[i].lock();
+        if ( vec ) {
+            auto vec2 = AMP::dynamic_pointer_cast<VIEW_TYPE>( vec );
+            if ( vec2 ) {
                 return true;
             }
         }

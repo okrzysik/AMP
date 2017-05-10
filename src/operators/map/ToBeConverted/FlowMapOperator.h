@@ -40,7 +40,9 @@ protected:
     virtual void smear( double tolerance );
     virtual void smear( double tolerance, std::multimap<double, double> &m );
 };
-}
-}
+
+
+} // Operator namespace
+} // AMP namespace
 
 #endif

@@ -16,13 +16,12 @@ namespace LinearAlgebra {
 ********************************************************/
 void NativePetscMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 {
-    if ( !other_op->isA<NativePetscMatrix>() ) {
-        AMP_ERROR( "Incompatible matrix types" );
-    }
+    auto other = dynamic_pointer_cast<NativePetscMatrix>( other_op );
+    AMP_INSIST( other!=nullptr, "Incompatible matrix types" );
 
     auto res = new NativePetscMatrix;
     MatMatMult( d_Mat,
-                other_op->castTo<NativePetscMatrix>().d_Mat,
+                other->d_Mat,
                 MAT_INITIAL_MATRIX,
                 PETSC_DEFAULT,
                 &( res->d_Mat ) );
@@ -36,12 +35,12 @@ void NativePetscMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 Vector::shared_ptr NativePetscMatrix::extractDiagonal( Vector::shared_ptr v ) const
 {
     Vector::shared_ptr retVal;
-    if ( v->isA<NativePetscVector>() ) {
+    if ( dynamic_pointer_cast<NativePetscVector>(v) ) {
         retVal = v;
     } else {
         retVal = getRightVector();
     }
-    MatGetDiagonal( getMat(), retVal->castTo<PetscVector>().getVec() );
+    MatGetDiagonal( getMat(), dynamic_pointer_cast<PetscVector>(retVal)->getVec() );
     return retVal;
 }
 

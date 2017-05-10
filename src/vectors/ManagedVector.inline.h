@@ -14,7 +14,8 @@ inline std::string ManagedVector::type() const
     if ( d_vBuffer )
         return " ( managed data )";
     std::string retVal = " ( managed view of ";
-    retVal += d_Engine->castTo<Vector>().type();
+    auto vec = dynamic_pointer_cast<Vector>( d_Engine );
+    retVal += vec->type();
     retVal += " )";
     return retVal;
 }
@@ -24,10 +25,10 @@ inline Vector::shared_ptr ManagedVector::getRootVector()
 {
     if ( d_vBuffer )
         return shared_from_this();
-    Vector *t = &( d_Engine->castTo<Vector>() );
-    if ( t->isA<ManagedVector>() )
-        return t->castTo<ManagedVector>().getRootVector();
-    return t->shared_from_this();
+    auto vec = dynamic_pointer_cast<ManagedVector>( d_Engine );
+    if ( vec != nullptr )
+        return vec->getRootVector();
+    return dynamic_pointer_cast<Vector>( d_Engine )->shared_from_this();
 }
 
 
@@ -36,7 +37,7 @@ inline Vector::const_iterator ManagedVector::begin() const
     if ( d_vBuffer )
         return Vector::begin();
     else
-        return d_Engine->castTo<const Vector>().begin();
+        return dynamic_pointer_cast<const Vector>( d_Engine )->begin();
 }
 
 
@@ -45,7 +46,7 @@ inline Vector::const_iterator ManagedVector::end() const
     if ( d_vBuffer )
         return Vector::end();
     else
-        return d_Engine->castTo<const Vector>().end();
+        return dynamic_pointer_cast<const Vector>( d_Engine )->end();
 }
 
 
@@ -54,7 +55,7 @@ inline Vector::iterator ManagedVector::begin()
     if ( d_vBuffer )
         return Vector::begin();
     else
-        return d_Engine->castTo<Vector>().begin();
+        return dynamic_pointer_cast<Vector>( d_Engine )->begin();
 }
 
 
@@ -63,7 +64,7 @@ inline Vector::iterator ManagedVector::end()
     if ( d_vBuffer )
         return Vector::end();
     else
-        return d_Engine->castTo<Vector>().end();
+        return dynamic_pointer_cast<Vector>( d_Engine )->end();
 }
 
 
@@ -80,7 +81,7 @@ inline Vector::shared_ptr ManagedVector::selectInto( const VectorSelector &s )
     if ( d_vBuffer ) {
         result = Vector::selectInto( s );
     } else {
-        result = d_Engine->castTo<Vector>().selectInto( s );
+        result = dynamic_pointer_cast<Vector>( d_Engine )->selectInto( s );
     }
     return result;
 }
@@ -92,7 +93,7 @@ inline Vector::const_shared_ptr ManagedVector::selectInto( const VectorSelector 
     if ( d_vBuffer ) {
         result = Vector::selectInto( s );
     } else {
-        result = d_Engine->castTo<Vector>().selectInto( s );
+        result = dynamic_pointer_cast<Vector>( d_Engine )->selectInto( s );
     }
     return result;
 }
@@ -151,18 +152,6 @@ inline size_t ManagedVector::getLocalSize() const { return d_Engine->getLocalSiz
 
 
 inline size_t ManagedVector::getGlobalSize() const { return d_Engine->getGlobalSize(); }
-
-
-inline AMP::shared_ptr<Vector> ManagedVector::cloneVector( const Variable::shared_ptr name ) const
-{
-    AMP::shared_ptr<Vector> retVal( getNewRawPtr() );
-    if ( !d_vBuffer ) {
-        retVal->castTo<ManagedVector>().d_Engine =
-            d_Engine->cloneEngine( VectorEngine::BufferPtr() );
-    }
-    retVal->setVariable( name );
-    return retVal;
-}
 
 
 inline ManagedVector::~ManagedVector() {}

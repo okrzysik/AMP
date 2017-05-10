@@ -10,8 +10,9 @@
 namespace AMP {
 namespace LinearAlgebra {
 
+
+template<typename TYPE>
 class VectorDataIterator;
-class ConstVectorDataIterator;
 
 
 /**
@@ -38,7 +39,6 @@ class ConstVectorDataIterator;
   */
 class VectorData : virtual public Castable
 {
-
 public: // enums
 
     /**\brief Flag to choose algorithm for makeConsistent
@@ -145,7 +145,7 @@ public: // Virtual functions
       }
       \endcode
       */
-    virtual VectorDataIterator begin();
+    virtual VectorDataIterator<double> begin();
 
     /**
       * \brief Return an iterator to the beginning of the data
@@ -157,7 +157,7 @@ public: // Virtual functions
       * iterators, be sure to call DataChangeListener::dataChanged() on
       * the vector after use.
       */
-    virtual ConstVectorDataIterator begin() const;
+    virtual VectorDataIterator<const double> begin() const;
 
     /**
       * \brief Return an iterator to the end of the data
@@ -182,11 +182,11 @@ public: // Virtual functions
       }
       \endcode
       */
-    virtual VectorDataIterator end();
+    virtual VectorDataIterator<double> end();
 
     /**
       * \brief Return an iterator to the end of the data
-      * \returns A ConstVectorDataIterator
+      * \returns A const VectorDataIterator
       * \details Since the Vector presents an interface to a contiguous
       * block of data, it is natural for it to provide a random access
       * iterator.
@@ -194,7 +194,7 @@ public: // Virtual functions
       * iterators, be sure to call DataChangeListener::dataChanged() on
       * the vector after use.
       */
-    virtual ConstVectorDataIterator end() const;
+    virtual VectorDataIterator<const double> end() const;
 
     /**
       * \brief Set values in the vector by their local offset

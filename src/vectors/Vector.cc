@@ -171,9 +171,9 @@ void Vector::copyVector( Vector::const_shared_ptr rhs )
 {
     if ( rhs->getLocalSize() != getLocalSize() )
         AMP_ERROR( "Destination vector and source vector not the same size" );
-    VectorDataIterator cur1      = begin();
-    VectorDataIterator end1      = end();
-    ConstVectorDataIterator cur2 = rhs->begin();
+    VectorDataIterator<double> cur1       = begin();
+    VectorDataIterator<double> end1       = end();
+    VectorDataIterator<const double> cur2 = rhs->begin();
     while ( cur1 != end1 ) {
         *cur1 = *cur2;
         ++cur1;

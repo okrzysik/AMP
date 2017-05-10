@@ -308,9 +308,9 @@ void VectorTests::Bug_491( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
     vector1->setRandomValues();
-    AMP::LinearAlgebra::Vector::shared_ptr managed_petsc =
-        AMP::LinearAlgebra::PetscVector::view( vector1 );
-    Vec managed_vec = managed_petsc->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    auto managed_petsc = AMP::LinearAlgebra::PetscVector::view( vector1 );
+    auto petsc_vec = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( managed_petsc );
+    Vec managed_vec = petsc_vec->getVec();
 
     double n1, n2, ninf;
     double sp_n1, sp_n2, sp_inf;
