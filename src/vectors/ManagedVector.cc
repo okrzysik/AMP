@@ -57,7 +57,7 @@ ManagedVector::ManagedVector( shared_ptr alias )
 /********************************************************
 * Subset                                                *
 ********************************************************/
-Vector::shared_ptr ManagedVector::subsetVectorForVariable( const Variable::shared_ptr &name )
+Vector::shared_ptr ManagedVector::subsetVectorForVariable( Variable::const_shared_ptr name )
 {
     Vector::shared_ptr retVal;
     if ( !d_vBuffer )
@@ -67,7 +67,7 @@ Vector::shared_ptr ManagedVector::subsetVectorForVariable( const Variable::share
     return retVal;
 }
 Vector::const_shared_ptr
-ManagedVector::constSubsetVectorForVariable( const Variable::shared_ptr &name ) const
+ManagedVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
 {
     Vector::const_shared_ptr retVal;
     if ( !d_vBuffer )

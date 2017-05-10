@@ -88,9 +88,9 @@ public:
     virtual Vector::iterator begin() override;
     virtual Vector::iterator end() override;
 
-    virtual Vector::shared_ptr subsetVectorForVariable( const Variable::shared_ptr &name ) override;
+    virtual Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     virtual Vector::const_shared_ptr
-    constSubsetVectorForVariable( const Variable::shared_ptr &name ) const override;
+    constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
     virtual size_t numberOfDataBlocks() const override;
     virtual size_t sizeOfDataBlock( size_t i ) const override;
     virtual void copyVector( Vector::const_shared_ptr src_vec ) override;

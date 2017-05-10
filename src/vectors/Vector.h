@@ -6,7 +6,6 @@
 #include <string>
 
 #include "discretization/DOF_Manager.h"
-#include "utils/Castable.h"
 #include "utils/ParameterBase.h"
 #include "utils/RNG.h"
 #include "utils/enable_shared_from_this.h"
@@ -21,7 +20,7 @@ namespace LinearAlgebra {
 
 
 //! Parameters used to instantiate a Vector
-class VectorParameters : public ParameterBase, public Castable
+class VectorParameters : public ParameterBase
 {
 public:
     //! Convenience typedef
@@ -149,14 +148,14 @@ public: // Virtual functions
       * number of entries.  The vector will be associated with a clone of the same Variable with the
      * given name
      */
-    virtual Vector::shared_ptr cloneVector( const std::string &name ) const;
+    virtual Vector::shared_ptr cloneVector( const std::string& name ) const;
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
       * \param[in] name  Variable by which to retrieve a subvector
       * \return  A Vector shared pointer
       * \see MultiVector
      */
-    virtual Vector::shared_ptr subsetVectorForVariable( const Variable::shared_ptr &name );
+    virtual Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name );
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
       * \param[in] name  Variable by which to retrieve a subvector
@@ -164,7 +163,7 @@ public: // Virtual functions
       * \see MultiVector
      */
     virtual Vector::const_shared_ptr
-    constSubsetVectorForVariable( const Variable::shared_ptr &name ) const;
+    constSubsetVectorForVariable( Variable::const_shared_ptr name ) const;
 
     /** \brief Copy the elements of a vector into <i>this</i>
       *   Note: if the ghosts in the rhs do not match the ghosts in this,

@@ -77,7 +77,7 @@ protected:
 
     /** \brief   A virtual method to construct the map from a vector
      * \details  This function constructs the map from a given vector.
-     *    The inherited class must impliment this function
+     *    The inherited class must implement this function
      * \param [in] vec  The vector to be used to construct the map
      * \param [in] mesh The meshused to construct the map
      * \param [in] it   The iterator over the boundary used for the map
@@ -89,9 +89,9 @@ protected:
 
     /** \brief  A virtual method to construct a vector from a map
      * \details  This function constructs a vector from the map.
-     *    The inherited class must impliment this function
+     *    The inherited class must implement this function
      * \param [out] vec The vector to be used to construct the map
-     * \param [in] mesh The meshused to construct the map
+     * \param [in] mesh The mesh used to construct the map
      * \param [in] it   The iterator over the boundary used for the map
      * \param [in] map  The map containing all of the points
      */

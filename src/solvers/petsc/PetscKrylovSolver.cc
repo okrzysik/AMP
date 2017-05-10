@@ -251,8 +251,8 @@ void PetscKrylovSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
         std::cout << "PetscKrylovSolver::solve: initial L2Norm of rhs vector: " << f->L2Norm()
                   << std::endl;
     }
-    Vec fVec = fVecView->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
-    Vec uVec = uVecView->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    Vec fVec = dynamic_pointer_cast<const AMP::LinearAlgebra::PetscVector>(fVecView)->getVec();
+    Vec uVec = dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(uVecView)->getVec();
 
     // Create the preconditioner and re-register the operator
     PC pc;
@@ -470,9 +470,9 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
 
     // not sure why, but the state of sp_z is not updated
     // and petsc uses the cached norm
-    if ( sp_z->isA<AMP::LinearAlgebra::DataChangeFirer>() ) {
-        sp_z->castTo<AMP::LinearAlgebra::DataChangeFirer>().fireDataChange();
-    }
+    auto firer = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( sp_z );
+    if ( firer )
+        firer->fireDataChange();
 
     // these tests were helpful in finding a bug
     if ( ( (PetscKrylovSolver *) ctx )->getDebugPrintInfoLevel() > 5 ) {

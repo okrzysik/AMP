@@ -75,7 +75,7 @@ public:
         tests1.testManagedVector( utils );
         tests2.testManagedVector( utils );
 #if defined(USE_EXT_PETSC) && defined(USE_EXT_TRILINOS)
-        if ( global_cached_matrix->isA<AMP::LinearAlgebra::ManagedPetscMatrix>() ) {
+        if ( dynamic_pointer_cast<AMP::LinearAlgebra::ManagedPetscMatrix>(global_cached_matrix) ) {
             AMP::shared_ptr<VectorFactory> factory3( new PETScInterfaceRightVectorFactory() );
             AMP::shared_ptr<VectorFactory> factory4( new PETScInterfaceLeftVectorFactory() );
             VectorTests tests3( factory3 );

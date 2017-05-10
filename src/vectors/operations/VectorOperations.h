@@ -2,7 +2,6 @@
 #define included_AMP_VectorOperations
 
 
-#include "utils/Castable.h"
 #include "utils/shared_ptr.h"
 #include "utils/AMP_MPI.h"
 #include "utils/RNG.h"
@@ -37,7 +36,7 @@ class VectorData;
   If you are reading this portion of the documentation, odds are you do not need
   to know about VectorOperations.
   */
-class VectorOperations : virtual public Castable
+class VectorOperations
 {
 public:
 

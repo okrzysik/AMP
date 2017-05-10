@@ -120,7 +120,7 @@ Vector::const_shared_ptr Vector::constSelect( const VectorSelector &s,
     Vector::const_shared_ptr retVal = this->selectInto( s );
     if ( retVal != nullptr ) {
         if ( AMP::dynamic_pointer_cast<const MultiVector>( retVal ) == nullptr )
-            retVal = MultiVector::view( retVal, retVal->getComm() );
+            retVal = MultiVector::constView( retVal, retVal->getComm() );
         Variable::shared_ptr var( new Variable( variable_name ) );
         AMP::const_pointer_cast<Vector>( retVal )->setVariable( var );
     }
@@ -133,7 +133,7 @@ void Vector::registerView( Vector::shared_ptr v ) const
             return;
     ( *d_Views ).push_back( v );
 }
-Vector::shared_ptr Vector::subsetVectorForVariable( const Variable::shared_ptr &name )
+Vector::shared_ptr Vector::subsetVectorForVariable( Variable::const_shared_ptr name )
 {
     Vector::shared_ptr retVal;
     if ( d_pVariable ) { // If there is a variable...
@@ -143,7 +143,7 @@ Vector::shared_ptr Vector::subsetVectorForVariable( const Variable::shared_ptr &
     return retVal;
 }
 Vector::const_shared_ptr
-Vector::constSubsetVectorForVariable( const Variable::shared_ptr &name ) const
+Vector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
 {
     Vector::const_shared_ptr retVal;
     if ( d_pVariable ) { // If there is a variable...

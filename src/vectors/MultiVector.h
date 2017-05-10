@@ -95,7 +95,7 @@ public:
       * and vec is added to it.  If vec is not a parallel vector(such as a SimpleVector), comm
       * must be specified.
       */
-    static AMP::shared_ptr<MultiVector> view( Vector::shared_ptr &vec,
+    static AMP::shared_ptr<MultiVector> view( Vector::shared_ptr vec,
                                               AMP_MPI comm = AMP_MPI( AMP_COMM_NULL ) );
 
     /** \brief Create a multivector view of a vector
@@ -105,7 +105,7 @@ public:
       * and vec is added to it.  If vec is not a parallel vector(such as a SimpleVector), comm
       * must be specified.
       */
-    static AMP::shared_ptr<const MultiVector> view( Vector::const_shared_ptr &vec,
+    static AMP::shared_ptr<const MultiVector> constView( Vector::const_shared_ptr vec,
                                                     AMP_MPI comm = AMP_MPI( AMP_COMM_NULL ) );
 
     /** \brief Encapsulate a vector in a MultiVector
@@ -115,7 +115,7 @@ public:
       * and vec is added to it.  If vec is not a parallel vector(such as a SimpleVector), comm
       * must be specified.
       */
-    static AMP::shared_ptr<MultiVector> encapsulate( Vector::shared_ptr &vec,
+    static AMP::shared_ptr<MultiVector> encapsulate( Vector::shared_ptr vec,
                                                      AMP_MPI comm = AMP_MPI( AMP_COMM_NULL ) );
 
     /** \brief Replace a vector in a MultiVector
@@ -176,9 +176,9 @@ public:
 
     virtual size_t sizeOfDataBlock( size_t i ) const override;
 
-    virtual Vector::shared_ptr subsetVectorForVariable( const Variable::shared_ptr &name ) override;
+    virtual Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     virtual Vector::const_shared_ptr
-    constSubsetVectorForVariable( const Variable::shared_ptr &name ) const override;
+    constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
     virtual void copyVector( Vector::const_shared_ptr src_vec ) override;
     virtual void swapVectors( Vector &other ) override;

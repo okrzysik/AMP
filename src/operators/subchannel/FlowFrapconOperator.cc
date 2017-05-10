@@ -89,30 +89,6 @@ void FlowFrapconOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // Subset the vectors
     AMP::LinearAlgebra::Vector::const_shared_ptr flowInputVec = subsetInputVector( u );
     AMP::LinearAlgebra::Vector::shared_ptr outputVec          = subsetOutputVector( r );
-
-    // AMP::LinearAlgebra::Variable::shared_ptr localVar ( new
-    // AMP::LinearAlgebra::Variable(d_cladVec->getVariable()->getName() ) );
-    // d_localCladVec = AMP::LinearAlgebra::SimpleVector<double>::create( d_numpoints, localVar );
-    //
-    // AMP::shared_ptr<AMP::InputDatabase> map3to1_db (new AMP::InputDatabase("Dummy"));
-    // map3to1_db->putInteger("BoundaryId",4);
-    // map3to1_db->putString("InputVariable",localVar->getName());
-    // map3to1_db->putString("OutputVariable",localVar->getName());
-    // AMP::shared_ptr<AMP::Operator::MapOperatorParameters> map3to1Params (new
-    // AMP::Operator::MapOperatorParameters(
-    // map3to1_db ));
-    // map3to1Params->d_MeshAdapter = d_MeshAdapter;
-    // AMP::shared_ptr<AMP::Operator::Map3Dto1D> mapCladto1 (new AMP::Operator::Map3Dto1D(
-    // map3to1Params ));
-    //
-    // mapCladto1->setZLocations( d_Map1to3->getZLocations());
-    //
-    // mapCladto1->setVector(d_localCladVec);
-    // mapCladto1->apply(nullVec, d_cladVec, nullVec);
-
-    // should never use resize as it is assumed that the vector is created using the right size !!
-    // outputVec->castTo<SimpleVector>().resize (d_numpoints);
-
     zPoints.resize( d_numpoints );
 
     // set the inlet flow temperature value

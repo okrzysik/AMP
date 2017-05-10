@@ -292,7 +292,7 @@ void NeumannVectorCorrection::setFrozenVector( AMP::LinearAlgebra::Vector::share
         return;
     if ( d_Frozen == nullptr )
         d_Frozen = AMP::LinearAlgebra::MultiVector::create( "frozenMultiVec", d_Mesh->getComm() );
-    d_Frozen->castTo<AMP::LinearAlgebra::MultiVector>().addVector( f2 );
+    dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(d_Frozen)->addVector( f2 );
 }
 
 

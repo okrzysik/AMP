@@ -286,9 +286,8 @@ void PetscSNESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
                   << std::endl;
 
     // Get petsc views of the vectors
-    AMP::LinearAlgebra::Vector::const_shared_ptr spRhs =
-        AMP::LinearAlgebra::PetscVector::constView( f );
-    AMP::LinearAlgebra::Vector::shared_ptr spSol = AMP::LinearAlgebra::PetscVector::view( u );
+    auto spRhs = AMP::LinearAlgebra::PetscVector::constView( f );
+    auto spSol = AMP::LinearAlgebra::PetscVector::view( u );
 
 // Create temporary copies of the petsc views
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
@@ -318,11 +317,11 @@ void PetscSNESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
     // if the dynamic cast yielded a valid pointer
     if ( spSol.get() != nullptr ) {
 
-        Vec x = spSol->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+        Vec x = dynamic_pointer_cast<const AMP::LinearAlgebra::PetscVector>(spSol)->getVec();
 
         Vec b = PETSC_NULL;
         if ( spRhs.get() != nullptr ) {
-            b = spRhs->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+            b = dynamic_pointer_cast<const AMP::LinearAlgebra::PetscVector>(spRhs)->getVec();
             setSNESFunction( spRhs );
         }
 
@@ -605,7 +604,7 @@ void PetscSNESSolver::setSNESFunction( AMP::shared_ptr<const AMP::LinearAlgebra:
     AMP_INSIST( petscVec.get() != nullptr,
                 "ERROR: Currently the SNES Solver can only be used with a Petsc_Vector, the "
                 "supplied Vector does not appear to belong to this class" );
-    Vec residualVector = petscVec->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+    Vec residualVector = dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(petscVec)->getVec();
     SNESSetFunction( d_SNESSolver, residualVector, PetscSNESSolver::apply, (void *) this );
 }
 

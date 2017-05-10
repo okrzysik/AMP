@@ -28,19 +28,15 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, DOF_PER_NODE );
 
     // Create a nodal variable
-    AMP::LinearAlgebra::Variable::shared_ptr variable(
-        new AMP::LinearAlgebra::Variable( "test vector" ) );
+    auto variable = AMP::make_shared<AMP::LinearAlgebra::Variable>( "test vector" );
 
     // Create the matrix and vectors
-    AMP::LinearAlgebra::Vector::shared_ptr vector1 =
-        AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
-    AMP::LinearAlgebra::Vector::shared_ptr vector2 =
-        AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
-    AMP::LinearAlgebra::Matrix::shared_ptr matrixa =
-        AMP::LinearAlgebra::createMatrix( vector1, vector2 );
+    auto vector1 = AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
+    auto vector2 = AMP::LinearAlgebra::createVector( DOFs, variable, SPLIT );
+    auto matrixa = AMP::LinearAlgebra::createMatrix( vector1, vector2 );
 
     // Currently there is a bug with multivectors
-    bool isMultiVector = vector1->isA<AMP::LinearAlgebra::MultiVector>();
+    bool isMultiVector = dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(vector1) != nullptr;
     if ( isMultiVector ) {
         utils->expected_failure( "VerifyGetMatrixTrivialTest with split=true" );
         PROFILE_STOP2("VerifyGetMatrixTrivialTest",1);

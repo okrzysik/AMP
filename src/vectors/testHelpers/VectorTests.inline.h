@@ -61,7 +61,7 @@ void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_p
 
     p->setToScalar( 5.0 );
     i = 0;
-    for ( cur1 = p->begin(); cur1 != end; cur1++ ) {
+    for ( cur1 = p->begin(); cur1 != end; ++cur1 ) {
         if ( ( *cur1 ) != 5.0 )
             break;
         i++;

@@ -58,7 +58,7 @@ AMP::shared_ptr<const MultiVector> MultiVector::const_create(
         vecs2[i]   = AMP::const_pointer_cast<Vector>( vecs[i] );
     return MultiVector::create( variable, comm, vecs2 );
 }
-AMP::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr &vec, AMP_MPI comm )
+AMP::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec, AMP_MPI comm )
 {
     auto multivec = AMP::dynamic_pointer_cast<MultiVector>( vec );
     if ( multivec ) {
@@ -74,7 +74,7 @@ AMP::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr &vec, 
         firer->registerListener( multivec.get() );
     return multivec;
 }
-AMP::shared_ptr<MultiVector> MultiVector::view( Vector::shared_ptr &vec, AMP_MPI comm )
+AMP::shared_ptr<MultiVector> MultiVector::view( Vector::shared_ptr vec, AMP_MPI comm )
 {
     // Check to see if this is a multivector
     auto multivec = AMP::dynamic_pointer_cast<MultiVector>( vec );
@@ -101,7 +101,7 @@ AMP::shared_ptr<MultiVector> MultiVector::view( Vector::shared_ptr &vec, AMP_MPI
     }
     return multivec;
 }
-AMP::shared_ptr<const MultiVector> MultiVector::view( Vector::const_shared_ptr &vec, AMP_MPI comm )
+AMP::shared_ptr<const MultiVector> MultiVector::constView( Vector::const_shared_ptr vec, AMP_MPI comm )
 {
     // Check to see if this is a multivector
     auto multivec = AMP::dynamic_pointer_cast<const MultiVector>( vec );
@@ -452,7 +452,7 @@ void MultiVector::dumpGhostedData( std::ostream &out, size_t offset ) const
 /****************************************************************
 * Subset                                                        *
 ****************************************************************/
-Vector::shared_ptr MultiVector::subsetVectorForVariable( const Variable::shared_ptr &name )
+Vector::shared_ptr MultiVector::subsetVectorForVariable( Variable::const_shared_ptr name )
 {
     // Subset a multivector for a variable
     /* A variable used to contain a mesh and a name, now it only contains a name
@@ -476,8 +476,7 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( const Variable::shared_
     // If no vectors were found, check if the variable is actually a multivariable and subset on it
     const AMP_MPI &comm = getComm();
     if ( comm.sumReduce( subvectors.size() ) == 0 ) {
-        AMP::shared_ptr<MultiVariable> multivariable =
-            AMP::dynamic_pointer_cast<MultiVariable>( name );
+        auto multivariable = AMP::dynamic_pointer_cast<const MultiVariable>( name );
         if ( multivariable.get() != nullptr ) {
             bool all_found = true;
             std::vector<Vector::shared_ptr> sub_subvectors( multivariable->numVariables() );
@@ -500,21 +499,22 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( const Variable::shared_
     int N_procs = comm.sumReduce<int>( subvectors.empty() ? 0 : 1 );
     if ( N_procs == 0 )
         return Vector::shared_ptr();
+    auto variable = name->cloneVariable( name->getName() );
     AMP::shared_ptr<MultiVector> retVal;
     if ( N_procs == comm.getSize() ) {
         // All processor have a variable
-        retVal = create( name, getComm() );
+        retVal = create( variable, getComm() );
         retVal->addVector( subvectors );
     } else {
         // Only a subset of processors have a variable
         AMP_MPI new_comm = comm.split( subvectors.empty() ? -1 : 0, comm.getRank() );
-        retVal           = create( name, new_comm );
+        retVal           = create( variable, new_comm );
         retVal->addVector( subvectors );
     }
     return retVal;
 }
 Vector::const_shared_ptr
-MultiVector::constSubsetVectorForVariable( const Variable::shared_ptr &name ) const
+MultiVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
 {
     MultiVector *tmp = const_cast<MultiVector *>( this );
     return tmp->subsetVectorForVariable( name );

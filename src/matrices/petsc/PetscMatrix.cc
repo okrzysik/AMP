@@ -8,11 +8,11 @@ namespace LinearAlgebra {
 
 Matrix::shared_ptr PetscMatrix::createView( shared_ptr in_matrix )
 {
-    if ( in_matrix->isA<ManagedPetscMatrix>() )
-        return in_matrix;
-
-    AMP_ERROR( "Managed memory matrix is not well defined" );
-    return Matrix::shared_ptr();
+    auto mat = dynamic_pointer_cast<ManagedPetscMatrix>( in_matrix );
+    AMP_INSIST( mat!=nullptr, "Managed memory matrix is not well defined" );
+    return mat;
 }
+
+
 }
 } // end namespace

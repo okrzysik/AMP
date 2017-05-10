@@ -5,19 +5,18 @@
 #include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
 #include <exception>
-#include <utils/Castable.h>
+
 
 void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,
              const double *shift,
              const double *scale,
              const size_t nshift )
 {
-    if ( not vec->isA<AMP::LinearAlgebra::MultiVector>() ) {
+    auto mvec = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vec );
+    if ( !mvec ) {
         vec->scale( scale[0] );
         vec->addScalar( vec, shift[0] );
     } else {
-        AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> mvec =
-            AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vec );
         size_t nvecs = mvec->getNumberOfSubvectors();
         AMP_INSIST( nshift <= nvecs, "not enough subvectors" );
         for ( size_t i = 0; i < nshift; i++ ) {

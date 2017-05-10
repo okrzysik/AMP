@@ -16,8 +16,7 @@ namespace LinearAlgebra {
  * engine...yet
 */
 
-class VectorEngineParameters:
-    virtual public Castable
+class VectorEngineParameters
 {
 public:
     typedef AMP::shared_ptr<VectorEngineParameters> shared_ptr;

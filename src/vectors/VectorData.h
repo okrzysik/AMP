@@ -3,7 +3,6 @@
 
 #include "vectors/CommunicationList.h"
 #include "utils/shared_ptr.h"
-#include "utils/Castable.h"
 #include <vector>
 
 
@@ -37,7 +36,7 @@ class VectorDataIterator;
   to know about VectorData.
 
   */
-class VectorData : virtual public Castable
+class VectorData
 {
 public: // enums
 
