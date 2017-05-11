@@ -10,7 +10,7 @@ ENABLE_WARNINGS
 #include "operators/LinearOperator.h"
 #include "utils/Utilities.h"
 #include "vectors/DataChangeFirer.h"
-#include "vectors/trilinos/EpetraVector.h"
+#include "vectors/trilinos/epetra/EpetraVector.h"
 
 namespace AMP {
 namespace Solver {
