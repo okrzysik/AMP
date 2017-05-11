@@ -225,7 +225,7 @@ protected:
      * \param[in]  other_op  The other matrix to multiply
      * \param[out] result  The matrix to store the result
      */
-    virtual void multiply( shared_ptr other_op, shared_ptr &result );
+    virtual void multiply( shared_ptr other_op, shared_ptr &result ) override;
 
     // AMP variables and DOFManagers for the left and right vectors
     AMP::LinearAlgebra::Variable::shared_ptr d_VariableLeft;
