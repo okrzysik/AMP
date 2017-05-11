@@ -47,9 +47,7 @@ public:
     /**
       The function that computes the residual.
      * @param u: multivector of the state.
-     * @param r: specific power in Watts per gram
-     The result of apply is
-     * r = A(u)
+     * @param f: The result of apply ( f = A(u) )
      */
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;

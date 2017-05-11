@@ -82,18 +82,6 @@ public:
         return d_volumeOperator->isValidInput( sol );
     }
 
-
-    /**
-     * Returns a shared pointer to a OperatorParameters object that can be used to construct
-     * or update an Operator which corresponds to some approximation to the Jacobian or tangent
-     * matrix
-     * of the NonlinearBVPOperator
-     *
-     * \param x
-     *        This function takes as input a current vector x at which the Jacobian or tangent
-     * matrix needs to be
-     * constructed
-     */
     AMP::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr x,

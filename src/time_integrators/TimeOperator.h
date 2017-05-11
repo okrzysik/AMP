@@ -154,7 +154,9 @@ public:
      to
      * two OperatorParameter objects, one for the mass operator (if not a FD or FVM discretization)
      * and one for the rhs operator.
+     @param [in] type : type of parameters to get
      @param [in] u : shared pointer to a Vector at which the Jacobian is to be evaluated.
+     @param [in] params : optional parameters object
      */
     AMP::shared_ptr<AMP::Operator::OperatorParameters>
     getParameters( const std::string &type,

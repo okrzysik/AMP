@@ -1,4 +1,4 @@
-
+//! @cond Doxygen_Suppress
 #ifndef included_AMP_DTK_AMPMeshEntityLocalMap
 #define included_AMP_DTK_AMPMeshEntityLocalMap
 
@@ -120,3 +120,4 @@ private:
 }
 
 #endif
+//! @endcond

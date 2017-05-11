@@ -617,7 +617,8 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
     // Create the count (Note: we do not need to worry about thread safety)
     d_count      = new int;
     *( d_count ) = 1;
-    ++N_MPI_Comm_created;
+    if ( d_manage )
+        ++N_MPI_Comm_created;
     // Create d_ranks
     if ( comm_size > 1 ) {
         d_ranks = new int[comm_size];
