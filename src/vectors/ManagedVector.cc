@@ -116,9 +116,9 @@ void ManagedVector::copyVector( Vector::const_shared_ptr other )
         AMP_ERROR( "Destination vector and source vector not the same size" );
     }
     fireDataChange();
-    VectorDataIterator<double> cur1       = begin();
-    VectorDataIterator<double> end1       = end();
-    VectorDataIterator<const double> cur2 = other->begin();
+    VectorDataIterator<double> cur1       = VectorData::begin();
+    VectorDataIterator<double> end1       = VectorData::end();
+    VectorDataIterator<const double> cur2 = other->VectorData::begin();
     while ( cur1 != end1 ) {
         *cur1 = *cur2;
         ++cur1;

@@ -63,7 +63,7 @@ class NativePetscVector :
     public NativeVector,
     public PetscVector,
     public VectorEngine,
-    public VectorOperationsDefault
+    public VectorOperationsDefault<double>
 {
 public:
     //! Conveninece typedef
@@ -166,6 +166,8 @@ public:
     {
         return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
     }
+
+    virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(double).hash_code(); }
 
 protected:
     virtual void *getRawDataBlockAsVoid( size_t i ) override;

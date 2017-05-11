@@ -16,7 +16,7 @@ namespace LinearAlgebra {
   */
 class NullVector :
     public Vector,
-    public VectorOperationsDefault
+    public VectorOperationsDefault<double>
 {
 private:
     explicit NullVector( Variable::shared_ptr );
@@ -68,6 +68,8 @@ public:
     virtual size_t sizeOfDataBlock( size_t ) const override;
 
     virtual uint64_t getDataID() const override { return 0; }
+
+    virtual bool isTypeId( size_t, size_t ) const override { return false; }
 
     using Vector::cloneVector;
     using Vector::dot;

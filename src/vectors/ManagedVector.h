@@ -49,7 +49,7 @@ public:
 */
 class ManagedVector :
     public Vector,
-    public VectorOperationsDefault,
+    public VectorOperationsDefault<double>,
     public DataChangeFirer
 {
 
@@ -83,10 +83,6 @@ public:
     VectorEngine::shared_ptr getVectorEngine();
     VectorEngine::const_shared_ptr getVectorEngine() const;
     std::string type() const override;
-    virtual Vector::const_iterator begin() const override;
-    virtual Vector::const_iterator end() const override;
-    virtual Vector::iterator begin() override;
-    virtual Vector::iterator end() override;
 
     virtual Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     virtual Vector::const_shared_ptr
@@ -148,6 +144,7 @@ public:
     {
         return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
     }
+    virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(double).hash_code(); }
 
 protected:
     virtual Vector::shared_ptr selectInto( const VectorSelector & ) override;
@@ -177,24 +174,24 @@ public: // Pull Vector into the current scope
     using Vector::cloneVector;
 
 public: // Pull VectorOperations into the current scope
-    using VectorOperationsDefault::add;
-    using VectorOperationsDefault::addScalar;
-    using VectorOperationsDefault::abs;
-    using VectorOperationsDefault::axpy;
-    using VectorOperationsDefault::axpby;
-    using VectorOperationsDefault::divide;
-    using VectorOperationsDefault::dot;
-    using VectorOperationsDefault::equals;
-    using VectorOperationsDefault::linearSum;
-    using VectorOperationsDefault::minQuotient;
-    using VectorOperationsDefault::multiply;
-    using VectorOperationsDefault::setRandomValues;
-    using VectorOperationsDefault::scale;
-    using VectorOperationsDefault::subtract;
-    using VectorOperationsDefault::reciprocal;
-    using VectorOperationsDefault::wrmsNorm;
-    using VectorOperationsDefault::wrmsNormMask;
-    using VectorOperationsDefault::zero;
+    using VectorOperations::add;
+    using VectorOperations::addScalar;
+    using VectorOperations::abs;
+    using VectorOperations::axpy;
+    using VectorOperations::axpby;
+    using VectorOperations::divide;
+    using VectorOperations::dot;
+    using VectorOperations::equals;
+    using VectorOperations::linearSum;
+    using VectorOperations::minQuotient;
+    using VectorOperations::multiply;
+    using VectorOperations::setRandomValues;
+    using VectorOperations::scale;
+    using VectorOperations::subtract;
+    using VectorOperations::reciprocal;
+    using VectorOperations::wrmsNorm;
+    using VectorOperations::wrmsNormMask;
+    using VectorOperations::zero;
 
 private:
     ManagedVector();

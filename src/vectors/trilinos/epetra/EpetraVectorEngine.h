@@ -59,7 +59,7 @@ private:
   */
 class EpetraVectorEngine :
     public VectorEngine,
-    public VectorOperationsDefault
+    public VectorOperationsDefault<double>
 {
 protected:
     /** \brief  The Epetra_Vector to perform work on

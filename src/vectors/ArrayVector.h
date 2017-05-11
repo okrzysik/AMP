@@ -5,6 +5,7 @@
 
 #include "vectors/Vector.h"
 #include "vectors/operations/VectorOperationsDefault.h"
+#include "vectors/operations/VectorOperationsDefault.hpp"
 #include "utils/FunctionTable.h"
 #include "utils/Array.h"
 
@@ -19,7 +20,7 @@ namespace LinearAlgebra {
 template <typename T, typename FUN = FunctionTable, typename Allocator = std::allocator<T>>
 class ArrayVector :
     public Vector,
-    public VectorOperationsDefault
+    public VectorOperationsDefault<T>
 {
 private:
     AMP::Array<T, FUN, Allocator> d_array;
@@ -219,162 +220,6 @@ public:
       */
     void assemble() override { AMP_ERROR("Not implemented"); }
 
-    /**
-     * The next set of functions are derived from the VectorOperations class and should eventually
-     * go away as we move away from a single type
-     */
-
-    /**
-     * \param  alpha a scalar double
-     * \brief  Set all compenents of a vector to a scalar.
-     * For Vectors, the components of <em>this</em> are set to \f$\alpha\f$.
-     */
-    void setToScalar( double alpha ) override;
-
-    /**
-     * \param  alpha  a scalar double
-     * \param  x  a vector
-     * \brief  Set vector equal to scaled input.
-     * For Vectors, \f$\mathit{this}_i = \alpha x_i\f$.
-     */
-    void scale( double alpha, const VectorOperations &x ) override;
-
-    /**
-     * \param  alpha  a scalar double
-     *
-     * \brief  Scale a vector.
-     * For Vectors, \f$\mathit{this}_i = \alpha\mathit{this}_i\f$.
-     */
-    void scale( double alpha ) override;
-
-    /**
-     * \param  x  a vector
-     * \param  y  a vector
-     * \brief  Adds two vectors.
-     * For Vectors, \f$\mathit{this}_i = x_i + y_i\f$.
-     */
-    void add( const VectorOperations &x, const VectorOperations &y ) override;
-
-    /**
-      * \param x  a vector
-      * \param y  a vector
-      * \brief Subtracts one vector from another.
-      * For Vectors, \f$\mathit{this}_i = x_i - y_i\f$
-     */
-    void subtract( const VectorOperations &x, const VectorOperations &y ) override;
-
-    /**
-      * \param x  a vector
-      * \param y  a vector
-      * \brief Component-wise multiply one vector with another.
-      * For Vectors, \f$\mathit{this}_i = x_i  y_i\f$
-     */
-    void multiply( const VectorOperations &x, const VectorOperations &y ) override;
-
-    /**
-      * \param x  a vector
-      * \param y  a vector
-      * \brief Component-wise divide one vector by another.
-      * For Vectors, \f$\mathit{this}_i = x_i / y_i\f$
-     */
-    void divide( const VectorOperations &x, const VectorOperations &y ) override;
-
-    /**
-      * \param x  a vector
-      * \brief Set this to the component-wise reciprocal of a vector.  \f$\mathit{this}_i =
-     * 1/x_i\f$.
-     */
-    void reciprocal( const VectorOperations &x ) override;
-
-
-    /**
-     * \param alpha a scalar
-     * \param x a vector
-     * \param beta a scalar
-     * \param y a vector
-     * \brief Set a vector to be a linear combination of two vectors.
-     *  \f$\mathit{this}_i = \alpha x_i + \beta y_i\f$.
-     */
-    void linearSum( double alpha,
-                            const VectorOperations &x,
-                            double beta,
-                            const VectorOperations &y ) override;
-
-    /**
-      * \param alpha a scalar
-      * \param x a vector
-      * \param y a vector
-      * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
-     */
-    void axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
-
-    /**
-      * \param alpha a scalar
-      * \param beta a scalar
-      * \param x  a vector
-      * \brief Set this vector alpha * x + this.
-      * \f$\mathit{this}_i = \alpha x_i + \beta \mathit{this}_i \f$
-      */
-    void axpby( double alpha, double beta, const VectorOperations &x ) override;
-
-    /**
-      * \param x a vector
-      * \brief Set this to the component-wise absolute value of a vector.
-      * \f$\mathit{this}_i = |x_i|\f$.
-     */
-    void abs( const VectorOperations &x ) override;
-
-    /**
-      * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
-     */
-    double min( void ) const override;
-
-    /**
-      * \brief Return the maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
-     */
-    double max( void ) const override;
-
-    /**
-     * \brief Set data in this vector to random values on [0,1).
-     */
-    void setRandomValues( void ) override;
-    using Vector::setRandomValues;
-
-    /**
-     * \brief Return discrete @f$ L_1 @f$ -norm of this vector.
-     * \details Returns \f[\sum_i |\mathit{this}_i|\f]
-     */
-    double L1Norm( void ) const override;
-
-    /**
-     * \brief Return discrete @f$ L_2 @f$ -norm of this vector.
-     * \details Returns \f[\sqrt{\sum_i \mathit{this}_i^2}\f]
-     */
-    double L2Norm( void ) const override;
-
-    /**
-     * \brief Return the @f$ L_\infty @f$ -norm of this vector.
-     * \details Returns \f[\max_i |\mathit{this}_i|\f]
-     */
-    double maxNorm( void ) const override;
-
-    /**
-      * \param x a vector
-      * \brief Return the dot product of this vector with the argument vector.
-      * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
-     */
-    using Vector::dot;
-    double dot( const VectorOperations &x ) const override;
-
-    /**
-      * \fn equals (Vector & const rhs, double tol )
-      * \brief  Determine if two vectors are equal using an absolute tolerance
-      * \param[in] rhs Vector to compare to
-      * \param[in] tol Tolerance of comparison
-      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
-      */
-    bool localEquals( const VectorOperations &rhs, double tol = 0.000001 ) const override;
-
 protected:
 
     /** \brief Return a pointer to a particular block of memory in the
@@ -388,6 +233,9 @@ protected:
       * \param i The block to return
       */
     const void *getRawDataBlockAsVoid( size_t i ) const override  { AMP_ASSERT(i==0); return d_array.data(); }
+
+    virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(T).hash_code(); }
+
 };
 
 }

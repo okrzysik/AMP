@@ -32,42 +32,6 @@ inline Vector::shared_ptr ManagedVector::getRootVector()
 }
 
 
-inline Vector::const_iterator ManagedVector::begin() const
-{
-    if ( d_vBuffer )
-        return Vector::begin();
-    else
-        return dynamic_pointer_cast<const Vector>( d_Engine )->begin();
-}
-
-
-inline Vector::const_iterator ManagedVector::end() const
-{
-    if ( d_vBuffer )
-        return Vector::end();
-    else
-        return dynamic_pointer_cast<const Vector>( d_Engine )->end();
-}
-
-
-inline Vector::iterator ManagedVector::begin()
-{
-    if ( d_vBuffer )
-        return Vector::begin();
-    else
-        return dynamic_pointer_cast<Vector>( d_Engine )->begin();
-}
-
-
-inline Vector::iterator ManagedVector::end()
-{
-    if ( d_vBuffer )
-        return Vector::end();
-    else
-        return dynamic_pointer_cast<Vector>( d_Engine )->end();
-}
-
-
 inline void ManagedVector::dataChanged()
 {
     if ( *d_UpdateState == UpdateState::UNCHANGED )

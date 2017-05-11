@@ -3,6 +3,7 @@
 
 #include "Vector.h"
 #include "vectors/operations/VectorOperationsDefault.h"
+#include "vectors/operations/VectorOperationsDefault.hpp"
 
 
 namespace AMP {
@@ -15,7 +16,7 @@ namespace LinearAlgebra {
 template <typename T>
 class SimpleVector :
     public Vector,
-    public VectorOperationsDefault
+    public VectorOperationsDefault<T>
 {
 protected:
     std::vector<T> d_Data;
@@ -72,36 +73,9 @@ public:
     {
         return reinterpret_cast<uint64_t>( d_Data.data() );
     }
-    virtual void setToScalar( double alpha ) override;
-    virtual void scale( double alpha, const VectorOperations &x ) override;
-    virtual void scale( double alpha ) override;
-    virtual void add( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void subtract( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void multiply( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void divide( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void reciprocal( const VectorOperations &x ) override;
-    virtual void linearSum( double alpha,
-                            const VectorOperations &x,
-                            double beta,
-                            const VectorOperations &y ) override;
-    virtual void
-    axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void axpby( double alpha, double beta, const VectorOperations &x ) override;
-    virtual void abs( const VectorOperations &x ) override;
-    virtual double min( void ) const override;
-    virtual double max( void ) const override;
-    virtual double L1Norm( void ) const override;
-    virtual double L2Norm( void ) const override;
-    virtual double maxNorm( void ) const override;
-
-    using Vector::dot;
-    virtual double dot( const VectorOperations &x ) const override;
-
-    using Vector::cloneVector;
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
     virtual size_t numberOfDataBlocks() const override;
     virtual size_t sizeOfDataBlock( size_t i = 0 ) const override;
-    using Vector::copyVector;
     virtual void copyVector( Vector::const_shared_ptr src_vec ) override;
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector &other ) override;
@@ -137,7 +111,17 @@ public:
 
     //! return a const reference to the internal data container
     const std::vector<T> &getData( void ) const { return d_Data; }
+
+protected:
+    virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(T).hash_code(); }
+
+public:
+    using Vector::cloneVector;
+    using Vector::copyVector;
+
 };
+
+
 }
 }
 

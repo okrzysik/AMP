@@ -122,8 +122,8 @@ PetscErrorCode _AMP_shift( Vec px, PetscScalar s)
 {
     PETSC_RECAST( x, px );
 
-    auto cur = x->ManagedVector::begin();
-    auto end = x->ManagedVector::end();
+    auto cur = x->VectorData::begin();
+    auto end = x->VectorData::end();
     while ( cur != end ) {
         *cur = s+ ( *cur );
         cur++;
@@ -220,8 +220,8 @@ PetscErrorCode _AMP_exp( Vec a )
 {
     PETSC_RECAST( x, a );
 
-    auto cur = x->ManagedVector::begin();
-    auto end = x->ManagedVector::end();
+    auto cur = x->VectorData::begin();
+    auto end = x->VectorData::end();
     while ( cur != end ) {
         *cur = exp( *cur );
         cur++;
@@ -233,8 +233,8 @@ PetscErrorCode _AMP_log( Vec a )
 {
     PETSC_RECAST( x, a );
 
-    auto cur = x->ManagedVector::begin();
-    auto end = x->ManagedVector::end();
+    auto cur = x->VectorData::begin();
+    auto end = x->VectorData::end();
     while ( cur != end ) {
         *cur = log( *cur );
         cur++;
@@ -251,10 +251,10 @@ PetscErrorCode _AMP_pointwisemin( Vec a, Vec b, Vec c )
     AMP_INSIST( x->getLocalSize() == y->getLocalSize(), "Incompatible vectors" );
     AMP_INSIST( x->getLocalSize() == z->getLocalSize(), "Incompatible vectors" );
 
-    auto xi = x->ManagedVector::begin();
-    auto yi = y->ManagedVector::begin();
-    auto zi = z->ManagedVector::begin();
-    auto xe = x->ManagedVector::end();
+    auto xi = x->VectorData::begin();
+    auto yi = y->VectorData::begin();
+    auto zi = z->VectorData::begin();
+    auto xe = x->VectorData::end();
     while ( xi != xe ) {
         *xi = std::min( *yi, *zi );
         xi++;
@@ -273,10 +273,10 @@ PetscErrorCode _AMP_pointwisemax( Vec a, Vec b, Vec c )
     AMP_INSIST( x->getLocalSize() == y->getLocalSize(), "Incompatible vectors" );
     AMP_INSIST( x->getLocalSize() == z->getLocalSize(), "Incompatible vectors" );
 
-    auto xi = x->ManagedVector::begin();
-    auto yi = y->ManagedVector::begin();
-    auto zi = z->ManagedVector::begin();
-    auto xe = x->ManagedVector::end();
+    auto xi = x->VectorData::begin();
+    auto yi = y->VectorData::begin();
+    auto zi = z->VectorData::begin();
+    auto xe = x->VectorData::end();
     while ( xi != xe ) {
         *xi = std::max( *yi, *zi );
         xi++;
@@ -295,10 +295,10 @@ PetscErrorCode _AMP_pointwisemaxabs( Vec a, Vec b, Vec c )
     AMP_INSIST( x->getLocalSize() == y->getLocalSize(), "Incompatible vectors" );
     AMP_INSIST( x->getLocalSize() == z->getLocalSize(), "Incompatible vectors" );
 
-    auto xi = x->ManagedVector::begin();
-    auto yi = y->ManagedVector::begin();
-    auto zi = z->ManagedVector::begin();
-    auto xe = x->ManagedVector::end();
+    auto xi = x->VectorData::begin();
+    auto yi = y->VectorData::begin();
+    auto zi = z->VectorData::begin();
+    auto xe = x->VectorData::end();
     while ( xi != xe ) {
         *xi = std::max( fabs( *yi ), fabs( *zi ) );
         xi++;
@@ -329,8 +329,8 @@ PetscErrorCode _AMP_pointwisedivide( Vec a, Vec b, Vec c )
 PetscErrorCode _AMP_sqrt( Vec a )
 {
     PETSC_RECAST( x, a );
-    auto cur = x->ManagedVector::begin();
-    auto end = x->ManagedVector::end();
+    auto cur = x->VectorData::begin();
+    auto end = x->VectorData::end();
     while ( cur != end ) {
         *cur = sqrt( fabs( *cur ) );
         cur++;
@@ -382,9 +382,9 @@ PetscErrorCode _AMP_maxpointwisedivide( Vec a, Vec b, PetscReal *res )
     PETSC_RECAST( x, a );
     PETSC_RECAST( y, b );
 
-    AMP::LinearAlgebra::Vector::iterator cur_x = x->ManagedVector::begin();
-    AMP::LinearAlgebra::Vector::iterator cur_y = y->ManagedVector::begin();
-    AMP::LinearAlgebra::Vector::iterator end_x = x->ManagedVector::end();
+    AMP::LinearAlgebra::Vector::iterator cur_x = x->VectorData::begin();
+    AMP::LinearAlgebra::Vector::iterator cur_y = y->VectorData::begin();
+    AMP::LinearAlgebra::Vector::iterator end_x = x->VectorData::end();
     double local_res                           = 0.0;
     while ( cur_x != end_x ) {
         if ( *cur_y == 0.0 ) {

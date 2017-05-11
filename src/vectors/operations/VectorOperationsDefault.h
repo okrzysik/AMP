@@ -14,6 +14,7 @@ namespace LinearAlgebra {
   * \details VectorOperationsDefault impliments a default set of 
   *    vector operations on the CPU. 
   */
+template<typename TYPE=double>
 class VectorOperationsDefault : virtual public VectorOperations
 {
 public:
@@ -250,5 +251,6 @@ public: // Pull VectorOperations into the current scope
 
 } // LinearAlgebra namespace
 } // AMP namespace
+
 
 #endif

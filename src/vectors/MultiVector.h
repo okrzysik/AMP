@@ -202,6 +202,8 @@ public:
     virtual size_t getGlobalSize() const override;
     virtual size_t getGhostSize() const override;
     virtual void putRawData( const double * ) override;
+    virtual bool isTypeId( size_t hash, size_t ) const override;
+
 
     // Vector engine functions
     virtual AMP::shared_ptr<std::vector<double>> getNewBuffer() override;

@@ -390,8 +390,8 @@ void *MultiVector::getRawDataBlockAsVoid( size_t i )
     for ( size_t j = 0; j != d_vVectors.size(); j++ ) {
         curOffset += d_vVectors[j]->numberOfDataBlocks();
         if ( i < curOffset ) {
-            return d_vVectors[j]->getRawDataBlock<double>( i - curOffset +
-                                                           d_vVectors[j]->numberOfDataBlocks() );
+            size_t index = i + d_vVectors[j]->numberOfDataBlocks() - curOffset;
+            return d_vVectors[j]->getRawDataBlock<double>( index );
         }
     }
     return nullptr;
@@ -402,11 +402,23 @@ const void *MultiVector::getRawDataBlockAsVoid( size_t i ) const
     for ( size_t j = 0; j != d_vVectors.size(); j++ ) {
         curOffset += d_vVectors[j]->numberOfDataBlocks();
         if ( i < curOffset ) {
-            return d_vVectors[j]->getRawDataBlock<double>( i - curOffset +
-                                                           d_vVectors[j]->numberOfDataBlocks() );
+            size_t index = i + d_vVectors[j]->numberOfDataBlocks() - curOffset;
+            return d_vVectors[j]->getRawDataBlock<double>( index );
         }
     }
     return nullptr;
+}
+bool MultiVector::isTypeId( size_t hash, size_t block ) const
+{
+    size_t curOffset = 0;
+    for ( size_t j = 0; j != d_vVectors.size(); j++ ) {
+        curOffset += d_vVectors[j]->numberOfDataBlocks();
+        if ( block < curOffset ) {
+            size_t index = block + d_vVectors[j]->numberOfDataBlocks() - curOffset;
+            return d_vVectors[j]->isTypeId( hash, index );
+        }
+    }
+    return false;
 }
 const void *MultiVector::getDataBlock( size_t i ) const { return getRawDataBlockAsVoid( i ); }
 void *MultiVector::getDataBlock( size_t i ) { return getRawDataBlockAsVoid( i ); }

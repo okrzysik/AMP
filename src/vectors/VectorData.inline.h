@@ -29,23 +29,47 @@ inline bool VectorData::containsGlobalElement( size_t i )
 
 
 /****************************************************************
+* Get the type of data                                          *
+****************************************************************/
+template <typename TYPE>
+bool VectorData::isType( ) const
+{
+    bool test = true;
+    auto hash = typeid(TYPE).hash_code();
+    for (size_t i=0; i<numberOfDataBlocks(); i++)
+        test = test && isTypeId( hash, i );
+    return test;
+}
+template <typename TYPE>
+bool VectorData::isBlockType( size_t i ) const
+{
+    auto hash = typeid(TYPE).hash_code();
+    return isTypeId( hash, i );
+}
+
+
+/****************************************************************
 * Create vector iterators                                       *
 ****************************************************************/
-inline VectorDataIterator<double> VectorData::begin()
+template<class TYPE>
+inline VectorDataIterator<TYPE> VectorData::begin()
 {
-    return VectorDataIterator<double>( this, 0 );
+    return VectorDataIterator<TYPE>( this, 0 );
 }
-inline VectorDataIterator<double> VectorData::end()
+template<class TYPE>
+inline VectorDataIterator<TYPE> VectorData::end()
 {
-    return VectorDataIterator<double>( this, getLocalSize() );
+    return VectorDataIterator<TYPE>( this, getLocalSize() );
 }
-inline VectorDataIterator<const double> VectorData::begin() const
+template<class TYPE>
+inline VectorDataIterator<const TYPE> VectorData::begin() const
 {
-    return VectorDataIterator<const double>( const_cast<VectorData*>(this), 0 );
+    return VectorDataIterator<const TYPE>( const_cast<VectorData*>(this), 0 );
 }
-inline VectorDataIterator<const double> VectorData::end() const
+template<class TYPE>
+inline VectorDataIterator<const TYPE> VectorData::end() const
 {
-    return VectorDataIterator<const double>( const_cast<VectorData*>(this), getLocalSize() );
+    return VectorDataIterator<const TYPE>( const_cast<VectorData*>(this), getLocalSize() );
 }
 inline size_t VectorData::getGhostSize() const
 {

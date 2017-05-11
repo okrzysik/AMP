@@ -46,7 +46,7 @@ class NativeThyraVector :
     public NativeVector,
     public ThyraVector,
     public VectorEngine,
-    public VectorOperationsDefault
+    public VectorOperationsDefault<double>
 {
 public:
     //! Conveninece typedef
@@ -113,7 +113,7 @@ public:
     virtual AMP_MPI getComm() const override;
     virtual void copyOutRawData( double *out ) const override;
     virtual uint64_t getDataID() const override  { return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) ); }
-
+    virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(double).hash_code(); }
 
 protected:
     //! Empty constructor.

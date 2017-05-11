@@ -46,7 +46,7 @@ namespace LinearAlgebra {
   */
 class SubsetVector :
     public Vector,
-    public VectorOperationsDefault
+    public VectorOperationsDefault<double>
 {
 
 public:
@@ -75,6 +75,7 @@ public:
     virtual void copyOutRawData( double *out ) const override;
 
     virtual uint64_t getDataID() const override { return d_ViewVector->getDataID(); }
+    virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(double).hash_code(); }
 
 private:
     SubsetVector() {}

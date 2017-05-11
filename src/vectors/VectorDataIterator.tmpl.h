@@ -103,6 +103,7 @@ VectorDataIterator<TYPE>::VectorDataIterator( VectorData *vec, size_t position )
     d_data = new TYPE*[d_N_blocks];
     d_blockSize = new size_t[d_N_blocks];
     for (size_t i=0; i<d_N_blocks; i++) {
+        AMP_INSIST( vec->isBlockType<TYPE>(i), "Data type does not match iterator type" );
         d_data[i] = vec->getRawDataBlock<TYPE>( i );
         d_blockSize[i] = vec->sizeOfDataBlock( i );
         d_size += d_blockSize[i];
