@@ -7,6 +7,8 @@
 // Modified:	$LastChangedDate: 2008-04-14 14:51:47 -0700 (Mon, 14 Apr 2008) $
 // Description:	A box structure representing a portion of the AMR index space
 //
+// NOTE: This is a modification of the DatabaseBox class from SAMRAI
+//       We have simply used it with modifications
 
 #ifndef included_DatabaseBox
 #define included_DatabaseBox

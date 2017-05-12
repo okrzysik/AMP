@@ -6,6 +6,8 @@
 // Modified:	$LastChangedDate: 2008-03-11 13:23:52 -0700 (Tue, 11 Mar 2008) $
 // Description:	Parallel I/O classes pout, perr, and plog and control class
 //
+// NOTE: This is a modification of the PIO class from SAMRAI
+//       We have simply used it with modifications
 
 #include <string>
 

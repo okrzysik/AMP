@@ -7,6 +7,8 @@
 // Modified:	$LastChangedDate: 2008-04-14 14:51:47 -0700 (Mon, 14 Apr 2008) $
 // Description:	An input manager singleton class that parses input files
 //
+// NOTE: This is a modification of the InputManager class from SAMRAI
+//       We have simply used it with modifications
 
 #ifndef included_InputManager
 #define included_InputManager

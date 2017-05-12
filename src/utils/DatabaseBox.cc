@@ -7,6 +7,8 @@
 // Modified:	$LastChangedDate: 2008-01-25 13:28:01 -0800 (Fri, 25 Jan 2008) $
 // Description:	A box structure representing a portion of the AMR index space
 //
+// NOTE: This is a modification of the DatabaseBox class from SAMRAI
+//       We have simply used it with modifications
 
 #include "DatabaseBox.h"
 

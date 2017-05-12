@@ -7,6 +7,8 @@
 // Modified:	$LastChangedDate: 2008-11-19 14:24:28 -0800 (Wed, 19 Nov 2008) $
 // Description:	An memory database structure that stores (key,value) pairs in memory
 //
+// NOTE: This is a modification of the MemoryDatabase class from SAMRAI
+//       We have simply used it with modifications
 
 #include "MemoryDatabase.h"
 
