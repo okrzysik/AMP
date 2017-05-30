@@ -12,6 +12,22 @@ ENABLE_WARNINGS
 #include "vectors/DataChangeFirer.h"
 #include "vectors/trilinos/epetra/EpetraVector.h"
 
+// Teuchos
+#include <Teuchos_RCP.hpp>
+
+// Xpetra
+#include <Xpetra_CrsMatrixWrap.hpp>
+
+// MueLu
+#include "MueLu.hpp"
+#include "MueLu_TentativePFactory.hpp"
+#include "MueLu_SaPFactory.hpp"
+#include "MueLu_SmootherFactory.hpp"
+#include "MueLu_TransPFactory.hpp"
+#include "MueLu_TrilinosSmoother.hpp"
+#include "MueLu_DirectSolver.hpp"
+#include "MueLu_RAPFactory.hpp"
+
 namespace AMP {
 namespace Solver {
 
@@ -39,7 +55,42 @@ void TrilinosMueLuSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> 
 {
     getFromInput( parameters->d_db );
     if ( d_pOperator.get() != nullptr ) {
+
         registerOperator( d_pOperator );
+
+        if( d_build_from_components ) {
+            
+            // Transfer operators
+            auto TentativePFact = Teuchos::rcp( new MueLu::TentativePFactory<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>() );
+            auto SaPFact        = Teuchos::rcp( new MueLu::SaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>() );
+            auto RFact          = Teuchos::rcp( new MueLu::TransPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>());
+
+           d_M.SetFactory("Ptent", TentativePFact);
+           d_M.SetFactory("P",     SaPFact);
+           d_M.SetFactory("R",     RFact);
+           
+           d_M.SetFactory("Smoother", Teuchos::null);      //skips smoother setup
+
+           // coarsest solver.
+           auto coarseSolverPrototype   = Teuchos::rcp( new MueLu::DirectSolver<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>() );
+           auto   coarseSolverFact      = Teuchos::rcp( new MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>(coarseSolverPrototype, Teuchos::null) );
+           d_M.SetFactory("CoarseSolver", coarseSolverFact);
+
+           // extract the matrix from AMP, create an Epetra view and then wrap in a Xpetra
+           // matrix
+           auto linearOperator  = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator> ( d_pOperator );           
+           auto ampMatrix       = linearOperator->getMatrix();
+           auto epetraMatrix    = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix> ( AMP::LinearAlgebra::EpetraMatrix::createView( ampMatrix ) );
+           auto epA = Teuchos::rcpFromRef( epetraMatrix->getEpetra_CrsMatrix() );
+           Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>> exA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix( epA ) );
+           auto crsWrapMat      = Teuchos::rcp( new Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>( exA ) ); 
+           auto   fineLevelA    = Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>> ( crsWrapMat );
+
+           d_mueluHierarchy->SetDefaultVerbLevel(MueLu::Medium);
+           auto finestMGLevel = d_mueluHierarchy->GetLevel();
+           finestMGLevel->Set( "A", fineLevelA );
+
+        }
     }
 }
 
@@ -111,7 +162,7 @@ void TrilinosMueLuSolver::registerOperator( const AMP::shared_ptr<AMP::Operator:
 
     if ( d_bUseEpetra ) {
 
-        AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
+        auto linearOperator =
             AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
         AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
 

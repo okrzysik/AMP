@@ -14,6 +14,11 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #include "Teuchos_ParameterList.hpp"
+// Xpetra include
+#include <Xpetra_Parameters.hpp>
+#include <Xpetra_Operator_fwd.hpp>
+#include "MueLu_FactoryManager_decl.hpp"
+//#include "MuelLu_Hierarchy.hpp"
 //#include <MueLu.hpp>
 #pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
@@ -21,6 +26,7 @@
 
 namespace MueLu{
   class EpetraOperator;
+  template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node> class Hierarchy;
 }
 
 
@@ -28,8 +34,14 @@ namespace AMP {
 namespace Solver {
 
 
-typedef SolverStrategyParameters TrilinosMueLuSolverParameters;
+using TrilinosMueLuSolverParameters = SolverStrategyParameters;
 
+//#if defined(HAVE_MUELU_EPETRA) && defined(HAVE_MUELU_EPETRAEXT)
+ using Scalar=double;
+ using LocalOrdinal=int;
+ using GlobalOrdinal=int;
+ using Node=Xpetra::EpetraNode;
+ //#endif
 
 /**
  * The TrilinosMueLuSolver is a wrapper to the Trilinos ML solver. ML provides implementations of
@@ -118,7 +130,7 @@ protected:
 
 private:
     bool d_bUseEpetra;
-
+    bool d_build_from_components = false;  //! whether to explicitly build the hierarchy
     AMP_MPI d_comm;
 
     bool d_bCreationPhase; /**< set to true if the PC is not ready and false otherwise. */
@@ -128,6 +140,10 @@ private:
 
     AMP::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> d_matrix;
     Teuchos::ParameterList d_MueLuParameterList;
+
+    Teuchos::RCP< MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode> > d_mueluHierarchy; //! AMG hierarchy
+
+    MueLu::FactoryManager<Scalar, LocalOrdinal, GlobalOrdinal, Node> d_M; //! factory manager for MueLu components
 
 };
 }
