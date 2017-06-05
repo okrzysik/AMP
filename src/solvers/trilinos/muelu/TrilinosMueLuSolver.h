@@ -143,7 +143,7 @@ private:
 
     Teuchos::RCP< MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode> > d_mueluHierarchy; //! AMG hierarchy
 
-    MueLu::FactoryManager<Scalar, LocalOrdinal, GlobalOrdinal, Node> d_M; //! factory manager for MueLu components
+    MueLu::FactoryManager<Scalar, LocalOrdinal, GlobalOrdinal, Node> d_factoryManager; //! factory manager for MueLu components
 
 };
 }

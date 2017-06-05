@@ -21,6 +21,8 @@
 #include "utils/Writer.h"
 #include "vectors/Vector.h"
 
+#include "solvers/trilinos/muelu/TrilinosMueLuSolver.h"
+
 #include "solvers/petsc/PetscKrylovSolver.h"
 #include "solvers/petsc/PetscKrylovSolverParameters.h"
 
@@ -33,9 +35,6 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "operators/boundary/DirichletMatrixCorrection.h"
 #include "vectors/VectorBuilder.h"
-
-#include "solvers/trilinos/muelu/TrilinosMueLuSolver.h"
-
 
 void linearThermalTest( AMP::UnitTest *ut )
 {

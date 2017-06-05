@@ -79,6 +79,8 @@ LinearSolver{
   print_info_level = 3
   max_iterations = 10
   max_error = 1e-10
+  problem_symmetric =TRUE
+  coarse_max_size = 100
 }
 
 VolumeIntegralOperator{
