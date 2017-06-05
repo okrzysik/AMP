@@ -85,6 +85,7 @@ void TrilinosMueLuSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> 
            auto crsWrapMat      = Teuchos::rcp( new Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>( exA ) ); 
            auto   fineLevelA    = Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>> ( crsWrapMat );
 
+           d_mueluHierarchy     = Teuchos::rcp( new MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode >() );
            d_mueluHierarchy->SetDefaultVerbLevel(MueLu::Medium);
            auto finestMGLevel   = d_mueluHierarchy->GetLevel();
            finestMGLevel->Set( "A", fineLevelA );
@@ -102,6 +103,7 @@ void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db
     d_bRobustMode = db->getBoolWithDefault( "ROBUST_MODE", false );
     d_bUseEpetra  = db->getBoolWithDefault( "USE_EPETRA", true );
 
+    d_build_from_components = db->getBoolWithDefault( "build_from_components", false );
     // general parameters
     d_MueLuParameterList.set( "verbosity", db->getStringWithDefault("verbosity", "medium") );
     d_MueLuParameterList.set( "problem: type", db->getStringWithDefault("problem_type", "unknown"));
@@ -209,6 +211,77 @@ void TrilinosMueLuSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
     PROFILE_STOP( "reset" );
 }
 
+void TrilinosMueLuSolver::solveWithHierarchy( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                                              AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
+{
+    PROFILE_START( "solveWithHierarchy" );
+    // in this case we make the assumption we can access a EpetraMat for now
+    AMP_INSIST( d_pOperator.get() != nullptr,
+                "ERROR: TrilinosMueLuSolver::solve() operator cannot be NULL" );
+
+    if ( d_bUseZeroInitialGuess ) {
+        u->zero();
+    }
+    
+    AMP::shared_ptr<AMP::LinearAlgebra::Vector> r;
+
+    bool computeResidual = false;
+    if ( d_bRobustMode || ( d_iDebugPrintInfoLevel > 1 ) ) {
+        computeResidual = true;
+    }
+
+    double initialResNorm = 0., finalResNorm = 0.;
+
+    if ( computeResidual ) {
+        r = f->cloneVector();
+        d_pOperator->residual( f, u, r );
+        initialResNorm = r->L2Norm();
+
+        if ( d_iDebugPrintInfoLevel > 1 ) {
+            AMP::pout << "TrilinosMueLuSolver::solve(), L2 norm of residual before solve "
+                      << std::setprecision( 15 ) << initialResNorm << std::endl;
+        }
+    }
+
+    if ( d_iDebugPrintInfoLevel > 2 ) {
+        double solution_norm = u->L2Norm();
+        AMP::pout << "TrilinosMueLuSolver : before solve solution norm: " << std::setprecision( 15 )
+                  << solution_norm << std::endl;
+    }
+
+    // add solution code here
+    
+    // Check for NaNs in the solution (no communication necessary)
+    double localNorm = u->localL2Norm();
+    AMP_INSIST( localNorm == localNorm, "NaNs detected in solution" );
+
+    // we are forced to update the state of u here
+    // as Epetra is not going to change the state of a managed vector
+    // an example where this will and has caused problems is when the
+    // vector is a petsc managed vector being passed back to PETSc
+    if ( u->isA<AMP::LinearAlgebra::DataChangeFirer>() ) {
+        u->castTo<AMP::LinearAlgebra::DataChangeFirer>().fireDataChange();
+    }
+
+    if ( d_iDebugPrintInfoLevel > 2 ) {
+        double solution_norm = u->L2Norm();
+        AMP::pout << "TrilinosMueLuSolver : after solve solution norm: " << std::setprecision( 15 )
+                  << solution_norm << std::endl;
+    }
+
+    if ( computeResidual ) {
+        d_pOperator->residual( f, u, r );
+        finalResNorm = r->L2Norm();
+
+        if ( d_iDebugPrintInfoLevel > 1 ) {
+            AMP::pout << "TrilinosMueLuSolver::solve(), L2 norm of residual after solve "
+                      << std::setprecision( 15 ) << finalResNorm << std::endl;
+        }
+    }
+
+    PROFILE_STOP( "solveWithHierarchy" );
+    
+}
 
 void TrilinosMueLuSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                  AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )

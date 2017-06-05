@@ -80,6 +80,14 @@ public:
                 AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
+     * Solve the system \f$Au = f\f$.
+     @param [in] f : shared pointer to right hand side vector
+     @param [out] u : shared pointer to approximate computed solution
+     */
+    void solveWithHierarchy( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                             AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
+
+    /**
      * Return a shared pointer to the ML_Epetra::MultiLevelPreconditioner object
      */
     inline const AMP::shared_ptr<MueLu::EpetraOperator> getMLSolver( void )
