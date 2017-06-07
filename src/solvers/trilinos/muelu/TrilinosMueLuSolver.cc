@@ -5,8 +5,8 @@ DISABLE_WARNINGS
 #include <Teuchos_RCP.hpp>
 
 // Xpetra
+#include <Xpetra_EpetraVector.hpp>
 #include <Xpetra_CrsMatrixWrap.hpp>
-
 // MueLu
 #include "MueLu.hpp"
 #include "MueLu_TentativePFactory.hpp"
@@ -31,6 +31,8 @@ ENABLE_WARNINGS
 namespace AMP {
 namespace Solver {
 
+
+    
 
 /****************************************************************
 * Constructors / Destructor                                     *
@@ -61,12 +63,12 @@ void TrilinosMueLuSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> 
         if( d_build_from_components ) {
             
             // Transfer operators
-            auto TentativePFact       = Teuchos::rcp( new MueLu::TentativePFactory<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>() );
-            auto SaPFact              = Teuchos::rcp( new MueLu::SaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>() );
-            auto RFact                = Teuchos::rcp( new MueLu::TransPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>());
+            auto TentativePFact       = Teuchos::rcp( new MueLu::TentativePFactory<SC, LO, GO, NO>() );
+            auto SaPFact              = Teuchos::rcp( new MueLu::SaPFactory<SC, LO, GO, NO>() );
+            auto RFact                = Teuchos::rcp( new MueLu::TransPFactory<SC, LO, GO, NO>());
            // coarsest solver.
-           auto coarseSolverPrototype = Teuchos::rcp( new MueLu::DirectSolver<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>() );
-           auto   coarseSolverFact    = Teuchos::rcp( new MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>(coarseSolverPrototype, Teuchos::null) );
+           auto coarseSolverPrototype = Teuchos::rcp( new MueLu::DirectSolver<SC, LO, GO, NO>() );
+           auto   coarseSolverFact    = Teuchos::rcp( new MueLu::SmootherFactory<SC, LO, GO, NO>(coarseSolverPrototype, Teuchos::null) );
 
            d_factoryManager.SetFactory("Ptent", TentativePFact);
            d_factoryManager.SetFactory("P",     SaPFact);
@@ -81,11 +83,11 @@ void TrilinosMueLuSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> 
            auto ampMatrix       = linearOperator->getMatrix();
            auto epetraMatrix    = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix> ( AMP::LinearAlgebra::EpetraMatrix::createView( ampMatrix ) );
            auto epA             = Teuchos::rcpFromRef( epetraMatrix->getEpetra_CrsMatrix() );
-           Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>> exA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix( epA ) );
-           auto crsWrapMat      = Teuchos::rcp( new Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>( exA ) ); 
-           auto   fineLevelA    = Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode>> ( crsWrapMat );
+           Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> exA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix( epA ) );
+           auto crsWrapMat      = Teuchos::rcp( new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>( exA ) ); 
+           auto   fineLevelA    = Teuchos::rcp_dynamic_cast<Xpetra::Matrix<SC, LO, GO, NO>> ( crsWrapMat );
 
-           d_mueluHierarchy     = Teuchos::rcp( new MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode >() );
+           d_mueluHierarchy     = Teuchos::rcp( new MueLu::Hierarchy<SC, LO, GO, NO >() );
            d_mueluHierarchy->SetDefaultVerbLevel(MueLu::Medium);
            auto finestMGLevel   = d_mueluHierarchy->GetLevel();
            finestMGLevel->Set( "A", fineLevelA );
@@ -120,7 +122,14 @@ void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db
     d_MueLuParameterList.set( "smoother: overlap", db->getIntegerWithDefault("smoother_overlap", 0));
     d_MueLuParameterList.set( "smoother: pre overlap", db->getIntegerWithDefault("smoother_pre_overlap", 0));
     d_MueLuParameterList.set( "smoother: post overlap", db->getIntegerWithDefault("smoother_post_overlap", 0));
-
+#if 0
+    d_MueLuParameterList.set( "relaxation: ", db->getIntegerWithDefault("relaxation", 0));
+    d_MueLuParameterList.set( "relaxation: ", db->getIntegerWithDefault("relaxation", 0));
+    d_MueLuParameterList.set( "relaxation: ", db->getIntegerWithDefault("relaxation", 0));
+    d_MueLuParameterList.set( "relaxation: ", db->getIntegerWithDefault("relaxation", 0));
+    d_MueLuParameterList.set( "relaxation: ", db->getIntegerWithDefault("relaxation", 0));
+#endif
+    
     d_MueLuParameterList.set( "coarse: max size", db->getIntegerWithDefault("coarse_max_size", 2000));
     d_MueLuParameterList.set( "coarse: type", db->getStringWithDefault("coarse_type", "SuperLU"));
     d_MueLuParameterList.set( "coarse: overlap", db->getIntegerWithDefault("coarse_overlap", 0));
@@ -215,69 +224,31 @@ void TrilinosMueLuSolver::solveWithHierarchy( AMP::shared_ptr<const AMP::LinearA
                                               AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solveWithHierarchy" );
-    // in this case we make the assumption we can access a EpetraMat for now
-    AMP_INSIST( d_pOperator.get() != nullptr,
-                "ERROR: TrilinosMueLuSolver::solve() operator cannot be NULL" );
 
-    if ( d_bUseZeroInitialGuess ) {
-        u->zero();
-    }
+    if ( d_bUseEpetra ) {
+
+        
+        // These functions throw exceptions if this cannot be performed.
+        Epetra_Vector &fVec = ( AMP::LinearAlgebra::EpetraVector::view( AMP::const_pointer_cast<AMP::LinearAlgebra::Vector>(f) ) )
+            ->castTo<AMP::LinearAlgebra::EpetraVector>()
+            .getEpetra_Vector();
+        Epetra_Vector &uVec = ( AMP::LinearAlgebra::EpetraVector::view( u ) )
+            ->castTo<AMP::LinearAlgebra::EpetraVector>()
+            .getEpetra_Vector();
+
+        auto rcp_u = Teuchos::rcpFromRef( uVec );
+        auto rcp_f = Teuchos::rcpFromRef( fVec );
+
+        // Epetra -> Xpetra
+        auto xu = Teuchos::rcp( new Xpetra::EpetraVectorT <int, NO> ( rcp_u ) );
+        auto xf = Teuchos::rcp( new Xpetra::EpetraVectorT <int, NO> ( rcp_f ) );
+
+        d_mueluHierarchy->Iterate( *xf, *xu, d_iMaxIterations );
+        
+    } else {
+        AMP_ERROR("Only Epetra interface currently supported");
+    }        
     
-    AMP::shared_ptr<AMP::LinearAlgebra::Vector> r;
-
-    bool computeResidual = false;
-    if ( d_bRobustMode || ( d_iDebugPrintInfoLevel > 1 ) ) {
-        computeResidual = true;
-    }
-
-    double initialResNorm = 0., finalResNorm = 0.;
-
-    if ( computeResidual ) {
-        r = f->cloneVector();
-        d_pOperator->residual( f, u, r );
-        initialResNorm = r->L2Norm();
-
-        if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "TrilinosMueLuSolver::solve(), L2 norm of residual before solve "
-                      << std::setprecision( 15 ) << initialResNorm << std::endl;
-        }
-    }
-
-    if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = u->L2Norm();
-        AMP::pout << "TrilinosMueLuSolver : before solve solution norm: " << std::setprecision( 15 )
-                  << solution_norm << std::endl;
-    }
-
-    // add solution code here
-    
-    // Check for NaNs in the solution (no communication necessary)
-    double localNorm = u->localL2Norm();
-    AMP_INSIST( localNorm == localNorm, "NaNs detected in solution" );
-
-    // we are forced to update the state of u here
-    // as Epetra is not going to change the state of a managed vector
-    // an example where this will and has caused problems is when the
-    // vector is a petsc managed vector being passed back to PETSc
-    if ( u->isA<AMP::LinearAlgebra::DataChangeFirer>() ) {
-        u->castTo<AMP::LinearAlgebra::DataChangeFirer>().fireDataChange();
-    }
-
-    if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = u->L2Norm();
-        AMP::pout << "TrilinosMueLuSolver : after solve solution norm: " << std::setprecision( 15 )
-                  << solution_norm << std::endl;
-    }
-
-    if ( computeResidual ) {
-        d_pOperator->residual( f, u, r );
-        finalResNorm = r->L2Norm();
-
-        if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "TrilinosMueLuSolver::solve(), L2 norm of residual after solve "
-                      << std::setprecision( 15 ) << finalResNorm << std::endl;
-        }
-    }
 
     PROFILE_STOP( "solveWithHierarchy" );
     
@@ -287,73 +258,84 @@ void TrilinosMueLuSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vecto
                                  AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
+
+    AMP_ASSERT( f != nullptr );
+    AMP_ASSERT( u != nullptr );
+
     // in this case we make the assumption we can access a EpetraMat for now
     AMP_INSIST( d_pOperator.get() != nullptr,
                 "ERROR: TrilinosMueLuSolver::solve() operator cannot be NULL" );
-
+    
     if ( d_bUseZeroInitialGuess ) {
         u->zero();
     }
 
-    if ( d_bCreationPhase ) {
-        if ( d_bUseEpetra ) {
-            // MueLu expects a Teuchos ref pointer
-            Teuchos::RCP<Epetra_CrsMatrix> fineLevelMatrixPtr = Teuchos::rcpFromRef(d_matrix->getEpetra_CrsMatrix());
-            auto mueluRCP = MueLu::CreateEpetraPreconditioner(fineLevelMatrixPtr, 
-                                                              d_MueLuParameterList);
-            d_mueluSolver.reset( mueluRCP.get() );
-            mueluRCP.release();
-        } else {
-            AMP_ERROR("Only Epetra interface currently supported");
-        }
-        d_bCreationPhase = false;
-    }
-
+    
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> r;
-
+    
     bool computeResidual = false;
     if ( d_bRobustMode || ( d_iDebugPrintInfoLevel > 1 ) ) {
         computeResidual = true;
     }
-
+    
     double initialResNorm = 0., finalResNorm = 0.;
-
+    
     if ( computeResidual ) {
         r = f->cloneVector();
         d_pOperator->residual( f, u, r );
         initialResNorm = r->L2Norm();
-
+        
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "TrilinosMueLuSolver::solve(), L2 norm of residual before solve "
                       << std::setprecision( 15 ) << initialResNorm << std::endl;
         }
     }
-
+    
     if ( d_iDebugPrintInfoLevel > 2 ) {
         double solution_norm = u->L2Norm();
         AMP::pout << "TrilinosMueLuSolver : before solve solution norm: " << std::setprecision( 15 )
                   << solution_norm << std::endl;
     }
+    
+    if( d_build_from_components ) {
 
-    if ( d_bUseEpetra ) {
-        // These functions throw exceptions if this cannot be performed.
-        AMP_ASSERT( f != nullptr );
-        const Epetra_Vector &fVec = ( AMP::LinearAlgebra::EpetraVector::constView( f ) )
-                                        ->castTo<const AMP::LinearAlgebra::EpetraVector>()
-                                        .getEpetra_Vector();
-        Epetra_Vector &uVec = ( AMP::LinearAlgebra::EpetraVector::view( u ) )
-                                  ->castTo<AMP::LinearAlgebra::EpetraVector>()
-                                  .getEpetra_Vector();
+        solveWithHierarchy( f, u );
 
-        d_mueluSolver->ApplyInverse( fVec, uVec );
     } else {
-        AMP_ERROR("Only Epetra interface supported");
+        
+        if ( d_bCreationPhase ) {
+            if ( d_bUseEpetra ) {
+                // MueLu expects a Teuchos ref pointer
+                Teuchos::RCP<Epetra_CrsMatrix> fineLevelMatrixPtr = Teuchos::rcpFromRef(d_matrix->getEpetra_CrsMatrix());
+                auto mueluRCP = MueLu::CreateEpetraPreconditioner(fineLevelMatrixPtr, 
+                                                                  d_MueLuParameterList);
+                d_mueluSolver.reset( mueluRCP.get() );
+                mueluRCP.release();
+            } else {
+                AMP_ERROR("Only Epetra interface currently supported");
+            }
+            d_bCreationPhase = false;
+        }
+        
+        if ( d_bUseEpetra ) {
+            // These functions throw exceptions if this cannot be performed.
+            const Epetra_Vector &fVec = ( AMP::LinearAlgebra::EpetraVector::constView( f ) )
+                ->castTo<const AMP::LinearAlgebra::EpetraVector>()
+                .getEpetra_Vector();
+            Epetra_Vector &uVec = ( AMP::LinearAlgebra::EpetraVector::view( u ) )
+                ->castTo<AMP::LinearAlgebra::EpetraVector>()
+                .getEpetra_Vector();
+            
+            d_mueluSolver->ApplyInverse( fVec, uVec );
+        } else {
+            AMP_ERROR("Only Epetra interface supported");
+        }
     }
-
+    
     // Check for NaNs in the solution (no communication necessary)
     double localNorm = u->localL2Norm();
     AMP_INSIST( localNorm == localNorm, "NaNs detected in solution" );
-
+    
     // we are forced to update the state of u here
     // as Epetra is not going to change the state of a managed vector
     // an example where this will and has caused problems is when the

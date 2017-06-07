@@ -27,21 +27,22 @@
 namespace MueLu{
   class EpetraOperator;
   template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node> class Hierarchy;
+  
+  using Scalar=double;
+  using LocalOrdinal=int;
+  using GlobalOrdinal=int;
+  using Node=Xpetra::EpetraNode;
 }
-
 
 namespace AMP {
 namespace Solver {
 
 
 using TrilinosMueLuSolverParameters = SolverStrategyParameters;
-
-//#if defined(HAVE_MUELU_EPETRA) && defined(HAVE_MUELU_EPETRAEXT)
- using Scalar=double;
- using LocalOrdinal=int;
- using GlobalOrdinal=int;
- using Node=Xpetra::EpetraNode;
- //#endif
+using SC=MueLu::Scalar;
+using LO=MueLu::LocalOrdinal;
+using GO=MueLu::GlobalOrdinal;
+using NO=MueLu::Node;
 
 /**
  * The TrilinosMueLuSolver is a wrapper to the Trilinos ML solver. ML provides implementations of
@@ -149,9 +150,9 @@ private:
     AMP::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> d_matrix;
     Teuchos::ParameterList d_MueLuParameterList;
 
-    Teuchos::RCP< MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Xpetra::EpetraNode> > d_mueluHierarchy; //! AMG hierarchy
+    Teuchos::RCP< MueLu::Hierarchy<SC,LO,GO,NO> > d_mueluHierarchy; //! AMG hierarchy
 
-    MueLu::FactoryManager<Scalar, LocalOrdinal, GlobalOrdinal, Node> d_factoryManager; //! factory manager for MueLu components
+    MueLu::FactoryManager<SC,LO,GO,NO> d_factoryManager; //! factory manager for MueLu components
 
 };
 }
