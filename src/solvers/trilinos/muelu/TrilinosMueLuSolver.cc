@@ -6,7 +6,6 @@ DISABLE_WARNINGS
 
 // Xpetra
 #include <Xpetra_EpetraVector.hpp>
-#include <Xpetra_CrsMatrixWrap.hpp>
 // MueLu
 #include "MueLu.hpp"
 #include "MueLu_TentativePFactory.hpp"
@@ -56,47 +55,115 @@ TrilinosMueLuSolver::~TrilinosMueLuSolver()
 void TrilinosMueLuSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters )
 {
     getFromInput( parameters->d_db );
+
     if ( d_pOperator.get() != nullptr ) {
 
         registerOperator( d_pOperator );
 
-        if( d_build_from_components ) {
-            
-            // Transfer operators
-            auto TentativePFact       = Teuchos::rcp( new MueLu::TentativePFactory<SC, LO, GO, NO>() );
-            auto SaPFact              = Teuchos::rcp( new MueLu::SaPFactory<SC, LO, GO, NO>() );
-            auto RFact                = Teuchos::rcp( new MueLu::TransPFactory<SC, LO, GO, NO>());
-           // coarsest solver.
-           auto coarseSolverPrototype = Teuchos::rcp( new MueLu::DirectSolver<SC, LO, GO, NO>() );
-           auto   coarseSolverFact    = Teuchos::rcp( new MueLu::SmootherFactory<SC, LO, GO, NO>(coarseSolverPrototype, Teuchos::null) );
+        if( d_build_hierarchy ) {
 
-           d_factoryManager.SetFactory("Ptent", TentativePFact);
-           d_factoryManager.SetFactory("P",     SaPFact);
-           d_factoryManager.SetFactory("R",     RFact);
-           d_factoryManager.SetFactory("Smoother", Teuchos::null);      //skips smoother setup
-           d_factoryManager.SetFactory("CoarseSolver", coarseSolverFact);
+            if( d_build_hierarchy_from_defaults ) {
 
-           // extract the matrix from AMP
-           // create an Epetra view
-           // wrap in a Xpetra matrix
-           auto linearOperator  = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator> ( d_pOperator );           
-           auto ampMatrix       = linearOperator->getMatrix();
-           auto epetraMatrix    = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix> ( AMP::LinearAlgebra::EpetraMatrix::createView( ampMatrix ) );
-           auto epA             = Teuchos::rcpFromRef( epetraMatrix->getEpetra_CrsMatrix() );
-           Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> exA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix( epA ) );
-           auto crsWrapMat      = Teuchos::rcp( new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>( exA ) ); 
-           auto   fineLevelA    = Teuchos::rcp_dynamic_cast<Xpetra::Matrix<SC, LO, GO, NO>> ( crsWrapMat );
+                buildHierarchyFromDefaults();
 
-           d_mueluHierarchy     = Teuchos::rcp( new MueLu::Hierarchy<SC, LO, GO, NO >() );
-           d_mueluHierarchy->SetDefaultVerbLevel(MueLu::Medium);
-           auto finestMGLevel   = d_mueluHierarchy->GetLevel();
-           finestMGLevel->Set( "A", fineLevelA );
+            } else {
 
-           const int startLevel = 0;
-           const int maxLevels  = 10;
-           d_mueluHierarchy->Setup( d_factoryManager, startLevel, maxLevels );
+                buildHierarchyByLevel();
+            }
 
         }
+    }
+}
+
+Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> TrilinosMueLuSolver::getXpetraMatrix( AMP::shared_ptr<AMP::Operator::LinearOperator> & op )
+{
+    // wrap in a Xpetra matrix
+    auto ampMatrix       = op->getMatrix();
+    auto epetraMatrix    = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix> ( AMP::LinearAlgebra::EpetraMatrix::createView( ampMatrix ) );
+    auto epA             = Teuchos::rcpFromRef( epetraMatrix->getEpetra_CrsMatrix() );
+    Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> exA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix( epA ) );
+    auto crsWrapMat      = Teuchos::rcp( new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>( exA ) ); 
+    auto xA    = Teuchos::rcp_dynamic_cast<Xpetra::Matrix<SC, LO, GO, NO>> ( crsWrapMat );
+
+    return xA;
+}
+
+void TrilinosMueLuSolver::buildHierarchyFromDefaults( void )
+{
+
+    // Transfer operators
+    auto TentativePFact       = Teuchos::rcp( new MueLu::TentativePFactory<SC, LO, GO, NO>() );
+    auto SaPFact              = Teuchos::rcp( new MueLu::SaPFactory<SC, LO, GO, NO>() );
+    auto RFact                = Teuchos::rcp( new MueLu::TransPFactory<SC, LO, GO, NO>());
+    // coarsest solver.
+    auto coarseSolverPrototype = Teuchos::rcp( new MueLu::DirectSolver<SC, LO, GO, NO>() );
+    auto   coarseSolverFact    = Teuchos::rcp( new MueLu::SmootherFactory<SC, LO, GO, NO>(coarseSolverPrototype, Teuchos::null) );
+                
+    d_factoryManager.SetFactory("Ptent", TentativePFact);
+    d_factoryManager.SetFactory("P",     SaPFact);
+    d_factoryManager.SetFactory("R",     RFact);
+    //    d_factoryManager.SetFactory("Smoother", Teuchos::null);      //skips smoother setup
+    d_factoryManager.SetFactory("CoarseSolver", coarseSolverFact);
+                
+    // extract the Xpetra matrix from AMP
+    auto linearOperator  = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator> ( d_pOperator );           
+    auto fineLevelA = getXpetraMatrix( linearOperator );
+                
+    d_mueluHierarchy     = Teuchos::rcp( new MueLu::Hierarchy<SC, LO, GO, NO >() );
+    d_mueluHierarchy->SetDefaultVerbLevel(MueLu::Medium);
+    auto finestMGLevel   = d_mueluHierarchy->GetLevel();
+    finestMGLevel->Set( "A", fineLevelA );
+                
+    const int startLevel = 0;
+    const int maxLevels  = 10;
+    d_mueluHierarchy->Setup( d_factoryManager, startLevel, maxLevels );
+
+}
+
+void TrilinosMueLuSolver::buildHierarchyByLevel( void )
+{
+    d_mueluHierarchy     = Teuchos::rcp( new MueLu::Hierarchy<SC, LO, GO, NO >() );
+    d_mueluHierarchy->SetDefaultVerbLevel(MueLu::Medium);
+    auto finestMGLevel   = d_mueluHierarchy->GetLevel();
+    // extract the Xpetra matrix from AMP
+    auto linearOperator  = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator> ( d_pOperator );           
+    auto fineLevelA = getXpetraMatrix( linearOperator );            
+    finestMGLevel->Set( "A", fineLevelA );
+
+    d_levelFactoryManager.resize( d_maxLevels );
+    for ( size_t i=0u; i<d_maxLevels; ++i ) {
+
+        d_levelFactoryManager[i] = Teuchos::rcp( new MueLu::FactoryManager<SC,LO,GO,NO> );
+
+        // Transfer operators
+        auto TentativePFact       = Teuchos::rcp( new MueLu::TentativePFactory<SC, LO, GO, NO>() );
+        auto SaPFact              = Teuchos::rcp( new MueLu::SaPFactory<SC, LO, GO, NO>() );
+        auto RFact                = Teuchos::rcp( new MueLu::TransPFactory<SC, LO, GO, NO>());
+        // coarsest solver.
+        auto coarseSolverPrototype = Teuchos::rcp( new MueLu::DirectSolver<SC, LO, GO, NO>() );
+        auto   coarseSolverFact    = Teuchos::rcp( new MueLu::SmootherFactory<SC, LO, GO, NO>(coarseSolverPrototype, Teuchos::null) );
+        
+        d_levelFactoryManager[i]->SetFactory("Ptent", TentativePFact);
+        d_levelFactoryManager[i]->SetFactory("P",     SaPFact);
+        d_levelFactoryManager[i]->SetFactory("R",     RFact);
+        d_levelFactoryManager[i]->SetFactory("Smoother", Teuchos::null);      //skips smoother setup
+        d_levelFactoryManager[i]->SetFactory("CoarseSolver", coarseSolverFact);
+
+    }
+
+    for ( size_t i=0u; i<d_maxLevels; ++i ) {
+        
+        auto finerLevelManager = (i==0u) ? Teuchos::null : d_levelFactoryManager[i-1];
+        auto currentLevelManager = d_levelFactoryManager[i];
+        auto coarserLevelManager = ( i> d_maxLevels-1 ) ? d_levelFactoryManager[i] : Teuchos::null;
+
+        bool bIsLastLevel = d_mueluHierarchy->Setup( i,
+                                                     finerLevelManager,
+                                                     currentLevelManager,
+                                                     coarserLevelManager );
+
+        if ( bIsLastLevel ) break;
+        
     }
 }
 
@@ -105,12 +172,15 @@ void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db
     d_bRobustMode = db->getBoolWithDefault( "ROBUST_MODE", false );
     d_bUseEpetra  = db->getBoolWithDefault( "USE_EPETRA", true );
 
-    d_build_from_components = db->getBoolWithDefault( "build_from_components", false );
+    d_build_hierarchy = db->getBoolWithDefault( "build_hierarchy", false );
+    d_build_hierarchy_from_defaults = db->getBoolWithDefault( "build_hierarchy_from_defaults", true );
+
     // general parameters
     d_MueLuParameterList.set( "verbosity", db->getStringWithDefault("verbosity", "medium") );
     d_MueLuParameterList.set( "problem: type", db->getStringWithDefault("problem_type", "unknown"));
     d_MueLuParameterList.set( "number of equations", db->getIntegerWithDefault("number_of_equations", 1));
-    d_MueLuParameterList.set( "max levels", db->getIntegerWithDefault("max_levels", 10));
+    d_maxLevels = db->getIntegerWithDefault("max_levels", 10);
+    d_MueLuParameterList.set( "max levels", (int) d_maxLevels);
     d_MueLuParameterList.set( "cycle type", db->getStringWithDefault("cycle_type", "V"));
     d_MueLuParameterList.set( "problem: symmetric", db->getBoolWithDefault("problem_symmetric", false));
     d_MueLuParameterList.set( "xml parameter file", db->getStringWithDefault("xml_parameter_file", ""));
@@ -297,7 +367,7 @@ void TrilinosMueLuSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vecto
                   << solution_norm << std::endl;
     }
     
-    if( d_build_from_components ) {
+    if( d_build_hierarchy ) {
 
         solveWithHierarchy( f, u );
 

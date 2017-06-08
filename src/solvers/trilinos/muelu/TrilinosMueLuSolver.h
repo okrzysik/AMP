@@ -17,9 +17,12 @@
 // Xpetra include
 #include <Xpetra_Parameters.hpp>
 #include <Xpetra_Operator_fwd.hpp>
-#include "MueLu_FactoryManager_decl.hpp"
-//#include "MuelLu_Hierarchy.hpp"
-//#include <MueLu.hpp>
+#include <Xpetra_Matrix.hpp>
+
+#include <MueLu_FactoryManager.hpp>
+
+#include <vector>
+
 #pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
@@ -35,8 +38,14 @@ namespace MueLu{
 }
 
 namespace AMP {
+
+namespace Operator{
+  class LinearOperator;
+}
+
 namespace Solver {
 
+  
 
 using TrilinosMueLuSolverParameters = SolverStrategyParameters;
 using SC=MueLu::Scalar;
@@ -137,22 +146,35 @@ protected:
 
     void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
 
+    //! build the hierarchy using the defaults constructed by MueLu
+    void buildHierarchyFromDefaults( void );
+
+    //! build the hierarchy level by level, potentially customizing each level
+    void buildHierarchyByLevel( void );
+
+    //! utility function to extract Xpetra Matrix from AMP LinearOperator
+    Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> getXpetraMatrix( AMP::shared_ptr<AMP::Operator::LinearOperator> & op );
+
 private:
-    bool d_bUseEpetra;
-    bool d_build_from_components = false;  //! whether to explicitly build the hierarchy
+
+    bool d_bUseEpetra                    = true;  //! whether we are using Epetra
+    bool d_build_hierarchy               = false; //! whether to explicitly build the hierarchy
+    bool d_build_hierarchy_from_defaults = true;  //! build the hierarchy using the defaults constructed by MueLu
+    bool d_bCreationPhase                = false; //! set to true if the solver is yet to be initialized
+    bool d_bRobustMode                   = false; //! use a direct solver if the MG solve fails to converge
+
     AMP_MPI d_comm;
 
-    bool d_bCreationPhase; /**< set to true if the PC is not ready and false otherwise. */
-    bool d_bRobustMode;
-
+    size_t d_maxLevels;  //! maximum number of levels
+    
     AMP::shared_ptr<MueLu::EpetraOperator> d_mueluSolver;
 
     AMP::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> d_matrix;
     Teuchos::ParameterList d_MueLuParameterList;
 
     Teuchos::RCP< MueLu::Hierarchy<SC,LO,GO,NO> > d_mueluHierarchy; //! AMG hierarchy
-
     MueLu::FactoryManager<SC,LO,GO,NO> d_factoryManager; //! factory manager for MueLu components
+    std::vector<Teuchos::RCP<MueLu::FactoryManager<SC,LO,GO,NO>>> d_levelFactoryManager; //! factory manager for MueLu components by level
 
 };
 }
