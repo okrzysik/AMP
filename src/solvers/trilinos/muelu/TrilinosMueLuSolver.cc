@@ -60,19 +60,33 @@ void TrilinosMueLuSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> 
 
         registerOperator( d_pOperator );
 
-        if( d_build_hierarchy ) {
-
-            if( d_build_hierarchy_from_defaults ) {
-
-                buildHierarchyFromDefaults();
-
-            } else {
-
-                buildHierarchyByLevel();
-            }
-
-        }
     }
+}
+
+Teuchos::RCP<MueLu::TentativePFactory<SC, LO, GO, NO>> TrilinosMueLuSolver::getTentativePFactory( void )
+{
+    return Teuchos::rcp( new MueLu::TentativePFactory<SC, LO, GO, NO>() );
+}
+
+Teuchos::RCP<MueLu::SaPFactory<SC, LO, GO, NO>> TrilinosMueLuSolver::getSaPFactory( void )
+{
+    return Teuchos::rcp( new MueLu::SaPFactory<SC, LO, GO, NO>() );
+}
+    
+Teuchos::RCP<MueLu::TransPFactory<SC, LO, GO, NO>> TrilinosMueLuSolver::getRFactory( void )
+{
+    return Teuchos::rcp( new MueLu::TransPFactory<SC, LO, GO, NO>() );
+}
+
+Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> TrilinosMueLuSolver::getCoarseSolverFactory( void )
+{
+    auto coarseSolverPrototype = Teuchos::rcp( new MueLu::DirectSolver<SC, LO, GO, NO>() );
+    return Teuchos::rcp( new MueLu::SmootherFactory<SC, LO, GO, NO>(coarseSolverPrototype, Teuchos::null) );
+}
+
+Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> TrilinosMueLuSolver::getSmootherFactory( void )
+{
+    return Teuchos::null;
 }
 
 Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> TrilinosMueLuSolver::getXpetraMatrix( AMP::shared_ptr<AMP::Operator::LinearOperator> & op )
@@ -132,26 +146,20 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
 
     d_levelFactoryManager.resize( d_maxLevels );
 
-#if 1
+#if 0
+    
     // seeing if we can build the hierarchy level by level with each setup interleaved
+    // potential problems ahead might be the Request calls that MueLu seems to make
     for ( size_t i=0u; i<d_maxLevels; ++i ) {
 
         d_levelFactoryManager[i] = Teuchos::rcp( new MueLu::FactoryManager<SC,LO,GO,NO> );
-        
-        // Transfer operators
-        auto TentativePFact       = Teuchos::rcp( new MueLu::TentativePFactory<SC, LO, GO, NO>() );
-        auto SaPFact              = Teuchos::rcp( new MueLu::SaPFactory<SC, LO, GO, NO>() );
-        auto RFact                = Teuchos::rcp( new MueLu::TransPFactory<SC, LO, GO, NO>());
-        // coarsest solver.
-        auto coarseSolverPrototype = Teuchos::rcp( new MueLu::DirectSolver<SC, LO, GO, NO>() );
-        auto   coarseSolverFact    = Teuchos::rcp( new MueLu::SmootherFactory<SC, LO, GO, NO>(coarseSolverPrototype, Teuchos::null) );
-        
-        d_levelFactoryManager[i]->SetFactory("Ptent", TentativePFact);
-        d_levelFactoryManager[i]->SetFactory("P",     SaPFact);
-        d_levelFactoryManager[i]->SetFactory("R",     RFact);
-        d_levelFactoryManager[i]->SetFactory("Smoother", Teuchos::null);      //skips smoother setup
-        d_levelFactoryManager[i]->SetFactory("CoarseSolver", coarseSolverFact);
-        
+
+        d_levelFactoryManager[i]->SetFactory("Ptent", getTentativePFactory() );
+        d_levelFactoryManager[i]->SetFactory("P",     getSaPFactory() );
+        d_levelFactoryManager[i]->SetFactory("R",     getRFactory() );
+        d_levelFactoryManager[i]->SetFactory("Smoother", getSmootherFactory() );      
+        d_levelFactoryManager[i]->SetFactory("CoarseSolver", getCoarseSolverFactory() );
+
         auto finerLevelManager = (i==0u) ? Teuchos::null : d_levelFactoryManager[i-1];
         auto currentLevelManager = d_levelFactoryManager[i];
         
@@ -167,28 +175,20 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
     for ( size_t i=0u; i<d_maxLevels; ++i ) {
 
         d_levelFactoryManager[i] = Teuchos::rcp( new MueLu::FactoryManager<SC,LO,GO,NO> );
-
-        // Transfer operators
-        auto TentativePFact       = Teuchos::rcp( new MueLu::TentativePFactory<SC, LO, GO, NO>() );
-        auto SaPFact              = Teuchos::rcp( new MueLu::SaPFactory<SC, LO, GO, NO>() );
-        auto RFact                = Teuchos::rcp( new MueLu::TransPFactory<SC, LO, GO, NO>());
-        // coarsest solver.
-        auto coarseSolverPrototype = Teuchos::rcp( new MueLu::DirectSolver<SC, LO, GO, NO>() );
-        auto   coarseSolverFact    = Teuchos::rcp( new MueLu::SmootherFactory<SC, LO, GO, NO>(coarseSolverPrototype, Teuchos::null) );
-        
-        d_levelFactoryManager[i]->SetFactory("Ptent", TentativePFact);
-        d_levelFactoryManager[i]->SetFactory("P",     SaPFact);
-        d_levelFactoryManager[i]->SetFactory("R",     RFact);
-        d_levelFactoryManager[i]->SetFactory("Smoother", Teuchos::null);      //skips smoother setup
-        d_levelFactoryManager[i]->SetFactory("CoarseSolver", coarseSolverFact);
-
+        d_levelFactoryManager[i]->SetFactory("Ptent", getTentativePFactory() );
+        d_levelFactoryManager[i]->SetFactory("P",     getSaPFactory() );
+        d_levelFactoryManager[i]->SetFactory("R",     getRFactory() );
+        // explicitly setting the factory to null appears to be the wrong thing to do
+        // MueLu decides no smoothing is required on the level
+        //        d_levelFactoryManager[i]->SetFactory("Smoother", getSmootherFactory() );      
+        d_levelFactoryManager[i]->SetFactory("CoarseSolver", getCoarseSolverFactory() );
     }
 
     for ( size_t i=0u; i<d_maxLevels; ++i ) {
         
         auto finerLevelManager = (i==0u) ? Teuchos::null : d_levelFactoryManager[i-1];
         auto currentLevelManager = d_levelFactoryManager[i];
-        auto coarserLevelManager = ( i> d_maxLevels-1 ) ? d_levelFactoryManager[i] : Teuchos::null;
+        auto coarserLevelManager = ( i < d_maxLevels-1 ) ? d_levelFactoryManager[i+1] : Teuchos::null;
 
         bool bIsLastLevel = d_mueluHierarchy->Setup( i,
                                                      finerLevelManager,
@@ -284,22 +284,36 @@ void TrilinosMueLuSolver::registerOperator( const AMP::shared_ptr<AMP::Operator:
 
     if ( d_bUseEpetra ) {
 
-        auto linearOperator =
-            AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-        AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
+        if( d_build_hierarchy ) {
 
-        d_matrix = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(
-            linearOperator->getMatrix() );
-        AMP_INSIST( d_matrix.get() != nullptr, "d_matrix cannot be NULL" );
+            if( d_build_hierarchy_from_defaults ) {
 
-        // MueLu expects a Teuchos ref pointer
-        Teuchos::RCP<Epetra_CrsMatrix> fineLevelMatrixPtr = Teuchos::rcpFromRef(d_matrix->getEpetra_CrsMatrix());
-        auto mueluRCP = MueLu::CreateEpetraPreconditioner(fineLevelMatrixPtr, 
-                                                          d_MueLuParameterList);
+                buildHierarchyFromDefaults();
+
+            } else {
+
+                buildHierarchyByLevel();
+            }
+
+        } else {
+            
+            auto linearOperator =
+                AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+            AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
+            
+            d_matrix = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(
+                                                                                   linearOperator->getMatrix() );
+            AMP_INSIST( d_matrix.get() != nullptr, "d_matrix cannot be NULL" );
+            
+            // MueLu expects a Teuchos ref pointer
+            Teuchos::RCP<Epetra_CrsMatrix> fineLevelMatrixPtr = Teuchos::rcpFromRef(d_matrix->getEpetra_CrsMatrix());
+            auto mueluRCP = MueLu::CreateEpetraPreconditioner(fineLevelMatrixPtr, 
+                                                              d_MueLuParameterList);
+            
+            d_mueluSolver.reset( mueluRCP.get() );
+            mueluRCP.release();
+        }
         
-        d_mueluSolver.reset( mueluRCP.get() );
-        mueluRCP.release();
-
     } else {
         AMP_ERROR("Only Epetra interface currently supported");
     }

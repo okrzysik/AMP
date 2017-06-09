@@ -30,6 +30,11 @@
 namespace MueLu{
   class EpetraOperator;
   template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node> class Hierarchy;
+  template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node> class TentativePFactory;
+  template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node> class SaPFactory;
+  template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node> class TransPFactory;
+  template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node> class DirectSolver;
+  template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node> class SmootherFactory;
   
   using Scalar=double;
   using LocalOrdinal=int;
@@ -155,6 +160,12 @@ protected:
     //! utility function to extract Xpetra Matrix from AMP LinearOperator
     Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> getXpetraMatrix( AMP::shared_ptr<AMP::Operator::LinearOperator> & op );
 
+    Teuchos::RCP<MueLu::TentativePFactory<SC, LO, GO, NO>> getTentativePFactory( void );
+    Teuchos::RCP<MueLu::SaPFactory<SC, LO, GO, NO>> getSaPFactory( void );
+    Teuchos::RCP<MueLu::TransPFactory<SC, LO, GO, NO>> getRFactory( void );
+    Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> getCoarseSolverFactory( void );
+    Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> getSmootherFactory( void );
+    
 private:
 
     bool d_bUseEpetra                    = true;  //! whether we are using Epetra
