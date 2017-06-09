@@ -131,6 +131,39 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
     finestMGLevel->Set( "A", fineLevelA );
 
     d_levelFactoryManager.resize( d_maxLevels );
+
+#if 1
+    // seeing if we can build the hierarchy level by level with each setup interleaved
+    for ( size_t i=0u; i<d_maxLevels; ++i ) {
+
+        d_levelFactoryManager[i] = Teuchos::rcp( new MueLu::FactoryManager<SC,LO,GO,NO> );
+        
+        // Transfer operators
+        auto TentativePFact       = Teuchos::rcp( new MueLu::TentativePFactory<SC, LO, GO, NO>() );
+        auto SaPFact              = Teuchos::rcp( new MueLu::SaPFactory<SC, LO, GO, NO>() );
+        auto RFact                = Teuchos::rcp( new MueLu::TransPFactory<SC, LO, GO, NO>());
+        // coarsest solver.
+        auto coarseSolverPrototype = Teuchos::rcp( new MueLu::DirectSolver<SC, LO, GO, NO>() );
+        auto   coarseSolverFact    = Teuchos::rcp( new MueLu::SmootherFactory<SC, LO, GO, NO>(coarseSolverPrototype, Teuchos::null) );
+        
+        d_levelFactoryManager[i]->SetFactory("Ptent", TentativePFact);
+        d_levelFactoryManager[i]->SetFactory("P",     SaPFact);
+        d_levelFactoryManager[i]->SetFactory("R",     RFact);
+        d_levelFactoryManager[i]->SetFactory("Smoother", Teuchos::null);      //skips smoother setup
+        d_levelFactoryManager[i]->SetFactory("CoarseSolver", coarseSolverFact);
+        
+        auto finerLevelManager = (i==0u) ? Teuchos::null : d_levelFactoryManager[i-1];
+        auto currentLevelManager = d_levelFactoryManager[i];
+        
+        bool bIsLastLevel = d_mueluHierarchy->Setup( i,
+                                                     finerLevelManager,
+                                                     currentLevelManager,
+                                                     Teuchos::null );
+        if ( bIsLastLevel ) break;
+    }
+        
+#else
+    
     for ( size_t i=0u; i<d_maxLevels; ++i ) {
 
         d_levelFactoryManager[i] = Teuchos::rcp( new MueLu::FactoryManager<SC,LO,GO,NO> );
@@ -165,6 +198,7 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
         if ( bIsLastLevel ) break;
         
     }
+#endif
 }
 
 void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
@@ -172,9 +206,13 @@ void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db
     d_bRobustMode = db->getBoolWithDefault( "ROBUST_MODE", false );
     d_bUseEpetra  = db->getBoolWithDefault( "USE_EPETRA", true );
 
+#if 1
+    d_build_hierarchy = db->getBoolWithDefault( "build_hierarchy", true );
+    d_build_hierarchy_from_defaults = db->getBoolWithDefault( "build_hierarchy_from_defaults", false );
+#else
     d_build_hierarchy = db->getBoolWithDefault( "build_hierarchy", false );
     d_build_hierarchy_from_defaults = db->getBoolWithDefault( "build_hierarchy_from_defaults", true );
-
+#endif
     // general parameters
     d_MueLuParameterList.set( "verbosity", db->getStringWithDefault("verbosity", "medium") );
     d_MueLuParameterList.set( "problem: type", db->getStringWithDefault("problem_type", "unknown"));
