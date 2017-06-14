@@ -22,3 +22,11 @@ The websites associated with the AMP package includes:
 # Team #
 * Bobby Philip (ORNL)
 * Mark Berrill (ORNL)
+
+# Alumni #
+* Kevin Clarno (ORNL)
+* Damien Le Grande (ORNL)
+* Gary Dilts (LANL)
+* Bill Cochran (ORNL)
+* Rahul Sampath (ORNL)
+* Srikanth Allu (ORNL)
