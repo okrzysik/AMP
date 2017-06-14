@@ -86,7 +86,17 @@ Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> TrilinosMueLuSolver::getCoa
 
 Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> TrilinosMueLuSolver::getSmootherFactory( void )
 {
-    return Teuchos::null;
+    std::string ifpackType = "RELAXATION";
+#if 0
+    // Create Gauss-Seidel smoother.
+    Teuchos::ParameterList ifpackList;
+    ifpackList.set("relaxation: sweeps", (LO) 3);
+    ifpackList.set("relaxation: damping factor", (SC) 1.0);
+    auto smootherPrototype = Teuchos::rcp(new MueLu::TrilinosSmoother<SC, LO, GO, NO>(ifpackType, ifpackList));
+#else
+    auto smootherPrototype = Teuchos::rcp(new MueLu::TrilinosSmoother<SC, LO, GO, NO>(ifpackType, d_MueLuParameterList));
+#endif
+    return Teuchos::rcp(new MueLu::SmootherFactory<SC, LO, GO, NO>(smootherPrototype));
 }
 
 Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> TrilinosMueLuSolver::getXpetraMatrix( AMP::shared_ptr<AMP::Operator::LinearOperator> & op )
@@ -180,7 +190,7 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
         d_levelFactoryManager[i]->SetFactory("R",     getRFactory() );
         // explicitly setting the factory to null appears to be the wrong thing to do
         // MueLu decides no smoothing is required on the level
-        //        d_levelFactoryManager[i]->SetFactory("Smoother", getSmootherFactory() );      
+        d_levelFactoryManager[i]->SetFactory("Smoother", getSmootherFactory() );      
         d_levelFactoryManager[i]->SetFactory("CoarseSolver", getCoarseSolverFactory() );
     }
 
@@ -230,12 +240,42 @@ void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db
     d_MueLuParameterList.set( "smoother: overlap", db->getIntegerWithDefault("smoother_overlap", 0));
     d_MueLuParameterList.set( "smoother: pre overlap", db->getIntegerWithDefault("smoother_pre_overlap", 0));
     d_MueLuParameterList.set( "smoother: post overlap", db->getIntegerWithDefault("smoother_post_overlap", 0));
+
+    d_MueLuParameterList.set( "relaxation: sweeps", db->getIntegerWithDefault("relaxation_sweeps", 1) );
+    d_MueLuParameterList.set( "relaxation: damping factor", db->getDoubleWithDefault("relaxation_damping_factor", 1.0) );
+
+    if ( db->keyExists("relaxation_zero_starting_solution") ) {     
+        d_MueLuParameterList.set( "relaxation: zero starting solution", db->getBool("relaxation_zero_starting_solution") );
+    }
+
+    if ( db->keyExists("relaxation_backward_mode") ) { 
+        d_MueLuParameterList.set( "relaxation: backward mode", db->getBool("relaxation_backward_mode"));
+    }
+    
+    if ( db->keyExists("relaxation_use_l1") ) { 
+        d_MueLuParameterList.set( "relaxation: use l1", db->getBool("relaxation_use_l1") );
+    }
+    
+    if ( db->keyExists("relaxation_l1_eta") ) { 
+        d_MueLuParameterList.set( "relaxation: l1 eta", db->getDouble("relaxation_l1_eta") );
+    }
+    
+    if ( db->keyExists("relaxation_min_diagonal_value") ) { 
+        d_MueLuParameterList.set( "relaxation: min diagonal value", db->getDouble("relaxation_min_diagonal_value") );
+    }
+
+    if ( db->keyExists("relaxation_fix_tiny_diagonal_entries") ) { 
+        d_MueLuParameterList.set( "relaxation: fix tiny diagonal entries", db->getBool("relaxation_fix_tiny_diagonal_entries") );
+    }
+
+    if ( db->keyExists("relaxation_check_diagonal_entries") ) { 
+        d_MueLuParameterList.set( "relaxation: check diagonal entries", db->getBool("relaxation_check_diagonal_entries") );
+    }
+
 #if 0
-    d_MueLuParameterList.set( "relaxation: ", db->getIntegerWithDefault("relaxation", 0));
-    d_MueLuParameterList.set( "relaxation: ", db->getIntegerWithDefault("relaxation", 0));
-    d_MueLuParameterList.set( "relaxation: ", db->getIntegerWithDefault("relaxation", 0));
-    d_MueLuParameterList.set( "relaxation: ", db->getIntegerWithDefault("relaxation", 0));
-    d_MueLuParameterList.set( "relaxation: ", db->getIntegerWithDefault("relaxation", 0));
+    if ( db->keyExists("relaxation_local_smoothing_indices") ) { 
+        d_MueLuParameterList.set( "relaxation: local smoothing indices", db->getIntegerWithDefault("relaxation_local_smoothing_indices") );
+    }
 #endif
     
     d_MueLuParameterList.set( "coarse: max size", db->getIntegerWithDefault("coarse_max_size", 2000));

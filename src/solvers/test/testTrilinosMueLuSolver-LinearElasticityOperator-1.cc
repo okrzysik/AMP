@@ -122,7 +122,7 @@ void linearElasticTest( AMP::UnitTest *ut )
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > ( 1e-10 * initResidualNorm ) ) {
-        ut->failure( "TrilinosMLSolver successfully solves a linear elasticity problem" );
+        ut->failure( "TrilinosMLSolver could not solve a linear elasticity problem successfully" );
     } else {
         ut->passes( "TrilinosMLSolver successfully solves a linear elasticity problem" );
     }

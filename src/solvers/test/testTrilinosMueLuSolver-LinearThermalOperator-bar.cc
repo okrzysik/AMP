@@ -197,7 +197,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {
-        ut->failure( "TrilinosMueLuSolver successfully solves a linear thermal problem with a nuclear "
+        ut->failure( "TrilinosMueLuSolver could NOT successfully solve a linear thermal problem with a nuclear "
                      "source term." );
     } else {
         ut->passes( "TrilinosMueLuSolver successfully solves a linear thermal problem with a nuclear "
