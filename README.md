@@ -25,8 +25,9 @@ The websites associated with the AMP package includes:
 
 # Alumni #
 * Kevin Clarno (ORNL)
-* Damien Le Grande (ORNL)
+* Damien Lebrun-Grandie (ORNL)
 * Gary Dilts (LANL)
 * Bill Cochran (ORNL)
 * Rahul Sampath (ORNL)
 * Srikanth Allu (ORNL)
+* Steven Hamilton (ORNL)
