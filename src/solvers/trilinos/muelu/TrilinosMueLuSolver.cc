@@ -13,6 +13,8 @@ DISABLE_WARNINGS
 #include "MueLu_SmootherFactory.hpp"
 #include "MueLu_TransPFactory.hpp"
 #include "MueLu_TrilinosSmoother.hpp"
+#include "MueLu_IfpackSmoother.hpp"
+#include "MueLu_Ifpack2Smoother.hpp"
 #include "MueLu_DirectSolver.hpp"
 #include "MueLu_RAPFactory.hpp"
 #include <MueLu_CreateEpetraPreconditioner.hpp>
@@ -86,16 +88,21 @@ Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> TrilinosMueLuSolver::getCoa
 
 Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> TrilinosMueLuSolver::getSmootherFactory( void )
 {
-    std::string ifpackType = "RELAXATION";
-#if 0
-    // Create Gauss-Seidel smoother.
-    Teuchos::ParameterList ifpackList;
-    ifpackList.set("relaxation: sweeps", (LO) 3);
-    ifpackList.set("relaxation: damping factor", (SC) 1.0);
-    auto smootherPrototype = Teuchos::rcp(new MueLu::TrilinosSmoother<SC, LO, GO, NO>(ifpackType, ifpackList));
-#else
-    auto smootherPrototype = Teuchos::rcp(new MueLu::TrilinosSmoother<SC, LO, GO, NO>(ifpackType, d_MueLuParameterList));
-#endif
+    std::string ifpackType; 
+
+    Teuchos::RCP<MueLu::SmootherPrototype<SC, LO, GO, NO>> smootherPrototype;
+    
+    if ( d_smoother_type == "TrilinosSmoother" ) {
+        ifpackType = "RELAXATION";
+        smootherPrototype = Teuchos::rcp(new MueLu::TrilinosSmoother<SC, LO, GO, NO>(ifpackType, d_MueLuParameterList));
+    } else if ( d_smoother_type == "IfpackSmoother" ) {
+        ifpackType = "point relaxation stand-alone"; 
+        smootherPrototype = Teuchos::rcp(new MueLu::IfpackSmoother<NO>(ifpackType, d_MueLuParameterList));
+    } else if ( d_smoother_type == "Ifpack2Smoother" ) {
+        ifpackType = "point relaxation stand-alone"; 
+        smootherPrototype = Teuchos::rcp(new MueLu::Ifpack2Smoother<SC, LO, GO, NO>(ifpackType, d_MueLuParameterList));
+    }
+
     return Teuchos::rcp(new MueLu::SmootherFactory<SC, LO, GO, NO>(smootherPrototype));
 }
 
@@ -146,7 +153,15 @@ void TrilinosMueLuSolver::buildHierarchyFromDefaults( void )
 
 void TrilinosMueLuSolver::buildHierarchyByLevel( void )
 {
+
+    d_mueluHierarchyManager = Teuchos::rcp(new MueLu::ParameterListInterpreter<SC, LO, GO, NO >( d_MueLuParameterList ) );
+
+#if 0    
     d_mueluHierarchy     = Teuchos::rcp( new MueLu::Hierarchy<SC, LO, GO, NO >() );
+#else
+    d_mueluHierarchy     = d_mueluHierarchyManager->CreateHierarchy();
+#endif
+
     d_mueluHierarchy->SetDefaultVerbLevel(MueLu::Medium);
     auto finestMGLevel   = d_mueluHierarchy->GetLevel();
     // extract the Xpetra matrix from AMP
@@ -156,32 +171,53 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
 
     d_levelFactoryManager.resize( d_maxLevels );
 
-#if 0
-    
-    // seeing if we can build the hierarchy level by level with each setup interleaved
-    // potential problems ahead might be the Request calls that MueLu seems to make
+#if 1
     for ( size_t i=0u; i<d_maxLevels; ++i ) {
 
         d_levelFactoryManager[i] = Teuchos::rcp( new MueLu::FactoryManager<SC,LO,GO,NO> );
-
         d_levelFactoryManager[i]->SetFactory("Ptent", getTentativePFactory() );
         d_levelFactoryManager[i]->SetFactory("P",     getSaPFactory() );
         d_levelFactoryManager[i]->SetFactory("R",     getRFactory() );
-        d_levelFactoryManager[i]->SetFactory("Smoother", getSmootherFactory() );      
-        d_levelFactoryManager[i]->SetFactory("CoarseSolver", getCoarseSolverFactory() );
+    }
 
+    // seeing if smoothers can be initialized for each level
+    for ( size_t i=0u; i<d_maxLevels; ++i ) {
+        
         auto finerLevelManager = (i==0u) ? Teuchos::null : d_levelFactoryManager[i-1];
         auto currentLevelManager = d_levelFactoryManager[i];
-        
+        auto coarserLevelManager = ( i < d_maxLevels-1 ) ? d_levelFactoryManager[i+1] : Teuchos::null;
+
+        // setup a level
         bool bIsLastLevel = d_mueluHierarchy->Setup( i,
                                                      finerLevelManager,
                                                      currentLevelManager,
-                                                     Teuchos::null );
-        if ( bIsLastLevel ) break;
-    }
+                                                     coarserLevelManager );
+
+        auto currentLevel = d_mueluHierarchy->GetLevel( i );
+
+        // keep some of the factories
+        auto PtentFactory = currentLevelManager->GetFactory("Ptent");
+        currentLevel->Keep("Ptent",  PtentFactory.get() );
+
+        auto PFactory = currentLevelManager->GetFactory("P");
+        currentLevel->Keep("P",  PFactory.get() );
+
+        auto RFactory = currentLevelManager->GetFactory("R");
+        currentLevel->Keep("R",  RFactory.get() );
+
+        currentLevelManager->SetFactory("Smoother", getSmootherFactory() );      
+        currentLevelManager->SetFactory("CoarseSolver", getCoarseSolverFactory() );
+
+        // setup a level
+        bIsLastLevel = d_mueluHierarchy->Setup( i,
+                                                finerLevelManager,
+                                                currentLevelManager,
+                                                coarserLevelManager );
         
+        if ( bIsLastLevel ) break;
+        
+    }
 #else
-    
     for ( size_t i=0u; i<d_maxLevels; ++i ) {
 
         d_levelFactoryManager[i] = Teuchos::rcp( new MueLu::FactoryManager<SC,LO,GO,NO> );
@@ -234,6 +270,8 @@ void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db
     d_MueLuParameterList.set( "xml parameter file", db->getStringWithDefault("xml_parameter_file", ""));
     
     // smoothing and coarse solver options
+    d_smoother_type = db->getStringWithDefault("smoother_type", "IfpackSmoother");
+    
     d_MueLuParameterList.set( "smoother: pre or post", db->getStringWithDefault("smoother_pre_or_post", "both"));
     d_MueLuParameterList.set( "smoother: pre type", db->getStringWithDefault("smoother_pre_type", "RELAXATION"));
     d_MueLuParameterList.set( "smoother: post type", db->getStringWithDefault("smoother_post_type", "RELAXATION"));
@@ -241,6 +279,8 @@ void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db
     d_MueLuParameterList.set( "smoother: pre overlap", db->getIntegerWithDefault("smoother_pre_overlap", 0));
     d_MueLuParameterList.set( "smoother: post overlap", db->getIntegerWithDefault("smoother_post_overlap", 0));
 
+#if 0    
+    d_MueLuParameterList.set( "relaxation: type", db->getStringWithDefault("relaxation_type", "Gauss-Seidel") );
     d_MueLuParameterList.set( "relaxation: sweeps", db->getIntegerWithDefault("relaxation_sweeps", 1) );
     d_MueLuParameterList.set( "relaxation: damping factor", db->getDoubleWithDefault("relaxation_damping_factor", 1.0) );
 
@@ -272,7 +312,6 @@ void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db
         d_MueLuParameterList.set( "relaxation: check diagonal entries", db->getBool("relaxation_check_diagonal_entries") );
     }
 
-#if 0
     if ( db->keyExists("relaxation_local_smoothing_indices") ) { 
         d_MueLuParameterList.set( "relaxation: local smoothing indices", db->getIntegerWithDefault("relaxation_local_smoothing_indices") );
     }

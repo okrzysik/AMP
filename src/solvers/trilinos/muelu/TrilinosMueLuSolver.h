@@ -20,6 +20,7 @@
 #include <Xpetra_Matrix.hpp>
 
 #include <MueLu_FactoryManager.hpp>
+#include <MueLu_HierarchyManager_fwd.hpp>
 
 #include <vector>
 
@@ -177,11 +178,15 @@ private:
     AMP_MPI d_comm;
 
     size_t d_maxLevels;  //! maximum number of levels
+
+    std::string d_smoother_type; //! key for creating different smoothers
     
     AMP::shared_ptr<MueLu::EpetraOperator> d_mueluSolver;
 
     AMP::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> d_matrix;
     Teuchos::ParameterList d_MueLuParameterList;
+
+    Teuchos::RCP< MueLu::HierarchyManager<SC,LO,GO,NO> > d_mueluHierarchyManager; //! manager that creates hierarchy
 
     Teuchos::RCP< MueLu::Hierarchy<SC,LO,GO,NO> > d_mueluHierarchy; //! AMG hierarchy
     MueLu::FactoryManager<SC,LO,GO,NO> d_factoryManager; //! factory manager for MueLu components
