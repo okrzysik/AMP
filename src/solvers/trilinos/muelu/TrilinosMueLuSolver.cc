@@ -6,6 +6,8 @@ DISABLE_WARNINGS
 
 // Xpetra
 #include <Xpetra_EpetraVector.hpp>
+#include <Xpetra_Operator.hpp>
+#include <Xpetra_Matrix.hpp>
 // MueLu
 #include "MueLu.hpp"
 #include "MueLu_TentativePFactory.hpp"
@@ -86,21 +88,32 @@ Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> TrilinosMueLuSolver::getCoa
     return Teuchos::rcp( new MueLu::SmootherFactory<SC, LO, GO, NO>(coarseSolverPrototype, Teuchos::null) );
 }
 
-Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> TrilinosMueLuSolver::getSmootherFactory( void )
+Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> TrilinosMueLuSolver::getSmootherFactory( const int level )
 {
     std::string ifpackType; 
-
     Teuchos::RCP<MueLu::SmootherPrototype<SC, LO, GO, NO>> smootherPrototype;
-    
+
+    const auto &mueLuLevel = d_mueluHierarchy->GetLevel( level );
+    const auto A = mueLuLevel->Get<Teuchos::RCP<Xpetra::Operator<SC, LO, GO, NO>>>("A");
+
+    auto &smootherParams = d_MueLuParameterList.get<Teuchos::ParameterList>( "smoother: params");
+
     if ( d_smoother_type == "TrilinosSmoother" ) {
+
         ifpackType = "RELAXATION";
-        smootherPrototype = Teuchos::rcp(new MueLu::TrilinosSmoother<SC, LO, GO, NO>(ifpackType, d_MueLuParameterList));
+        smootherPrototype = Teuchos::rcp( new MueLu::TrilinosSmoother<SC, LO, GO, NO>(ifpackType, smootherParams) );
+
     } else if ( d_smoother_type == "IfpackSmoother" ) {
+
+        // legacy interface to Ifpack
         ifpackType = "point relaxation stand-alone"; 
-        smootherPrototype = Teuchos::rcp(new MueLu::IfpackSmoother<NO>(ifpackType, d_MueLuParameterList));
+        smootherPrototype = Teuchos::rcp( new MueLu::IfpackSmoother<NO>(ifpackType, smootherParams) );
+
     } else if ( d_smoother_type == "Ifpack2Smoother" ) {
+
         ifpackType = "point relaxation stand-alone"; 
-        smootherPrototype = Teuchos::rcp(new MueLu::Ifpack2Smoother<SC, LO, GO, NO>(ifpackType, d_MueLuParameterList));
+        smootherPrototype = Teuchos::rcp( new MueLu::Ifpack2Smoother<SC, LO, GO, NO>(ifpackType, smootherParams) );
+
     }
 
     return Teuchos::rcp(new MueLu::SmootherFactory<SC, LO, GO, NO>(smootherPrototype));
@@ -156,11 +169,11 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
 
     d_mueluHierarchyManager = Teuchos::rcp(new MueLu::ParameterListInterpreter<SC, LO, GO, NO >( d_MueLuParameterList ) );
 
-#if 0    
-    d_mueluHierarchy     = Teuchos::rcp( new MueLu::Hierarchy<SC, LO, GO, NO >() );
-#else
     d_mueluHierarchy     = d_mueluHierarchyManager->CreateHierarchy();
-#endif
+    // forced to set Max coarse size explicitly, as there does not seem to be any other sane way of doing it
+
+    d_mueluHierarchy->SetMaxCoarseSize( d_MueLuParameterList.get<int>("coarse: max size") );
+    //    d_mueluHierarchyManager->SetupHierarchy( *d_mueluHierarchy);
 
     d_mueluHierarchy->SetDefaultVerbLevel(MueLu::Medium);
     auto finestMGLevel   = d_mueluHierarchy->GetLevel();
@@ -171,7 +184,6 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
 
     d_levelFactoryManager.resize( d_maxLevels );
 
-#if 1
     for ( size_t i=0u; i<d_maxLevels; ++i ) {
 
         d_levelFactoryManager[i] = Teuchos::rcp( new MueLu::FactoryManager<SC,LO,GO,NO> );
@@ -205,9 +217,11 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
         auto RFactory = currentLevelManager->GetFactory("R");
         currentLevel->Keep("R",  RFactory.get() );
 
-        currentLevelManager->SetFactory("Smoother", getSmootherFactory() );      
+        currentLevelManager->SetFactory("Smoother", getSmootherFactory( i ) );      
         currentLevelManager->SetFactory("CoarseSolver", getCoarseSolverFactory() );
 
+        coarserLevelManager = ( bIsLastLevel ) ? Teuchos::null : d_levelFactoryManager[i+1];
+        
         // setup a level
         bIsLastLevel = d_mueluHierarchy->Setup( i,
                                                 finerLevelManager,
@@ -217,34 +231,7 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
         if ( bIsLastLevel ) break;
         
     }
-#else
-    for ( size_t i=0u; i<d_maxLevels; ++i ) {
 
-        d_levelFactoryManager[i] = Teuchos::rcp( new MueLu::FactoryManager<SC,LO,GO,NO> );
-        d_levelFactoryManager[i]->SetFactory("Ptent", getTentativePFactory() );
-        d_levelFactoryManager[i]->SetFactory("P",     getSaPFactory() );
-        d_levelFactoryManager[i]->SetFactory("R",     getRFactory() );
-        // explicitly setting the factory to null appears to be the wrong thing to do
-        // MueLu decides no smoothing is required on the level
-        d_levelFactoryManager[i]->SetFactory("Smoother", getSmootherFactory() );      
-        d_levelFactoryManager[i]->SetFactory("CoarseSolver", getCoarseSolverFactory() );
-    }
-
-    for ( size_t i=0u; i<d_maxLevels; ++i ) {
-        
-        auto finerLevelManager = (i==0u) ? Teuchos::null : d_levelFactoryManager[i-1];
-        auto currentLevelManager = d_levelFactoryManager[i];
-        auto coarserLevelManager = ( i < d_maxLevels-1 ) ? d_levelFactoryManager[i+1] : Teuchos::null;
-
-        bool bIsLastLevel = d_mueluHierarchy->Setup( i,
-                                                     finerLevelManager,
-                                                     currentLevelManager,
-                                                     coarserLevelManager );
-
-        if ( bIsLastLevel ) break;
-        
-    }
-#endif
 }
 
 void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
@@ -279,44 +266,53 @@ void TrilinosMueLuSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db
     d_MueLuParameterList.set( "smoother: pre overlap", db->getIntegerWithDefault("smoother_pre_overlap", 0));
     d_MueLuParameterList.set( "smoother: post overlap", db->getIntegerWithDefault("smoother_post_overlap", 0));
 
-#if 0    
-    d_MueLuParameterList.set( "relaxation: type", db->getStringWithDefault("relaxation_type", "Gauss-Seidel") );
-    d_MueLuParameterList.set( "relaxation: sweeps", db->getIntegerWithDefault("relaxation_sweeps", 1) );
-    d_MueLuParameterList.set( "relaxation: damping factor", db->getDoubleWithDefault("relaxation_damping_factor", 1.0) );
+    Teuchos::ParameterList relaxationParams;
 
-    if ( db->keyExists("relaxation_zero_starting_solution") ) {     
-        d_MueLuParameterList.set( "relaxation: zero starting solution", db->getBool("relaxation_zero_starting_solution") );
-    }
+    if( db->keyExists( "smoother_params" ) ) {
 
-    if ( db->keyExists("relaxation_backward_mode") ) { 
-        d_MueLuParameterList.set( "relaxation: backward mode", db->getBool("relaxation_backward_mode"));
-    }
+        const auto &smoother_db = db->getDatabase( "smoother_params" );
+
+        relaxationParams.set( "relaxation: type", smoother_db->getStringWithDefault("relaxation_type", "Gauss-Seidel") );
+        relaxationParams.set( "relaxation: sweeps", smoother_db->getIntegerWithDefault("relaxation_sweeps", 1) );
+        relaxationParams.set( "relaxation: damping factor", smoother_db->getDoubleWithDefault("relaxation_damping_factor", 1.0) );
+        
+        if ( smoother_db->keyExists("relaxation_zero_starting_solution") ) {     
+            relaxationParams.set( "relaxation: zero starting solution", smoother_db->getBool("relaxation_zero_starting_solution") );
+        }
+
+        if ( smoother_db->keyExists("relaxation_backward_mode") ) { 
+            relaxationParams.set( "relaxation: backward mode", smoother_db->getBool("relaxation_backward_mode"));
+        }
     
-    if ( db->keyExists("relaxation_use_l1") ) { 
-        d_MueLuParameterList.set( "relaxation: use l1", db->getBool("relaxation_use_l1") );
-    }
+        if ( smoother_db->keyExists("relaxation_use_l1") ) { 
+            relaxationParams.set( "relaxation: use l1", smoother_db->getBool("relaxation_use_l1") );
+        }
     
-    if ( db->keyExists("relaxation_l1_eta") ) { 
-        d_MueLuParameterList.set( "relaxation: l1 eta", db->getDouble("relaxation_l1_eta") );
-    }
+        if ( smoother_db->keyExists("relaxation_l1_eta") ) { 
+            relaxationParams.set( "relaxation: l1 eta", smoother_db->getDouble("relaxation_l1_eta") );
+        }
     
-    if ( db->keyExists("relaxation_min_diagonal_value") ) { 
-        d_MueLuParameterList.set( "relaxation: min diagonal value", db->getDouble("relaxation_min_diagonal_value") );
-    }
+        if ( smoother_db->keyExists("relaxation_min_diagonal_value") ) { 
+            relaxationParams.set( "relaxation: min diagonal value", smoother_db->getDouble("relaxation_min_diagonal_value") );
+        }
 
-    if ( db->keyExists("relaxation_fix_tiny_diagonal_entries") ) { 
-        d_MueLuParameterList.set( "relaxation: fix tiny diagonal entries", db->getBool("relaxation_fix_tiny_diagonal_entries") );
-    }
+        if ( smoother_db->keyExists("relaxation_fix_tiny_diagonal_entries") ) { 
+            relaxationParams.set( "relaxation: fix tiny diagonal entries", smoother_db->getBool("relaxation_fix_tiny_diagonal_entries") );
+        }
 
-    if ( db->keyExists("relaxation_check_diagonal_entries") ) { 
-        d_MueLuParameterList.set( "relaxation: check diagonal entries", db->getBool("relaxation_check_diagonal_entries") );
-    }
-
-    if ( db->keyExists("relaxation_local_smoothing_indices") ) { 
-        d_MueLuParameterList.set( "relaxation: local smoothing indices", db->getIntegerWithDefault("relaxation_local_smoothing_indices") );
-    }
+        if ( smoother_db->keyExists("relaxation_check_diagonal_entries") ) { 
+            relaxationParams.set( "relaxation: check diagonal entries", smoother_db->getBool("relaxation_check_diagonal_entries") );
+        }
+#if 0
+        if ( smoother_db->keyExists("relaxation_local_smoothing_indices") ) { 
+            relaxationParams.set( "relaxation: local smoothing indices", smoother_db->getIntegerWithDefault("relaxation_local_smoothing_indices") );
+        }
 #endif
+        
+    }
     
+    d_MueLuParameterList.set( "smoother: params",  relaxationParams );
+
     d_MueLuParameterList.set( "coarse: max size", db->getIntegerWithDefault("coarse_max_size", 2000));
     d_MueLuParameterList.set( "coarse: type", db->getStringWithDefault("coarse_type", "SuperLU"));
     d_MueLuParameterList.set( "coarse: overlap", db->getIntegerWithDefault("coarse_overlap", 0));

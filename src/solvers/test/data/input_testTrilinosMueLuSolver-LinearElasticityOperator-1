@@ -64,10 +64,14 @@ Load_Boundary {
 }
 
 LinearSolver{
-  PDE_equations = 3
+  number_of_equations = 3
   print_info_level = 3
   max_iterations = 10
   max_error = 1e-10
+  smoother_pre_type = "CHEBYSHEV"
+  smoother_post_type = "CHEBYSHEV"
+  build_hierarchy = FALSE
+  coarse_max_size = 100
 }
 
 

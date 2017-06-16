@@ -125,7 +125,7 @@ public:
     /**
      * Register the operator that the solver will use during solves
      @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$
-     */
+    */
     void registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op ) override;
 
     /**
@@ -165,7 +165,7 @@ protected:
     Teuchos::RCP<MueLu::SaPFactory<SC, LO, GO, NO>> getSaPFactory( void );
     Teuchos::RCP<MueLu::TransPFactory<SC, LO, GO, NO>> getRFactory( void );
     Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> getCoarseSolverFactory( void );
-    Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> getSmootherFactory( void );
+    Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> getSmootherFactory( const int level );
     
 private:
 

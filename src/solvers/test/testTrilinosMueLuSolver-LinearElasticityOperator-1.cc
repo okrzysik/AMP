@@ -27,7 +27,7 @@
 
 void linearElasticTest( AMP::UnitTest *ut )
 {
-    std::string exeName( "testTrilinosMLSolver-LinearElasticityOperator-1" );
+    std::string exeName( "testTrilinosMueLuSolver-LinearElasticityOperator-1" );
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
@@ -122,9 +122,9 @@ void linearElasticTest( AMP::UnitTest *ut )
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > ( 1e-10 * initResidualNorm ) ) {
-        ut->failure( "TrilinosMLSolver could not solve a linear elasticity problem successfully" );
+        ut->failure( "TrilinosMueLuSolver could not solve a linear elasticity problem successfully" );
     } else {
-        ut->passes( "TrilinosMLSolver successfully solves a linear elasticity problem" );
+        ut->passes( "TrilinosMueLuSolver successfully solves a linear elasticity problem" );
     }
 
     input_db.reset();
