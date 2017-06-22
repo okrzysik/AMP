@@ -81,6 +81,16 @@ public:
       */
     virtual Variable::shared_ptr getVariable( size_t which );
 
+    /** \brief  Get a particular variable from the list of variables
+      * \param  which  the index of the variable sought
+      *
+      * \details This is an alias for \code
+        d_vVariables[which];
+        \endcode It is bounds checked in
+      * debug builds.
+      */
+    virtual Variable::const_shared_ptr getVariable( size_t which ) const;
+
     /** \brief Returns the number of variables in the list
       *
       * \details This is an alias for
@@ -88,7 +98,7 @@ public:
         d_vVariables.size();
         \endcode
       */
-    virtual size_t numVariables();
+    virtual size_t numVariables() const;
 
     /** \brief Add a variable to the end of the variable list
       * \param  newVar  a shared pointer to the new variable

@@ -5,6 +5,7 @@
 #include "vectors/NativeVector.h"
 #include "vectors/VectorEngine.h"
 #include "vectors/petsc/PetscVector.h"
+#include "vectors/operations/VectorOperationsDefault.h"
 
 
 namespace AMP {
@@ -58,7 +59,11 @@ public:
   * \see PetscVector
   * \see ManagedPetscVector
   */
-class NativePetscVector : public NativeVector, public PetscVector, public VectorEngine
+class NativePetscVector :
+    public NativeVector,
+    public PetscVector,
+    public VectorEngine,
+    public VectorOperationsDefault<double>
 {
 public:
     //! Conveninece typedef
@@ -84,7 +89,7 @@ public:
 
     using Vector::cloneVector;
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
-    virtual void copyVector( Vector::const_shared_ptr vec ) override;
+    virtual void copy( const VectorOperations &vec ) override;
 
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector & ) override;
@@ -162,6 +167,9 @@ public:
         return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
     }
 
+    virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(double).hash_code(); }
+    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof(double); }
+
 protected:
     virtual void *getRawDataBlockAsVoid( size_t i ) override;
     virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
@@ -180,9 +188,29 @@ private:
     parameters_ptr d_pParameters;
     bool d_bDeleteMe;
     mutable double *d_pArray; // mutable so that we can cache the value
+
+public: // Pull VectorOperations into the current scope
+    using VectorOperationsDefault::add;
+    using VectorOperationsDefault::abs;
+    using VectorOperationsDefault::axpy;
+    using VectorOperationsDefault::axpby;
+    using VectorOperationsDefault::divide;
+    using VectorOperationsDefault::dot;
+    using VectorOperationsDefault::linearSum;
+    using VectorOperationsDefault::minQuotient;
+    using VectorOperationsDefault::multiply;
+    using VectorOperationsDefault::scale;
+    using VectorOperationsDefault::setRandomValues;
+    using VectorOperationsDefault::subtract;
+    using VectorOperationsDefault::reciprocal;
+    using VectorOperationsDefault::wrmsNorm;
+    using VectorOperationsDefault::wrmsNormMask;
+
 };
-}
-}
+
+
+} // LinearAlgebra namespace
+} // AMP namespace
 
 #include "NativePetscVector.inline.h"
 

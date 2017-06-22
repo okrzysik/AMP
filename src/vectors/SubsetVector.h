@@ -1,7 +1,8 @@
 #ifndef included_AMP_SubsetVector
 #define included_AMP_SubsetVector
 
-#include "Vector.h"
+#include "vectors/Vector.h"
+#include "vectors/operations/VectorOperationsDefault.h"
 #include <vector>
 
 namespace AMP {
@@ -43,7 +44,9 @@ namespace LinearAlgebra {
       vec2.copyVector( vec3 );
     \endcode
   */
-class SubsetVector : public Vector
+class SubsetVector :
+    public Vector,
+    public VectorOperationsDefault<double>
 {
 
 public:
@@ -72,6 +75,9 @@ public:
     virtual void copyOutRawData( double *out ) const override;
 
     virtual uint64_t getDataID() const override { return d_ViewVector->getDataID(); }
+    virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(double).hash_code(); }
+    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof(double); }
+
 
 private:
     SubsetVector() {}

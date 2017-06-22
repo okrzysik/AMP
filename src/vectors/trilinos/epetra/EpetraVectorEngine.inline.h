@@ -33,17 +33,21 @@ inline const void *EpetraVectorEngine::getDataBlock( size_t i ) const
 
 inline size_t EpetraVectorEngine::getLocalSize() const
 {
-    return d_Params->castTo<EpetraVectorEngineParameters>().getLocalSize();
+    auto params = dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params );
+    AMP_ASSERT( params != nullptr );
+    return params->getLocalSize();
 }
 
 inline size_t EpetraVectorEngine::getGlobalSize() const
 {
-    return d_Params->castTo<EpetraVectorEngineParameters>().getGlobalSize();
+    auto params = dynamic_pointer_cast<EpetraVectorEngineParameters>( d_Params );
+    AMP_ASSERT( params != nullptr );
+    return params->getGlobalSize();
 }
 
 inline bool EpetraVectorEngine::sameEngine( VectorEngine &e ) const
 {
-    return e.isA<EpetraVectorEngine>();
+    return dynamic_cast<EpetraVectorEngine*>( &e ) != nullptr;
 }
 
 inline size_t EpetraVectorEngine::numberOfDataBlocks() const { return 1; }

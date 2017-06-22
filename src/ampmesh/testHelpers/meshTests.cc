@@ -1118,9 +1118,8 @@ public:
 AMP::LinearAlgebra::Vector::shared_ptr first , AMP::LinearAlgebra::Vector::shared_ptr second )
         {
           multi->setRandomValues ();
-          AMP::LinearAlgebra::Vector::iterator  cur_multi , cur_sub;
-          cur_multi = multi->begin();
-          cur_sub = first->begin();
+          auto cur_multi = multi->begin();
+          auto cur_sub = first->begin();
           bool retVal = true;
           size_t i = 0;
           while ( cur_multi != multi->end() )
@@ -1159,10 +1158,9 @@ AMP::LinearAlgebra::Vector::shared_ptr first , AMP::LinearAlgebra::Vector::share
 "number_1" ) );
           AMP::LinearAlgebra::Variable::shared_ptr var2 ( new AMP::Mesh::Nodal3VectorVariable (
 "number_2" ) );
-          AMP::LinearAlgebra::Variable::shared_ptr multivar ( new AMP::LinearAlgebra::MultiVariable
-( "multi" ) );
-          multivar->castTo<AMP::LinearAlgebra::MultiVariable>().add ( var1 );
-          multivar->castTo<AMP::LinearAlgebra::MultiVariable>().add ( var2 );
+          auto multivar = AMP::make_shared<AMP::LinearAlgebra::MultiVariable>( "multi" );
+          multivar->add( var1 );
+          multivar->add( var2 );
 
           AMP::LinearAlgebra::Vector::shared_ptr  p1 = mesh->createVector ( multivar );
           AMP::LinearAlgebra::Vector::shared_ptr  p2 = p1->subsetVectorForVariable ( var1 );
@@ -1195,7 +1193,7 @@ AMP::LinearAlgebra::Vector::shared_ptr first , AMP::LinearAlgebra::Vector::share
           else
             utils->failure ( "Subset vector fails to pull out the correct vectors 2" );
 
-          Vec vec = p4->castTo<AMP::LinearAlgebra::PetscVector>().getVec();
+          Vec vec = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>(p4)->getVec();
           AMP::LinearAlgebra::Vector::shared_ptr p7 (
 reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *> (
 vec->data ) , AMP::LinearAlgebra::ExternalVectorDeleter() );

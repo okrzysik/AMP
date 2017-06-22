@@ -36,6 +36,6 @@ inline size_t CommunicationList::getVectorSendBufferSize() const { return d_Send
 
 inline size_t CommunicationList::getStartGID() const { return d_iBegin; }
 
-inline AMP_MPI CommunicationList::getComm() const { return d_comm; }
+inline const AMP_MPI& CommunicationList::getComm() const { return d_comm; }
 }
 }

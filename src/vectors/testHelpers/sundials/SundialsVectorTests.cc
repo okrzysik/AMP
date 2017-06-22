@@ -10,6 +10,14 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
+static inline N_Vector getVec( AMP::LinearAlgebra::Vector::shared_ptr vector )
+{
+    auto sundials = dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>( vector );
+    AMP_ASSERT( sundials != nullptr );
+    return sundials->getNVector();
+}
+
+
 void SundialsVectorTests::testSundialsVector( AMP::UnitTest *ut )
 {
     CloneSundialsVector( ut );
@@ -31,7 +39,7 @@ void SundialsVectorTests::testSundialsVector( AMP::UnitTest *ut )
 void SundialsVectorTests::CloneSundialsVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
     N_Vector vec_b = N_VClone( vec_a );
     AMP::LinearAlgebra::ManagedSundialsVector *vectorb = getVector( vec_b );
     bool pass                                          = true;
@@ -55,9 +63,9 @@ void SundialsVectorTests::LinearSumSundialsVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectord( d_factory->getVector() );
 
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
-    N_Vector vec_b = vectorb->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
-    N_Vector vec_c = vectorc->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
+    N_Vector vec_b = getVec( vectorb );
+    N_Vector vec_c = getVec( vectorc );
 
     vectora->setRandomValues();
     vectorb->setRandomValues();
@@ -75,7 +83,7 @@ void SundialsVectorTests::LinearSumSundialsVector( AMP::UnitTest *utils )
 void SundialsVectorTests::ConstSundialsVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
     N_VConst( 0., vec_a );
     double maxNorm = vectora->maxNorm();
     if ( maxNorm > 0 )
@@ -100,9 +108,9 @@ void SundialsVectorTests::ProdSundialsVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectord( d_factory->getVector() );
 
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
-    N_Vector vec_b = vectorb->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
-    N_Vector vec_c = vectorc->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
+    N_Vector vec_b = getVec( vectorb );
+    N_Vector vec_c = getVec( vectorc );
 
     vectora->setRandomValues();
     vectorb->setRandomValues();
@@ -124,9 +132,9 @@ void SundialsVectorTests::DivSundialsVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectord( d_factory->getVector() );
 
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
-    N_Vector vec_b = vectorb->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
-    N_Vector vec_c = vectorc->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
+    N_Vector vec_b = getVec( vectorb );
+    N_Vector vec_c = getVec( vectorc );
 
     vectora->setRandomValues();
     vectorb->setRandomValues();
@@ -146,8 +154,8 @@ void SundialsVectorTests::ScaleSundialsVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
 
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
-    N_Vector vec_b = vectorb->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
+    N_Vector vec_b = getVec( vectorb );
 
     vectora->setRandomValues();
     N_VScale( 2.0, vec_a, vec_b );
@@ -166,8 +174,8 @@ void SundialsVectorTests::AbsSundialsVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
 
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
-    N_Vector vec_b = vectorb->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
+    N_Vector vec_b = getVec( vectorb );
 
     vectora->setRandomValues();
     vectorc->setToScalar( 0.5 );
@@ -188,8 +196,8 @@ void SundialsVectorTests::InvSundialsVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
 
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
-    N_Vector vec_b = vectorb->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
+    N_Vector vec_b = getVec( vectorb );
 
     vectora->setRandomValues();
     N_VInv( vec_a, vec_b );
@@ -208,8 +216,8 @@ void SundialsVectorTests::AddConstSundialsVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
 
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
-    N_Vector vec_b = vectorb->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
+    N_Vector vec_b = getVec( vectorb );
 
     vectora->setRandomValues();
     N_VAddConst( vec_a, .3, vec_b );
@@ -228,8 +236,8 @@ void SundialsVectorTests::DotProdSundialsVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
 
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
-    N_Vector vec_b = vectorb->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
+    N_Vector vec_b = getVec( vectorb );
 
     vectora->setRandomValues();
     vectorb->setRandomValues();
@@ -246,7 +254,7 @@ void SundialsVectorTests::MaxNormSundialsVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
 
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
 
     vectora->setRandomValues();
 
@@ -267,8 +275,8 @@ void SundialsVectorTests::WRMSNormSundialsVector( AMP::UnitTest *utils )
     if ( !vectorc )
         utils->failure( "N_VWrmsNorm" );
 
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
-    N_Vector vec_b = vectorb->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
+    N_Vector vec_b = getVec( vectorb );
 
     vectora->setRandomValues();
     vectorb->setRandomValues();
@@ -286,7 +294,7 @@ void SundialsVectorTests::MinSundialsVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
 
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
 
     vectora->setRandomValues();
 
@@ -303,7 +311,7 @@ void SundialsVectorTests::L1NormSundialsVector( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
 
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
 
     vectora->setRandomValues();
 
@@ -321,8 +329,8 @@ void SundialsVectorTests::MinQuotientSundialsVector( AMP::UnitTest *utils )
     AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
     AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
 
-    N_Vector vec_a = vectora->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
-    N_Vector vec_b = vectorb->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector();
+    N_Vector vec_a = getVec( vectora );
+    N_Vector vec_b = getVec( vectorb );
 
     vectora->setRandomValues();
     vectorb->setRandomValues();

@@ -108,7 +108,7 @@ public:
       @param [in] u Input vector
       @param [in] fname Name of the output file
       */
-    void printStressAndStrain( AMP::LinearAlgebra::Vector::shared_ptr u, const std::string &fname );
+    void printStressAndStrain( AMP::LinearAlgebra::Vector::const_shared_ptr u, const std::string &fname );
 
     AMP::shared_ptr<MechanicsMaterialModel> getMaterialModel() { return d_materialModel; }
 

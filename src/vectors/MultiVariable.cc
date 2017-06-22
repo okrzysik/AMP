@@ -52,6 +52,11 @@ Variable::shared_ptr MultiVariable::getVariable( size_t which )
     AMP_ASSERT( which < d_vVariables.size() );
     return d_vVariables[which];
 }
+Variable::const_shared_ptr MultiVariable::getVariable( size_t which ) const
+{
+    AMP_ASSERT( which < d_vVariables.size() );
+    return d_vVariables[which];
+}
 void MultiVariable::setVariable( size_t i, Variable::shared_ptr &p )
 {
     AMP_ASSERT( i < d_vVariables.size() );
@@ -76,7 +81,10 @@ void MultiVariable::add( Variable::shared_ptr newVar )
 /****************************************************************
 * Misc                                                          *
 ****************************************************************/
-size_t MultiVariable::numVariables() { return d_vVariables.size(); }
+size_t MultiVariable::numVariables() const
+{
+    return d_vVariables.size();
+}
 
 void MultiVariable::sortVariablesByName( const std::vector<std::string> &order )
 {

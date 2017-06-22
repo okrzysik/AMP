@@ -133,10 +133,6 @@ void FlowFrapconJacobian::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         d_numpoints = zPoints.size();
     }
 
-
-    // should never use resize as it is assumed that the vector is created using the right size !!
-    // outputVec->castTo<SimpleVector>().resize (d_numpoints);
-
     zPoints.resize( d_numpoints );
 
     // set the inlet flow temperature value

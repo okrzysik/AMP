@@ -19,7 +19,7 @@ inline VectorEngine::BufferPtr NativeThyraVector::getNewBuffer()
 
 inline bool NativeThyraVector::sameEngine( VectorEngine &e ) const
 {
-    return e.isA<NativeThyraVector>();
+    return dynamic_cast<NativeThyraVector*>( &e );
 }
 
 
@@ -90,24 +90,25 @@ inline void NativeThyraVector::swapVectors( Vector & )
 inline Teuchos::RCP<const Thyra::VectorBase<double>>
 NativeThyraVector::getThyraVec( const VectorOperations &v )
 {
-    AMP::shared_ptr<const ThyraVector> v2 = AMP::dynamic_pointer_cast<const ThyraVector>(
-        ThyraVector::constView( v.castTo<const Vector>().shared_from_this() ) );
-    AMP_ASSERT( v2 != NULL );
-    return v2->getVec();
+    auto vec = dynamic_cast<const Vector*>( &v );
+    AMP_ASSERT( vec != nullptr );
+    auto vec2 = AMP::dynamic_pointer_cast<const ThyraVector>(
+        ThyraVector::constView( vec->shared_from_this() ) );
+    AMP_ASSERT( vec2 != nullptr );
+    return vec2->getVec();
 }
 
 
 inline Teuchos::RCP<const Thyra::VectorBase<double>>
-NativeThyraVector::getThyraVec( const Vector::const_shared_ptr &v )
+NativeThyraVector::getThyraVec( const Vector::const_shared_ptr &vec )
 {
-    AMP::shared_ptr<const ThyraVector> v2 =
-        AMP::dynamic_pointer_cast<const ThyraVector>( ThyraVector::constView( v ) );
-    AMP_ASSERT( v2 != NULL );
-    return v2->getVec();
+    auto vec2 = AMP::dynamic_pointer_cast<const ThyraVector>( ThyraVector::constView( vec ) );
+    AMP_ASSERT( vec2 != nullptr );
+    return vec2->getVec();
 }
 
 
-inline void NativeThyraVector::copyVector( Vector::const_shared_ptr src_vec )
+inline void NativeThyraVector::copy( const VectorOperations& src_vec )
 {
     Thyra::copy<double>( *( getThyraVec( src_vec ) ), d_thyraVec.ptr() );
 }
@@ -121,7 +122,9 @@ inline void NativeThyraVector::setToScalar( double alpha )
 
 inline void NativeThyraVector::scale( double alpha, const VectorOperations &x )
 {
-    copyVector( x.castTo<const Vector>().shared_from_this() );
+    auto vec = dynamic_cast<const Vector*>( &x );
+    AMP_ASSERT( vec != nullptr );
+    copyVector( vec->shared_from_this() );
     Thyra::scale<double>( alpha, d_thyraVec.ptr() );
 }
 

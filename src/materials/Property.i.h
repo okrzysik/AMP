@@ -130,7 +130,6 @@ void Property<Number>::evalvActual(
     RETURN_VTYPE &r, const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>> &args )
 {
     std::vector<Number> eval_args( d_n_arguments ); // list of arguments for each input type
-    typename RETURN_VTYPE::iterator r_iter;         // Iterator for the results vector
 
     // First we make sure that all of the vectors have something in them
     AMP_ASSERT( r.begin() != r.end() );
@@ -156,7 +155,7 @@ void Property<Number>::evalvActual(
     }
     const size_t npresent = parameter_iter.size();
 
-    for ( r_iter = r.begin(); r_iter != r.end(); ++r_iter ) {
+    for ( auto r_iter = r.begin(); r_iter != r.end(); ++r_iter ) {
         // Loop through the list of actually present parameter iterators and assign their values to
         // the vector being
         // sent to eval

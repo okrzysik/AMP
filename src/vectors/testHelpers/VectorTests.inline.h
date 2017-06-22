@@ -12,10 +12,10 @@ template <typename VIEWER>
 void VectorTests::DeepCloneOfView( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
-    if ( !vector1->isA<AMP::LinearAlgebra::MultiVector>() )
+    if ( AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(vector1) == nullptr )
         return;
-    vector1                                        = VIEWER::view( vector1 );
-    AMP::LinearAlgebra::Vector::shared_ptr vector2 = vector1->cloneVector();
+    vector1      = VIEWER::view( vector1 );
+    auto vector2 = vector1->cloneVector();
     bool pass                                      = true;
     for ( size_t i = 0; i != vector1->numberOfDataBlocks(); i++ ) {
         pass &= ( vector1->getRawDataBlock<double>( i ) != vector2->getRawDataBlock<double>( i ) );
@@ -30,8 +30,6 @@ void VectorTests::DeepCloneOfView( AMP::UnitTest *utils )
 template <typename ITERATOR>
 void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::UnitTest *utils )
 {
-    typename ITERATOR::vector_type &ref = p->castTo<typename ITERATOR::vector_type>();
-
     int kk = p->getLocalSize();
     if ( ( p->end() - p->begin() ) == (int) p->getLocalSize() )
         utils->passes( "Subtracting begin from end " );
@@ -43,9 +41,9 @@ void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_p
     else
         utils->failure( "Subtracting end from beginning " );
 
-    ITERATOR cur1, cur2;
-    cur1 = cur2  = ref.begin();
-    ITERATOR end = ref.end();
+    VectorDataIterator<double> cur1, cur2;
+    cur1 = cur2 = p->begin();
+    VectorDataIterator<double> end = p->end();
     ++cur1;
     ++cur2;
     int i = 0;
@@ -63,7 +61,7 @@ void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_p
 
     p->setToScalar( 5.0 );
     i = 0;
-    for ( cur1 = ref.begin(); cur1 != end; cur1++ ) {
+    for ( cur1 = p->begin(); cur1 != end; ++cur1 ) {
         if ( ( *cur1 ) != 5.0 )
             break;
         i++;
@@ -80,7 +78,7 @@ void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_p
         if ( ( *cur1 ) != 5.0 )
             break;
         i++;
-    } while ( cur1 != ref.begin() );
+    } while ( cur1 != p->begin() );
 
     if ( i == kk )
         utils->passes( "Iterating backward data access" );
@@ -88,7 +86,7 @@ void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_p
         utils->failure( "Iterating backward data access" );
 
     if ( p->getLocalSize() > 7 ) {
-        cur1 = ref.begin();
+        cur1 = p->begin();
         cur2 = cur1 + 5;
         if ( ( cur2 - cur1 ) == 5 )
             utils->passes( "Adding and subtracting" );

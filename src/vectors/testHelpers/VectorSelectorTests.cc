@@ -72,15 +72,14 @@ void AMP::LinearAlgebra::VectorTests::testAllSelectors( AMP::UnitTest *ut )
 void AMP::LinearAlgebra::VectorTests::test_VS_ByVariableName( AMP::UnitTest *ut )
 {
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    AMP::LinearAlgebra::Vector::shared_ptr vec1  = d_factory->getVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vec2  = vec1->cloneVector( "vec2" );
-    AMP::LinearAlgebra::Vector::shared_ptr vec3a = vec1->cloneVector( "vec3" );
-    AMP::LinearAlgebra::Vector::shared_ptr vec3b = vec1->cloneVector( "vec3" );
-    AMP::LinearAlgebra::Vector::shared_ptr vec3 =
-        AMP::LinearAlgebra::MultiVector::create( "multivec", globalComm );
-    vec3->castTo<AMP::LinearAlgebra::MultiVector>().addVector( vec2 );
-    vec3->castTo<AMP::LinearAlgebra::MultiVector>().addVector( vec3a );
-    vec3->castTo<AMP::LinearAlgebra::MultiVector>().addVector( vec3b );
+    auto vec1  = d_factory->getVector();
+    auto vec2  = vec1->cloneVector( "vec2" );
+    auto vec3a = vec1->cloneVector( "vec3" );
+    auto vec3b = vec1->cloneVector( "vec3" );
+    auto vec3  = AMP::LinearAlgebra::MultiVector::create( "multivec", globalComm );
+    vec3->addVector( vec2 );
+    vec3->addVector( vec3a );
+    vec3->addVector( vec3b );
 
     bool pass = true;
     AMP::LinearAlgebra::Vector::shared_ptr selection1 =
@@ -101,10 +100,9 @@ void AMP::LinearAlgebra::VectorTests::test_VS_ByVariableName( AMP::UnitTest *ut 
     }
 
     selection1 = vec3->select( AMP::LinearAlgebra::VS_ByVariableName( "vec3" ), "subset" );
-    AMP::LinearAlgebra::Vector::shared_ptr vec3_sub =
-        AMP::LinearAlgebra::MultiVector::create( "multivec", globalComm );
-    vec3_sub->castTo<AMP::LinearAlgebra::MultiVector>().addVector( vec3a );
-    vec3_sub->castTo<AMP::LinearAlgebra::MultiVector>().addVector( vec3b );
+    auto vec3_sub = AMP::LinearAlgebra::MultiVector::create( "multivec", globalComm );
+    vec3_sub->addVector( vec3a );
+    vec3_sub->addVector( vec3b );
     if ( selection1 ) {
         if ( !compareVecSubset( vec3_sub, selection1 ) ) {
             ut->failure( "Could not find vector" );

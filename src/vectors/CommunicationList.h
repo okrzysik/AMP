@@ -12,7 +12,7 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-class Vector;
+class VectorData;
 
 
 /**
@@ -134,7 +134,7 @@ public:
      * to be for an all-to-all, given the communication lists computed by
      * buildCommunicationArrays.
      */
-    void packSendBuffer( std::vector<double> &buffer, const Vector &vector ) const;
+    void packSendBuffer( std::vector<double> &buffer, const VectorData &vector ) const;
 
     /**
      * \brief Given an AMP vector, this will create the appropriate receive buffer used
@@ -145,7 +145,7 @@ public:
      * to be for an all-to-all, given the communication lists computed by
      * buildCommunicationArrays.
      */
-    void packReceiveBuffer( std::vector<double> &buffer, const Vector &vector ) const;
+    void packReceiveBuffer( std::vector<double> &buffer, const VectorData &vector ) const;
 
     /**
      * \brief Given a buffer from all-to-all, unpack it into a vector
@@ -154,7 +154,7 @@ public:
      * \details  After an all-to-all, this method will unpack the result and set the data
      * in appropriate places in the vector.
      */
-    void unpackReceiveBufferSet( const std::vector<double> &buffer, Vector &vector ) const;
+    void unpackReceiveBufferSet( const std::vector<double> &buffer, VectorData &vector ) const;
 
     /**
      * \brief Given a buffer from all-to-all, unpack it into a vector
@@ -163,7 +163,7 @@ public:
      * \details  After an all-to-all, this method will unpack the result and add the data
      * in appropriate places in the vector.
      */
-    void unpackSendBufferAdd( const std::vector<double> &buffer, Vector &vector ) const;
+    void unpackSendBufferAdd( const std::vector<double> &buffer, VectorData &vector ) const;
 
     /**
      * \brief Given a buffer from all-to-all, unpack it into a vector
@@ -172,7 +172,7 @@ public:
      * \details  After an all-to-all, this method will unpack the result and set the data
      * in appropriate places in the vector.
      */
-    void unpackSendBufferSet( const std::vector<double> &buffer, Vector &vector ) const;
+    void unpackSendBufferSet( const std::vector<double> &buffer, VectorData &vector ) const;
 
     /**
      * \brief  Return the first d.o.f. on this core
@@ -204,7 +204,7 @@ public:
      * \brief  Return the communicator used for this communication list
      * \return The communicator.
      */
-    AMP_MPI getComm() const;
+    const AMP_MPI& getComm() const;
 
 
     /**

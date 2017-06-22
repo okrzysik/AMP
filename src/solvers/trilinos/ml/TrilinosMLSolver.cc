@@ -204,8 +204,7 @@ void TrilinosMLSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
 
 
 void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                              AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                  u )
+                              AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
     // in this case we make the assumption we can access a EpetraMat for now
@@ -257,12 +256,13 @@ void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> 
     if ( d_bUseEpetra ) {
         // These functions throw exceptions if this cannot be performed.
         AMP_ASSERT( f != nullptr );
-        const Epetra_Vector &fVec = ( AMP::LinearAlgebra::EpetraVector::constView( f ) )
-                                        ->castTo<const AMP::LinearAlgebra::EpetraVector>()
-                                        .getEpetra_Vector();
-        Epetra_Vector &uVec = ( AMP::LinearAlgebra::EpetraVector::view( u ) )
-                                  ->castTo<AMP::LinearAlgebra::EpetraVector>()
-                                  .getEpetra_Vector();
+
+        auto f_epetra = AMP::dynamic_pointer_cast<const AMP::LinearAlgebra::EpetraVector>(
+            AMP::LinearAlgebra::EpetraVector::constView( f ) );
+        auto u_epetra = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>(
+            AMP::LinearAlgebra::EpetraVector::view( u ) );
+        const Epetra_Vector &fVec = f_epetra->getEpetra_Vector();
+        Epetra_Vector &uVec = u_epetra->getEpetra_Vector();
 
         d_mlSolver->ApplyInverse( fVec, uVec );
     } else {
@@ -284,9 +284,9 @@ void TrilinosMLSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> 
     // as Epetra is not going to change the state of a managed vector
     // an example where this will and has caused problems is when the
     // vector is a petsc managed vector being passed back to PETSc
-    if ( u->isA<AMP::LinearAlgebra::DataChangeFirer>() ) {
-        u->castTo<AMP::LinearAlgebra::DataChangeFirer>().fireDataChange();
-    }
+    auto firer = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( u );
+    if ( firer )
+        firer->fireDataChange();
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         double solution_norm = u->L2Norm();
