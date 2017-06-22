@@ -83,31 +83,8 @@ public: // typedefs
       */
     typedef AMP::shared_ptr<const Vector> const_shared_ptr;
 
-    /** \typedef iterator
-      * \brief An iterator for the data in a Vector---DO NOT USE WITHOUT READING DETAILS.
-      * \see DataChangeFirer
-      * \warning  If you understand what DataChangeFirer does and why, then you can use
-      * the non-const iterator.
-      * This can be used with the following pattern:
-      * \code
-      void square ( Vector::shared_ptr  vector )
-      {
-        auto cur_entry = vector->begin();
-        while ( cur_entry != vector->end() ) {
-          (*cur_entry) = (*cur_entry)*(*cur_entry);
-          cur_entry++;
-        }
-        auto firer = dynamic_cast<DataChangeFirer>vector.get();
-        if ( firer != nullptr )
-            firer->fireDataChange();
-      }
-      \endcode
-      */
+    // Deprecated
     typedef VectorDataIterator<double> iterator;
-
-    /** \typedef const_iterator
-      * \brief An iterator for the data in a Vector
-      */
     typedef VectorDataIterator<const double> const_iterator;
 
 
@@ -164,14 +141,6 @@ public: // Virtual functions
      */
     virtual Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const;
-
-    /** \brief Copy the elements of a vector into <i>this</i>
-      *   Note: if the ghosts in the rhs do not match the ghosts in this,
-      *   a makeConsistent is performed to fill the ghosts.  Otherwise it
-      *   is assumed that rhs has consistent ghost values.
-      * \param[in] rhs  a shared pointer to the Vector to copy the data from
-     */
-    virtual void copyVector( Vector::const_shared_ptr rhs );
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other  Vector to swap data with
@@ -284,6 +253,9 @@ public: // Constructor/destructors
 
 public: // Non-virtual functions
 
+    /// @copydoc VectorOperations::copy(const VectorOperations&)
+    inline void copyVector( AMP::shared_ptr<const Vector> x ) { copy(*x); }
+
     /** \brief Change the variable associated with this vector
       * \param[in] name  The new variable
      */
@@ -366,14 +338,6 @@ public: // Non-virtual functions
       */
     static RNG::shared_ptr getDefaultRNG();
 
-    /** \brief Copy ghosted vlues to a vector
-      * \param[in] rhs  Vector to copy ghost values from
-      * \details  This ensures that ghosted values on this and rhs
-      * are the same without a call to makeConsistent.
-      * \see makeConsistent
-      */
-    void copyGhostValues( const AMP::shared_ptr<const Vector> &rhs );
-
     /** \brief Associate the ghost buffer of a Vector with this Vector
       * \param in  The Vector to share a ghost buffer with
       */
@@ -394,8 +358,6 @@ protected: // Internal data
     //! The DOF_Manager
     AMP::Discretization::DOFManager::shared_ptr d_DOFManager;
 
-    friend class ManagedVector;
-    friend class MultiVector;
 
 private:
     // The following are not implemented

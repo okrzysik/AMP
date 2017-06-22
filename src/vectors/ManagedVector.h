@@ -89,7 +89,7 @@ public:
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
     virtual size_t numberOfDataBlocks() const override;
     virtual size_t sizeOfDataBlock( size_t i ) const override;
-    virtual void copyVector( Vector::const_shared_ptr src_vec ) override;
+    virtual void copy( const VectorOperations& src ) override;
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector &other ) override;
 
@@ -145,6 +145,7 @@ public:
         return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
     }
     virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(double).hash_code(); }
+    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof(double); }
 
 protected:
     virtual Vector::shared_ptr selectInto( const VectorSelector & ) override;

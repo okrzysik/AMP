@@ -523,7 +523,7 @@ AMP::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
     return outParams;
 }
 
-void MechanicsNonlinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vector::shared_ptr u,
+void MechanicsNonlinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                                          const std::string &fname )
 {
     if ( !d_isInitialized ) {
@@ -537,41 +537,37 @@ void MechanicsNonlinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vec
 
     AMP::LinearAlgebra::Variable::shared_ptr dispVar =
         d_inpVariables->getVariable( Mechanics::DISPLACEMENT );
-    AMP::LinearAlgebra::Vector::shared_ptr dispVector = mySubsetVector( u, dispVar );
+    auto dispVector = mySubsetVector( u, dispVar );
     setVector( Mechanics::DISPLACEMENT, dispVector );
 
     if ( d_isActive[Mechanics::TEMPERATURE] ) {
         if ( !( d_isFrozen[Mechanics::TEMPERATURE] ) ) {
-            AMP::LinearAlgebra::Variable::shared_ptr tempVar =
-                d_inpVariables->getVariable( Mechanics::TEMPERATURE );
-            AMP::LinearAlgebra::Vector::shared_ptr tempVector = mySubsetVector( u, tempVar );
+            auto tempVar = d_inpVariables->getVariable( Mechanics::TEMPERATURE );
+            auto tempVector = mySubsetVector( u, tempVar );
             setVector( Mechanics::TEMPERATURE, tempVector );
         }
     }
 
     if ( d_isActive[Mechanics::BURNUP] ) {
         if ( !( d_isFrozen[Mechanics::BURNUP] ) ) {
-            AMP::LinearAlgebra::Variable::shared_ptr burnVar =
-                d_inpVariables->getVariable( Mechanics::BURNUP );
-            AMP::LinearAlgebra::Vector::shared_ptr burnVector = mySubsetVector( u, burnVar );
+            auto burnVar = d_inpVariables->getVariable( Mechanics::BURNUP );
+            auto burnVector = mySubsetVector( u, burnVar );
             setVector( Mechanics::BURNUP, burnVector );
         }
     }
 
     if ( d_isActive[Mechanics::OXYGEN_CONCENTRATION] ) {
         if ( !( d_isFrozen[Mechanics::OXYGEN_CONCENTRATION] ) ) {
-            AMP::LinearAlgebra::Variable::shared_ptr oxyVar =
-                d_inpVariables->getVariable( Mechanics::OXYGEN_CONCENTRATION );
-            AMP::LinearAlgebra::Vector::shared_ptr oxyVector = mySubsetVector( u, oxyVar );
+            auto oxyVar = d_inpVariables->getVariable( Mechanics::OXYGEN_CONCENTRATION );
+            auto oxyVector = mySubsetVector( u, oxyVar );
             setVector( Mechanics::OXYGEN_CONCENTRATION, oxyVector );
         }
     }
 
     if ( d_isActive[Mechanics::LHGR] ) {
         if ( !( d_isFrozen[Mechanics::LHGR] ) ) {
-            AMP::LinearAlgebra::Variable::shared_ptr lhgrVar =
-                d_inpVariables->getVariable( Mechanics::LHGR );
-            AMP::LinearAlgebra::Vector::shared_ptr lhgrVector = mySubsetVector( u, lhgrVar );
+            auto lhgrVar = d_inpVariables->getVariable( Mechanics::LHGR );
+            auto lhgrVector = mySubsetVector( u, lhgrVar );
             setVector( Mechanics::LHGR, lhgrVector );
         }
     }

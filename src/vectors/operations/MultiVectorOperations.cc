@@ -6,6 +6,16 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
+* Constructors                                                  *
+****************************************************************/
+AMP::shared_ptr<VectorOperations> MultiVectorOperations::cloneOperations() const
+{
+    auto ptr = AMP::make_shared<MultiVectorOperations>( );
+    return ptr;
+}
+
+
+/****************************************************************
 * min, max, norms, etc.                                         *
 ****************************************************************/
 bool MultiVectorOperations::localEquals( const VectorOperations &x, double tol ) const
@@ -133,6 +143,27 @@ double MultiVectorOperations::localWrmsNormMask( const VectorOperations &x,
 /****************************************************************
 * Functions to initalize the data                               *
 ****************************************************************/
+void MultiVectorOperations::copy( const VectorOperations &x )
+{
+    auto x2 = dynamic_cast<const MultiVectorOperations*>( &x );
+    if ( x2 ) {
+        // Both this and x are multivectors
+        for ( size_t i = 0; i != d_operations.size(); i++ )
+            d_operations[i]->copy( *(x2->d_operations[i]) );
+    } else {
+        // x is not a multivector, try to call a default implimentation
+        auto y2 = d_VectorData;
+        auto x2 = x.getVectorData();
+        AMP_ASSERT( x2->getLocalSize() == y2->getLocalSize() );
+        if ( x2->isType<double>() && y2->isType<double>() ) {
+            std::copy( x2->begin<double>(), x2->end<double>(), y2->begin<double>() );
+        } else if ( x2->isType<float>() && y2->isType<float>() ) {
+            std::copy( x2->begin<float>(), x2->end<float>(), y2->begin<float>() );
+        } else {
+            AMP_ERROR("Unable to discern data types");
+        }
+    }
+}
 void MultiVectorOperations::zero()
 {
     for ( auto &op : d_operations )

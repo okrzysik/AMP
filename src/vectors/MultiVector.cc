@@ -408,6 +408,18 @@ const void *MultiVector::getRawDataBlockAsVoid( size_t i ) const
     }
     return nullptr;
 }
+size_t MultiVector::sizeofDataBlockType( size_t block ) const
+{
+    size_t curOffset = 0;
+    for ( size_t j = 0; j != d_vVectors.size(); j++ ) {
+        curOffset += d_vVectors[j]->numberOfDataBlocks();
+        if ( block < curOffset ) {
+            size_t index = block + d_vVectors[j]->numberOfDataBlocks() - curOffset;
+            return d_vVectors[j]->sizeofDataBlockType( index );
+        }
+    }
+    return 0;
+}
 bool MultiVector::isTypeId( size_t hash, size_t block ) const
 {
     size_t curOffset = 0;
@@ -573,30 +585,6 @@ void MultiVector::setUpdateStatus( UpdateState state )
     *d_UpdateState = state;
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
         d_vVectors[i]->setUpdateStatus( state );
-}
-
-
-void MultiVector::copyVector( Vector::const_shared_ptr src )
-{
-    AMP::shared_ptr<const MultiVector> rhs = AMP::dynamic_pointer_cast<const MultiVector>( src );
-    if ( rhs.get() != nullptr ) {
-        // We are dealing with 2 multivectors
-        AMP_ASSERT( rhs->d_vVectors.size() == d_vVectors.size() );
-        for ( size_t i = 0; i != d_vVectors.size(); i++ )
-            d_vVectors[i]->copyVector( rhs->d_vVectors[i] );
-        *d_UpdateState = *( rhs->getUpdateStatusPtr() );
-    } else if ( d_vVectors.size() == 1 ) {
-        // We have a multivector of a single vector
-        d_vVectors[0]->copyVector( src );
-    } else if ( *getDOFManager() == *( src->getDOFManager() ) ) {
-        // The two DOFManagers are compatible, we can perform a basic copy
-        VectorDataIterator<double> dst_it = Vector::begin();
-        for ( VectorDataIterator<const double> src_it = src->begin(); src_it != src->end();
-              ++dst_it, ++src_it )
-            *dst_it = *src_it;
-    } else {
-        AMP_ERROR( "Unable to copy vector" );
-    }
 }
 
 

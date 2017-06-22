@@ -180,7 +180,6 @@ public:
     virtual Vector::const_shared_ptr
     constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
-    virtual void copyVector( Vector::const_shared_ptr src_vec ) override;
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector &other ) override;
     virtual void setValuesByLocalID( int num, size_t *indices, const double *vals ) override;
@@ -203,7 +202,7 @@ public:
     virtual size_t getGhostSize() const override;
     virtual void putRawData( const double * ) override;
     virtual bool isTypeId( size_t hash, size_t ) const override;
-
+    virtual size_t sizeofDataBlockType( size_t i ) const override;
 
     // Vector engine functions
     virtual AMP::shared_ptr<std::vector<double>> getNewBuffer() override;

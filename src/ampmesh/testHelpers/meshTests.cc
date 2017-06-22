@@ -1118,9 +1118,8 @@ public:
 AMP::LinearAlgebra::Vector::shared_ptr first , AMP::LinearAlgebra::Vector::shared_ptr second )
         {
           multi->setRandomValues ();
-          AMP::LinearAlgebra::Vector::iterator  cur_multi , cur_sub;
-          cur_multi = multi->begin();
-          cur_sub = first->begin();
+          auto cur_multi = multi->begin();
+          auto cur_sub = first->begin();
           bool retVal = true;
           size_t i = 0;
           while ( cur_multi != multi->end() )

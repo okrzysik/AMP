@@ -46,6 +46,10 @@ inline bool VectorOperations::equals( AMP::shared_ptr<const VectorOperations> x,
 {
     return equals( *x, tol );
 }
+inline void VectorOperations::copy( AMP::shared_ptr<const VectorOperations> x )
+{
+    return copy( *x );
+}
 inline void VectorOperations::scale( double alpha, AMP::shared_ptr<const VectorOperations> x )
 {
     return scale( alpha, *x );

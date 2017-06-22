@@ -26,7 +26,7 @@ static inline int lround( double x ) { return x >= 0 ? floor( x ) : ceil( x ); }
 void VectorTests::InstantiateVector( AMP::UnitTest *utils )
 {
 
-    AMP::LinearAlgebra::Vector::shared_ptr vector( d_factory->getVector() );
+    auto vector = d_factory->getVector();
     if ( vector )
         utils->passes( "created " + d_factory->name() );
     else        
@@ -36,14 +36,14 @@ void VectorTests::InstantiateVector( AMP::UnitTest *utils )
 
 void VectorTests::CopyVectorConsistency( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vec1( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vec2                = vec1->cloneVector();
-    AMP::LinearAlgebra::Vector::shared_ptr vec3                = vec1->cloneVector();
-    AMP::LinearAlgebra::CommunicationList::shared_ptr commList = vec1->getCommunicationList();
-    double *t1                                                 = nullptr;
-    double *t2                                                 = nullptr;
-    size_t *ndx                                                = nullptr;
-    size_t numGhosts                                           = commList->getGhostIDList().size();
+    auto vec1 = d_factory->getVector();
+    auto vec2 = vec1->cloneVector();
+    auto vec3 = vec1->cloneVector();
+    auto commList = vec1->getCommunicationList();
+    double *t1 = nullptr;
+    double *t2 = nullptr;
+    size_t *ndx = nullptr;
+    size_t numGhosts = commList->getGhostIDList().size();
 
     vec1->setRandomValues();
     vec2->copyVector( vec1 );
@@ -78,7 +78,7 @@ void VectorTests::CopyVectorConsistency( AMP::UnitTest *utils )
 
 void VectorTests::Bug_728( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector( d_factory->getVector() );
+    auto vector = d_factory->getVector();
     AMP::LinearAlgebra::Variable::shared_ptr var1 = vector->getVariable();
 
     // Exit if there is no associated variable
@@ -101,12 +101,12 @@ void VectorTests::Bug_728( AMP::UnitTest *utils )
 
 void VectorTests::SetToScalarVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector( d_factory->getVector() );
+    auto vector = d_factory->getVector();
     vector->setToScalar( 0. );
     utils->passes( "setToScalar ran to completion " + d_factory->name() );
     bool fail                                   = false;
-    AMP::LinearAlgebra::Vector::iterator curVec = vector->begin();
-    AMP::LinearAlgebra::Vector::iterator endVec = vector->end();
+    auto curVec = vector->begin();
+    auto endVec = vector->end();
     while ( curVec != endVec ) {
         if ( *curVec != 0. ) {
             fail = true;
@@ -120,7 +120,7 @@ void VectorTests::SetToScalarVector( AMP::UnitTest *utils )
         utils->failure( "Failed to set scalar to 0 " + d_factory->name() );
     fail = false;
     vector->setToScalar( 5. );
-    AMP::LinearAlgebra::Vector::iterator curVal = vector->begin();
+    auto curVal = vector->begin();
     while ( curVal != endVec ) {
         if ( *curVal != 5. ) {
             fail = true;
@@ -147,7 +147,7 @@ void VectorTests::SetToScalarVector( AMP::UnitTest *utils )
 
 void VectorTests::CloneVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector( d_factory->getVector() );
+    auto vector = d_factory->getVector();
     AMP::LinearAlgebra::Vector::shared_ptr clone = vector->cloneVector( "cloned vector" );
     clone->setToScalar( 0. );
     utils->passes( "Clone created " + d_factory->name() );
@@ -167,8 +167,8 @@ void VectorTests::CloneVector( AMP::UnitTest *utils )
 
 void VectorTests::DotProductVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector2( d_factory->getVector() );
+    auto vector1( d_factory->getVector() );
+    auto vector2( d_factory->getVector() );
     vector1->setToScalar( 1. );
     vector2->setToScalar( 2. );
 
@@ -201,7 +201,7 @@ void VectorTests::DotProductVector( AMP::UnitTest *utils )
 
 void VectorTests::L2NormVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector( d_factory->getVector() );
+    auto vector = d_factory->getVector();
     vector->setToScalar( 1. );
 
     auto norm  = vector->L2Norm();
@@ -237,9 +237,8 @@ void VectorTests::AbsVector( AMP::UnitTest *utils )
 
 void VectorTests::L1NormVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector_1( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector_abs;
+    auto vector = d_factory->getVector();
+    auto vector_1( d_factory->getVector() );
     vector->setRandomValues();
     vector_1->setToScalar( 1. );
     auto norm = vector->L1Norm();
@@ -254,12 +253,12 @@ void VectorTests::L1NormVector( AMP::UnitTest *utils )
 
 void VectorTests::MaxNormVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector( d_factory->getVector() );
+    auto vector = d_factory->getVector();
     vector->setRandomValues();
     auto infNorm = vector->maxNorm();
     vector->abs( vector );
-    AMP::LinearAlgebra::Vector::iterator curData = vector->begin();
-    AMP::LinearAlgebra::Vector::iterator endData = vector->end();
+    auto curData = vector->begin();
+    auto endData = vector->end();
     double local_ans                             = *curData;
     while ( curData != endData ) {
         local_ans = std::max( local_ans, *curData );
@@ -275,15 +274,15 @@ void VectorTests::MaxNormVector( AMP::UnitTest *utils )
 
 void VectorTests::ScaleVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector2( d_factory->getVector() );
+    auto vector1( d_factory->getVector() );
+    auto vector2( d_factory->getVector() );
     double beta = 1.2345;
     vector2->setRandomValues();
     vector1->scale( beta, vector2 );
-    bool pass                                     = true;
-    AMP::LinearAlgebra::Vector::iterator curData1 = vector1->begin();
-    AMP::LinearAlgebra::Vector::iterator endData1 = vector1->end();
-    AMP::LinearAlgebra::Vector::iterator curData2 = vector2->begin();
+    bool pass = true;
+    auto curData1 = vector1->begin();
+    auto endData1 = vector1->end();
+    auto curData2 = vector2->begin();
     while ( curData1 != endData1 ) {
         if ( *curData1 != beta * *curData2 )
             pass = false;
@@ -306,7 +305,7 @@ void VectorTests::ScaleVector( AMP::UnitTest *utils )
 #ifdef USE_EXT_PETSC
 void VectorTests::Bug_491( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
+    auto vector1( d_factory->getVector() );
     vector1->setRandomValues();
     auto managed_petsc = AMP::LinearAlgebra::PetscVector::view( vector1 );
     auto petsc_vec = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::PetscVector>( managed_petsc );
@@ -375,17 +374,17 @@ void VectorTests::Bug_491( AMP::UnitTest *utils )
 
 void VectorTests::AddVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector2( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector3( d_factory->getVector() );
+    auto vector1( d_factory->getVector() );
+    auto vector2( d_factory->getVector() );
+    auto vector3( d_factory->getVector() );
     vector1->setRandomValues();
     vector2->setRandomValues();
     vector3->add( vector1, vector2 );
-    bool pass                                     = true;
-    AMP::LinearAlgebra::Vector::iterator curData1 = vector1->begin();
-    AMP::LinearAlgebra::Vector::iterator endData1 = vector1->end();
-    AMP::LinearAlgebra::Vector::iterator curData2 = vector2->begin();
-    AMP::LinearAlgebra::Vector::iterator curData3 = vector3->begin();
+    bool pass = true;
+    auto curData1 = vector1->begin();
+    auto endData1 = vector1->end();
+    auto curData2 = vector2->begin();
+    auto curData3 = vector3->begin();
     while ( curData1 != endData1 ) {
         if ( *curData3 != *curData1 + *curData2 )
             pass = false;
@@ -403,18 +402,18 @@ void VectorTests::AddVector( AMP::UnitTest *utils )
 
 void VectorTests::SubtractVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector2( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector3( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector4( d_factory->getVector() );
+    auto vector1( d_factory->getVector() );
+    auto vector2( d_factory->getVector() );
+    auto vector3( d_factory->getVector() );
+    auto vector4( d_factory->getVector() );
     vector1->setRandomValues();
     vector2->setRandomValues();
     vector3->subtract( vector1, vector2 );
-    bool pass                                     = true;
-    AMP::LinearAlgebra::Vector::iterator curData1 = vector1->begin();
-    AMP::LinearAlgebra::Vector::iterator endData1 = vector1->end();
-    AMP::LinearAlgebra::Vector::iterator curData2 = vector2->begin();
-    AMP::LinearAlgebra::Vector::iterator curData3 = vector3->begin();
+    bool pass = true;
+    auto curData1 = vector1->begin();
+    auto endData1 = vector1->end();
+    auto curData2 = vector2->begin();
+    auto curData3 = vector3->begin();
     while ( curData1 != endData1 ) {
         if ( *curData3 != *curData1 - *curData2 )
             pass = false;
@@ -438,17 +437,17 @@ void VectorTests::SubtractVector( AMP::UnitTest *utils )
 
 void VectorTests::MultiplyVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector2( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector3( d_factory->getVector() );
+    auto vector1( d_factory->getVector() );
+    auto vector2( d_factory->getVector() );
+    auto vector3( d_factory->getVector() );
     vector1->setRandomValues();
     vector2->setToScalar( 3. );
     vector3->multiply( vector1, vector2 );
-    bool pass                                     = true;
-    AMP::LinearAlgebra::Vector::iterator curData1 = vector1->begin();
-    AMP::LinearAlgebra::Vector::iterator endData1 = vector1->end();
-    AMP::LinearAlgebra::Vector::iterator curData2 = vector2->begin();
-    AMP::LinearAlgebra::Vector::iterator curData3 = vector3->begin();
+    bool pass = true;
+    auto curData1 = vector1->begin();
+    auto endData1 = vector1->end();
+    auto curData2 = vector2->begin();
+    auto curData3 = vector3->begin();
     while ( curData1 != endData1 ) {
         if ( *curData3 != *curData1 * *curData2 )
             pass = false;
@@ -465,17 +464,17 @@ void VectorTests::MultiplyVector( AMP::UnitTest *utils )
 
 void VectorTests::DivideVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector2( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector3( d_factory->getVector() );
+    auto vector1( d_factory->getVector() );
+    auto vector2( d_factory->getVector() );
+    auto vector3( d_factory->getVector() );
     vector1->setRandomValues();
     vector2->setRandomValues();
     vector3->divide( vector1, vector2 );
-    bool pass                                    = true;
-    AMP::LinearAlgebra::Vector::iterator curVal1 = vector1->begin();
-    AMP::LinearAlgebra::Vector::iterator curVal2 = vector2->begin();
-    AMP::LinearAlgebra::Vector::iterator curVal3 = vector3->begin();
-    AMP::LinearAlgebra::Vector::iterator endVal3 = vector3->end();
+    bool pass = true;
+    auto curVal1 = vector1->begin();
+    auto curVal2 = vector2->begin();
+    auto curVal3 = vector3->begin();
+    auto endVal3 = vector3->end();
     while ( curVal3 != endVal3 ) {
         if ( *curVal3 != *curVal1 / *curVal2 )
             pass = false;
@@ -497,9 +496,9 @@ void VectorTests::DivideVector( AMP::UnitTest *utils )
 
 void VectorTests::VectorIteratorLengthTest( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::iterator curEntry = vector1->begin();
-    AMP::LinearAlgebra::Vector::iterator endEntry = vector1->end();
+    auto vector1( d_factory->getVector() );
+    auto curEntry = vector1->begin();
+    auto endEntry = vector1->end();
     size_t i                                      = 0;
     while ( curEntry != endEntry ) {
         i++;
@@ -516,7 +515,7 @@ void VectorTests::VectorIteratorLengthTest( AMP::UnitTest *utils )
 
 void VectorTests::VectorIteratorTests( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
+    auto vector1 = d_factory->getVector();
     both_VectorIteratorTests<AMP::LinearAlgebra::Vector::iterator>( vector1, utils );
     both_VectorIteratorTests<AMP::LinearAlgebra::Vector::const_iterator>( vector1, utils );
 }
@@ -524,7 +523,7 @@ void VectorTests::VectorIteratorTests( AMP::UnitTest *utils )
 
 void VectorTests::VerifyVectorMin( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vec( d_factory->getVector() );
+    auto vec = d_factory->getVector();
     vec->setRandomValues();
     vec->scale( -1.0 ); // make negative
     if ( fabs( vec->min() + vec->maxNorm() ) < 1.e-10 )
@@ -536,7 +535,7 @@ void VectorTests::VerifyVectorMin( AMP::UnitTest *utils )
 
 void VectorTests::VerifyVectorMax( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vec( d_factory->getVector() );
+    auto vec = d_factory->getVector();
     vec->setRandomValues();
     if ( fabs( vec->max() - vec->maxNorm() ) < 1.e-10 )
         utils->passes( "maximum of positive vector == ||.||_infty " + d_factory->name() );
@@ -547,7 +546,7 @@ void VectorTests::VerifyVectorMax( AMP::UnitTest *utils )
 
 void VectorTests::VerifyVectorMaxMin( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vec( d_factory->getVector() );
+    auto vec = d_factory->getVector();
     bool passes = true;
     for ( size_t i = 0; i != 10; i++ ) {
         vec->setRandomValues();
@@ -584,7 +583,7 @@ static void SetRandomValuesVectorVerify(
 }
 void VectorTests::SetRandomValuesVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector( d_factory->getVector() );
+    auto vector = d_factory->getVector();
     auto l2norm1 = -1;
     for ( size_t i = 0; i < 5; i++ ) {
         vector->setRandomValues();
@@ -601,11 +600,11 @@ void VectorTests::SetRandomValuesVector( AMP::UnitTest *utils )
 
 void VectorTests::ReciprocalVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectord( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
+    auto vectora = d_factory->getVector();
+    auto vectorb = d_factory->getVector();
+    auto vectorc = d_factory->getVector();
+    auto vectord = d_factory->getVector();
+    auto vector1 = d_factory->getVector();
     vectora->setRandomValues();
     vectorb->reciprocal( vectora );
     vector1->setToScalar( 1. );
@@ -623,10 +622,10 @@ static void LinearSumVectorRun(
     AMP::shared_ptr<const VectorFactory> factory,
     AMP::UnitTest *utils, double alpha, double beta, const char *msg )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectord( factory->getVector() );
+    auto vectora = factory->getVector();
+    auto vectorb = factory->getVector();
+    auto vectorc = factory->getVector();
+    auto vectord = factory->getVector();
     vectora->setRandomValues();
     vectorb->setRandomValues();
     vectorc->linearSum( alpha, vectora, beta, vectorb );
@@ -651,10 +650,10 @@ void VectorTests::LinearSumVector( AMP::UnitTest *utils )
 static void AxpyVectorRun( AMP::shared_ptr<const VectorFactory> factory,
     AMP::UnitTest *utils, double alpha, const char *msg )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectord( factory->getVector() );
+    auto vectora = factory->getVector();
+    auto vectorb = factory->getVector();
+    auto vectorc = factory->getVector();
+    auto vectord = factory->getVector();
     vectora->setRandomValues();
     vectorb->setRandomValues();
     vectorc->linearSum( alpha, vectora, 1., vectorb );
@@ -675,11 +674,11 @@ void VectorTests::AxpyVector( AMP::UnitTest *utils )
 static void AxpbyVectorRun( AMP::shared_ptr<const VectorFactory> factory,
     AMP::UnitTest *utils, double alpha, double beta, const char *msg )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb1( factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectord( factory->getVector() );
+    auto vectora  = factory->getVector();
+    auto vectorb  = factory->getVector();
+    auto vectorb1 = factory->getVector();
+    auto vectorc  = factory->getVector();
+    auto vectord  = factory->getVector();
     vectora->setRandomValues();
     vectorb->setRandomValues();
     vectorc->copyVector( vectorb );
@@ -710,9 +709,9 @@ void VectorTests::AxpbyVector( AMP::UnitTest *utils )
 
 void VectorTests::CopyVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
+    auto vectora  = d_factory->getVector();
+    auto vectorb  = d_factory->getVector();
+    auto vectorc  = d_factory->getVector();
 
     vectora->setRandomValues();
     vectorb->copyVector( vectora );
@@ -735,9 +734,9 @@ void VectorTests::CopyVector( AMP::UnitTest *utils )
 
 void VectorTests::CopyRawDataBlockVector( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vectora( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorb( d_factory->getVector() );
-    AMP::LinearAlgebra::Vector::shared_ptr vectorc( d_factory->getVector() );
+    auto vectora  = d_factory->getVector();
+    auto vectorb  = d_factory->getVector();
+    auto vectorc  = d_factory->getVector();
 
     vectora->setRandomValues();
     vectorb->zero();
@@ -755,7 +754,7 @@ void VectorTests::CopyRawDataBlockVector( AMP::UnitTest *utils )
 
 void VectorTests::VerifyVectorGhostCreate( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vector = d_factory->getVector();
+    auto vector = d_factory->getVector();
     int num_ghosts                                = vector->getGhostSize();
     AMP_MPI globalComm                            = AMP_MPI( AMP_COMM_WORLD );
     num_ghosts                                    = globalComm.sumReduce( num_ghosts );
@@ -771,8 +770,8 @@ void VectorTests::VerifyVectorGhostCreate( AMP::UnitTest *utils )
 
 void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
 {
-    AMP::Discretization::DOFManager::shared_ptr dofmap = d_factory->getDOFMap();
-    AMP::LinearAlgebra::Vector::shared_ptr vector      = d_factory->getVector();
+    auto dofmap = d_factory->getDOFMap();
+    auto vector = d_factory->getVector();
     if ( !vector )
         utils->failure( "verify makeConsistent () for add " + d_factory->name() );
 
@@ -849,8 +848,8 @@ void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
 
 void VectorTests::VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
 {
-    AMP::Discretization::DOFManager::shared_ptr dofmap = d_factory->getDOFMap();
-    AMP::LinearAlgebra::Vector::shared_ptr vector      = d_factory->getVector();
+    auto dofmap = d_factory->getDOFMap();
+    auto vector = d_factory->getVector();
 
     // Zero the vector
     vector->zero();
@@ -916,18 +915,16 @@ void VectorTests::VerifyVectorMakeConsistentSet( AMP::UnitTest *utils )
 // This should always return one copy of the superset of the data
 void VectorTests::TestMultivectorDuplicate( AMP::UnitTest *utils )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr vec0 = d_factory->getVector();
+    auto vec0 = d_factory->getVector();
     // Create a multivector
-    AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "multivec" ) );
+    auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>( "multivec" );
     auto multiVec = AMP::LinearAlgebra::MultiVector::create( var, vec0->getComm() );
     // Add different views of vec0
     multiVec->addVector( vec0 );
     multiVec->addVector( vec0 );
     multiVec->addVector( multiVec->getVector( 0 ) );
-    auto var2 =
-        AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable( "vec2" ) );
+    auto var2 = AMP::make_shared<AMP::LinearAlgebra::Variable>( "vec2" );
     multiVec->addVector( AMP::LinearAlgebra::MultiVector::create( var2, vec0->getComm() ) );
-
     // Verify the size of the multivector
     auto dof1 = vec0->getDOFManager();
     auto dof2 = multiVec->getDOFManager();

@@ -14,6 +14,17 @@ extern template class VectorOperationsDefault<double>; // Suppresses implicit in
 
 
 /****************************************************************
+* Constructors                                                  *
+****************************************************************/
+template<typename TYPE>
+AMP::shared_ptr<VectorOperations> VectorOperationsDefault<TYPE>::cloneOperations() const
+{
+    auto ptr = AMP::make_shared<VectorOperationsDefault<TYPE>>( );
+    return ptr;
+}
+
+
+/****************************************************************
 * min, max, norms, etc.                                         *
 ****************************************************************/
 template<typename TYPE>
@@ -24,9 +35,9 @@ bool VectorOperationsDefault<TYPE>::localEquals( const VectorOperations &rhs, do
     if ( ( x.getGlobalSize() != y.getGlobalSize() ) || ( x.getLocalSize() != y.getLocalSize() ) )
         return false;
     bool equal = true;
-    auto cur1 = x.begin<TYPE>();
-    auto cur2 = y.begin<TYPE>();
-    auto last = x.end<TYPE>();
+    auto cur1 = x.constBegin<TYPE>();
+    auto cur2 = y.constBegin<TYPE>();
+    auto last = x.constEnd<TYPE>();
     while ( cur1 != last ) {
         if ( fabs( *cur1 - *cur2 ) > tol ) {
             equal = false;
@@ -108,9 +119,9 @@ template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localDot( const VectorOperations& x ) const
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
-    auto curMe   = d_VectorData->begin<TYPE>();
-    auto last    = d_VectorData->end<TYPE>();
-    auto curXRhs = x.getVectorData()->begin<TYPE>();
+    auto curMe   = d_VectorData->constBegin<TYPE>();
+    auto last    = d_VectorData->constEnd<TYPE>();
+    auto curXRhs = x.getVectorData()->constBegin<TYPE>();
     double ans   = 0;
     while ( curMe != last ) {
         double v1 = static_cast<double>( *curMe );
@@ -124,9 +135,9 @@ double VectorOperationsDefault<TYPE>::localDot( const VectorOperations& x ) cons
 template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localMinQuotient( const VectorOperations &x ) const
 {
-    auto curx = x.getVectorData()->begin<TYPE>();
-    auto endx = x.getVectorData()->end<TYPE>();
-    auto cury = d_VectorData->begin<TYPE>();
+    auto curx = x.getVectorData()->constBegin<TYPE>();
+    auto endx = x.getVectorData()->constEnd<TYPE>();
+    auto cury = d_VectorData->constBegin<TYPE>();
     double ans = std::numeric_limits<double>::max();
     while ( curx != endx ) {
         if ( *cury != 0 ) {
@@ -142,9 +153,9 @@ double VectorOperationsDefault<TYPE>::localMinQuotient( const VectorOperations &
 template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localWrmsNorm( const VectorOperations &x ) const
 {
-    auto curx = x.getVectorData()->begin<TYPE>();
-    auto endx = x.getVectorData()->end<TYPE>();
-    auto cury = d_VectorData->begin<TYPE>();
+    auto curx = x.getVectorData()->constBegin<TYPE>();
+    auto endx = x.getVectorData()->constEnd<TYPE>();
+    auto cury = d_VectorData->constBegin<TYPE>();
     double ans = 0;
     size_t N = 0;
     while ( curx != endx ) {
@@ -161,10 +172,10 @@ template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorOperations &x,
                              const VectorOperations &mask ) const
 {
-    auto curx = x.getVectorData()->begin<TYPE>();
-    auto endx = x.getVectorData()->end<TYPE>();
-    auto cury = d_VectorData->begin<TYPE>();
-    auto curm = mask.getVectorData()->begin<TYPE>();
+    auto curx = x.getVectorData()->constBegin<TYPE>();
+    auto endx = x.getVectorData()->constEnd<TYPE>();
+    auto cury = d_VectorData->constBegin<TYPE>();
+    auto curm = mask.getVectorData()->constBegin<TYPE>();
     double ans = 0;
     size_t N = 0;
     while ( curx != endx ) {
@@ -199,6 +210,7 @@ void VectorOperationsDefault<TYPE>::zero()
         for ( size_t i = 0; i != ghosts.size(); i++ )
             ghosts[i] = 0;
     }
+    // Override the status state since we set the ghost values
     *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
 }
 template<typename TYPE>
@@ -215,6 +227,7 @@ void VectorOperationsDefault<TYPE>::setToScalar( double alpha )
         for ( size_t i = 0; i != ghosts.size(); i++ )
             ghosts[i] = alpha;
     }
+    // Override the status state since we set the ghost values
     *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
 }
 template<typename TYPE>
@@ -228,7 +241,7 @@ void VectorOperationsDefault<TYPE>::setRandomValues()
         *curMe         = curRand;
         ++curMe;
     }
-    d_VectorData->dataChanged();
+    // Call makeConsistent to leave the vector in a consistent state
     d_VectorData->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
 }
 template<typename TYPE>
@@ -241,7 +254,7 @@ void VectorOperationsDefault<TYPE>::setRandomValues( RNG::shared_ptr rng )
         *curMe = r;
         ++curMe;
     }
-    d_VectorData->dataChanged();
+    // Call makeConsistent to leave the vector in a consistent state
     d_VectorData->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
 }
 
@@ -249,6 +262,15 @@ void VectorOperationsDefault<TYPE>::setRandomValues( RNG::shared_ptr rng )
 /****************************************************************
 * Basic linear algebra                                          *
 ****************************************************************/
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::copy( const VectorOperations &x )
+{
+    auto x_data = x.getVectorData();
+    auto y_data = d_VectorData;
+    AMP_ASSERT( x_data->getLocalSize() == y_data->getLocalSize() );
+    std::copy( x_data->begin<TYPE>(), x_data->end<TYPE>(), y_data->begin<TYPE>() );
+    y_data->copyGhostValues( *x_data );
+}
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::scale( double alpha )
 {
@@ -258,7 +280,6 @@ void VectorOperationsDefault<TYPE>::scale( double alpha )
         *curMe *= alpha;
         ++curMe;
     }
-    d_VectorData->dataChanged();
 }
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::scale( double alpha, const VectorOperations &x )
@@ -272,7 +293,6 @@ void VectorOperationsDefault<TYPE>::scale( double alpha, const VectorOperations 
         ++curRhs;
         ++curMe;
     }
-    d_VectorData->dataChanged();
 }
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::add( const VectorOperations &x, const VectorOperations &y )
@@ -289,7 +309,6 @@ void VectorOperationsDefault<TYPE>::add( const VectorOperations &x, const Vector
         ++curYRhs;
         ++curMe;
     }
-    d_VectorData->dataChanged();
 }
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::subtract( const VectorOperations &x, const VectorOperations &y )
@@ -306,7 +325,6 @@ void VectorOperationsDefault<TYPE>::subtract( const VectorOperations &x, const V
         ++curYRhs;
         ++curMe;
     }
-    d_VectorData->dataChanged();
 }
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::multiply( const VectorOperations &x, const VectorOperations &y )
@@ -323,7 +341,6 @@ void VectorOperationsDefault<TYPE>::multiply( const VectorOperations &x, const V
         ++curYRhs;
         ++curMe;
     }
-    d_VectorData->dataChanged();
 }
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::divide( const VectorOperations &x, const VectorOperations &y )
@@ -340,7 +357,6 @@ void VectorOperationsDefault<TYPE>::divide( const VectorOperations &x, const Vec
         ++curYRhs;
         ++curMe;
     }
-    d_VectorData->dataChanged();
 }
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::reciprocal( const VectorOperations &x )
@@ -354,7 +370,6 @@ void VectorOperationsDefault<TYPE>::reciprocal( const VectorOperations &x )
         ++curRhs;
         ++curMe;
     }
-    d_VectorData->dataChanged();
 }
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::linearSum( double alpha_in,
@@ -376,7 +391,6 @@ void VectorOperationsDefault<TYPE>::linearSum( double alpha_in,
         ++curYRhs;
         ++curMe;
     }
-    d_VectorData->dataChanged();
 }
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::axpy( double alpha_in, const VectorOperations &x, const VectorOperations &y )
@@ -394,7 +408,6 @@ void VectorOperationsDefault<TYPE>::axpy( double alpha_in, const VectorOperation
         ++curYRhs;
         ++curMe;
     }
-    d_VectorData->dataChanged();
 }
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::axpby( double alpha_in, double beta_in, const VectorOperations &x )
@@ -410,7 +423,6 @@ void VectorOperationsDefault<TYPE>::axpby( double alpha_in, double beta_in, cons
         ++curXRhs;
         ++curMe;
     }
-    d_VectorData->dataChanged();
 }
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::abs( const VectorOperations &x )
@@ -424,7 +436,6 @@ void VectorOperationsDefault<TYPE>::abs( const VectorOperations &x )
         ++curXRhs;
         ++curMe;
     }
-    d_VectorData->dataChanged();
 }
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::addScalar( const VectorOperations &x, double alpha_in )
@@ -439,7 +450,6 @@ void VectorOperationsDefault<TYPE>::addScalar( const VectorOperations &x, double
         ++curXRhs;
         ++curMe;
     }
-    d_VectorData->dataChanged();
 }
 
 

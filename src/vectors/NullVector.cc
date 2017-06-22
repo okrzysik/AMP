@@ -36,7 +36,6 @@ Vector::shared_ptr NullVector::cloneVector( const Variable::shared_ptr name ) co
 {
     return create( name );
 }
-void NullVector::copyVector( Vector::const_shared_ptr ) {}
 void NullVector::swapVectors( Vector & ) {}
 void NullVector::aliasVector( Vector & ) {}
 void NullVector::setValuesByLocalID( int, size_t *, const double * )

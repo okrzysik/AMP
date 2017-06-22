@@ -155,6 +155,32 @@ void VectorData::dumpGhostedData( std::ostream &out, size_t offset ) const
 }
 
 
+/****************************************************************
+* dump data to ostream                                          *
+****************************************************************/
+void VectorData::copyGhostValues( const VectorData &rhs )
+{
+    if ( getGhostSize() == 0 ) {
+        // No ghosts to fill, we don't need to do anything
+    } else if ( getGhostSize() == rhs.getGhostSize() ) {
+        // The ghosts in the src vector match the current vector
+        // Copy the ghosts from the rhs
+        std::vector<size_t> ghostIDs = getCommunicationList()->getGhostIDList();
+        std::vector<double> values( ghostIDs.size() );
+        rhs.getGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
+        this->setGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
+        // Copy the consistency state from the rhs
+        *d_UpdateState = *( rhs.getUpdateStatusPtr() );
+    } else {
+        // We can't copy the ghosts from the rhs
+        // Use makeConsistent to fill the ghosts
+        // Note: this will incure global communication
+        *d_UpdateState = *( rhs.getUpdateStatusPtr() );
+        if ( *d_UpdateState == UpdateState::UNCHANGED )
+            *d_UpdateState = UpdateState::LOCAL_CHANGED;
+    }
+}
+
 } // LinearAlgebra namespace
 } // AMP namespace
 

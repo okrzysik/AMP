@@ -129,11 +129,11 @@ inline void NativePetscVector::swapVectors( Vector &other )
 }
 
 
-inline void NativePetscVector::copyVector( Vector::const_shared_ptr src_vec )
+inline void NativePetscVector::copy( const VectorOperations &src )
 {
     resetArray();
-    VecCopy( dynamic_pointer_cast<const NativePetscVector>(src_vec)->getVec(), d_petscVec );
-    copyGhostValues( src_vec );
+    VecCopy( dynamic_cast<const NativePetscVector*>(&src)->getVec(), d_petscVec );
+    copyGhostValues( *dynamic_cast<const VectorData*>(&src) );
 }
 
 

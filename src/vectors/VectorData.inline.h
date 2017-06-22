@@ -2,6 +2,7 @@
 #define included_AMP_VectorData_inline
 
 #include "vectors/VectorDataIterator.h"
+#include "vectors/DataChangeFirer.h"
 
 #include <algorithm>
 
@@ -54,17 +55,29 @@ bool VectorData::isBlockType( size_t i ) const
 template<class TYPE>
 inline VectorDataIterator<TYPE> VectorData::begin()
 {
+    dataChanged();
     return VectorDataIterator<TYPE>( this, 0 );
-}
-template<class TYPE>
-inline VectorDataIterator<TYPE> VectorData::end()
-{
-    return VectorDataIterator<TYPE>( this, getLocalSize() );
 }
 template<class TYPE>
 inline VectorDataIterator<const TYPE> VectorData::begin() const
 {
     return VectorDataIterator<const TYPE>( const_cast<VectorData*>(this), 0 );
+}
+template<class TYPE>
+inline VectorDataIterator<const TYPE> VectorData::constBegin() const
+{
+    return VectorDataIterator<const TYPE>( const_cast<VectorData*>(this), 0 );
+}
+template<class TYPE>
+inline VectorDataIterator<TYPE> VectorData::end()
+{
+    dataChanged();
+    return VectorDataIterator<TYPE>( this, getLocalSize() );
+}
+template<class TYPE>
+inline VectorDataIterator<const TYPE> VectorData::constEnd() const
+{
+    return VectorDataIterator<const TYPE>( const_cast<VectorData*>(this), getLocalSize() );
 }
 template<class TYPE>
 inline VectorDataIterator<const TYPE> VectorData::end() const
@@ -91,6 +104,9 @@ inline void VectorData::dataChanged()
 {
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
+    auto firer = dynamic_cast<DataChangeFirer*>( this );
+    if ( firer != nullptr )
+        firer->fireDataChange();
 }
 
 

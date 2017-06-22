@@ -24,6 +24,16 @@ public:
     //! Destructor
     virtual ~MultiVectorOperations() {}
 
+    //! Clone the operations
+    virtual AMP::shared_ptr<VectorOperations> cloneOperations() const override;
+
+    /**
+     * \brief  Set vector equal to x
+     *      For Vectors, \f$\mathit{this}_i = x_i\f$.
+     * \param[in] x         a vector
+     */
+    virtual void copy( const VectorOperations &x ) override;
+
     /**
       *\brief Set vector entries (including ghosts) to zero
       *\details This is equivalent (but more efficient) to calling setToScalar ( 0.0 ) followed by a

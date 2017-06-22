@@ -242,15 +242,13 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             }
 
             double finalSolNorm = solVec->L2Norm();
-
             AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
 
-            AMP::LinearAlgebra::Vector::shared_ptr mechUvec =
-                solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );
-            AMP::LinearAlgebra::Vector::shared_ptr mechVvec =
-                solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
-            AMP::LinearAlgebra::Vector::shared_ptr mechWvec =
-                solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
+            AMP_ASSERT( solVec->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
+            auto mechUvec = solVec->constSelect( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );
+            auto mechVvec = solVec->constSelect( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
+            auto mechWvec = solVec->constSelect( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
+            AMP_ASSERT( solVec->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
 
             double finalMaxU = mechUvec->maxNorm();
             double finalMaxV = mechVvec->maxNorm();
@@ -280,6 +278,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             std::string number1 = num1;
             std::string fname   = exeName + "_Stress_Strain_" + number1 + ".txt";
 
+            AMP_ASSERT( solVec->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
             AMP::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
                 nonlinearMechanicsBVPoperator->getVolumeOperator() )
                 ->printStressAndStrain( solVec, fname );

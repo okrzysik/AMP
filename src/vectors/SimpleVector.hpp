@@ -76,25 +76,6 @@ SimpleVector<T>::create( Variable::shared_ptr var,
 
 
 /****************************************************************
-* Copy vector                                                   *
-****************************************************************/
-template <typename T>
-void SimpleVector<T>::copyVector( Vector::const_shared_ptr src_vec )
-{
-    if ( getLocalSize() != src_vec->getLocalSize() )
-        AMP_ERROR( "Mismatched vectors" );
-    auto it = src_vec->begin();
-    for ( size_t i = 0; i < getLocalSize(); i++ ) {
-        d_Data[i] = static_cast<T>( *it );
-        ++it;
-    }
-    copyGhostValues( src_vec );
-    // Copy the consistency state from the rhs
-    *d_UpdateState = *( src_vec->getUpdateStatusPtr() );
-}
-
-
-/****************************************************************
 * Copy raw data                                                 *
 ****************************************************************/
 template <typename T>

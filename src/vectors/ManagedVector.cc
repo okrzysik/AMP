@@ -91,42 +91,28 @@ bool ManagedVector::isAnAliasOf( Vector &rhs )
 }
 
 
-void ManagedVector::copyVector( Vector::const_shared_ptr other )
+void ManagedVector::copy( const VectorOperations& other )
 {
-    AMP::shared_ptr<const ManagedVector> rhs_managed =
-        AMP::dynamic_pointer_cast<const ManagedVector>( other );
+    auto rhs_managed = dynamic_cast<const ManagedVector*>( &other );
     AMP::shared_ptr<Vector> vec1;
     AMP::shared_ptr<const Vector> vec2;
-    if ( rhs_managed.get() != nullptr ) {
+    if ( rhs_managed != nullptr ) {
         // We are dealing with two managed vectors, check if they both have data engines
         if ( d_Engine.get() != nullptr )
             vec1 = AMP::dynamic_pointer_cast<Vector>( d_Engine );
         if ( rhs_managed->d_Engine.get() != nullptr )
             vec2 = AMP::dynamic_pointer_cast<const Vector>( rhs_managed->d_Engine );
     }
-    if ( vec1.get() != nullptr && vec2.get() != nullptr ) {
+    // Perform the copy
+    if ( vec1 != nullptr && vec2 != nullptr ) {
         // We have two data engines, perform the copy between them
-        vec1->copyVector( vec2 );
+        vec1->copy( vec2 );
         fireDataChange();
-        *d_UpdateState = *( other->getUpdateStatusPtr() );
-        return;
+        *d_UpdateState = *( other.getVectorData()->getUpdateStatusPtr() );
+    } else {
+        // Default, general case
+        VectorOperationsDefault::copy( other );
     }
-    // Default, general case
-    if ( other->getLocalSize() != getLocalSize() ) { // Another error condition
-        AMP_ERROR( "Destination vector and source vector not the same size" );
-    }
-    fireDataChange();
-    VectorDataIterator<double> cur1       = VectorData::begin();
-    VectorDataIterator<double> end1       = VectorData::end();
-    VectorDataIterator<const double> cur2 = other->VectorData::begin();
-    while ( cur1 != end1 ) {
-        *cur1 = *cur2;
-        ++cur1;
-        ++cur2;
-    }
-    copyGhostValues( other );
-    // Copy the consistency state from other
-    *d_UpdateState = *( other->getUpdateStatusPtr() );
 }
 
 

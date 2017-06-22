@@ -76,6 +76,8 @@ public:
 
     virtual uint64_t getDataID() const override { return d_ViewVector->getDataID(); }
     virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(double).hash_code(); }
+    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof(double); }
+
 
 private:
     SubsetVector() {}

@@ -32,7 +32,6 @@ Vector::shared_ptr ArrayVector<T, FUN, Allocator>::create( const std::vector<siz
         AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
     retVal->d_globalSize = N;
     retVal->d_comm       = comm;
-
     return retVal;
 }
 
@@ -45,7 +44,6 @@ Vector::shared_ptr ArrayVector<T, FUN, Allocator>::create( const std::vector<siz
     retVal->setVariable( var );
     retVal->resize( localSize );
     const auto N = retVal->getArray().length();
-
     AMP::Discretization::DOFManager::shared_ptr DOFs(
         new AMP::Discretization::DOFManager( N, comm ) );
     retVal->d_DOFManager = DOFs;
@@ -69,21 +67,6 @@ ArrayVector<T, FUN, Allocator>::create( Variable::shared_ptr var,
     retVal->d_comm       = DOFs->getComm();
     AMP_ERROR("This routine is not complete");
     return retVal;
-}
-
-/****************************************************************
-* Copy vector                                                   *
-****************************************************************/
-template <typename T, typename FUN, typename Allocator>
-void ArrayVector<T, FUN, Allocator>::copyVector( Vector::const_shared_ptr src_vec )
-{
-    if ( getLocalSize() != src_vec->getLocalSize() )
-        AMP_ERROR( "Mismatched vectors" );
-    auto &internalArray = this->getArray();
-    const auto &otherArray = std::dynamic_pointer_cast<const ArrayVector<T, FUN, Allocator>>(src_vec)->getArray();
-    internalArray = otherArray;  // use copy assignment
-    // copy ghost values will also copy the consistency state
-    copyGhostValues( src_vec );
 }
 
 template <typename T, typename FUN, typename Allocator>

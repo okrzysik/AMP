@@ -246,6 +246,9 @@ public: // Virtual functions
       */
     virtual void getValuesByLocalID( int num, size_t *indices, double *vals ) const;
 
+
+public: // Advanced functions
+
     /**\brief  A unique id for the underlying data allocation
       *\details This is a unique id that is associated with the data
       *   data allocation.  Views of a vector should preserve the id of
@@ -254,6 +257,28 @@ public: // Virtual functions
       *   Note: this id is not consistent across multiple processors.
       */
     virtual uint64_t getDataID() const = 0;
+
+    /** \brief Return a pointer to a particular block of memory in the vector
+      * \param i The block to return
+      */
+    virtual void* getRawDataBlockAsVoid( size_t i ) = 0;
+
+    /** \brief Return a pointer to a particular block of memory in the
+      * vector
+      * \param i The block to return
+      */
+    virtual const void* getRawDataBlockAsVoid( size_t i ) const = 0;
+
+    /** \brief Return the result of sizeof(TYPE) for the given data block
+      * \param i The block to return
+      */
+    virtual size_t sizeofDataBlockType( size_t i ) const = 0;
+
+    /** \brief Is the data of the given type
+      * \param hash     The hash code: typeid(myint).hash_code()
+      * \param block    The block id to check
+      */
+    virtual bool isTypeId( size_t hash, size_t block ) const = 0;
 
 
 public:
@@ -323,79 +348,43 @@ public: // Non-virtual functions
       * \brief Return an iterator to the beginning of the data
       * \returns A VectorDataIterator
       * \details Since the Vector presents an interface to a contiguous
-      * block of data, it is natural for it to provide a random access
-      * iterator.
-      * \warning If you are using PETSc and plan to write data to these
-      * iterators, be sure to call DataChangeListener::dataChanged() on
-      * the vector after use.
-      * \code
-      void square ( Vector::shared_ptr  vector )
-      {
-        auto cur_entry = vector->begin();
-        while ( cur_entry != vector->end() ) {
-          (*cur_entry) = (*cur_entry)*(*cur_entry);
-          cur_entry++;
-        }
-        auto firer = dynamic_cast<DataChangeFirer>vector.get();
-        if ( firer != nullptr )
-            firer->fireDataChange();
-      }
-      \endcode
+      *     block of data, it is natural for it to provide a random
+      *     access iterator.
+      * \warning The non-const version of the iterators will automatically
+      *     leave the vector in a non-consistent state.  The user may
+      *     be required to call makeConsistent.
       */
     template<class TYPE = double>
     inline VectorDataIterator<TYPE> begin();
 
-    /**
-      * \brief Return an iterator to the beginning of the data
-      * \returns A ConstVectorDataIterator
-      * \details Since the Vector presents an interface to a contiguous
-      * block of data, it is natural for it to provide a random access
-      * iterator.
-      * \warning If you are using PETSc and plan to write data to these
-      * iterators, be sure to call DataChangeListener::dataChanged() on
-      * the vector after use.
-      */
+    /// @copydoc VectorData::begin()
     template<class TYPE = double>
     inline VectorDataIterator<const TYPE> begin() const;
+
+    /// @copydoc VectorData::begin()
+    template<class TYPE = double>
+    inline VectorDataIterator<const TYPE> constBegin() const;
 
     /**
       * \brief Return an iterator to the end of the data
       * \returns A VectorDataIterator
       * \details Since the Vector presents an interface to a contiguous
-      * block of data, it is natural for it to provide a random access
-      * iterator.
-      * \warning If you are using PETSc and plan to write data to these
-      * iterators, be sure to call DataChangeListener::dataChanged() on
-      * the vector after use.
-      * \code
-      void square ( Vector::shared_ptr  vector )
-      {
-        auto cur_entry = vector->begin();
-        while ( cur_entry != vector->end() ) {
-          (*cur_entry) = (*cur_entry)*(*cur_entry);
-          cur_entry++;
-        }
-        auto firer = dynamic_cast<DataChangeFirer>vector.get();
-        if ( firer != nullptr )
-            firer->fireDataChange();
-      }
-      \endcode
+      *     block of data, it is natural for it to provide a random
+      *     access iterator.
+      * \warning The non-const version of the iterators will automatically
+      *     leave the vector in a non-consistent state.  The user may
+      *     be required to call makeConsistent.
       */
     template<class TYPE = double>
     inline VectorDataIterator<TYPE> end();
 
-    /**
-      * \brief Return an iterator to the end of the data
-      * \returns A const VectorDataIterator
-      * \details Since the Vector presents an interface to a contiguous
-      * block of data, it is natural for it to provide a random access
-      * iterator.
-      * \warning If you are using PETSc and plan to write data to these
-      * iterators, be sure to call DataChangeListener::dataChanged() on
-      * the vector after use.
-      */
+    /// @copydoc VectorData::end()
     template<class TYPE = double>
     inline VectorDataIterator<const TYPE> end() const;
+
+    /// @copydoc VectorData::end()
+    template<class TYPE = double>
+    inline VectorDataIterator<const TYPE> constEnd() const;
 
     /** \brief Obtain a particular contiguous block of data cast to RETURN_TYPE
       * \tparam RETURN_TYPE  The pointer type of the return
@@ -425,6 +414,14 @@ public: // Non-virtual functions
     template <typename TYPE>
     bool isBlockType( size_t i = 0 ) const;
 
+    /** \brief Copy ghosted vlues to a vector
+      * \param[in] rhs  Vector to copy ghost values from
+      * \details  This ensures that ghosted values on this and rhs
+      * are the same without a call to makeConsistent.
+      * \see makeConsistent
+      */
+    void copyGhostValues( const VectorData &rhs );
+
 public:
 
     /** \brief Notify listeners that data has changed in this vector.
@@ -435,27 +432,6 @@ public:
      * \param[in]  GID  The global ID of the element
      */
     bool containsGlobalElement( size_t GID );
-
-
-protected:
-
-    /** \brief Return a pointer to a particular block of memory in the
-      * vector
-      * \param i The block to return
-      */
-    virtual void* getRawDataBlockAsVoid( size_t i ) = 0;
-
-    /** \brief Return a pointer to a particular block of memory in the
-      * vector
-      * \param i The block to return
-      */
-    virtual const void* getRawDataBlockAsVoid( size_t i ) const = 0;
-
-    /** \brief Is the data of the given type
-      * \param hash     The hash code: typeid(myint).hash_code()
-      * \param block    The block id to check
-      */
-    virtual bool isTypeId( size_t hash, size_t block ) const = 0;
 
 
 public: // Non virtual functions
@@ -577,10 +553,11 @@ protected: // Internal data
       */
     CommunicationList::shared_ptr d_CommList;
 
-    /**\brief  The current update state for a vector
-      *\details A Vector can be in one of three states. This is the current state of the vector
-      * Because a vector can be composed of vectors, the update state needs to be shared between
-      *them
+    /** \brief  The current update state for a vector
+      * \details A Vector can be in one of three states.
+      *  This is the current state of the vector
+      *  Because a vector can be composed of vectors,
+      *  the update state needs to be shared between them.
       */
     AMP::shared_ptr<UpdateState> d_UpdateState;
 

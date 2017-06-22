@@ -43,7 +43,6 @@ public:
 
     virtual shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
 
-    virtual void copyVector( Vector::const_shared_ptr rhs ) override;
     virtual void swapVectors( Vector & ) override;
     virtual void aliasVector( Vector & ) override;
 
@@ -70,6 +69,7 @@ public:
     virtual uint64_t getDataID() const override { return 0; }
 
     virtual bool isTypeId( size_t, size_t ) const override { return false; }
+    virtual size_t sizeofDataBlockType( size_t ) const override { return 0; }
 
     using Vector::cloneVector;
     using Vector::dot;

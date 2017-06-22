@@ -34,6 +34,8 @@ Vector::Vector():
     *d_UpdateState = UpdateState::UNCHANGED;
     d_Views        = AMP::shared_ptr<std::vector<AMP::weak_ptr<Vector>>>(
         new std::vector<AMP::weak_ptr<Vector>>() );
+    // Set default output stream
+    d_output_stream = &AMP::plog;
 }
 Vector::Vector( VectorParameters::shared_ptr parameters )
 {
@@ -167,25 +169,6 @@ Vector::shared_ptr Vector::cloneVector( const std::string &name ) const
 /****************************************************************
 * Misc                                                          *
 ****************************************************************/
-void Vector::copyVector( Vector::const_shared_ptr rhs )
-{
-    if ( rhs->getLocalSize() != getLocalSize() )
-        AMP_ERROR( "Destination vector and source vector not the same size" );
-    VectorDataIterator<double> cur1       = begin();
-    VectorDataIterator<double> end1       = end();
-    VectorDataIterator<const double> cur2 = rhs->begin();
-    while ( cur1 != end1 ) {
-        *cur1 = *cur2;
-        ++cur1;
-        ++cur2;
-    }
-    auto firer = dynamic_cast<DataChangeFirer*>( this );
-    if ( firer != nullptr )
-        firer->fireDataChange();
-    copyGhostValues( rhs );
-    // Copy the consistency state from the rhs
-    *d_UpdateState = *( rhs->getUpdateStatusPtr() );
-}
 void Vector::setCommunicationList( CommunicationList::shared_ptr comm )
 {
     AMP_ASSERT( comm );
@@ -196,27 +179,6 @@ void Vector::setCommunicationList( CommunicationList::shared_ptr comm )
             new std::vector<double>( d_CommList->getVectorReceiveBufferSize() ) );
         d_AddBuffer = AMP::shared_ptr<std::vector<double>>(
             new std::vector<double>( d_CommList->getVectorReceiveBufferSize() ) );
-    }
-}
-
-void Vector::copyGhostValues( const AMP::shared_ptr<const Vector> &rhs )
-{
-    if ( getGhostSize() == 0 ) {
-        // No ghosts to fill, we don't need to do anything
-    } else if ( getGhostSize() == rhs->getGhostSize() ) {
-        // The ghosts in the src vector match the current vector
-        // Copy the ghosts from the rhs
-        std::vector<size_t> ghostIDs = getCommunicationList()->getGhostIDList();
-        std::vector<double> values( ghostIDs.size() );
-        rhs->getGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
-        this->setGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
-        // Copy the consistency state from the rhs
-        *d_UpdateState = *( rhs->getUpdateStatusPtr() );
-    } else {
-        // We can't copy the ghosts from the rhs
-        // Use makeConsistent to fill the ghosts
-        // Note: this will incure global communication
-        makeConsistent( ScatterType::CONSISTENT_SET );
     }
 }
 

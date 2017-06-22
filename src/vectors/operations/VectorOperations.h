@@ -43,6 +43,15 @@ public:
     //! Destructor
     virtual ~VectorOperations() {}
 
+    //! Clone the operations
+    virtual AMP::shared_ptr<VectorOperations> cloneOperations() const = 0;
+
+    /**
+     * \brief  Set vector equal to x
+     *      For Vectors, \f$\mathit{this}_i = x_i\f$.
+     * \param[in] x         a vector
+     */
+    virtual void copy( const VectorOperations &x ) = 0;
 
     /**
       *\brief Set vector entries (including ghosts) to zero
@@ -319,6 +328,8 @@ public: // shared_ptr wrappers
     inline bool equals( AMP::shared_ptr<const VectorOperations> rhs, double tol = 0.000001 );
     /// @copydoc VectorOperations::scale(double,const VectorOperations&)
     inline void scale( double alpha, AMP::shared_ptr<const VectorOperations> x );
+    /// @copydoc VectorOperations::copy(const VectorOperations&)
+    inline void copy( AMP::shared_ptr<const VectorOperations> x );
     /// @copydoc VectorOperations::add(const VectorOperations&,const VectorOperations&)
     inline void add( AMP::shared_ptr<const VectorOperations> x, AMP::shared_ptr<const VectorOperations> y );
     /// @copydoc VectorOperations::addScalar(const VectorOperations&,double)

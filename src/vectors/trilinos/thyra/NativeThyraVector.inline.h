@@ -108,7 +108,7 @@ NativeThyraVector::getThyraVec( const Vector::const_shared_ptr &vec )
 }
 
 
-inline void NativeThyraVector::copyVector( Vector::const_shared_ptr src_vec )
+inline void NativeThyraVector::copy( const VectorOperations& src_vec )
 {
     Thyra::copy<double>( *( getThyraVec( src_vec ) ), d_thyraVec.ptr() );
 }

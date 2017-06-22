@@ -276,8 +276,7 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
 *  Solve                                                        *
 ****************************************************************/
 void PetscSNESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                             AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                 u )
+                             AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 
@@ -410,6 +409,8 @@ void PetscSNESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     spRhs.reset();
     spSol.reset();
+
+    u->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     PROFILE_STOP( "solve" );
 }

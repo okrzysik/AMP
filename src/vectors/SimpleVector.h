@@ -76,7 +76,6 @@ public:
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr name ) const override;
     virtual size_t numberOfDataBlocks() const override;
     virtual size_t sizeOfDataBlock( size_t i = 0 ) const override;
-    virtual void copyVector( Vector::const_shared_ptr src_vec ) override;
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector &other ) override;
     virtual void setValuesByLocalID( int num, size_t *indices, const double *vals ) override;
@@ -114,10 +113,10 @@ public:
 
 protected:
     virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(T).hash_code(); }
+    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof(double); }
 
 public:
     using Vector::cloneVector;
-    using Vector::copyVector;
 
 };
 

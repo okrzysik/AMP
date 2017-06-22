@@ -70,7 +70,7 @@ public:
     virtual Vector::shared_ptr getManagedVectorCopy( AMP_MPI comm ) override;
     virtual Vector::shared_ptr getManagedVectorDuplicate( AMP_MPI comm ) override;
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
-    virtual void copyVector( Vector::const_shared_ptr vec ) override;
+    virtual void copy( const VectorOperations& vec ) override;
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector & ) override;
     virtual size_t numberOfDataBlocks() const override;
@@ -121,7 +121,7 @@ protected:
 
     virtual void *getRawDataBlockAsVoid( size_t i ) override;
     virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
-
+    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof(double); }
 
 private:
     size_t d_local;

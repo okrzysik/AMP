@@ -89,7 +89,7 @@ public:
 
     using Vector::cloneVector;
     virtual Vector::shared_ptr cloneVector( const Variable::shared_ptr ) const override;
-    virtual void copyVector( Vector::const_shared_ptr vec ) override;
+    virtual void copy( const VectorOperations &vec ) override;
 
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector & ) override;
@@ -168,6 +168,7 @@ public:
     }
 
     virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(double).hash_code(); }
+    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof(double); }
 
 protected:
     virtual void *getRawDataBlockAsVoid( size_t i ) override;
