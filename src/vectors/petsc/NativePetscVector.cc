@@ -11,16 +11,16 @@ namespace LinearAlgebra {
 NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params )
     : NativeVector(), PetscVector(), VectorEngine()
 {
-    NativePetscVectorParameters &npvParams = in_params->castTo<NativePetscVectorParameters>();
-    d_petscVec                             = npvParams.d_InVec;
-    d_pArray                               = nullptr;
+    auto npvParams = dynamic_pointer_cast<NativePetscVectorParameters>( in_params );
+    d_petscVec     = npvParams->d_InVec;
+    d_pArray       = nullptr;
     CommunicationListParameters::shared_ptr params( new CommunicationListParameters() );
-    params->d_comm      = npvParams.d_Comm;
-    params->d_localsize = npvParams.d_localsize;
+    params->d_comm      = npvParams->d_Comm;
+    params->d_localsize = npvParams->d_localsize;
     setCommunicationList( CommunicationList::shared_ptr( new CommunicationList( params ) ) );
-    d_bDeleteMe  = npvParams.d_Deleteable;
+    d_bDeleteMe  = npvParams->d_Deleteable;
     d_DOFManager = AMP::Discretization::DOFManager::shared_ptr(
-        new AMP::Discretization::DOFManager( npvParams.d_localsize, npvParams.d_Comm ) );
+        new AMP::Discretization::DOFManager( npvParams->d_localsize, npvParams->d_Comm ) );
 }
 
 
@@ -37,8 +37,7 @@ Vector::shared_ptr NativePetscVector::cloneVector( const Variable::shared_ptr va
     resetArray();
     Vec new_petscVec;
     VecDuplicate( d_petscVec, &new_petscVec );
-    AMP::shared_ptr<NativePetscVectorParameters> npvParams(
-        new NativePetscVectorParameters( new_petscVec, true ) );
+    auto npvParams = make_shared<NativePetscVectorParameters>( new_petscVec, true );
     npvParams->d_Comm         = getComm();
     Vector::shared_ptr retVal = Vector::shared_ptr( new NativePetscVector( npvParams ) );
     retVal->setVariable( var );

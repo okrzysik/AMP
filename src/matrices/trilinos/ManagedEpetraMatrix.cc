@@ -117,7 +117,7 @@ void ManagedEpetraMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 {
     if ( this->numGlobalColumns() != other_op->numGlobalRows() )
         AMP_ERROR( "Inner matrix dimensions must agree" );
-    if ( !other_op->isA<ManagedEpetraMatrix>() )
+    if ( !dynamic_pointer_cast<ManagedEpetraMatrix>(other_op) )
         AMP_ERROR( "Incompatible matrix types" );
     AMP_ASSERT( other_op->numGlobalRows() == numGlobalColumns() );
 #ifdef USE_EXT_MPI
@@ -137,7 +137,7 @@ void ManagedEpetraMatrix::multiply( shared_ptr other_op, shared_ptr &result )
     int ierr = EpetraExt::MatrixMatrix::Multiply(
         *d_epetraMatrix,
         false,
-        *( other_op->castTo<ManagedEpetraMatrix>().d_epetraMatrix ),
+        *( dynamic_pointer_cast<ManagedEpetraMatrix>(other_op)->d_epetraMatrix ),
         false,
         *( res->d_epetraMatrix ),
         true );
@@ -200,7 +200,8 @@ void ManagedEpetraMatrix::zero()
 void ManagedEpetraMatrix::axpy( double alpha, const Matrix &rhs )
 {
     EpetraExt::MatrixMatrix::Add(
-        *( rhs.castTo<ManagedEpetraMatrix>().d_epetraMatrix ), false, alpha, *d_epetraMatrix, 1.0 );
+        *( dynamic_cast<const ManagedEpetraMatrix*>(&rhs)->d_epetraMatrix ),
+        false, alpha, *d_epetraMatrix, 1.0 );
 }
 
 
@@ -291,15 +292,14 @@ Vector::shared_ptr ManagedEpetraMatrix::extractDiagonal( Vector::shared_ptr v ) 
         retVal = getRightVector();
     }
     VerifyEpetraReturn(
-        d_epetraMatrix->ExtractDiagonalCopy( retVal->castTo<EpetraVector>().getEpetra_Vector() ),
+        d_epetraMatrix->ExtractDiagonalCopy( dynamic_pointer_cast<EpetraVector>(retVal)->getEpetra_Vector() ),
         "extractDiagonal" );
     return retVal;
 }
 void ManagedEpetraMatrix::setDiagonal( Vector::const_shared_ptr in )
 {
-    const Epetra_Vector &vec =
-        EpetraVector::constView( in )->castTo<EpetraVector>().getEpetra_Vector();
-    VerifyEpetraReturn( d_epetraMatrix->ReplaceDiagonalValues( vec ), "setDiagonal" );
+    auto vec = dynamic_pointer_cast<const EpetraVector>( EpetraVector::constView( in ) );
+    VerifyEpetraReturn( d_epetraMatrix->ReplaceDiagonalValues( vec->getEpetra_Vector() ), "setDiagonal" );
 }
 void ManagedEpetraMatrix::setIdentity()
 {

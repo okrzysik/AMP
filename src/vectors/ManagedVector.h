@@ -2,9 +2,11 @@
 #define included_AMP_ManagedVector
 
 
-#include "DataChangeFirer.h"
-#include "Vector.h"
-#include "VectorEngine.h"
+#include "vectors/Vector.h"
+#include "vectors/operations/VectorOperationsDefault.h"
+#include "vectors/VectorEngine.h"
+#include "vectors/DataChangeFirer.h"
+
 #include <stdexcept>
 #include <vector>
 
@@ -45,7 +47,10 @@ public:
    A ManagedVector has two pointers: data and engine.  If the data pointer
    is null, then the engine is assumed to have the data.
 */
-class ManagedVector : public Vector, public DataChangeFirer
+class ManagedVector :
+    public Vector,
+    public VectorOperationsDefault<double>,
+    public DataChangeFirer
 {
 
 public:
@@ -78,23 +83,18 @@ public:
     VectorEngine::shared_ptr getVectorEngine();
     VectorEngine::const_shared_ptr getVectorEngine() const;
     std::string type() const override;
-    virtual Vector::const_iterator begin() const override;
-    virtual Vector::const_iterator end() const override;
-    virtual Vector::iterator begin() override;
-    virtual Vector::iterator end() override;
 
-    virtual Vector::shared_ptr subsetVectorForVariable( const Variable::shared_ptr &name ) override;
+    virtual Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
     virtual Vector::const_shared_ptr
-    constSubsetVectorForVariable( const Variable::shared_ptr &name ) const override;
+    constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
     virtual size_t numberOfDataBlocks() const override;
     virtual size_t sizeOfDataBlock( size_t i ) const override;
-    virtual void copyVector( Vector::const_shared_ptr src_vec ) override;
+    virtual void copy( const VectorOperations& src ) override;
     virtual void swapVectors( Vector &other ) override;
     virtual void aliasVector( Vector &other ) override;
 
     virtual bool isAnAliasOf( Vector &rhs );
     virtual bool isAnAliasOf( Vector::shared_ptr rhs );
-    using Vector::cloneVector;
     virtual AMP::shared_ptr<Vector> cloneVector( const Variable::shared_ptr name ) const override;
     virtual AMP::shared_ptr<ParameterBase> getParameters() override;
 
@@ -137,7 +137,6 @@ public:
     double L1Norm( void ) const override;
     double L2Norm( void ) const override;
     double maxNorm( void ) const override;
-    using Vector::dot;
     double dot( const VectorOperations &x ) const override;
     virtual UpdateState getUpdateStatus() const override;
     virtual void setUpdateStatus( UpdateState state ) override;
@@ -145,33 +144,55 @@ public:
     {
         return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
     }
+    virtual bool isTypeId( size_t hash, size_t ) const override { return hash == typeid(double).hash_code(); }
+    virtual size_t sizeofDataBlockType( size_t ) const override { return sizeof(double); }
 
 protected:
     virtual Vector::shared_ptr selectInto( const VectorSelector & ) override;
     virtual Vector::const_shared_ptr selectInto( const VectorSelector & ) const override;
 
-    /**\brief  A method that is called whenever data changes.  This fires
-         triggers that may have been registered with DataChangeFirer
-         */
-    virtual void dataChanged() override;
 
-    /**\brief  The buffer used to store data
-     */
+    //! The buffer used to store data
     VectorEngine::BufferPtr d_vBuffer;
-    /**\brief  The engine to act on the buffer
-     */
+
+    //! The engine to act on the buffer
     VectorEngine::shared_ptr d_Engine;
-    /**\brief  The parameters used to create this vector
-     */
+
+    //! The parameters used to create this vector
     AMP::shared_ptr<ManagedVectorParameters> d_pParameters;
 
-    /**\brief  Function that returns a pointer to a managed vector
-     */
+    //! Function that returns a pointer to a managed vector
     virtual ManagedVector *getNewRawPtr() const = 0;
+
+    virtual void dataChanged() override;
     virtual void *getRawDataBlockAsVoid( size_t i ) override;
     virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
 
     virtual void addCommunicationListToParameters( CommunicationList::shared_ptr comm ) override;
+
+
+public: // Pull Vector into the current scope
+    using Vector::cloneVector;
+
+public: // Pull VectorOperations into the current scope
+    using VectorOperations::add;
+    using VectorOperations::addScalar;
+    using VectorOperations::abs;
+    using VectorOperations::axpy;
+    using VectorOperations::axpby;
+    using VectorOperations::divide;
+    using VectorOperations::dot;
+    using VectorOperations::equals;
+    using VectorOperations::linearSum;
+    using VectorOperations::minQuotient;
+    using VectorOperations::multiply;
+    using VectorOperations::setRandomValues;
+    using VectorOperations::scale;
+    using VectorOperations::subtract;
+    using VectorOperations::reciprocal;
+    using VectorOperations::wrmsNorm;
+    using VectorOperations::wrmsNormMask;
+    using VectorOperations::zero;
 
 private:
     ManagedVector();

@@ -123,12 +123,12 @@ void IDATimeIntegrator::initializeIDA()
 {
     N_Vector id = nullptr;
 
-    AMP::LinearAlgebra::Vector::shared_ptr pSundials_sol =
-        AMP::LinearAlgebra::SundialsVector::view( d_solution );
-    AMP::LinearAlgebra::Vector::shared_ptr pSundials_sol_prime =
-        AMP::LinearAlgebra::SundialsVector::view( d_solution_prime );
+    auto pSundials_sol = dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(
+        AMP::LinearAlgebra::SundialsVector::view( d_solution ) );
+    auto pSundials_sol_prime = dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(
+        AMP::LinearAlgebra::SundialsVector::view( d_solution_prime ) );
 
-    id = N_VClone( pSundials_sol->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector() );
+    id = N_VClone( pSundials_sol->getNVector() );
 
     d_ida_mem = IDACreate();
     AMP_ASSERT( d_ida_mem != nullptr );
@@ -143,12 +143,11 @@ void IDATimeIntegrator::initializeIDA()
     // AMP::shared_ptr<AMP::LinearAlgebra::SundialsVector> pSun_nvec =
     // AMP::dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(pSundials_sol);
 
-    ierr =
-        IDAInit( d_ida_mem,
-                 IDAResTrial,
-                 d_initial_time,
-                 pSundials_sol->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector(),
-                 pSundials_sol_prime->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector() );
+    ierr = IDAInit( d_ida_mem,
+                    IDAResTrial,
+                    d_initial_time,
+                    pSundials_sol->getNVector(),
+                    pSundials_sol_prime->getNVector() );
     AMP_ASSERT( ierr == IDA_SUCCESS );
 
     ierr = IDASStolerances( d_ida_mem, d_relative_tolerance, d_absolute_tolerance );
@@ -188,8 +187,8 @@ void IDATimeIntegrator::initializeIDA()
         AMP_ASSERT( ierr == IDA_SUCCESS );
         ierr = IDAGetConsistentIC(
             d_ida_mem,
-            pSundials_sol->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector(),
-            pSundials_sol_prime->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector() );
+            pSundials_sol->getNVector(),
+            pSundials_sol_prime->getNVector() );
         AMP_ASSERT( ierr == IDA_SUCCESS );
     }
 
@@ -301,10 +300,10 @@ int IDATimeIntegrator::advanceSolution( const double dt, const bool /* first_ste
     long int nliters  = 0;
     long int npsolves = 0;
 
-    AMP::LinearAlgebra::Vector::shared_ptr ptr_y =
-        AMP::LinearAlgebra::SundialsVector::view( d_solution );
-    AMP::LinearAlgebra::Vector::shared_ptr ptr_ydot =
-        AMP::LinearAlgebra::SundialsVector::view( d_solution_prime );
+    auto ptr_y = dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(
+        AMP::LinearAlgebra::SundialsVector::view( d_solution ) );
+    auto ptr_ydot = dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(
+        AMP::LinearAlgebra::SundialsVector::view( d_solution_prime ) );
 
     // specify some initial step
     hcur = d_current_time + dt;
@@ -313,8 +312,8 @@ int IDATimeIntegrator::advanceSolution( const double dt, const bool /* first_ste
     retval = IDASolve( d_ida_mem,
                        hcur,
                        &d_current_time,
-                       ptr_y->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector(),
-                       ptr_ydot->castTo<AMP::LinearAlgebra::SundialsVector>().getNVector(),
+                       ptr_y->getNVector(),
+                       ptr_ydot->getNVector(),
                        IDA_ONE_STEP );
     // should be fixed.
     AMP::pout << "after IDASolve" << std::endl;

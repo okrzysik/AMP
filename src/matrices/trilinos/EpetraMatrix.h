@@ -22,13 +22,6 @@ typedef MatrixParameters EpetraMatrixParameters;
   *  -# Provides an interface for accessing this Epetra_CrsMatrix independent of base or derived
   classes
   *  -# Provides a static method for creating an Epetra_CrsMatrix view of an AMP vector.
-  *
-  * This allows the Castable class to be used to verify correctness of code.  For instance,
-  * given a Matrix shared poitner, it is possible to get the Epetra_CrsMatrix safely thusly
-  \code
-    Matrix::shared_ptr  matrix;
-    Epetra_CrsMatrix &mat = matrix->castTo<EpetraMatrix>().getEpetra_CrsMatrix();
-  \endcode
   */
 
 class EpetraMatrix : virtual public Matrix
@@ -104,7 +97,7 @@ public:
       * \param[in] p  The matrix to view
       * \return  An AMP:Matrix capable of casting to EpetraMatrix
       */
-    static shared_ptr createView( shared_ptr p );
+    static AMP::shared_ptr<EpetraMatrix> createView( shared_ptr p );
 
     /** \brief  A call-through to Epetra_CrsMatrix fillComplete
       */

@@ -28,7 +28,9 @@ inline size_t SimpleVector<T>::sizeOfDataBlock( size_t i ) const
 template <typename T>
 inline void SimpleVector<T>::swapVectors( Vector &rhs )
 {
-    d_Data.swap( rhs.castTo<SimpleVector>().d_Data );
+    auto x = dynamic_cast<SimpleVector*>( &rhs );
+    AMP_INSIST( x != nullptr, "rhs is not a SimpleVector" );
+    d_Data.swap( x->d_Data );
 }
 
 template <typename T>

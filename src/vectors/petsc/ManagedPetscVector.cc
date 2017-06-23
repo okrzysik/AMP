@@ -122,8 +122,8 @@ PetscErrorCode _AMP_shift( Vec px, PetscScalar s)
 {
     PETSC_RECAST( x, px );
 
-    AMP::LinearAlgebra::VectorDataIterator cur = x->ManagedVector::begin();
-    AMP::LinearAlgebra::VectorDataIterator end = x->ManagedVector::end();
+    auto cur = x->VectorData::begin();
+    auto end = x->VectorData::end();
     while ( cur != end ) {
         *cur = s+ ( *cur );
         cur++;
@@ -193,7 +193,7 @@ PetscErrorCode _AMP_dot_local( Vec a, Vec b, PetscScalar *ans )
 {
     PETSC_RECAST( x, a );
     PETSC_RECAST( y, b );
-    *ans = x->localDot( y->shared_from_this() );
+    *ans = x->localDot( *y );
     return 0;
 }
 
@@ -220,8 +220,8 @@ PetscErrorCode _AMP_exp( Vec a )
 {
     PETSC_RECAST( x, a );
 
-    AMP::LinearAlgebra::VectorDataIterator cur = x->ManagedVector::begin();
-    AMP::LinearAlgebra::VectorDataIterator end = x->ManagedVector::end();
+    auto cur = x->VectorData::begin();
+    auto end = x->VectorData::end();
     while ( cur != end ) {
         *cur = exp( *cur );
         cur++;
@@ -233,8 +233,8 @@ PetscErrorCode _AMP_log( Vec a )
 {
     PETSC_RECAST( x, a );
 
-    AMP::LinearAlgebra::VectorDataIterator cur = x->ManagedVector::begin();
-    AMP::LinearAlgebra::VectorDataIterator end = x->ManagedVector::end();
+    auto cur = x->VectorData::begin();
+    auto end = x->VectorData::end();
     while ( cur != end ) {
         *cur = log( *cur );
         cur++;
@@ -251,11 +251,10 @@ PetscErrorCode _AMP_pointwisemin( Vec a, Vec b, Vec c )
     AMP_INSIST( x->getLocalSize() == y->getLocalSize(), "Incompatible vectors" );
     AMP_INSIST( x->getLocalSize() == z->getLocalSize(), "Incompatible vectors" );
 
-    AMP::LinearAlgebra::VectorDataIterator xi, yi, zi, xe;
-    xi = x->ManagedVector::begin();
-    yi = y->ManagedVector::begin();
-    zi = z->ManagedVector::begin();
-    xe = x->ManagedVector::end();
+    auto xi = x->VectorData::begin();
+    auto xe = x->VectorData::end();
+    auto yi = y->VectorData::constBegin();
+    auto zi = z->VectorData::constBegin();
     while ( xi != xe ) {
         *xi = std::min( *yi, *zi );
         xi++;
@@ -274,11 +273,10 @@ PetscErrorCode _AMP_pointwisemax( Vec a, Vec b, Vec c )
     AMP_INSIST( x->getLocalSize() == y->getLocalSize(), "Incompatible vectors" );
     AMP_INSIST( x->getLocalSize() == z->getLocalSize(), "Incompatible vectors" );
 
-    AMP::LinearAlgebra::VectorDataIterator xi, yi, zi, xe;
-    xi = x->ManagedVector::begin();
-    yi = y->ManagedVector::begin();
-    zi = z->ManagedVector::begin();
-    xe = x->ManagedVector::end();
+    auto xi = x->VectorData::begin();
+    auto xe = x->VectorData::end();
+    auto yi = y->VectorData::constBegin();
+    auto zi = z->VectorData::constBegin();
     while ( xi != xe ) {
         *xi = std::max( *yi, *zi );
         xi++;
@@ -297,11 +295,10 @@ PetscErrorCode _AMP_pointwisemaxabs( Vec a, Vec b, Vec c )
     AMP_INSIST( x->getLocalSize() == y->getLocalSize(), "Incompatible vectors" );
     AMP_INSIST( x->getLocalSize() == z->getLocalSize(), "Incompatible vectors" );
 
-    AMP::LinearAlgebra::VectorDataIterator xi, yi, zi, xe;
-    xi = x->ManagedVector::begin();
-    yi = y->ManagedVector::begin();
-    zi = z->ManagedVector::begin();
-    xe = x->ManagedVector::end();
+    auto xi = x->VectorData::begin();
+    auto yi = y->VectorData::begin();
+    auto zi = z->VectorData::begin();
+    auto xe = x->VectorData::end();
     while ( xi != xe ) {
         *xi = std::max( fabs( *yi ), fabs( *zi ) );
         xi++;
@@ -332,8 +329,8 @@ PetscErrorCode _AMP_pointwisedivide( Vec a, Vec b, Vec c )
 PetscErrorCode _AMP_sqrt( Vec a )
 {
     PETSC_RECAST( x, a );
-    AMP::LinearAlgebra::VectorDataIterator cur = x->ManagedVector::begin();
-    AMP::LinearAlgebra::VectorDataIterator end = x->ManagedVector::end();
+    auto cur = x->VectorData::begin();
+    auto end = x->VectorData::end();
     while ( cur != end ) {
         *cur = sqrt( fabs( *cur ) );
         cur++;
@@ -385,10 +382,10 @@ PetscErrorCode _AMP_maxpointwisedivide( Vec a, Vec b, PetscReal *res )
     PETSC_RECAST( x, a );
     PETSC_RECAST( y, b );
 
-    AMP::LinearAlgebra::Vector::iterator cur_x = x->ManagedVector::begin();
-    AMP::LinearAlgebra::Vector::iterator cur_y = y->ManagedVector::begin();
-    AMP::LinearAlgebra::Vector::iterator end_x = x->ManagedVector::end();
-    double local_res                           = 0.0;
+    auto cur_x = x->VectorData::constBegin();
+    auto cur_y = y->VectorData::constBegin();
+    auto end_x = x->VectorData::constEnd();
+    double local_res = 0.0;
     while ( cur_x != end_x ) {
         if ( *cur_y == 0.0 ) {
             local_res = std::max( local_res, fabs( *cur_x ) );
@@ -777,8 +774,9 @@ ManagedPetscVector::ManagedPetscVector( Vector::shared_ptr alias )
     : ManagedVector( alias ), PetscVector()
 {
     initPetsc();
-    if ( alias->isA<DataChangeFirer>() )
-        alias->castTo<DataChangeFirer>().registerListener( this );
+    auto firer = dynamic_pointer_cast<DataChangeFirer>( alias );
+    if ( firer )
+        firer->registerListener( this );
 }
 
 
@@ -813,9 +811,8 @@ ManagedPetscVector *ManagedPetscVector::petscDuplicate()
 
 void ManagedPetscVector::copyFromPetscVec( Vector &dest, Vec source )
 {
-    AMP::shared_ptr<ManagedVectorParameters> params =
-        AMP::dynamic_pointer_cast<ManagedVectorParameters>(
-            dest.castTo<ManagedVector>().getParameters() );
+    auto params = AMP::dynamic_pointer_cast<ManagedVectorParameters>(
+        dynamic_cast<ManagedVector*>(&dest)->getParameters() );
     if ( !params )
         throw( "Incompatible vector types" );
 
@@ -864,11 +861,10 @@ AMP::shared_ptr<AMP::LinearAlgebra::Vector> ManagedPetscVector::createFromPetscV
 
 void ManagedPetscVector::swapVectors( Vector &other )
 {
-    ManagedPetscVector &tmp = other.castTo<ManagedPetscVector>();
-    ParentVector::swapVectors( tmp );
-    // swapPetscVec( tmp );
-    // getVec()->data = this;
-    // other.castTo<ManagedPetscVector>().getVec()->data = &tmp;
+    auto tmp = dynamic_cast<ManagedPetscVector*>( &other );
+    AMP_ASSERT( tmp != nullptr );
+    ParentVector::swapVectors( *tmp );
 }
+
 }
 }

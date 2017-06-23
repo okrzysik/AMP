@@ -1,10 +1,9 @@
-#include "Vector.h"
+#include "vectors/VectorData.h"
 #include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
-#include <vector>
 
-// class Vector;
-// typedef  AMP::shared_ptr<Vector>   Vector_shared_ptr;
+#include <iostream>
+#include <vector>
 
 
 namespace AMP {
@@ -151,7 +150,7 @@ CommunicationList::shared_ptr CommunicationList::subset( VectorIndexer::shared_p
     return CommunicationList::shared_ptr( retVal );
 }
 
-void CommunicationList::packReceiveBuffer( std::vector<double> &recv, const Vector &vec ) const
+void CommunicationList::packReceiveBuffer( std::vector<double> &recv, const VectorData &vec ) const
 {
     AMP_ASSERT( recv.size() == d_ReceiveDOFList.size() );
     if ( recv.empty() )
@@ -160,7 +159,7 @@ void CommunicationList::packReceiveBuffer( std::vector<double> &recv, const Vect
         (int) recv.size(), getPtr( d_ReceiveDOFList ), getPtr( recv ) );
 }
 
-void CommunicationList::packSendBuffer( std::vector<double> &send, const Vector &vec ) const
+void CommunicationList::packSendBuffer( std::vector<double> &send, const VectorData &vec ) const
 {
     AMP_ASSERT( send.size() == d_SendDOFList.size() );
     if ( send.empty() )
@@ -168,19 +167,19 @@ void CommunicationList::packSendBuffer( std::vector<double> &send, const Vector 
     vec.getLocalValuesByGlobalID( (int) send.size(), getPtr( d_SendDOFList ), getPtr( send ) );
 }
 
-void CommunicationList::unpackReceiveBufferSet( const std::vector<double> &recv, Vector &vec ) const
+void CommunicationList::unpackReceiveBufferSet( const std::vector<double> &recv, VectorData &vec ) const
 {
     AMP_ASSERT( recv.size() == d_ReceiveDOFList.size() );
     vec.setValuesByGlobalID( (int) recv.size(), getPtr( d_ReceiveDOFList ), getPtr( recv ) );
 }
 
-void CommunicationList::unpackSendBufferAdd( const std::vector<double> &recv, Vector &vec ) const
+void CommunicationList::unpackSendBufferAdd( const std::vector<double> &recv, VectorData &vec ) const
 {
     AMP_ASSERT( recv.size() == d_SendDOFList.size() );
     vec.addLocalValuesByGlobalID( (int) recv.size(), getPtr( d_SendDOFList ), getPtr( recv ) );
 }
 
-void CommunicationList::unpackSendBufferSet( const std::vector<double> &recv, Vector &vec ) const
+void CommunicationList::unpackSendBufferSet( const std::vector<double> &recv, VectorData &vec ) const
 {
     AMP_ASSERT( recv.size() == d_SendDOFList.size() );
     vec.setLocalValuesByGlobalID( (int) recv.size(), getPtr( d_SendDOFList ), getPtr( recv ) );

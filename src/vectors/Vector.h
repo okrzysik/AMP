@@ -6,14 +6,13 @@
 #include <string>
 
 #include "discretization/DOF_Manager.h"
-#include "utils/Castable.h"
 #include "utils/ParameterBase.h"
 #include "utils/RNG.h"
 #include "utils/enable_shared_from_this.h"
 #include "utils/shared_ptr.h"
-#include "vectors/CommunicationList.h"
 #include "vectors/Variable.h"
-#include "vectors/VectorOperations.h"
+#include "vectors/VectorData.h"
+#include "vectors/operations/VectorOperations.h"
 
 
 namespace AMP {
@@ -21,7 +20,7 @@ namespace LinearAlgebra {
 
 
 //! Parameters used to instantiate a Vector
-class VectorParameters : public ParameterBase, public Castable
+class VectorParameters : public ParameterBase
 {
 public:
     //! Convenience typedef
@@ -35,11 +34,10 @@ public:
 };
 
 
-class VectorDataIterator;
-class ConstVectorDataIterator;
 class VectorSelector;
 class MultiVector;
 class ManagedVector;
+
 
 /** \brief Abstraction of a discrete Vector in a linear simulation
   * \details  This class encapsulates many BLAS level 1 operations
@@ -64,14 +62,16 @@ class ManagedVector;
   * \f$\mathbf{L}\mathbf{\tilde{u}}=\mathbf{f}\f$.  In this case
   * \f$\mathbf{\tilde{u}}\f$ and \f$\mathbf{f}\f$ are Vectors.
   */
-
-class Vector : virtual public VectorOperations, public AMP::enable_shared_from_this<Vector>
+class Vector :
+    virtual public VectorData,
+    virtual public VectorOperations,
+    public AMP::enable_shared_from_this<Vector>
 {
-public:
-    /**\brief Flag to choose algorithm for makeConsistent
-      *\see makeConsistent
-      */
-    enum class ScatterType { CONSISTENT_ADD, CONSISTENT_SET };
+
+public: // typedefs
+
+    using VectorData::ScatterType;
+    using VectorData::UpdateState;
 
     /** \typedef shared_ptr
       * \brief Shorthand for shared pointer to Vector
@@ -83,62 +83,16 @@ public:
       */
     typedef AMP::shared_ptr<const Vector> const_shared_ptr;
 
+    // Deprecated
+    typedef VectorDataIterator<double> iterator;
+    typedef VectorDataIterator<const double> const_iterator;
+
+
+public: // Virtual functions
+
     /** \brief Return the name of the vector
       */
     virtual std::string type() const = 0;
-
-    /** \typedef iterator
-      * \brief An iterator for the data in a Vector---DO NOT USE WITHOUT READING DETAILS.
-      * \see DataChangeFirer
-      * \warning  If you understand what DataChangeFirer does and why, then you can use
-      * the non-const iterator.
-      * This can be used with the following pattern:
-      * \code
-      void square ( Vector::shared_ptr  vector )
-      {
-        Vector::iterator    cur_entry = vector->begin();
-        while ( cur_entry != vector->end() )
-        {
-        (*cur_entry) = (*cur_entry)*(*cur_entry);
-        cur_entry++;
-        }
-        if ( vector->isA<DataChangeFirer>() )
-        {
-        vector->castTo<DataChangeFirer>().fireDataChange();
-        }
-      }
-        \endcode
-      */
-    typedef VectorDataIterator iterator;
-
-    /** \typedef const_iterator
-      * \brief An iterator for the data in a Vector
-      */
-    typedef ConstVectorDataIterator const_iterator;
-    /** \brief Constructor
-      * \param[in] parameters  A pointer to a parameters class
-      * \see VectorParameters
-     */
-    explicit Vector( VectorParameters::shared_ptr parameters );
-
-    /** \brief Destructor
-     */
-    virtual ~Vector();
-
-    /** \brief Change the variable associated with this vector
-      * \param[in] name  The new variable
-     */
-    void setVariable( const Variable::shared_ptr name );
-
-    /** \brief  Get the variable associated with this vector
-      * \return  A shared point to the Variable associated with this Vector
-      */
-    const Variable::shared_ptr getVariable() const;
-
-    /** \brief  Get the variable associated with this vector
-      * \return  A shared point to the Variable associated with this Vector
-      */
-    Variable::shared_ptr getVariable();
 
     //! \name Vector memory manipulation
     //! \brief These methods control memory allocation, copying data, aliasing data, and swapping
@@ -171,30 +125,14 @@ public:
       * number of entries.  The vector will be associated with a clone of the same Variable with the
      * given name
      */
-    virtual Vector::shared_ptr cloneVector( const std::string &name ) const;
+    virtual Vector::shared_ptr cloneVector( const std::string& name ) const;
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
       * \param[in] name  Variable by which to retrieve a subvector
       * \return  A Vector shared pointer
       * \see MultiVector
      */
-    inline Vector::shared_ptr subsetVectorForVariable( const std::string& name );
-
-
-    /** \brief Retrieve a sub-vector associated with a particular Variable
-      * \param[in] name  Variable by which to retrieve a subvector
-      * \return  A Vector shared pointer
-      * \see MultiVector
-     */
-    virtual Vector::shared_ptr subsetVectorForVariable( const Variable::shared_ptr &name );
-
-    /** \brief Retrieve a sub-vector associated with a particular Variable
-      * \param[in] name  Variable by which to retrieve a subvector
-      * \return  A Vector shared pointer
-      * \see MultiVector
-     */
-    inline Vector::const_shared_ptr
-    constSubsetVectorForVariable( const std::string& name ) const;
+    virtual Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name );
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
       * \param[in] name  Variable by which to retrieve a subvector
@@ -202,44 +140,7 @@ public:
       * \see MultiVector
      */
     virtual Vector::const_shared_ptr
-    constSubsetVectorForVariable( const Variable::shared_ptr &name ) const;
-
-    /** \brief Obtain a particular contiguous block of data cast to RETURN_TYPE
-      * \tparam RETURN_TYPE  The pointer type of the return
-      * \param[in] i  Which block
-      * \return A contiguous array of type RETURN_TYPE
-      */
-    template <typename RETURN_TYPE>
-    RETURN_TYPE *getRawDataBlock( size_t i = 0 );
-
-    /** \brief Obtain a particular contiguous block of data cast to RETURN_TYPE
-      * \tparam RETURN_TYPE  The pointer type of the return
-      * \param[in] i  Which block
-      * \return A const contiguous array of type RETURN_TYPE
-      */
-    template <typename RETURN_TYPE>
-    const RETURN_TYPE *getRawDataBlock( size_t i = 0 ) const;
-
-    /** \brief Number of blocks of contiguous data in the Vector
-      * \return Number of blocks in the Vector
-      * \details  A vector is not necessarily contiguous in memory.  This method
-      * returns the number of contiguous blocks in memory used by this vector
-      */
-    virtual size_t numberOfDataBlocks() const = 0;
-
-    /** \brief Number of elements in a data block
-      * \param[in] i  particular data block
-      * \return The size of a particular block
-      */
-    virtual size_t sizeOfDataBlock( size_t i = 0 ) const = 0;
-
-    /** \brief Copy the elements of a vector into <i>this</i>
-      *   Note: if the ghosts in the rhs do not match the ghosts in this,
-      *   a makeConsistent is performed to fill the ghosts.  Otherwise it
-      *   is assumed that rhs has consistent ghost values.
-      * \param[in] rhs  a shared pointer to the Vector to copy the data from
-     */
-    virtual void copyVector( Vector::const_shared_ptr rhs );
+    constSubsetVectorForVariable( Variable::const_shared_ptr name ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other  Vector to swap data with
@@ -252,23 +153,6 @@ public:
       * without a and b exchanging pointers.
      */
     virtual void swapVectors( Vector &other ) = 0;
-
-    /** \brief  Swap the data in this Vector for another
-      * \param[in]  other Vector to swap data with
-      * \details Effectively, this is
-      * \code
-      Vector *a;
-      Vector *b;
-      std::swap ( a, b );
-        \endcode
-      * without a and b exchanging pointers.
-     */
-    void swapVectors( Vector::shared_ptr other );
-
-    /* \brief  Returns true if this vector has this element
-     * \param[in]  GID  The global ID of the element
-     */
-    bool containsGlobalElement( size_t GID );
 
 
     /** \brief Return a parameters description of this vector
@@ -317,669 +201,12 @@ public:
      */
     virtual void aliasVector( Vector &other ) = 0;
 
-    /**  \brief  Make <i>this</i> be an alias of another vector
-      *  \param[in]  other  Vector to be aliased
-      *  \details  This will make <i>this</i> "point" to other.
-     */
-    void aliasVector( Vector::shared_ptr other );
-
-    /**\brief Copy data into this vector
-      *\param[in] buf  Buffer to copy from
-      */
-    virtual void putRawData( const double *buf ) = 0;
-
-    /**\brief Copy data out of this vector
-      *\param[out] buf  Buffer to copy to
-      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
-      */
-    virtual void copyOutRawData( double *buf ) const = 0;
-
-    /**\brief Number of elements "owned" by this core
-      *\return  Number of entries stored contiguously on this processor
-      *\details  For some types of variables, vectors may store "ghost"
-      * data---possibly non-contiguous subsets of entries stored on other
-      * cores.
-      */
-    virtual size_t getLocalSize() const = 0;
-
-    /**\brief Number of total entries in this vector across all cores
-      *\return Number of entries stored across all cores in this
-      */
-    virtual size_t getGlobalSize() const = 0;
-
-    /**\brief The largest index in the vector (whether it is stored or not)
-      *\details  Sparse vectors may not actually store the largest index
-      * and getGlobalSize will only return the number of values stored
-      *\return The largest index
-      */
-    virtual size_t getGlobalMaxID() const;
-
-    /**\brief The largest index in the vector (whether it is stored or not)
-      *\details  Sparse vectors may not actually store the largest index
-      * and getGlobalSize will only return the number of values stored
-      *\return The largest index
-      */
-    virtual size_t getLocalMaxID() const;
-
-    virtual size_t getLocalStartID() const;
-
-    /**\brief Number of entries "owned" by other cores stored on this
-      * core.
-      *\return Number of entries "owned" by other cores stored on this core
-      */
-    virtual size_t getGhostSize() const;
-    //@}
-
-    //! \name Linear Algebra Interface (Use this interface to perform math)
-    //@{
-
-    /**
-     * \brief  Set all compenents of a vector to a scalar.
-     * \param[in]  alpha a scalar double
-     * For Vectors, the components of <em>this</em> are set to \f$\alpha\f$.
-     */
-    virtual void setToScalar( double alpha ) override;
-
-    /**
-      *\brief Set vector entries (including ghosts) to zero
-      *\details This is equivalent (but more efficient) to calling setToScalar ( 0.0 ) followed by a
-      *makeConsistent(SET)
-      */
-    void zero();
-
-    /**
-     * \brief  Scale a vector.
-     * \param[in]  alpha  a scalar double
-     *
-     * For Vectors, \f$\mathit{this}_i = \alpha\mathit{this}_i\f$.
-     */
-    virtual void scale( double alpha ) override;
-
-    /**
-     * \brief  Set vector equal to scaled input.
-     * \param[in]  alpha  a scalar double
-     * \param[in]  x  a vector
-     * For Vectors, \f$\mathit{this}_i = \alpha x_i\f$.
-     */
-    void scale( double alpha, Vector::const_shared_ptr x );
-
-    /**
-      * \brief set vector to \f$x + \alpha \bar{1}\f$.
-      * \param[in] x a vector
-      * \param[in] alpha a scalar
-      * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
-      */
-    void addScalar( Vector::const_shared_ptr x, double alpha );
-
-    /**
-     * \brief  Adds two vectors.
-     * \param[in]  x  a vector
-     * \param[in]  y  a vector
-     * For Vectors, \f$\mathit{this}_i = x_i + y_i\f$.
-     */
-    void add( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-
-    /**
-      * \brief Subtracts one vector from another.
-      * \param[in] x  a vector
-      * \param[in] y  a vector
-      * For Vectors, \f$\mathit{this}_i = x_i - y_i\f$
-     */
-    void subtract( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-
-    /**
-      * \brief Component-wise multiply one vector with another.
-      * \param[in] x  a vector
-      * \param[in] y  a vector
-      * For Vectors, \f$\mathit{this}_i = x_i  y_i\f$
-     */
-    void multiply( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-
-    /**
-      * \brief Component-wise divide one vector by another.
-      * \param[in] x  a vector
-      * \param[in] y  a vector
-      * For Vectors, \f$\mathit{this}_i = x_i / y_i\f$
-     */
-    void divide( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-
-    /**
-      * \brief Set this to the component-wise reciprocal of a vector.  \f$\mathit{this}_i =
-     * 1/x_i\f$.
-      * \param[in] x  a vector
-     */
-    void reciprocal( Vector::const_shared_ptr x );
-
-    /**
-     * \param[in] alpha a scalar
-     * \param[in] x a vector
-     * \param[in] beta a scalar
-     * \param[in] y a vector
-     * \brief Set a vector to be a linear combination of two vectors.
-     *  \f$\mathit{this}_i = \alpha x_i + \beta y_i\f$.
-     */
-    void
-    linearSum( double alpha, Vector::const_shared_ptr x, double beta, Vector::const_shared_ptr y );
-
-    /**
-      * \param[in] alpha a scalar
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \brief Set this vector to alpha * x + y.  \f$\mathit{this}_i = \alpha x_i + y_i\f$.
-      *    Note: after this call, the data may not be in a consistent state,
-      *    and may require calling makeConsistent(SET) if consistency is required.
-     */
-    void axpy( double alpha, Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-    /**
-      * \param[in] alpha a scalar
-      * \param[in] beta a scalar
-      * \param[in] x  a vector
-      * \brief Set this vector alpha * x + this.
-      *    \f$\mathit{this}_i = \alpha x_i + \beta \mathit{this}_i \f$
-      *    Note: after this call, the data may not be in a consistent state,
-      *    and may require calling makeConsistent(SET) if consistency is required.
-      */
-    void axpby( double alpha, double beta, Vector::const_shared_ptr x );
-
-    /**
-      * \param[in] x a vector
-      * \brief Set this to the component-wise absolute value of a vector.
-      * \f$\mathit{this}_i = |x_i|\f$.
-     */
-    void abs( Vector::const_shared_ptr x );
-
-    /**
-     * \brief Set data in this vector to random values on [0,1).
-     */
-    virtual void setRandomValues( void ) override;
-
-    /**
-     * \brief Set data in this vector to random values using
-     * a particular generator
-     * \param[in]  rng  The generator to use.
-     */
-    void setRandomValues( RNG::shared_ptr rng );
-
-    /**
-      * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
-     */
-    virtual double min( void ) const override;
-
-    /**
-      * \brief Return the maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
-     */
-    virtual double max( void ) const override;
-
-    /**
-     * \brief Return discrete @f$ L_1 @f$ -norm of this vector.
-     * \details Returns \f[\sum_i |\mathit{this}_i|\f]
-     */
-    virtual double L1Norm( void ) const override;
-
-    /**
-     * \brief Return discrete @f$ L_2 @f$ -norm of this vector.
-     * \details Returns \f[\sqrt{\sum_i \mathit{this}_i^2}\f]
-     */
-    virtual double L2Norm( void ) const override;
-
-    /**
-     * \brief Return the @f$ L_\infty @f$ -norm of this vector.
-     * \details Returns \f[\max_i |\mathit{this}_i|\f]
-     */
-    virtual double maxNorm( void ) const override;
-
-    /**
-      * \param[in] x a vector
-      * \brief Return the dot product of this vector with the argument vector.
-      * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
-     */
-    virtual double dot( Vector::const_shared_ptr x );
-
-    /**
-      * \brief Return the local minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
-     */
-    virtual double localMin( void ) const;
-
-    /**
-      * \brief Return the local maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
-     */
-    virtual double localMax( void ) const;
-
-    /**
-     * \brief Return local discrete @f$ L_1 @f$ -norm of this vector.
-     * \details Returns \f[\sum_i |\mathit{this}_i|\f]
-     */
-    virtual double localL1Norm( void ) const;
-
-    /**
-     * \brief Return local discrete @f$ L_2 @f$ -norm of this vector.
-     * \details Returns \f[\sqrt{\sum_i \mathit{this}_i^2}\f]
-     */
-    virtual double localL2Norm( void ) const;
-
-    /**
-     * \brief Return the local @f$ L_\infty @f$ -norm of this vector.
-     * \details Returns \f[\max_i |\mathit{this}_i|\f]
-     */
-    virtual double localMaxNorm( void ) const;
-
-    /**
-      * \param[in] x a vector
-      * \brief Return the local dot product of this vector with the argument vector.
-      * \details Returns \f[\sum_i x_i\mathit{this}_i\f]
-     */
-    virtual double localDot( AMP::shared_ptr<const Vector> x ) const;
-
-    /**
-      * \brief  Determine if two vectors are equal using an absolute tolerance
-      * \param[in] rhs Vector to compare to
-      * \param[in] tol Tolerance of comparison
-      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
-      */
-    bool equals( Vector::const_shared_ptr rhs, double tol = 0.000001 ) const;
-
-    /**
-      * \fn equals (Vector & const rhs, double tol )
-      * \brief  Determine if two vectors are equal using an absolute tolerance
-      * \param[in] rhs Vector to compare to
-      * \param[in] tol Tolerance of comparison
-      * \return  True iff \f$||\mathit{rhs} - x||_\infty < \mathit{tol}\f$
-      */
-    virtual bool equals( Vector const &rhs, double tol = 0.000001 ) const;
-    //@}
-
-
-    //! \name Manual vector manipulation
-    //@{
-
-    /**
-      * \brief Return an iterator to the beginning of the data
-      * \returns A VectorDataIterator
-      * \details Since the Vector presents an interface to a contiguous
-      * block of data, it is natural for it to provide a random access
-      * iterator.
-      * \warning If you are using PETSc and plan to write data to these
-      * iterators, be sure to call DataChangeListener::dataChanged() on
-      * the vector after use.
-      * \code
-      void square ( Vector::shared_ptr  vector )
-      {
-        Vector::iterator    cur_entry = vector->begin();
-        while ( cur_entry != vector->end() )
-        {
-        (*cur_entry) = (*cur_entry)*(*cur_entry);
-        cur_entry++;
-        }
-        if ( vector->isA<DataChangeFirer>() )
-        {
-        vector->castTo<DataChangeFirer>().fireDataChange();
-        }
-      }
-        \endcode
-      */
-    virtual VectorDataIterator begin();
-    /**
-      * \brief Return an iterator to the beginning of the data
-      * \returns A ConstVectorDataIterator
-      * \details Since the Vector presents an interface to a contiguous
-      * block of data, it is natural for it to provide a random access
-      * iterator.
-      * \warning If you are using PETSc and plan to write data to these
-      * iterators, be sure to call DataChangeListener::dataChanged() on
-      * the vector after use.
-      */
-    virtual ConstVectorDataIterator begin() const;
-
-    /**
-      * \brief Return an iterator to the end of the data
-      * \returns A VectorDataIterator
-      * \details Since the Vector presents an interface to a contiguous
-      * block of data, it is natural for it to provide a random access
-      * iterator.
-      * \warning If you are using PETSc and plan to write data to these
-      * iterators, be sure to call DataChangeListener::dataChanged() on
-      * the vector after use.
-      * \code
-      void square ( Vector::shared_ptr  vector )
-      {
-        Vector::iterator    cur_entry = vector->begin();
-        while ( cur_entry != vector->end() )
-        {
-        (*cur_entry) = (*cur_entry)*(*cur_entry);
-        cur_entry++;
-        }
-        if ( vector->isA<DataChangeFirer>() )
-        {
-        vector->castTo<DataChangeFirer>().fireDataChange();
-        }
-      }
-        \endcode
-      */
-    virtual VectorDataIterator end();
-
-    /**
-      * \brief Return an iterator to the end of the data
-      * \returns A ConstVectorDataIterator
-      * \details Since the Vector presents an interface to a contiguous
-      * block of data, it is natural for it to provide a random access
-      * iterator.
-      * \warning If you are using PETSc and plan to write data to these
-      * iterators, be sure to call DataChangeListener::dataChanged() on
-      * the vector after use.
-      */
-    virtual ConstVectorDataIterator end() const;
-
-
-    /**
-      * \brief Set values in the vector by their local offset
-      * \param[in] num  number of values to set
-      * \param[in] indices the indices of the values to set
-      * \param[in] vals the values to place in the vector
-      * \details This will set the owned values for this core.  All indices are
-      * from 0.
-      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
-      */
-    virtual void setValuesByLocalID( int num, size_t *indices, const double *vals ) = 0;
-    /**
-      * \brief Set a single value in the vector by local ID
-      * \param[in] i  offset of value to set
-      * \param[in] val the value to place in the vector
-      * \details An alias for setValuesByLocalID ( 1, &num, &val );
-      */
-    void setValueByLocalID( size_t i, const double val );
-
-    /**
-      * \brief Set owned values using global identifier
-      * \param[in] num  number of values to set
-      * \param[in] indices the indices of the values to set
-      * \param[in] vals the values to place in the vector
-      *
-      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
-      */
-    virtual void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) = 0;
-
-    /**
-      * \brief Set a single owned value using global identifier
-      * \param[in] i  offset of value to set
-      * \param[in] val the value to place in the vector
-      * \details An alias for setLocalValuesByGlobalID ( 1, &i, &val );
-      */
-    void setLocalValueByGlobalID( size_t i, const double val );
-
-    /**
-      * \brief Set ghost values using global identifier
-      * \param[in] num  number of values to set
-      * \param[in] indices the indices of the values to set
-      * \param[in] vals the values to place in the vector
-      *
-      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
-      */
-    virtual void setGhostValuesByGlobalID( int num, size_t *indices, const double *vals );
-
-    /**
-      * \brief Set a ghost owned value using global identifier
-      * \param[in] i  offset of value to set
-      * \param[in] val the value to place in the vector
-      * \details An alias for setLocalValuesByGlobalID ( 1, &i, &val );
-      */
-    void setGhostValueByGlobalID( size_t i, const double val );
-
-    /**
-      * \brief Set owned or shared values using global identifier
-      * \param[in] num  number of values to set
-      * \param[in] indices the indices of the values to set
-      * \param[in] vals the values to place in the vector
-      * \details Since the shared buffer and owned buffer are separate,
-      * this function must sort the data by buffer before setting
-      * values.
-      */
-    virtual void setValuesByGlobalID( int num, size_t *indices, const double *vals );
-
-    /**
-      * \brief Set an owned or shared value using global identifier
-      * \param[in] i  offset of value to set
-      * \param[in] val the value to place in the vector
-      * \details  An alias for setValuesByGlobalID ( 1, &i, &val )
-      */
-    void setValueByGlobalID( size_t i, const double val );
-
-
-    /**
-      * \brief Add values to vector entities by their local offset
-      * \param[in] num  number of values to set
-      * \param[in] indices the indices of the values to set
-      * \param[in] vals the values to place in the vector
-      * \details This will set the owned values for this core.  All indices are
-      * from 0.
-      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
-     * \mathit{vals}_i \f$
-      */
-    virtual void addValuesByLocalID( int num, size_t *indices, const double *vals ) = 0;
-    /**
-      * \brief Add a single value in the vector by local ID
-      * \param[in] i  offset of value to set
-      * \param[in] val the value to place in the vector
-      * \details An alias for addValuesByLocalID ( 1, &num, &val );
-      */
-    void addValueByLocalID( size_t i, const double val );
-
-    /**
-      * \brief Add owned values using global identifier
-      * \param[in] num  number of values to set
-      * \param[in] indices the indices of the values to set
-      * \param[in] vals the values to place in the vector
-      *
-      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
-     * \mathit{vals}_i \f$
-      */
-    virtual void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) = 0;
-    /**
-      * \brief Add a single owned value using global identifier
-      * \param[in] i  offset of value to set
-      * \param[in] val the value to place in the vector
-      * \details An alias for addLocalValuesByGlobalID ( 1, &i, &val );
-      */
-    void addLocalValueByGlobalID( size_t i, const double val );
-
-    /**
-      * \brief Add owned or shared values using global identifier
-      * \param[in] num  number of values to set
-      * \param[in] indices the indices of the values to set
-      * \param[in] vals the values to place in the vector
-      * \details Since the shared buffer and owned buffer are separate,
-      * this function must sort the data by buffer before setting
-      * values.
-      */
-    virtual void addValuesByGlobalID( int num, size_t *indices, const double *vals );
-
-    /**
-      * \brief Add an owned or shared value using global identifier
-      * \param[in] i  offset of value to set
-      * \param[in] val the value to place in the vector
-      * \details  An alias for setValuesByGlobalID ( 1, &i, &val )
-      */
-    void addValueByGlobalID( size_t i, const double val );
-
-    /**
-      * \brief get ghosted values to add to off-proc elements
-      * \param[in] num  number of values to set
-      * \param[in] indices the indices of the values to set
-      * \param[in] vals the values to place in the vector
-      * \details This will get the ghosted updates this processor has made.  All indices are
-      * from global 0.
-      */
-    virtual void getGhostAddValuesByGlobalID( int num, size_t *indices, double *vals ) const;
-
-    /**
-      * \brief get values in the vector by their local offset
-      * \param[in] num  number of values to set
-      * \param[in] indices the indices of the values to set
-      * \param[out] vals the values to place in the vector
-      * \details This will get the owned values for this core.  All indices are
-      * from 0.
-      */
-    virtual void getValuesByGlobalID( int num, size_t *indices, double *vals ) const;
-
-    /**
-      * \brief Return a value from the vector.
-      * \param[in] i The global index into the vector
-      * \return The value stored at the index
-      * \details This uses getValuesByGlobalID to get the value
-      */
-    double getValueByGlobalID( size_t i ) const;
-
-    /**
-      * \brief Get local values in the vector by their global offset
-      * \param[in] num  number of values to set
-      * \param[in] indices the indices of the values to set
-      * \param[out] vals the values to place in the vector
-      * \details This will get any value owned by this core.
-      */
-    virtual void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const = 0;
-
-    /**
-      * \brief Return a local value from the vector.
-      * \param[in] i The global index into the vector
-      * \return The value stored at the index
-      * \details This uses getLocalValuesByGlobalID to get the value
-      */
-    double getLocalValueByGlobalID( size_t i ) const;
-
-    /**
-      * \brief Get ghost values in the vector by their global offset
-      * \param[in] num  number of values to set
-      * \param[in] indices the indices of the values to set
-      * \param[out] vals the values to place in the vector
-      * \details This will get any value owned by this core.
-      */
-    virtual void getGhostValuesByGlobalID( int num, size_t *indices, double *vals ) const;
-
-    /**
-      * \brief Return a ghost value from the vector.
-      * \param[in] i The global index into the vector
-      * \return The value stored at the index
-      * \details This uses getGhostValuesByGlobalID to get the value
-      */
-    double getGhostValueByGlobalID( size_t i ) const;
-
-
-    /**
-      * \brief Get local values in the vector by their global offset
-      * \param[in] num  number of values to set
-      * \param[in] indices the indices of the values to set
-      * \param[out] vals the values to place in the vector
-      * \details This will get any value used by this core.
-      */
-    virtual void getValuesByLocalID( int num, size_t *indices, double *vals ) const;
-
-    /**
-      * \brief Return a local value from the vector.
-      * \param[in] i The global index into the vector
-      * \return The value stored at the index
-      * \details This uses getValuesByGlobalID to get the value
-      */
-    double getValueByLocalID( size_t i ) const;
-
     /**
       * \brief This method is used to implement the assemble interface
       * of PETSc.
       * \details  This method is empty except for instantiations of NativePetscVector
       */
     virtual void assemble() = 0;
-    //@}
-
-
-    //! \name VectorOperations virtual interface
-    //@{
-    virtual void scale( double alpha, const VectorOperations &x ) override;
-    virtual void add( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void subtract( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void multiply( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void divide( const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void reciprocal( const VectorOperations &x ) override;
-    virtual void linearSum( double alpha,
-                            const VectorOperations &x,
-                            double beta,
-                            const VectorOperations &y ) override;
-    virtual void
-    axpy( double alpha, const VectorOperations &x, const VectorOperations &y ) override;
-    virtual void axpby( double alpha, double beta, const VectorOperations &x ) override;
-    virtual void abs( const VectorOperations &x ) override;
-    virtual double dot( const VectorOperations &x ) const override;
-    //@}
-
-    //! \name Static methods for computation
-    //@{
-    /**
-      * \brief Return a weighted norm of a vector
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \return \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
-      */
-    static double wrmsNorm( const VectorOperations &x, const VectorOperations &y );
-
-    /**
-      * \brief Return a weighted norm of a subset of a vector
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \param[in] mask a vector
-      * \return \f[\sqrt{\frac{\displaystyle \sum_{i,\mathit{mask}_i>0} x^2_iy^2_i}{n}}\f]
-      */
-
-    static double wrmsNormMask( const VectorOperations &x,
-                                const VectorOperations &y,
-                                const VectorOperations &mask );
-
-    /**
-      * \brief Returns the minimum of the quotient of two vectors
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
-      */
-
-    static double minQuotient( const VectorOperations &x, const VectorOperations &y );
-    /**
-      * \brief Returns the minimum of the quotient of two vectors
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
-      */
-    static double minQuotient( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-
-    /**
-      * \brief Return a weighted norm of a vector
-      * \param[in] x a vector
-      * \param[in] y a vector
-      * \details Returns \f[\sqrt{\frac{\displaystyle \sum_i x^2_iy^2_i}{n}}\f]
-      */
-    static double wrmsNorm( Vector::const_shared_ptr x, Vector::const_shared_ptr y );
-
-
-    //@}
-
-
-    //! \name Parallel Management
-    //@{
-
-    /**
-      * \brief Update shared values on entire communicator
-      * \param t The type of scatter used to compute values
-      * \details  There are two algorithms used by makeConsistent
-      * - If t = CONSISTENT_SET, then owned values are
-      *   sent to processors that share the value.  Shared values are
-      *   overwritten
-      * - If t = CONSISTENT_ADD, then shared values are accumulated
-      *   on the core that owns it and applied as determined, either
-      *   add or set.  Then, the values are broadcast out.
-      *
-      * Generally, when adding to a vector, the GATHER_SCATTER should
-      * be used to make consistent.  When setting entries in a vector
-      * the BROADCAST should be used.
-      */
-    virtual void makeConsistent( ScatterType t );
-
-    //! Get the CommunicationList for this Vector
-    virtual CommunicationList::shared_ptr getCommunicationList() const;
 
     //! Get the DOFManager for this Vector
     virtual AMP::Discretization::DOFManager::shared_ptr getDOFManager() const;
@@ -994,8 +221,89 @@ public:
       */
     virtual AMP_MPI getComm() const;
 
-    //@}
 
+    /** \brief  Selects a portion of this vector and puts a view into a vector
+      * \param[in]  criterion  The method for deciding inclusion in the view
+      */
+    virtual Vector::shared_ptr selectInto( const VectorSelector &criterion );
+
+    // This is the const version of selectInto.
+    virtual Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const;
+
+    /** \brief Helper function that probably doesn't need to exist anymore
+      * \param  commList  The CommunicationList to add to the parameters
+      * \details For internal use only
+      */
+    virtual void addCommunicationListToParameters( CommunicationList::shared_ptr commList );
+
+
+public: // Constructor/destructors
+
+
+    /** \brief Constructor
+      * \param[in] parameters  A pointer to a parameters class
+      * \see VectorParameters
+     */
+    explicit Vector( VectorParameters::shared_ptr parameters );
+
+    /** \brief Destructor
+     */
+    virtual ~Vector();
+
+
+public: // Non-virtual functions
+
+    /// @copydoc VectorOperations::copy(const VectorOperations&)
+    inline void copyVector( AMP::shared_ptr<const Vector> x ) { copy(*x); }
+
+    /** \brief Change the variable associated with this vector
+      * \param[in] name  The new variable
+     */
+    void setVariable( const Variable::shared_ptr name );
+
+    /** \brief  Get the variable associated with this vector
+      * \return  A shared point to the Variable associated with this Vector
+      */
+    const Variable::shared_ptr getVariable() const;
+
+    /** \brief  Get the variable associated with this vector
+      * \return  A shared point to the Variable associated with this Vector
+      */
+    Variable::shared_ptr getVariable();
+
+    /** \brief Retrieve a sub-vector associated with a particular Variable
+      * \param[in] name  Variable by which to retrieve a subvector
+      * \return  A Vector shared pointer
+      * \see MultiVector
+     */
+    inline Vector::shared_ptr subsetVectorForVariable( const std::string& name );
+
+
+    /** \brief Retrieve a sub-vector associated with a particular Variable
+      * \param[in] name  Variable by which to retrieve a subvector
+      * \return  A Vector shared pointer
+      * \see MultiVector
+     */
+    inline Vector::const_shared_ptr
+    constSubsetVectorForVariable( const std::string& name ) const;
+
+    /** \brief  Swap the data in this Vector for another
+      * \param[in]  other Vector to swap data with
+      * \details Effectively, this is
+      * \code
+      Vector *a;
+      Vector *b;
+      std::swap ( a, b );
+        \endcode
+      * without a and b exchanging pointers.
+     */
+    void swapVectors( Vector::shared_ptr other );
+
+    /**  \brief  Make <i>this</i> be an alias of another vector
+      *  \param[in]  other  Vector to be aliased
+      *  \details  This will make <i>this</i> "point" to other.
+     */
+    void aliasVector( Vector::shared_ptr other );
 
     /** \brief  If a particular type of view of this Vector has been created,
       * return it.
@@ -1018,19 +326,6 @@ public:
       */
     void registerView( Vector::shared_ptr v ) const;
 
-    /** \brief Write owned data to an std::ostream
-      * \param[in] out  The output stream to write to.
-      * \param[in] GIDoffset  A number to add to the global ID when writing information
-      * \param[in] LIDoffset  A number to add to the local ID when writing information
-      */
-    virtual void
-    dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const;
-    /** \brief Write data owned by other processors to an std::ostream
-      * \param[in] out  The output stream to write to.
-      * \param[in] offset  A number to add to the global ID when writing information
-      */
-    virtual void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const;
-
     /** \brief Set the default RNG of this vector
       * \param[in] rng  The generator to set
       */
@@ -1041,148 +336,28 @@ public:
       * \details  If setDefaultRNG has not been called, this returns
       * an AMP::RNG base class.
       */
-    RNG::shared_ptr getDefaultRNG();
-
-
-    /**\brief The four states a Vector can be in
-      *\see makeConsistent
-      */
-    enum class UpdateState { UNCHANGED, LOCAL_CHANGED, ADDING, SETTING, MIXED };
-
-
-    /** \brief  Return the current update state of the Vector
-      * \details  This returns the effective update state of the
-      *  vector, including any vectors it contains.  The effective
-      *  state is defined as:
-      *  UNCHANGED - All data and sub vectors are unchanged
-      *  LOCAL_CHANGED - Local data may be modified, sub vectors must either
-      *             be UNCHANGED or LOCAL_CHANGED.
-      *  ADDING - Local and ghost data may be modified through add opperations,
-      *             sub vectors must be UNCHANGED, LOCAL_CHANGED, or ADDING
-      *  SETTING - Local and ghost data may be modified through set opperations,
-      *             sub vectors must be UNCHANGED, LOCAL_CHANGED, or SETTING
-      * If different subvectors have incompatible states ADDING and SETTING,
-      * this function will return MIXED
-      */
-    virtual UpdateState getUpdateStatus() const;
-
-
-    /** \brief  Sets the current update state of the Vector
-      * \details  This sets the update status of the vector.
-      * This function should only be called by advanced users
-      * \param[in] state  State of the vector to set
-      */
-    virtual void setUpdateStatus( UpdateState state );
-
-
-    /** \brief  Return the current update state of this Vector
-      * \details  This returns the pointer to the update state
-      *  of the current vector only (not vectors it contains).
-      *  It should NOT be used by users.
-      */
-    AMP::shared_ptr<UpdateState> getUpdateStatusPtr() const;
-
-
-    /** \brief  Tie the current update state to another
-      * \details  This sets the pointer to the update state
-      *  of the current vector only (not vectors it contains).
-      *  It should NOT be used by users.
-      * \param  rhs Pointer to share update state with
-      */
-    void setUpdateStatusPtr( AMP::shared_ptr<UpdateState> rhs );
-
-
-    /**\brief  A unique id for the underlying data allocation
-      *\details This is a unique id that is associated with the data
-      *   data allocation.  Views of a vector should preserve the id of
-      *   the original vector.  Vectors that are not allocated, or contain
-      *   multiple vectors (such as Multivector) should return 0.
-      *   Note: this id is not consistent across multiple processors.
-      */
-    virtual uint64_t getDataID() const = 0;
-
-protected:
-    /** \brief  Selects a portion of this vector and puts a view into a vector
-      * \param[in]  criterion  The method for deciding inclusion in the view
-      * \param[in,out]  vector  The vector to add the view to
-      * \details  vector must be a MultiVector.  The easiest way to ensure this is to
-      * create it with the select method.
-      */
-    virtual Vector::shared_ptr selectInto( const VectorSelector &criterion );
-
-    // This is the const version of selectInto.
-    virtual Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const;
-
-    /** \brief  A default RNG to use when one is not specified
-      */
-    static RNG::shared_ptr d_DefaultRNG;
-
-
-    /** \brief Copy ghosted vlues to a vector
-      * \param[in] rhs  Vector to copy ghost values from
-      * \details  This ensures that ghosted values on this and rhs
-      * are the same without a call to makeConsistent.
-      * \see makeConsistent
-      */
-    void copyGhostValues( const AMP::shared_ptr<const Vector> &rhs );
-
-    /** \brief Notify listeners that data has changed in this vector.
-      */
-    virtual void dataChanged();
-
-    /** \brief returns if two vectors are the same length globally and locally, otherwise throws an
-     * exception
-      * \param rhs  Vector to compare with
-      */
-    void requireSameSize( Vector &rhs );
-
-    /** \brief Return a pointer to a particular block of memory in the
-      * vector
-      * \param i The block to return
-      */
-    virtual void *getRawDataBlockAsVoid( size_t i ) = 0;
-
-    /** \brief Return a pointer to a particular block of memory in the
-      * vector
-      * \param i The block to return
-      */
-    virtual const void *getRawDataBlockAsVoid( size_t i ) const = 0;
-
-    /** \brief Helper function that probably doesn't need to exist anymore
-      * \param  commList  The CommunicationList to add to the parameters
-      * \details For internal use only
-      */
-    virtual void addCommunicationListToParameters( CommunicationList::shared_ptr commList );
+    static RNG::shared_ptr getDefaultRNG();
 
     /** \brief Associate the ghost buffer of a Vector with this Vector
       * \param in  The Vector to share a ghost buffer with
       */
     void aliasGhostBuffer( Vector::shared_ptr in );
 
-    /**\brief  The communication list for this vector
-      */
-    CommunicationList::shared_ptr d_CommList;
 
-    /**\brief  The current update state for a vector
-      *\details A Vector can be in one of three states. This is the current state of the vector
-      * Because a vector can be composed of vectors, the update state needs to be shared between
-      *them
-      */
-    AMP::shared_ptr<UpdateState> d_UpdateState;
+protected: // Internal data
 
-    /**\brief  The Variable associated with this Vector
-      */
+    // A default RNG to use when one is not specified
+    static RNG::shared_ptr d_DefaultRNG;
+
+    // The Variable associated with this Vector
     Variable::shared_ptr d_pVariable;
 
-    /** \brief Constructor
-    */
+    // Constructor
     Vector();
 
     //! The DOF_Manager
     AMP::Discretization::DOFManager::shared_ptr d_DOFManager;
 
-    friend class ManagedVector;
-    friend class MultiVector;
 
 private:
     // The following are not implemented
@@ -1192,9 +367,8 @@ private:
     // output stream for vector data
     std::ostream *d_output_stream;
 
-    AMP::shared_ptr<std::vector<double>> d_Ghosts;
-    AMP::shared_ptr<std::vector<double>> d_AddBuffer;
     AMP::shared_ptr<std::vector<AMP::weak_ptr<Vector>>> d_Views;
+
 };
 
 
@@ -1202,10 +376,11 @@ private:
 std::ostream &operator<<( std::ostream &out, const Vector::shared_ptr );
 //! Stream operator
 std::ostream &operator<<( std::ostream &out, const Vector & );
-}
-}
+
+
+} // LinearAlgebra namespace
+} // AMP namespace
 
 #include "Vector.inline.h"
-#include "Vector.tmpl.h"
 
 #endif

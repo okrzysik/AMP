@@ -2,10 +2,10 @@
 #define included_AMP_Matrix
 
 #include "matrices/MatrixParameters.h"
-#include "utils/Castable.h"
 #include "utils/ParameterBase.h"
 #include "utils/shared_ptr.h"
 #include "vectors/Vector.h"
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -20,7 +20,7 @@ namespace LinearAlgebra {
   * way to interact with a matrix.  Matrix creation may require
   * use of one of the derived classes.
   */
-class Matrix : public Castable
+class Matrix
 {
 public:
     //! Convenience typedef

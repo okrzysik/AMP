@@ -252,12 +252,13 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         const ML_Aggregate *agg_obj = mlSolver->GetML_Aggregate();
         ML_Aggregate_Print( const_cast<ML_Aggregate *>( agg_obj ) );
 
-        Epetra_Vector &fVec = ( AMP::LinearAlgebra::EpetraVector::view( fusedRhsVec ) )
-                                  ->castTo<AMP::LinearAlgebra::EpetraVector>()
-                                  .getEpetra_Vector();
-        Epetra_Vector &uVec = ( AMP::LinearAlgebra::EpetraVector::view( fusedSolVec ) )
-                                  ->castTo<AMP::LinearAlgebra::EpetraVector>()
-                                  .getEpetra_Vector();
+        auto f_epetra = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>(
+            AMP::LinearAlgebra::EpetraVector::view( fusedRhsVec ) );
+        auto u_epetra = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>(
+            AMP::LinearAlgebra::EpetraVector::view( fusedSolVec ) );
+
+        Epetra_Vector &fVec = f_epetra->getEpetra_Vector();
+        Epetra_Vector &uVec = u_epetra->getEpetra_Vector();
 
         fusedOperator->residual( fusedRhsVec, fusedSolVec, fusedResVec );
         std::cout << "MatFree-1: L2 norm of residual before solve " << std::setprecision( 15 )
@@ -265,9 +266,9 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
         mlSolver->ApplyInverse( fVec, uVec );
 
-        if ( fusedSolVec->isA<AMP::LinearAlgebra::DataChangeFirer>() ) {
-            fusedSolVec->castTo<AMP::LinearAlgebra::DataChangeFirer>().fireDataChange();
-        }
+        auto firer = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( fusedSolVec );
+        if ( firer )
+            firer->fireDataChange();
 
         double solution_norm = fusedSolVec->L2Norm();
         std::cout << "MatFree-1:  solution norm: " << std::setprecision( 15 ) << solution_norm
@@ -337,9 +338,9 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         delete[] rhsArr;
         rhsArr = nullptr;
 
-        if ( fusedSolVec->isA<AMP::LinearAlgebra::DataChangeFirer>() ) {
-            fusedSolVec->castTo<AMP::LinearAlgebra::DataChangeFirer>().fireDataChange();
-        }
+        auto firer = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( fusedSolVec );
+        if ( firer )
+            firer->fireDataChange();
 
         double solution_norm = fusedSolVec->L2Norm();
         std::cout << "MatFree-2:  solution norm: " << std::setprecision( 15 ) << solution_norm

@@ -29,16 +29,6 @@ class EpetraVectorParameters : public VectorParameters
   *  -# Provides an interface for accessing this Epetra_Vector independent of base or derived
   classes
   *  -# Provides a static method for creating an Epetra_Vector view of an AMP Vector.
-  *
-  *  This allows the Castable class to be used to verify correctness of code.  For instance,
-  *  given a Vector shared pointer, it is possible to get the Epetra_Vector safely thusly
-  \code
-     Vector::shared_ptr  vector;
-     vector->castTo<EpetraVector>().getEpetra_Vector();
-  \endcode
-  *  The castTo ensures that the Epetra_Vector exists.  An Epetra_Vector expects data
-  *  in a contiguous block.  If the vector does not contain a contiuous block of data, then
-  *  an Epetra_Vector cannot be created.
   */
 class EpetraVector
 {
@@ -61,19 +51,14 @@ public:
       *  \see view()
       *  \returns Epetra_Vector wrapper for this vector
       *\code
-      double  DoEpetraMax ( Vector::shared_ptr  &in )
+      double DoEpetraMax( Vector::shared_ptr  &in )
       {
-        double   ans;
-
-       // Create an Epetra_Vector, if necessary
+        // Create an Epetra_Vector, if necessary
         Vector::shared_ptr  in_epetra_view = EpetraVector::view ( in );
-
-       // Extract the Epetra_Vector
-        Epetra_Vector &in_vec = in_epetra_view->castTo<EpetraVector>().getEpetra_Vector ();
-
-       // Perform an Epetra_Vector operation
-        in_vec.MaxValue ( &abs );
-        return ans;
+        // Extract the Epetra_Vector
+        Epetra_Vector &in_vec = dynamic_pointer_cast<EpetraVector>(in_epetra_view)->getEpetra_Vector();
+        // Perform an Epetra_Vector operation
+        retrun in_vec.MaxValue ( &abs );
       }
       \endcode
       */
@@ -88,19 +73,14 @@ public:
       *  following idiom should be used since it fails gracefully.  In
       *  this function, a view may be created before the Epetra_Vector is extracted
       *\code
-      double  DoEpetraMax ( Vector::shared_ptr  &in )
+      double DoEpetraMax( Vector::shared_ptr  &in )
       {
-        double   ans;
-
-       // Create an Epetra_Vector, if necessary
+        // Create an Epetra_Vector, if necessary
         Vector::shared_ptr  in_epetra_view = EpetraVector::view ( in );
-
-       // Extract the Epetra_Vector
-        Epetra_Vector &in_vec = in_epetra_view->castTo<EpetraVector>().getEpetra_Vector ();
-
-       // Perform an Epetra_Vector operation
-        in_vec.MaxValue ( &abs );
-        return ans;
+        // Extract the Epetra_Vector
+        Epetra_Vector &in_vec = dynamic_pointer_cast<EpetraVector>(in_epetra_view)->getEpetra_Vector();
+        // Perform an Epetra_Vector operation
+        retrun in_vec.MaxValue ( &abs );
       }
       \endcode
       */

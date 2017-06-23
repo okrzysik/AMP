@@ -33,21 +33,7 @@ class SundialsVectorParameters
   *  -# Provides a Sundials N_Vector for derived classes to use, fill, manage, etc.
   *  -# Provides an interface for accessing this Sundials N_Vector independent of derived classes
   *  -# Provides a static method for creating a Sundials view of an AMP Vector.
-  *
-  *  This allows the Castable class to be used to verify correctness of code.  For instance,
-  *  given a Vector shared pointer, it is possible to get the Sundials N_Vector safely thusly
-  \code
-     Vector::shared_ptr  vector;
-     vector->castTo<SundialsVector>().getNVector();
-  \endcode
-  *  The castTo ensures that the Sundials NVector exists.  If the NVector does not exist, the castTo
-  will
-  *  throw an error.  If, on the other hand, you have an arbitrary AMP Vector that may
-  *  or may not have a Sundials NVector associated with it, you can use the static members
-  *  to create the Sundials NVector if it doesn't already exist, give or take some edge cases.
   */
-
-
 class SundialsVector
 {
 protected:
@@ -75,15 +61,13 @@ public:
       *  be used since it fails gracefully.  In this function, a view
       *  may be created before the NVector is extracted.
       \code
-      double  DoSundialsMin ( Vector::shared_ptr &in )
+      double DoSundialsMin( Vector::shared_ptr &in )
       {
-        double  ans;
-        Vector::shared_ptr  in_sundials_view = SundialsVector::view( in );        // Create a
-      Sundials N_Vector if
-      necessary
-        N_Vector  in_nvector = in_sundials_view->castTo<SundialsVector>().getNVector();  // Extract
-      the N_Vector
-        return N_VMin ( in_nvector );
+        // Create a Sundials N_Vector if necessary
+        Vector::shared_ptr  in_sundials_view = SundialsVector::view( in );        
+        // Extract the N_Vector
+        N_Vector in_nvector = dynamic_pointer_cast<SundialsVector>(in_sundials_view)->getNVector();  
+        return N_VMin( in_nvector );
       }
       \endcode
       */
@@ -96,18 +80,13 @@ public:
       *  be used since it fails gracefully.  In this function, a view
       *  may be created before the NVector is extracted.
       \code
-      double  DoSundialsMin ( Vector::shared_ptr &in )
+      double DoSundialsMin( Vector::shared_ptr &in )
       {
-        double  ans;
-
-       // Create an N_Vector wrapper if necessary
-        Vector::shared_ptr  in_sundials_view = SundialsVector::view ( in );
-
-       // Extract the N_Vector
-        N_Vector  in_nvector = in_sundials_view->castTo<SundialsVector>().getNVector();
-
-       // Perform a Sundials operations
-        return N_VMin ( in_nvector );
+        // Create a Sundials N_Vector if necessary
+        Vector::shared_ptr  in_sundials_view = SundialsVector::view( in );        
+        // Extract the N_Vector
+        N_Vector in_nvector = dynamic_pointer_cast<SundialsVector>(in_sundials_view)->getNVector();  
+        return N_VMin( in_nvector );
       }
       \endcode
       */

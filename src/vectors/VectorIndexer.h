@@ -1,8 +1,8 @@
 #ifndef included_AMP_VectorIndexer
 #define included_AMP_VectorIndexer
 
-#include "utils/Castable.h"
 #include "utils/shared_ptr.h"
+
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -20,7 +20,7 @@ class Vector;
   * between global ids.
   * \see SubsetVector
   */
-class VectorIndexer : public Castable
+class VectorIndexer
 {
 public:
     typedef AMP::shared_ptr<VectorIndexer> shared_ptr;

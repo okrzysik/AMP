@@ -372,27 +372,22 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
 
-    AMP::LinearAlgebra::Vector::shared_ptr globalSolMultiVector =
-        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
-    globalSolMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector( globalSolVec );
-    globalSolMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector( flowSolVec );
+    auto globalSolMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    globalSolMultiVector->addVector( globalSolVec );
+    globalSolMultiVector->addVector( flowSolVec );
 
-    AMP::LinearAlgebra::Vector::shared_ptr globalSolMultiVectorView =
-        AMP::LinearAlgebra::MultiVector::view( globalSolMultiVector, globalComm );
+    auto globalSolMultiVectorView = AMP::LinearAlgebra::MultiVector::view( globalSolMultiVector, globalComm );
     //---------------------------------------------------------------------------------------------------------------------//
-    AMP::LinearAlgebra::Vector::shared_ptr globalRhsMultiVector =
-        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
-    globalRhsMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector( globalRhsVec );
-    globalRhsMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector( flowRhsVec );
+    auto globalRhsMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    globalRhsMultiVector->addVector( globalRhsVec );
+    globalRhsMultiVector->addVector( flowRhsVec );
 
-    AMP::LinearAlgebra::Vector::shared_ptr globalRhsMultiVectorView =
-        AMP::LinearAlgebra::MultiVector::view( globalRhsMultiVector, globalComm );
+    auto globalRhsMultiVectorView = AMP::LinearAlgebra::MultiVector::view( globalRhsMultiVector, globalComm );
     //---------------------------------------------------------------------------------------------------------------------//
     //---------------------------------------------------------------------------------------------------------------------//
-    AMP::LinearAlgebra::Vector::shared_ptr globalResMultiVector =
-        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
-    globalResMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector( globalResVec );
-    globalResMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector( flowResVec );
+   auto globalResMultiVector = AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
+    globalResMultiVector->addVector( globalResVec );
+    globalResMultiVector->addVector( flowResVec );
 
     //  AMP::LinearAlgebra::Vector::shared_ptr globalResMultiVectorView =
     //  AMP::LinearAlgebra::MultiVector::view(

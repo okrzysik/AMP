@@ -120,12 +120,9 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
             thermalNonlinearOperator->getVolumeOperator() );
 
 
-    AMP::LinearAlgebra::Vector::shared_ptr globalSolVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
-    AMP::LinearAlgebra::Vector::shared_ptr globalRhsVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
-    AMP::LinearAlgebra::Vector::shared_ptr globalResVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
+    auto globalSolVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
+    auto globalRhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
+    auto globalResVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVolumeOperator->getOutputVariable() );
 
     globalSolVec->setToScalar( intguess );
 
@@ -187,36 +184,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     // nonlinearSolver_db1->getDatabase("LinearSolver");
 
     ut->passes( "set up to the iterations passes." );
-    //-------------------------------------
 
-    AMP::LinearAlgebra::Vector::shared_ptr globalSolMultiVector =
-        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
-    globalSolMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector( globalSolVec );
-
-    // AMP::LinearAlgebra::Vector::shared_ptr globalSolMultiVectorView =
-    // AMP::LinearAlgebra::MultiVector::view(
-    // globalSolMultiVector, globalComm );
-    //---------------------------------------------------------------------------------------------------------------------//
-    AMP::LinearAlgebra::Vector::shared_ptr globalRhsMultiVector =
-        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
-    globalRhsMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector( globalRhsVec );
-
-    // AMP::LinearAlgebra::Vector::shared_ptr globalRhsMultiVectorView =
-    // AMP::LinearAlgebra::MultiVector::view(
-    // globalRhsMultiVector, globalComm );
-    //---------------------------------------------------------------------------------------------------------------------//
-    AMP::LinearAlgebra::Vector::shared_ptr globalResMultiVector =
-        AMP::LinearAlgebra::MultiVector::create( "multivector", globalComm );
-    globalResMultiVector->castTo<AMP::LinearAlgebra::MultiVector>().addVector( globalResVec );
-
-    // AMP::LinearAlgebra::Vector::shared_ptr globalResMultiVectorView =
-    // AMP::LinearAlgebra::MultiVector::view(
-    // globalResMultiVector, globalComm );
-    //---------------------------------------------------------------------------------------------------------------------//
-
-
-    // AMP::LinearAlgebra::Vector::shared_ptr robinRHSVec = meshAdapter->createVector(
-    // thermalNonlinearOperator->getOutputVariable() );
 
     //-------------------------------------
     AMP::Operator::Operator::shared_ptr boundaryOp =
@@ -285,7 +253,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     thermalNonlinearOperator->modifyInitialSolutionVector( globalSolVec );
 
     thermalNonlinearOperator->residual(
-        globalRhsMultiVector, globalSolMultiVector, globalResMultiVector );
+        globalRhsVec, globalSolVec, globalResVec );
     AMP::pout << "Initial Residual Norm for Step is: " << globalResVec->L2Norm() << std::endl;
     expectedVal = 4.84311;
     if ( !AMP::Utilities::approx_equal( expectedVal, globalResVec->L2Norm(), 1e-5 ) ) {
@@ -302,7 +270,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
     }
 
     thermalNonlinearOperator->residual(
-        globalRhsMultiVector, globalSolMultiVector, globalResMultiVector );
+        globalRhsVec, globalSolVec, globalResVec );
     AMP::pout << "Final   Residual Norm for Step is: " << globalResVec->L2Norm() << std::endl;
     expectedVal = 1. - 10;
     if ( !AMP::Utilities::approx_equal( expectedVal, globalResVec->L2Norm(), 10.0 ) ) {

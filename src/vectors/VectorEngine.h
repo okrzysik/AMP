@@ -1,8 +1,7 @@
 #ifndef included_AMP_VectorEngine
 #define included_AMP_VectorEngine
 
-
-#include "VectorOperations.h"
+#include "vectors/operations/VectorOperationsDefault.h"
 #include "utils/AMP_MPI.h"
 #include "utils/shared_ptr.h"
 #include <vector>
@@ -17,7 +16,7 @@ namespace LinearAlgebra {
  * engine...yet
 */
 
-class VectorEngineParameters : public Castable
+class VectorEngineParameters
 {
 public:
     typedef AMP::shared_ptr<VectorEngineParameters> shared_ptr;
@@ -58,6 +57,7 @@ protected:
     size_t d_global; // Number of global DOFs
     AMP_MPI d_comm;  // Comm
 };
+
 
 /** \class VectorEngine
  * \brief A class that can perform mathematics on vectors.

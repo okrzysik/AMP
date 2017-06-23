@@ -79,7 +79,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         auto col = getRow( row );
         newMatrix->createValuesByGlobalID( row, col );
     }
-    newMatrix->castTo<AMP::LinearAlgebra::EpetraMatrix>().setEpetraMaps( leftVec, rightVec );
+    dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(newMatrix)->setEpetraMaps( leftVec, rightVec );
     newMatrix->fillComplete();
     newMatrix->zero();
     newMatrix->makeConsistent();

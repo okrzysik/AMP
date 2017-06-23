@@ -37,14 +37,14 @@ Vector::shared_ptr VS_Stride::subset( Vector::shared_ptr p ) const
 {
     Variable::shared_ptr variable(
         new StridedVariable( p->getVariable()->getName(), d_Offset, d_Stride ) );
-    Vector::shared_ptr vector = SubsetVector::view( p, variable );
+    auto vector = SubsetVector::view( p, variable );
     return vector;
 }
 Vector::const_shared_ptr VS_Stride::subset( Vector::const_shared_ptr p ) const
 {
     Variable::shared_ptr variable(
         new StridedVariable( p->getVariable()->getName(), d_Offset, d_Stride ) );
-    Vector::const_shared_ptr vector = SubsetVector::view( p, variable );
+    auto vector = SubsetVector::view( p, variable );
     return vector;
 }
 

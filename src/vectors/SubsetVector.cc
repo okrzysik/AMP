@@ -99,12 +99,12 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
     }
     // Get a pointer to every value in the subset
     std::vector<double *> data_ptr( retVal->d_SubsetLocalIDToViewGlobalID.size(), nullptr );
-    VectorDataIterator iterator = retVal->d_ViewVector->begin();
-    size_t last_pos             = retVal->d_ViewVector->getCommunicationList()->getStartGID();
+    auto iterator = retVal->d_ViewVector->constBegin();
+    size_t last_pos = retVal->d_ViewVector->getCommunicationList()->getStartGID();
     for ( size_t i = 0; i < data_ptr.size(); i++ ) {
         iterator += (int) ( retVal->d_SubsetLocalIDToViewGlobalID[i] - last_pos );
         last_pos    = retVal->d_SubsetLocalIDToViewGlobalID[i];
-        data_ptr[i] = &( *iterator );
+        data_ptr[i] = const_cast<double*>( &( *iterator ) );
     }
     // Create the data blocks
     // For now use one datablock for each value, this needs to be changed
@@ -275,11 +275,15 @@ std::string SubsetVector::type() const
 
 void SubsetVector::swapVectors( Vector &rhs )
 {
-    SubsetVector &s = rhs.castTo<SubsetVector>();
-    std::swap( d_ViewVector, s.d_ViewVector );
-    std::swap( d_SubsetLocalIDToViewGlobalID, s.d_SubsetLocalIDToViewGlobalID );
-    std::swap( d_dataBlockSize, s.d_dataBlockSize );
-    std::swap( d_dataBlockPtr, s.d_dataBlockPtr );
+    auto s = dynamic_cast<SubsetVector*>( &rhs );
+    AMP_ASSERT( s != nullptr );
+    std::swap( d_ViewVector, s->d_ViewVector );
+    std::swap( d_SubsetLocalIDToViewGlobalID, s->d_SubsetLocalIDToViewGlobalID );
+    std::swap( d_dataBlockSize, s->d_dataBlockSize );
+    std::swap( d_dataBlockPtr, s->d_dataBlockPtr );
 }
-}
-}
+
+
+} // LinearAlgebra namespace
+} // AMP namespace
+

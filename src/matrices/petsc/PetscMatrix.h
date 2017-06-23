@@ -48,13 +48,6 @@ typedef MatrixParameters PetscMatrixParameters;
   *  -# Provides a Mat for derived classes to use, fill, manage, etc.
   *  -# Provides an interface for accessing this Mat independent of base or derived classes
   *  -# Provides a static method for creating a Mat view of an AMP vector.
-  *
-  * This allows the Castable class to be used to verify correctness of code.  For instance,
-  * given a Matrix shared poitner, it is possible to get the Epetra_CrsMatrix safely thusly
-  \code
-    Matrix::shared_ptr  matrix;
-    Mat &mat = matrix->castTo<PetscMatrix>().getMat();
-  \endcode
   */
 class PetscMatrix : virtual public Matrix
 {

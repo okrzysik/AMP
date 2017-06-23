@@ -60,16 +60,16 @@ inline void NativePetscMatrix::copyFromMat( Mat m ) { MatCopy( m, d_Mat, SAME_NO
 inline void NativePetscMatrix::mult( Vector::const_shared_ptr in, Vector::shared_ptr out )
 {
     MatMult( d_Mat,
-             in->castTo<const NativePetscVector>().getVec(),
-             out->castTo<NativePetscVector>().getVec() );
+             dynamic_pointer_cast<const NativePetscVector>(in)->getVec(),
+             dynamic_pointer_cast<NativePetscVector>(out)->getVec() );
 }
 
 
 inline void NativePetscMatrix::multTranspose( Vector::const_shared_ptr in, Vector::shared_ptr out )
 {
     MatMultTranspose( d_Mat,
-                      in->castTo<const NativePetscVector>().getVec(),
-                      out->castTo<NativePetscVector>().getVec() );
+             dynamic_pointer_cast<const NativePetscVector>(in)->getVec(),
+             dynamic_pointer_cast<NativePetscVector>(out)->getVec() );
 }
 
 
@@ -104,7 +104,7 @@ inline void NativePetscMatrix::axpy( double alpha, const Matrix &x )
 {
     AMP_ASSERT( x.numGlobalRows() == this->numGlobalRows() );
     AMP_ASSERT( x.numGlobalColumns() == this->numGlobalColumns() );
-    MatAXPY( d_Mat, alpha, x.castTo<NativePetscMatrix>().d_Mat, SAME_NONZERO_PATTERN );
+    MatAXPY( d_Mat, alpha, dynamic_cast<const NativePetscMatrix*>(&x)->d_Mat, SAME_NONZERO_PATTERN );
 }
 
 
@@ -121,8 +121,8 @@ inline void NativePetscMatrix::zero() { MatZeroEntries( d_Mat ); }
 
 inline void NativePetscMatrix::setDiagonal( Vector::const_shared_ptr in )
 {
-    const PetscVector &pVec = in->castTo<NativePetscVector>();
-    MatDiagonalSet( d_Mat, pVec.getVec(), INSERT_VALUES );
+    auto pVec = dynamic_pointer_cast<const NativePetscVector>(in);
+    MatDiagonalSet( d_Mat, pVec->getVec(), INSERT_VALUES );
 }
 
 inline void NativePetscMatrix::setIdentity()

@@ -49,7 +49,7 @@ namespace AMP {
 #endif
 
 
-// Forward decleration
+// Forward deceleration
 class FunctionTable;
 
 /*!
