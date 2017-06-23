@@ -35,6 +35,20 @@ namespace AMP {
 namespace Solver {
 
 
+static inline AMP::shared_ptr<AMP::LinearAlgebra::EpetraVector> epetraView( AMP::LinearAlgebra::Vector::shared_ptr x )
+{
+    auto y = AMP::LinearAlgebra::EpetraVector::view( x );
+    auto z = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraVector>( y );
+    AMP_ASSERT( x != nullptr );
+    return z;
+}
+static inline AMP::shared_ptr<const AMP::LinearAlgebra::EpetraVector> epetraView( AMP::LinearAlgebra::Vector::const_shared_ptr x )
+{
+    auto y = AMP::LinearAlgebra::EpetraVector::constView( x );
+    auto z = AMP::dynamic_pointer_cast<const AMP::LinearAlgebra::EpetraVector>( y );
+    AMP_ASSERT( x != nullptr );
+    return z;
+}
     
 
 /****************************************************************
@@ -426,12 +440,8 @@ void TrilinosMueLuSolver::solveWithHierarchy( AMP::shared_ptr<const AMP::LinearA
 
         
         // These functions throw exceptions if this cannot be performed.
-        Epetra_Vector &fVec = ( AMP::LinearAlgebra::EpetraVector::view( AMP::const_pointer_cast<AMP::LinearAlgebra::Vector>(f) ) )
-            ->castTo<AMP::LinearAlgebra::EpetraVector>()
-            .getEpetra_Vector();
-        Epetra_Vector &uVec = ( AMP::LinearAlgebra::EpetraVector::view( u ) )
-            ->castTo<AMP::LinearAlgebra::EpetraVector>()
-            .getEpetra_Vector();
+        Epetra_Vector &fVec = const_cast<Epetra_Vector&>( epetraView(f)->getEpetra_Vector() );
+        Epetra_Vector &uVec = epetraView(u)->getEpetra_Vector();
 
         auto rcp_u = Teuchos::rcpFromRef( uVec );
         auto rcp_f = Teuchos::rcpFromRef( fVec );
@@ -516,12 +526,8 @@ void TrilinosMueLuSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vecto
         
         if ( d_bUseEpetra ) {
             // These functions throw exceptions if this cannot be performed.
-            const Epetra_Vector &fVec = ( AMP::LinearAlgebra::EpetraVector::constView( f ) )
-                ->castTo<const AMP::LinearAlgebra::EpetraVector>()
-                .getEpetra_Vector();
-            Epetra_Vector &uVec = ( AMP::LinearAlgebra::EpetraVector::view( u ) )
-                ->castTo<AMP::LinearAlgebra::EpetraVector>()
-                .getEpetra_Vector();
+            const Epetra_Vector &fVec = epetraView(f)->getEpetra_Vector();
+            Epetra_Vector &uVec = epetraView(u)->getEpetra_Vector();
             
             d_mueluSolver->ApplyInverse( fVec, uVec );
         } else {
@@ -537,9 +543,9 @@ void TrilinosMueLuSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vecto
     // as Epetra is not going to change the state of a managed vector
     // an example where this will and has caused problems is when the
     // vector is a petsc managed vector being passed back to PETSc
-    if ( u->isA<AMP::LinearAlgebra::DataChangeFirer>() ) {
-        u->castTo<AMP::LinearAlgebra::DataChangeFirer>().fireDataChange();
-    }
+    auto firer = AMP::dynamic_pointer_cast<AMP::LinearAlgebra::DataChangeFirer>( u );
+    if ( firer )
+        firer->fireDataChange();
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         double solution_norm = u->L2Norm();
@@ -570,8 +576,7 @@ void TrilinosMueLuSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vecto
 
 
 void TrilinosMueLuSolver::reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                      AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                          u )
+                                         AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "reSolveWithLU" );
 
