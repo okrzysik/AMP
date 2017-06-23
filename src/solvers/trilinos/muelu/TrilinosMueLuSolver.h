@@ -166,12 +166,15 @@ protected:
     Teuchos::RCP<MueLu::TransPFactory<SC, LO, GO, NO>> getRFactory( void );
     Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> getCoarseSolverFactory( void );
     Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> getSmootherFactory( const int level );
+
+    Teuchos::ParameterList &getSmootherParameters( const int level );
     
 private:
 
     bool d_bUseEpetra                    = true;  //! whether we are using Epetra
     bool d_build_hierarchy               = false; //! whether to explicitly build the hierarchy
     bool d_build_hierarchy_from_defaults = true;  //! build the hierarchy using the defaults constructed by MueLu
+    bool d_construct_partition           = false; //! whether to construct user defined partitions
     bool d_bCreationPhase                = false; //! set to true if the solver is yet to be initialized
     bool d_bRobustMode                   = false; //! use a direct solver if the MG solve fails to converge
 

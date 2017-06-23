@@ -96,7 +96,7 @@ Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> TrilinosMueLuSolver::getSmo
     const auto &mueLuLevel = d_mueluHierarchy->GetLevel( level );
     const auto A = mueLuLevel->Get<Teuchos::RCP<Xpetra::Operator<SC, LO, GO, NO>>>("A");
 
-    auto &smootherParams = d_MueLuParameterList.get<Teuchos::ParameterList>( "smoother: params");
+    auto &smootherParams = getSmootherParameters( level );
 
     if ( d_smoother_type == "TrilinosSmoother" ) {
 
@@ -130,6 +130,22 @@ Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> TrilinosMueLuSolver::getXpetraMatri
     auto xA    = Teuchos::rcp_dynamic_cast<Xpetra::Matrix<SC, LO, GO, NO>> ( crsWrapMat );
 
     return xA;
+}
+
+Teuchos::ParameterList &TrilinosMueLuSolver::getSmootherParameters( const int level )
+{
+    auto &smootherParams = d_MueLuParameterList.get<Teuchos::ParameterList>( "smoother: params");
+
+    if ( d_smoother_type == "IfpackSmoother" ) {
+
+        if ( d_construct_partition ) {            
+
+            const auto &mueLuLevel = d_mueluHierarchy->GetLevel( level );
+            const auto A = mueLuLevel->Get<Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>>>("A");            
+        }
+    }
+    
+    return smootherParams;
 }
 
 void TrilinosMueLuSolver::buildHierarchyFromDefaults( void )
