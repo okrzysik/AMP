@@ -8,6 +8,9 @@
 // Modified:	$LastChangedDate: 2008-11-24 16:44:41 -0800 (Mon, 24 Nov 2008) $
 // Description:	An input database structure that stores (key,value) pairs
 //
+// NOTE: This is a modification of the MemoryDatabase class from SAMRAI
+//       We have simply used it with modifications
+
 
 #ifndef included_InputDatabase
 #define included_InputDatabase

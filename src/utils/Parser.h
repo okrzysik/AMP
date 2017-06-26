@@ -8,6 +8,8 @@
 // Modified:	$LastChangedDate: 2008-04-14 14:51:47 -0700 (Mon, 14 Apr 2008) $
 // Description:	Parser that reads the input database grammar
 //
+// NOTE: This is a modification of the Parser class from SAMRAI
+//       We have simply used it with modifications
 
 #ifndef included_Parser
 #define included_Parser

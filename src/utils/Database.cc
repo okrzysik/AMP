@@ -7,6 +7,8 @@
 // Modified:	$LastChangedDate: 2008-04-11 15:29:55 -0700 (Fri, 11 Apr 2008) $
 // Description:	An abstract base class for the AMP database objects
 //
+// NOTE: This is a modification of the Database class from SAMRAI
+//       We have simply used it with modifications
 
 #include "Database.h"
 

@@ -42,8 +42,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         comm = AMP_MPI( AMP_COMM_SELF );
 
     // Create the matrix parameters
-    AMP::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrixParameters> params(
-        new AMP::LinearAlgebra::ManagedEpetraMatrixParameters( leftDOF, rightDOF, comm ) );
+    auto params = AMP::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrixParameters> ( leftDOF, rightDOF, comm );
     params->d_CommListLeft  = leftVec->getCommunicationList();
     params->d_CommListRight = rightVec->getCommunicationList();
     params->d_VariableLeft  = leftVec->getVariable();
@@ -56,7 +55,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     for ( size_t row = row_start; row < row_end; row++ ) {
         auto col = getRow( row );
         params->setEntriesInRow( row-row_start, col.size() );
-        for ( auto tmp : col )
+        for ( auto &tmp : col )
             columns.insert( tmp );
     }
     params->addColumns( columns );

@@ -8,6 +8,9 @@
 // Modified:	$LastChangedDate: 2008-01-25 13:28:01 -0800 (Fri, 25 Jan 2008) $
 // Description:	Parser that reads the input database grammar
 //
+// NOTE: This is a modification of the Parser class from SAMRAI
+//       We have simply used it with modifications
+
 
 #include "Parser.h"
 #include "PIO.h"

@@ -6,6 +6,8 @@
 // Modified:    $LastChangedDate: 2008-02-29 13:26:00 -0800 (Fri, 29 Feb 2008) $
 // Description: Utility class for logging.
 //
+// NOTE: This is a modification of the Logger class from SAMRAI
+//       We have simply used it with modifications
 
 #ifndef included_tbox_Logger
 #define included_tbox_Logger

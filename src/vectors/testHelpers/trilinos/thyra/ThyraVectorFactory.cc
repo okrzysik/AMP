@@ -13,9 +13,11 @@
 DISABLE_WARNINGS
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
+#ifdef USE_TRILINOS_BELOS
 //#include "Thyra_SpmdVectorBase_def.hpp"
 #include "BelosMVOPTester.hpp"
 #include "BelosThyraAdapter.hpp"
+#endif
 #include "Thyra_DefaultSpmdVector_def.hpp"
 #include "Thyra_EpetraThyraWrappers.hpp"
 #ifdef USE_EXT_MPI
@@ -131,6 +133,7 @@ AMP::Discretization::DOFManager::shared_ptr ManagedNativeThyraFactory::getDOFMap
     return d_factory->getDOFMap();
 }
 
+#ifdef USE_TRILINOS_BELOS
 
 /****************************************************************
 * testBelosThyraVector                                          *
@@ -150,7 +153,7 @@ void testBelosThyraVector( AMP::UnitTest &ut, const VectorFactory& factory )
 }
 
 
-
+#endif
 
 }
 }

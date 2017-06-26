@@ -7,6 +7,8 @@
 // Modified:	$LastChangedDate: 2008-01-25 13:28:01 -0800 (Fri, 25 Jan 2008) $
 // Description:	An input manager singleton class that parses input files
 //
+// NOTE: This is a modification of the InputManager class from SAMRAI
+//       We have simply used it with modifications
 
 #include "InputManager.h"
 #include "AMPManager.h"

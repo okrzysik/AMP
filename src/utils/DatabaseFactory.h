@@ -6,6 +6,8 @@
 // Modified:	$LastChangedDate: 2008-03-28 15:10:07 -0700 (Fri, 28 Mar 2008) $
 // Description:	An abstract base class for a DatabaseFactory
 //
+// NOTE: This is a modification of the DatabaseFactory class from SAMRAI
+//       We have simply used it with modifications
 
 #ifndef included_DatabaseFactory
 #define included_DatabaseFactory
