@@ -125,11 +125,11 @@ private:
 
     HYPRE_Solver d_solver;      //! pointer to HYPRE BoomerAMG solver
 
-    int d_num_functions;
-    int d_min_iterations;
-    int d_max_coarse_size;
-    int d_min_coarse_size;
-    int d_max_levels;
+    int d_num_functions              = 1;
+    int d_min_iterations             = 0;
+    int d_max_coarse_size            = 800;
+    int d_min_coarse_size            = 100;
+    int d_max_levels                 = 10;
     int d_coarsen_type;
     int d_measure_type;
     int d_agg_num_levels;
