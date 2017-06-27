@@ -53,7 +53,7 @@ void userLinearOperatorTest( AMP::UnitTest * const ut, const std::string &exeNam
     const auto meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
 
     // create a linear diffusion operator
-    auto linearOperator = AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "LinearDiffusionOp", input_db );
+    auto linearOperator = AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "DiffusionBVPOperator", input_db );
     auto diffOp = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( linearOperator );
     
     // extract the internal matrix
