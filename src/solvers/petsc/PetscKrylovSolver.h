@@ -101,13 +101,19 @@ public:
      acceptable values ("RIGHT", "LEFT", "SYMMETRIC" )
          active only when uses_preconditioner set to true
      */
-    explicit PetscKrylovSolver( AMP::shared_ptr<PetscKrylovSolverParameters> parameters );
+    explicit PetscKrylovSolver( AMP::shared_ptr<SolverStrategyParameters> parameters );
 
     /**
      * Default destructor. Currently destroys the PETSc KSP object if it was created internally.
      */
     virtual ~PetscKrylovSolver();
 
+
+    //! static create routine that is used by SolverFactory 
+    static AMP::shared_ptr<SolverStrategy> createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters ) {
+      return AMP::make_shared<PetscKrylovSolver> ( solverStrategyParameters );
+    }
+    
     /**
      * Solve the system \f$Au = 0\f$.
      * @param [in] f : shared pointer to right hand side vector

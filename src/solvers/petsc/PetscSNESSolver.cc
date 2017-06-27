@@ -88,7 +88,7 @@ void PetscSNESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> para
 {
     PROFILE_START( "initialize" );
 
-    AMP::shared_ptr<PetscSNESSolverParameters> parameters =
+    auto parameters =
         AMP::dynamic_pointer_cast<PetscSNESSolverParameters>( params );
     getFromInput( parameters->d_db );
 

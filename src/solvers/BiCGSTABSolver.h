@@ -1,7 +1,6 @@
 #ifndef included_AMP_BiCGSTABSolver
 #define included_AMP_BiCGSTABSolver
 
-#include "solvers/KrylovSolverParameters.h"
 #include "solvers/SolverStrategy.h"
 #include "utils/AMP_MPI.h"
 
@@ -44,7 +43,17 @@ public:
      acceptable values ("RIGHT", "LEFT", "SYMMETRIC" )
          active only when uses_preconditioner set to true
      */
-    explicit BiCGSTABSolver( AMP::shared_ptr<KrylovSolverParameters> parameters );
+    explicit BiCGSTABSolver( AMP::shared_ptr<SolverStrategyParameters> parameters );
+
+    /** 
+     * static create routine that is used by SolverFactory 
+     @param [in] parameters The parameters object
+     contains a database objects with the fields listed for the constructor above
+     */
+    static AMP::shared_ptr<SolverStrategy> createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    {
+      return AMP::make_shared<BiCGSTABSolver> ( solverStrategyParameters );
+    }
 
     /**
      * Default destructor

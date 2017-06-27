@@ -1,4 +1,5 @@
 #include "solvers/BiCGSTABSolver.h"
+#include "solvers/KrylovSolverParameters.h"
 #include "ProfilerApp.h"
 #include "operators/LinearOperator.h"
 
@@ -14,7 +15,7 @@ namespace Solver {
 ****************************************************************/
 BiCGSTABSolver::BiCGSTABSolver() : d_restarts( 0 ) {}
 
-BiCGSTABSolver::BiCGSTABSolver( AMP::shared_ptr<KrylovSolverParameters> parameters )
+BiCGSTABSolver::BiCGSTABSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters ), d_restarts( 0 )
 {
     AMP_ASSERT( parameters.get() != nullptr );
@@ -34,7 +35,7 @@ BiCGSTABSolver::~BiCGSTABSolver() {}
 ****************************************************************/
 void BiCGSTABSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
-    AMP::shared_ptr<KrylovSolverParameters> parameters =
+    auto parameters =
         AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;

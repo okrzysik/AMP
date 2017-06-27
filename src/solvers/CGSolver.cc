@@ -1,4 +1,5 @@
 #include "solvers/CGSolver.h"
+#include "solvers/KrylovSolverParameters.h"
 #include "ProfilerApp.h"
 #include "operators/LinearOperator.h"
 
@@ -11,7 +12,7 @@ namespace Solver {
 ****************************************************************/
 CGSolver::CGSolver() {}
 
-CGSolver::CGSolver( AMP::shared_ptr<KrylovSolverParameters> parameters )
+CGSolver::CGSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
@@ -31,7 +32,7 @@ CGSolver::~CGSolver() {}
 ****************************************************************/
 void CGSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
-    AMP::shared_ptr<KrylovSolverParameters> parameters =
+    auto parameters =
         AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
     d_comm = parameters->d_comm;

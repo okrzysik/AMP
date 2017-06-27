@@ -19,9 +19,26 @@ responsibility for the use of this software.
 
 #include "solvers/SolverStrategy.h"
 #include "solvers/SolverStrategyParameters.h"
+
+#ifdef USE_EXT_HYPRE
 #include "solvers/hypre/BoomerAMGSolver.h"
+#endif
+
+#ifdef USE_TRILINOS_ML
 #include "solvers/trilinos/ml/TrilinosMLSolver.h"
+#endif
+
+#ifdef USE_TRILINOS_MUELU
 #include "solvers/trilinos/muelu/TrilinosMueLuSolver.h"
+#endif
+
+#ifdef USE_EXT_PETSC
+#include "solvers/petsc/PetscKrylovSolver.h"
+#endif
+
+#include "solvers/GMRESSolver.h"
+#include "solvers/BiCGSTABSolver.h"
+#include "solvers/CGSolver.h"
 
 namespace AMP {
 namespace Solver{
@@ -31,10 +48,25 @@ void registerSolverFactories()
 {
     auto &solverFactory = SolverFactory::getFactory();
 
+#ifdef USE_TRILINOS_MUELU
     solverFactory.registerFactory("TrilinosMueLuSolver", TrilinosMueLuSolver::createSolver);
+#endif
+    
+#ifdef USE_TRILINOS_ML
     solverFactory.registerFactory("TrilinosMLSolver", TrilinosMLSolver::createSolver);
+#endif
+    
+#ifdef USE_EXT_HYPRE
     solverFactory.registerFactory("BoomerAMGSolver", BoomerAMGSolver::createSolver);
+#endif
+    
+#ifdef USE_EXT_PETSC
+    solverFactory.registerFactory("PetscKrylovSolver", PetscKrylovSolver::createSolver);
+#endif
 
+    solverFactory.registerFactory("GMRESSolver", GMRESSolver::createSolver);
+    solverFactory.registerFactory("BiCGSTABSolver", BiCGSTABSolver::createSolver);
+    solverFactory.registerFactory("CGSolver", CGSolver::createSolver);
 }
 
 }
