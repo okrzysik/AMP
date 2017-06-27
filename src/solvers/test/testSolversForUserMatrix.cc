@@ -171,8 +171,15 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
     AMP::Solver::registerSolverFactories();
     
-    std::vector<std::string> files = { "Diffusion-TUI-Thermal-1",     "Diffusion-UO2MSRZC09-Thermal-1" };
+    std::vector<std::string> files = { "testSolversForUserMatrix-ML" };
 
+#ifdef USE_EXT_HYPRE
+    files.push_back("testSolversForUserMatrix-BoomerAMG");
+#endif
+#ifdef USE_TRILINOS_MUELU
+    files.push_back("testSolversForUserMatrix-MueLu");
+#endif
+    
     for ( const auto &file : files )
         userLinearOperatorTest( &ut, file );
 
