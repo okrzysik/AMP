@@ -568,6 +568,7 @@ IF ( USE_EXT_LIBMESH AND USE_EXT_HYPRE )
     ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalOperator-2 )
     ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearFickOperator-bar )
     ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearElasticityOperator-1 )
+    ADD_AMP_TEST_1_2_4( testSolversForUserMatrix )
 ENDIF()
 
 IF ( USE_EXT_PETSC AND USE_EXT_LIBMESH AND USE_EXT_HYPRE )
