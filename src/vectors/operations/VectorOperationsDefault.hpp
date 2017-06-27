@@ -268,7 +268,7 @@ void VectorOperationsDefault<TYPE>::copy( const VectorOperations &x )
     auto x_data = x.getVectorData();
     auto y_data = d_VectorData;
     AMP_ASSERT( x_data->getLocalSize() == y_data->getLocalSize() );
-    std::copy( x_data->begin<TYPE>(), x_data->end<TYPE>(), y_data->begin<TYPE>() );
+    std::copy( x_data->begin<TYPE>(), x_data->end<TYPE>(), y_data->template begin<TYPE>() );
     y_data->copyGhostValues( *x_data );
 }
 template<typename TYPE>
