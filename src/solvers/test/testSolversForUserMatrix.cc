@@ -28,6 +28,7 @@
 #include "operators/LinearOperator.h"
 
 #include "solvers/hypre/BoomerAMGSolver.h"
+#include "solvers/SolverFactory.h"
 
 void userLinearOperatorTest( AMP::UnitTest * const ut, const std::string &exeName )
 {
@@ -138,13 +139,12 @@ void userLinearOperatorTest( AMP::UnitTest * const ut, const std::string &exeNam
     AMP::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
     // Fill in the parameters fo the class with the info on the database.
-    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams(
-        new AMP::Solver::SolverStrategyParameters( mlSolver_db ) );
+    auto mlSolverParams = AMP::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
 
     // Define the operature to be used by the Solver.
     mlSolverParams->d_pOperator = linearOp;
     // Create the ML Solver
-    auto mlSolver = std::make_shared<AMP::Solver::BoomerAMGSolver>( mlSolverParams );
+    auto mlSolver = AMP::Solver::SolverFactory::create( mlSolverParams );
 
     // Use a random initial guess?
     mlSolver->setZeroInitialGuess( false );
@@ -169,7 +169,8 @@ int main( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-
+    AMP::Solver::registerSolverFactories();
+    
     std::vector<std::string> files = { "Diffusion-TUI-Thermal-1",     "Diffusion-UO2MSRZC09-Thermal-1" };
 
     for ( const auto &file : files )

@@ -87,6 +87,11 @@ public:
      */
     virtual ~TrilinosMueLuSolver();
 
+    //! static create routine that is used by SolverFactory 
+    static AMP::shared_ptr<SolverStrategy> createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters ) {
+      return AMP::make_shared<TrilinosMueLuSolver> ( solverStrategyParameters );
+    }
+
     /**
      * Solve the system \f$Au = f\f$.
      @param [in] f : shared pointer to right hand side vector

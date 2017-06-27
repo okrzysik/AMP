@@ -19,14 +19,23 @@ responsibility for the use of this software.
 
 #include "solvers/SolverStrategy.h"
 #include "solvers/SolverStrategyParameters.h"
+#include "solvers/hypre/BoomerAMGSolver.h"
+#include "solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "solvers/trilinos/muelu/TrilinosMueLuSolver.h"
 
 namespace AMP {
+namespace Solver{
     
 // register all known solver factories
 void registerSolverFactories()
 {
     auto &solverFactory = SolverFactory::getFactory();
 
+    solverFactory.registerFactory("TrilinosMueLuSolver", TrilinosMueLuSolver::createSolver);
+    solverFactory.registerFactory("TrilinosMLSolver", TrilinosMLSolver::createSolver);
+    solverFactory.registerFactory("BoomerAMGSolver", BoomerAMGSolver::createSolver);
+
 }
 
+}
 } // end namespace AMP

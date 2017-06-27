@@ -23,6 +23,8 @@ responsibility for the use of this software.
 
 namespace AMP{
 
+namespace Solver{
+    
 class SolverStrategy;
 class SolverStrategyParameters;
 
@@ -32,5 +34,5 @@ using SolverFactory = FactoryStrategy<SolverStrategy, SolverStrategyParameters>;
 void registerSolverFactories();
 
 }
-
+}
 #endif // included_SolverFactory_H_
