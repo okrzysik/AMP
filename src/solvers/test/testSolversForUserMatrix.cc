@@ -89,11 +89,11 @@ buildSolver ( const AMP::shared_ptr<AMP::InputDatabase> &input_db,
 
 }
        
-void userLinearOperatorTest( AMP::UnitTest * const ut, const std::string &exeName )
+void userLinearOperatorTest( AMP::UnitTest * const ut, const std::string &inputFileName )
 {
     // Test create
-    const std::string input_file = "input_" + exeName;
-    const std::string log_file   = "output_" + exeName;
+    const std::string input_file = inputFileName;
+    const std::string log_file   = "output_" + inputFileName;
 
     AMP::PIO::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
@@ -185,7 +185,7 @@ void userLinearOperatorTest( AMP::UnitTest * const ut, const std::string &exeNam
     auto passed = ( v->maxNorm() <= std::numeric_limits<double>::min());
 
     if( passed ) {
-        ut->passes( exeName );
+        ut->passes( inputFileName );
     } else {
         ut->failure( "unable to create a copy of a linear operator");
     }
@@ -230,12 +230,12 @@ int main( int argc, char *argv[] )
 
     } else {
     
-        files.push_back( "testSolversForUserMatrix-ML" );
+        files.push_back( "input_testSolversForUserMatrix-ML" );
 #ifdef USE_EXT_HYPRE
-        files.push_back("testSolversForUserMatrix-BoomerAMG");
+        files.push_back("input_testSolversForUserMatrix-BoomerAMG");
 #endif
 #ifdef USE_TRILINOS_MUELU
-        files.push_back("testSolversForUserMatrix-MueLu");
+        files.push_back("input_testSolversForUserMatrix-MueLu");
 #endif
     }
     
