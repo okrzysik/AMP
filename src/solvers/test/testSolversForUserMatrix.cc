@@ -29,7 +29,66 @@
 
 #include "solvers/hypre/BoomerAMGSolver.h"
 #include "solvers/SolverFactory.h"
+#include "solvers/KrylovSolverParameters.h"
 
+AMP::shared_ptr<AMP::Solver::SolverStrategy>
+buildSolver ( const AMP::shared_ptr<AMP::InputDatabase> &input_db,
+              const std::string &solver_name,                            
+              const AMP::AMP_MPI &comm,
+              AMP::shared_ptr<AMP::Operator::LinearOperator> &op )
+{
+
+    AMP::shared_ptr<AMP::Solver::SolverStrategy> solver;
+    AMP::shared_ptr<AMP::Solver::SolverStrategyParameters> parameters;
+    
+    AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
+    
+    const auto &db = input_db->getDatabase( solver_name );
+    
+    if ( db->keyExists( "name" ) ) {
+        
+        auto name = db->getString( "name" );
+
+        if ( ( name == "GMRESSolver" ) || ( name == "CGSolver" ) || ( name == "BiCGSTABSolver" ) ) {
+
+            // check if we need to construct a preconditioner
+            auto use_preconditioner = db->getBoolWithDefault( "use_preconditioner", false );
+            AMP::shared_ptr<AMP::Solver::SolverStrategy> pcSolver;
+
+            if ( use_preconditioner ) {
+
+                auto pc_name = db->getStringWithDefault( "pc_name", "Preconditioner" );
+
+                auto pcSolver = buildSolver( input_db,
+                                             pc_name,
+                                             comm,
+                                             op );
+
+                AMP_INSIST( pcSolver.get() != nullptr, "null preconditioner"); 
+            }
+            
+            auto params = AMP::make_shared<AMP::Solver::KrylovSolverParameters> ( db );
+            params->d_comm = comm;
+            params->d_pPreconditioner = pcSolver;
+            parameters = params;
+            
+        } else {
+            parameters = AMP::make_shared<AMP::Solver::SolverStrategyParameters> ( db );
+        }
+        
+        AMP_INSIST( parameters != nullptr, "null parameter object" );
+        parameters->d_pOperator = op;
+
+    } else {
+        AMP_ERROR("Key name does not exist in solver database");
+    }
+
+    solver = AMP::Solver::SolverFactory::create( parameters );
+
+    return solver;
+
+}
+       
 void userLinearOperatorTest( AMP::UnitTest * const ut, const std::string &exeName )
 {
     // Test create
@@ -134,23 +193,15 @@ void userLinearOperatorTest( AMP::UnitTest * const ut, const std::string &exeNam
     // ************************************************************************************************
     // make sure the database on theinput file exists for the linear solver
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
-    
-    // Read the input file onto a database.
-    AMP::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
-    // Fill in the parameters fo the class with the info on the database.
-    auto mlSolverParams = AMP::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
 
-    // Define the operature to be used by the Solver.
-    mlSolverParams->d_pOperator = linearOp;
-    // Create the ML Solver
-    auto mlSolver = AMP::Solver::SolverFactory::create( mlSolverParams );
+    auto linearSolver = buildSolver(  input_db, "LinearSolver", globalComm, linearOp );
 
     // Use a random initial guess?
-    mlSolver->setZeroInitialGuess( false );
+    linearSolver->setZeroInitialGuess( false );
 
     // Solve the prblem.
-    mlSolver->solve( u, v );
+    linearSolver->solve( u, v );
 
     // Compute the residual
     //    linearOp->residual( , TemperatureInKelvinVec, r );
@@ -170,15 +221,23 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
     AMP::Solver::registerSolverFactories();
-    
-    std::vector<std::string> files = { "testSolversForUserMatrix-ML" };
 
+    std::vector<std::string> files;
+    
+    if ( argc > 1 ) {
+
+        files.push_back( argv[1] );
+
+    } else {
+    
+        files.push_back( "testSolversForUserMatrix-ML" );
 #ifdef USE_EXT_HYPRE
-    files.push_back("testSolversForUserMatrix-BoomerAMG");
+        files.push_back("testSolversForUserMatrix-BoomerAMG");
 #endif
 #ifdef USE_TRILINOS_MUELU
-    files.push_back("testSolversForUserMatrix-MueLu");
+        files.push_back("testSolversForUserMatrix-MueLu");
 #endif
+    }
     
     for ( const auto &file : files )
         userLinearOperatorTest( &ut, file );
