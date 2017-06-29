@@ -43,13 +43,15 @@ void GMRESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const pa
 
     getFromInput( parameters->d_db );
 
-    d_dHessenberg.resize( d_iMaxKrylovDimension + 1, d_iMaxKrylovDimension + 1 );
+    // maximum dimension to allocate storage for
+    const int max_dim = std::min( d_iMaxKrylovDimension, d_iMaxIterations );
+    d_dHessenberg.resize( max_dim + 1, max_dim + 1 );
     d_dHessenberg.fill( 0.0 );
 
-    d_dcos.resize( d_iMaxKrylovDimension + 1, 0.0 );
-    d_dsin.resize( d_iMaxKrylovDimension + 1, 0.0 );
-    d_dw.resize( d_iMaxKrylovDimension + 1, 0.0 );
-    d_dy.resize( d_iMaxKrylovDimension, 0.0 );
+    d_dcos.resize( max_dim + 1, 0.0 );
+    d_dsin.resize( max_dim + 1, 0.0 );
+    d_dw.resize( max_dim + 1, 0.0 );
+    d_dy.resize( max_dim, 0.0 );
 
     d_pPreconditioner = parameters->d_pPreconditioner;
 
@@ -79,8 +81,7 @@ void GMRESSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 * TODO: store convergence history, iterations, convergence reason
 ****************************************************************/
 void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                         AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                             u )
+                         AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 
@@ -95,13 +96,14 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     double f_norm = f->L2Norm();
 
     // if the rhs is zero we try to converge to the relative convergence
-    if ( f_norm == 0.0 ) {
+    // NOTE:: update this test for a better 'almost equal'
+    if ( f_norm < std::numeric_limits<double>::epsilon() ) {
         f_norm = 1.0;
     }
 
     const double terminate_tol = d_dRelativeTolerance * f_norm;
 
-    if ( d_iDebugPrintInfoLevel > 1 ) {
+    if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "GMRESSolver::solve: initial L2Norm of solution vector: " << u->L2Norm()
                   << std::endl;
         std::cout << "GMRESSolver::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
@@ -117,16 +119,28 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
         res->copyVector( f );
+        u->setToScalar(0.0);
     } else {
         d_pOperator->residual( f, u, res );
     }
 
+    d_nr = -1;
+    
     // compute the current residual norm
     const double beta = res->L2Norm();
 
+    if ( d_iDebugPrintInfoLevel > 0 ) {
+        std::cout << "GMRES: initial residual " << beta << std::endl;
+        }
+    
     // return if the residual is already low enough
     if ( beta < terminate_tol ) {
-        // provide a convergence reason
+        if ( d_iDebugPrintInfoLevel > 0 ) {
+            std::cout << "GMRESSolver::solve: initial residual norm "
+                      << beta << " is below convergence tolerance: "
+                      << terminate_tol << std::endl;
+        }
+        
         // provide history (iterations, conv history etc)
         return;
     }
@@ -142,7 +156,7 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     auto v_norm = beta;
 
-    for ( int k = 0; ( k < d_iMaxIterations ) && ( v_norm < terminate_tol ); ++k ) {
+    for ( int k = 0; ( k < d_iMaxIterations ) && ( v_norm > terminate_tol ); ++k ) {
 
         // clone off of the rhs to create a new basis vector
         AMP::LinearAlgebra::Vector::shared_ptr v = f->cloneVector();
@@ -176,22 +190,30 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             computeGivensRotation( k );
             // zero out the subdiagonal
             applyGivensRotation( k, k );
+            d_dHessenberg( k + 1, k ) = 0.0; // explicitly set subdiag to zero to prevent round-off
 
             // explicitly apply the newly computed
             // Givens rotations to the rhs vector
             auto x      = d_dw[k];
-            auto y      = d_dw[k];
+            auto y      = d_dw[k+1];
             auto c      = d_dcos[k];
             auto s      = d_dsin[k];
+            #if 0
             d_dw[k]     = c * x - s * y;
             d_dw[k + 1] = s * x + c * y;
+            #else
+            d_dw[k]     = c * x + s * y;
+            d_dw[k + 1] = -s * x + c * y;
+            #endif
         }
 
-        // check on whether the comparison should be to terminate_tol
-        if ( std::fabs( d_dw[k + 1] ) < terminate_tol ) {
-            d_nr = k; // set the dimension of the upper triangular system to solve
-            break;
+        v_norm = std::fabs( d_dw[k + 1] );
+        
+        if ( d_iDebugPrintInfoLevel > 0 ) {
+            std::cout << "GMRES: iteration " << k << ", residual " << v_norm << std::endl;
         }
+
+        ++d_nr; // update the dimension of the upper triangular system to solve
     }
 
     // compute y, the solution to the least squares minimization problem
@@ -202,10 +224,9 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         u->axpy( d_dy[i], d_vBasis[i], u );
     }
 
-    // compute a final residual ??
-    d_pOperator->residual( f, u, res );
-
     if ( d_iDebugPrintInfoLevel > 2 ) {
+        d_pOperator->residual( f, u, res );
+        std::cout << "GMRES, Final residual: " << res->L2Norm() << std::endl;
         std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
     }
 
@@ -225,7 +246,7 @@ void GMRESSolver::orthogonalize( AMP::shared_ptr<AMP::LinearAlgebra::Vector> v )
 
             const double h_jk = v->dot( d_vBasis[j] );
             v->axpy( -h_jk, d_vBasis[j], v );
-            d_dHessenberg( j, k ) = h_jk;
+            d_dHessenberg( j, k-1 ) = h_jk;
         }
     } else {
 
@@ -233,7 +254,7 @@ void GMRESSolver::orthogonalize( AMP::shared_ptr<AMP::LinearAlgebra::Vector> v )
     }
 
     // h_{k+1, k}
-    auto v_norm = v->L2Norm();
+    const auto v_norm = v->L2Norm();
     d_dHessenberg( k, k - 1 ) = v_norm; // adjusting for zero starting index
 }
 
@@ -246,8 +267,13 @@ void GMRESSolver::applyGivensRotation( const int i, const int k )
     auto c = d_dcos[i];
     auto s = d_dsin[i];
 
+    #if 0
     d_dHessenberg( i, k )     = c * x - s * y;
     d_dHessenberg( i + 1, k ) = s * x + c * y;
+    #else
+    d_dHessenberg( i, k )     = c * x + s * y;
+    d_dHessenberg( i + 1, k ) = -s * x + c * y;
+    #endif
 }
 
 void GMRESSolver::computeGivensRotation( const int k )
@@ -278,8 +304,9 @@ void GMRESSolver::computeGivensRotation( const int k )
     } else {
 
         r = std::sqrt( f * f + g * g );
-        c = std::fabs( f ) / r;
-        s = std::copysign( g / r, f );
+        r = 1.0/r;
+        c = std::fabs( f ) * r;
+        s = std::copysign( g * r, f );
     }
 
     d_dcos[k] = c;

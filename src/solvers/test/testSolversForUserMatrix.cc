@@ -176,20 +176,6 @@ void userLinearOperatorTest( AMP::UnitTest * const ut, const std::string &inputF
     u->setRandomValues();
     v->setRandomValues();
 
-    // form the difference of the matrices
-    // COMMENT: simple add, subtract routines would be nice for matrices
-    ampMat->axpy(-1.0, userMat);
-    
-    linearOp->apply( u, v );
-
-    auto passed = ( v->maxNorm() <= std::numeric_limits<double>::min());
-
-    if( passed ) {
-        ut->passes( inputFileName );
-    } else {
-        ut->failure( "unable to create a copy of a linear operator");
-    }
-
     // ************************************************************************************************
     // make sure the database on theinput file exists for the linear solver
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
@@ -198,20 +184,20 @@ void userLinearOperatorTest( AMP::UnitTest * const ut, const std::string &inputF
     auto linearSolver = buildSolver(  input_db, "LinearSolver", globalComm, linearOp );
 
     // Use a random initial guess?
-    linearSolver->setZeroInitialGuess( false );
+    linearSolver->setZeroInitialGuess( true );
 
-    // Solve the prblem.
+    // Solve the problem.
     linearSolver->solve( u, v );
 
     // Compute the residual
-    //    linearOp->residual( , TemperatureInKelvinVec, r );
+    linearOp->residual( u, v, r );
 
     // Check the L2 norm of the final residual.
     const double finalResidualNorm = r->L2Norm();
     AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {
-        ut->failure( "BoomerAMGSolver could NOT solve a linear thermal problem" );
+        ut->failure( "solver could NOT solve a linear thermal problem" );
     }
 
 }
