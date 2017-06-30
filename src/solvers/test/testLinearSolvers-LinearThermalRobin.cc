@@ -64,11 +64,11 @@ buildSolver ( const AMP::shared_ptr<AMP::InputDatabase> &input_db,
 
                 auto pc_name = db->getStringWithDefault( "pc_name", "Preconditioner" );
 
-                auto pcSolver = buildSolver( input_db,
-                                             pc_name,
-                                             comm,
-                                             op );
-
+                pcSolver = buildSolver( input_db,
+                                        pc_name,
+                                        comm,
+                                        op );
+                
                 AMP_INSIST( pcSolver.get() != nullptr, "null preconditioner"); 
             }
             
@@ -308,17 +308,24 @@ int main( int argc, char *argv[] )
     } else {
     
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
+        files.push_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
         
 #ifdef USE_EXT_HYPRE
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
+        files.push_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
+        files.push_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
 #endif
 
 #ifdef USE_TRILINOS_ML
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-ML" );
+        files.push_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
+        files.push_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
 #endif
 
 #ifdef USE_TRILINOS_MUELU
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-MueLu" );
+        files.push_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES" );
+        files.push_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB" );
 #endif
 
     }

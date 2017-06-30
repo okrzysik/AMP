@@ -120,15 +120,15 @@ VolumeIntegralOperator{
 }
 
 LinearSolver{
-  name = "GMRESSolver"
-  use_preconditioner = FALSE
-  print_info_level = 2
-  max_iterations = 30
+  name = "BiCGSTABSolver"
+  use_preconditioner = TRUE
+  print_info_level = 3
+  max_iterations = 10
   max_error = 1e-10
 }
 
 Preconditioner{
-  name = "TrilinosMueLuSolver"
+  name = "TrilinosMLSolver"
   print_info_level = 3
   max_iterations = 1
   max_error = 1e-10

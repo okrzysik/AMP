@@ -120,11 +120,12 @@ VolumeIntegralOperator{
 }
 
 LinearSolver{
-  name = "GMRESSolver"
-  use_preconditioner = FALSE
+  name = "BiCGSTABSolver"
+  use_preconditioner = TRUE
   print_info_level = 2
-  max_iterations = 30
-  max_error = 1e-10
+  max_iterations = 150
+  relative_tolerance = 1e-10
+  max_error = 1e-14
 }
 
 Preconditioner{

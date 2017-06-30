@@ -57,7 +57,7 @@ void BiCGSTABSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
     d_dRelativeTolerance = db->getDoubleWithDefault( "relative_tolerance", 1.0e-9 );
     d_iMaxIterations     = db->getDoubleWithDefault( "max_iterations", 1000 );
 
-    d_bUsesPreconditioner = db->getBoolWithDefault( "uses_preconditioner", false );
+    d_bUsesPreconditioner = db->getBoolWithDefault( "use_preconditioner", false );
 }
 
 /****************************************************************
@@ -87,7 +87,7 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     const double terminate_tol = d_dRelativeTolerance * f_norm;
 
-    if ( d_iDebugPrintInfoLevel > 1 ) {
+    if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "BiCGSTABSolver::solve: initial L2Norm of solution vector: " << u->L2Norm()
                   << std::endl;
         std::cout << "BiCGSTABSolver::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
@@ -111,10 +111,19 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     double res_norm     = res->L2Norm();
     double r_tilde_norm = res_norm;
 
+    if ( d_iDebugPrintInfoLevel > 0 ) {
+        std::cout << "BiCGSTAB: initial residual " << res_norm << std::endl;
+        }
+
     // return if the residual is already low enough
     if ( res_norm < terminate_tol ) {
         // provide a convergence reason
         // provide history (iterations, conv history etc)
+        if ( d_iDebugPrintInfoLevel > 0 ) {
+            std::cout << "BiCGSTABSolver::solve: initial residual norm "
+                      << res_norm << " is below convergence tolerance: "
+                      << terminate_tol << std::endl;
+        }
         return;
     }
 
@@ -213,6 +222,10 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // compute the current residual norm
         res_norm = res->L2Norm();
 
+        if ( d_iDebugPrintInfoLevel > 0 ) {
+            std::cout << "BiCGSTAB: iteration " << (iter+1) << ", residual " << res_norm << std::endl;
+        }
+
         // break if the residual is already low enough
         if ( res_norm < terminate_tol ) {
             // provide a convergence reason
@@ -223,6 +236,9 @@ void BiCGSTABSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         if ( omega == 0.0 ) {
             // this is a breakdown of the iteration
             // need to flag
+            if ( d_iDebugPrintInfoLevel > 0 ) {
+                std::cout << "BiCGSTABSolver::solve: breakdown encountered, omega == 0" << std::endl;
+            }
             break;
         }
 

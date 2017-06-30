@@ -149,6 +149,12 @@ private:
     //! "HR" : Householder reflections (use when highly ill conditioned)
     std::string d_sOrthogonalizationMethod = "MGS";
 
+    //! string, determining left, right or both side preconditioning
+    //! this flag only applies if d_bUsesPreconditioner is true
+    //! valid values are "left", "right", "both"
+    //! currently only right is implemented
+    std::string d_preconditioner_side = "right";
+    
     //! boolean, for whether a preconditioner present or not
     bool d_bUsesPreconditioner = false;
 

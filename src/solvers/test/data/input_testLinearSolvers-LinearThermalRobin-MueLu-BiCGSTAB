@@ -120,10 +120,10 @@ VolumeIntegralOperator{
 }
 
 LinearSolver{
-  name = "GMRESSolver"
-  use_preconditioner = FALSE
-  print_info_level = 2
-  max_iterations = 30
+  name = "BiCGSTABSolver"
+  use_preconditioner = TRUE
+  print_info_level = 3
+  max_iterations = 10
   max_error = 1e-10
 }
 
@@ -139,7 +139,6 @@ Preconditioner{
     relaxation_sweeps = 2
   }
   coarse_max_size = 100
-  
 }
 
 SourcePhysicsModel {

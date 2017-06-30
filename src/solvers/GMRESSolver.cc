@@ -72,7 +72,13 @@ void GMRESSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 
     d_sOrthogonalizationMethod = db->getStringWithDefault( "ortho_method", "MGS" );
 
-    d_bUsesPreconditioner = db->getBoolWithDefault( "uses_preconditioner", false );
+    d_bUsesPreconditioner = db->getBoolWithDefault( "use_preconditioner", false );
+
+    // default is right preconditioning, options are right, left, both
+    if ( d_bUsesPreconditioner ) {
+        d_preconditioner_side =  db->getStringWithDefault( "preconditioner_side", "right" );
+    }
+    
     d_bRestart            = db->getBoolWithDefault( "gmres_restart", false );
 }
 
@@ -156,13 +162,22 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     auto v_norm = beta;
 
+    // z is only used if there is preconditioning
+    AMP::LinearAlgebra::Vector::shared_ptr z; 
+
     for ( int k = 0; ( k < d_iMaxIterations ) && ( v_norm > terminate_tol ); ++k ) {
 
         // clone off of the rhs to create a new basis vector
         AMP::LinearAlgebra::Vector::shared_ptr v = f->cloneVector();
-
+        if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
+            z = f->cloneVector();
+            d_pPreconditioner->solve( d_vBasis[k], z );
+        } else {
+            z = d_vBasis[k];
+        }
+        
         // construct the Krylov vector
-        d_pOperator->apply( d_vBasis[k], v );
+        d_pOperator->apply( z, v );
 
         // orthogonalize to previous vectors and
         // add new column to Hessenberg matrix
@@ -221,10 +236,23 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     backwardSolve();
 
     // update the current approximation with the correction
-    for ( int i = 0; i <= d_nr; ++i ) {
-        u->axpy( d_dy[i], d_vBasis[i], u );
-    }
+    if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 
+        z->setToScalar(0.0);
+
+        for ( int i = 0; i <= d_nr; ++i ) {
+            z->axpy( d_dy[i], d_vBasis[i], z );
+        }
+
+        AMP::LinearAlgebra::Vector::shared_ptr v = f->cloneVector();
+        d_pPreconditioner->solve( z, v );
+        u->axpy(1.0, v, u);
+        
+    } else {
+        for ( int i = 0; i <= d_nr; ++i ) {
+            u->axpy( d_dy[i], d_vBasis[i], u );
+        }
+    }
     u->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
