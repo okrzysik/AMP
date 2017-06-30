@@ -311,6 +311,10 @@ COPY_TEST_FILE( input_testTrilinosMLSolver-LinearThermalRobin )
 COPY_TEST_FILE( input_testSolversForUserMatrix-ML )
 
 IF ( USE_EXT_TRILINOS AND USE_TRILINOS_MUELU )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-ML )
+ENDIF()
+
+IF ( USE_EXT_TRILINOS AND USE_TRILINOS_MUELU )
 COPY_TEST_FILE( input_testTrilinosMueLuSolver-LinearThermalRobin )
 COPY_TEST_FILE( input_testTrilinosMueLuSolver-LinearThermalOperator-2 )
 COPY_TEST_FILE( input_testTrilinosMueLuSolver-LinearThermalOperator-3 )
@@ -322,6 +326,7 @@ COPY_TEST_FILE( input_testTrilinosMueLuSolver-LinearThermalOperator-2_HALDEN_cla
 COPY_TEST_FILE( input_testTrilinosMueLuSolver-LinearFickOperator-bar )
 COPY_TEST_FILE( input_testTrilinosMueLuSolver-LinearElasticityOperator-1 )
 COPY_TEST_FILE( input_testSolversForUserMatrix-MueLu )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu )
 ENDIF()
 
 IF ( USE_EXT_HYPRE )
@@ -336,6 +341,7 @@ COPY_TEST_FILE( input_testBoomerAMGSolver-LinearThermalOperator-2_HALDEN_clad )
 COPY_TEST_FILE( input_testBoomerAMGSolver-LinearFickOperator-bar )
 COPY_TEST_FILE( input_testBoomerAMGSolver-LinearElasticityOperator-1 )
 COPY_TEST_FILE( input_testSolversForUserMatrix-BoomerAMG )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG )
 ENDIF()
 
 COPY_TEST_FILE( input_testColumnSolver-LinearThermalAndFick-1 )
@@ -377,6 +383,8 @@ COPY_TEST_FILE( input_testPelletStackMechanicsSolver-1 )
 COPY_TEST_FILE( input_testPelletStackMechanicsSolver-2 )
 
 COPY_TEST_FILE( input_testLinearFlow-1 )
+
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-GMRES )
 
 IF( USE_EXT_LIBMESH )
   ADD_AMP_TEST( testUpdatedLagrangianMechanics-eigenValues-1 )
@@ -561,6 +569,8 @@ ENDIF()
     ADD_AMP_TEST_1_2_4( testPetscSNESSolver-NonlinearFickSoret-2 )
 
     ADD_AMP_PROVISIONAL_TEST( testPetscSNESSolver-IncompressibleFlow-1 1)
+
+    ADD_AMP_TEST_1_2_4( testLinearSolvers-LinearThermalRobin )
 
 ENDIF()
 

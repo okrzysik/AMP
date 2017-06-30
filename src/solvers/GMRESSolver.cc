@@ -173,6 +173,7 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // check for happy breakdown
         if ( v_norm != 0.0 ) {
             v->scale( 1.0 / v_norm );
+            v->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
         }
 
         // update basis with new orthonormal vector
@@ -210,7 +211,7 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         v_norm = std::fabs( d_dw[k + 1] );
         
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "GMRES: iteration " << k << ", residual " << v_norm << std::endl;
+            std::cout << "GMRES: iteration " << (k+1) << ", residual " << v_norm << std::endl;
         }
 
         ++d_nr; // update the dimension of the upper triangular system to solve
@@ -224,9 +225,11 @@ void GMRESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         u->axpy( d_dy[i], d_vBasis[i], u );
     }
 
+    u->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
+
     if ( d_iDebugPrintInfoLevel > 2 ) {
         d_pOperator->residual( f, u, res );
-        std::cout << "GMRES, Final residual: " << res->L2Norm() << std::endl;
+        std::cout << "GMRES: Final residual: " << res->L2Norm() << std::endl;
         std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
     }
 
@@ -252,6 +255,8 @@ void GMRESSolver::orthogonalize( AMP::shared_ptr<AMP::LinearAlgebra::Vector> v )
 
         AMP_ERROR( "Unknown orthogonalization method in GMRES" );
     }
+
+    v->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 
     // h_{k+1, k}
     const auto v_norm = v->L2Norm();
@@ -340,10 +345,10 @@ void GMRESSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operato
 
     d_pOperator = op;
 
-    AMP::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
-        AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
+    auto linearOperator = AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
     AMP_ASSERT( linearOperator.get() != nullptr );
 }
+
 void GMRESSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator.get() != nullptr ) {
