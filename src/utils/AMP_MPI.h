@@ -179,6 +179,13 @@ public: // Member functions
 
 
     /**
+     *\brief Query the level of thread support, returned in provided
+     * \param provided (valid values: MPI_THREAD_SINGLE, MPI_THREAD_FUNNELED, MPI_THREAD_SERIALIZED, MPI_THREAD_MULTIPLE )
+     */
+    static int queryThreadSupport(int *provided);
+
+
+    /**
      * \brief Generate a random number
      * \details  This generates a random number that is consistent across the comm
      */
@@ -257,14 +264,14 @@ public: // Member functions
     /**
      * \brief Return the global ranks for the comm
      * \details  This returns a vector which contains the global ranks for each
-     *   member of the communicator.  The global ranks are defined according to AMP_COMM_WORLD.
+     *   member of the communicator.  The global ranks are defined according to WORLD comm.
      */
     std::vector<int> globalRanks() const;
 
 
     /**
      *  Get the current MPI communicator.
-     *  Note: The underlying MPI_Comm object may be free'd by AMP_MPI when it is no
+     *  Note: The underlying MPI_Comm object may be free'd by the object when it is no
      *  longer used by any communicators.  If the user has made a copy using the
      *  getCommunicator routine, then it may be free'd without user knowledge.  The
      *  user is responsible for checking if the communicator is valid, or keeping a

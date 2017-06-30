@@ -358,6 +358,17 @@ bool MPI_CLASS::MPI_active()
 #endif
 }
 
+int MPI_CLASS::queryThreadSupport(int *provided)
+{
+#ifdef USE_MPI
+    return MPI_Query_thread(provided);
+#else
+    // for now set to no threads in serial
+    *provided = 0;
+    return 0;
+#endif
+}
+
 
 /************************************************************************
 *  Function to perform a load balance of the given processes            *
@@ -853,7 +864,7 @@ MPI_CLASS MPI_CLASS::dup() const
 #endif
     // Create the new comm object
     MPI_CLASS new_comm( new_MPI_comm, true );
-    new_comm.d_isNull                             = d_isNull;
+    new_comm.d_isNull     = d_isNull;
     new_comm.d_call_abort = d_call_abort;
     return new_comm;
 }
@@ -1086,7 +1097,7 @@ int MPI_CLASS::compare( const MPI_CLASS &comm ) const
         return 4;
     else if ( result == MPI_UNEQUAL )
         return 0;
-    MPI_ERROR( "Unknown results from AMP_Comm_compare" );
+    MPI_ERROR( "Unknown results from comm compare" );
 #else
     if ( comm.communicator == MPI_COMM_NULL || communicator == MPI_COMM_NULL )
         return 0;
@@ -3069,7 +3080,7 @@ void MPI_CLASS::call_allGather<double>(
 template <>
 void MPI_CLASS::call_allGather<char>( const char*, int, char*, int*, int* ) const
 {
-    MPI_ERROR( "Internal error in AMP_MPI (allGather) " );
+    MPI_ERROR( "Internal error in communicator (allGather) " );
 }
 #endif
 
