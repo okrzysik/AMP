@@ -36,9 +36,10 @@ responsibility for the use of this software.
 #include "solvers/petsc/PetscKrylovSolver.h"
 #endif
 
+#include "solvers/CGSolver.h"
 #include "solvers/GMRESSolver.h"
 #include "solvers/BiCGSTABSolver.h"
-#include "solvers/CGSolver.h"
+#include "solvers/TFQMRSolver.h"
 
 namespace AMP {
 namespace Solver{
@@ -64,9 +65,10 @@ void registerSolverFactories()
     solverFactory.registerFactory("PetscKrylovSolver", PetscKrylovSolver::createSolver);
 #endif
 
+    solverFactory.registerFactory("CGSolver", CGSolver::createSolver);
     solverFactory.registerFactory("GMRESSolver", GMRESSolver::createSolver);
     solverFactory.registerFactory("BiCGSTABSolver", BiCGSTABSolver::createSolver);
-    solverFactory.registerFactory("CGSolver", CGSolver::createSolver);
+    solverFactory.registerFactory("TFQMRSolver", TFQMRSolver::createSolver);
 }
 
 }

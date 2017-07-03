@@ -54,7 +54,10 @@ buildSolver ( const AMP::shared_ptr<AMP::InputDatabase> &input_db,
         
         auto name = db->getString( "name" );
 
-        if ( ( name == "GMRESSolver" ) || ( name == "CGSolver" ) || ( name == "BiCGSTABSolver" ) ) {
+        if ( ( name == "GMRESSolver" )
+          || ( name == "CGSolver" )
+          || ( name == "BiCGSTABSolver" )
+          || ( name == "TFQMRSolver" ) ) {
 
             // check if we need to construct a preconditioner
             auto use_preconditioner = db->getBoolWithDefault( "use_preconditioner", false );
