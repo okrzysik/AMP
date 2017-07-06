@@ -118,6 +118,8 @@ private:
 
     bool d_bUsesPreconditioner = false;
 
+    std::string d_preconditioner_side;
+    
     AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
 }

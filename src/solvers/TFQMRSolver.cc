@@ -59,6 +59,11 @@ void TFQMRSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
     d_iMaxIterations     = db->getDoubleWithDefault( "max_iterations", 1000 );
 
     d_bUsesPreconditioner = db->getBoolWithDefault( "use_preconditioner", false );
+
+    // default is right preconditioning, options are right, left, both
+    if ( d_bUsesPreconditioner ) {
+        d_preconditioner_side =  db->getStringWithDefault( "preconditioner_side", "right" );
+    }
 }
 
 /****************************************************************
@@ -143,6 +148,16 @@ void TFQMRSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     y[1] = f->cloneVector();
     y[0]->zero();
     y[1]->zero();
+
+    // z is allocated only if the preconditioner is used
+    AMP::LinearAlgebra::Vector::shared_ptr z;
+    if ( d_bUsesPreconditioner ) {
+        z = f->cloneVector();
+        z->zero();
+    }
+    
+    auto delta = f->cloneVector();
+    delta->zero();
     
     auto w = res->cloneVector();
     w->copyVector( res );
@@ -153,11 +168,23 @@ void TFQMRSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     d->zero();
     
     auto v = res->cloneVector();
-    d_pOperator->apply( y[0], v );
+
+    if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
+
+        d_pPreconditioner->solve( y[0], z );
+
+    } else {
+
+        z = y[0];
+    }
+    
+    d_pOperator->apply( z, v );
 
     u[0]->copyVector( v );
 
     int k = 0;
+
+    bool converged = false;
     
     while ( k < d_iMaxIterations ) {
 
@@ -175,8 +202,19 @@ void TFQMRSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         for ( int j = 0; j <= 1; ++j ) {
 
             if ( j == 1 ) {
+                
                 y[1]->axpy( -alpha, v, y[0] );
-                d_pOperator->apply( y[1], u[1] );
+                
+                if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
+                    
+                    d_pPreconditioner->solve( y[1], z );
+                    
+                } else {
+                    z = y[1];
+                }
+                
+                d_pOperator->apply( z, u[1] );
+
             }
 
             const int m = 2*k-1+j;
@@ -188,17 +226,32 @@ void TFQMRSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             tau = tau*theta*c;
             eta = c*c*alpha;
 
-            x->axpy( eta, d, x);
+            // update the increment to the solution
+            delta->axpy( eta, d, delta);
 
             if( tau*(std::sqrt( (double) (m+1) ) ) <= terminate_tol ) {
 
-                // need to figure out what value of the residual to report here!!!
+            // need to figure out what value of the residual to report here!!!
                 if ( d_iDebugPrintInfoLevel > 0 ) {
                     std::cout << "TFQMR: iteration " << (k+1) << ", residual " << tau << std::endl;
                 }
-                return;                
+
+                converged = true; 
+                break;
             }
             
+        }
+
+        if ( converged ) {
+
+            // unwind the preconditioner if necessary
+            if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
+               d_pPreconditioner->solve( delta, z );
+            } else {
+            z = delta;
+            }
+            x->axpy( 1.0, z, x);
+            return;
         }
 
         // replace by soft-equal
@@ -213,7 +266,17 @@ void TFQMRSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         y[0]->axpy( beta, y[1], w );
 
-        d_pOperator->apply( y[0], u[0] );
+        if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
+            
+            d_pPreconditioner->solve( y[0], z );
+            
+        } else {
+
+            z = y[0];
+
+        }
+                
+        d_pOperator->apply( z, u[0] );
 
         v->axpy( beta, v, u[1] );
         v->axpy( beta, v, u[0] );

@@ -312,23 +312,27 @@ int main( int argc, char *argv[] )
     
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
+        files.push_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
         
 #ifdef USE_EXT_HYPRE
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
+        files.push_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
 #endif
 
 #ifdef USE_TRILINOS_ML
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-ML" );
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
+        files.push_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
 #endif
 
 #ifdef USE_TRILINOS_MUELU
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-MueLu" );
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES" );
         files.push_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB" );
+        files.push_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR" );
 #endif
 
     }
