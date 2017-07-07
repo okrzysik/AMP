@@ -40,6 +40,7 @@ responsibility for the use of this software.
 #include "solvers/GMRESSolver.h"
 #include "solvers/BiCGSTABSolver.h"
 #include "solvers/TFQMRSolver.h"
+#include "solvers/QMRCGSTABSolver.h"
 
 namespace AMP {
 namespace Solver{
@@ -69,6 +70,7 @@ void registerSolverFactories()
     solverFactory.registerFactory("GMRESSolver", GMRESSolver::createSolver);
     solverFactory.registerFactory("BiCGSTABSolver", BiCGSTABSolver::createSolver);
     solverFactory.registerFactory("TFQMRSolver", TFQMRSolver::createSolver);
+    solverFactory.registerFactory("QMRCGSTABSolver", QMRCGSTABSolver::createSolver);
 }
 
 }
