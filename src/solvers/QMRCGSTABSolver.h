@@ -10,7 +10,7 @@ namespace Solver {
 /**
  * The QMRCGSTABSolver class implements the QMRCGSTAB method for non-symmetric linear systems
  * introduced by Chan et. al.
- * reference required
+ * 
  * The implementation here is mostly based on the MATLAB code at
  * https://link.springer.com/content/pdf/bbm%3A978-3-8348-8100-7%2F1.pdf
  * Currently no preconditioning
