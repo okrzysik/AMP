@@ -368,10 +368,6 @@ MACRO ( CONFIGURE_AMP )
     ELSEIF ( NOT ONLY_BUILD_DOCS )
         MESSAGE( FATAL_ERROR "AMP_DATA must be set" )
     ENDIF()
-    # Set the maximum number of processors for the tests
-    IF ( NOT TEST_MAX_PROCS )
-        SET( TEST_MAX_PROCS 32 )
-    ENDIF()
     # Fix LDFLAGS if it is a CMake list
     STRING(REPLACE ";" " " LDFLAGS "${LDFLAGS}")
     # Check the user configure flags
