@@ -272,7 +272,6 @@ unsigned int Utilities::hash_char( const char *name )
 // Get the page size on mac or linux
 static size_t page_size = static_cast<size_t>( sysconf( _SC_PAGESIZE ) );
 #endif
-static size_t N_bytes_initialization = Utilities::getMemoryUsage();
 size_t Utilities::getSystemMemory()
 {
     size_t N_bytes = 0;

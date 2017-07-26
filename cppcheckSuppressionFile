@@ -104,4 +104,8 @@ preprocessorErrorDirective:*/solvers/petsc/ManagedPetscVector.h
 *:*/ampmesh/dendro/*
 *:*/ampmesh/hex8_element_t.cc
 
+// Suppress #error messages (they may be valid and will always be caught by compiler if options are exercised)
+preprocessorErrorDirective
+
+
 

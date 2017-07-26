@@ -33,11 +33,11 @@ AMPMeshEntitySet::AMPMeshEntitySet( const AMP::shared_ptr<AMP::Mesh::Mesh> &mesh
     for ( auto &m : d_id_maps )
         m = std::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
     mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ), d_id_maps[0] );
-    if ( d_amp_mesh->getGeomType() > 0 )
+    if ( (int) d_amp_mesh->getGeomType() > 0 )
         mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::GeomType::Edge, 0 ), d_id_maps[1] );
-    if ( d_amp_mesh->getGeomType() > 1 )
+    if ( (int) d_amp_mesh->getGeomType() > 1 )
         mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::GeomType::Face, 0 ), d_id_maps[2] );
-    if ( d_amp_mesh->getGeomType() > 2 )
+    if ( (int) d_amp_mesh->getGeomType() > 2 )
         mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 ), d_id_maps[3] );
 }
 
@@ -158,7 +158,7 @@ AMPMeshEntitySet::getGeomTypeFromEntityType( const int topological_dimension ) c
         type_id = AMP::Mesh::GeomType::Volume;
         break;
     default:
-        type_id = AMP::Mesh::null;
+        type_id = AMP::Mesh::GeomType::null;
         break;
     }
     return type_id;
