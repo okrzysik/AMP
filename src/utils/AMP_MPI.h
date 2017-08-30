@@ -145,7 +145,7 @@ public: // Member functions
 
 
     //! Function to set the affinity of the current process
-    static void setProcessAffinity( std::vector<int> procs );
+    static void setProcessAffinity( const std::vector<int>& procs );
 
 
     /**

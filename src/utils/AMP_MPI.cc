@@ -318,7 +318,7 @@ std::vector<int> MPI_CLASS::getProcessAffinity()
 #endif
     return procs;
 }
-void MPI_CLASS::setProcessAffinity( std::vector<int> procs )
+void MPI_CLASS::setProcessAffinity( const std::vector<int>& procs )
 {
 #ifdef USE_LINUX
     cpu_set_t mask;
