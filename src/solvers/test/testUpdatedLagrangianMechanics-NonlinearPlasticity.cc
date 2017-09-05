@@ -27,6 +27,7 @@
 #include "solvers/trilinos/ml/TrilinosMLSolver.h"
 
 #include "utils/ReadTestMesh.h"
+#include "utils/PIO.h"
 
 #include <iostream>
 #include <string>

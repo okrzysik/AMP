@@ -1,8 +1,11 @@
 #include "CoupledOperator.h"
-#include "ProfilerApp.h"
 #include "utils/Utilities.h"
 #include "vectors/Vector.h"
+
+#include "ProfilerApp.h"
+
 #include <vector>
+
 
 namespace AMP {
 namespace Operator {

@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <atomic>
 
 // Include mpi.h (or define MPI objects)
 #ifdef USE_EXT_MPI
@@ -1072,7 +1073,7 @@ private: // data members
      * Note that for thread safety, any access to this variable should be blocked for thread safety.
      * The value of count MUST be volatile to ensure the correct value is always used.
      */
-    int *volatile d_count;
+    std::atomic_int *volatile d_count;
 
     // Add a variable for data alignment (necessary for some Intel builds)
     double tmp_alignment;

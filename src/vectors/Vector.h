@@ -35,8 +35,6 @@ public:
 
 
 class VectorSelector;
-class MultiVector;
-class ManagedVector;
 
 
 /** \brief Abstraction of a discrete Vector in a linear simulation

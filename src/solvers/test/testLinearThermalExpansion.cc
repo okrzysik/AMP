@@ -16,6 +16,7 @@
 #include "vectors/VectorBuilder.h"
 
 #include "utils/Writer.h"
+#include "utils/PIO.h"
 
 #include "operators/ColumnOperator.h"
 #include "operators/LinearBVPOperator.h"

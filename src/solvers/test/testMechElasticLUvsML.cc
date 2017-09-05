@@ -5,6 +5,7 @@
 #include "utils/InputManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
+#include "utils/PIO.h"
 
 DISABLE_WARNINGS
 #include "libmesh/mesh_communication.h"

@@ -4,16 +4,19 @@
 #include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
 #include "vectors/MultiVector.h"
+
 #include <algorithm>
 #include <limits>
-#include <map>
 #include <map>
 #include <string>
 #include <valarray>
 #include <vector>
 
+
 namespace AMP {
 namespace Materials {
+
+
 /**
  * \namespace Materials
  * The materials design envisions a material property as a function.

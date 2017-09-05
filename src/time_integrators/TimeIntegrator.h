@@ -180,9 +180,9 @@ public:
      * \details  This function will append the necessary vectors that this solver
      *  owns to the global vector provided.  Note that each solver may own any number
      *  of vectors, but no vector may be owned by multiple solvers.
-     * \param vec   The multivector to append
+     * \param vec   The vector to append
      */
-    virtual void appendSolutionVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> vec )
+    virtual void appendSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
     {
         NULL_USE(vec);
     }
@@ -192,9 +192,9 @@ public:
      * \details  This function will append the necessary vectors that this solver
      *  owns to the global vector provided.  Note that each solver may own any number
      *  of vectors, but no vector may be owned by multiple solvers.
-     * \param vec   The multivector to append
+     * \param vec   The vector to append
      */
-    virtual void appendRhsVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> vec )
+    virtual void appendRhsVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
     {
         NULL_USE(vec);
     }

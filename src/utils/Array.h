@@ -1,15 +1,15 @@
 #ifndef included_ArrayClass
 #define included_ArrayClass
 
-#include "shared_ptr.h"
+#include "utils/shared_ptr.h"
 #include "utils/Utilities.h"
 
 #include <array>
 #include <functional>
 #include <iostream>
-#include <iostream>
 #include <memory>
 #include <vector>
+
 
 namespace AMP {
 

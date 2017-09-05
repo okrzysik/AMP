@@ -2,6 +2,7 @@
 #define included_test_VectorTests_inline
 
 #include "vectors/testHelpers/VectorTests.h"
+#include "vectors/MultiVector.h"
 
 
 namespace AMP {

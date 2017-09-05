@@ -5,8 +5,6 @@
 #include "operators/Operator.h"
 #include "utils/Writer.h"
 #include "utils/shared_ptr.h"
-#include "utils/shared_ptr.h"
-#include "vectors/MultiVector.h"
 #include "vectors/Vector.h"
 
 
@@ -128,7 +126,7 @@ public:
      *  of vectors, but no vector may be owned by multiple solvers.
      * \param vec   The multivector to append
      */
-    virtual void appendSolutionVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> vec );
+    virtual void appendSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr vec );
 
     /**
      * \brief  Append the vectors of interest to the rhs vector
@@ -137,7 +135,7 @@ public:
      *  of vectors, but no vector may be owned by multiple solvers.
      * \param vec   The multivector to append
      */
-    virtual void appendRhsVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> vec );
+    virtual void appendRhsVector( AMP::LinearAlgebra::Vector::shared_ptr vec );
 
     /**
      * \brief  Registers a writer with the solver

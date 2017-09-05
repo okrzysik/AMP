@@ -23,6 +23,8 @@ class PetscVectorFactory
 {
 public:
 
+    virtual ~PetscVectorFactory() {}
+
     virtual AMP::LinearAlgebra::Vector::shared_ptr getNativeVector() const = 0;
 
     virtual void destroyNativeVector( AMP::LinearAlgebra::NativePetscVector &rhs ) const

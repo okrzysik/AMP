@@ -145,7 +145,7 @@ IF ( USE_EXT_LIBMESH )
     ADD_AMP_TEST_1_2_4( testPowerShape-Zr )
     COPY_TEST_FILE( input_testPowerShape-5 )
 
-    ADD_AMP_TEST_1_2_4( testLinearOperator-1 )
+    ADD_AMP_TEST_124_MATRIX( testLinearOperator-1 )
     COPY_TEST_FILE( input_testLinearOperator-1 )
     COPY_MESH_FILE ( brick.e )
 

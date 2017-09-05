@@ -1,18 +1,15 @@
 #include "../../ampmesh/test/meshGenerators.h"
 
-#include "ProfilerApp.h"
 #include "ampmesh/Mesh.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "matrices/Matrix.h"
 #include "matrices/MatrixBuilder.h"
-#include "utils/AMPManager.h"
-#include "utils/AMP_MPI.h"
-#include "utils/UnitTest.h"
-#include "utils/Utilities.h"
-#include "vectors/Variable.h"
 #include "vectors/Variable.h"
 #include "vectors/VectorBuilder.h"
+#include "utils/Utilities.h"
+
+#include "ProfilerApp.h"
 
 #include <stdio.h>
 #include <string>
