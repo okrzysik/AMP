@@ -17,6 +17,7 @@
 #include <string.h>
 #include <typeinfo>
 #include <random>
+#include <thread>
 
 
 // Include OS specific headers
@@ -38,6 +39,7 @@
 // We are using linux
 #define USE_LINUX
 #include <sched.h>
+#include <unistd.h>
 #else
 #error Unknown OS
 #endif
@@ -230,15 +232,7 @@ static inline long long int unsigned_to_signed( unsigned long long int x )
 ************************************************************************/
 int MPI_CLASS::getNumberOfProcessors()
 {
-#if defined( USE_LINUX ) || defined( USE_MAC )
-    return sysconf( _SC_NPROCESSORS_ONLN );
-#elif defined( USE_WINDOWS )
-    SYSTEM_INFO sysinfo;
-    GetSystemInfo( &sysinfo );
-    return static_cast<int>( sysinfo.dwNumberOfProcessors );
-#else
-#error Unknown OS
-#endif
+    return std::thread::hardware_concurrency();
 }
 std::vector<int> MPI_CLASS::getProcessAffinity()
 {
