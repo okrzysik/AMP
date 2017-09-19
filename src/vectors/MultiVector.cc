@@ -1,7 +1,6 @@
 #include "vectors/MultiVector.h"
 #include "discretization/DOF_Manager.h"
 #include "discretization/MultiDOF_Manager.h"
-#include "utils/Counter.h"
 #include "utils/Utilities.h"
 #include "vectors/ManagedVector.h"
 #include "vectors/MultiVariable.h"
@@ -646,7 +645,6 @@ void MultiVector::setValuesByLocalID( int num, size_t *indices, const double *in
 {
     if ( num == 0 )
         return;
-    INCREMENT_COUNT( "Virtual" );
     std::vector<std::vector<size_t>> ndxs;
     std::vector<std::vector<double>> vals;
     partitionLocalValues( num, indices, in_vals, ndxs, vals );
@@ -659,7 +657,6 @@ void MultiVector::setLocalValuesByGlobalID( int num, size_t *indices, const doub
 {
     if ( num == 0 )
         return;
-    INCREMENT_COUNT( "Virtual" );
     std::vector<std::vector<size_t>> ndxs;
     std::vector<std::vector<double>> vals;
     partitionGlobalValues( num, indices, in_vals, ndxs, vals );
@@ -673,7 +670,6 @@ void MultiVector::setGhostValuesByGlobalID( int num, size_t *indices, const doub
 {
     if ( num == 0 )
         return;
-    INCREMENT_COUNT( "Virtual" );
     std::vector<std::vector<size_t>> ndxs;
     std::vector<std::vector<double>> vals;
     partitionGlobalValues( num, indices, in_vals, ndxs, vals );
@@ -687,7 +683,6 @@ void MultiVector::setValuesByGlobalID( int num, size_t *indices, const double *i
 {
     if ( num == 0 )
         return;
-    INCREMENT_COUNT( "Virtual" );
     std::vector<std::vector<size_t>> ndxs;
     std::vector<std::vector<double>> vals;
     partitionGlobalValues( num, indices, in_vals, ndxs, vals );
@@ -700,7 +695,6 @@ void MultiVector::addValuesByLocalID( int num, size_t *indices, const double *in
 {
     if ( num == 0 )
         return;
-    INCREMENT_COUNT( "Virtual" );
     std::vector<std::vector<size_t>> ndxs;
     std::vector<std::vector<double>> vals;
     partitionLocalValues( num, indices, in_vals, ndxs, vals );
@@ -713,7 +707,6 @@ void MultiVector::addLocalValuesByGlobalID( int num, size_t *indices, const doub
 {
     if ( num == 0 )
         return;
-    INCREMENT_COUNT( "Virtual" );
     std::vector<std::vector<size_t>> ndxs;
     std::vector<std::vector<double>> vals;
     partitionGlobalValues( num, indices, in_vals, ndxs, vals );
@@ -727,7 +720,6 @@ void MultiVector::addValuesByGlobalID( int num, size_t *indices, const double *i
 {
     if ( num == 0 )
         return;
-    INCREMENT_COUNT( "Virtual" );
     std::vector<std::vector<size_t>> ndxs;
     std::vector<std::vector<double>> vals;
     partitionGlobalValues( num, indices, in_vals, ndxs, vals );
@@ -740,7 +732,6 @@ void MultiVector::getValuesByGlobalID( int num, size_t *indices, double *out_val
 {
     if ( num == 0 )
         return;
-    INCREMENT_COUNT( "Virtual" );
     std::vector<std::vector<size_t>> ndxs;
     std::vector<std::vector<double>> vals;
     std::vector<std::vector<int>> remap;
@@ -758,7 +749,6 @@ void MultiVector::getLocalValuesByGlobalID( int num, size_t *indices, double *ou
 {
     if ( num == 0 )
         return;
-    INCREMENT_COUNT( "Virtual" );
     std::vector<std::vector<size_t>> ndxs;
     std::vector<std::vector<double>> vals;
     std::vector<std::vector<int>> remap;
@@ -777,7 +767,6 @@ void MultiVector::getGhostValuesByGlobalID( int num, size_t *indices, double *ou
 {
     if ( num == 0 )
         return;
-    INCREMENT_COUNT( "Virtual" );
     std::vector<std::vector<size_t>> ndxs;
     std::vector<std::vector<double>> vals;
     std::vector<std::vector<int>> remap;
@@ -796,7 +785,6 @@ void MultiVector::getValuesByLocalID( int num, size_t *indices, double *out_vals
 {
     if ( num == 0 )
         return;
-    INCREMENT_COUNT( "Virtual" );
     std::vector<std::vector<size_t>> ndxs;
     std::vector<std::vector<double>> vals;
     std::vector<std::vector<int>> remap;

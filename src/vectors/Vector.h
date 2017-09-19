@@ -11,7 +11,7 @@
 #include "utils/enable_shared_from_this.h"
 #include "utils/shared_ptr.h"
 #include "vectors/Variable.h"
-#include "vectors/VectorData.h"
+#include "vectors/data/VectorData.h"
 #include "vectors/operations/VectorOperations.h"
 
 

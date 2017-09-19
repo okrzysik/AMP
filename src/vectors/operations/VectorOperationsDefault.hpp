@@ -2,7 +2,7 @@
 #define included_AMP_VectorOperationsDefault_hpp
 
 #include "vectors/operations/VectorOperationsDefault.h"
-#include "vectors/VectorData.h"
+#include "vectors/data/VectorData.h"
 #include "vectors/Vector.h"
 
 

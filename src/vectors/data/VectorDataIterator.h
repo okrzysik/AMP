@@ -248,6 +248,6 @@ public:
 } // AMP namespace
 
 
-#include "vectors/VectorDataIterator.tmpl.h"
+#include "vectors/data/VectorDataIterator.tmpl.h"
 
 #endif

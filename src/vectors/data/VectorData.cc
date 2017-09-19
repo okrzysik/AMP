@@ -1,4 +1,4 @@
-#include "VectorData.h"
+#include "vectors/data/VectorData.h"
 
 
 namespace AMP {

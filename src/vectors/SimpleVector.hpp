@@ -10,88 +10,110 @@ namespace LinearAlgebra {
 /****************************************************************
 * Constructors                                                  *
 ****************************************************************/
-template <typename T>
-SimpleVector<T>::SimpleVector() : Vector(), d_startIndex( 0 ), d_globalSize( 0 )
+template< typename TYPE, typename OPS, typename DATA >
+SimpleVector<TYPE,OPS,DATA>::SimpleVector() : Vector(), DATA()
 {
 }
 
-template <typename T>
-Vector::shared_ptr SimpleVector<T>::create( size_t localSize, const std::string& var )
+template< typename TYPE, typename OPS, typename DATA >
+Vector::shared_ptr SimpleVector<TYPE,OPS,DATA>::create( size_t localSize, const std::string& var )
 {
     return create( localSize, AMP::make_shared<Variable>( var ) );
 }
 
-template <typename T>
-Vector::shared_ptr SimpleVector<T>::create( size_t localSize, Variable::shared_ptr var )
+template< typename TYPE, typename OPS, typename DATA >
+Vector::shared_ptr SimpleVector<TYPE,OPS,DATA>::create( size_t localSize, Variable::shared_ptr var )
 {
-    AMP::shared_ptr<SimpleVector<T>> retVal( new SimpleVector<T> );
-    retVal->d_startIndex = 0;
-    retVal->setVariable( var );
-    retVal->d_Data.resize( localSize );
     AMP_MPI comm( AMP_COMM_SELF );
-    AMP::Discretization::DOFManager::shared_ptr DOFs(
-        new AMP::Discretization::DOFManager( localSize, comm ) );
-    retVal->d_DOFManager = DOFs;
-    retVal->setCommunicationList(
-        AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
-    retVal->d_comm       = comm;
-    retVal->d_globalSize = localSize;
-    return retVal;
+    auto DOFs = AMP::make_shared<AMP::Discretization::DOFManager>( localSize, comm );
+    auto ptr = new SimpleVector<TYPE,OPS,DATA>( );
+    ptr->setVariable( var );
+    ptr->allocate( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
+    ptr->d_comm = comm;
+    ptr->d_DOFManager = DOFs;
+    ptr->setCommunicationList( AMP::LinearAlgebra::CommunicationList::createEmpty( localSize, comm ) );
+    return Vector::shared_ptr( ptr );
 }
-
-template <typename T>
+template< typename TYPE, typename OPS, typename DATA >
 Vector::shared_ptr
-SimpleVector<T>::create( size_t localSize, Variable::shared_ptr var, AMP_MPI comm )
+SimpleVector<TYPE,OPS,DATA>::create( size_t localSize, Variable::shared_ptr var, AMP_MPI comm )
 {
-    AMP::shared_ptr<SimpleVector<T>> retVal( new SimpleVector<T> );
-    retVal->d_startIndex = 0;
-    retVal->setVariable( var );
-    retVal->d_Data.resize( localSize );
-    AMP::Discretization::DOFManager::shared_ptr DOFs(
-        new AMP::Discretization::DOFManager( localSize, comm ) );
-    retVal->d_DOFManager = DOFs;
-    retVal->setCommunicationList(
-        AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
-    retVal->d_comm       = comm;
-    retVal->d_globalSize = comm.sumReduce( localSize );
-    return retVal;
+    auto DOFs = AMP::make_shared<AMP::Discretization::DOFManager>( localSize, comm );
+    auto ptr = new SimpleVector<TYPE,OPS,DATA>( );
+    ptr->setVariable( var );
+    ptr->allocate( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
+    ptr->d_DOFManager = DOFs;
+    ptr->d_comm       = comm;
+    ptr->setCommunicationList( AMP::LinearAlgebra::CommunicationList::createEmpty( localSize, comm ) );
+    return Vector::shared_ptr( ptr );
 }
-
-template <typename T>
+template< typename TYPE, typename OPS, typename DATA >
 Vector::shared_ptr
-SimpleVector<T>::create( Variable::shared_ptr var,
+SimpleVector<TYPE,OPS,DATA>::create( Variable::shared_ptr var,
                          AMP::Discretization::DOFManager::shared_ptr DOFs,
                          AMP::LinearAlgebra::CommunicationList::shared_ptr commlist )
 {
-    AMP::shared_ptr<SimpleVector<T>> retVal( new SimpleVector<T> );
-    retVal->d_startIndex = DOFs->beginDOF();
-    retVal->setVariable( var );
-    retVal->d_Data.resize( DOFs->numLocalDOF() );
-    retVal->d_DOFManager = DOFs;
-    retVal->setCommunicationList( commlist );
-    retVal->d_comm       = DOFs->getComm();
-    retVal->d_globalSize = DOFs->numGlobalDOF();
-    return retVal;
+    auto ptr = new SimpleVector<TYPE,OPS,DATA>( );
+    ptr->setVariable( var );
+    ptr->allocate( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
+    ptr->d_DOFManager = DOFs;
+    ptr->setCommunicationList( commlist );
+    ptr->d_comm = DOFs->getComm();
+    return Vector::shared_ptr( ptr );
 }
+template< typename TYPE, typename OPS, typename DATA >
+void SimpleVector<TYPE,OPS,DATA>::resize( size_t N )
+{
+    d_DOFManager = AMP::make_shared<AMP::Discretization::DOFManager>( N, d_comm );
+    this->allocate( d_DOFManager->beginDOF(), d_DOFManager->numLocalDOF(), d_DOFManager->numGlobalDOF() );
+}
+
 
 
 /****************************************************************
-* Copy raw data                                                 *
+* Vector operations                                             *
 ****************************************************************/
-template <typename T>
-void SimpleVector<T>::putRawData( const double *in )
+template< typename TYPE, typename OPS, typename DATA >
+inline Vector::shared_ptr SimpleVector<TYPE,OPS,DATA>::cloneVector( const Variable::shared_ptr name ) const
 {
-    for ( size_t i = 0; i < d_Data.size(); ++i ) {
-        d_Data[i] = static_cast<T>( in[i] );
-    }
+    return create( name, d_DOFManager, getCommunicationList() );
+}
+template< typename TYPE, typename OPS, typename DATA >
+inline void SimpleVector<TYPE,OPS,DATA>::swapVectors( Vector &rhs )
+{
+    auto x = dynamic_cast<SimpleVector*>( &rhs );
+    AMP_INSIST( x != nullptr, "rhs is not a SimpleVector" );
+    //d_Data.swap( x->d_Data );
+    AMP_ERROR("Not finished");
+}
+template< typename TYPE, typename OPS, typename DATA >
+inline void SimpleVector<TYPE,OPS,DATA>::aliasVector( Vector & )
+{
+    AMP_ERROR( "Not implemented" );
+}
+template< typename TYPE, typename OPS, typename DATA >
+inline void SimpleVector<TYPE,OPS,DATA>::assemble()
+{
+    AMP_ERROR( "Not implemented" );
 }
 
-template <typename T>
-void SimpleVector<T>::copyOutRawData( double *out ) const
+
+
+/****************************************************************
+* Data operations                                               *
+****************************************************************/
+template< typename TYPE, typename OPS, typename DATA >
+inline TYPE &SimpleVector<TYPE,OPS,DATA>::operator[]( size_t i )
 {
-    for ( size_t i = 0; i < d_Data.size(); ++i ) {
-        out[i] = static_cast<double>( d_Data[i] );
-    }
+    AMP_ASSERT( i < getLocalSize() );
+    return reinterpret_cast<TYPE*>( getRawDataBlock(0) )[i];
+}
+
+template< typename TYPE, typename OPS, typename DATA >
+inline TYPE SimpleVector<TYPE,OPS,DATA>::operator[]( size_t i ) const
+{
+    AMP_ASSERT( i < getLocalSize() );
+    return reinterpret_cast<const TYPE*>( getRawDataBlock(0) )[i];
 }
 
 

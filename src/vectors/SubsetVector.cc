@@ -1,7 +1,6 @@
 #include <algorithm>
 
 #include "discretization/subsetDOFManager.h"
-#include "utils/Counter.h"
 #include "utils/Utilities.h"
 #include "vectors/MultiVector.h"
 #include "vectors/SubsetVariable.h"
@@ -159,7 +158,6 @@ void SubsetVector::copyOutRawData( double *out ) const
 ****************************************************************/
 void SubsetVector::addLocalValuesByGlobalID( int cnt, size_t *ndx, const double *vals )
 {
-    INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( d_ViewVector.get() != nullptr );
     if ( cnt == 0 )
         return;
@@ -181,7 +179,6 @@ void SubsetVector::addLocalValuesByGlobalID( int cnt, size_t *ndx, const double 
 }
 void SubsetVector::getLocalValuesByGlobalID( int cnt, size_t *ndx, double *vals ) const
 {
-    INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( d_ViewVector.get() != nullptr );
     if ( cnt == 0 )
         return;
@@ -203,7 +200,6 @@ void SubsetVector::getLocalValuesByGlobalID( int cnt, size_t *ndx, double *vals 
 }
 void SubsetVector::setLocalValuesByGlobalID( int cnt, size_t *ndx, const double *vals )
 {
-    INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( d_ViewVector.get() != nullptr );
     if ( cnt == 0 )
         return;
@@ -225,7 +221,6 @@ void SubsetVector::setLocalValuesByGlobalID( int cnt, size_t *ndx, const double 
 }
 void SubsetVector::addValuesByLocalID( int cnt, size_t *ndx, const double *vals )
 {
-    INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( d_ViewVector.get() != nullptr );
     auto t = new size_t[cnt];
     for ( int i = 0; i != cnt; i++ )
@@ -235,7 +230,6 @@ void SubsetVector::addValuesByLocalID( int cnt, size_t *ndx, const double *vals 
 }
 void SubsetVector::setValuesByLocalID( int cnt, size_t *ndx, const double *vals )
 {
-    INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( d_ViewVector.get() != nullptr );
     auto t = new size_t[cnt];
     for ( int i = 0; i != cnt; i++ )
@@ -245,7 +239,6 @@ void SubsetVector::setValuesByLocalID( int cnt, size_t *ndx, const double *vals 
 }
 void SubsetVector::getValuesByLocalID( int cnt, size_t *ndx, double *vals ) const
 {
-    INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( d_ViewVector.get() != nullptr );
     auto t = new size_t[cnt];
     for ( int i = 0; i != cnt; i++ )

@@ -1,4 +1,3 @@
-#include "utils/Counter.h"
 #include "vectors/petsc/ManagedPetscVector.h"
 #include "vectors/petsc/NativePetscVector.h"
 
@@ -74,7 +73,6 @@ inline const void *NativePetscVector::getDataBlock( size_t i ) const
 
 inline void NativePetscVector::getValuesByLocalID( int numVals, size_t *ndx, double *vals ) const
 {
-    INCREMENT_COUNT( "Virtual" );
     Vector::getValuesByLocalID( numVals, ndx, vals );
 }
 
@@ -353,7 +351,6 @@ inline double NativePetscVector::localMaxNorm( void ) const
 
 inline void NativePetscVector::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
-    INCREMENT_COUNT( "Virtual" );
     for ( int i                               = 0; i != num; i++ )
         getRawDataBlock<double>()[indices[i]] = vals[i];
 }
@@ -362,7 +359,6 @@ inline void NativePetscVector::setValuesByLocalID( int num, size_t *indices, con
 inline void
 NativePetscVector::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
-    INCREMENT_COUNT( "Virtual" );
     resetArray();
     if ( sizeof( size_t ) == sizeof( PetscInt ) ) {
         VecSetValues( d_petscVec, num, (PetscInt *) indices, vals, INSERT_VALUES );
@@ -378,7 +374,6 @@ NativePetscVector::setLocalValuesByGlobalID( int num, size_t *indices, const dou
 
 inline void NativePetscVector::addValuesByLocalID( int num, size_t *indices, const double *vals )
 {
-    INCREMENT_COUNT( "Virtual" );
     for ( int i = 0; i != num; i++ )
         getRawDataBlock<double>()[indices[i]] += vals[i];
 }
@@ -387,7 +382,6 @@ inline void NativePetscVector::addValuesByLocalID( int num, size_t *indices, con
 inline void
 NativePetscVector::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
-    INCREMENT_COUNT( "Virtual" );
     resetArray();
     if ( sizeof( size_t ) == sizeof( PetscInt ) ) {
         VecSetValues( d_petscVec, num, (PetscInt *) indices, vals, ::ADD_VALUES );
@@ -447,7 +441,6 @@ inline const void *NativePetscVector::getRawDataBlockAsVoid( size_t i ) const
 inline void
 NativePetscVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
-    INCREMENT_COUNT( "Virtual" );
     if ( numVals == 0 )
         return;
     if ( sizeof( size_t ) == sizeof( PetscInt ) ) {
