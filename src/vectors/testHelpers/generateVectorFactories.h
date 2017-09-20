@@ -16,6 +16,7 @@ namespace LinearAlgebra {
   * \param[in] factory      The vector factory to generate:
         SimpleVectorFactory<15,false,double>
         SimpleVectorFactory<45, true,double>
+        SimpleVectorFactory<45,true,double,openmp,gpu>
         ArrayVectorFactory<4,10,false,double>
         ArrayVectorFactory<4,10,true,double>
         SimplePetscNativeFactory

@@ -27,7 +27,7 @@ inline const AMP_MPI& VectorOperations::getComm() const
 /****************************************************************
 * Access ghost values                                           *
 ****************************************************************/
-inline bool VectorOperations::haGhosts() const
+inline bool VectorOperations::hasGhosts() const
 {
     if ( d_VectorData == nullptr )
         return false;

@@ -137,6 +137,18 @@ public:
       */
     inline bool operator!=( const VectorDataIterator &rhs ) const;
 
+    //! Less than operator
+    inline bool operator<( const VectorDataIterator &rhs ) const;
+
+    //! Greater than operator
+    inline bool operator>( const VectorDataIterator &rhs ) const;
+
+    //! Less than or equal operator
+    inline bool operator<=( const VectorDataIterator &rhs ) const;
+
+    //! Greater than or equal operator
+    inline bool operator>=( const VectorDataIterator &rhs ) const;
+
     /** \brief Increment the iterator
       * \returns a reference to this iterator
       */

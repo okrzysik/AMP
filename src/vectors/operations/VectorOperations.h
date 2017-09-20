@@ -384,7 +384,7 @@ protected:
 
     VectorOperations();
 
-    inline bool haGhosts() const;
+    inline bool hasGhosts() const;
     inline std::vector<double>& getGhosts();
 
 

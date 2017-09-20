@@ -16,6 +16,10 @@
 #endif
 #endif
 
+#ifdef USE_OPENMP
+    #include "vectors/operations/OpenMP/VectorOperationsOpenMP.h"
+#endif
+
 #include <vector>
 #include <string>
 
@@ -83,6 +87,50 @@ int to_bool( const std::string& s )
 }
 
 
+// Generate a SimpleVectorFactory
+template<typename TYPE, typename VecOps>
+AMP::shared_ptr<VectorFactory> generateSimpleVectorFactory( int N, bool global, const std::string& data )
+{
+    AMP::shared_ptr<VectorFactory> factory;
+    if (data == "cpu") {
+        factory.reset( new SimpleVectorFactory<TYPE,VecOps,AMP::LinearAlgebra::VectorDataCPU<TYPE>>( N, global ) );
+    } else {
+        AMP_ERROR("Unknown VectorData");
+    }
+    return factory;
+}
+template<typename TYPE>
+AMP::shared_ptr<VectorFactory> generateSimpleVectorFactory( int N, bool global, const std::string& ops, const std::string& data )
+{
+    AMP::shared_ptr<VectorFactory> factory;
+    if ( ops == "default" ) {
+        factory = generateSimpleVectorFactory<TYPE,AMP::LinearAlgebra::VectorOperationsOpenMP<TYPE>>( N, global, data );
+    } else if ( ops == "openmp" ) {
+        #ifdef USE_OPENMP
+            factory = generateSimpleVectorFactory<TYPE,AMP::LinearAlgebra::VectorOperationsOpenMP<TYPE>>( N, global, data );
+        #else
+            AMP_ERROR("openmp generators are not supported without OpenMP support");
+        #endif
+    } else {
+        AMP_ERROR("Unknown VectorOperations");
+    }
+    return factory;
+}
+AMP::shared_ptr<VectorFactory> generateSimpleVectorFactory( int N, bool global,
+    const std::string& type, const std::string& ops, const std::string& data )
+{
+    AMP::shared_ptr<VectorFactory> factory;
+    if ( type == "double" ) {
+        factory = generateSimpleVectorFactory<double>( N, global, ops, data );
+    } else if ( type == "float" ) {
+        factory = generateSimpleVectorFactory<float>( N, global, ops, data );
+    } else {
+        AMP_ERROR("Unknown VectorOperations");
+    }
+    return factory;
+}
+
+
 AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string& name )
 {
     auto pos = name.find_first_of('<');
@@ -91,15 +139,14 @@ AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string& name )
     AMP::shared_ptr<VectorFactory> factory;
     if ( factoryName == "SimpleVectorFactory" ) {
         AMP_ASSERT(args.size()>=2);
-        if ( args.size()==2 )
+        // Set default arguments
+        if ( args.size()<3 )
             args.push_back("double");
-        if ( args[2] == "double" ) {
-            factory.reset( new SimpleVectorFactory<double>( to_int(args[0]), to_bool(args[1]) ) );
-        } else if ( args[2] == "float" ) {
-            factory.reset( new SimpleVectorFactory<float>( to_int(args[0]), to_bool(args[1]) ) );
-        } else {
-            AMP_ERROR("Unknown type");
-        }
+        if ( args.size()<4 )
+            args.push_back("default");
+        if ( args.size()<5 )
+            args.push_back("cpu");
+        factory = generateSimpleVectorFactory( to_int(args[0]), to_bool(args[1]), args[2], args[3], args[4] );
     } else if ( factoryName == "ArrayVectorFactory" ) {
         AMP_ASSERT(args.size()>=3);
         if ( args.size()==3 )
