@@ -125,7 +125,7 @@ public: // Virtual functions
     virtual void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const override;
 
 
-public: // Advanced functions
+public: // Advanced virtual functions
 
     /**\brief  A unique id for the underlying data allocation
       *\details This is a unique id that is associated with the data
@@ -143,7 +143,7 @@ public: // Advanced functions
 
     /** \brief Return a pointer to a particular block of memory in the
       * vector
-      * \param i The block to return
+      * \param i        The block to return
       */
     virtual const void* getRawDataBlockAsVoid( size_t i ) const override;
 
@@ -157,6 +157,19 @@ public: // Advanced functions
       * \param block    The block id to check
       */
     virtual bool isTypeId( size_t hash, size_t block ) const override;
+
+
+public:  // Non-virtual functions
+
+    /** \brief Access the raw element
+      * \param i        The element to return (local index)
+      */
+    TYPE& operator[]( size_t i );
+
+    /** \brief Access the raw element
+      * \param i        The element to return (local index)
+      */
+    const TYPE& operator[]( size_t i ) const;
 
 
 protected:

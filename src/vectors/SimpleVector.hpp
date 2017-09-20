@@ -98,24 +98,5 @@ inline void SimpleVector<TYPE,OPS,DATA>::assemble()
 }
 
 
-
-/****************************************************************
-* Data operations                                               *
-****************************************************************/
-template< typename TYPE, typename OPS, typename DATA >
-inline TYPE &SimpleVector<TYPE,OPS,DATA>::operator[]( size_t i )
-{
-    AMP_ASSERT( i < getLocalSize() );
-    return reinterpret_cast<TYPE*>( getRawDataBlock(0) )[i];
-}
-
-template< typename TYPE, typename OPS, typename DATA >
-inline TYPE SimpleVector<TYPE,OPS,DATA>::operator[]( size_t i ) const
-{
-    AMP_ASSERT( i < getLocalSize() );
-    return reinterpret_cast<const TYPE*>( getRawDataBlock(0) )[i];
-}
-
-
 }
 }

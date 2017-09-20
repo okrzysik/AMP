@@ -87,6 +87,17 @@ inline const void* VectorDataCPU<TYPE>::getRawDataBlockAsVoid( size_t i ) const
 * Access individual values                                      *
 ****************************************************************/
 template<typename TYPE>
+inline TYPE& VectorDataCPU<TYPE>::operator[]( size_t i )
+{
+    return d_Data[i];
+}
+
+template<typename TYPE>
+inline const TYPE& VectorDataCPU<TYPE>::operator[]( size_t i ) const
+{
+    return d_Data[i];
+}
+template<typename TYPE>
 inline void VectorDataCPU<TYPE>::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
     for ( int i            = 0; i != num; i++ )

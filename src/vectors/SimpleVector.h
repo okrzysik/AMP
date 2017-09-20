@@ -12,7 +12,7 @@ namespace LinearAlgebra {
 
 
 /** \brief A core-local vector
-* \details This is a Vector that implements the Vector interface for a std::vector<double>.
+* \details This is a native AMP vector
 */
 template< typename TYPE, typename VecOps=VectorOperationsDefault<TYPE>, typename VecData=VectorDataCPU<TYPE> >
 class SimpleVector :
@@ -66,9 +66,6 @@ public:
     //! Destructor
     virtual ~SimpleVector() override {}
 
-    // Access the raw elements
-    TYPE &operator[]( size_t i );
-    TYPE operator[]( size_t i ) const;
 
     //! Resize this vector
     virtual void resize( size_t i );
