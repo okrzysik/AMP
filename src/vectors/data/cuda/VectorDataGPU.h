@@ -1,5 +1,5 @@
-#ifndef included_AMP_VectorDataCPU
-#define included_AMP_VectorDataCPU
+#ifndef included_AMP_VectorDataGPU
+#define included_AMP_VectorDataGPU
 
 #include "vectors/data/VectorData.h"
 
@@ -18,18 +18,18 @@ class VectorDataIterator;
 
   \details
 
-  VectorDataCPU is a default implimentation of VectorData that stores
-  the local values as a single block of data on the CPU.
+  VectorDataGPU is a default implimentation of VectorData that stores
+  the local values as a single block of data on the GPU.
 
   */
 template<typename TYPE=double>
-class VectorDataCPU : virtual public VectorData
+class VectorDataGPU : virtual public VectorData
 {
 
 public: // Virtual functions
 
     //! Virtual destructor
-    virtual ~VectorDataCPU() {}
+    virtual ~VectorDataGPU();
 
 
     /** \brief Number of blocks of contiguous data in the Vector
@@ -174,22 +174,17 @@ public:  // Non-virtual functions
 
 protected:
 
-    VectorDataCPU(): d_startIndex(0), d_globalSize(0) {}
+    VectorDataGPU(): d_Data(nullptr), d_startIndex(0), d_localSize(0), d_globalSize(0) {}
 
     void allocate( size_t start, size_t localSize, size_t globalSize );
 
 
 private:
 
-    std::vector<TYPE> d_Data;
+    TYPE *d_Data;
     size_t d_startIndex;
+    size_t d_localSize;
     size_t d_globalSize;
-
-
-public: // Deprecated functions
-
-    //! return a const reference to the internal data container (deprecated)
-    inline const std::vector<TYPE> &getData( void ) const { return d_Data; }
 
 };
 

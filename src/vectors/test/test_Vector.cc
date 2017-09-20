@@ -9,6 +9,7 @@
 
 int main( int argc, char **argv )
 {
+
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
@@ -20,6 +21,10 @@ int main( int argc, char **argv )
     testBasicVector( ut, SimpleFactory2 );
     testBasicVector( ut, "SimpleVectorFactory<15,false,double,openmp,cpu>" );
     //testBasicVector( ut, "SimpleVectorFactory<15,false,float>" );
+#if USE_CUDA
+    testBasicVector( ut, "SimpleVectorFactory<15,false,double,default,gpu>" );
+    //testBasicVector( ut, "SimpleVectorFactory<15,false,double,cuda,gpu>" );
+#endif
     AMP::pout << std::endl;
 
     AMP::pout << "Testing ArrayVector" << std::endl;

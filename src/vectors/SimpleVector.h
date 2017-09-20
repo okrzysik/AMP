@@ -88,6 +88,6 @@ public: // Functions derived from Vector
 } // AMP namespace
 
 
-#include "SimpleVector.hpp"
+#include "vectors/SimpleVector.hpp"
 
 #endif

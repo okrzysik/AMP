@@ -1,26 +1,36 @@
-#ifndef included_AMP_VectorDataCPU_hpp
-#define included_AMP_VectorDataCPU_hpp
+#ifndef included_AMP_VectorDataGPU_hpp
+#define included_AMP_VectorDataGPU_hpp
 
-#include "vectors/data/VectorDataCPU.h"
+#include "vectors/data/cuda/VectorDataGPU.h"
+
+
+#include <cuda_runtime_api.h>
+#include <cuda.h>
 
 
 namespace AMP {
 namespace LinearAlgebra {
 
 
-extern template class VectorDataCPU<double>; // Suppresses implicit instantiation below --
-extern template class VectorDataCPU<float>; // Suppresses implicit instantiation below --
+extern template class VectorDataGPU<double>; // Suppresses implicit instantiation below --
+extern template class VectorDataGPU<float>; // Suppresses implicit instantiation below --
 
 
 /****************************************************************
 * Allocate the data                                             *
 ****************************************************************/
 template<typename TYPE>
-void VectorDataCPU<TYPE>::allocate( size_t start, size_t localSize, size_t globalSize )
+void VectorDataGPU<TYPE>::allocate( size_t start, size_t localSize, size_t globalSize )
 {
-    d_Data.resize( localSize );
+    cudaMallocManaged( (void**) &d_Data, localSize*sizeof(TYPE), cudaMemAttachGlobal );
     d_startIndex = start;
+    d_localSize = localSize;
     d_globalSize = globalSize;
+}
+template<typename TYPE>
+VectorDataGPU<TYPE>::~VectorDataGPU()
+{
+    cudaFree( d_Data );
 }
 
 
@@ -28,39 +38,39 @@ void VectorDataCPU<TYPE>::allocate( size_t start, size_t localSize, size_t globa
 * Return basic properties                                       *
 ****************************************************************/
 template<typename TYPE>
-inline size_t VectorDataCPU<TYPE>::numberOfDataBlocks() const
+size_t VectorDataGPU<TYPE>::numberOfDataBlocks() const
 {
     return 1;
 }
 template<typename TYPE>
-inline size_t VectorDataCPU<TYPE>::sizeOfDataBlock( size_t i ) const
+size_t VectorDataGPU<TYPE>::sizeOfDataBlock( size_t i ) const
 {
     if ( i > 0 )
         return 0;
-    return d_Data.size();
+    return d_localSize;
 }
 template<typename TYPE>
-inline size_t VectorDataCPU<TYPE>::getLocalSize() const
+size_t VectorDataGPU<TYPE>::getLocalSize() const
 {
-    return d_Data.size();
+    return d_localSize;
 }
 template<typename TYPE>
-inline size_t VectorDataCPU<TYPE>::getGlobalSize() const
+size_t VectorDataGPU<TYPE>::getGlobalSize() const
 {
     return d_globalSize;
 }
 template<typename TYPE>
-uint64_t VectorDataCPU<TYPE>::getDataID() const
+uint64_t VectorDataGPU<TYPE>::getDataID() const
 {
-    return reinterpret_cast<uint64_t>( d_Data.data() );
+    return reinterpret_cast<uint64_t>( d_Data );
 }
 template<typename TYPE>
-bool VectorDataCPU<TYPE>::isTypeId( size_t hash, size_t ) const
+bool VectorDataGPU<TYPE>::isTypeId( size_t hash, size_t ) const
 {
     return hash == typeid(TYPE).hash_code();
 }
 template<typename TYPE>
-size_t VectorDataCPU<TYPE>::sizeofDataBlockType( size_t ) const
+size_t VectorDataGPU<TYPE>::sizeofDataBlockType( size_t ) const
 {
     return sizeof(TYPE);
 }
@@ -70,20 +80,20 @@ size_t VectorDataCPU<TYPE>::sizeofDataBlockType( size_t ) const
 * Access the raw data blocks                                    *
 ****************************************************************/
 template<typename TYPE>
-inline void* VectorDataCPU<TYPE>::getRawDataBlockAsVoid( size_t i )
+inline void* VectorDataGPU<TYPE>::getRawDataBlockAsVoid( size_t i )
 {
     if ( i != 0 ) {
         return 0;
     }
-    return d_Data.data();
+    return d_Data;
 }
 template<typename TYPE>
-inline const void* VectorDataCPU<TYPE>::getRawDataBlockAsVoid( size_t i ) const
+inline const void* VectorDataGPU<TYPE>::getRawDataBlockAsVoid( size_t i ) const
 {
     if ( i != 0 ) {
         return 0;
     }
-    return d_Data.data();
+    return d_Data;
 }
 
 
@@ -91,18 +101,18 @@ inline const void* VectorDataCPU<TYPE>::getRawDataBlockAsVoid( size_t i ) const
 * Access individual values                                      *
 ****************************************************************/
 template<typename TYPE>
-inline TYPE& VectorDataCPU<TYPE>::operator[]( size_t i )
+inline TYPE& VectorDataGPU<TYPE>::operator[]( size_t i )
 {
     return d_Data[i];
 }
 
 template<typename TYPE>
-inline const TYPE& VectorDataCPU<TYPE>::operator[]( size_t i ) const
+inline const TYPE& VectorDataGPU<TYPE>::operator[]( size_t i ) const
 {
     return d_Data[i];
 }
 template<typename TYPE>
-inline void VectorDataCPU<TYPE>::setValuesByLocalID( int num, size_t *indices, const double *vals )
+inline void VectorDataGPU<TYPE>::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
     for ( int i            = 0; i != num; i++ )
         d_Data[indices[i]] = static_cast<TYPE>( vals[i] );
@@ -112,10 +122,10 @@ inline void VectorDataCPU<TYPE>::setValuesByLocalID( int num, size_t *indices, c
 
 template<typename TYPE>
 inline void
-VectorDataCPU<TYPE>::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+VectorDataGPU<TYPE>::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
     for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_startIndex && indices[i] < d_startIndex + d_Data.size() );
+        AMP_ASSERT( indices[i] >= d_startIndex && indices[i] < d_startIndex + d_localSize );
         d_Data[indices[i] - d_startIndex] = static_cast<TYPE>( vals[i] );
     }
     if ( *d_UpdateState == UpdateState::UNCHANGED )
@@ -123,7 +133,7 @@ VectorDataCPU<TYPE>::setLocalValuesByGlobalID( int num, size_t *indices, const d
 }
 
 template<typename TYPE>
-inline void VectorDataCPU<TYPE>::addValuesByLocalID( int num, size_t *indices, const double *vals )
+inline void VectorDataGPU<TYPE>::addValuesByLocalID( int num, size_t *indices, const double *vals )
 {
     for ( int i = 0; i != num; i++ )
         d_Data[indices[i]] += static_cast<TYPE>( vals[i] );
@@ -133,10 +143,10 @@ inline void VectorDataCPU<TYPE>::addValuesByLocalID( int num, size_t *indices, c
 
 template<typename TYPE>
 inline void
-VectorDataCPU<TYPE>::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+VectorDataGPU<TYPE>::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
     for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_startIndex && indices[i] < d_startIndex + d_Data.size() );
+        AMP_ASSERT( indices[i] >= d_startIndex && indices[i] < d_startIndex + d_localSize );
         d_Data[indices[i] - d_startIndex] += static_cast<TYPE>( vals[i] );
     }
     if ( *d_UpdateState == UpdateState::UNCHANGED )
@@ -145,10 +155,10 @@ VectorDataCPU<TYPE>::addLocalValuesByGlobalID( int num, size_t *indices, const d
 
 template<typename TYPE>
 inline void
-VectorDataCPU<TYPE>::getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const
+VectorDataGPU<TYPE>::getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const
 {
     for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_startIndex && indices[i] < d_startIndex + d_Data.size() );
+        AMP_ASSERT( indices[i] >= d_startIndex && indices[i] < d_startIndex + d_localSize );
         vals[i] = static_cast<double>( d_Data[indices[i] - d_startIndex] );
     }
 }
@@ -158,17 +168,17 @@ VectorDataCPU<TYPE>::getLocalValuesByGlobalID( int num, size_t *indices, double 
 * Copy raw data                                                 *
 ****************************************************************/
 template<typename TYPE>
-void VectorDataCPU<TYPE>::putRawData( const double *in )
+void VectorDataGPU<TYPE>::putRawData( const double *in )
 {
-    for ( size_t i = 0; i < d_Data.size(); ++i ) {
+    for ( size_t i = 0; i < d_localSize; ++i ) {
         d_Data[i] = static_cast<TYPE>( in[i] );
     }
 }
 
 template<typename TYPE>
-void VectorDataCPU<TYPE>::copyOutRawData( double *out ) const
+void VectorDataGPU<TYPE>::copyOutRawData( double *out ) const
 {
-    for ( size_t i = 0; i < d_Data.size(); ++i ) {
+    for ( size_t i = 0; i < d_localSize; ++i ) {
         out[i] = static_cast<double>( d_Data[i] );
     }
 }

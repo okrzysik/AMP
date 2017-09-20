@@ -121,7 +121,8 @@ public:
       * \see DataChangeListener
       * \details  This returns a reference to the data pointed to by the iterator
       */
-    inline TYPE &operator*();
+    inline TYPE& operator*() { return d_data[d_CurBlock][d_CurOffset]; }
+
 
     /** \brief Test for equality
       * \return True iff iterators point to the same place on the same vector
@@ -260,6 +261,6 @@ public:
 } // AMP namespace
 
 
-#include "vectors/data/VectorDataIterator.tmpl.h"
+#include "vectors/data/VectorDataIterator.inline.h"
 
 #endif

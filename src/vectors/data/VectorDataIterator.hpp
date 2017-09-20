@@ -272,40 +272,6 @@ int VectorDataIterator<TYPE>::operator-( const VectorDataIterator<TYPE> &rhs ) c
 }
 
 
-/****************************************************************
-* Boolean Operators                                             *
-****************************************************************/
-template<typename TYPE>
-inline bool VectorDataIterator<TYPE>::operator==( const VectorDataIterator<TYPE> &rhs ) const
-{
-    return d_hashcode == rhs.d_hashcode && d_pos == rhs.d_pos;
-}
-template<typename TYPE>
-inline bool VectorDataIterator<TYPE>::operator!=( const VectorDataIterator<TYPE> &rhs ) const
-{
-    return d_hashcode != rhs.d_hashcode || d_pos != rhs.d_pos;
-}
-template<typename TYPE>
-inline bool VectorDataIterator<TYPE>::operator<( const VectorDataIterator<TYPE> &rhs ) const
-{
-    return d_hashcode == rhs.d_hashcode ? ( d_pos < rhs.d_pos ) : ( d_hashcode < rhs.d_hashcode );
-}
-template<typename TYPE>
-inline bool VectorDataIterator<TYPE>::operator>( const VectorDataIterator<TYPE> &rhs ) const
-{
-    return d_hashcode == rhs.d_hashcode ? ( d_pos > rhs.d_pos ) : ( d_hashcode > rhs.d_hashcode );
-}
-template<typename TYPE>
-inline bool VectorDataIterator<TYPE>::operator<=( const VectorDataIterator<TYPE> &rhs ) const
-{
-    return d_hashcode == rhs.d_hashcode ? ( d_pos <= rhs.d_pos ) : ( d_hashcode <= rhs.d_hashcode );
-}
-template<typename TYPE>
-inline bool VectorDataIterator<TYPE>::operator>=( const VectorDataIterator<TYPE> &rhs ) const
-{
-    return d_hashcode == rhs.d_hashcode ? ( d_pos >= rhs.d_pos ) : ( d_hashcode >= rhs.d_hashcode );
-}
-
 
 /****************************************************************
 * Assigment Operators                                           *
@@ -319,11 +285,6 @@ TYPE& VectorDataIterator<TYPE>::operator[]( int i )
     if ( i < 0 )
         tmp.recede( -i );
     return tmp.d_data[tmp.d_CurBlock][tmp.d_CurOffset];
-}
-template<typename TYPE>
-inline TYPE &VectorDataIterator<TYPE>::operator*()
-{
-    return d_data[d_CurBlock][d_CurOffset];
 }
 
 

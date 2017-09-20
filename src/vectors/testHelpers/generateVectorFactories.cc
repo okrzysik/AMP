@@ -19,6 +19,9 @@
 #ifdef USE_OPENMP
     #include "vectors/operations/OpenMP/VectorOperationsOpenMP.h"
 #endif
+#ifdef USE_CUDA
+    #include "vectors/data/cuda/VectorDataGPU.h"
+#endif
 
 #include <vector>
 #include <string>
@@ -94,6 +97,12 @@ AMP::shared_ptr<VectorFactory> generateSimpleVectorFactory( int N, bool global, 
     AMP::shared_ptr<VectorFactory> factory;
     if (data == "cpu") {
         factory.reset( new SimpleVectorFactory<TYPE,VecOps,AMP::LinearAlgebra::VectorDataCPU<TYPE>>( N, global ) );
+    } else if (data == "gpu") {
+        #ifdef USE_CUDA
+            factory.reset( new SimpleVectorFactory<TYPE,VecOps,AMP::LinearAlgebra::VectorDataGPU<TYPE>>( N, global ) );
+        #else
+            AMP_ERROR("gpu data is not supported without CUDA");
+        #endif
     } else {
         AMP_ERROR("Unknown VectorData");
     }
@@ -109,7 +118,13 @@ AMP::shared_ptr<VectorFactory> generateSimpleVectorFactory( int N, bool global, 
         #ifdef USE_OPENMP
             factory = generateSimpleVectorFactory<TYPE,AMP::LinearAlgebra::VectorOperationsOpenMP<TYPE>>( N, global, data );
         #else
-            AMP_ERROR("openmp generators are not supported without OpenMP support");
+            AMP_ERROR("openmp generators are not supported without OpenMP");
+        #endif
+    } else if ( ops == "cuda" ) {
+        #ifdef USE_CUDA
+            AMP_ERROR("Not Finished");
+        #else
+            AMP_ERROR("cuda generators are not supported without CUDA");
         #endif
     } else {
         AMP_ERROR("Unknown VectorOperations");

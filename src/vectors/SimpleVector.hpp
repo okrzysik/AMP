@@ -74,12 +74,12 @@ void SimpleVector<TYPE,OPS,DATA>::resize( size_t N )
 * Vector operations                                             *
 ****************************************************************/
 template< typename TYPE, typename OPS, typename DATA >
-inline Vector::shared_ptr SimpleVector<TYPE,OPS,DATA>::cloneVector( const Variable::shared_ptr name ) const
+Vector::shared_ptr SimpleVector<TYPE,OPS,DATA>::cloneVector( const Variable::shared_ptr name ) const
 {
     return create( name, d_DOFManager, getCommunicationList() );
 }
 template< typename TYPE, typename OPS, typename DATA >
-inline void SimpleVector<TYPE,OPS,DATA>::swapVectors( Vector &rhs )
+void SimpleVector<TYPE,OPS,DATA>::swapVectors( Vector &rhs )
 {
     auto x = dynamic_cast<SimpleVector*>( &rhs );
     AMP_INSIST( x != nullptr, "rhs is not a SimpleVector" );
@@ -87,12 +87,12 @@ inline void SimpleVector<TYPE,OPS,DATA>::swapVectors( Vector &rhs )
     AMP_ERROR("Not finished");
 }
 template< typename TYPE, typename OPS, typename DATA >
-inline void SimpleVector<TYPE,OPS,DATA>::aliasVector( Vector & )
+void SimpleVector<TYPE,OPS,DATA>::aliasVector( Vector & )
 {
     AMP_ERROR( "Not implemented" );
 }
 template< typename TYPE, typename OPS, typename DATA >
-inline void SimpleVector<TYPE,OPS,DATA>::assemble()
+void SimpleVector<TYPE,OPS,DATA>::assemble()
 {
     AMP_ERROR( "Not implemented" );
 }
