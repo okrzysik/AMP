@@ -19,8 +19,10 @@ int main( int argc, char **argv )
     AMP::pout << "Testing SimpleVector" << std::endl;
     testBasicVector( ut, SimpleFactory1 );
     testBasicVector( ut, SimpleFactory2 );
-    testBasicVector( ut, "SimpleVectorFactory<15,false,double,openmp,cpu>" );
     //testBasicVector( ut, "SimpleVectorFactory<15,false,float>" );
+#if USE_OPENMP
+    testBasicVector( ut, "SimpleVectorFactory<15,false,double,openmp,cpu>" );
+#endif
 #if USE_CUDA
     testBasicVector( ut, "SimpleVectorFactory<15,false,double,default,gpu>" );
     //testBasicVector( ut, "SimpleVectorFactory<15,false,double,cuda,gpu>" );

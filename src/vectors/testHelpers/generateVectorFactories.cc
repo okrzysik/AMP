@@ -113,7 +113,7 @@ AMP::shared_ptr<VectorFactory> generateSimpleVectorFactory( int N, bool global, 
 {
     AMP::shared_ptr<VectorFactory> factory;
     if ( ops == "default" ) {
-        factory = generateSimpleVectorFactory<TYPE,AMP::LinearAlgebra::VectorOperationsOpenMP<TYPE>>( N, global, data );
+        factory = generateSimpleVectorFactory<TYPE,AMP::LinearAlgebra::VectorOperationsDefault<TYPE>>( N, global, data );
     } else if ( ops == "openmp" ) {
         #ifdef USE_OPENMP
             factory = generateSimpleVectorFactory<TYPE,AMP::LinearAlgebra::VectorOperationsOpenMP<TYPE>>( N, global, data );
