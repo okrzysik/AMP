@@ -60,6 +60,8 @@ VectorDataIterator<TYPE>& VectorDataIterator<TYPE>::operator=( const VectorDataI
 {
     if ( this == &rhs )
         return *this;
+    delete [] d_data;
+    delete [] d_blockSize;
     d_N_blocks = rhs.d_N_blocks;
     d_CurBlock = rhs.d_CurBlock;
     d_CurOffset = rhs.d_CurOffset;
