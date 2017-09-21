@@ -20,7 +20,7 @@ The websites associated with the AMP package includes:
 * CDash regression dashboard: http://vayu.ornl.gov/CDash/index.php?project=AMP
 
 # Team #
-* Bobby Philip (ORNL)
+* Bobby Philip (LANL)
 * Mark Berrill (ORNL)
 
 # Alumni #
