@@ -403,7 +403,6 @@ void MPI_CLASS::reset()
         if ( d_manage ) {
 #ifdef USE_MPI
             MPI_Comm_set_errhandler( communicator, MPI_ERRORS_ARE_FATAL );
-            delete d_count;
             int err = MPI_Comm_free( &communicator );
             if ( err != MPI_SUCCESS )
                 MPI_ERROR( "Problem free'ing MPI_Comm object" );
@@ -413,6 +412,7 @@ void MPI_CLASS::reset()
         }
         if ( d_ranks != nullptr )
             delete[] d_ranks;
+        delete d_count;
     }
     if ( d_currentTag == nullptr ) {
         // No tag index
