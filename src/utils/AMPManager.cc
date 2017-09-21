@@ -297,14 +297,6 @@ void AMPManager::shutdown()
     ShutdownRegistry::callRegisteredShutdowns();
     // Shutdown the parallel IO
     PIO::finalize();
-// Shutdown LibMesh
-#ifdef USE_EXT_LIBMESH
-// if ( AMP::Mesh::initializeLibMesh::isInitialized() ) {
-//    AMP_ERROR("Libmesh should be finalized before shutting down");
-//}
-// delete std::map objects from libmesh string_to_enum.C
-// clear_libmesh_enums();
-#endif
     // Shutdown MPI
     comm_world.barrier();   // Sync all processes
     clearMPIErrorHandler(); // Clear MPI error handler before deleting comms
@@ -322,6 +314,7 @@ void AMPManager::shutdown()
 #ifdef USE_EXT_PETSC
     if ( called_PetscInitialize ) {
         double petsc_start_time = Utilities::time();
+        PetscPopSignalHandler();
         PetscFinalize();
         petsc_time = Utilities::time() - petsc_start_time;
     }
