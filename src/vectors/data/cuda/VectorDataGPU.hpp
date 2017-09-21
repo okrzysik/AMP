@@ -23,6 +23,7 @@ template<typename TYPE>
 void VectorDataGPU<TYPE>::allocate( size_t start, size_t localSize, size_t globalSize )
 {
     cudaMallocManaged( (void**) &d_Data, localSize*sizeof(TYPE), cudaMemAttachGlobal );
+    AMP_INSIST( d_Data, "Failed to allocate memory on device" );
     d_startIndex = start;
     d_localSize = localSize;
     d_globalSize = globalSize;

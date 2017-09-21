@@ -25,7 +25,7 @@ int main( int argc, char **argv )
 #endif
 #if USE_CUDA
     testBasicVector( ut, "SimpleVectorFactory<15,false,double,default,gpu>" );
-    //testBasicVector( ut, "SimpleVectorFactory<15,false,double,cuda,gpu>" );
+    testBasicVector( ut, "SimpleVectorFactory<15,false,double,cuda,gpu>" );
 #endif
     AMP::pout << std::endl;
 

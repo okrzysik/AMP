@@ -21,6 +21,7 @@
 #endif
 #ifdef USE_CUDA
     #include "vectors/data/cuda/VectorDataGPU.h"
+    #include "vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
 
 #include <vector>
@@ -122,7 +123,7 @@ AMP::shared_ptr<VectorFactory> generateSimpleVectorFactory( int N, bool global, 
         #endif
     } else if ( ops == "cuda" ) {
         #ifdef USE_CUDA
-            AMP_ERROR("Not Finished");
+            factory = generateSimpleVectorFactory<TYPE,AMP::LinearAlgebra::VectorOperationsCuda<TYPE>>( N, global, data );
         #else
             AMP_ERROR("cuda generators are not supported without CUDA");
         #endif
