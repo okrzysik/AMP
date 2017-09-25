@@ -1,5 +1,5 @@
-#ifndef included_AMP_VectorOperationsDefault
-#define included_AMP_VectorOperationsDefault
+#ifndef included_AMP_VectorOperationsOpenMP
+#define included_AMP_VectorOperationsOpenMP
 
 
 #include "vectors/operations/VectorOperations.h"
@@ -11,19 +11,19 @@ namespace LinearAlgebra {
 
 /**
   * \brief  A default set of vector operations
-  * \details VectorOperationsDefault impliments a default set of 
+  * \details VectorOperationsOpenMP impliments a default set of 
   *    vector operations on the CPU. 
   */
 template<typename TYPE=double>
-class VectorOperationsDefault : virtual public VectorOperations
+class VectorOperationsOpenMP : virtual public VectorOperations
 {
 public:
 
     // Constructor
-    VectorOperationsDefault() {}
+    VectorOperationsOpenMP() {}
 
     //! Destructor
-    virtual ~VectorOperationsDefault() {}
+    virtual ~VectorOperationsOpenMP() {}
 
     //! Clone the operations
     virtual AMP::shared_ptr<VectorOperations> cloneOperations() const override;
@@ -206,7 +206,7 @@ public:
     virtual void addScalar( const VectorOperations &x, double alpha ) override;
 
 
-protected:
+private:
 
     /**
       * \brief Returns the local minimum of the quotient of two vectors:

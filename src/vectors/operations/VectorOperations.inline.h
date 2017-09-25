@@ -2,7 +2,7 @@
 #define included_AMP_VectorOperations_inline
 
 
-#include "vectors/VectorData.h"
+#include "vectors/data/VectorData.h"
 
 
 namespace AMP {
@@ -27,7 +27,7 @@ inline const AMP_MPI& VectorOperations::getComm() const
 /****************************************************************
 * Access ghost values                                           *
 ****************************************************************/
-inline bool VectorOperations::haGhosts() const
+inline bool VectorOperations::hasGhosts() const
 {
     if ( d_VectorData == nullptr )
         return false;

@@ -211,7 +211,6 @@ void EpetraVectorEngine::setRandomValues( void )
 
 void EpetraVectorEngine::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
-    INCREMENT_COUNT( "Virtual" );
     for ( int i                        = 0; i != num; i++ )
         getEpetra_Vector()[indices[i]] = vals[i];
 }
@@ -219,7 +218,6 @@ void EpetraVectorEngine::setValuesByLocalID( int num, size_t *indices, const dou
 
 void EpetraVectorEngine::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
-    INCREMENT_COUNT( "Virtual" );
     if ( num == 0 )
         return;
     AMP_ASSERT( getGlobalSize() < 0x80000000 );
@@ -231,7 +229,6 @@ void EpetraVectorEngine::setLocalValuesByGlobalID( int num, size_t *indices, con
 
 void EpetraVectorEngine::addValuesByLocalID( int num, size_t *indices, const double *vals )
 {
-    INCREMENT_COUNT( "Virtual" );
     if ( num == 0 )
         return;
     for ( int i = 0; i != num; i++ )
@@ -240,7 +237,6 @@ void EpetraVectorEngine::addValuesByLocalID( int num, size_t *indices, const dou
 
 void EpetraVectorEngine::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
-    INCREMENT_COUNT( "Virtual" );
     if ( num == 0 )
         return;
     AMP_ASSERT( getGlobalSize() < 0x80000000 );
@@ -252,13 +248,11 @@ void EpetraVectorEngine::addLocalValuesByGlobalID( int num, size_t *indices, con
 
 void EpetraVectorEngine::getValuesByLocalID( int, size_t *, double * ) const
 {
-    INCREMENT_COUNT( "Virtual" );
     AMP_ERROR( "This shouldn't be called" );
 }
 
 void EpetraVectorEngine::getLocalValuesByGlobalID( int, size_t *, double * ) const
 {
-    INCREMENT_COUNT( "Virtual" );
     AMP_ERROR( "This shouldn't be called" );
 }
 double EpetraVectorEngine::L1Norm( void ) const

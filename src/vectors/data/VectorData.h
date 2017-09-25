@@ -19,7 +19,7 @@ class VectorDataIterator;
 
   \details
 
-  VectorData is a temporary class that is helping disassociate data storage
+  VectorData is a class to helping disassociate data storage
   and vector operations such as dot product, norms, etc.  Currently, there are
   two classes that inherit from VectorData:  Vector and VectorEngine.  At
   some time in the (not so) distant future, this class will be dissolved entirely
@@ -574,7 +574,7 @@ protected: // Internal data
 } // AMP namespace
 
 
-#include "VectorData.inline.h"
+#include "vectors/data/VectorData.inline.h"
 
 
 #endif

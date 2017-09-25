@@ -39,6 +39,10 @@
 #ifdef USE_EXT_HYPRE
     #include "HYPRE_config.h"
 #endif
+#ifdef USE_CUDA
+    #include <cuda_runtime_api.h>
+    #include <cuda.h>
+#endif
 // clang-format off
 
 
@@ -243,6 +247,12 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     PIO::initialize();
     // Initialize the random number generator
     AMP::RNG::initialize( 123 );
+    // Initialize cuda
+#ifdef USE_CUDA
+    void *tmp;
+    cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal );
+    cudaFree( tmp );
+#endif
     // Set the signal/terminate handlers
     setHandlers();
     // Initialization finished

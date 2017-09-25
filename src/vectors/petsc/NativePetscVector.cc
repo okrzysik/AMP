@@ -49,10 +49,10 @@ void NativePetscVector::putRawData( const double *in )
     int a, b;
     VecGetOwnershipRange( d_petscVec, &a, &b );
     AMP_ASSERT( b - a == (int) getLocalSize() );
-    auto offs = new int[b - a];
-    for ( int j = 0; j != b - a; j++ )
+    std::vector<int> offs(b-a);
+    for ( size_t j = 0; j != offs.size(); j++ )
         offs[j] = a + j;
-    VecSetValues( d_petscVec, b - a, offs, in, INSERT_VALUES );
+    VecSetValues( d_petscVec, offs.size(), offs.data(), in, INSERT_VALUES );
 }
 
 

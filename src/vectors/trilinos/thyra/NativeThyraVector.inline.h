@@ -1,5 +1,4 @@
 #include "vectors/trilinos/thyra/NativeThyraVector.h"
-#include "utils/Counter.h"
 
 DISABLE_WARNINGS
 #include "Thyra_VectorStdOps_def.hpp"
@@ -50,7 +49,6 @@ inline const void *NativeThyraVector::getDataBlock( size_t i ) const
 
 inline void NativeThyraVector::getValuesByLocalID( int numVals, size_t *ndx, double *vals ) const
 {
-    INCREMENT_COUNT( "Virtual" );
     Vector::getValuesByLocalID( numVals, ndx, vals );
 }
 

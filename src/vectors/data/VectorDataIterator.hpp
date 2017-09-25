@@ -1,7 +1,7 @@
 #ifndef included_AMP_VectorIterators_tmpl
 #define included_AMP_VectorIterators_tmpl
 
-#include "vectors/VectorData.h"
+#include "vectors/data/VectorData.h"
 
 
 namespace AMP {
@@ -60,6 +60,8 @@ VectorDataIterator<TYPE>& VectorDataIterator<TYPE>::operator=( const VectorDataI
 {
     if ( this == &rhs )
         return *this;
+    delete [] d_data;
+    delete [] d_blockSize;
     d_N_blocks = rhs.d_N_blocks;
     d_CurBlock = rhs.d_CurBlock;
     d_CurOffset = rhs.d_CurOffset;
@@ -272,20 +274,6 @@ int VectorDataIterator<TYPE>::operator-( const VectorDataIterator<TYPE> &rhs ) c
 }
 
 
-/****************************************************************
-* Equal Operators                                               *
-****************************************************************/
-template<typename TYPE>
-inline bool VectorDataIterator<TYPE>::operator==( const VectorDataIterator<TYPE> &rhs ) const
-{
-    return d_hashcode == rhs.d_hashcode && d_pos == rhs.d_pos;
-}
-template<typename TYPE>
-inline bool VectorDataIterator<TYPE>::operator!=( const VectorDataIterator<TYPE> &rhs ) const
-{
-    return d_hashcode != rhs.d_hashcode || d_pos != rhs.d_pos;
-}
-
 
 /****************************************************************
 * Assigment Operators                                           *
@@ -299,11 +287,6 @@ TYPE& VectorDataIterator<TYPE>::operator[]( int i )
     if ( i < 0 )
         tmp.recede( -i );
     return tmp.d_data[tmp.d_CurBlock][tmp.d_CurOffset];
-}
-template<typename TYPE>
-inline TYPE &VectorDataIterator<TYPE>::operator*()
-{
-    return d_data[d_CurBlock][d_CurOffset];
 }
 
 
