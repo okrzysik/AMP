@@ -1,4 +1,4 @@
-#include "vectors/VectorData.h"
+#include "vectors/data/VectorData.h"
 #include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
 

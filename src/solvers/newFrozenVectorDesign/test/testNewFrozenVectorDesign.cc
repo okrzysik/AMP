@@ -7,6 +7,7 @@
 #include "utils/AMPManager.h"
 #include "utils/InputManager.h"
 #include "utils/UnitTest.h"
+#include "utils/PIO.h"
 
 #include "vectors/MultiVector.h"
 #include "vectors/SimpleVector.h"

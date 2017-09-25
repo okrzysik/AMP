@@ -2,6 +2,7 @@
 #include "utils/AMP_MPI.h"
 #include "utils/InputManager.h"
 #include "utils/UnitTest.h"
+#include "utils/PIO.h"
 
 #include "ampmesh/Mesh.h"
 #include "discretization/simpleDOF_Manager.h"

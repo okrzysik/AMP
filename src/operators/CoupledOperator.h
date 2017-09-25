@@ -3,9 +3,10 @@
 
 #include "ColumnOperator.h"
 #include "CoupledOperatorParameters.h"
-#include "utils/Utilities.h"
 #include "vectors/Vector.h"
+
 #include <vector>
+
 
 namespace AMP {
 namespace Operator {

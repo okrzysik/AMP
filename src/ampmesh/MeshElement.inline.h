@@ -65,6 +65,11 @@ MeshElement& MeshElement::operator=( MeshElement && rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
+    if ( element != nullptr ) {
+        // Delete the existing element
+        delete element;
+        element = nullptr;
+    }
     typeID = MeshElementTypeID;
     d_globalID = rhs.d_globalID;
     std::swap(element,rhs.element);

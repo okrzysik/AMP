@@ -1,5 +1,4 @@
 #include "vectors/ManagedVector.h"
-#include "utils/Counter.h"
 #include "utils/Utilities.h"
 #include <iostream>
 #include <stdexcept>
@@ -174,7 +173,6 @@ void ManagedVector::aliasVector( Vector &other )
 
 void ManagedVector::getValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
-    INCREMENT_COUNT( "Virtual" );
     Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec.get() == nullptr ) {
         Vector::getValuesByGlobalID( numVals, ndx, vals );
@@ -185,7 +183,6 @@ void ManagedVector::getValuesByGlobalID( int numVals, size_t *ndx, double *vals 
 
 void ManagedVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
-    INCREMENT_COUNT( "Virtual" );
     if ( d_vBuffer ) {
         for ( int i = 0; i != numVals; i++ )
             vals[i] = ( *d_vBuffer )[ndx[i] - d_CommList->getStartGID()];
@@ -197,7 +194,6 @@ void ManagedVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *
 
 void ManagedVector::getGhostValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
-    INCREMENT_COUNT( "Virtual" );
     Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec.get() == nullptr ) {
         Vector::getGhostValuesByGlobalID( numVals, ndx, vals );
@@ -208,7 +204,6 @@ void ManagedVector::getGhostValuesByGlobalID( int numVals, size_t *ndx, double *
 
 void ManagedVector::setValuesByLocalID( int i, size_t *id, const double *val )
 {
-    INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
@@ -218,7 +213,6 @@ void ManagedVector::setValuesByLocalID( int i, size_t *id, const double *val )
 
 void ManagedVector::setLocalValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
-    INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
@@ -228,7 +222,6 @@ void ManagedVector::setLocalValuesByGlobalID( int numVals, size_t *ndx, const do
 
 void ManagedVector::setGhostValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
-    INCREMENT_COUNT( "Virtual" );
     Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec.get() == nullptr ) {
         Vector::setGhostValuesByGlobalID( numVals, ndx, vals );
@@ -241,7 +234,6 @@ void ManagedVector::setValuesByGlobalID( int numVals, size_t *ndx, const double 
 {
     Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
     if ( vec.get() != nullptr ) {
-        INCREMENT_COUNT( "Virtual" );
         AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
         *d_UpdateState         = UpdateState::SETTING;
         Vector::shared_ptr vec = AMP::dynamic_pointer_cast<Vector>( d_Engine );
@@ -275,7 +267,6 @@ void ManagedVector::setValuesByGlobalID( int numVals, size_t *ndx, const double 
 
 void ManagedVector::addValuesByLocalID( int i, size_t *id, const double *val )
 {
-    INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
@@ -285,7 +276,6 @@ void ManagedVector::addValuesByLocalID( int i, size_t *id, const double *val )
 
 void ManagedVector::addLocalValuesByGlobalID( int i, size_t *id, const double *val )
 {
-    INCREMENT_COUNT( "Virtual" );
     AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;

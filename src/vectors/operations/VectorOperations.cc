@@ -1,5 +1,5 @@
 #include "vectors/operations/VectorOperations.h"
-#include "vectors/VectorData.h"
+#include "vectors/data/VectorData.h"
 #include "vectors/Vector.h"
 
 

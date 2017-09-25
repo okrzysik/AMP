@@ -1,8 +1,6 @@
 #ifndef included_AMP_PowerShape_h
 #define included_AMP_PowerShape_h
 
-#include "utils/Utilities.h"
-#include <vector>
 
 // AMP files
 #include "operators/Operator.h"

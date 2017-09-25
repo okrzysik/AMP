@@ -77,7 +77,7 @@ public:
 };
 
 
-template <class TYPE=double>
+template <class TYPE=double, typename VecOps=VectorOperationsDefault<TYPE>, typename VecData=VectorDataCPU<TYPE> >
 class SimpleVectorFactory: public VectorFactory
 {
 public:
@@ -94,10 +94,10 @@ public:
     {
         AMP::LinearAlgebra::Vector::shared_ptr vec;
         if ( GLOBAL )
-            vec = AMP::LinearAlgebra::SimpleVector<TYPE>::create(
+            vec = AMP::LinearAlgebra::SimpleVector<TYPE,VecOps,VecData>::create(
                 I, getVariable(), AMP_MPI( AMP_COMM_WORLD ) );
         else
-            vec = AMP::LinearAlgebra::SimpleVector<TYPE>::create( I, getVariable() );
+            vec = AMP::LinearAlgebra::SimpleVector<TYPE,VecOps,VecData>::create( I, getVariable() );
         return vec;
     }
 

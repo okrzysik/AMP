@@ -1,17 +1,15 @@
-
 #ifndef included_AMP_BVPOperatorParameters
 #define included_AMP_BVPOperatorParameters
 
-/*AMP files */
-#include "LinearOperator.h"
 #include "operators/OperatorParameters.h"
 #include "operators/boundary/BoundaryOperator.h"
-
-/*Boost files */
 #include "utils/shared_ptr.h"
+
 
 namespace AMP {
 namespace Operator {
+
+
 /** \class BVPOperatorParameters
  *  \brief Parameter object used for BVPOperators both linear and nonlinear
  *  \details This parameter object is used in the initialization and reset
@@ -36,7 +34,9 @@ public:
 
     AMP::shared_ptr<BoundaryOperator> d_boundaryOperator;
 };
-}
-}
+
+
+} // Operator namespace
+} // AMP namespace
 
 #endif

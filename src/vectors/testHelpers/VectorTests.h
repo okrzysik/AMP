@@ -26,6 +26,8 @@ public:
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const = 0;
 
+    virtual ~VectorFactory() {}
+
     virtual std::string name() const = 0;
 
     //! Get the DOFManager

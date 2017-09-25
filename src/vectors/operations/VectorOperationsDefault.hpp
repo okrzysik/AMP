@@ -2,7 +2,7 @@
 #define included_AMP_VectorOperationsDefault_hpp
 
 #include "vectors/operations/VectorOperationsDefault.h"
-#include "vectors/VectorData.h"
+#include "vectors/data/VectorData.h"
 #include "vectors/Vector.h"
 
 
@@ -11,6 +11,7 @@ namespace LinearAlgebra {
 
 
 extern template class VectorOperationsDefault<double>; // Suppresses implicit instantiation below --
+extern template class VectorOperationsDefault<float>; // Suppresses implicit instantiation below --
 
 
 /****************************************************************
@@ -205,7 +206,7 @@ void VectorOperationsDefault<TYPE>::zero()
         *curMe = 0;
         ++curMe;
     }
-    if ( haGhosts() ) {
+    if ( hasGhosts() ) {
         auto& ghosts = getGhosts();
         for ( size_t i = 0; i != ghosts.size(); i++ )
             ghosts[i] = 0;
@@ -222,7 +223,7 @@ void VectorOperationsDefault<TYPE>::setToScalar( double alpha )
         *curMe = alpha;
         ++curMe;
     }
-    if ( haGhosts() ) {
+    if ( hasGhosts() ) {
         auto& ghosts = getGhosts();
         for ( size_t i = 0; i != ghosts.size(); i++ )
             ghosts[i] = alpha;

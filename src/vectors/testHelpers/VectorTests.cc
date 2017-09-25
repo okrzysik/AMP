@@ -104,7 +104,7 @@ void VectorTests::SetToScalarVector( AMP::UnitTest *utils )
     auto vector = d_factory->getVector();
     vector->setToScalar( 0. );
     utils->passes( "setToScalar ran to completion " + d_factory->name() );
-    bool fail                                   = false;
+    bool fail = false;
     auto curVec = vector->begin();
     auto endVec = vector->end();
     while ( curVec != endVec ) {

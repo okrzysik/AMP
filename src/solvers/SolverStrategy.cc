@@ -93,8 +93,8 @@ void SolverStrategy::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector
 /****************************************************************
 * Empty functions                                               *
 ****************************************************************/
-void SolverStrategy::appendSolutionVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> ) {}
-void SolverStrategy::appendRhsVector( AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> ) {}
+void SolverStrategy::appendSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr ) {}
+void SolverStrategy::appendRhsVector( AMP::LinearAlgebra::Vector::shared_ptr ) {}
 void SolverStrategy::formRhs( double,
                               AMP::LinearAlgebra::Vector::shared_ptr,
                               AMP::LinearAlgebra::Vector::const_shared_ptr )

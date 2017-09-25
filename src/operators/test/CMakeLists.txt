@@ -11,7 +11,7 @@
 #     ADD_AMP_TEST_PARALLEL ( exe_name num_cores args )
 #
 #  To add the AMP 1, 2, and 4 processor test
-#     ADD_AMP_TEST_1_2_4 ( exe_name args )
+#     ADD_AMP_TEST_1_2_4( exe_name args )
 #
 #  To add a build target without placing in the test suite
 #     ADD_AMP_PROVISIONAL_TEST ( exe_name args )
@@ -25,6 +25,18 @@
 #  To add a mesh from either the data/ directory or the trunk/meshes/ directory
 #     COPY_MESH_FILE ( mesh_file )
 #
+
+
+FUNCTION( ADD_AMP_TEST_124_MATRIX EXEFILE ${ARGN} )
+    IF ( USE_EXT_TRILINOS )
+        # We have a parallel matrix
+        ADD_AMP_TEST_1_2_4( ${EXEFILE} ${ARGN} )
+    ELSE()
+        # We do not have a parallel matrix
+        ADD_AMP_TEST( ${EXEFILE} ${ARGN} )
+    ENDIF()
+ENDFUNCTION()
+
 
 COPY_MESH_FILE( cube8.with.boundary.labels.e )
 
@@ -94,24 +106,21 @@ COPY_TEST_FILE( input_linearMechanics+ThermalDiffusion+FickDiffusion-UO2MSRZC09-
 
 IF ( USE_EXT_LIBMESH )
 
-    ADD_AMP_TEST_1_2_4 (testParameterFactory-1 )
+    ADD_AMP_TEST_1_2_4(testParameterFactory-1 )
     COPY_TEST_FILE( input_testParameterFactory-1 )
 
     ADD_AMP_PROVISIONAL_TEST ( testMultiBlockMatrix )
 
-    ADD_AMP_TEST_1_2_4 ( testElementOperationFactory-1 )
+    ADD_AMP_TEST_1_2_4( testElementOperationFactory-1 )
     COPY_TEST_FILE( input_testElementOperationFactory-1 )
     COPY_TEST_FILE( input_MassLinearElement-create-1 )
 
     COPY_TEST_FILE( input_testSurfaceIteratorBug )
     ADD_AMP_TEST( testSurfaceIteratorBug )
 
-    ADD_AMP_TEST_1_2_4 ( testNeumannVectorCorrection )
+    ADD_AMP_TEST_1_2_4( testNeumannVectorCorrection )
     COPY_TEST_FILE( input_testNeumannVectorCorrection )
 
-    ADD_AMP_TEST_1_2_4 ( testNonlinearRobin-1 )
-    COPY_TEST_FILE( input_testNonlinearRobin-1 )
-    COPY_MESH_FILE ( cylinder.e )
 
     ADD_AMP_TEST( testStiffnessTransformation )
 
@@ -119,59 +128,65 @@ IF ( USE_EXT_LIBMESH )
 
     ADD_AMP_PROVISIONAL_TEST( testInverseJacobianBug )
 
-    ADD_AMP_TEST_1_2_4 ( testPowerShapeToVolIntOperator )
+    ADD_AMP_TEST_1_2_4( testPowerShapeToVolIntOperator )
     COPY_TEST_FILE( input_testPowerShapeToVolIntOperator )
 
-    ADD_AMP_TEST_1_2_4 ( testPowerShape-1 )
+    ADD_AMP_TEST_1_2_4( testPowerShape-1 )
     COPY_TEST_FILE( input_testPowerShape-1 )
     COPY_TEST_FILE( input_testPowerShape-diffusion )
 
-    ADD_AMP_TEST_1_2_4 ( testPowerShape-2 )
+    ADD_AMP_TEST_1_2_4( testPowerShape-2 )
     COPY_TEST_FILE( input_testPowerShape-2 )
 
-    ADD_AMP_TEST_1_2_4 ( testPowerShape-3 )
+    ADD_AMP_TEST_1_2_4( testPowerShape-3 )
     COPY_TEST_FILE( input_testPowerShape-3 )
 
-    ADD_AMP_TEST_1_2_4 ( testPowerShape-5 )
-    ADD_AMP_TEST_1_2_4 ( testPowerShape-Zr )
+    ADD_AMP_TEST_1_2_4( testPowerShape-5 )
+    ADD_AMP_TEST_1_2_4( testPowerShape-Zr )
     COPY_TEST_FILE( input_testPowerShape-5 )
 
-    ADD_AMP_TEST_1_2_4 ( testLinearOperator-1 )
+    ADD_AMP_TEST_124_MATRIX( testLinearOperator-1 )
     COPY_TEST_FILE( input_testLinearOperator-1 )
     COPY_MESH_FILE ( brick.e )
 
-    ADD_AMP_TEST_1_2_4 ( testLinearRobin-1 )
+    ADD_AMP_TEST_124_MATRIX( testLinearRobin-1 )
+    ADD_AMP_TEST_124_MATRIX( testNonlinearRobin-1 )
     COPY_TEST_FILE( input_LinearOp-Robin-1 )
+    COPY_TEST_FILE( input_testNonlinearRobin-1 )
+    COPY_MESH_FILE ( cylinder.e )
+
     COPY_MESH_FILE ( cube.with.12.boundaries.e )
 
-    ADD_AMP_TEST_1_2_4 ( testVolumeIntegral-1 )
+    ADD_AMP_TEST_1_2_4( testVolumeIntegral-1 )
     COPY_TEST_FILE( input_testVolumeIntegral-1 )
     COPY_TEST_FILE( input_testVolumeIntegral-2 )
     COPY_TEST_FILE( input_testVolumeIntegral-3 )
     COPY_MESH_FILE ( cube64.with.boundary.labels.e )
 
-    ADD_AMP_TEST_1_2_4 ( testNonlinearFickSoret-1 )
+    ADD_AMP_TEST_1_2_4( testNonlinearFickSoret-1 )
     COPY_TEST_FILE( input_FickSoret-TUI-1 )
     COPY_TEST_FILE( input_FickSoret-UO2MSRZC09-1 )
 
-    ADD_AMP_TEST_1_2_4 ( testFickSoretBVP-1 )
+    ADD_AMP_TEST_124_MATRIX( testFickSoretBVP-1 )
     COPY_TEST_FILE( input_FickSoret-BVP-TUI-1 )
     COPY_TEST_FILE( input_FickSoret-BVP-UO2MSRZC09-1 )
 
-    ADD_AMP_TEST_1_2_4 ( testLinearColumnOperator-1 )
+    ADD_AMP_TEST_124_MATRIX( testLinearColumnOperator-1 )
     COPY_TEST_FILE( input_testLinearColumnOperator-1 )
 
-    ADD_AMP_TEST_1_2_4 ( testNeutronicsRhs-1 )
+    ADD_AMP_TEST_1_2_4( testNeutronicsRhs-1 )
     COPY_TEST_FILE( input_testNeutronicsRhs-1 )
     COPY_TEST_FILE( input_testNeutronicsRhs-2 )
     COPY_TEST_FILE( input_testNeutronicsRhs-3 )
     COPY_TEST_FILE( input_testNeutronicsRhs-4 )
     COPY_MESH_FILE ( cube64.with.boundary.labels.e )
 
-    ADD_AMP_TEST_1_2_4 ( testNeutronicsRhs-2 )
+    ADD_AMP_TEST_1_2_4( testNeutronicsRhs-2 )
     COPY_TEST_FILE( input_testNeutronicsRhs-db )
 
-    ADD_AMP_TEST_1_2_4 ( testConsistentTangent )
+    # Consistent Tangent tests
+    ADD_AMP_TEST_124_MATRIX( testConsistentTangent )
+    ADD_AMP_TEST_124_MATRIX( testConsistentTangentBVP )
     COPY_TEST_FILE( input_testConsistentTangent-1-mesh1-normal )
     COPY_TEST_FILE( input_testConsistentTangent-1-mesh1-reduced )
     COPY_TEST_FILE( input_testConsistentTangent-1-cookMesh1-normal )
@@ -188,22 +203,20 @@ IF ( USE_EXT_LIBMESH )
     COPY_TEST_FILE( input_testConsistentTangent-4-mesh1-reduced )
     COPY_TEST_FILE( input_testConsistentTangent-4-cookMesh1-normal )
     COPY_TEST_FILE( input_testConsistentTangent-4-cookMesh1-reduced )
-    COPY_MESH_FILE ( mesh1 )
-    COPY_MESH_FILE ( cookMesh1 )
-
-    ADD_AMP_TEST_1_2_4 ( testConsistentTangentBVP )
     COPY_TEST_FILE( input_testConsistentTangentBVP-1-mesh1-normal )
     COPY_TEST_FILE( input_testConsistentTangentBVP-2-mesh1-normal )
     COPY_TEST_FILE( input_testConsistentTangentBVP-3-mesh1-normal )
     COPY_TEST_FILE( input_testConsistentTangentBVP-4-mesh1-normal )
     COPY_TEST_FILE( input_testConsistentTangentBVP-4-mesh1-reduced )
+    COPY_MESH_FILE ( mesh1 )
+    COPY_MESH_FILE ( cookMesh1 )
 
 ENDIF()
 
 COPY_MESH_FILE ( distortedElementMesh )
 
 
-# ADD_AMP_TEST_1_2_4 ( testGapConductanceOperator )
+# ADD_AMP_TEST_1_2_4( testGapConductanceOperator )
 
 # COPY_TEST_FILE( input_testGapConductanceOperator )
 

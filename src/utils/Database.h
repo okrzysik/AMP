@@ -12,16 +12,19 @@
 #ifndef included_Database
 #define included_Database
 
-#include "DatabaseBox.h"
-#include "PIO.h"
+#include "utils/DatabaseBox.h"
 #include "utils/shared_ptr.h"
+
 #include <complex>
-#include <iostream>
 #include <string>
 #include <vector>
 
 
 namespace AMP {
+
+
+// External definitions
+extern std::ostream pout;
 
 
 /**
@@ -1140,7 +1143,9 @@ public:
      */
     virtual void printClassData( std::ostream &os = pout ) = 0;
 };
-}
+
+
+} // AMP namespace
 
 
 #endif

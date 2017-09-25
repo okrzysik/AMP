@@ -1,5 +1,6 @@
 #include "solvers/trilinos/thyra/TrilinosLinearOP.h"
 #include "utils/Utilities.h"
+#include "vectors/MultiVector.h"
 #include "vectors/trilinos/thyra/ThyraVector.h"
 
 

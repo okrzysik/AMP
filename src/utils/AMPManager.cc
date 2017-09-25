@@ -39,6 +39,10 @@
 #ifdef USE_EXT_HYPRE
     #include "HYPRE_config.h"
 #endif
+#ifdef USE_CUDA
+    #include <cuda_runtime_api.h>
+    #include <cuda.h>
+#endif
 // clang-format off
 
 
@@ -243,6 +247,12 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     PIO::initialize();
     // Initialize the random number generator
     AMP::RNG::initialize( 123 );
+    // Initialize cuda
+#ifdef USE_CUDA
+    void *tmp;
+    cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal );
+    cudaFree( tmp );
+#endif
     // Set the signal/terminate handlers
     setHandlers();
     // Initialization finished
@@ -287,14 +297,6 @@ void AMPManager::shutdown()
     ShutdownRegistry::callRegisteredShutdowns();
     // Shutdown the parallel IO
     PIO::finalize();
-// Shutdown LibMesh
-#ifdef USE_EXT_LIBMESH
-// if ( AMP::Mesh::initializeLibMesh::isInitialized() ) {
-//    AMP_ERROR("Libmesh should be finalized before shutting down");
-//}
-// delete std::map objects from libmesh string_to_enum.C
-// clear_libmesh_enums();
-#endif
     // Shutdown MPI
     comm_world.barrier();   // Sync all processes
     clearMPIErrorHandler(); // Clear MPI error handler before deleting comms
@@ -312,6 +314,7 @@ void AMPManager::shutdown()
 #ifdef USE_EXT_PETSC
     if ( called_PetscInitialize ) {
         double petsc_start_time = Utilities::time();
+        PetscPopSignalHandler();
         PetscFinalize();
         petsc_time = Utilities::time() - petsc_start_time;
     }

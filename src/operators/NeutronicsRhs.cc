@@ -1,6 +1,3 @@
-
-#include "NeutronicsRhs.h"
-
 /* AMP Files */
 #include "NeutronicsRhs.h"
 #include "NeutronicsRhsParameters.h"
@@ -8,10 +5,7 @@
 #include "discretization/simpleDOF_Manager.h"
 #include "operators/Operator.h"
 #include "vectors/Vector.h"
-
 #include "utils/InputDatabase.h"
-
-/*Boost Files */
 #include "utils/shared_ptr.h"
 
 #include <cmath>

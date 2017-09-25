@@ -1,11 +1,10 @@
-#include "utils/Counter.h"
 
 
 namespace AMP {
 namespace LinearAlgebra {
 
 
-inline EpetraVectorEngine::~EpetraVectorEngine() { ADD_COUNT( "FLOPS", d_epetraVector.Flops() ); }
+inline EpetraVectorEngine::~EpetraVectorEngine() { }
 
 inline Epetra_Vector &EpetraVectorEngine::getEpetra_Vector() { return d_epetraVector; }
 

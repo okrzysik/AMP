@@ -631,6 +631,26 @@ inline int MPI_CLASS::allGather<std::string>(
     MPI_CLASS_ERROR( "Cannot allGather an array of strings" );
     return 0;
 }
+// Define specializations of call_allGather(const type, type*)
+#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+template <>
+void MPI_CLASS::call_allGather<unsigned char>( const unsigned char, unsigned char * ) const;
+template <>
+void MPI_CLASS::call_allGather<char>( const char, char * ) const;
+template <>
+void MPI_CLASS::call_allGather<unsigned int>( const unsigned int, unsigned int * ) const;
+template <>
+void MPI_CLASS::call_allGather<int>( const int, int * ) const;
+template <>
+void MPI_CLASS::call_allGather<unsigned long int>( const unsigned long int,
+                                                   unsigned long int * ) const;
+template <>
+void MPI_CLASS::call_allGather<long int>( const long int, long int * ) const;
+template <>
+void MPI_CLASS::call_allGather<float>( const float, float * ) const;
+template <>
+void MPI_CLASS::call_allGather<double>( const double, double * ) const;
+#endif
 // Default instantiation of MPI_CLASS::allGather
 template <class type>
 int MPI_CLASS::allGather( const type *send_data,
@@ -687,26 +707,6 @@ int MPI_CLASS::allGather( const type *send_data,
         delete[] recv_disp2;
     return N_recv;
 }
-// Define specializations of call_allGather(const type, type*)
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template <>
-void MPI_CLASS::call_allGather<unsigned char>( const unsigned char, unsigned char * ) const;
-template <>
-void MPI_CLASS::call_allGather<char>( const char, char * ) const;
-template <>
-void MPI_CLASS::call_allGather<unsigned int>( const unsigned int, unsigned int * ) const;
-template <>
-void MPI_CLASS::call_allGather<int>( const int, int * ) const;
-template <>
-void MPI_CLASS::call_allGather<unsigned long int>( const unsigned long int,
-                                                   unsigned long int * ) const;
-template <>
-void MPI_CLASS::call_allGather<long int>( const long int, long int * ) const;
-template <>
-void MPI_CLASS::call_allGather<float>( const float, float * ) const;
-template <>
-void MPI_CLASS::call_allGather<double>( const double, double * ) const;
-#endif
 // Default instantiations of call_allGather(const type, type*)
 template <class type>
 void MPI_CLASS::call_allGather( const type x_in, type *x_out ) const

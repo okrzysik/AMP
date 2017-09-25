@@ -114,10 +114,9 @@
 
 #### Suppress ACML errors
 {
-   acmlcpuid
+   acmlcpuid1
    Memcheck:Cond
    ...
-   fun:acmlcpuid_once
    fun:acmlcpuid2
    ...
 }

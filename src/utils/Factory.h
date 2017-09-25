@@ -12,9 +12,10 @@
 #include <string>
 
 #include "Singleton.h"
-#include "Utilities.h"
+
 #include "getkeys.h"
 
+#include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
 
 

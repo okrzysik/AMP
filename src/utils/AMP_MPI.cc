@@ -3,8 +3,9 @@
 // Include AMP headers
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
+#include "utils/Utilities.h"
+
 #include "ProfilerApp.h"
-#include "Utilities.h"
 
 // Include all other headers
 #include <algorithm>
@@ -16,6 +17,7 @@
 #include <string.h>
 #include <typeinfo>
 #include <random>
+#include <thread>
 
 
 // Include OS specific headers
@@ -32,16 +34,11 @@
 #elif defined( __APPLE__ )
 // Using MAC
 #define USE_MAC
-#include <pthread.h>
 #include <sched.h>
-#include <sys/time.h>
-#include <unistd.h>
 #elif defined( __linux ) || defined( __unix ) || defined( __posix )
 // We are using linux
 #define USE_LINUX
-#include <pthread.h>
 #include <sched.h>
-#include <sys/time.h>
 #include <unistd.h>
 #else
 #error Unknown OS
@@ -230,60 +227,12 @@ static inline long long int unsigned_to_signed( unsigned long long int x )
 }
 
 
-/******************************************************************
-* Some helper function to safely increment/decrement an integer   *
-* in a multi-threaded environment.                                *
-* These functions return the post increment/decrement count.      *
-******************************************************************/
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
-static HANDLE global_mpi_lock_queue; // Mutex lock for changing the queue
-static inline int increment_count( int *volatile count )
-{
-    WaitForSingleObject( global_mpi_lock_queue, INFINITE );
-    int tmp = ++( *count );
-    ReleaseMutex( global_mpi_lock_queue );
-    return tmp;
-}
-static inline int decrement_count( int *volatile count )
-{
-    WaitForSingleObject( global_mpi_lock_queue, INFINITE );
-    int tmp = --( *count );
-    ReleaseMutex( global_mpi_lock_queue );
-    return tmp;
-}
-#else
-static pthread_mutex_t global_mpi_lock_queue; // Mutex lock for changing the queue
-static inline int increment_count( int *volatile count )
-{
-    pthread_mutex_lock( &global_mpi_lock_queue );
-    int tmp = ++( *count );
-    pthread_mutex_unlock( &global_mpi_lock_queue );
-    return tmp;
-}
-static inline int decrement_count( int *volatile count )
-{
-    pthread_mutex_lock( &global_mpi_lock_queue );
-    int tmp = --( *count );
-    pthread_mutex_unlock( &global_mpi_lock_queue );
-    return tmp;
-}
-#endif
-
-
 /************************************************************************
 *  Functions to get/set the process affinities                          *
 ************************************************************************/
 int MPI_CLASS::getNumberOfProcessors()
 {
-#if defined( USE_LINUX ) || defined( USE_MAC )
-    return sysconf( _SC_NPROCESSORS_ONLN );
-#elif defined( USE_WINDOWS )
-    SYSTEM_INFO sysinfo;
-    GetSystemInfo( &sysinfo );
-    return static_cast<int>( sysinfo.dwNumberOfProcessors );
-#else
-#error Unknown OS
-#endif
+    return std::thread::hardware_concurrency();
 }
 std::vector<int> MPI_CLASS::getProcessAffinity()
 {
@@ -318,7 +267,7 @@ std::vector<int> MPI_CLASS::getProcessAffinity()
 #endif
     return procs;
 }
-void MPI_CLASS::setProcessAffinity( std::vector<int> procs )
+void MPI_CLASS::setProcessAffinity( const std::vector<int>& procs )
 {
 #ifdef USE_LINUX
     cpu_set_t mask;
@@ -448,13 +397,12 @@ void MPI_CLASS::reset()
     // Decrement the count if used
     int count = -1;
     if ( d_count != nullptr )
-        count = decrement_count( d_count );
+        count = --(*d_count);
     if ( count == 0 ) {
         // We are holding that last reference to the MPI_Comm object, we need to free it
         if ( d_manage ) {
 #ifdef USE_MPI
             MPI_Comm_set_errhandler( communicator, MPI_ERRORS_ARE_FATAL );
-            delete d_count;
             int err = MPI_Comm_free( &communicator );
             if ( err != MPI_SUCCESS )
                 MPI_ERROR( "Problem free'ing MPI_Comm object" );
@@ -464,6 +412,7 @@ void MPI_CLASS::reset()
         }
         if ( d_ranks != nullptr )
             delete[] d_ranks;
+        delete d_count;
     }
     if ( d_currentTag == nullptr ) {
         // No tag index
@@ -504,7 +453,7 @@ MPI_CLASS::MPI_CLASS( const MPI_CLASS &comm ):
     // Set and increment the count
     d_count = comm.d_count;
     if ( d_count != nullptr )
-        increment_count( d_count );
+        (*d_count)++;
     tmp_alignment = -1;
 }
 MPI_CLASS::MPI_CLASS( MPI_CLASS &&rhs ):
@@ -549,7 +498,7 @@ MPI_CLASS &MPI_CLASS::operator=( const MPI_CLASS &comm )
     // Set and increment the count
     this->d_count = comm.d_count;
     if ( this->d_count != nullptr )
-        increment_count( this->d_count );
+        (*d_count)++;
     this->tmp_alignment = -1;
     return *this;
 }
@@ -626,8 +575,8 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
          communicator != MPI_COMM_WORLD )
         d_manage = true;
     // Create the count (Note: we do not need to worry about thread safety)
-    d_count      = new int;
-    *( d_count ) = 1;
+    d_count  = new std::atomic_int;
+    *d_count = 1;
     if ( d_manage )
         ++N_MPI_Comm_created;
     // Create d_ranks
@@ -3870,42 +3819,17 @@ int MPI_CLASS::probe( int, int ) const
 double MPI_CLASS::time() { return MPI_Wtime(); }
 double MPI_CLASS::tick() { return MPI_Wtick(); }
 #else
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
 double MPI_CLASS::time()
 {
-    LARGE_INTEGER end, f;
-    QueryPerformanceFrequency( &f );
-    QueryPerformanceCounter( &end );
-    double time = ( (double) end.QuadPart ) / ( (double) f.QuadPart );
-    return time;
+    auto t = std::chrono::system_clock::now();
+    auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(t.time_since_epoch());
+    return 1e-9*ns.count();
 }
 double MPI_CLASS::tick()
 {
-    LARGE_INTEGER f;
-    QueryPerformanceFrequency( &f );
-    double resolution = ( (double) 1.0 ) / ( (double) f.QuadPart );
-    return resolution;
+    auto period = std::chrono::system_clock::period();
+    return static_cast<double>(period.num) / static_cast<double>(period.den);
 }
-#else
-double MPI_CLASS::time()
-{
-    timeval current_time;
-    gettimeofday( &current_time, nullptr );
-    double time = ( (double) current_time.tv_sec ) + 1e-6 * ( (double) current_time.tv_usec );
-    return time;
-}
-double MPI_CLASS::tick()
-{
-    timeval start, end;
-    gettimeofday( &start, nullptr );
-    gettimeofday( &end, nullptr );
-    while ( end.tv_sec == start.tv_sec && end.tv_usec == start.tv_usec )
-        gettimeofday( &end, nullptr );
-    double resolution = ( (double) ( end.tv_sec - start.tv_sec ) ) +
-                        1e-6 * ( (double) ( end.tv_usec - start.tv_usec ) );
-    return resolution;
-}
-#endif
 #endif
 
 

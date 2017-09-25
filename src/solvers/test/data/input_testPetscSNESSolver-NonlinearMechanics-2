@@ -151,15 +151,15 @@ NonlinearSolver{
     maximumFunctionEvals = 1000
     usesJacobian=TRUE
 
-    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ls_alpha 0.01"
+    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ls_alpha 0.01 -snes_stol=0"
 
     LinearSolver{
       print_info_level = 1
-        max_iterations = 10
+        max_iterations = 12
         max_error = 1e-10
         ksp_type = "fgmres"
         absolute_tolerance = 1.0e-9
-        relative_tolerance = 1.0e-01
+        relative_tolerance = 1.0e-2
         divergence_tolerance = 1.0e03
         max_krylov_dimension = 40
         uses_preconditioner=TRUE

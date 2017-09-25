@@ -66,7 +66,6 @@ Vector::const_shared_ptr EpetraVector::constView( Vector::const_shared_ptr inVec
         AMP::shared_ptr<ManagedEpetraVector> managed( new ManagedEpetraVector( AMP::const_pointer_cast<Vector>( inVector ) ) );
         retVal = managed;
     }
-
     if ( !retVal )
         AMP_ERROR( "Cannot create view!" );
     return retVal;

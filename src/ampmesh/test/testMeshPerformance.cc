@@ -1,27 +1,19 @@
-#include "ampmesh/Mesh.h"
-#include "ampmesh/testHelpers/meshTests.h"
+#include "meshGenerators.h"
 
-#include "utils/AMPManager.h"
-#include "ProfilerApp.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/MeshElement.h"
-#include "meshGenerators.h"
+#include "ampmesh/testHelpers/meshTests.h"
+#include "ampmesh/structured/BoxMesh.h"
+
+#include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/MemoryDatabase.h"
 #include "utils/UnitTest.h"
 
-#include "ampmesh/structured/BoxMesh.h"
-#ifdef USE_TRILINOS_STKMESH
-#include "ampmesh/STKmesh/STKMesh.h"
-#endif
-#ifdef USE_EXT_LIBMESH
-#include "ampmesh/libmesh/libMesh.h"
-#endif
-#ifdef USE_EXT_MOAB
-#include "ampmesh/moab/moabMesh.h"
-#endif
+
+#include "ProfilerApp.h"
 
 
 template<class GENERATOR>

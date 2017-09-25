@@ -9,6 +9,7 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 #include "utils/WriteSolutionToFile.h"
+#include "utils/PIO.h"
 
 #include "ampmesh/MultiMesh.h"
 #include "ampmesh/libmesh/initializeLibMesh.h"

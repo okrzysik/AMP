@@ -206,7 +206,7 @@ public:
     virtual void addScalar( const VectorOperations &x, double alpha ) override;
 
 
-private:
+protected:
 
     /**
       * \brief Returns the local minimum of the quotient of two vectors:
