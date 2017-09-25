@@ -206,8 +206,8 @@ void UnitTest::pack_message_stream( const std::vector<std::string> &messages,
                                     const int tag ) const
 {
     // Get the size of the messages
-    int N_messages   = (int) messages.size();
-    int *msg_size    = new int[N_messages];
+    auto N_messages  = (int) messages.size();
+    auto *msg_size   = new int[N_messages];
     int msg_size_tot = 0;
     for ( int i = 0; i < N_messages; i++ ) {
         msg_size[i] = (int) messages[i].size();
@@ -215,10 +215,10 @@ void UnitTest::pack_message_stream( const std::vector<std::string> &messages,
     }
     // Allocate space for the message stream
     int size_data = ( N_messages + 1 ) * sizeof( int ) + msg_size_tot;
-    char *data    = new char[size_data];
+    auto *data    = new char[size_data];
     // Pack the message stream
-    int *tmp = (int *) data;
-    tmp[0]   = N_messages;
+    auto *tmp = (int *) data;
+    tmp[0]    = N_messages;
     for ( int i = 0; i < N_messages; i++ )
         tmp[i + 1] = msg_size[i];
     int k = ( N_messages + 1 ) * sizeof( int );
@@ -243,13 +243,13 @@ std::vector<std::string> UnitTest::unpack_message_stream( const int rank, const 
     // Probe the message to get the message size
     int size_data = comm.probe( rank, tag );
     // Allocate memory to receive the data
-    char *data = new char[size_data];
+    auto *data = new char[size_data];
     // Receive the data (using a non-blocking receive)
     MPI_Request request = comm.Irecv( data, size_data, rank, tag );
     // Wait for the communication to be received
     AMP::AMP_MPI::wait( request );
     // Unpack the message stream
-    int *tmp       = (int *) data;
+    auto *tmp      = (int *) data;
     int N_messages = tmp[0];
     int *msg_size  = &tmp[1];
     std::vector<std::string> messages( N_messages );

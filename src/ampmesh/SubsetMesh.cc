@@ -66,19 +66,18 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
         std::vector<std::vector<AMP::shared_ptr<std::vector<MeshElement>>>>( (int) GeomDim + 1 );
     for ( int i = 0; i <= static_cast<int>( GeomDim ); i++ ) {
         d_elements[i] = std::vector<AMP::shared_ptr<std::vector<MeshElement>>>(
-            d_max_gcw + 1,
-            AMP::shared_ptr<std::vector<MeshElement>>( new std::vector<MeshElement>() ) );
+            d_max_gcw + 1, AMP::make_shared<std::vector<MeshElement>>() );
     }
     int gcw = 0;
-    while ( 1 ) {
+    while ( true ) {
         MeshIterator iterator1 = Mesh::getIterator(
             SetOP::Intersection, iterator_in, mesh->getIterator( GeomDim, gcw ) );
         MeshIterator iterator2 = iterator1.begin();
         if ( gcw > 0 )
             iterator2 =
                 Mesh::getIterator( SetOP::Complement, iterator1, mesh->getIterator( GeomDim, 0 ) );
-        d_elements[(int) GeomDim][gcw] = AMP::shared_ptr<std::vector<MeshElement>>(
-            new std::vector<MeshElement>( iterator2.size() ) );
+        d_elements[(int) GeomDim][gcw] =
+            AMP::make_shared<std::vector<MeshElement>>( iterator2.size() );
         for ( size_t i = 0; i < iterator2.size(); i++ ) {
             d_elements[(int) GeomDim][gcw]->operator[]( i ) = *iterator2;
             ++iterator2;
@@ -119,8 +118,8 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
                 }
                 ++iterator;
             }
-            d_elements[t][gcw] = AMP::shared_ptr<std::vector<MeshElement>>(
-                new std::vector<MeshElement>( list.begin(), list.end() ) );
+            d_elements[t][gcw] =
+                AMP::make_shared<std::vector<MeshElement>>( list.begin(), list.end() );
         }
     }
     // For each entity type, we need to check that any ghost elements are owned by somebody
@@ -218,13 +217,11 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
                 iterator = Mesh::getIterator( SetOP::Intersection, iterator1, iterator2 );
                 AMP::shared_ptr<std::vector<MeshElement>> elements;
                 if ( iterator.size() == 0 ) {
-                    elements = AMP::shared_ptr<std::vector<MeshElement>>(
-                        new std::vector<MeshElement>( 0 ) );
+                    elements = AMP::make_shared<std::vector<MeshElement>>( 0 );
                 } else if ( iterator.size() == iterator1.size() ) {
                     elements = d_elements[t][gcw];
                 } else {
-                    elements = AMP::shared_ptr<std::vector<MeshElement>>(
-                        new std::vector<MeshElement>( iterator.size() ) );
+                    elements = AMP::make_shared<std::vector<MeshElement>>( iterator.size() );
                     for ( size_t j = 0; j < iterator.size(); j++ ) {
                         elements->operator[]( j ) = *iterator;
                         ++iterator;
@@ -269,13 +266,11 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
             iterator               = Mesh::getIterator( SetOP::Intersection, iterator1, iterator2 );
             AMP::shared_ptr<std::vector<MeshElement>> elements;
             if ( iterator.size() == 0 ) {
-                elements =
-                    AMP::shared_ptr<std::vector<MeshElement>>( new std::vector<MeshElement>( 0 ) );
+                elements = AMP::make_shared<std::vector<MeshElement>>( 0 );
             } else if ( iterator.size() == iterator1.size() ) {
                 elements = d_elements[t][gcw];
             } else {
-                elements = AMP::shared_ptr<std::vector<MeshElement>>(
-                    new std::vector<MeshElement>( iterator.size() ) );
+                elements = AMP::make_shared<std::vector<MeshElement>>( iterator.size() );
                 for ( size_t j = 0; j < iterator.size(); j++ ) {
                     elements->operator[]( j ) = *iterator;
                     ++iterator;
@@ -316,7 +311,7 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
 /********************************************************
  * De-constructor                                        *
  ********************************************************/
-SubsetMesh::~SubsetMesh() {}
+SubsetMesh::~SubsetMesh() = default;
 
 
 /********************************************************
@@ -382,8 +377,8 @@ AMP::shared_ptr<Mesh> SubsetMesh::Subset( std::string name ) const
  ********************************************************/
 MeshIterator SubsetMesh::getIterator( const GeomType type, const int gcw ) const
 {
-    int gcw2  = gcw;
-    int type2 = static_cast<int>( type );
+    int gcw2   = gcw;
+    auto type2 = static_cast<int>( type );
     if ( gcw2 >= (int) d_elements[type2].size() )
         gcw2 = (int) d_elements[type2].size() - 1;
     if ( gcw2 == 0 )
@@ -396,7 +391,7 @@ MeshIterator SubsetMesh::getIterator( const GeomType type, const int gcw ) const
 }
 MeshIterator SubsetMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
-    int type2 = static_cast<int>( type );
+    auto type2 = static_cast<int>( type );
     if ( gcw == 0 )
         return MultiVectorIterator( d_surface[type2][0], 0 );
     if ( gcw >= (int) d_surface[type2].size() )
@@ -445,7 +440,7 @@ bool SubsetMesh::isMember( const MeshElementID &id ) const
 {
     if ( !d_parent_mesh->isMember( id ) )
         return false;
-    int type = static_cast<int>( id.type() );
+    auto type = static_cast<int>( id.type() );
     if ( type >= static_cast<int>( d_elements.size() ) )
         return false;
     for ( auto &elem : d_elements[type] ) {

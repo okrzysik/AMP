@@ -200,12 +200,9 @@ void MassDensityModel::getDensityThermal( std::vector<double> &result,
     unsigned int n = result.size();
     std::vector<double> density( n ), specificheat( n );
     std::map<std::string, AMP::shared_ptr<std::vector<double>>> args;
-    args.insert( std::make_pair(
-        "temperature", AMP::shared_ptr<std::vector<double>>( new std::vector<double>( T ) ) ) );
-    args.insert( std::make_pair(
-        "concentration", AMP::shared_ptr<std::vector<double>>( new std::vector<double>( U ) ) ) );
-    args.insert( std::make_pair(
-        "burnup", AMP::shared_ptr<std::vector<double>>( new std::vector<double>( B ) ) ) );
+    args.insert( std::make_pair( "temperature", AMP::make_shared<std::vector<double>>( T ) ) );
+    args.insert( std::make_pair( "concentration", AMP::make_shared<std::vector<double>>( U ) ) );
+    args.insert( std::make_pair( "burnup", AMP::make_shared<std::vector<double>>( B ) ) );
     d_material->property( "Density" )->evalv( density, args );
     d_material->property( "HeatCapacityPressure" )->evalv( specificheat, args );
     for ( unsigned int i = 0; i < n; i++ )
@@ -294,12 +291,9 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
     }
 
     std::map<std::string, AMP::shared_ptr<std::vector<double>>> args;
-    args.insert( std::make_pair(
-        "temperature", AMP::shared_ptr<std::vector<double>>( new std::vector<double>( T ) ) ) );
-    args.insert( std::make_pair(
-        "concentration", AMP::shared_ptr<std::vector<double>>( new std::vector<double>( U ) ) ) );
-    args.insert( std::make_pair(
-        "burnup", AMP::shared_ptr<std::vector<double>>( new std::vector<double>( B ) ) ) );
+    args.insert( std::make_pair( "temperature", AMP::make_shared<std::vector<double>>( T ) ) );
+    args.insert( std::make_pair( "concentration", AMP::make_shared<std::vector<double>>( U ) ) );
+    args.insert( std::make_pair( "burnup", AMP::make_shared<std::vector<double>>( B ) ) );
 
     if ( sourceProp->isScalar() ) {
         std::vector<double> coeff( neval ), dCoeff( neval, 0. );
@@ -381,12 +375,9 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         AMP_ASSERT( std::find( argnames.begin(), argnames.end(), "zee" ) != argnames.end() );
 
         // get argument vectors
-        args.insert( std::make_pair(
-            "radius", AMP::shared_ptr<std::vector<double>>( new std::vector<double>( neval ) ) ) );
-        args.insert( std::make_pair(
-            "theta", AMP::shared_ptr<std::vector<double>>( new std::vector<double>( neval ) ) ) );
-        args.insert( std::make_pair(
-            "zee", AMP::shared_ptr<std::vector<double>>( new std::vector<double>( neval ) ) ) );
+        args.insert( std::make_pair( "radius", AMP::make_shared<std::vector<double>>( neval ) ) );
+        args.insert( std::make_pair( "theta", AMP::make_shared<std::vector<double>>( neval ) ) );
+        args.insert( std::make_pair( "zee", AMP::make_shared<std::vector<double>>( neval ) ) );
         std::vector<double> &radius = ( *args.find( "radius" )->second );
         std::vector<double> &theta  = ( *args.find( "theta" )->second );
         std::vector<double> &zee    = ( *args.find( "zee" )->second );

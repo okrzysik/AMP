@@ -1,6 +1,8 @@
 #ifdef USE_AMP_MESH
 #include "MeshVariable.h"
 
+#include <utility>
+
 namespace AMP {
 namespace LinearAlgebra {
 
@@ -25,8 +27,8 @@ MeshVariable::getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr parentDO
 
 MeshIteratorVariable::MeshIteratorVariable( const std::string &name,
                                             const AMP::Mesh::MeshIterator &iterator,
-                                            const AMP_MPI &comm )
-    : SubsetVariable( name ), d_comm( comm ), d_iterator( iterator )
+                                            AMP_MPI comm )
+    : SubsetVariable( name ), d_comm( std::move( comm ) ), d_iterator( iterator )
 {
 }
 

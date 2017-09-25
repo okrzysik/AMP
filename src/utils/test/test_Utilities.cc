@@ -1,14 +1,13 @@
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 #include <iomanip>
 #include <iostream>
-#include <memory>
 #include <sstream>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
 #include <vector>
 
 #include "utils/AMPManager.h"
@@ -226,9 +225,9 @@ void test_shared_from_this( UnitTest *ut )
     else
         ut->failure( "shared_from_this 1" );
     try {
-        dummy *p1 = new dummy;
-        auto p2   = p1->getPtr();
-        pass      = test_shared_from_this_pointer( p2 );
+        auto *p1 = new dummy;
+        auto p2  = p1->getPtr();
+        pass     = test_shared_from_this_pointer( p2 );
     } catch ( ... ) {
         pass = false;
     }
@@ -334,7 +333,7 @@ int main( int argc, char *argv[] )
         double t0       = Utilities::time();
         size_t n_bytes1 = Utilities::getMemoryUsage();
         double time1    = Utilities::time() - t0;
-        uint64_t *tmp   = new uint64_t[0x100000];
+        auto *tmp       = new uint64_t[0x100000];
         memset( tmp, 0xAA, 0x100000 * sizeof( uint64_t ) );
         Utilities::nullUse( tmp );
         t0              = Utilities::time();
@@ -378,8 +377,8 @@ int main( int argc, char *argv[] )
         if ( system_bytes >= 4e9 && globalComm.getRank() == 0 ) {
             // Test getting the memory usage for 2-4 GB bytes
             // Note: we only run this test on machines with more than 4 GB of memory
-            n_bytes1       = Utilities::getMemoryUsage();
-            uint64_t *tmp2 = new uint64_t[0x10000001]; // Allocate 2^31+8 bytes
+            n_bytes1   = Utilities::getMemoryUsage();
+            auto *tmp2 = new uint64_t[0x10000001]; // Allocate 2^31+8 bytes
             memset( tmp2, 0xAA, 0x10000001 * sizeof( uint64_t ) );
             Utilities::nullUse( tmp );
             n_bytes2 = Utilities::getMemoryUsage();
@@ -402,9 +401,9 @@ int main( int argc, char *argv[] )
         if ( system_bytes >= 8e9 && globalComm.getRank() == 0 ) {
             // Test getting the memory usage for > 4 GB bytes
             // Note: we only run this test on machines with more than 8 GB of memory
-            n_bytes1       = Utilities::getMemoryUsage();
-            size_t size    = 0x20000000;
-            uint64_t *tmp2 = new uint64_t[size]; // Allocate 2^31+8 bytes
+            n_bytes1    = Utilities::getMemoryUsage();
+            size_t size = 0x20000000;
+            auto *tmp2  = new uint64_t[size]; // Allocate 2^31+8 bytes
             if ( tmp == nullptr ) {
                 ut.expected_failure( "Unable to allocate variable of size 4 GB" );
             } else {

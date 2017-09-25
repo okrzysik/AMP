@@ -14,6 +14,6 @@ TimeOperatorParameters::TimeOperatorParameters( const AMP::shared_ptr<AMP::Datab
     d_pMassOperatorParameters.reset();
 }
 
-TimeOperatorParameters::~TimeOperatorParameters() {}
+TimeOperatorParameters::~TimeOperatorParameters() = default;
 } // namespace TimeIntegrator
 } // namespace AMP

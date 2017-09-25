@@ -118,8 +118,7 @@ int main( int argc, char *argv[] )
     // of input values
     std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
     for ( size_t i = 0; i < nargs; i++ ) {
-        argMap.insert( std::make_pair(
-            names[i], AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1 ) ) ) );
+        argMap.insert( std::make_pair( names[i], AMP::make_shared<std::vector<double>>( 1 ) ) );
     }
 
     // Fill in the argument value grid

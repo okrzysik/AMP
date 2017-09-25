@@ -17,10 +17,10 @@
 namespace AMP {
 
 
-Database::Database() {}
+Database::Database() = default;
 
 
-Database::~Database() {}
+Database::~Database() = default;
 
 
 /*
@@ -36,7 +36,7 @@ Database::~Database() {}
 void Database::putBool( const std::string &key, const bool &data )
 {
     AMP_ASSERT( !key.empty() );
-    unsigned char uchar_data = (unsigned char) data;
+    auto uchar_data = (unsigned char) data;
 
     putBoolArray( key, &uchar_data, 1 );
 }
@@ -86,7 +86,7 @@ bool Database::getBoolWithDefault( const std::string &key, const bool &defaultva
     AMP_ASSERT( !key.empty() );
     if ( keyExists( key ) ) {
         std::vector<unsigned char> local_bool = getBoolArray( key );
-        bool *locptr                          = (bool *) &( local_bool[0] );
+        auto *locptr                          = (bool *) &( local_bool[0] );
         return ( locptr == nullptr ? defaultvalue : *locptr );
     } else {
         return defaultvalue;

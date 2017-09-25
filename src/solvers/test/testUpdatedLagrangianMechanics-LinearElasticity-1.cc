@@ -390,7 +390,7 @@ int main( int argc, char *argv[] )
     std::vector<std::string> exeNames;
     // exeNames.push_back("testUpdatedLagrangianMechanics-LinearElasticity-1");
     // exeNames.push_back("testUpdatedLagrangianMechanics-LinearElasticity-1a");
-    exeNames.push_back( "testUpdatedLagrangianMechanics-LinearElasticity-1b" );
+    exeNames.emplace_back( "testUpdatedLagrangianMechanics-LinearElasticity-1b" );
     // exeNames.push_back("testUpdatedLagrangianMechanics-LinearElasticity-1c");
 
     for ( auto &exeName : exeNames )

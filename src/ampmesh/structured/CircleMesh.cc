@@ -1,4 +1,5 @@
 #include "ampmesh/structured/CircleMesh.h"
+
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/BoxMeshHelpers.h"
 
@@ -104,10 +105,7 @@ void CircleMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_pt
 /****************************************************************
  * Copy the mesh                                                 *
  ****************************************************************/
-AMP::shared_ptr<Mesh> CircleMesh::copy() const
-{
-    return AMP::shared_ptr<CircleMesh>( new CircleMesh( *this ) );
-}
+AMP::shared_ptr<Mesh> CircleMesh::copy() const { return AMP::make_shared<CircleMesh>( *this ); }
 
 
 /****************************************************************
@@ -136,7 +134,7 @@ void CircleMesh::coord( const MeshElementIndex &index, double *pos ) const
 std::array<double, 3> CircleMesh::physicalToLogical( const double *x ) const
 {
     auto point              = BoxMeshHelpers::map_circle_logical( d_R, 2, x[0], x[1] );
-    std::array<double, 3> y = { point.first, point.second, 0 };
+    std::array<double, 3> y = { { point.first, point.second, 0 } };
     return y;
 }
 

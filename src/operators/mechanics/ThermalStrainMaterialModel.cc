@@ -288,8 +288,8 @@ void ThermalStrainMaterialModel::getConstitutiveMatrixUpdatedLagrangian(
 
     if ( d_useJaumannRate == true ) {
         for ( auto &elem : d_constitutiveMatrix_UL ) {
-            for ( int j = 0; j < 6; j++ ) {
-                elem[j] /= d_detULF[d_gaussPtCnt];
+            for ( double &j : elem ) {
+                j /= d_detULF[d_gaussPtCnt];
             }
         }
     }
@@ -311,8 +311,8 @@ void ThermalStrainMaterialModel::constructConstitutiveMatrix( const double passe
     double K = E / ( 3.0 * ( 1.0 - ( 2.0 * Nu ) ) );
 
     for ( auto &elem : d_constitutiveMatrix ) {
-        for ( int j = 0; j < 6; j++ ) {
-            elem[j] = 0.0;
+        for ( double &j : elem ) {
+            j = 0.0;
         }
     }
 
@@ -338,8 +338,8 @@ void ThermalStrainMaterialModel::constructConstitutiveMatrixUpdatedLagrangian(
     double K = E / ( 3.0 * ( 1.0 - ( 2.0 * Nu ) ) );
 
     for ( auto &elem : d_constitutiveMatrix_UL ) {
-        for ( int j = 0; j < 6; j++ ) {
-            elem[j] = 0.0;
+        for ( double &j : elem ) {
+            j = 0.0;
         }
     }
 

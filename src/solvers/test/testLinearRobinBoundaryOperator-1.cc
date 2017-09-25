@@ -332,7 +332,7 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.push_back( "testLinearRobinBoundaryOperator-1" );
+    exeNames.emplace_back( "testLinearRobinBoundaryOperator-1" );
     // exeNames.push_back("testLinearRobinBoundaryOperator-2");
 
     for ( auto &exeName : exeNames ) {

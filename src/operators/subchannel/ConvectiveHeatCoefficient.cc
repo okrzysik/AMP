@@ -60,15 +60,15 @@ void ConvectiveHeatCoefficient::getConductance(
 {
     AMP_ASSERT( inputVectors.size() == 4 );
     std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
-    argMap.insert( std::make_pair( std::string( "temperature" ),
-                                   AMP::shared_ptr<std::vector<double>>( new std::vector<double>(
-                                       inputVectors[0].begin(), inputVectors[0].end() ) ) ) );
-    argMap.insert( std::make_pair( std::string( "density" ),
-                                   AMP::shared_ptr<std::vector<double>>( new std::vector<double>(
-                                       inputVectors[2].begin(), inputVectors[2].end() ) ) ) );
-    argMap.insert( std::make_pair( std::string( "diameter" ),
-                                   AMP::shared_ptr<std::vector<double>>( new std::vector<double>(
-                                       inputVectors[3].begin(), inputVectors[3].end() ) ) ) );
+    argMap.insert( std::make_pair(
+        std::string( "temperature" ),
+        AMP::make_shared<std::vector<double>>( inputVectors[0].begin(), inputVectors[0].end() ) ) );
+    argMap.insert( std::make_pair(
+        std::string( "density" ),
+        AMP::make_shared<std::vector<double>>( inputVectors[2].begin(), inputVectors[2].end() ) ) );
+    argMap.insert( std::make_pair(
+        std::string( "diameter" ),
+        AMP::make_shared<std::vector<double>>( inputVectors[3].begin(), inputVectors[3].end() ) ) );
     // argMap.insert(std::make_pair("reynolds",new std::vector<double>(inputVectors[4].begin(),
     // inputVectors[4].end())));
     // argMap.insert(std::make_pair("prandtl",new std::vector<double>(inputVectors[5].begin(),

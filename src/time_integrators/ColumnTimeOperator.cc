@@ -84,7 +84,7 @@ ColumnTimeOperator::ColumnTimeOperator(
     d_pPreviousTimeSolution = params->d_pPreviousTimeSolution;
 }
 
-ColumnTimeOperator::~ColumnTimeOperator() {}
+ColumnTimeOperator::~ColumnTimeOperator() = default;
 
 void ColumnTimeOperator::reset(
     const AMP::shared_ptr<AMP::Operator::OperatorParameters> &in_params )

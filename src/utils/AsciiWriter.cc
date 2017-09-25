@@ -29,7 +29,7 @@ AsciiWriter::global_id AsciiWriter::getID( AMP_MPI local_comm, AMP_MPI global_co
  * Constructor/Destructor                                    *
  ************************************************************/
 AsciiWriter::AsciiWriter() : AMP::Utilities::Writer() {}
-AsciiWriter::~AsciiWriter() {}
+AsciiWriter::~AsciiWriter() = default;
 
 
 /************************************************************
@@ -225,8 +225,8 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
         dst_vec = AMP::LinearAlgebra::SimpleVector<double>::create(
             global_size, var, AMP_MPI( AMP_COMM_SELF ) );
         AMP_ASSERT( dst_vec->numberOfDataBlocks() == 1 );
-        double *ptr = dst_vec->getRawDataBlock<double>( 0 );
-        size_t i    = 0;
+        auto *ptr = dst_vec->getRawDataBlock<double>( 0 );
+        size_t i  = 0;
         for ( int j = 0; j < comm.getSize(); j++ ) {
             if ( size[j] > 0 ) {
                 requests.push_back( comm.Irecv( &ptr[i], size[j], j, 123 ) );

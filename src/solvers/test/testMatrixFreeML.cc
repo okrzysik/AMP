@@ -38,7 +38,7 @@
 
 void myGetRow2( void *object, int row, std::vector<size_t> &cols, std::vector<double> &values )
 {
-    AMP::Operator::ColumnOperator *op = reinterpret_cast<AMP::Operator::ColumnOperator *>( object );
+    auto *op = reinterpret_cast<AMP::Operator::ColumnOperator *>( object );
     AMP::LinearAlgebra::Matrix::shared_ptr mat =
         AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op->getOperator( 0 ) )
             ->getMatrix();
@@ -47,7 +47,7 @@ void myGetRow2( void *object, int row, std::vector<size_t> &cols, std::vector<do
 
 void myGetRow3( void *object, int row, std::vector<size_t> &cols, std::vector<double> &values )
 {
-    AMP::Operator::ColumnOperator *op = reinterpret_cast<AMP::Operator::ColumnOperator *>( object );
+    auto *op = reinterpret_cast<AMP::Operator::ColumnOperator *>( object );
     AMP::LinearAlgebra::Matrix::shared_ptr firstMat =
         AMP::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op->getOperator( 0 ) )
             ->getMatrix();
@@ -69,8 +69,7 @@ void myGetRow3( void *object, int row, std::vector<size_t> &cols, std::vector<do
 int myMatVec( ML_Operator *data, int in_length, double in[], int out_length, double out[] )
 {
 
-    AMP::Operator::LinearOperator *op =
-        reinterpret_cast<AMP::Operator::LinearOperator *>( ML_Get_MyMatvecData( data ) );
+    auto *op = reinterpret_cast<AMP::Operator::LinearOperator *>( ML_Get_MyMatvecData( data ) );
     AMP::LinearAlgebra::Matrix::shared_ptr mat = op->getMatrix();
 
     AMP::LinearAlgebra::Vector::shared_ptr inVec  = mat->getRightVector();
@@ -98,8 +97,7 @@ int myGetRow( ML_Operator *data,
               int row_lengths[] )
 {
 
-    AMP::Operator::LinearOperator *op =
-        reinterpret_cast<AMP::Operator::LinearOperator *>( ML_Get_MyGetrowData( data ) );
+    auto *op = reinterpret_cast<AMP::Operator::LinearOperator *>( ML_Get_MyGetrowData( data ) );
     AMP::LinearAlgebra::Matrix::shared_ptr mat = op->getMatrix();
 
     int spaceRequired = 0;
@@ -567,12 +565,12 @@ int main( int argc, char *argv[] )
     std::vector<std::string> exeNames;
 
     if ( argc == 1 ) {
-        exeNames.push_back( "testMatrixFreeML-1" );
+        exeNames.emplace_back( "testMatrixFreeML-1" );
     } else {
         for ( int i = 1; i < argc; i++ ) {
             char inpName[100];
             sprintf( inpName, "testMatrixFreeML-%s", argv[i] );
-            exeNames.push_back( inpName );
+            exeNames.emplace_back( inpName );
         } // end for i
     }
 

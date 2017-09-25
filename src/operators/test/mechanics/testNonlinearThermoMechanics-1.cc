@@ -238,7 +238,7 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.push_back( "nonlinearBVP-Mechanics-ThermalStrain-Thermal-UO2MSRZC09-1" );
+    exeNames.emplace_back( "nonlinearBVP-Mechanics-ThermalStrain-Thermal-UO2MSRZC09-1" );
 
     for ( auto &exeName : exeNames )
         thermoMechanicsTest( &ut, exeName );

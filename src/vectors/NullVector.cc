@@ -1,4 +1,5 @@
 #include "vectors/NullVector.h"
+
 #include "discretization/DOF_Manager.h"
 
 namespace AMP {
@@ -14,10 +15,10 @@ NullVector::NullVector( Variable::shared_ptr var )
     d_CommList = CommunicationList::createEmpty( 0, AMP_MPI( AMP_COMM_SELF ) );
     d_DOFManager.reset( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) );
 }
-NullVector::~NullVector() {}
+NullVector::~NullVector() = default;
 Vector::shared_ptr NullVector::create( const std::string &name )
 {
-    return Vector::shared_ptr( new NullVector( Variable::shared_ptr( new Variable( name ) ) ) );
+    return Vector::shared_ptr( new NullVector( AMP::make_shared<Variable>( name ) ) );
 }
 Vector::shared_ptr NullVector::create( const Variable::shared_ptr var )
 {

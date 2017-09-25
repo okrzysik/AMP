@@ -54,7 +54,7 @@ PowerShape::PowerShape( AMP::shared_ptr<PowerShapeParameters> parameters ) : Ope
  * \brief Destructor.                                                    *
  *************************************************************************
  */
-PowerShape::~PowerShape() {}
+PowerShape::~PowerShape() = default;
 
 /*!
  *************************************************************************
@@ -70,7 +70,7 @@ void PowerShape::reset( const AMP::shared_ptr<OperatorParameters> &parameters )
     if ( d_coordinateSystem == "cartesian" ) {
 
         if ( d_type == "legendre" ) {
-            d_useFixedPower = 1;
+            d_useFixedPower = true;
             d_numXmoments   = 0;
             d_numYmoments   = 0;
             d_numZmoments   = 0;
@@ -308,14 +308,11 @@ void PowerShape::getFromDatabase( AMP::shared_ptr<AMP::Database> db )
     {
         // std::string feTypeOrderName = d_db->getStringWithDefault("FE_ORDER", "SECOND");
         std::string feTypeOrderName = d_db->getStringWithDefault( "FE_ORDER", "FIRST" );
-        libMeshEnums::Order feTypeOrder =
-            Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
-        std::string feFamilyName = d_db->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
-        libMeshEnums::FEFamily feFamily =
-            Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+        auto feTypeOrder          = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+        std::string feFamilyName  = d_db->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
+        auto feFamily             = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
         std::string qruleTypeName = d_db->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
-        libMeshEnums::QuadratureType qruleType =
-            Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+        auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
         const unsigned int dimension = 3;
         d_feType.reset( new ::FEType( feTypeOrder, feFamily ) );
         d_fe.reset( (::FEBase::build( dimension, ( *d_feType ) ) ).release() );
@@ -634,7 +631,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             volume_db->putString( "InputVariableType", "IntegrationPointScalar" );
             volume_db->putInteger( "Number_Active_Variables", 1 );
             volume_db->putInteger( "Number_Auxillary_Variables", 0 );
-            volume_db->putBool( "Constant_Source", 1 );
+            volume_db->putBool( "Constant_Source", true );
             volume_db->putString( "OutputVariable", "Temperature" );
             volume_db->putInteger( "print_info_level", 1 );
             volume_db->putDatabase( "ActiveInputVariables" );

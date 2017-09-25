@@ -123,13 +123,11 @@ void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *utils )
     if ( dynamic_pointer_cast<NativePetscVector>( vectora ) )
         return;
 
-    vectora->setVariable( AMP::LinearAlgebra::Variable::shared_ptr(
-        new AMP::LinearAlgebra::Variable( "dummy_variable" ) ) );
+    vectora->setVariable( AMP::make_shared<AMP::LinearAlgebra::Variable>( "dummy_variable" ) );
     Vec petsc_vec = getVec( vectora );
     Vec another_vec;
     checkPetscError( utils, VecDuplicate( petsc_vec, &another_vec ) );
-    AMP::LinearAlgebra::ManagedPetscVector *dup =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( another_vec->data );
+    auto *dup = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( another_vec->data );
     utils->passes( "managed duplicated" );
     if ( ( dup->getGlobalSize() == vectora->getGlobalSize() ) &&
          ( dup->getLocalSize() == vectora->getLocalSize() ) )

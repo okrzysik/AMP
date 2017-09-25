@@ -22,6 +22,7 @@ DISABLE_WARNINGS
 #include "Thyra_EpetraThyraWrappers.hpp"
 #ifdef USE_EXT_MPI
 #include <Epetra_MpiComm.h>
+
 #else
 #include <Epetra_SerialComm.h>
 #endif
@@ -39,7 +40,7 @@ namespace LinearAlgebra {
  ****************************************************************/
 AMP::LinearAlgebra::Variable::shared_ptr NativeThyraFactory::getVariable() const
 {
-    return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable( "thyra" ) );
+    return AMP::make_shared<AMP::LinearAlgebra::Variable>( "thyra" );
 }
 AMP::LinearAlgebra::Vector::shared_ptr NativeThyraFactory::getVector() const
 {
@@ -81,8 +82,7 @@ AMP::Discretization::DOFManager::shared_ptr NativeThyraFactory::getDOFMap() cons
  ****************************************************************/
 AMP::LinearAlgebra::Variable::shared_ptr ManagedThyraFactory::getVariable() const
 {
-    return AMP::LinearAlgebra::Variable::shared_ptr(
-        new AMP::LinearAlgebra::Variable( "managed_thyra" ) );
+    return AMP::make_shared<AMP::LinearAlgebra::Variable>( "managed_thyra" );
 }
 AMP::LinearAlgebra::Vector::shared_ptr ManagedThyraFactory::getVector() const
 {
@@ -105,8 +105,7 @@ AMP::Discretization::DOFManager::shared_ptr ManagedThyraFactory::getDOFMap() con
  ****************************************************************/
 AMP::LinearAlgebra::Variable::shared_ptr ManagedNativeThyraFactory::getVariable() const
 {
-    return AMP::LinearAlgebra::Variable::shared_ptr(
-        new AMP::LinearAlgebra::Variable( "managed_native_thyra" ) );
+    return AMP::make_shared<AMP::LinearAlgebra::Variable>( "managed_native_thyra" );
 }
 AMP::LinearAlgebra::Vector::shared_ptr ManagedNativeThyraFactory::getVector() const
 {
@@ -141,7 +140,7 @@ void testBelosThyraVector( AMP::UnitTest &ut, const VectorFactory &factory )
 {
     AMP::shared_ptr<AMP::LinearAlgebra::ThyraVector> vector =
         AMP::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>( factory.getVector() );
-    typedef Thyra::MultiVectorBase<double> TMVB;
+    using TMVB = Thyra::MultiVectorBase<double>;
     Teuchos::RCP<Belos::OutputManager<double>> outputmgr =
         Teuchos::rcp( new Belos::OutputManager<double>() );
     bool pass = Belos::TestMultiVecTraits<double, TMVB>( outputmgr, vector->getVec() );

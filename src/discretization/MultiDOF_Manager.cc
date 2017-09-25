@@ -1,5 +1,6 @@
 #include "discretization/MultiDOF_Manager.h"
 
+
 #include "ampmesh/MeshElementVectorIterator.h"
 #include "utils/Utilities.h"
 
@@ -45,7 +46,7 @@ multiDOFManager::multiDOFManager( const AMP_MPI &globalComm,
 /****************************************************************
  * Deconstructor                                                 *
  ****************************************************************/
-multiDOFManager::~multiDOFManager() {}
+multiDOFManager::~multiDOFManager() = default;
 
 
 /****************************************************************
@@ -143,8 +144,7 @@ AMP::Mesh::MeshIterator multiDOFManager::getIterator() const
     // Get the iterators for all sub DOFmanagers
     std::vector<AMP::shared_ptr<AMP::Mesh::MeshIterator>> iterators( d_managers.size() );
     for ( size_t i = 0; i < d_managers.size(); i++ )
-        iterators[i] = AMP::shared_ptr<AMP::Mesh::MeshIterator>(
-            new AMP::Mesh::MeshIterator( d_managers[i]->getIterator() ) );
+        iterators[i] = AMP::make_shared<AMP::Mesh::MeshIterator>( d_managers[i]->getIterator() );
     // Get the list of unique elements
     size_t N_tot = 0;
     for ( auto &iterator : iterators )

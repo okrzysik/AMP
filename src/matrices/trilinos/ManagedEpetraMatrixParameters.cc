@@ -6,6 +6,7 @@
 #include "Epetra_Map.h"
 #ifdef USE_EXT_MPI
 #include <Epetra_MpiComm.h>
+
 #else
 #include <Epetra_SerialComm.h>
 #endif
@@ -44,11 +45,10 @@ Epetra_Map &ManagedEpetraMatrixParameters::getEpetraRowMap()
     AMP_ASSERT( d_DOFManagerRight.get() != nullptr );
     AMP_INSIST( d_DOFManagerLeft->numGlobalDOF() < 0x80000000,
                 "Epetra does not support vectors with global size greater than 2^31" );
-    int N_row_local  = static_cast<int>( d_DOFManagerLeft->numLocalDOF() );
-    int N_row_global = static_cast<int>( d_DOFManagerLeft->numGlobalDOF() );
+    auto N_row_local  = static_cast<int>( d_DOFManagerLeft->numLocalDOF() );
+    auto N_row_global = static_cast<int>( d_DOFManagerLeft->numGlobalDOF() );
     if ( d_eRowMap.get() == nullptr ) {
-        d_eRowMap =
-            AMP::shared_ptr<Epetra_Map>( new Epetra_Map( N_row_global, N_row_local, 0, comm ) );
+        d_eRowMap = AMP::make_shared<Epetra_Map>( N_row_global, N_row_local, 0, comm );
     }
     return *d_eRowMap;
 }

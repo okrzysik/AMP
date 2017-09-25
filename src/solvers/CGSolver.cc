@@ -9,7 +9,7 @@ namespace Solver {
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-CGSolver::CGSolver() {}
+CGSolver::CGSolver() = default;
 
 CGSolver::CGSolver( AMP::shared_ptr<KrylovSolverParameters> parameters )
     : SolverStrategy( parameters )
@@ -24,7 +24,7 @@ CGSolver::CGSolver( AMP::shared_ptr<KrylovSolverParameters> parameters )
 /****************************************************************
  *  Destructor                                                   *
  ****************************************************************/
-CGSolver::~CGSolver() {}
+CGSolver::~CGSolver() = default;
 
 /****************************************************************
  *  Initialize                                                   *

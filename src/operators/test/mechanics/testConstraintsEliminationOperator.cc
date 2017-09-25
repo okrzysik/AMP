@@ -105,8 +105,8 @@ void myTest( AMP::UnitTest *ut )
             dummyOperator_db->putString( "OutputVariable", "displacement" );
             AMP::shared_ptr<AMP::Operator::OperatorParameters> dummyOperatorParams(
                 new AMP::Operator::OperatorParameters( dummyOperator_db ) );
-            dirOp = AMP::shared_ptr<AMP::Operator::CustomConstraintsEliminationOperator>(
-                new AMP::Operator::CustomConstraintsEliminationOperator( dummyOperatorParams ) );
+            dirOp = AMP::make_shared<AMP::Operator::CustomConstraintsEliminationOperator>(
+                dummyOperatorParams );
             std::vector<size_t> slaveIndices;
             std::vector<double> slaveValues;
             int const boundaryID = 2;

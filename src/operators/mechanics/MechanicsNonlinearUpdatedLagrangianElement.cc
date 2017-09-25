@@ -668,8 +668,8 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
         // currZeta[qp], detJ);
 
         for ( auto &elem : Bl_np1 ) {
-            for ( int j = 0; j < 24; j++ ) {
-                elem[j] = 0.0;
+            for ( double &j : elem ) {
+                j = 0.0;
             }
         }
 
@@ -949,8 +949,8 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Reduced()
     double ebar_np1o2[3][3], avg_dil_strain = 0.0;
     if ( d_useJaumannRate == false ) {
         for ( auto &elem : ebar_np1o2 ) {
-            for ( int j = 0; j < 3; j++ ) {
-                elem[j] = 0.0;
+            for ( double &j : elem ) {
+                j = 0.0;
             }
         }
 

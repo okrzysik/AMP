@@ -316,7 +316,7 @@ int main( int argc, char *argv[] )
 
     std::vector<std::string> exeNames;
     // exeNames.push_back("testPericElastoViscoPlasticity-1");
-    exeNames.push_back( "testPericElastoViscoPlasticity-2" );
+    exeNames.emplace_back( "testPericElastoViscoPlasticity-2" );
 
     for ( auto &exeName : exeNames )
         myTest( &ut, exeName );

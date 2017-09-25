@@ -1,4 +1,5 @@
 #include "ampmesh/libmesh/libMesh.h"
+
 #include "ProfilerApp.h"
 #include "ampmesh/MeshElementVectorIterator.h"
 #include "ampmesh/MultiIterator.h"
@@ -57,7 +58,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
         AMP_INSIST( PhysicalDim > 0 && PhysicalDim < 10, "Invalid dimension" );
         GeomDim = (GeomType) PhysicalDim;
         // Create the libMesh objects
-        d_libMesh = AMP::shared_ptr<::Mesh>( new ::Mesh( PhysicalDim ) );
+        d_libMesh = AMP::make_shared<::Mesh>( PhysicalDim );
         if ( d_db->keyExists( "FileName" ) ) {
             // Read an existing mesh
             d_libMesh->read( d_db->getString( "FileName" ) );
@@ -294,7 +295,7 @@ void libMesh::initialize()
     }
     // Construct the list of elements of type side or edge
     for ( int i = 0; i <= (int) GeomDim; i++ ) {
-        GeomType type = (GeomType) i;
+        auto type = (GeomType) i;
         if ( type == GeomType::Vertex || type == GeomDim )
             continue;
         // Get a unique list of all elements of the desired type
@@ -390,9 +391,9 @@ void libMesh::initialize()
         }
         elem_pos++;
     }
-    int GeomDim2                     = static_cast<int>( GeomDim );
-    d_localSurfaceElements[GeomDim2] = AMP::shared_ptr<std::vector<MeshElement>>(
-        new std::vector<MeshElement>( localBoundaryElements.size() ) );
+    auto GeomDim2 = static_cast<int>( GeomDim );
+    d_localSurfaceElements[GeomDim2] =
+        AMP::make_shared<std::vector<MeshElement>>( localBoundaryElements.size() );
     auto elem_iterator = localBoundaryElements.begin();
     for ( size_t i = 0; i < localBoundaryElements.size(); i++ ) {
         ( *d_localSurfaceElements[GeomDim2] )[i] =
@@ -400,8 +401,8 @@ void libMesh::initialize()
         ++elem_iterator;
     }
     AMP::Utilities::quicksort( *d_localSurfaceElements[GeomDim2] );
-    d_ghostSurfaceElements[GeomDim2] = AMP::shared_ptr<std::vector<MeshElement>>(
-        new std::vector<MeshElement>( ghostBoundaryElements.size() ) );
+    d_ghostSurfaceElements[GeomDim2] =
+        AMP::make_shared<std::vector<MeshElement>>( ghostBoundaryElements.size() );
     elem_iterator = ghostBoundaryElements.begin();
     for ( size_t i = 0; i < ghostBoundaryElements.size(); i++ ) {
         ( *d_ghostSurfaceElements[GeomDim2] )[i] =
@@ -409,8 +410,8 @@ void libMesh::initialize()
         ++elem_iterator;
     }
     AMP::Utilities::quicksort( *d_ghostSurfaceElements[GeomDim2] );
-    d_localSurfaceElements[0] = AMP::shared_ptr<std::vector<MeshElement>>(
-        new std::vector<MeshElement>( localBoundaryNodes.size() ) );
+    d_localSurfaceElements[0] =
+        AMP::make_shared<std::vector<MeshElement>>( localBoundaryNodes.size() );
     auto node_iterator = localBoundaryNodes.begin();
     for ( size_t i = 0; i < localBoundaryNodes.size(); i++ ) {
         ( *d_localSurfaceElements[0] )[i] = libMeshElement(
@@ -418,8 +419,8 @@ void libMesh::initialize()
         ++node_iterator;
     }
     AMP::Utilities::quicksort( *d_localSurfaceElements[0] );
-    d_ghostSurfaceElements[0] = AMP::shared_ptr<std::vector<MeshElement>>(
-        new std::vector<MeshElement>( ghostBoundaryNodes.size() ) );
+    d_ghostSurfaceElements[0] =
+        AMP::make_shared<std::vector<MeshElement>>( ghostBoundaryNodes.size() );
     node_iterator = ghostBoundaryNodes.begin();
     for ( size_t i = 0; i < ghostBoundaryNodes.size(); i++ ) {
         ( *d_ghostSurfaceElements[0] )[i] = libMeshElement(
@@ -432,7 +433,7 @@ void libMesh::initialize()
     size_t element_surface_global_size =
         d_comm.sumReduce( d_localSurfaceElements[GeomDim2]->size() );
     for ( int type2 = 1; type2 < (int) GeomDim; type2++ ) {
-        GeomType type = (GeomType) type2;
+        auto type = (GeomType) type2;
         std::set<MeshElement> local, ghost;
         MeshIterator it = getIterator( type, 0 );
         for ( size_t i = 0; i < it.size(); i++ ) {
@@ -451,10 +452,10 @@ void libMesh::initialize()
             }
             ++it;
         }
-        d_localSurfaceElements[type2] = AMP::shared_ptr<std::vector<MeshElement>>(
-            new std::vector<MeshElement>( local.begin(), local.end() ) );
-        d_ghostSurfaceElements[type2] = AMP::shared_ptr<std::vector<MeshElement>>(
-            new std::vector<MeshElement>( ghost.begin(), ghost.end() ) );
+        d_localSurfaceElements[type2] =
+            AMP::make_shared<std::vector<MeshElement>>( local.begin(), local.end() );
+        d_ghostSurfaceElements[type2] =
+            AMP::make_shared<std::vector<MeshElement>>( ghost.begin(), ghost.end() );
         AMP::Utilities::quicksort( *d_localSurfaceElements[type2] );
         AMP::Utilities::quicksort( *d_ghostSurfaceElements[type2] );
         size_t local_size  = d_localSurfaceElements[type2]->size();
@@ -484,10 +485,10 @@ void libMesh::initialize()
     d_libMesh->boundary_info->build_node_list_from_side_list();
     d_libMesh->boundary_info->build_node_boundary_ids( node_ids );
     for ( int type2 = 0; type2 <= (int) GeomDim; type2++ ) {
-        GeomType type         = (GeomType) type2;
+        auto type             = (GeomType) type2;
         MeshIterator iterator = getIterator( type, 0 );
         for ( auto &bid : bids ) {
-            int id = (int) bid;
+            auto id = (int) bid;
             // Count the number of elements on the given boundary
             MeshIterator curElem = iterator.begin();
             MeshIterator endElem = iterator.end();

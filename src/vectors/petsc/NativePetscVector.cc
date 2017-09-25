@@ -1,4 +1,5 @@
 #include "vectors/petsc/NativePetscVector.h"
+
 #include "vectors/petsc/ManagedPetscVector.h"
 
 #include "petsc.h"
@@ -17,10 +18,10 @@ NativePetscVector::NativePetscVector( VectorParameters::shared_ptr in_params )
     CommunicationListParameters::shared_ptr params( new CommunicationListParameters() );
     params->d_comm      = npvParams->d_Comm;
     params->d_localsize = npvParams->d_localsize;
-    setCommunicationList( CommunicationList::shared_ptr( new CommunicationList( params ) ) );
+    setCommunicationList( AMP::make_shared<CommunicationList>( params ) );
     d_bDeleteMe  = npvParams->d_Deleteable;
-    d_DOFManager = AMP::Discretization::DOFManager::shared_ptr(
-        new AMP::Discretization::DOFManager( npvParams->d_localsize, npvParams->d_Comm ) );
+    d_DOFManager = AMP::make_shared<AMP::Discretization::DOFManager>( npvParams->d_localsize,
+                                                                      npvParams->d_Comm );
 }
 
 

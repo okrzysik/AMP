@@ -14,14 +14,15 @@
 
 #include "Utilities.h"
 
+#include <cstdio>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <stdio.h>
 
 #include <complex>
-#include <stdlib.h>
+#include <cstdlib>
+#include <utility>
 
 
 #define PRINT_DEFAULT ( 1 )
@@ -44,8 +45,8 @@ namespace AMP {
 /************************************************************************
  *  Constructors/destructors                                             *
  ************************************************************************/
-MemoryDatabase::MemoryDatabase( const std::string &name )
-    : d_database_name( name ), comm( AMP_COMM_WORLD )
+MemoryDatabase::MemoryDatabase( std::string name )
+    : d_database_name( std::move( name ) ), comm( AMP_COMM_WORLD )
 {
 }
 
@@ -56,7 +57,7 @@ MemoryDatabase::MemoryDatabase( const std::string &name )
  *									                                    *
  ************************************************************************/
 
-MemoryDatabase::~MemoryDatabase() {}
+MemoryDatabase::~MemoryDatabase() = default;
 
 
 /************************************************************************
@@ -215,7 +216,7 @@ bool MemoryDatabase::isBool( const std::string &key )
 
 void MemoryDatabase::putBool( const std::string &key, const bool &data )
 {
-    unsigned char uchar_data = (unsigned char) data;
+    auto uchar_data = (unsigned char) data;
     putBoolArray( key, &uchar_data, 1 );
 }
 
@@ -1050,7 +1051,7 @@ void MemoryDatabase::getStringArray( const std::string &key,
     }
 }
 
-std::string MemoryDatabase::getName( void ) { return d_database_name; }
+std::string MemoryDatabase::getName() { return d_database_name; }
 
 /************************************************************************
  *									*
@@ -1062,7 +1063,7 @@ std::string MemoryDatabase::getName( void ) { return d_database_name; }
 
 bool MemoryDatabase::deleteKeyIfFound( const std::string &key )
 {
-    for ( std::list<KeyData>::iterator i = d_keyvalues.begin(); i != d_keyvalues.end(); i++ ) {
+    for ( auto i = d_keyvalues.begin(); i != d_keyvalues.end(); i++ ) {
         if ( ( *i ).d_key == key ) {
             d_keyvalues.erase( i );
             return ( true );

@@ -38,21 +38,21 @@ double VectorOperations::dot( const VectorOperations &x ) const
         ans = getComm().sumReduce( ans );
     return ans;
 }
-double VectorOperations::L1Norm( void ) const
+double VectorOperations::L1Norm() const
 {
     double ans = localL1Norm();
     if ( hasComm() )
         ans = getComm().sumReduce( ans );
     return ans;
 }
-double VectorOperations::maxNorm( void ) const
+double VectorOperations::maxNorm() const
 {
     double ans = localMaxNorm();
     if ( hasComm() )
         ans = getComm().maxReduce( ans );
     return ans;
 }
-double VectorOperations::L2Norm( void ) const
+double VectorOperations::L2Norm() const
 {
     double ans = localL2Norm();
     if ( hasComm() )

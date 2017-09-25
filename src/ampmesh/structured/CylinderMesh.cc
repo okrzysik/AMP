@@ -1,4 +1,5 @@
 #include "ampmesh/structured/CylinderMesh.h"
+
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/BoxMeshHelpers.h"
 
@@ -118,10 +119,7 @@ void CylinderMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_
 /****************************************************************
  * Copy the mesh                                                 *
  ****************************************************************/
-AMP::shared_ptr<Mesh> CylinderMesh::copy() const
-{
-    return AMP::shared_ptr<CylinderMesh>( new CylinderMesh( *this ) );
-}
+AMP::shared_ptr<Mesh> CylinderMesh::copy() const { return AMP::make_shared<CylinderMesh>( *this ); }
 
 
 /****************************************************************

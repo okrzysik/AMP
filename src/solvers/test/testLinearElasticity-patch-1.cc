@@ -159,8 +159,8 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.push_back( "testLinearElasticity-patch-1-normal" );
-    exeNames.push_back( "testLinearElasticity-patch-1-reduced" );
+    exeNames.emplace_back( "testLinearElasticity-patch-1-normal" );
+    exeNames.emplace_back( "testLinearElasticity-patch-1-reduced" );
 
     for ( auto &exeName : exeNames )
         linearElasticTest( &ut, exeName );

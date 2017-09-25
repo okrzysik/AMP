@@ -101,7 +101,7 @@ void test_with_shape( AMP::UnitTest *ut, std::string exeName )
               << " : " << SpecificPowerShapeVec->min() << " : " << SpecificPowerShapeVec->max()
               << std::endl;
     // Check that the data is non-negative
-    bool itpasses = 1;
+    bool itpasses = true;
     AMP::Mesh::MeshIterator elem =
         meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
     AMP::Mesh::MeshIterator end_elems = elem.end();
@@ -114,7 +114,7 @@ void test_with_shape( AMP::UnitTest *ut, std::string exeName )
             if ( SpecificPowerShapeVec->getValueByGlobalID( offset ) < 0.0 ) {
                 if ( !itpasses )
                     ut->failure( "PowerShape error" );
-                itpasses = 0;
+                itpasses = false;
             }
         } // end for gauss-points
     }     // end for elements

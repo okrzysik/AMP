@@ -1,6 +1,8 @@
 #include "ampmesh/structured/structuredMeshIterator.h"
+
 #include "ampmesh/structured/structuredMeshElement.h"
 #include "utils/Utilities.h"
+#include <utility>
 
 
 namespace AMP {
@@ -100,7 +102,7 @@ structuredMeshIterator::structuredMeshIterator(
     size_t pos )
     : d_isPeriodic( mesh->d_isPeriodic ),
       d_globalSize( mesh->d_globalSize ),
-      d_elements( elements ),
+      d_elements( std::move( elements ) ),
       d_mesh( mesh )
 {
     d_typeID   = structuredMeshIteratorTypeID;
@@ -155,7 +157,7 @@ MeshIterator *structuredMeshIterator::clone() const { return new structuredMeshI
 /********************************************************
  * De-constructor                                        *
  ********************************************************/
-structuredMeshIterator::~structuredMeshIterator() {}
+structuredMeshIterator::~structuredMeshIterator() = default;
 
 
 /********************************************************
@@ -225,12 +227,12 @@ MeshIterator structuredMeshIterator::operator+( int n ) const
 MeshIterator &structuredMeshIterator::operator+=( int n )
 {
     if ( n >= 0 ) { // increment *this
-        size_t n2 = static_cast<size_t>( n );
+        auto n2 = static_cast<size_t>( n );
         if ( d_pos + n2 > d_size )
             AMP_ERROR( "Iterated past end of iterator" );
         d_pos += n2;
     } else { // decrement *this
-        size_t n2 = static_cast<size_t>( -n );
+        auto n2 = static_cast<size_t>( -n );
         if ( n2 > d_pos )
             AMP_ERROR( "Iterated past beginning of iterator" );
         d_pos -= n2;
@@ -248,7 +250,7 @@ bool structuredMeshIterator::operator==( const MeshIterator &rhs ) const
     if ( size() != rhs.size() )
         return false;
     structuredMeshIterator *rhs2 = nullptr;
-    structuredMeshIterator *tmp =
+    auto *tmp =
         (structuredMeshIterator *) &rhs; // Convert rhs to a structuredMeshIterator* so we can
                                          // access the base class members
     if ( typeid( rhs ) == typeid( structuredMeshIterator ) ) {

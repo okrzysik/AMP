@@ -314,7 +314,7 @@ int main( int argc, char *argv[] )
     ut.verbose();
 
     std::vector<std::string> exeNames;
-    exeNames.push_back( "nonlinearBVP-Mechanics-ThermalStrain-Thermal-Oxygen-UO2MSRZC09-1" );
+    exeNames.emplace_back( "nonlinearBVP-Mechanics-ThermalStrain-Thermal-Oxygen-UO2MSRZC09-1" );
     // exeNames.push_back("testNonlinearMechanics-1-reduced");
 
     for ( auto &exeName : exeNames ) {

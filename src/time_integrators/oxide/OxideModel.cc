@@ -1,6 +1,6 @@
 #include "OxideModel.h"
-#include "math.h"
 #include "utils/Utilities.h"
+#include <cmath>
 
 #include <algorithm>
 

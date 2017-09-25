@@ -1,4 +1,5 @@
 #include "vectors/sundials/ManagedSundialsVector.h"
+
 #include "utils/UtilityMacros.h"
 
 
@@ -70,7 +71,7 @@ ManagedSundialsVector *ManagedSundialsVector::rawClone() const
     if ( !d_vBuffer ) {
         p->d_Engine = d_Engine->cloneEngine( VectorEngine::BufferPtr() );
     } else {
-        p->d_Buffer = VectorEngine::BufferPtr( new VectorEngine::Buffer( d_vBuffer->size() ) );
+        p->d_Buffer = AMP::make_shared<VectorEngine::Buffer>( d_vBuffer->size() );
         p->d_Engine = d_Engine->cloneEngine( p->d_Buffer );
     }
     p->d_CommList   = getCommunicationList();
@@ -124,7 +125,7 @@ N_Vector ManagedSundialsVector::cloneVector_AMP( N_Vector n_vector )
     /**
      * Extracts the content filed of n_vector
      */
-    ManagedSundialsVector *srcAMPVector = static_cast<ManagedSundialsVector *>( n_vector->content );
+    auto *srcAMPVector = static_cast<ManagedSundialsVector *>( n_vector->content );
     ManagedSundialsVector *newSundialsVector = srcAMPVector->rawClone();
 
     newSundialsVector->setVariable( srcAMPVector->getVariable() );
@@ -140,7 +141,7 @@ N_Vector ManagedSundialsVector::cloneempty_no_impl( N_Vector )
 void ManagedSundialsVector::freeVectorComponents_AMP( N_Vector v )
 {
 
-    ManagedSundialsVector *ptr = static_cast<ManagedSundialsVector *>( v->content );
+    auto *ptr = static_cast<ManagedSundialsVector *>( v->content );
     delete ptr;
 }
 

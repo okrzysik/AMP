@@ -60,7 +60,7 @@ int main( int argc, char **argv )
 
     std::vector<AMP::shared_ptr<std::vector<double>>> vfcv( 3 );
     for ( size_t i = 0; i < 3; i++ )
-        vfcv[i] = AMP::shared_ptr<std::vector<double>>( new std::vector<double>( n ) );
+        vfcv[i] = AMP::make_shared<std::vector<double>>( n );
 
     AMP::shared_ptr<AMP::Materials::VectorProperty<double>> vectorProperty =
         AMP::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>(
@@ -74,7 +74,7 @@ int main( int argc, char **argv )
         3, std::vector<AMP::shared_ptr<std::vector<double>>>( 3 ) );
     for ( size_t i = 0; i < 3; i++ )
         for ( size_t j = 0; j < 3; j++ )
-            tfcv[i][j] = AMP::shared_ptr<std::vector<double>>( new std::vector<double>( n ) );
+            tfcv[i][j] = AMP::make_shared<std::vector<double>>( n );
 
     AMP::shared_ptr<AMP::Materials::TensorProperty<double>> tensorProperty =
         AMP::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>(

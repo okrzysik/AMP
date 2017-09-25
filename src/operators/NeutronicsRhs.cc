@@ -46,7 +46,7 @@ NeutronicsRhs::NeutronicsRhs( SP_Parameters parameters ) : Operator( parameters 
  * Destructor.                                                           *
  *************************************************************************
  */
-NeutronicsRhs::~NeutronicsRhs() {}
+NeutronicsRhs::~NeutronicsRhs() = default;
 
 /*
  *************************************************************************
@@ -86,7 +86,7 @@ void NeutronicsRhs::getFromInput( SP_Database db )
     }
 
     // Power in Watts per gram
-    d_useFixedValue = db->getBoolWithDefault( "useFixedValue", 1 );
+    d_useFixedValue = db->getBoolWithDefault( "useFixedValue", true );
     if ( d_useFixedValue ) {
         if ( db->keyExists( "fixedValues" ) ) {
             std::string tmp = "fixedValues";
@@ -241,8 +241,7 @@ NeutronicsRhs::SourceType NeutronicsRhs::str2id( std::string str )
 void NeutronicsRhs::setOutputVariableName( const std::string &name, int varId )
 {
     (void) varId;
-    d_outputVariable =
-        AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable( name ) );
+    d_outputVariable = AMP::make_shared<AMP::LinearAlgebra::Variable>( name );
 }
 
 AMP::LinearAlgebra::Variable::shared_ptr NeutronicsRhs::getOutputVariable()

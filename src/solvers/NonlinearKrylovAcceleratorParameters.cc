@@ -4,7 +4,7 @@
 namespace AMP {
 namespace Solver {
 
-NonlinearKrylovAcceleratorParameters::NonlinearKrylovAcceleratorParameters() {}
+NonlinearKrylovAcceleratorParameters::NonlinearKrylovAcceleratorParameters() = default;
 
 NonlinearKrylovAcceleratorParameters::NonlinearKrylovAcceleratorParameters(
     const AMP::shared_ptr<AMP::Database> &database )
@@ -12,6 +12,6 @@ NonlinearKrylovAcceleratorParameters::NonlinearKrylovAcceleratorParameters(
 {
 }
 
-NonlinearKrylovAcceleratorParameters::~NonlinearKrylovAcceleratorParameters() {}
+NonlinearKrylovAcceleratorParameters::~NonlinearKrylovAcceleratorParameters() = default;
 } // namespace Solver
 } // namespace AMP

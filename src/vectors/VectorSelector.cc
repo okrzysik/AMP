@@ -1,8 +1,10 @@
 #include "vectors/VectorSelector.h"
+
 #include "vectors/CommVariable.h"
 #include "vectors/MeshVariable.h"
 #include "vectors/StridedVariable.h"
 #include "vectors/SubsetVector.h"
+#include <utility>
 
 
 namespace AMP {
@@ -12,7 +14,7 @@ namespace LinearAlgebra {
 /********************************************************
  * VectorSelector                                        *
  ********************************************************/
-VectorSelector::~VectorSelector() {}
+VectorSelector::~VectorSelector() = default;
 bool VectorSelector::isSelected( Vector::const_shared_ptr ) const { return true; }
 AMP_MPI VectorSelector::communicator( Vector::const_shared_ptr p ) const { return p->getComm(); }
 Vector::shared_ptr VectorSelector::subset( Vector::shared_ptr p ) const { return p; }
@@ -22,7 +24,7 @@ Vector::const_shared_ptr VectorSelector::subset( Vector::const_shared_ptr p ) co
 /********************************************************
  * VS_ByVariableName                                     *
  ********************************************************/
-VS_ByVariableName::VS_ByVariableName( std::string n ) : d_VecName( n ) {}
+VS_ByVariableName::VS_ByVariableName( std::string n ) : d_VecName( std::move( n ) ) {}
 bool VS_ByVariableName::isSelected( Vector::const_shared_ptr v ) const
 {
     return v->getVariable()->getName() == d_VecName;

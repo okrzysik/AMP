@@ -38,7 +38,7 @@ DOFManager::shared_ptr structuredFaceDOFManager::create( AMP::shared_ptr<AMP::Me
 /****************************************************************
  * Deconstructor                                                 *
  ****************************************************************/
-structuredFaceDOFManager::~structuredFaceDOFManager() {}
+structuredFaceDOFManager::~structuredFaceDOFManager() = default;
 
 
 /****************************************************************

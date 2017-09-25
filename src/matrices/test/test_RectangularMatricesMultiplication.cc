@@ -64,12 +64,12 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     // Loop through the valid matrix build types
     std::vector<std::string> types;
     if ( globalComm.getSize() == 1 )
-        types.push_back( "DenseSerialMatrix" );
+        types.emplace_back( "DenseSerialMatrix" );
 #ifdef USE_EXT_TRILINOS
-    types.push_back( "ManagedEpetraMatrix" );
+    types.emplace_back( "ManagedEpetraMatrix" );
 #endif
 #if defined( USE_EXT_TRILINOS ) && defined( USE_EXT_PETSC )
-    types.push_back( "ManagedPetscMatrix" );
+    types.emplace_back( "ManagedPetscMatrix" );
 #endif
     for ( auto &type : types ) {
         char tmp[100];

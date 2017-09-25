@@ -1,4 +1,5 @@
 #include "ampmesh/structured/ShellMesh.h"
+
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/BoxMeshHelpers.h"
 
@@ -114,10 +115,7 @@ void ShellMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr
 /****************************************************************
  * Copy the mesh                                                 *
  ****************************************************************/
-AMP::shared_ptr<Mesh> ShellMesh::copy() const
-{
-    return AMP::shared_ptr<ShellMesh>( new ShellMesh( *this ) );
-}
+AMP::shared_ptr<Mesh> ShellMesh::copy() const { return AMP::make_shared<ShellMesh>( *this ); }
 
 
 /****************************************************************

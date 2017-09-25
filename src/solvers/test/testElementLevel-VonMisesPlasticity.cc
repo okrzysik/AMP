@@ -270,7 +270,7 @@ int main( int argc, char *argv[] )
     // exeNames.push_back("testElementLevel-16-ElementMesh-Elasticity");
     // exeNames.push_back("testElementLevel-VonMisesIsotropicHardeningPlasticity");
     // exeNames.push_back("testElementLevel-VonMisesKinematicHardeningPlasticity");
-    exeNames.push_back( "testElementLevel-VonMisesPlasticity-1" );
+    exeNames.emplace_back( "testElementLevel-VonMisesPlasticity-1" );
 
     for ( auto &exeName : exeNames )
         myTest( &ut, exeName );

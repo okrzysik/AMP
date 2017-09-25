@@ -1,4 +1,5 @@
 #include "AsyncMapOperator.h"
+
 #include "AsyncMapOperatorParameters.h"
 #include "ProfilerApp.h"
 #include "ampmesh/MultiMesh.h"
@@ -26,7 +27,7 @@ AsyncMapOperator::AsyncMapOperator( const AMP::shared_ptr<OperatorParameters> &p
         meshes.push_back( d_mesh1 );
     if ( d_mesh2.get() != nullptr )
         meshes.push_back( d_mesh2 );
-    d_Mesh = AMP::shared_ptr<AMP::Mesh::MultiMesh>( new AMP::Mesh::MultiMesh( d_MapComm, meshes ) );
+    d_Mesh = AMP::make_shared<AMP::Mesh::MultiMesh>( d_MapComm, meshes );
     // Get the input variable
     bool var  = params->d_db->keyExists( "VariableName" );
     bool var1 = params->d_db->keyExists( "VariableName1" );
@@ -36,23 +37,19 @@ AsyncMapOperator::AsyncMapOperator( const AMP::shared_ptr<OperatorParameters> &p
         AMP_INSIST( !var1 && !var2,
                     "VariableName is used, VariableName1 and VariableName2cannot be used" );
         std::string variableName = params->d_db->getString( "VariableName" );
-        d_inpVariable            = AMP::LinearAlgebra::Variable::shared_ptr(
-            new AMP::LinearAlgebra::Variable( variableName ) );
-        d_outVariable = AMP::LinearAlgebra::Variable::shared_ptr(
-            new AMP::LinearAlgebra::Variable( variableName ) );
+        d_inpVariable            = AMP::make_shared<AMP::LinearAlgebra::Variable>( variableName );
+        d_outVariable            = AMP::make_shared<AMP::LinearAlgebra::Variable>( variableName );
     } else {
         AMP_INSIST( var1 && var2, "Both VariableName1 and VariableName2 must be used" );
         std::string variableName1 = params->d_db->getString( "VariableName1" );
         std::string variableName2 = params->d_db->getString( "VariableName2" );
-        d_inpVariable             = AMP::LinearAlgebra::Variable::shared_ptr(
-            new AMP::LinearAlgebra::Variable( variableName1 ) );
-        d_outVariable = AMP::LinearAlgebra::Variable::shared_ptr(
-            new AMP::LinearAlgebra::Variable( variableName2 ) );
+        d_inpVariable             = AMP::make_shared<AMP::LinearAlgebra::Variable>( variableName1 );
+        d_outVariable             = AMP::make_shared<AMP::LinearAlgebra::Variable>( variableName2 );
     }
 }
 
 
-AsyncMapOperator::~AsyncMapOperator() {}
+AsyncMapOperator::~AsyncMapOperator() = default;
 
 
 void AsyncMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,

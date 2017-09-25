@@ -27,9 +27,8 @@ void testit( AMP::UnitTest *ut,
              double y,
              double z )
 {
-    AMP::shared_ptr<AMP::Database> db(
-        AMP::dynamic_pointer_cast<AMP::Database>( AMP::shared_ptr<AMP::MemoryDatabase>(
-            new AMP::MemoryDatabase( "ManufacturedSolution" ) ) ) );
+    AMP::shared_ptr<AMP::Database> db( AMP::dynamic_pointer_cast<AMP::Database>(
+        AMP::make_shared<AMP::MemoryDatabase>( "ManufacturedSolution" ) ) );
 
     db->putString( "Geometry", geom );
     db->putString( "Order", order );

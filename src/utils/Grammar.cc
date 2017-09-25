@@ -2,14 +2,14 @@
 #include "Database.h"
 #include "Parser.h"
 #include "utils/shared_ptr.h"
+#include <cmath>
 #include <complex>
-#include <math.h>
 #include <sstream>
 #include <string>
 #include <vector>
 
 using namespace std;
-typedef ostringstream ostrstream;
+using ostrstream = ostringstream;
 
 namespace AMP {
 
@@ -247,13 +247,13 @@ YYSTYPE;
 #ifdef YYTYPE_UINT8
 typedef YYTYPE_UINT8 yytype_uint8;
 #else
-typedef unsigned char yytype_uint8;
+using yytype_uint8  = unsigned char;
 #endif
 
 #ifdef YYTYPE_INT8
 typedef YYTYPE_INT8 yytype_int8;
 #elif ( defined __STDC__ || defined __C99__FUNC__ || defined __cplusplus || defined _MSC_VER )
-typedef signed char yytype_int8;
+using yytype_int8   = signed char;
 #else
 typedef short int yytype_int8;
 #endif
@@ -261,13 +261,13 @@ typedef short int yytype_int8;
 #ifdef YYTYPE_UINT16
 typedef YYTYPE_UINT16 yytype_uint16;
 #else
-typedef unsigned short int yytype_uint16;
+using yytype_uint16 = unsigned short;
 #endif
 
 #ifdef YYTYPE_INT16
 typedef YYTYPE_INT16 yytype_int16;
 #else
-typedef short int yytype_int16;
+using yytype_int16  = short;
 #endif
 
 #ifndef YYSIZE_T
@@ -1119,7 +1119,7 @@ int yyparse();
 #endif
 #else /* ! YYPARSE_PARAM */
 #if defined __STDC__ || defined __cplusplus
-int yyparse( void );
+int yyparse();
 #else
 int yyparse();
 #endif
@@ -1148,7 +1148,7 @@ int yyparse( YYPARSE_PARAM ) void *YYPARSE_PARAM;
 #endif
 #else /* ! YYPARSE_PARAM */
 #if ( defined __STDC__ || defined __C99__FUNC__ || defined __cplusplus || defined _MSC_VER )
-int yyparse( void )
+int yyparse()
 #else
 int yyparse()
 
@@ -1270,8 +1270,8 @@ yysetstate:
             yystacksize = YYMAXDEPTH;
 
         {
-            yytype_int16 *yyss1  = yyss;
-            union yyalloc *yyptr = (union yyalloc *) YYSTACK_ALLOC( YYSTACK_BYTES( yystacksize ) );
+            yytype_int16 *yyss1 = yyss;
+            auto *yyptr         = (union yyalloc *) YYSTACK_ALLOC( YYSTACK_BYTES( yystacksize ) );
             if ( !yyptr )
                 goto yyexhaustedlab;
             YYSTACK_RELOCATE( yyss );
@@ -1397,7 +1397,7 @@ yyreduce:
 
         /* This is a hack to make a warning message go away from
            a symbol flex defines but does not use */
-        if ( 0 ) {
+        if ( false ) {
             goto yyerrlab1;
         }
 
@@ -2054,7 +2054,7 @@ yyerrorlab:
     /* Pacify compilers like GCC when the user code never invokes
        YYERROR and the label yyerrorlab therefore never appears in user
        code.  */
-    if ( /*CONSTCOND*/ 0 )
+    if ( /*CONSTCOND*/ false )
         goto yyerrorlab;
 
     /* Do not reclaim the symbols of the rule which action triggered
@@ -2653,7 +2653,7 @@ static KeyData *eval_function( KeyData *arg, const string &func )
 
 static KeyData *lookup_variable( const string &key, const int index, const bool is_array )
 {
-    KeyData *result      = new KeyData;
+    auto *result         = new KeyData;
     result->d_node_type  = KEY_INTEGER;
     result->d_array_type = KEY_INTEGER;
     result->d_array_size = 1;

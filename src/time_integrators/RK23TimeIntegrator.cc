@@ -36,7 +36,7 @@ RK23TimeIntegrator::RK23TimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters
 *                                                                      *
 ************************************************************************
 */
-RK23TimeIntegrator::~RK23TimeIntegrator() {}
+RK23TimeIntegrator::~RK23TimeIntegrator() = default;
 
 /*
 ************************************************************************
@@ -66,7 +66,7 @@ void RK23TimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> parame
     AMP_ERROR( "Not Finished" );
 }
 
-void RK23TimeIntegrator::setupVectors( void )
+void RK23TimeIntegrator::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution
@@ -147,7 +147,7 @@ int RK23TimeIntegrator::advanceSolution( const double dt, const bool first_step 
 *                                                                      *
 ************************************************************************
 */
-bool RK23TimeIntegrator::checkNewSolution( void ) const
+bool RK23TimeIntegrator::checkNewSolution() const
 {
     bool retcode = false;
 
@@ -169,7 +169,7 @@ bool RK23TimeIntegrator::checkNewSolution( void ) const
 *                                                                      *
 ************************************************************************
 */
-void RK23TimeIntegrator::updateSolution( void )
+void RK23TimeIntegrator::updateSolution()
 {
     d_solution->swapVectors( *d_new_solution );
     d_current_time += d_current_dt;

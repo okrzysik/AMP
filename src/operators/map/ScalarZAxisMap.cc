@@ -40,7 +40,7 @@ ScalarZAxisMap::ScalarZAxisMap( const AMP::shared_ptr<AMP::Operator::OperatorPar
 /************************************************************************
  *  De-constructor                                                       *
  ************************************************************************/
-ScalarZAxisMap::~ScalarZAxisMap() {}
+ScalarZAxisMap::~ScalarZAxisMap() = default;
 
 
 /************************************************************************

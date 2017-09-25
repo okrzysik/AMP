@@ -1,13 +1,12 @@
 #include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 #include <iostream>
-#include <math.h>
 #include <stdexcept>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
-#include <time.h>
 #include <vector>
 
 #include "utils/AMPManager.h"
@@ -44,13 +43,13 @@ public:
     TestAllocateClass( TestAllocateClass &&rhs )
     {
         data     = rhs.data;
-        rhs.data = NULL;
+        rhs.data = nullptr;
     }
     TestAllocateClass &operator=( TestAllocateClass &&rhs )
     {
         if ( this != &rhs ) {
             data     = rhs.data;
-            rhs.data = NULL;
+            rhs.data = nullptr;
         }
         return *this;
     }
@@ -364,7 +363,7 @@ int main( int argc, char *argv[] )
     // Test the allocation of a non-trivial type
     {
         bool pass = true;
-        std::shared_ptr<TestAllocateClass> ptr;
+        AMP::shared_ptr<TestAllocateClass> ptr;
         {
             Array<TestAllocateClass> x( 3, 4 );
             pass = pass && TestAllocateClass::get_N_alloc() == 12;
@@ -389,7 +388,7 @@ int main( int argc, char *argv[] )
 
     // Finished
     ut.report( 1 );
-    int num_failed = static_cast<int>( ut.NumFailGlobal() );
+    auto num_failed = static_cast<int>( ut.NumFailGlobal() );
     if ( num_failed == 0 )
         pout << "All tests passed\n";
     AMPManager::shutdown();

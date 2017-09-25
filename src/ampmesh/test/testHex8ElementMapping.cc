@@ -192,10 +192,10 @@ void draw_tetrahedron( unsigned int f, hex8_element_t *volume_element )
     p.push_back( volume_element->get_support_point( faces[4 * f + 2] ) );
     p.push_back( volume_element->get_support_point( faces[4 * f + 3] ) );
     std::vector<triangle_t> t;
-    t.push_back( triangle_t( p[0], p[1], p[3] ) );
-    t.push_back( triangle_t( p[2], p[3], p[1] ) );
-    t.push_back( triangle_t( p[1], p[2], p[0] ) );
-    t.push_back( triangle_t( p[3], p[0], p[2] ) );
+    t.emplace_back( p[0], p[1], p[3] );
+    t.emplace_back( p[2], p[3], p[1] );
+    t.emplace_back( p[1], p[2], p[0] );
+    t.emplace_back( p[3], p[0], p[2] );
     std::string option;
     std::vector<bool> b( 4, false );
     if ( t[0].above_point( t[2].get_centroid() ) ) {

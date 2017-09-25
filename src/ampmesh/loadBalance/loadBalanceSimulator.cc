@@ -3,9 +3,9 @@
 #include "ampmesh/MultiMesh.h"
 
 #include <algorithm>
+#include <cstring>
 #include <iomanip>
 #include <iostream>
-#include <string.h>
 
 
 // inline function to convert two size_t to double, divide, round the result, and return a size_t

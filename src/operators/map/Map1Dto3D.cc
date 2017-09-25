@@ -84,7 +84,7 @@ void Map1Dto3D::computeZNodeLocations()
 {
 
     // Check that the mesh exists on some processors
-    int N_mesh = d_MapComm.sumReduce<int>( ( d_MapMesh.get() != nullptr ? 1 : 0 ) );
+    auto N_mesh = d_MapComm.sumReduce<int>( ( d_MapMesh.get() != nullptr ? 1 : 0 ) );
     AMP_ASSERT( N_mesh > 0 );
 
     // Get the local location of nodes on the boundary
@@ -127,7 +127,7 @@ void Map1Dto3D::computeZGaussLocations()
 {
 
     // Check that the mesh exists on some processors
-    int N_mesh = d_MapComm.sumReduce<int>( ( d_MapMesh.get() != nullptr ? 1 : 0 ) );
+    auto N_mesh = d_MapComm.sumReduce<int>( ( d_MapMesh.get() != nullptr ? 1 : 0 ) );
     AMP_ASSERT( N_mesh > 0 );
 
     // Get the local location of nodes on the boundary
@@ -138,14 +138,13 @@ void Map1Dto3D::computeZGaussLocations()
             d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryId, 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
 
-        libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-        libMeshEnums::FEFamily feFamily =
-            Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+        auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+        auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
         AMP::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
         AMP::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
 
-        libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
+        auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
         AMP::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
 
         d_fe->attach_quadrature_rule( d_qrule.get() );
@@ -261,14 +260,13 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     const double z2 = d_zLocations[d_zLocations.size() - 1] + TOL;
 
     for ( size_t i = 0; i < bnd.size(); i++ ) {
-        libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-        libMeshEnums::FEFamily feFamily =
-            Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+        auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+        auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
         AMP::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
         AMP::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
 
-        libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
+        auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
         AMP::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
 
         d_fe->attach_quadrature_rule( d_qrule.get() );

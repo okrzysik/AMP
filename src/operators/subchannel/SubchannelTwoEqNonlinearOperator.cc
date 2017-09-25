@@ -223,11 +223,9 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
         // evaluate enthalpy at inlet
         std::map<std::string, AMP::shared_ptr<std::vector<double>>> enthalpyArgMap;
         enthalpyArgMap.insert( std::make_pair(
-            std::string( "temperature" ),
-            AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, d_Tin ) ) ) );
-        enthalpyArgMap.insert( std::make_pair(
-            std::string( "pressure" ),
-            AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, P_in ) ) ) );
+            std::string( "temperature" ), AMP::make_shared<std::vector<double>>( 1, d_Tin ) ) );
+        enthalpyArgMap.insert( std::make_pair( std::string( "pressure" ),
+                                               AMP::make_shared<std::vector<double>>( 1, P_in ) ) );
         std::vector<double> enthalpyResult( 1 );
         d_subchannelPhysicsModel->getProperty( "Enthalpy", enthalpyResult, enthalpyArgMap );
         double h_eval = enthalpyResult[0];
@@ -336,12 +334,10 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                 std::map<std::string, AMP::shared_ptr<std::vector<double>>> volumeArgMap_plus;
                 volumeArgMap_plus.insert(
                     std::make_pair( std::string( "enthalpy" ),
-                                    AMP::shared_ptr<std::vector<double>>(
-                                        new std::vector<double>( 1, h_plus ) ) ) );
+                                    AMP::make_shared<std::vector<double>>( 1, h_plus ) ) );
                 volumeArgMap_plus.insert(
                     std::make_pair( std::string( "pressure" ),
-                                    AMP::shared_ptr<std::vector<double>>(
-                                        new std::vector<double>( 1, p_plus ) ) ) );
+                                    AMP::make_shared<std::vector<double>>( 1, p_plus ) ) );
                 std::vector<double> volumeResult_plus( 1 );
                 d_subchannelPhysicsModel->getProperty(
                     "SpecificVolume", volumeResult_plus, volumeArgMap_plus );
@@ -351,12 +347,10 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                 std::map<std::string, AMP::shared_ptr<std::vector<double>>> volumeArgMap_minus;
                 volumeArgMap_minus.insert(
                     std::make_pair( std::string( "enthalpy" ),
-                                    AMP::shared_ptr<std::vector<double>>(
-                                        new std::vector<double>( 1, h_minus ) ) ) );
+                                    AMP::make_shared<std::vector<double>>( 1, h_minus ) ) );
                 volumeArgMap_minus.insert(
                     std::make_pair( std::string( "pressure" ),
-                                    AMP::shared_ptr<std::vector<double>>(
-                                        new std::vector<double>( 1, p_minus ) ) ) );
+                                    AMP::make_shared<std::vector<double>>( 1, p_minus ) ) );
                 std::vector<double> volumeResult_minus( 1 );
                 d_subchannelPhysicsModel->getProperty(
                     "SpecificVolume", volumeResult_minus, volumeArgMap_minus );
@@ -369,12 +363,12 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
 
                 // evaluate density at cell center
                 std::map<std::string, AMP::shared_ptr<std::vector<double>>> volumeArgMap_avg;
-                volumeArgMap_avg.insert( std::make_pair(
-                    std::string( "enthalpy" ),
-                    AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, h_avg ) ) ) );
-                volumeArgMap_avg.insert( std::make_pair(
-                    std::string( "pressure" ),
-                    AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p_avg ) ) ) );
+                volumeArgMap_avg.insert(
+                    std::make_pair( std::string( "enthalpy" ),
+                                    AMP::make_shared<std::vector<double>>( 1, h_avg ) ) );
+                volumeArgMap_avg.insert(
+                    std::make_pair( std::string( "pressure" ),
+                                    AMP::make_shared<std::vector<double>>( 1, p_avg ) ) );
                 std::vector<double> volumeResult_avg( 1 );
                 d_subchannelPhysicsModel->getProperty(
                     "SpecificVolume", volumeResult_avg, volumeArgMap_avg );
@@ -394,12 +388,10 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                     std::map<std::string, AMP::shared_ptr<std::vector<double>>> temperatureArgMap;
                     temperatureArgMap.insert(
                         std::make_pair( std::string( "enthalpy" ),
-                                        AMP::shared_ptr<std::vector<double>>(
-                                            new std::vector<double>( 1, h_avg ) ) ) );
+                                        AMP::make_shared<std::vector<double>>( 1, h_avg ) ) );
                     temperatureArgMap.insert(
                         std::make_pair( std::string( "pressure" ),
-                                        AMP::shared_ptr<std::vector<double>>(
-                                            new std::vector<double>( 1, p_avg ) ) ) );
+                                        AMP::make_shared<std::vector<double>>( 1, p_avg ) ) );
                     std::vector<double> temperatureResult( 1 );
                     d_subchannelPhysicsModel->getProperty(
                         "Temperature", temperatureResult, temperatureArgMap );
@@ -409,12 +401,10 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
                     std::map<std::string, AMP::shared_ptr<std::vector<double>>> viscosityArgMap;
                     viscosityArgMap.insert(
                         std::make_pair( std::string( "temperature" ),
-                                        AMP::shared_ptr<std::vector<double>>(
-                                            new std::vector<double>( 1, T_avg ) ) ) );
+                                        AMP::make_shared<std::vector<double>>( 1, T_avg ) ) );
                     viscosityArgMap.insert(
                         std::make_pair( std::string( "density" ),
-                                        AMP::shared_ptr<std::vector<double>>(
-                                            new std::vector<double>( 1, rho_avg ) ) ) );
+                                        AMP::make_shared<std::vector<double>>( 1, rho_avg ) ) );
                     std::vector<double> viscosityResult( 1 );
                     d_subchannelPhysicsModel->getProperty(
                         "DynamicViscosity", viscosityResult, viscosityArgMap );

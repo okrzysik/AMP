@@ -207,7 +207,7 @@ void IDATimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> paramet
 }
 
 
-void IDATimeIntegrator::setupVectors( void )
+void IDATimeIntegrator::setupVectors()
 {
     // clone vectors so they have the same data layout as d_solution
     d_residual = d_solution->cloneVector();
@@ -219,7 +219,7 @@ void IDATimeIntegrator::setupVectors( void )
 /************************************************************************
  *  Update internal state to reflect time advanced solution.             *
  ************************************************************************/
-void IDATimeIntegrator::updateSolution( void )
+void IDATimeIntegrator::updateSolution()
 {
     /*
     int retval = IDA_SUCCESS;
@@ -350,7 +350,7 @@ int IDATimeIntegrator::advanceSolution( const double dt, const bool /* first_ste
     return ( retval );
 }
 
-void IDATimeIntegrator::updateSourceTerm( void )
+void IDATimeIntegrator::updateSourceTerm()
 {
     // Ideally, IDATimeIntegrator should call a function which takes d_solution and t and returns
     // the appropriate
@@ -363,7 +363,7 @@ void IDATimeIntegrator::updateSourceTerm( void )
  *                                                                      *
  ************************************************************************
  */
-bool IDATimeIntegrator::checkNewSolution( void ) const
+bool IDATimeIntegrator::checkNewSolution() const
 {
     /*
      * Ordinarily we would check the actual error in the solution

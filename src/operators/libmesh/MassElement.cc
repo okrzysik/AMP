@@ -23,18 +23,15 @@ MassElement::MassElement( const AMP::shared_ptr<ElementOperationParameters> &par
 
     std::string feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "FIRST" );
 
-    libMeshEnums::Order feTypeOrder =
-        Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
     std::string feFamilyName = ( params->d_db )->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
 
-    libMeshEnums::FEFamily feFamily =
-        Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    auto feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
     std::string qruleTypeName = ( params->d_db )->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
 
-    libMeshEnums::QuadratureType qruleType =
-        Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+    auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     const unsigned int dimension = 3;
 

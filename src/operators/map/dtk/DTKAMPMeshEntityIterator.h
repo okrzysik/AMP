@@ -3,7 +3,6 @@
 #define included_AMP_DTK_AMPMeshEntityIterator
 
 #include <functional>
-#include <memory>
 #include <unordered_map>
 
 #include "utils/AMP_MPI.h"

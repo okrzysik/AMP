@@ -224,11 +224,11 @@ MeshIterator &libMeshIterator::operator++()
     d_pos++;
     if ( d_type == 0 ) {
         // Node iterator
-        ::Mesh::node_iterator *it = (::Mesh::node_iterator *) d_pos2;
+        auto *it = (::Mesh::node_iterator *) d_pos2;
         it->operator++();
     } else if ( d_type == 1 ) {
         // Element iterator
-        ::Mesh::element_iterator *it = (::Mesh::element_iterator *) d_pos2;
+        auto *it = (::Mesh::element_iterator *) d_pos2;
         it->operator++();
     } else {
         AMP_ERROR( "libMesh does not support iterators over this (unknown) type" );
@@ -280,7 +280,7 @@ MeshIterator &libMeshIterator::operator+=( int n )
     // Prform the increment and return
     if ( d_type == 0 ) {
         // Node iterator
-        ::Mesh::node_iterator *it = (::Mesh::node_iterator *) d_pos2;
+        auto *it = (::Mesh::node_iterator *) d_pos2;
         if ( n >= 0 ) {
             for ( int i = 0; i < n; i++ )
                 it->operator++();
@@ -289,7 +289,7 @@ MeshIterator &libMeshIterator::operator+=( int n )
         }
     } else if ( d_type == 1 ) {
         // Element iterator
-        ::Mesh::element_iterator *it = (::Mesh::element_iterator *) d_pos2;
+        auto *it = (::Mesh::element_iterator *) d_pos2;
         if ( n >= 0 ) {
             for ( int i = 0; i < n; i++ )
                 it->operator++();
@@ -311,7 +311,7 @@ MeshIterator &libMeshIterator::operator+=( int n )
 bool libMeshIterator::operator==( const MeshIterator &rhs ) const
 {
     libMeshIterator *rhs2 = nullptr;
-    libMeshIterator *tmp =
+    auto *tmp =
         (libMeshIterator
              *) &rhs; // Convert rhs to a libMeshIterator* so we can access the base class members
     if ( typeid( rhs ) == typeid( libMeshIterator ) ) {
@@ -372,14 +372,14 @@ void libMeshIterator::setCurrentElement()
         d_cur_element = libMeshElement();
     } else if ( d_type == 0 ) {
         // Node iterator
-        ::Mesh::node_iterator *it = (::Mesh::node_iterator *) d_pos2;
-        ::Node *node              = it->operator*();
+        auto *it     = (::Mesh::node_iterator *) d_pos2;
+        ::Node *node = it->operator*();
         d_cur_element =
             libMeshElement( d_dim, GeomType::Vertex, (void *) node, d_rank, d_meshID, d_mesh );
     } else if ( d_type == 1 ) {
         // Element iterator
-        ::Mesh::element_iterator *it = (::Mesh::element_iterator *) d_pos2;
-        ::Elem *elem                 = it->operator*();
+        auto *it     = (::Mesh::element_iterator *) d_pos2;
+        ::Elem *elem = it->operator*();
         d_cur_element =
             libMeshElement( d_dim, (GeomType) d_dim, (void *) elem, d_rank, d_meshID, d_mesh );
     } else {

@@ -55,9 +55,8 @@ void DiffusionCylindricalTransportModel::getTensorTransport(
     if ( args.find( d_RadiusArgument ) != args.end() ) {
         AMP_INSIST( args[d_RadiusArgument]->size() == coordinates.size(), "radial size mismatch" );
     } else {
-        args.insert( std::make_pair( d_RadiusArgument,
-                                     AMP::shared_ptr<std::vector<double>>(
-                                         new std::vector<double>( coordinates.size() ) ) ) );
+        args.insert( std::make_pair(
+            d_RadiusArgument, AMP::make_shared<std::vector<double>>( coordinates.size() ) ) );
     }
     std::vector<double> &radius( *args[d_RadiusArgument] );
     for ( size_t k = 0; k < radius.size(); k++ ) {

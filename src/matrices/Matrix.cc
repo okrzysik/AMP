@@ -62,7 +62,7 @@ size_t Matrix::endRow() const
 // Print the matrix to a IO stream
 std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
 {
-    Matrix *M = (Matrix *) &M_in;
+    auto *M = (Matrix *) &M_in;
     // Print the matrix type (not supported yet)
     /*out << "Vector type: " << v.type() << "\n";
     if ( v.getVariable() )

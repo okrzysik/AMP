@@ -282,11 +282,11 @@ void CommunicationList::scatter_set( std::vector<double> &in, std::vector<double
     if ( d_SendSizes.empty() )
         return;
     double *send_buf = getPtr( in );
-    int *send_sizes  = (int *) &( d_SendSizes[0] );
-    int *send_disps  = (int *) &( d_SendDisplacements[0] );
+    auto *send_sizes = (int *) &( d_SendSizes[0] );
+    auto *send_disps = (int *) &( d_SendDisplacements[0] );
     double *recv_buf = getPtr( out );
-    int *recv_sizes  = (int *) &( d_ReceiveSizes[0] );
-    int *recv_disps  = (int *) &( d_ReceiveDisplacements[0] );
+    auto *recv_sizes = (int *) &( d_ReceiveSizes[0] );
+    auto *recv_disps = (int *) &( d_ReceiveDisplacements[0] );
 
     d_comm.allToAll( send_buf, send_sizes, send_disps, recv_buf, recv_sizes, recv_disps, true );
 }
@@ -294,11 +294,11 @@ void CommunicationList::scatter_set( std::vector<double> &in, std::vector<double
 void CommunicationList::scatter_add( std::vector<double> &in, std::vector<double> &out ) const
 {
     double *send_buf = getPtr( in );
-    int *send_sizes  = (int *) &( d_ReceiveSizes[0] );
-    int *send_disps  = (int *) &( d_ReceiveDisplacements[0] );
+    auto *send_sizes = (int *) &( d_ReceiveSizes[0] );
+    auto *send_disps = (int *) &( d_ReceiveDisplacements[0] );
     double *recv_buf = getPtr( out );
-    int *recv_sizes  = (int *) &( d_SendSizes[0] );
-    int *recv_disps  = (int *) &( d_SendDisplacements[0] );
+    auto *recv_sizes = (int *) &( d_SendSizes[0] );
+    auto *recv_disps = (int *) &( d_SendDisplacements[0] );
 
     d_comm.allToAll( send_buf, send_sizes, send_disps, recv_buf, recv_sizes, recv_disps, true );
 }

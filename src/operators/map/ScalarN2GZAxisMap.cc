@@ -66,7 +66,7 @@ ScalarN2GZAxisMap::ScalarN2GZAxisMap( const AMP::shared_ptr<AMP::Operator::Opera
 /************************************************************************
  *  De-constructor                                                       *
  ************************************************************************/
-ScalarN2GZAxisMap::~ScalarN2GZAxisMap() {}
+ScalarN2GZAxisMap::~ScalarN2GZAxisMap() = default;
 
 /************************************************************************
  *  Check if the map type is "ScalarN2GZAxis"                               *
@@ -136,12 +136,11 @@ ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator &iterator )
     std::vector<size_t> ids;
     for ( size_t i = 0; i < cur.size(); i++ ) {
         // Create the libmesh element
-        libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-        libMeshEnums::FEFamily feFamily =
-            Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+        auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+        auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
         AMP::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
         AMP::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
-        libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
+        auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
         AMP::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
         d_fe->attach_quadrature_rule( d_qrule.get() );
         d_fe->reinit( libmeshElements.getElement( cur->globalID() ) );

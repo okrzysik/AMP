@@ -25,7 +25,7 @@
 #include "discretization/simpleDOF_Manager.h"
 #endif
 
-#include <math.h>
+#include <cmath>
 
 
 namespace AMP {
@@ -58,7 +58,7 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
 /********************************************************
  * De-constructor                                        *
  ********************************************************/
-Mesh::~Mesh() {}
+Mesh::~Mesh() = default;
 
 
 /********************************************************
@@ -66,7 +66,7 @@ Mesh::~Mesh() {}
  ********************************************************/
 AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_ptr &params )
 {
-    AMP::shared_ptr<AMP::Database> database = params->d_db;
+    auto database = params->d_db;
     AMP_ASSERT( database != nullptr );
     AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
     AMP_INSIST( database->keyExists( "MeshName" ), "MeshName must exist in input database" );
@@ -75,28 +75,28 @@ AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
     AMP::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( MeshType == std::string( "Multimesh" ) ) {
         // The mesh is a multimesh
-        mesh = AMP::shared_ptr<AMP::Mesh::MultiMesh>( new AMP::Mesh::MultiMesh( params ) );
+        mesh = AMP::make_shared<AMP::Mesh::MultiMesh>( params );
     } else if ( MeshType == std::string( "AMP" ) ) {
         // The mesh is a AMP mesh
         mesh = AMP::Mesh::BoxMesh::generate( params );
     } else if ( MeshType == std::string( "libMesh" ) ) {
 // The mesh is a libmesh mesh
 #ifdef USE_EXT_LIBMESH
-        mesh = AMP::shared_ptr<AMP::Mesh::libMesh>( new AMP::Mesh::libMesh( params ) );
+        mesh = AMP::make_shared<AMP::Mesh::libMesh>( params );
 #else
         AMP_ERROR( "AMP was compiled without support for libMesh" );
 #endif
     } else if ( MeshType == std::string( "STKMesh" ) ) {
 // The mesh is a libmesh mesh
 #ifdef USE_TRILINOS_STKMESH
-        mesh = AMP::shared_ptr<AMP::Mesh::STKMesh>( new AMP::Mesh::STKMesh( params ) );
+        mesh = AMP::make_shared<AMP::Mesh::STKMesh>( params );
 #else
         AMP_ERROR( "AMP was compiled without support for STKMesh" );
 #endif
     } else if ( MeshType == std::string( "moab" ) || MeshType == std::string( "MOAB" ) ) {
 // The mesh is a MOAB mesh
 #ifdef USE_EXT_MOAB
-        mesh = AMP::shared_ptr<AMP::Mesh::moabMesh>( new AMP::Mesh::moabMesh( params ) );
+        mesh = AMP::make_shared<AMP::Mesh::moabMesh>( params );
 #else
         AMP_ERROR( "AMP was compiled without support for MOAB" );
 #endif
@@ -114,7 +114,7 @@ AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
  ********************************************************/
 size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
-    AMP::shared_ptr<AMP::Database> database = params->d_db;
+    auto database = params->d_db;
     AMP_ASSERT( database != nullptr );
     size_t meshSize = 0;
     if ( database->keyExists( "NumberOfElements" ) ) {
@@ -130,7 +130,6 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
     // This is being called through the base class, call the appropriate function
     AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
     std::string MeshType = database->getString( "MeshType" );
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( MeshType == std::string( "Multimesh" ) ) {
         // The mesh is a multimesh
         meshSize = AMP::Mesh::MultiMesh::estimateMeshSize( params );
@@ -167,13 +166,12 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
  ********************************************************/
 size_t Mesh::maxProcs( const MeshParameters::shared_ptr &params )
 {
-    AMP::shared_ptr<AMP::Database> database = params->d_db;
+    auto database = params->d_db;
     AMP_ASSERT( database != nullptr );
     // This is being called through the base class, call the appropriate function
     AMP_INSIST( database->keyExists( "MeshType" ), "MeshType must exist in input database" );
     std::string MeshType = database->getString( "MeshType" );
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh;
-    size_t maxSize = 0;
+    size_t maxSize       = 0;
     if ( MeshType == std::string( "Multimesh" ) ) {
         // The mesh is a multimesh
         maxSize = AMP::Mesh::MultiMesh::maxProcs( params );
@@ -419,8 +417,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         } else if ( union_ids.size() == B.size() ) {
             return MeshIterator( B.begin() );
         } else {
-            AMP::shared_ptr<std::vector<MeshElement>> elements(
-                new std::vector<MeshElement>( union_ids.size() ) );
+            auto elements = AMP::make_shared<std::vector<MeshElement>>( union_ids.size() );
             for ( auto &elem : A ) {
                 MeshElementID idA = elem.globalID();
                 size_t index      = Utilities::findfirst( union_ids, idA );
@@ -474,8 +471,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         } else if ( intersection.size() == B.size() ) {
             return MeshIterator( B.begin() );
         } else {
-            AMP::shared_ptr<std::vector<MeshElement>> elements(
-                new std::vector<MeshElement>( intersection.size() ) );
+            auto elements = AMP::make_shared<std::vector<MeshElement>>( intersection.size() );
             for ( auto &elem : B ) {
                 MeshElementID idB = elem.globalID();
                 size_t index      = Utilities::findfirst( intersection, idB );
@@ -502,8 +498,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         if ( compliment.size() == A.size() ) {
             return MeshIterator( A.begin() );
         } else {
-            AMP::shared_ptr<std::vector<MeshElement>> elements(
-                new std::vector<MeshElement>( compliment.size() ) );
+            auto elements = AMP::make_shared<std::vector<MeshElement>>( compliment.size() );
             for ( auto &elem : A ) {
                 MeshElementID idA = elem.globalID();
                 size_t index      = Utilities::findfirst( compliment, idA );

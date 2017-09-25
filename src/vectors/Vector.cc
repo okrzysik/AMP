@@ -6,9 +6,9 @@
 #include "vectors/MultiVector.h"
 #include "vectors/VectorSelector.h"
 
-#include <float.h>
-#include <math.h>
-#include <string.h>
+#include <cfloat>
+#include <cmath>
+#include <cstring>
 #include <typeinfo>
 
 
@@ -26,12 +26,11 @@ RNG::shared_ptr Vector::d_DefaultRNG;
 Vector::Vector() : VectorData(), VectorOperations()
 {
     d_VectorData = dynamic_cast<VectorData *>( this );
-    d_Ghosts     = AMP::shared_ptr<std::vector<double>>( new std::vector<double> );
-    d_AddBuffer  = AMP::shared_ptr<std::vector<double>>( new std::vector<double> );
+    d_Ghosts     = AMP::make_shared<std::vector<double>>();
+    d_AddBuffer  = AMP::make_shared<std::vector<double>>();
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = UpdateState::UNCHANGED;
-    d_Views        = AMP::shared_ptr<std::vector<AMP::weak_ptr<Vector>>>(
-        new std::vector<AMP::weak_ptr<Vector>>() );
+    d_Views        = AMP::make_shared<std::vector<AMP::weak_ptr<Vector>>>();
     // Set default output stream
     d_output_stream = &AMP::plog;
 }
@@ -49,15 +48,14 @@ Vector::Vector( VectorParameters::shared_ptr parameters )
     d_UpdateState.reset( new UpdateState );
     *d_UpdateState = UpdateState::UNCHANGED;
     d_DOFManager   = parameters->d_DOFManager;
-    d_Views        = AMP::shared_ptr<std::vector<AMP::weak_ptr<Vector>>>(
-        new std::vector<AMP::weak_ptr<Vector>>() );
+    d_Views        = AMP::make_shared<std::vector<AMP::weak_ptr<Vector>>>();
 }
 
 
 /****************************************************************
  * De-Constructors                                               *
  ****************************************************************/
-Vector::~Vector() {}
+Vector::~Vector() = default;
 
 
 /****************************************************************
@@ -158,7 +156,7 @@ Vector::shared_ptr Vector::cloneVector( const std::string &name ) const
     if ( getVariable() ) {
         retVal = cloneVector( getVariable()->cloneVariable( name ) );
     } else {
-        retVal = cloneVector( Variable::shared_ptr( new Variable( name ) ) );
+        retVal = cloneVector( AMP::make_shared<Variable>( name ) );
     }
     return retVal;
 }
@@ -173,10 +171,10 @@ void Vector::setCommunicationList( CommunicationList::shared_ptr comm )
     d_CommList = comm;
     if ( comm ) {
         addCommunicationListToParameters( comm );
-        d_Ghosts = AMP::shared_ptr<std::vector<double>>(
-            new std::vector<double>( d_CommList->getVectorReceiveBufferSize() ) );
-        d_AddBuffer = AMP::shared_ptr<std::vector<double>>(
-            new std::vector<double>( d_CommList->getVectorReceiveBufferSize() ) );
+        d_Ghosts =
+            AMP::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
+        d_AddBuffer =
+            AMP::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
     }
 }
 

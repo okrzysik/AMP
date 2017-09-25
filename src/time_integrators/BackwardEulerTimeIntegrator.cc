@@ -32,7 +32,7 @@ BackwardEulerTimeIntegrator::BackwardEulerTimeIntegrator(
 /***********************************************************************
  *  Destructor.                                                         *
  ***********************************************************************/
-BackwardEulerTimeIntegrator::~BackwardEulerTimeIntegrator() {}
+BackwardEulerTimeIntegrator::~BackwardEulerTimeIntegrator() = default;
 
 
 /***********************************************************************
@@ -81,7 +81,7 @@ void BackwardEulerTimeIntegrator::setInitialGuess( const bool,
 /***********************************************************************
  *  Update internal state to reflect time advanced solution.            *
  ***********************************************************************/
-void BackwardEulerTimeIntegrator::updateSolution( void )
+void BackwardEulerTimeIntegrator::updateSolution()
 {
     // we can figure out a swap later
     d_pPreviousTimeSolution->copyVector( d_solution );
@@ -108,7 +108,7 @@ double BackwardEulerTimeIntegrator::getNextDt( const bool ) { return d_current_d
 /***********************************************************************
  *  Check whether time advanced solution is acceptable.                 *
  ***********************************************************************/
-bool BackwardEulerTimeIntegrator::checkNewSolution( void ) const
+bool BackwardEulerTimeIntegrator::checkNewSolution() const
 {
     /*
      * Ordinarily we would check the actual error in the solution

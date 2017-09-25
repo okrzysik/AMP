@@ -28,7 +28,7 @@ StridedZAxisMap::StridedZAxisMap( const AMP::shared_ptr<AMP::Operator::OperatorP
 /************************************************************************
  *  De-constructor                                                       *
  ************************************************************************/
-StridedZAxisMap::~StridedZAxisMap() {}
+StridedZAxisMap::~StridedZAxisMap() = default;
 
 /************************************************************************
  *  Check if the map type is "StridedZAxis"                              *

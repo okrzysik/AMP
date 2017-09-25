@@ -1,4 +1,5 @@
 #include "vectors/trilinos/thyra/ThyraVector.h"
+
 #include "vectors/MultiVariable.h"
 #include "vectors/MultiVector.h"
 #include "vectors/SimpleVector.h"
@@ -40,14 +41,14 @@ Vector::const_shared_ptr ThyraVector::constView( Vector::const_shared_ptr inVect
         retVal->setVariable( inVector->getVariable() );
         inVector->registerView( retVal );
     } else if ( dynamic_pointer_cast<const VectorEngine>( inVector ) ) {
-        Vector::shared_ptr inVector2            = AMP::const_pointer_cast<Vector>( inVector );
-        ManagedThyraVectorParameters *newParams = new ManagedThyraVectorParameters;
-        newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
-        newParams->d_CloneEngine = false;
-        AMP_INSIST( inVector->getCommunicationList().get() != NULL,
+        Vector::shared_ptr inVector2 = AMP::const_pointer_cast<Vector>( inVector );
+        auto *newParams              = new ManagedThyraVectorParameters;
+        newParams->d_Engine          = AMP::dynamic_pointer_cast<VectorEngine>( inVector2 );
+        newParams->d_CloneEngine     = false;
+        AMP_INSIST( inVector->getCommunicationList().get() != nullptr,
                     "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();
-        AMP_INSIST( inVector->getDOFManager().get() != NULL,
+        AMP_INSIST( inVector->getDOFManager().get() != nullptr,
                     "All vectors must have a DOFManager list" );
         newParams->d_DOFManager = inVector->getDOFManager();
         ManagedThyraVector *t = new ManagedThyraVector( VectorParameters::shared_ptr( newParams ) );
@@ -68,7 +69,7 @@ Vector::const_shared_ptr ThyraVector::constView( Vector::const_shared_ptr inVect
 Vector::shared_ptr ThyraVector::view( Vector::shared_ptr inVector )
 {
     // Check if we have an exisiting view
-    if ( AMP::dynamic_pointer_cast<ThyraVector>( inVector ) != NULL )
+    if ( AMP::dynamic_pointer_cast<ThyraVector>( inVector ) != nullptr )
         return inVector;
     if ( inVector->hasView<ManagedThyraVector>() )
         return inVector->getView<ManagedThyraVector>();
@@ -78,13 +79,13 @@ Vector::shared_ptr ThyraVector::view( Vector::shared_ptr inVector )
         retVal = Vector::shared_ptr( new ManagedThyraVector( inVector ) );
         inVector->registerView( retVal );
     } else if ( dynamic_pointer_cast<VectorEngine>( inVector ) ) {
-        ManagedThyraVectorParameters *newParams = new ManagedThyraVectorParameters;
+        auto *newParams          = new ManagedThyraVectorParameters;
         newParams->d_Engine      = AMP::dynamic_pointer_cast<VectorEngine>( inVector );
         newParams->d_CloneEngine = false;
-        AMP_INSIST( inVector->getCommunicationList().get() != NULL,
+        AMP_INSIST( inVector->getCommunicationList().get() != nullptr,
                     "All vectors must have a communication list" );
         newParams->d_CommList = inVector->getCommunicationList();
-        AMP_INSIST( inVector->getDOFManager().get() != NULL,
+        AMP_INSIST( inVector->getDOFManager().get() != nullptr,
                     "All vectors must have a DOFManager list" );
         newParams->d_DOFManager = inVector->getDOFManager();
         ManagedThyraVector *newVector =
@@ -116,11 +117,10 @@ static void nullDeleter( T * ){};
 AMP::LinearAlgebra::Vector::shared_ptr ThyraVector::view( Thyra::VectorBase<double> *vec )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vec_out;
-    if ( vec == NULL ) {
+    if ( vec == nullptr ) {
         // Null vec, do nothing
     } else if ( dynamic_cast<AMP::LinearAlgebra::ThyraVectorWrapper *>( vec ) ) {
-        AMP::LinearAlgebra::ThyraVectorWrapper *tmp =
-            dynamic_cast<AMP::LinearAlgebra::ThyraVectorWrapper *>( vec );
+        auto *tmp = dynamic_cast<AMP::LinearAlgebra::ThyraVectorWrapper *>( vec );
         if ( tmp->numVecs() == 0 ) {
             vec_out.reset();
         } else if ( tmp->numVecs() == 1 ) {
@@ -130,8 +130,7 @@ AMP::LinearAlgebra::Vector::shared_ptr ThyraVector::view( Thyra::VectorBase<doub
             for ( size_t i = 0; i < tmp->d_vecs.size(); i++ ) {
                 char name[100];
                 sprintf( name, "col-%i\n", (int) tmp->d_cols[i] );
-                vars.push_back( AMP::LinearAlgebra::Variable::shared_ptr(
-                    new AMP::LinearAlgebra::Variable( name ) ) );
+                vars.push_back( AMP::make_shared<AMP::LinearAlgebra::Variable>( name ) );
             }
             AMP::LinearAlgebra::Variable::shared_ptr multiVar(
                 new AMP::LinearAlgebra::MultiVariable( "ThyraMultiVec", vars ) );
@@ -149,11 +148,10 @@ AMP::LinearAlgebra::Vector::const_shared_ptr
 ThyraVector::constView( const Thyra::VectorBase<double> *vec )
 {
     AMP::LinearAlgebra::Vector::const_shared_ptr vec_out;
-    if ( vec == NULL ) {
+    if ( vec == nullptr ) {
         // Null vec, do nothing
     } else if ( dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper *>( vec ) ) {
-        const AMP::LinearAlgebra::ThyraVectorWrapper *tmp =
-            dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper *>( vec );
+        const auto *tmp = dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper *>( vec );
         if ( tmp->numVecs() == 0 ) {
             vec_out.reset();
         } else if ( tmp->numVecs() == 1 ) {
@@ -163,8 +161,7 @@ ThyraVector::constView( const Thyra::VectorBase<double> *vec )
             for ( size_t i = 0; i < tmp->d_vecs.size(); i++ ) {
                 char name[100];
                 sprintf( name, "col-%i\n", (int) tmp->d_cols[i] );
-                vars.push_back( AMP::LinearAlgebra::Variable::shared_ptr(
-                    new AMP::LinearAlgebra::Variable( name ) ) );
+                vars.push_back( AMP::make_shared<AMP::LinearAlgebra::Variable>( name ) );
             }
             AMP::LinearAlgebra::Variable::shared_ptr multiVar(
                 new AMP::LinearAlgebra::MultiVariable( "ThyraMultiVec", vars ) );

@@ -70,7 +70,7 @@ SubchannelToCladMap::SubchannelToCladMap(
 /************************************************************************
  *  De-constructor                                                       *
  ************************************************************************/
-SubchannelToCladMap::~SubchannelToCladMap() {}
+SubchannelToCladMap::~SubchannelToCladMap() = default;
 
 
 /************************************************************************
@@ -95,10 +95,10 @@ void SubchannelToCladMap::fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr mesh )
         root = d_MapComm.getRank();
         AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( mesh, d_x, d_y, d_z );
     }
-    root      = d_MapComm.maxReduce( root );
-    size_t Nx = d_MapComm.bcast<size_t>( d_x.size() - 1, root );
-    size_t Ny = d_MapComm.bcast<size_t>( d_y.size() - 1, root );
-    size_t Nz = d_MapComm.bcast<size_t>( d_z.size(), root );
+    root    = d_MapComm.maxReduce( root );
+    auto Nx = d_MapComm.bcast<size_t>( d_x.size() - 1, root );
+    auto Ny = d_MapComm.bcast<size_t>( d_y.size() - 1, root );
+    auto Nz = d_MapComm.bcast<size_t>( d_z.size(), root );
     d_x.resize( Nx + 1, 0.0 );
     d_y.resize( Ny + 1, 0.0 );
     d_z.resize( Nz, 0.0 );
@@ -236,7 +236,7 @@ void SubchannelToCladMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
     for ( size_t i = 0; i < N_subchannels; i++ ) {
         if ( !d_ownSubChannel[i] )
             continue;
-        int tag = (int) i; // We have an independent comm
+        auto tag = (int) i; // We have an independent comm
         for ( size_t j = 0; j < d_subchannelRecv[i].size(); j++ ) {
             int rank = d_subchannelRecv[i][j];
             d_currRequests.push_back(
@@ -267,8 +267,8 @@ void SubchannelToCladMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
     auto tmp_data = new double[d_z.size()];
     for ( size_t i = 0; i < N_subchannels; i++ ) {
         if ( d_elem[i].size() > 0 ) {
-            f[i]    = std::vector<double>( d_z.size(), 0.0 );
-            int tag = (int) i; // We have an independent comm
+            f[i]     = std::vector<double>( d_z.size(), 0.0 );
+            auto tag = (int) i; // We have an independent comm
             for ( size_t j = 0; j < d_subchannelRanks[i].size(); j++ ) {
                 int length = d_z.size();
                 d_MapComm.recv<double>( tmp_data, length, d_subchannelRanks[i][j], false, tag );

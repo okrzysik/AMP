@@ -10,6 +10,6 @@ ImplicitTimeIntegratorParameters::ImplicitTimeIntegratorParameters(
     d_solver.reset();
 }
 
-ImplicitTimeIntegratorParameters::~ImplicitTimeIntegratorParameters() {}
+ImplicitTimeIntegratorParameters::~ImplicitTimeIntegratorParameters() = default;
 } // namespace TimeIntegrator
 } // namespace AMP

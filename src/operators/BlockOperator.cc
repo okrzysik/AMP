@@ -188,7 +188,7 @@ void BlockOperator::getRow( void *object,
                             std::vector<size_t> &cols,
                             std::vector<double> &values )
 {
-    BlockOperator *myObject = static_cast<BlockOperator *>( object );
+    auto *myObject = static_cast<BlockOperator *>( object );
 
     AMP_ASSERT( row >= 0 );
     AMP_ASSERT( row < ( myObject->getNumRows() ) );

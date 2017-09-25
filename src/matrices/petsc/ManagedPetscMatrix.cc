@@ -124,7 +124,7 @@ PetscErrorCode _AMP_Scale( Mat x, PetscScalar alpha )
 namespace AMP {
 namespace LinearAlgebra {
 
-typedef ManagedEpetraMatrixParameters ManagedPetscMatrixParameters;
+using ManagedPetscMatrixParameters = ManagedEpetraMatrixParameters;
 
 
 void ManagedPetscMatrix::initPetscMat()
@@ -145,12 +145,12 @@ void ManagedPetscMatrix::initPetscMat()
                     static_cast<void *>( this ),
                     &d_Mat );
 
-    MatShellSetOperation( d_Mat, MATOP_MULT, (void ( * )( void )) _AMP_Mult );
-    MatShellSetOperation( d_Mat, MATOP_GET_VECS, (void ( * )( void )) _AMP_GetVecs );
-    MatShellSetOperation( d_Mat, MATOP_GET_DIAGONAL, (void ( * )( void )) _AMP_GetDiagonal );
-    MatShellSetOperation( d_Mat, MATOP_MULT_ADD, (void ( * )( void )) _AMP_Mult_add );
-    MatShellSetOperation( d_Mat, MATOP_AXPY, (void ( * )( void )) _AMP_AXPY );
-    MatShellSetOperation( d_Mat, MATOP_SCALE, (void ( * )( void )) _AMP_Scale );
+    MatShellSetOperation( d_Mat, MATOP_MULT, (void ( * )()) _AMP_Mult );
+    MatShellSetOperation( d_Mat, MATOP_GET_VECS, (void ( * )()) _AMP_GetVecs );
+    MatShellSetOperation( d_Mat, MATOP_GET_DIAGONAL, (void ( * )()) _AMP_GetDiagonal );
+    MatShellSetOperation( d_Mat, MATOP_MULT_ADD, (void ( * )()) _AMP_Mult_add );
+    MatShellSetOperation( d_Mat, MATOP_AXPY, (void ( * )()) _AMP_AXPY );
+    MatShellSetOperation( d_Mat, MATOP_SCALE, (void ( * )()) _AMP_Scale );
 }
 
 
@@ -210,7 +210,7 @@ void ManagedPetscMatrix::copyFromMat( Mat m )
     // AMP::Discretization::DOFManager::shared_ptr colDOF = params->getRightDOFManager();
     for ( size_t i = rowDOF->beginDOF(); i < rowDOF->endDOF(); i++ ) {
         AMP_ASSERT( i < 0x80000000 ); // We have not converted matrices to 64-bits yet
-        int row = (int) i;
+        auto row = (int) i;
         int num_cols;
         const int *cols;
         const double *data;

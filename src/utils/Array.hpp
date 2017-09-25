@@ -223,7 +223,7 @@ void Array<TYPE, FUN, Allocator>::resize( const std::vector<size_t> &N )
     if ( N.empty() ) {
         N2[0] = 0;
     }
-    std::shared_ptr<TYPE> old_data = d_ptr;
+    AMP::shared_ptr<TYPE> old_data = d_ptr;
     // Allocate new data
     allocate( N );
     // Copy the old values
@@ -475,46 +475,46 @@ bool Array<TYPE, FUN, Allocator>::operator==( const Array &rhs ) const
  *  Get a view of an C array                             *
  ********************************************************/
 template<class TYPE, class FUN, class Allocator>
-std::shared_ptr<Array<TYPE, FUN, Allocator>>
-Array<TYPE, FUN, Allocator>::view( size_t N, std::shared_ptr<TYPE> const &data )
+AMP::shared_ptr<Array<TYPE, FUN, Allocator>>
+Array<TYPE, FUN, Allocator>::view( size_t N, AMP::shared_ptr<TYPE> const &data )
 {
     return view( std::vector<size_t>{ N }, data );
 }
 template<class TYPE, class FUN, class Allocator>
-std::shared_ptr<Array<TYPE, FUN, Allocator>>
-Array<TYPE, FUN, Allocator>::view( size_t N1, size_t N2, std::shared_ptr<TYPE> const &data )
+AMP::shared_ptr<Array<TYPE, FUN, Allocator>>
+Array<TYPE, FUN, Allocator>::view( size_t N1, size_t N2, AMP::shared_ptr<TYPE> const &data )
 {
     return view( std::vector<size_t>{ N1, N2 }, data );
 }
 template<class TYPE, class FUN, class Allocator>
-std::shared_ptr<Array<TYPE, FUN, Allocator>> Array<TYPE, FUN, Allocator>::view(
-    size_t N1, size_t N2, size_t N3, std::shared_ptr<TYPE> const &data )
+AMP::shared_ptr<Array<TYPE, FUN, Allocator>> Array<TYPE, FUN, Allocator>::view(
+    size_t N1, size_t N2, size_t N3, AMP::shared_ptr<TYPE> const &data )
 {
     return view( std::vector<size_t>{ N1, N2, N3 }, data );
 }
 template<class TYPE, class FUN, class Allocator>
-std::shared_ptr<const Array<TYPE, FUN, Allocator>>
-Array<TYPE, FUN, Allocator>::constView( size_t N, std::shared_ptr<const TYPE> const &data )
+AMP::shared_ptr<const Array<TYPE, FUN, Allocator>>
+Array<TYPE, FUN, Allocator>::constView( size_t N, AMP::shared_ptr<const TYPE> const &data )
 {
     return constView( std::vector<size_t>{ N }, data );
 }
 template<class TYPE, class FUN, class Allocator>
-std::shared_ptr<const Array<TYPE, FUN, Allocator>> Array<TYPE, FUN, Allocator>::constView(
-    size_t N1, size_t N2, std::shared_ptr<const TYPE> const &data )
+AMP::shared_ptr<const Array<TYPE, FUN, Allocator>> Array<TYPE, FUN, Allocator>::constView(
+    size_t N1, size_t N2, AMP::shared_ptr<const TYPE> const &data )
 {
     return constView( std::vector<size_t>{ N1, N2 }, data );
 }
 template<class TYPE, class FUN, class Allocator>
-std::shared_ptr<const Array<TYPE, FUN, Allocator>> Array<TYPE, FUN, Allocator>::constView(
-    size_t N1, size_t N2, size_t N3, std::shared_ptr<const TYPE> const &data )
+AMP::shared_ptr<const Array<TYPE, FUN, Allocator>> Array<TYPE, FUN, Allocator>::constView(
+    size_t N1, size_t N2, size_t N3, AMP::shared_ptr<const TYPE> const &data )
 {
     return constView( std::vector<size_t>{ N1, N2, N3 }, data );
 }
 template<class TYPE, class FUN, class Allocator>
-std::shared_ptr<Array<TYPE, FUN, Allocator>>
-Array<TYPE, FUN, Allocator>::view( const std::vector<size_t> &N, std::shared_ptr<TYPE> const &data )
+AMP::shared_ptr<Array<TYPE, FUN, Allocator>>
+Array<TYPE, FUN, Allocator>::view( const std::vector<size_t> &N, AMP::shared_ptr<TYPE> const &data )
 {
-    std::shared_ptr<Array<TYPE, FUN, Allocator>> array( new Array<TYPE, FUN, Allocator>() );
+    AMP::shared_ptr<Array<TYPE, FUN, Allocator>> array( new Array<TYPE, FUN, Allocator>() );
     array->d_ndim   = N.size();
     array->d_length = 1;
     for ( size_t i = 0; i < N.size(); i++ ) {
@@ -528,9 +528,9 @@ Array<TYPE, FUN, Allocator>::view( const std::vector<size_t> &N, std::shared_ptr
     return array;
 }
 template<class TYPE, class FUN, class Allocator>
-std::shared_ptr<const Array<TYPE, FUN, Allocator>>
+AMP::shared_ptr<const Array<TYPE, FUN, Allocator>>
 Array<TYPE, FUN, Allocator>::constView( const std::vector<size_t> &N,
-                                        std::shared_ptr<const TYPE> const &data )
+                                        AMP::shared_ptr<const TYPE> const &data )
 {
     return view( N, std::const_pointer_cast<TYPE>( data ) );
 }
@@ -542,7 +542,7 @@ void Array<TYPE, FUN, Allocator>::view2( Array<TYPE, FUN, Allocator> &src )
 }
 template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::view2( const std::vector<size_t> &N,
-                                         std::shared_ptr<TYPE> const &data )
+                                         AMP::shared_ptr<TYPE> const &data )
 {
     d_ndim = static_cast<int>( N.size() );
     for ( size_t i = 0; i < ARRAY_NDIM_MAX; i++ ) {
@@ -596,19 +596,19 @@ void Array<TYPE, FUN, Allocator>::viewRaw( const std::vector<size_t> &N, TYPE *d
  ********************************************************/
 template<class TYPE, class FUN, class Allocator>
 template<class TYPE2>
-std::shared_ptr<Array<TYPE2, FUN, Allocator>>
-Array<TYPE, FUN, Allocator>::convert( std::shared_ptr<Array<TYPE, FUN, Allocator>> array )
+AMP::shared_ptr<Array<TYPE2, FUN, Allocator>>
+Array<TYPE, FUN, Allocator>::convert( AMP::shared_ptr<Array<TYPE, FUN, Allocator>> array )
 {
     if ( std::is_same<TYPE, TYPE2>() )
         return array;
-    std::shared_ptr<Array<TYPE2>> array2( new Array<TYPE2>( array->size() ) );
+    AMP::shared_ptr<Array<TYPE2>> array2( new Array<TYPE2>( array->size() ) );
     array2.copy( *array );
     return array2;
 }
 template<class TYPE, class FUN, class Allocator>
 template<class TYPE2>
-std::shared_ptr<const Array<TYPE2, FUN, Allocator>>
-Array<TYPE, FUN, Allocator>::convert( std::shared_ptr<const Array<TYPE, FUN, Allocator>> array )
+AMP::shared_ptr<const Array<TYPE2, FUN, Allocator>>
+Array<TYPE, FUN, Allocator>::convert( AMP::shared_ptr<const Array<TYPE, FUN, Allocator>> array )
 {
     return Array<TYPE, FUN, Allocator>::convert(
         std::const_pointer_cast<Array<TYPE2, FUN, Allocator>>( array ) );

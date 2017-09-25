@@ -117,13 +117,13 @@ void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     AMP::Mesh::MeshIterator el     = meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
-    libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-    libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+    auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
     AMP::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
     AMP::shared_ptr<::FEBase> d_fe( (::FEBase::build( 3, ( *d_feType ) ) ).release() );
 
-    libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
+    auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
     AMP::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 3, qruleOrder ) ).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
@@ -157,13 +157,13 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 
     AMP::Discretization::DOFManager::shared_ptr dof_map = TemperatureVec->getDOFManager();
 
-    libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-    libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+    auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
     AMP::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
     AMP::shared_ptr<::FEBase> d_fe( (::FEBase::build( 3, ( *d_feType ) ) ).release() );
 
-    libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
+    auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
     AMP::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 3, qruleOrder ) ).release() );
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
@@ -604,7 +604,7 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
     std::vector<std::string> exeNames;
-    exeNames.push_back( "testMeshRefinementDiffusion-1" );
+    exeNames.emplace_back( "testMeshRefinementDiffusion-1" );
 
     for ( auto name : exeNames )
         multiMeshLoop( &ut, name );

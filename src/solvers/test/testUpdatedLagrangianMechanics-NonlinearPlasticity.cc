@@ -250,10 +250,10 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.push_back( "testUpdatedLagrangianMechanics-NonlinearPlasticity-1" );
-    exeNames.push_back( "testUpdatedLagrangianMechanics-NonlinearPlasticity-2" );
-    exeNames.push_back( "testUpdatedLagrangianMechanics-NonlinearPlasticity-1a" );
-    exeNames.push_back( "testUpdatedLagrangianMechanics-NonlinearPlasticity-2a" );
+    exeNames.emplace_back( "testUpdatedLagrangianMechanics-NonlinearPlasticity-1" );
+    exeNames.emplace_back( "testUpdatedLagrangianMechanics-NonlinearPlasticity-2" );
+    exeNames.emplace_back( "testUpdatedLagrangianMechanics-NonlinearPlasticity-1a" );
+    exeNames.emplace_back( "testUpdatedLagrangianMechanics-NonlinearPlasticity-2a" );
 
     for ( auto &exeName : exeNames )
         myTest( &ut, exeName );

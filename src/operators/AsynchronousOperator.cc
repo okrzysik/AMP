@@ -14,7 +14,7 @@ AsynchronousOperator::AsynchronousOperator( const AMP::shared_ptr<OperatorParame
 }
 
 
-AsynchronousOperator::~AsynchronousOperator() {}
+AsynchronousOperator::~AsynchronousOperator() = default;
 
 
 /*bool AsynchronousOperator::continueAsynchronousConstruction ( const AMP::shared_ptr <

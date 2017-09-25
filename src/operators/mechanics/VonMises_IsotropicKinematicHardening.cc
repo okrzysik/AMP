@@ -93,8 +93,8 @@ VonMises_IsotropicKinematicHardening::VonMises_IsotropicKinematicHardening(
         ( params->d_db )->getDoubleWithDefault( "Default_Oxygen_Concentration", 0.0 );
 
     for ( auto &elem : d_constitutiveMatrix ) {
-        for ( size_t j = 0; j < 6; j++ )
-            elem[j] = 0.;
+        for ( double &j : elem )
+            j = 0.;
     }
     d_gaussPtCnt                 = 0;
     Total_Gauss_Point            = 0;
@@ -411,8 +411,8 @@ void VonMises_IsotropicKinematicHardening::getConstitutiveMatrix( double *&const
 
         // Initializing the tangent matrix as zero.
         for ( auto &elem : d_constitutiveMatrix ) {
-            for ( int j = 0; j < 6; j++ ) {
-                elem[j] = 0.0;
+            for ( double &j : elem ) {
+                j = 0.0;
             }
         }
 
@@ -541,8 +541,8 @@ void VonMises_IsotropicKinematicHardening::getConstitutiveMatrix( double *&const
 
     // Initiaization of the constitutive matrix.
     for ( auto &elem : d_constitutiveMatrix ) {
-        for ( int j = 0; j < 6; j++ ) {
-            elem[j] = 0.0;
+        for ( double &j : elem ) {
+            j = 0.0;
         }
     }
 

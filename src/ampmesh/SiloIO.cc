@@ -28,7 +28,7 @@ static inline size_t find_slash( const std::string &filename )
  * Constructor/Destructor                                    *
  ************************************************************/
 SiloIO::SiloIO() : AMP::Utilities::Writer() { d_dim = -1; }
-SiloIO::~SiloIO() {}
+SiloIO::~SiloIO() = default;
 
 
 /************************************************************
@@ -416,7 +416,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     std::string meshName                     = data.meshName;
     std::string zoneName                     = "zone_" + rank;
     AMP::Mesh::MeshIterator element_iterator = mesh->getIterator( mesh->getGeomType(), 0 );
-    int num_elems                            = (int) element_iterator.size();
+    auto num_elems                           = (int) element_iterator.size();
     DBPutZonelist2( FileHandle,
                     zoneName.c_str(),
                     num_elems,
@@ -648,15 +648,15 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &
             data.insert( std::pair<AMP::Mesh::MeshID, siloMultiMeshData>( elem.id, elem ) );
         } else {
             // Add the submeshes
-            for ( size_t j = 0; j < elem.meshes.size(); ++j ) {
+            for ( auto &meshe : elem.meshes ) {
                 bool found = false;
                 for ( auto &_k : iterator->second.meshes ) {
-                    if ( elem.meshes[j].id == _k.id && elem.meshes[j].meshName == _k.meshName &&
-                         elem.meshes[j].path == _k.path && elem.meshes[j].path == _k.file )
+                    if ( meshe.id == _k.id && meshe.meshName == _k.meshName &&
+                         meshe.path == _k.path && meshe.path == _k.file )
                         found = true;
                 }
                 if ( !found )
-                    iterator->second.meshes.push_back( elem.meshes[j] );
+                    iterator->second.meshes.push_back( meshe );
             }
             // Add the variables if we don't have them yet
             if ( elem.varName.size() > 0 ) {

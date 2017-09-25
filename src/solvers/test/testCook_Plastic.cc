@@ -258,7 +258,7 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.push_back( "testCook_Plastic_normal" );
+    exeNames.emplace_back( "testCook_Plastic_normal" );
     // exeNames.push_back("testCook_Plastic_reduced");
 
     for ( auto &exeName : exeNames )

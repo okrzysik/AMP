@@ -33,14 +33,14 @@ bool MultiVectorOperations::localEquals( const VectorOperations &x, double tol )
     }
     return equals;
 }
-double MultiVectorOperations::localMin( void ) const
+double MultiVectorOperations::localMin() const
 {
     double ans = 1e300;
     for ( auto &op : d_operations )
         ans = std::min( ans, op->localMin() );
     return ans;
 }
-double MultiVectorOperations::localMax( void ) const
+double MultiVectorOperations::localMax() const
 {
     double ans = -1e300;
     for ( auto &op : d_operations )

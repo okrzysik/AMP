@@ -10,8 +10,8 @@ namespace LinearAlgebra {
 /********************************************************
  * Constructors / De-constructors                        *
  ********************************************************/
-EpetraVector::EpetraVector() {}
-EpetraVector::~EpetraVector() {}
+EpetraVector::EpetraVector()  = default;
+EpetraVector::~EpetraVector() = default;
 
 
 /********************************************************

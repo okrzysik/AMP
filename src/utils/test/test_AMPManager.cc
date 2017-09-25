@@ -1,9 +1,9 @@
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
 #include <vector>
 
 #include "utils/AMPManager.h"
@@ -51,7 +51,7 @@ int main( int argc, char *argv[] )
         if ( procMax > 0 && globalSize > procMax )
             AMP_ERROR( "AMP did not initialize on a sub-communicator" );
         // Introduce a memory leak to catch in valgrind later
-        double *x = new double[100];
+        auto *x = new double[100];
         if ( x == nullptr )
             AMP_ERROR( "error" );
         // Test the abort

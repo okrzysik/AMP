@@ -12,10 +12,10 @@ namespace Solver {
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-BiCGSTABSolver::BiCGSTABSolver() : d_restarts( 0 ) {}
+BiCGSTABSolver::BiCGSTABSolver() = default;
 
 BiCGSTABSolver::BiCGSTABSolver( AMP::shared_ptr<KrylovSolverParameters> parameters )
-    : SolverStrategy( parameters ), d_restarts( 0 )
+    : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
 
@@ -27,7 +27,7 @@ BiCGSTABSolver::BiCGSTABSolver( AMP::shared_ptr<KrylovSolverParameters> paramete
 /****************************************************************
  *  Destructor                                                   *
  ****************************************************************/
-BiCGSTABSolver::~BiCGSTABSolver() {}
+BiCGSTABSolver::~BiCGSTABSolver() = default;
 
 /****************************************************************
  *  Initialize                                                   *

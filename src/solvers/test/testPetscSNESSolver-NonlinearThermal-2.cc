@@ -304,7 +304,7 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.push_back( "testPetscSNESSolver-NonlinearThermal-cylinder_MATPRO2" );
+    exeNames.emplace_back( "testPetscSNESSolver-NonlinearThermal-cylinder_MATPRO2" );
 
     for ( auto &exeName : exeNames )
         myTest( &ut, exeName );

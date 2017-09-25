@@ -53,7 +53,7 @@ void PetscMatrixShellOperator::setOperator( AMP::shared_ptr<Operator> op )
                     this,
                     &d_mat );
     MatShellSetOperation(
-        d_mat, MATOP_MULT, ( void ( * )( void ) )( &( PetscMatrixShellOperator::mult ) ) );
+        d_mat, MATOP_MULT, ( void ( * )() )( &( PetscMatrixShellOperator::mult ) ) );
     d_matrix.reset( new AMP::LinearAlgebra::NativePetscMatrix( d_mat, true ) );
 }
 
@@ -61,7 +61,7 @@ PetscErrorCode PetscMatrixShellOperator::mult( Mat mat, Vec in, Vec out )
 {
     void *ctx;
     MatShellGetContext( mat, &ctx );
-    PetscMatrixShellOperator *op = reinterpret_cast<PetscMatrixShellOperator *>( ctx );
+    auto *op = reinterpret_cast<PetscMatrixShellOperator *>( ctx );
 
     AMP::LinearAlgebra::Vector::shared_ptr inVec(
         reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data ),

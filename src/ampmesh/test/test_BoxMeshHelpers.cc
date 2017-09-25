@@ -3,7 +3,7 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 
-#include <math.h>
+#include <cmath>
 #include <random>
 
 

@@ -113,8 +113,7 @@ public:
         d_variableNumberParameters = true;
     }
 
-    virtual void set_parameters_and_number( const double *params,
-                                            const unsigned int nparams ) override
+    void set_parameters_and_number( const double *params, const unsigned int nparams ) override
     {
         AMP_ASSERT( nparams > 0 );
         Property<double>::set_parameters_and_number( params, nparams );
@@ -123,7 +122,7 @@ public:
     /** returns property and derivative wrto r
      * \return [0]=property, [1]=property derivative wrto r
      */
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 };
 
 /** radial diffusion coefficient */
@@ -142,8 +141,7 @@ public:
         d_variableNumberParameters = true;
     }
 
-    virtual void set_parameters_and_number( const double *params,
-                                            const unsigned int nparams ) override
+    void set_parameters_and_number( const double *params, const unsigned int nparams ) override
     {
         AMP_ASSERT( nparams > 0 );
         Property<double>::set_parameters_and_number( params, nparams );
@@ -152,7 +150,7 @@ public:
     /** returns property and derivative wrto r
      * \return [0]=property, [1]=property derivative wrto r
      */
-    virtual std::vector<double> evalVector( std::vector<double> &args ) override;
+    std::vector<double> evalVector( std::vector<double> &args ) override;
 };
 
 /** longitudinal diffusion coefficient */
@@ -172,14 +170,13 @@ public:
         d_variableNumberParameters = true;
     }
 
-    virtual void set_parameters_and_number( const double *params,
-                                            const unsigned int nparams ) override
+    void set_parameters_and_number( const double *params, const unsigned int nparams ) override
     {
         AMP_ASSERT( nparams > 0 );
         Property<double>::set_parameters_and_number( params, nparams );
     }
 
-    virtual std::vector<double> evalVector( std::vector<double> &args ) override;
+    std::vector<double> evalVector( std::vector<double> &args ) override;
 };
 
 /** full cylindrically symmetric tensor diffusion coefficient
@@ -211,8 +208,7 @@ public:
     }
 
     // NOTE: must change dimension first before changing number of parameters
-    virtual void set_parameters_and_number( const double *params,
-                                            const unsigned int nparams ) override
+    void set_parameters_and_number( const double *params, const unsigned int nparams ) override
     {
         Property<double>::set_parameters_and_number( params, nparams );
         AMP_ASSERT( d_nparams >= 3 );
@@ -224,7 +220,7 @@ public:
                                                    d_nparamsLongitudinal );
     }
 
-    virtual std::vector<std::vector<double>> evalTensor( std::vector<double> &args ) override;
+    std::vector<std::vector<double>> evalTensor( std::vector<double> &args ) override;
 
 private:
     RadialFickProp d_radialK;

@@ -159,7 +159,7 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.push_back( "testMaterialModels_VonMisesPlasticity-1" );
+    exeNames.emplace_back( "testMaterialModels_VonMisesPlasticity-1" );
 
     for ( auto &exeName : exeNames )
         myTest( &ut, exeName );

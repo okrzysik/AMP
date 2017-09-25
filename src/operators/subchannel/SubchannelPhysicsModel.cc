@@ -34,28 +34,28 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
     if ( formulation == std::string( "OneEqnForwardSubstitution" ) ) {
         AMP_ERROR( "The formulation ''OneEqnForwardSubstitution'' has not yet been implemented" );
     } else if ( formulation == std::string( "TwoEqnPicardIteration" ) ) {
-        properties.push_back( "Enthalpy" );
+        properties.emplace_back( "Enthalpy" );
     } else if ( formulation == std::string( "TwoEqnJFNKPressure" ) ) {
-        properties.push_back( "Enthalpy" );
-        properties.push_back( "SpecificVolume" );
+        properties.emplace_back( "Enthalpy" );
+        properties.emplace_back( "SpecificVolume" );
     } else if ( formulation == std::string( "TwoEqnJFNKDensity" ) ) {
-        properties.push_back( "Enthalpy" );
-        properties.push_back( "Pressure" );
+        properties.emplace_back( "Enthalpy" );
+        properties.emplace_back( "Pressure" );
         AMP_ERROR( "The formulation ''TwoEqnJFNKDensity'' has not yet been implemented" );
     } else if ( formulation == std::string( "FunctionsTesting" ) ) {
-        properties.push_back( "Temperature" );
-        properties.push_back( "SaturatedLiquidEnthalpy" );
-        properties.push_back( "SpecificVolume" );
-        properties.push_back( "ThermalConductivity" );
-        properties.push_back( "ConvectiveHeat" );
-        properties.push_back( "DynamicViscosity" );
-        properties.push_back( "Enthalpy" );
+        properties.emplace_back( "Temperature" );
+        properties.emplace_back( "SaturatedLiquidEnthalpy" );
+        properties.emplace_back( "SpecificVolume" );
+        properties.emplace_back( "ThermalConductivity" );
+        properties.emplace_back( "ConvectiveHeat" );
+        properties.emplace_back( "DynamicViscosity" );
+        properties.emplace_back( "Enthalpy" );
     } else {
         AMP_ERROR( "Invalid Formulation key" );
     }
     // add properties to property pointer map
-    for ( auto prop = properties.begin(); prop != properties.end(); ++prop ) {
-        d_properties.insert( std::make_pair( *prop, d_material->property( *prop ) ) );
+    for ( auto &propertie : properties ) {
+        d_properties.insert( std::make_pair( propertie, d_material->property( propertie ) ) );
     }
 
     if ( params->d_db->keyExists( "Defaults" ) ) {
@@ -70,27 +70,28 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
         std::map<std::string, bool>
             defaults_found; // maps Defaults key to boolean for that key being found
         // initialize entries in defaults_found to false
-        for ( auto key = defaultkeys.begin(); key != defaultkeys.end(); ++key ) {
-            defaults_found.insert( std::make_pair( *key, false ) );
+        for ( auto &defaultkey : defaultkeys ) {
+            defaults_found.insert( std::make_pair( defaultkey, false ) );
         }
         // for each property needed by formulation
-        for ( auto prop = properties.begin(); prop != properties.end(); ++prop ) {
+        for ( auto &propertie : properties ) {
             // get its arguments
-            std::vector<std::string> argnames = d_properties.find( *prop )->second->get_arguments();
+            std::vector<std::string> argnames =
+                d_properties.find( propertie )->second->get_arguments();
             // for each Defaults key
-            for ( auto key = defaultkeys.begin(); key != defaultkeys.end(); ++key ) {
+            for ( auto &defaultkey : defaultkeys ) {
                 // try to find it in the property arguments
-                auto hit = std::find( argnames.begin(), argnames.end(), *key );
+                auto hit = std::find( argnames.begin(), argnames.end(), defaultkey );
                 // if found, report it as being found
                 if ( hit != argnames.end() )
-                    defaults_found.find( *key )->second = true;
+                    defaults_found.find( defaultkey )->second = true;
             }
         }
         // generate error if a Defaults key was not found in any property arguments
-        for ( auto key = defaultkeys.begin(); key != defaultkeys.end(); ++key ) {
+        for ( auto &defaultkey : defaultkeys ) {
             std::string insist_string =
-                "Default argument '" + ( *key ) + "' was not found as a property argument";
-            std::map<std::string, bool>::const_iterator it = defaults_found.find( *key );
+                "Default argument '" + defaultkey + "' was not found as a property argument";
+            std::map<std::string, bool>::const_iterator it = defaults_found.find( defaultkey );
             bool found                                     = false;
             if ( it != defaults_found.end() ) {
                 found = it->second;
@@ -100,8 +101,8 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
 
         // load and check defaults:
         // for each property needed by formulation
-        for ( auto prop = properties.begin(); prop != properties.end(); ++prop ) {
-            auto property      = d_properties.find( *prop )->second;       // pointer to property
+        for ( auto &propertie : properties ) {
+            auto property      = d_properties.find( propertie )->second;   // pointer to property
             size_t n_arguments = property->get_number_arguments();         // number of arguments
             std::vector<std::string> argnames = property->get_arguments(); // argument names
             std::vector<double> prop_defaults( n_arguments ); // argument default values

@@ -27,7 +27,7 @@ LinearTimeOperator::LinearTimeOperator(
     reset( in_params );
 }
 
-LinearTimeOperator::~LinearTimeOperator() {}
+LinearTimeOperator::~LinearTimeOperator() = default;
 
 void LinearTimeOperator::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 {

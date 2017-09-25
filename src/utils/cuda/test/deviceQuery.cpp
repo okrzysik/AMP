@@ -15,7 +15,6 @@
 
 // std::system includes
 #include <iostream>
-#include <memory>
 
 #include "utils/cuda/helper_cuda.h"
 #include <cuda_runtime.h>

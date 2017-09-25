@@ -23,8 +23,8 @@
 #include "ProfilerApp.h"
 
 #include <algorithm>
+#include <cstring>
 #include <iostream>
-#include <string.h>
 
 
 namespace AMP {
@@ -207,13 +207,16 @@ void BoxMesh::initialize()
         }
     }
     // Create the list of elements on each surface
-    const std::array<int, 6> globalRange = { 0, std::max( d_globalSize[0] - 1, 0 ),
-                                             0, std::max( d_globalSize[1] - 1, 0 ),
-                                             0, std::max( d_globalSize[2] - 1, 0 ) };
+    const std::array<int, 6> globalRange = { { 0,
+                                               std::max( d_globalSize[0] - 1, 0 ),
+                                               0,
+                                               std::max( d_globalSize[1] - 1, 0 ),
+                                               0,
+                                               std::max( d_globalSize[2] - 1, 0 ) } };
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
         // Loop through the different geometry types;
         for ( int t = 0; t <= static_cast<int>( GeomDim ); t++ ) {
-            GeomType type     = static_cast<GeomType>( t );
+            auto type         = static_cast<GeomType>( t );
             auto range1       = globalRange;
             auto range2       = globalRange;
             range1[2 * d + 0] = 0;
@@ -338,7 +341,7 @@ void BoxMesh::finalize()
 /****************************************************************
  * De-constructor                                                *
  ****************************************************************/
-BoxMesh::~BoxMesh() {}
+BoxMesh::~BoxMesh() = default;
 
 
 /****************************************************************
@@ -406,7 +409,7 @@ BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const std::array<doubl
         if ( fabs( x[d] - 1.0 ) < 1e-12 )
             x[d] = 1.0 - 1e-12;
         if ( x[d] < 0 || x[d] > 1 )
-            return MeshElementIndex();
+            return {};
     }
     // Convert x to [0,size]
     x[0] = x[0] * d_globalSize[0];
@@ -478,8 +481,7 @@ std::vector<MeshElement> BoxMesh::getElementParents( const MeshElement &meshelem
     if ( type == meshelem.globalID().type() )
         return std::vector<MeshElement>( 1, meshelem );
     // Get the element of interest
-    const structuredMeshElement *elem =
-        dynamic_cast<const structuredMeshElement *>( meshelem.getRawElement() );
+    const auto *elem = dynamic_cast<const structuredMeshElement *>( meshelem.getRawElement() );
     AMP_ASSERT( elem != nullptr );
     return elem->getParents( type );
 }
@@ -503,10 +505,11 @@ size_t BoxMesh::numGlobalElements( const GeomType type ) const
 {
     if ( type > GeomDim )
         return 0;
-    std::array<int, 6> box = { 0, d_globalSize[0] - 1, 0, d_globalSize[1] - 1,
-                               0, d_globalSize[2] - 1 };
-    auto range             = getIteratorRange( box, type, 0 );
-    size_t N               = 0;
+    std::array<int, 6> box = {
+        { 0, d_globalSize[0] - 1, 0, d_globalSize[1] - 1, 0, d_globalSize[2] - 1 }
+    };
+    auto range = getIteratorRange( box, type, 0 );
+    size_t N   = 0;
     for ( auto tmp : range )
         N += MeshElementIndex::numElements( tmp.first, tmp.second );
     return N;
@@ -548,9 +551,8 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
     ElementBlocks blocks;
     blocks.reserve( 3 );
     if ( type == GeomDim ) {
-        blocks.push_back(
-            std::make_pair( MeshElementIndex( type, 0, range[0], range[2], range[4] ),
-                            MeshElementIndex( type, 0, range[1], range[3], range[5] ) ) );
+        blocks.emplace_back( MeshElementIndex( type, 0, range[0], range[2], range[4] ),
+                             MeshElementIndex( type, 0, range[1], range[3], range[5] ) );
     } else if ( type == GeomType::Vertex ) {
         for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
             if ( gcw != 0 )
@@ -558,9 +560,8 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
             else if ( !d_isPeriodic[d] && range[2 * d + 1] == d_globalSize[d] - 1 )
                 range[2 * d + 1]++;
         }
-        blocks.push_back(
-            std::make_pair( MeshElementIndex( type, 0, range[0], range[2], range[4] ),
-                            MeshElementIndex( type, 0, range[1], range[3], range[5] ) ) );
+        blocks.emplace_back( MeshElementIndex( type, 0, range[0], range[2], range[4] ),
+                             MeshElementIndex( type, 0, range[1], range[3], range[5] ) );
     } else if ( type == GeomType::Edge && GeomDim == GeomType::Face ) {
         auto range1 = range;
         auto range2 = range;
@@ -568,12 +569,10 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
             range2[1]++;
         if ( gcw != 0 || ( gcw == 0 && !d_isPeriodic[1] && range[3] == d_globalSize[1] - 1 ) )
             range1[3]++;
-        blocks.push_back(
-            std::make_pair( MeshElementIndex( type, 0, range1[0], range1[2], range1[4] ),
-                            MeshElementIndex( type, 0, range1[1], range1[3], range1[5] ) ) );
-        blocks.push_back(
-            std::make_pair( MeshElementIndex( type, 1, range2[0], range2[2], range2[4] ),
-                            MeshElementIndex( type, 1, range2[1], range2[3], range2[5] ) ) );
+        blocks.emplace_back( MeshElementIndex( type, 0, range1[0], range1[2], range1[4] ),
+                             MeshElementIndex( type, 0, range1[1], range1[3], range1[5] ) );
+        blocks.emplace_back( MeshElementIndex( type, 1, range2[0], range2[2], range2[4] ),
+                             MeshElementIndex( type, 1, range2[1], range2[3], range2[5] ) );
     } else if ( type == GeomType::Edge && GeomDim == GeomType::Volume ) {
         auto range1 = range;
         auto range2 = range;
@@ -590,15 +589,12 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
             range1[5]++;
             range2[5]++;
         }
-        blocks.push_back(
-            std::make_pair( MeshElementIndex( type, 0, range1[0], range1[2], range1[4] ),
-                            MeshElementIndex( type, 0, range1[1], range1[3], range1[5] ) ) );
-        blocks.push_back(
-            std::make_pair( MeshElementIndex( type, 1, range2[0], range2[2], range2[4] ),
-                            MeshElementIndex( type, 1, range2[1], range2[3], range2[5] ) ) );
-        blocks.push_back(
-            std::make_pair( MeshElementIndex( type, 2, range3[0], range3[2], range3[4] ),
-                            MeshElementIndex( type, 2, range3[1], range3[3], range3[5] ) ) );
+        blocks.emplace_back( MeshElementIndex( type, 0, range1[0], range1[2], range1[4] ),
+                             MeshElementIndex( type, 0, range1[1], range1[3], range1[5] ) );
+        blocks.emplace_back( MeshElementIndex( type, 1, range2[0], range2[2], range2[4] ),
+                             MeshElementIndex( type, 1, range2[1], range2[3], range2[5] ) );
+        blocks.emplace_back( MeshElementIndex( type, 2, range3[0], range3[2], range3[4] ),
+                             MeshElementIndex( type, 2, range3[1], range3[3], range3[5] ) );
     } else if ( type == GeomType::Face && GeomDim == GeomType::Volume ) {
         auto range1 = range;
         auto range2 = range;
@@ -609,15 +605,12 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
             range2[3]++;
         if ( gcw != 0 || ( gcw == 0 && !d_isPeriodic[2] && range[5] == d_globalSize[2] - 1 ) )
             range3[5]++;
-        blocks.push_back(
-            std::make_pair( MeshElementIndex( type, 0, range1[0], range1[2], range1[4] ),
-                            MeshElementIndex( type, 0, range1[1], range1[3], range1[5] ) ) );
-        blocks.push_back(
-            std::make_pair( MeshElementIndex( type, 1, range2[0], range2[2], range2[4] ),
-                            MeshElementIndex( type, 1, range2[1], range2[3], range2[5] ) ) );
-        blocks.push_back(
-            std::make_pair( MeshElementIndex( type, 2, range3[0], range3[2], range3[4] ),
-                            MeshElementIndex( type, 2, range3[1], range3[3], range3[5] ) ) );
+        blocks.emplace_back( MeshElementIndex( type, 0, range1[0], range1[2], range1[4] ),
+                             MeshElementIndex( type, 0, range1[1], range1[3], range1[5] ) );
+        blocks.emplace_back( MeshElementIndex( type, 1, range2[0], range2[2], range2[4] ),
+                             MeshElementIndex( type, 1, range2[1], range2[3], range2[5] ) );
+        blocks.emplace_back( MeshElementIndex( type, 2, range3[0], range3[2], range3[4] ),
+                             MeshElementIndex( type, 2, range3[1], range3[3], range3[5] ) );
     } else {
         AMP_ERROR( "Unknown case" );
     }

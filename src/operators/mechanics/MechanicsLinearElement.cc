@@ -242,8 +242,8 @@ void MechanicsLinearElement::apply_Reduced()
                 materialStiffness[i][j] = 0.0;
 
         for ( auto &elem : materialMatrix )
-            for ( int j = 0; j < 6; j++ )
-                elem[j] = 0.0;
+            for ( double &j : elem )
+                j = 0.0;
 
         d_materialModel->getConstitutiveMatrix( constitutiveMatrix );
 
@@ -435,8 +435,8 @@ void MechanicsLinearElement::apply_Normal()
                 materialStiffness[i][j] = 0.0;
 
         for ( auto &elem : materialMatrix )
-            for ( int j = 0; j < 6; j++ )
-                elem[j] = 0.0;
+            for ( double &j : elem )
+                j = 0.0;
 
         d_materialModel->getConstitutiveMatrix( constitutiveMatrix );
 

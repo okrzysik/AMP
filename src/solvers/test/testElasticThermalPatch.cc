@@ -188,10 +188,10 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> mesh_files;
-    mesh_files.push_back( "testElasticThermalPatch-1" );
-    mesh_files.push_back( "testElasticThermalPatch-2" );
-    mesh_files.push_back( "testElasticThermalPatch-3" );
-    mesh_files.push_back( "testElasticThermalPatch-4" );
+    mesh_files.emplace_back( "testElasticThermalPatch-1" );
+    mesh_files.emplace_back( "testElasticThermalPatch-2" );
+    mesh_files.emplace_back( "testElasticThermalPatch-3" );
+    mesh_files.emplace_back( "testElasticThermalPatch-4" );
 
     for ( auto &mesh_file : mesh_files )
         myTest( &ut, mesh_file );

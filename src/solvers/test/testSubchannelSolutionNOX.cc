@@ -29,7 +29,7 @@
 #include "vectors/VectorBuilder.h"
 
 
-typedef std::vector<double> doubleVec;
+using doubleVec = std::vector<double>;
 
 
 // Function to get the linear heat generation rate
@@ -400,8 +400,8 @@ int main( int argc, char *argv[] )
     files[0] = "testSubchannelSolution-1";
     files[1] = "testSubchannelSolution-2";
 
-    for ( size_t i = 0; i < files.size(); i++ )
-        flowTest( &ut, files[i] );
+    for ( const auto &file : files )
+        flowTest( &ut, file );
 
     ut.report();
 

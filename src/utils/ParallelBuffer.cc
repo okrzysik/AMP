@@ -195,7 +195,7 @@ void ParallelBuffer::copyToBuffer( const std::string &text, const int length )
 
     if ( d_buffer_ptr + length > d_buffer_size ) {
         const int new_size = std::max( d_buffer_ptr + length, 2 * d_buffer_size );
-        char *new_buffer   = new char[new_size];
+        auto *new_buffer   = new char[new_size];
 
         if ( d_buffer_ptr > 0 ) {
             (void) strncpy( new_buffer, d_buffer, d_buffer_ptr );

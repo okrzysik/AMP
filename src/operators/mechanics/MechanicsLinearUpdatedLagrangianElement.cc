@@ -367,8 +367,8 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
         stressMatrix[0][1] = stressMatrix[1][0] = currentStress[5];
 
         for ( auto &elem : bigStressMatrix ) {
-            for ( int j = 0; j < 9; j++ ) {
-                elem[j] = 0.0;
+            for ( double &j : elem ) {
+                j = 0.0;
             }
         }
 
@@ -721,8 +721,8 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
         }
 
         for ( auto &elem : bigStressMatrix ) {
-            for ( int j = 0; j < 9; j++ ) {
-                elem[j] = 0.0;
+            for ( double &j : elem ) {
+                j = 0.0;
             }
         }
 

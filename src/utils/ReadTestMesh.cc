@@ -254,7 +254,7 @@ void readTestMesh( AMP::shared_ptr<AMP::InputDatabase> mesh_file_db, AMP::shared
         sprintf( newKey, "NumberOfBoundaryNodes%d", bid );
         int bndDofSize = mesh_db->getInteger( newKey );
         if ( bndDofSize > 0 ) {
-            int *bndDofIndices = new int[bndDofSize];
+            auto *bndDofIndices = new int[bndDofSize];
             mesh_db->getIntegerArray( key, bndDofIndices, bndDofSize );
             for ( int i = 0; i < bndDofSize; i++ ) {
                 mesh->boundary_info->add_node( mesh->node_ptr( bndDofIndices[i] ), bid );
@@ -270,7 +270,7 @@ void readTestMesh( AMP::shared_ptr<AMP::InputDatabase> mesh_file_db, AMP::shared
         sprintf( newKey, "NumberOfBoundarySides%d", bid );
         int bndDofSize = mesh_db->getInteger( newKey );
         if ( bndDofSize > 0 ) {
-            int *bndDofIndices = new int[2 * bndDofSize];
+            auto *bndDofIndices = new int[2 * bndDofSize];
             mesh_db->getIntegerArray( key, bndDofIndices, ( 2 * bndDofSize ) );
             for ( int i = 0; i < bndDofSize; i++ ) {
                 mesh->boundary_info->add_side(

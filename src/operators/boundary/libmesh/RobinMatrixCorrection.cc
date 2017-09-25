@@ -45,8 +45,8 @@ RobinMatrixCorrection::RobinMatrixCorrection(
     d_alpha = 0;
     d_beta  = 0;
     d_gamma = 0;
-    d_JxW   = 0;
-    d_phi   = 0;
+    d_JxW   = nullptr;
+    d_phi   = nullptr;
 
     reset( params );
 }

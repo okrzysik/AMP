@@ -38,11 +38,11 @@ DTKMapOperator::DTKMapOperator( const AMP::shared_ptr<OperatorParameters> &param
     };
 
     // Create DTK domain mesh objects.
-    d_domain_mesh = std::make_shared<DTKAMPMeshManager>(
+    d_domain_mesh = AMP::make_shared<DTKAMPMeshManager>(
         dtk_op_params->d_domain_mesh, dtk_op_params->d_domain_dofs, select_all );
 
     // Create DTK range mesh objects.
-    d_range_mesh = std::make_shared<DTKAMPMeshManager>(
+    d_range_mesh = AMP::make_shared<DTKAMPMeshManager>(
         dtk_op_params->d_range_mesh, dtk_op_params->d_range_dofs, select_all );
 }
 

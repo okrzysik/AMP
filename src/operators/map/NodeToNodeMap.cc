@@ -72,7 +72,7 @@ NodeToNodeMap::NodeToNodeMap( const AMP::shared_ptr<AMP::Operator::OperatorParam
 /********************************************************
  * De-constructor                                        *
  ********************************************************/
-NodeToNodeMap::~NodeToNodeMap() {}
+NodeToNodeMap::~NodeToNodeMap() = default;
 
 
 /********************************************************
@@ -274,8 +274,8 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
 
 
     // Send the list of points on mesh1 to all processors
-    int commSize = d_MapComm.getSize();
-    int send_cnt = (int) ownedPointsMesh1.size();
+    int commSize  = d_MapComm.getSize();
+    auto send_cnt = (int) ownedPointsMesh1.size();
     std::vector<int> recv_cnt( commSize, 0 );
     std::vector<int> recv_disp( commSize, 0 );
     d_MapComm.allGather( send_cnt, &recv_cnt[0] );

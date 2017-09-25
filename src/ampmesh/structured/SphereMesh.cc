@@ -1,4 +1,5 @@
 #include "ampmesh/structured/SphereMesh.h"
+
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/BoxMeshHelpers.h"
 
@@ -105,10 +106,7 @@ void SphereMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_pt
 /****************************************************************
  * Copy the mesh                                                 *
  ****************************************************************/
-AMP::shared_ptr<Mesh> SphereMesh::copy() const
-{
-    return AMP::shared_ptr<SphereMesh>( new SphereMesh( *this ) );
-}
+AMP::shared_ptr<Mesh> SphereMesh::copy() const { return AMP::make_shared<SphereMesh>( *this ); }
 
 
 /****************************************************************

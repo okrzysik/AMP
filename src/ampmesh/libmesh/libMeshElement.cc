@@ -34,23 +34,23 @@ libMeshElement::libMeshElement( int dim,
                                 const libMesh *mesh )
 {
     AMP_ASSERT( libmesh_element != nullptr );
-    typeID                  = libMeshElementTypeID;
-    element                 = nullptr;
-    d_dim                   = dim;
-    d_rank                  = rank;
-    d_mesh                  = mesh;
-    d_meshID                = meshID;
-    ptr_element             = libmesh_element;
-    unsigned int local_id   = (unsigned int) -1;
-    unsigned int owner_rank = (unsigned int) -1;
-    bool is_local           = false;
+    typeID          = libMeshElementTypeID;
+    element         = nullptr;
+    d_dim           = dim;
+    d_rank          = rank;
+    d_mesh          = mesh;
+    d_meshID        = meshID;
+    ptr_element     = libmesh_element;
+    auto local_id   = (unsigned int) -1;
+    auto owner_rank = (unsigned int) -1;
+    bool is_local   = false;
     if ( type == GeomType::Vertex ) {
-        ::Node *node = (::Node *) ptr_element;
-        local_id     = node->id();
-        owner_rank   = node->processor_id();
-        is_local     = owner_rank == d_rank;
+        auto *node = (::Node *) ptr_element;
+        local_id   = node->id();
+        owner_rank = node->processor_id();
+        is_local   = owner_rank == d_rank;
     } else if ( type == (GeomType) dim ) {
-        ::Elem *elem = (::Elem *) ptr_element;
+        auto *elem = (::Elem *) ptr_element;
         AMP_ASSERT( elem->n_neighbors() < 100 );
         local_id   = elem->id();
         owner_rank = elem->processor_id();
@@ -69,27 +69,27 @@ libMeshElement::libMeshElement( int dim,
     : d_delete_elem( false )
 {
     AMP_ASSERT( libmesh_element.get() != nullptr );
-    typeID                  = libMeshElementTypeID;
-    element                 = nullptr;
-    d_dim                   = dim;
-    d_rank                  = rank;
-    d_mesh                  = mesh;
-    d_meshID                = meshID;
-    ptr2                    = libmesh_element;
-    ptr_element             = libmesh_element.get();
-    unsigned int local_id   = (unsigned int) -1;
-    unsigned int owner_rank = (unsigned int) -1;
-    bool is_local           = false;
+    typeID          = libMeshElementTypeID;
+    element         = nullptr;
+    d_dim           = dim;
+    d_rank          = rank;
+    d_mesh          = mesh;
+    d_meshID        = meshID;
+    ptr2            = libmesh_element;
+    ptr_element     = libmesh_element.get();
+    auto local_id   = (unsigned int) -1;
+    auto owner_rank = (unsigned int) -1;
+    bool is_local   = false;
     if ( type == GeomType::Vertex ) {
-        ::Node *node = (::Node *) ptr_element;
-        local_id     = node->id();
-        owner_rank   = node->processor_id();
-        is_local     = owner_rank == d_rank;
+        auto *node = (::Node *) ptr_element;
+        local_id   = node->id();
+        owner_rank = node->processor_id();
+        is_local   = owner_rank == d_rank;
     } else {
-        ::Elem *elem = (::Elem *) ptr_element;
-        local_id     = elem->id();
-        owner_rank   = elem->processor_id();
-        is_local     = owner_rank == d_rank;
+        auto *elem = (::Elem *) ptr_element;
+        local_id   = elem->id();
+        owner_rank = elem->processor_id();
+        is_local   = owner_rank == d_rank;
     }
     d_globalID = MeshElementID( is_local, type, local_id, owner_rank, meshID );
 }
@@ -153,7 +153,7 @@ void libMeshElement::getElements( const GeomType type, std::vector<MeshElement> 
 {
     AMP_INSIST( type <= d_globalID.type(), "sub-elements must be of a smaller or equivalent type" );
     children.clear();
-    ::Elem *elem = (::Elem *) ptr_element;
+    auto *elem = (::Elem *) ptr_element;
     if ( d_globalID.type() == GeomType::Vertex ) {
         // A vertex does not have children, return itself
         if ( type != GeomType::Vertex )
@@ -233,12 +233,12 @@ void libMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &neighbo
         }
     } else if ( (int) d_globalID.type() == d_dim ) {
         // Return the neighbors of the current element
-        ::Elem *elem = (::Elem *) ptr_element;
+        auto *elem = (::Elem *) ptr_element;
         // if ( elem->n_neighbors()==0 )
         //    AMP_ERROR("Element has not neighbors, this could indicate a problem with the mesh");
         neighbors.resize( elem->n_neighbors() );
         for ( size_t i = 0; i < neighbors.size(); i++ ) {
-            void *neighbor_elem = (void *) elem->neighbor( i );
+            auto *neighbor_elem = (void *) elem->neighbor( i );
             AMP::shared_ptr<libMeshElement> neighbor;
             if ( neighbor_elem != nullptr )
                 neighbor = AMP::shared_ptr<libMeshElement>( new libMeshElement(
@@ -258,15 +258,15 @@ double libMeshElement::volume() const
 {
     if ( d_globalID.type() == GeomType::Vertex )
         AMP_ERROR( "volume is is not defined Nodes" );
-    ::Elem *elem = (::Elem *) ptr_element;
+    auto *elem = (::Elem *) ptr_element;
     return elem->volume();
 }
 void libMeshElement::coord( size_t &N, double *x ) const
 {
     if ( d_globalID.type() != GeomType::Vertex )
         AMP_ERROR( "coord is only defined for Nodes" );
-    ::Node *node = (::Node *) ptr_element;
-    N            = std::min<size_t>( N, d_dim );
+    auto *node = (::Node *) ptr_element;
+    N          = std::min<size_t>( N, d_dim );
     for ( int i = 0; i < d_dim; i++ )
         x[i] = ( *node )( i );
 }
@@ -274,7 +274,7 @@ void libMeshElement::centroid( size_t &N, double *x ) const
 {
     if ( d_globalID.type() == GeomType::Vertex )
         return coord( N, x );
-    ::Elem *elem   = (::Elem *) ptr_element;
+    auto *elem     = (::Elem *) ptr_element;
     ::Point center = elem->centroid();
     N              = std::min<size_t>( N, d_dim );
     for ( int i = 0; i < d_dim; i++ )
@@ -292,13 +292,13 @@ bool libMeshElement::containsPoint( const std::vector<double> &pos, double TOL )
             dist2 += ( point[i] - pos[i] ) * ( point[i] - pos[i] );
         return dist2 <= TOL * TOL;
     }
-    ::Elem *elem = (::Elem *) ptr_element;
+    auto *elem = (::Elem *) ptr_element;
     ::Point point( pos[0], pos[1], pos[2] );
     return elem->contains_point( point, TOL );
 }
 bool libMeshElement::isOnSurface() const
 {
-    int type           = static_cast<int>( d_globalID.type() );
+    auto type          = static_cast<int>( d_globalID.type() );
     MeshElement search = MeshElement( *this );
     if ( d_globalID.is_local() ) {
         const std::vector<MeshElement> &data = *( d_mesh->d_localSurfaceElements[type] );
@@ -330,7 +330,7 @@ bool libMeshElement::isOnBoundary( int id ) const
     AMP::shared_ptr<::Mesh> d_libMesh = d_mesh->getlibMesh();
     if ( type == GeomType::Vertex ) {
         // Entity is a libmesh node
-        ::Node *node                = (::Node *) ptr_element;
+        auto *node                  = (::Node *) ptr_element;
         std::vector<short int> bids = d_libMesh->boundary_info->boundary_ids( node );
         for ( auto &bid : bids ) {
             if ( bid == id )
@@ -338,7 +338,7 @@ bool libMeshElement::isOnBoundary( int id ) const
         }
     } else if ( (int) type == d_dim ) {
         // Entity is a libmesh node
-        ::Elem *elem      = (::Elem *) ptr_element;
+        auto *elem        = (::Elem *) ptr_element;
         unsigned int side = d_libMesh->boundary_info->side_with_boundary_id( elem, id );
         if ( side != static_cast<unsigned int>( -1 ) )
             on_boundary = true;
@@ -361,8 +361,8 @@ bool libMeshElement::isInBlock( int id ) const
         AMP_ERROR( "isInBlock is not currently implimented for anything but elements" );
     } else if ( (int) type == d_dim ) {
         // Entity is a libmesh node
-        ::Elem *elem = (::Elem *) ptr_element;
-        in_block     = (int) elem->subdomain_id() == id;
+        auto *elem = (::Elem *) ptr_element;
+        in_block   = (int) elem->subdomain_id() == id;
     } else {
         // All other entities are on the boundary iff all of their verticies are on the surface
         AMP_ERROR( "isInBlock is not currently implimented for anything but elements" );

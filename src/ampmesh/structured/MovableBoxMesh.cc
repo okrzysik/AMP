@@ -1,4 +1,5 @@
 #include "ampmesh/structured/MovableBoxMesh.h"
+
 #include "ampmesh/MultiIterator.h"
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/structuredMeshElement.h"
@@ -134,7 +135,7 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
  ****************************************************************/
 AMP::shared_ptr<Mesh> MovableBoxMesh::copy() const
 {
-    return AMP::shared_ptr<MovableBoxMesh>( new MovableBoxMesh( *this ) );
+    return AMP::make_shared<MovableBoxMesh>( *this );
 }
 
 

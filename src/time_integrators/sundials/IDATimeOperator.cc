@@ -17,7 +17,7 @@ IDATimeOperator::IDATimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParamet
     d_beta = 1.0;
 }
 
-IDATimeOperator::~IDATimeOperator() {}
+IDATimeOperator::~IDATimeOperator() = default;
 
 
 /*
@@ -38,7 +38,7 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     if ( d_cloningHappened == 0 ) {
         d_pScratchVector = r->cloneVector();
         d_pScratchVector->zero();
-        d_cloningHappened = 1;
+        d_cloningHappened = true;
     }
 
     d_pMassOperator->apply( d_pIDATimeDerivative, d_pScratchVector );

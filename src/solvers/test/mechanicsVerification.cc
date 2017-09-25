@@ -204,8 +204,8 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
     bool useRegularGridMesh = inputDatabase->getBool( "UseRegularGridMesh" );
     if ( useRegularGridMesh ) {
 
-        libmeshInit = AMP::shared_ptr<AMP::Mesh::initializeLibMesh>(
-            new AMP::Mesh::initializeLibMesh( AMP::AMP_MPI( AMP_COMM_WORLD ) ) );
+        libmeshInit =
+            AMP::make_shared<AMP::Mesh::initializeLibMesh>( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         std::string mesh_file       = inputDatabase->getString( "mesh_file" );
         const unsigned int mesh_dim = 3;
         AMP::shared_ptr<::Mesh> myMesh( new ::Mesh( mesh_dim ) );
@@ -569,13 +569,13 @@ int main( int argc, char *argv[] )
     std::vector<std::string> exeNames;
 
     if ( argc == 1 ) {
-        exeNames.push_back( "mechanicsVerification-Linear" );
+        exeNames.emplace_back( "mechanicsVerification-Linear" );
         //    exeNames.push_back("mechanicsVerification-HaldenPellet");
     } else {
         for ( int i = 1; i < argc; i++ ) {
             char inpName[100];
             sprintf( inpName, "mechanicsVerification-%s", argv[i] );
-            exeNames.push_back( inpName );
+            exeNames.emplace_back( inpName );
         } // end for i
     }
 

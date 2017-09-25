@@ -205,10 +205,10 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.push_back( "testPetscSNESSolver-NonlinearFick-cylinder-1a" );
-    exeNames.push_back( "testPetscSNESSolver-NonlinearFick-cylinder-1b" );
-    exeNames.push_back( "testPetscSNESSolver-NonlinearFick-cylinder-1c" );
-    exeNames.push_back( "testPetscSNESSolver-NonlinearFick-cylinder-1d" );
+    exeNames.emplace_back( "testPetscSNESSolver-NonlinearFick-cylinder-1a" );
+    exeNames.emplace_back( "testPetscSNESSolver-NonlinearFick-cylinder-1b" );
+    exeNames.emplace_back( "testPetscSNESSolver-NonlinearFick-cylinder-1c" );
+    exeNames.emplace_back( "testPetscSNESSolver-NonlinearFick-cylinder-1d" );
 
     for ( auto &exeName : exeNames )
         myTest( &ut, exeName );

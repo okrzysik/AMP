@@ -52,7 +52,7 @@ void myTest( AMP::UnitTest *ut )
     // map the volume ids to dtk ids
     int counter = 0;
     AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> vol_id_map =
-        std::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
+        AMP::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
     for ( vol_iterator = vol_iterator.begin(); vol_iterator != vol_iterator.end();
           ++vol_iterator, ++counter ) {
         vol_id_map->emplace( vol_iterator->globalID(), counter );
@@ -71,7 +71,7 @@ void myTest( AMP::UnitTest *ut )
 
     // make the rank map.
     AMP::shared_ptr<std::unordered_map<int, int>> rank_map =
-        std::make_shared<std::unordered_map<int, int>>();
+        AMP::make_shared<std::unordered_map<int, int>>();
     auto global_ranks = mesh->getComm().globalRanks();
     int size          = mesh->getComm().getSize();
     for ( int n = 0; n < size; ++n ) {

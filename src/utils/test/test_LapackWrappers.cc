@@ -1,9 +1,9 @@
 #include "LapackWrappers.h"
 
 #include <chrono>
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
 #include <thread>
 
 
@@ -69,7 +69,7 @@ int main( int, char *[] )
         double error;
         int err = Lapack<double>::run_test( dptests[i], dpN[i], error );
         auto t2 = std::chrono::system_clock::now();
-        int us  = static_cast<int>( diff( t1, t2 ) / dpN[i] );
+        auto us = static_cast<int>( diff( t1, t2 ) / dpN[i] );
         printf(
             "%7s:  %s:  %5i us  (%e)\n", dptests[i], err == 0 ? "passed" : "failed", us, error );
         N_err += err;
@@ -94,7 +94,7 @@ int main( int, char *[] )
         float error;
         int err = Lapack<float>::run_test( sptests[i], spN[i], error );
         auto t2 = std::chrono::system_clock::now();
-        int us  = static_cast<int>( diff( t1, t2 ) / spN[i] );
+        auto us = static_cast<int>( diff( t1, t2 ) / spN[i] );
         printf(
             "%7s:  %s:  %5i us  (%e)\n", sptests[i], err == 0 ? "passed" : "failed", us, error );
         N_err += err;
@@ -126,7 +126,7 @@ int main( int, char *[] )
         bool pass = true;
         for ( int j = 0; j < N_threads; j++ )
             pass = pass && N_errors_thread[j] == 0;
-        int us = static_cast<int>( diff( t1, t2 ) / ( dpN[i] * N_threads ) );
+        auto us = static_cast<int>( diff( t1, t2 ) / ( dpN[i] * N_threads ) );
         printf( "%7s:  %s:  %5i us\n", dptests[i], pass ? "passed" : "failed", us );
         N_errors += ( pass ? 0 : 1 );
     }

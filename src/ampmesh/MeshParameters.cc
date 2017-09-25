@@ -18,7 +18,7 @@ MeshParameters::MeshParameters( const AMP::shared_ptr<AMP::Database> db )
 /********************************************************
  * De-constructor                                        *
  ********************************************************/
-MeshParameters::~MeshParameters() {}
+MeshParameters::~MeshParameters() = default;
 
 
 /********************************************************

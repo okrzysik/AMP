@@ -17,8 +17,8 @@
 #include "ShutdownRegistry.h"
 #include "Utilities.h"
 #include "utils/AMP_MPI.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #ifndef NULL
 #define NULL ( 0 )
@@ -86,7 +86,7 @@ void InputManager::freeManager()
 
 InputManager::InputManager() : comm( AMP_COMM_WORLD ) {}
 
-InputManager::~InputManager() {}
+InputManager::~InputManager() = default;
 
 /*
 *************************************************************************
@@ -146,7 +146,7 @@ void InputManager::parseInputFile( const std::string &filename, AMP::shared_ptr<
     /*
      * Parse input file.
      */
-    Parser *parser     = new Parser();
+    auto *parser       = new Parser();
     const int errors   = parser->parse( filename, fstream, db );
     const int warnings = parser->getNumberWarnings();
 

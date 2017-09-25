@@ -66,7 +66,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 };
 
 class DensityProp : public Property<double>
@@ -83,7 +83,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 };
 
 class ThermalExpansionProp : public Property<double>
@@ -100,7 +100,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 };
 
 class HeatCapacityPressureProp : public Property<double>
@@ -117,7 +117,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 };
 
 class YoungsModulusProp : public Property<double>
@@ -134,7 +134,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 };
 
 class PoissonRatioProp : public Property<double>
@@ -150,7 +150,7 @@ public:
     {
     } // Number of arguments
 
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 };
 
 class DxThermalConductivityProp : public Property<double>
@@ -167,7 +167,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 };
 
 class DTThermalConductivityProp : public Property<double>
@@ -184,7 +184,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 };
 
 

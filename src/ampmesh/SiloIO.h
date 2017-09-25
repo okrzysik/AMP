@@ -139,10 +139,10 @@ private:
 
     // Structure used to hold data for the silo multimeshes
     struct siloMultiMeshData {
-        AMP::Mesh::MeshID id;             // Unique ID to identify the mesh
-        AMP::Mesh::Mesh::shared_ptr mesh; // Pointer to the mesh
-        int ownerRank; // Global rank of the processor that "owns" the mesh (usually rank 0 on the
-                       // mesh comm)
+        AMP::Mesh::MeshID id;                 // Unique ID to identify the mesh
+        AMP::Mesh::Mesh::shared_ptr mesh;     // Pointer to the mesh
+        int ownerRank;                        // Global rank of the processor that "owns" the mesh
+                                              // (usually rank 0 on the mesh comm)
         std::string name;                     // Name of the multimesh in silo
         std::vector<siloBaseMeshData> meshes; // Base mesh info needed to construct the mesh data
         std::vector<std::string>

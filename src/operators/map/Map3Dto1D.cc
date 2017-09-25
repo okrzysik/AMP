@@ -106,16 +106,13 @@ void Map3Dto1D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
         // Iterator for the solid-clad boundary
         for ( ; bnd != end_bnd; ++bnd ) {
-            libMeshEnums::Order feTypeOrder =
-                Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-            libMeshEnums::FEFamily feFamily =
-                Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+            auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+            auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
             AMP::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
             AMP::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
 
-            libMeshEnums::Order qruleOrder =
-                Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
+            auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
             AMP::shared_ptr<::QBase> d_qrule(
                 (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
 

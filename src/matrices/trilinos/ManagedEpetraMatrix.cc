@@ -68,7 +68,7 @@ Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
         new EpetraVectorEngineParameters( localSize, globalSize, memp->getEpetraComm() );
     VectorEngineParameters::shared_ptr p_eng( evep );
     AMP::shared_ptr<ManagedVectorParameters> p_params( new ManagedVectorParameters );
-    p_params->d_Buffer = VectorEngine::BufferPtr( new std::vector<double>( localSize ) );
+    p_params->d_Buffer = AMP::make_shared<std::vector<double>>( localSize );
     p_params->d_Engine =
         VectorEngine::shared_ptr( new EpetraVectorEngine( p_eng, p_params->d_Buffer ) );
     p_params->d_CommList   = memp->d_CommListRight;
@@ -88,7 +88,7 @@ Vector::shared_ptr ManagedEpetraMatrix::getLeftVector() const
         new EpetraVectorEngineParameters( localSize, globalSize, memp->getEpetraComm() );
     VectorEngineParameters::shared_ptr p_eng( evep );
     AMP::shared_ptr<ManagedVectorParameters> p_params( new ManagedVectorParameters );
-    p_params->d_Buffer = VectorEngine::BufferPtr( new std::vector<double>( localSize ) );
+    p_params->d_Buffer = AMP::make_shared<std::vector<double>>( localSize );
     p_params->d_Engine =
         VectorEngine::shared_ptr( new EpetraVectorEngine( p_eng, p_params->d_Buffer ) );
     p_params->d_CommList   = memp->d_CommListLeft;
@@ -447,7 +447,7 @@ std::vector<size_t> ManagedEpetraMatrix::getColumnIDs( size_t row ) const
  ********************************************************/
 void ManagedEpetraMatrix::makeConsistent()
 {
-    Epetra_FECrsMatrix *mat = dynamic_cast<Epetra_FECrsMatrix *>( d_epetraMatrix );
+    auto *mat = dynamic_cast<Epetra_FECrsMatrix *>( d_epetraMatrix );
     if ( mat ) {
         VerifyEpetraReturn( mat->GlobalAssemble( false ), "makeParallelConsistent" );
         fillComplete();
