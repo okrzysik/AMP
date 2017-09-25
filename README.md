@@ -7,16 +7,16 @@ To access the Advanced Multi-Physics (AMP) code:
 
 * Log in to bitbucket
 * Clone the AMP repository to your local machine/cluster, e.g.
-    * hg clone https://bitbucket.org/AdvancedMultiPhysics/amp
+    * hg clone https://bitbucket.org/AdvancedMultiPhysics/amp2
 * Build the prerequisite software following the instructions on the Wiki (link on left or below)
 # Associated Websites #
 
 The websites associated with the AMP package includes:
 
-* Wiki: https://bitbucket.org/AdvancedMultiPhysics/amp/wiki/Home
+* Wiki: https://bitbucket.org/AdvancedMultiPhysics/amp2/wiki/Home
 * Doxygen documentation: http://advancedmultiphysics.bitbucket.org/
-* Mercurial repositories:  https://bitbucket.org/AdvancedMultiPhysics/amp
-* Issue tracker: https://bitbucket.org/AdvancedMultiPhysics/amp/issues?status=new&status=open
+* Mercurial repositories:  https://bitbucket.org/AdvancedMultiPhysics/amp2
+* Issue tracker: https://bitbucket.org/AdvancedMultiPhysics/amp2/issues?status=new&status=open
 * CDash regression dashboard: http://vayu.ornl.gov/CDash/index.php?project=AMP
 
 # Team #

@@ -1,7 +1,6 @@
 #ifndef included_AMP_GMRESSolver
 #define included_AMP_GMRESSolver
 
-#include "solvers/KrylovSolverParameters.h"
 #include "solvers/SolverStrategy.h"
 #include "utils/AMP_MPI.h"
 #include "utils/Array.h"
@@ -44,7 +43,17 @@ public:
      acceptable values ("RIGHT", "LEFT" )
          active only when uses_preconditioner set to true
      */
-    explicit GMRESSolver( AMP::shared_ptr<KrylovSolverParameters> parameters );
+    explicit GMRESSolver( AMP::shared_ptr<SolverStrategyParameters> parameters );
+
+    /** 
+     * static create routine that is used by SolverFactory 
+     @param [in] parameters The parameters object
+     contains a database objects with the fields listed for the constructor above
+     */
+    static AMP::shared_ptr<SolverStrategy> createSolver( AMP::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    {
+      return AMP::make_shared<GMRESSolver> ( solverStrategyParameters );
+    }
 
     /**
      * Default destructor
@@ -141,6 +150,12 @@ private:
     //! "HR" : Householder reflections (use when highly ill conditioned)
     std::string d_sOrthogonalizationMethod = "MGS";
 
+    //! string, determining left, right or both side preconditioning
+    //! this flag only applies if d_bUsesPreconditioner is true
+    //! valid values are "left", "right", "both"
+    //! currently only right is implemented
+    std::string d_preconditioner_side = "right";
+    
     //! boolean, for whether a preconditioner present or not
     bool d_bUsesPreconditioner = false;
 

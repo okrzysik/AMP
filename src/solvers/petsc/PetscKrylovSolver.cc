@@ -35,14 +35,17 @@ PetscKrylovSolver::PetscKrylovSolver()
     d_bKSPCreatedInternally = false;
     d_KrylovSolver          = nullptr;
 }
-PetscKrylovSolver::PetscKrylovSolver( AMP::shared_ptr<PetscKrylovSolverParameters> parameters )
+PetscKrylovSolver::PetscKrylovSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters.get() != nullptr );
 
+    auto params = AMP::dynamic_pointer_cast<PetscKrylovSolverParameters>( parameters );
+    AMP_ASSERT( params.get() != nullptr );
+
     // Create a default KrylovSolver
     d_bKSPCreatedInternally = true;
-    KSPCreate( parameters->d_comm.getCommunicator(), &d_KrylovSolver );
+    KSPCreate( params->d_comm.getCommunicator(), &d_KrylovSolver );
 
     // Initialize
     initialize( parameters );
@@ -71,9 +74,11 @@ PetscKrylovSolver::~PetscKrylovSolver()
 ****************************************************************/
 void PetscKrylovSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
-    AMP::shared_ptr<PetscKrylovSolverParameters> parameters =
-        AMP::dynamic_pointer_cast<PetscKrylovSolverParameters>( params );
+    auto parameters = AMP::dynamic_pointer_cast<PetscKrylovSolverParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
+
+    // the comm is set here of instead of the constructor because this routine
+    // could be called by SNES directly
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
 

@@ -1,0 +1,80 @@
+
+Mesh {
+  MeshType = "libMesh"
+    dim = 3
+    MeshName = "TestMesh"
+    FileName = "brick.e"
+}
+
+
+MechanicsBVPOperator {
+  name="LinearBVPOperator"
+  print_info_level = 1
+  VolumeOperator = "MechanicsLinearFEOperator1"
+  BoundaryOperator = "DirichletMatrixCorrection1"
+}
+
+MechanicsLinearFEOperator1 {
+  name="MechanicsLinearFEOperator"
+  print_info_level = 1
+  reset_reuses_matrix = TRUE
+  InputVariable = "disp"
+  OutputVariable = "disp"
+
+  MechanicsElement {
+    name="MechanicsLinearElement"
+    USE_REDUCED_INTEGRATION = FALSE 
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+    }
+
+    LocalModel = "IsotropicElasticModel1"
+}
+
+DirichletMatrixCorrection1 {
+    name="DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    skip_rhs_correction = TRUE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+}
+
+IsotropicElasticModel1 {
+     name="IsotropicElasticModel"
+     Youngs_Modulus = 2.08e11
+     Poissons_Ratio = 0.23
+    }
+
+Load_Boundary {
+  name="DirichletVectorCorrection"
+  print_info_level = 1
+  skip_params = FALSE
+  number_of_ids = 1
+  id_0 = 1
+  number_of_dofs_0 = 1
+  dof_0_0 = 2
+  value_0_0 = 1.0
+}
+
+LinearSolver{
+  num_functions = 3
+  cycle_type = 2  // V cycle
+  relax_type = 3
+  number_sweeps = 2
+  coarsen_type = 10
+  interp_type = 6
+  agg_interp_type = 1
+  nodal = 0
+  print_info_level = 3
+  max_iterations = 40
+  max_error = 1e-10
+}
+
+

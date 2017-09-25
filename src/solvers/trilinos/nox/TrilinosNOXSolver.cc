@@ -10,7 +10,11 @@
 
 // Trilinos includes
 DISABLE_WARNINGS
+
+#ifdef USE_TRILINOS_BELOS
 #include "BelosTypes.hpp"
+#endif
+
 #include "NOX_MatrixFree_ModelEvaluatorDecorator.hpp"
 #include "NOX_Solver_Factory.H"
 #include "NOX_StatusTest_Combo.H"
@@ -133,7 +137,7 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
     }
     builder.setParameterList( p );
     d_lowsFactory = builder.createLinearSolveStrategy( "" );
-    // d_lowsFactory->initializeVerboseObjectBase();
+    //d_lowsFactory->initializeVerboseObjectBase();
     d_thyraModel->set_W_factory( d_lowsFactory );
     // Create the convergence tests (these will need to be on the input database)
     Teuchos::RCP<NOX::StatusTest::NormF> absresid =
