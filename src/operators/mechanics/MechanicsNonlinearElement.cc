@@ -477,9 +477,9 @@ void MechanicsNonlinearElement::apply_Normal()
         if(radius > 0.004665626) {
           valAtGaussPt = 414.0;
         }
-*/ // This part of the code is used to assign a
-   // temperature distribution by
-   // hand.
+*/          // This part of the code is used to assign a
+            // temperature distribution by
+            // hand.
             /*        if(radius <= 0.0025527) {
           valAtGaussPt = 772.8084 - (17315315.440195 * radius * radius);
         }
@@ -498,9 +498,9 @@ void MechanicsNonlinearElement::apply_Normal()
         if(radius > 0.004665626) {
           valAtGaussPt = 430.22;
         }
-*/ // This part of the code is used to assign a
-   // temperature distribution by
-   // hand.
+*/          // This part of the code is used to assign a
+            // temperature distribution by
+            // hand.
             fieldsAtGaussPt[Mechanics::TEMPERATURE].push_back( valAtGaussPt );
         }
 

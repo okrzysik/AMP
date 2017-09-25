@@ -54,8 +54,8 @@ epetraView( AMP::LinearAlgebra::Vector::const_shared_ptr x )
 
 
 /****************************************************************
-* Constructors / Destructor                                     *
-****************************************************************/
+ * Constructors / Destructor                                     *
+ ****************************************************************/
 TrilinosMueLuSolver::TrilinosMueLuSolver() { d_bCreationPhase = true; }
 TrilinosMueLuSolver::TrilinosMueLuSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
@@ -499,8 +499,7 @@ void TrilinosMueLuSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
 }
 
 void TrilinosMueLuSolver::solveWithHierarchy( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                              AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                                  u )
+                                              AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solveWithHierarchy" );
 
@@ -529,8 +528,7 @@ void TrilinosMueLuSolver::solveWithHierarchy( AMP::shared_ptr<const AMP::LinearA
 }
 
 void TrilinosMueLuSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                 AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                     u )
+                                 AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 
@@ -645,8 +643,7 @@ void TrilinosMueLuSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vecto
 
 
 void TrilinosMueLuSolver::reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                         AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                             u )
+                                         AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "reSolveWithLU" );
 
@@ -689,5 +686,5 @@ void TrilinosMueLuSolver::reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebr
     PROFILE_STOP( "reSolveWithLU" );
 }
 
-} // Solver
-} // AMP
+} // namespace Solver
+} // namespace AMP

@@ -12,8 +12,8 @@ namespace AMP {
 namespace Solver {
 
 /****************************************************************
-*  Constructors                                                 *
-****************************************************************/
+ *  Constructors                                                 *
+ ****************************************************************/
 TFQMRSolver::TFQMRSolver() : d_restarts( 0 ) {}
 
 TFQMRSolver::TFQMRSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
@@ -27,13 +27,13 @@ TFQMRSolver::TFQMRSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
 
 
 /****************************************************************
-*  Destructor                                                   *
-****************************************************************/
+ *  Destructor                                                   *
+ ****************************************************************/
 TFQMRSolver::~TFQMRSolver() {}
 
 /****************************************************************
-*  Initialize                                                   *
-****************************************************************/
+ *  Initialize                                                   *
+ ****************************************************************/
 void TFQMRSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> const params )
 {
     auto parameters = AMP::dynamic_pointer_cast<KrylovSolverParameters>( params );
@@ -66,12 +66,11 @@ void TFQMRSolver::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 }
 
 /****************************************************************
-*  Solve                                                        *
-* TODO: store convergence history, iterations, convergence reason
-****************************************************************/
+ *  Solve                                                        *
+ * TODO: store convergence history, iterations, convergence reason
+ ****************************************************************/
 void TFQMRSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                         AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                             x )
+                         AMP::shared_ptr<AMP::LinearAlgebra::Vector> x )
 {
     PROFILE_START( "solve" );
 
@@ -292,8 +291,8 @@ void TFQMRSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 }
 
 /****************************************************************
-*  Function to set the register the operator                    *
-****************************************************************/
+ *  Function to set the register the operator                    *
+ ****************************************************************/
 void TFQMRSolver::registerOperator( const AMP::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op.get() != nullptr );
@@ -317,5 +316,5 @@ void TFQMRSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorPa
         d_pPreconditioner->resetOperator( params );
     }
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

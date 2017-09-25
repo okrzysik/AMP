@@ -32,6 +32,6 @@ using SolverFactory = FactoryStrategy<SolverStrategy, SolverStrategyParameters>;
 
 // free function to preregister solvers known by SAMRSolvers
 void registerSolverFactories();
-}
-}
+} // namespace Solver
+} // namespace AMP
 #endif // included_SolverFactory_H_

@@ -59,8 +59,7 @@ public:
      @param [out] u : shared pointer to approximate computed solution
      */
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u ) override;
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Initialize the solution vector and potentially create internal vectors needed for solution
@@ -186,7 +185,7 @@ private:
 
     bool d_bCreationPhase; /**< set to true if the PC is not ready and false otherwise. */
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

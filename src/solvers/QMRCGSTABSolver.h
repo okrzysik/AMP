@@ -65,8 +65,7 @@ public:
      * @param [out] u : shared pointer to approximate computed solution
      */
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u ) override;
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Initialize the QMRCGSTABSolver. Should not be necessary for the user to call in general.
@@ -122,7 +121,7 @@ private:
 
     AMP::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

@@ -14,8 +14,8 @@ namespace Solver {
 
 
 /****************************************************************
-* Constructors / Destructor                                     *
-****************************************************************/
+ * Constructors / Destructor                                     *
+ ****************************************************************/
 BoomerAMGSolver::BoomerAMGSolver() { d_bCreationPhase = true; }
 BoomerAMGSolver::BoomerAMGSolver( AMP::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
@@ -444,8 +444,8 @@ void BoomerAMGSolver::copyToHypre( AMP::shared_ptr<const AMP::LinearAlgebra::Vec
 }
 
 
-void BoomerAMGSolver::copyFromHypre(
-    HYPRE_IJVector hypre_v, AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_v )
+void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
+                                     AMP::shared_ptr<AMP::LinearAlgebra::Vector> amp_v )
 {
     char hypre_mesg[100];
 
@@ -519,8 +519,7 @@ void BoomerAMGSolver::reset( AMP::shared_ptr<SolverStrategyParameters> )
 
 
 void BoomerAMGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                             AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                 u )
+                             AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
     // in this case we make the assumption we can access a EpetraMat for now
@@ -605,5 +604,5 @@ void BoomerAMGSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
     PROFILE_STOP( "solve" );
 }
 
-} // Solver
-} // AMP
+} // namespace Solver
+} // namespace AMP

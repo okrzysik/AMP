@@ -30,24 +30,24 @@
 
 namespace MueLu {
 class EpetraOperator;
-template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
+template<typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
 class Hierarchy;
-template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
+template<typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
 class TentativePFactory;
-template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
+template<typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
 class SaPFactory;
-template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
+template<typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
 class TransPFactory;
-template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
+template<typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
 class DirectSolver;
-template <typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
+template<typename Scalar, typename LocalOrdinal, typename GlobalOrdinal, typename Node>
 class SmootherFactory;
 
 using Scalar        = double;
 using LocalOrdinal  = int;
 using GlobalOrdinal = int;
 using Node          = Xpetra::EpetraNode;
-}
+} // namespace MueLu
 
 namespace AMP {
 
@@ -105,8 +105,7 @@ public:
      @param [out] u : shared pointer to approximate computed solution
      */
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u ) override;
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Solve the system \f$Au = f\f$.
@@ -114,8 +113,7 @@ public:
      @param [out] u : shared pointer to approximate computed solution
      */
     void solveWithHierarchy( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                             AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                 u );
+                             AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
     /**
      * Return a shared pointer to the ML_Epetra::MultiLevelPreconditioner object
@@ -161,8 +159,7 @@ public:
 
 protected:
     void reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                            u );
+                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
     void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
 
@@ -212,7 +209,7 @@ private:
     std::vector<Teuchos::RCP<MueLu::FactoryManager<SC, LO, GO, NO>>>
         d_levelFactoryManager; //! factory manager for MueLu components by level
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

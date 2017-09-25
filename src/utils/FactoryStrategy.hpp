@@ -16,7 +16,7 @@ namespace AMP {
 // unique_ptr but since AMP does not currently have that
 // we will return a shared_ptr
 
-template <typename TYPE, typename PARAMETERS>
+template<typename TYPE, typename PARAMETERS>
 class FactoryStrategy
 {
 private:
@@ -55,26 +55,27 @@ public:
     static void registerFactory( std::string name, FactoryStrategy::FunctionPtr ptr );
 };
 
-template <typename TYPE, typename PARAMETERS>
+template<typename TYPE, typename PARAMETERS>
 FactoryStrategy<TYPE, PARAMETERS>::FactoryStrategy()
 {
 }
 
-template <typename TYPE, typename PARAMETERS>
+template<typename TYPE, typename PARAMETERS>
 FactoryStrategy<TYPE, PARAMETERS>::~FactoryStrategy()
 {
 }
 
-template <typename TYPE, typename PARAMETERS>
+template<typename TYPE, typename PARAMETERS>
 FactoryStrategy<TYPE, PARAMETERS> &FactoryStrategy<TYPE, PARAMETERS>::getFactory( void )
 {
     static FactoryStrategy<TYPE, PARAMETERS> singletonInstance;
     return singletonInstance;
 }
 
-template <typename TYPE, typename PARAMETERS>
-AMP::shared_ptr<TYPE> FactoryStrategy<TYPE, PARAMETERS>::create(
-    std::string name, AMP::shared_ptr<PARAMETERS> parameters )
+template<typename TYPE, typename PARAMETERS>
+AMP::shared_ptr<TYPE>
+FactoryStrategy<TYPE, PARAMETERS>::create( std::string name,
+                                           AMP::shared_ptr<PARAMETERS> parameters )
 {
     AMP::shared_ptr<TYPE> obj;
     auto it = d_factories.find( name );
@@ -89,7 +90,7 @@ AMP::shared_ptr<TYPE> FactoryStrategy<TYPE, PARAMETERS>::create(
     return obj;
 }
 
-template <typename TYPE, typename PARAMETERS>
+template<typename TYPE, typename PARAMETERS>
 AMP::shared_ptr<TYPE>
 FactoryStrategy<TYPE, PARAMETERS>::create( AMP::shared_ptr<PARAMETERS> parameters )
 {
@@ -111,7 +112,7 @@ FactoryStrategy<TYPE, PARAMETERS>::create( AMP::shared_ptr<PARAMETERS> parameter
     return factory.create( objectName, parameters );
 }
 
-template <typename TYPE, typename PARAMETERS>
+template<typename TYPE, typename PARAMETERS>
 void FactoryStrategy<TYPE, PARAMETERS>::registerFactory(
     std::string name, FactoryStrategy<TYPE, PARAMETERS>::FunctionPtr ptr )
 {
@@ -119,11 +120,11 @@ void FactoryStrategy<TYPE, PARAMETERS>::registerFactory(
     factory.registerFunction( name, ptr );
 }
 
-template <typename TYPE, typename PARAMETERS>
+template<typename TYPE, typename PARAMETERS>
 void FactoryStrategy<TYPE, PARAMETERS>::registerFunction(
     std::string name, FactoryStrategy<TYPE, PARAMETERS>::FunctionPtr ptr )
 {
     d_factories[name] = ptr;
 }
-}
+} // namespace AMP
 #endif

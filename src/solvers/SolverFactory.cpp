@@ -72,5 +72,5 @@ void registerSolverFactories()
     solverFactory.registerFactory( "TFQMRSolver", TFQMRSolver::createSolver );
     solverFactory.registerFactory( "QMRCGSTABSolver", QMRCGSTABSolver::createSolver );
 }
-}
+} // namespace Solver
 } // end namespace AMP
