@@ -314,10 +314,10 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.push_back( "testPetscSNESSolver-NonlinearThermoMechanics-1" );
-    exeNames.push_back( "testPetscSNESSolver-NonlinearThermoMechanics-1a" );
-    exeNames.push_back( "testPetscSNESSolver-NonlinearThermoMechanics-1b" );
-    exeNames.push_back( "testPetscSNESSolver-NonlinearThermoMechanics-1c" );
+    exeNames.emplace_back( "testPetscSNESSolver-NonlinearThermoMechanics-1" );
+    exeNames.emplace_back( "testPetscSNESSolver-NonlinearThermoMechanics-1a" );
+    exeNames.emplace_back( "testPetscSNESSolver-NonlinearThermoMechanics-1b" );
+    exeNames.emplace_back( "testPetscSNESSolver-NonlinearThermoMechanics-1c" );
 
     for ( auto &exeName : exeNames )
         myTest( &ut, exeName );

@@ -16,9 +16,9 @@
 
 #include "utils/AMP_MPI.h"
 #include "utils/Utilities.h"
+#include <cstdio>
+#include <cstdlib>
 #include <fstream>
-#include <stdio.h>
-#include <stdlib.h>
 
 #ifndef NULL
 #define NULL ( 0 )
@@ -45,7 +45,7 @@ ImplicitTimeIntegrator::ImplicitTimeIntegrator(
     initialize( parameters );
 }
 
-ImplicitTimeIntegrator::~ImplicitTimeIntegrator() {}
+ImplicitTimeIntegrator::~ImplicitTimeIntegrator() = default;
 
 /*
 *************************************************************************

@@ -167,13 +167,13 @@ int main( int argc, char *argv[] )
         for ( int i = 1; i <= 6; i++ ) {
             char name[100];
             sprintf( name, "mesh2elem-%d", i );
-            mesh_files.push_back( name );
+            mesh_files.emplace_back( name );
         } // end for i
     } else {
         for ( int i = 1; i < argc; i++ ) {
             char name[100];
             sprintf( name, "mesh2elem-%d", atoi( argv[i] ) );
-            mesh_files.push_back( name );
+            mesh_files.emplace_back( name );
         } // end for i
     }
 

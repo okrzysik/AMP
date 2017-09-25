@@ -47,14 +47,13 @@ public:
         range[3] = 1.0;
         range[5] = 1.0;
         // Create a generic MeshParameters object
-        AMP::shared_ptr<AMP::MemoryDatabase> database( new AMP::MemoryDatabase( "Mesh" ) );
+        auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
         database->putInteger( "dim", 3 );
         database->putString( "MeshName", "AMP::cube" );
         database->putString( "Generator", "cube" );
         database->putIntegerArray( "Size", size );
         database->putDoubleArray( "Range", range );
-        AMP::shared_ptr<AMP::Mesh::MeshParameters> params(
-            new AMP::Mesh::MeshParameters( database ) );
+        auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create an AMP mesh
         mesh = AMP::Mesh::BoxMesh::generate( params );
@@ -94,14 +93,13 @@ public:
         range[1] = 0.0;
         range[2] = 1.0;
         // Create a generic MeshParameters object
-        AMP::shared_ptr<AMP::MemoryDatabase> database( new AMP::MemoryDatabase( "Mesh" ) );
+        auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
         database->putInteger( "dim", 3 );
         database->putString( "MeshName", "AMP::cylinder" );
         database->putString( "Generator", "cylinder" );
         database->putIntegerArray( "Size", size );
         database->putDoubleArray( "Range", range );
-        AMP::shared_ptr<AMP::Mesh::MeshParameters> params(
-            new AMP::Mesh::MeshParameters( database ) );
+        auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create an AMP mesh
         mesh = AMP::Mesh::BoxMesh::generate( params );
@@ -127,14 +125,13 @@ public:
         range[2] = 0.0;
         range[3] = 1.0;
         // Create a generic MeshParameters object
-        AMP::shared_ptr<AMP::MemoryDatabase> database( new AMP::MemoryDatabase( "Mesh" ) );
+        auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
         database->putInteger( "dim", 3 );
         database->putString( "MeshName", "AMP::tube" );
         database->putString( "Generator", "tube" );
         database->putIntegerArray( "Size", size );
         database->putDoubleArray( "Range", range );
-        AMP::shared_ptr<AMP::Mesh::MeshParameters> params(
-            new AMP::Mesh::MeshParameters( database ) );
+        auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create an AMP mesh
         mesh = AMP::Mesh::BoxMesh::generate( params );
@@ -150,20 +147,19 @@ public:
     virtual void build_mesh() override
     {
         // Create the multimesh database
-        AMP::shared_ptr<AMP::MemoryDatabase> meshDatabase( new AMP::MemoryDatabase( "Mesh" ) );
+        auto meshDatabase = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
         meshDatabase->putString( "MeshName", "SinglePin" );
         meshDatabase->putString( "MeshType", "Multimesh" );
         meshDatabase->putString( "MeshDatabasePrefix", "Mesh_" );
         meshDatabase->putString( "MeshArrayDatabasePrefix", "MeshArray_" );
         // Create the mesh array database (PelletMeshes)
-        AMP::shared_ptr<Database> pelletMeshDatabase = meshDatabase->putDatabase( "Mesh_1" );
+        auto pelletMeshDatabase = meshDatabase->putDatabase( "Mesh_1" );
         createPelletMeshDatabase( pelletMeshDatabase );
         // Create the mesh database (clad)
-        AMP::shared_ptr<Database> cladMeshDatabase = meshDatabase->putDatabase( "Mesh_2" );
+        auto cladMeshDatabase = meshDatabase->putDatabase( "Mesh_2" );
         createCladMeshDatabase( cladMeshDatabase );
         // Create the parameter object
-        AMP::shared_ptr<AMP::Mesh::MeshParameters> params(
-            new AMP::Mesh::MeshParameters( meshDatabase ) );
+        auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create the mesh
         mesh = AMP::Mesh::Mesh::buildMesh( params );
@@ -175,13 +171,13 @@ private:
     {
         int N_pellet = 2;
         // Create the multimesh database
-        AMP::shared_ptr<AMP::MemoryDatabase> meshDatabase( new AMP::MemoryDatabase( "Mesh" ) );
+        auto meshDatabase = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
         db->putString( "MeshName", "PelletMeshes" );
         db->putString( "MeshType", "Multimesh" );
         db->putString( "MeshDatabasePrefix", "Mesh_" );
         db->putString( "MeshArrayDatabasePrefix", "MeshArray_" );
         // Create the mesh array database (PelletMeshes)
-        AMP::shared_ptr<Database> meshArrayDatabase = db->putDatabase( "MeshArray_1" );
+        auto meshArrayDatabase = db->putDatabase( "MeshArray_1" );
         meshArrayDatabase->putInteger( "N", N_pellet );
         meshArrayDatabase->putString( "iterator", "%i" );
         std::vector<int> indexArray( N_pellet );
@@ -221,7 +217,7 @@ private:
         range[2] = 0;
         range[3] = 0.042;
         // Create the multimesh database
-        AMP::shared_ptr<AMP::MemoryDatabase> meshDatabase( new AMP::MemoryDatabase( "Mesh" ) );
+        auto meshDatabase = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
         db->putString( "MeshName", "clad" );
         db->putString( "MeshType", "AMP" );
         db->putString( "Generator", "tube" );

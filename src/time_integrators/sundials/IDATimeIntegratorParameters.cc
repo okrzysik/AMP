@@ -16,6 +16,6 @@ IDATimeIntegratorParameters::IDATimeIntegratorParameters( const AMP::shared_ptr<
     d_ic_vector_prime.reset();
 }
 
-IDATimeIntegratorParameters::~IDATimeIntegratorParameters() {}
+IDATimeIntegratorParameters::~IDATimeIntegratorParameters() = default;
 } // namespace TimeIntegrator
 } // namespace AMP

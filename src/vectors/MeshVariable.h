@@ -49,7 +49,7 @@ public:
      */
     MeshIteratorVariable( const std::string &name,
                           const AMP::Mesh::MeshIterator &iterator,
-                          const AMP_MPI &comm );
+                          AMP_MPI comm );
 
     virtual AMP::Discretization::DOFManager::shared_ptr
         getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr ) const override;

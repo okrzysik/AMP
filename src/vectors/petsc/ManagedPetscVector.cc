@@ -1,4 +1,5 @@
 #include "vectors/petsc/ManagedPetscVector.h"
+
 #include "utils/Utilities.h"
 #include "vectors/VectorEngine.h"
 #include "vectors/petsc/PetscVector.h"
@@ -464,10 +465,8 @@ PetscErrorCode _AMP_destroyvecs( PetscInt num, Vec vecArray[] )
 
 PetscErrorCode _AMP_axpy( Vec out, PetscScalar alpha, Vec in )
 {
-    AMP::LinearAlgebra::ManagedPetscVector *x =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
-    AMP::LinearAlgebra::ManagedPetscVector *y =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( out->data );
+    auto *x = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
+    auto *y = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( out->data );
     y->axpy( alpha, *x, *y );
     return 0;
 }
@@ -475,12 +474,9 @@ PetscErrorCode _AMP_axpy( Vec out, PetscScalar alpha, Vec in )
 
 PetscErrorCode _AMP_waxpy( Vec w, PetscScalar alpha, Vec x, Vec y )
 {
-    AMP::LinearAlgebra::ManagedPetscVector *xIn =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( x->data );
-    AMP::LinearAlgebra::ManagedPetscVector *yIn =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( y->data );
-    AMP::LinearAlgebra::ManagedPetscVector *wOut =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( w->data );
+    auto *xIn  = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( x->data );
+    auto *yIn  = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( y->data );
+    auto *wOut = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( w->data );
 
     AMP_INSIST( ( wOut != xIn ) && ( wOut != yIn ),
                 "ERROR: _AMP_waxpy: w cannot be the same as x or y" );
@@ -550,8 +546,7 @@ bool _Verify_Memory( AMP::LinearAlgebra::Vector *p1, AMP::LinearAlgebra::Vector 
 PetscErrorCode _AMP_duplicate( Vec in, Vec *out )
 {
 
-    AMP::LinearAlgebra::ManagedPetscVector *p =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
+    auto *p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
     AMP::LinearAlgebra::ManagedPetscVector *dup = p->petscDuplicate();
     AMP_ASSERT( _Verify_Memory( p, dup ) );
     *out = dup->getVec();
@@ -576,17 +571,15 @@ PetscErrorCode _AMP_restorearray( Vec y, PetscScalar ** )
 
 PetscErrorCode _AMP_getarray( Vec in, PetscScalar **out )
 {
-    AMP::LinearAlgebra::ManagedPetscVector *p =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
-    *out = p->getRawDataBlock<PetscScalar>();
+    auto *p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
+    *out    = p->getRawDataBlock<PetscScalar>();
     return 0;
 }
 
 PetscErrorCode _AMP_getlocalsize( Vec in, PetscInt *out )
 {
-    AMP::LinearAlgebra::ManagedPetscVector *p =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
-    *out = (PetscInt) p->getLocalSize();
+    auto *p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( in->data );
+    *out    = (PetscInt) p->getLocalSize();
     return 0;
 }
 
@@ -598,16 +591,14 @@ PetscErrorCode _AMP_setfromoptions( Vec )
 
 PetscErrorCode _AMP_reciprocal( Vec v )
 {
-    AMP::LinearAlgebra::ManagedPetscVector *p =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( v->data );
+    auto *p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( v->data );
     p->reciprocal( *p );
     return 0;
 }
 
 PetscErrorCode _AMP_abs( Vec v )
 {
-    AMP::LinearAlgebra::ManagedPetscVector *p =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( v->data );
+    auto *p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( v->data );
     p->abs( *p );
     PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( v ) );
     return 0;
@@ -616,8 +607,7 @@ PetscErrorCode _AMP_abs( Vec v )
 PetscErrorCode _AMP_resetarray( Vec ) { return 0; }
 PetscErrorCode _AMP_destroy( Vec v )
 {
-    AMP::LinearAlgebra::ManagedPetscVector *p =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( v->data );
+    auto *p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( v->data );
     if ( p->constructedWithPetscDuplicate() ) {
         delete p;
     }
@@ -629,8 +619,7 @@ PetscErrorCode _AMP_create( Vec ) { return 0; }
 
 PetscErrorCode _AMP_set( Vec x, PetscScalar alpha )
 {
-    AMP::LinearAlgebra::ManagedPetscVector *p =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( x->data );
+    auto *p = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( x->data );
     p->setToScalar( alpha );
     // petsc calls object state increase for this function
     return 0;
@@ -824,8 +813,8 @@ void ManagedPetscVector::copyFromPetscVec( Vector &dest, Vec source )
 
     const VectorEngineParameters &eparams = *( params->d_Engine->getEngineParameters() );
     auto ids                              = new PetscInt[eparams.getLocalSize()];
-    PetscInt begin                        = (PetscInt) eparams.beginDOF();
-    PetscInt end                          = (PetscInt) eparams.endDOF();
+    auto begin                            = (PetscInt) eparams.beginDOF();
+    auto end                              = (PetscInt) eparams.endDOF();
     for ( PetscInt i = begin; i < end; i++ )
         ids[i - begin] = i;
     VecGetValues( source, dest.getLocalSize(), ids, dest.getRawDataBlock<double>() );
@@ -844,8 +833,8 @@ AMP::shared_ptr<AMP::LinearAlgebra::Vector> ManagedPetscVector::createFromPetscV
     AMP::shared_ptr<ManagedVectorParameters> t( new ManagedPetscVectorParameters() );
     VectorEngineParameters::shared_ptr ve_params(
         new EpetraVectorEngineParameters( local_size, global_size, comm ) );
-    t->d_Engine = VectorEngine::shared_ptr( new EpetraVectorEngine(
-        ve_params, VectorEngine::BufferPtr( new VectorEngine::Buffer( local_size ) ) ) );
+    t->d_Engine = VectorEngine::shared_ptr(
+        new EpetraVectorEngine( ve_params, AMP::make_shared<VectorEngine::Buffer>( local_size ) ) );
     ManagedPetscVector *pRetVal_t =
         new ManagedPetscVector( AMP::dynamic_pointer_cast<VectorParameters>( t ) );
     Vector::shared_ptr pRetVal( pRetVal_t );

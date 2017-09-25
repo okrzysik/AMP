@@ -3,7 +3,7 @@
 #include "utils/AMPManager.h"
 #include "utils/MemoryDatabase.h"
 
-#include <string.h>
+#include <cstring>
 
 // LibMesh include
 #include "libmesh/mesh.h"
@@ -83,7 +83,7 @@ initializeLibMesh::initializeLibMesh( AMP_MPI comm )
         int argc_libmesh    = 0;
         char **argv_libmesh = nullptr;
         const int argc      = AMPManager::get_argc();
-        const char **argv   = (const char **) AMPManager::get_argv();
+        const auto **argv   = (const char **) AMPManager::get_argv();
         argc_libmesh        = add_libmesh_cmdline( argc, argv, &argv_libmesh );
 #ifdef USE_EXT_MPI
 #ifdef USE_EXT_PETSC

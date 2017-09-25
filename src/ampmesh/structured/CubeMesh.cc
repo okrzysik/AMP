@@ -1,4 +1,5 @@
 #include "ampmesh/structured/CubeMesh.h"
+
 #include "ampmesh/MultiIterator.h"
 #include "ampmesh/shapes/Box.h"
 #include "ampmesh/structured/BoxMesh.h"
@@ -122,10 +123,7 @@ void CubeMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr 
 /****************************************************************
  * Copy the mesh                                                 *
  ****************************************************************/
-AMP::shared_ptr<Mesh> CubeMesh::copy() const
-{
-    return AMP::shared_ptr<CubeMesh>( new CubeMesh( *this ) );
-}
+AMP::shared_ptr<Mesh> CubeMesh::copy() const { return AMP::make_shared<CubeMesh>( *this ); }
 
 
 /****************************************************************
@@ -158,7 +156,7 @@ void CubeMesh::coord( const MeshElementIndex &index, double *pos ) const
  ****************************************************************/
 std::array<double, 3> CubeMesh::physicalToLogical( const double *x ) const
 {
-    std::array<double, 3> y = { 0, 0, 0 };
+    std::array<double, 3> y = { { 0, 0, 0 } };
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
         int i = AMP::Utilities::findfirst( d_coord[d], x[d] );
         i     = std::max<int>( i, 1 );

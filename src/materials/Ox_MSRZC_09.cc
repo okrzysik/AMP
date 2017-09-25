@@ -12,7 +12,7 @@
 #include "materials/Material.h"
 #include "materials/Property.h"
 
-#include <math.h>
+#include <cmath>
 #include <string>
 #include <valarray>
 
@@ -58,7 +58,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 };
 
 class SoretCoefficientProp : public Property<double>
@@ -75,7 +75,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 };
 
 //=================== Functions =====================================================

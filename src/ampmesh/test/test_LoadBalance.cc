@@ -6,9 +6,9 @@
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 
+#include <cmath>
 #include <iomanip>
 #include <iostream>
-#include <math.h>
 
 
 // Main function

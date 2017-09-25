@@ -425,13 +425,13 @@ void ManagedVector::abs( const VectorOperations &x )
 }
 
 
-double ManagedVector::min( void ) const { return d_Engine->min(); }
+double ManagedVector::min() const { return d_Engine->min(); }
 
 
-double ManagedVector::max( void ) const { return d_Engine->max(); }
+double ManagedVector::max() const { return d_Engine->max(); }
 
 
-void ManagedVector::setRandomValues( void )
+void ManagedVector::setRandomValues()
 {
     d_Engine->setRandomValues();
     dataChanged();
@@ -447,13 +447,13 @@ void ManagedVector::setToScalar( double alpha )
 }
 
 
-double ManagedVector::L1Norm( void ) const { return d_Engine->L1Norm(); }
+double ManagedVector::L1Norm() const { return d_Engine->L1Norm(); }
 
 
-double ManagedVector::L2Norm( void ) const { return d_Engine->L2Norm(); }
+double ManagedVector::L2Norm() const { return d_Engine->L2Norm(); }
 
 
-double ManagedVector::maxNorm( void ) const { return d_Engine->maxNorm(); }
+double ManagedVector::maxNorm() const { return d_Engine->maxNorm(); }
 
 
 double ManagedVector::dot( const VectorOperations &x ) const

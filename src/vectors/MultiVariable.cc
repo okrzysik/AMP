@@ -2,6 +2,7 @@
 #include "utils/Utilities.h"
 #include <algorithm>
 #include <map>
+#include <utility>
 
 
 namespace AMP {
@@ -36,12 +37,11 @@ public:
 /****************************************************************
  * Constructors/Destructors                                      *
  ****************************************************************/
-MultiVariable::MultiVariable( const std::string &name,
-                              const std::vector<Variable::shared_ptr> &vars )
-    : Variable( name ), d_vVariables( vars )
+MultiVariable::MultiVariable( const std::string &name, std::vector<Variable::shared_ptr> vars )
+    : Variable( name ), d_vVariables( std::move( vars ) )
 {
 }
-MultiVariable::~MultiVariable() {}
+MultiVariable::~MultiVariable() = default;
 
 
 /****************************************************************
@@ -92,7 +92,7 @@ void MultiVariable::sortVariablesByName( const std::vector<std::string> &order )
 
 bool MultiVariable::operator==( const Variable &rhs ) const
 {
-    const MultiVariable *multivariable = dynamic_cast<const MultiVariable *>( &rhs );
+    const auto *multivariable = dynamic_cast<const MultiVariable *>( &rhs );
     if ( multivariable == nullptr ) {
         // We are comparing a multi variable to another variable
         // The two variables match if the variable equals all sub-variable and

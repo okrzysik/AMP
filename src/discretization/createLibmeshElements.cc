@@ -29,7 +29,7 @@ namespace Discretization {
 
 
 // Default constuctor
-createLibmeshElements::createLibmeshElements() {}
+createLibmeshElements::createLibmeshElements() = default;
 
 
 // De-constuctor
@@ -92,7 +92,7 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
     d_type                           = type;
     AMP::Mesh::MeshIterator iterator = iterator_in.begin();
     if ( d_type != nullptr && iterator.size() > 0 ) {
-        int dim = (int) iterator->elementType();
+        auto dim = (int) iterator->elementType();
         d_rule.reset( libMesh::QBase::build( d_qtype, dim, d_qorder ).release() );
         d_base.reset( libMesh::FEBase::build( dim, *d_type ).release() );
         d_base->attach_quadrature_rule( d_rule.get() );
@@ -108,9 +108,9 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
         elements[i] = createLibmeshElements::createElement( *iterator );
         // Create the libmesh QBase and FEBase for the element
         if ( d_type != nullptr && cache_fe ) {
-            int dim = (int) iterator->elementType();
-            rule[i] = libMesh::QBase::build( d_qtype, dim, d_qorder ).release();
-            base[i] = libMesh::FEBase::build( dim, *d_type ).release();
+            auto dim = (int) iterator->elementType();
+            rule[i]  = libMesh::QBase::build( d_qtype, dim, d_qorder ).release();
+            base[i]  = libMesh::FEBase::build( dim, *d_type ).release();
             base[i]->attach_quadrature_rule( rule[i] );
             base[i]->reinit( elements[i] );
         }
@@ -138,7 +138,7 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
 // Create a libmesh element
 libMesh::Elem *createLibmeshElements::createElement( const AMP::Mesh::MeshElement &elem )
 {
-    int dim                                   = (int) elem.elementType();
+    auto dim                                  = (int) elem.elementType();
     std::vector<AMP::Mesh::MeshElement> nodes = elem.getElements( AMP::Mesh::GeomType::Vertex );
     libMesh::Elem *element                    = nullptr;
     // Create the libmesh element

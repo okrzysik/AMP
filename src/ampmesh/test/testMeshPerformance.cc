@@ -19,7 +19,7 @@
 template<class GENERATOR>
 void runTest( AMP::UnitTest &ut )
 {
-    auto generator = AMP::shared_ptr<GENERATOR>( new GENERATOR );
+    auto generator = AMP::make_shared<GENERATOR>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshPerformance( &ut, generator->getMesh() );
 }
@@ -28,7 +28,6 @@ void runTest( AMP::UnitTest &ut )
 void testMeshGenerators( AMP::UnitTest &ut )
 {
     PROFILE_START( "testMeshGenerators" );
-    AMP::shared_ptr<AMP::unit_test::MeshGenerator> generator;
     // AMP mesh generators
     runTest<AMP::unit_test::AMPCubeGenerator<4>>( ut );
     runTest<AMP::unit_test::AMPCylinderGenerator>( ut );
@@ -50,16 +49,16 @@ void testInputMesh( AMP::UnitTest &ut, std::string filename )
 {
     PROFILE_START( "testInputMesh" );
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( filename, input_db );
 
     // Get the Mesh database and create the mesh parameters
-    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto database = input_db->getDatabase( "Mesh" );
+    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Run the mesh tests
     AMP::Mesh::meshTests::MeshPerformance( &ut, mesh );

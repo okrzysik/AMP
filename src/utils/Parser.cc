@@ -27,7 +27,7 @@ extern void yyrestart( FILE * );
 extern void parser_static_table_initialize();
 
 Parser *Parser::s_default_parser         = nullptr;
-bool Parser::s_static_tables_initialized = 0;
+bool Parser::s_static_tables_initialized = false;
 
 /*
 *************************************************************************
@@ -42,7 +42,7 @@ Parser::Parser()
 {
     if ( !s_static_tables_initialized ) {
         parser_static_table_initialize();
-        s_static_tables_initialized = 1;
+        s_static_tables_initialized = true;
     }
     comm = AMP_MPI( AMP_COMM_WORLD );
 }
@@ -55,7 +55,7 @@ Parser::Parser()
 *************************************************************************
 */
 
-Parser::~Parser() {}
+Parser::~Parser() = default;
 
 /*
 *************************************************************************
@@ -219,7 +219,7 @@ AMP::shared_ptr<Database> Parser::getDatabaseWithKey( const std::string &key )
 {
     AMP::shared_ptr<Database> returnPtr;
 
-    std::list<AMP::shared_ptr<Database>>::iterator i = d_scope_stack.begin();
+    auto i = d_scope_stack.begin();
     for ( ; i != d_scope_stack.end(); i++ ) {
         if ( ( *i )->keyExists( key ) )
             return ( ( *i ) );

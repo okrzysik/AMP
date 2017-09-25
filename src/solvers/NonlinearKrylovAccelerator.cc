@@ -50,7 +50,7 @@ NonlinearKrylovAccelerator::NonlinearKrylovAccelerator(
 }
 
 
-NonlinearKrylovAccelerator::~NonlinearKrylovAccelerator( void )
+NonlinearKrylovAccelerator::~NonlinearKrylovAccelerator()
 {
     if ( d_ppdFunctionDifferenceInnerProducts != nullptr ) {
         delete d_ppdFunctionDifferenceInnerProducts[0];
@@ -417,7 +417,7 @@ void NonlinearKrylovAccelerator::solve( AMP::shared_ptr<const AMP::LinearAlgebra
 }
 
 
-void NonlinearKrylovAccelerator::restart( void )
+void NonlinearKrylovAccelerator::restart()
 {
     int k;
 
@@ -440,7 +440,7 @@ void NonlinearKrylovAccelerator::restart( void )
 }
 
 
-void NonlinearKrylovAccelerator::relax( void )
+void NonlinearKrylovAccelerator::relax()
 {
     if ( d_bContainsPendingVecs ) {
         /* Drop the initial slot where the pending vectors are stored. */

@@ -84,8 +84,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         }
     }
 
-    libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-    libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+    auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
     AMP::shared_ptr<::FEType> feType( new ::FEType( feTypeOrder, feFamily ) );
     AMP::shared_ptr<::FEBase> fe( (::FEBase::build( 3, ( *feType ) ) ).release() );
@@ -103,8 +103,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     const std::vector<RealGradient> &dxyzdeta  = fe->get_dxyzdeta();
     const std::vector<RealGradient> &dxyzdzeta = fe->get_dxyzdzeta();
 
-    libMeshEnums::QuadratureType qruleType =
-        Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
+    auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
     libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
     AMP::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, 3, qruleOrder ) ).release() );
 

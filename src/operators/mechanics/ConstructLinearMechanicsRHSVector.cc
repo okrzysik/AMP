@@ -27,16 +27,13 @@ void computeTemperatureRhsVector(
     AMP::shared_ptr<::QBase> qrule;
 
     std::string feTypeOrderName = elementRhsDatabase->getStringWithDefault( "FE_ORDER", "FIRST" );
-    libMeshEnums::Order feTypeOrder =
-        Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+    auto feTypeOrder            = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
     std::string feFamilyName = elementRhsDatabase->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
-    libMeshEnums::FEFamily feFamily =
-        Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    auto feFamily            = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
     std::string qruleTypeName = elementRhsDatabase->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
-    libMeshEnums::QuadratureType qruleType =
-        Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+    auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     const unsigned int dimension = 3;
 

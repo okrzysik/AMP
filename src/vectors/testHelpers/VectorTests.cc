@@ -153,8 +153,8 @@ void VectorTests::CloneVector( AMP::UnitTest *utils )
     utils->passes( "Clone created " + d_factory->name() );
     bool pass = true;
     for ( size_t i = 0; i != vector->numberOfDataBlocks(); i++ ) {
-        double *clone_ptr  = clone->getRawDataBlock<double>( i );
-        double *vector_ptr = vector->getRawDataBlock<double>( i );
+        auto *clone_ptr  = clone->getRawDataBlock<double>( i );
+        auto *vector_ptr = vector->getRawDataBlock<double>( i );
         if ( clone_ptr == vector_ptr )
             pass = false;
     }
@@ -802,7 +802,7 @@ void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils )
         utils->failure( "addValueByGlobalID leaves vector in UpdateState::ADDING state " +
                         d_factory->name() );
 
-    double offset = (double) ( 1 << utils->rank() );
+    auto offset = (double) ( 1 << utils->rank() );
     for ( size_t i = 0; i != vector->getGhostSize(); i++ ) {
         size_t ndx = vector->getCommunicationList()->getGhostIDList()[i];
         vector->addValueByGlobalID( ndx, offset );

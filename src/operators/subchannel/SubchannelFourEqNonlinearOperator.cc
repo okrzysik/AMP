@@ -19,10 +19,10 @@ namespace Operator {
 SubchannelFourEqNonlinearOperator::SubchannelFourEqNonlinearOperator(
     const AMP::shared_ptr<SubchannelOperatorParameters> &params )
     : Operator( params ),
-      d_forceNoConduction( 0 ),
-      d_forceNoTurbulence( 0 ),
-      d_forceNoHeatSource( 0 ),
-      d_forceNoFriction( 0 ),
+      d_forceNoConduction( false ),
+      d_forceNoTurbulence( false ),
+      d_forceNoHeatSource( false ),
+      d_forceNoFriction( false ),
       d_Pout( 0 ),
       d_Tin( 0 ),
       d_mass( 0 ),
@@ -269,9 +269,9 @@ void SubchannelFourEqNonlinearOperator::getLateralFaces(
         bool perpindicular_to_x = true; // is the current face perpindicular to x-axis?
         bool perpindicular_to_y = true; // is the current face perpindicular to y-axis?
         // loop over vertices of current face
-        for ( size_t j = 0; j < vertices.size(); ++j ) {
+        for ( auto &vertice : vertices ) {
             // get coordinates of current vertex
-            std::vector<double> vertexCoord = vertices[j].coord();
+            std::vector<double> vertexCoord = vertice.coord();
             // if any vertex does not have the same x-coordinate as the face centroid,
             if ( !AMP::Utilities::approx_equal( vertexCoord[0], faceCentroid[0], 1.0e-6 ) )
                 // then the face is not perpindicular to x-axis
@@ -330,9 +330,9 @@ SubchannelFourEqNonlinearOperator::getGapWidths( AMP::Mesh::Mesh::shared_ptr mes
                 double y1            = 0.0;
                 double correction    = 0.0; // gap width correction for exclusion of clad
                 double gapWidth      = 0.0;
-                for ( size_t j = 0; j < vertices.size(); ++j ) {
+                for ( auto &vertice : vertices ) {
                     // get coordinates of current vertex
-                    std::vector<double> vertexCoord = vertices[j].coord();
+                    std::vector<double> vertexCoord = vertice.coord();
                     if ( AMP::Utilities::approx_equal( vertexCoord[2], d_z[Nz], 1.0e-12 ) ) {
                         if ( topVertex1Found ) { // second top vertex has been found
                             // check for clad centered at this vertex
@@ -538,8 +538,8 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
         AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement>> subchannelElements(
             new std::vector<AMP::Mesh::MeshElement>() );
         subchannelElements->reserve( d_numSubchannels );
-        for ( size_t ielem = 0; ielem < d_elem[isub].size(); ++ielem ) {
-            subchannelElements->push_back( d_elem[isub][ielem] );
+        for ( const auto &ielem : d_elem[isub] ) {
+            subchannelElements->push_back( ielem );
         }
         AMP::Mesh::MeshIterator localSubchannelCell = AMP::Mesh::MultiVectorIterator(
             subchannelElements ); // iterator over elements of current subchannel
@@ -577,15 +577,15 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
             AMP_ASSERT( d_QFraction.size() == d_numSubchannels );
             flux = Subchannel::getHeatFluxGeneration( d_heatShape, d_z, d_rodDiameter[isub], d_Q );
             // multiply by power fraction
-            for ( size_t i = 0; i < flux.size(); i++ )
-                flux[i] = flux[i] * d_QFraction[isub];
+            for ( double &i : flux )
+                i = i * d_QFraction[isub];
         } else if ( d_source == "totalHeatGenerationWithDiscretizationError" ) {
             AMP_ASSERT( d_QFraction.size() == d_numSubchannels );
             flux = Subchannel::getHeatFluxGenerationWithDiscretizationError(
                 d_heatShape, d_z, d_rodDiameter[isub], d_Q );
             // multiply by power fraction
-            for ( size_t i = 0; i < flux.size(); i++ )
-                flux[i] = flux[i] * d_QFraction[isub];
+            for ( double &i : flux )
+                i = i * d_QFraction[isub];
         } else {
             AMP_ERROR( "Heat source type '" + d_source + "' is invalid" );
         }
@@ -738,8 +738,8 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
             // loop over gap faces
             std::vector<AMP::Mesh::MeshElement> cellFaces =
                 localSubchannelCell->getElements( AMP::Mesh::GeomType::Face );
-            for ( auto face = cellFaces.begin(); face != cellFaces.end(); ++face ) {
-                std::vector<double> faceCentroid = face->centroid();
+            for ( auto &cellFace : cellFaces ) {
+                std::vector<double> faceCentroid = cellFace.centroid();
                 auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
                 if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
                     // get face
@@ -1328,12 +1328,10 @@ double SubchannelFourEqNonlinearOperator::Volume( double h, double p )
     // h: enthalpy
     // p: pressure
     std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
-    argMap.insert(
-        std::make_pair( std::string( "enthalpy" ),
-                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, h ) ) ) );
-    argMap.insert(
-        std::make_pair( std::string( "pressure" ),
-                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p ) ) ) );
+    argMap.insert( std::make_pair( std::string( "enthalpy" ),
+                                   AMP::make_shared<std::vector<double>>( 1, h ) ) );
+    argMap.insert( std::make_pair( std::string( "pressure" ),
+                                   AMP::make_shared<std::vector<double>>( 1, p ) ) );
     std::vector<double> result( 1 );
     d_subchannelPhysicsModel->getProperty( "SpecificVolume", result, argMap );
     return result[0];
@@ -1345,12 +1343,10 @@ double SubchannelFourEqNonlinearOperator::Temperature( double h, double p )
     // h: enthalpy
     // p: pressure
     std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
-    argMap.insert(
-        std::make_pair( std::string( "enthalpy" ),
-                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, h ) ) ) );
-    argMap.insert(
-        std::make_pair( std::string( "pressure" ),
-                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p ) ) ) );
+    argMap.insert( std::make_pair( std::string( "enthalpy" ),
+                                   AMP::make_shared<std::vector<double>>( 1, h ) ) );
+    argMap.insert( std::make_pair( std::string( "pressure" ),
+                                   AMP::make_shared<std::vector<double>>( 1, p ) ) );
     std::vector<double> result( 1 );
     d_subchannelPhysicsModel->getProperty( "Temperature", result, argMap );
     return result[0];
@@ -1362,12 +1358,10 @@ double SubchannelFourEqNonlinearOperator::ThermalConductivity( double T, double 
     // T: temperature
     // rho: density
     std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
-    argMap.insert(
-        std::make_pair( std::string( "temperature" ),
-                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, T ) ) ) );
-    argMap.insert( std::make_pair(
-        std::string( "density" ),
-        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, rho ) ) ) );
+    argMap.insert( std::make_pair( std::string( "temperature" ),
+                                   AMP::make_shared<std::vector<double>>( 1, T ) ) );
+    argMap.insert( std::make_pair( std::string( "density" ),
+                                   AMP::make_shared<std::vector<double>>( 1, rho ) ) );
     std::vector<double> result( 1 );
     d_subchannelPhysicsModel->getProperty( "ThermalConductivity", result, argMap );
     return result[0];
@@ -1379,12 +1373,10 @@ double SubchannelFourEqNonlinearOperator::DynamicViscosity( double T, double rho
     // T: temperature
     // rho: density
     std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
-    argMap.insert(
-        std::make_pair( std::string( "temperature" ),
-                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, T ) ) ) );
-    argMap.insert( std::make_pair(
-        std::string( "density" ),
-        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, rho ) ) ) );
+    argMap.insert( std::make_pair( std::string( "temperature" ),
+                                   AMP::make_shared<std::vector<double>>( 1, T ) ) );
+    argMap.insert( std::make_pair( std::string( "density" ),
+                                   AMP::make_shared<std::vector<double>>( 1, rho ) ) );
     std::vector<double> result( 1 );
     d_subchannelPhysicsModel->getProperty( "DynamicViscosity", result, argMap );
     return result[0];
@@ -1396,12 +1388,10 @@ double SubchannelFourEqNonlinearOperator::Enthalpy( double T, double p )
     // T: temperature
     // p: pressure
     std::map<std::string, AMP::shared_ptr<std::vector<double>>> argMap;
-    argMap.insert(
-        std::make_pair( std::string( "temperature" ),
-                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, T ) ) ) );
-    argMap.insert(
-        std::make_pair( std::string( "pressure" ),
-                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, p ) ) ) );
+    argMap.insert( std::make_pair( std::string( "temperature" ),
+                                   AMP::make_shared<std::vector<double>>( 1, T ) ) );
+    argMap.insert( std::make_pair( std::string( "pressure" ),
+                                   AMP::make_shared<std::vector<double>>( 1, p ) ) );
     std::vector<double> result( 1 );
     d_subchannelPhysicsModel->getProperty( "Enthalpy", result, argMap );
     return result[0];
@@ -1419,8 +1409,8 @@ void SubchannelFourEqNonlinearOperator::getAxialFaces( AMP::Mesh::MeshElement ce
     // get all faces of cell
     std::vector<AMP::Mesh::MeshElement> cellFaces = cell.getElements( AMP::Mesh::GeomType::Face );
     // loop over faces of cell
-    for ( auto face = cellFaces.begin(); face != cellFaces.end(); ++face ) {
-        std::vector<double> faceCentroid = face->centroid();
+    for ( auto &cellFace : cellFaces ) {
+        std::vector<double> faceCentroid = cellFace.centroid();
         // if z-coordinates of centroids of the cell and face are not equal,
         if ( !AMP::Utilities::approx_equal( faceCentroid[2], cellCentroid[2], 1.0e-6 ) ) {
             // if face is above cell centroid,
@@ -1429,7 +1419,7 @@ void SubchannelFourEqNonlinearOperator::getAxialFaces( AMP::Mesh::MeshElement ce
                 if ( upperFaceFound )
                     AMP_ERROR( "Two upper axial faces were found for the same cell." );
                 else {
-                    upperFace      = *face;
+                    upperFace      = cellFace;
                     upperFaceFound = true;
                 }
             else
@@ -1437,7 +1427,7 @@ void SubchannelFourEqNonlinearOperator::getAxialFaces( AMP::Mesh::MeshElement ce
                 if ( lowerFaceFound )
                 AMP_ERROR( "Two lower axial faces were found for the same cell." );
             else {
-                lowerFace      = *face;
+                lowerFace      = cellFace;
                 lowerFaceFound = true;
             }
         }
@@ -1468,8 +1458,8 @@ AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLate
     AMP::Mesh::MeshElement axiallyAdjacentLateralFace;
     std::vector<AMP::Mesh::MeshElement> daughterCellFaces =
         daughterCell->getElements( AMP::Mesh::GeomType::Face );
-    for ( auto face = daughterCellFaces.begin(); face != daughterCellFaces.end(); ++face ) {
-        std::vector<double> faceCentroid = face->centroid();
+    for ( auto &daughterCellFace : daughterCellFaces ) {
+        std::vector<double> faceCentroid = daughterCellFace.centroid();
         auto lateralFaceIterator         = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) {
             // get lateral face

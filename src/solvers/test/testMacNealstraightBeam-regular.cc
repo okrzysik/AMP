@@ -191,26 +191,26 @@ int main( int argc, char *argv[] )
     std::vector<std::string> exeNames;
 
     if ( argc == 1 ) {
-        exeNames.push_back( "testMacNealstraightBeam-regular-X-normal-mesh0" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-X-reduced-mesh0" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-Y-normal-mesh0" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-Y-reduced-mesh0" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-Z-normal-mesh0" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-Z-reduced-mesh0" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-X-normal-mesh0" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-X-reduced-mesh0" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Y-normal-mesh0" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Y-reduced-mesh0" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Z-normal-mesh0" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Z-reduced-mesh0" );
 
-        exeNames.push_back( "testMacNealstraightBeam-regular-X-normal-mesh1" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-X-reduced-mesh1" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-Y-normal-mesh1" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-Y-reduced-mesh1" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-Z-normal-mesh1" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-Z-reduced-mesh1" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-X-normal-mesh1" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-X-reduced-mesh1" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Y-normal-mesh1" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Y-reduced-mesh1" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Z-normal-mesh1" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Z-reduced-mesh1" );
 
-        exeNames.push_back( "testMacNealstraightBeam-regular-X-normal-mesh2" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-X-reduced-mesh2" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-Y-normal-mesh2" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-Y-reduced-mesh2" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-Z-normal-mesh2" );
-        exeNames.push_back( "testMacNealstraightBeam-regular-Z-reduced-mesh2" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-X-normal-mesh2" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-X-reduced-mesh2" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Y-normal-mesh2" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Y-reduced-mesh2" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Z-normal-mesh2" );
+        exeNames.emplace_back( "testMacNealstraightBeam-regular-Z-reduced-mesh2" );
     } else {
         for ( int i = 1; i < argc; i += 3 ) {
             char inpName[100];
@@ -219,7 +219,7 @@ int main( int argc, char *argv[] )
                      argv[i],
                      argv[i + 1],
                      atoi( argv[i + 2] ) );
-            exeNames.push_back( inpName );
+            exeNames.emplace_back( inpName );
         } // end for i
     }
 

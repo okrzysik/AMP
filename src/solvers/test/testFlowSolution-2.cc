@@ -119,8 +119,7 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
     AMP::shared_ptr<AMP::Operator::NeutronicsRhs> neutronicsOperator;
     AMP::LinearAlgebra::Vector::shared_ptr specificPowerGpVec;
     if ( meshAdapter1.get() != nullptr ) {
-        neutronicsOperator = AMP::shared_ptr<AMP::Operator::NeutronicsRhs>(
-            new AMP::Operator::NeutronicsRhs( neutronicsParams ) );
+        neutronicsOperator = AMP::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
         AMP::LinearAlgebra::Variable::shared_ptr specificPowerGpVar =
             neutronicsOperator->getOutputVariable();
         specificPowerGpVec =
@@ -312,10 +311,8 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
         mapcladflowParams->d_Mesh    = meshAdapter2;
         mapcladflowParams->d_MapMesh = meshAdapter2;
         mapcladflowParams->d_MapComm = meshAdapter2->getComm();
-        mapCladTo1DFlow1             = AMP::shared_ptr<AMP::Operator::Map3Dto1D>(
-            new AMP::Operator::Map3Dto1D( mapcladflowParams ) );
-        mapCladTo1DFlow2 = AMP::shared_ptr<AMP::Operator::Map3Dto1D>(
-            new AMP::Operator::Map3Dto1D( mapcladflowParams ) );
+        mapCladTo1DFlow1 = AMP::make_shared<AMP::Operator::Map3Dto1D>( mapcladflowParams );
+        mapCladTo1DFlow2 = AMP::make_shared<AMP::Operator::Map3Dto1D>( mapcladflowParams );
 
         AMP::shared_ptr<AMP::InputDatabase> mapflowclad_db =
             AMP::dynamic_pointer_cast<AMP::InputDatabase>(
@@ -325,10 +322,8 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
         mapflowcladParams->d_Mesh    = meshAdapter2;
         mapflowcladParams->d_MapMesh = meshAdapter2;
         mapflowcladParams->d_MapComm = meshAdapter2->getComm();
-        map1DFlowTo3DFlow1           = AMP::shared_ptr<AMP::Operator::Map1Dto3D>(
-            new AMP::Operator::Map1Dto3D( mapflowcladParams ) );
-        map1DFlowTo3DFlow2 = AMP::shared_ptr<AMP::Operator::Map1Dto3D>(
-            new AMP::Operator::Map1Dto3D( mapflowcladParams ) );
+        map1DFlowTo3DFlow1 = AMP::make_shared<AMP::Operator::Map1Dto3D>( mapflowcladParams );
+        map1DFlowTo3DFlow2 = AMP::make_shared<AMP::Operator::Map1Dto3D>( mapflowcladParams );
 
         mapCladTo1DFlow1->setZLocations( map1DFlowTo3DFlow1->getZLocations() );
         mapCladTo1DFlow2->setZLocations( map1DFlowTo3DFlow2->getZLocations() );
@@ -510,8 +505,8 @@ void PelletCladQuasiStaticThermalFlow( AMP::UnitTest *ut, std::string exeName )
         coupledlinearParams3->d_FlowOperator = flowJacobian;
         coupledlinearParams3->d_Map1to3      = map1DFlowTo3DFlow2;
         coupledlinearParams3->d_Mesh         = meshAdapter2;
-        coupledlinearOperator3 = AMP::shared_ptr<AMP::Operator::CoupledFlowFrapconOperator>(
-            new AMP::Operator::CoupledFlowFrapconOperator( coupledlinearParams3 ) );
+        coupledlinearOperator3 =
+            AMP::make_shared<AMP::Operator::CoupledFlowFrapconOperator>( coupledlinearParams3 );
         coupledLinearOperator->append( coupledlinearOperator3 );
     }
 

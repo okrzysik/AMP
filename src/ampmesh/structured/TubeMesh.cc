@@ -1,4 +1,5 @@
 #include "ampmesh/structured/TubeMesh.h"
+
 #include "ampmesh/MultiIterator.h"
 #include "ampmesh/shapes/Box.h"
 #include "ampmesh/structured/BoxMesh.h"
@@ -123,10 +124,7 @@ void TubeMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr 
 /****************************************************************
  * Copy the mesh                                                 *
  ****************************************************************/
-AMP::shared_ptr<Mesh> TubeMesh::copy() const
-{
-    return AMP::shared_ptr<TubeMesh>( new TubeMesh( *this ) );
-}
+AMP::shared_ptr<Mesh> TubeMesh::copy() const { return AMP::make_shared<TubeMesh>( *this ); }
 
 
 /****************************************************************

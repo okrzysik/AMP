@@ -10,6 +10,6 @@ TimeIntegratorParameters::TimeIntegratorParameters( const AMP::shared_ptr<AMP::D
     d_operator.reset();
 }
 
-TimeIntegratorParameters::~TimeIntegratorParameters() {}
+TimeIntegratorParameters::~TimeIntegratorParameters() = default;
 } // namespace TimeIntegrator
 } // namespace AMP

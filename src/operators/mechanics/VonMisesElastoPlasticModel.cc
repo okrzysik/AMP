@@ -51,8 +51,8 @@ VonMisesElastoPlasticModel::VonMisesElastoPlasticModel(
         params->d_db->getDoubleWithDefault( "Default_Oxygen_Concentration", 0.0 );
 
     for ( auto &elem : d_constitutiveMatrix ) {
-        for ( size_t j = 0; j < 6; j++ )
-            elem[j] = 0.;
+        for ( double &j : elem )
+            j = 0.;
     }
     d_gaussPtCnt                 = 0;
     Total_Gauss_Point            = 0;
@@ -357,8 +357,8 @@ void VonMisesElastoPlasticModel::getConstitutiveMatrixUpdatedLagrangian(
 
     if ( d_useJaumannRate == true ) {
         for ( auto &elem : d_constitutiveMatrix ) {
-            for ( int j = 0; j < 6; j++ ) {
-                elem[j] /= d_detULF[d_gaussPtCnt];
+            for ( double &j : elem ) {
+                j /= d_detULF[d_gaussPtCnt];
             }
         }
 
@@ -437,8 +437,8 @@ void VonMisesElastoPlasticModel::constructConstitutiveMatrix()
 
         // Initializing the tangent matrix as zero.
         for ( auto &elem : d_constitutiveMatrix ) {
-            for ( int j = 0; j < 6; j++ ) {
-                elem[j] = 0.0;
+            for ( double &j : elem ) {
+                j = 0.0;
             }
         }
 
@@ -521,8 +521,8 @@ void VonMisesElastoPlasticModel::constructConstitutiveMatrix()
 
     // Initiaization of the constitutive matrix.
     for ( auto &elem : d_constitutiveMatrix ) {
-        for ( int j = 0; j < 6; j++ ) {
-            elem[j] = 0.0;
+        for ( double &j : elem ) {
+            j = 0.0;
         }
     }
 

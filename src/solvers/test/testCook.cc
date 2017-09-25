@@ -202,19 +202,19 @@ int main( int argc, char *argv[] )
     std::vector<std::string> exeNames;
 
     if ( argc == 1 ) {
-        exeNames.push_back( "testCook-normal-mesh0" );
-        exeNames.push_back( "testCook-reduced-mesh0" );
+        exeNames.emplace_back( "testCook-normal-mesh0" );
+        exeNames.emplace_back( "testCook-reduced-mesh0" );
 
-        exeNames.push_back( "testCook-normal-mesh1" );
-        exeNames.push_back( "testCook-reduced-mesh1" );
+        exeNames.emplace_back( "testCook-normal-mesh1" );
+        exeNames.emplace_back( "testCook-reduced-mesh1" );
 
-        exeNames.push_back( "testCook-normal-mesh2" );
-        exeNames.push_back( "testCook-reduced-mesh2" );
+        exeNames.emplace_back( "testCook-normal-mesh2" );
+        exeNames.emplace_back( "testCook-reduced-mesh2" );
     } else {
         for ( int i = 1; i < argc; i += 2 ) {
             char inpName[100];
             sprintf( inpName, "testCook-%s-mesh%d", argv[i], atoi( argv[i + 1] ) );
-            exeNames.push_back( inpName );
+            exeNames.emplace_back( inpName );
         } // end for i
     }
 

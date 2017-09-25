@@ -1,4 +1,5 @@
 #include "ampmesh/structured/SphereSurfaceMesh.h"
+
 #include "ampmesh/structured/BoxMesh.h"
 #include "ampmesh/structured/BoxMeshHelpers.h"
 
@@ -115,7 +116,7 @@ void SphereSurfaceMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_sh
  ****************************************************************/
 AMP::shared_ptr<Mesh> SphereSurfaceMesh::copy() const
 {
-    return AMP::shared_ptr<SphereSurfaceMesh>( new SphereSurfaceMesh( *this ) );
+    return AMP::make_shared<SphereSurfaceMesh>( *this );
 }
 
 
@@ -145,7 +146,7 @@ std::array<double, 3> SphereSurfaceMesh::physicalToLogical( const double *x ) co
     const double z0           = x[2] - d_offset[2];
     const double r            = sqrt( x0 * x0 + y0 * y0 + z0 * z0 );
     auto point                = BoxMeshHelpers::map_sphere_surface_logical( d_r, x0, y0, z0 );
-    std::array<double, 3> pos = { point.first, point.second, r / d_r - 1 };
+    std::array<double, 3> pos = { { point.first, point.second, r / d_r - 1 } };
     return pos;
 }
 

@@ -191,7 +191,7 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
                     AMP_ERROR( "Not finished" );
                 }
                 face_list.push_back( *iterator );
-                index.push_back( std::make_tuple( t1, t2, t3 ) );
+                index.emplace_back( t1, t2, t3 );
             }
             ++iterator;
         }

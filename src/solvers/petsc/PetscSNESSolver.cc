@@ -240,10 +240,8 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
     PROFILE_START( "apply" );
     int ierr = 0;
 
-    AMP::LinearAlgebra::ManagedPetscVector *xvec =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( x->data );
-    AMP::LinearAlgebra::ManagedPetscVector *rvec =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( r->data );
+    auto *xvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( x->data );
+    auto *rvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( r->data );
 
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> sp_x( xvec,
                                                       AMP::LinearAlgebra::ExternalVectorDeleter() );
@@ -433,9 +431,9 @@ PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat, void *ctx 
 #endif
 {
     PROFILE_START( "setJacobian" );
-    int ierr                     = 0;
-    PetscSNESSolver *pSNESSolver = (PetscSNESSolver *) ctx;
-    bool bUsesJacobian           = pSNESSolver->getUsesJacobian();
+    int ierr           = 0;
+    auto *pSNESSolver  = (PetscSNESSolver *) ctx;
+    bool bUsesJacobian = pSNESSolver->getUsesJacobian();
 
     if ( !bUsesJacobian ) {
 #if PETSC_VERSION_LE( 3, 2, 0 )
@@ -449,8 +447,7 @@ PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat, void *ctx 
 #endif
     }
 
-    AMP::LinearAlgebra::ManagedPetscVector *pVecShell =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( x->data );
+    auto *pVecShell = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( x->data );
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> pSolution(
         pVecShell, AMP::LinearAlgebra::ExternalVectorDeleter() );
 
@@ -496,16 +493,14 @@ PetscErrorCode PetscSNESSolver::lineSearchPreCheck(
 #error Not programmed for this version yet
 #endif
 {
-    int ierr                     = 1;
-    PetscSNESSolver *pSNESSolver = (PetscSNESSolver *) checkctx;
+    int ierr          = 1;
+    auto *pSNESSolver = (PetscSNESSolver *) checkctx;
 
     AMP::shared_ptr<AMP::Operator::Operator> pOperator         = pSNESSolver->getOperator();
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> pScratchVector = pSNESSolver->getScratchVector();
 
-    AMP::LinearAlgebra::ManagedPetscVector *xvec =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( x->data );
-    AMP::LinearAlgebra::ManagedPetscVector *yvec =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( y->data );
+    auto *xvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( x->data );
+    auto *yvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( y->data );
 
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> sp_x( xvec,
                                                       AMP::LinearAlgebra::ExternalVectorDeleter() );
@@ -544,15 +539,13 @@ PetscErrorCode PetscSNESSolver::lineSearchPreCheck(
 
 PetscErrorCode PetscSNESSolver::mffdCheckBounds( void *checkctx, Vec U, Vec a, PetscScalar *h )
 {
-    PetscSNESSolver *pSNESSolver                           = (PetscSNESSolver *) checkctx;
+    auto *pSNESSolver                                      = (PetscSNESSolver *) checkctx;
     AMP::shared_ptr<AMP::Operator::Operator> pSNESOperator = pSNESSolver->getOperator();
     AMP::shared_ptr<AMP::Operator::Operator> pOperator;
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> pScratchVector = pSNESSolver->getScratchVector();
 
-    AMP::LinearAlgebra::ManagedPetscVector *uvec =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( U->data );
-    AMP::LinearAlgebra::ManagedPetscVector *avec =
-        reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
+    auto *uvec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( U->data );
+    auto *avec = reinterpret_cast<AMP::LinearAlgebra::ManagedPetscVector *>( a->data );
 
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> sp_u( uvec,
                                                       AMP::LinearAlgebra::ExternalVectorDeleter() );

@@ -42,11 +42,10 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
         d_iterator = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     }
     // Initialize some libmesh variables
-    libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-    libMeshEnums::Order qruleOrder  = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
-    libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
-    libMeshEnums::QuadratureType qtype =
-        libMesh::Utility::string_to_enum<QuadratureType>( "QGAUSS" );
+    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+    auto qruleOrder  = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
+    auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+    auto qtype       = libMesh::Utility::string_to_enum<QuadratureType>( "QGAUSS" );
     libMesh::AutoPtr<libMesh::FEType> feType( new libMesh::FEType( feTypeOrder, feFamily ) );
     libMesh::AutoPtr<libMesh::QBase> qrule   = libMesh::QBase::build( qtype, d_dim, qruleOrder );
     libMesh::AutoPtr<libMesh::FEBase> febase = libMesh::FEBase::build( d_dim, *feType );

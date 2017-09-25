@@ -1,4 +1,5 @@
 #include "operators/subchannel/SubchannelToPointMap.h"
+
 #include "ProfilerApp.h"
 #include "ampmesh/StructuredMeshHelper.h"
 #include "operators/subchannel/SubchannelConstants.h"
@@ -70,12 +71,12 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
             std::map<std::string, AMP::shared_ptr<std::vector<double>>> subchannelArgMap;
             subchannelArgMap.insert(
                 std::make_pair( std::string( "enthalpy" ),
-                                AMP::shared_ptr<std::vector<double>>( new std::vector<double>(
-                                    1, h_scale * uInternal->getValueByGlobalID( dofs[0] ) ) ) ) );
+                                AMP::make_shared<std::vector<double>>(
+                                    1, h_scale * uInternal->getValueByGlobalID( dofs[0] ) ) ) );
             subchannelArgMap.insert(
                 std::make_pair( std::string( "pressure" ),
-                                AMP::shared_ptr<std::vector<double>>( new std::vector<double>(
-                                    1, P_scale * uInternal->getValueByGlobalID( dofs[1] ) ) ) ) );
+                                AMP::make_shared<std::vector<double>>(
+                                    1, P_scale * uInternal->getValueByGlobalID( dofs[1] ) ) ) );
             if ( d_outputVar->getName() == "Density" ) {
                 std::vector<double> specificVolume( 1 );
                 d_subchannelPhysicsModel->getProperty(
@@ -157,10 +158,10 @@ void SubchannelToPointMap::createGrid()
         root = d_comm.getRank();
         AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( d_Mesh, x, y, z );
     }
-    root      = d_comm.maxReduce( root );
-    size_t Nx = d_comm.bcast<size_t>( x.size() - 1, root );
-    size_t Ny = d_comm.bcast<size_t>( y.size() - 1, root );
-    size_t Nz = d_comm.bcast<size_t>( z.size(), root );
+    root    = d_comm.maxReduce( root );
+    auto Nx = d_comm.bcast<size_t>( x.size() - 1, root );
+    auto Ny = d_comm.bcast<size_t>( y.size() - 1, root );
+    auto Nz = d_comm.bcast<size_t>( z.size(), root );
     x.resize( Nx + 1, 0.0 );
     y.resize( Ny + 1, 0.0 );
     z.resize( Nz, 0.0 );

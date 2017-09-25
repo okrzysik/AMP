@@ -23,6 +23,7 @@
 #include "ampmesh/moab/moabMesh.h"
 #endif
 
+
 // Function to test the creation/destruction of a mesh with the mesh generators
 // Note: this only runs the mesh tests, not the vector or matrix tests
 void testMeshGenerators( AMP::UnitTest *ut )
@@ -30,49 +31,40 @@ void testMeshGenerators( AMP::UnitTest *ut )
     PROFILE_START( "testMeshGenerators" );
     AMP::shared_ptr<AMP::unit_test::MeshGenerator> generator;
     // AMP mesh generators
-    generator = AMP::shared_ptr<AMP::unit_test::AMPCubeGenerator<4>>(
-        new AMP::unit_test::AMPCubeGenerator<4> );
+    generator = AMP::make_shared<AMP::unit_test::AMPCubeGenerator<4>>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, generator->getMesh() );
-    generator = AMP::shared_ptr<AMP::unit_test::AMPCylinderGenerator>(
-        new AMP::unit_test::AMPCylinderGenerator );
+    generator = AMP::make_shared<AMP::unit_test::AMPCylinderGenerator>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, generator->getMesh() );
-    generator =
-        AMP::shared_ptr<AMP::unit_test::AMPTubeGenerator>( new AMP::unit_test::AMPTubeGenerator );
+    generator = AMP::make_shared<AMP::unit_test::AMPTubeGenerator>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, generator->getMesh() );
-    generator = AMP::shared_ptr<AMP::unit_test::AMPMultiMeshGenerator>(
-        new AMP::unit_test::AMPMultiMeshGenerator );
+    generator = AMP::make_shared<AMP::unit_test::AMPMultiMeshGenerator>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
 // libmesh generators
 #ifdef USE_EXT_LIBMESH
     // Test the libmesh cube generator
-    generator = AMP::shared_ptr<AMP::unit_test::MeshGenerator>(
-        new AMP::unit_test::LibMeshCubeGenerator<5> );
+    generator = AMP::make_shared<AMP::unit_test::LibMeshCubeGenerator<5>>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     // Test the libmesh reader generator
-    generator = AMP::shared_ptr<AMP::unit_test::MeshGenerator>(
-        new AMP::unit_test::ExodusReaderGenerator<> );
+    generator = AMP::make_shared<AMP::unit_test::ExodusReaderGenerator<>>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
-    generator = AMP::shared_ptr<AMP::unit_test::MeshGenerator>(
-        new AMP::unit_test::ExodusReaderGenerator<2> );
+    generator = AMP::make_shared<AMP::unit_test::ExodusReaderGenerator<2>>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     // Test the ThreeElementLGenerator generator
-    generator = AMP::shared_ptr<AMP::unit_test::MeshGenerator>(
-        new AMP::unit_test::libMeshThreeElementGenerator );
+    generator = AMP::make_shared<AMP::unit_test::libMeshThreeElementGenerator>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     // Test the multimesh generator
-    generator = AMP::shared_ptr<AMP::unit_test::MultiMeshGenerator>(
-        new AMP::unit_test::MultiMeshGenerator );
+    generator = AMP::make_shared<AMP::unit_test::MultiMeshGenerator>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, generator->getMesh() );
@@ -87,10 +79,9 @@ void testAMPMesh( AMP::UnitTest *ut )
     PROFILE_START( "testAMPMesh" );
     // Create the AMP mesh
     AMP::shared_ptr<AMP::unit_test::MeshGenerator> generator;
-    generator = AMP::shared_ptr<AMP::unit_test::AMPCubeGenerator<5>>(
-        new AMP::unit_test::AMPCubeGenerator<5> );
+    generator = AMP::make_shared<AMP::unit_test::AMPCubeGenerator<5>>();
     generator->build_mesh();
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh = generator->getMesh();
+    auto mesh = generator->getMesh();
 
     // Check the basic dimensions
     std::vector<size_t> size( 3, 5 );
@@ -171,15 +162,15 @@ void testSTKMesh( AMP::UnitTest *ut )
 {
     PROFILE_START( "testSTKMesh" );
     // Create a generic MeshParameters object
-    AMP::shared_ptr<AMP::MemoryDatabase> database( new AMP::MemoryDatabase( "Mesh" ) );
+    auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
     database->putInteger( "dim", 3 );
     database->putString( "MeshName", "pellet_lo_res.e" );
     database->putString( "FileName", "pellet_lo_res.e" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create an STKMesh mesh
-    AMP::shared_ptr<AMP::Mesh::STKMesh> mesh( new AMP::Mesh::STKMesh( params ) );
+    auto mesh = AMP::make_shared<AMP::Mesh::STKMesh>( params );
 
     // Run the mesh tests
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
@@ -196,15 +187,15 @@ void testlibMesh( AMP::UnitTest *ut )
 {
     PROFILE_START( "testlibMesh" );
     // Create a generic MeshParameters object
-    AMP::shared_ptr<AMP::MemoryDatabase> database( new AMP::MemoryDatabase( "Mesh" ) );
+    auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
     database->putInteger( "dim", 3 );
     database->putString( "MeshName", "pellet_lo_res.e" );
     database->putString( "FileName", "pellet_lo_res.e" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create an libMesh mesh
-    AMP::shared_ptr<AMP::Mesh::libMesh> mesh( new AMP::Mesh::libMesh( params ) );
+    auto mesh = AMP::make_shared<AMP::Mesh::libMesh>( params );
 
     // Run the mesh tests
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
@@ -221,16 +212,16 @@ void testMoabMesh( AMP::UnitTest *ut )
 {
     PROFILE_START( "testMoabMesh" );
     // Create a generic MeshParameters object
-    AMP::shared_ptr<AMP::MemoryDatabase> database( new AMP::MemoryDatabase( "Mesh" ) );
+    auto database = AMP::make_shared<AMP::MemoryDatabase>( "Mesh" );
     database->putInteger( "dim", 3 );
     database->putString( "MeshName", "pellet_lo_res.e" );
     database->putString( "FileName", "pellet_lo_res.e" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto params = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create an MOAB mesh
     try {
-        AMP::shared_ptr<AMP::Mesh::moabMesh> mesh( new AMP::Mesh::moabMesh( params ) );
+        auto mesh = AMP::make_shared<AMP::Mesh::moabMesh>( params );
     } catch ( ... ) {
         ut->expected_failure( "MOAB meshes cannot be created yet" );
     }
@@ -249,16 +240,16 @@ void testInputMesh( AMP::UnitTest *ut, std::string filename )
 {
     PROFILE_START( "testInputMesh" );
     // Read the input file
-    AMP::shared_ptr<AMP::InputDatabase> input_db( new AMP::InputDatabase( "input_db" ) );
+    auto input_db = AMP::make_shared<AMP::InputDatabase>( "input_db" );
     AMP::InputManager::getManager()->parseInputFile( filename, input_db );
 
     // Get the Mesh database and create the mesh parameters
-    AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
-    AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto database = input_db->getDatabase( "Mesh" );
+    auto params   = AMP::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    AMP::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Run the mesh tests
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
@@ -273,8 +264,9 @@ void testSubsetMesh( AMP::UnitTest *ut )
     PROFILE_START( "testSubsetMesh" );
 #ifdef USE_EXT_LIBMESH
     // Subset a mesh for a surface without ghost cells and test
-    AMP::shared_ptr<AMP::unit_test::MeshGenerator> generator(
-        new AMP::unit_test::SurfaceSubsetGenerator<AMP::unit_test::ExodusReaderGenerator<>, 0> );
+    AMP::shared_ptr<AMP::unit_test::MeshGenerator> generator;
+    generator = AMP::make_shared<
+        AMP::unit_test::SurfaceSubsetGenerator<AMP::unit_test::ExodusReaderGenerator<>, 0>>();
     generator->build_mesh();
     AMP::Mesh::Mesh::shared_ptr mesh = generator->getMesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
@@ -282,8 +274,8 @@ void testSubsetMesh( AMP::UnitTest *ut )
     // MeshMatrixTestLoop( ut, mesh );
 
     // Subset a mesh for a surface with ghost cells and test
-    generator = AMP::shared_ptr<AMP::unit_test::MeshGenerator>(
-        new AMP::unit_test::SurfaceSubsetGenerator<AMP::unit_test::ExodusReaderGenerator<3>, 1> );
+    generator = AMP::make_shared<
+        AMP::unit_test::SurfaceSubsetGenerator<AMP::unit_test::ExodusReaderGenerator<3>, 1>>();
     generator->build_mesh();
     mesh = generator->getMesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );

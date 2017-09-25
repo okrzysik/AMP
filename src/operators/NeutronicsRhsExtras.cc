@@ -59,7 +59,7 @@ NeutronicsRhsExtras::NeutronicsRhsExtras( SP_Parameters parameters )
  * Destructor.                                                           *
  *************************************************************************
  */
-NeutronicsRhsExtras::~NeutronicsRhsExtras() {}
+NeutronicsRhsExtras::~NeutronicsRhsExtras() = default;
 
 /*
  *************************************************************************
@@ -99,7 +99,7 @@ void NeutronicsRhsExtras::getFromInput( SP_Database db )
     }
 
     // Power in Watts per gram
-    d_useFixedValue = db->getBoolWithDefault( "useFixedValue", 1 );
+    d_useFixedValue = db->getBoolWithDefault( "useFixedValue", true );
     if ( d_useFixedValue ) {
         if ( db->keyExists( "fixedValues" ) ) {
             std::string tmp = "fixedValues";

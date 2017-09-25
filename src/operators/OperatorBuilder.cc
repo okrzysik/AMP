@@ -63,7 +63,7 @@ namespace AMP {
 namespace Operator {
 
 
-typedef OperatorParameters IdentityOperatorParameters;
+using IdentityOperatorParameters = OperatorParameters;
 
 
 AMP::shared_ptr<Operator>

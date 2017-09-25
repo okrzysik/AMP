@@ -213,13 +213,13 @@ int main( int argc, char *argv[] )
     std::vector<std::string> exeNames;
 
     if ( argc == 1 ) {
-        exeNames.push_back( "testLinearMechanics-PressureBoundary-1" );
-        exeNames.push_back( "testLinearMechanics-PressureBoundary-HaldenPellet" );
+        exeNames.emplace_back( "testLinearMechanics-PressureBoundary-1" );
+        exeNames.emplace_back( "testLinearMechanics-PressureBoundary-HaldenPellet" );
     } else {
         for ( int i = 1; i < argc; ++i ) {
             char inpName[100];
             sprintf( inpName, "testLinearMechanics-PressureBoundary-%s", argv[i] );
-            exeNames.push_back( inpName );
+            exeNames.emplace_back( inpName );
         } // end for i
     }
 

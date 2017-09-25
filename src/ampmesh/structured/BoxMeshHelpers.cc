@@ -1,7 +1,7 @@
 #include "ampmesh/structured/BoxMeshHelpers.h"
 #include "utils/Utilities.h"
 
-#include "math.h"
+#include <cmath>
 
 namespace AMP {
 namespace Mesh {

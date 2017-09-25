@@ -32,7 +32,7 @@ ManagedVector *ManagedThyraVector::getNewRawPtr() const
 /****************************************************************
  * Destructor                                                    *
  ****************************************************************/
-ManagedThyraVector::~ManagedThyraVector() {}
+ManagedThyraVector::~ManagedThyraVector() = default;
 
 
 /****************************************************************

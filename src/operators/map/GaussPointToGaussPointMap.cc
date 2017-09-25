@@ -93,16 +93,13 @@ void GaussPointToGaussPointMap::createIdxMap(
 {
     AMP::shared_ptr<AMP::Database> db = params->d_db;
     std::string feTypeOrderName       = db->getStringWithDefault( "FE_ORDER", "FIRST" );
-    libMeshEnums::Order feTypeOrder =
-        Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
     std::string feFamilyName = db->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
-    libMeshEnums::FEFamily feFamily =
-        Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    auto feFamily            = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
     std::string qruleTypeName = db->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
-    libMeshEnums::QuadratureType qruleType =
-        Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+    auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     std::string qruleOrderName = db->getStringWithDefault( "QRULE_ORDER", "DEFAULT" );
 

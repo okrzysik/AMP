@@ -202,12 +202,12 @@ int main( int argc, char *argv[] )
 
     std::vector<std::string> exeNames;
 
-    exeNames.push_back( "testConsistentTangentBVP-1-mesh1-normal" );
-    exeNames.push_back( "testConsistentTangentBVP-2-mesh1-normal" );
-    exeNames.push_back( "testConsistentTangentBVP-3-mesh1-normal" );
-    exeNames.push_back( "testConsistentTangentBVP-4-mesh1-normal" );
+    exeNames.emplace_back( "testConsistentTangentBVP-1-mesh1-normal" );
+    exeNames.emplace_back( "testConsistentTangentBVP-2-mesh1-normal" );
+    exeNames.emplace_back( "testConsistentTangentBVP-3-mesh1-normal" );
+    exeNames.emplace_back( "testConsistentTangentBVP-4-mesh1-normal" );
 
-    exeNames.push_back( "testConsistentTangentBVP-4-mesh1-reduced" );
+    exeNames.emplace_back( "testConsistentTangentBVP-4-mesh1-reduced" );
 
     for ( int j = 0; j < 2; j++ ) {
         for ( auto &exeName : exeNames )

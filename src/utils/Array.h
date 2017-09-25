@@ -7,7 +7,6 @@
 #include <array>
 #include <functional>
 #include <iostream>
-#include <memory>
 #include <vector>
 
 
@@ -129,7 +128,7 @@ public: // Views/copies/subset
      * @param N             Number of elements in the array
      * @param data          Pointer to the data
      */
-    static std::shared_ptr<Array> view( size_t N, std::shared_ptr<TYPE> const &data );
+    static AMP::shared_ptr<Array> view( size_t N, AMP::shared_ptr<TYPE> const &data );
 
     /*!
      * Create a new 2D Array with the given number of rows and columns
@@ -137,8 +136,8 @@ public: // Views/copies/subset
      * @param N_columns     Number of columns
      * @param data          Pointer to the data
      */
-    static std::shared_ptr<Array>
-    view( size_t N_rows, size_t N_columns, std::shared_ptr<TYPE> const &data );
+    static AMP::shared_ptr<Array>
+    view( size_t N_rows, size_t N_columns, AMP::shared_ptr<TYPE> const &data );
 
     /*!
      * Create a new 3D Array view to a raw block of data
@@ -147,16 +146,16 @@ public: // Views/copies/subset
      * @param N3            Number of elements in the third dimension
      * @param data          Pointer to the data
      */
-    static std::shared_ptr<Array>
-    view( size_t N1, size_t N2, size_t N3, std::shared_ptr<TYPE> const &data );
+    static AMP::shared_ptr<Array>
+    view( size_t N1, size_t N2, size_t N3, AMP::shared_ptr<TYPE> const &data );
 
     /*!
      * Create a multi-dimensional Array view to a raw block of data
      * @param N             Number of elements in each dimension
      * @param data          Pointer to the data
      */
-    static std::shared_ptr<Array> view( const std::vector<size_t> &N,
-                                        std::shared_ptr<TYPE> const &data );
+    static AMP::shared_ptr<Array> view( const std::vector<size_t> &N,
+                                        AMP::shared_ptr<TYPE> const &data );
 
 
     /*!
@@ -164,8 +163,8 @@ public: // Views/copies/subset
      * @param N             Number of elements in the array
      * @param data          Pointer to the data
      */
-    static std::shared_ptr<const Array> constView( size_t N,
-                                                   std::shared_ptr<const TYPE> const &data );
+    static AMP::shared_ptr<const Array> constView( size_t N,
+                                                   AMP::shared_ptr<const TYPE> const &data );
 
     /*!
      * Create a new 2D Array with the given number of rows and columns
@@ -173,8 +172,8 @@ public: // Views/copies/subset
      * @param N_columns     Number of columns
      * @param data          Pointer to the data
      */
-    static std::shared_ptr<const Array>
-    constView( size_t N_rows, size_t N_columns, std::shared_ptr<const TYPE> const &data );
+    static AMP::shared_ptr<const Array>
+    constView( size_t N_rows, size_t N_columns, AMP::shared_ptr<const TYPE> const &data );
 
     /*!
      * Create a new 3D Array view to a raw block of data
@@ -183,16 +182,16 @@ public: // Views/copies/subset
      * @param N3            Number of elements in the third dimension
      * @param data          Pointer to the data
      */
-    static std::shared_ptr<const Array>
-    constView( size_t N1, size_t N2, size_t N3, std::shared_ptr<const TYPE> const &data );
+    static AMP::shared_ptr<const Array>
+    constView( size_t N1, size_t N2, size_t N3, AMP::shared_ptr<const TYPE> const &data );
 
     /*!
      * Create a multi-dimensional Array view to a raw block of data
      * @param N             Number of elements in each dimension
      * @param data          Pointer to the data
      */
-    static std::shared_ptr<const Array> constView( const std::vector<size_t> &N,
-                                                   std::shared_ptr<const TYPE> const &data );
+    static AMP::shared_ptr<const Array> constView( const std::vector<size_t> &N,
+                                                   AMP::shared_ptr<const TYPE> const &data );
 
 
     /*!
@@ -206,11 +205,11 @@ public: // Views/copies/subset
      * @param N             Number of elements in each dimension
      * @param data          Pointer to the data
      */
-    void view2( const std::vector<size_t> &N, std::shared_ptr<TYPE> const &data );
+    void view2( const std::vector<size_t> &N, AMP::shared_ptr<TYPE> const &data );
 
     /*!
      * Make this object a view of the raw data (expert use only).
-     * Use view2( N, std::shared_ptr(data,[](TYPE*){}) ) instead.
+     * Use view2( N, AMP::shared_ptr(data,[](TYPE*){}) ) instead.
      *   Note: this interface is not recommended as it does not protect from
      *   the src data being deleted while still being used by the Array.
      *   Additionally for maximum performance it does not set the internal shared_ptr
@@ -222,7 +221,7 @@ public: // Views/copies/subset
 
     /*!
      * Make this object a view of the raw data (expert use only).
-     * Use view2( N, std::shared_ptr(data,[](TYPE*){}) ) instead.
+     * Use view2( N, AMP::shared_ptr(data,[](TYPE*){}) ) instead.
      *   Note: this interface is not recommended as it does not protect from
      *   the src data being deleted while still being used by the Array.
      *   Additionally for maximum performance it does not set the internal shared_ptr
@@ -237,8 +236,8 @@ public: // Views/copies/subset
      * @param array         Input array
      */
     template<class TYPE2>
-    static std::shared_ptr<Array<TYPE2, FUN, Allocator>>
-    convert( std::shared_ptr<Array<TYPE, FUN, Allocator>> array );
+    static AMP::shared_ptr<Array<TYPE2, FUN, Allocator>>
+    convert( AMP::shared_ptr<Array<TYPE, FUN, Allocator>> array );
 
 
     /*!
@@ -246,8 +245,8 @@ public: // Views/copies/subset
      * @param array         Input array
      */
     template<class TYPE2>
-    static std::shared_ptr<const Array<TYPE2, FUN, Allocator>>
-    convert( std::shared_ptr<const Array<TYPE, FUN, Allocator>> array );
+    static AMP::shared_ptr<const Array<TYPE2, FUN, Allocator>>
+    convert( AMP::shared_ptr<const Array<TYPE, FUN, Allocator>> array );
 
 
     /*!
@@ -474,10 +473,10 @@ public: // Accessors
     }
 
     //! Return the pointer to the raw data
-    inline std::shared_ptr<TYPE> getPtr() { return d_ptr; }
+    inline AMP::shared_ptr<TYPE> getPtr() { return d_ptr; }
 
     //! Return the pointer to the raw data
-    inline std::shared_ptr<const TYPE> getPtr() const { return d_ptr; }
+    inline AMP::shared_ptr<const TYPE> getPtr() const { return d_ptr; }
 
     //! Return the pointer to the raw data
     HOST_DEVICE inline TYPE *data() { return d_data; }
@@ -614,7 +613,7 @@ private:
     size_t d_N[ARRAY_NDIM_MAX];  // Size of each dimension
     size_t d_length;             // Total length of array
     TYPE *d_data;                // Raw pointer to data in array
-    std::shared_ptr<TYPE> d_ptr; // Shared pointer to data in array
+    AMP::shared_ptr<TYPE> d_ptr; // Shared pointer to data in array
     void allocate( const std::vector<size_t> &N );
 
 public:

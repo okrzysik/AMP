@@ -56,7 +56,7 @@ void ThyraVectorWrapper::initialize(
     AMP_ASSERT( !vecs.empty() );
     AMP_ASSERT( vecs.size() == cols.size() );
     for ( size_t i = 0; i < vecs.size(); i++ ) {
-        AMP_ASSERT( vecs[i] != NULL );
+        AMP_ASSERT( vecs[i] != nullptr );
         AMP_ASSERT( cols[i] < N_cols );
         /*for (size_t j=0; j<i; j++) {
             AMP_ASSERT(vecs[i]!=vecs[j]);
@@ -185,8 +185,8 @@ void ThyraVectorWrapper::applyImpl( const Thyra::EOpTransp M_trans,
     Y_dim[1] = Y->domain()->dim(); // Number of columns of Y
     if ( M_trans == Thyra::NOTRANS || M_trans == Thyra::CONJ ) {
         // We are computing: Y = alpha*M*X + beta*Y
-        const ThyraVectorWrapper *y = dynamic_cast<const ThyraVectorWrapper *>( Y.get() );
-        AMP_ASSERT( y != NULL );
+        const auto *y = dynamic_cast<const ThyraVectorWrapper *>( Y.get() );
+        AMP_ASSERT( y != nullptr );
         AMP_ASSERT( M_dim[1] == X_dim[0] && M_dim[0] == Y_dim[0] && X_dim[1] == Y_dim[1] );
         AMP_ASSERT( M_dim[1] == d_vecs.size() && Y_dim[1] == y->d_vecs.size() );
         AMP::LinearAlgebra::Vector::shared_ptr tmp = d_vecs[0]->cloneVector();
@@ -206,9 +206,9 @@ void ThyraVectorWrapper::applyImpl( const Thyra::EOpTransp M_trans,
     } else if ( M_trans == Thyra::TRANS || M_trans == Thyra::CONJTRANS ) {
         // We are computing: Y = alpha*transpose(M)*X + beta*Y
         AMP_ASSERT( M_dim[0] == X_dim[0] && M_dim[1] == Y_dim[0] && X_dim[1] == Y_dim[1] );
-        if ( dynamic_cast<const ThyraVectorWrapper *>( &X ) != NULL ) {
-            const ThyraVectorWrapper *x = dynamic_cast<const ThyraVectorWrapper *>( &X );
-            AMP_ASSERT( x != NULL );
+        if ( dynamic_cast<const ThyraVectorWrapper *>( &X ) != nullptr ) {
+            const auto *x = dynamic_cast<const ThyraVectorWrapper *>( &X );
+            AMP_ASSERT( x != nullptr );
             size_t N = d_vecs.size();    // Number of columns of M
             size_t M = x->d_vecs.size(); // Number of columns of X
             AMP_ASSERT( Y->domain()->dim() == (Teuchos::Ordinal) M );
@@ -275,9 +275,9 @@ ThyraVectorWrapper::nonContigSubViewImpl( const Teuchos::ArrayView<const int> &c
 {
     std::vector<size_t> cols;
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vecs;
-    for ( Teuchos::ArrayView<const int>::size_type i = 0; i < columns.size(); i++ ) {
-        cols.push_back( columns[i] );
-        vecs.push_back( d_vecs[columns[i]] );
+    for ( int column : columns ) {
+        cols.push_back( column );
+        vecs.push_back( d_vecs[column] );
     }
     return Teuchos::RCP<const ThyraVectorWrapper>( new ThyraVectorWrapper( vecs, cols, d_N_cols ) );
 }
@@ -286,9 +286,9 @@ ThyraVectorWrapper::nonconstNonContigSubViewImpl( const Teuchos::ArrayView<const
 {
     std::vector<size_t> cols;
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vecs;
-    for ( Teuchos::ArrayView<const int>::size_type i = 0; i < columns.size(); i++ ) {
-        cols.push_back( columns[i] );
-        vecs.push_back( d_vecs[columns[i]] );
+    for ( int column : columns ) {
+        cols.push_back( column );
+        vecs.push_back( d_vecs[column] );
     }
     return Teuchos::RCP<ThyraVectorWrapper>( new ThyraVectorWrapper( vecs, cols, d_N_cols ) );
 }
@@ -339,9 +339,9 @@ void ThyraVectorWrapper::acquireDetachedVectorViewImpl(
     size_t upper = std::min<size_t>( rng.ubound(), vec->getLocalSize() );
     AMP_ASSERT( upper > lower );
     size_t size = upper - lower;
-    double *ptr = new double[size];
+    auto *ptr   = new double[size];
     Teuchos::ArrayRCP<double> array( ptr, rng.lbound(), rng.lbound() + size, true );
-    size_t *indices = new size_t[size];
+    auto *indices = new size_t[size];
     for ( size_t i = 0; i < size; i++ )
         indices[i] = lower + i;
     vec->getValuesByLocalID( size, indices, ptr );
@@ -363,9 +363,9 @@ void ThyraVectorWrapper::acquireNonconstDetachedVectorViewImpl(
     size_t upper = std::min<size_t>( rng.ubound(), vec->getLocalSize() );
     AMP_ASSERT( upper > lower );
     size_t size = upper - lower;
-    double *ptr = new double[size];
+    auto *ptr   = new double[size];
     Teuchos::ArrayRCP<double> array( ptr, rng.lbound(), rng.lbound() + size, true );
-    size_t *indices = new size_t[size];
+    auto *indices = new size_t[size];
     for ( size_t i = 0; i < size; i++ )
         indices[i] = lower + i;
     vec->getValuesByLocalID( size, indices, ptr );
@@ -381,8 +381,8 @@ void ThyraVectorWrapper::commitNonconstDetachedVectorViewImpl(
     size_t lower                           = array.lowerOffset();
     size_t upper                           = array.upperOffset();
     AMP_ASSERT( upper > lower && upper <= vec->getLocalSize() );
-    size_t size     = upper - lower;
-    size_t *indices = new size_t[size];
+    size_t size   = upper - lower;
+    auto *indices = new size_t[size];
     for ( size_t i = 0; i < size; i++ )
         indices[i] = lower + i;
     vec->setValuesByLocalID( size, indices, array.get() );
@@ -441,7 +441,7 @@ void ThyraVectorWrapper::applyOpImpl(
         }
     }
     // Reduce the result
-    if ( reduct_obj.get() != NULL ) {
+    if ( reduct_obj.get() != nullptr ) {
         RTOpPack::SPMD_all_reduce<double>(
             d_comm,
             op,
@@ -450,11 +450,11 @@ void ThyraVectorWrapper::applyOpImpl(
             Teuchos::tuple<RTOpPack::ReductTarget *>( &*reduct_obj ).getRawPtr() );
     }
     // Change the vector state targ_vecs
-    for ( size_t i = 0; i < targ_vecs_ptr.size(); i++ ) {
+    for ( auto &i : targ_vecs_ptr ) {
         for ( size_t j = 0; j < d_vecs.size(); j++ ) {
-            if ( targ_vecs_ptr[i]->d_vecs[j]->getUpdateStatus() ==
+            if ( i->d_vecs[j]->getUpdateStatus() ==
                  AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED )
-                targ_vecs_ptr[i]->d_vecs[j]->setUpdateStatus(
+                i->d_vecs[j]->setUpdateStatus(
                     AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED );
         }
     }
@@ -476,8 +476,8 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
     std::vector<ThyraVectorWrapper *> targ_vecs_ptr  = getPtr( block_size, targ_multi_vecs );
     // Apply the operation
     std::vector<Teuchos::RCP<RTOpPack::ReductTarget>> reduct_obj2( d_vecs.size() );
-    for ( size_t i = 0; i < reduct_obj2.size(); i++ )
-        reduct_obj2[i] = primary_op.reduct_obj_create();
+    for ( auto &i : reduct_obj2 )
+        i = primary_op.reduct_obj_create();
     for ( size_t k = 0; k < d_vecs.size(); k++ ) {
         for ( size_t j = 0; j < n_blocks; j++ ) {
             std::vector<RTOpPack::ConstSubVectorView<double>> sub_vecs( vecs_ptr.size() );
@@ -530,11 +530,11 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
         AMP_ERROR( "Not programmed yet" );
     }
     // Change the vector state targ_vecs
-    for ( size_t i = 0; i < targ_vecs_ptr.size(); i++ ) {
+    for ( auto &i : targ_vecs_ptr ) {
         for ( size_t j = 0; j < d_vecs.size(); j++ ) {
-            if ( targ_vecs_ptr[i]->d_vecs[j]->getUpdateStatus() ==
+            if ( i->d_vecs[j]->getUpdateStatus() ==
                  AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED )
-                targ_vecs_ptr[i]->d_vecs[j]->setUpdateStatus(
+                i->d_vecs[j]->setUpdateStatus(
                     AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED );
         }
     }
@@ -584,7 +584,7 @@ void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
         }
     }
     // Reduce the result
-    if ( reduct_obj.get() != NULL ) {
+    if ( reduct_obj.get() != nullptr ) {
         RTOpPack::SPMD_all_reduce<double>(
             d_comm,
             primary_op,
@@ -593,11 +593,11 @@ void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
             Teuchos::tuple<RTOpPack::ReductTarget *>( &*reduct_obj ).getRawPtr() );
     }
     // Change the vector state targ_vecs
-    for ( size_t i = 0; i < targ_vecs_ptr.size(); i++ ) {
+    for ( auto &i : targ_vecs_ptr ) {
         for ( size_t j = 0; j < d_vecs.size(); j++ ) {
-            if ( targ_vecs_ptr[i]->d_vecs[j]->getUpdateStatus() ==
+            if ( i->d_vecs[j]->getUpdateStatus() ==
                  AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED )
-                targ_vecs_ptr[i]->d_vecs[j]->setUpdateStatus(
+                i->d_vecs[j]->setUpdateStatus(
                     AMP::LinearAlgebra::Vector::UpdateState::LOCAL_CHANGED );
         }
     }
@@ -612,10 +612,10 @@ static std::vector<ThyraVectorWrapper *> getPtr( std::vector<size_t> block_size,
                                                  Teuchos::ArrayView<const Teuchos::Ptr<TYPE>> vecs )
 {
     int n_vecs = vecs.size();
-    std::vector<ThyraVectorWrapper *> ptr( n_vecs, NULL );
+    std::vector<ThyraVectorWrapper *> ptr( n_vecs, nullptr );
     for ( int i = 0; i < n_vecs; i++ ) {
         ptr[i] = dynamic_cast<ThyraVectorWrapper *>( vecs[i].getRawPtr() );
-        AMP_INSIST( ptr[i] != NULL,
+        AMP_INSIST( ptr[i] != nullptr,
                     "All vectors used in applyOpImpl must be of the type ThyraVectorWrapper" );
         for ( size_t j = 0; j < ptr[i]->numVecs(); j++ ) {
             AMP::LinearAlgebra::Vector::const_shared_ptr tmp = ptr[i]->getVec( j );
@@ -632,10 +632,10 @@ getConstPtr( std::vector<size_t> block_size,
              Teuchos::ArrayView<const Teuchos::Ptr<const TYPE>> vecs )
 {
     int n_vecs = vecs.size();
-    std::vector<const ThyraVectorWrapper *> ptr( n_vecs, NULL );
+    std::vector<const ThyraVectorWrapper *> ptr( n_vecs, nullptr );
     for ( int i = 0; i < n_vecs; i++ ) {
         ptr[i] = dynamic_cast<const ThyraVectorWrapper *>( vecs[i].getRawPtr() );
-        AMP_INSIST( ptr[i] != NULL,
+        AMP_INSIST( ptr[i] != nullptr,
                     "All vectors used in applyOpImpl must be of the type ThyraVectorWrapper" );
         for ( size_t j = 0; j < ptr[i]->numVecs(); j++ ) {
             AMP::LinearAlgebra::Vector::const_shared_ptr tmp = ptr[i]->getVec( j );

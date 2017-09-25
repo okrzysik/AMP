@@ -266,7 +266,7 @@ int main( int argc, char *argv[] )
 
     std::vector<std::string> exeNames;
     //  exeNames.push_back("testPetscSNESSolver-NonlinearThermal-cylinder_kIsOne");
-    exeNames.push_back( "testPetscSNESSolver-NonlinearThermal-cylinder_MATPRO" );
+    exeNames.emplace_back( "testPetscSNESSolver-NonlinearThermal-cylinder_MATPRO" );
 
     for ( auto &exeName : exeNames )
         myTest( &ut, exeName );

@@ -97,7 +97,7 @@ DOFManager::shared_ptr subsetDOFManager::create( AMP::shared_ptr<const DOFManage
 /****************************************************************
  * Deconstructor                                                 *
  ****************************************************************/
-subsetDOFManager::~subsetDOFManager() {}
+subsetDOFManager::~subsetDOFManager() = default;
 
 
 /****************************************************************
@@ -116,7 +116,7 @@ void subsetDOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids
     // Get the subset DOFs
     std::vector<size_t> subsetDOFs = getSubsetDOF( parentDOFs );
     // Remove any DOFs == -1
-    std::vector<size_t>::iterator cur = subsetDOFs.begin();
+    auto cur = subsetDOFs.begin();
     while ( cur != subsetDOFs.end() ) {
         if ( *cur >= d_global ) {
             cur = subsetDOFs.erase( cur );

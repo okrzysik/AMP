@@ -252,7 +252,7 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
     std::vector<std::string> exeNames;
-    exeNames.push_back( "testLinearFlow-1" );
+    exeNames.emplace_back( "testLinearFlow-1" );
 
     for ( auto name : exeNames )
         myTest( &ut, name );

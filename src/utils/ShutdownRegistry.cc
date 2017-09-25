@@ -34,9 +34,9 @@ void ShutdownRegistry::registerShutdownRoutine( void ( *callback )(), unsigned c
         initialize();
     }
 
-    ShutdownRegistryItem *item = new ShutdownRegistryItem;
-    item->callback             = callback;
-    item->next                 = (ShutdownRegistryItem *) nullptr;
+    auto *item     = new ShutdownRegistryItem;
+    item->callback = callback;
+    item->next     = (ShutdownRegistryItem *) nullptr;
     if ( s_num_shutdown_items[priority] == 0 ) {
         s_shutdown_list[priority] = item;
     } else {

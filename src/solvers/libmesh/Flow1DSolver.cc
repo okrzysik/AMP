@@ -15,7 +15,7 @@ Flow1DSolver::Flow1DSolver( AMP::shared_ptr<SolverStrategyParameters> parameters
     initialize( parameters );
 }
 
-Flow1DSolver::~Flow1DSolver() {}
+Flow1DSolver::~Flow1DSolver() = default;
 
 void Flow1DSolver::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> ) {}
 

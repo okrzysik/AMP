@@ -180,7 +180,7 @@ void linearFickTest( AMP::UnitTest *ut )
     double c     = -power / 2.;
     double b     = -10. * power;
     double a     = 300. + 150. * power;
-    bool passes  = 1;
+    bool passes  = true;
 
     if ( false ) {
         double cal, zee, sol, err;
@@ -224,7 +224,7 @@ void linearFickTest( AMP::UnitTest *ut )
                     if ( iNode < numNodes - 1 )
                         file << "," << std::endl;
                     if ( fabs( cal - sol ) > cal * 1e-3 ) {
-                        passes = 0;
+                        passes = false;
                         ut->failure( "Error" );
                     }
                     iNode++;

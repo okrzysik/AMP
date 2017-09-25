@@ -5,6 +5,7 @@
 #include "vectors/VectorSelector.h"
 #include "vectors/testHelpers/VectorTests.h"
 
+
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 
@@ -46,8 +47,7 @@ inline void testSelector( AMP::UnitTest *ut,
 void AMP::LinearAlgebra::VectorTests::testAllSelectors( AMP::UnitTest *ut )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vec( d_factory->getVector() );
-    vec->setVariable( AMP::LinearAlgebra::Variable::shared_ptr(
-        new AMP::LinearAlgebra::Variable( "test_selector" ) ) );
+    vec->setVariable( AMP::make_shared<AMP::LinearAlgebra::Variable>( "test_selector" ) );
     AMP::AMP_MPI vec_comm = vec->getComm();
     AMP::AMP_MPI world_comm( AMP_COMM_WORLD );
     AMP::AMP_MPI self_comm( AMP_COMM_SELF );

@@ -43,7 +43,7 @@ SolverStrategy::SolverStrategy( AMP::shared_ptr<SolverStrategyParameters> parame
 /****************************************************************
  * Destructor                                                    *
  ****************************************************************/
-SolverStrategy::~SolverStrategy() {}
+SolverStrategy::~SolverStrategy() = default;
 
 
 /****************************************************************

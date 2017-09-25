@@ -22,7 +22,6 @@ responsibility for the use of this software.
 #include "TimeIntegrator.h"
 #include "TimeIntegratorParameters.h"
 
-#include <memory>
 
 
 namespace AMP {

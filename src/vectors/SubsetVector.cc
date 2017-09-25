@@ -74,8 +74,7 @@ Vector::const_shared_ptr SubsetVector::view( Vector::const_shared_ptr v,
         params->d_comm        = subsetDOF->getComm();
         params->d_localsize   = subsetDOF->numLocalDOF();
         params->d_remote_DOFs = remote_DOFs;
-        commList              = AMP::LinearAlgebra::CommunicationList::shared_ptr(
-            new AMP::LinearAlgebra::CommunicationList( params ) );
+        commList              = AMP::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
     }
     // Create the new subset vector
     AMP::shared_ptr<SubsetVector> retVal( new SubsetVector() );

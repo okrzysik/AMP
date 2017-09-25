@@ -24,7 +24,7 @@ OxideTimeIntegrator::OxideTimeIntegrator( AMP::shared_ptr<TimeIntegratorParamete
     initialize( parameters );
 }
 
-OxideTimeIntegrator::~OxideTimeIntegrator() {}
+OxideTimeIntegrator::~OxideTimeIntegrator() = default;
 
 
 /************************************************************************
@@ -232,13 +232,13 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
 /************************************************************************
  * Check the solution                                                    *
  ************************************************************************/
-bool OxideTimeIntegrator::checkNewSolution( void ) const { return true; }
+bool OxideTimeIntegrator::checkNewSolution() const { return true; }
 
 
 /************************************************************************
  * Update the solution                                                   *
  ************************************************************************/
-void OxideTimeIntegrator::updateSolution( void ) {}
+void OxideTimeIntegrator::updateSolution() {}
 
 
 /************************************************************************

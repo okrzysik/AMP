@@ -207,9 +207,8 @@ MatTestResult testMaterial( string &name )
         std::vector<double> value( npoints ), nominal;
         map<string, AMP::shared_ptr<vector<double>>> args;
         for ( size_t i = 0; i < nargs; i++ ) {
-            args.insert( std::make_pair(
-                argnames[i],
-                AMP::shared_ptr<vector<double>>( new vector<double>( justright[i] ) ) ) );
+            args.insert(
+                std::make_pair( argnames[i], AMP::make_shared<vector<double>>( justright[i] ) ) );
         }
 
         // set up AMP::Vector arguments to evalv
@@ -422,10 +421,8 @@ MatTestResult testMaterial( string &name )
                 testMap   = property->make_map( argsMultiVec );
                 bool good = true;
                 for ( size_t i = 0; i < nargs; i++ ) {
-                    map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>::iterator vec1It =
-                        testMap.find( argnames[i] );
-                    map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>::iterator vec2It =
-                        argsVec.find( argnames[i] );
+                    auto vec1It = testMap.find( argnames[i] );
+                    auto vec2It = argsVec.find( argnames[i] );
                     bool goodIt = true;
                     if ( vec1It == testMap.end() ) {
                         goodIt = false; // make_map missed an argument
@@ -521,7 +518,7 @@ MatTestResult testMaterial( string &name )
             // set up reduced argument list
             map<string, AMP::shared_ptr<vector<double>>> argsm( args );
             if ( nargs > 0 ) {
-                map<string, AMP::shared_ptr<vector<double>>>::iterator argend = argsm.end();
+                auto argend = argsm.end();
                 --argend;
                 argsm.erase( argend );
             }
@@ -613,10 +610,8 @@ MatTestResult testMaterial( string &name )
                 testMap   = vectorProperty->make_map( argsMultiVec );
                 bool good = true;
                 for ( size_t i = 0; i < nargs; i++ ) {
-                    map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>::iterator vec1It =
-                        testMap.find( argnames[i] );
-                    map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>::iterator vec2It =
-                        argsVec.find( argnames[i] );
+                    auto vec1It = testMap.find( argnames[i] );
+                    auto vec2It = argsVec.find( argnames[i] );
                     bool goodIt = true;
                     if ( vec1It == testMap.end() ) {
                         goodIt = false; // make_map missed an argument
@@ -664,10 +659,8 @@ MatTestResult testMaterial( string &name )
             std::vector<AMP::shared_ptr<std::vector<double>>> stdEval( nvec );
             std::vector<AMP::shared_ptr<std::vector<double>>> nominalEval( nvec );
             for ( size_t i = 0; i < nvec; i++ ) {
-                stdEval[i] =
-                    AMP::shared_ptr<std::vector<double>>( new std::vector<double>( npoints ) );
-                nominalEval[i] =
-                    AMP::shared_ptr<std::vector<double>>( new std::vector<double>( npoints ) );
+                stdEval[i]     = AMP::make_shared<std::vector<double>>( npoints );
+                nominalEval[i] = AMP::make_shared<std::vector<double>>( npoints );
             }
 
             // check that number of components is positive
@@ -873,7 +866,7 @@ MatTestResult testMaterial( string &name )
             // set up reduced argument list
             map<string, AMP::shared_ptr<vector<double>>> argsm( args );
             if ( nargs > 0 ) {
-                map<string, AMP::shared_ptr<vector<double>>>::iterator argend = argsm.end();
+                auto argend = argsm.end();
                 --argend;
                 argsm.erase( argend );
             }
@@ -964,10 +957,8 @@ MatTestResult testMaterial( string &name )
                 testMap   = tensorProperty->make_map( argsMultiVec );
                 bool good = true;
                 for ( size_t i = 0; i < nargs; i++ ) {
-                    map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>::iterator vec1It =
-                        testMap.find( argnames[i] );
-                    map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>::iterator vec2It =
-                        argsVec.find( argnames[i] );
+                    auto vec1It = testMap.find( argnames[i] );
+                    auto vec2It = argsVec.find( argnames[i] );
                     bool goodIt = true;
                     if ( vec1It == testMap.end() ) {
                         goodIt = false; // make_map missed an argument
@@ -1018,10 +1009,8 @@ MatTestResult testMaterial( string &name )
                 nvecs[0], std::vector<AMP::shared_ptr<std::vector<double>>>( nvecs[1] ) );
             for ( size_t i = 0; i < nvecs[0]; i++ )
                 for ( size_t j = 0; j < nvecs[1]; j++ ) {
-                    stdEval[i][j] =
-                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( npoints ) );
-                    nominalEval[i][j] =
-                        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( npoints ) );
+                    stdEval[i][j]     = AMP::make_shared<std::vector<double>>( npoints );
+                    nominalEval[i][j] = AMP::make_shared<std::vector<double>>( npoints );
                 }
 
             // check that number of components is positive
@@ -1240,7 +1229,7 @@ MatTestResult testMaterial( string &name )
             // set up reduced argument list
             map<string, AMP::shared_ptr<vector<double>>> argsm( args );
             if ( nargs > 0 ) {
-                map<string, AMP::shared_ptr<vector<double>>>::iterator argend = argsm.end();
+                auto argend = argsm.end();
                 --argend;
                 argsm.erase( argend );
             }
@@ -1321,25 +1310,25 @@ int main( int argc, char **argv )
             cout << xlate( _j.range ) << "   ";
             cout << xlate( _j.params ) << "    ";
             unsigned int nsuccess = 0, nargeval = 0;
-            for ( size_t k = 0; k < NSUCCESS; k++ )
-                if ( _j.success[k] )
+            for ( bool succes : _j.success )
+                if ( succes )
                     nsuccess++;
             cout << nsuccess << "/" << NSUCCESS << "    ";
-            for ( size_t k = 0; k < NARGEVAL; k++ )
-                if ( _j.nargeval[k] )
+            for ( bool k : _j.nargeval )
+                if ( k )
                     nargeval++;
             cout << nargeval << "/" << NARGEVAL << "      ";
             if ( _j.isVector ) {
                 unsigned int nvector = 0;
-                for ( size_t k = 0; k < NVECTOR; k++ )
-                    if ( _j.vector[k] )
+                for ( bool k : _j.vector )
+                    if ( k )
                         nvector++;
                 cout << nvector << "/" << NVECTOR << "      ";
             }
             if ( _j.isTensor ) {
                 unsigned int ntensor = 0;
-                for ( size_t k = 0; k < NTENSOR; k++ )
-                    if ( _j.tensor[k] )
+                for ( bool k : _j.tensor )
+                    if ( k )
                         ntensor++;
                 cout << ntensor << "/" << NTENSOR << "      ";
             }
@@ -1358,9 +1347,7 @@ int main( int argc, char **argv )
         else
             ut.failure( msg + "created" );
         maxpassed += 1;
-        for ( vector<PropTestResult>::iterator j = score.propResults.begin();
-              j != score.propResults.end();
-              ++j ) {
+        for ( auto j = score.propResults.begin(); j != score.propResults.end(); ++j ) {
             msg = "material " + score.name + " property" + " " + j->name + " ";
             if ( j->params )
                 ut.passes( msg + "get/set parameters" );

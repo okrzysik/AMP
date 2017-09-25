@@ -127,10 +127,10 @@ void CladToSubchannelMap::fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr mesh )
         root = d_MapComm.getRank();
         AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( mesh, d_x, d_y, d_z );
     }
-    root      = d_MapComm.maxReduce( root );
-    size_t Nx = d_MapComm.bcast<size_t>( d_x.size() - 1, root );
-    size_t Ny = d_MapComm.bcast<size_t>( d_y.size() - 1, root );
-    size_t Nz = d_MapComm.bcast<size_t>( d_z.size(), root );
+    root    = d_MapComm.maxReduce( root );
+    auto Nx = d_MapComm.bcast<size_t>( d_x.size() - 1, root );
+    auto Ny = d_MapComm.bcast<size_t>( d_y.size() - 1, root );
+    auto Nz = d_MapComm.bcast<size_t>( d_z.size(), root );
     d_x.resize( Nx + 1, 0.0 );
     d_y.resize( Ny + 1, 0.0 );
     d_z.resize( Nz, 0.0 );
@@ -235,7 +235,7 @@ void CladToSubchannelMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
     for ( size_t i = 0; i < N_subchannels; i++ ) {
         if ( d_elem[i].empty() )
             continue;
-        int tag = (int) i; // We have an independent comm
+        auto tag = (int) i; // We have an independent comm
         for ( size_t j = 0; j < d_subchannelRanks[i].size(); j++ ) {
             int rank = d_subchannelRanks[i][j];
             d_currRequests.push_back(
@@ -265,7 +265,7 @@ void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
     auto tmp_data = new double[2 * d_sendMaxBufferSize];
     for ( size_t i = 0; i < N_subchannels; i++ ) {
         if ( d_ownSubChannel[i] ) {
-            int tag = (int) i; // We have an independent comm
+            auto tag = (int) i; // We have an independent comm
             mapData.resize( 0 );
             for ( auto &elem : d_subchannelSend[i] ) {
                 int length = 2 * d_sendMaxBufferSize;
@@ -273,8 +273,7 @@ void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
                 AMP_ASSERT( length % 2 == 0 );
                 mapData.reserve( mapData.size() + length / 2 );
                 for ( int k = 0; k < length / 2; k++ )
-                    mapData.push_back(
-                        std::pair<double, double>( tmp_data[2 * k + 0], tmp_data[2 * k + 1] ) );
+                    mapData.emplace_back( tmp_data[2 * k + 0], tmp_data[2 * k + 1] );
             }
             create_map( mapData, x[i], f[i] );
         }

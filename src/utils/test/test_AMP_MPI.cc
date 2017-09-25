@@ -99,8 +99,8 @@ int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
 {
     PROFILE_START( "testReduce" );
     char message[128];
-    type rank = (type) comm.getRank();
-    type size = (type) comm.getSize();
+    auto rank = (type) comm.getRank();
+    auto size = (type) comm.getSize();
     if ( (int) ( size ) != comm.getSize() ) {
         sprintf( message,
                  "Reduce (%s) cannot represent the number of processors",
@@ -231,11 +231,11 @@ int testScan( MPI_CLASS comm, UnitTest *ut, int flag = 0 )
 {
     PROFILE_START( "testScan" );
     char message[500];
-    type x = ( type )( comm.getRank() + 1 );
+    auto x = ( type )( comm.getRank() + 1 );
     type y;
     sprintf( message, "sumScan (%s)", typeid( type ).name() );
     comm.sumScan<type>( &x, &y, 1 );
-    type N = ( type )( ( ( comm.getRank() + 1 ) * ( comm.getRank() + 2 ) ) / 2 );
+    auto N = ( type )( ( ( comm.getRank() + 1 ) * ( comm.getRank() + 2 ) ) / 2 );
     if ( y == N )
         ut->passes( message );
     else
@@ -302,8 +302,8 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
     PROFILE_START( "testAllGather" );
     char message[128];
     // Test scalar allGather
-    type x1  = (type) comm.getRank();
-    type *x2 = new type[comm.getSize()];
+    auto x1  = (type) comm.getRank();
+    auto *x2 = new type[comm.getSize()];
     comm.allGather( x1, x2 );
     bool pass = true;
     for ( int i = 0; i < comm.getSize(); i++ ) {
@@ -317,11 +317,11 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
     else
         ut->failure( message );
     // Test vector allGather
-    int N     = ( comm.getSize() * ( comm.getSize() + 1 ) ) / 2;
-    type *x3  = new type[comm.getRank() + 1];
-    type *x4  = new type[N];
-    type *x5  = new type[N];
-    int *size = new int[comm.getSize()];
+    int N      = ( comm.getSize() * ( comm.getSize() + 1 ) ) / 2;
+    auto *x3   = new type[comm.getRank() + 1];
+    auto *x4   = new type[N];
+    auto *x5   = new type[N];
+    auto *size = new int[comm.getSize()];
     for ( int i = 0; i <= comm.getRank(); i++ )
         x3[i] = (type) comm.getRank();
     int tot1 = comm.allGather( x3, comm.getRank() + 1, x4 );
@@ -353,10 +353,10 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
     delete[] x5;
     delete[] size;
     // Test vector allGather with know recive sizes and non-zero displacements
-    type *send     = new type[comm.getRank() + 1];
-    type *recv     = new type[comm.getSize() * comm.getSize() + 1];
-    int *recv_size = new int[comm.getSize()];
-    int *recv_disp = new int[comm.getSize()];
+    auto *send      = new type[comm.getRank() + 1];
+    auto *recv      = new type[comm.getSize() * comm.getSize() + 1];
+    auto *recv_size = new int[comm.getSize()];
+    auto *recv_disp = new int[comm.getSize()];
     for ( int i = 0; i <= comm.getRank(); i++ )
         send[i] = i;
     for ( int i = 0; i < comm.getSize(); i++ )
@@ -369,7 +369,7 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
     pass    = true;
     if ( tot != N )
         pass = false;
-    type test = (type) -1;
+    auto test = (type) -1;
     if ( recv[0] != test )
         pass = false;
     for ( int i = 0; i < comm.getSize(); i++ ) {
@@ -415,7 +415,7 @@ int testSetGather( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testSetGather" );
     char message[500];
-    type x1 = (type) comm.getRank();
+    auto x1 = (type) comm.getRank();
     std::set<type> set;
     set.insert( x1 );
     comm.setGather( set );
@@ -441,7 +441,7 @@ int testMapGather( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testMapGather" );
     char message[128];
-    type x1 = (type) comm.getRank();
+    auto x1 = (type) comm.getRank();
     std::map<int, type> map;
     map.insert( std::pair<int, type>( comm.getRank(), x1 ) );
     comm.mapGather( map );
@@ -474,10 +474,10 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
     char message[128];
     int size = 0;
     type *send_data, *recv_data;
-    int *send_cnt  = new int[comm.getSize()];
-    int *recv_cnt  = new int[comm.getSize()];
-    int *send_disp = new int[comm.getSize()];
-    int *recv_disp = new int[comm.getSize()];
+    auto *send_cnt  = new int[comm.getSize()];
+    auto *recv_cnt  = new int[comm.getSize()];
+    auto *send_disp = new int[comm.getSize()];
+    auto *recv_disp = new int[comm.getSize()];
     // Test allToAll with a scalar value to each processor
     send_data = new type[comm.getSize()];
     recv_data = new type[comm.getSize()];
@@ -552,7 +552,7 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
                 if ( recv_data[j + recv_disp[i]] != test )
                     pass = false;
             } else {
-                type test = (type) -2;
+                auto test = (type) -2;
                 if ( recv_data[j + recv_disp[i]] != test )
                     pass = false;
             }
@@ -569,8 +569,8 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
         ut->failure( message );
     // Test allToAll with a unknown recieve length
     send_data        = new type[comm.getSize() * comm.getSize()];
-    type *recv_data1 = new type[comm.getSize() * comm.getSize()];
-    type *recv_data2 = new type[comm.getSize() * comm.getSize()];
+    auto *recv_data1 = new type[comm.getSize() * comm.getSize()];
+    auto *recv_data2 = new type[comm.getSize() * comm.getSize()];
     for ( int i = 0; i < comm.getSize(); i++ ) {
         send_cnt[i]  = i;
         recv_cnt[i]  = -1;
@@ -735,7 +735,7 @@ int testIsendIrecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
         }
     }
     // Recv all messages
-    type *recv_buffer = new type[comm.getSize()];
+    auto *recv_buffer = new type[comm.getSize()];
     for ( int i = 0; i < comm.getSize(); i++ )
         recv_buffer[i] = v2;
     recv_buffer[comm.getRank()] = v1;
@@ -805,8 +805,8 @@ int testCommRanks( MPI_CLASS comm, UnitTest *ut )
     }
     auto ranks = comm.globalRanks();
     pass       = pass && (int) ranks.size() == comm.getSize();
-    for ( size_t i = 0; i < ranks.size(); i++ )
-        pass = pass && ranks[i] >= 0;
+    for ( int rank : ranks )
+        pass = pass && rank >= 0;
     auto ranks2 = ranks;
     AMP::Utilities::unique( ranks2 );
     pass = pass && ranks.size() == ranks2.size();

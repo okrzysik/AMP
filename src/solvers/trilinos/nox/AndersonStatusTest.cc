@@ -29,7 +29,7 @@ AndersonStatusTest::AndersonStatusTest( AMP::shared_ptr<AMP::Database> db )
     AMP_ASSERT( d_variableNames.size() == d_tolerances.size() );
     d_relativeResiduals.resize( d_variableNames.size(), 1e12 );
 }
-AndersonStatusTest::~AndersonStatusTest() {}
+AndersonStatusTest::~AndersonStatusTest() = default;
 
 NOX::StatusTest::StatusType AndersonStatusTest::checkStatus( const NOX::Solver::Generic &solver,
                                                              NOX::StatusTest::CheckType checkType )

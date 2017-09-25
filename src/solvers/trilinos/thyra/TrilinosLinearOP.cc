@@ -11,18 +11,18 @@ namespace Solver {
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-TrilinosLinearOP::TrilinosLinearOP() {}
+TrilinosLinearOP::TrilinosLinearOP() = default;
 TrilinosLinearOP::TrilinosLinearOP( AMP::Operator::Operator::shared_ptr op )
 {
     this->d_operator = op;
-    AMP_ASSERT( d_operator != NULL );
+    AMP_ASSERT( d_operator != nullptr );
 }
 TrilinosLinearOP::TrilinosLinearOP( AMP::Solver::SolverStrategy::shared_ptr solver )
 {
     this->d_solver = solver;
-    AMP_ASSERT( d_solver != NULL );
+    AMP_ASSERT( d_solver != nullptr );
 }
-TrilinosLinearOP::~TrilinosLinearOP() {}
+TrilinosLinearOP::~TrilinosLinearOP() = default;
 
 
 /****************************************************************
@@ -55,10 +55,10 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
         dynamic_cast<const Thyra::VectorBase<double> *>( &X ) );
     AMP::LinearAlgebra::Vector::shared_ptr y0 = AMP::LinearAlgebra::ThyraVector::view(
         dynamic_cast<Thyra::VectorBase<double> *>( Y.get() ) );
-    if ( x0 != NULL )
+    if ( x0 != nullptr )
         const_cast<AMP::LinearAlgebra::Vector *>( x0.get() )
             ->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
-    if ( y0 != NULL )
+    if ( y0 != nullptr )
         y0->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> x;
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> y;
@@ -72,7 +72,7 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
             AMP::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVector>( x0 );
         AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> y1 =
             AMP::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( y0 );
-        AMP_ASSERT( x1 != NULL && y1 != NULL );
+        AMP_ASSERT( x1 != nullptr && y1 != nullptr );
         size_t N_vecs_x = x1->getNumberOfSubvectors();
         size_t N_vecs_y = y1->getNumberOfSubvectors();
         AMP_ASSERT( N_vecs_x != N_vecs_y );
@@ -85,7 +85,7 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
         y.push_back( y0 );
     }
     for ( size_t i = 0; i < x.size(); i++ ) {
-        if ( d_operator != NULL ) {
+        if ( d_operator != nullptr ) {
             // Apply the AMP::Operator to compute f = OP(M)*X
             AMP::LinearAlgebra::Vector::shared_ptr f = y[i]->cloneVector();
             d_operator->apply( x[i], f );

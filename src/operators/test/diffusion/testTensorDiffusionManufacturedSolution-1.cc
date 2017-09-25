@@ -286,10 +286,10 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
     std::vector<std::string> files, meshes;
-    files.push_back( "TensorDiffusion-Fick-MMS-1" );
-    meshes.push_back( "Mesh" );
-    files.push_back( "TensorDiffusion-Fick-MMS-2" );
-    meshes.push_back( "Mesh" );
+    files.emplace_back( "TensorDiffusion-Fick-MMS-1" );
+    meshes.emplace_back( "Mesh" );
+    files.emplace_back( "TensorDiffusion-Fick-MMS-2" );
+    meshes.emplace_back( "Mesh" );
     // files.push_back("Diffusion-Fick-OxMSRZC09-MMS-1");
 
     for ( size_t i = 0; i < files.size(); i++ )

@@ -19,7 +19,7 @@ namespace LinearAlgebra {
 ThyraVectorSpaceWrapper::ThyraVectorSpaceWrapper(
     AMP::shared_ptr<const ThyraVectorWrapper> thyra_vec, bool is_range )
 {
-    AMP_INSIST( thyra_vec != NULL, "thyra_vec may not be NULL" );
+    AMP_INSIST( thyra_vec != nullptr, "thyra_vec may not be NULL" );
     d_thyra_vec = thyra_vec;
     d_is_range  = is_range;
 }
@@ -28,7 +28,7 @@ ThyraVectorSpaceWrapper::ThyraVectorSpaceWrapper(
 /****************************************************************
  * Destructor                                                    *
  ****************************************************************/
-ThyraVectorSpaceWrapper::~ThyraVectorSpaceWrapper() {}
+ThyraVectorSpaceWrapper::~ThyraVectorSpaceWrapper() = default;
 
 
 /****************************************************************
@@ -42,9 +42,8 @@ Teuchos::Ordinal ThyraVectorSpaceWrapper::dim() const
 }
 bool ThyraVectorSpaceWrapper::isCompatible( const Thyra::VectorSpaceBase<double> &vecSpc ) const
 {
-    const ThyraVectorSpaceWrapper *vecSpaceWrapper =
-        dynamic_cast<const ThyraVectorSpaceWrapper *>( &vecSpc );
-    if ( vecSpaceWrapper == NULL )
+    const auto *vecSpaceWrapper = dynamic_cast<const ThyraVectorSpaceWrapper *>( &vecSpc );
+    if ( vecSpaceWrapper == nullptr )
         return false;
     if ( this == vecSpaceWrapper )
         return true;

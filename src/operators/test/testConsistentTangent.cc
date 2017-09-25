@@ -198,25 +198,25 @@ int main( int argc, char *argv[] )
 
     std::vector<std::string> exeNames;
 
-    exeNames.push_back( "testConsistentTangent-1-mesh1-normal" );
-    exeNames.push_back( "testConsistentTangent-1-mesh1-reduced" );
-    exeNames.push_back( "testConsistentTangent-1-cookMesh1-normal" );
-    exeNames.push_back( "testConsistentTangent-1-cookMesh1-reduced" );
+    exeNames.emplace_back( "testConsistentTangent-1-mesh1-normal" );
+    exeNames.emplace_back( "testConsistentTangent-1-mesh1-reduced" );
+    exeNames.emplace_back( "testConsistentTangent-1-cookMesh1-normal" );
+    exeNames.emplace_back( "testConsistentTangent-1-cookMesh1-reduced" );
 
-    exeNames.push_back( "testConsistentTangent-2-mesh1-normal" );
-    exeNames.push_back( "testConsistentTangent-2-mesh1-reduced" );
-    exeNames.push_back( "testConsistentTangent-2-cookMesh1-normal" );
-    exeNames.push_back( "testConsistentTangent-2-cookMesh1-reduced" );
+    exeNames.emplace_back( "testConsistentTangent-2-mesh1-normal" );
+    exeNames.emplace_back( "testConsistentTangent-2-mesh1-reduced" );
+    exeNames.emplace_back( "testConsistentTangent-2-cookMesh1-normal" );
+    exeNames.emplace_back( "testConsistentTangent-2-cookMesh1-reduced" );
 
-    exeNames.push_back( "testConsistentTangent-3-mesh1-normal" );
-    exeNames.push_back( "testConsistentTangent-3-mesh1-reduced" );
-    exeNames.push_back( "testConsistentTangent-3-cookMesh1-normal" );
-    exeNames.push_back( "testConsistentTangent-3-cookMesh1-reduced" );
+    exeNames.emplace_back( "testConsistentTangent-3-mesh1-normal" );
+    exeNames.emplace_back( "testConsistentTangent-3-mesh1-reduced" );
+    exeNames.emplace_back( "testConsistentTangent-3-cookMesh1-normal" );
+    exeNames.emplace_back( "testConsistentTangent-3-cookMesh1-reduced" );
 
-    exeNames.push_back( "testConsistentTangent-4-mesh1-normal" );
-    exeNames.push_back( "testConsistentTangent-4-mesh1-reduced" );
-    exeNames.push_back( "testConsistentTangent-4-cookMesh1-normal" );
-    exeNames.push_back( "testConsistentTangent-4-cookMesh1-reduced" );
+    exeNames.emplace_back( "testConsistentTangent-4-mesh1-normal" );
+    exeNames.emplace_back( "testConsistentTangent-4-mesh1-reduced" );
+    exeNames.emplace_back( "testConsistentTangent-4-cookMesh1-normal" );
+    exeNames.emplace_back( "testConsistentTangent-4-cookMesh1-reduced" );
 
     for ( int j = 0; j < 2; j++ ) {
         for ( auto &exeName : exeNames )

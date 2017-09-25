@@ -49,7 +49,7 @@ void TrilinosNOXSolver::reset( AMP::shared_ptr<SolverStrategyParameters> paramet
 {
     initialize( parameters );
 }
-TrilinosNOXSolver::~TrilinosNOXSolver() {}
+TrilinosNOXSolver::~TrilinosNOXSolver() = default;
 
 
 /****************************************************************
@@ -60,15 +60,15 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
     // Copy the parameters
     AMP::shared_ptr<TrilinosNOXSolverParameters> params =
         AMP::dynamic_pointer_cast<TrilinosNOXSolverParameters>( parameters );
-    AMP_ASSERT( params.get() != NULL );
-    AMP_ASSERT( params->d_db.get() != NULL );
+    AMP_ASSERT( params.get() != nullptr );
+    AMP_ASSERT( params->d_db.get() != nullptr );
     d_comm = params->d_comm;
-    if ( params->d_pInitialGuess.get() != NULL )
+    if ( params->d_pInitialGuess.get() != nullptr )
         d_initialGuess = params->d_pInitialGuess;
-    AMP_ASSERT( d_initialGuess != NULL );
+    AMP_ASSERT( d_initialGuess != nullptr );
     AMP::shared_ptr<AMP::Database> nonlinear_db = parameters->d_db;
     AMP::shared_ptr<AMP::Database> linear_db    = nonlinear_db->getDatabase( "LinearSolver" );
-    AMP_ASSERT( linear_db != NULL );
+    AMP_ASSERT( linear_db != nullptr );
     // Create the default OStream
     Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::VerboseObjectBase::getDefaultOStream();
     // Create a model evaluator
@@ -166,7 +166,7 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
         d_nlParams->sublist( "Anderson Parameters" ).set( "Mixing Parameter", mixing );
         d_nlParams->sublist( "Anderson Parameters" )
             .sublist( "Preconditioning" )
-            .set( "Precondition", d_precOp.get() != NULL );
+            .set( "Precondition", d_precOp.get() != nullptr );
         Teuchos::RCP<NOX::StatusTest::RelativeNormF> relresid =
             Teuchos::rcp( new NOX::StatusTest::RelativeNormF( d_dMaxError ) );
         d_status->addStatusTest( relresid );
@@ -181,7 +181,7 @@ void TrilinosNOXSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> pa
         .sublist( "Newton" )
         .sublist( "Linear Solver" )
         .set( "Tolerance", linearRelativeTolerance );
-    if ( params->d_prePostOperator.get() != NULL ) {
+    if ( params->d_prePostOperator.get() != nullptr ) {
         Teuchos::RefCountPtr<NOX::Abstract::PrePostOperator> prePostOperator(
             params->d_prePostOperator.get(),
             Teuchos::DeallocDelete<NOX::Abstract::PrePostOperator>(),
@@ -258,11 +258,10 @@ void TrilinosNOXSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>
     if ( solvStatus != NOX::StatusTest::Converged )
         AMP_ERROR( "Failed to solve" );
     // Copy the solution back to u
-    const NOX::Thyra::Vector *tmp =
-        dynamic_cast<const NOX::Thyra::Vector *>( &( nox_group->getX() ) );
-    const AMP::LinearAlgebra::ThyraVectorWrapper *thyraVec =
+    const auto *tmp = dynamic_cast<const NOX::Thyra::Vector *>( &( nox_group->getX() ) );
+    const auto *thyraVec =
         dynamic_cast<const AMP::LinearAlgebra::ThyraVectorWrapper *>( &( tmp->getThyraVector() ) );
-    AMP_ASSERT( thyraVec != NULL );
+    AMP_ASSERT( thyraVec != nullptr );
     AMP_ASSERT( thyraVec->numVecs() == 1 );
     u->copyVector( thyraVec->getVec( 0 ) );
     // PROFILE_STOP("solve");

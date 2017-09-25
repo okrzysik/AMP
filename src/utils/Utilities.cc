@@ -8,18 +8,18 @@
 #include "utils/StackTrace.h"
 
 #include <algorithm>
+#include <cmath>
+#include <csignal>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <math.h>
-#include <signal.h>
 #include <sstream>
 #include <stdexcept>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
-#include <time.h>
 
 
 // Detect the OS and include system dependent headers
@@ -101,8 +101,8 @@ void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_
 {
     AMP_MPI comm = AMP_MPI( AMP_COMM_WORLD );
     if ( ( !only_node_zero_creates ) || ( comm.getRank() == 0 ) ) {
-        int length     = (int) path.length();
-        char *path_buf = new char[length + 1];
+        auto length    = (int) path.length();
+        auto *path_buf = new char[length + 1];
         sprintf( path_buf, "%s", path.c_str() );
         struct stat status;
         int pos = length - 1;
@@ -369,31 +369,30 @@ void Utilities::printBanner()
     std::ostringstream banner;
     banner << std::endl;
     banner << "            _____                    _____                    _____" << std::endl;
-    banner << "           /\\    \\                  /\\    \\                  /\\    \\ "
+    banner << R"(           /\    \                  /\    \                  /\    \ )"
            << std::endl;
-    banner << "          /::\\    \\                /::\\____\\                /::\\    \\"
+    banner << R"(          /::\    \                /::\____\                /::\    \)"
            << std::endl;
-    banner << "         /::::\\    \\              /::::|   |               /::::\\    \\"
+    banner << R"(         /::::\    \              /::::|   |               /::::\    \)"
            << std::endl;
-    banner << "        /::::::\\    \\            /:::::|   |              /::::::\\    \\"
+    banner << R"(        /::::::\    \            /:::::|   |              /::::::\    \)"
            << std::endl;
-    banner << "       /:::/\\:::\\    \\          /::::::|   |             /:::/\\:::\\    \\"
+    banner << R"(       /:::/\:::\    \          /::::::|   |             /:::/\:::\    \)"
            << std::endl;
-    banner << "      /:::/__\\:::\\    \\        /:::/|::|   |            /:::/__\\:::\\    \\"
+    banner << R"(      /:::/__\:::\    \        /:::/|::|   |            /:::/__\:::\    \)"
            << std::endl;
-    banner << "     /::::\\   \\:::\\    \\      /:::/ |::|   |           /::::\\   \\:::\\    \\"
+    banner << R"(     /::::\   \:::\    \      /:::/ |::|   |           /::::\   \:::\    \)"
            << std::endl;
-    banner << "    /::::::\\   \\:::\\    \\    /:::/  |::|___|______    /::::::\\   \\:::\\    \\"
+    banner << R"(    /::::::\   \:::\    \    /:::/  |::|___|______    /::::::\   \:::\    \)"
            << std::endl;
     banner << "   /:::/\\:::\\   \\:::\\    \\  /:::/   |::::::::\\    \\  /:::/\\:::\\   "
               "\\:::\\____\\"
            << std::endl;
-    banner
-        << "  /:::/  \\:::\\   \\:::\\____\\/:::/    |:::::::::\\____\\/:::/  \\:::\\   \\:::|    |"
-        << std::endl;
-    banner << "  \\::/    \\:::\\  /:::/    /\\::/    / ~~~~~/:::/    /\\::/    \\:::\\  /:::|____|"
+    banner << R"(  /:::/  \:::\   \:::\____\/:::/    |:::::::::\____\/:::/  \:::\   \:::|    |)"
            << std::endl;
-    banner << "   \\/____/ \\:::\\/:::/    /  \\/____/      /:::/    /  \\/_____/\\:::\\/:::/    /"
+    banner << R"(  \::/    \:::\  /:::/    /\::/    / ~~~~~/:::/    /\::/    \:::\  /:::|____|)"
+           << std::endl;
+    banner << R"(   \/____/ \:::\/:::/    /  \/____/      /:::/    /  \/_____/\:::\/:::/    /)"
            << std::endl;
     banner << "            \\::::::/    /               /:::/    /            \\::::::/    /"
            << std::endl;
@@ -427,7 +426,7 @@ std::vector<int> Utilities::factor( size_t number )
     n = number;
     std::vector<int> factors;
     factors.reserve( N_primes_max );
-    while ( 1 ) {
+    while ( true ) {
         // Check if n is a trivial prime number
         if ( n == 2 || n == 3 || n == 5 ) {
             factors.push_back( (int) n );

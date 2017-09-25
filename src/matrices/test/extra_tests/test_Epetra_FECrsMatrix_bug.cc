@@ -6,7 +6,7 @@
  */
 #include "utils/AMP_MPI.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #include <Epetra_FECrsMatrix.h>
 #include <Epetra_Map.h>

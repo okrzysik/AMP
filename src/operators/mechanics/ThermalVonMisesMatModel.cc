@@ -57,8 +57,8 @@ ThermalVonMisesMatModel::ThermalVonMisesMatModel(
     d_Is_Init_Called = false;
 
     for ( auto &elem : d_constitutiveMatrix ) {
-        for ( size_t j = 0; j < 6; j++ )
-            elem[j] = 0.;
+        for ( double &j : elem )
+            j = 0.;
     }
     d_gaussPtCnt                 = 0;
     Total_Gauss_Point            = 0;
@@ -402,8 +402,8 @@ void ThermalVonMisesMatModel::getConstitutiveMatrix( double *&constitutiveMatrix
 
         // Initializing the tangent matrix as zero.
         for ( auto &elem : d_constitutiveMatrix ) {
-            for ( int j = 0; j < 6; j++ ) {
-                elem[j] = 0.0;
+            for ( double &j : elem ) {
+                j = 0.0;
             }
         }
 
@@ -460,8 +460,8 @@ void ThermalVonMisesMatModel::getConstitutiveMatrix( double *&constitutiveMatrix
 
     // Initiaization of the constitutive matrix.
     for ( auto &elem : d_constitutiveMatrix ) {
-        for ( int j = 0; j < 6; j++ ) {
-            elem[j] = 0.0;
+        for ( double &j : elem ) {
+            j = 0.0;
         }
     }
 

@@ -1,4 +1,5 @@
 #include "operators/subchannel/CoupledChannelToCladMapOperator.h"
+
 #include "operators/subchannel/CoupledChannelToCladMapOperatorParameters.h"
 #include "operators/subchannel/SubchannelConstants.h"
 
@@ -65,12 +66,12 @@ void CoupledChannelToCladMapOperator::apply( AMP::LinearAlgebra::Vector::const_s
             std::map<std::string, AMP::shared_ptr<std::vector<double>>> temperatureArgMap;
             temperatureArgMap.insert(
                 std::make_pair( std::string( "enthalpy" ),
-                                AMP::shared_ptr<std::vector<double>>( new std::vector<double>(
-                                    1, h_scale * uInternal->getValueByGlobalID( dofs[0] ) ) ) ) );
+                                AMP::make_shared<std::vector<double>>(
+                                    1, h_scale * uInternal->getValueByGlobalID( dofs[0] ) ) ) );
             temperatureArgMap.insert(
                 std::make_pair( std::string( "pressure" ),
-                                AMP::shared_ptr<std::vector<double>>( new std::vector<double>(
-                                    1, P_scale * uInternal->getValueByGlobalID( dofs[1] ) ) ) ) );
+                                AMP::make_shared<std::vector<double>>(
+                                    1, P_scale * uInternal->getValueByGlobalID( dofs[1] ) ) ) );
             std::vector<double> temperatureResult( 1 );
             std::vector<double> specificVolume( 1 );
             d_subchannelPhysicsModel->getProperty(

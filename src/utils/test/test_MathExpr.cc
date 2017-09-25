@@ -3,7 +3,7 @@
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 
-#include <math.h>
+#include <cmath>
 
 
 using namespace AMP;

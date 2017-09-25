@@ -31,9 +31,9 @@
 namespace AMP {
 namespace TimeIntegrator {
 
-TimeIntegratorFactory::TimeIntegratorFactory() {}
+TimeIntegratorFactory::TimeIntegratorFactory() = default;
 
-TimeIntegratorFactory::~TimeIntegratorFactory() {}
+TimeIntegratorFactory::~TimeIntegratorFactory() = default;
 
 AMP::shared_ptr<TimeIntegrator> TimeIntegratorFactory::createTimeIntegrator(
     AMP::shared_ptr<TimeIntegratorParameters> timeIntegratorParameters )

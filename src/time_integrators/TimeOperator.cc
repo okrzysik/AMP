@@ -29,7 +29,7 @@ TimeOperator::TimeOperator( AMP::shared_ptr<AMP::Operator::OperatorParameters> i
     reset( in_params );
 }
 
-TimeOperator::~TimeOperator() {}
+TimeOperator::~TimeOperator() = default;
 
 void TimeOperator::getFromInput( const AMP::shared_ptr<AMP::Database> &db )
 {
@@ -82,9 +82,9 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     if ( u.get() != nullptr )
         AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::Vector::UpdateState::UNCHANGED );
 
-    AMP_INSIST( ( r != NULL ), "NULL Residual/Output Vector" );
+    AMP_INSIST( ( r != nullptr ), "NULL Residual/Output Vector" );
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector( r );
-    AMP_INSIST( ( rInternal != NULL ), "NULL Residual/Output Vector" );
+    AMP_INSIST( ( rInternal != nullptr ), "NULL Residual/Output Vector" );
 
     d_pScratchVector = rInternal->cloneVector();
     d_pScratchVector->zero();

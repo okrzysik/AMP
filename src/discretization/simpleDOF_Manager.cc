@@ -104,7 +104,7 @@ DOFManager::shared_ptr simpleDOFManager::create( const AMP::Mesh::MeshIterator &
 /****************************************************************
  * Deconstructor                                                 *
  ****************************************************************/
-simpleDOFManager::~simpleDOFManager() {}
+simpleDOFManager::~simpleDOFManager() = default;
 
 
 /****************************************************************
@@ -370,7 +370,7 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
     for ( auto &remote_id : remote_ids )
         meshIDs.insert( remote_id.meshID() );
     std::vector<AMP::Mesh::MeshID> tmpLocalIDs( meshIDs.begin(), meshIDs.end() );
-    int N = (int) comm.sumReduce<size_t>( tmpLocalIDs.size() );
+    auto N = (int) comm.sumReduce<size_t>( tmpLocalIDs.size() );
     if ( N == 0 ) {
         // Nobody has any remote ids to identify
         return std::vector<size_t>();

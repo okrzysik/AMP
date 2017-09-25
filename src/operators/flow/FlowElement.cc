@@ -25,16 +25,13 @@ FlowElement::FlowElement( const AMP::shared_ptr<ElementOperationParameters> &par
     // int numApprox = (params->d_db)->getIntegerWithDefault("NUM_APPROX", 2);
 
     std::string U_feTypeOrderName = ( params->d_db )->getStringWithDefault( "FE_ORDER", "SECOND" );
-    libMeshEnums::Order feTypeOrder =
-        Utility::string_to_enum<libMeshEnums::Order>( U_feTypeOrderName );
+    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( U_feTypeOrderName );
 
     std::string feFamilyName = ( params->d_db )->getStringWithDefault( "FE_FAMILY", "LAGRANGE" );
-    libMeshEnums::FEFamily feFamily =
-        Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    auto feFamily            = Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
     std::string qruleTypeName = ( params->d_db )->getStringWithDefault( "QRULE_TYPE", "QGAUSS" );
-    libMeshEnums::QuadratureType qruleType =
-        Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
+    auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
     d_feType.reset( new ::FEType( feTypeOrder, feFamily ) );
 

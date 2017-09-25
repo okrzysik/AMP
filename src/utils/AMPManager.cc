@@ -49,13 +49,13 @@
 #include <iostream>
 #include <new>
 #include <sstream>
-#include <string.h>
+#include <cstring>
 #include <vector>
 #include <array>
 #include <algorithm>
-#include <signal.h>
+#include <csignal>
 #include <stdexcept>
-#include <stdio.h>
+#include <cstdio>
 
 
 namespace AMP {
@@ -209,7 +209,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
         called_PetscInitialize = false;
     } else {
         std::vector<char *> petscArgs = getPetscArgs();
-        int n_args                    = static_cast<int>( petscArgs.size() );
+        auto n_args                    = static_cast<int>( petscArgs.size() );
         char **args                   = nullptr;
         if ( n_args > 0 )
             args = &petscArgs[0];
@@ -358,7 +358,7 @@ void AMPManager::shutdown()
 ****************************************************************************/
 static inline void addArg( std::string arg, std::vector<char *> &args )
 {
-    char *tmp = new char[arg.length() + 1];
+    auto *tmp = new char[arg.length() + 1];
     memset( tmp, 0, arg.length() + 1 );
     memcpy( tmp, arg.c_str(), arg.length() );
     args.push_back( tmp );
@@ -421,7 +421,7 @@ void AMPManager::setMPIErrorHandler()
 #ifdef USE_EXT_MPI
     if ( MPI_Active() ) {
         if ( mpierr.get() == nullptr ) {
-            mpierr = AMP::shared_ptr<MPI_Errhandler>( new MPI_Errhandler );
+            mpierr = AMP::make_shared<MPI_Errhandler>( );
             MPI_Comm_create_errhandler( MPI_error_handler_fun, mpierr.get() );
         }
         MPI_Comm_set_errhandler( MPI_COMM_SELF, *mpierr );
@@ -496,7 +496,7 @@ bool AMPManager::MPI_Active()
 ****************************************************************************/
 std::array<int,3> AMPManager::revision()
 {
-    return { AMP::Version::major, AMP::Version::minor, AMP::Version::build };
+    return { {AMP::Version::major, AMP::Version::minor, AMP::Version::build} };
 }
 std::string AMPManager::info()
 {

@@ -33,7 +33,7 @@ ExplicitEuler::ExplicitEuler( AMP::shared_ptr<TimeIntegratorParameters> paramete
 *                                                                      *
 ************************************************************************
 */
-ExplicitEuler::~ExplicitEuler() {}
+ExplicitEuler::~ExplicitEuler() = default;
 
 /*
 ************************************************************************
@@ -63,7 +63,7 @@ void ExplicitEuler::reset( AMP::shared_ptr<TimeIntegratorParameters> parameters 
     AMP_ERROR( "Not Finished" );
 }
 
-void ExplicitEuler::setupVectors( void )
+void ExplicitEuler::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution
@@ -109,7 +109,7 @@ int ExplicitEuler::advanceSolution( const double dt, const bool first_step )
 *                                                                      *
 ************************************************************************
 */
-bool ExplicitEuler::checkNewSolution( void ) const
+bool ExplicitEuler::checkNewSolution() const
 {
     /*
      * Ordinarily we would check the actual error in the solution
@@ -126,7 +126,7 @@ bool ExplicitEuler::checkNewSolution( void ) const
 *                                                                      *
 ************************************************************************
 */
-void ExplicitEuler::updateSolution( void )
+void ExplicitEuler::updateSolution()
 {
     d_current_time += d_current_dt;
     d_solution->swapVectors( *d_new_solution );

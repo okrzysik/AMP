@@ -1,7 +1,7 @@
 #include "matrices/DenseSerialMatrix.h"
-#include "string.h"
 #include "vectors/VectorBuilder.h"
-#include <stdio.h>
+#include <cstdio>
+#include <cstring>
 
 #include <numeric>
 

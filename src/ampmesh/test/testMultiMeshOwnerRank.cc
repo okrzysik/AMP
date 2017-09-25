@@ -27,7 +27,7 @@ auto hash_id( AMP::Mesh::MeshElementID id ) -> std::hash<std::string>::result_ty
     if ( id.is_local() )
         tmp = 0x80000000;
     tmp += ( 0x007FFFFF & id.owner_rank() ) << 8;
-    char type = (char) id.type();
+    auto type = (char) id.type();
     tmp += ( (unsigned char) type );
     m.id_i[1] = ( ( (AMP::Mesh::uint64) tmp ) << 32 ) + ( (AMP::Mesh::uint64) id.local_id() );
 

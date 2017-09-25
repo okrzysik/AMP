@@ -4,6 +4,7 @@
 #include "utils/Utilities.h"
 
 #include <set>
+#include <utility>
 
 
 namespace AMP {
@@ -24,7 +25,7 @@ DOFManager::DOFManager( size_t N_local, const AMP_MPI &comm ) : d_comm( comm )
 /****************************************************************
  * Deconstructor                                                 *
  ****************************************************************/
-DOFManager::~DOFManager() {}
+DOFManager::~DOFManager() = default;
 
 
 /****************************************************************
@@ -162,8 +163,7 @@ AMP::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::Mesh::shared_pt
             element_list.push_back( elem );
     }
     // Create the element iterator
-    AMP::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elements(
-        new std::vector<AMP::Mesh::MeshElement>( element_list ) );
+    auto elements = AMP::make_shared<std::vector<AMP::Mesh::MeshElement>>( element_list );
     AMP::Mesh::MeshIterator subsetIterator = AMP::Mesh::MultiVectorIterator( elements, 0 );
     // Get the DOFs
     std::vector<AMP::Mesh::MeshElementID> id_list( elements->size() );

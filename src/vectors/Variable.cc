@@ -1,19 +1,22 @@
 
 #include "Variable.h"
 
+#include <utility>
+
+
 namespace AMP {
 namespace LinearAlgebra {
 
 
-Variable::Variable( const std::string &n ) : d_VariableName( n ) {}
+Variable::Variable( std::string n ) : d_VariableName( std::move( n ) ) {}
 
 
-Variable::~Variable() {}
+Variable::~Variable() = default;
 
 
 Variable::shared_ptr Variable::cloneVariable( const std::string &name ) const
 {
-    return Variable::shared_ptr( new Variable( name ) );
+    return AMP::make_shared<Variable>( name );
 }
 
 

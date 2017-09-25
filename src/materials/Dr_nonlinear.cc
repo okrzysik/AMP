@@ -56,7 +56,7 @@ public:
     {
     } // Range of variables
 
-    virtual double eval( std::vector<double> &args ) override;
+    double eval( std::vector<double> &args ) override;
 };
 
 //=================== Functions =====================================================

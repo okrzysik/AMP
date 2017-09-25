@@ -60,7 +60,7 @@ SubchannelToCladGPMap::SubchannelToCladGPMap(
 /************************************************************************
  *  De-constructor                                                       *
  ************************************************************************/
-SubchannelToCladGPMap::~SubchannelToCladGPMap() {}
+SubchannelToCladGPMap::~SubchannelToCladGPMap() = default;
 
 
 /************************************************************************
@@ -112,12 +112,11 @@ SubchannelToCladGPMap::getGaussPoints( AMP::Mesh::Mesh::shared_ptr,
     for ( size_t i = 0; i < ids.size(); i++ ) {
         AMP_ASSERT( ids[i].type() == AMP::Mesh::GeomType::Face );
         // Create the libmesh element
-        libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-        libMeshEnums::FEFamily feFamily =
-            Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+        auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+        auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
         AMP::shared_ptr<::FEType> d_feType( new ::FEType( feTypeOrder, feFamily ) );
         AMP::shared_ptr<::FEBase> d_fe( (::FEBase::build( 2, ( *d_feType ) ) ).release() );
-        libMeshEnums::Order qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
+        auto qruleOrder = Utility::string_to_enum<libMeshEnums::Order>( "SECOND" );
         AMP::shared_ptr<::QBase> d_qrule( (::QBase::build( "QGAUSS", 2, qruleOrder ) ).release() );
         d_fe->attach_quadrature_rule( d_qrule.get() );
         d_fe->reinit( libmeshElements.getElement( ids[i] ) );

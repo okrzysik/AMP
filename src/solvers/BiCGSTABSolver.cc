@@ -28,7 +28,7 @@ BiCGSTABSolver::BiCGSTABSolver( AMP::shared_ptr<SolverStrategyParameters> parame
 /****************************************************************
  *  Destructor                                                   *
  ****************************************************************/
-BiCGSTABSolver::~BiCGSTABSolver() {}
+BiCGSTABSolver::~BiCGSTABSolver() = default;
 
 /****************************************************************
  *  Initialize                                                   *

@@ -752,8 +752,8 @@ void polarDecompositionFeqRU_Simo(
             Ft[j][i] = F[i][j];
 
     for ( auto &elem : I )
-        for ( int j = 0; j < 3; j++ )
-            elem[j] = 0.0;
+        for ( double &j : elem )
+            j = 0.0;
 
     I[0][0] = I[1][1] = I[2][2] = 1.0;
 

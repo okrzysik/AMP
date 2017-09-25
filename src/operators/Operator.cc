@@ -10,7 +10,7 @@ namespace Operator {
 int Operator::d_iInstance_id = 0;
 
 
-Operator::Operator( void )
+Operator::Operator()
 {
     d_iObject_id = Operator::d_iInstance_id;
 

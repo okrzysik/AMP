@@ -1,5 +1,6 @@
 
 #include "MassLinearFEOperator.h"
+
 #include "utils/Utilities.h"
 
 
@@ -46,12 +47,10 @@ MassLinearFEOperator::MassLinearFEOperator(
     // d_inpVariable.reset(new AMP::Mesh::NodalScalarVariable("inpVar"));
     // d_outVariable.reset(new AMP::Mesh::NodalScalarVariable("outVar"));
     std::string inpVar = params->d_db->getString( "InputVariable" );
-    d_inpVariable =
-        AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable( inpVar ) );
+    d_inpVariable      = AMP::make_shared<AMP::LinearAlgebra::Variable>( inpVar );
 
     std::string outVar = params->d_db->getString( "OutputVariable" );
-    d_outVariable =
-        AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable( outVar ) );
+    d_outVariable      = AMP::make_shared<AMP::LinearAlgebra::Variable>( outVar );
 
     reset( params );
 }

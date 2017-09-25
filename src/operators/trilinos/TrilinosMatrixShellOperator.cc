@@ -67,8 +67,7 @@ size_t TrilinosMatrixShellOperator::getMatrixSize() { return ( d_nodalDofMap->nu
 int TrilinosMatrixShellOperator::matVec(
     ML_Operator *data, int in_length, double in[], int out_length, double out[] )
 {
-    TrilinosMatrixShellOperator *op =
-        reinterpret_cast<TrilinosMatrixShellOperator *>( ML_Get_MyMatvecData( data ) );
+    auto *op = reinterpret_cast<TrilinosMatrixShellOperator *>( ML_Get_MyMatvecData( data ) );
 
     AMP_ASSERT( in_length == out_length );
     AMP_ASSERT( (int) op->d_nodalDofMap->numLocalDOF() == out_length );
@@ -97,8 +96,7 @@ int TrilinosMatrixShellOperator::getRow( ML_Operator *data,
                                          double values[],
                                          int row_lengths[] )
 {
-    TrilinosMatrixShellOperator *op =
-        reinterpret_cast<TrilinosMatrixShellOperator *>( ML_Get_MyGetrowData( data ) );
+    auto *op = reinterpret_cast<TrilinosMatrixShellOperator *>( ML_Get_MyGetrowData( data ) );
 
     int spaceRequired = 0;
     int cnt           = 0;

@@ -6,7 +6,7 @@
 #include "utils/Utilities.h"
 #include "vectors/VectorBuilder.h"
 
-#include <math.h>
+#include <cmath>
 #include <tuple>
 
 namespace AMP {
@@ -326,14 +326,11 @@ std::vector<double> getHeatFluxClad( std::vector<double> z,
     convectiveHeatArgMap.insert( std::make_pair( std::string( "temperature" ), cladTemp ) );
     convectiveHeatArgMap.insert( std::make_pair( std::string( "density" ), flowDens ) );
     convectiveHeatArgMap.insert( std::make_pair(
-        std::string( "diameter" ),
-        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( N, channelDiam ) ) ) );
+        std::string( "diameter" ), AMP::make_shared<std::vector<double>>( N, channelDiam ) ) );
     convectiveHeatArgMap.insert( std::make_pair(
-        std::string( "reynolds" ),
-        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( N, reynolds ) ) ) );
+        std::string( "reynolds" ), AMP::make_shared<std::vector<double>>( N, reynolds ) ) );
     convectiveHeatArgMap.insert( std::make_pair(
-        std::string( "prandtl" ),
-        AMP::shared_ptr<std::vector<double>>( new std::vector<double>( N, prandtl ) ) ) );
+        std::string( "prandtl" ), AMP::make_shared<std::vector<double>>( N, prandtl ) ) );
     std::vector<double> heff( N );
     subchannelPhysicsModel->getProperty( "ConvectiveHeat", heff, convectiveHeatArgMap );
     std::vector<double> flux( dz.size(), 0.0 );

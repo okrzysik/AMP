@@ -165,7 +165,7 @@ void testMap( AMP::UnitTest *ut, std::string exeName )
         std::cout << std::endl;
         //------------------------------------------------------------
 
-        if ( 1 ) {
+        if ( true ) {
             testPassed = true;
             break;
         } else {

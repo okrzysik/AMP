@@ -33,7 +33,7 @@ RK2TimeIntegrator::RK2TimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> 
 *                                                                      *
 ************************************************************************
 */
-RK2TimeIntegrator::~RK2TimeIntegrator() {}
+RK2TimeIntegrator::~RK2TimeIntegrator() = default;
 
 /*
 ************************************************************************
@@ -63,7 +63,7 @@ void RK2TimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> paramet
     AMP_ERROR( "Not Finished" );
 }
 
-void RK2TimeIntegrator::setupVectors( void )
+void RK2TimeIntegrator::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution
@@ -107,7 +107,7 @@ int RK2TimeIntegrator::advanceSolution( const double dt, const bool )
 *                                                                      *
 ************************************************************************
 */
-bool RK2TimeIntegrator::checkNewSolution( void ) const
+bool RK2TimeIntegrator::checkNewSolution() const
 {
     /*
      * Ordinarily we would check the actual error in the solution
@@ -124,7 +124,7 @@ bool RK2TimeIntegrator::checkNewSolution( void ) const
 *                                                                      *
 ************************************************************************
 */
-void RK2TimeIntegrator::updateSolution( void )
+void RK2TimeIntegrator::updateSolution()
 {
     d_current_time += d_current_dt;
     d_solution->swapVectors( *d_new_solution );

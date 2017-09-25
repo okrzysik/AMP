@@ -104,7 +104,7 @@ MeshIterator *MultiIterator::clone() const { return new MultiIterator( *this ); 
 /********************************************************
  * De-constructor                                        *
  ********************************************************/
-MultiIterator::~MultiIterator() {}
+MultiIterator::~MultiIterator() = default;
 
 
 /********************************************************
@@ -199,7 +199,7 @@ MeshIterator MultiIterator::operator+( int n ) const
 MeshIterator &MultiIterator::operator+=( int n )
 {
     if ( n >= 0 ) { // increment *this
-        size_t n2 = static_cast<size_t>( n );
+        auto n2 = static_cast<size_t>( n );
         if ( d_pos + n2 > d_size )
             AMP_ERROR( "Iterated past end of iterator" );
         if ( d_pos + n2 == d_size ) {
@@ -227,7 +227,7 @@ MeshIterator &MultiIterator::operator+=( int n )
         d_localPos += n2;
         d_pos += n;
     } else { // decrement *this
-        size_t n2 = static_cast<size_t>( -n );
+        auto n2 = static_cast<size_t>( -n );
         if ( d_pos < n2 )
             AMP_ERROR( "Iterated past beginning of iterator" );
         if ( d_pos == n2 ) {
@@ -269,7 +269,7 @@ bool MultiIterator::operator==( const MeshIterator &rhs ) const
 {
     // Convert rhs to a MultiIterator* so we can access the base class members
     const MultiIterator *rhs2 = nullptr;
-    const MultiIterator *tmp  = reinterpret_cast<const MultiIterator *>( &rhs );
+    const auto *tmp           = reinterpret_cast<const MultiIterator *>( &rhs );
     if ( typeid( rhs ) == typeid( MultiIterator ) ) {
         rhs2 = tmp; // We can safely cast rhs to a MultiIterator
     } else if ( tmp->d_typeID == MultiIteratorTypeID ) {

@@ -706,12 +706,10 @@ void SubchannelSolve( AMP::UnitTest *ut, std::string exeName )
                          ->getDouble( "Inlet_Temperature" );
         // compute inlet enthalpy
         std::map<std::string, AMP::shared_ptr<std::vector<double>>> enthalpyArgMap;
-        enthalpyArgMap.insert( std::make_pair(
-            "temperature",
-            AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, Tin ) ) ) );
-        enthalpyArgMap.insert( std::make_pair(
-            "pressure",
-            AMP::shared_ptr<std::vector<double>>( new std::vector<double>( 1, Pout ) ) ) );
+        enthalpyArgMap.insert(
+            std::make_pair( "temperature", AMP::make_shared<std::vector<double>>( 1, Tin ) ) );
+        enthalpyArgMap.insert(
+            std::make_pair( "pressure", AMP::make_shared<std::vector<double>>( 1, Pout ) ) );
         std::vector<double> enthalpyResult( 1 );
         subchannelPhysicsModel->getProperty( "Enthalpy", enthalpyResult, enthalpyArgMap );
         double hin = enthalpyResult[0];

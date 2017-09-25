@@ -173,8 +173,8 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
 
     // Send the data
-    size_t myRank = (size_t) d_MapComm.getRank();
-    auto curReq   = beginRequests();
+    auto myRank = (size_t) d_MapComm.getRank();
+    auto curReq = beginRequests();
     if ( d_mesh1.get() != nullptr ) {
         for ( size_t i = 0; i < d_own_mesh2.size(); i++ ) {
             if ( i == myRank )
@@ -211,7 +211,7 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     PROFILE_START( "applyFinish" );
 
     // Recieve the data and create the maps
-    size_t myRank = (size_t) d_MapComm.getRank();
+    auto myRank = (size_t) d_MapComm.getRank();
     std::map<double, std::pair<int, double>> map1;
     std::map<double, std::pair<int, double>> map2;
     std::vector<comm_data> recvBuf;

@@ -225,11 +225,11 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.push_back( "testPetscSNESSolver-NonlinearMechanics-PlateWithHole-1" );
-    exeNames.push_back( "testPetscSNESSolver-LU-NonlinearMechanics-1-normal" );
-    exeNames.push_back( "testPetscSNESSolver-ML-NonlinearMechanics-1-normal" );
-    exeNames.push_back( "testPetscSNESSolver-LU-NonlinearMechanics-1-reduced" );
-    exeNames.push_back( "testPetscSNESSolver-ML-NonlinearMechanics-1-reduced" );
+    exeNames.emplace_back( "testPetscSNESSolver-NonlinearMechanics-PlateWithHole-1" );
+    exeNames.emplace_back( "testPetscSNESSolver-LU-NonlinearMechanics-1-normal" );
+    exeNames.emplace_back( "testPetscSNESSolver-ML-NonlinearMechanics-1-normal" );
+    exeNames.emplace_back( "testPetscSNESSolver-LU-NonlinearMechanics-1-reduced" );
+    exeNames.emplace_back( "testPetscSNESSolver-ML-NonlinearMechanics-1-reduced" );
 
     for ( auto &exeName : exeNames )
         myTest( &ut, exeName );

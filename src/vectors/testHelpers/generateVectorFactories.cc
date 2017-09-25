@@ -169,17 +169,17 @@ AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
         AMP_ASSERT( args.size() >= 2 );
         // Set default arguments
         if ( args.size() < 3 )
-            args.push_back( "double" );
+            args.emplace_back( "double" );
         if ( args.size() < 4 )
-            args.push_back( "default" );
+            args.emplace_back( "default" );
         if ( args.size() < 5 )
-            args.push_back( "cpu" );
+            args.emplace_back( "cpu" );
         factory = generateSimpleVectorFactory(
             to_int( args[0] ), to_bool( args[1] ), args[2], args[3], args[4] );
     } else if ( factoryName == "ArrayVectorFactory" ) {
         AMP_ASSERT( args.size() >= 3 );
         if ( args.size() == 3 )
-            args.push_back( "double" );
+            args.emplace_back( "double" );
         if ( args[3] == "double" ) {
             factory.reset( new ArrayVectorFactory<double>(
                 to_int( args[0] ), to_int( args[1] ), to_bool( args[2] ) ) );

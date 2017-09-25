@@ -243,7 +243,7 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
     std::vector<std::string> files;
-    files.push_back( "Diffusion-Fick-TUI-MMS-1" );
+    files.emplace_back( "Diffusion-Fick-TUI-MMS-1" );
     // files.push_back("Diffusion-Fick-OxMSRZC09-MMS-1");
 
     for ( auto &file : files )

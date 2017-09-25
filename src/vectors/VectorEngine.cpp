@@ -15,7 +15,7 @@ VectorEngineParameters::VectorEngineParameters( size_t local_size, size_t global
     d_comm.sumScan( &local_size, &d_end, 1 );
     d_begin = d_end - local_size;
 }
-VectorEngineParameters::~VectorEngineParameters() {}
+VectorEngineParameters::~VectorEngineParameters() = default;
 
 
 } // namespace LinearAlgebra

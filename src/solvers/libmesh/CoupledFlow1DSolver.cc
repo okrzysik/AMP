@@ -61,7 +61,7 @@ CoupledFlow1DSolver::CoupledFlow1DSolver( AMP::shared_ptr<SolverStrategyParamete
         AMP::LinearAlgebra::SimpleVector<double>::create( d_numpoints, d_SimpleVariable );
 }
 
-CoupledFlow1DSolver::~CoupledFlow1DSolver() {}
+CoupledFlow1DSolver::~CoupledFlow1DSolver() = default;
 
 void CoupledFlow1DSolver::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vector> ) {}
 

@@ -22,7 +22,7 @@ AMPMeshEntitySet::AMPMeshEntitySet( const AMP::shared_ptr<AMP::Mesh::Mesh> &mesh
     : d_amp_mesh( mesh ), d_id_maps( 4 )
 {
     // Build the rank map.
-    d_rank_map        = std::make_shared<std::unordered_map<int, int>>();
+    d_rank_map        = AMP::make_shared<std::unordered_map<int, int>>();
     auto global_ranks = d_amp_mesh->getComm().globalRanks();
     int size          = d_amp_mesh->getComm().getSize();
     for ( int n = 0; n < size; ++n ) {
@@ -31,7 +31,7 @@ AMPMeshEntitySet::AMPMeshEntitySet( const AMP::shared_ptr<AMP::Mesh::Mesh> &mesh
 
     // Map the global ids to DTK ids.
     for ( auto &m : d_id_maps )
-        m = std::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
+        m = AMP::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
     mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ), d_id_maps[0] );
     if ( (int) d_amp_mesh->getGeomType() > 0 )
         mapGlobalIds( d_amp_mesh->getIterator( AMP::Mesh::GeomType::Edge, 0 ), d_id_maps[1] );

@@ -69,12 +69,12 @@ int main( int argc, char **argv )
     // Test some basic properties
     std::vector<std::string> types = { "DenseSerialMatrix" };
 #ifdef USE_EXT_TRILINOS
-    types.push_back( "ManagedEpetraMatrix" );
+    types.emplace_back( "ManagedEpetraMatrix" );
 #endif
 #if defined( USE_EXT_TRILINOS ) && defined( USE_EXT_PETSC )
-    types.push_back( "ManagedPetscMatrix" );
+    types.emplace_back( "ManagedPetscMatrix" );
 #endif
-    types.push_back( "auto" );
+    types.emplace_back( "auto" );
     for ( auto type : types )
         testBasics( ut, type );
 

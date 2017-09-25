@@ -93,8 +93,8 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.push_back( "testNonlinearMechanics-1-normal" );
-    exeNames.push_back( "testNonlinearMechanics-1-reduced" );
+    exeNames.emplace_back( "testNonlinearMechanics-1-normal" );
+    exeNames.emplace_back( "testNonlinearMechanics-1-reduced" );
     // exeNames.push_back("testNonlinearMechanics_Creep-1-normal");
     // exeNames.push_back("testNonlinearMechanics_Creep-1-reduced");
     // exeNames.push_back("testNonlinearMechanics_Creep_MatLib-1-normal");

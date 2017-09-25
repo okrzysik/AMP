@@ -14,7 +14,7 @@ PetscMonitor::PetscMonitor( AMP_MPI comm )
     d_comm = comm;
     AMP_ASSERT( !d_comm.isNull() );
 }
-PetscMonitor::~PetscMonitor() {}
+PetscMonitor::~PetscMonitor() = default;
 
 
 /********************************************************************
@@ -38,13 +38,13 @@ std::string PetscMonitor::removeMonitor( std::string options )
 #ifdef USE_EXT_PETSC
 PetscErrorCode PetscMonitor::monitorKSP( KSP ksp, int iteration, double L2norm, void *ctx )
 {
-    PetscMonitor *monitor = reinterpret_cast<PetscMonitor *>( ctx );
+    auto *monitor = reinterpret_cast<PetscMonitor *>( ctx );
     monitor->printKSPStatus( ksp, iteration, L2norm );
     return 0;
 }
 PetscErrorCode PetscMonitor::monitorSNES( SNES snes, int iteration, double L2norm, void *ctx )
 {
-    PetscMonitor *monitor = reinterpret_cast<PetscMonitor *>( ctx );
+    auto *monitor = reinterpret_cast<PetscMonitor *>( ctx );
     monitor->printSNESStatus( snes, iteration, L2norm );
     return 0;
 }

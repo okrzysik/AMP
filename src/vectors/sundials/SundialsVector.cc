@@ -1,3 +1,4 @@
+
 #include "vectors/MultiVector.h"
 #include "vectors/sundials/ManagedSundialsVector.h"
 
@@ -29,9 +30,8 @@ Vector::const_shared_ptr SundialsVector::constView( Vector::const_shared_ptr inV
         if ( inVector->getDOFManager().get() != nullptr )
             new_params->d_DOFManager = inVector->getDOFManager();
         else
-            new_params->d_DOFManager =
-                AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::DOFManager(
-                    inVector->getLocalSize(), inVector->getComm() ) );
+            new_params->d_DOFManager = AMP::make_shared<AMP::Discretization::DOFManager>(
+                inVector->getLocalSize(), inVector->getComm() );
         ManagedSundialsVector *t =
             new ManagedSundialsVector( VectorParameters::shared_ptr( new_params ) );
         t->setVariable( inVector->getVariable() );
@@ -70,9 +70,8 @@ Vector::shared_ptr SundialsVector::view( Vector::shared_ptr inVector )
         if ( inVector->getDOFManager().get() != nullptr )
             new_params->d_DOFManager = inVector->getDOFManager();
         else
-            new_params->d_DOFManager =
-                AMP::Discretization::DOFManager::shared_ptr( new AMP::Discretization::DOFManager(
-                    inVector->getLocalSize(), inVector->getComm() ) );
+            new_params->d_DOFManager = AMP::make_shared<AMP::Discretization::DOFManager>(
+                inVector->getLocalSize(), inVector->getComm() );
         ManagedSundialsVector *t =
             new ManagedSundialsVector( VectorParameters::shared_ptr( new_params ) );
         t->setVariable( inVector->getVariable() );

@@ -1,17 +1,19 @@
 #include "SolverStrategyParameters.h"
 
+#include <utility>
+
 
 namespace AMP {
 namespace Solver {
 
 SolverStrategyParameters::SolverStrategyParameters() { d_name = "SolverStrategyParameters"; }
 
-SolverStrategyParameters::SolverStrategyParameters( const AMP::shared_ptr<AMP::Database> &db )
-    : d_db( db )
+SolverStrategyParameters::SolverStrategyParameters( AMP::shared_ptr<AMP::Database> db )
+    : d_db( std::move( db ) )
 {
     d_name = "SolverStrategyParameters";
 }
 
-SolverStrategyParameters::~SolverStrategyParameters() {}
+SolverStrategyParameters::~SolverStrategyParameters() = default;
 } // namespace Solver
 } // namespace AMP

@@ -34,7 +34,7 @@ void simpleDOFManagerVectorTest( AMP::UnitTest *ut,
     // Calculate the number of DOFs per Node (we require that the # of DOFs is >= N_DOFs)
     double avgDOFsPerNode =
         ( (double) N_DOFs ) / ( (double) mesh->numGlobalElements( AMP::Mesh::GeomType::Vertex ) );
-    int DOFsPerNode = (int) ceil( avgDOFsPerNode );
+    auto DOFsPerNode = (int) ceil( avgDOFsPerNode );
     // Create a simple DOFManager
     std::string varName = "test";
     AMP::Discretization::DOFManager::shared_ptr DOFs =
@@ -56,7 +56,7 @@ void simpleDOFManagerVectorTest( AMP::UnitTest *ut,
     v1->zero();
     AMP_ASSERT( v1->L2Norm() == 0.0 );
     size_t index = v1->getGlobalSize() - 4;
-    double val   = (double) index;
+    auto val     = (double) index;
     if ( v1->containsGlobalElement( index ) )
         v1->setValueByGlobalID( index, val );
     // Time makeConsistentSet

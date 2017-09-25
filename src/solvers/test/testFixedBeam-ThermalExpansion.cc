@@ -300,7 +300,7 @@ int main( int argc, char *argv[] )
     std::vector<std::string> exeNames;
     // exeNames.push_back("testFixedBeam-ThermalExpansion-1");
     // exeNames.push_back("testFixedBeam-ThermalExpansion-2");
-    exeNames.push_back( "testFixedBeam-ThermalExpansion-3" );
+    exeNames.emplace_back( "testFixedBeam-ThermalExpansion-3" );
 
     for ( auto &exeName : exeNames )
         myTest( &ut, exeName );

@@ -89,10 +89,9 @@ void DiffusionNonlinearElement::apply()
         // construct material evalv arguments
         for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
             if ( d_elementInputVectors[var].size() > 0 ) {
-                transport_args.insert(
-                    std::make_pair( Diffusion::names[var],
-                                    AMP::shared_ptr<std::vector<double>>(
-                                        new std::vector<double>( d_elementInputVectors[var] ) ) ) );
+                transport_args.insert( std::make_pair(
+                    Diffusion::names[var],
+                    AMP::make_shared<std::vector<double>>( d_elementInputVectors[var] ) ) );
             }
         }
 

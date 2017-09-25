@@ -39,8 +39,8 @@
 #include "utils/ReadTestMesh.h"
 
 
+#include <cmath>
 #include <iostream>
-#include <math.h>
 #include <string>
 
 #include "utils/shared_ptr.h"
@@ -310,7 +310,7 @@ int main( int argc, char *argv[] )
     std::vector<std::string> exeNames;
     // exeNames.push_back("testElementLevel-IsotropicElasticity");
     // exeNames.push_back("testElementLevel-VonMisesIsotropicHardeningPlasticity");
-    exeNames.push_back( "testElementLevel-VonMisesKinematicHardeningPlasticity" );
+    exeNames.emplace_back( "testElementLevel-VonMisesKinematicHardeningPlasticity" );
 
     for ( auto &exeName : exeNames )
         myTest( &ut, exeName );

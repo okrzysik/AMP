@@ -2,9 +2,9 @@
 
 #include "utils/AMP_MPI.h"
 #include "utils/Utilities.h"
+#include <cstdio>
+#include <cstdlib>
 #include <fstream>
-#include <stdio.h>
-#include <stdlib.h>
 
 /*Design-By-Contract Macros*/
 #include "utils/Utilities.h"
@@ -53,7 +53,7 @@ TimeIntegrator::TimeIntegrator(
     initialize( parameters );
 }
 
-TimeIntegrator::~TimeIntegrator() {}
+TimeIntegrator::~TimeIntegrator() = default;
 
 /*
 *************************************************************************

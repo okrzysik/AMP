@@ -73,7 +73,7 @@ MeshIterator *MultiVectorIterator::clone() const { return new MultiVectorIterato
 /********************************************************
  * De-constructor                                        *
  ********************************************************/
-MultiVectorIterator::~MultiVectorIterator() {}
+MultiVectorIterator::~MultiVectorIterator() = default;
 
 
 /********************************************************
@@ -131,12 +131,12 @@ MeshIterator MultiVectorIterator::operator+( int n ) const
 MeshIterator &MultiVectorIterator::operator+=( int n )
 {
     if ( n >= 0 ) { // increment *this
-        size_t n2 = static_cast<size_t>( n );
+        auto n2 = static_cast<size_t>( n );
         if ( d_pos + n2 > d_elements->size() )
             AMP_ERROR( "Iterated past end of iterator" );
         d_pos += n2;
     } else { // decrement *this
-        size_t n2 = static_cast<size_t>( -n );
+        auto n2 = static_cast<size_t>( -n );
         if ( n2 > d_pos )
             AMP_ERROR( "Iterated past beginning of iterator" );
         d_pos -= n2;
@@ -153,7 +153,7 @@ bool MultiVectorIterator::operator==( const MeshIterator &rhs ) const
 {
     const MultiVectorIterator *rhs2 = nullptr;
     // Convert rhs to a MultiVectorIterator* so we can access the base class members
-    const MultiVectorIterator *tmp = reinterpret_cast<const MultiVectorIterator *>( &rhs );
+    const auto *tmp = reinterpret_cast<const MultiVectorIterator *>( &rhs );
     if ( typeid( rhs ) == typeid( MultiVectorIterator ) ) {
         rhs2 = tmp; // We can safely cast rhs to a MultiVectorIterator
     } else if ( tmp->d_typeID == MultiVectorIteratorTypeID ) {

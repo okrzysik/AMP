@@ -43,7 +43,7 @@ void calculateGrad( AMP::UnitTest *ut )
 
     EquationSystems equation_systems( *( mesh.get() ) );
 
-    LinearImplicitSystem &system = equation_systems.add_system<LinearImplicitSystem>( "Poisson" );
+    auto &system = equation_systems.add_system<LinearImplicitSystem>( "Poisson" );
 
     system.add_variable( "V", FIRST );
     equation_systems.init();

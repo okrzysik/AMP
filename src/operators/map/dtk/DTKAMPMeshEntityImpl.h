@@ -10,7 +10,6 @@
 #include <DTK_EntityImpl.hpp>
 
 #include <map>
-#include <memory>
 #include <unordered_map>
 
 namespace AMP {

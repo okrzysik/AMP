@@ -4,6 +4,9 @@
 
 #ifdef USE_EXT_MPI
 #include <Epetra_MpiComm.h>
+
+#include <utility>
+
 #else
 #include <Epetra_SerialComm.h>
 #endif
@@ -47,10 +50,10 @@ EpetraVectorEngineParameters::EpetraVectorEngineParameters( size_t local_size,
                                                             size_t global_size,
                                                             AMP::shared_ptr<Epetra_Map> emap,
                                                             AMP_MPI ecomm )
-    : VectorEngineParameters( local_size, global_size, ecomm ), d_emap( emap )
+    : VectorEngineParameters( local_size, global_size, ecomm ), d_emap( std::move( emap ) )
 {
 }
-EpetraVectorEngineParameters::~EpetraVectorEngineParameters() {}
+EpetraVectorEngineParameters::~EpetraVectorEngineParameters() = default;
 
 
 /********************************************************
@@ -74,8 +77,7 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
     //    ids[i] = (int) (i+d_begin);
     // d_emap = AMP::shared_ptr<Epetra_Map> ( new Epetra_Map ( (int) d_global, (int) local_size,
     // &ids[0], 0, comm ) );
-    d_emap =
-        AMP::shared_ptr<Epetra_Map>( new Epetra_Map( (int) d_global, (int) local_size, 0, comm ) );
+    d_emap = AMP::make_shared<Epetra_Map>( (int) d_global, (int) local_size, 0, comm );
     // Check the map to make sure it is correct
     AMP_ASSERT( local_size == (size_t) d_emap->NumMyPoints() );
     AMP_ASSERT( d_global == (size_t) d_emap->NumGlobalPoints() );
@@ -188,21 +190,21 @@ void EpetraVectorEngine::abs( const VectorOperations &x )
     getEpetra_Vector().Abs( getEpetraVector( x ) );
 }
 
-double EpetraVectorEngine::min( void ) const
+double EpetraVectorEngine::min() const
 {
     double retVal;
     getEpetra_Vector().MinValue( &retVal );
     return retVal;
 }
 
-double EpetraVectorEngine::max( void ) const
+double EpetraVectorEngine::max() const
 {
     double retVal;
     getEpetra_Vector().MaxValue( &retVal );
     return retVal;
 }
 
-void EpetraVectorEngine::setRandomValues( void )
+void EpetraVectorEngine::setRandomValues()
 {
     getEpetra_Vector().Random();
     this->abs( *this );
@@ -255,14 +257,14 @@ void EpetraVectorEngine::getLocalValuesByGlobalID( int, size_t *, double * ) con
 {
     AMP_ERROR( "This shouldn't be called" );
 }
-double EpetraVectorEngine::L1Norm( void ) const
+double EpetraVectorEngine::L1Norm() const
 {
     double retVal;
     getEpetra_Vector().Norm1( &retVal );
     return retVal;
 }
 
-double EpetraVectorEngine::L2Norm( void ) const
+double EpetraVectorEngine::L2Norm() const
 {
     double retVal;
     getEpetra_Vector().Norm2( &retVal );
@@ -270,7 +272,7 @@ double EpetraVectorEngine::L2Norm( void ) const
 }
 
 
-double EpetraVectorEngine::maxNorm( void ) const
+double EpetraVectorEngine::maxNorm() const
 {
     double retVal;
     getEpetra_Vector().NormInf( &retVal );
@@ -304,27 +306,27 @@ void EpetraVectorEngine::copyOutRawData( double *out ) const
 }
 
 
-double EpetraVectorEngine::localMin( void ) const
+double EpetraVectorEngine::localMin() const
 {
     AMP_ERROR( "Not implimented" );
     return 0;
 }
-double EpetraVectorEngine::localMax( void ) const
+double EpetraVectorEngine::localMax() const
 {
     AMP_ERROR( "Not implimented" );
     return 0;
 }
-double EpetraVectorEngine::localL1Norm( void ) const
+double EpetraVectorEngine::localL1Norm() const
 {
     AMP_ERROR( "Not implimented" );
     return 0;
 }
-double EpetraVectorEngine::localL2Norm( void ) const
+double EpetraVectorEngine::localL2Norm() const
 {
     AMP_ERROR( "Not implimented" );
     return 0;
 }
-double EpetraVectorEngine::localMaxNorm( void ) const
+double EpetraVectorEngine::localMaxNorm() const
 {
     AMP_ERROR( "Not implimented" );
     return 0;

@@ -68,8 +68,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         AMP::LinearAlgebra::createVector( nodalScalarDOF, var, true );
     vec->zero();
 
-    libMeshEnums::Order feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
-    libMeshEnums::FEFamily feFamily = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
+    auto feTypeOrder = Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
+    auto feFamily    = Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
     AMP::Mesh::MeshIterator bnd =
         mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, surfaceId, 0 );
@@ -100,8 +100,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         AMP::shared_ptr<::FEBase> fe( (::FEBase::build( 2, ( *feType ) ) ).release() );
         const std::vector<std::vector<Real>> &phi = fe->get_phi();
         const std::vector<Real> &djxw             = fe->get_JxW();
-        libMeshEnums::QuadratureType qruleType =
-            Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
+        auto qruleType = Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
         libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
         AMP::shared_ptr<::QBase> qrule( (::QBase::build( qruleType, 2, qruleOrder ) ).release() );
         fe->attach_quadrature_rule( qrule.get() );

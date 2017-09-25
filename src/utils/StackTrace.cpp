@@ -46,7 +46,7 @@
     #include <execinfo.h>
     #include <sched.h>
     #include <sys/time.h>
-    #include <time.h>
+    #include <ctime>
     #include <unistd.h>
     #include <sys/syscall.h>
 #endif
@@ -118,7 +118,7 @@ static inline std::string exec( const std::string &cmd )
     while ( !feof( pipe ) ) {
         char buffer[257];
         buffer[256] = 0;
-        if ( fgets( buffer, 128, pipe ) != NULL )
+        if ( fgets( buffer, 128, pipe ) != nullptr )
             result += buffer;
     }
     pclose( pipe );
@@ -290,7 +290,7 @@ std::string StackTrace::getExecutable()
     std::string exe;
     try {
 #ifdef USE_LINUX
-        char *buf = new char[0x10000];
+        auto *buf = new char[0x10000];
         int len   = ::readlink( "/proc/self/exe", buf, 0x10000 );
         if ( len != -1 ) {
             buf[len] = '\0';
@@ -342,7 +342,7 @@ static const global_symbols_struct &getSymbols2()
                         continue;
                     if ( line[0] == ' ' )
                         continue;
-                    char *a = const_cast<char *>( line.c_str() );
+                    auto *a = const_cast<char *>( line.c_str() );
                     char *b = strchr( a, ' ' );
                     if ( b == nullptr )
                         continue;
@@ -359,7 +359,7 @@ static const global_symbols_struct &getSymbols2()
                     size_t add = strtoul( a, nullptr, 16 );
                     data.address.push_back( reinterpret_cast<void *>( add ) );
                     data.type.push_back( b[0] );
-                    data.obj.push_back( std::string( c ) );
+                    data.obj.emplace_back( c );
                 }
             } catch ( ... ) {
                 data.error = -3;
@@ -447,7 +447,7 @@ static std::tuple<std::string, std::string, std::string, int> split_atos( const 
 }
 #endif
 #ifdef USE_LINUX
-typedef uint64_t uint_p;
+using uint_p = uint64_t;
 #elif defined( USE_MAC )
 typedef unsigned long uint_p;
 #endif
@@ -459,9 +459,9 @@ static inline std::string generateCmd( const std::string &s1,
                                        const std::string &s4 )
 {
     std::string cmd = s1 + s2 + s3;
-    for ( size_t i = 0; i < addresses.size(); i++ ) {
+    for ( auto &addresse : addresses ) {
         char tmp[32];
-        sprintf( tmp, "%lx ", reinterpret_cast<uint_p>( addresses[i] ) );
+        sprintf( tmp, "%lx ", reinterpret_cast<uint_p>( addresse ) );
         cmd += tmp;
     }
     cmd += s4;
@@ -542,9 +542,9 @@ static void getFileAndLine( std::vector<StackTrace::stack_info> &info )
 {
     // Build a list of stack elements for each object
     std::map<std::string,std::vector<StackTrace::stack_info*>> obj_map;
-    for (size_t i=0; i<info.size(); i++) {
-        auto& list = obj_map[info[i].object];
-        list.emplace_back( &info[i] );
+    for (auto & i : info) {
+        auto& list = obj_map[i.object];
+        list.emplace_back( &i );
     }
     // For each object, get the file/line numbers for all entries
     for ( auto& entry : obj_map ) 
@@ -692,7 +692,7 @@ std::vector<void*> StackTrace::backtrace( std::thread::native_handle_type tid )
             sigfillset(&sa.sa_mask);
             sa.sa_flags = SA_SIGINFO;
             sa.sa_sigaction = _callstack_signal_handler;
-            sigaction(CALLSTACK_SIG, &sa, NULL);
+            sigaction(CALLSTACK_SIG, &sa, nullptr);
             thread_backtrace_finished = false;
             pthread_kill( tid, CALLSTACK_SIG );
             auto t1 = std::chrono::high_resolution_clock::now();
@@ -904,17 +904,17 @@ std::vector<StackTrace::stack_info> StackTrace::getCallStack( std::thread::nativ
 static void fillMultiStackInfoHelper( std::vector<StackTrace::multi_stack_info> &stack,
                                       std::map<void *, StackTrace::stack_info> &stack_data )
 {
-    for ( size_t i = 0; i < stack.size(); i++ ) {
-        stack[i].stack = stack_data[stack[i].stack.address];
-        fillMultiStackInfoHelper( stack[i].children, stack_data );
+    for ( auto &i : stack ) {
+        i.stack = stack_data[i.stack.address];
+        fillMultiStackInfoHelper( i.children, stack_data );
     }
 }
 static void getAddresses( const std::vector<StackTrace::multi_stack_info> &stack,
                           std::set<void *> &addresses )
 {
-    for ( size_t i = 0; i < stack.size(); i++ ) {
-        addresses.insert( stack[i].stack.address );
-        getAddresses( stack[i].children, addresses );
+    for ( const auto &i : stack ) {
+        addresses.insert( i.stack.address );
+        getAddresses( i.children, addresses );
     }
 }
 static void fillMultiStackInfo( std::vector<StackTrace::multi_stack_info> &stack )
