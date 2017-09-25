@@ -19,7 +19,7 @@ public:
     static AMP::shared_ptr<ElementOperation>
     createElementOperation( AMP::shared_ptr<AMP::Database> input_db );
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

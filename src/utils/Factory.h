@@ -28,7 +28,7 @@ namespace voodoo {
  * base class of the
  * registration objects
  */
-template <class BaseClass, typename Key = std::string, unsigned long n = 0>
+template<class BaseClass, typename Key = std::string, unsigned long n = 0>
 struct RegistrationBase {
 };
 
@@ -36,7 +36,7 @@ struct RegistrationBase {
  *    \class        Registration
  *    \brief        Template for the registration objects
  */
-template <class BaseClass, class Derived, typename Key = std::string, unsigned long n = 0>
+template<class BaseClass, class Derived, typename Key = std::string, unsigned long n = 0>
 struct Registration : public RegistrationBase<BaseClass, Key, n> {
 };
 
@@ -44,20 +44,20 @@ struct Registration : public RegistrationBase<BaseClass, Key, n> {
  *    \class        Factory
  *    \brief        factory class is a singleton class
  */
-template <class BaseClass, typename Key = std::string, unsigned long n = 0>
+template<class BaseClass, typename Key = std::string, unsigned long n = 0>
 class Factory : public Singleton<Factory<BaseClass, Key, n>>
 {
 };
 
 
-template <class BaseClass, typename Key>
+template<class BaseClass, typename Key>
 struct RegistrationBase<BaseClass, Key, 0> {
     virtual AMP::shared_ptr<BaseClass> create() const = 0;
     virtual ~RegistrationBase() {}
 };
 
 
-template <class BaseClass, typename Key>
+template<class BaseClass, typename Key>
 class Factory<BaseClass, Key, 0> : public Singleton<Factory<BaseClass, Key, 0>>
 {
 public:
@@ -98,7 +98,7 @@ private:
 };
 
 
-template <class BaseClass, class Derived, typename Key>
+template<class BaseClass, class Derived, typename Key>
 struct Registration<BaseClass, Derived, Key, 0> : public RegistrationBase<BaseClass, Key, 0> {
     explicit Registration( const Key &key )
     {
@@ -111,6 +111,7 @@ struct Registration<BaseClass, Derived, Key, 0> : public RegistrationBase<BaseCl
         }
     }
     virtual ~Registration() {}
+
 private:
     AMP::shared_ptr<BaseClass> create() const
     {
@@ -124,7 +125,7 @@ private:
 
 
 } // namespace voodoo
-} // namespace amp
+} // namespace AMP
 
 
 #endif // FACTORY_H

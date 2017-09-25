@@ -31,29 +31,29 @@ typedef int mode_t;
 
 
 // \cond HIDDEN_SYMBOLS
-template <class T>
+template<class T>
 inline T type_default_tol();
-template <>
+template<>
 inline int type_default_tol<int>()
 {
     return 0;
 }
-template <>
+template<>
 inline unsigned int type_default_tol<unsigned int>()
 {
     return 0;
 }
-template <>
+template<>
 inline size_t type_default_tol<size_t>()
 {
     return 0;
 }
-template <>
+template<>
 inline double type_default_tol<double>()
 {
     return 1e-12;
 }
-template <class T>
+template<class T>
 inline T type_default_tol()
 {
     return pow( std::numeric_limits<T>::epsilon(), (T) 0.77 );
@@ -136,7 +136,7 @@ void abort( const std::string &message, const std::string &filename, const int l
  * \param v2     scalar floating point value
  * \param tol    relative tolerance
  */
-template <class T>
+template<class T>
 inline bool approx_equal( const T &v1, const T &v2, const T tol = type_default_tol<T>() )
 {
     // Compute the absolute tolerance
@@ -152,7 +152,7 @@ inline bool approx_equal( const T &v1, const T &v2, const T tol = type_default_t
  * \param v2     scalar floating point value
  * \param tol    relative tolerance
  */
-template <class T>
+template<class T>
 inline bool approx_equal_abs( const T &v1, const T &v2, const T tol = type_default_tol<T>() )
 {
     return fabs( (double) ( v1 - v2 ) ) <= tol; // Check if the two value are less than tolerance
@@ -162,7 +162,7 @@ inline bool approx_equal_abs( const T &v1, const T &v2, const T tol = type_defau
  * Quicksort a std::vector
  * \param x      vector to sort
  */
-template <class T>
+template<class T>
 void quicksort( std::vector<T> &x );
 
 /*!
@@ -170,14 +170,14 @@ void quicksort( std::vector<T> &x );
  * \param x      Vector to sort
  * \param y      Extra values to be sorted with X
  */
-template <class T1, class T2>
+template<class T1, class T2>
 void quicksort( std::vector<T1> &x, std::vector<T2> &y );
 
 /*!
  * Get the unique set on a std::vector
  * \param x      vector to create the unique set (elements will be returned in sorted order)
  */
-template <class T>
+template<class T>
 void unique( std::vector<T> &x );
 
 /*!
@@ -187,7 +187,7 @@ void unique( std::vector<T> &x );
  * \param x      vector to sort
  * \param value  Value to search for
  */
-template <class T>
+template<class T>
 size_t findfirst( const std::vector<T> &x, const T &value );
 
 /*!
@@ -269,11 +269,11 @@ void printBanner();
 //! Null use function
 void nullUse( void * );
 
-} // Utilities namespace
+} // namespace Utilities
 
 
 // templated quicksort routine
-template <class T>
+template<class T>
 void Utilities::quicksort( std::vector<T> &x )
 {
     long int n = static_cast<long int>( x.size() );
@@ -363,7 +363,7 @@ void Utilities::quicksort( std::vector<T> &x )
 
 
 // templated quicksort routine
-template <class T1, class T2>
+template<class T1, class T2>
 void Utilities::quicksort( std::vector<T1> &x, std::vector<T2> &y )
 {
     if ( x.size() != y.size() )
@@ -479,9 +479,9 @@ void Utilities::quicksort( std::vector<T1> &x, std::vector<T2> &y )
 
 
 /************************************************************************
-* Subroutine to find the unique elements in a list                      *
-************************************************************************/
-template <class T>
+ * Subroutine to find the unique elements in a list                      *
+ ************************************************************************/
+template<class T>
 void Utilities::unique( std::vector<T> &x )
 {
     if ( x.size() <= 1 )
@@ -502,12 +502,12 @@ void Utilities::unique( std::vector<T> &x )
 
 
 /************************************************************************
-* Subroutine to find the first element in X which is greater than Y     *
-* using a simple hashing technique.  This is the a faster method, but   *
-* requires the vector X to be in ascending order.                       *
-* Returns -1 if no value is larger.                                     *
-************************************************************************/
-template <class T>
+ * Subroutine to find the first element in X which is greater than Y     *
+ * using a simple hashing technique.  This is the a faster method, but   *
+ * requires the vector X to be in ascending order.                       *
+ * Returns -1 if no value is larger.                                     *
+ ************************************************************************/
+template<class T>
 size_t Utilities::findfirst( const std::vector<T> &x_in, const T &value )
 {
     size_t n = x_in.size();

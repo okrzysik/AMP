@@ -66,7 +66,7 @@ public:
     AMP::LinearAlgebra::Vector::shared_ptr d_outVec;
     AMP::AMP_MPI d_comm;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

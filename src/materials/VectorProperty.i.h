@@ -24,8 +24,8 @@ namespace Materials {
  * \param[in]   args  input arguments corresponding to d_sequence
  *					  Must be in the correct order: T, u, burn
  */
-template <class Number>
-template <class INPUT_VTYPE, class RETURN_VTYPE>
+template<class Number>
+template<class INPUT_VTYPE, class RETURN_VTYPE>
 void VectorProperty<Number>::evalvActual(
     std::vector<AMP::shared_ptr<RETURN_VTYPE>> &r,
     const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>> &args )
@@ -120,7 +120,7 @@ void VectorProperty<Number>::evalvActual(
     }
 }
 
-template <class Number>
+template<class Number>
 void VectorProperty<Number>::evalv(
     std::vector<AMP::shared_ptr<std::vector<Number>>> &r,
     const std::map<std::string, AMP::shared_ptr<std::vector<Number>>> &args )
@@ -129,5 +129,5 @@ void VectorProperty<Number>::evalv(
     evalvActual( r, args );
 }
 
-} // Materials namespace
-} // AMP namespace
+} // namespace Materials
+} // namespace AMP

@@ -52,31 +52,31 @@ class ManagedVector : public Vector, public VectorOperationsDefault<double>, pub
 
 public:
     /** \brief Construct a ManagedVector from a set of parameters
-      * \param[in] params  The description of the ManagedVector
-      */
+     * \param[in] params  The description of the ManagedVector
+     */
     explicit ManagedVector( VectorParameters::shared_ptr params );
 
     /** \brief Construct a view of an AMP vector
-      * \param[in] alias  Vector to view
-      */
+     * \param[in] alias  Vector to view
+     */
     explicit ManagedVector( const Vector::shared_ptr alias );
 
     //! Destructor
     virtual ~ManagedVector();
 
     /** \brief  If a vector has multiple views to multiple external packages
-      * associated with it, this will return the barest version of the vector
-      * \return A vector with the fewest views associated with it.
-      * \details  A ManagedVector must have an engine and it may have data.
-      * If it has an engine with no data, then the engine has must have data.
-      * If the engine can be cast to a ManagedVector, it is and getRootVector
-      * is called recursively.
-      */
+     * associated with it, this will return the barest version of the vector
+     * \return A vector with the fewest views associated with it.
+     * \details  A ManagedVector must have an engine and it may have data.
+     * If it has an engine with no data, then the engine has must have data.
+     * If the engine can be cast to a ManagedVector, it is and getRootVector
+     * is called recursively.
+     */
     Vector::shared_ptr getRootVector();
 
     /** \brief  Return the engine associated with this ManagedVector
-    * \return The engine
-    */
+     * \return The engine
+     */
     VectorEngine::shared_ptr getVectorEngine();
     VectorEngine::const_shared_ptr getVectorEngine() const;
     std::string type() const override;
@@ -175,21 +175,21 @@ public: // Pull Vector into the current scope
     using Vector::cloneVector;
 
 public: // Pull VectorOperations into the current scope
+    using VectorOperations::abs;
     using VectorOperations::add;
     using VectorOperations::addScalar;
-    using VectorOperations::abs;
-    using VectorOperations::axpy;
     using VectorOperations::axpby;
+    using VectorOperations::axpy;
     using VectorOperations::divide;
     using VectorOperations::dot;
     using VectorOperations::equals;
     using VectorOperations::linearSum;
     using VectorOperations::minQuotient;
     using VectorOperations::multiply;
-    using VectorOperations::setRandomValues;
-    using VectorOperations::scale;
-    using VectorOperations::subtract;
     using VectorOperations::reciprocal;
+    using VectorOperations::scale;
+    using VectorOperations::setRandomValues;
+    using VectorOperations::subtract;
     using VectorOperations::wrmsNorm;
     using VectorOperations::wrmsNormMask;
     using VectorOperations::zero;
@@ -197,8 +197,8 @@ public: // Pull VectorOperations into the current scope
 private:
     ManagedVector();
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #include "ManagedVector.inline.h"
 

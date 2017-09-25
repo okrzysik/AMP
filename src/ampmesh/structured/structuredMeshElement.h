@@ -139,8 +139,8 @@ protected:
 };
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP
 
 
 #endif

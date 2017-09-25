@@ -1,5 +1,5 @@
-#include "AsyncMapOperator.h"
 #include "AsyncMapColumnOperator.h"
+#include "AsyncMapOperator.h"
 #include "ProfilerApp.h"
 
 namespace AMP {
@@ -66,9 +66,9 @@ bool AsyncMapColumnOperator::requiresMakeConsistentSet()
 
 
 /********************************************************************
-* Function to copy a key from database 1 to database 2              *
-* If the key is an array of size N it will only copy the ith value. *
-********************************************************************/
+ * Function to copy a key from database 1 to database 2              *
+ * If the key is an array of size N it will only copy the ith value. *
+ ********************************************************************/
 static void copyKey( AMP::shared_ptr<AMP::Database> &database1,
                      AMP::shared_ptr<AMP::Database> &database2,
                      std::string key,
@@ -162,8 +162,8 @@ static void copyKey( AMP::shared_ptr<AMP::Database> &database1,
 
 
 /************************************************************
-* Function to create the databases for the individual maps  *
-************************************************************/
+ * Function to create the databases for the individual maps  *
+ ************************************************************/
 std::vector<AMP::shared_ptr<AMP::Database>>
 AsyncMapColumnOperator::createDatabases( AMP::shared_ptr<AMP::Database> database1 )
 {
@@ -188,5 +188,5 @@ AsyncMapColumnOperator::createDatabases( AMP::shared_ptr<AMP::Database> database
     }
     return meshDatabases;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

@@ -123,8 +123,8 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
     d_isInitialized = false;
 }
 
-void MechanicsNonlinearFEOperator::preAssembly(
-    AMP::LinearAlgebra::Vector::const_shared_ptr u, AMP::shared_ptr<AMP::LinearAlgebra::Vector> r )
+void MechanicsNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                                AMP::shared_ptr<AMP::LinearAlgebra::Vector> r )
 {
     AMP_INSIST( ( u != nullptr ), "NULL Input Vector" );
 
@@ -783,5 +783,5 @@ MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_
         return vec->constSubsetVectorForVariable( var );
     }
 }
-}
-} // end namespace
+} // namespace Operator
+} // namespace AMP

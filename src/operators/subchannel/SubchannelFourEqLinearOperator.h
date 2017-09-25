@@ -162,7 +162,7 @@ private:
                                    AMP::Mesh::MeshElement,
                                    std::map<std::vector<double>, AMP::Mesh::MeshElement> );
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

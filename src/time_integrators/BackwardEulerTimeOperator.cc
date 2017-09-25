@@ -50,5 +50,5 @@ void BackwardEulerTimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_
 
     r->subtract( *r, *d_pSourceTerm );
 }
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

@@ -10,8 +10,8 @@ namespace Mesh {
 static unsigned int MultiVectorIteratorTypeID = TYPE_HASH( MultiVectorIterator );
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 MultiVectorIterator::MultiVectorIterator()
 {
     d_typeID   = MultiVectorIteratorTypeID;
@@ -65,20 +65,20 @@ MultiVectorIterator &MultiVectorIterator::operator=( const MultiVectorIterator &
 
 
 /********************************************************
-* Function to clone the iterator                        *
-********************************************************/
+ * Function to clone the iterator                        *
+ ********************************************************/
 MeshIterator *MultiVectorIterator::clone() const { return new MultiVectorIterator( *this ); }
 
 
 /********************************************************
-* De-constructor                                        *
-********************************************************/
+ * De-constructor                                        *
+ ********************************************************/
 MultiVectorIterator::~MultiVectorIterator() {}
 
 
 /********************************************************
-* Return an iterator to the beginning or end            *
-********************************************************/
+ * Return an iterator to the beginning or end            *
+ ********************************************************/
 MeshIterator MultiVectorIterator::begin() const { return MultiVectorIterator( d_elements, 0 ); }
 MeshIterator MultiVectorIterator::end() const
 {
@@ -87,8 +87,8 @@ MeshIterator MultiVectorIterator::end() const
 
 
 /********************************************************
-* Increment/Decrement the iterator                      *
-********************************************************/
+ * Increment/Decrement the iterator                      *
+ ********************************************************/
 MeshIterator &MultiVectorIterator::operator++()
 {
     // Prefix increment (increment and return this)
@@ -120,8 +120,8 @@ MeshIterator MultiVectorIterator::operator--( int )
 
 
 /********************************************************
-* Random access incrementors                            *
-********************************************************/
+ * Random access incrementors                            *
+ ********************************************************/
 MeshIterator MultiVectorIterator::operator+( int n ) const
 {
     MultiVectorIterator tmp( *this ); // Create a temporary iterator
@@ -147,8 +147,8 @@ MeshIterator &MultiVectorIterator::operator+=( int n )
 
 
 /********************************************************
-* Compare two iterators                                 *
-********************************************************/
+ * Compare two iterators                                 *
+ ********************************************************/
 bool MultiVectorIterator::operator==( const MeshIterator &rhs ) const
 {
     const MultiVectorIterator *rhs2 = nullptr;
@@ -206,5 +206,5 @@ bool MultiVectorIterator::operator!=( const MeshIterator &rhs ) const
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

@@ -20,7 +20,6 @@
 
 #include "vectors/SimpleVector.h"
 #include "vectors/Variable.h"
-#include "vectors/Variable.h"
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 #include "vectors/VectorSelector.h"

@@ -318,7 +318,7 @@ std::vector<std::vector<double>> TensorFickProp::evalTensor( std::vector<double>
     }
     return result;
 }
-}
+} // namespace CylindricallySymmetric_NS
 
 //=================== Materials =====================================================
 
@@ -330,5 +330,5 @@ CylindricallySymmetric::CylindricallySymmetric()
     INSERT_PROPERTY_IN_MAP( LongitudinalFick, CylindricallySymmetric_NS );
     INSERT_PROPERTY_IN_MAP( TensorFick, CylindricallySymmetric_NS );
 }
-}
-}
+} // namespace Materials
+} // namespace AMP

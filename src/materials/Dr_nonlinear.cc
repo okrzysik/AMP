@@ -73,7 +73,7 @@ inline double FickCoefficientProp::eval( std::vector<double> &args )
     double fick = p[0] * exp( -p[1] * u );
     return fick;
 }
-}
+} // namespace Dr_nonlinear_NS
 
 //=================== Materials =====================================================
 
@@ -82,5 +82,5 @@ Dr_nonlinear::Dr_nonlinear()
     d_propertyMap = new std::map<std::string, AMP::shared_ptr<Property<double>>>();
     INSERT_PROPERTY_IN_MAP( FickCoefficient, Dr_nonlinear_NS );
 }
-}
-}
+} // namespace Materials
+} // namespace AMP

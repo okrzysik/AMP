@@ -121,7 +121,7 @@ void DiffusionNonlinearElement::apply()
             // interpolate to gauss points
             for ( size_t qp = 0; qp < d_qrule->n_points(); qp++ ) {
                 for ( int i = 0; i < 3; i++ )
-                    for ( int j                             = 0; j < 3; j++ )
+                    for ( int j = 0; j < 3; j++ )
                         ( *transportCoeffTensor[i][j] )[qp] = 0.0;
                 for ( size_t n = 0; n < num_nodes; n++ ) {
                     for ( int i = 0; i < 3; i++ )
@@ -164,5 +164,5 @@ void DiffusionNonlinearElement::apply()
 
     d_transportModel->postNonlinearAssemblyElementOperation();
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

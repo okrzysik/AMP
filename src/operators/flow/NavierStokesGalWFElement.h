@@ -76,7 +76,7 @@ protected:
 
 private:
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

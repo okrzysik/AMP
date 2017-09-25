@@ -88,5 +88,5 @@ void NonlinearFEOperator::destroyLibMeshElementList()
     } // end for i
     d_currElemPtrs.clear();
 }
-}
-} // end namespace
+} // namespace Operator
+} // namespace AMP

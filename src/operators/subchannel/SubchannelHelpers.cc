@@ -214,14 +214,14 @@ getHeatFluxGeneration( std::string heatShape, std::vector<double> z, double diam
         AMP_ASSERT( z[i] > z[i - 1] );
     double height = z.back() - z.front();
     std::vector<double> dz( z.size() - 1, 0.0 );
-    for ( size_t i  = 0; i < dz.size(); i++ )
-        dz[i]       = z[i + 1] - z[i];
+    for ( size_t i = 0; i < dz.size(); i++ )
+        dz[i] = z[i + 1] - z[i];
     const double pi = 3.1415926535897932;
     std::vector<double> flux( dz.size(), 0.0 );
     if ( heatShape == "Flat" ) {
         // sinusoidal
         for ( size_t i = 0; i < dz.size(); i++ )
-            flux[i]    = Q_tot / ( pi * diameter * height );
+            flux[i] = Q_tot / ( pi * diameter * height );
     } else if ( heatShape == "Sinusoidal" ) {
         // sinusoidal
         for ( size_t i = 0; i < dz.size(); i++ )
@@ -235,21 +235,23 @@ getHeatFluxGeneration( std::string heatShape, std::vector<double> z, double diam
 }
 
 // Compute the heat flux for the subchannel assuming a heat generation rate
-std::vector<double> getHeatFluxGenerationWithDiscretizationError(
-    std::string heatShape, std::vector<double> z, double diameter, double Q_tot )
+std::vector<double> getHeatFluxGenerationWithDiscretizationError( std::string heatShape,
+                                                                  std::vector<double> z,
+                                                                  double diameter,
+                                                                  double Q_tot )
 {
     for ( size_t i = 1; i < z.size(); i++ )
         AMP_ASSERT( z[i] > z[i - 1] );
     double height = z.back() - z.front();
     std::vector<double> dz( z.size() - 1, 0.0 );
-    for ( size_t i  = 0; i < dz.size(); i++ )
-        dz[i]       = z[i + 1] - z[i];
+    for ( size_t i = 0; i < dz.size(); i++ )
+        dz[i] = z[i + 1] - z[i];
     const double pi = 3.1415926535897932;
     std::vector<double> flux( dz.size(), 0.0 );
     if ( heatShape == "Flat" ) {
         // sinusoidal
         for ( size_t i = 0; i < dz.size(); i++ )
-            flux[i]    = Q_tot / ( pi * diameter * height );
+            flux[i] = Q_tot / ( pi * diameter * height );
     } else if ( heatShape == "Sinusoidal" ) {
         // sinusoidal
         for ( size_t i = 0; i < dz.size(); i++ )
@@ -264,14 +266,12 @@ std::vector<double> getHeatFluxGenerationWithDiscretizationError(
 
 // Compute the heat flux for the subchannel using the clad temperature
 std::vector<double> getHeatFluxClad( std::vector<double> z,
-                                     std::vector<AMP::Mesh::MeshElementID>
-                                         face_ids,
+                                     std::vector<AMP::Mesh::MeshElementID> face_ids,
                                      double channelDiam,
                                      double reynolds,
                                      double prandtl,
                                      double fraction,
-                                     AMP::shared_ptr<SubchannelPhysicsModel>
-                                         subchannelPhysicsModel,
+                                     AMP::shared_ptr<SubchannelPhysicsModel> subchannelPhysicsModel,
                                      AMP::LinearAlgebra::Vector::const_shared_ptr flow,
                                      AMP::LinearAlgebra::Vector::const_shared_ptr clad_temp )
 {
@@ -279,7 +279,7 @@ std::vector<double> getHeatFluxClad( std::vector<double> z,
         AMP_ASSERT( z[i] > z[i - 1] );
     std::vector<double> dz( z.size() - 1, 0.0 );
     for ( size_t i = 0; i < dz.size(); i++ )
-        dz[i]      = z[i + 1] - z[i];
+        dz[i] = z[i + 1] - z[i];
     // const double pi = 3.1415926535897932;
     AMP_ASSERT( face_ids.size() == z.size() );
     AMP_ASSERT( flow != nullptr );
@@ -433,6 +433,6 @@ AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
     diameter->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
     return diameter;
 }
-}
-}
-}
+} // namespace Subchannel
+} // namespace Operator
+} // namespace AMP

@@ -7,4 +7,4 @@ namespace AMP {
 ParameterBase::ParameterBase() : d_name( "ParameterBase" ) {}
 
 ParameterBase::~ParameterBase() {}
-}
+} // namespace AMP

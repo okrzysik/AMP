@@ -111,7 +111,7 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
     for ( size_t i = 0; i < d_numSubchannels; i++ )
         total_area += d_channelArea[i];
     d_channelMass.resize( d_numSubchannels, 0.0 );
-    for ( size_t i       = 0; i < d_numSubchannels; i++ )
+    for ( size_t i = 0; i < d_numSubchannels; i++ )
         d_channelMass[i] = d_mass * d_channelArea[i] / total_area;
 
     // get additional parameters based on heat source type
@@ -243,12 +243,10 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
             // ======================================================
             // residual at face corresponds to cell above
             dofMap->getDOFs( face->globalID(), dofs );
-            double h_minus =
-                h_scale *
-                d_frozenVec->getValueByGlobalID( dofs[0] ); // enthalpy evaluated at lower face
-            double p_minus =
-                P_scale *
-                d_frozenVec->getValueByGlobalID( dofs[1] ); // pressure evaluated at lower face
+            double h_minus = h_scale * d_frozenVec->getValueByGlobalID(
+                                           dofs[0] ); // enthalpy evaluated at lower face
+            double p_minus = P_scale * d_frozenVec->getValueByGlobalID(
+                                           dofs[1] ); // pressure evaluated at lower face
             std::vector<double> minusFaceCentroid = face->centroid();
             double z_minus = minusFaceCentroid[2]; // z-coordinate of lower face
             if ( face == end_face - 1 ) {
@@ -260,12 +258,10 @@ void SubchannelTwoEqLinearOperator::reset( const AMP::shared_ptr<OperatorParamet
                 std::vector<double> plusFaceCentroid = face->centroid();
                 double z_plus = plusFaceCentroid[2]; // z-coordinate of lower face
                 --face;
-                double h_plus = h_scale *
-                                d_frozenVec->getValueByGlobalID(
-                                    dofs_plus[0] ); // enthalpy evaluated at upper face
-                double p_plus = P_scale *
-                                d_frozenVec->getValueByGlobalID(
-                                    dofs_plus[1] ); // pressure evaluated at upper face
+                double h_plus = h_scale * d_frozenVec->getValueByGlobalID(
+                                              dofs_plus[0] ); // enthalpy evaluated at upper face
+                double p_plus = P_scale * d_frozenVec->getValueByGlobalID(
+                                              dofs_plus[1] ); // pressure evaluated at upper face
 
                 // evaluate specific volume at upper face
                 std::map<std::string, AMP::shared_ptr<std::vector<double>>> volumeArgMap_plus;
@@ -396,8 +392,7 @@ double SubchannelTwoEqLinearOperator::getDoubleParameter(
         return ( myparams->d_db )->getDouble( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
-                     << defaultValue
-                     << "\n" );
+                     << defaultValue << "\n" );
         return defaultValue;
     }
 }
@@ -721,5 +716,5 @@ double SubchannelTwoEqLinearOperator::dfdp_upper(
     // calculate derivative
     return ( f_pert - f ) / pert;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

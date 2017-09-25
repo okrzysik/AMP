@@ -10,8 +10,8 @@ namespace Mesh {
 
 
 /********************************************************
-*  Comparison operators                                 *
-********************************************************/
+ *  Comparison operators                                 *
+ ********************************************************/
 inline bool MeshIterator::operator<( const MeshIterator &rhs ) const
 {
     return this->position() < rhs.position();
@@ -31,8 +31,8 @@ inline bool MeshIterator::operator>=( const MeshIterator &rhs ) const
 
 
 /********************************************************
-* Function to get the size and position of the iterator *
-********************************************************/
+ * Function to get the size and position of the iterator *
+ ********************************************************/
 inline const MeshIterator *MeshIterator::rawIterator() const
 {
     return d_iterator == nullptr ? this : d_iterator;
@@ -52,8 +52,8 @@ inline unsigned int MeshIterator::type_id() const
 
 
 /********************************************************
-* Functions for dereferencing the d_iterator            *
-********************************************************/
+ * Functions for dereferencing the d_iterator            *
+ ********************************************************/
 inline MeshElement &MeshIterator::operator*()
 {
     return d_iterator == nullptr ? *d_element : *d_iterator->d_element;
@@ -72,7 +72,7 @@ inline const MeshElement *MeshIterator::operator->() const
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP
 
 #endif

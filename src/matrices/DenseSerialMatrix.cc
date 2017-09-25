@@ -10,8 +10,8 @@ namespace LinearAlgebra {
 
 
 /********************************************************
-* Constructor/Destructor                                *
-********************************************************/
+ * Constructor/Destructor                                *
+ ********************************************************/
 DenseSerialMatrix::DenseSerialMatrix( MatrixParameters::shared_ptr params ) : Matrix( params )
 {
     d_VariableLeft    = params->d_VariableLeft;
@@ -27,8 +27,8 @@ DenseSerialMatrix::~DenseSerialMatrix() { delete[] d_M; }
 
 
 /********************************************************
-* Copy/transpose the matrix                             *
-********************************************************/
+ * Copy/transpose the matrix                             *
+ ********************************************************/
 Matrix::shared_ptr DenseSerialMatrix::transpose() const
 {
     // Create the matrix parameters
@@ -64,8 +64,8 @@ Matrix::shared_ptr DenseSerialMatrix::cloneMatrix() const
 
 
 /********************************************************
-* Matrix-vector multiplication                          *
-********************************************************/
+ * Matrix-vector multiplication                          *
+ ********************************************************/
 void DenseSerialMatrix::mult( AMP::LinearAlgebra::Vector::const_shared_ptr in,
                               AMP::LinearAlgebra::Vector::shared_ptr out )
 {
@@ -73,7 +73,7 @@ void DenseSerialMatrix::mult( AMP::LinearAlgebra::Vector::const_shared_ptr in,
     AMP_ASSERT( out->getGlobalSize() == d_rows );
     auto k = new size_t[std::max( d_cols, d_rows )];
     for ( size_t i = 0; i < std::max( d_cols, d_rows ); i++ )
-        k[i]       = i;
+        k[i] = i;
     // Get x
     auto x = new double[d_cols];
     in->getValuesByGlobalID( d_cols, k, x );
@@ -98,7 +98,7 @@ void DenseSerialMatrix::multTranspose( AMP::LinearAlgebra::Vector::const_shared_
     AMP_ASSERT( out->getGlobalSize() == d_cols );
     auto k = new size_t[std::max( d_cols, d_rows )];
     for ( size_t i = 0; i < std::max( d_cols, d_rows ); i++ )
-        k[i]       = i;
+        k[i] = i;
     // Get x
     auto x = new double[d_rows];
     in->getValuesByGlobalID( d_rows, k, x );
@@ -119,8 +119,8 @@ void DenseSerialMatrix::multTranspose( AMP::LinearAlgebra::Vector::const_shared_
 
 
 /********************************************************
-* Scale/axpy/setScalar                                  *
-********************************************************/
+ * Scale/axpy/setScalar                                  *
+ ********************************************************/
 void DenseSerialMatrix::scale( double alpha )
 {
     for ( size_t i = 0; i < d_rows * d_cols; i++ )
@@ -150,14 +150,14 @@ void DenseSerialMatrix::axpy( double alpha, const Matrix &X )
 void DenseSerialMatrix::setScalar( double alpha )
 {
     for ( size_t i = 0; i < d_rows * d_cols; i++ )
-        d_M[i]     = alpha;
+        d_M[i] = alpha;
 }
 void DenseSerialMatrix::zero() { memset( d_M, 0, d_rows * d_cols * sizeof( double ) ); }
 
 
 /********************************************************
-* Get/Set values                                        *
-********************************************************/
+ * Get/Set values                                        *
+ ********************************************************/
 void DenseSerialMatrix::addValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
 {
@@ -189,8 +189,8 @@ void DenseSerialMatrix::setValueByGlobalID( size_t row, size_t col, double value
 
 
 /********************************************************
-* Get values/rows by global id                          *
-********************************************************/
+ * Get values/rows by global id                          *
+ ********************************************************/
 void DenseSerialMatrix::getRowByGlobalID( size_t row,
                                           std::vector<size_t> &cols,
                                           std::vector<double> &values ) const
@@ -205,8 +205,8 @@ void DenseSerialMatrix::getRowByGlobalID( size_t row,
 }
 
 /********************************************************
-* Get column indices by global id                       *
-********************************************************/
+ * Get column indices by global id                       *
+ ********************************************************/
 std::vector<size_t> DenseSerialMatrix::getColumnIDs( size_t row ) const
 {
     AMP_ASSERT( row < d_rows );
@@ -226,14 +226,14 @@ void DenseSerialMatrix::getValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const
 {
     for ( size_t i = 0; i < num_rows; i++ )
-        for ( size_t j               = 0; j < num_cols; j++ )
+        for ( size_t j = 0; j < num_cols; j++ )
             values[i * num_cols + j] = d_M[rows[i] + cols[j] * d_rows];
 }
 
 
 /********************************************************
-* Get/Set the diagonal                                  *
-********************************************************/
+ * Get/Set the diagonal                                  *
+ ********************************************************/
 Vector::shared_ptr DenseSerialMatrix::extractDiagonal( Vector::shared_ptr buf ) const
 {
     AMP_ASSERT( d_cols == d_rows );
@@ -243,10 +243,10 @@ Vector::shared_ptr DenseSerialMatrix::extractDiagonal( Vector::shared_ptr buf ) 
     AMP_ASSERT( out->getGlobalSize() == d_cols );
     auto y = new double[d_cols];
     for ( size_t i = 0; i < d_cols; i++ )
-        y[i]       = d_M[i + i * d_rows];
-    auto k         = new size_t[d_cols];
+        y[i] = d_M[i + i * d_rows];
+    auto k = new size_t[d_cols];
     for ( size_t i = 0; i < d_cols; i++ )
-        k[i]       = i;
+        k[i] = i;
     out->setValuesByGlobalID( d_cols, k, y );
     delete[] y;
     delete[] k;
@@ -258,10 +258,10 @@ void DenseSerialMatrix::setDiagonal( Vector::const_shared_ptr in )
     AMP_ASSERT( in->getGlobalSize() == d_rows );
     auto k = new size_t[d_rows];
     for ( size_t i = 0; i < d_rows; i++ )
-        k[i]       = i;
-    auto x         = new double[d_rows];
+        k[i] = i;
+    auto x = new double[d_rows];
     in->getValuesByGlobalID( d_rows, k, x );
-    for ( size_t i          = 0; i < d_rows; i++ )
+    for ( size_t i = 0; i < d_rows; i++ )
         d_M[i + i * d_rows] = x[i];
     delete[] x;
 }
@@ -269,14 +269,14 @@ void DenseSerialMatrix::setIdentity()
 {
     AMP_ASSERT( d_cols == d_rows );
     memset( d_M, 0, d_rows * d_cols * sizeof( double ) );
-    for ( size_t i          = 0; i < d_rows; i++ )
+    for ( size_t i = 0; i < d_rows; i++ )
         d_M[i + i * d_rows] = 1.0;
 }
 
 
 /********************************************************
-* Get the left/right vectors and DOFManagers            *
-********************************************************/
+ * Get the left/right vectors and DOFManagers            *
+ ********************************************************/
 Vector::shared_ptr DenseSerialMatrix::getRightVector() const
 {
     return createVector( getRightDOFManager(), d_VariableRight );
@@ -296,8 +296,8 @@ Discretization::DOFManager::shared_ptr DenseSerialMatrix::getLeftDOFManager() co
 
 
 /********************************************************
-* Compute the maximum column sum                        *
-********************************************************/
+ * Compute the maximum column sum                        *
+ ********************************************************/
 double DenseSerialMatrix::L1Norm() const
 {
     double norm = 0.0;
@@ -311,10 +311,10 @@ double DenseSerialMatrix::L1Norm() const
 }
 
 /********************************************************
-* Multiply two matricies                                *
-* result = this * other_op                              *
-* C(N,M) = A(N,K)*B(K,M)
-********************************************************/
+ * Multiply two matricies                                *
+ * result = this * other_op                              *
+ * C(N,M) = A(N,K)*B(K,M)
+ ********************************************************/
 void DenseSerialMatrix::multiply( Matrix::shared_ptr other_op, Matrix::shared_ptr &result )
 {
     if ( this->numGlobalColumns() != other_op->numGlobalRows() )
@@ -354,5 +354,5 @@ void DenseSerialMatrix::multiply( Matrix::shared_ptr other_op, Matrix::shared_pt
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP

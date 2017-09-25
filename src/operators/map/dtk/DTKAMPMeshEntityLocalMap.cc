@@ -138,5 +138,5 @@ void AMPMeshEntityLocalMap::getElementNodeCoordinates(
 }
 
 //---------------------------------------------------------------------------//
-}
-}
+} // namespace Operator
+} // namespace AMP

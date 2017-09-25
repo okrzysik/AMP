@@ -22,13 +22,12 @@ namespace LinearAlgebra {
 
 
 /********************************************************
-* Build a ManagedPetscMatrix                             *
-********************************************************/
+ * Build a ManagedPetscMatrix                             *
+ ********************************************************/
 AMP::LinearAlgebra::Matrix::shared_ptr
 createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                      AMP::LinearAlgebra::Vector::shared_ptr rightVec,
-                     std::function<std::vector<size_t>( size_t )>
-                         getRow,
+                     std::function<std::vector<size_t>( size_t )> getRow,
                      const std::string &type )
 {
 #if defined( USE_EXT_TRILINOS )
@@ -99,8 +98,8 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 
 
 /********************************************************
-* Build a DenseSerialMatrix                             *
-********************************************************/
+ * Build a DenseSerialMatrix                             *
+ ********************************************************/
 AMP::LinearAlgebra::Matrix::shared_ptr
 createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                          AMP::LinearAlgebra::Vector::shared_ptr rightVec )
@@ -132,8 +131,8 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 
 
 /********************************************************
-* Test the matrix to ensure it is valid                 *
-********************************************************/
+ * Test the matrix to ensure it is valid                 *
+ ********************************************************/
 static void test( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
 {
     auto leftDOF         = matrix->getLeftDOFManager();
@@ -154,14 +153,13 @@ static void test( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
 
 
 /********************************************************
-* Matrix builder                                        *
-********************************************************/
+ * Matrix builder                                        *
+ ********************************************************/
 AMP::LinearAlgebra::Matrix::shared_ptr
 createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
               AMP::LinearAlgebra::Vector::shared_ptr leftVec,
               const std::string &type,
-              std::function<std::vector<size_t>( size_t )>
-                  getRow )
+              std::function<std::vector<size_t>( size_t )> getRow )
 {
     // Determine the type of matrix to build
     std::string type2 = type;
@@ -197,7 +195,7 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
         test( matrix );
     return matrix;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

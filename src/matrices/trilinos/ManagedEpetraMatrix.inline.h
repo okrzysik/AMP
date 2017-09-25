@@ -17,5 +17,5 @@ inline Matrix::shared_ptr ManagedEpetraMatrix::cloneMatrix() const
     r->d_DeleteMatrix      = true;
     return Matrix::shared_ptr( r );
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

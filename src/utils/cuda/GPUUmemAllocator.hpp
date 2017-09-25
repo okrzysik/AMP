@@ -16,7 +16,7 @@ inline void checkError( cudaError_t e )
     }
 }
 
-template <typename T>
+template<typename T>
 T *GPUUmemAllocator<T>::allocate( size_t n )
 {
     T *d_m;
@@ -26,7 +26,7 @@ T *GPUUmemAllocator<T>::allocate( size_t n )
     return d_m;
 }
 
-template <typename T>
+template<typename T>
 void GPUUmemAllocator<T>::deallocate( T *p, size_t n )
 {
     (void) n;
@@ -34,13 +34,13 @@ void GPUUmemAllocator<T>::deallocate( T *p, size_t n )
     checkError( E );
 }
 
-template <typename T>
+template<typename T>
 void GPUUmemAllocator<T>::construct( T *p )
 {
     new ( p ) T;
 }
 
-template <typename T>
+template<typename T>
 void GPUUmemAllocator<T>::destroy( T *p )
 {
     NULL_USE( p );

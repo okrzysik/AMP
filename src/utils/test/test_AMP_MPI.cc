@@ -69,9 +69,9 @@ struct mytype {
 // Routines to test Reduce with known data types
 // flag - 0: all tests should pass
 //        1: basic reduce should pass, reduce with rank should fail with error message
-template <class type>
+template<class type>
 int testReduce( MPI_CLASS comm, UnitTest *ut, int flag );
-template <>
+template<>
 int testReduce<std::complex<double>>( MPI_CLASS comm, UnitTest *ut, int )
 {
     PROFILE_START( "testReduce<complex double>" );
@@ -94,7 +94,7 @@ int testReduce<std::complex<double>>( MPI_CLASS comm, UnitTest *ut, int )
     PROFILE_STOP( "testReduce<complex double>" );
     return 2; // Return the number of tests
 }
-template <class type>
+template<class type>
 int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
 {
     PROFILE_START( "testReduce" );
@@ -226,7 +226,7 @@ int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
 // Routine to test Scan with known data types
 // flag - 0: all tests should pass
 //        1: only sumScan is valid (complex<double>)
-template <class type>
+template<class type>
 int testScan( MPI_CLASS comm, UnitTest *ut, int flag = 0 )
 {
     PROFILE_START( "testScan" );
@@ -262,7 +262,7 @@ int testScan( MPI_CLASS comm, UnitTest *ut, int flag = 0 )
 
 
 // Routine to test bcast
-template <class type>
+template<class type>
 int testBcast( MPI_CLASS comm, UnitTest *ut, type default_val, type new_val )
 {
     PROFILE_START( "testBcast" );
@@ -296,7 +296,7 @@ int testBcast( MPI_CLASS comm, UnitTest *ut, type default_val, type new_val )
 
 
 // Routine to test allGather
-template <class type>
+template<class type>
 int testAllGather( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testAllGather" );
@@ -323,13 +323,13 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
     type *x5  = new type[N];
     int *size = new int[comm.getSize()];
     for ( int i = 0; i <= comm.getRank(); i++ )
-        x3[i]   = (type) comm.getRank();
-    int tot1    = comm.allGather( x3, comm.getRank() + 1, x4 );
-    int tot2    = comm.allGather( x3, comm.getRank() + 1, x5, size );
-    pass        = true;
+        x3[i] = (type) comm.getRank();
+    int tot1 = comm.allGather( x3, comm.getRank() + 1, x4 );
+    int tot2 = comm.allGather( x3, comm.getRank() + 1, x5, size );
+    pass     = true;
     if ( tot1 != N || tot2 != N )
         pass = false;
-    int k    = 0;
+    int k = 0;
     for ( int i = 0; i < comm.getSize(); i++ ) {
         if ( size[i] != i + 1 )
             pass = false;
@@ -359,16 +359,16 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
     int *recv_disp = new int[comm.getSize()];
     for ( int i = 0; i <= comm.getRank(); i++ )
         send[i] = i;
-    for ( int i      = 0; i < comm.getSize(); i++ )
+    for ( int i = 0; i < comm.getSize(); i++ )
         recv_size[i] = i + 1;
-    for ( int i      = 0; i < comm.getSize(); i++ )
+    for ( int i = 0; i < comm.getSize(); i++ )
         recv_disp[i] = 1 + i * comm.getSize() + comm.getSize() - i - 1;
     for ( int i = 0; i <= comm.getSize() * comm.getSize(); i++ )
         recv[i] = (type) -1;
-    int tot     = comm.allGather( send, comm.getRank() + 1, recv, recv_size, recv_disp, true );
-    pass        = true;
+    int tot = comm.allGather( send, comm.getRank() + 1, recv, recv_size, recv_disp, true );
+    pass    = true;
     if ( tot != N )
-        pass  = false;
+        pass = false;
     type test = (type) -1;
     if ( recv[0] != test )
         pass = false;
@@ -410,7 +410,7 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
 
 
 // Routine to test setGather
-template <class type>
+template<class type>
 int testSetGather( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testSetGather" );
@@ -436,7 +436,7 @@ int testSetGather( MPI_CLASS comm, UnitTest *ut )
 
 
 // Routine to test mapGather
-template <class type>
+template<class type>
 int testMapGather( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testMapGather" );
@@ -466,7 +466,7 @@ int testMapGather( MPI_CLASS comm, UnitTest *ut )
 
 
 // Routine to test allToAll
-template <class type>
+template<class type>
 int testAllToAll( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testAllToAll" );
@@ -481,7 +481,7 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
     // Test allToAll with a scalar value to each processor
     send_data = new type[comm.getSize()];
     recv_data = new type[comm.getSize()];
-    for ( int i      = 0; i < comm.getSize(); i++ )
+    for ( int i = 0; i < comm.getSize(); i++ )
         send_data[i] = comm.getSize();
     comm.allToAll( 1, send_data, recv_data );
     pass = true;
@@ -539,7 +539,7 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
                 send_data[j + send_disp[i]] = (type) -1;
         }
     }
-    for ( int i      = 0; i < 2 * comm.getRank() * comm.getSize(); i++ )
+    for ( int i = 0; i < 2 * comm.getRank() * comm.getSize(); i++ )
         recv_data[i] = (type) -2;
     size = comm.allToAll( send_data, send_cnt, send_disp, recv_data, recv_cnt, recv_disp, true );
     pass = true;
@@ -632,7 +632,7 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
 
 
 // Routine to test send/recv
-template <class type>
+template<class type>
 int testSendRecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
 {
     PROFILE_START( "testSendRecv" );
@@ -715,7 +715,7 @@ int testSendRecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
 
 
 // Routine to test Isend/Irecv
-template <class type>
+template<class type>
 int testIsendIrecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
 {
     PROFILE_START( "testIsendIrecv" );
@@ -736,8 +736,8 @@ int testIsendIrecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
     }
     // Recv all messages
     type *recv_buffer = new type[comm.getSize()];
-    for ( int i                 = 0; i < comm.getSize(); i++ )
-        recv_buffer[i]          = v2;
+    for ( int i = 0; i < comm.getSize(); i++ )
+        recv_buffer[i] = v2;
     recv_buffer[comm.getRank()] = v1;
     for ( int j = 0; j < comm.getSize(); j++ ) {
         // Check if the current rank is recieving
@@ -806,7 +806,7 @@ int testCommRanks( MPI_CLASS comm, UnitTest *ut )
     auto ranks = comm.globalRanks();
     pass       = pass && (int) ranks.size() == comm.getSize();
     for ( size_t i = 0; i < ranks.size(); i++ )
-        pass    = pass && ranks[i] >= 0;
+        pass = pass && ranks[i] >= 0;
     auto ranks2 = ranks;
     AMP::Utilities::unique( ranks2 );
     pass = pass && ranks.size() == ranks2.size();
@@ -1263,7 +1263,7 @@ int main( int argc, char *argv[] )
         std::string rank_string;
         if ( globalComm.getRank() == 0 )
             rank_string = "Rank 0";
-        rank_string     = globalComm.bcast( rank_string, 0 );
+        rank_string = globalComm.bcast( rank_string, 0 );
         if ( rank_string == "Rank 0" )
             ut.passes( "Bcast std::string" );
         else

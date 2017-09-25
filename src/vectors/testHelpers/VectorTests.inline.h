@@ -9,7 +9,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-template <typename VIEWER>
+template<typename VIEWER>
 void VectorTests::DeepCloneOfView( AMP::UnitTest *utils )
 {
     AMP::LinearAlgebra::Vector::shared_ptr vector1( d_factory->getVector() );
@@ -28,7 +28,7 @@ void VectorTests::DeepCloneOfView( AMP::UnitTest *utils )
 }
 
 
-template <typename ITERATOR>
+template<typename ITERATOR>
 void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p,
                                             AMP::UnitTest *utils )
 {

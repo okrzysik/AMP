@@ -1,5 +1,5 @@
-#include "vectors/sundials/ManagedSundialsVector.h"
 #include "vectors/MultiVector.h"
+#include "vectors/sundials/ManagedSundialsVector.h"
 
 
 namespace AMP {
@@ -88,5 +88,5 @@ Vector::shared_ptr SundialsVector::view( Vector::shared_ptr inVector )
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP

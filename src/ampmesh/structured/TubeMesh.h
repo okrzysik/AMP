@@ -80,13 +80,13 @@ public:
 
 
 public: // BoxMesh specific functionality
-        /**
-         * \brief    Return the logical coordinates
-         * \details  This function queries the mesh to get the logical coordinates in [0,1]
-         *     from the physical coordinates.  Not all meshes support this functionallity.
-         * \param[in] x         Physical coordinates
-         * @return              Returns the logical coordinates
-         */
+    /**
+     * \brief    Return the logical coordinates
+     * \details  This function queries the mesh to get the logical coordinates in [0,1]
+     *     from the physical coordinates.  Not all meshes support this functionallity.
+     * \param[in] x         Physical coordinates
+     * @return              Returns the logical coordinates
+     */
     virtual std::array<double, 3> physicalToLogical( const double *x ) const override;
 
 
@@ -99,8 +99,8 @@ private:
 };
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP
 
 
 #endif

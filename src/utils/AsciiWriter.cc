@@ -11,8 +11,8 @@ namespace Utilities {
 
 
 /************************************************************
-* Helper function to get a unique id for each vector        *
-************************************************************/
+ * Helper function to get a unique id for each vector        *
+ ************************************************************/
 static unsigned int localID = 0;
 AsciiWriter::global_id AsciiWriter::getID( AMP_MPI local_comm, AMP_MPI global_comm )
 {
@@ -26,21 +26,21 @@ AsciiWriter::global_id AsciiWriter::getID( AMP_MPI local_comm, AMP_MPI global_co
 
 
 /************************************************************
-* Constructor/Destructor                                    *
-************************************************************/
+ * Constructor/Destructor                                    *
+ ************************************************************/
 AsciiWriter::AsciiWriter() : AMP::Utilities::Writer() {}
 AsciiWriter::~AsciiWriter() {}
 
 
 /************************************************************
-* Some basic functions                                      *
-************************************************************/
+ * Some basic functions                                      *
+ ************************************************************/
 std::string AsciiWriter::getExtension() { return "ascii"; }
 
 
 /************************************************************
-* Function to read a silo file                              *
-************************************************************/
+ * Function to read a silo file                              *
+ ************************************************************/
 void AsciiWriter::readFile( const std::string & )
 {
     AMP_ERROR( "readFile is not implemented yet" );
@@ -48,9 +48,9 @@ void AsciiWriter::readFile( const std::string & )
 
 
 /************************************************************
-* Function to write an ascii file                           *
-************************************************************/
-template <class TYPE>
+ * Function to write an ascii file                           *
+ ************************************************************/
+template<class TYPE>
 std::set<AsciiWriter::global_id> getKeys( const std::map<AsciiWriter::global_id, TYPE> &local_map,
                                           AMP_MPI comm )
 {
@@ -148,8 +148,8 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
 
 
 /************************************************************
-* Function to register a mesh                               *
-************************************************************/
+ * Function to register a mesh                               *
+ ************************************************************/
 #ifdef USE_AMP_MESH
 void AsciiWriter::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, std::string )
 {
@@ -159,8 +159,8 @@ void AsciiWriter::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, std::string )
 
 
 /************************************************************
-* Function to register a vector                             *
-************************************************************/
+ * Function to register a vector                             *
+ ************************************************************/
 #if defined( USE_AMP_MESH ) && defined( USE_AMP_VECTORS )
 void AsciiWriter::registerVector( AMP::LinearAlgebra::Vector::shared_ptr,
                                   AMP::Mesh::Mesh::shared_ptr,
@@ -187,8 +187,8 @@ void AsciiWriter::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat )
 
 
 /************************************************************
-* Function to copy a vector to rank 0                       *
-************************************************************/
+ * Function to copy a vector to rank 0                       *
+ ************************************************************/
 #ifdef USE_AMP_VECTORS
 AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
     AMP::LinearAlgebra::Vector::const_shared_ptr src_vec, int vec_root, AMP_MPI comm )
@@ -197,7 +197,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
     // Boradcast the local vector size and name to all processors for simplicity
     std::string name;
     if ( rank == vec_root )
-        name          = src_vec->getVariable()->getName();
+        name = src_vec->getVariable()->getName();
     name              = comm.bcast( name, vec_root );
     size_t local_size = 0;
     if ( src_vec != nullptr )
@@ -214,7 +214,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
     std::vector<MPI_Request> requests;
     std::vector<double> local_data( local_size, 0 );
     if ( local_size > 0 ) {
-        for ( size_t i    = 0; i < local_size; i++ )
+        for ( size_t i = 0; i < local_size; i++ )
             local_data[i] = src_vec->getValueByLocalID( i );
         requests.push_back( comm.Isend( &local_data[0], local_size, 0, 123 ) );
     }
@@ -242,8 +242,8 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
 
 
 /************************************************************
-* Function to copy a row to rank 0                          *
-************************************************************/
+ * Function to copy a row to rank 0                          *
+ ************************************************************/
 #ifdef USE_AMP_MATRICES
 void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr mat,
                                  AMP_MPI comm,
@@ -293,5 +293,5 @@ void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr ma
 #endif
 
 
-} // Utilities namespace
-} // AMP namespace
+} // namespace Utilities
+} // namespace AMP

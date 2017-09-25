@@ -50,5 +50,5 @@ void IdentityOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     rInternal->makeConsistent( AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

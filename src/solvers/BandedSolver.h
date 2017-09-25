@@ -42,8 +42,7 @@ public:
      * @param[out] u    shared pointer to approximate computed solution
      */
     virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                            u );
+                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
     /**
      * Resets the operator registered with the solver with new parameters if necessary
@@ -72,7 +71,7 @@ private:
     AMP::Discretization::DOFManager::shared_ptr rightDOF;
     AMP::Discretization::DOFManager::shared_ptr leftDOF;
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

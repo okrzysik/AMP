@@ -111,7 +111,7 @@ protected:
 
     bool d_useUpdatedLagrangian;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

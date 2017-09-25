@@ -216,7 +216,7 @@ void ManagedPetscMatrix::copyFromMat( Mat m )
         const double *data;
         MatGetRow( m, row, &num_cols, &cols, &data );
         std::vector<size_t> cols2( num_cols );
-        for ( int i  = 0; i < num_cols; i++ )
+        for ( int i = 0; i < num_cols; i++ )
             cols2[i] = cols[i];
         createValuesByGlobalID( row, cols2 );
         MatRestoreRow( m, row, &num_cols, &cols, &data );
@@ -232,5 +232,5 @@ Matrix::shared_ptr ManagedPetscMatrix::cloneMatrix() const
 {
     return shared_ptr( new ManagedPetscMatrix( *this ) );
 }
-}
-} // end namespace
+} // namespace LinearAlgebra
+} // namespace AMP

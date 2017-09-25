@@ -1207,5 +1207,5 @@ void DendroSearch::reportTiming( size_t n,
 }
 
 
-} // Mesh
-} // AMP
+} // namespace Mesh
+} // namespace AMP

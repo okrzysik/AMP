@@ -4,7 +4,7 @@
 namespace AMP {
 namespace unit_test {
 
-template <typename T>
+template<typename T>
 void testArrayVectorDimensions( std::vector<size_t> &dims, AMP::UnitTest &ut )
 {
     AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "array" ) );
@@ -19,5 +19,5 @@ void testArrayVectorDimensions( std::vector<size_t> &dims, AMP::UnitTest &ut )
     else
         ut.failure( "ArrayVector does not correctly returns dimensions" );
 }
-}
-}
+} // namespace unit_test
+} // namespace AMP

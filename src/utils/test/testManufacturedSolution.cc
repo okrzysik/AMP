@@ -52,9 +52,9 @@ void testit( AMP::UnitTest *ut,
     std::valarray<double> out( 10 ), in( nc ), param( na );
 
     for ( size_t i = 0; i < na; i++ )
-        param[i]   = i;
+        param[i] = i;
     for ( size_t i = 0; i < nc; i++ )
-        in[i]      = i + 1;
+        in[i] = i + 1;
     ms.setTricubicParams( in, param );
     ms.evaluate( out, x, y, z );
 

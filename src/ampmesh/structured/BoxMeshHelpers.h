@@ -115,8 +115,8 @@ std::tuple<double, double, double>
 map_logical_shell( double r1, double r2, double x, double y, double z );
 
 
-} // BoxMeshHelpers namespace
-} // Mesh namespace
-} // AMP namespace
+} // namespace BoxMeshHelpers
+} // namespace Mesh
+} // namespace AMP
 
 #endif

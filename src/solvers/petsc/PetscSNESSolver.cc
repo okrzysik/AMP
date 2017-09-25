@@ -34,8 +34,8 @@ static inline void checkErr( PetscErrorCode ierr )
 
 
 /****************************************************************
-*  Constructors                                                 *
-****************************************************************/
+ *  Constructors                                                 *
+ ****************************************************************/
 PetscSNESSolver::PetscSNESSolver()
 {
     d_bUsesJacobian                  = false;
@@ -60,8 +60,8 @@ PetscSNESSolver::PetscSNESSolver( AMP::shared_ptr<PetscSNESSolverParameters> par
 
 
 /****************************************************************
-*  De-constructor                                               *
-****************************************************************/
+ *  De-constructor                                               *
+ ****************************************************************/
 PetscSNESSolver::~PetscSNESSolver()
 {
     // when we are using Matrix free delete the MF PETSc Jacobian
@@ -82,8 +82,8 @@ PetscSNESSolver::~PetscSNESSolver()
 
 
 /****************************************************************
-*  Initialize                                                   *
-****************************************************************/
+ *  Initialize                                                   *
+ ****************************************************************/
 void PetscSNESSolver::initialize( AMP::shared_ptr<SolverStrategyParameters> params )
 {
     PROFILE_START( "initialize" );
@@ -233,8 +233,8 @@ void PetscSNESSolver::getFromInput( const AMP::shared_ptr<AMP::Database> db )
 
 
 /****************************************************************
-*  Apply                                                        *
-****************************************************************/
+ *  Apply                                                        *
+ ****************************************************************/
 PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
 {
     PROFILE_START( "apply" );
@@ -274,11 +274,10 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
 
 
 /****************************************************************
-*  Solve                                                        *
-****************************************************************/
+ *  Solve                                                        *
+ ****************************************************************/
 void PetscSNESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                             AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                 u )
+                             AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
 
@@ -423,8 +422,8 @@ void PetscSNESSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
 
 /****************************************************************
-*  setJacobian                                                  *
-****************************************************************/
+ *  setJacobian                                                  *
+ ****************************************************************/
 #if PETSC_VERSION_LE( 3, 2, 0 )
 PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat *A, Mat *, MatStructure *, void *ctx )
 #elif ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 7 )
@@ -467,8 +466,8 @@ PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat, void *ctx 
 
 
 /****************************************************************
-*  Check if the vector is valid                                 *
-****************************************************************/
+ *  Check if the vector is valid                                 *
+ ****************************************************************/
 bool PetscSNESSolver::isVectorValid( AMP::shared_ptr<AMP::Operator::Operator> &op,
                                      AMP::LinearAlgebra::Vector::shared_ptr &v,
                                      AMP_MPI comm )
@@ -482,8 +481,8 @@ bool PetscSNESSolver::isVectorValid( AMP::shared_ptr<AMP::Operator::Operator> &o
 
 
 /****************************************************************
-*  Linesearch precheck                                          *
-****************************************************************/
+ *  Linesearch precheck                                          *
+ ****************************************************************/
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
 PetscErrorCode
 PetscSNESSolver::lineSearchPreCheck( SNES, Vec x, Vec y, void *checkctx, PetscTruth *changed_y )
@@ -623,4 +622,4 @@ void PetscSNESSolver::setInitialGuess( AMP::shared_ptr<AMP::LinearAlgebra::Vecto
 
 
 } // Solver
-} // AMP
+} // namespace AMP

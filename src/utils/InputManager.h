@@ -151,6 +151,6 @@ private:
 
     static AMP::shared_ptr<Database> s_input_db;
 };
-}
+} // namespace AMP
 
 #endif

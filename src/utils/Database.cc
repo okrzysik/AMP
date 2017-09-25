@@ -31,7 +31,7 @@ Database::~Database() {}
  * Create a boolean scalar entry in the database with the specified
  * key name.  A scalar entry is an array of one.
  *
-*/
+ */
 
 void Database::putBool( const std::string &key, const bool &data )
 {
@@ -53,9 +53,7 @@ void Database::putBoolArray( const std::string &key, const std::vector<unsigned 
         putBoolArray( key, &( data[0] ), static_cast<int>( data.size() ) );
     } else {
         AMP_ERROR( "Database::putBoolArray() error in database "
-                   << getName()
-                   << "\n    Attempt to put zero-length array with key = "
-                   << key
+                   << getName() << "\n    Attempt to put zero-length array with key = " << key
                    << std::endl );
     }
 }
@@ -102,14 +100,10 @@ void Database::getBoolArray( const std::string &key, bool *data, const int nelem
     const int tsize                = tmp.size();
 
     if ( nelements != tsize ) {
-        AMP_ERROR( "Database::getBoolArray() error in database " << getName()
-                                                                 << "\n    Incorrect array size = "
-                                                                 << nelements
-                                                                 << " given for key = "
-                                                                 << key
-                                                                 << "\n    Actual array size = "
-                                                                 << tsize
-                                                                 << std::endl );
+        AMP_ERROR( "Database::getBoolArray() error in database "
+                   << getName() << "\n    Incorrect array size = " << nelements
+                   << " given for key = " << key << "\n    Actual array size = " << tsize
+                   << std::endl );
     }
 
     for ( int i = 0; i < tsize; i++ ) {
@@ -161,9 +155,7 @@ void Database::putDatabaseBoxArray( const std::string &key, const std::vector<Da
         putDatabaseBoxArray( key, &( data[0] ), static_cast<int>( data.size() ) );
     } else {
         AMP_ERROR( "Database::putDatabaseBoxArray() error in database "
-                   << getName()
-                   << "\n    Attempt to put zero-length array with key = "
-                   << key
+                   << getName() << "\n    Attempt to put zero-length array with key = " << key
                    << std::endl );
     }
 }
@@ -221,13 +213,8 @@ void Database::getDatabaseBoxArray( const std::string &key, DatabaseBox *data, c
 
     if ( nelements != tsize ) {
         AMP_ERROR( "Database::getDatabaseBoxArray() error in database "
-                   << getName()
-                   << "\n    Incorrect array size = "
-                   << nelements
-                   << " given for key = "
-                   << key
-                   << "\n    Actual array size = "
-                   << tsize
+                   << getName() << "\n    Incorrect array size = " << nelements
+                   << " given for key = " << key << "\n    Actual array size = " << tsize
                    << std::endl );
     }
 
@@ -271,9 +258,7 @@ void Database::putCharArray( const std::string &key, const std::vector<char> &da
         putCharArray( key, &( data[0] ), static_cast<int>( data.size() ) );
     } else {
         AMP_ERROR( "Database::putCharArray() error in database "
-                   << getName()
-                   << "\n    Attempt to put zero-length array with key = "
-                   << key
+                   << getName() << "\n    Attempt to put zero-length array with key = " << key
                    << std::endl );
     }
 }
@@ -329,14 +314,10 @@ void Database::getCharArray( const std::string &key, char *data, const int nelem
     const int tsize       = tmp.size();
 
     if ( nelements != tsize ) {
-        AMP_ERROR( "Database::getCharArray() error in database " << getName()
-                                                                 << "\n    Incorrect array size = "
-                                                                 << nelements
-                                                                 << " given for key = "
-                                                                 << key
-                                                                 << "\n    Actual array size = "
-                                                                 << tsize
-                                                                 << std::endl );
+        AMP_ERROR( "Database::getCharArray() error in database "
+                   << getName() << "\n    Incorrect array size = " << nelements
+                   << " given for key = " << key << "\n    Actual array size = " << tsize
+                   << std::endl );
     }
 
     for ( int i = 0; i < tsize; i++ ) {
@@ -394,9 +375,7 @@ void Database::putComplexArray( const std::string &key,
         putComplexArray( key, &( data[0] ), static_cast<int>( data.size() ) );
     } else {
         AMP_ERROR( "Database::putComplexArray() error in database "
-                   << getName()
-                   << "\n    Attempt to put zero-length array with key = "
-                   << key
+                   << getName() << "\n    Attempt to put zero-length array with key = " << key
                    << std::endl );
     }
 }
@@ -455,13 +434,8 @@ void Database::getComplexArray( const std::string &key,
 
     if ( nelements != tsize ) {
         AMP_ERROR( "Database::getComplexArray() error in database "
-                   << getName()
-                   << "\n    Incorrect array size = "
-                   << nelements
-                   << " given for key = "
-                   << key
-                   << "\n    Actual array size = "
-                   << tsize
+                   << getName() << "\n    Incorrect array size = " << nelements
+                   << " given for key = " << key << "\n    Actual array size = " << tsize
                    << std::endl );
     }
 
@@ -526,9 +500,7 @@ void Database::putFloatArray( const std::string &key, const std::vector<float> &
         putFloatArray( key, &( data[0] ), static_cast<int>( data.size() ) );
     } else {
         AMP_ERROR( "Database::putFloatArray() error in database "
-                   << getName()
-                   << "\n    Attempt to put zero-length array with key = "
-                   << key
+                   << getName() << "\n    Attempt to put zero-length array with key = " << key
                    << std::endl );
     }
 }
@@ -584,14 +556,10 @@ void Database::getFloatArray( const std::string &key, float *data, const int nel
     const int tsize        = tmp.size();
 
     if ( nelements != tsize ) {
-        AMP_ERROR( "Database::getFloatArray() error in database " << getName()
-                                                                  << "\n    Incorrect array size = "
-                                                                  << nelements
-                                                                  << " given for key = "
-                                                                  << key
-                                                                  << "\n    Actual array size = "
-                                                                  << tsize
-                                                                  << std::endl );
+        AMP_ERROR( "Database::getFloatArray() error in database "
+                   << getName() << "\n    Incorrect array size = " << nelements
+                   << " given for key = " << key << "\n    Actual array size = " << tsize
+                   << std::endl );
     }
 
     for ( int i = 0; i < tsize; i++ ) {
@@ -649,9 +617,7 @@ void Database::putDoubleArray( const std::string &key, const std::vector<double>
         putDoubleArray( key, &( data[0] ), static_cast<int>( data.size() ) );
     } else {
         AMP_ERROR( "Database::putDoubleArray() error in database "
-                   << getName()
-                   << "\n    Attempt to put zero-length array with key = "
-                   << key
+                   << getName() << "\n    Attempt to put zero-length array with key = " << key
                    << std::endl );
     }
 }
@@ -707,13 +673,8 @@ void Database::getDoubleArray( const std::string &key, double *data, const int n
 
     if ( nelements != tsize ) {
         AMP_ERROR( "Database::getDoubleArray() error in database "
-                   << getName()
-                   << "\n    Incorrect array size = "
-                   << nelements
-                   << " given for key = "
-                   << key
-                   << "\n    Actual array size = "
-                   << tsize
+                   << getName() << "\n    Incorrect array size = " << nelements
+                   << " given for key = " << key << "\n    Actual array size = " << tsize
                    << std::endl );
     }
 
@@ -775,9 +736,7 @@ void Database::putIntegerArray( const std::string &key, const std::vector<int> &
         putIntegerArray( key, &( data[0] ), static_cast<int>( data.size() ) );
     } else {
         AMP_ERROR( "Database::putIntegerArray() error in database "
-                   << getName()
-                   << "\n    Attempt to put zero-length array with key = "
-                   << key
+                   << getName() << "\n    Attempt to put zero-length array with key = " << key
                    << std::endl );
     }
 }
@@ -834,13 +793,8 @@ void Database::getIntegerArray( const std::string &key, int *data, const int nel
 
     if ( nelements != tsize ) {
         AMP_ERROR( "Database::getIntegerArray() error in database "
-                   << getName()
-                   << "\n    Incorrect array size = "
-                   << nelements
-                   << " given for key = "
-                   << key
-                   << "\n    Actual array size = "
-                   << tsize
+                   << getName() << "\n    Incorrect array size = " << nelements
+                   << " given for key = " << key << "\n    Actual array size = " << tsize
                    << std::endl );
     }
 
@@ -898,9 +852,7 @@ void Database::putStringArray( const std::string &key, const std::vector<std::st
         putStringArray( key, &( data[0] ), static_cast<int>( data.size() ) );
     } else {
         AMP_ERROR( "Database::putStringArray() error in database "
-                   << getName()
-                   << "\n    Attempt to put zero-length array with key = "
-                   << key
+                   << getName() << "\n    Attempt to put zero-length array with key = " << key
                    << std::endl );
     }
 }
@@ -957,13 +909,8 @@ void Database::getStringArray( const std::string &key, std::string *data, const 
 
     if ( nelements != tsize ) {
         AMP_ERROR( "Database::getStringArray() error in database "
-                   << getName()
-                   << "\n    Incorrect array size = "
-                   << nelements
-                   << " given for key = "
-                   << key
-                   << "\n    Actual array size = "
-                   << tsize
+                   << getName() << "\n    Incorrect array size = " << nelements
+                   << " given for key = " << key << "\n    Actual array size = " << tsize
                    << std::endl );
     }
 
@@ -971,4 +918,4 @@ void Database::getStringArray( const std::string &key, std::string *data, const 
         data[i] = tmp[i];
     }
 }
-}
+} // namespace AMP

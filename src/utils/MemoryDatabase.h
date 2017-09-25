@@ -746,7 +746,7 @@ private:
     std::list<KeyData> d_keyvalues;
     AMP_MPI comm;
 };
-}
+} // namespace AMP
 
 
 #endif

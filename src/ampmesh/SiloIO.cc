@@ -25,15 +25,15 @@ static inline size_t find_slash( const std::string &filename )
 
 
 /************************************************************
-* Constructor/Destructor                                    *
-************************************************************/
+ * Constructor/Destructor                                    *
+ ************************************************************/
 SiloIO::SiloIO() : AMP::Utilities::Writer() { d_dim = -1; }
 SiloIO::~SiloIO() {}
 
 
 /************************************************************
-* Some basic functions                                      *
-************************************************************/
+ * Some basic functions                                      *
+ ************************************************************/
 std::string SiloIO::getExtension() { return "silo"; }
 
 
@@ -44,18 +44,18 @@ static void createSiloDirectory( DBfile *FileHandle, std::string path );
 
 
 /************************************************************
-* Function to read a silo file                              *
-************************************************************/
+ * Function to read a silo file                              *
+ ************************************************************/
 void SiloIO::readFile( const std::string & ) { AMP_ERROR( "readFile is not implimented yet" ); }
 
 
 /************************************************************
-* Function to write a silo file                             *
-* Note: it appears that only one prcoessor may write to a   *
-* file at a time, and that once a processor closes the file *
-* it cannot reopen it (or at least doing this on the        *
-* processor that created the file creates problems).        *
-************************************************************/
+ * Function to write a silo file                             *
+ * Note: it appears that only one prcoessor may write to a   *
+ * file at a time, and that once a processor closes the file *
+ * it cannot reopen it (or at least doing this on the        *
+ * processor that created the file creates problems).        *
+ ************************************************************/
 void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
 {
     PROFILE_START( "writeFile" );
@@ -147,8 +147,8 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
 
 
 /************************************************************
-* Function to register a mesh with silo                     *
-************************************************************/
+ * Function to register a mesh with silo                     *
+ ************************************************************/
 void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::string path )
 {
     if ( mesh == nullptr )
@@ -224,8 +224,8 @@ void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, std::str
 }
 
 /************************************************************
-* Function to get the mesh ids to use for registering       *
-************************************************************/
+ * Function to get the mesh ids to use for registering       *
+ ************************************************************/
 std::vector<AMP::Mesh::MeshID> SiloIO::getMeshIDs( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     std::vector<AMP::Mesh::MeshID> ids;
@@ -248,8 +248,8 @@ std::vector<AMP::Mesh::MeshID> SiloIO::getMeshIDs( AMP::Mesh::Mesh::shared_ptr m
 
 
 /************************************************************
-* Function to register a vector with silo                   *
-************************************************************/
+ * Function to register a vector with silo                   *
+ ************************************************************/
 #ifdef USE_AMP_VECTORS
 void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                              AMP::Mesh::Mesh::shared_ptr mesh,
@@ -314,8 +314,8 @@ void SiloIO::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr )
 
 
 /************************************************************
-* Function to write a mesh                                  *
-************************************************************/
+ * Function to write a mesh                                  *
+ ************************************************************/
 void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cycle, double time )
 {
     PROFILE_START( "writeMesh", 1 );
@@ -351,14 +351,14 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     PROFILE_STOP( "writeMesh - get-nodelist-1", 3 );
     PROFILE_START( "writeMesh - get-nodelist-2", 3 );
     double *coord[3];
-    for ( int i   = 0; i < d_dim; ++i )
-        coord[i]  = new double[node_iterator.size()];
+    for ( int i = 0; i < d_dim; ++i )
+        coord[i] = new double[node_iterator.size()];
     node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
     for ( size_t i = 0; i < node_iterator.size(); ++i ) {
         size_t index = AMP::Utilities::findfirst( nodelist_ids, node_iterator->globalID() );
         AMP_ASSERT( nodelist_ids[index] == node_iterator->globalID() );
         std::vector<double> elem_coord = node_iterator->coord();
-        for ( int j         = 0; j < d_dim; ++j )
+        for ( int j = 0; j < d_dim; ++j )
             coord[j][index] = elem_coord[j];
         ++node_iterator;
     }
@@ -462,8 +462,8 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
         int nvar                                         = 0;
         int centering                                    = 0;
         auto var                                         = new double *[data.varSize[i]];
-        for ( int j            = 0; j < data.varSize[i]; ++j )
-            var[j]             = nullptr;
+        for ( int j = 0; j < data.varSize[i]; ++j )
+            var[j] = nullptr;
         const char *varnames[] = { "1", "2", "3" };
         if ( data.varType[i] > mesh->getGeomType() ) {
             // We have a mixed mesh type and there will be no data of the given type for this mesh
@@ -472,14 +472,14 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
             centering = DB_NODECENT;
             nvar      = (int) nodelist_ids.size();
             for ( int j = 0; j < data.varSize[i]; ++j )
-                var[j]  = new double[nvar];
+                var[j] = new double[nvar];
             std::vector<size_t> dofs( data.varSize[i] );
             std::vector<double> vals( data.varSize[i] );
             for ( int j = 0; j < nvar; ++j ) {
                 DOFs->getDOFs( nodelist_ids[j], dofs );
                 AMP_ASSERT( (int) dofs.size() == data.varSize[i] );
                 data.vec[i]->getValuesByGlobalID( data.varSize[i], &dofs[0], &vals[0] );
-                for ( int k   = 0; k < data.varSize[i]; ++k )
+                for ( int k = 0; k < data.varSize[i]; ++k )
                     var[k][j] = vals[k];
             }
         } else if ( data.varType[i] == mesh->getGeomType() ) {
@@ -487,14 +487,14 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
             centering = DB_ZONECENT;
             nvar      = (int) num_elems;
             for ( int j = 0; j < data.varSize[i]; ++j )
-                var[j]  = new double[nvar];
+                var[j] = new double[nvar];
             std::vector<size_t> dofs( data.varSize[i] );
             std::vector<double> vals( data.varSize[i] );
             AMP::Mesh::MeshIterator it = element_iterator.begin();
             for ( int j = 0; j < nvar; ++j ) {
                 DOFs->getDOFs( it->globalID(), dofs );
                 data.vec[i]->getValuesByGlobalID( data.varSize[i], &dofs[0], &vals[0] );
-                for ( int k   = 0; k < data.varSize[i]; ++k )
+                for ( int k = 0; k < data.varSize[i]; ++k )
                     var[k][j] = vals[k];
                 ++it;
             }
@@ -553,9 +553,9 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
 
 
 /************************************************************
-* Function to syncronize the multimesh data                 *
-* If root==-1, the data will be synced across all procs     *
-************************************************************/
+ * Function to syncronize the multimesh data                 *
+ * If root==-1, the data will be synced across all procs     *
+ ************************************************************/
 void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &data,
                                 int root ) const
 {
@@ -671,9 +671,9 @@ void SiloIO::syncMultiMeshData( std::map<AMP::Mesh::MeshID, siloMultiMeshData> &
 
 
 /************************************************************
-* Function to syncronize a variable list                    *
-* If root==-1, the data will be synced across all procs     *
-************************************************************/
+ * Function to syncronize a variable list                    *
+ * If root==-1, the data will be synced across all procs     *
+ ************************************************************/
 void SiloIO::syncVariableList( std::set<std::string> &data_set, int root ) const
 {
     PROFILE_START( "syncVariableList", 1 );
@@ -681,9 +681,9 @@ void SiloIO::syncVariableList( std::set<std::string> &data_set, int root ) const
     size_t N_local  = data.size();
     size_t N_global = d_comm.sumReduce( N_local );
     auto size_local = new size_t[N_local];
-    for ( size_t i    = 0; i < N_local; ++i )
+    for ( size_t i = 0; i < N_local; ++i )
         size_local[i] = data[i].size();
-    auto size_global  = new size_t[N_global];
+    auto size_global = new size_t[N_global];
     d_comm.allGather( size_local, N_local, size_global );
     size_t tot_size_local = 0;
     for ( size_t i = 0; i < N_local; ++i )
@@ -746,8 +746,8 @@ void SiloIO::syncVariableList( std::set<std::string> &data_set, int root ) const
 
 
 /************************************************************
-* Function to write the summary data                        *
-************************************************************/
+ * Function to write the summary data                        *
+ ************************************************************/
 void SiloIO::writeSummary( std::string filename, int cycle, double time )
 {
     PROFILE_START( "writeSummary", 1 );
@@ -803,7 +803,7 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
             std::string file       = data.name;
             AMP_ASSERT( !file.empty() );
             if ( file.compare( 0, base_path.size(), base_path ) == 0 )
-                file   = file.substr( base_path.size() );
+                file = file.substr( base_path.size() );
             size_t pos = find_slash( file );
             if ( pos != std::string::npos )
                 subdirs.insert( file.substr( 0, pos ) );
@@ -820,7 +820,7 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
                 std::string file = data.meshes[i].file;
                 AMP_ASSERT( !file.empty() );
                 if ( file.compare( 0, base_path.size(), base_path ) == 0 )
-                    file     = file.substr( base_path.size() );
+                    file = file.substr( base_path.size() );
                 meshNames[i] = file + ":" + data.meshes[i].path + "/" + data.meshes[i].meshName;
             }
             auto meshnames = new char *[data.meshes.size()];
@@ -913,8 +913,8 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
 
 
 /************************************************************
-* Functions for siloBaseMeshData                            *
-************************************************************/
+ * Functions for siloBaseMeshData                            *
+ ************************************************************/
 size_t SiloIO::siloBaseMeshData::size()
 {
     size_t N_bytes = sizeof( AMP::Mesh::MeshID ); // Store the mesh id
@@ -1032,8 +1032,8 @@ SiloIO::siloBaseMeshData SiloIO::siloBaseMeshData::unpack( char *ptr )
 
 
 /************************************************************
-* Functions for siloMultiMeshData                           *
-************************************************************/
+ * Functions for siloMultiMeshData                           *
+ ************************************************************/
 SiloIO::siloMultiMeshData::siloMultiMeshData( const SiloIO::siloMultiMeshData &rhs )
     : id( rhs.id ),
       mesh( rhs.mesh ),
@@ -1142,8 +1142,8 @@ SiloIO::siloMultiMeshData SiloIO::siloMultiMeshData::unpack( char *ptr )
 
 
 /************************************************************
-* Some utilit functions                                     *
-************************************************************/
+ * Some utilit functions                                     *
+ ************************************************************/
 void createSiloDirectory( DBfile *FileHandle, std::string path )
 {
     // Create a subdirectory tree from the current working path if it does not exist
@@ -1199,5 +1199,5 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr,
 #endif
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

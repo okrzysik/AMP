@@ -130,5 +130,5 @@ void NavierStokesGalWFLinearElement::apply()
 
     } // end for qp
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

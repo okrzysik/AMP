@@ -143,7 +143,7 @@ private:
                                std::vector<double> &data );
 #endif
 };
-}
-}
+} // namespace Utilities
+} // namespace AMP
 
 #endif

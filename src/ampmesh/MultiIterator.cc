@@ -14,8 +14,8 @@ static MeshElement nullElement;
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 MultiIterator::MultiIterator() : d_localPos( 0 ), d_iteratorNum( 0 )
 {
     d_typeID = MultiIteratorTypeID;
@@ -96,27 +96,27 @@ MultiIterator &MultiIterator::operator=( const MultiIterator &rhs )
 
 
 /********************************************************
-* Function to clone the iterator                        *
-********************************************************/
+ * Function to clone the iterator                        *
+ ********************************************************/
 MeshIterator *MultiIterator::clone() const { return new MultiIterator( *this ); }
 
 
 /********************************************************
-* De-constructor                                        *
-********************************************************/
+ * De-constructor                                        *
+ ********************************************************/
 MultiIterator::~MultiIterator() {}
 
 
 /********************************************************
-* Return an iterator to the beginning or end            *
-********************************************************/
+ * Return an iterator to the beginning or end            *
+ ********************************************************/
 MeshIterator MultiIterator::begin() const { return MultiIterator( d_iterators, 0 ); }
 MeshIterator MultiIterator::end() const { return MultiIterator( d_iterators, d_size ); }
 
 
 /********************************************************
-* Increment/Decrement the iterator                      *
-********************************************************/
+ * Increment/Decrement the iterator                      *
+ ********************************************************/
 MeshIterator &MultiIterator::operator++()
 {
     // Prefix increment (increment and return this)
@@ -188,8 +188,8 @@ MeshIterator MultiIterator::operator--( int )
 
 
 /********************************************************
-* Random access incrementors                            *
-********************************************************/
+ * Random access incrementors                            *
+ ********************************************************/
 MeshIterator MultiIterator::operator+( int n ) const
 {
     MultiIterator tmp( *this ); // Create a temporary iterator
@@ -261,10 +261,10 @@ MeshIterator &MultiIterator::operator+=( int n )
 
 
 /********************************************************
-* Compare two iterators                                 *
-* Two MultiIterators are the same if both the list of   *
-* iterators and the current position are the same.      *
-********************************************************/
+ * Compare two iterators                                 *
+ * Two MultiIterators are the same if both the list of   *
+ * iterators and the current position are the same.      *
+ ********************************************************/
 bool MultiIterator::operator==( const MeshIterator &rhs ) const
 {
     // Convert rhs to a MultiIterator* so we can access the base class members
@@ -313,5 +313,5 @@ bool MultiIterator::operator==( const MeshIterator &rhs ) const
 bool MultiIterator::operator!=( const MeshIterator &rhs ) const { return !operator==( rhs ); }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

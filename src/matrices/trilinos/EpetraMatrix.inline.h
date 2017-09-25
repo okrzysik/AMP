@@ -25,5 +25,5 @@ inline EpetraMatrix::~EpetraMatrix()
 inline Epetra_CrsMatrix &EpetraMatrix::getEpetra_CrsMatrix() { return *d_epetraMatrix; }
 
 inline const Epetra_CrsMatrix &EpetraMatrix::getEpetra_CrsMatrix() const { return *d_epetraMatrix; }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

@@ -158,6 +158,6 @@ private:
 
     static void exitFun();
 };
-}
+} // namespace AMP
 
 #endif

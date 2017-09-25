@@ -9,8 +9,8 @@ namespace AMP {
 namespace LinearAlgebra {
 
 /**  \class  EpetraVectorParameters
-  *  \brief  Parameters class to construct an EpetraVector
-  */
+ *  \brief  Parameters class to construct an EpetraVector
+ */
 class EpetraVectorParameters : public VectorParameters
 {
 };
@@ -34,12 +34,12 @@ class EpetraVector
 {
 protected:
     /**  \brief Constructor
-      */
+     */
     EpetraVector();
 
 public:
     /**  \brief Destructor
-      */
+     */
     virtual ~EpetraVector();
 
     /**
@@ -89,33 +89,33 @@ public:
     virtual const Epetra_Vector &getEpetra_Vector() const = 0;
 
     /**
-      *  \brief  Obtain a view of a vector with an Epetra_Vector wrapper
-      *  \param[in] vec  The vector to get an Epetra_Vector view of.
-      *  \return A Vector::shared_ptr guaranteed to have an Epetra_Vector
-      *   wrapper available through the getEpetra_Vector() interface.
-      *  \see getEpetra_Vector()
-      *  \details  If the vector has an Epetra_Vector wrapper already
-      *  created, it is returned.  Otherwise, it will try to create an
-      *  Epetra_Vector wrapper around the Vector.  If it fails, an
-      *  exception is thrown.
-      */
+     *  \brief  Obtain a view of a vector with an Epetra_Vector wrapper
+     *  \param[in] vec  The vector to get an Epetra_Vector view of.
+     *  \return A Vector::shared_ptr guaranteed to have an Epetra_Vector
+     *   wrapper available through the getEpetra_Vector() interface.
+     *  \see getEpetra_Vector()
+     *  \details  If the vector has an Epetra_Vector wrapper already
+     *  created, it is returned.  Otherwise, it will try to create an
+     *  Epetra_Vector wrapper around the Vector.  If it fails, an
+     *  exception is thrown.
+     */
     static Vector::shared_ptr view( Vector::shared_ptr vec );
 
     /**
-      *  \brief  Obtain a view of a vector with an Epetra_Vector wrapper
-      *  \param[in] vec The vector to get an Epetra_Vector view of.
-      *  \return A Vector::shared_ptr guaranteed to have an Epetra_Vector
-      *   wrapper available through the getEpetra_Vector() interface.
-      *  \see getEpetra_Vector()
-      *  \details  If the vector has an Epetra_Vector wrapper already
-      *  created, it is returned.  Otherwise, it will try to create an
-      *  Epetra_Vector wrapper around the Vector.  If it fails, an
-      *  exception is thrown.
-      */
+     *  \brief  Obtain a view of a vector with an Epetra_Vector wrapper
+     *  \param[in] vec The vector to get an Epetra_Vector view of.
+     *  \return A Vector::shared_ptr guaranteed to have an Epetra_Vector
+     *   wrapper available through the getEpetra_Vector() interface.
+     *  \see getEpetra_Vector()
+     *  \details  If the vector has an Epetra_Vector wrapper already
+     *  created, it is returned.  Otherwise, it will try to create an
+     *  Epetra_Vector wrapper around the Vector.  If it fails, an
+     *  exception is thrown.
+     */
     static Vector::const_shared_ptr constView( Vector::const_shared_ptr vec );
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 
 #endif

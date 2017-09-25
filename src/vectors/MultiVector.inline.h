@@ -47,5 +47,5 @@ inline Vector::shared_ptr &MultiVector::getVector( VectorOperations &rhs, size_t
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP

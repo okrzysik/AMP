@@ -7,5 +7,5 @@ PetscSNESSolverParameters::PetscSNESSolverParameters( const AMP::shared_ptr<AMP:
     : SolverStrategyParameters( db )
 {
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

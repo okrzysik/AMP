@@ -195,7 +195,7 @@ inline double YoungsModulusProp::eval( std::vector<double> &args )
 }
 
 inline double PoissonRatioProp::eval( std::vector<double> & ) { return PRatio; }
-}
+} // namespace Steel316_MSRZC_09_NS
 
 //=================== Materials =====================================================
 
@@ -209,5 +209,5 @@ Steel316_MSRZC_09::Steel316_MSRZC_09()
     INSERT_PROPERTY_IN_MAP( YoungsModulus, Steel316_MSRZC_09_NS );
     INSERT_PROPERTY_IN_MAP( PoissonRatio, Steel316_MSRZC_09_NS );
 }
-}
-}
+} // namespace Materials
+} // namespace AMP

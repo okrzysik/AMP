@@ -7,8 +7,8 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Set/Get individual values                                     *
-****************************************************************/
+ * Set/Get individual values                                     *
+ ****************************************************************/
 void VectorData::setValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
     AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
@@ -100,8 +100,8 @@ void VectorData::getGhostAddValuesByGlobalID( int numVals, size_t *ndx, double *
 
 
 /****************************************************************
-* makeConsistent                                                *
-****************************************************************/
+ * makeConsistent                                                *
+ ****************************************************************/
 void VectorData::makeConsistent( ScatterType t )
 {
     if ( t == ScatterType::CONSISTENT_ADD ) {
@@ -127,8 +127,8 @@ void VectorData::makeConsistent( ScatterType t )
 
 
 /****************************************************************
-* dump data to ostream                                          *
-****************************************************************/
+ * dump data to ostream                                          *
+ ****************************************************************/
 void VectorData::dumpOwnedData( std::ostream &out, size_t GIDoffset, size_t LIDoffset ) const
 {
     auto curElement = begin();
@@ -157,8 +157,8 @@ void VectorData::dumpGhostedData( std::ostream &out, size_t offset ) const
 
 
 /****************************************************************
-* dump data to ostream                                          *
-****************************************************************/
+ * dump data to ostream                                          *
+ ****************************************************************/
 void VectorData::copyGhostValues( const VectorData &rhs )
 {
     if ( getGhostSize() == 0 ) {
@@ -182,5 +182,5 @@ void VectorData::copyGhostValues( const VectorData &rhs )
     }
 }
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP

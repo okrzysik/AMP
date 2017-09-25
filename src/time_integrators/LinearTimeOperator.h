@@ -106,7 +106,7 @@ protected:
 
 private:
 };
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif

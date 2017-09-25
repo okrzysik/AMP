@@ -248,7 +248,7 @@ void DiffusionNonlinearFEOperator::preElementOperation(
     d_currNodes = elem.getElements( AMP::Mesh::GeomType::Vertex );
     std::vector<AMP::Mesh::MeshElementID> ids( d_currNodes.size() );
     for ( size_t i = 0; i < d_currNodes.size(); i++ )
-        ids[i]     = d_currNodes[i].globalID();
+        ids[i] = d_currNodes[i].globalID();
 
     std::vector<size_t> dofs( d_currNodes.size() );
     for ( unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
@@ -263,7 +263,7 @@ void DiffusionNonlinearFEOperator::preElementOperation(
     }
 
     d_elementOutputVector.resize( d_currNodes.size() );
-    for ( unsigned int i         = 0; i < d_currNodes.size(); i++ )
+    for ( unsigned int i = 0; i < d_currNodes.size(); i++ )
         d_elementOutputVector[i] = 0.0;
 
     d_diffNonlinElem->setElementVectors( elementInputVectors, d_elementOutputVector );
@@ -286,7 +286,7 @@ void DiffusionNonlinearFEOperator::postElementOperation()
 
     std::vector<AMP::Mesh::MeshElementID> ids( d_currNodes.size() );
     for ( size_t i = 0; i < d_currNodes.size(); i++ )
-        ids[i]     = d_currNodes[i].globalID();
+        ids[i] = d_currNodes[i].globalID();
 
     AMP::Discretization::DOFManager::shared_ptr DOF = d_outVec->getDOFManager();
     std::vector<size_t> dofs( d_currNodes.size() );
@@ -488,5 +488,5 @@ bool DiffusionNonlinearFEOperator::isValidInput( AMP::LinearAlgebra::Vector::sha
 
     return result;
 }
-}
-} // end namespace
+} // namespace Operator
+} // namespace AMP

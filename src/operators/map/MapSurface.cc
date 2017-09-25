@@ -56,5 +56,5 @@ void MapSurface::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     mapMaster->apply( inpVec, nullVec );
     mapTarget->apply( gap1DVec, nullVec );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

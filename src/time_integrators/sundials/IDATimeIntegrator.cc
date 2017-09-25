@@ -23,8 +23,8 @@ namespace TimeIntegrator {
 
 
 /************************************************************************
-*  Constructor.                                                         *
-************************************************************************/
+ *  Constructor.                                                         *
+ ************************************************************************/
 IDATimeIntegrator::IDATimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters )
     : TimeIntegrator( parameters )
 {
@@ -33,8 +33,8 @@ IDATimeIntegrator::IDATimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> 
 
 
 /************************************************************************
-*  Destructor.                                                          *
-************************************************************************/
+ *  Destructor.                                                          *
+ ************************************************************************/
 IDATimeIntegrator::~IDATimeIntegrator()
 {
     // Delete the time operator
@@ -48,8 +48,8 @@ IDATimeIntegrator::~IDATimeIntegrator()
 
 
 /************************************************************************
-* Initialize.                                                           *
-************************************************************************/
+ * Initialize.                                                           *
+ ************************************************************************/
 void IDATimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
 #ifdef DEBUG_CHECK_ASSERTIONS
@@ -217,8 +217,8 @@ void IDATimeIntegrator::setupVectors( void )
 
 
 /************************************************************************
-*  Update internal state to reflect time advanced solution.             *
-************************************************************************/
+ *  Update internal state to reflect time advanced solution.             *
+ ************************************************************************/
 void IDATimeIntegrator::updateSolution( void )
 {
     /*
@@ -235,8 +235,8 @@ void IDATimeIntegrator::updateSolution( void )
 
 
 /************************************************************************
-* Read input from database.                                             *
-************************************************************************/
+ * Read input from database.                                             *
+ ************************************************************************/
 void IDATimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 {
     if ( input_db->keyExists( "bLinearMassOperator" ) ) {
@@ -526,6 +526,6 @@ AMP::shared_ptr<AMP::LinearAlgebra::Vector> IDATimeIntegrator::getSourceTerm() c
     return ( d_pSourceTerm );
 }
 }
-}
+} // namespace AMP
 
 #endif

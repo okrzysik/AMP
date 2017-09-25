@@ -17,5 +17,5 @@ MatrixParameters::MatrixParameters( AMP::Discretization::DOFManager::shared_ptr 
     d_DOFManagerLeft  = left;
     d_DOFManagerRight = right;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

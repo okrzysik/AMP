@@ -13,9 +13,9 @@ namespace AMP {
 namespace Operator {
 
 /** \brief  For problems with a great deal of symmetry, it is possible
-  * to move data from one mesh to another by generating a 1D appoximation
-  * using one mesh and interpolating the results on another
-  */
+ * to move data from one mesh to another by generating a 1D appoximation
+ * using one mesh and interpolating the results on another
+ */
 
 
 /**
@@ -140,7 +140,7 @@ private:
 };
 
 
-} // Operator namespace
-} // AMP namespace
+} // namespace Operator
+} // namespace AMP
 
 #endif

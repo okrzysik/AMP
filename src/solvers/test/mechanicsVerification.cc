@@ -153,11 +153,11 @@ void computeForcingTerms(
 }
 
 /** Compute exact solution */
-void computeExactSolution( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                           AMP::shared_ptr<AMP::MechanicsManufacturedSolution::MMS>
-                               manufacturedSolution,
-                           AMP::LinearAlgebra::Vector::shared_ptr exactSolutionsVec,
-                           bool verbose = false )
+void computeExactSolution(
+    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    AMP::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
+    AMP::LinearAlgebra::Vector::shared_ptr exactSolutionsVec,
+    bool verbose = false )
 {
     // Loop over all nodes
     AMP::Discretization::DOFManager::shared_ptr dofMap = exactSolutionsVec->getDOFManager();
@@ -179,7 +179,8 @@ void computeExactSolution( AMP::Mesh::Mesh::shared_ptr meshAdapter,
         AMP::pout << "--------------------------------------------\n"
                   << "---- exact solution norm = " << std::setprecision( 15 )
                   << exactSolutionsVec->L2Norm() << "\n"
-                  << "--------------------------------------------\n" << std::endl;
+                  << "--------------------------------------------\n"
+                  << std::endl;
     } // end if verbose
 }
 
@@ -271,13 +272,13 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
     manufacturedSolution->setYoungsModulus( E );
 
     /**
-      * default values Mi=1.0, Lj=1.0, aij=0, and bij=1
-      *
-      * Linear        -> u_i = Mi*product_j (aij*j/Lj+bij) where i,j = x,y,z
-      *
-      * Trigonometric -> u_i = Mi*product_j sin((aij*j/Lj+bij)*pi/2) where i,j = x,y,z
-      *
-      */
+     * default values Mi=1.0, Lj=1.0, aij=0, and bij=1
+     *
+     * Linear        -> u_i = Mi*product_j (aij*j/Lj+bij) where i,j = x,y,z
+     *
+     * Trigonometric -> u_i = Mi*product_j sin((aij*j/Lj+bij)*pi/2) where i,j = x,y,z
+     *
+     */
     std::string typeCoeffAB = mmsDatabase->getStringWithDefault( "type_coeff_ab", "simple" );
     AMP::pout << "Manufactured solution = " << mmsDatabase->getString( "name" ) << "\n";
     AMP::pout << "Type of coefficient = " << typeCoeffAB << "\n";
@@ -295,44 +296,44 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
         double randMax = +1.0;
         srand( 0 ); // to be able to reproduce results
 
-        manufacturedSolution->set_axx(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_bxx(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_axy(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_bxy(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_axz(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_bxz(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
+        manufacturedSolution->set_axx( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_bxx( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_axy( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_bxy( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_axz( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_bxz( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
 
-        manufacturedSolution->set_ayx(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_byx(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_ayy(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_byy(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_ayz(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_byz(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
+        manufacturedSolution->set_ayx( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_byx( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_ayy( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_byy( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_ayz( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_byz( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
 
-        manufacturedSolution->set_azx(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_bzx(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_azy(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_bzy(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_azz(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
-        manufacturedSolution->set_bzz(
-            randMin + ( randMax - randMin ) * double( rand() ) / double( RAND_MAX ) );
+        manufacturedSolution->set_azx( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_bzx( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_azy( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_bzy( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_azz( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
+        manufacturedSolution->set_bzz( randMin + ( randMax - randMin ) * double( rand() ) /
+                                                     double( RAND_MAX ) );
     } else {
         AMP_ERROR( "Unknown value for typeCoeffAB" );
     } // end if typeCoeffAB
@@ -495,7 +496,8 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
     AMP::pout << "------------------------------------------------\n"
               << "---- numerical solution norm = " << std::setprecision( 15 ) << solVec->L2Norm()
               << "\n"
-              << "------------------------------------------------\n" << std::endl;
+              << "------------------------------------------------\n"
+              << std::endl;
 
     /** Compute exact solution over the domain to compare with numerical solution */
     AMP::LinearAlgebra::Vector::shared_ptr exactSolVec =
@@ -521,7 +523,8 @@ void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
               << " >>>>\n"
               << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
               << "scaled exact error norm = " << std::setprecision( 15 )
-              << scaleFactor * exactErrVec->L2Norm() << "\n" << std::endl;
+              << scaleFactor * exactErrVec->L2Norm() << "\n"
+              << std::endl;
 
     if ( manufacturedSolution->getName() == "Linear" ) {
         if ( scaleFactor * exactErrVec->L2Norm() < 1.0e-12 ) {

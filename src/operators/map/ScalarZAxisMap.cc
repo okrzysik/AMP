@@ -9,8 +9,8 @@ namespace Operator {
 
 
 /************************************************************************
-*  Default constructor                                                  *
-************************************************************************/
+ *  Default constructor                                                  *
+ ************************************************************************/
 ScalarZAxisMap::ScalarZAxisMap( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : Map3to1to3( p )
 {
@@ -38,14 +38,14 @@ ScalarZAxisMap::ScalarZAxisMap( const AMP::shared_ptr<AMP::Operator::OperatorPar
 
 
 /************************************************************************
-*  De-constructor                                                       *
-************************************************************************/
+ *  De-constructor                                                       *
+ ************************************************************************/
 ScalarZAxisMap::~ScalarZAxisMap() {}
 
 
 /************************************************************************
-*  Check if the map type is "ScalarZAxis"                               *
-************************************************************************/
+ *  Check if the map type is "ScalarZAxis"                               *
+ ************************************************************************/
 bool ScalarZAxisMap::validMapType( const std::string &t )
 {
     if ( t == "ScalarZAxis" )
@@ -55,11 +55,11 @@ bool ScalarZAxisMap::validMapType( const std::string &t )
 
 
 /************************************************************************
-*  buildMap                                                             *
-*  This function constructs the map from the given vector.              *
-*  It loops through all values in "cur", storing the value iv using     *
-*  the z-position as the 1D key.                                        *
-************************************************************************/
+ *  buildMap                                                             *
+ *  This function constructs the map from the given vector.              *
+ *  It loops through all values in "cur", storing the value iv using     *
+ *  the z-position as the 1D key.                                        *
+ ************************************************************************/
 std::multimap<double, double>
 ScalarZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
                           const AMP::Mesh::Mesh::shared_ptr,
@@ -85,8 +85,8 @@ ScalarZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
 
 
 /************************************************************************
-*  buildReturn                                                          *
-************************************************************************/
+ *  buildReturn                                                          *
+ ************************************************************************/
 void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr vec,
                                   const AMP::Mesh::Mesh::shared_ptr,
                                   const AMP::Mesh::MeshIterator &iterator,
@@ -164,5 +164,5 @@ void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr v
 }
 
 
-} // Operator namespace
-} // AMP namespace
+} // namespace Operator
+} // namespace AMP

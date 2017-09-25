@@ -45,7 +45,6 @@
 #include "solvers/petsc/PetscSNESSolverParameters.h"
 #include "solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "vectors/Variable.h"
-#include "vectors/Variable.h"
 #include "vectors/Vector.h"
 #include "vectors/VectorBuilder.h"
 #include "vectors/VectorSelector.h"

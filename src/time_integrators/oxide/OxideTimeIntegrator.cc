@@ -15,8 +15,8 @@ namespace TimeIntegrator {
 
 
 /************************************************************************
-* Constructor and destructor for TimeIntegrator.                        *
-************************************************************************/
+ * Constructor and destructor for TimeIntegrator.                        *
+ ************************************************************************/
 OxideTimeIntegrator::OxideTimeIntegrator( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_INSIST( parameters.get() != nullptr, "Null parameter" );
@@ -28,8 +28,8 @@ OxideTimeIntegrator::~OxideTimeIntegrator() {}
 
 
 /************************************************************************
-* Initialize the time integrator and problem                            *
-************************************************************************/
+ * Initialize the time integrator and problem                            *
+ ************************************************************************/
 void OxideTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters )
 {
     PROFILE_START( "initialize" );
@@ -103,14 +103,14 @@ void OxideTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> 
     OxideModel::get_diffusion_coefficients( 500, D );
     for ( size_t i = 0; i < N_layer.size(); i++ ) {
         x0[i] = i * 10.0e-7; // Set the initial thickness to 10 nm
-        for ( int j  = 0; j < N_layer[i]; j++ )
+        for ( int j = 0; j < N_layer[i]; j++ )
             C0[i][j] = Cb[2 * i + 0] +
                        ( Cb[2 * i + 1] - Cb[2 * i + 0] ) * ( j + 0.5 ) / ( (double) N_layer[i] );
     }
     x0[N_layer.size()] = 1e2 * total_depth; // Convert from m to cm
     OxideModel::integrateOxide( 86400, N_layer.size(), &N_layer[0], x0, Cb, C0, D, C1, x1, v1 );
     for ( size_t i = 0; i < N_layer.size(); i++ )
-        depth2[i]  = x1[i + 1] - x1[i];
+        depth2[i] = x1[i + 1] - x1[i];
     // Copy the initial solution to all points in the mesh
     AMP::Discretization::DOFManager::shared_ptr DOF_oxide = d_oxide->getDOFManager();
     AMP::Discretization::DOFManager::shared_ptr DOF_alpha = d_alpha->getDOFManager();
@@ -141,8 +141,8 @@ void OxideTimeIntegrator::initialize( AMP::shared_ptr<TimeIntegratorParameters> 
 
 
 /************************************************************************
-* Reset the time integrator                                             *
-************************************************************************/
+ * Reset the time integrator                                             *
+ ************************************************************************/
 void OxideTimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> )
 {
     AMP_ERROR( "reset is not programmed for OxideTimeIntegrator" );
@@ -150,8 +150,8 @@ void OxideTimeIntegrator::reset( AMP::shared_ptr<TimeIntegratorParameters> )
 
 
 /************************************************************************
-* Reset the time integrator                                             *
-************************************************************************/
+ * Reset the time integrator                                             *
+ ************************************************************************/
 int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
 {
     PROFILE_START( "advanceSolution" );
@@ -197,13 +197,13 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
         depth->getValuesByGlobalID( dofs.size(), &dofs[0], depth2 );
         x0[0] = 0.0;
         for ( size_t i = 0; i < N_layer.size(); i++ )
-            x0[i + 1]  = x0[i] + depth2[i];
+            x0[i + 1] = x0[i] + depth2[i];
         // Perform the time integration
         double dt2 = dt * 3600 * 24; // Convert from days to seconds
         AMP_ASSERT( dt2 >= 0.0 );
         OxideModel::integrateOxide( dt2, N_layer.size(), &N_layer[0], x0, Cb, C0, D, C1, x1, v1 );
         for ( size_t i = 0; i < N_layer.size(); i++ )
-            depth2[i]  = x1[i + 1] - x1[i];
+            depth2[i] = x1[i + 1] - x1[i];
         // Save the results
         DOF_C->getDOFs( id, dofs );
         AMP_ASSERT( (int) dofs.size() == N_total );
@@ -230,20 +230,20 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
 
 
 /************************************************************************
-* Check the solution                                                    *
-************************************************************************/
+ * Check the solution                                                    *
+ ************************************************************************/
 bool OxideTimeIntegrator::checkNewSolution( void ) const { return true; }
 
 
 /************************************************************************
-* Update the solution                                                   *
-************************************************************************/
+ * Update the solution                                                   *
+ ************************************************************************/
 void OxideTimeIntegrator::updateSolution( void ) {}
 
 
 /************************************************************************
-* Return time increment for next solution advance.                      *
-************************************************************************/
+ * Return time increment for next solution advance.                      *
+ ************************************************************************/
 double OxideTimeIntegrator::getNextDt( const bool ) { return 1e10; }
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

@@ -8,20 +8,20 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
-template <typename TYPE, typename OPS, typename DATA>
+ * Constructors                                                  *
+ ****************************************************************/
+template<typename TYPE, typename OPS, typename DATA>
 SimpleVector<TYPE, OPS, DATA>::SimpleVector() : Vector(), DATA()
 {
 }
 
-template <typename TYPE, typename OPS, typename DATA>
+template<typename TYPE, typename OPS, typename DATA>
 Vector::shared_ptr SimpleVector<TYPE, OPS, DATA>::create( size_t localSize, const std::string &var )
 {
     return create( localSize, AMP::make_shared<Variable>( var ) );
 }
 
-template <typename TYPE, typename OPS, typename DATA>
+template<typename TYPE, typename OPS, typename DATA>
 Vector::shared_ptr SimpleVector<TYPE, OPS, DATA>::create( size_t localSize,
                                                           Variable::shared_ptr var )
 {
@@ -36,7 +36,7 @@ Vector::shared_ptr SimpleVector<TYPE, OPS, DATA>::create( size_t localSize,
         AMP::LinearAlgebra::CommunicationList::createEmpty( localSize, comm ) );
     return Vector::shared_ptr( ptr );
 }
-template <typename TYPE, typename OPS, typename DATA>
+template<typename TYPE, typename OPS, typename DATA>
 Vector::shared_ptr
 SimpleVector<TYPE, OPS, DATA>::create( size_t localSize, Variable::shared_ptr var, AMP_MPI comm )
 {
@@ -50,7 +50,7 @@ SimpleVector<TYPE, OPS, DATA>::create( size_t localSize, Variable::shared_ptr va
         AMP::LinearAlgebra::CommunicationList::createEmpty( localSize, comm ) );
     return Vector::shared_ptr( ptr );
 }
-template <typename TYPE, typename OPS, typename DATA>
+template<typename TYPE, typename OPS, typename DATA>
 Vector::shared_ptr
 SimpleVector<TYPE, OPS, DATA>::create( Variable::shared_ptr var,
                                        AMP::Discretization::DOFManager::shared_ptr DOFs,
@@ -64,7 +64,7 @@ SimpleVector<TYPE, OPS, DATA>::create( Variable::shared_ptr var,
     ptr->d_comm = DOFs->getComm();
     return Vector::shared_ptr( ptr );
 }
-template <typename TYPE, typename OPS, typename DATA>
+template<typename TYPE, typename OPS, typename DATA>
 void SimpleVector<TYPE, OPS, DATA>::resize( size_t N )
 {
     d_DOFManager = AMP::make_shared<AMP::Discretization::DOFManager>( N, d_comm );
@@ -74,15 +74,15 @@ void SimpleVector<TYPE, OPS, DATA>::resize( size_t N )
 
 
 /****************************************************************
-* Vector operations                                             *
-****************************************************************/
-template <typename TYPE, typename OPS, typename DATA>
+ * Vector operations                                             *
+ ****************************************************************/
+template<typename TYPE, typename OPS, typename DATA>
 Vector::shared_ptr
 SimpleVector<TYPE, OPS, DATA>::cloneVector( const Variable::shared_ptr name ) const
 {
     return create( name, d_DOFManager, getCommunicationList() );
 }
-template <typename TYPE, typename OPS, typename DATA>
+template<typename TYPE, typename OPS, typename DATA>
 void SimpleVector<TYPE, OPS, DATA>::swapVectors( Vector &rhs )
 {
     auto x = dynamic_cast<SimpleVector *>( &rhs );
@@ -90,15 +90,15 @@ void SimpleVector<TYPE, OPS, DATA>::swapVectors( Vector &rhs )
     // d_Data.swap( x->d_Data );
     AMP_ERROR( "Not finished" );
 }
-template <typename TYPE, typename OPS, typename DATA>
+template<typename TYPE, typename OPS, typename DATA>
 void SimpleVector<TYPE, OPS, DATA>::aliasVector( Vector & )
 {
     AMP_ERROR( "Not implemented" );
 }
-template <typename TYPE, typename OPS, typename DATA>
+template<typename TYPE, typename OPS, typename DATA>
 void SimpleVector<TYPE, OPS, DATA>::assemble()
 {
     AMP_ERROR( "Not implemented" );
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

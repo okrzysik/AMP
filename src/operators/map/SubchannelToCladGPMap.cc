@@ -34,8 +34,8 @@ interp_linear( const std::vector<double> &x, const std::vector<double> &f, doubl
 }
 
 /************************************************************************
-*  Default constructor                                                  *
-************************************************************************/
+ *  Default constructor                                                  *
+ ************************************************************************/
 SubchannelToCladGPMap::SubchannelToCladGPMap(
     const AMP::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : SubchannelToCladMap( p )
@@ -58,14 +58,14 @@ SubchannelToCladGPMap::SubchannelToCladGPMap(
 
 
 /************************************************************************
-*  De-constructor                                                       *
-************************************************************************/
+ *  De-constructor                                                       *
+ ************************************************************************/
 SubchannelToCladGPMap::~SubchannelToCladGPMap() {}
 
 
 /************************************************************************
-*  Check if the map type is "SubchannelToCladMap"                       *
-************************************************************************/
+ *  Check if the map type is "SubchannelToCladMap"                       *
+ ************************************************************************/
 bool SubchannelToCladGPMap::validMapType( const std::string &t )
 {
     if ( t == "SubchannelToCladGPMap" )
@@ -75,8 +75,8 @@ bool SubchannelToCladGPMap::validMapType( const std::string &t )
 
 
 /************************************************************************
-*  Fill the return vector for the given subchannel                      *
-************************************************************************/
+ *  Fill the return vector for the given subchannel                      *
+ ************************************************************************/
 void SubchannelToCladGPMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                               double[4],
                                               AMP::Mesh::Mesh::shared_ptr mesh,
@@ -101,8 +101,8 @@ void SubchannelToCladGPMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared
 
 
 /************************************************************************
-*  Function to build the z-coordinates of the gauss points              *
-************************************************************************/
+ *  Function to build the z-coordinates of the gauss points              *
+ ************************************************************************/
 std::vector<SubchannelToCladGPMap::gaussPointZCoord>
 SubchannelToCladGPMap::getGaussPoints( AMP::Mesh::Mesh::shared_ptr,
                                        const std::vector<AMP::Mesh::MeshElementID> &ids )
@@ -125,11 +125,11 @@ SubchannelToCladGPMap::getGaussPoints( AMP::Mesh::Mesh::shared_ptr,
         std::vector<Point> coordinates = d_fe->get_xyz();
         AMP_ASSERT( coordinates.size() == 4 );
         for ( unsigned int qp = 0; qp < 4; qp++ )
-            z_pos[i].z[qp]    = coordinates[qp]( 2 );
+            z_pos[i].z[qp] = coordinates[qp]( 2 );
     }
     return z_pos;
 }
 
 
-} // Operator namespace
-} // AMP namespace
+} // namespace Operator
+} // namespace AMP

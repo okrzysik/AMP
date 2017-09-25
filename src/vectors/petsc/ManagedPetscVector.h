@@ -10,8 +10,8 @@ namespace LinearAlgebra {
 
 
 /** \typedef ManagedPetscVectorParameters
-* \brief   Requirements for constructing a ManagedPetscVector
-*/
+ * \brief   Requirements for constructing a ManagedPetscVector
+ */
 typedef ManagedVectorParameters ManagedPetscVectorParameters;
 
 
@@ -32,59 +32,59 @@ private:
 
 protected:
     /** \brief  Convenience typedef fpr a ManagedVector
-      */
+     */
     typedef ManagedVector ParentVector;
 
     /** \brief Populate PETSc data structures with functions that call
-      * back into the Vector interface
-      */
+     * back into the Vector interface
+     */
     void initPetsc();
 
 
 public:
     /** \brief Construct a new ManagedPetscVector given a set of parameters
-      * \param[in] params  The parameters describing the new vector
-      */
+     * \param[in] params  The parameters describing the new vector
+     */
     explicit ManagedPetscVector( VectorParameters::shared_ptr params );
 
     /** \brief Construct a view of another vector
-      * \param[in] alias The vector to view
-      */
+     * \param[in] alias The vector to view
+     */
     explicit ManagedPetscVector( Vector::shared_ptr alias );
 
     /** \brief Method to create a duplicate of this vector for VecDuplicate
-      * \return Raw pointer to a new vector.  This does not copy data
-      */
+     * \return Raw pointer to a new vector.  This does not copy data
+     */
     ManagedPetscVector *petscDuplicate();
 
     /** \brief Identifies whether this vector was created through the
-      * VecDuplicate interface
-      * \return true if constructed with VecDuplicate.  False otherwise
-      */
+     * VecDuplicate interface
+     * \return true if constructed with VecDuplicate.  False otherwise
+     */
     bool constructedWithPetscDuplicate();
 
     /** \brief Destructor
-      */
+     */
     virtual ~ManagedPetscVector();
 
     /** \brief Create an exact clone of this vector.
-      * \return A raw pointer to a clone of this vector
-      */
+     * \return A raw pointer to a clone of this vector
+     */
     ManagedPetscVector *rawClone() const;
 
 
     /** \brief Copy data from a PETSc Vec to an AMP Vector
-      * \param[out] dest  Vector to copy to
-      * \param[in]  src   Vec to copy from
-      */
+     * \param[out] dest  Vector to copy to
+     * \param[in]  src   Vec to copy from
+     */
     static void copyFromPetscVec( Vector &dest, Vec src );
 
     /** \brief Create data from a PETSc Vec, but do not copy data
-      * \param[in]  src   Vec to copy from
-      * \param[in]  comm  The AMP_MPI to create the AMP Vector on.
-      * \return A new AMP vector with identical data distribution to the
-      * PETSc Vec.
-      */
+     * \param[in]  src   Vec to copy from
+     * \param[in]  comm  The AMP_MPI to create the AMP Vector on.
+     * \return A new AMP vector with identical data distribution to the
+     * PETSc Vec.
+     */
     static Vector::shared_ptr createFromPetscVec( Vec src, AMP_MPI &comm );
 
 
@@ -102,8 +102,8 @@ public:
 protected:
     virtual ManagedVector *getNewRawPtr() const override;
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #include "ManagedPetscVector.inline.h"
 

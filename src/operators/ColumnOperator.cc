@@ -27,8 +27,7 @@ void ColumnOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
 AMP::shared_ptr<OperatorParameters>
 ColumnOperator::getParameters( const std::string &type,
                                AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                               AMP::shared_ptr<OperatorParameters>
-                                   params )
+                               AMP::shared_ptr<OperatorParameters> params )
 {
     AMP::shared_ptr<AMP::Database> db;
     AMP::shared_ptr<ColumnOperatorParameters> opParameters( new ColumnOperatorParameters( db ) );
@@ -108,5 +107,5 @@ bool ColumnOperator::isValidInput( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &
 
     return bRetVal;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

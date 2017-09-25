@@ -31,8 +31,8 @@ namespace PETSC {
 
 
 /********************************************************
-* Helper functions                                      *
-********************************************************/
+ * Helper functions                                      *
+ ********************************************************/
 inline PetscErrorCode vecDestroy( Vec *v )
 {
 #if ( PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR == 0 )
@@ -65,6 +65,6 @@ inline PetscErrorCode matDestroy( Mat *mat )
 }
 
 
-} // PETSC
+} // namespace PETSC
 
 #endif

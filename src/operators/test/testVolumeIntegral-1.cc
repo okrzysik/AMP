@@ -1,4 +1,3 @@
-#include "utils/AMPManager.h"
 #include "materials/Material.h"
 #include "utils/AMPManager.h"
 #include "utils/Database.h"
@@ -6,7 +5,6 @@
 #include "utils/InputManager.h"
 #include "utils/PIO.h"
 #include "utils/UnitTest.h"
-#include "utils/Utilities.h"
 #include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
 #include "vectors/Variable.h"

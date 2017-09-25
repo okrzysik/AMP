@@ -17,8 +17,8 @@ static unsigned int generate_id( const std::vector<unsigned int> &ids );
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 libMeshElement::libMeshElement()
 {
     typeID     = libMeshElementTypeID;
@@ -62,8 +62,7 @@ libMeshElement::libMeshElement( int dim,
 }
 libMeshElement::libMeshElement( int dim,
                                 GeomType type,
-                                AMP::shared_ptr<::Elem>
-                                    libmesh_element,
+                                AMP::shared_ptr<::Elem> libmesh_element,
                                 unsigned int rank,
                                 MeshID meshID,
                                 const libMesh *mesh )
@@ -127,20 +126,20 @@ libMeshElement &libMeshElement::operator=( const libMeshElement &rhs )
 
 
 /****************************************************************
-* De-constructor                                                *
-****************************************************************/
+ * De-constructor                                                *
+ ****************************************************************/
 libMeshElement::~libMeshElement() { element = nullptr; }
 
 
 /****************************************************************
-* Function to clone the element                                 *
-****************************************************************/
+ * Function to clone the element                                 *
+ ****************************************************************/
 MeshElement *libMeshElement::clone() const { return new libMeshElement( *this ); }
 
 
 /****************************************************************
-* Return the global rank of the owner rank                      *
-****************************************************************/
+ * Return the global rank of the owner rank                      *
+ ****************************************************************/
 unsigned int libMeshElement::globalOwnerRank() const
 {
     return d_mesh->getComm().globalRanks()[d_globalID.owner_rank()];
@@ -148,8 +147,8 @@ unsigned int libMeshElement::globalOwnerRank() const
 
 
 /****************************************************************
-* Function to get the elements composing the current element    *
-****************************************************************/
+ * Function to get the elements composing the current element    *
+ ****************************************************************/
 void libMeshElement::getElements( const GeomType type, std::vector<MeshElement> &children ) const
 {
     AMP_INSIST( type <= d_globalID.type(), "sub-elements must be of a smaller or equivalent type" );
@@ -166,7 +165,7 @@ void libMeshElement::getElements( const GeomType type, std::vector<MeshElement> 
         if ( elem->has_children() ) {
             children.resize( elem->n_children() );
             for ( unsigned int i = 0; i < children.size(); i++ )
-                children[i]      = libMeshElement(
+                children[i] = libMeshElement(
                     d_dim, type, (void *) elem->child( i ), d_rank, d_meshID, d_mesh );
         } else {
             children.resize( 1 );
@@ -176,7 +175,7 @@ void libMeshElement::getElements( const GeomType type, std::vector<MeshElement> 
         // Return the nodes of the current element
         children.resize( elem->n_nodes() );
         for ( unsigned int i = 0; i < children.size(); i++ )
-            children[i]      = libMeshElement(
+            children[i] = libMeshElement(
                 d_dim, type, (void *) elem->get_node( i ), d_rank, d_meshID, d_mesh );
     } else {
         // Return the children
@@ -217,8 +216,8 @@ void libMeshElement::getElements( const GeomType type, std::vector<MeshElement> 
 
 
 /****************************************************************
-* Function to get the neighboring elements                      *
-****************************************************************/
+ * Function to get the neighboring elements                      *
+ ****************************************************************/
 void libMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const
 {
     neighbors.clear();
@@ -253,8 +252,8 @@ void libMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &neighbo
 
 
 /****************************************************************
-* Functions to get basic element properties                     *
-****************************************************************/
+ * Functions to get basic element properties                     *
+ ****************************************************************/
 double libMeshElement::volume() const
 {
     if ( d_globalID.type() == GeomType::Vertex )
@@ -269,7 +268,7 @@ void libMeshElement::coord( size_t &N, double *x ) const
     ::Node *node = (::Node *) ptr_element;
     N            = std::min<size_t>( N, d_dim );
     for ( int i = 0; i < d_dim; i++ )
-        x[i]    = ( *node )( i );
+        x[i] = ( *node )( i );
 }
 void libMeshElement::centroid( size_t &N, double *x ) const
 {
@@ -279,7 +278,7 @@ void libMeshElement::centroid( size_t &N, double *x ) const
     ::Point center = elem->centroid();
     N              = std::min<size_t>( N, d_dim );
     for ( int i = 0; i < d_dim; i++ )
-        x[i]    = center( i );
+        x[i] = center( i );
 }
 bool libMeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
 {
@@ -373,9 +372,9 @@ bool libMeshElement::isInBlock( int id ) const
 
 
 /****************************************************************
-* Functions to generate a new id based on the nodes             *
-* Note: this function requires the node ids to be sorted        *
-****************************************************************/
+ * Functions to generate a new id based on the nodes             *
+ * Note: this function requires the node ids to be sorted        *
+ ****************************************************************/
 static unsigned int fliplr( unsigned int x )
 {
     unsigned int y     = 0;
@@ -392,9 +391,9 @@ unsigned int generate_id( const std::vector<unsigned int> &ids )
 {
     unsigned int id0 = ids[0];
     unsigned int id_diff[100];
-    for ( size_t i     = 1; i < ids.size(); i++ )
+    for ( size_t i = 1; i < ids.size(); i++ )
         id_diff[i - 1] = ids[i] - ids[i - 1];
-    unsigned int tmp   = 0;
+    unsigned int tmp = 0;
     for ( size_t i = 0; i < ids.size() - 1; i++ ) {
         unsigned int shift = ( 7 * i ) % 13;
         tmp                = tmp ^ ( id_diff[i] << shift );
@@ -404,5 +403,5 @@ unsigned int generate_id( const std::vector<unsigned int> &ids )
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

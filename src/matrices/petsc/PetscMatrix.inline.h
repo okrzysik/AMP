@@ -13,5 +13,5 @@ inline Mat &PetscMatrix::getMat() { return d_Mat; }
 inline Mat PetscMatrix::getMat() const { return d_Mat; }
 
 
-} // LinearAlgebra
-} // AMP
+} // namespace LinearAlgebra
+} // namespace AMP

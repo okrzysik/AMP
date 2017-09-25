@@ -55,10 +55,10 @@ namespace AMP {
 class AMP_MPI final
 {
 public: // Constructors
-        /**
-         *\brief  Is MPI active
-         *\details  This returns true if MPI is initailized and not finalized
-         */
+    /**
+     *\brief  Is MPI active
+     *\details  This returns true if MPI is initailized and not finalized
+     */
     static bool MPI_active();
 
 
@@ -127,11 +127,11 @@ public: // Constructors
 
 
 public: // Member functions
-        /**
-         * \brief Get the node name
-         * \details  This function returns a unique name for each node.
-         *    It is a wrapper for MPI_Get_processor_name.
-         */
+    /**
+     * \brief Get the node name
+     * \details  This function returns a unique name for each node.
+     *    It is a wrapper for MPI_Get_processor_name.
+     */
     static std::string getNodeName();
 
 
@@ -435,7 +435,7 @@ public: // Member functions
      *   It returns the sum across all processors;
      * \param value  The input value for the all reduce
      */
-    template <class type>
+    template<class type>
     type sumReduce( const type value ) const;
 
 
@@ -447,7 +447,7 @@ public: // Member functions
      * \param x  The input/output array for the reduce
      * \param n  The number of values in the array (must match on all nodes)
      */
-    template <class type>
+    template<class type>
     void sumReduce( type *x, const int n = 1 ) const;
 
 
@@ -460,7 +460,7 @@ public: // Member functions
      * \param y  The output array for the reduce
      * \param n  The number of values in the array (must match on all nodes)
      */
-    template <class type>
+    template<class type>
     void sumReduce( const type *x, type *y, const int n = 1 ) const;
 
 
@@ -470,7 +470,7 @@ public: // Member functions
      *   It returns the minimum value across all processors;
      * \param value  The input value for the all reduce
      */
-    template <class type>
+    template<class type>
     type minReduce( const type value ) const;
 
 
@@ -488,7 +488,7 @@ public: // Member functions
      * \param rank_of_min  Optional array indicating the rank of the processor containing the
      * minimum value
      */
-    template <class type>
+    template<class type>
     void minReduce( type *x, const int n = 1, int *rank_of_min = nullptr ) const;
 
 
@@ -507,7 +507,7 @@ public: // Member functions
      * \param rank_of_min  Optional array indicating the rank of the processor containing the
      * minimum value
      */
-    template <class type>
+    template<class type>
     void minReduce( const type *x, type *y, const int n = 1, int *rank_of_min = nullptr ) const;
 
 
@@ -517,7 +517,7 @@ public: // Member functions
      *   It returns the maximum value across all processors;
      * \param value     The input value for the all reduce
      */
-    template <class type>
+    template<class type>
     type maxReduce( const type value ) const;
 
 
@@ -535,7 +535,7 @@ public: // Member functions
      * \param rank_of_max  Optional array indicating the rank of the processor containing the
      * minimum value
      */
-    template <class type>
+    template<class type>
     void maxReduce( type *x, const int n = 1, int *rank_of_max = nullptr ) const;
 
 
@@ -554,7 +554,7 @@ public: // Member functions
      * \param rank_of_max  Optional array indicating the rank of the processor containing the
      * minimum value
      */
-    template <class type>
+    template<class type>
     void maxReduce( const type *x, type *y, const int n = 1, int *rank_of_max = nullptr ) const;
 
 
@@ -566,7 +566,7 @@ public: // Member functions
      * \param y         The output array for the scan
      * \param n         The number of values in the array (must match on all nodes)
      */
-    template <class type>
+    template<class type>
     void sumScan( const type *x, type *y, const int n = 1 ) const;
 
 
@@ -578,7 +578,7 @@ public: // Member functions
      * \param y         The output array for the scan
      * \param n         The number of values in the array (must match on all nodes)
      */
-    template <class type>
+    template<class type>
     void minScan( const type *x, type *y, const int n = 1 ) const;
 
 
@@ -590,7 +590,7 @@ public: // Member functions
      * \param y         The output array for the scan
      * \param n     The number of values in the array (must match on all nodes)
      */
-    template <class type>
+    template<class type>
     void maxScan( const type *x, type *y, const int n = 1 ) const;
 
 
@@ -600,7 +600,7 @@ public: // Member functions
      * \param value     The input value for the broadcast.
      * \param root      The processor performing the broadcast
      */
-    template <class type>
+    template<class type>
     type bcast( const type value, const int root ) const;
 
 
@@ -611,7 +611,7 @@ public: // Member functions
      * \param n         The number of values in the array (must match on all nodes)
      * \param root      The processor performing the broadcast
      */
-    template <class type>
+    template<class type>
     void bcast( type *value, const int n, const int root ) const;
 
 
@@ -637,7 +637,7 @@ public: // Member functions
      *                  to be sent with this message.  Default tag is 0.
      *                  The matching recv must share this tag.
      */
-    template <class type>
+    template<class type>
     void send( const type *buf, const int length, const int recv, int tag = 0 ) const;
 
 
@@ -669,7 +669,7 @@ public: // Member functions
      * @param tag       Integer argument specifying an integer tag
      *                  to be sent with this message.
      */
-    template <class type>
+    template<class type>
     MPI_Request
     Isend( const type *buf, const int length, const int recv_proc, const int tag ) const;
 
@@ -709,7 +709,7 @@ public: // Member functions
      * @param tag        Optional integer argument specifying a tag which must be matched
      *                   by the tag of the incoming message. Default tag is 0.
      */
-    template <class type>
+    template<class type>
     void recv(
         type *buf, int &length, const int send, const bool get_length = false, int tag = 0 ) const;
 
@@ -740,7 +740,7 @@ public: // Member functions
      * @param tag        Optional integer argument specifying a tag which must
      *                   be matched by the tag of the incoming message.
      */
-    template <class type>
+    template<class type>
     MPI_Request Irecv( type *buf, const int length, const int send_proc, const int tag ) const;
 
 
@@ -765,7 +765,7 @@ public: // Member functions
      * @param[in] x      Input value for allGather
      * @return           Output array for allGather
      */
-    template <class type>
+    template<class type>
     std::vector<type> allGather( const type &x ) const;
 
 
@@ -774,7 +774,7 @@ public: // Member functions
      * @param[in] x      Input array for allGather
      * @return           Output array for allGather
      */
-    template <class type>
+    template<class type>
     std::vector<type> allGather( const std::vector<type> &x_in ) const;
 
 
@@ -786,7 +786,7 @@ public: // Member functions
      * @param x_out     Output array for allGather (must be preallocated to the size of the
      * communicator)
      */
-    template <class type>
+    template<class type>
     void allGather( const type x_in, type *x_out ) const;
 
 
@@ -815,7 +815,7 @@ public: // Member functions
      * internally
      *                      and the sizes and displacements will be returned (if desired).
      */
-    template <class type>
+    template<class type>
     int allGather( const type *send_data,
                    const int send_cnt,
                    type *recv_data,
@@ -828,7 +828,7 @@ public: // Member functions
      * This function combines sets from different processors to create a single master set
      * @param set       Input/Output std::set for the gather.
      */
-    template <class type>
+    template<class type>
     void setGather( std::set<type> &set ) const;
 
 
@@ -837,7 +837,7 @@ public: // Member functions
      * If two or more ranks share the same key, the lowest rank will be used
      * @param map       Input/Output std::map for the gather.
      */
-    template <class KEY, class DATA>
+    template<class KEY, class DATA>
     void mapGather( std::map<KEY, DATA> &map ) const;
 
 
@@ -852,7 +852,7 @@ public: // Member functions
      * @param send_data     Input array (nxN)
      * @param recv_data     Output array of received values (nxN)
      */
-    template <class type>
+    template<class type>
     void allToAll( const int n, const type *send_data, type *recv_data ) const;
 
 
@@ -884,7 +884,7 @@ public: // Member functions
      * internally
      *                      and the sizes and displacements will be returned (if desired).
      */
-    template <class type>
+    template<class type>
     int allToAll( const type *send_data,
                   const int send_cnt[],
                   const int send_disp[],
@@ -1005,34 +1005,34 @@ public: // Member functions
 
 
 private: // Private helper functions for templated MPI operations;
-    template <class type>
+    template<class type>
     void call_sumReduce( type *x, const int n = 1 ) const;
-    template <class type>
+    template<class type>
     void call_sumReduce( const type *x, type *y, const int n = 1 ) const;
-    template <class type>
+    template<class type>
     void call_minReduce( type *x, const int n = 1, int *rank_of_min = nullptr ) const;
-    template <class type>
+    template<class type>
     void
     call_minReduce( const type *x, type *y, const int n = 1, int *rank_of_min = nullptr ) const;
-    template <class type>
+    template<class type>
     void call_maxReduce( type *x, const int n = 1, int *rank_of_max = nullptr ) const;
-    template <class type>
+    template<class type>
     void
     call_maxReduce( const type *x, type *y, const int n = 1, int *rank_of_max = nullptr ) const;
-    template <class type>
+    template<class type>
     void call_bcast( type *x, const int n, const int root ) const;
-    template <class type>
+    template<class type>
     void call_allGather( const type x_in, type *x_out ) const;
-    template <class type>
+    template<class type>
     void call_allGather(
         const type *x_in, int size_in, type *x_out, int *size_out, int *disp_out ) const;
-    template <class type>
+    template<class type>
     void call_sumScan( const type *x, type *y, int n = 1 ) const;
-    template <class type>
+    template<class type>
     void call_minScan( const type *x, type *y, int n = 1 ) const;
-    template <class type>
+    template<class type>
     void call_maxScan( const type *x, type *y, int n = 1 ) const;
-    template <class type>
+    template<class type>
     void call_allToAll( const type *send_data,
                         const int send_cnt[],
                         const int send_disp[],
@@ -1088,7 +1088,7 @@ private: // data members
 };
 
 
-} // namespace
+} // namespace AMP
 
 
 // Include the default instantiations

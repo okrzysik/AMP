@@ -1,10 +1,10 @@
-#include "ampmesh/STKmesh/initializeSTKMesh.h"
+#include "ampmesh/STKmesh/STKMesh.h"
 #include "ProfilerApp.h"
 #include "ampmesh/MeshElementVectorIterator.h"
 #include "ampmesh/MultiIterator.h"
-#include "ampmesh/STKmesh/STKMesh.h"
 #include "ampmesh/STKmesh/STKMeshElement.h"
 #include "ampmesh/STKmesh/STKMeshIterator.h"
+#include "ampmesh/STKmesh/initializeSTKMesh.h"
 #include "utils/AMPManager.h"
 #include "utils/MemoryDatabase.h"
 #include "utils/Utilities.h"
@@ -37,15 +37,15 @@ namespace Mesh {
 typedef stk::mesh::Field<double, stk::mesh::Cartesian> CartesianField;
 
 struct NullDeleter {
-    template <typename T>
+    template<typename T>
     void operator()( T * )
     {
     }
 };
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 STKMesh::STKMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_in )
 {
     PROFILE_START( "constructor" );
@@ -95,7 +95,7 @@ STKMesh::STKMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
             displacement[1] = d_db->getDouble( "y_offset" );
         if ( d_db->keyExists( "z_offset" ) )
             displacement[2] = d_db->getDouble( "z_offset" );
-        bool test           = false;
+        bool test = false;
         for ( size_t i = 0; i < displacement.size() && !test; i++ )
             test = displacement[i];
         if ( test )
@@ -131,8 +131,8 @@ STKMesh::STKMesh( AMP::shared_ptr<stk::mesh::BulkData> mesh, std::string name )
 
 
 /********************************************************
-* De-constructor                                        *
-********************************************************/
+ * De-constructor                                        *
+ ********************************************************/
 STKMesh::~STKMesh()
 {
     // First we need to destroy the elements, surface sets, and boundary sets
@@ -147,14 +147,14 @@ STKMesh::~STKMesh()
 
 
 /********************************************************
-* Function to copy the mesh                             *
-********************************************************/
+ * Function to copy the mesh                             *
+ ********************************************************/
 Mesh STKMesh::copy() const { return STKMesh( *this ); }
 
 
 /********************************************************
-* Function to initialize the STKMesh object             *
-********************************************************/
+ * Function to initialize the STKMesh object             *
+ ********************************************************/
 void STKMesh::initialize()
 {
     PROFILE_START( "initialize" );
@@ -173,7 +173,7 @@ void STKMesh::initialize()
     stk::mesh::count_entities( d_STKMeshMeta->locally_owned_part(), *d_STKMeshBulk, n_local );
     stk::mesh::count_entities( !stk::mesh::Selector(), *d_STKMeshBulk, n_global );
     for ( unsigned i = 0; i < NDim; i++ )
-        n_ghost[i]   = n_global[i] - n_local[i];
+        n_ghost[i] = n_global[i] - n_local[i];
     std::vector<size_t> global;
     stk::mesh::fem::comm_mesh_counts( *d_STKMeshBulk, global );
     n_global.assign( global.begin(), global.end() );
@@ -501,8 +501,8 @@ void STKMesh::initialize()
 
 
 /********************************************************
-* Function to estimate the mesh size                    *
-********************************************************/
+ * Function to estimate the mesh size                    *
+ ********************************************************/
 size_t STKMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
     AMP::shared_ptr<AMP::Database> database = params->getDatabase();
@@ -559,8 +559,8 @@ size_t STKMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 
 
 /****************************************************************
-* Estimate the maximum number of processors                     *
-****************************************************************/
+ * Estimate the maximum number of processors                     *
+ ****************************************************************/
 size_t STKMesh::maxProcs( const MeshParameters::shared_ptr &params )
 {
     return estimateMeshSize( params );
@@ -568,8 +568,8 @@ size_t STKMesh::maxProcs( const MeshParameters::shared_ptr &params )
 
 
 /********************************************************
-* Return the number of elements                         *
-********************************************************/
+ * Return the number of elements                         *
+ ********************************************************/
 size_t STKMesh::numLocalElements( const GeomType type ) const
 {
     if ( n_local[type] == static_cast<size_t>( -1 ) )
@@ -595,8 +595,8 @@ size_t STKMesh::numGhostElements( const GeomType type, int gcw ) const
 
 
 /********************************************************
-* Return an iterator over the given geometric type      *
-********************************************************/
+ * Return an iterator over the given geometric type      *
+ ********************************************************/
 MeshIterator STKMesh::getIterator( const GeomType type, const int gcw ) const
 {
     stk::mesh::EntityRank entity_rank = 0xFF;
@@ -632,9 +632,9 @@ MeshIterator STKMesh::getIterator( const GeomType type, const int gcw ) const
 
 
 /********************************************************
-* Return an iterator over the given boundary ids        *
-* Note: we have not programmed this for ghosts yet      *
-********************************************************/
+ * Return an iterator over the given boundary ids        *
+ * Note: we have not programmed this for ghosts yet      *
+ ********************************************************/
 MeshIterator STKMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
     AMP_ASSERT( type >= 0 && type <= GeomDim );
@@ -657,9 +657,9 @@ MeshIterator STKMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
 
 
 /********************************************************
-* Return an iterator over the given boundary ids        *
-* Note: we have not programmed this for ghosts yet      *
-********************************************************/
+ * Return an iterator over the given boundary ids        *
+ * Note: we have not programmed this for ghosts yet      *
+ ********************************************************/
 std::vector<int> STKMesh::getBoundaryIDs() const
 {
     std::vector<int> bids;
@@ -690,8 +690,8 @@ STKMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
 
 
 /********************************************************
-* Return an iterator over the given block ids           *
-********************************************************/
+ * Return an iterator over the given block ids           *
+ ********************************************************/
 std::vector<int> STKMesh::getBlockIDs() const { return d_block_ids; }
 MeshIterator STKMesh::getBlockIDIterator( const GeomType type, const int id, const int gcw ) const
 {
@@ -701,8 +701,8 @@ MeshIterator STKMesh::getBlockIDIterator( const GeomType type, const int id, con
 
 
 /********************************************************
-* Return pointers to the neighbor nodes give a node id  *
-********************************************************/
+ * Return pointers to the neighbor nodes give a node id  *
+ ********************************************************/
 std::vector<stk::mesh::Entity *> STKMesh::getNeighborNodes( MeshElementID id ) const
 {
     AMP_INSIST( id.type() == GeomType::Vertex, "This function is for nodes" );
@@ -715,8 +715,8 @@ std::vector<stk::mesh::Entity *> STKMesh::getNeighborNodes( MeshElementID id ) c
 
 
 /********************************************************
-* Function to return the element given an ID            *
-********************************************************/
+ * Function to return the element given an ID            *
+ ********************************************************/
 MeshElement STKMesh::getElement( const MeshElementID &elem_id ) const
 {
     MeshID mesh_id = elem_id.meshID();
@@ -764,8 +764,8 @@ MeshElement STKMesh::getElement( const MeshElementID &elem_id ) const
 
 
 /********************************************************
-* Displace a mesh                                       *
-********************************************************/
+ * Displace a mesh                                       *
+ ********************************************************/
 void STKMesh::displaceMesh( std::vector<double> x_in )
 {
     // Check x
@@ -881,5 +881,5 @@ void STKMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
 #endif
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

@@ -85,30 +85,30 @@ void NavierStokesGalWFElement::apply()
         for ( unsigned int j = 0; j < num_nodes; j++ ) {
 
             elementOutputVector[( 4 * j )] +=
-                JxW[qp] *
-                ( d_alpha_conv * ( u * dudx + v * dudy + w * dudz ) * phi[j][qp] +
-                  d_density * dpdx * phi[j][qp] +
-                  d_alpha_diff * d_fmu * ( dudx * dphi[j][qp]( 0 ) + dudy * dphi[j][qp]( 1 ) +
-                                           dudz * dphi[j][qp]( 2 ) ) );
+                JxW[qp] * ( d_alpha_conv * ( u * dudx + v * dudy + w * dudz ) * phi[j][qp] +
+                            d_density * dpdx * phi[j][qp] +
+                            d_alpha_diff * d_fmu *
+                                ( dudx * dphi[j][qp]( 0 ) + dudy * dphi[j][qp]( 1 ) +
+                                  dudz * dphi[j][qp]( 2 ) ) );
 
             elementOutputVector[( 4 * j ) + 1] +=
-                JxW[qp] *
-                ( d_alpha_conv * ( u * dvdx + v * dvdy + w * dvdz ) * phi[j][qp] +
-                  d_density * dpdy * phi[j][qp] +
-                  d_alpha_diff * d_fmu * ( dvdx * dphi[j][qp]( 0 ) + dvdy * dphi[j][qp]( 1 ) +
-                                           dvdz * dphi[j][qp]( 2 ) ) );
+                JxW[qp] * ( d_alpha_conv * ( u * dvdx + v * dvdy + w * dvdz ) * phi[j][qp] +
+                            d_density * dpdy * phi[j][qp] +
+                            d_alpha_diff * d_fmu *
+                                ( dvdx * dphi[j][qp]( 0 ) + dvdy * dphi[j][qp]( 1 ) +
+                                  dvdz * dphi[j][qp]( 2 ) ) );
 
             elementOutputVector[( 4 * j ) + 2] +=
-                JxW[qp] *
-                ( d_alpha_conv * ( u * dwdx + v * dwdy + w * dwdz ) * phi[j][qp] +
-                  d_density * dpdz * phi[j][qp] +
-                  d_alpha_diff * d_fmu * ( dwdx * dphi[j][qp]( 0 ) + dwdy * dphi[j][qp]( 1 ) +
-                                           dwdz * dphi[j][qp]( 2 ) ) );
+                JxW[qp] * ( d_alpha_conv * ( u * dwdx + v * dwdy + w * dwdz ) * phi[j][qp] +
+                            d_density * dpdz * phi[j][qp] +
+                            d_alpha_diff * d_fmu *
+                                ( dwdx * dphi[j][qp]( 0 ) + dwdy * dphi[j][qp]( 1 ) +
+                                  dwdz * dphi[j][qp]( 2 ) ) );
 
             elementOutputVector[( 4 * j ) + 3] += JxW[qp] * ( ( dudx + dudy + dudz ) * phi[j][qp] );
         }
 
     } // end for qp
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

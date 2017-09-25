@@ -42,11 +42,11 @@ public:
     virtual ~MeshIterator();
 
 public: // Virtual functions
-        /**
-         * \brief Pre-Increment
-         * \details  Pre-Increment the mesh iterator and return the reference to the iterator.
-         *   This should be the fastest way to increment the iterator.
-         */
+    /**
+     * \brief Pre-Increment
+     * \details  Pre-Increment the mesh iterator and return the reference to the iterator.
+     *   This should be the fastest way to increment the iterator.
+     */
     virtual MeshIterator &operator++();
 
     /**
@@ -194,13 +194,13 @@ public: // non-virtual functions
     inline MeshElement &operator*( void );
 
     //! Dereference the iterator
-    inline const MeshElement &operator*( void ) const;
+    inline const MeshElement &operator*(void) const;
 
     //! Dereference the iterator
     inline MeshElement *operator->( void );
 
     //! Dereference the iterator
-    inline const MeshElement *operator->( void ) const;
+    inline const MeshElement *operator->(void) const;
 
 protected:
     // Clone the iterator
@@ -220,8 +220,8 @@ protected:
 };
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP
 
 #include "ampmesh/MeshIterator.inline.h"
 

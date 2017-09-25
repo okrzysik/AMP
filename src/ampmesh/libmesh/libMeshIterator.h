@@ -97,7 +97,7 @@ private:
 
     void setCurrentElement();
 };
-}
-}
+} // namespace Mesh
+} // namespace AMP
 
 #endif

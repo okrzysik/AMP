@@ -18,10 +18,10 @@ namespace LinearAlgebra {
 
 
 /** \class ThyraVectorSpaceWrapper
-  * \brief  Wrapper a VectorSpace in AMP
-  * \details  This function is used to allow us to safely wrap an AMP vector
-  *   in a thyra vector for use within Trilinos.
-  */
+ * \brief  Wrapper a VectorSpace in AMP
+ * \details  This function is used to allow us to safely wrap an AMP vector
+ *   in a thyra vector for use within Trilinos.
+ */
 class ThyraVectorSpaceWrapper : public Thyra::VectorSpaceBase<double>
 {
 public:
@@ -64,7 +64,7 @@ private:
     // Private constuctor
     ThyraVectorSpaceWrapper() {}
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

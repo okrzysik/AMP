@@ -376,7 +376,7 @@ std::vector<double> VectorFickCoefficientProp::evalVector( std::vector<double> &
 {
     std::vector<double> result( d_dimension );
     for ( size_t i = 0; i < d_dimension; i++ )
-        result[i]  = d_params[i];
+        result[i] = d_params[i];
     return result;
 }
 
@@ -385,11 +385,11 @@ std::vector<std::vector<double>> TensorFickCoefficientProp::evalTensor( std::vec
     std::vector<std::vector<double>> result( d_dimensions[0],
                                              std::vector<double>( d_dimensions[1] ) );
     for ( size_t i = 0; i < d_dimensions[0]; i++ )
-        for ( size_t j   = 0; j < d_dimensions[1]; j++ )
+        for ( size_t j = 0; j < d_dimensions[1]; j++ )
             result[i][j] = d_params[i * d_dimensions[1] + j];
     return result;
 }
-}
+} // namespace FixedClad_NS
 
 //  =================== Materials =====================================================
 
@@ -414,5 +414,5 @@ FixedClad::FixedClad()
     INSERT_PROPERTY_IN_MAP( VectorFickCoefficient, FixedClad_NS );
     INSERT_PROPERTY_IN_MAP( TensorFickCoefficient, FixedClad_NS );
 }
-}
-}
+} // namespace Materials
+} // namespace AMP

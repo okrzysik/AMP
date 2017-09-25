@@ -8,14 +8,14 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
-template <typename T, typename FUN, typename Allocator>
+ * Constructors                                                  *
+ ****************************************************************/
+template<typename T, typename FUN, typename Allocator>
 ArrayVector<T, FUN, Allocator>::ArrayVector() : Vector()
 {
 }
 
-template <typename T, typename FUN, typename Allocator>
+template<typename T, typename FUN, typename Allocator>
 Vector::shared_ptr ArrayVector<T, FUN, Allocator>::create( const std::vector<size_t> &localSize,
                                                            Variable::shared_ptr var )
 {
@@ -35,7 +35,7 @@ Vector::shared_ptr ArrayVector<T, FUN, Allocator>::create( const std::vector<siz
     return retVal;
 }
 
-template <typename T, typename FUN, typename Allocator>
+template<typename T, typename FUN, typename Allocator>
 Vector::shared_ptr ArrayVector<T, FUN, Allocator>::create( const std::vector<size_t> &localSize,
                                                            Variable::shared_ptr var,
                                                            AMP_MPI comm )
@@ -54,7 +54,7 @@ Vector::shared_ptr ArrayVector<T, FUN, Allocator>::create( const std::vector<siz
     return retVal;
 }
 
-template <typename T, typename FUN, typename Allocator>
+template<typename T, typename FUN, typename Allocator>
 Vector::shared_ptr
 ArrayVector<T, FUN, Allocator>::create( Variable::shared_ptr var,
                                         AMP::Discretization::DOFManager::shared_ptr DOFs,
@@ -69,7 +69,7 @@ ArrayVector<T, FUN, Allocator>::create( Variable::shared_ptr var,
     return retVal;
 }
 
-template <typename T, typename FUN, typename Allocator>
+template<typename T, typename FUN, typename Allocator>
 inline Vector::shared_ptr
 ArrayVector<T, FUN, Allocator>::cloneVector( const Variable::shared_ptr name ) const
 {
@@ -77,7 +77,7 @@ ArrayVector<T, FUN, Allocator>::cloneVector( const Variable::shared_ptr name ) c
     return create( array.size(), name, this->getComm() );
 }
 
-template <typename T, typename FUN, typename Allocator>
+template<typename T, typename FUN, typename Allocator>
 void ArrayVector<T, FUN, Allocator>::swapVectors( Vector &rhs )
 {
     // get internal arrays
@@ -88,31 +88,31 @@ void ArrayVector<T, FUN, Allocator>::swapVectors( Vector &rhs )
     internalArray.swap( otherArray );
 }
 
-template <typename T, typename FUN, typename Allocator>
+template<typename T, typename FUN, typename Allocator>
 void ArrayVector<T, FUN, Allocator>::aliasVector( Vector & )
 {
     AMP_ERROR( "Not implemented" );
 }
 
-template <typename T, typename FUN, typename Allocator>
+template<typename T, typename FUN, typename Allocator>
 void ArrayVector<T, FUN, Allocator>::resize( const std::vector<size_t> &localDims )
 {
     d_array.resize( localDims );
 }
 
 
-template <typename T, typename FUN, typename Allocator>
+template<typename T, typename FUN, typename Allocator>
 void ArrayVector<T, FUN, Allocator>::putRawData( const double *buf )
 {
     auto &array = this->getArray();
     array.copy( buf );
 }
 
-template <typename T, typename FUN, typename Allocator>
+template<typename T, typename FUN, typename Allocator>
 void ArrayVector<T, FUN, Allocator>::copyOutRawData( double *buf ) const
 {
     auto &array = this->getArray();
     array.copyTo( buf );
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

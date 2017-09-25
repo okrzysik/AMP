@@ -9,8 +9,8 @@ namespace Solver {
 
 
 /****************************************************************
-*  Constructors                                                 *
-****************************************************************/
+ *  Constructors                                                 *
+ ****************************************************************/
 TrilinosLinearOP::TrilinosLinearOP() {}
 TrilinosLinearOP::TrilinosLinearOP( AMP::Operator::Operator::shared_ptr op )
 {
@@ -26,8 +26,8 @@ TrilinosLinearOP::~TrilinosLinearOP() {}
 
 
 /****************************************************************
-*  Functions inherited from Thyra::LinearOpBase                 *
-****************************************************************/
+ *  Functions inherited from Thyra::LinearOpBase                 *
+ ****************************************************************/
 Teuchos::RCP<const Thyra::VectorSpaceBase<double>> TrilinosLinearOP::range() const
 {
     AMP_ERROR( "Not Implimented Yet" );
@@ -97,5 +97,5 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
         }
     }
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

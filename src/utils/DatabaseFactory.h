@@ -34,6 +34,6 @@ public:
     virtual AMP::shared_ptr<Database> allocate( const std::string &name ) = 0;
     virtual ~DatabaseFactory() {}
 };
-}
+} // namespace AMP
 
 #endif

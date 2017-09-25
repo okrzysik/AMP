@@ -12,8 +12,7 @@ ConstraintsEliminationSolver::ConstraintsEliminationSolver(
 }
 
 void ConstraintsEliminationSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector>,
-                                          AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                              u )
+                                          AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     AMP::shared_ptr<AMP::Operator::ConstraintsEliminationOperator> op =
         AMP::dynamic_pointer_cast<AMP::Operator::ConstraintsEliminationOperator>( d_pOperator );

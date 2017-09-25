@@ -42,8 +42,8 @@ public:
 
 
 /**
-  * AMP operator element implementation for DTK Map operator.
-*/
+ * AMP operator element implementation for DTK Map operator.
+ */
 class DTKMapOperator : public Operator
 {
 public:
@@ -72,7 +72,7 @@ private:
     // DTK range mesh.
     AMP::shared_ptr<DTKAMPMeshManager> d_range_mesh;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

@@ -9,7 +9,6 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -301,8 +300,8 @@ void moabInterface( AMP::UnitTest *ut )
     else
         ut->failure( "Values not interpolated correctly" );
 
-// How about some output?
-// Useful for making sure everything looks right
+        // How about some output?
+        // Useful for making sure everything looks right
 
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );

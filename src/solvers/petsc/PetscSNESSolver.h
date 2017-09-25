@@ -42,9 +42,9 @@ namespace Solver {
 
 
 /**
-  * The PETScSNESSolver is a wrapper to the PETSc SNES solver which provides an implementation
-  * of the inexact Newton method.
-  */
+ * The PETScSNESSolver is a wrapper to the PETSc SNES solver which provides an implementation
+ * of the inexact Newton method.
+ */
 class PetscSNESSolver : public SolverStrategy
 {
 public:
@@ -107,8 +107,7 @@ public:
     @param [out] u : shared pointer to approximate computed solution
      */
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u ) override;
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Initialize the solution vector by copying the initial guess vector
@@ -237,7 +236,7 @@ private:
 
     AMP::shared_ptr<PetscKrylovSolver> d_pKrylovSolver;
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

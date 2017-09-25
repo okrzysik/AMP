@@ -217,5 +217,5 @@ AMP::shared_ptr<DiffusionTransportModel> DiffusionLinearFEOperator::getTransport
 {
     return d_transportModel;
 }
-}
-} // end namespace
+} // namespace Operator
+} // namespace AMP

@@ -209,7 +209,7 @@ void NonlinearKrylovAccelerator::correction( AMP::shared_ptr<AMP::LinearAlgebra:
          *  CHOLESKI FACTORIZATION OF H = W^t W
          *  original matrix kept in the upper triangle (implicit unit diagonal)
          *  lower triangle holds the factorization
-        */
+         */
 
         /* Trivial initial factorization stage. */
         int nvec                                                                       = 1;
@@ -332,8 +332,7 @@ void NonlinearKrylovAccelerator::correction( AMP::shared_ptr<AMP::LinearAlgebra:
 
 
 void NonlinearKrylovAccelerator::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                                        AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                                            u )
+                                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     AMP_INSIST( d_pOperator != nullptr, "Operator cannot be NULL" );
     AMP_INSIST( d_pPreconditioner.get() != nullptr, "Preconditioning operator cannot be NULL" );
@@ -513,5 +512,5 @@ void NonlinearKrylovAccelerator::putToDatabase( AMP::shared_ptr<AMP::Database> &
     db->putDouble( "d_dAbsoluteTolerance", d_dAbsoluteTolerance );
     db->putDouble( "d_dRelativeTolerance", d_dRelativeTolerance );
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

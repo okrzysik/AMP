@@ -12,7 +12,7 @@ namespace AMP {
 namespace Operator {
 
 
-template <class T>
+template<class T>
 static T *getPtr( std::vector<T> &x )
 {
     if ( x.empty() )
@@ -22,8 +22,8 @@ static T *getPtr( std::vector<T> &x )
 
 
 /********************************************************
-* Constructor                                           *
-********************************************************/
+ * Constructor                                           *
+ ********************************************************/
 NodeToNodeMap::NodeToNodeMap( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &params )
     : AMP::Operator::AsyncMapOperator( params )
 {
@@ -37,7 +37,7 @@ NodeToNodeMap::NodeToNodeMap( const AMP::shared_ptr<AMP::Operator::OperatorParam
     dim = -1;
     if ( d_mesh1.get() != nullptr )
         dim = d_mesh1->getDim();
-    dim     = d_MapComm.maxReduce( dim );
+    dim = d_MapComm.maxReduce( dim );
     AMP_INSIST( dim <= 3, "Node to Node map only works up to 3d (see Point)" );
     DofsPerObj = Params.d_db->getIntegerWithDefault( "DOFsPerObject", 1 );
     AMP::Mesh::GeomType geomType =
@@ -70,14 +70,14 @@ NodeToNodeMap::NodeToNodeMap( const AMP::shared_ptr<AMP::Operator::OperatorParam
 
 
 /********************************************************
-* De-constructor                                        *
-********************************************************/
+ * De-constructor                                        *
+ ********************************************************/
 NodeToNodeMap::~NodeToNodeMap() {}
 
 
 /********************************************************
-* Check if the string matches a NodeToNode map          *
-********************************************************/
+ * Check if the string matches a NodeToNode map          *
+ ********************************************************/
 bool NodeToNodeMap::validMapType( const std::string &t )
 {
     if ( t == "NodeToNode" )
@@ -87,8 +87,8 @@ bool NodeToNodeMap::validMapType( const std::string &t )
 
 
 /********************************************************
-* Set the vector                                        *
-********************************************************/
+ * Set the vector                                        *
+ ********************************************************/
 void NodeToNodeMap::setVector( AMP::LinearAlgebra::Vector::shared_ptr p )
 {
     d_OutputVector = subsetInputVector( p );
@@ -99,8 +99,8 @@ AMP::LinearAlgebra::Vector::shared_ptr NodeToNodeMap::getVector() { return d_Out
 
 
 /********************************************************
-* Start the communication                               *
-********************************************************/
+ * Start the communication                               *
+ ********************************************************/
 void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                 AMP::LinearAlgebra::Vector::shared_ptr )
 {
@@ -125,7 +125,7 @@ void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     for ( size_t i = 0; i < d_sendList.size(); i++ ) {
         DOF->getDOFs( d_sendList[i], local_dofs );
         AMP_ASSERT( (int) local_dofs.size() == DofsPerObj );
-        for ( int j                  = 0; j < DofsPerObj; j++ )
+        for ( int j = 0; j < DofsPerObj; j++ )
             dofs[j + i * DofsPerObj] = local_dofs[j];
     }
     PROFILE_STOP( "getDOFs", 1 );
@@ -143,7 +143,7 @@ void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         int offset = DofsPerObj * d_displ[i];
         if ( i == d_MapComm.getRank() ) {
             // Perform a local copy
-            for ( int j         = offset; j < offset + count; j++ )
+            for ( int j = offset; j < offset + count; j++ )
                 d_recvBuffer[j] = d_sendBuffer[j];
         } else if ( count > 0 ) {
             // Start asyncronous communication
@@ -159,8 +159,8 @@ void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
 
 /********************************************************
-* Finish the communication and fill the vector          *
-********************************************************/
+ * Finish the communication and fill the vector          *
+ ********************************************************/
 void NodeToNodeMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
                                  AMP::LinearAlgebra::Vector::shared_ptr )
 {
@@ -173,7 +173,7 @@ void NodeToNodeMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     for ( size_t i = 0; i < d_recvList.size(); i++ ) {
         DOF->getDOFs( d_recvList[i], local_dofs );
         AMP_ASSERT( (int) local_dofs.size() == DofsPerObj );
-        for ( int j                  = 0; j < DofsPerObj; j++ )
+        for ( int j = 0; j < DofsPerObj; j++ )
             dofs[j + i * DofsPerObj] = local_dofs[j];
     }
 
@@ -192,10 +192,10 @@ void NodeToNodeMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
 
 
 /****************************************************************
-* Function to compute the send/recv lists                       *
-* We need to group the DOFs to send/recieve by processor and    *
-* ensure that both processors will agree on the order.          *
-****************************************************************/
+ * Function to compute the send/recv lists                       *
+ * We need to group the DOFs to send/recieve by processor and    *
+ * ensure that both processors will agree on the order.          *
+ ****************************************************************/
 void NodeToNodeMap::buildSendRecvList()
 {
     // First, count the total number of elemnt IDs to send/recv for each processor
@@ -211,9 +211,9 @@ void NodeToNodeMap::buildSendRecvList()
         d_count[rank]++;
     }
     d_displ = std::vector<int>( commSize, 0 );
-    for ( int i    = 1; i < commSize; i++ )
+    for ( int i = 1; i < commSize; i++ )
         d_displ[i] = d_displ[i - 1] + d_count[i - 1];
-    int N_tot      = d_displ[commSize - 1] + d_count[commSize - 1];
+    int N_tot = d_displ[commSize - 1] + d_count[commSize - 1];
     // Create the send/recv lists and remote DOF lists for each processor
     std::vector<std::vector<AMP::Mesh::MeshElementID>> send_elements( commSize );
     std::vector<std::vector<AMP::Mesh::MeshElementID>> recv_elements( commSize );
@@ -256,9 +256,9 @@ void NodeToNodeMap::buildSendRecvList()
 
 
 /****************************************************************
-* Function to compute the pairs of points for each mesh         *
-* We have the option of requiring if all points are matched.    *
-****************************************************************/
+ * Function to compute the pairs of points for each mesh         *
+ * We have the option of requiring if all points are matched.    *
+ ****************************************************************/
 void NodeToNodeMap::createPairs( bool requireAllPaired )
 {
     d_localPairsMesh1.resize( 0 );
@@ -279,8 +279,8 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
     std::vector<int> recv_cnt( commSize, 0 );
     std::vector<int> recv_disp( commSize, 0 );
     d_MapComm.allGather( send_cnt, &recv_cnt[0] );
-    for ( int i                   = 1; i < commSize; i++ )
-        recv_disp[i]              = recv_disp[i - 1] + recv_cnt[i - 1];
+    for ( int i = 1; i < commSize; i++ )
+        recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
     int N_recv_tot                = recv_disp[commSize - 1] + recv_cnt[commSize - 1];
     std::vector<Point> surfacePts = std::vector<Point>( N_recv_tot );
     d_MapComm.allGather(
@@ -315,10 +315,10 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
     // Send the list of points on mesh2 to all processors
     send_cnt = (int) ownedPointsMesh2.size();
     d_MapComm.allGather( send_cnt, &recv_cnt[0] );
-    for ( int i      = 1; i < commSize; i++ )
+    for ( int i = 1; i < commSize; i++ )
         recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
-    N_recv_tot       = recv_disp[commSize - 1] + recv_cnt[commSize - 1];
-    surfacePts       = std::vector<Point>( N_recv_tot );
+    N_recv_tot = recv_disp[commSize - 1] + recv_cnt[commSize - 1];
+    surfacePts = std::vector<Point>( N_recv_tot );
     d_MapComm.allGather(
         getPtr( ownedPointsMesh2 ), send_cnt, &surfacePts[0], &recv_cnt[0], &recv_disp[0], true );
 
@@ -353,9 +353,9 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
 
 
 /********************************************************
-* Function to create the list of owned points from the  *
-* iterator over the surface nodes                       *
-********************************************************/
+ * Function to create the list of owned points from the  *
+ * iterator over the surface nodes                       *
+ ********************************************************/
 std::vector<NodeToNodeMap::Point>
 NodeToNodeMap::createOwnedPoints( AMP::Mesh::MeshIterator iterator )
 {
@@ -372,10 +372,10 @@ NodeToNodeMap::createOwnedPoints( AMP::Mesh::MeshIterator iterator )
         // Create the point
         Point temp;
         temp.id = cur->globalID();
-        for ( size_t j  = 0; j < pos.size(); ++j )
+        for ( size_t j = 0; j < pos.size(); ++j )
             temp.pos[j] = pos[j];
-        temp.proc       = rank;
-        surfacePts[i]   = temp;
+        temp.proc     = rank;
+        surfacePts[i] = temp;
     }
     // Sort the points
     AMP::Utilities::quicksort( surfacePts );
@@ -384,8 +384,8 @@ NodeToNodeMap::createOwnedPoints( AMP::Mesh::MeshIterator iterator )
 
 
 /********************************************************
-* Constructors for Point                                *
-********************************************************/
+ * Constructors for Point                                *
+ ********************************************************/
 NodeToNodeMap::Point::Point() : proc( -1 )
 {
     pos[0] = 0.0;
@@ -401,9 +401,9 @@ NodeToNodeMap::Point::Point( const Point &rhs ) : id( rhs.id ), proc( rhs.proc )
 
 
 /********************************************************
-* Operators for Point                                   *
-* Note: we use a tolerance of 1e-8 for checking points  *
-********************************************************/
+ * Operators for Point                                   *
+ * Note: we use a tolerance of 1e-8 for checking points  *
+ ********************************************************/
 bool NodeToNodeMap::Point::operator==( const Point &rhs ) const
 {
     // Two points are == if they share the same position (within tolerance)
@@ -434,5 +434,5 @@ bool NodeToNodeMap::Point::operator<=( const Point &rhs ) const
 }
 bool NodeToNodeMap::Point::operator>=( const Point &rhs ) const { return !operator<( rhs ); }
 bool NodeToNodeMap::Point::operator>( const Point &rhs ) const { return !operator<=( rhs ); }
-}
-}
+} // namespace Operator
+} // namespace AMP

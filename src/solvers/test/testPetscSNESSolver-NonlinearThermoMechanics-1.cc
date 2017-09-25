@@ -124,7 +124,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     AMP::LinearAlgebra::Vector::shared_ptr rhsVec = solVec->cloneVector();
     AMP::LinearAlgebra::Vector::shared_ptr resVec = solVec->cloneVector();
 
-//----------------------------------------------------------------------------------------------------------------------------------------------//
+    //----------------------------------------------------------------------------------------------------------------------------------------------//
 
 #ifdef USE_EXT_SILO
     siloWriter->registerVector(

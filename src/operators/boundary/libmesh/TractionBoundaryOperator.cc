@@ -134,5 +134,5 @@ TractionBoundaryOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr
         return vec;
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

@@ -92,7 +92,7 @@ void DiffusionCylindricalTransportModel::getTensorTransport(
             AMP_INSIST( result[i][j]->size() == coordinates.size(),
                         "result tensor components must be same size as coordinates" );
             if ( ( i == 2 ) || ( j == 2 ) )
-                for ( size_t k           = 0; k < coordinates.size(); k++ )
+                for ( size_t k = 0; k < coordinates.size(); k++ )
                     ( *result[i][j] )[k] = 0.;
         }
     }
@@ -106,5 +106,5 @@ void DiffusionCylindricalTransportModel::getTensorTransport(
         ( *result[1][1] )[k] = radialCoefficient[k] * y * y / r2;
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

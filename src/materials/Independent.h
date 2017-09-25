@@ -12,8 +12,8 @@ class Independent : public Material
 public:
     Independent();
 };
-}
-}
+} // namespace Materials
+} // namespace AMP
 
 
 // Add static initialize to force symbols to be included

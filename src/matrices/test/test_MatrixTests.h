@@ -17,7 +17,7 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-template <class MATRIX_FACTORY>
+template<class MATRIX_FACTORY>
 void fillWithPseudoLaplacian( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
 {
     AMP::Discretization::DOFManager::shared_ptr dofmap = MATRIX_FACTORY::getDOFMap();
@@ -39,7 +39,7 @@ void fillWithPseudoLaplacian( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
 }
 
 
-template <typename FACTORY>
+template<typename FACTORY>
 class InstantiateMatrix
 {
 public:
@@ -58,7 +58,7 @@ public:
 };
 
 
-template <typename FACTORY>
+template<typename FACTORY>
 class VerifyGetLeftRightVector
 {
 public:
@@ -94,7 +94,7 @@ public:
 };
 
 
-template <typename FACTORY>
+template<typename FACTORY>
 class VerifyGetSetValuesMatrix
 {
 public:
@@ -128,7 +128,7 @@ public:
 };
 
 
-template <typename FACTORY>
+template<typename FACTORY>
 class VerifyAXPYMatrix
 {
 public:
@@ -168,7 +168,7 @@ public:
         // Test that axpy failes with different sized matricies
         std::vector<size_t> row( 7 );
         for ( size_t i = 0; i < row.size(); i++ )
-            row[i]     = i;
+            row[i] = i;
         AMP::LinearAlgebra::Vector::shared_ptr smallVec =
             AMP::LinearAlgebra::SimpleVector<double>::create( 7, vector1lhs->getVariable() );
         AMP::LinearAlgebra::Matrix::shared_ptr smallMat = AMP::LinearAlgebra::createMatrix(
@@ -186,7 +186,7 @@ public:
 };
 
 
-template <typename FACTORY>
+template<typename FACTORY>
 class VerifyScaleMatrix
 {
 public:
@@ -230,7 +230,7 @@ public:
 };
 
 
-template <typename FACTORY>
+template<typename FACTORY>
 class VerifyExtractDiagonal
 {
 public:
@@ -264,7 +264,7 @@ public:
 };
 
 
-template <typename FACTORY>
+template<typename FACTORY>
 class VerifyMultMatrix
 {
 public:
@@ -324,7 +324,7 @@ public:
 
 
 // Test matrix-matrix multiplication (this tests takes a long time for large matrices)
-template <typename FACTORY>
+template<typename FACTORY>
 class VerifyMatMultMatrix
 {
 public:
@@ -395,7 +395,7 @@ public:
 };
 
 
-template <typename FACTORY>
+template<typename FACTORY>
 class VerifyAddElementNode
 {
 public:
@@ -473,7 +473,7 @@ public:
         PROFILE_STOP( "VerifySetElementNode" );
     }
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

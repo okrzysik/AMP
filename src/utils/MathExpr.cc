@@ -7,8 +7,8 @@ namespace AMP {
 
 
 /************************************************************
-*  Constructors/Destructor                                  *
-************************************************************/
+ *  Constructors/Destructor                                  *
+ ************************************************************/
 MathExpr::MathExpr() : d_fun( nullptr ) {}
 MathExpr::MathExpr( const std::string &expression, const std::vector<std::string> &variables )
     : d_fun( nullptr )
@@ -53,8 +53,8 @@ MathExpr::~MathExpr()
 
 
 /************************************************************
-*  Initialize the data                                      *
-************************************************************/
+ *  Initialize the data                                      *
+ ************************************************************/
 void MathExpr::initialize( const std::string &expression,
                            const std::vector<std::string> &variables )
 {
@@ -64,8 +64,8 @@ void MathExpr::initialize( const std::string &expression,
     d_tevar.resize( variables.size() );
     for ( size_t i = 0; i < variables.size(); i++ )
         d_tevar[i] = { d_vars[i].c_str(), &d_data[i], TE_VARIABLE, nullptr };
-    int error      = 0;
-    d_fun          = te_compile( d_expr.c_str(), d_tevar.data(), variables.size(), &error );
+    int error = 0;
+    d_fun     = te_compile( d_expr.c_str(), d_tevar.data(), variables.size(), &error );
     if ( error != 0 ) {
         if ( d_fun != nullptr )
             te_free( d_fun );
@@ -76,17 +76,17 @@ void MathExpr::initialize( const std::string &expression,
 
 
 /************************************************************
-*  Evaluate the expression                                  *
-************************************************************/
+ *  Evaluate the expression                                  *
+ ************************************************************/
 double MathExpr::eval( const std::vector<double> &data )
 {
     AMP_INSIST( data.size() == d_data.size(),
                 "Number of arguments does not match number of variables" );
     for ( size_t i = 0; i < data.size(); i++ )
-        d_data[i]  = data[i];
-    double result  = te_eval( d_fun );
+        d_data[i] = data[i];
+    double result = te_eval( d_fun );
     return result;
 }
 
 
-} // AMP namespace
+} // namespace AMP

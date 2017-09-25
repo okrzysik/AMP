@@ -36,12 +36,12 @@ public:
      * This Constructor reads the value for the key USE_MATERIALS_LIBRARY (false by default)
      * and also USE_ELEMENT_PHYSICS from the database. These specify if material library or the
      * element physics model are used for calculating the source terms.
-    */
+     */
     explicit SourcePhysicsModel( const AMP::shared_ptr<SourcePhysicsModelParameters> &params );
 
     /**
-    * Destructor.
-    */
+     * Destructor.
+     */
     virtual ~SourcePhysicsModel() {}
 
     void getConstitutiveProperty( std::vector<double> &result,
@@ -72,7 +72,7 @@ private:
     // Cached variables that may or may not be used to improve perfomance
     std::map<std::string, AMP::shared_ptr<std::vector<double>>> d_inputMaterialParameters;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

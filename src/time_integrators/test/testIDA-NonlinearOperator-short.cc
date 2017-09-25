@@ -62,10 +62,9 @@
 //#define __INIT_FN__(x,y,z,t) ( exp(-0.015 *  __PI__ * __PI__ * t) * cos(0.1 * __PI__ * x) *
 // cos(0.1 * __PI__ * y) *
 // cos(0.05 * __PI__ * z) )
-#define __INIT_FN__( x, y, z )                                        \
-    ( 1 -                                                             \
-      sqrt( x * x + y * y + z * z ) * sqrt( x * x + y * y + z * z ) * \
-          sqrt( x * x + y * y + z * z ) )
+#define __INIT_FN__( x, y, z )                                            \
+    ( 1 - sqrt( x * x + y * y + z * z ) * sqrt( x * x + y * y + z * z ) * \
+              sqrt( x * x + y * y + z * z ) )
 #define __INIT_PRIME_FN__( x, y, z )                                  \
     ( sqrt( x * x + y * y + z * z ) * sqrt( x * x + y * y + z * z ) * \
       sqrt( x * x + y * y + z * z ) )

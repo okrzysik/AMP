@@ -1,7 +1,7 @@
 #ifndef included_GPUDevAllocator_H_
 #define included_GPUDevAllocator_H_
 
-template <typename T>
+template<typename T>
 class GPUDevAllocator
 {
 public:

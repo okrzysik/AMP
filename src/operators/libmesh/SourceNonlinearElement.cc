@@ -158,5 +158,5 @@ void SourceNonlinearElement::apply()
 
     PROFILE_STOP( "apply", 5 );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

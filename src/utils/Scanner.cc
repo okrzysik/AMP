@@ -3,7 +3,6 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdlib.h>
 #include <string.h>
 #include <string>
 
@@ -554,7 +553,7 @@ static int input( void );
 /* This used to be an fputs(), but since the string might contain NUL's,
  * we now use fwrite().
  */
-#define ECHO ( void ) fwrite( yytext, yyleng, 1, yyout )
+#define ECHO (void) fwrite( yytext, yyleng, 1, yyout )
 #endif
 
 /* Gets input and stuffs it into "buf".  number of characters read, or YY_NULL,
@@ -566,7 +565,7 @@ static int input( void );
         int c = '*';                                                                    \
         size_t n;                                                                       \
         for ( n = 0; n < max_size && ( c = getc( yyin ) ) != EOF && c != '\n'; ++n )    \
-            buf[n]                       = (char) c;                                    \
+            buf[n] = (char) c;                                                          \
         if ( c == '\n' )                                                                \
             buf[n++] = (char) c;                                                        \
         if ( c == EOF && ferror( yyin ) )                                               \
@@ -1161,7 +1160,7 @@ static int yy_get_next_buffer( void )
     /* First move last chars to start of buffer. */
     number_to_move = (int) ( ( yy_c_buf_p ) - ( yytext_ptr ) ) - 1;
 
-    for ( i         = 0; i < number_to_move; ++i )
+    for ( i = 0; i < number_to_move; ++i )
         *( dest++ ) = *( source++ );
 
     if ( YY_CURRENT_BUFFER_LVALUE->yy_buffer_status == YY_BUFFER_EOF_PENDING )
@@ -1289,42 +1288,42 @@ static yy_state_type yy_try_NUL_trans( yy_state_type yy_current_state )
     return yy_is_jam ? 0 : yy_current_state;
 }
 
-//    static void yyunput (int c, char * yy_bp )
-//{
-//    char *yy_cp;
-//
-//    yy_cp = (yy_c_buf_p);
-//
-//    /* undo effects of setting up yytext */
-//    *yy_cp = (yy_hold_char);
-//
-//    if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
-//        { /* need to shift things up to make room */
-//        /* +2 for EOB chars. */
-//        int number_to_move = (yy_n_chars) + 2;
-//        char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
-//                    YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
-//        char *source =
-//                &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move];
-//
-//        while ( source > YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
-//            *--dest = *--source;
-//
-//        yy_cp += (int) (dest - source);
-//        yy_bp += (int) (dest - source);
-//        YY_CURRENT_BUFFER_LVALUE->yy_n_chars =
-//            (yy_n_chars) = YY_CURRENT_BUFFER_LVALUE->yy_buf_size;
-//
-//        if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
-//            YY_FATAL_ERROR( "flex scanner push-back overflow" );
-//        }
-//
-//    *--yy_cp = (char) c;
-//
-//    (yytext_ptr) = yy_bp;
-//    (yy_hold_char) = *yy_cp;
-//    (yy_c_buf_p) = yy_cp;
-//}
+    //    static void yyunput (int c, char * yy_bp )
+    //{
+    //    char *yy_cp;
+    //
+    //    yy_cp = (yy_c_buf_p);
+    //
+    //    /* undo effects of setting up yytext */
+    //    *yy_cp = (yy_hold_char);
+    //
+    //    if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
+    //        { /* need to shift things up to make room */
+    //        /* +2 for EOB chars. */
+    //        int number_to_move = (yy_n_chars) + 2;
+    //        char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
+    //                    YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
+    //        char *source =
+    //                &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move];
+    //
+    //        while ( source > YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
+    //            *--dest = *--source;
+    //
+    //        yy_cp += (int) (dest - source);
+    //        yy_bp += (int) (dest - source);
+    //        YY_CURRENT_BUFFER_LVALUE->yy_n_chars =
+    //            (yy_n_chars) = YY_CURRENT_BUFFER_LVALUE->yy_buf_size;
+    //
+    //        if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
+    //            YY_FATAL_ERROR( "flex scanner push-back overflow" );
+    //        }
+    //
+    //    *--yy_cp = (char) c;
+    //
+    //    (yytext_ptr) = yy_bp;
+    //    (yy_hold_char) = *yy_cp;
+    //    (yy_c_buf_p) = yy_cp;
+    //}
 
 #ifndef YY_NO_INPUT
 #ifdef __cplusplus
@@ -1366,7 +1365,7 @@ static int input( void )
                 /* Reset buffer status. */
                 yyrestart( yyin );
 
-            /*FALLTHROUGH*/
+                /*FALLTHROUGH*/
 
             case EOB_ACT_END_OF_FILE: {
                 if ( yywrap() )
@@ -1722,7 +1721,7 @@ YY_BUFFER_STATE yy_scan_bytes( yyconst char *yybytes, int _yybytes_len )
     if ( !buf )
         YY_FATAL_ERROR( "out of dynamic memory in yy_scan_bytes()" );
 
-    for ( i    = 0; i < _yybytes_len; ++i )
+    for ( i = 0; i < _yybytes_len; ++i )
         buf[i] = yybytes[i];
 
     buf[_yybytes_len] = buf[_yybytes_len + 1] = YY_END_OF_BUFFER_CHAR;
@@ -1749,7 +1748,7 @@ static void yy_fatal_error( yyconst char *msg )
     exit( YY_EXIT_FAILURE );
 }
 
-/* Redefine yyless() so it works in section 3 code. */
+    /* Redefine yyless() so it works in section 3 code. */
 
 #undef yyless
 #define yyless( n )                                   \
@@ -1815,8 +1814,8 @@ void yyset_debug( int bdebug ) { yy_flex_debug = bdebug; }
 static int yy_init_globals( void )
 {
     /* Initialization is the same as for the non-reentrant scanner.
- * This function is called from yylex_destroy(), so don't allocate here.
- */
+     * This function is called from yylex_destroy(), so don't allocate here.
+     */
 
     ( yy_buffer_stack )     = nullptr;
     ( yy_buffer_stack_top ) = 0;
@@ -1862,15 +1861,15 @@ int yylex_destroy( void )
     return 0;
 }
 
-/*
- * Internal utility routines.
- */
+    /*
+     * Internal utility routines.
+     */
 
 #ifndef yytext_ptr
 static void yy_flex_strncpy( char *s1, yyconst char *s2, int n )
 {
     int i;
-    for ( i   = 0; i < n; ++i )
+    for ( i = 0; i < n; ++i )
         s1[i] = s2[i];
 }
 #endif

@@ -14,13 +14,13 @@ namespace LinearAlgebra {
 
 
 /**
-* \class ManagedSundialsVector
-* \brief A class that can provide a Sundials N_Vector view of an AMP Vector.
-* \details
-*  This class should not be used explicitly.  It is the return type of
-*  SundialsVector::view() and SundialsVector::constView().
-*
-* \see SundialsVector
+ * \class ManagedSundialsVector
+ * \brief A class that can provide a Sundials N_Vector view of an AMP Vector.
+ * \details
+ *  This class should not be used explicitly.  It is the return type of
+ *  SundialsVector::view() and SundialsVector::constView().
+ *
+ * \see SundialsVector
  */
 typedef ManagedVectorParameters ManagedSundialsVectorParameters;
 
@@ -29,17 +29,17 @@ class ManagedSundialsVector : public ManagedVector, public SundialsVector
 
 public:
     /** \brief Construct a ManagedSundialsVector from a set of parameters
-      * \param[in] params Description of the new vector
-      */
+     * \param[in] params Description of the new vector
+     */
     explicit ManagedSundialsVector( VectorParameters::shared_ptr params );
 
     /** \brief Create a view to an AMP vector
-      * \param[in] alias  Vector to view
-      */
+     * \param[in] alias  Vector to view
+     */
     explicit ManagedSundialsVector( shared_ptr alias );
 
     /** \brief Destructor
-      */
+     */
     virtual ~ManagedSundialsVector();
 
     // These are adequately documented in a base class or there is little need for the documentation
@@ -83,8 +83,8 @@ private:
     static booleantype constrmask_no_impl( N_Vector c, N_Vector x, N_Vector m );
     static realtype minquotient_AMP( N_Vector num, N_Vector denom );
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #include "ManagedSundialsVector.inline.h"
 

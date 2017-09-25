@@ -108,5 +108,5 @@ void MassMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &par
     // This does consistent for both "Sum-into" and "set".
     inputMatrix->makeConsistent();
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

@@ -29,5 +29,5 @@ inline MultiVariable::const_iterator MultiVariable::endVariable() const
 {
     return d_vVariables.end();
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

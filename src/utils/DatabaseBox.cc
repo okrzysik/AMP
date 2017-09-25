@@ -51,4 +51,4 @@ int DatabaseBox::operator==( const DatabaseBox &box ) const
     }
     return ( equals );
 }
-}
+} // namespace AMP

@@ -36,7 +36,7 @@ protected:
     std::vector<AMP::Mesh::MeshElementID> d_nodeID;
     bool d_residualMode;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

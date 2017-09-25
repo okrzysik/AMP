@@ -18,7 +18,7 @@ public:
     static AMP::shared_ptr<ElementPhysicsModel>
     createElementPhysicsModel( AMP::shared_ptr<AMP::Database> input_db );
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

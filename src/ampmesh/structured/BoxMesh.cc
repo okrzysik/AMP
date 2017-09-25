@@ -32,8 +32,8 @@ namespace Mesh {
 
 
 /****************************************************************
-* Generator                                                     *
-****************************************************************/
+ * Generator                                                     *
+ ****************************************************************/
 AMP::shared_ptr<BoxMesh> BoxMesh::generate( MeshParameters::shared_ptr params )
 {
     auto db               = params->getDatabase();
@@ -64,8 +64,8 @@ AMP::shared_ptr<BoxMesh> BoxMesh::generate( MeshParameters::shared_ptr params )
 
 
 /****************************************************************
-* Estimate the mesh size                                        *
-****************************************************************/
+ * Estimate the mesh size                                        *
+ ****************************************************************/
 size_t BoxMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
     auto size = estimateLogicalMeshSize( params );
@@ -101,8 +101,8 @@ std::vector<size_t> BoxMesh::estimateLogicalMeshSize( const MeshParameters::shar
 
 
 /****************************************************************
-* Constructor                                                   *
-****************************************************************/
+ * Constructor                                                   *
+ ****************************************************************/
 BoxMesh::BoxMesh( MeshParameters::shared_ptr params_in ) : Mesh( params_in )
 {
     // Check for valid inputs
@@ -138,15 +138,15 @@ BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh.d_params )
         d_onSurface[i] = mesh.d_onSurface[i];
     }
     for ( int d = 0; d < 4; d++ ) {
-        for ( int i                   = 0; i < 6; i++ )
+        for ( int i = 0; i < 6; i++ )
             d_globalSurfaceList[i][d] = mesh.d_globalSurfaceList[i][d];
     }
 }
 
 
 /****************************************************************
-* Initialize the mesh                                           *
-****************************************************************/
+ * Initialize the mesh                                           *
+ ****************************************************************/
 void BoxMesh::initialize()
 {
     PROFILE_START( "initialize" );
@@ -182,13 +182,13 @@ void BoxMesh::initialize()
     // Create the load balance
     if ( d_comm.getSize() == 1 ) {
         // We are dealing with a serial mesh (do nothing to change the local box sizes)
-        for ( int d        = 0; d < static_cast<int>( GeomDim ); d++ )
+        for ( int d = 0; d < static_cast<int>( GeomDim ); d++ )
             d_numBlocks[d] = 1;
     } else {
         // We are dealing with a parallel mesh
         // First, get the prime factors for number of processors and divide the dimensions
         std::vector<int> factors = AMP::Utilities::factor( d_comm.getSize() );
-        for ( int d        = 0; d < 3; d++ )
+        for ( int d = 0; d < 3; d++ )
             d_numBlocks[d] = 1;
         while ( !factors.empty() ) {
             int d    = -1;
@@ -321,7 +321,7 @@ void BoxMesh::finalize()
         displacement[1] = d_db->getDouble( "y_offset" );
     if ( d_db->keyExists( "z_offset" ) && PhysicalDim >= 3 )
         displacement[2] = d_db->getDouble( "z_offset" );
-    bool test           = false;
+    bool test = false;
     for ( auto &elem : displacement ) {
         if ( elem != 0.0 )
             test = true;
@@ -336,14 +336,14 @@ void BoxMesh::finalize()
 
 
 /****************************************************************
-* De-constructor                                                *
-****************************************************************/
+ * De-constructor                                                *
+ ****************************************************************/
 BoxMesh::~BoxMesh() {}
 
 
 /****************************************************************
-* Estimate the maximum number of processors                     *
-****************************************************************/
+ * Estimate the maximum number of processors                     *
+ ****************************************************************/
 size_t BoxMesh::maxProcs( const MeshParameters::shared_ptr &params )
 {
     // Check for valid inputs
@@ -368,8 +368,8 @@ size_t BoxMesh::maxProcs( const MeshParameters::shared_ptr &params )
 
 
 /****************************************************************
-* Function to return the element given an ID                    *
-****************************************************************/
+ * Function to return the element given an ID                    *
+ ****************************************************************/
 MeshElement BoxMesh::getElement( const MeshElementID &id ) const
 {
     // Get the index of the element
@@ -386,8 +386,8 @@ MeshElement BoxMesh::getElement( const MeshElementIndex &index ) const
 
 
 /****************************************************************
-* Find the mesh element index from a point                      *
-****************************************************************/
+ * Find the mesh element index from a point                      *
+ ****************************************************************/
 static inline int to_nearest( double x ) { return static_cast<int>( floor( x + 0.5 ) ); }
 BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const std::array<double, 3> &x0,
                                                           GeomType type ) const
@@ -466,8 +466,8 @@ BoxMesh::MeshElementIndex BoxMesh::getElementFromPhysical( const double *x, Geom
 
 
 /********************************************************
-* Function to return parents of an element              *
-********************************************************/
+ * Function to return parents of an element              *
+ ********************************************************/
 std::vector<MeshElement> BoxMesh::getElementParents( const MeshElement &meshelem,
                                                      const GeomType type ) const
 {
@@ -486,8 +486,8 @@ std::vector<MeshElement> BoxMesh::getElementParents( const MeshElement &meshelem
 
 
 /****************************************************************
-* Functions to return the number of elements                    *
-****************************************************************/
+ * Functions to return the number of elements                    *
+ ****************************************************************/
 size_t BoxMesh::numLocalElements( const GeomType type ) const
 {
     if ( type > GeomDim )
@@ -505,8 +505,8 @@ size_t BoxMesh::numGlobalElements( const GeomType type ) const
         return 0;
     std::array<int, 6> box = { 0, d_globalSize[0] - 1, 0, d_globalSize[1] - 1,
                                0, d_globalSize[2] - 1 };
-    auto range = getIteratorRange( box, type, 0 );
-    size_t N   = 0;
+    auto range             = getIteratorRange( box, type, 0 );
+    size_t N               = 0;
     for ( auto tmp : range )
         N += MeshElementIndex::numElements( tmp.first, tmp.second );
     return N;
@@ -529,8 +529,8 @@ size_t BoxMesh::numGhostElements( const GeomType type, int gcw ) const
 
 
 /****************************************************************
-* Function to get an iterator                                   *
-****************************************************************/
+ * Function to get an iterator                                   *
+ ****************************************************************/
 BoxMesh::ElementBlocks
 BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const int gcw ) const
 {
@@ -688,8 +688,8 @@ MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 
 
 /****************************************************************
-* Function to get an iterator over the surface                  *
-****************************************************************/
+ * Function to get an iterator over the surface                  *
+ ****************************************************************/
 MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
     if ( type > GeomDim )
@@ -727,8 +727,8 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
 
 
 /****************************************************************
-* Functions to get the boundaries                               *
-****************************************************************/
+ * Functions to get the boundaries                               *
+ ****************************************************************/
 std::vector<int> BoxMesh::getBoundaryIDs() const
 {
     std::set<int> ids;
@@ -812,5 +812,5 @@ bool BoxMesh::isOnBoundary( const MeshElementIndex &index, int id ) const
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

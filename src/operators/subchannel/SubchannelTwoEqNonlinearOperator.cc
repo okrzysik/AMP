@@ -101,7 +101,7 @@ void SubchannelTwoEqNonlinearOperator::reset( const AMP::shared_ptr<OperatorPara
     for ( size_t i = 0; i < d_numSubchannels; i++ )
         total_area += d_channelArea[i];
     d_channelMass.resize( d_numSubchannels, 0.0 );
-    for ( size_t i       = 0; i < d_numSubchannels; i++ )
+    for ( size_t i = 0; i < d_numSubchannels; i++ )
         d_channelMass[i] = d_mass * d_channelArea[i] / total_area;
 
     // get additional parameters based on heat source type
@@ -290,15 +290,13 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
             } else {
                 // residual at face corresponds to cell below
                 dof_manager->getDOFs( face->globalID(), dofs );
-                double h_plus =
-                    h_scale *
-                    inputVec->getValueByGlobalID( dofs[0] ); // enthalpy evaluated at lower face
+                double h_plus = h_scale * inputVec->getValueByGlobalID(
+                                              dofs[0] ); // enthalpy evaluated at lower face
                 double z_plus = ( face->centroid() )[2];
                 --face;
                 dof_manager->getDOFs( face->globalID(), dofs );
-                double h_minus =
-                    h_scale *
-                    inputVec->getValueByGlobalID( dofs[0] ); // enthalpy evaluated at lower face
+                double h_minus = h_scale * inputVec->getValueByGlobalID(
+                                               dofs[0] ); // enthalpy evaluated at lower face
                 double z_minus = ( face->centroid() )[2];
                 ++face;
                 double dz = z_plus - z_minus;
@@ -310,12 +308,10 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
             // ======================================================
             // residual at face corresponds to cell above
             dof_manager->getDOFs( face->globalID(), dofs );
-            double h_minus =
-                h_scale *
-                inputVec->getValueByGlobalID( dofs[0] ); // enthalpy evaluated at lower face
-            double p_minus =
-                P_scale *
-                inputVec->getValueByGlobalID( dofs[1] ); // pressure evaluated at lower face
+            double h_minus = h_scale * inputVec->getValueByGlobalID(
+                                           dofs[0] ); // enthalpy evaluated at lower face
+            double p_minus = P_scale * inputVec->getValueByGlobalID(
+                                           dofs[1] ); // pressure evaluated at lower face
             std::vector<double> minusFaceCentroid = face->centroid();
             double z_minus = minusFaceCentroid[2]; // z-coordinate of lower face
             if ( face == end_face - 1 ) {
@@ -323,12 +319,10 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
             } else {
                 ++face;
                 dof_manager->getDOFs( face->globalID(), dofs );
-                double h_plus =
-                    h_scale *
-                    inputVec->getValueByGlobalID( dofs[0] ); // enthalpy evaluated at upper face
-                double p_plus =
-                    P_scale *
-                    inputVec->getValueByGlobalID( dofs[1] ); // pressure evaluated at upper face
+                double h_plus = h_scale * inputVec->getValueByGlobalID(
+                                              dofs[0] ); // enthalpy evaluated at upper face
+                double p_plus = P_scale * inputVec->getValueByGlobalID(
+                                              dofs[1] ); // pressure evaluated at upper face
                 std::vector<double> plusFaceCentroid = face->centroid();
                 double z_plus = plusFaceCentroid[2]; // z-coordinate of lower face
                 --face;
@@ -538,8 +532,7 @@ double SubchannelTwoEqNonlinearOperator::getDoubleParameter(
         return ( myparams->d_db )->getDouble( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
-                     << defaultValue
-                     << "\n" );
+                     << defaultValue << "\n" );
         return defaultValue;
     }
 }
@@ -555,8 +548,7 @@ int SubchannelTwoEqNonlinearOperator::getIntegerParameter(
         return ( myparams->d_db )->getInteger( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
-                     << defaultValue
-                     << "\n" );
+                     << defaultValue << "\n" );
         return defaultValue;
     }
 }
@@ -572,8 +564,7 @@ std::string SubchannelTwoEqNonlinearOperator::getStringParameter(
         return ( myparams->d_db )->getString( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
-                     << defaultValue
-                     << "\n" );
+                     << defaultValue << "\n" );
         return defaultValue;
     }
 }
@@ -587,5 +578,5 @@ int SubchannelTwoEqNonlinearOperator::getSubchannelIndex( double x, double y )
         return ( i - 1 ) + ( j - 1 ) * ( d_x.size() - 1 );
     return -1;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

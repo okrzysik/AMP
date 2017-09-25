@@ -14,8 +14,8 @@ const double scalePressure =
     1e-3; // Scale the pressure by this constant in the vector (controls the norm)
 const double scaleLateralMassFlowRate =
     1e-3; // Scale the lateral mass flow rate by this constant in the vector (controls the norm)
-}
-}
-}
+} // namespace Subchannel
+} // namespace Operator
+} // namespace AMP
 
 #endif

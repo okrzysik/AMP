@@ -12,8 +12,8 @@ namespace LinearAlgebra {
 
 
 /** \class NativeThyraVectorParameters
-  * \brief Parameters to set when creating a NativeThyraVector
-  */
+ * \brief Parameters to set when creating a NativeThyraVector
+ */
 class NativeThyraVectorParameters : public NativeVectorParameters
 {
 public:
@@ -32,16 +32,16 @@ public:
 
 
 /** \class NativeThyraVector
-  * \brief An AMP Vector that uses Thyra for parallel data management, linear algebra,
-  * etc.
-  * \details  This is an AMP wrapper to Thyra.  This is different from ManagedThyraVector
-  * in that this class does not replace calls to Vec*.  Rather, it wraps these calls.
-  * This class is used when Thyra is chosen as the default linear algebra engine.
-  *
-  * This class is not to be used directly, just through base class interfaces.
-  * \see ThyraVector
-  * \see ManagedThyraVector
-  */
+ * \brief An AMP Vector that uses Thyra for parallel data management, linear algebra,
+ * etc.
+ * \details  This is an AMP wrapper to Thyra.  This is different from ManagedThyraVector
+ * in that this class does not replace calls to Vec*.  Rather, it wraps these calls.
+ * This class is used when Thyra is chosen as the default linear algebra engine.
+ *
+ * This class is not to be used directly, just through base class interfaces.
+ * \see ThyraVector
+ * \see ManagedThyraVector
+ */
 class NativeThyraVector : public NativeVector,
                           public ThyraVector,
                           public VectorEngine,
@@ -56,8 +56,8 @@ public:
 
 
     /** \brief Construct a wrapper for a Thyra Vec from a set of parameters
-      * \param[in] params The parameters describing the Vec
-      */
+     * \param[in] params The parameters describing the Vec
+     */
     explicit NativeThyraVector( VectorParameters::shared_ptr params );
 
     //! Destructor
@@ -141,27 +141,27 @@ private:
 
 
 public: // Pull VectorOperations into the current scope
-    using Vector::add;
     using Vector::abs;
-    using Vector::axpy;
+    using Vector::add;
     using Vector::axpby;
+    using Vector::axpy;
+    using Vector::cloneVector;
     using Vector::divide;
     using Vector::dot;
     using Vector::linearSum;
     using Vector::minQuotient;
     using Vector::multiply;
+    using Vector::reciprocal;
     using Vector::scale;
     using Vector::setRandomValues;
     using Vector::subtract;
-    using Vector::reciprocal;
     using Vector::wrmsNorm;
     using Vector::wrmsNormMask;
-    using Vector::cloneVector;
 };
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 
 #include "NativeThyraVector.inline.h"

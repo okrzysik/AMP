@@ -2,7 +2,6 @@
 #include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
 #include <exception>
 
@@ -35,8 +34,7 @@ void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec, const double shift, con
 
 void applyTests( AMP::UnitTest *ut,
                  std::string msgPrefix,
-                 AMP::shared_ptr<AMP::Operator::Operator>
-                     testOperator,
+                 AMP::shared_ptr<AMP::Operator::Operator> testOperator,
                  AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
                  AMP::LinearAlgebra::Vector::shared_ptr solVec,
                  AMP::LinearAlgebra::Vector::shared_ptr resVec,
@@ -48,8 +46,7 @@ void applyTests( AMP::UnitTest *ut,
 
 void applyTests( AMP::UnitTest *ut,
                  std::string msgPrefix,
-                 AMP::shared_ptr<AMP::Operator::Operator>
-                     testOperator,
+                 AMP::shared_ptr<AMP::Operator::Operator> testOperator,
                  AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
                  AMP::LinearAlgebra::Vector::shared_ptr solVec,
                  AMP::LinearAlgebra::Vector::shared_ptr resVec,

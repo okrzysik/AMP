@@ -68,7 +68,7 @@ private:
     std::vector<double> d_range;
 };
 
-} // Mesh namespace
-} // Geometry namespace
+} // namespace Geometry
+} // namespace AMP
 
 #endif

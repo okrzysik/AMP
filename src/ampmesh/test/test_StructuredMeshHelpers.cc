@@ -1,7 +1,7 @@
-#include "utils/AMPManager.h"
 #include "ampmesh/Mesh.h"
 #include "ampmesh/StructuredMeshHelper.h"
 #include "ampmesh/structured/BoxMesh.h"
+#include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
 #include "utils/UnitTest.h"
 

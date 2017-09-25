@@ -107,6 +107,6 @@ extern std::ostream perr;
  * from multiple processors, the processor number is appended to the filename.
  */
 extern std::ostream plog;
-}
+} // namespace AMP
 
 #endif

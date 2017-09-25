@@ -138,8 +138,7 @@ public:
      @param [out] u : shared pointer to approximate computed solution
      */
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u ) override;
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Return a shared pointer to the ML_Epetra::MultiLevelPreconditioner object
@@ -185,8 +184,7 @@ public:
 
 protected:
     void reSolveWithLU( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                            u );
+                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
     void getFromInput( const AMP::shared_ptr<AMP::Database> &db );
 
@@ -218,7 +216,7 @@ private:
     std::vector<double> d_z_values;
     std::vector<double> d_null_space;
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

@@ -1,10 +1,10 @@
 
-#include "operators/mechanics/IsotropicElasticModel.h"
 #include "ampmesh/MeshID.h"
 #include "ampmesh/dendro/DendroSearch.h"
 #include "ampmesh/euclidean_geometry_tools.h"
 #include "ampmesh/latex_visualization_tools.h"
 #include "operators/contact/NodeToGeomType::FaceContactOperator.h"
+#include "operators/mechanics/IsotropicElasticModel.h"
 
 #include <algorithm>
 #include <cmath>
@@ -293,8 +293,8 @@ size_t NodeToGeomType::FaceContactOperator::updateActiveSet(
             if ( nDotT > 1.0e-10 ) {
                 ++nActiveSlaveVerticesDeactivated;
                 d_InactiveSet.push_back( *activeSetIterator );
-                activeSetIterator          = d_ActiveSet.erase( activeSetIterator );
-                slaveVerticesShiftIterator = d_SlaveShift.erase( slaveVerticesShiftIterator,
+                activeSetIterator               = d_ActiveSet.erase( activeSetIterator );
+                slaveVerticesShiftIterator      = d_SlaveShift.erase( slaveVerticesShiftIterator,
                                                                  slaveVerticesShiftIterator + 3 );
                 masterVerticesGlobalIDsIterator = d_MasterVerticesGlobalIDs.erase(
                     masterVerticesGlobalIDsIterator, masterVerticesGlobalIDsIterator + 4 );

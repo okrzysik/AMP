@@ -3,7 +3,6 @@
 
 #include "vectors/MultiVector.h"
 #include "vectors/VectorSelector.h"
-#include "vectors/VectorSelector.h"
 #include "vectors/testHelpers/VectorTests.h"
 
 #include "utils/AMPManager.h"
@@ -48,7 +47,7 @@ public:
 private:
     AMP::shared_ptr<const VectorFactory> d_factory;
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

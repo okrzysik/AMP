@@ -148,7 +148,7 @@ void SubchannelFourEqNonlinearOperator::reset( const AMP::shared_ptr<OperatorPar
         total_area += d_channelArea[i];
     // inlet mass flow rate for each subchannel
     d_channelMass.resize( d_numSubchannels, 0.0 );
-    for ( size_t i       = 0; i < d_numSubchannels; i++ )
+    for ( size_t i = 0; i < d_numSubchannels; i++ )
         d_channelMass[i] = d_mass * d_channelArea[i] / total_area;
 
     // Get the subchannel elements
@@ -195,8 +195,7 @@ double SubchannelFourEqNonlinearOperator::getDoubleParameter(
         return ( myparams->d_db )->getDouble( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
-                     << defaultValue
-                     << "\n" );
+                     << defaultValue << "\n" );
         return defaultValue;
     }
 }
@@ -212,8 +211,7 @@ int SubchannelFourEqNonlinearOperator::getIntegerParameter(
         return ( myparams->d_db )->getInteger( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
-                     << defaultValue
-                     << "\n" );
+                     << defaultValue << "\n" );
         return defaultValue;
     }
 }
@@ -229,8 +227,7 @@ std::string SubchannelFourEqNonlinearOperator::getStringParameter(
         return ( myparams->d_db )->getString( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
-                     << defaultValue
-                     << "\n" );
+                     << defaultValue << "\n" );
         return defaultValue;
     }
 }
@@ -246,8 +243,7 @@ bool SubchannelFourEqNonlinearOperator::getBoolParameter(
         return ( myparams->d_db )->getBool( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
-                     << defaultValue
-                     << "\n" );
+                     << defaultValue << "\n" );
         return defaultValue;
     }
 }
@@ -512,7 +508,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
     // create vector of the mid points of each axial interval
     std::vector<double> zMid( d_z.size() - 1 );
     for ( size_t j = 0; j < d_z.size() - 1; ++j )
-        zMid[j]    = d_z[j] + 0.5 * ( d_z[j + 1] - d_z[j] );
+        zMid[j] = d_z[j] + 0.5 * ( d_z[j + 1] - d_z[j] );
 
     AMP::Mesh::MeshIterator cell =
         d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 ); // iterator for cells of mesh
@@ -582,14 +578,14 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
             flux = Subchannel::getHeatFluxGeneration( d_heatShape, d_z, d_rodDiameter[isub], d_Q );
             // multiply by power fraction
             for ( size_t i = 0; i < flux.size(); i++ )
-                flux[i]    = flux[i] * d_QFraction[isub];
+                flux[i] = flux[i] * d_QFraction[isub];
         } else if ( d_source == "totalHeatGenerationWithDiscretizationError" ) {
             AMP_ASSERT( d_QFraction.size() == d_numSubchannels );
             flux = Subchannel::getHeatFluxGenerationWithDiscretizationError(
                 d_heatShape, d_z, d_rodDiameter[isub], d_Q );
             // multiply by power fraction
             for ( size_t i = 0; i < flux.size(); i++ )
-                flux[i]    = flux[i] * d_QFraction[isub];
+                flux[i] = flux[i] * d_QFraction[isub];
         } else {
             AMP_ERROR( "Heat source type '" + d_source + "' is invalid" );
         }
@@ -1139,14 +1135,14 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                     crossflowSign = 1.0;
                 else
                     crossflowSign = -1.0;
-                double area1      = d_channelArea[isubCell1];
-                double area2      = d_channelArea[isubCell2];
-                double u1_plus    = m1_plus * vol1_plus / area1;
-                double u1_minus   = m1_minus * vol1_minus / area1;
-                double u2_plus    = m2_plus * vol2_plus / area2;
-                double u2_minus   = m2_minus * vol2_minus / area2;
-                double u_plus     = 0.5 * ( u1_plus + u2_plus );
-                double u_minus    = 0.5 * ( u1_minus + u2_minus );
+                double area1    = d_channelArea[isubCell1];
+                double area2    = d_channelArea[isubCell2];
+                double u1_plus  = m1_plus * vol1_plus / area1;
+                double u1_minus = m1_minus * vol1_minus / area1;
+                double u2_plus  = m2_plus * vol2_plus / area2;
+                double u2_minus = m2_minus * vol2_minus / area2;
+                double u_plus   = 0.5 * ( u1_plus + u2_plus );
+                double u_minus  = 0.5 * ( u1_minus + u2_minus );
 
                 double w_axialDonor_plus;
                 double w_axialDonor_minus;
@@ -1453,8 +1449,7 @@ void SubchannelFourEqNonlinearOperator::getAxialFaces( AMP::Mesh::MeshElement ce
 AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLateralFace(
     AMP::Mesh::MeshElement *daughterCell,
     AMP::Mesh::MeshElement parentLateralFace,
-    std::map<std::vector<double>, AMP::Mesh::MeshElement>
-        interiorLateralFaceMap )
+    std::map<std::vector<double>, AMP::Mesh::MeshElement> interiorLateralFaceMap )
 {
     // gets the lateral face that is either below or above another lateral face
     // daughterCell: cell that is either above or below the parent cell
@@ -1483,7 +1478,7 @@ AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLate
             // loop through coordinates to determine if lateral face is the lateral face axially
             // adjacent to the current
             // lateral face
-            double knownCentroid[3] = { parentLateralFaceCentroid[0],
+            double knownCentroid[3]           = { parentLateralFaceCentroid[0],
                                         parentLateralFaceCentroid[1],
                                         daughterCellCentroid[2] };
             bool isAxiallyAdjacentLateralFace = true;
@@ -1504,5 +1499,5 @@ AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLate
     AMP_INSIST( axiallyAdjacentLateralFaceFound, "Axially adjacent lateral face was not found." );
     return axiallyAdjacentLateralFace;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

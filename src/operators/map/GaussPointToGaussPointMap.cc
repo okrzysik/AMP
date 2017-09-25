@@ -247,5 +247,5 @@ void GaussPointToGaussPointMap::createIdxMap(
         elem = nullptr;
     } // end for i
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

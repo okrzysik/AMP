@@ -299,8 +299,7 @@ size_t AMP_to_MATLAB( AMP::Mesh::MeshElement face, size_t variable_id )
 
 // function to create map of global IDs to elements and variables
 void createGlobalIDMaps( AMP::Discretization::DOFManager::shared_ptr dof_manager,
-                         AMP::shared_ptr<AMP::Mesh::Mesh>
-                             mesh,
+                         AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
                          std::map<size_t, AMP::Mesh::MeshElement> &elements_by_globalID,
                          std::map<size_t, size_t> &variables_by_globalID )
 {
@@ -341,12 +340,9 @@ bool JacobianIsCorrect( AMP::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
                         double J_reference[num_dofs_MATLAB][num_dofs_MATLAB],
                         AMP::Discretization::DOFManager::shared_ptr dof_manager,
                         AMP::Mesh::Mesh::shared_ptr mesh,
-                        std::map<std::vector<double>, AMP::Mesh::MeshElement>
-                            lateral_face_map,
-                        std::map<size_t, AMP::Mesh::MeshElement>
-                            elements_by_globalID,
-                        std::map<size_t, size_t>
-                            variables_by_globalID )
+                        std::map<std::vector<double>, AMP::Mesh::MeshElement> lateral_face_map,
+                        std::map<size_t, AMP::Mesh::MeshElement> elements_by_globalID,
+                        std::map<size_t, size_t> variables_by_globalID )
 {
     double J_test_MATLAB[num_dofs_MATLAB][num_dofs_MATLAB] = { { 0.0 } };
     // loop over axial faces

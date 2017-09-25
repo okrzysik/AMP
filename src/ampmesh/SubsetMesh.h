@@ -289,7 +289,7 @@ protected:
     std::map<map_id_struct, AMP::shared_ptr<std::vector<MeshElement>>> d_blockSets;
 };
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP
 
 #endif

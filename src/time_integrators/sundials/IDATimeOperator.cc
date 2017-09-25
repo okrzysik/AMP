@@ -73,5 +73,5 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP::pout << r << std::endl;
     }
 }
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

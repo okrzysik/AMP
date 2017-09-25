@@ -522,5 +522,5 @@ void IsotropicElasticModel::calculateStress( const std::vector<std::vector<doubl
     }
     // for(int i=0; i<6; i++) std::cout<<"stress["<<i<<"]="<<stress[i]<<std::endl;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

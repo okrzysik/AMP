@@ -17,7 +17,7 @@ inline void checkErrorD( cudaError_t e )
 }
 
 // Allocate space for n objects of type T on GPU
-template <typename T>
+template<typename T>
 T *GPUDevAllocator<T>::allocate( size_t n )
 {
     T *d_m;
@@ -28,7 +28,7 @@ T *GPUDevAllocator<T>::allocate( size_t n )
 }
 
 
-template <typename T>
+template<typename T>
 void GPUDevAllocator<T>::deallocate( T *p, size_t n )
 {
     (void) n;
@@ -36,13 +36,13 @@ void GPUDevAllocator<T>::deallocate( T *p, size_t n )
     checkErrorD( E );
 }
 
-template <typename T>
+template<typename T>
 void GPUDevAllocator<T>::construct( T *p )
 {
     new ( p ) T;
 }
 
-template <typename T>
+template<typename T>
 void GPUDevAllocator<T>::destroy( T *p )
 {
     (void) p;

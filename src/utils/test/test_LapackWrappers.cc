@@ -8,7 +8,7 @@
 
 
 // Call Lapack::run_test
-template <typename TYPE>
+template<typename TYPE>
 void run_test( const char *routine, int N, int &N_errors, double &error )
 {
     N_errors = Lapack<TYPE>::run_test( routine, N, error );
@@ -17,8 +17,7 @@ void run_test( const char *routine, int N, int &N_errors, double &error )
 
 // Get the time difference in us
 static inline int64_t diff( std::chrono::time_point<std::chrono::system_clock> t1,
-                            std::chrono::time_point<std::chrono::system_clock>
-                                t2 )
+                            std::chrono::time_point<std::chrono::system_clock> t2 )
 {
     return static_cast<int64_t>( 1e6 * std::chrono::duration<double>( t2 - t1 ).count() );
 }
@@ -62,9 +61,9 @@ int main( int, char *[] )
     const char *dptests[] = { "dcopy",  "dscal",  "dnrm2",  "dasum",  "ddot",   "daxpy",
                               "dgemv",  "dgemm",  "dgesv",  "dgtsv",  "dgbsv",  "dgetrf",
                               "dgttrf", "dgbtrf", "dgetrs", "dgttrs", "dgbtrs", "dgetri" };
-    const int dpN[] = { 500, 500, 500, 500, 500, 100, 100, 100, 100,
+    const int dpN[]       = { 500, 500, 500, 500, 500, 100, 100, 100, 100,
                         500, 500, 100, 500, 500, 100, 500, 500, 100 };
-    int N_err = 0;
+    int N_err             = 0;
     for ( size_t i = 0; i < sizeof( dptests ) / sizeof( char * ); i++ ) {
         auto t1 = std::chrono::system_clock::now();
         double error;
@@ -87,9 +86,9 @@ int main( int, char *[] )
     const char *sptests[] = { "scopy",  "sscal",  "snrm2",  "sasum",  "sdot",   "saxpy",
                               "sgemv",  "sgemm",  "sgesv",  "sgtsv",  "sgbsv",  "sgetrf",
                               "sgttrf", "sgbtrf", "sgetrs", "sgttrs", "sgbtrs", "sgetri" };
-    const int spN[] = { 500, 500, 500, 500, 500, 100, 100, 100, 100,
+    const int spN[]       = { 500, 500, 500, 500, 500, 100, 100, 100, 100,
                         500, 500, 100, 500, 500, 100, 500, 500, 100 };
-    N_err = 0;
+    N_err                 = 0;
     for ( size_t i = 0; i < sizeof( sptests ) / sizeof( char * ); i++ ) {
         auto t1 = std::chrono::system_clock::now();
         float error;
@@ -115,7 +114,7 @@ int main( int, char *[] )
         std::thread threads[128];
         int N_errors_thread[128];
         double error_thread[128];
-        for ( int j    = 0; j < N_threads; j++ )
+        for ( int j = 0; j < N_threads; j++ )
             threads[j] = std::thread( run_test<double>,
                                       dptests[i],
                                       dpN[i],
@@ -127,7 +126,7 @@ int main( int, char *[] )
         bool pass = true;
         for ( int j = 0; j < N_threads; j++ )
             pass = pass && N_errors_thread[j] == 0;
-        int us   = static_cast<int>( diff( t1, t2 ) / ( dpN[i] * N_threads ) );
+        int us = static_cast<int>( diff( t1, t2 ) / ( dpN[i] * N_threads ) );
         printf( "%7s:  %s:  %5i us\n", dptests[i], pass ? "passed" : "failed", us );
         N_errors += ( pass ? 0 : 1 );
     }

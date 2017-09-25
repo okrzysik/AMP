@@ -377,7 +377,7 @@ private:
                                                         std::vector<std::pair<double, int>> &ids );
 };
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP
 
 #endif

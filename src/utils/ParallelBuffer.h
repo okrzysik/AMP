@@ -130,7 +130,7 @@ private:
     int d_buffer_size;        // size of the internal output buffer
     int d_buffer_ptr;         // number of charcters in the output buffer
 };
-}
+} // namespace AMP
 
 
 #endif

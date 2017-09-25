@@ -3,7 +3,7 @@
 
 void boo( void );
 
-template <typename T>
+template<typename T>
 class A
 {
 public:

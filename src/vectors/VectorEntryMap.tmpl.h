@@ -1,31 +1,31 @@
 namespace AMP {
 namespace LinearAlgebra {
 
-template <bool AFFINE_MAP>
+template<bool AFFINE_MAP>
 unsigned int VectorEntryMap<AFFINE_MAP>::numDOFsPerObject()
 {
     return d_Variable->DOFsPerObject();
 }
 
-template <bool AFFINE_MAP>
+template<bool AFFINE_MAP>
 CommunicationList::shared_ptr &VectorEntryMap<AFFINE_MAP>::getCommunicationList()
 {
     return d_CommList;
 }
 
-template <bool AFFINE_MAP>
+template<bool AFFINE_MAP>
 unsigned int VectorEntryMap<AFFINE_MAP>::firstElement()
 {
     return d_FirstRow;
 }
 
-template <bool AFFINE_MAP>
+template<bool AFFINE_MAP>
 unsigned int VectorEntryMap<AFFINE_MAP>::endElement()
 {
     return this->firstElement() + this->numLocalElements();
 }
 
-template <bool AFFINE_MAP>
+template<bool AFFINE_MAP>
 size_t VectorEntryMap<AFFINE_MAP>::ComputeFirstDOF()
 {
     size_t retVal;
@@ -38,7 +38,7 @@ size_t VectorEntryMap<AFFINE_MAP>::ComputeFirstDOF()
     return retVal;
 }
 
-template <bool AFFINE_MAP>
+template<bool AFFINE_MAP>
 VectorEntryMap<AFFINE_MAP>::VectorEntryMap( Parameters::shared_ptr ptr )
     : d_CommList( ptr->d_CommList ),
       d_SortedObjects( ptr->d_SortedObjects ),
@@ -52,18 +52,18 @@ VectorEntryMap<AFFINE_MAP>::VectorEntryMap( Parameters::shared_ptr ptr )
     }
 }
 
-template <bool AFFINE_MAP>
+template<bool AFFINE_MAP>
 VectorEntryMap<AFFINE_MAP>::~VectorEntryMap()
 {
 }
 
-template <bool AFFINE_MAP>
+template<bool AFFINE_MAP>
 unsigned int VectorEntryMap<AFFINE_MAP>::numLocalElements()
 {
     return d_NumRows;
 }
 
-template <bool AFFINE_MAP>
+template<bool AFFINE_MAP>
 size_t VectorEntryMap<AFFINE_MAP>::getGlobalID( size_t obj_id, size_t dof ) const
 {
     size_t retVal;
@@ -76,7 +76,7 @@ size_t VectorEntryMap<AFFINE_MAP>::getGlobalID( size_t obj_id, size_t dof ) cons
     return retVal;
 }
 
-template <bool AFFINE_MAP>
+template<bool AFFINE_MAP>
 void VectorEntryMap<AFFINE_MAP>::getLocalID( size_t gid, size_t &lid, size_t &dof ) const
 {
     if ( AFFINE_MAP ) {
@@ -87,8 +87,8 @@ void VectorEntryMap<AFFINE_MAP>::getLocalID( size_t gid, size_t &lid, size_t &do
     }
 }
 
-template <bool AFFINE_MAP>
-template <typename DOF_FIELD, typename ITERATOR>
+template<bool AFFINE_MAP>
+template<typename DOF_FIELD, typename ITERATOR>
 void VectorEntryMap<AFFINE_MAP>::computeNonAffineMap( ITERATOR begin, ITERATOR end )
 {
     d_NumRows = 0;
@@ -104,16 +104,16 @@ void VectorEntryMap<AFFINE_MAP>::computeNonAffineMap( ITERATOR begin, ITERATOR e
     }
 }
 
-template <bool AFFINE_MAP>
+template<bool AFFINE_MAP>
 unsigned int VectorEntryMap<AFFINE_MAP>::numGlobalElements()
 {
     return d_TotalSize;
 }
 
-template <bool AFFINE_MAP>
+template<bool AFFINE_MAP>
 void VectorEntryMap<AFFINE_MAP>::setCommunicationList( CommunicationList::shared_ptr in )
 {
     d_CommList = in;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

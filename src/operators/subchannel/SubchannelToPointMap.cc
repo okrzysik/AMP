@@ -112,7 +112,7 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
         outputVec = outputVec->subsetVectorForVariable( getOutputVariable() );
     std::vector<double> localOutput( d_point_x.size(), 0.0 );
     if ( d_subchannel_x.size() > 1 && d_subchannel_y.size() > 1 ) {
-        for ( size_t i     = 0; i < d_point_x.size(); i++ )
+        for ( size_t i = 0; i < d_point_x.size(); i++ )
             localOutput[i] = AMP::Utilities::trilinear( d_subchannel_x,
                                                         d_subchannel_y,
                                                         d_subchannel_z,
@@ -121,15 +121,15 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
                                                         d_point_y[i],
                                                         d_point_z[i] );
     } else if ( d_subchannel_x.size() > 1 ) {
-        for ( size_t i     = 0; i < d_point_x.size(); i++ )
+        for ( size_t i = 0; i < d_point_x.size(); i++ )
             localOutput[i] = AMP::Utilities::bilinear(
                 d_subchannel_x, d_subchannel_z, output, d_point_x[i], d_point_z[i] );
     } else if ( d_subchannel_y.size() > 1 ) {
-        for ( size_t i     = 0; i < d_point_x.size(); i++ )
+        for ( size_t i = 0; i < d_point_x.size(); i++ )
             localOutput[i] = AMP::Utilities::bilinear(
                 d_subchannel_y, d_subchannel_z, output, d_point_y[i], d_point_z[i] );
     } else {
-        for ( size_t i     = 0; i < d_point_x.size(); i++ )
+        for ( size_t i = 0; i < d_point_x.size(); i++ )
             localOutput[i] = AMP::Utilities::linear( d_subchannel_z, output, d_point_z[i] );
     }
     if ( d_point_x.size() > 0 ) {
@@ -137,7 +137,7 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
         AMP_ASSERT( outputVec->getLocalSize() == d_point_x.size() );
         std::vector<size_t> dofs( d_point_x.size() );
         for ( size_t i = 0; i < d_point_x.size(); i++ )
-            dofs[i]    = i;
+            dofs[i] = i;
         outputVec->setValuesByLocalID( dofs.size(), &dofs[0], &localOutput[0] );
     }
     if ( outputVec )
@@ -170,12 +170,12 @@ void SubchannelToPointMap::createGrid()
     d_subchannel_x.resize( Nx );
     d_subchannel_y.resize( Ny );
     d_subchannel_z = z;
-    for ( size_t i        = 0; i < Nx; i++ )
+    for ( size_t i = 0; i < Nx; i++ )
         d_subchannel_x[i] = 0.5 * ( x[i + 1] + x[i] );
-    for ( size_t i        = 0; i < Ny; i++ )
+    for ( size_t i = 0; i < Ny; i++ )
         d_subchannel_y[i] = 0.5 * ( y[i + 1] + y[i] );
-    N_subchannels         = Nx * Ny;
+    N_subchannels = Nx * Ny;
     PROFILE_STOP( "createGrid" );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

@@ -1,7 +1,7 @@
-#include "utils/Utilities.h"
-#include "DiffusionNonlinearFEOperatorParameters.h"
 #include "FickSoretNonlinearFEOperator.h"
+#include "DiffusionNonlinearFEOperatorParameters.h"
 #include "FickSoretNonlinearFEOperatorParameters.h"
+#include "utils/Utilities.h"
 
 
 namespace AMP {
@@ -113,5 +113,5 @@ void FickSoretNonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shar
     // apply Fick operator and store in r.
     d_FickOperator->apply( u, r );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

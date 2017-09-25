@@ -1,6 +1,6 @@
-#include "utils/Database.h"
 #include "utils/AMPManager.h"
 #include "utils/AMP_MPI.h"
+#include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
 #include "utils/PIO.h"
@@ -8,8 +8,6 @@
 #include "utils/Utilities.h"
 
 #include "ampmesh/libmesh/initializeLibMesh.h"
-#include "ampmesh/libmesh/initializeLibMesh.h"
-#include "ampmesh/libmesh/libMesh.h"
 #include "ampmesh/libmesh/libMesh.h"
 
 #include "discretization/DOF_Manager.h"

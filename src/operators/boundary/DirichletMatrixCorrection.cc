@@ -8,8 +8,8 @@ namespace Operator {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 DirichletMatrixCorrection::DirichletMatrixCorrection(
     const AMP::shared_ptr<DirichletMatrixCorrectionParameters> &params )
     : BoundaryOperator( params )
@@ -28,8 +28,8 @@ DirichletMatrixCorrection::DirichletMatrixCorrection(
 
 
 /****************************************************************
-* Reset                                                         *
-****************************************************************/
+ * Reset                                                         *
+ ****************************************************************/
 void DirichletMatrixCorrection::reset( const AMP::shared_ptr<OperatorParameters> &params )
 {
     AMP::shared_ptr<DirichletMatrixCorrectionParameters> myParams =
@@ -122,8 +122,8 @@ void DirichletMatrixCorrection::parseParams(
 
 
 /****************************************************************
-* applyMatrixCorrection                                         *
-****************************************************************/
+ * applyMatrixCorrection                                         *
+ ****************************************************************/
 void DirichletMatrixCorrection::applyMatrixCorrection()
 {
     AMP_ASSERT( !d_applyMatrixCorrectionWasCalled );
@@ -275,5 +275,5 @@ void DirichletMatrixCorrection::setRHScorrection( AMP::LinearAlgebra::Vector::sh
         d_rhsCorrectionSet->apply( emptyVec, rhs );
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

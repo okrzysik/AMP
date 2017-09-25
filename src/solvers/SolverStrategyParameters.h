@@ -36,10 +36,10 @@ public:
     virtual ~SolverStrategyParameters();
 
     /**
-    *  Pointer to database object which needs to be initialized specific to the solver.
-    *  Documentation for parameters required by each solver can be found in the
-    *  documentation for the solver.
-    */
+     *  Pointer to database object which needs to be initialized specific to the solver.
+     *  Documentation for parameters required by each solver can be found in the
+     *  documentation for the solver.
+     */
     AMP::shared_ptr<AMP::Database> d_db;
 
     AMP::shared_ptr<AMP::Operator::Operator> d_pOperator;
@@ -47,7 +47,7 @@ public:
 protected:
 private:
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif //  included_SolverStrategyParameters

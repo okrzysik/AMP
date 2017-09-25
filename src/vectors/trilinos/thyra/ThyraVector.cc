@@ -11,20 +11,20 @@ namespace LinearAlgebra {
 
 
 /************************************************************************
-* Constructors                                                          *
-************************************************************************/
+ * Constructors                                                          *
+ ************************************************************************/
 ThyraVector::ThyraVector() { d_thyraVec.reset(); }
 
 
 /************************************************************************
-* Destructors                                                           *
-************************************************************************/
+ * Destructors                                                           *
+ ************************************************************************/
 ThyraVector::~ThyraVector() { d_thyraVec.reset(); }
 
 
 /****************************************************************
-* constView                                                     *
-****************************************************************/
+ * constView                                                     *
+ ****************************************************************/
 Vector::const_shared_ptr ThyraVector::constView( Vector::const_shared_ptr inVector )
 {
     // Check if we have an exisiting view
@@ -63,8 +63,8 @@ Vector::const_shared_ptr ThyraVector::constView( Vector::const_shared_ptr inVect
 
 
 /****************************************************************
-* View                                                          *
-****************************************************************/
+ * View                                                          *
+ ****************************************************************/
 Vector::shared_ptr ThyraVector::view( Vector::shared_ptr inVector )
 {
     // Check if we have an exisiting view
@@ -102,16 +102,16 @@ Vector::shared_ptr ThyraVector::view( Vector::shared_ptr inVector )
 
 
 /****************************************************************
-* Return the thyra vector                                       *
-****************************************************************/
+ * Return the thyra vector                                       *
+ ****************************************************************/
 Teuchos::RCP<Thyra::VectorBase<double>> ThyraVector::getVec() { return d_thyraVec; }
 Teuchos::RCP<const Thyra::VectorBase<double>> ThyraVector::getVec() const { return d_thyraVec; }
 
 
 /****************************************************************
-* Return the views to the AMP vectors                           *
-****************************************************************/
-template <class T>
+ * Return the views to the AMP vectors                           *
+ ****************************************************************/
+template<class T>
 static void nullDeleter( T * ){};
 AMP::LinearAlgebra::Vector::shared_ptr ThyraVector::view( Thyra::VectorBase<double> *vec )
 {
@@ -180,5 +180,5 @@ ThyraVector::constView( const Thyra::VectorBase<double> *vec )
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP

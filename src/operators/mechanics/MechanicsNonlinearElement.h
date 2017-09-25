@@ -101,7 +101,7 @@ public:
       @param [in] elementInputVectors Field (Displacement, Temperature, Burnup etc) values at the
       nodes of the current element.
      */
-    template <MaterialUpdateType type>
+    template<MaterialUpdateType type>
     void updateMaterialModel( const std::vector<std::vector<double>> &elementInputVectors );
 
     /**
@@ -128,19 +128,19 @@ public:
                                  std::vector<double> &strainVec );
 
 protected:
-    template <MaterialUpdateType type>
+    template<MaterialUpdateType type>
     void materialModelPreNonlinearElementOperation();
 
-    template <MaterialUpdateType type>
+    template<MaterialUpdateType type>
     void materialModelPreNonlinearGaussPointOperation();
 
-    template <MaterialUpdateType type>
+    template<MaterialUpdateType type>
     void materialModelNonlinearGaussPointOperation( const std::vector<std::vector<double>> & );
 
-    template <MaterialUpdateType type>
+    template<MaterialUpdateType type>
     void materialModelPostNonlinearGaussPointOperation();
 
-    template <MaterialUpdateType type>
+    template<MaterialUpdateType type>
     void materialModelPostNonlinearElementOperation();
 
     /**
@@ -177,77 +177,77 @@ private:
 };
 
 
-template <>
+template<>
 inline void MechanicsNonlinearElement::materialModelPreNonlinearElementOperation<
     MechanicsNonlinearElement::RESET>()
 {
     d_materialModel->preNonlinearResetElementOperation();
 }
 
-template <>
+template<>
 inline void MechanicsNonlinearElement::materialModelPreNonlinearElementOperation<
     MechanicsNonlinearElement::JACOBIAN>()
 {
     d_materialModel->preNonlinearJacobianElementOperation();
 }
 
-template <>
+template<>
 inline void MechanicsNonlinearElement::materialModelPreNonlinearGaussPointOperation<
     MechanicsNonlinearElement::RESET>()
 {
     d_materialModel->preNonlinearResetGaussPointOperation();
 }
 
-template <>
+template<>
 inline void MechanicsNonlinearElement::materialModelPreNonlinearGaussPointOperation<
     MechanicsNonlinearElement::JACOBIAN>()
 {
     d_materialModel->preNonlinearJacobianGaussPointOperation();
 }
 
-template <>
+template<>
 inline void MechanicsNonlinearElement::materialModelPostNonlinearElementOperation<
     MechanicsNonlinearElement::RESET>()
 {
     d_materialModel->postNonlinearResetElementOperation();
 }
 
-template <>
+template<>
 inline void MechanicsNonlinearElement::materialModelPostNonlinearElementOperation<
     MechanicsNonlinearElement::JACOBIAN>()
 {
     d_materialModel->postNonlinearJacobianElementOperation();
 }
 
-template <>
+template<>
 inline void MechanicsNonlinearElement::materialModelPostNonlinearGaussPointOperation<
     MechanicsNonlinearElement::RESET>()
 {
     d_materialModel->postNonlinearResetGaussPointOperation();
 }
 
-template <>
+template<>
 inline void MechanicsNonlinearElement::materialModelPostNonlinearGaussPointOperation<
     MechanicsNonlinearElement::JACOBIAN>()
 {
     d_materialModel->postNonlinearJacobianGaussPointOperation();
 }
 
-template <>
+template<>
 inline void MechanicsNonlinearElement::materialModelNonlinearGaussPointOperation<
     MechanicsNonlinearElement::RESET>( const std::vector<std::vector<double>> &strain )
 {
     d_materialModel->nonlinearResetGaussPointOperation( strain );
 }
 
-template <>
+template<>
 inline void MechanicsNonlinearElement::materialModelNonlinearGaussPointOperation<
     MechanicsNonlinearElement::JACOBIAN>( const std::vector<std::vector<double>> &strain )
 {
     d_materialModel->nonlinearJacobianGaussPointOperation( strain );
 }
 
-template <MechanicsNonlinearElement::MaterialUpdateType type>
+template<MechanicsNonlinearElement::MaterialUpdateType type>
 void MechanicsNonlinearElement::updateMaterialModel(
     const std::vector<std::vector<double>> &elementInputVectors )
 {
@@ -349,7 +349,7 @@ void MechanicsNonlinearElement::updateMaterialModel(
 
     materialModelPostNonlinearElementOperation<type>();
 }
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

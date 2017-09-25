@@ -32,7 +32,7 @@
 
 // Function to build a vector using a mesh
 #if defined( USE_AMP_MESH ) && defined( USE_AMP_VECTORS )
-template <int SIZE_X, int SIZE_Y, int SIZE_Z>
+template<int SIZE_X, int SIZE_Y, int SIZE_Z>
 AMP::LinearAlgebra::Vector::shared_ptr createVector( AMP::LinearAlgebra::Variable::shared_ptr var,
                                                      AMP::AMP_MPI comm )
 {

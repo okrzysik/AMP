@@ -13,7 +13,7 @@ class AsynchronousColumnOperator : public ColumnOperator
 {
 public:
     /** Constructor
-      */
+     */
     explicit AsynchronousColumnOperator( const AMP::shared_ptr<OperatorParameters> & );
 
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
@@ -27,7 +27,7 @@ public:
 
     virtual void append( AMP::shared_ptr<Operator> op ) override;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

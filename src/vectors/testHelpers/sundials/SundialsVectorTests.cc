@@ -341,8 +341,8 @@ void SundialsVectorTests::MinQuotientSundialsVector( AMP::UnitTest *utils )
     else
         utils->failure( "N_VMinQuotient" );
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 /// \endcond
 #endif

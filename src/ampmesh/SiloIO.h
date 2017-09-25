@@ -195,7 +195,7 @@ private:
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_vectors;
 #endif
 };
-}
-}
+} // namespace Mesh
+} // namespace AMP
 
 #endif

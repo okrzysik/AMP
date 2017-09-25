@@ -12,8 +12,8 @@ class Dr_nonlinear : public Material
 public:
     Dr_nonlinear();
 };
-}
-}
+} // namespace Materials
+} // namespace AMP
 
 
 // Add static initialize to force symbols to be included

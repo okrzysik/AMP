@@ -35,8 +35,8 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* NativeThyraFactory                                            *
-****************************************************************/
+ * NativeThyraFactory                                            *
+ ****************************************************************/
 AMP::LinearAlgebra::Variable::shared_ptr NativeThyraFactory::getVariable() const
 {
     return AMP::LinearAlgebra::Variable::shared_ptr( new AMP::LinearAlgebra::Variable( "thyra" ) );
@@ -77,8 +77,8 @@ AMP::Discretization::DOFManager::shared_ptr NativeThyraFactory::getDOFMap() cons
 
 
 /****************************************************************
-* ManagedThyraFactory                                           *
-****************************************************************/
+ * ManagedThyraFactory                                           *
+ ****************************************************************/
 AMP::LinearAlgebra::Variable::shared_ptr ManagedThyraFactory::getVariable() const
 {
     return AMP::LinearAlgebra::Variable::shared_ptr(
@@ -101,8 +101,8 @@ AMP::Discretization::DOFManager::shared_ptr ManagedThyraFactory::getDOFMap() con
 
 
 /****************************************************************
-* ManagedNativeThyraFactory                                     *
-****************************************************************/
+ * ManagedNativeThyraFactory                                     *
+ ****************************************************************/
 AMP::LinearAlgebra::Variable::shared_ptr ManagedNativeThyraFactory::getVariable() const
 {
     return AMP::LinearAlgebra::Variable::shared_ptr(
@@ -135,8 +135,8 @@ AMP::Discretization::DOFManager::shared_ptr ManagedNativeThyraFactory::getDOFMap
 #ifdef USE_TRILINOS_BELOS
 
 /****************************************************************
-* testBelosThyraVector                                          *
-****************************************************************/
+ * testBelosThyraVector                                          *
+ ****************************************************************/
 void testBelosThyraVector( AMP::UnitTest &ut, const VectorFactory &factory )
 {
     AMP::shared_ptr<AMP::LinearAlgebra::ThyraVector> vector =
@@ -153,8 +153,8 @@ void testBelosThyraVector( AMP::UnitTest &ut, const VectorFactory &factory )
 
 
 #endif
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 /// \endcond
 

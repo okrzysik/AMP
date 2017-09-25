@@ -23,8 +23,8 @@ AMP::LinearAlgebra::Vector::shared_ptr
 createVector( AMP::Discretization::DOFManager::shared_ptr DOFs,
               AMP::LinearAlgebra::Variable::shared_ptr variable,
               bool split = true );
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif
 #endif

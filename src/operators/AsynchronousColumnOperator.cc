@@ -50,5 +50,5 @@ void AsynchronousColumnOperator::append( AMP::shared_ptr<Operator> op )
         }
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

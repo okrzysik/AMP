@@ -22,7 +22,7 @@ inline bool TimeIntegrator::stepsRemaining() const
 inline int TimeIntegrator::getIntegratorStep() const { return ( d_integrator_step ); }
 
 inline int TimeIntegrator::getMaxIntegratorSteps() const { return ( d_max_integrator_steps ); }
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif

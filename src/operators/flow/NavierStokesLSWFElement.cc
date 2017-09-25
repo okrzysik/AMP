@@ -253,5 +253,5 @@ void NavierStokesLSWFElement::apply()
         }
     } // end for qp
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

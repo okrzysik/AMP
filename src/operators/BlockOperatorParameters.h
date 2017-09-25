@@ -21,7 +21,7 @@ public:
 
     std::vector<std::vector<AMP::shared_ptr<OperatorParameters>>> d_blockParams;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

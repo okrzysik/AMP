@@ -35,16 +35,18 @@ static inline const Epetra_Vector &getEpetraVector( const VectorOperations &vec 
 
 
 /********************************************************
-* EpetraVectorEngineParameters constructors             *
-********************************************************/
+ * EpetraVectorEngineParameters constructors             *
+ ********************************************************/
 EpetraVectorEngineParameters::EpetraVectorEngineParameters( size_t local_size,
                                                             size_t global_size,
                                                             AMP_MPI comm )
     : VectorEngineParameters( local_size, global_size, comm )
 {
 }
-EpetraVectorEngineParameters::EpetraVectorEngineParameters(
-    size_t local_size, size_t global_size, AMP::shared_ptr<Epetra_Map> emap, AMP_MPI ecomm )
+EpetraVectorEngineParameters::EpetraVectorEngineParameters( size_t local_size,
+                                                            size_t global_size,
+                                                            AMP::shared_ptr<Epetra_Map> emap,
+                                                            AMP_MPI ecomm )
     : VectorEngineParameters( local_size, global_size, ecomm ), d_emap( emap )
 {
 }
@@ -52,8 +54,8 @@ EpetraVectorEngineParameters::~EpetraVectorEngineParameters() {}
 
 
 /********************************************************
-* Function to return (and create) the Epetra_Map        *
-********************************************************/
+ * Function to return (and create) the Epetra_Map        *
+ ********************************************************/
 Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
 {
     if ( d_emap.get() != nullptr )
@@ -91,8 +93,8 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
 
 
 /********************************************************
-* Constructor                                           *
-********************************************************/
+ * Constructor                                           *
+ ********************************************************/
 EpetraVectorEngine::EpetraVectorEngine( VectorEngineParameters::shared_ptr alias, BufferPtr buf )
     : d_epetraVector( View,
                       dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
@@ -209,7 +211,7 @@ void EpetraVectorEngine::setRandomValues( void )
 
 void EpetraVectorEngine::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
-    for ( int i                        = 0; i != num; i++ )
+    for ( int i = 0; i != num; i++ )
         getEpetra_Vector()[indices[i]] = vals[i];
 }
 
@@ -220,7 +222,7 @@ void EpetraVectorEngine::setLocalValuesByGlobalID( int num, size_t *indices, con
         return;
     AMP_ASSERT( getGlobalSize() < 0x80000000 );
     std::vector<int> indices2( num, 0 );
-    for ( int i     = 0; i < num; i++ )
+    for ( int i = 0; i < num; i++ )
         indices2[i] = (int) indices[i];
     getEpetra_Vector().ReplaceGlobalValues( num, const_cast<double *>( vals ), &indices2[0] );
 }
@@ -239,7 +241,7 @@ void EpetraVectorEngine::addLocalValuesByGlobalID( int num, size_t *indices, con
         return;
     AMP_ASSERT( getGlobalSize() < 0x80000000 );
     std::vector<int> indices2( num, 0 );
-    for ( int i     = 0; i < num; i++ )
+    for ( int i = 0; i < num; i++ )
         indices2[i] = (int) indices[i];
     getEpetra_Vector().SumIntoGlobalValues( num, const_cast<double *>( vals ), &indices2[0] );
 }
@@ -327,5 +329,5 @@ double EpetraVectorEngine::localMaxNorm( void ) const
     AMP_ERROR( "Not implimented" );
     return 0;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

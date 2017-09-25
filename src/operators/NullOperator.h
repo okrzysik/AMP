@@ -16,8 +16,8 @@ namespace Operator {
 
 
 /**
-  * Class NullOperator is an empty operator that does nothing
-  */
+ * Class NullOperator is an empty operator that does nothing
+ */
 class NullOperator : public AMP::Operator::Operator
 {
 public:
@@ -43,7 +43,7 @@ public:
 protected:
 private:
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

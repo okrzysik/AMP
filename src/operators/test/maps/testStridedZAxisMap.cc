@@ -35,8 +35,7 @@ void project( AMP::Mesh::MeshIterator const &meshIterator,
               AMP::LinearAlgebra::Vector::shared_ptr vector,
               size_t const dof,
               size_t const dofsPerNode,
-              std::function<double( std::vector<double> const & )>
-                  functionOfSpace )
+              std::function<double( std::vector<double> const & )> functionOfSpace )
 {
     AMP_INSIST( dof < dofsPerNode, "WRONG!" );
     AMP::Discretization::DOFManager::const_shared_ptr dofManager = vector->getDOFManager();

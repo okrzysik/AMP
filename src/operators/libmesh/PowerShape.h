@@ -106,7 +106,7 @@ private:
 public:
     /*
      * A class for representing the neutronics source operator.
-    */
+     */
     explicit PowerShape( SP_Parameters parameters );
 
     /**
@@ -185,8 +185,8 @@ protected:
 
 private:
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif
 

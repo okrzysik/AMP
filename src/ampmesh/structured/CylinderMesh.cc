@@ -22,8 +22,8 @@ namespace Mesh {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 CylinderMesh::CylinderMesh( MeshParameters::shared_ptr params ) : BoxMesh( params )
 {
     // Input options from the database
@@ -74,8 +74,8 @@ CylinderMesh::CylinderMesh( MeshParameters::shared_ptr params ) : BoxMesh( param
 
 
 /****************************************************************
-* Estimate the mesh size                                        *
-****************************************************************/
+ * Estimate the mesh size                                        *
+ ****************************************************************/
 std::vector<size_t>
 CylinderMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params )
 {
@@ -91,8 +91,8 @@ CylinderMesh::estimateLogicalMeshSize( const MeshParameters::shared_ptr &params 
 
 
 /****************************************************************
-* Functions to displace the mesh                                *
-****************************************************************/
+ * Functions to displace the mesh                                *
+ ****************************************************************/
 int CylinderMesh::isMeshMovable() const { return 1; }
 void CylinderMesh::displaceMesh( const std::vector<double> &x )
 {
@@ -116,8 +116,8 @@ void CylinderMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_
 
 
 /****************************************************************
-* Copy the mesh                                                 *
-****************************************************************/
+ * Copy the mesh                                                 *
+ ****************************************************************/
 AMP::shared_ptr<Mesh> CylinderMesh::copy() const
 {
     return AMP::shared_ptr<CylinderMesh>( new CylinderMesh( *this ) );
@@ -125,8 +125,8 @@ AMP::shared_ptr<Mesh> CylinderMesh::copy() const
 
 
 /****************************************************************
-* Return the coordinate                                         *
-****************************************************************/
+ * Return the coordinate                                         *
+ ****************************************************************/
 void CylinderMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
     int i      = index.index( 0 );
@@ -143,8 +143,8 @@ void CylinderMesh::coord( const MeshElementIndex &index, double *pos ) const
 
 
 /****************************************************************
-* Return the logical coordinates                                *
-****************************************************************/
+ * Return the logical coordinates                                *
+ ****************************************************************/
 std::array<double, 3> CylinderMesh::physicalToLogical( const double * ) const
 {
     AMP_ERROR( "physicalToLogical is not supported in CylinderMesh" );
@@ -152,5 +152,5 @@ std::array<double, 3> CylinderMesh::physicalToLogical( const double * ) const
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

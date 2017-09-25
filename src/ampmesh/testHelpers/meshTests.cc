@@ -45,7 +45,7 @@ meshTests::createRankMap( AMP::Mesh::Mesh::shared_ptr mesh )
         }
         int N = mesh->getComm().allGather( &map, N_send, &tmp[0] );
         std::vector<int> rank( N );
-        for ( int j            = 0; j < N; j++ )
+        for ( int j = 0; j < N; j++ )
             rank[tmp[j].first] = tmp[j].second;
         proc_map.insert( std::pair<AMP::Mesh::MeshID, std::vector<int>>( meshIDs[i], rank ) );
     }
@@ -90,7 +90,7 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
     bool pass_position         = true;
     for ( size_t i = 0; i < iterator.size(); i++, ++it ) {
         if ( it.position() != i )
-            pass_position           = false;
+            pass_position = false;
         AMP::Mesh::MeshElementID id = it->globalID();
         id_set.insert( id );
         if ( id.is_local() )
@@ -203,7 +203,7 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
                 auto pieces = element.getElements( type2 );
                 ids.resize( pieces.size() );
                 for ( size_t j = 0; j < pieces.size(); j++ )
-                    ids[j]     = pieces[j].globalID();
+                    ids[j] = pieces[j].globalID();
                 AMP::Utilities::unique( ids );
                 if ( pieces.empty() || pieces.size() != ids.size() ) {
                     pieces        = element.getElements( type2 );
@@ -314,8 +314,8 @@ void meshTests::MeshIteratorTest( AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::
 
 
 // Test operator operations for iterator
-void meshTests::MeshIteratorOperationTest(
-    AMP::UnitTest *ut, AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorOperationTest( AMP::UnitTest *ut,
+                                           AMP::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // Create some iterators to work with
     AMP::Mesh::MeshIterator A = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );

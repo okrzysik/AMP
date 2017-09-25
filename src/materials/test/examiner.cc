@@ -17,10 +17,10 @@
 using std::cout;
 using std::endl;
 using std::exception;
-using std::vector;
+using std::map;
 using std::string;
 using std::valarray;
-using std::map;
+using std::vector;
 
 #include "materials/Material.h"
 #include "materials/Property.h"

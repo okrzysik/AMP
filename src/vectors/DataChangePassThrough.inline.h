@@ -6,5 +6,5 @@ inline DataChangePassThrough::DataChangePassThrough() {}
 inline DataChangePassThrough::~DataChangePassThrough() {}
 
 inline void DataChangePassThrough::dataChanged() { fireDataChange(); }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

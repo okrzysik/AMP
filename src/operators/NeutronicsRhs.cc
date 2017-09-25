@@ -258,5 +258,5 @@ AMP::LinearAlgebra::Variable::shared_ptr NeutronicsRhs::getOutputVariable()
   SP_HexGaussPointVariable var( new HexGaussPointVariable (name) );
   return var;
   }*/
-}
-}
+} // namespace Operator
+} // namespace AMP

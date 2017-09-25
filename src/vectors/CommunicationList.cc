@@ -1,6 +1,6 @@
-#include "vectors/data/VectorData.h"
 #include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
+#include "vectors/data/VectorData.h"
 
 #include <iostream>
 #include <vector>
@@ -11,10 +11,10 @@ namespace LinearAlgebra {
 
 
 /************************************************************************
-* Some simple fuctions to get a pointer to the data in a std::vector,   *
-* where the vector may be empty.                                        *
-************************************************************************/
-template <typename T>
+ * Some simple fuctions to get a pointer to the data in a std::vector,   *
+ * where the vector may be empty.                                        *
+ ************************************************************************/
+template<typename T>
 static T *getPtr( std::vector<T> &in )
 {
     T *retVal = nullptr;
@@ -22,7 +22,7 @@ static T *getPtr( std::vector<T> &in )
         retVal = &( in[0] );
     return retVal;
 }
-template <typename T>
+template<typename T>
 static T *getPtr( const std::vector<T> &in )
 {
     T *retVal = nullptr;
@@ -33,8 +33,8 @@ static T *getPtr( const std::vector<T> &in )
 
 
 /************************************************************************
-* Constructors                                                          *
-************************************************************************/
+ * Constructors                                                          *
+ ************************************************************************/
 CommunicationListParameters::CommunicationListParameters() : d_comm( AMP_COMM_NULL )
 {
     d_localsize = (size_t) -1;
@@ -90,8 +90,8 @@ CommunicationList::shared_ptr CommunicationList::createEmpty( size_t local, AMP_
 
 
 /************************************************************************
-* All other functions                                                   *
-************************************************************************/
+ * All other functions                                                   *
+ ************************************************************************/
 CommunicationList::shared_ptr CommunicationList::subset( VectorIndexer::shared_ptr ndx )
 {
     auto retVal = new CommunicationList;
@@ -261,9 +261,9 @@ void CommunicationList::buildCommunicationArrays( std::vector<size_t> &DOFs,
     d_SendDisplacements.resize( commSize, 0 );
     d_comm.allToAll( 1, &( d_ReceiveSizes[0] ), &( d_SendSizes[0] ) );
     d_SendDisplacements[0] = 0;
-    for ( size_t i             = 1; i < commSize; i++ )
+    for ( size_t i = 1; i < commSize; i++ )
         d_SendDisplacements[i] = d_SendDisplacements[i - 1] + d_SendSizes[i - 1];
-    size_t send_buf_size       = d_SendDisplacements[commSize - 1] + d_SendSizes[commSize - 1];
+    size_t send_buf_size = d_SendDisplacements[commSize - 1] + d_SendSizes[commSize - 1];
 
     // Get the send DOFs (requires the recv DOFs to be sorted)
     d_SendDOFList.resize( send_buf_size );
@@ -302,5 +302,5 @@ void CommunicationList::scatter_add( std::vector<double> &in, std::vector<double
 
     d_comm.allToAll( send_buf, send_sizes, send_disps, recv_buf, recv_sizes, recv_disps, true );
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

@@ -94,7 +94,7 @@ VonMises_IsotropicKinematicHardening::VonMises_IsotropicKinematicHardening(
 
     for ( auto &elem : d_constitutiveMatrix ) {
         for ( size_t j = 0; j < 6; j++ )
-            elem[j]    = 0.;
+            elem[j] = 0.;
     }
     d_gaussPtCnt                 = 0;
     Total_Gauss_Point            = 0;
@@ -881,5 +881,5 @@ void VonMises_IsotropicKinematicHardening::postNonlinearAssembly()
         }
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

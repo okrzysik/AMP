@@ -77,5 +77,5 @@ void ConvectiveHeatCoefficient::getConductance(
     d_property->evalv( beta, argMap );
     d_property->evalv( gamma, argMap );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

@@ -220,5 +220,5 @@ double RK23TimeIntegrator::getNextDt( const bool )
 
     return d_next_dt;
 }
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

@@ -6,7 +6,6 @@
 #include "utils/PIO.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
-#include "utils/Utilities.h"
 #include "utils/shared_ptr.h"
 #include "vectors/Variable.h"
 #include <string>
@@ -278,7 +277,7 @@ void flowTest( AMP::UnitTest *ut, std::string exeName )
         ut->failure( "the Final Residual Norm has changed." );
     }
 
-//---------------------------------------------------------------------------
+        //---------------------------------------------------------------------------
 
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );

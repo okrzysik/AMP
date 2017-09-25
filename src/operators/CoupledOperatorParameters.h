@@ -36,8 +36,8 @@ public:
 
     AMP::shared_ptr<Operator> d_BVPOperator;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 
 #endif

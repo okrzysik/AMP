@@ -44,7 +44,7 @@ inline void NeutronicsRhs::setTimeInDays( double days )
 {
     setTimeInSeconds( days * d_secondsPerDay );
 }
-}
+} // namespace Operator
 } // end namespace AMP
 
 #endif // operator_NeutronicsRhs_i_h

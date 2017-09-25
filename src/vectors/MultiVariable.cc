@@ -1,5 +1,5 @@
-#include "utils/Utilities.h"
 #include "MultiVariable.h"
+#include "utils/Utilities.h"
 #include <algorithm>
 #include <map>
 
@@ -34,8 +34,8 @@ public:
 
 
 /****************************************************************
-* Constructors/Destructors                                      *
-****************************************************************/
+ * Constructors/Destructors                                      *
+ ****************************************************************/
 MultiVariable::MultiVariable( const std::string &name,
                               const std::vector<Variable::shared_ptr> &vars )
     : Variable( name ), d_vVariables( vars )
@@ -45,8 +45,8 @@ MultiVariable::~MultiVariable() {}
 
 
 /****************************************************************
-* Get/set a variable                                            *
-****************************************************************/
+ * Get/set a variable                                            *
+ ****************************************************************/
 Variable::shared_ptr MultiVariable::getVariable( size_t which )
 {
     AMP_ASSERT( which < d_vVariables.size() );
@@ -79,8 +79,8 @@ void MultiVariable::add( Variable::shared_ptr newVar )
 
 
 /****************************************************************
-* Misc                                                          *
-****************************************************************/
+ * Misc                                                          *
+ ****************************************************************/
 size_t MultiVariable::numVariables() const { return d_vVariables.size(); }
 
 void MultiVariable::sortVariablesByName( const std::vector<std::string> &order )
@@ -151,5 +151,5 @@ void MultiVariable::removeDuplicateVariables()
     }
     d_vVariables = unique_list;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

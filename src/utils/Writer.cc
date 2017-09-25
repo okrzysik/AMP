@@ -13,8 +13,8 @@ namespace Utilities {
 
 
 /************************************************************
-* Builder                                                   *
-************************************************************/
+ * Builder                                                   *
+ ************************************************************/
 AMP::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::string type )
 {
     AMP::shared_ptr<AMP::Utilities::Writer> writer;
@@ -44,19 +44,19 @@ AMP::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( AMP::shared_ptr<AMP
 
 
 /************************************************************
-* Constructor/Destructor                                    *
-************************************************************/
+ * Constructor/Destructor                                    *
+ ************************************************************/
 Writer::Writer() : d_comm( AMP_COMM_WORLD ) { d_decomposition = 2; }
 Writer::~Writer() {}
 
 
 /************************************************************
-* Some basic functions                                      *
-************************************************************/
+ * Some basic functions                                      *
+ ************************************************************/
 void Writer::setDecomposition( int d )
 {
     AMP_INSIST( d == 1 || d == 2, "decomposition must be 1 or 2" );
     d_decomposition = d;
 }
-}
-}
+} // namespace Utilities
+} // namespace AMP

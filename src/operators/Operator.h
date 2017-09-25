@@ -17,12 +17,12 @@ namespace Operator {
 
 
 /**
-  * Class Operator is an abstract base class for representing
-  * a discrete operator which may be linear or nonlinear.  Concrete
-  * implementations must include an implementation of the apply() function.
-  * The constructor for the class takes a pointer to
-  * a OperatorParameters object.
-  */
+ * Class Operator is an abstract base class for representing
+ * a discrete operator which may be linear or nonlinear.  Concrete
+ * implementations must include an implementation of the apply() function.
+ * The constructor for the class takes a pointer to
+ * a OperatorParameters object.
+ */
 class Operator
 {
 public:
@@ -38,10 +38,10 @@ public:
     virtual ~Operator() {}
 
     /**
-      * This function is useful for re-initializing/updating an operator
-      * \param params
-      *    parameter object containing parameters to change
-      */
+     * This function is useful for re-initializing/updating an operator
+     * \param params
+     *    parameter object containing parameters to change
+     */
     virtual void reset( const AMP::shared_ptr<OperatorParameters> &params );
 
     /**
@@ -165,7 +165,7 @@ protected:
 
 private:
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

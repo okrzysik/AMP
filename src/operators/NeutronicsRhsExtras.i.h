@@ -40,7 +40,7 @@ inline void NeutronicsRhsExtras::setTimeInSeconds( double setSeconds )
     }
     AMP_INSIST( false, "Could not find the appropriate time." );
 }
-}
+} // namespace Operator
 } // end namespace AMP
 
 #endif // operator_NeutronicsRhsExtras_i_h

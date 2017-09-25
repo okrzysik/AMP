@@ -148,5 +148,5 @@ void RK2TimeIntegrator::getFromInput( AMP::shared_ptr<AMP::Database> input_db )
 }
 
 double RK2TimeIntegrator::getNextDt( const bool ) { return d_current_dt; }
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

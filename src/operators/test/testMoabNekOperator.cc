@@ -13,7 +13,6 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -185,7 +184,7 @@ void nekPipeOperator( AMP::UnitTest *ut )
     else
         ut->failure( "Nodal vector is identically zero" );
 
-// How about some output?
+        // How about some output?
 
 #ifdef USE_EXT_SILO
     AMP::Utilities::Writer::shared_ptr siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );

@@ -13,24 +13,24 @@ namespace AMP {
 
 
 /********************************************************
-*  Constructors                                         *
-********************************************************/
-template <class TYPE, class FUN, class Allocator>
+ *  Constructors                                         *
+ ********************************************************/
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array()
 {
     d_ndim   = 1;
     d_length = 0;
     for ( size_t i = 0; i < ARRAY_NDIM_MAX; i++ )
-        d_N[i]     = 1;
-    d_N[0]         = 0;
-    d_data         = nullptr;
+        d_N[i] = 1;
+    d_N[0] = 0;
+    d_data = nullptr;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( size_t N )
 {
     allocate( std::vector<size_t>( 1, N ) );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( size_t N_rows, size_t N_columns )
 {
     std::vector<size_t> N( 2 );
@@ -38,7 +38,7 @@ Array<TYPE, FUN, Allocator>::Array( size_t N_rows, size_t N_columns )
     N[1] = N_columns;
     allocate( N );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( size_t N1, size_t N2, size_t N3 )
 {
     std::vector<size_t> N( 3 );
@@ -47,22 +47,22 @@ Array<TYPE, FUN, Allocator>::Array( size_t N1, size_t N2, size_t N3 )
     N[2] = N3;
     allocate( N );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( const std::vector<size_t> &N, const TYPE *data )
 {
     allocate( N );
     if ( data != NULL ) {
         for ( size_t i = 0; i < d_length; i++ )
-            d_data[i]  = data[i];
+            d_data[i] = data[i];
     }
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::allocate( const std::vector<size_t> &N )
 {
     d_ndim   = static_cast<int>( N.size() );
     d_length = 1;
     for ( size_t i = 0; i < ARRAY_NDIM_MAX; i++ )
-        d_N[i]     = 1;
+        d_N[i] = 1;
     for ( size_t i = 0; i < N.size(); i++ ) {
         d_N[i] = N[i];
         d_length *= N[i];
@@ -91,15 +91,15 @@ void Array<TYPE, FUN, Allocator>::allocate( const std::vector<size_t> &N )
     if ( d_length > 0 && d_data == nullptr )
         ARRAY_ERROR( "Failed to allocate array" );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( const Array &rhs )
     : d_ndim( rhs.d_ndim ), d_length( rhs.d_length ), d_data( nullptr )
 {
     allocate( rhs.size() );
     for ( size_t i = 0; i < d_length; i++ )
-        d_data[i]  = rhs.d_data[i];
+        d_data[i] = rhs.d_data[i];
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( Array &&rhs )
     : d_ndim( rhs.d_ndim ), d_length( rhs.d_length ), d_data( rhs.d_data )
 {
@@ -110,17 +110,17 @@ Array<TYPE, FUN, Allocator>::Array( Array &&rhs )
     rhs.d_data   = nullptr;
     d_ptr        = std::move( rhs.d_ptr );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::operator=( const Array &rhs )
 {
     if ( this == &rhs )
         return *this;
     this->allocate( rhs.size() );
-    for ( size_t i      = 0; i < d_length; i++ )
+    for ( size_t i = 0; i < d_length; i++ )
         this->d_data[i] = rhs.d_data[i];
     return *this;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::operator=( Array &&rhs )
 {
     if ( this == &rhs )
@@ -136,36 +136,36 @@ Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::operator=( Array &&rhs
     d_ptr        = std::move( rhs.d_ptr );
     return *this;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::operator=( const std::vector<TYPE> &rhs )
 {
     this->allocate( std::vector<size_t>( 1, rhs.size() ) );
-    for ( size_t i      = 0; i < rhs.size(); i++ )
+    for ( size_t i = 0; i < rhs.size(); i++ )
         this->d_data[i] = rhs[i];
     return *this;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::~Array()
 {
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::clear()
 {
     d_ndim   = 0;
     d_length = 0;
     for ( size_t i = 0; i < ARRAY_NDIM_MAX; i++ )
-        d_N[i]     = 1;
-    d_N[0]         = 0;
+        d_N[i] = 1;
+    d_N[0] = 0;
     d_ptr.reset();
     d_data = nullptr;
 }
 
 
 /********************************************************
-*  Check if the size of the array matches rhs           *
-********************************************************/
-template <class TYPE, class FUN, class Allocator>
-template <class TYPE2, class FUN2, class Allocator2>
+ *  Check if the size of the array matches rhs           *
+ ********************************************************/
+template<class TYPE, class FUN, class Allocator>
+template<class TYPE2, class FUN2, class Allocator2>
 bool Array<TYPE, FUN, Allocator>::sizeMatch( const Array<TYPE2, FUN2, Allocator2> &rhs ) const
 {
     bool test = d_ndim == rhs.d_ndim;
@@ -176,24 +176,24 @@ bool Array<TYPE, FUN, Allocator>::sizeMatch( const Array<TYPE2, FUN2, Allocator2
 
 
 /********************************************************
-*  Resize the array                                     *
-********************************************************/
-template <class TYPE, class FUN, class Allocator>
+ *  Resize the array                                     *
+ ********************************************************/
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::resize( size_t N )
 {
     resize( std::vector<size_t>{ N } );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::resize( size_t N1, size_t N2 )
 {
     resize( std::vector<size_t>{ N1, N2 } );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::resize( size_t N1, size_t N2, size_t N3 )
 {
     resize( std::vector<size_t>{ N1, N2, N3 } );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::resize( const std::vector<size_t> &N )
 {
     // Check if the array actually changed size
@@ -202,7 +202,7 @@ void Array<TYPE, FUN, Allocator>::resize( const std::vector<size_t> &N )
         new_length *= N[i];
     if ( N.empty() )
         new_length = 0;
-    bool changed   = new_length != d_length || (int) N.size() != d_ndim;
+    bool changed = new_length != d_length || (int) N.size() != d_ndim;
     for ( size_t i = 0; i < N.size(); i++ )
         changed = changed || N[i] != d_N[i];
     if ( !changed )
@@ -214,9 +214,9 @@ void Array<TYPE, FUN, Allocator>::resize( const std::vector<size_t> &N )
     std::array<size_t, 5> N1{ { 1, 1, 1, 1, 1 } };
     std::array<size_t, 5> N2{ { 1, 1, 1, 1, 1 } };
     for ( int d = 0; d < d_ndim; d++ )
-        N1[d]   = d_N[d];
+        N1[d] = d_N[d];
     for ( size_t d = 0; d < N.size(); d++ )
-        N2[d]      = N[d];
+        N2[d] = N[d];
     if ( d_ndim == 0 ) {
         N1[0] = 0;
     }
@@ -263,7 +263,7 @@ void Array<TYPE, FUN, Allocator>::resize( const std::vector<size_t> &N )
         }
     }
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::resizeDim( int dim, size_t N, const TYPE &value )
 {
     ARRAY_INSIST( dim >= d_ndim, "Invalid dimension" );
@@ -287,9 +287,9 @@ void Array<TYPE, FUN, Allocator>::resizeDim( int dim, size_t N, const TYPE &valu
 
 
 /********************************************************
-*  Reshape the array                                     *
-********************************************************/
-template <class TYPE, class FUN, class Allocator>
+ *  Reshape the array                                     *
+ ********************************************************/
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::reshape( const std::vector<size_t> &N )
 {
     size_t new_length = 1;
@@ -299,15 +299,15 @@ void Array<TYPE, FUN, Allocator>::reshape( const std::vector<size_t> &N )
         ARRAY_ERROR( "reshape is not allowed to change the array size" );
     d_ndim = N.size();
     for ( size_t i = 0; i < ARRAY_NDIM_MAX; i++ )
-        d_N[i]     = 1;
+        d_N[i] = 1;
     for ( size_t i = 0; i < N.size(); i++ )
-        d_N[i]     = N[i];
+        d_N[i] = N[i];
 }
 
 
 /********************************************************
-*  Subset the array                                     *
-********************************************************/
+ *  Subset the array                                     *
+ ********************************************************/
 // clang-format off
 // Helper function to check subset indices
 template<class TYPE,class FUN,class Allocator>
@@ -449,9 +449,9 @@ void Array<TYPE,FUN,Allocator>::addSubset( const std::vector<size_t> &index, con
 
 
 /********************************************************
-*  Operator overloading                                 *
-********************************************************/
-template <class TYPE, class FUN, class Allocator>
+ *  Operator overloading                                 *
+ ********************************************************/
+template<class TYPE, class FUN, class Allocator>
 bool Array<TYPE, FUN, Allocator>::operator==( const Array &rhs ) const
 {
     if ( this == &rhs )
@@ -472,45 +472,45 @@ bool Array<TYPE, FUN, Allocator>::operator==( const Array &rhs ) const
 
 
 /********************************************************
-*  Get a view of an C array                             *
-********************************************************/
-template <class TYPE, class FUN, class Allocator>
+ *  Get a view of an C array                             *
+ ********************************************************/
+template<class TYPE, class FUN, class Allocator>
 std::shared_ptr<Array<TYPE, FUN, Allocator>>
 Array<TYPE, FUN, Allocator>::view( size_t N, std::shared_ptr<TYPE> const &data )
 {
     return view( std::vector<size_t>{ N }, data );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 std::shared_ptr<Array<TYPE, FUN, Allocator>>
 Array<TYPE, FUN, Allocator>::view( size_t N1, size_t N2, std::shared_ptr<TYPE> const &data )
 {
     return view( std::vector<size_t>{ N1, N2 }, data );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 std::shared_ptr<Array<TYPE, FUN, Allocator>> Array<TYPE, FUN, Allocator>::view(
     size_t N1, size_t N2, size_t N3, std::shared_ptr<TYPE> const &data )
 {
     return view( std::vector<size_t>{ N1, N2, N3 }, data );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 std::shared_ptr<const Array<TYPE, FUN, Allocator>>
 Array<TYPE, FUN, Allocator>::constView( size_t N, std::shared_ptr<const TYPE> const &data )
 {
     return constView( std::vector<size_t>{ N }, data );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 std::shared_ptr<const Array<TYPE, FUN, Allocator>> Array<TYPE, FUN, Allocator>::constView(
     size_t N1, size_t N2, std::shared_ptr<const TYPE> const &data )
 {
     return constView( std::vector<size_t>{ N1, N2 }, data );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 std::shared_ptr<const Array<TYPE, FUN, Allocator>> Array<TYPE, FUN, Allocator>::constView(
     size_t N1, size_t N2, size_t N3, std::shared_ptr<const TYPE> const &data )
 {
     return constView( std::vector<size_t>{ N1, N2, N3 }, data );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 std::shared_ptr<Array<TYPE, FUN, Allocator>>
 Array<TYPE, FUN, Allocator>::view( const std::vector<size_t> &N, std::shared_ptr<TYPE> const &data )
 {
@@ -523,24 +523,24 @@ Array<TYPE, FUN, Allocator>::view( const std::vector<size_t> &N, std::shared_ptr
     }
     if ( array->d_ndim == 0 )
         array->d_length = 0;
-    array->d_ptr        = data;
-    array->d_data       = array->d_ptr.get();
+    array->d_ptr  = data;
+    array->d_data = array->d_ptr.get();
     return array;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 std::shared_ptr<const Array<TYPE, FUN, Allocator>>
 Array<TYPE, FUN, Allocator>::constView( const std::vector<size_t> &N,
                                         std::shared_ptr<const TYPE> const &data )
 {
     return view( N, std::const_pointer_cast<TYPE>( data ) );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::view2( Array<TYPE, FUN, Allocator> &src )
 {
     view2( src.size(), src.getPtr() );
     d_data = src.d_data;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::view2( const std::vector<size_t> &N,
                                          std::shared_ptr<TYPE> const &data )
 {
@@ -557,7 +557,7 @@ void Array<TYPE, FUN, Allocator>::view2( const std::vector<size_t> &N,
     d_data = d_ptr.get();
 }
 
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::viewRaw( const std::initializer_list<size_t> &N, TYPE *data )
 {
     d_ndim = static_cast<int>( N.size() );
@@ -573,7 +573,7 @@ void Array<TYPE, FUN, Allocator>::viewRaw( const std::initializer_list<size_t> &
     d_ptr.reset();
     d_data = data;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::viewRaw( const std::vector<size_t> &N, TYPE *data )
 {
     d_ndim = static_cast<int>( N.size() );
@@ -592,10 +592,10 @@ void Array<TYPE, FUN, Allocator>::viewRaw( const std::vector<size_t> &N, TYPE *d
 
 
 /********************************************************
-*  Convert array types                                  *
-********************************************************/
-template <class TYPE, class FUN, class Allocator>
-template <class TYPE2>
+ *  Convert array types                                  *
+ ********************************************************/
+template<class TYPE, class FUN, class Allocator>
+template<class TYPE2>
 std::shared_ptr<Array<TYPE2, FUN, Allocator>>
 Array<TYPE, FUN, Allocator>::convert( std::shared_ptr<Array<TYPE, FUN, Allocator>> array )
 {
@@ -605,38 +605,38 @@ Array<TYPE, FUN, Allocator>::convert( std::shared_ptr<Array<TYPE, FUN, Allocator
     array2.copy( *array );
     return array2;
 }
-template <class TYPE, class FUN, class Allocator>
-template <class TYPE2>
+template<class TYPE, class FUN, class Allocator>
+template<class TYPE2>
 std::shared_ptr<const Array<TYPE2, FUN, Allocator>>
 Array<TYPE, FUN, Allocator>::convert( std::shared_ptr<const Array<TYPE, FUN, Allocator>> array )
 {
     return Array<TYPE, FUN, Allocator>::convert(
         std::const_pointer_cast<Array<TYPE2, FUN, Allocator>>( array ) );
 }
-template <class TYPE, class FUN, class Allocator>
-template <class TYPE2>
+template<class TYPE, class FUN, class Allocator>
+template<class TYPE2>
 void Array<TYPE, FUN, Allocator>::copy( const Array<TYPE2, FUN, Allocator> &array )
 {
     resize( array.size() );
     const TYPE2 *src = array.data();
     for ( size_t i = 0; i < d_length; i++ )
-        d_data[i]  = static_cast<TYPE>( src[i] );
+        d_data[i] = static_cast<TYPE>( src[i] );
 }
-template <class TYPE, class FUN, class Allocator>
-template <class TYPE2>
+template<class TYPE, class FUN, class Allocator>
+template<class TYPE2>
 void Array<TYPE, FUN, Allocator>::copy( const TYPE2 *src )
 {
     for ( size_t i = 0; i < d_length; i++ )
-        d_data[i]  = static_cast<TYPE>( src[i] );
+        d_data[i] = static_cast<TYPE>( src[i] );
 }
-template <class TYPE, class FUN, class Allocator>
-template <class TYPE2>
+template<class TYPE, class FUN, class Allocator>
+template<class TYPE2>
 void Array<TYPE, FUN, Allocator>::copyTo( TYPE2 *dst ) const
 {
     for ( size_t i = 0; i < d_length; i++ )
-        dst[i]     = static_cast<TYPE2>( d_data[i] );
+        dst[i] = static_cast<TYPE2>( d_data[i] );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::swap( Array &other )
 {
     // check that dimensions match
@@ -654,19 +654,19 @@ void Array<TYPE, FUN, Allocator>::swap( Array &other )
     d_ptr                = other.d_ptr;
     other.d_ptr          = data_shared_ptr;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::fill( const TYPE &value )
 {
     for ( size_t i = 0; i < d_length; i++ )
-        d_data[i]  = value;
+        d_data[i] = value;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::scale( const TYPE &value )
 {
     for ( size_t i = 0; i < d_length; i++ )
         d_data[i] *= value;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::pow( const Array<TYPE, FUN, Allocator> &baseArray,
                                        const TYPE &exp )
 {
@@ -675,13 +675,13 @@ void Array<TYPE, FUN, Allocator>::pow( const Array<TYPE, FUN, Allocator> &baseAr
     ARRAY_ASSERT( d_length == baseArray.length() );
     const auto base_data = baseArray.data();
     for ( size_t i = 0; i < d_length; i++ )
-        d_data[i]  = std::pow( base_data[i], exp );
+        d_data[i] = std::pow( base_data[i], exp );
 }
 
 /********************************************************
-*  Simple math operations                               *
-********************************************************/
-template <class TYPE, class FUN, class Allocator>
+ *  Simple math operations                               *
+ ********************************************************/
+template<class TYPE, class FUN, class Allocator>
 bool Array<TYPE, FUN, Allocator>::NaNs() const
 {
     bool test = false;
@@ -690,13 +690,13 @@ bool Array<TYPE, FUN, Allocator>::NaNs() const
     return test;
 }
 
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::mean( void ) const
 {
     TYPE x = this->sum() / d_length;
     return x;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::min( int dir ) const
 {
     std::vector<size_t> size_ans = size();
@@ -713,13 +713,13 @@ Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::min( int dir ) const
         for ( size_t i1 = 0; i1 < N1; i1++ ) {
             TYPE x = d_data[i1 + i3 * N1 * N2];
             for ( size_t i2 = 0; i2 < N2; i2++ )
-                x               = std::min( x, d_data[i1 + i2 * N1 + i3 * N1 * N2] );
+                x = std::min( x, d_data[i1 + i2 * N1 + i3 * N1 * N2] );
             data2[i1 + i3 * N1] = x;
         }
     }
     return ans;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::max( int dir ) const
 {
     std::vector<size_t> size_ans = size();
@@ -736,13 +736,13 @@ Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::max( int dir ) const
         for ( size_t i1 = 0; i1 < N1; i1++ ) {
             TYPE x = d_data[i1 + i3 * N1 * N2];
             for ( size_t i2 = 0; i2 < N2; i2++ )
-                x               = std::max( x, d_data[i1 + i2 * N1 + i3 * N1 * N2] );
+                x = std::max( x, d_data[i1 + i2 * N1 + i3 * N1 * N2] );
             data2[i1 + i3 * N1] = x;
         }
     }
     return ans;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::sum( int dir ) const
 {
     std::vector<size_t> size_ans = size();
@@ -765,7 +765,7 @@ Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::sum( int dir ) const
     }
     return ans;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::min( const std::vector<size_t> &index ) const
 {
     // Get the subset indicies
@@ -792,7 +792,7 @@ TYPE Array<TYPE, FUN, Allocator>::min( const std::vector<size_t> &index ) const
 
     return x;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::max( const std::vector<size_t> &index ) const
 {
     // Get the subset indicies
@@ -818,7 +818,7 @@ TYPE Array<TYPE, FUN, Allocator>::max( const std::vector<size_t> &index ) const
     }
     return x;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::sum( const std::vector<size_t> &index ) const
 {
     // Get the subset indicies
@@ -844,7 +844,7 @@ TYPE Array<TYPE, FUN, Allocator>::sum( const std::vector<size_t> &index ) const
     }
     return x;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::mean( const std::vector<size_t> &index ) const
 {
     // Get the subset indicies
@@ -863,11 +863,12 @@ TYPE Array<TYPE, FUN, Allocator>::mean( const std::vector<size_t> &index ) const
 
 
 /********************************************************
-*  Find all elements that match the given operation     *
-********************************************************/
-template <class TYPE, class FUN, class Allocator>
-std::vector<size_t> Array<TYPE, FUN, Allocator>::find(
-    const TYPE &value, std::function<bool( const TYPE &, const TYPE & )> compare ) const
+ *  Find all elements that match the given operation     *
+ ********************************************************/
+template<class TYPE, class FUN, class Allocator>
+std::vector<size_t>
+Array<TYPE, FUN, Allocator>::find( const TYPE &value,
+                                   std::function<bool( const TYPE &, const TYPE & )> compare ) const
 {
     std::vector<size_t> result;
     result.reserve( d_length );
@@ -880,9 +881,9 @@ std::vector<size_t> Array<TYPE, FUN, Allocator>::find(
 
 
 /********************************************************
-*  Print an array to an output stream                   *
-********************************************************/
-template <class TYPE, class FUN, class Allocator>
+ *  Print an array to an output stream                   *
+ ********************************************************/
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::print( std::ostream &os,
                                          const std::string &name,
                                          const std::string &prefix ) const
@@ -904,14 +905,14 @@ void Array<TYPE, FUN, Allocator>::print( std::ostream &os,
 
 
 /********************************************************
-*  Reverse dimensions (transpose)                       *
-********************************************************/
-template <class TYPE, class FUN, class Allocator>
+ *  Reverse dimensions (transpose)                       *
+ ********************************************************/
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::reverseDim() const
 {
     std::vector<size_t> N2( ARRAY_NDIM_MAX );
     for ( int d = 0; d < ARRAY_NDIM_MAX; d++ )
-        N2[d]   = d_N[ARRAY_NDIM_MAX - d - 1];
+        N2[d] = d_N[ARRAY_NDIM_MAX - d - 1];
     Array<TYPE, FUN, Allocator> y( N2 );
 #if ARRAY_NDIM_MAX != 5
 #error Function programmed for dimensions other than 5
@@ -931,16 +932,16 @@ Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::reverseDim() const
     }
     auto S2 = size();
     for ( int d = 0; d < d_ndim; d++ )
-        S2[d]   = size( d_ndim - d - 1 );
+        S2[d] = size( d_ndim - d - 1 );
     y.reshape( S2 );
     return y;
 }
 
 
 /********************************************************
-*  Coarsen the array                                    *
-********************************************************/
-template <class TYPE, class FUN, class Allocator>
+ *  Coarsen the array                                    *
+ ********************************************************/
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>
 Array<TYPE, FUN, Allocator>::coarsen( const Array<TYPE, FUN, Allocator> &filter ) const
 {
@@ -960,9 +961,9 @@ Array<TYPE, FUN, Allocator>::coarsen( const Array<TYPE, FUN, Allocator> &filter 
                 for ( size_t k2 = 0; k2 < Nh[2]; k2++ ) {
                     for ( size_t j2 = 0; j2 < Nh[1]; j2++ ) {
                         for ( size_t i2 = 0; i2 < Nh[0]; i2++ ) {
-                            tmp += filter( i2, j2, k2 ) *
-                                   this->operator()(
-                                       i1 * Nh[0] + i2, j1 * Nh[1] + j2, k1 * Nh[2] + k2 );
+                            tmp += filter( i2, j2, k2 ) * this->operator()( i1 *Nh[0] + i2,
+                                                                            j1 * Nh[1] + j2,
+                                                                            k1 * Nh[2] + k2 );
                         }
                     }
                 }
@@ -972,11 +973,10 @@ Array<TYPE, FUN, Allocator>::coarsen( const Array<TYPE, FUN, Allocator> &filter 
     }
     return y;
 }
-template <class TYPE, class FUN, class Allocator>
-Array<TYPE, FUN, Allocator>
-Array<TYPE, FUN, Allocator>::coarsen( const std::vector<size_t> &ratio,
-                                      std::function<TYPE( const Array<TYPE, FUN, Allocator> & )>
-                                          filter ) const
+template<class TYPE, class FUN, class Allocator>
+Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::coarsen(
+    const std::vector<size_t> &ratio,
+    std::function<TYPE( const Array<TYPE, FUN, Allocator> & )> filter ) const
 {
     ARRAY_ASSERT( (int) ratio.size() == d_ndim );
     auto S2 = size();
@@ -995,7 +995,7 @@ Array<TYPE, FUN, Allocator>::coarsen( const std::vector<size_t> &ratio,
                     for ( size_t j2 = 0; j2 < ratio[1]; j2++ ) {
                         for ( size_t i2 = 0; i2 < ratio[0]; i2++ ) {
                             tmp2[GET_ARRAY_INDEX3D( tmp.d_N, i2, j2, k2 )] = this->operator()(
-                                i1 * ratio[0] + i2, j1 * ratio[1] + j2, k1 * ratio[2] + k2 );
+                                i1 *ratio[0] + i2, j1 * ratio[1] + j2, k1 * ratio[2] + k2 );
                         }
                     }
                 }
@@ -1008,9 +1008,9 @@ Array<TYPE, FUN, Allocator>::coarsen( const std::vector<size_t> &ratio,
 
 
 /********************************************************
-*  Interpolate                                          *
-********************************************************/
-template <class TYPE>
+ *  Interpolate                                          *
+ ********************************************************/
+template<class TYPE>
 inline TYPE Array_interp_1D( double x, int N, const TYPE *data )
 {
     int i = floor( x );
@@ -1018,7 +1018,7 @@ inline TYPE Array_interp_1D( double x, int N, const TYPE *data )
     i     = std::min( i, N - 2 );
     return ( i + 1 - x ) * data[i] + ( x - i ) * data[i + 1];
 }
-template <class TYPE>
+template<class TYPE>
 inline TYPE Array_interp_2D( double x, double y, int Nx, int Ny, const TYPE *data )
 {
     int i       = floor( x );
@@ -1037,7 +1037,7 @@ inline TYPE Array_interp_2D( double x, double y, int Nx, int Ny, const TYPE *dat
                     data[i + 1 + ( j + 1 ) * Nx] };
     return ( dx * f[1] + dx2 * f[0] ) * dy2 + ( dx * f[3] + dx2 * f[2] ) * dy;
 }
-template <class TYPE>
+template<class TYPE>
 inline TYPE
 Array_interp_3D( double x, double y, double z, int Nx, int Ny, int Nz, const TYPE *data )
 {
@@ -1064,11 +1064,11 @@ Array_interp_3D( double x, double y, double z, int Nx, int Ny, int Nz, const TYP
                     data[i + 1 + j * Nx + ( k + 1 ) * Nx * Ny],
                     data[i + ( j + 1 ) * Nx + ( k + 1 ) * Nx * Ny],
                     data[i + 1 + ( j + 1 ) * Nx + ( k + 1 ) * Nx * Ny] };
-    double h0 = ( dx * f[1] + dx2 * f[0] ) * dy2 + ( dx * f[3] + dx2 * f[2] ) * dy;
-    double h1 = ( dx * f[5] + dx2 * f[4] ) * dy2 + ( dx * f[7] + dx2 * f[6] ) * dy;
+    double h0   = ( dx * f[1] + dx2 * f[0] ) * dy2 + ( dx * f[3] + dx2 * f[2] ) * dy;
+    double h1   = ( dx * f[5] + dx2 * f[4] ) * dy2 + ( dx * f[7] + dx2 * f[6] ) * dy;
     return h0 * dz2 + h1 * dz;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 inline TYPE Array<TYPE, FUN, Allocator>::interp( const std::vector<double> &x )
 {
     int ndim = 0, dim[ARRAY_NDIM_MAX];
@@ -1097,14 +1097,14 @@ inline TYPE Array<TYPE, FUN, Allocator>::interp( const std::vector<double> &x )
 
 
 /********************************************************
-*  Math operations (should call the Math class)         *
-********************************************************/
-template <class TYPE, class FUN, class Allocator>
+ *  Math operations (should call the Math class)         *
+ ********************************************************/
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::rand()
 {
     FUN::rand( *this );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::
 operator+=( const Array<TYPE, FUN, Allocator> &rhs )
 {
@@ -1112,7 +1112,7 @@ operator+=( const Array<TYPE, FUN, Allocator> &rhs )
     FUN::transform( fun, *this, rhs, *this );
     return *this;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::
 operator-=( const Array<TYPE, FUN, Allocator> &rhs )
 {
@@ -1120,21 +1120,21 @@ operator-=( const Array<TYPE, FUN, Allocator> &rhs )
     FUN::transform( fun, *this, rhs, *this );
     return *this;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::operator+=( const TYPE &rhs )
 {
     const auto &fun = [rhs]( const TYPE &x ) { return x + rhs; };
     FUN::transform( fun, *this, *this );
     return *this;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::operator-=( const TYPE &rhs )
 {
     const auto &fun = [rhs]( const TYPE &x ) { return x - rhs; };
     FUN::transform( fun, *this, *this );
     return *this;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> operator+( const Array<TYPE, FUN, Allocator> &a,
                                        const Array<TYPE, FUN, Allocator> &b )
 {
@@ -1143,7 +1143,7 @@ Array<TYPE, FUN, Allocator> operator+( const Array<TYPE, FUN, Allocator> &a,
     FUN::transform( fun, a, b, c );
     return c;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> operator-( const Array<TYPE, FUN, Allocator> &a,
                                        const Array<TYPE, FUN, Allocator> &b )
 {
@@ -1152,31 +1152,31 @@ Array<TYPE, FUN, Allocator> operator-( const Array<TYPE, FUN, Allocator> &a,
     FUN::transform( fun, a, b, c );
     return c;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> operator*( const Array<TYPE, FUN, Allocator> &a,
                                        const Array<TYPE, FUN, Allocator> &b )
 {
     return Array<TYPE, FUN, Allocator>::multiply( a, b );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::min() const
 {
     const auto &fun = []( const TYPE &a, const TYPE &b ) { return a < b ? a : b; };
     return FUN::reduce( fun, *this, d_data[0] );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::max() const
 {
     const auto &fun = []( const TYPE &a, const TYPE &b ) { return a > b ? a : b; };
     return FUN::reduce( fun, *this, d_data[0] );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::sum() const
 {
     const auto &fun = []( const TYPE &a, const TYPE &b ) { return a + b; };
     return FUN::reduce( fun, *this, (TYPE) 0 );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>
 Array<TYPE, FUN, Allocator>::multiply( const Array<TYPE, FUN, Allocator> &a,
                                        const Array<TYPE, FUN, Allocator> &b )
@@ -1185,7 +1185,7 @@ Array<TYPE, FUN, Allocator>::multiply( const Array<TYPE, FUN, Allocator> &a,
     FUN::multiply( a, b, c );
     return c;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::axpby( const TYPE &alpha,
                                          const Array<TYPE, FUN, Allocator> &x,
                                          const TYPE &beta )
@@ -1195,7 +1195,7 @@ void Array<TYPE, FUN, Allocator>::axpby( const TYPE &alpha,
     };
     FUN::transform( fun, x, *this, *this );
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>
 Array<TYPE, FUN, Allocator>::transform( std::function<TYPE( const TYPE & )> fun,
                                         const Array<TYPE, FUN, Allocator> &x )
@@ -1204,7 +1204,7 @@ Array<TYPE, FUN, Allocator>::transform( std::function<TYPE( const TYPE & )> fun,
     FUN::transform( fun, x, y );
     return y;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>
 Array<TYPE, FUN, Allocator>::transform( std::function<TYPE( const TYPE &, const TYPE & )> fun,
                                         const Array<TYPE, FUN, Allocator> &x,
@@ -1214,7 +1214,7 @@ Array<TYPE, FUN, Allocator>::transform( std::function<TYPE( const TYPE &, const 
     FUN::transform( fun, x, y, z );
     return z;
 }
-template <class TYPE, class FUN, class Allocator>
+template<class TYPE, class FUN, class Allocator>
 bool Array<TYPE, FUN, Allocator>::equals( const Array &rhs, TYPE tol ) const
 {
     return FUN::equals( *this, rhs, tol );

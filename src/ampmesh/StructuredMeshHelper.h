@@ -86,6 +86,6 @@ public:
 
 protected:
 };
-}
-}
+} // namespace Mesh
+} // namespace AMP
 #endif

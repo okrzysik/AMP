@@ -13,7 +13,7 @@
 namespace AMP {
 namespace Materials {
 
-template <>
+template<>
 void TensorProperty<double>::evalv(
     std::vector<std::vector<AMP::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
     const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
@@ -22,7 +22,7 @@ void TensorProperty<double>::evalv(
     evalvActual( r, args );
 }
 
-template <>
+template<>
 void TensorProperty<double>::evalv(
     std::vector<std::vector<AMP::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
     const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
@@ -30,5 +30,5 @@ void TensorProperty<double>::evalv(
     std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> mapargs = make_map( args );
     evalv( r, mapargs );
 }
-}
-}
+} // namespace Materials
+} // namespace AMP

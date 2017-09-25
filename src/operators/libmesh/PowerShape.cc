@@ -11,11 +11,11 @@
 //---------------------------------------------------------------------------//
 
 /*AMP Files */
-#include "operators/Operator.h"
 #include "PowerShape.h"
 #include "PowerShapeParameters.h"
 #include "discretization/simpleDOF_Manager.h"
 #include "libmesh/cell_hex8.h"
+#include "operators/Operator.h"
 #include "operators/OperatorBuilder.h"
 #include "operators/OperatorParameters.h"
 #include "vectors/Vector.h"
@@ -1094,7 +1094,7 @@ double PowerShape::getGaussianF( double x, double y )
                                pow( y - d_muY, 2 ) / ( 2 * pow( d_sigmaY, 2.0 ) ) ) );
     return gaussianF;
 }
-}
+} // namespace Operator
 } // end namespace AMP
 
 //---------------------------------------------------------------------------//

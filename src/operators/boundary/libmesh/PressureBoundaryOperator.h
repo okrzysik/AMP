@@ -30,7 +30,7 @@ public:
 protected:
     AMP::shared_ptr<AMP::Operator::TractionBoundaryOperator> d_tractionOp;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

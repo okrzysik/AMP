@@ -10,8 +10,8 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Get basic info                                                *
-****************************************************************/
+ * Get basic info                                                *
+ ****************************************************************/
 inline AMP::shared_ptr<ParameterBase> Vector::getParameters()
 {
     return AMP::shared_ptr<ParameterBase>();
@@ -24,8 +24,8 @@ inline AMP_MPI Vector::getComm() const { return d_CommList->getComm(); }
 
 
 /****************************************************************
-* Subset for variable name                                      *
-****************************************************************/
+ * Subset for variable name                                      *
+ ****************************************************************/
 inline Vector::shared_ptr Vector::subsetVectorForVariable( const std::string &name )
 {
     auto var = AMP::make_shared<AMP::LinearAlgebra::Variable>( name );
@@ -40,9 +40,9 @@ Vector::constSubsetVectorForVariable( const std::string &name ) const
 
 
 /****************************************************************
-* getView/hasView                                               *
-****************************************************************/
-template <typename VIEW_TYPE>
+ * getView/hasView                                               *
+ ****************************************************************/
+template<typename VIEW_TYPE>
 Vector::shared_ptr Vector::getView() const
 {
     for ( size_t i = 0; i != d_Views->size(); i++ ) {
@@ -56,7 +56,7 @@ Vector::shared_ptr Vector::getView() const
     }
     return Vector::shared_ptr();
 }
-template <typename VIEW_TYPE>
+template<typename VIEW_TYPE>
 bool Vector::hasView() const
 {
     for ( size_t i = 0; i != d_Views->size(); i++ ) {
@@ -73,8 +73,8 @@ bool Vector::hasView() const
 
 
 /****************************************************************
-* RNG                                                           *
-****************************************************************/
+ * RNG                                                           *
+ ****************************************************************/
 inline void Vector::setDefaultRNG( RNG::shared_ptr p ) { d_DefaultRNG = p; }
 inline RNG::shared_ptr Vector::getDefaultRNG()
 {
@@ -90,8 +90,8 @@ inline RNG::shared_ptr Vector::getDefaultRNG()
 
 
 /****************************************************************
-* Misc functions                                                *
-****************************************************************/
+ * Misc functions                                                *
+ ****************************************************************/
 inline const Variable::shared_ptr Vector::getVariable() const { return d_pVariable; }
 inline Variable::shared_ptr Vector::getVariable() { return d_pVariable; }
 inline Vector::shared_ptr Vector::cloneVector() const { return cloneVector( getVariable() ); }
@@ -103,8 +103,8 @@ inline void Vector::setVariable( const Variable::shared_ptr name )
 
 
 /****************************************************************
-* Wrappers for shared_ptr                                       *
-****************************************************************/
+ * Wrappers for shared_ptr                                       *
+ ****************************************************************/
 // clang-format off
 inline void Vector::swapVectors( shared_ptr other ) { swapVectors( *other ); }
 inline void Vector::aliasVector( shared_ptr other ) { aliasVector( *other ); }
@@ -114,7 +114,7 @@ inline std::ostream &operator<<( std::ostream &out, const Vector::shared_ptr p )
 // clang-format on
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

@@ -309,5 +309,5 @@ void PelletStackOperator::computeZscan( AMP::LinearAlgebra::Vector::const_shared
         finalMaxZdispsList[i] += finalMaxZdispsList[i - 1];
     } // end for i
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

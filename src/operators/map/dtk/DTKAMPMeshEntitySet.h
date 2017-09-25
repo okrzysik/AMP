@@ -17,8 +17,8 @@ namespace Operator {
 
 
 /**
-  * AMP Mesh element implementation for DTK EntitySet interface.
-*/
+ * AMP Mesh element implementation for DTK EntitySet interface.
+ */
 class AMPMeshEntitySet : public DataTransferKit::EntitySet
 {
 public:
@@ -99,8 +99,8 @@ private:
     std::vector<AMP::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>>
         d_id_maps;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif
 //! @endcond

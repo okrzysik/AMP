@@ -31,7 +31,7 @@ protected:
 
 
 // Class to create a cube
-template <int SIZE_X, int SIZE_Y, int SIZE_Z>
+template<int SIZE_X, int SIZE_Y, int SIZE_Z>
 class AMPCubeGenerator3 : public MeshGenerator
 {
 public:
@@ -60,7 +60,7 @@ public:
         mesh = AMP::Mesh::BoxMesh::generate( params );
     }
 };
-template <int SIZE>
+template<int SIZE>
 class AMPCubeGenerator : public MeshGenerator
 {
 public:
@@ -169,6 +169,7 @@ public:
         mesh = AMP::Mesh::Mesh::buildMesh( params );
     }
     static std::string name() { return "AMPMultiMeshGenerator"; }
+
 private:
     void createPelletMeshDatabase( AMP::shared_ptr<Database> db )
     {
@@ -184,7 +185,7 @@ private:
         meshArrayDatabase->putInteger( "N", N_pellet );
         meshArrayDatabase->putString( "iterator", "%i" );
         std::vector<int> indexArray( N_pellet );
-        for ( int i       = 0; i < N_pellet; i++ )
+        for ( int i = 0; i < N_pellet; i++ )
             indexArray[i] = i + 1;
         meshArrayDatabase->putIntegerArray( "indicies", indexArray );
         meshArrayDatabase->putString( "MeshName", "pellet_%i" );
@@ -203,7 +204,7 @@ private:
         meshArrayDatabase->putDouble( "x_offset", 0.0 );
         meshArrayDatabase->putDouble( "y_offset", 0.0 );
         std::vector<double> offsetArray( N_pellet );
-        for ( int i        = 0; i < N_pellet; i++ )
+        for ( int i = 0; i < N_pellet; i++ )
             offsetArray[i] = ( (double) i ) * 0.0105;
         meshArrayDatabase->putDoubleArray( "z_offset", offsetArray );
     }
@@ -232,7 +233,7 @@ private:
 
 
 // Surface subset generator
-template <class GENERATOR, int GCW>
+template<class GENERATOR, int GCW>
 class SurfaceSubsetGenerator : public MeshGenerator
 {
 public:
@@ -248,8 +249,8 @@ public:
     }
     static std::string name() { return "SurfaceSubsetGenerator"; }
 };
-}
-}
+} // namespace unit_test
+} // namespace AMP
 
 
 // Include libmesh generators

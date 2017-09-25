@@ -112,7 +112,7 @@ private:
     std::string d_PropertyName;
     std::vector<double> d_Parameters;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

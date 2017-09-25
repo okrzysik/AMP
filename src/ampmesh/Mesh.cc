@@ -35,8 +35,8 @@ static unsigned int nextLocalMeshID = 1;
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
 {
     // Set the base properties
@@ -56,14 +56,14 @@ Mesh::Mesh( const MeshParameters::shared_ptr &params_in )
 
 
 /********************************************************
-* De-constructor                                        *
-********************************************************/
+ * De-constructor                                        *
+ ********************************************************/
 Mesh::~Mesh() {}
 
 
 /********************************************************
-* Create a mesh from the input database                 *
-********************************************************/
+ * Create a mesh from the input database                 *
+ ********************************************************/
 AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_ptr &params )
 {
     AMP::shared_ptr<AMP::Database> database = params->d_db;
@@ -110,8 +110,8 @@ AMP::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( const MeshParameters::shared_p
 
 
 /********************************************************
-* Estimate the mesh size                                *
-********************************************************/
+ * Estimate the mesh size                                *
+ ********************************************************/
 size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
     AMP::shared_ptr<AMP::Database> database = params->d_db;
@@ -163,8 +163,8 @@ size_t Mesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 
 
 /********************************************************
-* Estimate the maximum number of processors             *
-********************************************************/
+ * Estimate the maximum number of processors             *
+ ********************************************************/
 size_t Mesh::maxProcs( const MeshParameters::shared_ptr &params )
 {
     AMP::shared_ptr<AMP::Database> database = params->d_db;
@@ -203,12 +203,12 @@ size_t Mesh::maxProcs( const MeshParameters::shared_ptr &params )
 
 
 /********************************************************
-* Function to set the mesh ID                           *
-* This function will create a unique ID for every mesh. *
-* To accomplish this goal, the ID will consist of the   *
-* rank of the root processor (from the global comm),    *
-* and the number of meshes created by that processor.   *
-********************************************************/
+ * Function to set the mesh ID                           *
+ * This function will create a unique ID for every mesh. *
+ * To accomplish this goal, the ID will consist of the   *
+ * rank of the root processor (from the global comm),    *
+ * and the number of meshes created by that processor.   *
+ ********************************************************/
 void Mesh::setMeshID()
 {
     if ( d_comm.getRank() == 0 ) {
@@ -223,8 +223,8 @@ void Mesh::setMeshID()
 
 
 /********************************************************
-* Function to return the meshID composing the mesh      *
-********************************************************/
+ * Function to return the meshID composing the mesh      *
+ ********************************************************/
 std::vector<MeshID> Mesh::getAllMeshIDs() const { return std::vector<MeshID>( 1, d_meshID ); }
 std::vector<MeshID> Mesh::getBaseMeshIDs() const { return std::vector<MeshID>( 1, d_meshID ); }
 std::vector<MeshID> Mesh::getLocalMeshIDs() const { return std::vector<MeshID>( 1, d_meshID ); }
@@ -232,8 +232,8 @@ std::vector<MeshID> Mesh::getLocalBaseMeshIDs() const { return std::vector<MeshI
 
 
 /********************************************************
-* Function to return the mesh with the given ID         *
-********************************************************/
+ * Function to return the mesh with the given ID         *
+ ********************************************************/
 AMP::shared_ptr<Mesh> Mesh::Subset( MeshID meshID ) const
 {
     if ( d_meshID == meshID )
@@ -244,8 +244,8 @@ AMP::shared_ptr<Mesh> Mesh::Subset( MeshID meshID ) const
 
 
 /********************************************************
-* Function to return the mesh with the given name       *
-********************************************************/
+ * Function to return the mesh with the given name       *
+ ********************************************************/
 AMP::shared_ptr<Mesh> Mesh::Subset( std::string name ) const
 {
     if ( d_name == name )
@@ -256,8 +256,8 @@ AMP::shared_ptr<Mesh> Mesh::Subset( std::string name ) const
 
 
 /********************************************************
-* Function to subset a mesh using a mesh iterator       *
-********************************************************/
+ * Function to subset a mesh using a mesh iterator       *
+ ********************************************************/
 AMP::shared_ptr<Mesh> Mesh::Subset( const MeshIterator &iterator, bool isGlobal ) const
 {
     if ( isGlobal ) {
@@ -274,8 +274,8 @@ AMP::shared_ptr<Mesh> Mesh::Subset( const MeshIterator &iterator, bool isGlobal 
 
 
 /********************************************************
-* Function to return the element given an ID            *
-********************************************************/
+ * Function to return the element given an ID            *
+ ********************************************************/
 MeshElement Mesh::getElement( const MeshElementID &elem_id ) const
 {
     MeshID mesh_id = elem_id.meshID();
@@ -291,8 +291,8 @@ MeshElement Mesh::getElement( const MeshElementID &elem_id ) const
 
 
 /********************************************************
-* Function to return parents of an element              *
-********************************************************/
+ * Function to return parents of an element              *
+ ********************************************************/
 std::vector<MeshElement> Mesh::getElementParents( const MeshElement &, const GeomType ) const
 {
     AMP_ERROR( "getElementParents is not implimented for the base class" );
@@ -301,8 +301,8 @@ std::vector<MeshElement> Mesh::getElementParents( const MeshElement &, const Geo
 
 
 /********************************************************
-* Return the position vector                            *
-********************************************************/
+ * Return the position vector                            *
+ ********************************************************/
 #ifdef USE_AMP_VECTORS
 AMP::LinearAlgebra::Vector::shared_ptr Mesh::getPositionVector( std::string name,
                                                                 const int gcw ) const
@@ -339,14 +339,14 @@ AMP::LinearAlgebra::Vector::shared_ptr Mesh::getPositionVector( std::string name
 
 
 /********************************************************
-* Check if the element is a member of the mesh          *
-********************************************************/
+ * Check if the element is a member of the mesh          *
+ ********************************************************/
 bool Mesh::isMember( const MeshElementID &id ) const { return id.meshID() == d_meshID; }
 
 
 /********************************************************
-* Functions that aren't implimented for the base class  *
-********************************************************/
+ * Functions that aren't implimented for the base class  *
+ ********************************************************/
 AMP::shared_ptr<Mesh> Mesh::Subset( Mesh & ) const
 {
     AMP_ERROR( "Subset is not implimented for the base class" );
@@ -400,8 +400,8 @@ size_t Mesh::numGhostElements( const GeomType, int ) const
 
 
 /********************************************************
-* MeshIterator set operations                           *
-********************************************************/
+ * MeshIterator set operations                           *
+ ********************************************************/
 MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshIterator &B )
 {
     if ( OP == SetOP::Union ) {
@@ -449,7 +449,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         std::vector<MeshElementID> idA( A.size() );
         auto it = A.begin();
         for ( size_t i = 0; i < A.size(); ++i, ++it )
-            idA[i]     = it->globalID();
+            idA[i] = it->globalID();
         Utilities::quicksort( idA );
         std::vector<MeshElementID> intersection;
         intersection.reserve( B.size() );
@@ -522,5 +522,5 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

@@ -74,5 +74,5 @@ PetscErrorCode PetscMatrixShellOperator::mult( Mat mat, Vec in, Vec out )
 
     return ( 0 );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

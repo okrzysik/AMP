@@ -10,8 +10,8 @@ namespace LinearAlgebra {
 
 
 /********************************************************
-* VectorSelector                                        *
-********************************************************/
+ * VectorSelector                                        *
+ ********************************************************/
 VectorSelector::~VectorSelector() {}
 bool VectorSelector::isSelected( Vector::const_shared_ptr ) const { return true; }
 AMP_MPI VectorSelector::communicator( Vector::const_shared_ptr p ) const { return p->getComm(); }
@@ -20,8 +20,8 @@ Vector::const_shared_ptr VectorSelector::subset( Vector::const_shared_ptr p ) co
 
 
 /********************************************************
-* VS_ByVariableName                                     *
-********************************************************/
+ * VS_ByVariableName                                     *
+ ********************************************************/
 VS_ByVariableName::VS_ByVariableName( std::string n ) : d_VecName( n ) {}
 bool VS_ByVariableName::isSelected( Vector::const_shared_ptr v ) const
 {
@@ -30,8 +30,8 @@ bool VS_ByVariableName::isSelected( Vector::const_shared_ptr v ) const
 
 
 /********************************************************
-* VS_Stride                                             *
-********************************************************/
+ * VS_Stride                                             *
+ ********************************************************/
 VS_Stride::VS_Stride( size_t a, size_t b ) : d_Offset( a ), d_Stride( b ) {}
 Vector::shared_ptr VS_Stride::subset( Vector::shared_ptr p ) const
 {
@@ -50,8 +50,8 @@ Vector::const_shared_ptr VS_Stride::subset( Vector::const_shared_ptr p ) const
 
 
 /********************************************************
-* VS_Comm                                               *
-********************************************************/
+ * VS_Comm                                               *
+ ********************************************************/
 VS_Comm::VS_Comm( AMP_MPI comm )
 {
     AMP_ASSERT( !comm.isNull() );
@@ -78,8 +78,8 @@ Vector::const_shared_ptr VS_Comm::subset( Vector::const_shared_ptr p ) const
 
 
 /********************************************************
-* VS_Mesh                                               *
-********************************************************/
+ * VS_Mesh                                               *
+ ********************************************************/
 #ifdef USE_AMP_MESH
 VS_Mesh::VS_Mesh( AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
 {
@@ -117,8 +117,8 @@ Vector::const_shared_ptr VS_Mesh::subset( Vector::const_shared_ptr p ) const
 
 
 /********************************************************
-* VS_MeshIterator                                       *
-********************************************************/
+ * VS_MeshIterator                                       *
+ ********************************************************/
 #ifdef USE_AMP_MESH
 VS_MeshIterator::VS_MeshIterator( const AMP::Mesh::MeshIterator &iterator,
                                   const AMP::AMP_MPI &comm )
@@ -140,5 +140,5 @@ Vector::const_shared_ptr VS_MeshIterator::subset( Vector::const_shared_ptr p ) c
     return vector;
 }
 #endif
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

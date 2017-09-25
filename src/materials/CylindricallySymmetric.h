@@ -12,8 +12,8 @@ class CylindricallySymmetric : public AMP::Materials::Material
 public:
     CylindricallySymmetric();
 };
-}
-}
+} // namespace Materials
+} // namespace AMP
 
 
 // Add static initialize to force symbols to be included

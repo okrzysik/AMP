@@ -58,8 +58,8 @@ namespace																\
 {																		\
     AMP::voodoo::Registration<Material,name> reg(#name);				\
 }*/
-}
-}
+} // namespace Materials
+} // namespace AMP
 
 
 #endif

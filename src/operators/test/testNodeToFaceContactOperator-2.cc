@@ -782,20 +782,20 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
             //  printNodesValues(masterMeshAdapter, masterNodesGlobalIDs, contactPressureVec);
             printNodesValues( slaveMeshAdapter, slaveNodesGlobalIDs, contactPressureVec );
 
-//  std::vector<double> coord;
-//  std::vector<size_t> dof;
-//  double disp[3];
-//  for (size_t jj = 0; jj < sizeOfActiveSetBeforeUpdate; ++jj) {
-//    std::vector<double> coord = (slaveMeshAdapter->getElement(activeSet[jj])).coord();
-//    if (std::abs(coord[2] - 0.0) < 1.0e-10) {
-//      tempDofManager->getDOFs(activeSet[jj], dof);
-//      double pressure = contactPressureVec->getLocalValueByGlobalID(dof[0]);
-//      dispDofManager->getDOFs(activeSet[jj], dof);
-//      columnSolVec->getLocalValuesByGlobalID(3, &(dof[0]), disp);
-//      std::transform(&(coord[0]), &(coord[0])+3, &(coord[0]), disp, std::plus<double>());
-//      std::cout<<coord[0]<<"  "<<pressure<<"\n";
-//    } // end if
-//  } // end for jj
+            //  std::vector<double> coord;
+            //  std::vector<size_t> dof;
+            //  double disp[3];
+            //  for (size_t jj = 0; jj < sizeOfActiveSetBeforeUpdate; ++jj) {
+            //    std::vector<double> coord = (slaveMeshAdapter->getElement(activeSet[jj])).coord();
+            //    if (std::abs(coord[2] - 0.0) < 1.0e-10) {
+            //      tempDofManager->getDOFs(activeSet[jj], dof);
+            //      double pressure = contactPressureVec->getLocalValueByGlobalID(dof[0]);
+            //      dispDofManager->getDOFs(activeSet[jj], dof);
+            //      columnSolVec->getLocalValuesByGlobalID(3, &(dof[0]), disp);
+            //      std::transform(&(coord[0]), &(coord[0])+3, &(coord[0]), disp,
+            //      std::plus<double>()); std::cout<<coord[0]<<"  "<<pressure<<"\n";
+            //    } // end if
+            //  } // end for jj
 
 #ifdef USE_EXT_SILO
             {

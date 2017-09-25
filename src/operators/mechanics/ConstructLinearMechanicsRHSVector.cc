@@ -4,8 +4,7 @@
 
 void computeTemperatureRhsVector(
     AMP::Mesh::Mesh::shared_ptr mesh,
-    AMP::shared_ptr<AMP::Database>
-        input_db,
+    AMP::shared_ptr<AMP::Database> input_db,
     AMP::LinearAlgebra::Variable::shared_ptr,
     AMP::LinearAlgebra::Variable::shared_ptr displacementVar,
     const AMP::shared_ptr<AMP::LinearAlgebra::Vector> &currTemperatureVec,
@@ -196,7 +195,7 @@ void computeTemperatureRhsVector(
             for ( unsigned int i = 0; i < 6; i++ ) {
                 d_thermalStrain[i] = 0.0;
                 d_thermalStress[i] = 0.0;
-                for ( unsigned int j           = 0; j < 6; j++ )
+                for ( unsigned int j = 0; j < 6; j++ )
                     d_constitutiveMatrix[i][j] = 0.0;
             }
 

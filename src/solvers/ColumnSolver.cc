@@ -16,8 +16,7 @@ ColumnSolver::ColumnSolver( AMP::shared_ptr<SolverStrategyParameters> parameters
 }
 
 void ColumnSolver::solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                          AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                              u )
+                          AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     // u->zero();
 
@@ -121,5 +120,5 @@ void ColumnSolver::resetOperator( const AMP::shared_ptr<AMP::Operator::OperatorP
         }
     }
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

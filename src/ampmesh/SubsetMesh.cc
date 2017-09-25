@@ -13,8 +13,8 @@ namespace Mesh {
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
                         const AMP::Mesh::MeshIterator &iterator_in,
                         bool isGlobal )
@@ -177,7 +177,7 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
     }
     // Count the number of elements of each type
     N_global = std::vector<size_t>( (int) GeomDim + 1 );
-    for ( int i     = 0; i <= (int) GeomDim; i++ )
+    for ( int i = 0; i <= (int) GeomDim; i++ )
         N_global[i] = d_elements[i][0]->size();
     d_comm.sumReduce( &N_global[0], (int) N_global.size() );
     for ( int i = 0; i <= (int) GeomDim; i++ )
@@ -249,7 +249,7 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
     d_boundaryIdSets = std::vector<int>( new_boundary_ids.begin(), new_boundary_ids.end() );
     int *send_ptr    = nullptr;
     if ( d_boundaryIdSets.size() > 0 )
-        send_ptr     = &d_boundaryIdSets[0];
+        send_ptr = &d_boundaryIdSets[0];
     size_t recv_size = d_comm.sumReduce( d_boundaryIdSets.size() );
     if ( recv_size > 0 ) {
         std::vector<int> recv_list( recv_size, 0 );
@@ -301,7 +301,7 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
         send_ptr      = nullptr;
         if ( d_boundaryIdSets.size() > 0 )
             send_ptr = &d_boundaryIdSets[0];
-        recv_size    = d_comm.sumReduce( d_blockIdSets.size() );
+        recv_size = d_comm.sumReduce( d_blockIdSets.size() );
         if ( recv_size > 0 ) {
             std::vector<int> recv_list( recv_size, 0 );
             d_comm.allGather( &send_ptr[0], (int) d_blockIdSets.size(), &recv_list[0] );
@@ -314,14 +314,14 @@ SubsetMesh::SubsetMesh( AMP::shared_ptr<const Mesh> mesh,
 
 
 /********************************************************
-* De-constructor                                        *
-********************************************************/
+ * De-constructor                                        *
+ ********************************************************/
 SubsetMesh::~SubsetMesh() {}
 
 
 /********************************************************
-* Copy the mesh                                         *
-********************************************************/
+ * Copy the mesh                                         *
+ ********************************************************/
 AMP::shared_ptr<Mesh> SubsetMesh::copy() const
 {
     AMP_ERROR( "Copy is not currently supported with SubsetMesh" );
@@ -330,8 +330,8 @@ AMP::shared_ptr<Mesh> SubsetMesh::copy() const
 
 
 /********************************************************
-* Function to return the meshID composing the mesh      *
-********************************************************/
+ * Function to return the meshID composing the mesh      *
+ ********************************************************/
 std::vector<MeshID> SubsetMesh::getAllMeshIDs() const
 {
     std::vector<MeshID> ids = d_parent_mesh->getAllMeshIDs();
@@ -354,8 +354,8 @@ std::vector<MeshID> SubsetMesh::getLocalBaseMeshIDs() const
 
 
 /********************************************************
-* Function to return the mesh with the given ID         *
-********************************************************/
+ * Function to return the mesh with the given ID         *
+ ********************************************************/
 AMP::shared_ptr<Mesh> SubsetMesh::Subset( MeshID meshID ) const
 {
     if ( d_meshID == meshID || d_parent_mesh->meshID() == meshID )
@@ -366,8 +366,8 @@ AMP::shared_ptr<Mesh> SubsetMesh::Subset( MeshID meshID ) const
 
 
 /********************************************************
-* Function to return the mesh with the given name       *
-********************************************************/
+ * Function to return the mesh with the given name       *
+ ********************************************************/
 AMP::shared_ptr<Mesh> SubsetMesh::Subset( std::string name ) const
 {
     if ( d_name == name || d_parent_mesh->getName() == name )
@@ -378,8 +378,8 @@ AMP::shared_ptr<Mesh> SubsetMesh::Subset( std::string name ) const
 
 
 /********************************************************
-* Mesh iterators                                        *
-********************************************************/
+ * Mesh iterators                                        *
+ ********************************************************/
 MeshIterator SubsetMesh::getIterator( const GeomType type, const int gcw ) const
 {
     int gcw2  = gcw;
@@ -439,8 +439,8 @@ MeshIterator SubsetMesh::getBlockIDIterator( const GeomType, const int, const in
 
 
 /********************************************************
-* Check if the element is a member of the mesh          *
-********************************************************/
+ * Check if the element is a member of the mesh          *
+ ********************************************************/
 bool SubsetMesh::isMember( const MeshElementID &id ) const
 {
     if ( !d_parent_mesh->isMember( id ) )
@@ -462,8 +462,8 @@ bool SubsetMesh::isMember( const MeshElementID &id ) const
 
 
 /********************************************************
-* Function to return the element given an ID            *
-********************************************************/
+ * Function to return the element given an ID            *
+ ********************************************************/
 MeshElement SubsetMesh::getElement( const MeshElementID &elem_id ) const
 {
     return d_parent_mesh->getElement( elem_id );
@@ -471,8 +471,8 @@ MeshElement SubsetMesh::getElement( const MeshElementID &elem_id ) const
 
 
 /********************************************************
-* Function to return parents of an element              *
-********************************************************/
+ * Function to return parents of an element              *
+ ********************************************************/
 std::vector<MeshElement> SubsetMesh::getElementParents( const MeshElement &elem,
                                                         const GeomType type ) const
 {
@@ -481,8 +481,8 @@ std::vector<MeshElement> SubsetMesh::getElementParents( const MeshElement &elem,
 
 
 /********************************************************
-* Other functions                                       *
-********************************************************/
+ * Other functions                                       *
+ ********************************************************/
 size_t SubsetMesh::numLocalElements( const GeomType type ) const
 {
     return d_elements[static_cast<int>( type )][0]->size();
@@ -513,5 +513,5 @@ void SubsetMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_pt
 #endif
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

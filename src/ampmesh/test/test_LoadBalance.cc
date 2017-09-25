@@ -34,9 +34,9 @@ int main( int argc, char **argv )
     AMP::shared_ptr<AMP::Database> database = input_db->getDatabase( "Mesh" );
     AMP::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
     std::vector<int> comm_ranks( N_procs );
-    for ( int i       = 0; i < N_procs; i++ )
+    for ( int i = 0; i < N_procs; i++ )
         comm_ranks[i] = i;
-    double t0         = AMP::AMP_MPI::time();
+    double t0 = AMP::AMP_MPI::time();
     AMP::Mesh::loadBalanceSimulator mesh( params, comm_ranks );
     double t1 = AMP::AMP_MPI::time();
 

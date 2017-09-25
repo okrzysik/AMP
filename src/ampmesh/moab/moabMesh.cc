@@ -25,8 +25,8 @@ namespace Mesh {
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 moabMesh::moabMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_in )
 {
     d_core = AMP::shared_ptr<moab::Core>( new moab::Core() );
@@ -35,26 +35,26 @@ moabMesh::moabMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params
 
 
 /********************************************************
-* De-constructor                                        *
-********************************************************/
+ * De-constructor                                        *
+ ********************************************************/
 moabMesh::~moabMesh() {}
 
 
 /********************************************************
-* Function to copy the mesh                             *
-********************************************************/
+ * Function to copy the mesh                             *
+ ********************************************************/
 Mesh moabMesh::copy() const { return moabMesh( *this ); }
 
 
 /********************************************************
-* Function to initialize the moabMesh object             *
-********************************************************/
+ * Function to initialize the moabMesh object             *
+ ********************************************************/
 void moabMesh::initialize() { AMP_ERROR( "Not finished" ); }
 
 
 /********************************************************
-* Function to estimate the mesh size                    *
-********************************************************/
+ * Function to estimate the mesh size                    *
+ ********************************************************/
 size_t moabMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 {
     AMP_ERROR( "Not finished" );
@@ -63,8 +63,8 @@ size_t moabMesh::estimateMeshSize( const MeshParameters::shared_ptr &params )
 
 
 /********************************************************
-* Return the number of elements                         *
-********************************************************/
+ * Return the number of elements                         *
+ ********************************************************/
 size_t moabMesh::numLocalElements( const GeomType type ) const
 {
     AMP_ERROR( "Not finished" );
@@ -83,8 +83,8 @@ size_t moabMesh::numGhostElements( const GeomType type, int gcw ) const
 
 
 /********************************************************
-* Return an iterator over the given geometric type      *
-********************************************************/
+ * Return an iterator over the given geometric type      *
+ ********************************************************/
 MeshIterator moabMesh::getIterator( const GeomType type, const int gcw ) const
 {
     AMP_ERROR( "Not finished" );
@@ -93,9 +93,9 @@ MeshIterator moabMesh::getIterator( const GeomType type, const int gcw ) const
 
 
 /********************************************************
-* Return an iterator over the given boundary ids        *
-* Note: we have not programmed this for ghosts yet      *
-********************************************************/
+ * Return an iterator over the given boundary ids        *
+ * Note: we have not programmed this for ghosts yet      *
+ ********************************************************/
 MeshIterator moabMesh::getSurfaceIterator( const GeomType type, const int gcw ) const
 {
     AMP_ERROR( "Not finished" );
@@ -104,9 +104,9 @@ MeshIterator moabMesh::getSurfaceIterator( const GeomType type, const int gcw ) 
 
 
 /********************************************************
-* Return an iterator over the given boundary ids        *
-* Note: we have not programmed this for ghosts yet      *
-********************************************************/
+ * Return an iterator over the given boundary ids        *
+ * Note: we have not programmed this for ghosts yet      *
+ ********************************************************/
 std::vector<int> moabMesh::getBoundaryIDs() const
 {
     AMP_ERROR( "Not finished" );
@@ -121,8 +121,8 @@ moabMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gc
 
 
 /********************************************************
-* Displace a mesh                                       *
-********************************************************/
+ * Displace a mesh                                       *
+ ********************************************************/
 void moabMesh::displaceMesh( std::vector<double> x_in ) { AMP_ERROR( "Not finished" ); }
 #ifdef USE_AMP_VECTORS
 void moabMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
@@ -136,5 +136,5 @@ void moabMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr 
 #endif
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

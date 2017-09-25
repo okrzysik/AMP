@@ -128,12 +128,12 @@ public:
   }
   \endcode
   */
-template <typename T>
+template<typename T>
 class RandomVariable
 {
 public:
     /**\brief Typedef of the type of the random variable
-      */
+     */
     typedef T type;
 
 private:
@@ -143,22 +143,22 @@ private:
 
 public:
     /**\brief  Constructor.
-      *\param[in] low  The smallest value the variable can take
-      *\param[in] high  The supremum or one more than the max value the variable can take
-      *\param[in] r  The generator to use for making the variable
-      */
+     *\param[in] low  The smallest value the variable can take
+     *\param[in] high  The supremum or one more than the max value the variable can take
+     *\param[in] r  The generator to use for making the variable
+     */
     explicit RandomVariable( type low, type high, RNG::shared_ptr r );
 
     /**\brief  The casting operator to allow the RandomVariable to be an appropriate
-      * rvalue for type.  Everytime it is cast, it generates a new number.
-      */
+     * rvalue for type.  Everytime it is cast, it generates a new number.
+     */
     operator type();
 };
 
 /** \brief  Explicit instantiation of a RandomVariable<double>
-  * \see RandomVariable
-  */
-template <>
+ * \see RandomVariable
+ */
+template<>
 class RandomVariable<double>
 {
 public:
@@ -175,9 +175,9 @@ public:
 };
 
 /** \brief  Explicit instantiation of a RandomVariable<float>
-  * \see RandomVariable
-  */
-template <>
+ * \see RandomVariable
+ */
+template<>
 class RandomVariable<float>
 {
 public:
@@ -192,7 +192,7 @@ public:
 
     operator type();
 };
-}
+} // namespace AMP
 
 #include "RNG.inline.h"
 #include "RNG.tmpl.h"

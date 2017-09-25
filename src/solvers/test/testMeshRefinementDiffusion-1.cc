@@ -110,8 +110,7 @@ void calculateManufacturedSolution(
 
 void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                        AMP::Discretization::DOFManager::shared_ptr gaussPointDOF,
-                       AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                           manufacturedRHS )
+                       AMP::shared_ptr<AMP::LinearAlgebra::Vector> manufacturedRHS )
 {
     // Compute the source on the gauss point
 
@@ -345,8 +344,9 @@ void registerMapswithThermalOperator(
 //       Main Program     //
 ///////////////////////////////////////////////
 
-void myTest(
-    AMP::UnitTest *ut, AMP::shared_ptr<AMP::InputDatabase> input_db, AMP::AMP_MPI globalComm )
+void myTest( AMP::UnitTest *ut,
+             AMP::shared_ptr<AMP::InputDatabase> input_db,
+             AMP::AMP_MPI globalComm )
 {
 
     AMP::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );

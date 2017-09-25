@@ -72,5 +72,5 @@ void DiffusionTransportTensorModel::getTensorTransport(
         }
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

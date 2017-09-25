@@ -6,8 +6,8 @@ namespace LinearAlgebra {
 
 
 /********************************************************
-* VectorEngineParameters constructors             *
-********************************************************/
+ * VectorEngineParameters constructors             *
+ ********************************************************/
 VectorEngineParameters::VectorEngineParameters( size_t local_size, size_t global_size, AMP_MPI c )
     : d_begin( 0 ), d_end( 0 ), d_global( 0 ), d_comm( c.getCommunicator() )
 {
@@ -18,5 +18,5 @@ VectorEngineParameters::VectorEngineParameters( size_t local_size, size_t global
 VectorEngineParameters::~VectorEngineParameters() {}
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP

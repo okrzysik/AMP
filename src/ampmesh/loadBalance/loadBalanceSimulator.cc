@@ -21,8 +21,8 @@ namespace Mesh {
 
 
 /************************************************************
-* Constructors                                              *
-************************************************************/
+ * Constructors                                              *
+ ************************************************************/
 loadBalanceSimulator::loadBalanceSimulator()
 {
     d_N_elements = 0;
@@ -71,10 +71,10 @@ loadBalanceSimulator::loadBalanceSimulator( AMP::shared_ptr<MeshParameters> para
             d_N_elements = Mesh::estimateMeshSize( params );
         else
             d_N_elements = N_elements;
-        d_min            = divide_double( d_N_elements, d_ranks.size() );
-        d_max            = divide_double( d_N_elements, d_ranks.size() );
-        d_max_ranks      = Mesh::maxProcs( params );
-        cache_valid      = true;
+        d_min       = divide_double( d_N_elements, d_ranks.size() );
+        d_max       = divide_double( d_N_elements, d_ranks.size() );
+        d_max_ranks = Mesh::maxProcs( params );
+        cache_valid = true;
     }
     if ( d_ranks.size() > d_max_ranks )
         d_ranks.resize( d_max_ranks );
@@ -122,8 +122,8 @@ loadBalanceSimulator::loadBalanceSimulator( const loadBalanceSimulator &rhs )
 
 
 /************************************************************
-* Function to add a processor                               *
-************************************************************/
+ * Function to add a processor                               *
+ ************************************************************/
 bool loadBalanceSimulator::addProc( int rank )
 {
     bool added  = false;
@@ -145,8 +145,8 @@ bool loadBalanceSimulator::addProc( int rank )
 
 
 /************************************************************
-* Function to return the min, max, and avg # of elements    *
-************************************************************/
+ * Function to return the min, max, and avg # of elements    *
+ ************************************************************/
 size_t loadBalanceSimulator::min()
 {
     if ( !cache_valid )
@@ -163,8 +163,8 @@ size_t loadBalanceSimulator::avg() { return divide_double( d_N_elements, d_ranks
 
 
 /************************************************************
-* Function to print the load balance                        *
-************************************************************/
+ * Function to print the load balance                        *
+ ************************************************************/
 void loadBalanceSimulator::print( unsigned char detail, unsigned char indent_N )
 {
     int N_procs = 0;
@@ -199,8 +199,8 @@ void loadBalanceSimulator::print( unsigned char detail, unsigned char indent_N )
 
 
 /************************************************************
-* Misc. functions                                           *
-************************************************************/
+ * Misc. functions                                           *
+ ************************************************************/
 void loadBalanceSimulator::changeRanks( const std::vector<int> &ranks )
 {
     if ( d_submeshes.empty() ) {
@@ -263,5 +263,5 @@ void loadBalanceSimulator::updateCache()
     }
     cache_valid = true;
 }
-}
-}
+} // namespace Mesh
+} // namespace AMP

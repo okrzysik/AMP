@@ -14,7 +14,7 @@
 namespace AMP {
 namespace Materials {
 
-template <>
+template<>
 std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>>
 Property<double>::make_map( const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
 {
@@ -38,7 +38,7 @@ Property<double>::make_map( const AMP::shared_ptr<AMP::LinearAlgebra::MultiVecto
     return result;
 }
 
-template <>
+template<>
 void Property<double>::evalv(
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> &r,
     const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
@@ -47,12 +47,12 @@ void Property<double>::evalv(
     evalvActual( *r, args );
 }
 
-template <>
+template<>
 void Property<double>::evalv( AMP::shared_ptr<AMP::LinearAlgebra::Vector> &r,
                               const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
 {
     std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> mapargs = make_map( args );
     evalv( r, mapargs );
 }
-}
-}
+} // namespace Materials
+} // namespace AMP

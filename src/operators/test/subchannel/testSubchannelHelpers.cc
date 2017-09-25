@@ -89,9 +89,9 @@ void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
     size_t N = z.size() - 1;
     std::vector<double> dz( N );
     for ( size_t i = 0; i < N; i++ )
-        dz[i]      = z[i + 1] - z[i];
-    double diam    = 0.00822;
-    double Q_tot   = 66.5e3;
+        dz[i] = z[i + 1] - z[i];
+    double diam  = 0.00822;
+    double Q_tot = 66.5e3;
     std::vector<double> flux1 =
         AMP::Operator::Subchannel::getHeatFluxGeneration( "Sinusoidal", z, diam, Q_tot );
     std::vector<double> flux2 =

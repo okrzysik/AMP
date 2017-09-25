@@ -93,7 +93,7 @@ int to_bool( const std::string &s )
 
 
 // Generate a SimpleVectorFactory
-template <typename TYPE, typename VecOps>
+template<typename TYPE, typename VecOps>
 AMP::shared_ptr<VectorFactory>
 generateSimpleVectorFactory( int N, bool global, const std::string &data )
 {
@@ -115,7 +115,7 @@ generateSimpleVectorFactory( int N, bool global, const std::string &data )
     }
     return factory;
 }
-template <typename TYPE>
+template<typename TYPE>
 AMP::shared_ptr<VectorFactory>
 generateSimpleVectorFactory( int N, bool global, const std::string &ops, const std::string &data )
 {
@@ -283,5 +283,5 @@ AMP::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
     }
     return factory;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

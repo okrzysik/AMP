@@ -157,7 +157,7 @@ protected:
     // The decomposition to use
     int d_decomposition;
 };
-}
-}
+} // namespace Utilities
+} // namespace AMP
 
 #endif

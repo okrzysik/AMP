@@ -19,5 +19,5 @@ inline std::string ManagedSundialsVector::type() const
 
 
 inline void ManagedSundialsVector::assemble() {}
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

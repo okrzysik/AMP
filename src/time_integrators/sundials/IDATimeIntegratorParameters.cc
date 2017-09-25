@@ -17,5 +17,5 @@ IDATimeIntegratorParameters::IDATimeIntegratorParameters( const AMP::shared_ptr<
 }
 
 IDATimeIntegratorParameters::~IDATimeIntegratorParameters() {}
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP

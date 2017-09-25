@@ -22,7 +22,7 @@ public:
     std::vector<unsigned int> d_sideNumbers;
     std::vector<AMP::Mesh::MeshElementID> d_nodeID;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

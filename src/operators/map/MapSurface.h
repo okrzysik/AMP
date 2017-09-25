@@ -62,7 +62,7 @@ private:
     AMP::shared_ptr<Map1Dto3D> mapTarget;
     AMP::shared_ptr<MapOperatorParameters> mapTargetParams;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

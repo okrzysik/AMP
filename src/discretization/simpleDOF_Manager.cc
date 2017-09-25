@@ -11,8 +11,8 @@ namespace Discretization {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 DOFManager::shared_ptr simpleDOFManager::create( AMP::shared_ptr<AMP::Mesh::Mesh> mesh,
                                                  AMP::Mesh::GeomType type,
                                                  int gcw,
@@ -102,14 +102,14 @@ DOFManager::shared_ptr simpleDOFManager::create( const AMP::Mesh::MeshIterator &
 
 
 /****************************************************************
-* Deconstructor                                                 *
-****************************************************************/
+ * Deconstructor                                                 *
+ ****************************************************************/
 simpleDOFManager::~simpleDOFManager() {}
 
 
 /****************************************************************
-* Initialize the data                                           *
-****************************************************************/
+ * Initialize the data                                           *
+ ****************************************************************/
 void simpleDOFManager::initialize()
 {
     // Get the mesh ids
@@ -162,8 +162,8 @@ void simpleDOFManager::initialize()
 
 
 /****************************************************************
-* Subset the DOF manager                                        *
-****************************************************************/
+ * Subset the DOF manager                                        *
+ ****************************************************************/
 AMP::shared_ptr<DOFManager> simpleDOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh,
                                                       bool useMeshComm )
 {
@@ -210,8 +210,8 @@ AMP::shared_ptr<DOFManager> simpleDOFManager::subset( const AMP::Mesh::Mesh::sha
 
 
 /****************************************************************
-* Get the DOFs for the element                                  *
-****************************************************************/
+ * Get the DOFs for the element                                  *
+ ****************************************************************/
 inline void simpleDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
                                           std::vector<size_t> &dofs ) const
 {
@@ -255,8 +255,8 @@ void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
 
 
 /****************************************************************
-* Get the element ID give a dof                                 *
-****************************************************************/
+ * Get the element ID give a dof                                 *
+ ****************************************************************/
 AMP::Mesh::MeshElement simpleDOFManager::getElement( size_t dof ) const
 {
     AMP::Mesh::MeshElementID id;
@@ -276,21 +276,21 @@ AMP::Mesh::MeshElement simpleDOFManager::getElement( size_t dof ) const
 
 
 /****************************************************************
-* Get an entry over the mesh elements associated with the DOFs  *
-****************************************************************/
+ * Get an entry over the mesh elements associated with the DOFs  *
+ ****************************************************************/
 AMP::Mesh::MeshIterator simpleDOFManager::getIterator() const { return d_localIterator.begin(); }
 
 
 /****************************************************************
-* Return the remote DOFs for a vector                           *
-****************************************************************/
+ * Return the remote DOFs for a vector                           *
+ ****************************************************************/
 std::vector<size_t> simpleDOFManager::getRemoteDOFs() const
 {
     // Create the list of remote DOFs
     size_t N = d_remote_id.size();
     std::vector<size_t> remote_DOFs( N * DOFsPerElement, (size_t) -1 );
     for ( size_t i = 0, k = 0; i < N; i++ ) {
-        for ( int j        = 0; j < DOFsPerElement; j++, k++ )
+        for ( int j = 0; j < DOFsPerElement; j++, k++ )
             remote_DOFs[k] = d_remote_dof[i] * DOFsPerElement + j;
     }
     AMP::Utilities::quicksort( remote_DOFs );
@@ -299,8 +299,8 @@ std::vector<size_t> simpleDOFManager::getRemoteDOFs() const
 
 
 /****************************************************************
-* Return the row DOFs                                           *
-****************************************************************/
+ * Return the row DOFs                                           *
+ ****************************************************************/
 std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
 {
     // Get a list of all element ids that are part of the row
@@ -355,10 +355,10 @@ std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
 
 
 /****************************************************************
-* Find the remote DOF given a set of mesh element IDs           *
-* Note: for this function to work correctly, the remote ids     *
-* must be sorted, and d_local_id must be set                    *
-****************************************************************/
+ * Find the remote DOF given a set of mesh element IDs           *
+ * Note: for this function to work correctly, the remote ids     *
+ * must be sorted, and d_local_id must be set                    *
+ ****************************************************************/
 std::vector<size_t>
 simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids ) const
 {
@@ -463,7 +463,7 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
     AMP::Mesh::MeshElementID *send_buffer = nullptr;
     if ( !remote_ids2.empty() )
         send_buffer = &remote_ids2[0];
-    N               = comm.allToAll<AMP::Mesh::MeshElementID>(
+    N = comm.allToAll<AMP::Mesh::MeshElementID>(
         send_buffer, &send_cnt[0], &send_disp[0], &recv_id[0], &recv_cnt[0], &recv_disp[0], true );
     AMP_INSIST( N == (int) tot_size, "Unexpected recieve size" );
     recv_id.resize( tot_size );
@@ -480,7 +480,7 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
     size_t *send_buffer_DOFs = nullptr;
     if ( tot_size > 0 )
         send_buffer_DOFs = &recieved_DOF[0];
-    N                    = comm.allToAll<size_t>( send_buffer_DOFs,
+    N = comm.allToAll<size_t>( send_buffer_DOFs,
                                &recv_cnt[0],
                                &recv_disp[0],
                                &remote_dof[0],
@@ -495,5 +495,5 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
         AMP_ASSERT( remote_ids[i] == remote_ids2[i] );
     return remote_dof;
 }
-}
-}
+} // namespace Discretization
+} // namespace AMP

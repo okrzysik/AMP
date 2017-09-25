@@ -39,7 +39,7 @@ public:
     // Valid variables are: "Density", "Temperature"
     AMP::LinearAlgebra::Variable::shared_ptr d_outputVar;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

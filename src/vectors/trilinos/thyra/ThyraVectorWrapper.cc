@@ -21,23 +21,24 @@ namespace LinearAlgebra {
 
 
 // Some function definitions
-template <class TYPE>
+template<class TYPE>
 static std::vector<ThyraVectorWrapper *>
 getPtr( std::vector<size_t> block_size, Teuchos::ArrayView<const Teuchos::Ptr<TYPE>> vecs );
-template <class TYPE>
-static std::vector<const ThyraVectorWrapper *> getConstPtr(
-    std::vector<size_t> block_size, Teuchos::ArrayView<const Teuchos::Ptr<const TYPE>> vecs );
+template<class TYPE>
+static std::vector<const ThyraVectorWrapper *>
+getConstPtr( std::vector<size_t> block_size,
+             Teuchos::ArrayView<const Teuchos::Ptr<const TYPE>> vecs );
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 ThyraVectorWrapper::ThyraVectorWrapper(
     const std::vector<AMP::LinearAlgebra::Vector::shared_ptr> &vecs )
 {
     std::vector<size_t> cols( vecs.size() );
     for ( size_t i = 0; i < vecs.size(); i++ )
-        cols[i]    = i;
+        cols[i] = i;
     this->initialize( vecs, cols, vecs.size() );
 }
 ThyraVectorWrapper::ThyraVectorWrapper(
@@ -85,15 +86,15 @@ void ThyraVectorWrapper::initialize(
 
 
 /****************************************************************
-* Destructor                                                    *
-****************************************************************/
+ * Destructor                                                    *
+ ****************************************************************/
 ThyraVectorWrapper::~ThyraVectorWrapper() { delete d_comm; }
 
 
 /****************************************************************
-* Get a shared object to this                                   *
-****************************************************************/
-template <class T>
+ * Get a shared object to this                                   *
+ ****************************************************************/
+template<class T>
 static void nullDeleter( T * ){};
 AMP::shared_ptr<const ThyraVectorWrapper> ThyraVectorWrapper::shared_from_this() const
 {
@@ -102,8 +103,8 @@ AMP::shared_ptr<const ThyraVectorWrapper> ThyraVectorWrapper::shared_from_this()
 
 
 /****************************************************************
-* Functions to return the number of rows and columns            *
-****************************************************************/
+ * Functions to return the number of rows and columns            *
+ ****************************************************************/
 size_t ThyraVectorWrapper::numRows() const
 {
     // The number of rows is the number of unknowns in the vectors
@@ -117,8 +118,8 @@ size_t ThyraVectorWrapper::numColumns() const
 
 
 /****************************************************************
-* Functions to return the vector space                          *
-****************************************************************/
+ * Functions to return the vector space                          *
+ ****************************************************************/
 Teuchos::RCP<const Thyra::VectorSpaceBase<double>> ThyraVectorWrapper::range() const
 {
     AMP::shared_ptr<const ThyraVectorWrapper> this_ptr = shared_from_this();
@@ -138,8 +139,8 @@ Teuchos::RCP<const Thyra::VectorSpaceBase<double>> ThyraVectorWrapper::space() c
 
 
 /****************************************************************
-* Public functions derived from Thyra::MultiVectorBase          *
-****************************************************************/
+ * Public functions derived from Thyra::MultiVectorBase          *
+ ****************************************************************/
 Teuchos::RCP<Thyra::MultiVectorBase<double>> ThyraVectorWrapper::clone_mv() const
 {
     return clone_v();
@@ -147,13 +148,13 @@ Teuchos::RCP<Thyra::MultiVectorBase<double>> ThyraVectorWrapper::clone_mv() cons
 
 
 /****************************************************************
-* Public functions derived from Thyra::VectorBase               *
-****************************************************************/
+ * Public functions derived from Thyra::VectorBase               *
+ ****************************************************************/
 Teuchos::RCP<Thyra::VectorBase<double>> ThyraVectorWrapper::clone_v() const
 {
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vecs( d_vecs.size() );
     for ( size_t i = 0; i < d_vecs.size(); i++ )
-        vecs[i]    = d_vecs[i]->cloneVector();
+        vecs[i] = d_vecs[i]->cloneVector();
     Teuchos::RCP<Thyra::VectorBase<double>> new_vec(
         new ThyraVectorWrapper( vecs, d_cols, d_N_cols ) );
     return new_vec;
@@ -161,8 +162,8 @@ Teuchos::RCP<Thyra::VectorBase<double>> ThyraVectorWrapper::clone_v() const
 
 
 /****************************************************************
-* Protected functions derived from Thyra::LinearOpBase          *
-****************************************************************/
+ * Protected functions derived from Thyra::LinearOpBase          *
+ ****************************************************************/
 bool ThyraVectorWrapper::opSupportedImpl( Thyra::EOpTransp M_trans ) const
 {
     NULL_USE( M_trans );
@@ -239,8 +240,8 @@ void ThyraVectorWrapper::assignImpl( double alpha )
 }
 
 /****************************************************************
-* Protected functions derived from Thyra::MultiVectorBase       *
-****************************************************************/
+ * Protected functions derived from Thyra::MultiVectorBase       *
+ ****************************************************************/
 Teuchos::RCP<Thyra::VectorBase<double>> ThyraVectorWrapper::nonconstColImpl( Teuchos::Ordinal j )
 {
     std::vector<size_t> cols( 1, j );
@@ -326,8 +327,8 @@ void ThyraVectorWrapper::commitNonconstDetachedMultiVectorViewImpl(
 
 
 /****************************************************************
-* Protected functions derived from Thyra::VectorBase            *
-****************************************************************/
+ * Protected functions derived from Thyra::VectorBase            *
+ ****************************************************************/
 void ThyraVectorWrapper::acquireDetachedVectorViewImpl(
     const Teuchos::Range1D &rng, RTOpPack::ConstSubVectorView<double> *sub_vec ) const
 {
@@ -395,8 +396,8 @@ void ThyraVectorWrapper::setSubVectorImpl( const RTOpPack::SparseSubVectorT<doub
 
 
 /****************************************************************
-* applyOpImpl                                                   *
-****************************************************************/
+ * applyOpImpl                                                   *
+ ****************************************************************/
 void ThyraVectorWrapper::applyOpImpl(
     const RTOpPack::RTOpT<double> &op,
     const Teuchos::ArrayView<const Teuchos::Ptr<const Thyra::VectorBase<double>>> &vecs,
@@ -407,7 +408,7 @@ void ThyraVectorWrapper::applyOpImpl(
     NULL_USE( global_offset );
     size_t n_blocks = d_vecs[0]->numberOfDataBlocks();
     std::vector<size_t> block_size( n_blocks, 0 );
-    for ( size_t i    = 0; i < n_blocks; i++ )
+    for ( size_t i = 0; i < n_blocks; i++ )
         block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
     // Check that all vectors are compatible and get the pointers
     std::vector<const ThyraVectorWrapper *> vecs_ptr = getConstPtr( block_size, vecs );
@@ -468,14 +469,14 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
     AMP_INSIST( primary_global_offset == 0, "Not programmed for a global offset yet" );
     size_t n_blocks = d_vecs[0]->numberOfDataBlocks();
     std::vector<size_t> block_size( n_blocks, 0 );
-    for ( size_t i    = 0; i < n_blocks; i++ )
+    for ( size_t i = 0; i < n_blocks; i++ )
         block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
     // Check that all vectors are compatible and get the pointers
     std::vector<const ThyraVectorWrapper *> vecs_ptr = getConstPtr( block_size, multi_vecs );
     std::vector<ThyraVectorWrapper *> targ_vecs_ptr  = getPtr( block_size, targ_multi_vecs );
     // Apply the operation
     std::vector<Teuchos::RCP<RTOpPack::ReductTarget>> reduct_obj2( d_vecs.size() );
-    for ( size_t i     = 0; i < reduct_obj2.size(); i++ )
+    for ( size_t i = 0; i < reduct_obj2.size(); i++ )
         reduct_obj2[i] = primary_op.reduct_obj_create();
     for ( size_t k = 0; k < d_vecs.size(); k++ ) {
         for ( size_t j = 0; j < n_blocks; j++ ) {
@@ -550,7 +551,7 @@ void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
     NULL_USE( primary_global_offset );
     size_t n_blocks = d_vecs[0]->numberOfDataBlocks();
     std::vector<size_t> block_size( n_blocks, 0 );
-    for ( size_t i    = 0; i < n_blocks; i++ )
+    for ( size_t i = 0; i < n_blocks; i++ )
         block_size[i] = d_vecs[0]->sizeOfDataBlock( i );
     // Check that all vectors are compatible and get the pointers
     std::vector<const ThyraVectorWrapper *> vecs_ptr = getConstPtr( block_size, multi_vecs );
@@ -604,11 +605,11 @@ void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
 
 
 /****************************************************************
-* Helper functions                                              *
-****************************************************************/
-template <class TYPE>
-static std::vector<ThyraVectorWrapper *>
-getPtr( std::vector<size_t> block_size, Teuchos::ArrayView<const Teuchos::Ptr<TYPE>> vecs )
+ * Helper functions                                              *
+ ****************************************************************/
+template<class TYPE>
+static std::vector<ThyraVectorWrapper *> getPtr( std::vector<size_t> block_size,
+                                                 Teuchos::ArrayView<const Teuchos::Ptr<TYPE>> vecs )
 {
     int n_vecs = vecs.size();
     std::vector<ThyraVectorWrapper *> ptr( n_vecs, NULL );
@@ -625,9 +626,10 @@ getPtr( std::vector<size_t> block_size, Teuchos::ArrayView<const Teuchos::Ptr<TY
     }
     return ptr;
 }
-template <class TYPE>
-static std::vector<const ThyraVectorWrapper *> getConstPtr(
-    std::vector<size_t> block_size, Teuchos::ArrayView<const Teuchos::Ptr<const TYPE>> vecs )
+template<class TYPE>
+static std::vector<const ThyraVectorWrapper *>
+getConstPtr( std::vector<size_t> block_size,
+             Teuchos::ArrayView<const Teuchos::Ptr<const TYPE>> vecs )
 {
     int n_vecs = vecs.size();
     std::vector<const ThyraVectorWrapper *> ptr( n_vecs, NULL );
@@ -644,5 +646,5 @@ static std::vector<const ThyraVectorWrapper *> getConstPtr(
     }
     return ptr;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

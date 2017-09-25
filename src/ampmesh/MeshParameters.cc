@@ -6,8 +6,8 @@ namespace Mesh {
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 MeshParameters::MeshParameters() : comm( AMP_COMM_NULL ), MAX_GCW_WIDTH( 1 ) {}
 MeshParameters::MeshParameters( const AMP::shared_ptr<AMP::Database> db )
     : d_db( db ), comm( AMP_COMM_NULL ), MAX_GCW_WIDTH( 1 )
@@ -16,22 +16,22 @@ MeshParameters::MeshParameters( const AMP::shared_ptr<AMP::Database> db )
 
 
 /********************************************************
-* De-constructor                                        *
-********************************************************/
+ * De-constructor                                        *
+ ********************************************************/
 MeshParameters::~MeshParameters() {}
 
 
 /********************************************************
-* Set the desired communicator                          *
-********************************************************/
+ * Set the desired communicator                          *
+ ********************************************************/
 void MeshParameters::setComm( AMP::AMP_MPI comm_in ) { comm = comm_in; }
 
 
 /********************************************************
-* Return the database                                   *
-********************************************************/
+ * Return the database                                   *
+ ********************************************************/
 AMP::shared_ptr<AMP::Database> MeshParameters::getDatabase() { return d_db; }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

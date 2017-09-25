@@ -160,7 +160,7 @@ private:
     AMP::shared_ptr<moab::Core> d_core;
 };
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP
 
 #endif

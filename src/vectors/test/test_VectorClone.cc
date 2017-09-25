@@ -1,5 +1,5 @@
-#include "vectors/MultiVector.h"
 #include "vectors/MultiVariable.h"
+#include "vectors/MultiVector.h"
 
 #include "vectors/testHelpers/VectorTests.h"
 

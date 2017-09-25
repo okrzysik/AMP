@@ -243,5 +243,5 @@ FlowFrapconJacobian::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared
         return vec->constSubsetVectorForVariable( var );
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

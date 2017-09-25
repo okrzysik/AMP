@@ -211,7 +211,7 @@ private:
 
     AMP_MPI comm;
 };
-}
+} // namespace AMP
 
 
 #endif

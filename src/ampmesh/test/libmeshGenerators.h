@@ -17,7 +17,7 @@ namespace unit_test {
 
 
 // Class to create a cube in Libmesh
-template <int SIZE>
+template<int SIZE>
 class LibMeshCubeGenerator : public MeshGenerator
 {
 public:
@@ -42,7 +42,7 @@ public:
 
 
 // Class to read in a default exodus file
-template <int FILE = 1>
+template<int FILE = 1>
 class ExodusReaderGenerator : public MeshGenerator
 {
 public:
@@ -89,7 +89,7 @@ public:
         meshArrayDatabase->putInteger( "N", N_meshes );
         meshArrayDatabase->putString( "iterator", "%i" );
         std::vector<int> indexArray( N_meshes );
-        for ( int i       = 0; i < N_meshes; i++ )
+        for ( int i = 0; i < N_meshes; i++ )
             indexArray[i] = i + 1;
         meshArrayDatabase->putIntegerArray( "indicies", indexArray );
         meshArrayDatabase->putString( "MeshName", "pellet_%i" );
@@ -112,7 +112,7 @@ public:
         meshArrayDatabase->putDouble( "x_offset", 0.0 );
         meshArrayDatabase->putDouble( "y_offset", 0.0 );
         std::vector<double> offsetArray( N_meshes );
-        for ( int i        = 0; i < N_meshes; i++ )
+        for ( int i = 0; i < N_meshes; i++ )
             offsetArray[i] = ( (double) i ) * 0.0105;
         meshArrayDatabase->putDoubleArray( "z_offset", offsetArray );
         // Create the parameter object
@@ -239,8 +239,8 @@ protected:
 };
 
 
-} // unit_test namespace
-} // AMP namespace
+} // namespace unit_test
+} // namespace AMP
 
 
 #endif

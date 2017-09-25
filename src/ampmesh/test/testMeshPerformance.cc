@@ -16,7 +16,7 @@
 #include "ProfilerApp.h"
 
 
-template <class GENERATOR>
+template<class GENERATOR>
 void runTest( AMP::UnitTest &ut )
 {
     auto generator = AMP::shared_ptr<GENERATOR>( new GENERATOR );

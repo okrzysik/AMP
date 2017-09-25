@@ -40,7 +40,7 @@ protected:
 };
 
 
-} // Discretization namespace
-} // AMP namespace
+} // namespace Discretization
+} // namespace AMP
 
 #endif

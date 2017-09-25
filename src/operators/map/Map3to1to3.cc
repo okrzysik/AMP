@@ -8,7 +8,7 @@ namespace AMP {
 namespace Operator {
 
 
-template <class T>
+template<class T>
 static T *getPtr( std::vector<T> &x )
 {
     if ( x.size() == 0 )
@@ -18,8 +18,8 @@ static T *getPtr( std::vector<T> &x )
 
 
 /********************************************************
-* Constructor                                           *
-********************************************************/
+ * Constructor                                           *
+ ********************************************************/
 Map3to1to3::Map3to1to3( const AMP::shared_ptr<OperatorParameters> &params_in )
     : AsyncMapOperator( params_in )
 {
@@ -65,14 +65,14 @@ Map3to1to3::Map3to1to3( const AMP::shared_ptr<OperatorParameters> &params_in )
 
 
 /********************************************************
-* De-constructor                                        *
-********************************************************/
+ * De-constructor                                        *
+ ********************************************************/
 Map3to1to3::~Map3to1to3() { waitForAllRequests(); }
 
 
 /********************************************************
-* Function to add points to the map                     *
-********************************************************/
+ * Function to add points to the map                     *
+ ********************************************************/
 void Map3to1to3::addTo1DMap( std::multimap<double, double> &map, double z, double val )
 {
     map.insert( std::pair<double, double>( z, val ) );
@@ -87,8 +87,8 @@ void Map3to1to3::addTo1DMap( std::multimap<double, double> &map,
 
 
 /********************************************************
-* Function to start the communication                   *
-********************************************************/
+ * Function to start the communication                   *
+ ********************************************************/
 void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                              AMP::LinearAlgebra::Vector::shared_ptr )
 {
@@ -202,9 +202,9 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
 
 /********************************************************
-* Function to finish the communication and perform the  *
-* interpolation                                         *
-********************************************************/
+ * Function to finish the communication and perform the  *
+ * interpolation                                         *
+ ********************************************************/
 void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
                               AMP::LinearAlgebra::Vector::shared_ptr )
 {
@@ -285,8 +285,8 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
 
 
 /********************************************************
-* Function to unpack a recv buffer                      *
-********************************************************/
+ * Function to unpack a recv buffer                      *
+ ********************************************************/
 void Map3to1to3::unpackBuffer( const std::vector<comm_data> &buffer,
                                std::map<double, std::pair<int, double>> &map )
 {
@@ -325,8 +325,8 @@ void Map3to1to3::unpackBuffer( const std::vector<comm_data> &buffer,
 
 
 /********************************************************
-* Other functions                                       *
-********************************************************/
+ * Other functions                                       *
+ ********************************************************/
 void Map3to1to3::setVector( AMP::LinearAlgebra::Vector::shared_ptr result )
 {
     d_ResultVector = subsetOutputVector( result );
@@ -350,5 +350,5 @@ void Map3to1to3::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr,
 {
     AMP_ERROR( "buildReturn should never be called for the BaseClass" );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

@@ -14,7 +14,7 @@ namespace AMP {
 namespace LinearAlgebra {
 class Vector;
 }
-}
+} // namespace AMP
 #endif
 
 
@@ -473,7 +473,7 @@ protected:
     explicit Mesh( const Mesh::shared_ptr &old_mesh );
 };
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP
 
 #endif

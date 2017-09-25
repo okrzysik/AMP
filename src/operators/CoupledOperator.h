@@ -79,7 +79,7 @@ public:
 protected:
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenGaussPointVector;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

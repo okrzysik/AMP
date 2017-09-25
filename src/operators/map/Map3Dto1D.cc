@@ -341,5 +341,5 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP::pout << outputVec << std::endl;
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

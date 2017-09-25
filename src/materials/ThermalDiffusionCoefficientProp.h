@@ -42,9 +42,9 @@ public:
         std::valarray<double> soretParams = d_SoretProp.get_parameters();
         AMP_ASSERT( nparams == fickParams.size() + soretParams.size() );
         size_t nfick = fickParams.size(), nsoret = soretParams.size();
-        for ( size_t i    = 0; i < nfick; i++ )
+        for ( size_t i = 0; i < nfick; i++ )
             fickParams[i] = params[i];
-        for ( size_t i     = 0; i < nsoret; i++ )
+        for ( size_t i = 0; i < nsoret; i++ )
             soretParams[i] = params[nfick + i];
         d_FickProp.set_parameters( &fickParams[0], nfick );
         d_SoretProp.set_parameters( &soretParams[0], nsoret );
@@ -91,9 +91,9 @@ public:
         std::valarray<double> soretParams = d_SoretProp.get_parameters();
         AMP_ASSERT( nparams == fickParams.size() + soretParams.size() );
         size_t nfick = fickParams.size(), nsoret = soretParams.size();
-        for ( size_t i    = 0; i < nfick; i++ )
+        for ( size_t i = 0; i < nfick; i++ )
             fickParams[i] = params[i];
-        for ( size_t i     = 0; i < nsoret; i++ )
+        for ( size_t i = 0; i < nsoret; i++ )
             soretParams[i] = params[nfick + i];
         d_FickProp.set_parameters( &fickParams[0], nfick );
         d_SoretProp.set_parameters( &soretParams[0], nsoret );
@@ -140,9 +140,9 @@ public:
         std::valarray<double> soretParams = d_SoretProp.get_parameters();
         AMP_ASSERT( nparams == fickParams.size() + soretParams.size() );
         size_t nfick = fickParams.size(), nsoret = soretParams.size();
-        for ( size_t i    = 0; i < nfick; i++ )
+        for ( size_t i = 0; i < nfick; i++ )
             fickParams[i] = params[i];
-        for ( size_t i     = 0; i < nsoret; i++ )
+        for ( size_t i = 0; i < nsoret; i++ )
             soretParams[i] = params[nfick + i];
         d_FickProp.set_parameters( &fickParams[0], nfick );
         d_SoretProp.set_parameters( &soretParams[0], nsoret );

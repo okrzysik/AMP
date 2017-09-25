@@ -8,15 +8,15 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 VectorOperations::VectorOperations() : d_VectorData( nullptr ) {}
 
 
 /****************************************************************
-* min, max, norms, etc.                                         *
-* Note: these routines require communication                    *
-****************************************************************/
+ * min, max, norms, etc.                                         *
+ * Note: these routines require communication                    *
+ ****************************************************************/
 double VectorOperations::min() const
 {
     double ans = localMin();
@@ -93,9 +93,9 @@ double VectorOperations::wrmsNormMask( const VectorOperations &x,
 
 
 /****************************************************************
-* equals                                                        *
-* Note: these routines require communication                    *
-****************************************************************/
+ * equals                                                        *
+ * Note: these routines require communication                    *
+ ****************************************************************/
 bool VectorOperations::equals( const VectorOperations &rhs, double tol ) const
 {
     bool equal = localEquals( rhs, tol );
@@ -105,5 +105,5 @@ bool VectorOperations::equals( const VectorOperations &rhs, double tol ) const
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP

@@ -86,7 +86,7 @@ private:
 
     static bool s_initialized;
 };
-}
+} // namespace AMP
 
 
 #endif

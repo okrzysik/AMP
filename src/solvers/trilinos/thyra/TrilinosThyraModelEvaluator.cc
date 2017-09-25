@@ -18,8 +18,8 @@ namespace Solver {
 
 
 /****************************************************************
-*  Constructors                                                 *
-****************************************************************/
+ *  Constructors                                                 *
+ ****************************************************************/
 TrilinosThyraModelEvaluator::TrilinosThyraModelEvaluator(
     AMP::shared_ptr<TrilinosThyraModelEvaluatorParameters> params )
 {
@@ -33,14 +33,14 @@ TrilinosThyraModelEvaluator::TrilinosThyraModelEvaluator(
 
 
 /****************************************************************
-*  Destructor                                                   *
-****************************************************************/
+ *  Destructor                                                   *
+ ****************************************************************/
 TrilinosThyraModelEvaluator::~TrilinosThyraModelEvaluator() {}
 
 
 /****************************************************************
-*  Set the rhs vector                                           *
-****************************************************************/
+ *  Set the rhs vector                                           *
+ ****************************************************************/
 void TrilinosThyraModelEvaluator::setRhs( AMP::LinearAlgebra::Vector::const_shared_ptr rhs )
 {
     d_rhs = rhs;
@@ -48,8 +48,8 @@ void TrilinosThyraModelEvaluator::setRhs( AMP::LinearAlgebra::Vector::const_shar
 
 
 /****************************************************************
-*  Evaluate the model                                           *
-****************************************************************/
+ *  Evaluate the model                                           *
+ ****************************************************************/
 void TrilinosThyraModelEvaluator::evalModelImpl(
     const ::Thyra::ModelEvaluatorBase::InArgs<double> &inArgs,
     const ::Thyra::ModelEvaluatorBase::OutArgs<double> &outArgs ) const
@@ -115,8 +115,8 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
 
 
 /****************************************************************
-* Functions derived from Thyra::StateFuncModelEvaluatorBase     *
-****************************************************************/
+ * Functions derived from Thyra::StateFuncModelEvaluatorBase     *
+ ****************************************************************/
 Teuchos::RCP<const ::Thyra::VectorSpaceBase<double>>
 TrilinosThyraModelEvaluator::get_x_space() const
 {
@@ -172,8 +172,8 @@ TrilinosThyraModelEvaluator::get_W_factory() const
 
 
 /****************************************************************
-* Function to create the preconditioner                         *
-****************************************************************/
+ * Function to create the preconditioner                         *
+ ****************************************************************/
 Teuchos::RCP<::Thyra::PreconditionerBase<double>> TrilinosThyraModelEvaluator::create_W_prec() const
 {
     Teuchos::RCP<Thyra::DefaultPreconditioner<double>> preconditioner;
@@ -188,9 +188,9 @@ Teuchos::RCP<::Thyra::PreconditionerBase<double>> TrilinosThyraModelEvaluator::c
 
 
 /****************************************************************
-* Return the views to the TrilinosLinearOP                      *
-****************************************************************/
-template <class T>
+ * Return the views to the TrilinosLinearOP                      *
+ ****************************************************************/
+template<class T>
 static void nullDeleter( T * ){};
 AMP::shared_ptr<AMP::Solver::TrilinosLinearOP>
 TrilinosThyraModelEvaluator::view( Teuchos::RCP<Thyra::LinearOpBase<double>> op )
@@ -202,5 +202,5 @@ TrilinosThyraModelEvaluator::view( Teuchos::RCP<Thyra::LinearOpBase<double>> op 
     return AMP::shared_ptr<AMP::Solver::TrilinosLinearOP>(
         tmp, nullDeleter<AMP::Solver::TrilinosLinearOP> );
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

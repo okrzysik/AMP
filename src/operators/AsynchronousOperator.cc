@@ -66,5 +66,5 @@ void AsynchronousOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
     applyStart( u, f );
     applyFinish( u, f );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

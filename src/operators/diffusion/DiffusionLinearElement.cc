@@ -147,5 +147,5 @@ void DiffusionLinearElement::apply()
 
     d_transportModel->postLinearElementOperation();
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

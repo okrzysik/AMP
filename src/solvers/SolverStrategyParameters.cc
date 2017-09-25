@@ -13,5 +13,5 @@ SolverStrategyParameters::SolverStrategyParameters( const AMP::shared_ptr<AMP::D
 }
 
 SolverStrategyParameters::~SolverStrategyParameters() {}
-}
-}
+} // namespace Solver
+} // namespace AMP

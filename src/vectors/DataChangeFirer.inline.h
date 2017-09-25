@@ -34,5 +34,5 @@ inline void DataChangeFirer::fireDataChange()
     for ( auto &elem : *this )
         ( elem )->dataChanged();
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

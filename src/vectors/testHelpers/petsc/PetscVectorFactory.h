@@ -202,8 +202,8 @@ public:
 
 
 #endif
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 /// \endcond
 #endif

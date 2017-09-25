@@ -36,7 +36,7 @@ MeshIteratorVariable::getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr 
 {
     return parentDOF->subset( d_iterator, d_comm );
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

@@ -68,5 +68,5 @@ void DiffusionElement::initializeForCurrentElement(
     d_elem           = elem;
     d_transportModel = transportModel;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

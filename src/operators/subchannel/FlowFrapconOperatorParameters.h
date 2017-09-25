@@ -20,7 +20,7 @@ public:
 
     AMP::LinearAlgebra::Variable::shared_ptr d_variable;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

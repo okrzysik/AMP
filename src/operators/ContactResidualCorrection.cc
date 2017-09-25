@@ -26,5 +26,5 @@ void ContactResidualCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_
         } // end for j
     }     // end for i
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

@@ -49,6 +49,7 @@ public:
     inline bool operator<=( const MeshID &rhs ) const { return data <= rhs.data; }
     inline bool operator>( const MeshID &rhs ) const { return data > rhs.data; }
     inline bool operator<( const MeshID &rhs ) const { return data < rhs.data; }
+
 private:
     // We will store the data as a 64-bit data type
     // We do not want the user to get direct access to the data
@@ -194,8 +195,8 @@ private:
 };
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP
 
 
 #endif

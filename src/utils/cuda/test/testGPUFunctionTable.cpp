@@ -6,7 +6,7 @@
 #include <cuda.h>
 
 
-template <class TYPE, class FUN, class ALLOC>
+template<class TYPE, class FUN, class ALLOC>
 void TestFunctionTable( AMP::UnitTest *ut,
                         AMP::Array<TYPE, FUN, ALLOC> &A,
                         AMP::Array<TYPE, FUN, ALLOC> &B )

@@ -75,5 +75,5 @@ void CustomConstraintsEliminationOperator::initialize(
     d_MasterIndices      = masterIndices;
     d_MasterCoefficients = masterCoefficients;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

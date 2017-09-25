@@ -118,7 +118,7 @@ private:
     std::vector<size_t> d_local_dofs[3];
     std::vector<size_t> d_remote_dofs[3];
 };
-}
-}
+} // namespace Discretization
+} // namespace AMP
 
 #endif

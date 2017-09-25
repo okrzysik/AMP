@@ -103,9 +103,9 @@ void computeCladTemperature( AMP::Mesh::Mesh::shared_ptr meshAdapter,
         radius = std::sqrt( vertexCoord[0] * vertexCoord[0] + vertexCoord[1] * vertexCoord[1] );
         AMP_ASSERT( ( radius >= cladInnerRadius - epsilon ) &&
                     ( radius <= cladOuterRadius + epsilon ) );
-        temperature = cladOuterRadiusTemperature +
-                      linearHeatGenerationRate / ( 2.0 * M_PI ) / cladThermalConductivity *
-                          std::log( cladOuterRadius / radius );
+        temperature = cladOuterRadiusTemperature + linearHeatGenerationRate / ( 2.0 * M_PI ) /
+                                                       cladThermalConductivity *
+                                                       std::log( cladOuterRadius / radius );
         temperatureField->getDOFManager()->getDOFs( meshIterator->globalID(), DOFsIndices );
         AMP_ASSERT( DOFsIndices.size() == 1 );
         temperatureField->setLocalValuesByGlobalID( 1, &( DOFsIndices[0] ), &temperature );
@@ -530,21 +530,21 @@ void computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
 }
 
 
-void computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
-                          AMP::LinearAlgebra::Vector::shared_ptr displacementField,
-                          AMP::LinearAlgebra::Vector::shared_ptr sigmaXX,
-                          AMP::LinearAlgebra::Vector::shared_ptr sigmaYY,
-                          AMP::LinearAlgebra::Vector::shared_ptr sigmaZZ,
-                          AMP::LinearAlgebra::Vector::shared_ptr sigmaYZ,
-                          AMP::LinearAlgebra::Vector::shared_ptr sigmaXZ,
-                          AMP::LinearAlgebra::Vector::shared_ptr sigmaXY,
-                          AMP::LinearAlgebra::Vector::shared_ptr sigmaEff,
-                          AMP::shared_ptr<AMP::Operator::MechanicsMaterialModel>
-                              mechanicsMaterialModel,
-                          double referenceTemperature        = 273.0,
-                          double thermalExpansionCoefficient = 2.0e-6,
-                          AMP::LinearAlgebra::Vector::shared_ptr temperatureField =
-                              AMP::LinearAlgebra::Vector::shared_ptr() )
+void computeStressTensor(
+    AMP::Mesh::Mesh::shared_ptr mesh,
+    AMP::LinearAlgebra::Vector::shared_ptr displacementField,
+    AMP::LinearAlgebra::Vector::shared_ptr sigmaXX,
+    AMP::LinearAlgebra::Vector::shared_ptr sigmaYY,
+    AMP::LinearAlgebra::Vector::shared_ptr sigmaZZ,
+    AMP::LinearAlgebra::Vector::shared_ptr sigmaYZ,
+    AMP::LinearAlgebra::Vector::shared_ptr sigmaXZ,
+    AMP::LinearAlgebra::Vector::shared_ptr sigmaXY,
+    AMP::LinearAlgebra::Vector::shared_ptr sigmaEff,
+    AMP::shared_ptr<AMP::Operator::MechanicsMaterialModel> mechanicsMaterialModel,
+    double referenceTemperature        = 273.0,
+    double thermalExpansionCoefficient = 2.0e-6,
+    AMP::LinearAlgebra::Vector::shared_ptr temperatureField =
+        AMP::LinearAlgebra::Vector::shared_ptr() )
 {
 
     AMP::LinearAlgebra::VS_Mesh vectorSelector( mesh );
@@ -654,8 +654,7 @@ void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
             AMP::LinearAlgebra::Vector::shared_ptr sol,
             AMP::Operator::Operator::shared_ptr op,
-            AMP::shared_ptr<AMP::Solver::SolverStrategy>
-                pre,
+            AMP::shared_ptr<AMP::Solver::SolverStrategy> pre,
             size_t maxIters,
             double relTol,
             double absTol,

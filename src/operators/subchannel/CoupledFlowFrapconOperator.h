@@ -67,7 +67,7 @@ private:
     AMP::Operator::MapOperator::shared_ptr d_flowInternal3to1;
     AMP::Operator::MapOperator::shared_ptr d_flowInternal1to3;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

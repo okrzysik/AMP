@@ -56,7 +56,7 @@ private:
     AMP::LinearAlgebra::Vector::const_shared_ptr d_SourceVectorMap21;
     AMP::LinearAlgebra::Vector::shared_ptr d_TargetVectorMap21;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

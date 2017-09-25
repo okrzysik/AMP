@@ -82,7 +82,7 @@ protected:
     AMP::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
     AMP::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

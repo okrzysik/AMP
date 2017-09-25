@@ -30,8 +30,8 @@ public:
 
     std::vector<AMP::shared_ptr<OperatorParameters>> d_OperatorParameters;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 
 #endif

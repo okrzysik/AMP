@@ -21,8 +21,8 @@ RNG::shared_ptr Vector::d_DefaultRNG;
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 Vector::Vector() : VectorData(), VectorOperations()
 {
     d_VectorData = dynamic_cast<VectorData *>( this );
@@ -55,14 +55,14 @@ Vector::Vector( VectorParameters::shared_ptr parameters )
 
 
 /****************************************************************
-* De-Constructors                                               *
-****************************************************************/
+ * De-Constructors                                               *
+ ****************************************************************/
 Vector::~Vector() {}
 
 
 /****************************************************************
-* Subset, View, and Select                                      *
-****************************************************************/
+ * Subset, View, and Select                                      *
+ ****************************************************************/
 Vector::shared_ptr Vector::selectInto( const VectorSelector &s )
 {
     Vector::shared_ptr subvector;
@@ -165,8 +165,8 @@ Vector::shared_ptr Vector::cloneVector( const std::string &name ) const
 
 
 /****************************************************************
-* Misc                                                          *
-****************************************************************/
+ * Misc                                                          *
+ ****************************************************************/
 void Vector::setCommunicationList( CommunicationList::shared_ptr comm )
 {
     AMP_ASSERT( comm );
@@ -215,5 +215,5 @@ std::ostream &operator<<( std::ostream &out, const Vector &v )
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP

@@ -15,10 +15,9 @@ public:
     explicit MPCSolver( AMP::shared_ptr<MPCSolverParameters> params ) : SolverStrategy( params ) {}
 
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u );
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u );
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

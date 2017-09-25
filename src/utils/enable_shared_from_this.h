@@ -16,17 +16,17 @@ namespace AMP {
 
 
 /** \brief Enhancement of std::enable_shared_from_this
-  * \details  This class enhances/replaces std::enable_shared_from_this.
-  *    AMP has use cases that are not properly handled by enable_shared_from_this.
-  *    Specifically some of the vectors in AMP are managed by external packages
-  *    that do not use shared_ptr.  AMP then requires a shared_ptr for some of its
-  *    interfaces.  This causes a problem because if we try to use shared_from_this()
-  *    on a pointer that is not managed by the smart pointer, then the function crashes.
-  *    An example of this occurs in PetscManagedVector where PETSc manages the vectors,
-  *    but we want to enable the underlying data to be an AMP vector.  This class provides
-  *    the additional functionallity
-  */
-template <class T>
+ * \details  This class enhances/replaces std::enable_shared_from_this.
+ *    AMP has use cases that are not properly handled by enable_shared_from_this.
+ *    Specifically some of the vectors in AMP are managed by external packages
+ *    that do not use shared_ptr.  AMP then requires a shared_ptr for some of its
+ *    interfaces.  This causes a problem because if we try to use shared_from_this()
+ *    on a pointer that is not managed by the smart pointer, then the function crashes.
+ *    An example of this occurs in PetscManagedVector where PETSc manages the vectors,
+ *    but we want to enable the underlying data to be an AMP vector.  This class provides
+ *    the additional functionallity
+ */
+template<class T>
 class enable_shared_from_this : public base_enable_shared_from_this<T>
 {
 public:
@@ -69,11 +69,12 @@ public:
         return ptr;
     }
     virtual ~enable_shared_from_this<T>() {}
+
 protected:
     mutable AMP::weak_ptr<T> weak_ptr_;
 };
 
 
-} // AMP namespace
+} // namespace AMP
 
 #endif

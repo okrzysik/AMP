@@ -57,7 +57,7 @@ class panic_error;
 class version_mismatch_error;
 class map_full_error;
 class bad_dbi_error;
-}
+} // namespace LMDB
 
 /**
  * Base class for LMDB exception conditions.
@@ -273,7 +273,7 @@ static inline void *env_get_userctx( MDB_env *env );
 // TODO: mdb_env_set_assert()
 // TODO: mdb_reader_list()
 // TODO: mdb_reader_check()
-}
+} // namespace LMDB
 
 /**
  * @throws LMDB::error on failure
@@ -533,7 +533,7 @@ static inline void txn_commit( MDB_txn *txn );
 static inline void txn_abort( MDB_txn *txn ) noexcept;
 static inline void txn_reset( MDB_txn *txn ) noexcept;
 static inline void txn_renew( MDB_txn *txn );
-}
+} // namespace LMDB
 
 /**
  * @throws LMDB::error on failure
@@ -618,7 +618,7 @@ dbi_put( MDB_txn *txn, MDB_dbi dbi, const MDB_val *key, MDB_val *data, unsigned 
 static inline bool dbi_del( MDB_txn *txn, MDB_dbi dbi, const MDB_val *key, const MDB_val *data );
 // TODO: mdb_cmp()
 // TODO: mdb_dcmp()
-}
+} // namespace LMDB
 
 /**
  * @throws LMDB::error on failure
@@ -797,7 +797,7 @@ static inline void
 cursor_put( MDB_cursor *cursor, MDB_val *key, MDB_val *data, unsigned int flags );
 static inline void cursor_del( MDB_cursor *cursor, unsigned int flags );
 static inline void cursor_count( MDB_cursor *cursor, std::size_t &count );
-}
+} // namespace LMDB
 
 /**
  * @throws LMDB::error on failure
@@ -983,7 +983,7 @@ public:
     /**
      * Returns a pointer to the data.
      */
-    template <typename T>
+    template<typename T>
     T *data() noexcept
     {
         return reinterpret_cast<T *>( _val.mv_data );
@@ -992,7 +992,7 @@ public:
     /**
      * Returns a pointer to the data.
      */
-    template <typename T>
+    template<typename T>
     const T *data() const noexcept
     {
         return reinterpret_cast<T *>( _val.mv_data );
@@ -1011,7 +1011,7 @@ public:
     /**
      * Assigns the value.
      */
-    template <typename T>
+    template<typename T>
     val &assign( const T *const data, const std::size_t size ) noexcept
     {
         _val.mv_size = size;
@@ -1493,7 +1493,7 @@ public:
      * @param key
      * @throws LMDB::error on failure
      */
-    template <typename K>
+    template<typename K>
     bool get( MDB_txn *const txn, const K &key ) const
     {
         const LMDB::val k{ &key, sizeof( K ) };
@@ -1509,7 +1509,7 @@ public:
      * @param val
      * @throws LMDB::error on failure
      */
-    template <typename K, typename V>
+    template<typename K, typename V>
     bool get( MDB_txn *const txn, const K &key, V &val ) const
     {
         const LMDB::val k{ &key, sizeof( K ) };
@@ -1529,7 +1529,7 @@ public:
      * @param val
      * @throws LMDB::error on failure
      */
-    template <typename V>
+    template<typename V>
     bool get( MDB_txn *const txn, const char *const key, V &val ) const
     {
         const LMDB::val k{ key, std::strlen( key ) };
@@ -1566,7 +1566,7 @@ public:
      * @param flags
      * @throws LMDB::error on failure
      */
-    template <typename K>
+    template<typename K>
     bool put( MDB_txn *const txn, const K &key, const unsigned int flags = default_put_flags )
     {
         const LMDB::val k{ &key, sizeof( K ) };
@@ -1583,7 +1583,7 @@ public:
      * @param flags
      * @throws LMDB::error on failure
      */
-    template <typename K, typename V>
+    template<typename K, typename V>
     bool put( MDB_txn *const txn,
               const K &key,
               const V &val,
@@ -1603,7 +1603,7 @@ public:
      * @param flags
      * @throws LMDB::error on failure
      */
-    template <typename V>
+    template<typename V>
     bool put( MDB_txn *const txn,
               const char *const key,
               const V &val,
@@ -1649,7 +1649,7 @@ public:
      * @param key
      * @throws LMDB::error on failure
      */
-    template <typename K>
+    template<typename K>
     bool del( MDB_txn *const txn, const K &key )
     {
         const LMDB::val k{ &key, sizeof( K ) };
@@ -1841,7 +1841,7 @@ public:
      * @param op
      * @throws LMDB::error on failure
      */
-    template <typename K>
+    template<typename K>
     bool find( const K &key, const MDB_cursor_op op = MDB_SET )
     {
         LMDB::val k{ &key, sizeof( K ) };

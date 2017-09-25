@@ -33,7 +33,7 @@ public:
     int d_numExtras;
     std::vector<std::string> d_extrasName;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

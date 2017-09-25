@@ -34,5 +34,5 @@ StridedVariable::getSubsetDOF( AMP::Discretization::DOFManager::shared_ptr paren
         parentDOF, dofs, iterator, parentDOF->getComm() );
     return subsetDOF;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

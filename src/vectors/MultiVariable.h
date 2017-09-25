@@ -9,12 +9,12 @@ namespace LinearAlgebra {
 
 
 /** \brief  A class for combining variables.
-  * \details  When physics are brought together, individual variables need
-  * to be combined to generate a composition.  For instance, combining
-  * temperature and displacement into a single variable.
-  *
-  * \see MultiVector
-  */
+ * \details  When physics are brought together, individual variables need
+ * to be combined to generate a composition.  For instance, combining
+ * temperature and displacement into a single variable.
+ *
+ * \see MultiVector
+ */
 class MultiVariable : public Variable
 {
 public:
@@ -25,50 +25,50 @@ public:
     typedef std::vector<Variable::shared_ptr>::const_iterator const_iterator;
 
     /** \brief Get the first variable in the MultiVariable
-      * \return An iterator pointing to the first variable
-      */
+     * \return An iterator pointing to the first variable
+     */
     inline iterator beginVariable();
 
     /** \brief Get end of the MultiVariable array
-      * \return An iterator pointing to the end
-      */
+     * \return An iterator pointing to the end
+     */
     inline iterator endVariable();
 
     /** \brief Get the first variable in the MultiVariable
-      * \return An iterator pointing to the first variable
-      */
+     * \return An iterator pointing to the first variable
+     */
     inline const_iterator beginVariable() const;
 
     /** \brief Get end of the MultiVariable array
-      * \return An iterator pointing to the end
-      */
+     * \return An iterator pointing to the end
+     */
     inline const_iterator endVariable() const;
 
     /** \brief If there are multiple matching variables in the list, this
-      *  will remove them.  Note that may change the etnry order and will remove any null entries.
-      */
+     *  will remove them.  Note that may change the etnry order and will remove any null entries.
+     */
     void removeDuplicateVariables();
 
     /** \brief Given a vector of strings, this will sort the MultiVariable
-      * to the given order
-      * \param[in] v A list of names by which to sort the MultiVariable
-      */
+     * to the given order
+     * \param[in] v A list of names by which to sort the MultiVariable
+     */
     void sortVariablesByName( const std::vector<std::string> &v );
 
     /** \brief Constructor
-      * \details Because a MultiVariable is a Variable, it must have a name.  This does
-      *    not change the names of the variables in the list of vectors.
-      * \param[in] name  The name of the MultiVariable
-      * \param[in] vars  Optional list of variables in the MultiVariable
-      *
-      */
+     * \details Because a MultiVariable is a Variable, it must have a name.  This does
+     *    not change the names of the variables in the list of vectors.
+     * \param[in] name  The name of the MultiVariable
+     * \param[in] vars  Optional list of variables in the MultiVariable
+     *
+     */
     MultiVariable(
         const std::string &name,
         const std::vector<Variable::shared_ptr> &vars = std::vector<Variable::shared_ptr>() );
 
     /** \brief Destructor
-      *
-      */
+     *
+     */
     virtual ~MultiVariable();
 
     /** \brief  Get a particular variable from the list of variables
@@ -134,8 +134,8 @@ protected:
     //! List of variables comprising the MultiVariable
     std::vector<Variable::shared_ptr> d_vVariables;
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #include "MultiVariable.inline.h"
 #endif

@@ -130,7 +130,7 @@ static const unsigned int numberThermDiffArgs = 2;
 static const double thermDiffRanges[2][2]     = { { TminVal, TmaxVal }, { uminVal, umaxVal } };
 
 #include "ThermalDiffusionCoefficientProp.h"
-}
+} // namespace Ox_MSRZC_09_NS
 
 //=================== Materials =====================================================
 
@@ -141,5 +141,5 @@ Ox_MSRZC_09::Ox_MSRZC_09()
     INSERT_PROPERTY_IN_MAP( SoretCoefficient, Ox_MSRZC_09_NS );
     INSERT_PROPERTY_IN_MAP( ThermalDiffusionCoefficient, Ox_MSRZC_09_NS );
 }
-}
-}
+} // namespace Materials
+} // namespace AMP

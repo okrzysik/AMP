@@ -19,9 +19,9 @@ namespace Solver {
 
 
 /**
-  * The TrilinosNOXSolver is a wrapper to the PETSc SNES solver which provides an implementation
-  * of the inexact Newton method.
-  */
+ * The TrilinosNOXSolver is a wrapper to the PETSc SNES solver which provides an implementation
+ * of the inexact Newton method.
+ */
 class TrilinosNOXSolver : public SolverStrategy
 {
 public:
@@ -78,10 +78,10 @@ public:
     virtual ~TrilinosNOXSolver();
 
     /**
-    * Resets the solver internally with new parameters if necessary
-    * @param parameters
-    *        SolverStrategyParameters object that is NULL by default
-    */
+     * Resets the solver internally with new parameters if necessary
+     * @param parameters
+     *        SolverStrategyParameters object that is NULL by default
+     */
     virtual void reset( AMP::shared_ptr<SolverStrategyParameters> parameters ) override;
 
     /**
@@ -90,8 +90,7 @@ public:
      * @param [out] u : shared pointer to approximate computed solution
      */
     virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                            u ) override;
+                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * Provide the initial guess for the solver. This is a pure virtual function that the derived
@@ -121,7 +120,7 @@ protected:
     Teuchos::RCP<::Thyra::LinearOpWithSolveFactoryBase<double>> d_lowsFactory;
     Teuchos::RCP<NOX::StatusTest::Combo> d_status;
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

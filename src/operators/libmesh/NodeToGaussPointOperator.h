@@ -39,7 +39,7 @@ protected:
     std::vector<unsigned short int> d_N_quad;
     std::vector<std::vector<double>> d_phi;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

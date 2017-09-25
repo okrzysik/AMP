@@ -15,7 +15,7 @@ inline NativePetscVectorParameters::NativePetscVectorParameters( Vec v, bool del
     MPI_Comm comm = d_Comm.getCommunicator(); // Get a MPI_comm object from AMP_MPI to pass to PETSc
     PetscObjectGetComm( reinterpret_cast<PetscObject>( v ), &comm );
     if ( comm != d_Comm.getCommunicator() )
-        d_Comm   = AMP_MPI( comm );
+        d_Comm = AMP_MPI( comm );
     d_Deleteable = deleteable;
     int lsize;
     VecGetLocalSize( v, &lsize );
@@ -351,7 +351,7 @@ inline double NativePetscVector::localMaxNorm( void ) const
 
 inline void NativePetscVector::setValuesByLocalID( int num, size_t *indices, const double *vals )
 {
-    for ( int i                               = 0; i != num; i++ )
+    for ( int i = 0; i != num; i++ )
         getRawDataBlock<double>()[indices[i]] = vals[i];
 }
 
@@ -365,7 +365,7 @@ NativePetscVector::setLocalValuesByGlobalID( int num, size_t *indices, const dou
     } else {
         AMP_ASSERT( getGlobalSize() < 0x80000000 );
         std::vector<PetscInt> indices2( num, 0 );
-        for ( int i     = 0; i < num; i++ )
+        for ( int i = 0; i < num; i++ )
             indices2[i] = (PetscInt) indices[i];
         VecSetValues( d_petscVec, num, &indices2[0], vals, INSERT_VALUES );
     }
@@ -388,7 +388,7 @@ NativePetscVector::addLocalValuesByGlobalID( int num, size_t *indices, const dou
     } else {
         AMP_ASSERT( getGlobalSize() < 0x80000000 );
         std::vector<PetscInt> indices2( num, 0 );
-        for ( int i     = 0; i < num; i++ )
+        for ( int i = 0; i < num; i++ )
             indices2[i] = (PetscInt) indices[i];
         VecSetValues( d_petscVec, num, &indices2[0], vals, ::ADD_VALUES );
     }
@@ -453,5 +453,5 @@ NativePetscVector::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *v
         VecGetValues( d_petscVec, numVals, &ndx2[0], vals );
     }
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

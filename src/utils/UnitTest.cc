@@ -12,8 +12,8 @@ namespace AMP {
 
 
 /********************************************************************
-*  Constructor/Destructor                                           *
-********************************************************************/
+ *  Constructor/Destructor                                           *
+ ********************************************************************/
 UnitTest::UnitTest() : d_verbose( false )
 {
     if ( !AMP::AMPManager::isInitialized() )
@@ -30,9 +30,9 @@ void UnitTest::reset()
 
 
 /********************************************************************
-*  Print a global report                                            *
-*  Note: only rank 0 will print, all messages will be aggregated    *
-********************************************************************/
+ *  Print a global report                                            *
+ *  Note: only rank 0 will print, all messages will be aggregated    *
+ ********************************************************************/
 void UnitTest::report( const int level0 ) const
 {
     int size = this->size();
@@ -199,8 +199,8 @@ void UnitTest::report( const int level0 ) const
 
 
 /********************************************************************
-*  Pack and send the given messages                                 *
-********************************************************************/
+ *  Pack and send the given messages                                 *
+ ********************************************************************/
 void UnitTest::pack_message_stream( const std::vector<std::string> &messages,
                                     const int rank,
                                     const int tag ) const
@@ -219,9 +219,9 @@ void UnitTest::pack_message_stream( const std::vector<std::string> &messages,
     // Pack the message stream
     int *tmp = (int *) data;
     tmp[0]   = N_messages;
-    for ( int i    = 0; i < N_messages; i++ )
+    for ( int i = 0; i < N_messages; i++ )
         tmp[i + 1] = msg_size[i];
-    int k          = ( N_messages + 1 ) * sizeof( int );
+    int k = ( N_messages + 1 ) * sizeof( int );
     for ( int i = 0; i < N_messages; i++ ) {
         messages[i].copy( &data[k], msg_size[i] );
         k += msg_size[i];
@@ -236,8 +236,8 @@ void UnitTest::pack_message_stream( const std::vector<std::string> &messages,
 
 
 /********************************************************************
-*  Receive and unpack a message stream                              *
-********************************************************************/
+ *  Receive and unpack a message stream                              *
+ ********************************************************************/
 std::vector<std::string> UnitTest::unpack_message_stream( const int rank, const int tag ) const
 {
     // Probe the message to get the message size
@@ -265,8 +265,8 @@ std::vector<std::string> UnitTest::unpack_message_stream( const int rank, const 
 
 
 /********************************************************************
-*  Other functions                                                  *
-********************************************************************/
+ *  Other functions                                                  *
+ ********************************************************************/
 int UnitTest::rank() const { return comm.getRank(); }
 int UnitTest::size() const { return comm.getSize(); }
 size_t UnitTest::NumPassGlobal() const { return comm.sumReduce<size_t>( NumPassLocal() ); }
@@ -277,4 +277,4 @@ size_t UnitTest::NumExpectedFailGlobal() const
 }
 
 
-} // AMP namespace
+} // namespace AMP

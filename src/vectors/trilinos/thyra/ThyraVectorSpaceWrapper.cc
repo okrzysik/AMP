@@ -14,8 +14,8 @@ namespace LinearAlgebra {
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
+ * Constructors                                                  *
+ ****************************************************************/
 ThyraVectorSpaceWrapper::ThyraVectorSpaceWrapper(
     AMP::shared_ptr<const ThyraVectorWrapper> thyra_vec, bool is_range )
 {
@@ -26,14 +26,14 @@ ThyraVectorSpaceWrapper::ThyraVectorSpaceWrapper(
 
 
 /****************************************************************
-* Destructor                                                    *
-****************************************************************/
+ * Destructor                                                    *
+ ****************************************************************/
 ThyraVectorSpaceWrapper::~ThyraVectorSpaceWrapper() {}
 
 
 /****************************************************************
-* Virtual functions inherited from VectorSpaceBase              *
-****************************************************************/
+ * Virtual functions inherited from VectorSpaceBase              *
+ ****************************************************************/
 Teuchos::Ordinal ThyraVectorSpaceWrapper::dim() const
 {
     if ( !d_is_range )
@@ -130,5 +130,5 @@ void ThyraVectorSpaceWrapper::scalarProdsImpl( const Thyra::MultiVectorBase<doub
     NULL_USE( scalarProds );
     AMP_ERROR( "Not finished" );
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

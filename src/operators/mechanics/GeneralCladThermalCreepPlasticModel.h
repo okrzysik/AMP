@@ -277,8 +277,8 @@ protected:
 
     double d_Delta_Time; /**< The time increment (to be used in clad creep). */
 
-    double
-        d_constitutiveMatrix[6][6]; /**< Stores the 6x6 constitutive matrix for each gauss point. */
+    double d_constitutiveMatrix[6]
+                               [6]; /**< Stores the 6x6 constitutive matrix for each gauss point. */
 
     unsigned int d_gaussPtCnt; /**< A counter that keeps track of the number of the gauss points. */
 
@@ -388,7 +388,7 @@ protected:
 
 private:
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

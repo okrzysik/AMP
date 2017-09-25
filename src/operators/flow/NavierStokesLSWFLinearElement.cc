@@ -290,5 +290,5 @@ void NavierStokesLSWFLinearElement::apply()
 
     } // end for qp
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

@@ -112,6 +112,6 @@ private:
     // Function to update cached data
     void updateCache();
 };
-}
-}
+} // namespace Mesh
+} // namespace AMP
 #endif

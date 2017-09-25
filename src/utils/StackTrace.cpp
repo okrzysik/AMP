@@ -187,13 +187,13 @@ BOOL GetModuleListTH32( HANDLE hProcess, DWORD pid );
 BOOL GetModuleListPSAPI( HANDLE hProcess );
 DWORD LoadModule( HANDLE hProcess, LPCSTR img, LPCSTR mod, DWORD64 baseAddr, DWORD size );
 void LoadModules();
-};
+}; // namespace StackTrace
 #endif
 
 
 /****************************************************************************
-*  stack_info                                                               *
-****************************************************************************/
+ *  stack_info                                                               *
+ ****************************************************************************/
 std::string StackTrace::stack_info::print() const
 {
     char tmp[32];
@@ -248,9 +248,9 @@ std::vector<std::string> StackTrace::multi_stack_info::print( const std::string 
 
 
 /****************************************************************************
-*  Function to find an entry                                                *
-****************************************************************************/
-template <class TYPE>
+ *  Function to find an entry                                                *
+ ****************************************************************************/
+template<class TYPE>
 inline size_t findfirst( const std::vector<TYPE> &X, TYPE Y )
 {
     if ( X.empty() )
@@ -273,11 +273,11 @@ inline size_t findfirst( const std::vector<TYPE> &X, TYPE Y )
 
 
 /****************************************************************************
-* Function to get symbols for the executable from nm (if availible)         *
-* Note: this function maintains an internal cached copy to prevent          *
-*    exccessive calls to nm.  This function also uses a lock to ensure      *
-*    thread safety.                                                         *
-****************************************************************************/
+ * Function to get symbols for the executable from nm (if availible)         *
+ * Note: this function maintains an internal cached copy to prevent          *
+ *    exccessive calls to nm.  This function also uses a lock to ensure      *
+ *    thread safety.                                                         *
+ ****************************************************************************/
 std::mutex getSymbols_mutex;
 struct global_symbols_struct {
     std::vector<void *> address;
@@ -355,7 +355,7 @@ static const global_symbols_struct &getSymbols2()
                     c++;
                     char *d = strchr( c, '\n' );
                     if ( d )
-                        d[0]   = 0;
+                        d[0] = 0;
                     size_t add = strtoul( a, nullptr, 16 );
                     data.address.push_back( reinterpret_cast<void *>( add ) );
                     data.type.push_back( b[0] );
@@ -386,8 +386,8 @@ int StackTrace::getSymbols( std::vector<void *> &address,
 
 
 /****************************************************************************
-*  Function to get call stack info                                          *
-****************************************************************************/
+ *  Function to get call stack info                                          *
+ ****************************************************************************/
 #ifdef USE_MAC
 static void *loadAddress( const std::string &object )
 {
@@ -455,8 +455,7 @@ typedef unsigned long uint_p;
 static inline std::string generateCmd( const std::string &s1,
                                        const std::string &s2,
                                        const std::string &s3,
-                                       std::vector<void *>
-                                           addresses,
+                                       std::vector<void *> addresses,
                                        const std::string &s4 )
 {
     std::string cmd = s1 + s2 + s3;
@@ -888,8 +887,8 @@ std::vector<std::thread::native_handle_type> StackTrace::activeThreads( )
 
 
 /****************************************************************************
-*  Function to get the current call stack                                   *
-****************************************************************************/
+ *  Function to get the current call stack                                   *
+ ****************************************************************************/
 std::vector<StackTrace::stack_info> StackTrace::getCallStack()
 {
     auto trace = StackTrace::backtrace();
@@ -978,8 +977,8 @@ std::vector<StackTrace::multi_stack_info> StackTrace::getAllCallStacks()
 
 
 /****************************************************************************
-*  Function to get system search paths                                      *
-****************************************************************************/
+ *  Function to get system search paths                                      *
+ ****************************************************************************/
 std::string StackTrace::getSymPaths()
 {
     std::string paths;
@@ -1036,8 +1035,8 @@ std::string StackTrace::getSymPaths()
 
 
 /****************************************************************************
-*  Load modules for windows                                                 *
-****************************************************************************/
+ *  Load modules for windows                                                 *
+ ****************************************************************************/
 #ifdef USE_WINDOWS
 BOOL StackTrace::GetModuleListTH32( HANDLE hProcess, DWORD pid )
 {
@@ -1207,16 +1206,16 @@ void StackTrace::LoadModules()
 
 
 /****************************************************************************
-*  Get the signal name                                                      *
-****************************************************************************/
+ *  Get the signal name                                                      *
+ ****************************************************************************/
 std::string StackTrace::signalName( int sig ) { return std::string( strsignal( sig ) ); }
 std::vector<int> StackTrace::allSignalsToCatch()
 {
     std::set<int> signals;
     for ( int i = 1; i < 32; i++ )
-    signals.insert( i );
+        signals.insert( i );
     for ( int i = SIGRTMIN; i <= SIGRTMAX; i++ )
-    signals.insert( i );
+        signals.insert( i );
     signals.erase( SIGKILL );
     signals.erase( SIGSTOP );
     return std::vector<int>( signals.begin(), signals.end() );
@@ -1232,8 +1231,8 @@ std::vector<int> StackTrace::defaultSignalsToCatch()
 
 
 /****************************************************************************
-*  Set the signal handlers                                                  *
-****************************************************************************/
+ *  Set the signal handlers                                                  *
+ ****************************************************************************/
 static std::function<void( std::string, StackTrace::terminateType )> abort_fun;
 static std::string rethrow()
 {

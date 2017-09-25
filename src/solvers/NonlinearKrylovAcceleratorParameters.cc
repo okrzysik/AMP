@@ -13,5 +13,5 @@ NonlinearKrylovAcceleratorParameters::NonlinearKrylovAcceleratorParameters(
 }
 
 NonlinearKrylovAcceleratorParameters::~NonlinearKrylovAcceleratorParameters() {}
-}
-}
+} // namespace Solver
+} // namespace AMP

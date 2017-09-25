@@ -13,8 +13,8 @@ namespace Mesh {
 
 
 /************************************************************
-* Function to return the coordinates of a cube mesh         *
-************************************************************/
+ * Function to return the coordinates of a cube mesh         *
+ ************************************************************/
 void StructuredMeshHelper::getXYZCoordinates( AMP::Mesh::Mesh::shared_ptr mesh,
                                               std::vector<double> &x_out,
                                               std::vector<double> &y_out,
@@ -65,8 +65,8 @@ void StructuredMeshHelper::getXYZCoordinates( AMP::Mesh::Mesh::shared_ptr mesh,
 
 
 /************************************************************
-* Functions to iterators over particular sets of faces      *
-************************************************************/
+ * Functions to iterators over particular sets of faces      *
+ ************************************************************/
 AMP::Mesh::MeshIterator StructuredMeshHelper::getXYFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh,
                                                                  int gcw )
 {
@@ -211,5 +211,5 @@ AMP::Mesh::MeshIterator StructuredMeshHelper::getGapFaceIterator( AMP::Mesh::Mes
     AMP_ERROR( "Not finished" );
     return AMP::Mesh::MeshIterator();
 }
-}
-}
+} // namespace Mesh
+} // namespace AMP

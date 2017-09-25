@@ -3,7 +3,6 @@
 #include "utils/Database.h"
 #include "utils/InputDatabase.h"
 #include "utils/InputManager.h"
-#include "utils/InputManager.h"
 #include "utils/PIO.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"

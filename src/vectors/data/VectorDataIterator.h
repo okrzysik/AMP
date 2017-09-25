@@ -13,19 +13,19 @@ class VectorData;
 
 
 /**
-  * \class VectorDataIterator
-  * \brief  Iterator for local data in a vector
-  *
-  * \details Even though a vector may have non-contiguous storage of data, the
-  * interface presents a contiguous block of memory to the user:  each element
-  * in the vector is given an offset from 0 and the vector is packed.
-  * This allows for a random access iterator on the data.
-  *
-  * Vector::begin() and Vector::end() return this class.  This class
-  * uses the DataBlock interface in vectors to access data.  As a result,
-  * for some non-AMP managed vectors, this class may not be the most efficient.
-  */
-template <class TYPE = double>
+ * \class VectorDataIterator
+ * \brief  Iterator for local data in a vector
+ *
+ * \details Even though a vector may have non-contiguous storage of data, the
+ * interface presents a contiguous block of memory to the user:  each element
+ * in the vector is given an offset from 0 and the vector is packed.
+ * This allows for a random access iterator on the data.
+ *
+ * Vector::begin() and Vector::end() return this class.  This class
+ * uses the DataBlock interface in vectors to access data.  As a result,
+ * for some non-AMP managed vectors, this class may not be the most efficient.
+ */
+template<class TYPE = double>
 class VectorDataIterator final
 {
 private:
@@ -61,9 +61,9 @@ public:
     ~VectorDataIterator();
 
     /** \brief Copy constructor
-      * \param[in] rhs iterator to copy
-      * \details  Copies an iterator
-      */
+     * \param[in] rhs iterator to copy
+     * \details  Copies an iterator
+     */
     VectorDataIterator( const VectorDataIterator &rhs );
 
     /*!
@@ -86,12 +86,12 @@ public:
 
 
     /** \brief Constructor from a vector
-      * \details This will construct an iterator over the local data in the vector.
-      *   Vector::begin() and Vector::end() call this function to instantiate a new iterator.
-      *   This method should not be invoked outside of this use.
-      * \param[in] p  A (non-reference counted) pointer to the vector being iterated over
-      * \param[in] position  The local position in the vector.
-      */
+     * \details This will construct an iterator over the local data in the vector.
+     *   Vector::begin() and Vector::end() call this function to instantiate a new iterator.
+     *   This method should not be invoked outside of this use.
+     * \param[in] p  A (non-reference counted) pointer to the vector being iterated over
+     * \param[in] position  The local position in the vector.
+     */
     explicit VectorDataIterator( VectorData *p, size_t position );
 
 
@@ -112,28 +112,28 @@ public:
 
 
     /** \brief Dereference the iterator
-      * \return Value pointed to by the iterator
-      * \warning Setting values in the vector with the iterator requires firing of dataChanged
+     * \return Value pointed to by the iterator
+     * \warning Setting values in the vector with the iterator requires firing of dataChanged
      * event.
-      * \see PetscVector
-      * \see DataChangeListener
-      * \details  This returns a reference to the data pointed to by the iterator
-      */
+     * \see PetscVector
+     * \see DataChangeListener
+     * \details  This returns a reference to the data pointed to by the iterator
+     */
     inline TYPE &operator*() { return d_data[d_CurBlock][d_CurOffset]; }
 
 
     /** \brief Test for equality
-      * \return True iff iterators point to the same place on the same vector
-      * \details Returns true iff rhs points to the exact same offset of the same vector.
-      * It is possible for two iterators to point to the same spot in memory and return false.  This
-      * is due to the abstraction of a contiguous block presented by Vector.
-      */
+     * \return True iff iterators point to the same place on the same vector
+     * \details Returns true iff rhs points to the exact same offset of the same vector.
+     * It is possible for two iterators to point to the same spot in memory and return false.  This
+     * is due to the abstraction of a contiguous block presented by Vector.
+     */
     inline bool operator==( const VectorDataIterator &rhs ) const;
 
     /** \brief Test for inequality
-      * \returns True iff !(*this == rhs)
-      * \details Returns !(*this == rhs)
-      */
+     * \returns True iff !(*this == rhs)
+     * \details Returns !(*this == rhs)
+     */
     inline bool operator!=( const VectorDataIterator &rhs ) const;
 
     //! Less than operator
@@ -149,23 +149,23 @@ public:
     inline bool operator>=( const VectorDataIterator &rhs ) const;
 
     /** \brief Increment the iterator
-      * \returns a reference to this iterator
-      */
+     * \returns a reference to this iterator
+     */
     VectorDataIterator &operator++();
 
     /** \brief Increment the iterator
-      * \returns a copy of this iterator
-      */
+     * \returns a copy of this iterator
+     */
     VectorDataIterator operator++( int );
 
     /** \brief Decrement the iterator
-      * \returns a reference to this iterator
-      */
+     * \returns a reference to this iterator
+     */
     VectorDataIterator &operator--();
 
     /** \brief Decrement the iterator
-      * \returns a copy of this iterator
-      */
+     * \returns a copy of this iterator
+     */
     VectorDataIterator operator--( int );
 
     /** \brief Add a constant to this iterator
@@ -254,8 +254,8 @@ public:
 };
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 
 #include "vectors/data/VectorDataIterator.inline.h"

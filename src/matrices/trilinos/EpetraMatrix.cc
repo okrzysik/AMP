@@ -77,5 +77,5 @@ void EpetraMatrix::fillComplete()
         d_epetraMatrix->FillComplete();
     }
 }
-}
-} // end namespace
+} // namespace LinearAlgebra
+} // namespace AMP

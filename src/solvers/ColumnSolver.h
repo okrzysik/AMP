@@ -45,8 +45,7 @@ public:
      @param [out] u shared pointer to computed approximate solution
      */
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u ) override;
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**
      * sets the initial guess
@@ -92,7 +91,7 @@ protected:
 
 private:
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

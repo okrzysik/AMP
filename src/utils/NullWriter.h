@@ -48,7 +48,7 @@ public:
     virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr ) {}
 #endif
 };
-}
-}
+} // namespace Utilities
+} // namespace AMP
 
 #endif

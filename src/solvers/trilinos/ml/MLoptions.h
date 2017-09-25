@@ -44,7 +44,7 @@ public:
     int d_nullSpaceDimension;
     bool d_nullSpaceAddDefaultVectors;
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

@@ -65,6 +65,6 @@ private:
     void printSNESStatus( SNES snes, int iteration, double L2norm );
 #endif
 };
-}
+} // namespace AMP
 
 #endif

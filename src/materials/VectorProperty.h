@@ -6,7 +6,7 @@
 namespace AMP {
 namespace Materials {
 
-template <class Number>
+template<class Number>
 class VectorProperty : public Property<Number>
 {
 public:
@@ -69,7 +69,7 @@ protected:
 
 private:
     /* Loops through input vectors, calling the child eval function, returning vector results */
-    template <class INPUT_VTYPE, class RETURN_VTYPE>
+    template<class INPUT_VTYPE, class RETURN_VTYPE>
     void evalvActual( std::vector<AMP::shared_ptr<RETURN_VTYPE>> &r,
                       const std::map<std::string, AMP::shared_ptr<INPUT_VTYPE>> &args );
 
@@ -158,12 +158,12 @@ public:
     }
 };
 
-template <>
+template<>
 void VectorProperty<double>::evalv(
     std::vector<AMP::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
     const std::map<std::string, AMP::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
 
-template <>
+template<>
 void VectorProperty<double>::evalv( std::vector<AMP::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
                                     const AMP::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 

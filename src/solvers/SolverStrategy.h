@@ -56,14 +56,13 @@ public:
      * @param[out] u    shared pointer to approximate computed solution
      */
     virtual void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                        AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                            u ) = 0;
+                        AMP::shared_ptr<AMP::LinearAlgebra::Vector> u ) = 0;
 
     /**
      * Initialize the solution vector and potentially create internal vectors needed for solution
      * @param[in] parameters    The parameters object contains a database object.
      *                          Currently there are no required fields for the database object.
-    */
+     */
     virtual void initialize( AMP::shared_ptr<SolverStrategyParameters> const parameters );
 
     /**
@@ -210,7 +209,7 @@ protected:
 
 private:
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

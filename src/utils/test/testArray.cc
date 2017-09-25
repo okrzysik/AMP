@@ -60,6 +60,7 @@ public:
         N_alloc--;
     }
     static int get_N_alloc() { return N_alloc; }
+
 private:
     double *data;
     static int N_alloc;
@@ -69,19 +70,19 @@ int TestAllocateClass::N_alloc = 0;
 
 
 // Function to test linear interpolation
-template <class TYPE>
+template<class TYPE>
 TYPE fun( double x, double y, double z );
-template <>
+template<>
 inline double fun<double>( double x, double y, double z )
 {
     return sin( x ) * cos( y ) * exp( -z );
 }
-template <>
+template<>
 inline int fun<int>( double x, double y, double z )
 {
     return static_cast<int>( 100000 * fun<double>( x, y, z ) );
 }
-template <class TYPE>
+template<class TYPE>
 void test_interp( UnitTest &ut, const std::vector<size_t> &N )
 {
     Array<TYPE> A( N );
@@ -98,7 +99,7 @@ void test_interp( UnitTest &ut, const std::vector<size_t> &N )
         for ( size_t j = 0; j < A.size( 1 ); j++ ) {
             double y = j * 1.0 / std::max<double>( N2[1] - 1, 1 );
             for ( size_t k = 0; k < A.size( 2 ); k++ ) {
-                double z = k * 1.0 / std::max<double>( N2[2] - 1, 1 );
+                double z     = k * 1.0 / std::max<double>( N2[2] - 1, 1 );
                 A( i, j, k ) = fun<TYPE>( x, y, z );
             }
         }
@@ -173,7 +174,7 @@ int main( int argc, char *argv[] )
         Array<double> M3( M1 );
         Array<double> M4 = M2;
         Array<double> M5 = M1;
-        M5( 0, 0 ) = -1;
+        M5( 0, 0 )       = -1;
         if ( M1 == M2 && M1 == M3 && M1 == M4 && M1 != M5 )
             ut.passes( "Array constructors" );
         else

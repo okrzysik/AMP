@@ -1,5 +1,5 @@
-#include "utils/AMPManager.h"
 #include "operators/mechanics/UpdatedLagrangianUtils.h"
+#include "utils/AMPManager.h"
 #include "utils/UnitTest.h"
 #include "utils/Utilities.h"
 

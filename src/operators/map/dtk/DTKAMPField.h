@@ -65,7 +65,7 @@ private:
     // The support ids over which the field is constructed.
     Teuchos::Array<DataTransferKit::SupportId> d_support_ids;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

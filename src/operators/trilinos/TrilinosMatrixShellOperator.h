@@ -67,7 +67,7 @@ private:
                         std::vector<size_t> &cols,
                         std::vector<double> &values );
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

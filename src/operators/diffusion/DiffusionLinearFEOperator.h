@@ -56,7 +56,7 @@ protected:
 
     AMP::shared_ptr<DiffusionTransportModel> d_transportModel;
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

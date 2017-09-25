@@ -15,9 +15,9 @@ extern template class VectorOperationsDefault<float>;  // Suppresses implicit in
 
 
 /****************************************************************
-* Constructors                                                  *
-****************************************************************/
-template <typename TYPE>
+ * Constructors                                                  *
+ ****************************************************************/
+template<typename TYPE>
 AMP::shared_ptr<VectorOperations> VectorOperationsDefault<TYPE>::cloneOperations() const
 {
     auto ptr = AMP::make_shared<VectorOperationsDefault<TYPE>>();
@@ -26,9 +26,9 @@ AMP::shared_ptr<VectorOperations> VectorOperationsDefault<TYPE>::cloneOperations
 
 
 /****************************************************************
-* min, max, norms, etc.                                         *
-****************************************************************/
-template <typename TYPE>
+ * min, max, norms, etc.                                         *
+ ****************************************************************/
+template<typename TYPE>
 bool VectorOperationsDefault<TYPE>::localEquals( const VectorOperations &rhs, double tol ) const
 {
     const auto &x = *d_VectorData;
@@ -49,7 +49,7 @@ bool VectorOperationsDefault<TYPE>::localEquals( const VectorOperations &rhs, do
     }
     return equal;
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localMin( void ) const
 {
     size_t N_blocks = d_VectorData->numberOfDataBlocks();
@@ -62,7 +62,7 @@ double VectorOperationsDefault<TYPE>::localMin( void ) const
     }
     return static_cast<double>( ans );
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localMax( void ) const
 {
     size_t N_blocks = d_VectorData->numberOfDataBlocks();
@@ -75,7 +75,7 @@ double VectorOperationsDefault<TYPE>::localMax( void ) const
     }
     return static_cast<double>( ans );
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localL1Norm( void ) const
 {
     size_t N_blocks = d_VectorData->numberOfDataBlocks();
@@ -88,7 +88,7 @@ double VectorOperationsDefault<TYPE>::localL1Norm( void ) const
     }
     return ans;
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localL2Norm( void ) const
 {
     size_t N_blocks = d_VectorData->numberOfDataBlocks();
@@ -103,7 +103,7 @@ double VectorOperationsDefault<TYPE>::localL2Norm( void ) const
     }
     return sqrt( ans );
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localMaxNorm( void ) const
 {
     size_t N_blocks = d_VectorData->numberOfDataBlocks();
@@ -116,7 +116,7 @@ double VectorOperationsDefault<TYPE>::localMaxNorm( void ) const
     }
     return static_cast<double>( ans );
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localDot( const VectorOperations &x ) const
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -133,7 +133,7 @@ double VectorOperationsDefault<TYPE>::localDot( const VectorOperations &x ) cons
     }
     return ans;
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localMinQuotient( const VectorOperations &x ) const
 {
     auto curx  = x.getVectorData()->constBegin<TYPE>();
@@ -151,7 +151,7 @@ double VectorOperationsDefault<TYPE>::localMinQuotient( const VectorOperations &
     }
     return ans;
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localWrmsNorm( const VectorOperations &x ) const
 {
     auto curx  = x.getVectorData()->constBegin<TYPE>();
@@ -169,7 +169,7 @@ double VectorOperationsDefault<TYPE>::localWrmsNorm( const VectorOperations &x )
     }
     return sqrt( ans / N );
 }
-template <typename TYPE>
+template<typename TYPE>
 double VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorOperations &x,
                                                          const VectorOperations &mask ) const
 {
@@ -195,9 +195,9 @@ double VectorOperationsDefault<TYPE>::localWrmsNormMask( const VectorOperations 
 
 
 /****************************************************************
-* Functions to initalize the data                               *
-****************************************************************/
-template <typename TYPE>
+ * Functions to initalize the data                               *
+ ****************************************************************/
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::zero()
 {
     auto curMe = d_VectorData->begin<TYPE>();
@@ -209,12 +209,12 @@ void VectorOperationsDefault<TYPE>::zero()
     if ( hasGhosts() ) {
         auto &ghosts = getGhosts();
         for ( size_t i = 0; i != ghosts.size(); i++ )
-            ghosts[i]  = 0;
+            ghosts[i] = 0;
     }
     // Override the status state since we set the ghost values
     *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::setToScalar( double alpha )
 {
     auto curMe = d_VectorData->begin<TYPE>();
@@ -226,12 +226,12 @@ void VectorOperationsDefault<TYPE>::setToScalar( double alpha )
     if ( hasGhosts() ) {
         auto &ghosts = getGhosts();
         for ( size_t i = 0; i != ghosts.size(); i++ )
-            ghosts[i]  = alpha;
+            ghosts[i] = alpha;
     }
     // Override the status state since we set the ghost values
     *( d_VectorData->getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::setRandomValues()
 {
     RandomVariable<double> r( 0, 1, Vector::getDefaultRNG() );
@@ -245,7 +245,7 @@ void VectorOperationsDefault<TYPE>::setRandomValues()
     // Call makeConsistent to leave the vector in a consistent state
     d_VectorData->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::setRandomValues( RNG::shared_ptr rng )
 {
     RandomVariable<double> r( 0, 1, rng );
@@ -261,9 +261,9 @@ void VectorOperationsDefault<TYPE>::setRandomValues( RNG::shared_ptr rng )
 
 
 /****************************************************************
-* Basic linear algebra                                          *
-****************************************************************/
-template <typename TYPE>
+ * Basic linear algebra                                          *
+ ****************************************************************/
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::copy( const VectorOperations &x )
 {
     auto x_data = x.getVectorData();
@@ -272,7 +272,7 @@ void VectorOperationsDefault<TYPE>::copy( const VectorOperations &x )
     std::copy( x_data->begin<TYPE>(), x_data->end<TYPE>(), y_data->template begin<TYPE>() );
     y_data->copyGhostValues( *x_data );
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::scale( double alpha )
 {
     auto curMe = d_VectorData->begin<TYPE>();
@@ -282,7 +282,7 @@ void VectorOperationsDefault<TYPE>::scale( double alpha )
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::scale( double alpha, const VectorOperations &x )
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -295,7 +295,7 @@ void VectorOperationsDefault<TYPE>::scale( double alpha, const VectorOperations 
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::add( const VectorOperations &x, const VectorOperations &y )
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -311,7 +311,7 @@ void VectorOperationsDefault<TYPE>::add( const VectorOperations &x, const Vector
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::subtract( const VectorOperations &x, const VectorOperations &y )
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -327,7 +327,7 @@ void VectorOperationsDefault<TYPE>::subtract( const VectorOperations &x, const V
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::multiply( const VectorOperations &x, const VectorOperations &y )
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -343,7 +343,7 @@ void VectorOperationsDefault<TYPE>::multiply( const VectorOperations &x, const V
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::divide( const VectorOperations &x, const VectorOperations &y )
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -359,7 +359,7 @@ void VectorOperationsDefault<TYPE>::divide( const VectorOperations &x, const Vec
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::reciprocal( const VectorOperations &x )
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -372,7 +372,7 @@ void VectorOperationsDefault<TYPE>::reciprocal( const VectorOperations &x )
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::linearSum( double alpha_in,
                                                const VectorOperations &x,
                                                double beta_in,
@@ -393,7 +393,7 @@ void VectorOperationsDefault<TYPE>::linearSum( double alpha_in,
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::axpy( double alpha_in,
                                           const VectorOperations &x,
                                           const VectorOperations &y )
@@ -412,7 +412,7 @@ void VectorOperationsDefault<TYPE>::axpy( double alpha_in,
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::axpby( double alpha_in,
                                            double beta_in,
                                            const VectorOperations &x )
@@ -429,7 +429,7 @@ void VectorOperationsDefault<TYPE>::axpby( double alpha_in,
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::abs( const VectorOperations &x )
 {
     AMP_ASSERT( d_VectorData->getLocalSize() == x.getVectorData()->getLocalSize() );
@@ -442,7 +442,7 @@ void VectorOperationsDefault<TYPE>::abs( const VectorOperations &x )
         ++curMe;
     }
 }
-template <typename TYPE>
+template<typename TYPE>
 void VectorOperationsDefault<TYPE>::addScalar( const VectorOperations &x, double alpha_in )
 {
     const TYPE alpha = static_cast<TYPE>( alpha_in );
@@ -458,7 +458,7 @@ void VectorOperationsDefault<TYPE>::addScalar( const VectorOperations &x, double
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #endif

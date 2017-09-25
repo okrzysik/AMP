@@ -195,10 +195,10 @@ int main( int argc, char **argv )
         double liquidEnthalpyKnown[n] = { 762.683e3,
                                           1610.15e3,
                                           289.229e3 }; // saturated liquid enthalpy
-        double volumeKnown[n]       = { 0.00105925, 0.00119519, 0.00100259 }; // specific volume
-        double conductivityKnown[n] = { 0.684097, 0.503998, 0.610291 }; // thermal conductivity
-        double viscosityKnown[n]    = { 0.000218794, 7.72970e-5, 0.000853838 }; // dynamic viscosity
-        double enthalpyKnown[n]     = { 500.0e3, 1.0e6, 100.0e3 };              // enthalpy
+        double volumeKnown[n]         = { 0.00105925, 0.00119519, 0.00100259 }; // specific volume
+        double conductivityKnown[n]   = { 0.684097, 0.503998, 0.610291 };    // thermal conductivity
+        double viscosityKnown[n] = { 0.000218794, 7.72970e-5, 0.000853838 }; // dynamic viscosity
+        double enthalpyKnown[n]  = { 500.0e3, 1.0e6, 100.0e3 };              // enthalpy
 
         // test property functions against known values
         for ( size_t i = 0; i < n; i++ ) {

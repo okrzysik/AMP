@@ -147,5 +147,5 @@ inline double NativePetscMatrix::L1Norm() const
     MatNorm( d_Mat, NORM_1, &retVal );
     return retVal;
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

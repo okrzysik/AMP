@@ -31,7 +31,7 @@ private:
     AMP::shared_ptr<AMP::Materials::TensorProperty<double>>
         d_tensorProperty; /// tensor property pointer
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

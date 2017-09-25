@@ -22,7 +22,7 @@ namespace LinearAlgebra {
 
 
 // Class to create a matrix from a simpleDOFManager
-template <int NUM_DOF_ROW, int NUM_DOF_COL, class GENERATOR, int TYPE>
+template<int NUM_DOF_ROW, int NUM_DOF_COL, class GENERATOR, int TYPE>
 class DOFMatrixTestFactory
 {
 public:
@@ -141,5 +141,5 @@ template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<3,3,
 template<> AMP::Discretization::DOFManager::shared_ptr DOFMatrixTestFactory<3,3,ExodusReaderGenerator<>,2>::DOFs = AMP::shared_ptr<AMP::Discretization::DOFManager>();
 #endif
 // clang-format on
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

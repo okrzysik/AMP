@@ -24,8 +24,8 @@ AMP_MPI initializeLibMesh::d_comm        = AMP_MPI( AMP_COMM_NULL );
 
 
 /************************************************************
-* Class to wrap libmesh MPI types to properly free datatype *
-************************************************************/
+ * Class to wrap libmesh MPI types to properly free datatype *
+ ************************************************************/
 /*template<class TYPE>
 class libMeshWrapperType: public libMesh::Parallel::StandardType<TYPE>
 {
@@ -37,8 +37,8 @@ AMP::shared_ptr<libMeshWrapperType<Hilbert::HilbertIndices> > type_hilbert;*/
 
 
 /************************************************************
-* Function to alter the command line arguments for libmesh  *
-************************************************************/
+ * Function to alter the command line arguments for libmesh  *
+ ************************************************************/
 static int add_libmesh_cmdline( const int argc, const char **argv, char ***argv_new )
 {
     const int N_add = 0; // Number of additional arguments we want to add
@@ -56,8 +56,8 @@ static int add_libmesh_cmdline( const int argc, const char **argv, char ***argv_
 
 
 /************************************************************
-* Constructor initilize libmesh on the given comm           *
-************************************************************/
+ * Constructor initilize libmesh on the given comm           *
+ ************************************************************/
 initializeLibMesh::initializeLibMesh( AMP_MPI comm )
 {
     if ( N_copies > 0 ) {
@@ -108,8 +108,8 @@ initializeLibMesh::initializeLibMesh( AMP_MPI comm )
 
 
 /************************************************************
-* Deconstructor that will finalize libmesh                  *
-************************************************************/
+ * Deconstructor that will finalize libmesh                  *
+ ************************************************************/
 initializeLibMesh::~initializeLibMesh()
 {
     if ( N_copies <= 0 )
@@ -134,8 +134,8 @@ initializeLibMesh::~initializeLibMesh()
 
 
 /************************************************************
-* Function check if initiallize can be called successfully  *
-************************************************************/
+ * Function check if initiallize can be called successfully  *
+ ************************************************************/
 bool initializeLibMesh::canBeInitialized( AMP_MPI comm )
 {
     if ( N_copies == 0 )
@@ -149,10 +149,10 @@ bool initializeLibMesh::canBeInitialized( AMP_MPI comm )
 
 
 /************************************************************
-* Function to check if libmesh has been initialized         *
-************************************************************/
+ * Function to check if libmesh has been initialized         *
+ ************************************************************/
 bool initializeLibMesh::isInitialized() { return N_copies > 0; }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

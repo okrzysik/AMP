@@ -51,7 +51,7 @@ void NativePetscVector::putRawData( const double *in )
     AMP_ASSERT( b - a == (int) getLocalSize() );
     std::vector<int> offs( b - a );
     for ( size_t j = 0; j != offs.size(); j++ )
-        offs[j]    = a + j;
+        offs[j] = a + j;
     VecSetValues( d_petscVec, offs.size(), offs.data(), in, INSERT_VALUES );
 }
 
@@ -60,5 +60,5 @@ void NativePetscVector::copyOutRawData( double *out ) const
 {
     std::copy( getRawDataBlock<double>( 0 ), getRawDataBlock<double>( 0 ) + getLocalSize(), out );
 }
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP

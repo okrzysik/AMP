@@ -17,9 +17,9 @@ namespace Solver {
 
 
 /**
-  * The AndersonStatusTest implements a AMP-specific stopping criteria
-  * for use with the NOX Anderson acceleration solver.
-  */
+ * The AndersonStatusTest implements a AMP-specific stopping criteria
+ * for use with the NOX Anderson acceleration solver.
+ */
 class AndersonStatusTest : public NOX::StatusTest::Generic
 {
 public:
@@ -42,21 +42,21 @@ public:
     virtual ~AndersonStatusTest();
 
     /**
-    * Test the stopping criterion
-    * @param solver Instance of solver for which convergence is being evaluated.
-    * @param checkType Type of convergence check
-    */
+     * Test the stopping criterion
+     * @param solver Instance of solver for which convergence is being evaluated.
+     * @param checkType Type of convergence check
+     */
     NOX::StatusTest::StatusType checkStatus( const NOX::Solver::Generic &solver,
                                              NOX::StatusTest::CheckType checkType );
 
     /**
-    * Return the result of the most recent checkStatus call.
-    */
+     * Return the result of the most recent checkStatus call.
+     */
     NOX::StatusTest::StatusType getStatus() const;
 
     /**
-    * Output formatted description of stopping test to output stream.
-    */
+     * Output formatted description of stopping test to output stream.
+     */
     std::ostream &print( std::ostream &stream, int indent = 0 ) const;
 
 protected:
@@ -68,7 +68,7 @@ protected:
     std::vector<double> d_tolerances;
     std::vector<double> d_relativeResiduals;
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

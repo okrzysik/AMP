@@ -157,7 +157,7 @@ enum yytokentype {
 extern int yylex();
 void yyerror( const char *const error ) { Parser::getParser()->error( error ); }
 
-// Do not change the numbering of keys without checking promotion logic
+    // Do not change the numbering of keys without checking promotion logic
 
 #define KEY_COMPLEX ( 0 )
 #define KEY_DOUBLE ( 1 )
@@ -217,7 +217,7 @@ static KeyData *lookup_variable( const string &, const int, const bool );
 #if !defined YYSTYPE && !defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
 
-    {
+{
     char u_char;
     double u_double;
     int u_integer;
@@ -413,11 +413,11 @@ union yyalloc {
 #if defined __GNUC__ && 1 < __GNUC__
 #define YYCOPY( To, From, Count ) __builtin_memcpy( To, From, ( Count ) * sizeof( *( From ) ) )
 #else
-#define YYCOPY( To, From, Count )                     \
-    do {                                              \
-        YYSIZE_T yyi;                                 \
-        for ( yyi       = 0; yyi < ( Count ); yyi++ ) \
-            ( To )[yyi] = ( From )[yyi];              \
+#define YYCOPY( To, From, Count )               \
+    do {                                        \
+        YYSIZE_T yyi;                           \
+        for ( yyi = 0; yyi < ( Count ); yyi++ ) \
+            ( To )[yyi] = ( From )[yyi];        \
     } while ( YYID( 0 ) )
 #endif
 #endif
@@ -783,9 +783,9 @@ YYSTYPE const *const yyvaluep;
 }
 
 
-/*--------------------------------.
-| Print this symbol on YYOUTPUT.  |
-`--------------------------------*/
+    /*--------------------------------.
+    | Print this symbol on YYOUTPUT.  |
+    `--------------------------------*/
 
 #if ( defined __STDC__ || defined __C99__FUNC__ || defined __cplusplus || defined _MSC_VER )
 static void yy_symbol_print( FILE *yyoutput, int yytype, YYSTYPE const *const yyvaluep )
@@ -804,10 +804,10 @@ YYSTYPE const *const yyvaluep;
     YYFPRINTF( yyoutput, ")" );
 }
 
-/*------------------------------------------------------------------.
-| yy_stack_print -- Print the state stack from its BOTTOM up to its |
-| TOP (included).                                                   |
-`------------------------------------------------------------------*/
+    /*------------------------------------------------------------------.
+    | yy_stack_print -- Print the state stack from its BOTTOM up to its |
+    | TOP (included).                                                   |
+    `------------------------------------------------------------------*/
 
 #if ( defined __STDC__ || defined __C99__FUNC__ || defined __cplusplus || defined _MSC_VER )
 static void yy_stack_print( yytype_int16 *bottom, yytype_int16 *top )
@@ -829,9 +829,9 @@ yytype_int16 *top;
     } while ( YYID( 0 ) )
 
 
-/*------------------------------------------------.
-| Report that the YYRULE is going to be reduced.  |
-`------------------------------------------------*/
+    /*------------------------------------------------.
+    | Report that the YYRULE is going to be reduced.  |
+    `------------------------------------------------*/
 
 #if ( defined __STDC__ || defined __C99__FUNC__ || defined __cplusplus || defined _MSC_VER )
 static void yy_reduce_print( YYSTYPE *yyvsp, int yyrule )
@@ -1109,7 +1109,7 @@ YYSTYPE *yyvaluep;
 }
 
 
-/* Prevent warnings from -Wmissing-prototypes.  */
+    /* Prevent warnings from -Wmissing-prototypes.  */
 
 #ifdef YYPARSE_PARAM
 #if defined __STDC__ || defined __cplusplus
@@ -1958,7 +1958,7 @@ yyreduce:
     } break;
 
 
-    /* Line 1267 of yacc.c.  */
+        /* Line 1267 of yacc.c.  */
 
     default:
         break;
@@ -2327,10 +2327,10 @@ static KeyData *binary_op( KeyData *a, KeyData *b, const int op )
                 break;
             case T_EXP:
                 /*
-         * SGS this is broken for insure++ and gcc 3.3.2
-         * a->d_complex = pow(a->d_complex, b->d_complex);
-         * replaced with the defn from the header file.
-         */
+                 * SGS this is broken for insure++ and gcc 3.3.2
+                 * a->d_complex = pow(a->d_complex, b->d_complex);
+                 * replaced with the defn from the header file.
+                 */
                 a->d_complex = exp( a->d_complex * log( b->d_complex ) );
                 break;
             case T_MINUS:

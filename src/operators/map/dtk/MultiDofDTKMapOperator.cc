@@ -50,8 +50,8 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
 
     if ( boundaryMesh1_vol ) {
         d_SourceVectorMap12 =
-            commSubsetSourceVec->constSelect( AMP::LinearAlgebra::VS_Mesh( boundaryMesh1_vol ),
-                                              "var" )
+            commSubsetSourceVec
+                ->constSelect( AMP::LinearAlgebra::VS_Mesh( boundaryMesh1_vol ), "var" )
                 ->constSelect( AMP::LinearAlgebra::VS_ByVariableName( variable1 ), "var" )
                 ->constSelect( AMP::LinearAlgebra::VS_Stride( strideOffset1, strideLength1 ),
                                "var" );
@@ -101,8 +101,8 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( const AMP::shared_ptr<OperatorPa
     if ( boundaryMesh2_vol ) {
         // Build map 2 -> 1
         d_SourceVectorMap21 =
-            commSubsetSourceVec->constSelect( AMP::LinearAlgebra::VS_Mesh( boundaryMesh2_vol ),
-                                              "var" )
+            commSubsetSourceVec
+                ->constSelect( AMP::LinearAlgebra::VS_Mesh( boundaryMesh2_vol ), "var" )
                 ->constSelect( AMP::LinearAlgebra::VS_ByVariableName( variable2 ), "var" )
                 ->constSelect( AMP::LinearAlgebra::VS_Stride( strideOffset2, strideLength2 ),
                                "var" );
@@ -199,5 +199,5 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
     d_multiDofDTKMapOpParams->d_TargetVector->makeConsistent(
         AMP::LinearAlgebra::Vector::ScatterType::CONSISTENT_SET );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

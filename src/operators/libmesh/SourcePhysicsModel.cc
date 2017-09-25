@@ -186,5 +186,5 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double> &result,
     }
     PROFILE_STOP( "getConstitutiveProperty", 6 );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

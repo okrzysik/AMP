@@ -1,10 +1,10 @@
 #ifdef USE_EXT_PETSC
 
-#include "vectors/MultiVector.h"
+#include "vectors/testHelpers/petsc/PetscVectorTests.h"
 #include "utils/UnitTest.h"
+#include "vectors/MultiVector.h"
 #include "vectors/petsc/PetscHelpers.h"
 #include "vectors/testHelpers/petsc/PetscVectorFactory.h"
-#include "vectors/testHelpers/petsc/PetscVectorTests.h"
 
 #include "string"
 #include <algorithm>
@@ -1148,8 +1148,8 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *utils )
 }
 
 
-} // LinearAlgebra namespace
-} // AMP namespace
+} // namespace LinearAlgebra
+} // namespace AMP
 
 /// \endcond
 

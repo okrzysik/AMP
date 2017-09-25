@@ -217,5 +217,5 @@ DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::const_sha
         return vec->constSubsetVectorForVariable( var );
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

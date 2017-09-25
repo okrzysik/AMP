@@ -254,8 +254,8 @@ private:
 
     CommunicationList();
 };
-}
-}
+} // namespace LinearAlgebra
+} // namespace AMP
 
 #include "CommunicationList.inline.h"
 

@@ -7,8 +7,8 @@ namespace AMP {
 
 
 /********************************************************************
-*  Constructors/Deconstructors                                      *
-********************************************************************/
+ *  Constructors/Deconstructors                                      *
+ ********************************************************************/
 PetscMonitor::PetscMonitor( AMP_MPI comm )
 {
     d_comm = comm;
@@ -18,8 +18,8 @@ PetscMonitor::~PetscMonitor() {}
 
 
 /********************************************************************
-*  Remove the monitor option from the input string                  *
-********************************************************************/
+ *  Remove the monitor option from the input string                  *
+ ********************************************************************/
 std::string PetscMonitor::removeMonitor( std::string options )
 {
     size_t i2 = options.find( "monitor" );
@@ -33,8 +33,8 @@ std::string PetscMonitor::removeMonitor( std::string options )
 
 
 /********************************************************************
-*  Routines to provide petsc with function pointers for monitoring  *
-********************************************************************/
+ *  Routines to provide petsc with function pointers for monitoring  *
+ ********************************************************************/
 #ifdef USE_EXT_PETSC
 PetscErrorCode PetscMonitor::monitorKSP( KSP ksp, int iteration, double L2norm, void *ctx )
 {
@@ -69,4 +69,4 @@ void PetscMonitor::printSNESStatus( SNES snes, int iteration, double L2norm )
     }
 }
 #endif
-}
+} // namespace AMP

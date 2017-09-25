@@ -1,6 +1,6 @@
 
-#include "utils/Utilities.h"
 #include "MLoptions.h"
+#include "utils/Utilities.h"
 
 namespace AMP {
 namespace Solver {
@@ -206,5 +206,5 @@ void MLoptions::addDefaults( const std::string &problemType,
         AMP_ERROR( "The option, problem_type = \"" << problemType << "\" , is not supported." );
     }
 }
-}
-}
+} // namespace Solver
+} // namespace AMP

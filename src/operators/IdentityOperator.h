@@ -38,10 +38,10 @@ public:
                         AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
     /**
-      * This function is useful for re-initializing/updating an operator
-      * \param params
-      *    parameter object containing parameters to change
-      */
+     * This function is useful for re-initializing/updating an operator
+     * \param params
+     *    parameter object containing parameters to change
+     */
     virtual void reset( const AMP::shared_ptr<OperatorParameters> &params ) override;
 
     /**
@@ -64,7 +64,7 @@ public:
 
 private:
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

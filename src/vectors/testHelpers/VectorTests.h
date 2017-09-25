@@ -66,7 +66,7 @@ public:
     void CopyVectorConsistency( AMP::UnitTest *utils );
 
 
-    template <typename VIEWER>
+    template<typename VIEWER>
     void DeepCloneOfView( AMP::UnitTest *utils );
 
 
@@ -117,7 +117,7 @@ public:
     void VectorIteratorLengthTest( AMP::UnitTest *utils );
 
 
-    template <typename ITERATOR>
+    template<typename ITERATOR>
     void both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::UnitTest *utils );
 
 

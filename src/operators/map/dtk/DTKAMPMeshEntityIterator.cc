@@ -129,5 +129,5 @@ std::unique_ptr<DataTransferKit::EntityIterator> AMPMeshEntityIterator::clone() 
 }
 
 //---------------------------------------------------------------------------//
-}
-}
+} // namespace Operator
+} // namespace AMP

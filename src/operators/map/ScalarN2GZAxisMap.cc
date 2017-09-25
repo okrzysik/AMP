@@ -27,8 +27,8 @@ namespace Operator {
 
 
 /************************************************************************
-*  Default constructor                                                  *
-************************************************************************/
+ *  Default constructor                                                  *
+ ************************************************************************/
 ScalarN2GZAxisMap::ScalarN2GZAxisMap( const AMP::shared_ptr<AMP::Operator::OperatorParameters> &p )
     : Map3to1to3( p )
 {
@@ -64,13 +64,13 @@ ScalarN2GZAxisMap::ScalarN2GZAxisMap( const AMP::shared_ptr<AMP::Operator::Opera
 
 
 /************************************************************************
-*  De-constructor                                                       *
-************************************************************************/
+ *  De-constructor                                                       *
+ ************************************************************************/
 ScalarN2GZAxisMap::~ScalarN2GZAxisMap() {}
 
 /************************************************************************
-*  Check if the map type is "ScalarN2GZAxis"                               *
-************************************************************************/
+ *  Check if the map type is "ScalarN2GZAxis"                               *
+ ************************************************************************/
 bool ScalarN2GZAxisMap::validMapType( const std::string &t )
 {
     if ( t == "ScalarN2GZAxis" )
@@ -80,11 +80,11 @@ bool ScalarN2GZAxisMap::validMapType( const std::string &t )
 
 
 /************************************************************************
-*  buildMap                                                             *
-*  This function constructs the map from the given vector.              *
-*  It loops through all values in "cur", storing the value iv using     *
-*  the z-position as the 1D key.                                        *
-************************************************************************/
+ *  buildMap                                                             *
+ *  This function constructs the map from the given vector.              *
+ *  It loops through all values in "cur", storing the value iv using     *
+ *  the z-position as the 1D key.                                        *
+ ************************************************************************/
 std::multimap<double, double>
 ScalarN2GZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
                              const AMP::Mesh::Mesh::shared_ptr,
@@ -115,8 +115,8 @@ ScalarN2GZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
 
 
 /************************************************************************
-*  Function to build the z-coordinates of the gauss points              *
-************************************************************************/
+ *  Function to build the z-coordinates of the gauss points              *
+ ************************************************************************/
 AMP::LinearAlgebra::Vector::const_shared_ptr
 ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator &iterator )
 {
@@ -160,8 +160,8 @@ ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator &iterator )
 
 
 /************************************************************************
-*  buildReturn                                                          *
-************************************************************************/
+ *  buildReturn                                                          *
+ ************************************************************************/
 void ScalarN2GZAxisMap::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                      const AMP::Mesh::Mesh::shared_ptr,
                                      const AMP::Mesh::MeshIterator &iterator,
@@ -236,5 +236,5 @@ void ScalarN2GZAxisMap::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec,
 }
 
 
-} // Operator namespace
-} // AMP namespace
+} // namespace Operator
+} // namespace AMP

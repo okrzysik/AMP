@@ -73,8 +73,7 @@ void NonlinearBVPOperator::reset( const AMP::shared_ptr<OperatorParameters> &par
 AMP::shared_ptr<OperatorParameters>
 NonlinearBVPOperator::getParameters( const std::string &type,
                                      AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                                     AMP::shared_ptr<OperatorParameters>
-                                         params )
+                                     AMP::shared_ptr<OperatorParameters> params )
 {
     PROFILE_START( "getParameters" );
     AMP::shared_ptr<AMP::Database> db;
@@ -97,5 +96,5 @@ void NonlinearBVPOperator::modifyInitialSolutionVector( AMP::LinearAlgebra::Vect
 {
     ( this->getBoundaryOperator() )->modifyInitialSolutionVector( sol );
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

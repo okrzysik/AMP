@@ -280,6 +280,6 @@ void readTestMesh( AMP::shared_ptr<AMP::InputDatabase> mesh_file_db, AMP::shared
         }
     } // end for bid
 }
-}
+} // namespace AMP
 
 #endif

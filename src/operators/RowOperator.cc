@@ -29,5 +29,5 @@ void RowOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         rOriginal->add( rOriginal, ( rInternal[i] ) );
     }
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

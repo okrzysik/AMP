@@ -70,5 +70,5 @@ void MassElement::initializeForCurrentElement(
 
     d_densityModel = densityModel;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

@@ -25,7 +25,7 @@ public:
 
     virtual ~AsyncMapOperatorParameters();
 };
-}
-}
+} // namespace Operator
+} // namespace AMP
 
 #endif

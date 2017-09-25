@@ -163,5 +163,5 @@ Operator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
     PROFILE_STOP( "constSubsetInputVector", 1 );
     return retvec;
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

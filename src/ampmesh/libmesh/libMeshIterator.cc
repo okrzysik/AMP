@@ -17,8 +17,8 @@ static MeshElement nullElement;
 
 
 /********************************************************
-* Constructors                                          *
-********************************************************/
+ * Constructors                                          *
+ ********************************************************/
 libMeshIterator::libMeshIterator()
 {
     d_typeID   = libMeshIteratorTypeID;
@@ -175,14 +175,14 @@ libMeshIterator &libMeshIterator::operator=( const libMeshIterator &rhs )
 
 
 /********************************************************
-* Function to clone the iterator                        *
-********************************************************/
+ * Function to clone the iterator                        *
+ ********************************************************/
 MeshIterator *libMeshIterator::clone() const { return new libMeshIterator( *this ); }
 
 
 /********************************************************
-* De-constructor                                        *
-********************************************************/
+ * De-constructor                                        *
+ ********************************************************/
 libMeshIterator::~libMeshIterator()
 {
     if ( d_pos2 != nullptr ) {
@@ -203,8 +203,8 @@ libMeshIterator::~libMeshIterator()
 
 
 /********************************************************
-* Return an iterator to the beginning or end            *
-********************************************************/
+ * Return an iterator to the beginning or end            *
+ ********************************************************/
 MeshIterator libMeshIterator::begin() const
 {
     return libMeshIterator( d_type, d_mesh, d_gcw, d_begin2, d_end2, d_begin2, d_size, 0 );
@@ -216,8 +216,8 @@ MeshIterator libMeshIterator::end() const
 
 
 /********************************************************
-* Increment/Decrement the iterator                      *
-********************************************************/
+ * Increment/Decrement the iterator                      *
+ ********************************************************/
 MeshIterator &libMeshIterator::operator++()
 {
     // Prefix increment (increment and return this)
@@ -259,8 +259,8 @@ MeshIterator libMeshIterator::operator--( int )
 
 
 /********************************************************
-* Random access incrementors                            *
-********************************************************/
+ * Random access incrementors                            *
+ ********************************************************/
 MeshIterator libMeshIterator::operator+( int n ) const
 {
     libMeshIterator tmp( *this ); // Create a temporary iterator
@@ -306,8 +306,8 @@ MeshIterator &libMeshIterator::operator+=( int n )
 
 
 /********************************************************
-* Compare two iterators                                 *
-********************************************************/
+ * Compare two iterators                                 *
+ ********************************************************/
 bool libMeshIterator::operator==( const MeshIterator &rhs ) const
 {
     libMeshIterator *rhs2 = nullptr;
@@ -364,8 +364,8 @@ bool libMeshIterator::operator!=( const MeshIterator &rhs ) const { return !( ( 
 
 
 /********************************************************
-* Dereference the iterator to get the element           *
-********************************************************/
+ * Dereference the iterator to get the element           *
+ ********************************************************/
 void libMeshIterator::setCurrentElement()
 {
     if ( d_pos >= d_size ) {
@@ -388,5 +388,5 @@ void libMeshIterator::setCurrentElement()
 }
 
 
-} // Mesh namespace
-} // AMP namespace
+} // namespace Mesh
+} // namespace AMP

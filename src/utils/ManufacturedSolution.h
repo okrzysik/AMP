@@ -63,6 +63,7 @@ public:
     }
 
     std::string get_name() { return d_Name; }
+
 private:
     /**
      *	\brief unit cube, quadratic, all Neumann BC's.
@@ -273,5 +274,5 @@ private:
 
     std::string d_Name;
 };
-}
+} // namespace AMP
 #endif

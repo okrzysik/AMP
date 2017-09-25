@@ -16,8 +16,7 @@ void ColumnBoundaryOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
 AMP::shared_ptr<OperatorParameters>
 ColumnBoundaryOperator::getParameters( const std::string &type,
                                        AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                                       AMP::shared_ptr<OperatorParameters>
-                                           params )
+                                       AMP::shared_ptr<OperatorParameters> params )
 {
 
     AMP::shared_ptr<AMP::Database> db;
@@ -80,5 +79,5 @@ void ColumnBoundaryOperator::modifyInitialSolutionVector(
         elem->modifyInitialSolutionVector( sol );
     } // end for i
 }
-}
-}
+} // namespace Operator
+} // namespace AMP

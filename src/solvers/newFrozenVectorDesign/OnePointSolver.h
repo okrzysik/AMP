@@ -19,8 +19,7 @@ public:
     }
 
     void solve( AMP::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                AMP::shared_ptr<AMP::LinearAlgebra::Vector>
-                    u )
+                AMP::shared_ptr<AMP::LinearAlgebra::Vector> u )
     {
         // Assumption: primaryInputVar = outputVar
         // General solution: To avoid making the above assumption, we can replace
@@ -42,7 +41,7 @@ public:
 protected:
     AMP::shared_ptr<AMP::Operator::OnePointOperator> d_onePointOp;
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

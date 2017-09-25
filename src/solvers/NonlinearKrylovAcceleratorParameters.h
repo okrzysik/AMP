@@ -46,7 +46,7 @@ public:
 
     AMP::shared_ptr<AMP::LinearAlgebra::Vector> d_pInitialGuess;
 };
-}
-}
+} // namespace Solver
+} // namespace AMP
 
 #endif

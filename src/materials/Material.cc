@@ -47,5 +47,5 @@ std::vector<std::string> Material::list()
     }
     return result;
 }
-}
-}
+} // namespace Materials
+} // namespace AMP

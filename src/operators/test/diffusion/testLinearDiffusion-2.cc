@@ -86,9 +86,9 @@ void linearTest( AMP::UnitTest *ut,
     AMP::shared_ptr<AMP::Database> transportModel_db;
     if ( input_db->keyExists( "DiffusionTransportModel" ) )
         transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
-    double defTemp        = transportModel_db->getDoubleWithDefault( "Default_Temperature", 400.0 );
-    double defConc        = transportModel_db->getDoubleWithDefault( "Default_Concentration", .33 );
-    double defBurn        = transportModel_db->getDoubleWithDefault( "Default_Burnup", .5 );
+    double defTemp = transportModel_db->getDoubleWithDefault( "Default_Temperature", 400.0 );
+    double defConc = transportModel_db->getDoubleWithDefault( "Default_Concentration", .33 );
+    double defBurn = transportModel_db->getDoubleWithDefault( "Default_Burnup", .5 );
     AMP::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
     AMP::shared_ptr<AMP::Operator::DiffusionTransportModel> transportModel =

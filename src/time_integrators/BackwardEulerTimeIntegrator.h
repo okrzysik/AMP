@@ -34,10 +34,10 @@ public:
     void initialize( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
     /**
-    * Resets the internal state of the time integrator as needed.
-    * A parameter argument is passed to allow for general flexibility
-    * in determining what needs to be reset Typically used after a regrid.
-    */
+     * Resets the internal state of the time integrator as needed.
+     * A parameter argument is passed to allow for general flexibility
+     * in determining what needs to be reset Typically used after a regrid.
+     */
     void reset( AMP::shared_ptr<TimeIntegratorParameters> parameters ) override;
 
     /**
@@ -51,16 +51,16 @@ public:
     double getNextDt( const bool good_solution ) override;
 
     /**
-    * Set an initial guess for the time advanced solution.
-    */
+     * Set an initial guess for the time advanced solution.
+     */
     void setInitialGuess( const bool first_step,
                           const double current_time,
                           const double current_dt,
                           const double old_dt ) override;
 
     /**
-    * Update state of the solution.
-    */
+     * Update state of the solution.
+     */
     void updateSolution( void ) override;
 
     /**
@@ -88,13 +88,13 @@ private:
     void getFromInput( AMP::shared_ptr<AMP::Database> input_db );
 
     /**
-    * setup the vectors used by BE
-    */
+     * setup the vectors used by BE
+     */
     void setupVectors( void );
 
     double d_initial_dt;
 };
-}
-}
+} // namespace TimeIntegrator
+} // namespace AMP
 
 #endif

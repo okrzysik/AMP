@@ -99,8 +99,7 @@ protected:
                     MeshID meshID,
                     const STKMesh *mesh );
     STKMeshElement( int dim,
-                    AMP::shared_ptr<stk::mesh::Entity>
-                        element,
+                    AMP::shared_ptr<stk::mesh::Entity> element,
                     unsigned int rank,
                     MeshID meshID,
                     const STKMesh *mesh );
@@ -119,7 +118,7 @@ protected:
     friend class AMP::Mesh::STKMesh;
     friend class AMP::Mesh::STKMeshIterator;
 };
-}
-}
+} // namespace Mesh
+} // namespace AMP
 
 #endif
