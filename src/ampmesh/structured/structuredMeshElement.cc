@@ -422,9 +422,9 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
         // mesh
         BoxMesh::MeshElementIndex index(
             type, 0, ijk[0], ijk[1], ijk[2] );
-        index_list.push_back( index );
+        index_list.emplace_back( index );
         index.d_index[d_index.d_side]--;
-        index_list.push_back( index );
+        index_list.emplace_back( index );
     } else if ( d_index.d_type == static_cast<int>(GeomType::Vertex) ) {
         // We want to get the parents of a vertex
         AMP_ASSERT( static_cast<int>(d_meshType) <= 3 );
@@ -432,7 +432,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
             for ( int i = ijk[0] - 1; i <= ijk[0]; i++ ) {
                 for ( int j = ijk[1] - 1; j <= ijk[1]; j++ ) {
                     for ( int k = ijk[2] - 1; k <= ijk[2]; k++ ) {
-                        index_list.push_back( BoxMesh::MeshElementIndex( type, 0, i, j, k ) );
+                        index_list.emplace_back( BoxMesh::MeshElementIndex( type, 0, i, j, k ) );
                     }
                 }
             }
@@ -440,26 +440,24 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
             for ( int d = 0; d < static_cast<int>(d_meshType); d++ ) {
                 BoxMesh::MeshElementIndex index(
                     type, d, ijk[0], ijk[1], ijk[2] );
-                index_list.push_back( index );
+                index_list.emplace_back( index );
                 index.d_index[d]--;
-                index_list.push_back( index );
+                index_list.emplace_back( index );
             }
         } else if ( type == GeomType::Face && d_mesh->getGeomType() == GeomType::Volume ) {
-            for ( int j = ijk[1] - 1; j <= ijk[1]; j++ ) {
-                for ( int k = ijk[2] - 1; k <= ijk[2]; k++ )
-                    index_list.push_back(
-                        BoxMesh::MeshElementIndex( type, 0, ijk[0], j, k ) );
-            }
-            for ( int i = ijk[0] - 1; i <= ijk[0]; i++ ) {
-                for ( int k = ijk[2] - 1; k <= ijk[2]; k++ )
-                    index_list.push_back(
-                        BoxMesh::MeshElementIndex( type, 1, i, ijk[1], k ) );
-            }
-            for ( int i = ijk[0] - 1; i <= ijk[0]; i++ ) {
-                for ( int j = ijk[1] - 1; j <= ijk[1]; j++ )
-                    index_list.push_back(
-                        BoxMesh::MeshElementIndex( type, 2, i, j, ijk[2] ) );
-            }
+            index_list.resize( 12 );
+            index_list[0].reset(  type, 0, ijk[0],   ijk[1]-1, ijk[2]-1 );
+            index_list[1].reset(  type, 0, ijk[0],   ijk[1]-1, ijk[2]   );
+            index_list[2].reset(  type, 0, ijk[0],   ijk[1],   ijk[2]-1 );
+            index_list[3].reset(  type, 0, ijk[0],   ijk[1],   ijk[2]   );
+            index_list[4].reset(  type, 1, ijk[0]-1, ijk[1],   ijk[2]-1 );
+            index_list[5].reset(  type, 1, ijk[0]-1, ijk[1],   ijk[2]   );
+            index_list[6].reset(  type, 1, ijk[0],   ijk[1],   ijk[2]-1 );
+            index_list[7].reset(  type, 1, ijk[0],   ijk[1],   ijk[2]   );
+            index_list[8].reset(  type, 2, ijk[0]-1, ijk[1]-1, ijk[2]   );
+            index_list[9].reset(  type, 2, ijk[0]-1, ijk[1],   ijk[2]   );
+            index_list[10].reset( type, 2, ijk[0],   ijk[1]-1, ijk[2]   );
+            index_list[11].reset( type, 2, ijk[0],   ijk[1],   ijk[2]   );
         } else {
             char text[100];
             sprintf( text,
