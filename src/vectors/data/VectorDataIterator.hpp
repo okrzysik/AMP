@@ -81,6 +81,8 @@ VectorDataIterator<TYPE>& VectorDataIterator<TYPE>::operator=( VectorDataIterato
 {
     if ( this == &rhs )
         return *this;
+    delete [] d_blockSize;
+    delete [] d_data;
     d_N_blocks = rhs.d_N_blocks;
     d_CurBlock = rhs.d_CurBlock;
     d_CurOffset = rhs.d_CurOffset;

@@ -46,7 +46,7 @@ libMesh::libMesh( const MeshParameters::shared_ptr &params_in ) : Mesh( params_i
     AMP_INSIST( d_params.get(), "Params must not be null" );
     AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ), "Communicator must be set" );
     // Intialize libMesh
-    libmeshInit = AMP::shared_ptr<initializeLibMesh>( new initializeLibMesh( d_comm ) );
+    libmeshInit = AMP::make_shared<initializeLibMesh>( d_comm );
     // Load the mesh
     if ( d_db.get() ) {
         // Database exists
